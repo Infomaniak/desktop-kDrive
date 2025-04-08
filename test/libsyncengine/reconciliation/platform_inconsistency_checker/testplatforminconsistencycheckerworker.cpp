@@ -18,13 +18,15 @@
 
 #include "testplatforminconsistencycheckerworker.h"
 
-#include <memory>
-#include "libcommonserver/utility/utility.h"
-#include "libcommon/utility/types.h"
-
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
+#include "libcommon/utility/types.h"
+#include "libcommonserver/utility/utility.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/testhelpers.h"
+
+#include <memory>
 
 using namespace CppUnit;
 
@@ -45,21 +47,21 @@ void TestPlatformInconsistencyCheckerWorker::setUp() {
     TestBase::start();
     // Create parmsDb
     bool alreadyExists = false;
-    const auto parmsDbPath = Db::makeDbName(alreadyExists, true);
+    const auto parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
     const User user(1, 1, "dummy");
-    ParmsDb::instance()->insertUser(user);
+    (void) ParmsDb::instance()->insertUser(user);
 
     const Account account(1, 1, user.dbId());
-    ParmsDb::instance()->insertAccount(account);
+    (void) ParmsDb::instance()->insertAccount(account);
 
     const Drive drive(1, 1, account.dbId(), std::string(), 0, std::string());
-    ParmsDb::instance()->insertDrive(drive);
+    (void) ParmsDb::instance()->insertDrive(drive);
 
     const Sync sync(1, drive.dbId(), _tempDir.path(), "");
-    ParmsDb::instance()->insertSync(sync);
+    (void) ParmsDb::instance()->insertSync(sync);
 
     // Create SyncPal
     _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
@@ -190,9 +192,9 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
 
     // Set up remote tree
     const auto remoteParentNode = _syncPal->updateTree(ReplicaSide::Remote)->rootNode();
-    const auto remoteNodeLower =
-            std::make_shared<Node>(dbNodeIdLower, ReplicaSide::Remote, Str("a"), NodeType::File, OperationType::Move, "ra", 0, 0,
-                                   12345, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+    const auto remoteNodeLower = std::make_shared<Node>(
+            dbNodeIdLower, ReplicaSide::Remote, Str("a"), NodeType::File, OperationType::Move, "ra", 0, 0, 12345,
+            _syncPal->updateTree(ReplicaSide::Remote)->rootNode(), Node::MoveOriginInfos("a1", remoteParentNode->id().value()));
     const auto remoteNodeUpper =
             std::make_shared<Node>(dbNodeIdUpper, ReplicaSide::Remote, Str("A"), NodeType::File, OperationType::None, "rA", 0, 0,
                                    12345, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
@@ -326,7 +328,8 @@ void TestPlatformInconsistencyCheckerWorker::initUpdateTree(ReplicaSide side) {
                          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                          "aaaaaaaaaaaa"
                          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
-            NodeType::Directory, OperationType::Move, "testNode2", 0, 0, 12345, _syncPal->updateTree(side)->rootNode());
+            NodeType::Directory, OperationType::Move, "testNode2", 0, 0, 12345, _syncPal->updateTree(side)->rootNode(),
+            Node::MoveOriginInfos(SyncPath("testDira"), _syncPal->updateTree(side)->rootNode()->id().value()));
 
     const auto bNode = std::make_shared<Node>(_syncPal->updateTree(side)->side(), Str2SyncName("b.txt"), NodeType::File,
                                               OperationType::None, "bNode", 0, 0, 12345, testNode2);

@@ -649,6 +649,8 @@ QString SocketApi::socketAPIString(SyncFileStatus status, const VfsStatus &vfsSt
         case SyncFileStatus::Error:
             statusString = QLatin1String("ERROR");
             break;
+        case SyncFileStatus::EnumEnd:
+            assert(false && "Invalid enum value in switch statement.");
     }
 
     return statusString;

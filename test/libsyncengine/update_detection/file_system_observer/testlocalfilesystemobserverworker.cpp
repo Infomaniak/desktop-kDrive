@@ -29,7 +29,8 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/log/log.h"
-#include "requests/parameterscache.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+
 #include "test_utility/testhelpers.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -66,7 +67,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
 
     // Create parmsDb
     bool alreadyExists = false;
-    const SyncPath parmsDbPath = Db::makeDbName(alreadyExists, true);
+    const SyncPath parmsDbPath = MockDb::makeDbName(alreadyExists);
 
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
@@ -76,7 +77,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
     ParmsDb::instance()->insertExclusionTemplate(
             ExclusionTemplate(".DS_Store", true),
             constraintError); // TODO : to be removed once we have a default list of file excluded implemented
-    const SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists, true);
+    const SyncPath syncDbPath = MockDb::makeDbName(1, 1, 1, 1, alreadyExists);
 
     // Create SyncPal
     _syncPal = std::make_shared<SyncPalTest>(syncDbPath, KDRIVE_VERSION_STRING, true);
@@ -102,10 +103,13 @@ void TestLocalFileSystemObserverWorker::tearDown() {
 
     if (_syncPal && _syncPal->_localFSObserverWorker) {
         _syncPal->_localFSObserverWorker->stop();
+        _syncPal->_localFSObserverWorker->waitForExit();
+        _syncPal->_localFSObserverWorker.reset();
     }
 
     ParmsDb::instance()->close();
     ParmsDb::reset();
+    ParametersCache::reset();
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }
@@ -113,7 +117,7 @@ void TestLocalFileSystemObserverWorker::tearDown() {
 }
 
 void TestLocalFileSystemObserverWorker::testLFSOWithInitialSnapshot() {
-    std::unordered_set<NodeId> ids;
+    NodeSet ids;
     _syncPal->snapshot(ReplicaSide::Local)->ids(ids);
 
     uint64_t fileCounter = 0;

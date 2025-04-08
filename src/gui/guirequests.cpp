@@ -933,7 +933,7 @@ ExitCode GuiRequests::crash() {
     return exitCode;
 }
 
-ExitCode GuiRequests::getSubFolders(int userDbId, int driveId, const QString &nodeId, QList<NodeInfo> &list,
+ExitInfo GuiRequests::getSubFolders(int userDbId, int driveId, const QString &nodeId, QList<NodeInfo> &list,
                                     bool withPath /*= false*/) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -947,15 +947,15 @@ ExitCode GuiRequests::getSubFolders(int userDbId, int driveId, const QString &no
         return ExitCode::SystemError;
     }
 
-    auto exitCode = ExitCode::Unknown;
+    int exitInfoInt = 0;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
+    resultStream >> exitInfoInt;
     resultStream >> list;
 
-    return exitCode;
+    return ExitInfo::fromInt(exitInfoInt);
 }
 
-ExitCode GuiRequests::getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath /*= false*/) {
+ExitInfo GuiRequests::getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath /*= false*/) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << driveDbId;
@@ -967,12 +967,12 @@ ExitCode GuiRequests::getSubFolders(int driveDbId, const QString &nodeId, QList<
         return ExitCode::SystemError;
     }
 
-    auto exitCode = ExitCode::Unknown;
+    int exitInfoInt = 0;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
+    resultStream >> exitInfoInt;
     resultStream >> list;
 
-    return exitCode;
+    return ExitInfo::fromInt(exitInfoInt);
 }
 
 ExitCode GuiRequests::createMissingFolders(int driveDbId, const QList<QPair<QString, QString>> &serverFolderList,

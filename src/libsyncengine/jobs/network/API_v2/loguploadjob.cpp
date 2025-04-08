@@ -108,8 +108,7 @@ bool LogUploadJob::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
 void LogUploadJob::runJob() {
     if (!canRun()) {
         LOG_DEBUG(Log::instance()->getLogger(), "LogUploadJob job cannot run.");
-        _exitCode = ExitCode::Ok;
-        _exitCause = ExitCause::Unknown;
+        _exitInfo = ExitCode::Ok;
         return;
     }
 
@@ -202,8 +201,7 @@ void LogUploadJob::finalize() {
     }
 
     notifyLogUploadProgress(LogUploadState::Success, 100);
-    _exitCode = ExitCode::Ok;
-    _exitCause = ExitCause::Unknown;
+    _exitInfo = ExitCode::Ok;
     _runningJob.reset();
 }
 
@@ -361,8 +359,7 @@ ExitInfo LogUploadJob::copyLogsTo(const SyncPath &outputPath, const bool include
 }
 
 ExitInfo LogUploadJob::copyParmsDbTo(const SyncPath &outputPath) const {
-    const SyncPath parmsDbName = ".parms.db";
-    const SyncPath parmsDbPath = CommonUtility::getAppSupportDir() / parmsDbName;
+    const SyncPath parmsDbPath = KDC::ParmsDb::instance()->dbPath();
     DirectoryEntry entryParmsDb;
     IoError ioError = IoError::Unknown;
     if (!IoHelper::getDirectoryEntry(parmsDbPath, ioError, entryParmsDb)) {
@@ -510,7 +507,7 @@ ExitInfo LogUploadJob::upload(const SyncPath &archivePath) {
         uploadSessionLog = std::make_shared<LogUploadSession>(archivePath);
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadSession::LogUploadSession: error=" << e.what());
-        return ExitCode::SystemError;
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
     };
 
     bool canceledByUser = false;
@@ -613,8 +610,7 @@ void LogUploadJob::handleJobFailure(const ExitInfo &exitInfo, const bool clearTm
     }
 
     _runningJob.reset();
-    _exitCode = exitInfo.code();
-    _exitCause = exitInfo.cause();
+    _exitInfo = exitInfo;
 }
 
 bool LogUploadJob::getFileSize(const SyncPath &path, uint64_t &size) {

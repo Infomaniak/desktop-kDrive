@@ -40,6 +40,15 @@
 
 namespace KDC {
 
+struct StringHash {
+        using is_transparent = void; // Enables heterogeneous operations.
+
+        std::size_t operator()(std::string_view sv) const {
+            std::hash<std::string_view> hasher;
+            return hasher(sv);
+        }
+};
+
 using SyncTime = int64_t;
 using DbNodeId = int64_t;
 using UniqueId = int64_t;
@@ -49,6 +58,7 @@ using SyncName = std::filesystem::path::string_type;
 using SyncChar = std::filesystem::path::value_type;
 using DirectoryEntry = std::filesystem::directory_entry;
 using DirectoryOptions = std::filesystem::directory_options;
+using NodeSet = std::unordered_set<NodeId, StringHash, std::equal_to<>>;
 
 using SigValueType = std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring>;
 
@@ -229,7 +239,7 @@ enum class ExitCause {
     RedirectionError,
     ApiErr,
     InvalidSize,
-    FileAlreadyExist,
+    FileAlreadyExists,
     FileAccessError,
     UnexpectedFileSystemEvent,
     NotEnoughDiskSpace,
@@ -257,6 +267,10 @@ enum class ExitCause {
     OperationCanceled,
     ShareLinkAlreadyExists,
     InvalidArgument,
+    InvalidDestination,
+    DriveAsleep,
+    DriveWakingUp,
+    ServiceUnavailable,
     EnumEnd
 };
 std::string toString(ExitCause e);
@@ -272,6 +286,7 @@ struct ExitInfo {
 
         const ExitCode &code() const { return _code; }
         const ExitCause &cause() const { return _cause; }
+        void setCause(const ExitCause cause) { _cause = cause; }
         operator ExitCode() const { return _code; }
         operator ExitCause() const { return _cause; }
         explicit operator std::string() const {
@@ -283,6 +298,18 @@ struct ExitInfo {
         constexpr explicit operator int() const { return toInt(_code) * 100 + toInt(_cause); }
         constexpr bool operator==(const ExitInfo &other) const { return _code == other._code && _cause == other._cause; }
 
+        //! Merge 'this' object with an exitInfoToMerge given as a parameter, according to an ExitCode list ordered by priority:
+        //! - If 'this' object's code has priority over the parameter's code, do nothing.
+        //! - Else, update 'this' object using the exitInfoToMerge parameter.
+        /*!
+          \param exitInfo is used to update 'this' object.
+          \param exitCodeList is a vector of ExitCode(s) ranked by decreasing priority.
+        */
+        void merge(const ExitInfo &exitInfoToMerge, const std::vector<ExitCode> &exitCodeList);
+        static ExitInfo fromInt(const int val) {
+            return ExitInfo(static_cast<ExitCode>(val / 100), static_cast<ExitCause>(val % 100));
+        }
+
     private:
         ExitCode _code{ExitCode::Unknown};
         ExitCause _cause{ExitCause::Unknown};
@@ -292,19 +319,23 @@ struct ExitInfo {
             if (_code == ExitCode::Ok) return "";
             return " from (" + _srcLoc.toString() + ")";
         }
+
+        static long indexInList(const ExitCode &exitCode, const std::vector<ExitCode> &exitCodeList);
+
+        friend class TestTypes;
 };
 std::string toString(ExitInfo e);
 
 // Conflict types ordered by priority
 enum class ConflictType {
     None,
-    MoveParentDelete,
+    EditDelete,
     MoveDelete,
+    MoveParentDelete,
     CreateParentDelete,
     MoveMoveSource,
     MoveMoveDest,
     MoveCreate,
-    EditDelete,
     CreateCreate,
     EditEdit,
     MoveMoveCycle,
@@ -312,15 +343,11 @@ enum class ConflictType {
 };
 std::string toString(ConflictType e);
 
-static const std::unordered_set<ConflictType> conflictsWithLocalRename = { // All conflicts that rename the local file
-        ConflictType::CreateCreate, ConflictType::EditEdit, ConflictType::MoveCreate, ConflictType::MoveMoveDest};
-
-inline bool isConflictsWithLocalRename(ConflictType type) {
+// All conflict types whose resolution involves adding a "_conflict_" suffix to the local file's name.
+static const std::unordered_set<ConflictType> conflictsWithLocalRename = {ConflictType::CreateCreate, ConflictType::EditEdit};
+inline bool isConflictsWithLocalRename(const ConflictType type) {
     return conflictsWithLocalRename.contains(type);
 }
-
-enum class ConflictTypeResolution { None, DeleteCanceled, FileMovedToRoot, EnumEnd };
-std::string toString(ConflictTypeResolution e);
 
 enum class InconsistencyType {
     None = 0x00,
@@ -347,11 +374,12 @@ enum class CancelType {
     TmpBlacklisted,
     ExcludedByTemplate,
     Hardlink,
+    FileRescued,
     EnumEnd
 };
 std::string toString(CancelType e);
 
-enum class NodeStatus { Unknown = 0, Unprocessed, PartiallyProcessed, Processed, EnumEnd };
+enum class NodeStatus { Unknown = 0, Unprocessed, PartiallyProcessed, Processed, ConflictOpGenerated, EnumEnd };
 std::string toString(NodeStatus e);
 
 enum class SyncStatus { Undefined, Starting, Running, Idle, PauseAsked, Paused, StopAsked, Stopped, Error, EnumEnd };
@@ -517,7 +545,7 @@ std::string toString(UpdateState e);
 enum class VersionChannel { Prod, Next, Beta, Internal, Legacy, Unknown, EnumEnd };
 std::string toString(VersionChannel e);
 
-enum class Platform { MacOS, Windows, LinuxAMD, LinuxARM, Unknown, EnumEnd };
+enum class Platform { MacOS, Windows, WindowsServer, LinuxAMD, LinuxARM, Unknown, EnumEnd };
 std::string toString(Platform e);
 
 struct VersionInfo {
@@ -525,7 +553,7 @@ struct VersionInfo {
         std::string tag; // Version number. Example: 3.6.4
         // std::string changeLog; // List of changes in this version, not used for now.
         uint64_t buildVersion{0}; // Example: 20240816
-        std::string buildMinOsVersion; // Optionnal. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
+        std::string buildMinOsVersion; // Optional. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
         std::string downloadUrl; // URL to download the version
 
         [[nodiscard]] bool isValid() const {

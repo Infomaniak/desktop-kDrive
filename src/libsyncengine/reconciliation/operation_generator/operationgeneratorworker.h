@@ -44,7 +44,7 @@ class OperationGeneratorWorker : public OperationProcessor {
         void findAndMarkAllChildNodes(std::shared_ptr<Node> parentNode);
 
         std::queue<std::shared_ptr<Node>> _queuedToExplore;
-        std::unordered_set<NodeId> _deletedNodes;
+        NodeSet _deletedNodes;
 
         int64_t _bytesToDownload = 0;
 

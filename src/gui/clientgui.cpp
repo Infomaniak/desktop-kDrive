@@ -145,6 +145,9 @@ void ClientGui::onErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId) 
         auto userIt = _userInfoMap.find(_currentUserDbId);
         if (userIt != _userInfoMap.end() && !userIt->second.credentialsAsked()) {
             userIt->second.setCredentialsAsked(true);
+            if (_addDriveWizard) {
+                emit _addDriveWizard->exit();
+            }
             _app->askUserToLoginAgain(_currentUserDbId, userIt->second.email(), true);
         }
     }
@@ -619,9 +622,6 @@ void ClientGui::computeTrayOverallStatus(SyncStatus &status, bool &unresolvedCon
                 abortOrPausedSeen++;
             } else {
                 switch (syncInfoMapIt.second.status()) {
-                    case SyncStatus::Undefined:
-                    case SyncStatus::Starting:
-                        break;
                     case SyncStatus::Running:
                         runSeen++;
                         break;
@@ -636,6 +636,12 @@ void ClientGui::computeTrayOverallStatus(SyncStatus &status, bool &unresolvedCon
                     case SyncStatus::StopAsked:
                     case SyncStatus::Stopped:
                         abortOrPausedSeen++;
+                    case SyncStatus::Undefined:
+                    case SyncStatus::Starting:
+                        break;
+                    case SyncStatus::EnumEnd: {
+                        assert(false && "Invalid enum value in switch statement.");
+                    }
                 }
             }
             if (syncInfoMapIt.second.unresolvedConflicts()) {
@@ -688,6 +694,9 @@ QString ClientGui::trayTooltipStatusString(SyncStatus status, bool unresolvedCon
             statusString = tr("Sync is paused.");
             break;
             // no default case on purpose, check compiler warnings
+        case SyncStatus::EnumEnd: {
+            assert(false && "Invalid enum value in switch statement.");
+        }
     }
     if (paused) {
         // sync is disabled.
@@ -731,6 +740,9 @@ void ClientGui::executeSyncAction(ActionType type, int syncDbId) {
             }
             syncInfoMapIt->second.setStatus(SyncStatus::Starting);
             break;
+        case ActionType::EnumEnd: {
+            assert(false && "Invalid enum value in switch statement.");
+        }
     }
 
     emit updateProgress(syncDbId);
@@ -997,6 +1009,23 @@ void ClientGui::closeAllExcept(const QWidget *exceptWidget) {
             dialog->hide();
         }
     }
+}
+
+bool ClientGui::isUserUsed(int userDbId) const {
+    for (const auto &[accountDbId, accountInfoClient]: _accountInfoMap) {
+        if (accountInfoClient.userDbId() == userDbId) {
+            for (const auto &[driveDbId, driveInfoClient]: _driveInfoMap) {
+                if (driveInfoClient.accountDbId() == accountDbId) {
+                    for (const auto &[syncDbId, syncInfoClient]: _syncInfoMap) {
+                        if (syncInfoClient.driveDbId() == driveDbId) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return false;
 }
 
 void ClientGui::onAppVersionLocked(bool currentVersionLocked) {

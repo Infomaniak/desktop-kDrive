@@ -141,14 +141,15 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void setIsPaused(const bool paused) { _syncInfo.isPaused = paused; }
 
         [[nodiscard]] const std::shared_ptr<SyncOperationList> &syncOps() const { return _syncOps; }
+        [[nodiscard]] const std::shared_ptr<ConflictQueue> &conflictQueue() const { return _conflictQueue; }
 
         // TODO : not ideal, to be refactored
         bool checkIfExistsOnServer(const SyncPath &path, bool &exists) const;
         bool checkIfCanShareItem(const SyncPath &path, bool &canShare) const;
 
         ExitCode fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId) const;
-        ExitCode syncIdSet(SyncNodeType type, std::unordered_set<NodeId> &nodeIdSet);
-        ExitCode setSyncIdSet(SyncNodeType type, const std::unordered_set<NodeId> &nodeIdSet);
+        ExitCode syncIdSet(SyncNodeType type, NodeSet &nodeIdSet);
+        ExitCode setSyncIdSet(SyncNodeType type, const NodeSet &nodeIdSet);
         ExitCode syncListUpdated(bool restartSync);
         ExitCode excludeListUpdated();
         ExitCode fixConflictingFiles(bool keepLocalVersion, std::vector<Error> &errorList);
@@ -232,6 +233,11 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             _computeFSOperationsWorker = worker;
         }
 
+        void createSharedObjects();
+        void freeSharedObjects();
+        void initSharedObjects();
+        void resetSharedObjects();
+
         std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const;
         std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false) const;
 
@@ -288,10 +294,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         std::shared_ptr<TmpBlacklistManager> _tmpBlacklistManager{nullptr};
 
-        void createSharedObjects();
-        void freeSharedObjects();
-        void initSharedObjects();
-        void resetSharedObjects();
+
         void freeWorkers();
         ExitCode setSyncPaused(bool value);
         bool createOrOpenDb(const SyncPath &syncDbPath, const std::string &version,
@@ -332,7 +335,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class PlatformInconsistencyCheckerWorker;
         friend class OperationProcessor;
         friend class ConflictFinderWorker;
-        friend class ConflictResolverWorker;
         friend class OperationGeneratorWorker;
         friend class OperationSorterWorker;
         friend class ExecutorWorker;
@@ -358,6 +360,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class TestLocalJobs;
         friend class TestIntegration;
         friend class TestWorkers;
+        friend class TestAppServer;
         friend class MockSyncPal;
 };
 

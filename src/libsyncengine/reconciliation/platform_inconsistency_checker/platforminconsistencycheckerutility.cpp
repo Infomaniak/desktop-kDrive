@@ -92,7 +92,7 @@ ExitInfo PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &ab
         *newPathPtr = std::move(newFullPath);
     }
 
-    return {moveJob.exitCode(), moveJob.exitCause()};
+    return moveJob.exitInfo();
 }
 
 bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncPath &name) {

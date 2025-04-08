@@ -66,6 +66,8 @@ class AddDriveServerFoldersWidget : public QWidget {
         QColor _logoColor;
         bool _needToSave;
 
+        DriveAvailableInfo _driveInfo;
+
         inline QColor infoIconColor() const { return _infoIconColor; }
         inline void setInfoIconColor(QColor color) {
             _infoIconColor = color;
@@ -86,7 +88,7 @@ class AddDriveServerFoldersWidget : public QWidget {
         void setInfoIcon();
 
     private slots:
-        void onSubfoldersLoaded(bool error, bool empty = false);
+        void onSubfoldersLoaded(bool error, ExitCause exitCause);
         void onNeedToSave();
         void onBackButtonTriggered(bool checked = false);
         void onContinueButtonTriggered(bool checked = false);

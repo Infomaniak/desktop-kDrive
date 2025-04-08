@@ -35,16 +35,15 @@ class Snapshot : public SharedObject {
         ~Snapshot();
 
         Snapshot(Snapshot const &) = delete;
-        Snapshot &operator=(Snapshot &other);
+        Snapshot &operator=(const Snapshot &other);
 
         void init();
 
         bool updateItem(const SnapshotItem &newItem);
-        bool removeItem(const NodeId id); // Do not pass by reference to avoid dangling references
+        bool removeItem(const NodeId itemId); // Do not pass by reference to avoid dangling references
 
         NodeId itemId(const SyncPath &path) const;
         NodeId parentId(const NodeId &itemId) const;
-        bool setParentId(const NodeId &itemId, const NodeId &newParentId);
         bool path(const NodeId &itemId, SyncPath &path, bool &ignore) const noexcept;
         SyncName name(const NodeId &itemId) const;
         bool setName(const NodeId &itemId, const SyncName &newName);
@@ -63,9 +62,9 @@ class Snapshot : public SharedObject {
         bool pathExists(const SyncPath &path) const;
         bool isLink(const NodeId &itemId) const;
 
-        bool getChildrenIds(const NodeId &itemId, std::unordered_set<NodeId> &childrenIds) const;
+        bool getChildrenIds(const NodeId &itemId, NodeSet &childrenIds) const;
 
-        void ids(std::unordered_set<NodeId> &ids) const;
+        void ids(NodeSet &ids) const;
         /** Checks if ancestorItem is an ancestor of item.
          * @return true indicates that ancestorItem is an ancestor of item
          */
@@ -86,16 +85,34 @@ class Snapshot : public SharedObject {
         bool checkIntegrityRecursively() const;
 
     private:
-        void removeChildrenRecursively(const NodeId &parentId);
-        bool checkIntegrityRecursively(const NodeId &parentId) const;
+        bool getChildren(const NodeId &itemId, std::unordered_set<std::shared_ptr<SnapshotItem>> &children) const;
+        bool removeItem(std::shared_ptr<SnapshotItem> &item);
+
+        std::shared_ptr<SnapshotItem> findItem(const NodeId &itemId) const;
+        void removeChildrenRecursively(const std::shared_ptr<SnapshotItem> &parent);
+        bool checkIntegrityRecursively(const std::shared_ptr<SnapshotItem> &parent) const;
 
         ReplicaSide _side = ReplicaSide::Unknown;
         NodeId _rootFolderId;
-        std::unordered_map<NodeId, SnapshotItem> _items; // key: id
+
+        class SnapshotItemUnorderedMap : public std::unordered_map<NodeId, std::shared_ptr<SnapshotItem>> {
+            public:
+                // To ensure the integrity of the snapshot, we need to make sure that it is not used anywhere (i.e., as a child of
+                // another item) when removing it from the main map.
+                void erase(const NodeId &id) {
+                    const auto it = std::unordered_map<NodeId, std::shared_ptr<SnapshotItem>>::find(id);
+                    assert(it->second.use_count() == 1);
+                    (void) std::unordered_map<NodeId, std::shared_ptr<SnapshotItem>>::erase(it);
+                }
+        };
+
+        SnapshotItemUnorderedMap _items; // key: id
         bool _isValid = false;
         bool _copy = false; // false for a real time snapshot, true for a copy
 
         mutable std::recursive_mutex _mutex;
+
+        friend class TestSnapshot;
 };
 
 } // namespace KDC

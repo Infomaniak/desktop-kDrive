@@ -21,6 +21,7 @@
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include "test_utility/testbase.h"
+#include "libcommon/utility/types.h"
 
 namespace KDC {
 
@@ -41,6 +42,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
 #ifdef _WIN32
         CPPUNIT_TEST(testGetLastErrorMessage);
 #endif
+        CPPUNIT_TEST(testRelativePath);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -60,9 +62,26 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testIsSupportedLanguage();
         void testTruncateLongLogMessage();
         void testLogIfFail();
+        void testRelativePath();
 #ifdef _WIN32
         void testGetLastErrorMessage();
 #endif
+
+    private:
+        /* Generate all the possible path for a set of items and separators
+         * result vecor will contain all the generated paths, eg:
+         *  itemsNames = {"Dir1", "Dir2", "Dir3"}
+         *  separators = {'/', '\\'}
+         *  result = {"Dir1/Dir2/Dir3/", "Dir1\\Dir2/Dir3/", "Dir1/Dir2\\Dir3", "Dir1/Dir2/Dir3\\", "Dir1\\Dir2\\Dir3",
+         * "Dir1\\Dir2\\Dir3\\", ... }
+         *
+         * @param itemsNames: the list of items
+         * @param separators: the list of separators
+         * @param startWithSeparator: if the path should start with a separator
+         * @param result: the list of generated paths
+         */
+        void generatePaths(const std::vector<std::string> &itemsNames, const std::vector<char> &separators,
+                           bool startWithSeparator, std::vector<SyncPath> &result, const std::string &start = "", size_t pos = 0);
 };
 
 

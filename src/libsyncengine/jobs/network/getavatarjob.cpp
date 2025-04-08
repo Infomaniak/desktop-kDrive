@@ -54,16 +54,13 @@ bool GetAvatarJob::handleError(std::istream &is, const Poco::URI &uri) {
         LOG_WARN(_logger, "Unknown error in request: " << uri.toString().c_str());
     }
 
-    _exitCause = ExitCause::ApiErr;
-    _exitCode = ExitCode::BackError;
+    _exitInfo = {ExitCode::BackError, ExitCause::ApiErr};
 
     return false;
 }
 
 bool GetAvatarJob::handleResponse(std::istream &is) {
-    _avatar = std::shared_ptr<std::vector<char>>(
-            new std::vector<char>(std::istreambuf_iterator<char>(is), (std::istreambuf_iterator<char>())));
-
+    _avatar = std::make_shared<std::vector<char>>(std::istreambuf_iterator(is), (std::istreambuf_iterator<char>()));
     return true;
 }
 

@@ -50,6 +50,7 @@ std::string GetAppVersionJob::toStr(const Platform platform) {
         case Platform::MacOS:
             return platformMacOsKey;
         case Platform::Windows:
+        case Platform::WindowsServer:
             return platformWindowsKey;
         case Platform::LinuxAMD:
             return platformLinuxAmdKey;
