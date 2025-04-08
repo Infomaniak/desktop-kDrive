@@ -37,7 +37,8 @@ static const int waitForUpdateDelay = 1000; // 1sec
 
 LocalFileSystemObserverWorker::LocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                              const std::string &shortName) :
-    FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Local), _rootFolder(syncPal->localPath()) {}
+    FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Local),
+    _rootFolder(syncPal->localPath()) {}
 
 LocalFileSystemObserverWorker::~LocalFileSystemObserverWorker() {
     LOG_SYNCPAL_DEBUG(_logger, "~LocalFileSystemObserverWorker");
@@ -88,7 +89,6 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         _syncPal->removeItemFromTmpBlacklist(relativePath);
 
         auto ioError = IoError::Success;
-        bool exists = true;
 
         if (opTypeFromOS == OperationType::Delete) {
             // Check if exists with same nodeId
@@ -111,22 +111,22 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         }
 
         FileStat fileStat;
-        if (exists) {
-            ioError = IoError::Success;
-            if (!IoHelper::getFileStat(absolutePath, &fileStat, ioError)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, ioError));
-                tryToInvalidateSnapshot();
-                return;
-            }
-
-            if (ioError == IoError::AccessDenied) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absolutePath) << L" misses search permissions!");
-                sendAccessDeniedError(absolutePath);
-                continue;
-            } else if (ioError == IoError::NoSuchFileOrDirectory) {
-                exists = false;
-            }
+        bool exists = true;
+        ioError = IoError::Success;
+        if (!IoHelper::getFileStat(absolutePath, &fileStat, ioError)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, ioError));
+            tryToInvalidateSnapshot();
+            return;
         }
+
+        if (ioError == IoError::AccessDenied) {
+            LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absolutePath) << L" misses search permissions!");
+            sendAccessDeniedError(absolutePath);
+            continue;
+        } else if (ioError == IoError::NoSuchFileOrDirectory) {
+            exists = false;
+        }
+
 
         NodeId nodeId;
         auto nodeType = NodeType::Unknown;
@@ -641,7 +641,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                                                     << L". Blacklisting it temporarily");
                 sendAccessDeniedError(absolutePath);
             }
-            
+
             bool toExclude = false;
             const bool isLink = itemType.linkType != LinkType::None;
 
