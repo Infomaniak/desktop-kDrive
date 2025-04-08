@@ -630,12 +630,25 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             const auto &absolutePath = entry.path();
             const auto relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
 
+            if (!IoHelper::getItemType(absolutePath, itemType)) {
+                LOGW_SYNCPAL_DEBUG(_logger,
+                                   L"Error in IoHelper::getItemType: " << Utility::formatIoError(absolutePath, itemType.ioError));
+                dirIt.disableRecursionPending();
+                continue;
+            }
+            if (itemType.ioError == IoError::AccessDenied) {
+                LOGW_SYNCPAL_DEBUG(_logger, L"getItemType failed for item: "
+                                                    << Utility::formatIoError(absoluteParentDirPath, ioError)
+                                                    << L". Blacklisting it temporarily");
+                sendAccessDeniedError(absolutePath);
+            }
+            
             bool toExclude = false;
-            bool isLink = false;
+            const bool isLink = itemType.linkType != LinkType::None;
 
             // Check if the directory entry is managed
             bool isManaged = false;
-            if (!Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError)) {
+            if (!Utility::checkIfDirEntryIsManaged(entry, isManaged, itemType, ioError)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged: "
                                                    << Utility::formatIoError(absoluteParentDirPath, ioError));
                 dirIt.disableRecursionPending();
@@ -713,41 +726,30 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             if (absolutePath.parent_path() == _rootFolder) {
                 parentNodeId = *_syncPal->_syncDb->rootNode().nodeIdLocal();
             } else {
-                FileStat parentFileStat;
-                if (!IoHelper::getFileStat(absolutePath.parent_path(), &parentFileStat, ioError)) {
-                    LOGW_WARN(_logger,
-                              L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath.parent_path(), ioError));
-                    setExitCause(ExitCause::FileAccessError);
-                    return ExitCode::SystemError;
+                parentNodeId = snapshot()->itemId(relativePath.parent_path());
+                if (parentNodeId.empty()) {
+                    FileStat parentFileStat;
+                    if (!IoHelper::getFileStat(absolutePath.parent_path(), &parentFileStat, ioError)) {
+                        LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: "
+                                                   << Utility::formatIoError(absolutePath.parent_path(), ioError));
+                        setExitCause(ExitCause::FileAccessError);
+                        return ExitCode::SystemError;
+                    }
+
+                    if (ioError == IoError::NoSuchFileOrDirectory) {
+                        LOGW_SYNCPAL_DEBUG(_logger, L"Directory doesn't exist anymore: "
+                                                            << Utility::formatSyncPath(absolutePath.parent_path()));
+                        dirIt.disableRecursionPending();
+                        continue;
+                    } else if (ioError == IoError::AccessDenied) {
+                        LOGW_SYNCPAL_DEBUG(_logger, L"Directory misses search permission: "
+                                                            << Utility::formatSyncPath(absolutePath.parent_path()));
+                        dirIt.disableRecursionPending();
+                        sendAccessDeniedError(absolutePath);
+                        continue;
+                    }
+                    parentNodeId = std::to_string(parentFileStat.inode);
                 }
-
-                if (ioError == IoError::NoSuchFileOrDirectory) {
-                    LOGW_SYNCPAL_DEBUG(
-                            _logger, L"Directory doesn't exist anymore: " << Utility::formatSyncPath(absolutePath.parent_path()));
-                    dirIt.disableRecursionPending();
-                    continue;
-                } else if (ioError == IoError::AccessDenied) {
-                    LOGW_SYNCPAL_DEBUG(_logger, L"Directory misses search permission: "
-                                                        << Utility::formatSyncPath(absolutePath.parent_path()));
-                    dirIt.disableRecursionPending();
-                    sendAccessDeniedError(absolutePath);
-                    continue;
-                }
-
-                parentNodeId = std::to_string(parentFileStat.inode);
-            }
-
-            if (!IoHelper::getItemType(absolutePath, itemType)) {
-                LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Error in IoHelper::getItemType: " << Utility::formatIoError(absolutePath, itemType.ioError));
-                dirIt.disableRecursionPending();
-                continue;
-            }
-            if (itemType.ioError == IoError::AccessDenied) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"getItemType failed for item: "
-                                                    << Utility::formatIoError(absoluteParentDirPath, ioError)
-                                                    << L". Blacklisting it temporarily");
-                sendAccessDeniedError(absolutePath);
             }
 
             const SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime,
