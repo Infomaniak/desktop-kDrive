@@ -952,7 +952,7 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
 
     if (_dirIterator != dirIteratorEnd) {
 #ifdef _WIN32
-        // skip_permission_denied doesn't work on Windows
+        /* // skip_permission_denied doesn't work on Windows
         try {
             bool dummy = _dirIterator->exists();
             (void) dummy;
@@ -961,7 +961,7 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
         } catch (std::filesystem::filesystem_error &) {
             disableRecursionPending();
             return next(nextEntry, endOfDirectory, ioError);
-        }
+        }*/
 
 #endif
         nextEntry = *_dirIterator;

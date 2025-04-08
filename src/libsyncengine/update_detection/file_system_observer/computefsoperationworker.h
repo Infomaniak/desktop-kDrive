@@ -43,10 +43,14 @@ class ComputeFSOperationWorker : public ISyncWorker {
     private:
         using NodeIdSet = NodeSet;
         using DbNodeIdSet = std::unordered_set<DbNodeId>;
+        using NodeIdsSet = std::unordered_set<SyncDb::NodeIds, SyncDb::NodeIds::hashNodeIdsFunction>;
+        SnapshotVersion _lastLocalSnapshotSyncedVersion = 0;
+        SnapshotVersion _lastRemoteSnapshotSyncedVersion = 0;
+
         // Detect changes based on the database records: delete, move and edit operations
         ExitCode inferChangesFromDb(NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet);
         ExitCode inferChangesFromDb(const NodeType nodeType, NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet,
-                                    DbNodeIdSet &remainingDbIds); // Restrict change detection to a node type.
+                                    NodeIdsSet &remainingDbIds); // Restrict change detection to a node type.
         ExitCode inferChangeFromDbNode(const ReplicaSide side, const DbNode &dbNode, const SyncPath &localDbPath,
                                        const SyncPath &remoteDbPath); // Detect change for a single node on a specific side.
 

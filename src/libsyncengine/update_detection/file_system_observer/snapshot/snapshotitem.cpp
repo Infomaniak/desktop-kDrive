@@ -34,6 +34,40 @@ SnapshotItem::SnapshotItem(const SnapshotItem &other) {
     *this = other;
 }
 
+void SnapshotItem::setId(const NodeId &id) {
+    _id = id;
+    _lastChangedSnapshotVersion = _snapshotVersionHandler ? _snapshotVersionHandler->nextVersion() : 0;
+}
+
+void SnapshotItem::setParentId(const NodeId &newParentId) {
+    _parentId = newParentId;
+    _lastChangedSnapshotVersion = _snapshotVersionHandler ? _snapshotVersionHandler->nextVersion() : 0;
+}
+
+void SnapshotItem::setName(const SyncName &newName) {
+    _name = newName;
+    if (!Utility::normalizedSyncName(newName, _normalizedName)) {
+        _normalizedName = newName;
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncName(newName));
+    }
+    _lastChangedSnapshotVersion = _snapshotVersionHandler ? _snapshotVersionHandler->nextVersion() : 0;
+}
+
+void SnapshotItem::setCreatedAt(const SyncTime newCreatedAt) {
+    _createdAt = newCreatedAt;
+    _lastChangedSnapshotVersion = _snapshotVersionHandler ? _snapshotVersionHandler->nextVersion() : 0;
+}
+
+void SnapshotItem::setLastModified(const SyncTime newLastModified) {
+    _lastModified = newLastModified;
+    _lastChangedSnapshotVersion = _snapshotVersionHandler ? _snapshotVersionHandler->nextVersion() : 0;
+}
+
+void SnapshotItem::setType(const NodeType type) {
+    _type = type;
+    _lastChangedSnapshotVersion = _snapshotVersionHandler ? _snapshotVersionHandler->nextVersion() : 0;
+}
+
 int64_t SnapshotItem::size() const {
     int64_t ret = 0;
     if (!_children.empty()) {
@@ -46,10 +80,45 @@ int64_t SnapshotItem::size() const {
     return ret;
 }
 
+void SnapshotItem::setSize(const int64_t newSize) {
+    _size = newSize;
+    _lastChangedSnapshotVersion = _snapshotVersionHandler ? _snapshotVersionHandler->nextVersion() : 0;
+}
+
+void SnapshotItem::setIsLink(const bool isLink) {
+    _isLink = isLink;
+    _lastChangedSnapshotVersion = _snapshotVersionHandler ? _snapshotVersionHandler->nextVersion() : 0;
+}
+
+void SnapshotItem::setContentChecksum(const std::string &newChecksum) {
+    _contentChecksum = newChecksum;
+    _lastChangedSnapshotVersion = _snapshotVersionHandler ? _snapshotVersionHandler->nextVersion() : 0;
+}
+
+void SnapshotItem::setCanWrite(const bool canWrite) {
+    _canWrite = canWrite;
+    _lastChangedSnapshotVersion = _snapshotVersionHandler ? _snapshotVersionHandler->nextVersion() : 0;
+}
+
+void SnapshotItem::setCanShare(bool canShare) {
+    _canShare = canShare;
+}
+
+void SnapshotItem::setLastChangedSnapshotVersion(SnapshotVersion snapshotVersion) {
+    if (snapshotVersion > _lastChangedSnapshotVersion) {
+        _lastChangedSnapshotVersion = snapshotVersion;
+    } else {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"SnapshotItem::setLastChangedSnapshotVersion: "
+                  L"Trying to set a lower version than the current one. Current version: "
+                          << _lastChangedSnapshotVersion << L", new version: " << snapshotVersion << L" on " << Utility::s2ws(_id));
+    }
+}
+
 SnapshotItem &SnapshotItem::operator=(const SnapshotItem &other) {
     copyExceptChildren(other);
     _children = other.children();
-
+    _snapshotVersionHandler = nullptr;
     return *this;
 }
 
@@ -68,6 +137,7 @@ void SnapshotItem::copyExceptChildren(const SnapshotItem &other) {
     _canWrite = other.canWrite();
     _canShare = other.canShare();
     _path = other.path();
+    _lastChangedSnapshotVersion = _snapshotVersionHandler ? _snapshotVersionHandler->nextVersion() : 0;
 }
 
 void SnapshotItem::addChild(const std::shared_ptr<SnapshotItem> &child) {

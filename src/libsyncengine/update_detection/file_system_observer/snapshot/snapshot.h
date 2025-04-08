@@ -20,6 +20,7 @@
 
 #include "syncpal/sharedobject.h"
 #include "snapshotitem.h"
+#include "snapshotversionhandler.h"
 #include "db/dbnode.h"
 
 #include <unordered_map>
@@ -61,7 +62,7 @@ class Snapshot : public SharedObject {
         bool exists(const NodeId &itemId) const;
         bool pathExists(const SyncPath &path) const;
         bool isLink(const NodeId &itemId) const;
-
+        SnapshotVersion lastChangedSnapshotVersion(const NodeId &itemId) const;
         bool getChildrenIds(const NodeId &itemId, NodeSet &childrenIds) const;
 
         void ids(NodeSet &ids) const;
@@ -81,10 +82,12 @@ class Snapshot : public SharedObject {
 
         bool isValid() const;
         void setValid(bool newIsValid);
+        SnapshotVersion version() const;
 
         bool checkIntegrityRecursively() const;
 
     private:
+        std::shared_ptr<SnapshotVersionHandler> _versionHandlder;
         bool getChildren(const NodeId &itemId, std::unordered_set<std::shared_ptr<SnapshotItem>> &children) const;
         bool removeItem(std::shared_ptr<SnapshotItem> &item);
 

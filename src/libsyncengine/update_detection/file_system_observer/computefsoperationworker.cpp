@@ -103,6 +103,12 @@ void ComputeFSOperationWorker::execute() {
         LOG_SYNCPAL_INFO(_logger, "FS operation aborted after: " << elapsedSeconds.count() << "s");
 
     } else {
+        if (_syncPal->operationSet(ReplicaSide::Local)->nbOps() == 0) {
+            _lastLocalSnapshotSyncedVersion = _syncPal->snapshotCopy(ReplicaSide::Local)->version();
+        }
+        if (_syncPal->operationSet(ReplicaSide::Remote)->nbOps() == 0) {
+            _lastRemoteSnapshotSyncedVersion = _syncPal->snapshotCopy(ReplicaSide::Remote)->version();
+        }
         exitCode = ExitCode::Ok;
         LOG_SYNCPAL_INFO(_logger, "FS operation sets generated in: " << elapsedSeconds.count() << "s");
     }
@@ -312,10 +318,10 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
 
 
 ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet,
-                                                      std::unordered_set<DbNodeId> &remainingDbIds) {
-    for (auto dbIdIt = remainingDbIds.begin(); dbIdIt != remainingDbIds.end();) {
-        if (*dbIdIt == _syncPal->syncDb()->rootNode().nodeId()) {
-            dbIdIt = remainingDbIds.erase(dbIdIt);
+                                                      NodeIdsSet &remainingDbNodesIds) {
+    for (auto dbNodesIdsIt = remainingDbNodesIds.begin(); dbNodesIdsIt != remainingDbNodesIds.end();) {
+        if (dbNodesIdsIt->dbNodeId == _syncPal->syncDb()->rootNode().nodeId()) {
+            dbNodesIdsIt = remainingDbNodesIds.erase(dbNodesIdsIt);
             continue; // Ignore root folder
         }
 
@@ -323,17 +329,35 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
             return ExitCode::Ok;
         }
 
+        // Check if the item has change since the last sync
+        bool snapshotChanged = 0;
+        for (const auto side: std::array<ReplicaSide, 2>{ReplicaSide::Local, ReplicaSide::Remote}) {
+            const auto lastChangedSnapshotVersion =
+                    _syncPal->snapshotCopy(side)->lastChangedSnapshotVersion(dbNodesIdsIt->nodeId(side));
+            const auto lastSyncedSnapshotVersion =
+                    side == ReplicaSide::Local ? _lastLocalSnapshotSyncedVersion : _lastRemoteSnapshotSyncedVersion;
+            if (lastChangedSnapshotVersion == 0 || lastChangedSnapshotVersion > lastSyncedSnapshotVersion) {
+                snapshotChanged = true;
+                break;
+            } 
+        }
+        if (!snapshotChanged) {
+            localIdsSet.insert(dbNodesIdsIt->localNodeId);
+            remoteIdsSet.insert(dbNodesIdsIt->remoteNodeId);
+            dbNodesIdsIt = remainingDbNodesIds.erase(dbNodesIdsIt);
+            continue;
+        }
         DbNode dbNode;
         bool dbNodeIsFound = false;
-        const DbNodeId dbId = *dbIdIt;
-        if (!_syncDb->node(dbId, dbNode, dbNodeIsFound)) {
+        const auto dbNodeIds = *dbNodesIdsIt;
+        if (!_syncDb->node(dbNodesIdsIt->dbNodeId, dbNode, dbNodeIsFound)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
             setExitCause(ExitCause::DbAccessError);
             return ExitCode::DbError;
         }
         if (!dbNodeIsFound) {
             // The node is not anymore in the DB (one of its parents has been blacklisted)
-            dbIdIt = remainingDbIds.erase(dbIdIt);
+            dbNodesIdsIt = remainingDbNodesIds.erase(dbNodesIdsIt);
             continue;
         }
 
@@ -341,22 +365,22 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
         if (dbNode.nodeIdRemote()) remoteIdsSet.insert(*dbNode.nodeIdRemote());
 
         if (dbNode.type() != nodeType) {
-            ++dbIdIt;
+            ++dbNodesIdsIt;
             continue;
         }
 
-        dbIdIt = remainingDbIds.erase(dbIdIt);
+        dbNodesIdsIt = remainingDbNodesIds.erase(dbNodesIdsIt);
 
         SyncPath localDbPath;
         SyncPath remoteDbPath;
         bool dbPathsAreFound = false;
-        if (!_syncDb->path(dbId, localDbPath, remoteDbPath, dbPathsAreFound)) {
+        if (!_syncDb->path(dbNodeIds.dbNodeId, localDbPath, remoteDbPath, dbPathsAreFound)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
             setExitCause(ExitCause::DbAccessError);
             return ExitCode::DbError;
         }
         if (!dbPathsAreFound) {
-            LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << dbId);
+            LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << dbNodesIdsIt->dbNodeId);
             setExitCause(ExitCause::DbEntryNotFound);
             return ExitCode::DataError;
         }
@@ -387,7 +411,7 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
 
 ExitCode ComputeFSOperationWorker::inferChangesFromDb(NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet) {
     bool dbIdsArefound = false;
-    DbNodeIdSet remainingDbIds;
+    NodeIdsSet remainingDbIds;
     if (!_syncDb->dbIds(remainingDbIds, dbIdsArefound)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::ids");
         setExitCause(ExitCause::DbAccessError);

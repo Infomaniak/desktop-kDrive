@@ -987,6 +987,40 @@ bool SyncDb::dbIds(std::unordered_set<DbNodeId> &ids, bool &found) {
     return true;
 }
 
+bool SyncDb::dbIds(std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction> &ids, bool &found) {
+    const std::lock_guard<std::mutex> lock(_mutex);
+
+    // Find root node
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
+    if (!queryNext(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, found)) {
+        LOG_WARN(_logger, "Error getting query result: " << SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID);
+        return false;
+    }
+    if (!found) {
+        return true;
+    }
+    NodeIds nodeIds;
+    LOG_IF_FAIL(queryInt64Value(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, 0, nodeIds.dbNodeId));
+    LOG_IF_FAIL(queryStringValue(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, 3, nodeIds.localNodeId));
+    LOG_IF_FAIL(queryStringValue(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, 0, nodeIds.remoteNodeId));
+
+    ids.insert(nodeIds);
+
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
+
+    // Push child nodes' ids
+    try {
+        if (!pushChildDbIds(nodeIds.dbNodeId, ids)) {
+            return false;
+        }
+    } catch (...) {
+        LOG_WARN(_logger, "Error in SyncDb::pushChildDbIds");
+        return false;
+    }
+
+    return true;
+}
+
 bool SyncDb::path(DbNodeId dbNodeId, SyncPath &localPath, SyncPath &remotePath, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
@@ -2095,7 +2129,7 @@ bool SyncDb::pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<DbNodeId
     while (!dbNodeIdQueue.empty()) {
         DbNodeId dbNodeId = dbNodeIdQueue.front();
         dbNodeIdQueue.pop();
-
+        
         LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID));
         LOG_IF_FAIL(queryBindValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 1, dbNodeId));
         for (;;) {
@@ -2120,6 +2154,50 @@ bool SyncDb::pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<DbNodeId
                 LOG_IF_FAIL(queryIntValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 5, type));
                 if (static_cast<NodeType>(type) == NodeType::Directory) {
                     dbNodeIdQueue.push(dbChildNodeId);
+                }
+            }
+        }
+        LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID));
+    }
+
+    return true;
+}
+
+bool SyncDb::pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction> &ids) {
+    std::queue<DbNodeId> dbNodeIdQueue;
+    dbNodeIdQueue.push(parentNodeDbId);
+
+    while (!dbNodeIdQueue.empty()) {
+        DbNodeId dbNodeId = dbNodeIdQueue.front();
+        dbNodeIdQueue.pop();
+
+        LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID));
+        LOG_IF_FAIL(queryBindValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 1, dbNodeId));
+        for (;;) {
+            bool found;
+            if (!queryNext(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, found)) {
+                LOG_WARN(_logger, "Error getting query result: " << SELECT_NODE_BY_PARENTNODEID_REQUEST_ID
+                                                                 << " - parentNodeId=" << std::to_string(dbNodeId));
+                return false;
+            }
+            if (!found) {
+                break;
+            }
+            bool nodeIdIsNull;
+            LOG_IF_FAIL(queryIsNullValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 0, nodeIdIsNull));
+            if (!nodeIdIsNull) {
+                // The node exists in the snapshot
+                NodeIds childNodeIds;
+                LOG_IF_FAIL(queryInt64Value(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 0, childNodeIds.dbNodeId));
+                LOG_IF_FAIL(queryStringValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 3, childNodeIds.localNodeId));
+                LOG_IF_FAIL(queryStringValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 4, childNodeIds.remoteNodeId));
+
+                ids.insert(childNodeIds);
+
+                int type;
+                LOG_IF_FAIL(queryIntValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 5, type));
+                if (static_cast<NodeType>(type) == NodeType::Directory) {
+                    dbNodeIdQueue.push(childNodeIds.dbNodeId);
                 }
             }
         }
