@@ -32,16 +32,16 @@ class GetAppVersionJob : public AbstractNetworkJob {
 
         /**
          * @brief Return the adequat version info between Production or Production-Next.
-         * @return `DistributionChannel` enum value.
+         * @return `VersionChannel` enum value.
          */
-        [[nodiscard]] DistributionChannel prodVersionChannel() const { return _prodVersionChannel; }
-        [[nodiscard]] const VersionInfo &versionInfo(const DistributionChannel channel) { return _versionsInfo[channel]; }
+        [[nodiscard]] VersionChannel prodVersionChannel() const { return _prodVersionChannel; }
+        [[nodiscard]] const VersionInfo &versionInfo(const VersionChannel channel) { return _versionsInfo[channel]; }
         [[nodiscard]] const AllVersionsInfo &versionsInfo() const { return _versionsInfo; }
 
         std::string getUrl() override { return INFOMANIAK_API_URL + getSpecificUrl(); }
 
         static std::string toStr(Platform platform);
-        static std::string toStr(DistributionChannel channel);
+        static std::string toStr(VersionChannel channel);
 
     protected:
         bool handleResponse(std::istream &is) override;
@@ -53,12 +53,12 @@ class GetAppVersionJob : public AbstractNetworkJob {
         ExitInfo setData() override { return ExitCode::Ok; }
         bool handleError(std::istream &is, const Poco::URI &uri) override;
 
-        [[nodiscard]] DistributionChannel toDistributionChannel(const std::string &val) const;
+        [[nodiscard]] VersionChannel toDistributionChannel(const std::string &val) const;
 
         const Platform _platform{Platform::Unknown};
         const std::string _appId;
         const std::vector<int> _userIdList;
-        DistributionChannel _prodVersionChannel{DistributionChannel::Unknown};
+        VersionChannel _prodVersionChannel{VersionChannel::Unknown};
         AllVersionsInfo _versionsInfo;
 };
 

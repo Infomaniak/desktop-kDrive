@@ -24,7 +24,7 @@ using namespace CppUnit;
 
 namespace KDC {
 
-class TestUtility : public CppUnit::TestFixture {
+class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestUtility);
         CPPUNIT_TEST(testFreeDiskSpace);
         CPPUNIT_TEST(testIsCreationDateValid);
@@ -46,7 +46,7 @@ class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST(testStartsWithInsensitive);
         CPPUNIT_TEST(testEndsWith);
         CPPUNIT_TEST(testEndsWithInsensitive);
-        CPPUNIT_TEST(testIsEqualInsensitive);
+        CPPUNIT_TEST(testIsEqualUpToCaseAndEnc);
         CPPUNIT_TEST(testMoveItemToTrash);
         CPPUNIT_TEST(testStr2HexStr);
         CPPUNIT_TEST(testStrHex2Str);
@@ -66,8 +66,8 @@ class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE_END();
 
     public:
-        void setUp();
-        void tearDown();
+        void setUp() override { TestBase::start(); }
+        void tearDown() override { TestBase::stop(); }
 
     protected:
         void testFreeDiskSpace();
@@ -90,7 +90,7 @@ class TestUtility : public CppUnit::TestFixture {
         void testStartsWithInsensitive();
         void testEndsWith();
         void testEndsWithInsensitive();
-        void testIsEqualInsensitive();
+        void testIsEqualUpToCaseAndEnc();
         void testMoveItemToTrash();
         void testGetLinuxDesktopType();
         void testGetAppSupportDir();

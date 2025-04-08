@@ -73,7 +73,7 @@ DownloadJob::~DownloadJob() {
         }
 
         // TODO: usefull ?
-        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, false, 0, false); !exitInfo) {
+        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, VfsStatus()); !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
         }
 
@@ -86,7 +86,8 @@ DownloadJob::~DownloadJob() {
             LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
         }
 
-        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, false, 0, _exitCode == ExitCode::Ok); !exitInfo) {
+        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, VfsStatus({.isHydrated = _exitCode == ExitCode::Ok}));
+            !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
         }
     }
@@ -106,7 +107,7 @@ bool DownloadJob::canRun() {
     }
 
     // Check that we can create the item here
-    bool exists;
+    bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_localpath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_localpath, ioError));
@@ -118,7 +119,7 @@ bool DownloadJob::canRun() {
     if (_isCreate && exists) {
         LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_localpath)
                                           << L" already exists. Aborting current sync and restarting.");
-        _exitCode = ExitCode::NeedRestart;
+        _exitCode = ExitCode::DataError;
         _exitCause = ExitCause::UnexpectedFileSystemEvent;
         return false;
     }
@@ -158,18 +159,7 @@ void DownloadJob::runJob() noexcept {
             return;
         }
 
-        bool dummyIsPlaceHolder = false;
-        bool dummyIsSyncing = false;
-        int dummyProgress = 0;
-         if (const ExitInfo exitInfo = _vfs->status(_localpath, dummyIsPlaceHolder, _isHydrated, dummyIsSyncing, dummyProgress);
-            !exitInfo) {
-            LOGW_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
-            _exitCode = exitInfo.code();
-            _exitCause = exitInfo.cause();
-            return;
-        }  
-
-        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, true, 0, _isHydrated); !exitInfo) {
+        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, VfsStatus({.isSyncing = true})); !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
             _exitCode = exitInfo.code();
             _exitCause = exitInfo.cause();
@@ -183,11 +173,7 @@ void DownloadJob::runJob() noexcept {
 bool DownloadJob::handleResponse(std::istream &is) {
     // Get Mime type
     std::string contentType;
-    try {
-        contentType = _resHttp.get("Content-Type");
-    } catch (...) {
-        // No Content-Type
-    }
+    contentType = _resHttp.get("Content-Type", "");
 
     std::string mimeType;
     if (!contentType.empty()) {
@@ -202,6 +188,14 @@ bool DownloadJob::handleResponse(std::istream &is) {
         // Read link data
         getStringFromStream(is, linkData);
         isLink = true;
+    }
+
+    if (_vfs) {
+        VfsStatus vfsStatus;
+        _vfs->status(_localpath, vfsStatus);
+        _isHydrated = vfsStatus.isHydrated;
+    } else {
+        _isHydrated = true;
     }
 
     // Process download
@@ -441,7 +435,9 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
 bool DownloadJob::removeTmpFile() {
     if (_tmpPath.empty()) return true;
 
-    if (std::error_code ec; !std::filesystem::remove_all(_tmpPath, ec)) {
+    std::error_code ec;
+    std::filesystem::remove_all(_tmpPath, ec);
+    if (ec.value()) {
         LOGW_WARN(_logger, L"Failed to remove a downloaded temporary file: " << Utility::formatStdError(_tmpPath, ec));
         return false;
     }

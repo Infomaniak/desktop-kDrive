@@ -20,6 +20,7 @@
 
 #include "updatechecker.h"
 #include "utility/types.h"
+#include "libcommon/utility/utility.h"
 
 #include <functional>
 
@@ -30,7 +31,7 @@ class AbstractUpdater {
         AbstractUpdater();
         virtual ~AbstractUpdater() = default;
 
-        [[nodiscard]] const VersionInfo &versionInfo(const DistributionChannel channel) const {
+        [[nodiscard]] const VersionInfo &versionInfo(const VersionChannel channel) const {
             return _updateChecker->versionInfo(channel);
         }
         [[nodiscard]] const UpdateState &state() const { return _state; }
@@ -41,7 +42,7 @@ class AbstractUpdater {
          * @param id Optional. ID of the created asynchronous job. Useful in tests.
          * @return ExitCode::Ok if no errors.
          */
-        ExitCode checkUpdateAvailable(DistributionChannel currentChannel, UniqueId *id = nullptr);
+        ExitCode checkUpdateAvailable(VersionChannel currentChannel, UniqueId *id = nullptr);
 
         /**
          * @brief Start the installation.
@@ -62,20 +63,28 @@ class AbstractUpdater {
         void setStateChangeCallback(const std::function<void(UpdateState)> &stateChangeCallback);
 
         static void skipVersion(const std::string &skippedVersion);
-        static void unskipVersion();
+        virtual void unskipVersion();
         [[nodiscard]] static bool isVersionSkipped(const std::string &version);
 
-        void setCurrentChannel(const DistributionChannel currentChannel) { _currentChannel = currentChannel; }
+        void setCurrentChannel(const VersionChannel currentChannel) { _currentChannel = currentChannel; }
+
+        /* Get the channel of the currently installed version.
+         * If multiple channels refer to the current version, the closest to the production channel is returned.
+         * Production > Next > Beta > Internal
+         */
+        [[nodiscard]] VersionChannel currentVersionChannel() const;
 
     protected:
+        explicit AbstractUpdater(const std::shared_ptr<UpdateChecker> &updateChecker);
         void setState(UpdateState newState);
+        inline virtual std::string getCurrentVersion() const { return CommonUtility::currentVersion(); }
 
-        DistributionChannel _currentChannel{DistributionChannel::Unknown};
+        VersionChannel _currentChannel{VersionChannel::Unknown};
 
     private:
         void onAppVersionReceived();
 
-        std::unique_ptr<UpdateChecker> _updateChecker;
+        std::shared_ptr<UpdateChecker> _updateChecker;
         UpdateState _state{UpdateState::UpToDate}; // Current state of the update process.
         std::function<void(UpdateState)> _stateChangeCallback = nullptr;
 };

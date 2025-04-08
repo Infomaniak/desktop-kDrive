@@ -28,8 +28,10 @@
 #include <sys/statvfs.h>
 #endif
 
-#include <random>
+
 #include <fstream>
+#include <random>
+#include <regex>
 #include <sstream>
 #include <signal.h>
 
@@ -42,7 +44,6 @@
 #endif
 
 #include <QDir>
-#include <QFileInfo>
 #include <QTranslator>
 #include <QLibraryInfo>
 #include <QMimeDatabase>
@@ -171,10 +172,8 @@ const std::string &CommonUtility::currentVersion() {
 }
 
 QString CommonUtility::fileSystemName(const QString &dirPath) {
-    QDir dir(dirPath);
-    if (dir.exists()) {
-        QStorageInfo info(dirPath);
-        if (info.isValid()) {
+    if (QDir dir(dirPath); dir.exists()) {
+        if (const QStorageInfo info(dirPath); info.isValid()) {
             return info.fileSystemType();
         }
     } else {
@@ -182,7 +181,7 @@ QString CommonUtility::fileSystemName(const QString &dirPath) {
         return fileSystemName(dir.path());
     }
 
-    return QString();
+    return {};
 }
 
 QString CommonUtility::getIconPath(const IconType iconType) {
@@ -687,13 +686,31 @@ const std::string CommonUtility::dbVersionNumber(const std::string &dbVersion) {
 void CommonUtility::extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion) {
     if (version.empty()) return;
 
+    std::string versionDigits = version;
+
+    std::regex versionDigitsRegex(R"(^([0-9]+\.[0-9]+\.[0-9]+)\s\(build\s([0-9]{8})\)$)"); // Example: "3.6.9 (build 20250220)"
+    std::smatch words;
+    std::regex_match(versionDigits, words, versionDigitsRegex);
+
+    if (!words.empty()) {
+        assert(words.size() == 3 && "Wrong version format.");
+        versionDigits = words[1].str() + "." + words[2].str(); // Example: "3.6.9.20250220"
+    }
+
+    // Split `versionDigits` wrt the '.' delimiter
     std::string::size_type prevPos = 0;
     std::string::size_type pos = 0;
     do {
-        pos = version.find('.', prevPos);
-        tabVersion.push_back(std::stoi(version.substr(prevPos, pos - prevPos)));
+        pos = versionDigits.find('.', prevPos);
+        if (pos == std::string::npos) break;
+
+        tabVersion.push_back(std::stoi(versionDigits.substr(prevPos, pos - prevPos)));
         prevPos = pos + 1;
-    } while (pos != std::string::npos);
+    } while (true);
+
+    if (prevPos < versionDigits.size()) {
+        tabVersion.push_back(std::stoi(versionDigits.substr(prevPos)));
+    }
 }
 
 SyncPath CommonUtility::signalFilePath(AppType appType, SignalCategory signalCategory) {
@@ -939,4 +956,14 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
 }
 
 #endif
+
+QString CommonUtility::truncateLongLogMessage(const QString &message) {
+    if (static const qsizetype maxLogMessageSize = 2048; message.size() > maxLogMessageSize) {
+        return message.left(maxLogMessageSize) + " (truncated)";
+    }
+
+    return message;
+}
+
+
 } // namespace KDC

@@ -16,8 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #pragma once
-#include <random>
-
 #include "libcommon/log/sentry/handler.h"
 #include "libcommon/log/sentry/ptracedescriptor.h"
 
@@ -33,24 +31,19 @@ class AbstractPTrace {
         virtual void start() { (void) _start(); }
         virtual void stop(const PTraceStatus status = PTraceStatus::Ok) { _stop(status); }
         virtual void restart() { _restart(); }
+
     protected:
         explicit AbstractPTrace(const PTraceDescriptor &info) : _pTraceInfo(info) {};
         explicit AbstractPTrace(const PTraceDescriptor &info, const int dbId) : _pTraceInfo(info), _syncDbId(dbId) {};
 
         // Start a new performance trace.
         inline AbstractPTrace &_start() {
-            if (!checkCustomSampleRate()) {
-                _rateLimited = true;
-                return *this;
-            }
-            _rateLimited = false;
             _pTraceId = sentry::Handler::instance()->startPTrace(_pTraceInfo, _syncDbId);
             return *this;
         }
 
         // Stop the performance trace.
         void _stop(const PTraceStatus status = PTraceStatus::Ok) noexcept {
-            if (_rateLimited) return;
             if (_pTraceId) { // If the performance trace id is set, use it to stop the performance trace (faster).
                 Handler::instance()->stopPTrace(_pTraceId, status);
                 _pTraceId = 0;
@@ -70,14 +63,5 @@ class AbstractPTrace {
         pTraceId _pTraceId{0};
         PTraceDescriptor _pTraceInfo;
         int _syncDbId = -1;
-
-        bool _rateLimited = false;
-        bool checkCustomSampleRate() const {
-            if (_pTraceInfo._customSampleRate >= 1.0) return true;
-            static std::random_device rd;
-            static std::mt19937 gen(rd());
-            static std::uniform_real_distribution dis(0.0, 1.0);
-            return dis(gen) < _pTraceInfo._customSampleRate;
-        }
 };
 } // namespace KDC::sentry

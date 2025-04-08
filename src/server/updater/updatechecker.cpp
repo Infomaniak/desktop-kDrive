@@ -56,17 +56,18 @@ class VersionInfoCmp {
         }
 };
 
-const VersionInfo &UpdateChecker::versionInfo(const DistributionChannel choosedChannel) {
+const VersionInfo &UpdateChecker::versionInfo(const VersionChannel choosedChannel) {
+    if (!_isVersionReceived) return _defaultVersionInfo;
     const VersionInfo &prodVersion = prodVersionInfo();
 
     // If the user wants only `Production` versions, just return the current `Production` version.
-    if (choosedChannel == DistributionChannel::Prod) return prodVersion;
+    if (choosedChannel == VersionChannel::Prod) return prodVersion;
 
     // Otherwise, we need to check if there is not a newer version in other channels.
     const VersionInfo &betaVersion =
-            _versionsInfo.contains(DistributionChannel::Beta) ? _versionsInfo[DistributionChannel::Beta] : _defaultVersionInfo;
-    const VersionInfo &internalVersion = _versionsInfo.contains(DistributionChannel::Internal)
-                                                 ? _versionsInfo[DistributionChannel::Internal]
+            _versionsInfo.contains(VersionChannel::Beta) ? _versionsInfo[VersionChannel::Beta] : _defaultVersionInfo;
+    const VersionInfo &internalVersion = _versionsInfo.contains(VersionChannel::Internal)
+                                                 ? _versionsInfo[VersionChannel::Internal]
                                                  : _defaultVersionInfo;
     std::set<std::reference_wrapper<const VersionInfo>, VersionInfoCmp> sortedVersionList;
     sortedVersionList.insert(prodVersion);
@@ -84,7 +85,7 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
     _versionsInfo.clear();
     LOG_INFO(Log::instance()->getLogger(), "App version info received");
 
-    auto job = JobManager::instance()->getJob(jobId);
+    const auto job = JobManager::instance()->getJob(jobId);
     const auto getAppVersionJobPtr = std::dynamic_pointer_cast<GetAppVersionJob>(job);
     if (!getAppVersionJobPtr) {
         LOG_ERROR(Log::instance()->getLogger(), "Could not cast job pointer.");

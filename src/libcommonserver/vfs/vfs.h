@@ -18,44 +18,55 @@
 
 #pragma once
 
-#include "libcommon/utility/utility.h"
 #include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/handler.h"
-#include "libsyncengine/progress/syncfileitem.h"
 #include "libcommon/utility/sourcelocation.h"
 #include "libcommonserver/vfs/workerinfo.h"
+#include "libsyncengine/progress/syncfileitem.h"
 
 #include <memory>
 #include <deque>
 
 #include <QObject>
-#include <QScopedPointer>
-#include <QSharedPointer>
-#include <QList>
-#include <QMutex>
-#include <QThread>
-#include <QWaitCondition>
 
 #include <log4cplus/logger.h>
 #include <log4cplus/loggingmacros.h>
 
-constexpr short nbWorkers = 2;
+constexpr size_t nbWorkers = 2;
 constexpr short workerHydration = 0;
 constexpr short workerDehydration = 1;
 
 namespace KDC {
+
 struct VfsSetupParams {
         VfsSetupParams() = default;
         VfsSetupParams(const log4cplus::Logger &logger) : logger(logger) {}
-        int syncDbId;
-        int driveId;
-        int userId;
+        int syncDbId{-1};
+        int driveId{-1};
+        int userId{-1};
         SyncPath localPath;
         SyncPath targetPath;
         std::string namespaceCLSID;
-        KDC::ExecuteCommand executeCommand;
+        ExecuteCommand executeCommand;
         log4cplus::Logger logger;
         std::shared_ptr<sentry::Handler> sentryHandler;
+};
+
+struct VfsStatus {
+        bool isPlaceholder{false};
+        bool isHydrated{false};
+        bool isSyncing{false};
+        int16_t progress{0};
+
+        VfsStatus &operator=(const VfsStatus &other) {
+            if (this == &other) return *this;
+            isPlaceholder = other.isPlaceholder;
+            isHydrated = other.isHydrated;
+            isSyncing = other.isSyncing;
+            progress = other.progress;
+            return *this;
+        }
 };
 
 /** Interface describing how to deal with virtual/placeholder files.
@@ -75,25 +86,25 @@ class Vfs : public QObject {
 
     public:
         std::array<WorkerInfo, nbWorkers> _workerInfo;
-        static QString modeToString(KDC::VirtualFileMode virtualFileMode);
-        static KDC::VirtualFileMode modeFromString(const QString &str);
+        static QString modeToString(VirtualFileMode virtualFileMode);
+        static VirtualFileMode modeFromString(const QString &str);
 
         explicit Vfs(const VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
 
         ~Vfs() override;
 
-        inline void setSyncFileStatusCallback(void (*syncFileStatus)(int, const KDC::SyncPath &, KDC::SyncFileStatus &)) {
+        void setSyncFileStatusCallback(void (*syncFileStatus)(int, const SyncPath &, SyncFileStatus &)) {
             _syncFileStatus = syncFileStatus;
         }
-        inline void setSyncFileSyncingCallback(void (*syncFileSyncing)(int, const KDC::SyncPath &, bool &)) {
+        void setSyncFileSyncingCallback(void (*syncFileSyncing)(int, const SyncPath &, bool &)) {
             _syncFileSyncing = syncFileSyncing;
         }
-        inline void setSetSyncFileSyncingCallback(void (*setSyncFileSyncing)(int, const KDC::SyncPath &, bool)) {
+        void setSetSyncFileSyncingCallback(void (*setSyncFileSyncing)(int, const SyncPath &, bool)) {
             _setSyncFileSyncing = setSyncFileSyncing;
         }
-        inline void setExclusionAppListCallback(void (*exclusionAppList)(QString &)) { _exclusionAppList = exclusionAppList; }
+        void setExclusionAppListCallback(void (*exclusionAppList)(QString &)) { _exclusionAppList = exclusionAppList; }
 
-        virtual KDC::VirtualFileMode mode() const = 0;
+        virtual VirtualFileMode mode() const = 0;
 
         /** Initializes interaction with the VFS provider.
          *
@@ -125,8 +136,8 @@ class Vfs : public QObject {
          * - ExitCode::LogicError, ExitCause::Unknown: The liteSync connector is not initialized.
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
          * - ExitCode::SystemError, ExitCause::NotFound: The item(filePath) could not be found on the local filesystem.
-         * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item(filePath) or the item(filePath) is
-         * locked.
+         * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item(filePath) or the
+         * item(filePath) is locked.
          */
         virtual ExitInfo updateMetadata(const SyncPath &filePath, time_t creationTime, time_t modtime, int64_t size,
                                         const NodeId &fileId) = 0;
@@ -139,8 +150,8 @@ class Vfs : public QObject {
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
          * - ExitCode::SystemError, ExitCause::NotFound: The parent folder does not exist.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the destination folder.
-         * - ExitCode::SystemError, ExitCause::FileAlreadyExist: An item with the same name already exists in the destination
-         * folder.
+         * - ExitCode::SystemError, ExitCause::FileAlreadyExist: An item with the same name already exists in the
+         * destination folder.
          */
         virtual ExitInfo createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) = 0;
 
@@ -171,7 +182,7 @@ class Vfs : public QObject {
          * - ExitCode::SystemError, ExitCause::NotFound: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
          */
-        virtual ExitInfo convertToPlaceholder(const SyncPath &path, const KDC::SyncFileItem &item) = 0;
+        virtual ExitInfo convertToPlaceholder(const SyncPath &path, const SyncFileItem &item) = 0;
 
         /** Update the fetch status of a file.
          *
@@ -181,8 +192,8 @@ class Vfs : public QObject {
          * - ExitCode::Ok: Everything went fine, the fetch status was updated.
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
          * - ExitCode::SystemError, ExitCause::NotFound: The item could not be found.
-         * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked (The item is
-         * the file in the sync folder, any error on the tmpItem will lead to SystemError, Unknown).
+         * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked (The
+         * item is the file in the sync folder, any error on the tmpItem will lead to SystemError, Unknown).
          */
         virtual ExitInfo updateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
                                            bool &finished) = 0;
@@ -197,7 +208,7 @@ class Vfs : public QObject {
          * - ExitCode::SystemError, ExitCause::NotFound: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
          */
-        virtual ExitInfo forceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated = false) = 0;
+        virtual ExitInfo forceStatus(const SyncPath &path, const VfsStatus &vfsStatus) = 0;
 
         virtual bool cleanUpStatuses() { return true; };
 
@@ -226,7 +237,7 @@ class Vfs : public QObject {
          * - ExitCode::SystemError, ExitCause::NotFound: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
          */
-        virtual ExitInfo setPinState(const SyncPath &fileRelativePath, KDC::PinState state) = 0;
+        virtual ExitInfo setPinState(const SyncPath &fileRelativePath, PinState state) = 0;
 
         /** Returns the pin state of an item at a path.
          *
@@ -237,7 +248,7 @@ class Vfs : public QObject {
          *
          * Returns none on retrieval error.
          */
-        virtual KDC::PinState pinState(const SyncPath &fileRelativePath) = 0;
+        virtual PinState pinState(const SyncPath &fileRelativePath) = 0;
 
         /** Returns the status of a file.
          *
@@ -247,8 +258,7 @@ class Vfs : public QObject {
          * - ExitCode::SystemError, ExitCause::NotFound: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
          */
-        virtual ExitInfo status(const SyncPath &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
-                                int &progress) = 0;
+        virtual ExitInfo status(const SyncPath &filePath, VfsStatus &vfsStatus) = 0;
 
         /** Set the thumbnail for a file.
          *
@@ -280,16 +290,16 @@ class Vfs : public QObject {
         virtual bool isExcluded(const SyncPath &filePath) = 0;
 
 
-        virtual bool fileStatusChanged(const SyncPath &systemFileName, KDC::SyncFileStatus fileStatus) = 0;
+        virtual bool fileStatusChanged(const SyncPath &systemFileName, SyncFileStatus fileStatus) = 0;
 
         virtual void convertDirContentToPlaceholder(const QString &, bool) {}
 
         virtual void clearFileAttributes(const SyncPath &) = 0;
 
-        inline void setExtendedLog(bool extendedLog) { _extendedLog = extendedLog; }
+        void setExtendedLog(bool extendedLog) { _extendedLog = extendedLog; }
 
-        inline const std::string &namespaceCLSID() { return _vfsSetupParams.namespaceCLSID; }
-        inline void setNamespaceCLSID(const std::string &CLSID) { _vfsSetupParams.namespaceCLSID = CLSID; }
+        const std::string &namespaceCLSID() { return _vfsSetupParams.namespaceCLSID; }
+        void setNamespaceCLSID(const std::string &CLSID) { _vfsSetupParams.namespaceCLSID = CLSID; }
 
         virtual void dehydrate(const SyncPath &path) = 0;
         virtual void hydrate(const SyncPath &path) = 0;
@@ -304,7 +314,7 @@ class Vfs : public QObject {
     protected:
         VfsSetupParams _vfsSetupParams;
         void starVfsWorkers();
-        const std::array<int, nbWorkers> s_nb_threads = {5, 5};
+        const std::array<size_t, nbWorkers> s_nb_threads = {5, 5};
 
         // Callbacks
         void (*_syncFileStatus)(int syncDbId, const KDC::SyncPath &itemPath, KDC::SyncFileStatus &status) = nullptr;
@@ -312,9 +322,9 @@ class Vfs : public QObject {
         void (*_setSyncFileSyncing)(int syncDbId, const KDC::SyncPath &itemPath, bool syncing) = nullptr;
         void (*_exclusionAppList)(QString &appList) = nullptr;
 
-        inline bool extendedLog() { return _extendedLog; }
+        bool extendedLog() { return _extendedLog; }
 
-        /** Setup the plugin for the folder.
+        /** Set up the plugin for the folder.
          *
          * For example, the VFS provider might monitor files to be able to start a file
          * hydration (download of a file's remote contents) when the user wants to open
@@ -327,7 +337,7 @@ class Vfs : public QObject {
 
         virtual void stopImpl(bool unregister) = 0;
 
-        inline log4cplus::Logger logger() const { return _vfsSetupParams.logger; }
+        log4cplus::Logger logger() const { return _vfsSetupParams.logger; }
 
 
         /* Handle a VFS error by logging it and returning an ExitInfo with the appropriate error code.
@@ -354,10 +364,10 @@ class Vfs : public QObject {
         ExitInfo checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist,
                                     const SourceLocation &location = SourceLocation::currentLoc()) const;
 
-        /* By default we will return file access error.
+        /* By default, we will return file access error.
          *  The file will be blacklisted for 1h or until the user edit, move or delete it (or the sync is restarted).
          */
-        inline ExitInfo defaultVfsError(const SourceLocation &location = SourceLocation::currentLoc()) const {
+        ExitInfo defaultVfsError(const SourceLocation &location = SourceLocation::currentLoc()) const {
             return {ExitCode::SystemError, ExitCause::FileAccessError, location};
         }
 
@@ -374,7 +384,6 @@ Q_DECLARE_INTERFACE(KDC::Vfs, "Vfs")
 //
 
 namespace KDC {
-
 /// Implementation of Vfs for Vfs::Off mode - does nothing
 class VfsOff : public Vfs {
         Q_OBJECT
@@ -386,55 +395,61 @@ class VfsOff : public Vfs {
 
         ~VfsOff() override;
 
-        KDC::VirtualFileMode mode() const override { return KDC::VirtualFileMode::Off; }
+        VirtualFileMode mode() const override { return VirtualFileMode::Off; }
 
         bool socketApiPinStateActionsShown() const override { return false; }
 
         ExitInfo updateMetadata(const SyncPath &, time_t, time_t, int64_t, const NodeId &) override { return ExitCode::Ok; }
-        ExitInfo createPlaceholder(const KDC::SyncPath &, const KDC::SyncFileItem &) override { return ExitCode::Ok; }
+        ExitInfo createPlaceholder(const SyncPath &, const SyncFileItem &) override { return ExitCode::Ok; }
         ExitInfo dehydratePlaceholder(const SyncPath &) override { return ExitCode::Ok; }
-        ExitInfo convertToPlaceholder(const SyncPath &, const KDC::SyncFileItem &) override { return ExitCode::Ok; }
+        ExitInfo convertToPlaceholder(const SyncPath &, const SyncFileItem &) override { return ExitCode::Ok; }
         ExitInfo updateFetchStatus(const SyncPath &, const SyncPath &, int64_t, bool &, bool &) override { return ExitCode::Ok; }
-        ExitInfo forceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated = false) override;
+        ExitInfo forceStatus(const SyncPath &path, const VfsStatus &vfsStatus) override;
 
         ExitInfo isDehydratedPlaceholder(const SyncPath &, bool &isDehydrated) override {
             isDehydrated = false;
             return ExitCode::Ok;
         }
 
-        ExitInfo setPinState(const SyncPath &, KDC::PinState) override { return ExitCode::Ok; }
-        KDC::PinState pinState(const SyncPath &) override { return KDC::PinState::AlwaysLocal; }
-        ExitInfo status(const SyncPath &, bool &isPlaceHolder, bool &isHydrated, bool &, int &) override {
-            isPlaceHolder = false;
-            isHydrated = true;
+        ExitInfo setPinState(const SyncPath &, PinState) override { return ExitCode::Ok; }
+        PinState pinState(const SyncPath &) override { return PinState::AlwaysLocal; }
+        ExitInfo status(const SyncPath &, VfsStatus &vfsStatus) override {
+            vfsStatus.isPlaceholder = false;
+            vfsStatus.isHydrated = true;
             return ExitCode::Ok;
         }
         ExitInfo setThumbnail(const SyncPath &, const QPixmap &) override { return ExitCode::Ok; }
         ExitInfo setAppExcludeList() override { return ExitCode::Ok; }
         ExitInfo getFetchingAppList(QHash<QString, QString> &) override { return ExitCode::Ok; }
-        void exclude(const SyncPath &) override { /*VfsOff*/ }
+        void exclude(const SyncPath &) override { /*VfsOff*/
+        }
         bool isExcluded(const SyncPath &) override { return false; }
-        bool fileStatusChanged(const SyncPath &, KDC::SyncFileStatus) override { return true; }
+        bool fileStatusChanged(const SyncPath &, const SyncFileStatus) override { return true; }
 
-        void clearFileAttributes(const SyncPath &) override { /*VfsOff*/ }
-        void dehydrate(const SyncPath &) override { /*VfsOff*/ }
-        void hydrate(const SyncPath &) override { /*VfsOff*/ }
-        void cancelHydrate(const SyncPath &) override { /*VfsOff*/ }
+        void clearFileAttributes(const SyncPath &) override { /*VfsOff*/
+        }
+        void dehydrate(const SyncPath &) override { /*VfsOff*/
+        }
+        void hydrate(const SyncPath &) override { /*VfsOff*/
+        }
+        void cancelHydrate(const SyncPath &) override { /*VfsOff*/
+        }
 
     protected:
         ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
-        void stopImpl(bool /*unregister*/) override { /*VfsOff*/ }
+        void stopImpl(bool /*unregister*/) override { /*VfsOff*/
+        }
 
         friend class TestWorkers;
 };
 
 /// Check whether the plugin for the mode is available.
-bool isVfsPluginAvailable(KDC::VirtualFileMode virtualFileMode, QString &error);
+bool isVfsPluginAvailable(VirtualFileMode virtualFileMode, QString &error);
 
 /// Return the best available VFS mode.
-KDC::VirtualFileMode bestAvailableVfsMode();
+VirtualFileMode bestAvailableVfsMode();
 
 /// Create a VFS instance for the mode, returns nullptr on failure.
-std::unique_ptr<Vfs> createVfsFromPlugin(KDC::VirtualFileMode virtualFileMode, VfsSetupParams &vfsSetupParams, QString &error);
+std::unique_ptr<Vfs> createVfsFromPlugin(VirtualFileMode virtualFileMode, VfsSetupParams &vfsSetupParams, QString &error);
 
 } // namespace KDC

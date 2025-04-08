@@ -20,7 +20,7 @@
 #include "comm.h"
 #include "syncpal/virtualfilescleaner.h"
 #include "syncpalworker.h"
-#include "utility/asserts.h"
+#include "utility/logiffail.h"
 #include "syncpal/excludelistpropagator.h"
 #include "syncpal/conflictingfilescorrector.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
@@ -56,7 +56,7 @@
 namespace KDC {
 
 SyncPal::SyncPal(const std::shared_ptr<Vfs> &vfs, const SyncPath &syncDbPath, const std::string &version,
-                 const bool hasFullyCompleted) : _logger(Log::instance()->getLogger()), _vfs(vfs) {
+                 const bool hasFullyCompleted) : _vfs(vfs), _logger(Log::instance()->getLogger()) {
     _syncInfo.syncHasFullyCompleted = hasFullyCompleted;
     LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init: " << Utility::formatSyncPath(syncDbPath));
     assert(_vfs);
@@ -178,8 +178,8 @@ SyncPal::~SyncPal() {
 ExitCode SyncPal::setTargetNodeId(const std::string &targetNodeId) {
     bool found = false;
 
-    ASSERT(_remoteSnapshot)
-    ASSERT(_remoteUpdateTree)
+    LOG_IF_FAIL(_remoteSnapshot)
+    LOG_IF_FAIL(_remoteUpdateTree)
 
     if (!_syncDb->setTargetNodeId(targetNodeId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::setTargetNodeId");
@@ -208,13 +208,10 @@ SyncStatus SyncPal::status() const {
         // Has started
         if (_syncPalWorker->isRunning()) {
             // Still running
-            ASSERT(_localSnapshot)
-            ASSERT(_remoteSnapshot)
+            LOG_IF_FAIL(_localSnapshot)
+            LOG_IF_FAIL(_remoteSnapshot)
 
-            if (_syncPalWorker->pauseAsked()) {
-                // Auto pausing after a NON fatal error (network, back...)
-                return SyncStatus::PauseAsked;
-            } else if (_syncPalWorker->isPaused()) {
+            if (_syncPalWorker->isPaused()) {
                 // Auto paused after a NON fatal error
                 return SyncStatus::Paused;
             } else if (_syncPalWorker->stopAsked()) {
@@ -435,17 +432,17 @@ void SyncPal::freeSharedObjects() {
     _progressInfo.reset();
 
     // Check that there is no memory leak
-    ASSERT(_localSnapshot.use_count() == 0);
-    ASSERT(_remoteSnapshot.use_count() == 0);
-    ASSERT(_localSnapshotCopy.use_count() == 0);
-    ASSERT(_remoteSnapshotCopy.use_count() == 0);
-    ASSERT(_localOperationSet.use_count() == 0);
-    ASSERT(_remoteOperationSet.use_count() == 0);
-    ASSERT(_localUpdateTree.use_count() == 0);
-    ASSERT(_remoteUpdateTree.use_count() == 0);
-    ASSERT(_conflictQueue.use_count() == 0);
-    ASSERT(_syncOps.use_count() == 0);
-    ASSERT(_progressInfo.use_count() == 0);
+    LOG_IF_FAIL(_localSnapshot.use_count() == 0);
+    LOG_IF_FAIL(_remoteSnapshot.use_count() == 0);
+    LOG_IF_FAIL(_localSnapshotCopy.use_count() == 0);
+    LOG_IF_FAIL(_remoteSnapshotCopy.use_count() == 0);
+    LOG_IF_FAIL(_localOperationSet.use_count() == 0);
+    LOG_IF_FAIL(_remoteOperationSet.use_count() == 0);
+    LOG_IF_FAIL(_localUpdateTree.use_count() == 0);
+    LOG_IF_FAIL(_remoteUpdateTree.use_count() == 0);
+    LOG_IF_FAIL(_conflictQueue.use_count() == 0);
+    LOG_IF_FAIL(_syncOps.use_count() == 0);
+    LOG_IF_FAIL(_progressInfo.use_count() == 0);
 }
 
 void SyncPal::initSharedObjects() {
@@ -653,8 +650,8 @@ bool SyncPal::getSyncFileItem(const SyncPath &path, SyncFileItem &item) {
 }
 
 bool SyncPal::isSnapshotValid(ReplicaSide side) {
-    ASSERT(_localSnapshot)
-    ASSERT(_remoteSnapshot)
+    LOG_IF_FAIL(_localSnapshot)
+    LOG_IF_FAIL(_remoteSnapshot)
 
     return side == ReplicaSide::Local ? _localSnapshot->isValid() : _remoteSnapshot->isValid();
 }
@@ -1142,6 +1139,13 @@ void SyncPal::unpause() {
     }
 }
 
+std::chrono::time_point<std::chrono::steady_clock> SyncPal::pauseTime() const {
+    if (_syncPalWorker) {
+        return _syncPalWorker->pauseTime();
+    }
+    return std::chrono::steady_clock::now();
+}
+
 void SyncPal::stop(bool pausedByUser, bool quit, bool clear) {
     if (_syncPalWorker) {
         if (_syncPalWorker->isRunning()) {
@@ -1172,13 +1176,12 @@ void SyncPal::stop(bool pausedByUser, bool quit, bool clear) {
     _syncDb->setAutoDelete(clear);
 }
 
-bool SyncPal::isPaused(std::chrono::time_point<std::chrono::system_clock> &pauseTime) const {
-    if (_syncPalWorker && _syncPalWorker->isPaused()) {
-        pauseTime = _syncPalWorker->pauseTime();
-        return true;
-    }
+bool SyncPal::isPaused() const {
+    return _syncPalWorker && _syncPalWorker->isPaused();
+}
 
-    return false;
+bool SyncPal::pauseAsked() const {
+    return _syncPalWorker && _syncPalWorker->pauseAsked();
 }
 
 bool SyncPal::isIdle() const {
@@ -1308,10 +1311,6 @@ void SyncPal::blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativ
     _tmpBlacklistManager->blacklistItem(nodeId, relativePath, side);
 }
 
-bool SyncPal::isTmpBlacklisted(const NodeId &nodeId, ReplicaSide side) const {
-    return _tmpBlacklistManager->isTmpBlacklisted(nodeId, side);
-}
-
 bool SyncPal::isTmpBlacklisted(const SyncPath &relativePath, ReplicaSide side) const {
     return _tmpBlacklistManager->isTmpBlacklisted(relativePath, side);
 }
@@ -1327,7 +1326,6 @@ void SyncPal::removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side)
 void SyncPal::removeItemFromTmpBlacklist(const SyncPath &relativePath) {
     _tmpBlacklistManager->removeItemFromTmpBlacklist(relativePath);
 }
-
 
 ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, ExitCause cause) {
     std::shared_ptr<Node> dummyNodePtr;
@@ -1375,21 +1373,18 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
         return {ExitCode::DbError, ExitCause::Unknown};
     }
 
-    localBlacklistedNode = updateTree(ReplicaSide::Local)->getNodeById(localNodeId);
-    remoteBlacklistedNode = updateTree(ReplicaSide::Remote)->getNodeById(remoteNodeId);
-
     // Blacklist the item
     if (!localNodeId.empty()) {
         _tmpBlacklistManager->blacklistItem(localNodeId, relativeLocalPath, ReplicaSide::Local);
         if (!updateTree(ReplicaSide::Local)->deleteNode(localNodeId)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: " << Utility::formatSyncPath(relativeLocalPath));
+            // Do nothing: Can happen if the UpdateTreeWorker step has never been launched
         }
     }
 
     if (!remoteNodeId.empty()) {
         _tmpBlacklistManager->blacklistItem(remoteNodeId, relativeLocalPath, ReplicaSide::Remote);
         if (!updateTree(ReplicaSide::Remote)->deleteNode(remoteNodeId)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: " << Utility::formatSyncPath(relativeLocalPath));
+            // Do nothing: Can happen if the UpdateTreeWorker step has never been launched
         }
     }
 
@@ -1397,8 +1392,8 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
 }
 
 void SyncPal::copySnapshots() {
-    ASSERT(_localSnapshot)
-    ASSERT(_remoteSnapshot)
+    LOG_IF_FAIL(_localSnapshot)
+    LOG_IF_FAIL(_remoteSnapshot)
 
     *_localSnapshotCopy = *_localSnapshot;
     *_remoteSnapshotCopy = *_remoteSnapshot;

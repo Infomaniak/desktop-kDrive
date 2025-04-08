@@ -23,7 +23,7 @@
 
 namespace KDC {
 
-class TestLog : public CppUnit::TestFixture {
+class TestLog : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestLog);
         CPPUNIT_TEST(testLog);
         CPPUNIT_TEST(testExpiredLogFiles);
@@ -32,6 +32,7 @@ class TestLog : public CppUnit::TestFixture {
 
     public:
         void setUp(void) final;
+        void tearDown(void) final { TestBase::stop(); }
 
         void testLargeLogRolling(void);
         void testExpiredLogFiles(void);

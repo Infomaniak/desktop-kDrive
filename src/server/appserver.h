@@ -19,7 +19,7 @@
 #pragma once
 
 #include "qtsingleapplication.h"
-#include "libcommonserver/commserver.h"
+#include "commserver.h"
 #include "syncpal/syncpal.h"
 #include "libcommonserver/vfs/vfs.h"
 #include "navigationpanehelper.h"
@@ -82,8 +82,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         void clearSyncNodes();
         void sendShowSettingsMsg();
         void sendShowSynthesisMsg();
+        void sendRestartClientMsg();
+
         void clearKeychainKeys();
-        void showAlreadyRunning();
 
         void showHint(std::string errorHint);
         bool startClient();
@@ -108,14 +109,14 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool _vfsActivationDone{false};
         bool _vfsConnectionDone{false};
         bool _crashRecovered{false};
+        bool _appStartPTraceStopped{false};
+        bool _clientManuallyRestarted{false};
         QElapsedTimer _startedAt;
         QTimer _loadSyncsProgressTimer;
         QTimer _sendFilesNotificationsTimer;
         QTimer _restartSyncsTimer;
         std::unordered_map<int, SyncCache> _syncCacheMap;
         std::unordered_map<int, std::unordered_set<NodeId>> _undecidedListCacheMap;
-
-        std::unique_ptr<UpdateManager> _updateManager;
 
         void parseOptions(const QStringList &);
         bool initLogging() noexcept;
@@ -180,9 +181,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         static void sendErrorsCleared(int syncDbId);
         void sendQuit(); // Ask client to quit
 
-        // See types.h -> AppStateKey for the possible values of status
-        void cancelLogUpload();
-        ExitInfo uploadLog(bool includeArchivedLogs);
+        void uploadLog(bool includeArchivedLogs);
         void sendLogUploadStatusUpdated(LogUploadState status, int percent);
 
         void startSyncPals();

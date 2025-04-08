@@ -1201,7 +1201,7 @@ ExitCode GuiRequests::checkCommStatus() {
     return exitCode;
 }
 
-ExitCode GuiRequests::changeDistributionChannel(const DistributionChannel channel) {
+ExitCode GuiRequests::changeDistributionChannel(const VersionChannel channel) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << channel;
@@ -1212,8 +1212,7 @@ ExitCode GuiRequests::changeDistributionChannel(const DistributionChannel channe
     return ExitCode::Ok;
 }
 
-ExitCode GuiRequests::versionInfo(VersionInfo &versionInfo,
-                                  const DistributionChannel channel /*= DistributionChannel::Unknown*/) {
+ExitCode GuiRequests::versionInfo(VersionInfo &versionInfo, const VersionChannel channel /*= VersionChannel::Unknown*/) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << channel;

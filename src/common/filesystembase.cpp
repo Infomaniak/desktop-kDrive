@@ -18,11 +18,9 @@
 
 #include "filesystembase.h"
 
-#include <QDateTime>
-#include <QDir>
-#include <QUrl>
-#include <QFile>
 #include <QCoreApplication>
+#include <QFile>
+#include <QFileInfo>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -33,7 +31,6 @@
 #include <winbase.h>
 #include <fcntl.h>
 #include <io.h>
-#include <wchar.h>
 #endif
 
 namespace KDC {

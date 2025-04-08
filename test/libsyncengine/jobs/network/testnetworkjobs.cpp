@@ -55,8 +55,6 @@
 #include "test_utility/testhelpers.h"
 #include "mocks/libsyncengine/vfs/mockvfs.h"
 
-#include <iostream>
-
 using namespace CppUnit;
 
 namespace KDC {
@@ -68,9 +66,11 @@ static const NodeId pictureDirRemoteId = "56851"; // test_ci/test_pictures
 static const NodeId picture1RemoteId = "97373"; // test_ci/test_pictures/picture-1.jpg
 static const NodeId testFileRemoteId = "97370"; // test_ci/test_networkjobs/test_download.txt
 static const NodeId testFileRemoteRenameId = "97376"; // test_ci/test_networkjobs/test_rename*.txt
+#ifdef __APPLE__
 static const NodeId testAliasDnDRemoteId = "2023013"; // test_ci/test_networkjobs/test_alias_dnd
 static const NodeId testAliasGoodRemoteId = "2017813"; // test_ci/test_networkjobs/test_alias_good.log
 static const NodeId testAliasCorruptedRemoteId = "2017817"; // test_ci/test_networkjobs/test_alias_corrupted.log
+#endif
 static const NodeId testBigFileRemoteId = "97601"; // test_ci/big_file_dir/big_text_file.txt
 static const NodeId testDummyDirRemoteId = "98648"; // test_ci/dummy_dir
 static const NodeId testDummyFileRemoteId = "98649"; // test_ci/dummy_dir/picture.jpg
@@ -93,6 +93,7 @@ void createEmptyFile(const SyncPath &path) {
 } // namespace
 
 void TestNetworkJobs::setUp() {
+    TestBase::start();
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up");
 
     const testhelpers::TestVariables testVariables;
@@ -148,6 +149,7 @@ void TestNetworkJobs::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
     MockIoHelperTestNetworkJobs::resetStdFunctions();
+    TestBase::stop();
 }
 
 
@@ -328,8 +330,12 @@ void TestNetworkJobs::testDownload() {
         CPPUNIT_ASSERT(nodeId == nodeId2);
 
         // Download again but as an EDIT to be propagated on a hydrated placeholder
-        auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
+
         {
+            auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
+            vfs->setMockForceStatus([]([[maybe_unused]] const SyncPath &path,
+                                       [[maybe_unused]] const VfsStatus &vfsStatus) -> ExitInfo { return ExitCode::Ok; });
+
             DownloadJob job(vfs, _driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
@@ -408,7 +414,8 @@ void TestNetworkJobs::testDownload() {
 
         MockIoHelperTestNetworkJobs::resetStdFunctions();
     }
-    {
+    if (testhelpers::isRunningOnCI()) {
+        // Not Enough disk space (Only run on CI because it requires a small partition to be set up)
         const SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
         if (smallPartitionPath.empty()) return;
 
@@ -557,18 +564,13 @@ void TestNetworkJobs::testDownloadAborted() {
 
     auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     bool forceStatusCalled = false;
-    bool isSyncingRes = false;
-    int progressRes = 0;
-    bool isHydratedRes = false;
-    vfs->setForceStatusMock([&forceStatusCalled, &isSyncingRes, &progressRes, &isHydratedRes](
-                                    [[maybe_unused]] const SyncPath &path, [[maybe_unused]] bool isSyncing,
-                                    [[maybe_unused]] int progress, [[maybe_unused]] bool isHydrated) -> ExitInfo {
-        forceStatusCalled = true;
-        isSyncingRes = isSyncing;
-        progressRes = progress;
-        isHydratedRes = isHydrated;
-        return ExitCode::Ok;
-    });
+    VfsStatus vfsStatusRes;
+    vfs->setMockForceStatus(
+            [&forceStatusCalled, &vfsStatusRes]([[maybe_unused]] const SyncPath &path, const VfsStatus &vfsStatus) -> ExitInfo {
+                forceStatusCalled = true;
+                vfsStatusRes = vfsStatus;
+                return ExitCode::Ok;
+            });
 
     std::shared_ptr<DownloadJob> job =
             std::make_shared<DownloadJob>(vfs, _driveDbId, testBigFileRemoteId, localDestFilePath, 0, 0, 0, false);
@@ -585,9 +587,9 @@ void TestNetworkJobs::testDownloadAborted() {
     job.reset();
 
     CPPUNIT_ASSERT(forceStatusCalled);
-    CPPUNIT_ASSERT(!isSyncingRes);
-    CPPUNIT_ASSERT_EQUAL(0, progressRes);
-    CPPUNIT_ASSERT(!isHydratedRes);
+    CPPUNIT_ASSERT(!vfsStatusRes.isSyncing);
+    CPPUNIT_ASSERT_EQUAL(static_cast<int16_t>(0), vfsStatusRes.progress);
+    CPPUNIT_ASSERT(!vfsStatusRes.isHydrated);
     CPPUNIT_ASSERT(!std::filesystem::exists(localDestFilePath));
 }
 
@@ -823,7 +825,7 @@ void TestNetworkJobs::testFullFileListWithCursorJsonBlacklist() {
 void TestNetworkJobs::testFullFileListWithCursorCsvBlacklist() {
     CsvFullFileListWithCursorJob job(_driveDbId, "1", {pictureDirRemoteId}, true);
     const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
     int counter = 0;
     std::string cursor = job.getCursor();
@@ -849,7 +851,7 @@ void TestNetworkJobs::testFullFileListWithCursorCsvBlacklist() {
 void TestNetworkJobs::testFullFileListWithCursorMissingEof() {
     CsvFullFileListWithCursorJob job(_driveDbId, "1");
     const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
     int counter = 0;
     const std::string cursor = job.getCursor();
@@ -871,7 +873,7 @@ void TestNetworkJobs::testFullFileListWithCursorMissingEof() {
 void TestNetworkJobs::testGetInfoUser() {
     GetInfoUserJob job(_userDbId);
     const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
     CPPUNIT_ASSERT_EQUAL(std::string("John Doe"), job.name());
     CPPUNIT_ASSERT_EQUAL(std::string("john.doe@nogafam.ch"), job.email());
@@ -881,7 +883,7 @@ void TestNetworkJobs::testGetInfoUser() {
 void TestNetworkJobs::testGetInfoDrive() {
     GetInfoDriveJob job(_driveDbId);
     const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
     Poco::JSON::Object::Ptr data = job.jsonRes()->getObject(dataKey);
     CPPUNIT_ASSERT(data->get(nameKey).toString() == "kDrive Desktop Team");
@@ -890,7 +892,7 @@ void TestNetworkJobs::testGetInfoDrive() {
 void TestNetworkJobs::testThumbnail() {
     GetThumbnailJob job(_driveDbId, picture1RemoteId.c_str(), 50);
     const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
     CPPUNIT_ASSERT(!job.octetStreamRes().empty());
 }
@@ -901,7 +903,7 @@ void TestNetworkJobs::testDuplicateRenameMove() {
     // Duplicate
     DuplicateJob dupJob(nullptr, _driveDbId, testFileRemoteId, Str("test_duplicate.txt"));
     ExitCode exitCode = dupJob.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
     NodeId dupFileId;
     if (dupJob.jsonRes()) {
@@ -917,17 +919,17 @@ void TestNetworkJobs::testDuplicateRenameMove() {
     MoveJob moveJob(nullptr, _driveDbId, "", dupFileId, remoteTmpDir.id());
     moveJob.setBypassCheck(true);
     exitCode = moveJob.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
     GetFileListJob fileListJob(_driveDbId, remoteTmpDir.id());
     exitCode = fileListJob.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
     Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
     CPPUNIT_ASSERT(resObj);
     Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-    CPPUNIT_ASSERT(dataArray->getObject(0)->get(idKey) == dupFileId);
-    CPPUNIT_ASSERT(dataArray->getObject(0)->get(nameKey) == "test_duplicate.txt");
+    CPPUNIT_ASSERT_EQUAL(dupFileId, NodeId(dataArray->getObject(0)->get(idKey).convert<std::string>()));
+    CPPUNIT_ASSERT_EQUAL(std::string("test_duplicate.txt"), dataArray->getObject(0)->get(nameKey).convert<std::string>());
 }
 
 void TestNetworkJobs::testRename() {
@@ -982,11 +984,11 @@ void TestNetworkJobs::testUploadAborted() {
 
     auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     bool forceStatusCalled = false;
-    vfs->setForceStatusMock([&forceStatusCalled]([[maybe_unused]] const SyncPath &path, [[maybe_unused]] bool isSyncing,
-                                                 [[maybe_unused]] int progress, [[maybe_unused]] bool isHydrated) -> ExitInfo {
-        forceStatusCalled = true;
-        return ExitCode::Ok;
-    });
+    vfs->setMockForceStatus(
+            [&forceStatusCalled]([[maybe_unused]] const SyncPath &path, [[maybe_unused]] const VfsStatus &vfsStatus) -> ExitInfo {
+                forceStatusCalled = true;
+                return ExitCode::Ok;
+            });
 
     auto job =
             std::make_shared<UploadJob>(vfs, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 0);
@@ -1169,11 +1171,11 @@ void TestNetworkJobs::testDriveUploadSessionSynchronousAborted() {
 
     auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     bool forceStatusCalled = false;
-    vfs->setForceStatusMock([&forceStatusCalled]([[maybe_unused]] const SyncPath &path, [[maybe_unused]] bool isSyncing,
-                                                 [[maybe_unused]] int progress, [[maybe_unused]] bool isHydrated) -> ExitInfo {
-        forceStatusCalled = true;
-        return ExitCode::Ok;
-    });
+    vfs->setMockForceStatus(
+            [&forceStatusCalled]([[maybe_unused]] const SyncPath &path, [[maybe_unused]] const VfsStatus &vfsStatus) -> ExitInfo {
+                forceStatusCalled = true;
+                return ExitCode::Ok;
+            });
 
     auto DriveUploadSessionJob = std::make_shared<DriveUploadSession>(
             vfs, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 12345, false, 1);
@@ -1205,11 +1207,11 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronousAborted() {
 
     auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     bool forceStatusCalled = false;
-    vfs->setForceStatusMock([&forceStatusCalled]([[maybe_unused]] const SyncPath &path, [[maybe_unused]] bool isSyncing,
-                                                 [[maybe_unused]] int progress, [[maybe_unused]] bool isHydrated) -> ExitInfo {
-        forceStatusCalled = true;
-        return ExitCode::Ok;
-    });
+    vfs->setMockForceStatus(
+            [&forceStatusCalled]([[maybe_unused]] const SyncPath &path, [[maybe_unused]] const VfsStatus &vfsStatus) -> ExitInfo {
+                forceStatusCalled = true;
+                return ExitCode::Ok;
+            });
 
     auto DriveUploadSessionJob =
             std::make_shared<DriveUploadSession>(vfs, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(),
@@ -1249,10 +1251,10 @@ void TestNetworkJobs::testGetAppVersionInfo() {
         GetAppVersionJob job(CommonUtility::platform(), appUid);
         job.runSynchronously();
         CPPUNIT_ASSERT(!job.hasHttpError());
-        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Internal).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Beta).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Next).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Prod).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Internal).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Beta).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Next).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Prod).isValid());
         CPPUNIT_ASSERT(job.versionInfo(job.prodVersionChannel()).isValid());
     }
     // With 1 user ID
@@ -1264,10 +1266,10 @@ void TestNetworkJobs::testGetAppVersionInfo() {
         GetAppVersionJob job(CommonUtility::platform(), appUid, {user.userId()});
         job.runSynchronously();
         CPPUNIT_ASSERT(!job.hasHttpError());
-        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Internal).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Beta).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Next).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Prod).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Internal).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Beta).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Next).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Prod).isValid());
         CPPUNIT_ASSERT(job.versionInfo(job.prodVersionChannel()).isValid());
     }
     // // With several user IDs
@@ -1276,10 +1278,10 @@ void TestNetworkJobs::testGetAppVersionInfo() {
     //     GetAppVersionJob job(CommonUtility::platform(), appUid, {123, 456, 789});
     //     job.runSynchronously();
     //     CPPUNIT_ASSERT(!job.hasHttpError());
-    //     CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Internal).isValid());
-    //     CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Beta).isValid());
-    //     CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Next).isValid());
-    //     CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Prod).isValid());
+    //     CPPUNIT_ASSERT(job.getVersionInfo(VersionChannel::Internal).isValid());
+    //     CPPUNIT_ASSERT(job.getVersionInfo(VersionChannel::Beta).isValid());
+    //     CPPUNIT_ASSERT(job.getVersionInfo(VersionChannel::Next).isValid());
+    //     CPPUNIT_ASSERT(job.getVersionInfo(VersionChannel::Prod).isValid());
     //     CPPUNIT_ASSERT(job.getProdVersionInfo().isValid());
     // }
 }

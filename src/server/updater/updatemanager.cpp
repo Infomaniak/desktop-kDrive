@@ -32,6 +32,10 @@
 
 namespace KDC {
 
+std::shared_ptr<AbstractUpdater> UpdateManager::_updater;
+
+std::shared_ptr<UpdateManager> UpdateManager::_instance;
+
 UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
     _currentChannel = ParametersCache::instance()->parameters().distributionChannel();
 
@@ -51,7 +55,13 @@ UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
     QTimer::singleShot(3000, this, [this]() { setDistributionChannel(_currentChannel); });
 }
 
-void UpdateManager::setDistributionChannel(const DistributionChannel channel) {
+std::shared_ptr<UpdateManager> UpdateManager::instance() {
+    if (_instance == nullptr) _instance.reset(new UpdateManager());
+
+    return _instance;
+}
+
+void UpdateManager::setDistributionChannel(const VersionChannel channel) {
     _currentChannel = channel;
     _updater->checkUpdateAvailable(channel);
     ParametersCache::instance()->parameters().setDistributionChannel(channel);
@@ -62,7 +72,7 @@ void UpdateManager::startInstaller() const {
     LOG_DEBUG(Log::instance()->getLogger(), "startInstaller called!");
 
     // Cleanup skipped version
-    AbstractUpdater::unskipVersion();
+    _updater->unskipVersion();
 
     _updater->startInstaller();
 }
@@ -111,12 +121,12 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
 
 void UpdateManager::createUpdater() {
 #if defined(__APPLE__)
-    _updater = std::make_unique<SparkleUpdater>();
+    _updater = SparkleUpdater::instance();
 #elif defined(_WIN32)
-    _updater = std::make_unique<WindowsUpdater>();
+    _updater = WindowsUpdater::instance();
 #else
     // the best we can do is notify about updates
-    _updater = std::make_unique<LinuxUpdater>();
+    _updater = LinuxUpdater::instance();
 #endif
 }
 

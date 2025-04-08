@@ -18,6 +18,7 @@
 
 #include "config.h"
 #include "testutility.h"
+#include "test_utility/testhelpers.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/sourcelocation.h"
 #include "libcommonserver/io/iohelper.h"
@@ -81,6 +82,10 @@ void TestUtility::testIsVersionLower() {
 
     CPPUNIT_ASSERT(CommonUtility::isVersionLower("55.25.0", "55.55.0"));
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("55.75.0", "55.55.0"));
+
+    // With a build version
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("155.75.0 (build 20250221)", "155.75.0 (build 20250222)"));
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("255.85.0 (build 20240221)", "255.85.0 (build 20250222)"));
 }
 
 void TestUtility::testStringToAppStateValue() {
@@ -334,6 +339,7 @@ void TestUtility::testSourceLocation() {
 }
 
 void TestUtility::testGenerateRandomStringAlphaNum() {
+    if (!testhelpers::isExtendedTest()) return;
     {
         int err = 0;
         std::set<std::string> results;
@@ -387,22 +393,25 @@ void TestUtility::testLanguageCode() {
 }
 
 void TestUtility::testIsSupportedLanguage() {
-    CPPUNIT_ASSERT_EQUAL(true,  CommonUtility::isSupportedLanguage("en"));
-    CPPUNIT_ASSERT_EQUAL(true,  CommonUtility::isSupportedLanguage("fr"));
-    CPPUNIT_ASSERT_EQUAL(true,  CommonUtility::isSupportedLanguage("de"));
-    CPPUNIT_ASSERT_EQUAL(true,  CommonUtility::isSupportedLanguage("es"));
-    CPPUNIT_ASSERT_EQUAL(true,  CommonUtility::isSupportedLanguage("it"));
-    CPPUNIT_ASSERT_EQUAL(false,  CommonUtility::isSupportedLanguage("ita"));
-    CPPUNIT_ASSERT_EQUAL(false,  CommonUtility::isSupportedLanguage("zc"));
-    CPPUNIT_ASSERT_EQUAL(false,  CommonUtility::isSupportedLanguage(""));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("en"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("fr"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("de"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("es"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("it"));
+    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isSupportedLanguage("ita"));
+    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isSupportedLanguage("zc"));
+    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isSupportedLanguage(""));
 }
 
 #ifdef _WIN32
 void TestUtility::testGetLastErrorMessage() {
+    // Ensure that the error message is reset.
+    SetLastError(0);
+
     // No actual error. Display the expected success message.
     {
         const std::wstring msg = CommonUtility::getLastErrorMessage();
-        CPPUNIT_ASSERT(msg.starts_with(L"(0) - "));
+        CPPUNIT_ASSERT_MESSAGE(SyncName2Str(msg.c_str()), msg.starts_with(L"(0) - "));
     }
     // Display the file-not-found error message.
     {
@@ -412,4 +421,19 @@ void TestUtility::testGetLastErrorMessage() {
     }
 }
 #endif
+
+void TestUtility::testTruncateLongLogMessage() {
+    // No truncation
+    {
+        const QString message = "short";
+        CPPUNIT_ASSERT_EQUAL(std::string("short"), CommonUtility::truncateLongLogMessage(message).toStdString());
+    }
+
+    // Truncation of one character
+    {
+        const auto message = std::string(2049, 'a');
+        const QString truncatedMessage = CommonUtility::truncateLongLogMessage(QString::fromStdString(message));
+        CPPUNIT_ASSERT(QString::fromStdString(message.substr(0, 2048) + std::string(" (truncated)")) == truncatedMessage);
+    }
+}
 } // namespace KDC

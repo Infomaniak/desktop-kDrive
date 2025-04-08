@@ -842,7 +842,7 @@ void ClientGui::onAddDriveRejected() {
 }
 
 void ClientGui::onAddDriveFinished() {
-    _addDriveWizard.release();
+    static_cast<void>(_addDriveWizard.release());
 }
 
 void ClientGui::onCopyLinkItem(int driveDbId, const QString &nodeId) {
@@ -1558,7 +1558,7 @@ void ClientGui::openLoginDialog(int userDbId, bool invalidTokenError) {
     loop.connect(_loginDialog.get(), &QDialog::destroyed, &loop, [&]() { loop.quit(); });
     _loginDialog->show();
     loop.exec();
-    _loginDialog.release();
+    static_cast<void>(_loginDialog.release());
 
     if (accepted) {
         qCDebug(lcClientGui()) << "Login OK for userDbId=" << userDbId;

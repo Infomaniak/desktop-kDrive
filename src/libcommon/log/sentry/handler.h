@@ -100,6 +100,8 @@ class Handler {
         // Print an event description into a file (for debugging)
         static void writeEvent(const std::string &eventStr, bool crash) noexcept;
 
+        void setDistributionChannel(VersionChannel channel);
+
     protected:
         Handler() = default;
         void setMaxCaptureCountBeforeRateLimit(int maxCaptureCountBeforeRateLimit);
@@ -127,6 +129,8 @@ class Handler {
         sentry::ConfidentialityLevel _globalConfidentialityLevel = sentry::ConfidentialityLevel::Anonymous; // Default value
         sentry::ConfidentialityLevel _lastConfidentialityLevel = sentry::ConfidentialityLevel::None;
 
+        void setTag(const std::string &key, const std::string &value);
+        void removeTag(const std::string &key) { sentry_remove_tag(key.c_str()); }
         // Convert a `SentryUser` structure to a `sentry_value_t` that can safely be passed to
         // `sentry_set_user(sentry_value_t)`
         sentry_value_t toSentryValue(const SentryUser &user) const;
@@ -205,8 +209,10 @@ class Handler {
 
         std::map<int /*syncDbId*/, std::map<PTraceName, pTraceId>> _pTraceNameToPTraceIdMap;
 
+        bool checkCustomSampleRate(const PTraceDescriptor &pTraceInfo) const;
+
         // Debug
-        static KDC::AppType _appType;
+        static AppType _appType;
         static bool _debugCrashCallback;
         static bool _debugBeforeSendCallback;
 };

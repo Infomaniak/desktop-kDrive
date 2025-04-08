@@ -1,4 +1,9 @@
-project(testparms)
+cmake_minimum_required(VERSION 3.16)
+if(APPLE)
+    project(testparms LANGUAGES C CXX OBJC OBJCXX)
+else()
+    project(testparms LANGUAGES C CXX)
+endif()
 
 find_package(SQLite3 3.8.0 REQUIRED)
 find_package(Poco REQUIRED Foundation)
@@ -8,6 +13,8 @@ set(testparms_NAME ${APPLICATION_NAME}_test_parms)
 
 set(testparms_SRCS
     ../test.cpp
+    ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
+    ../test_utility/testbase.h
     test.cpp
     # Database
     db/testparmsdb.h db/testparmsdb.cpp
@@ -58,5 +65,11 @@ if(APPLE)
     install(CODE "
         message(STATUS \"Fixing library paths for ${testparms_NAME}...\")
         execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.8.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testparms_NAME})
+        execute_process(COMMAND \"install_name_tool\" -change /usr/local/lib/libcppunit-1.15.2.dylib @rpath/libcppunit-1.15.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testparms_NAME})
+        execute_process(COMMAND \"install_name_tool\" -change /opt/homebrew/opt/openssl@3/lib/libssl.3.dylib @rpath/libssl.3.dylib ${BIN_OUTPUT_DIRECTORY}/${testparms_NAME})
+        execute_process(COMMAND \"install_name_tool\" -change /opt/homebrew/opt/openssl@3/lib/libcrypto.3.dylib @rpath/libcrypto.3.dylib ${BIN_OUTPUT_DIRECTORY}/${testparms_NAME})
+        execute_process(COMMAND \"install_name_tool\" -add_rpath /usr/local/lib ${BIN_OUTPUT_DIRECTORY}/${testparms_NAME})
+        execute_process(COMMAND \"install_name_tool\" -add_rpath @executable_path ${BIN_OUTPUT_DIRECTORY}/${testparms_NAME})
+        execute_process(COMMAND \"install_name_tool\" -add_rpath /opt/homebrew/opt/openssl@3/lib ${BIN_OUTPUT_DIRECTORY}/${testparms_NAME})
         " COMPONENT RUNTIME)
 endif()

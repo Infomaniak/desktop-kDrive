@@ -17,7 +17,7 @@
  */
 
 #include "testoldsyncdb.h"
-#include "libcommonserver/utility/asserts.h"
+#include "libcommonserver/utility/logiffail.h"
 
 
 using namespace CppUnit;
@@ -28,6 +28,7 @@ const std::string oldSyncDbPath = "/Users/chrilarc/kDrive2/.sync_accaa3d05def.db
 
 void TestOldSyncDb::setUp() {
     // Create DB
+    TestBase::start();
     _testObj = new OldSyncDb(oldSyncDbPath);
 }
 
@@ -35,6 +36,7 @@ void TestOldSyncDb::tearDown() {
     // Close and delete DB
     _testObj->close();
     delete _testObj;
+    TestBase::stop();
 }
 
 void TestOldSyncDb::testSelectiveSync() {

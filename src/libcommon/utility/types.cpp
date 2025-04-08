@@ -85,8 +85,6 @@ std::string toString(const ExitCode e) {
             return "Unknown";
         case ExitCode::Ok:
             return "Ok";
-        case ExitCode::NeedRestart:
-            return "NeedRestart";
         case ExitCode::NetworkError:
             return "NetworkError";
         case ExitCode::InvalidToken:
@@ -723,30 +721,36 @@ std::string toString(const UpdateState e) {
             return "Checking";
         case UpdateState::Available:
             return "Available";
+        case UpdateState::ManualUpdateAvailable:
+            return "ManualUpdateAvailable";
         case UpdateState::Downloading:
             return "Downloading";
         case UpdateState::Ready:
             return "Ready";
-        case UpdateState::DownloadError:
-            return "DownloadError";
         case UpdateState::CheckError:
             return "CheckError";
+        case UpdateState::DownloadError:
+            return "DownloadError";
+        case UpdateState::UpdateError:
+            return "UpdateError";
         default:
             return noConversionStr;
     }
 }
 
-std::string toString(const DistributionChannel e) {
+std::string toString(const VersionChannel e) {
     switch (e) {
-        case DistributionChannel::Prod:
+        case VersionChannel::Prod:
             return "Prod";
-        case DistributionChannel::Next:
+        case VersionChannel::Next:
             return "Next";
-        case DistributionChannel::Beta:
+        case VersionChannel::Beta:
             return "Beta";
-        case DistributionChannel::Internal:
+        case VersionChannel::Internal:
             return "Internal";
-        case DistributionChannel::Unknown:
+        case VersionChannel::Legacy:
+            return "Legacy";
+        case VersionChannel::Unknown:
             return "Unknown";
         default:
             return noConversionStr;

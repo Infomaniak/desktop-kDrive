@@ -30,6 +30,7 @@
 namespace KDC {
 
 void TestExecutorWorker::setUp() {
+    TestBase::start();
     const testhelpers::TestVariables testVariables;
 
     const std::string localPathStr = _localTempDir.path().string();
@@ -68,7 +69,8 @@ void TestExecutorWorker::setUp() {
         Proxy::instance(parameters.proxyConfig());
     }
 
-    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(), KDRIVE_VERSION_STRING);
+    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(),
+                                         KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
     _syncPal->createWorkers(std::chrono::seconds(0));
     _syncPal->syncDb()->setAutoDelete(true);
@@ -82,6 +84,7 @@ void TestExecutorWorker::tearDown() {
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }
+    TestBase::stop();
 }
 
 void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
@@ -106,7 +109,8 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
     opPtr->setAffectedNode(node);
     // A hydrated placeholder.
     {
-        mockVfs->setVfsStatusOutput(true, true, false, 0);
+        constexpr VfsStatus vfsStatus = {.isPlaceholder = true, .isHydrated = true, .isSyncing = false, .progress = 0};
+        mockVfs->setVfsStatusOutput(vfsStatus);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -115,7 +119,8 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // A dehydrated placeholder.
     {
-        mockVfs->setVfsStatusOutput(true, false, false, 0);
+        constexpr VfsStatus vfsStatus = {.isPlaceholder = true, .isHydrated = false, .isSyncing = false, .progress = 0};
+        mockVfs->setVfsStatusOutput(vfsStatus);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -124,7 +129,8 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // A partially hydrated placeholder (syncing item).
     {
-        mockVfs->setVfsStatusOutput(true, false, true, 30);
+        constexpr VfsStatus vfsStatus = {.isPlaceholder = true, .isHydrated = false, .isSyncing = true, .progress = 30};
+        mockVfs->setVfsStatusOutput(vfsStatus);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -133,7 +139,8 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // Not a placeholder.
     {
-        mockVfs->setVfsStatusOutput(false, false, false, 0);
+        constexpr VfsStatus vfsStatus = {.isPlaceholder = false, .isHydrated = false, .isSyncing = false, .progress = 0};
+        mockVfs->setVfsStatusOutput(vfsStatus);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 

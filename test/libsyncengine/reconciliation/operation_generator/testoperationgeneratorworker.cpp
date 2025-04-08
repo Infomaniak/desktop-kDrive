@@ -25,6 +25,7 @@
 namespace KDC {
 
 void KDC::TestOperationGeneratorWorker::setUp() {
+    TestBase::start();
     _logger = Log::instance()->getLogger();
 
     LOGW_DEBUG(_logger, L"$$$$$ Set Up $$$$$");
@@ -36,7 +37,8 @@ void KDC::TestOperationGeneratorWorker::setUp() {
 
     SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
     std::filesystem::remove(syncDbPath);
-    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), syncDbPath, KDRIVE_VERSION_STRING, true);
+    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), syncDbPath,
+                                         KDRIVE_VERSION_STRING, true);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
 
@@ -160,6 +162,7 @@ void KDC::TestOperationGeneratorWorker::tearDown() {
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }
+    TestBase::stop();
 }
 
 void TestOperationGeneratorWorker::testCreateOp() {

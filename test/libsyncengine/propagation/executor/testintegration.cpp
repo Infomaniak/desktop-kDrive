@@ -62,6 +62,7 @@ const std::string testLongFileRemoteId = "19146";
 const std::string test_beaucoupRemoteId = "24642";
 
 void TestIntegration::setUp() {
+    TestBase::start();
     _logger = Log::instance()->getLogger();
 
     LOGW_DEBUG(_logger, L"$$$$$ Set Up");
@@ -106,8 +107,9 @@ void TestIntegration::setUp() {
     if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
         Proxy::instance(parameters.proxyConfig());
     }
- 
-    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(), KDRIVE_VERSION_STRING);
+
+    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
+                                         KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
 
     // Insert items to blacklist
@@ -161,6 +163,7 @@ void TestIntegration::tearDown() {
     _syncPal->stop(false, true, false);
     ParmsDb::instance()->close();
     ParmsDb::reset();
+    TestBase::stop();
 }
 
 void TestIntegration::testAll() {

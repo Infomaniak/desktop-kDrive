@@ -26,7 +26,7 @@
 
 namespace KDC {
 
-void KDC::TestTypes::testOtherSide() {
+void TestTypes::testOtherSide() {
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, otherSide(ReplicaSide::Remote));
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, otherSide(ReplicaSide::Local));
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Unknown, otherSide(ReplicaSide::Unknown));
@@ -96,13 +96,13 @@ void TestTypes::testExitInfo() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::NetworkError, ec);
     CPPUNIT_ASSERT_EQUAL(ExitCause::DbAccessError, ei.cause());
     CPPUNIT_ASSERT_EQUAL(ExitCause::DbAccessError, eca);
-    CPPUNIT_ASSERT_EQUAL(302, static_cast<int>(ei));
+    CPPUNIT_ASSERT_EQUAL(202, static_cast<int>(ei));
 
 
     ec = ExitCode::BackError;
     ei = ec;
     CPPUNIT_ASSERT_EQUAL(ExitCode::BackError, ei.code());
     CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, ei.cause());
-    CPPUNIT_ASSERT_EQUAL(700, static_cast<int>(ei));
+    CPPUNIT_ASSERT_EQUAL(600, static_cast<int>(ei));
 }
 } // namespace KDC

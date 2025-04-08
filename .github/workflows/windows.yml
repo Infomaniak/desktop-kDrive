@@ -2,6 +2,8 @@ name: Windows kDrive desktop CI
 
 on:
   pull_request:
+    branches-ignore:
+        - 'release/**'
     types: [synchronize, review_requested]
 
 concurrency:
@@ -17,21 +19,24 @@ env:
   KDRIVE_TEST_CI_LOCAL_PATH: ${{ vars.KDRIVE_TEST_CI_LOCAL_PATH }}
   KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
   KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
+  KDRIVE_TEST_CI_RUNNING_ON_CI: true
 
 jobs:
   build-kDrive:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
-
+    env:
+      COVFILE: ${{ github.workspace }}\\src\\test.cov
     steps:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
 
       - name: Checkout the PR
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
           submodules: recursive
+          fetch-depth: 0
         
       - name: Clean the log directory
         run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
@@ -53,33 +58,36 @@ jobs:
       - name: Build kDrive desktop
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
-          set COVFILE=%cd%\src\test.cov  
+          
           call "cov01.exe" -1
-
+          call "cov01.exe" -s
+          
+          set PATH=%ProgramFiles%\BullseyeCoverage\bin;%ProgramFiles%\Microsoft Visual Studio\VC\bin;%PATH%
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
         shell: cmd
 
       - name: Execute tests
         run: |
-          $env:COVFILE="$pwd\src\test.cov"
           & "cov01.exe" "-1" # coverage on
+          & "cov01.exe" "-s" # show status
+
           ./infomaniak-build-tools/run-tests.ps1
 
       - name: Compute code coverage
         if: false
-        run : |
-          rm -Force -ErrorAction SilentlyContinue BullseyeCoverageExclusions
-          echo "exclude folder 3rdparty/\nexclude folder ../" >> BullseyeCoverageExclusions
-          $env:COVFILE="$pwd\src\test.cov"
+        run : |          
+          & "covselect.exe" "--add" 'exclude folder c:/'
+          & "covselect.exe" "--add" 'exclude folder ../'
+          & "covselect.exe" "--add" 'exclude folder 3rdparty/'
+          & "covselect.exe" "--add" 'exclude folder gui/'
+          
           & "cov01.exe" "-0" # coverage off
-          & "covselect.exe" "--import" "BullseyeCoverageExclusions"
+          & "cov01.exe" "-s" # show status
+
           & "covxml.exe" "-f" "$env:COVFILE" "-o" "coverage.xml"
 
-      - name: Install sonar-scanner
-        if: false
-        uses: SonarSource/sonarcloud-github-c-cpp@v3
-        env:
-          SONAR_HOST_URL: https://sonarcloud.io
+          & "cov01.exe" "-1" # coverage on
+          & "cov01.exe" "-s" # show status
 
       - name: Run sonar-scanner
         if: false
@@ -87,15 +95,24 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           SONAR_TOKEN: ${{ secrets.SONAR_DESKTOP_KDRIVE_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
-        run: >
-            sonar-scanner 
+          INCLUDE: "C:\\"
+        uses: SonarSource/sonarqube-scan-action@v4
+        with:
+          args: >
             --define sonar.projectKey="Infomaniak_desktop-kDrive"
             --define sonar.organization="infomaniak"
             --define sonar.host.url="https://sonarcloud.io"
-            --define sonar.sources="src"
-            --define sonar.exclusions="src/3rdparty/**"
+            --define sonar.sources="src,extensions"
+            --define sonar.tests="test"
+            --define sonar.exclusions="src/3rdparty/**,src/gui/**"
             --define sonar.cfamily.compile-commands="build-windows/build/compile_commands.json"
-            --define sonar.cfamily.bullseye.reportPaths="coverage.xml"
+            --define sonar.cfamily.bullseye.reportPath="coverage.xml"
+            --define sonar.scm.exclusions.disabled=true
+            --define sonar.verbose=true
+
+      - name: Deactivate BullseyeCoverage
+        run: |
+          & "cov01.exe" "-0" # coverage off
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4

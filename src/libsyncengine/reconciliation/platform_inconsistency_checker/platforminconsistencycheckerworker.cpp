@@ -40,12 +40,12 @@ void PlatformInconsistencyCheckerWorker::execute() {
     checkTree(ReplicaSide::Remote);
     checkTree(ReplicaSide::Local);
 
-    for (const auto &idItem: _idsToBeRemoved) {
-        if (!idItem.remoteId.empty() && !_syncPal->updateTree(ReplicaSide::Remote)->deleteNode(idItem.remoteId)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << Utility::s2ws(idItem.remoteId));
+    for (const auto &[remoteId, localId]: _idsToBeRemoved) {
+        if (!remoteId.empty() && !_syncPal->updateTree(ReplicaSide::Remote)->deleteNode(remoteId)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << Utility::s2ws(remoteId));
         }
-        if (!idItem.localId.empty() && !_syncPal->updateTree(ReplicaSide::Local)->deleteNode(idItem.localId)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << Utility::s2ws(idItem.localId));
+        if (!localId.empty() && !_syncPal->updateTree(ReplicaSide::Local)->deleteNode(localId)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << Utility::s2ws(localId));
         }
     }
 
@@ -102,16 +102,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkRemoteTree(std::shared_ptr<Nod
             return ExitCode::Ok;
         }
 
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-            }
-
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-        }
-
         std::shared_ptr<Node> currentChildNode = it->second;
-
         if (pathChanged(currentChildNode)) {
             checkAgainstSiblings = true;
         }
@@ -143,14 +134,6 @@ ExitCode PlatformInconsistencyCheckerWorker::checkLocalTree(std::shared_ptr<Node
             return ExitCode::Ok;
         }
 
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-            }
-
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-        }
-
         const ExitCode exitCode = checkLocalTree(it->second, parentPath / localNode->name());
         if (exitCode != ExitCode::Ok) {
             return exitCode;
@@ -167,20 +150,10 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
     const std::shared_ptr<Node> localNode = node->side() == ReplicaSide::Local ? node : correspondingNodeDirect(node);
     const std::shared_ptr<Node> remoteNode = node->side() == ReplicaSide::Remote ? node : correspondingNodeDirect(node);
 
-    if (localNode) {
-        const SyncPath absoluteLocalPath = _syncPal->localPath() / localNode->getPath();
-        LOGW_SYNCPAL_INFO(_logger, L"Excluding local item with " << Utility::formatSyncPath(absoluteLocalPath) << L".");
-        PlatformInconsistencyCheckerUtility::renameLocalFile(
-                absoluteLocalPath, node->side() == ReplicaSide::Remote
-                                           ? PlatformInconsistencyCheckerUtility::SuffixType::Conflict
-                                           : PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
-
-        if (node->side() == ReplicaSide::Local) {
-            removeLocalNodeFromDb(localNode);
-        }
+    if (localNode && localNode->id().has_value()) {
+        _syncPal->blacklistTemporarily(localNode->id().value(), localNode->getPath(), localNode->side());
     }
-
-    if (node->side() == ReplicaSide::Remote) {
+    if (remoteNode && remoteNode->id().has_value()) {
         _syncPal->blacklistTemporarily(remoteNode->id().value(), remoteNode->getPath(), remoteNode->side());
     }
 
@@ -229,14 +202,6 @@ void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std
             return;
         }
 
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-            }
-
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-        }
-
         std::shared_ptr<Node> currentChildNode = it->second;
 
         // Check case conflicts
@@ -263,11 +228,9 @@ void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std
             if (currentChildNode->hasChangeEvent() && !isSpecialFolder) {
                 // Blacklist the new one
                 blacklistNode(currentChildNode, InconsistencyType::Case);
-                continue;
             } else {
                 // Blacklist the previously discovered child
                 blacklistNode(prevChildNode, InconsistencyType::Case);
-                continue;
             }
         }
     }

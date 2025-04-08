@@ -20,6 +20,7 @@
 #include "db/testsyncdb.h"
 #include "olddb/testoldsyncdb.h"
 #include "syncpal/testsyncpal.h"
+#include "syncpal/testsyncpalworker.h"
 #include "update_detection/file_system_observer/testfsoperation.h"
 #include "update_detection/file_system_observer/testfsoperationset.h"
 #include "update_detection/file_system_observer/testremotefilesystemobserverworker.h"
@@ -37,11 +38,11 @@
 #include "propagation/executor/testintegration.h"
 #include "propagation/executor/testexecutorworker.h"
 #include "jobs/network/testnetworkjobs.h"
+#include "jobs/network/API_v2/testloguploadjob.h"
 #include "jobs/network/testsnapshotitemhandler.h"
 #include "jobs/local/testlocaljobs.h"
 #include "jobs/testjobmanager.h"
 #include "requests/testexclusiontemplatecache.h"
-#include "requests/testserverrequests.h"
 
 #ifdef __APPLE__
 #include "update_detection/file_system_observer/testfolderwatchermac.h"
@@ -52,6 +53,7 @@
 namespace KDC {
 CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestNetworkJobs);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestLogUploadJob);
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncDb);
 
@@ -82,8 +84,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationSorterWorker);
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestOldSyncDb); // Needs a pre 3.3.4 DB
 CPPUNIT_TEST_SUITE_REGISTRATION(TestExecutorWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPal);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPalWorker);
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestIntegration);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestServerRequests);
 } // namespace KDC
 
 int main(int, char **) {

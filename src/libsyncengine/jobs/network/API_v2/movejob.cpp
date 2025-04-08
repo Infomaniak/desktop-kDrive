@@ -33,16 +33,14 @@ MoveJob::MoveJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath 
 MoveJob::~MoveJob() {
     if (!_vfs) return;
 
-    bool isPlaceholder = false;
-    bool isHydrated = false;
-    bool isSyncing = false;
-    int progress = 0;
-    if (const ExitInfo exitInfo = _vfs->status(_destFilepath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
+    VfsStatus vfsStatus;
+    if (const ExitInfo exitInfo = _vfs->status(_destFilepath, vfsStatus); !exitInfo) {
         LOGW_WARN(_logger, L"Error in vfsStatus for " << Utility::formatSyncPath(_destFilepath) << L": " << exitInfo);
     }
 
-    if (const ExitInfo exitInfo = _vfs->forceStatus(_destFilepath, false, 100,
-                                                    isHydrated);
+    vfsStatus.isSyncing = false;
+    vfsStatus.progress = 100;
+    if (const ExitInfo exitInfo = _vfs->forceStatus(_destFilepath, vfsStatus);
         !exitInfo) { // TODO : to be refactored, some parameters are used on macOS only
         LOGW_WARN(_logger, L"Error in vfsForceStatus for " << Utility::formatSyncPath(_destFilepath) << L": " << exitInfo);
     }
@@ -54,7 +52,7 @@ bool MoveJob::canRun() {
     }
 
     // Check that we still have to move the folder
-    bool exists;
+    bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_destFilepath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_destFilepath, ioError).c_str());

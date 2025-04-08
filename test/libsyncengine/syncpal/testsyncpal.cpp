@@ -21,6 +21,7 @@
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
+#include "syncpal/tmpblacklistmanager.h"
 #include "test_utility/testhelpers.h"
 
 #include <cstdlib>
@@ -30,6 +31,7 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestSyncPal::setUp() {
+    TestBase::start();
     const testhelpers::TestVariables testVariables;
 
     const std::string localPathStr = _localTempDir.path().string();
@@ -72,8 +74,10 @@ void TestSyncPal::setUp() {
         Proxy::instance(parameters.proxyConfig());
     }
 
-    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(), KDRIVE_VERSION_STRING);
+    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
+                                         KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
+    _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 }
 
 void TestSyncPal::tearDown() {
@@ -83,6 +87,7 @@ void TestSyncPal::tearDown() {
         _syncPal->stop(false, true, true);
     }
     ParmsDb::reset();
+    TestBase::stop();
 }
 
 void TestSyncPal::testUpdateTree() {
@@ -202,6 +207,62 @@ void TestSyncPal::testCheckIfExistsOnServer() {
     bool exists = false;
     auto remoteSnapshot = _syncPal->snapshot(ReplicaSide::Remote, false);
     CPPUNIT_ASSERT(_syncPal->checkIfExistsOnServer(SyncPath("dummy"), exists) == (remoteSnapshot != nullptr));
+}
+
+void TestSyncPal::testBlacklist() {
+    /// Insert nodes in DB
+    const DbNode nodeDirA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "la", "ra", testhelpers::defaultTime,
+                          testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
+    const DbNode nodeDirB(0, _syncPal->syncDb()->rootNode().nodeId(), Str("B"), Str("B"), "lb", "rb", testhelpers::defaultTime,
+                          testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
+    DbNodeId dbNodeIdDirA;
+    DbNodeId dbNodeIdDirB;
+    bool constraintError = false;
+    _syncPal->syncDb()->insertNode(nodeDirA, dbNodeIdDirA, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDirB, dbNodeIdDirB, constraintError);
+
+    const DbNode nodeFileAA(0, dbNodeIdDirA, Str("AA"), Str("AA"), "laa", "raa", testhelpers::defaultTime,
+                            testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, "cs_aa");
+    DbNodeId dbNodeIdFileAA;
+    _syncPal->syncDb()->insertNode(nodeFileAA, dbNodeIdFileAA, constraintError);
+
+    /// Init test snapshot
+    //// Insert dir in snapshot
+    _syncPal->_localSnapshot->updateItem(SnapshotItem(
+            nodeDirA.nodeIdLocal().value(), _syncPal->syncDb()->rootNode().nodeIdLocal().value(), nodeDirA.nameLocal(),
+            nodeDirA.created().value(), nodeDirA.lastModifiedLocal().value(), nodeDirA.type(), 123, false, true, true));
+    _syncPal->_localSnapshot->updateItem(SnapshotItem(
+            nodeDirB.nodeIdLocal().value(), _syncPal->syncDb()->rootNode().nodeIdLocal().value(), nodeDirB.nameLocal(),
+            nodeDirB.created().value(), nodeDirB.lastModifiedLocal().value(), nodeDirB.type(), 123, false, true, true));
+
+    _syncPal->_remoteSnapshot->updateItem(SnapshotItem(
+            nodeDirA.nodeIdRemote().value(), _syncPal->syncDb()->rootNode().nodeIdRemote().value(), nodeDirA.nameRemote(),
+            nodeDirA.created().value(), nodeDirA.lastModifiedRemote().value(), nodeDirA.type(), 123, false, true, true));
+    _syncPal->_remoteSnapshot->updateItem(SnapshotItem(
+            nodeDirB.nodeIdRemote().value(), _syncPal->syncDb()->rootNode().nodeIdRemote().value(), nodeDirB.nameRemote(),
+            nodeDirB.created().value(), nodeDirB.lastModifiedRemote().value(), nodeDirB.type(), 123, false, true, true));
+
+    //// Insert files in snapshot
+    _syncPal->_localSnapshot->updateItem(SnapshotItem(
+            nodeFileAA.nodeIdLocal().value(), nodeDirA.nodeIdLocal().value(), nodeFileAA.nameLocal(),
+            nodeFileAA.created().value(), nodeFileAA.lastModifiedLocal().value(), nodeFileAA.type(), 123, false, true, true));
+    _syncPal->_remoteSnapshot->updateItem(SnapshotItem(
+            nodeFileAA.nodeIdRemote().value(), nodeDirA.nodeIdRemote().value(), nodeFileAA.nameRemote(),
+            nodeFileAA.created().value(), nodeFileAA.lastModifiedRemote().value(), nodeFileAA.type(), 123, false, true, true));
+
+    // Make sure the local and remote items are blacklisted
+    _syncPal->handleAccessDeniedItem("A", ExitCause::FileAccessError);
+    CPPUNIT_ASSERT_EQUAL(1, _syncPal->_tmpBlacklistManager->getErrorCount("la", ReplicaSide::Local));
+    CPPUNIT_ASSERT_EQUAL(1, _syncPal->_tmpBlacklistManager->getErrorCount("ra", ReplicaSide::Remote));
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->_tmpBlacklistManager->isTmpBlacklisted(SyncPath("A/AA"), ReplicaSide::Local));
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->_tmpBlacklistManager->isTmpBlacklisted(SyncPath("A/AA"), ReplicaSide::Remote));
+
+    // Make sure the local and remote items are removed from blacklist (and the descendant)
+    _syncPal->removeItemFromTmpBlacklist("ra", ReplicaSide::Remote);
+    CPPUNIT_ASSERT_EQUAL(0, _syncPal->_tmpBlacklistManager->getErrorCount("la", ReplicaSide::Local));
+    CPPUNIT_ASSERT_EQUAL(0, _syncPal->_tmpBlacklistManager->getErrorCount("ra", ReplicaSide::Remote));
+    CPPUNIT_ASSERT_EQUAL(false, _syncPal->_tmpBlacklistManager->isTmpBlacklisted(SyncPath("A/AA"), ReplicaSide::Local));
+    CPPUNIT_ASSERT_EQUAL(false, _syncPal->_tmpBlacklistManager->isTmpBlacklisted(SyncPath("A/AA"), ReplicaSide::Remote));
 }
 
 void TestSyncPal::testAll() {

@@ -86,18 +86,17 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         OperationType opTypeFromOS = changedItem.second;
         const SyncPath absolutePath = changedItem.first.native();
         const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
+        _syncPal->removeItemFromTmpBlacklist(relativePath);
 
-        IoError ioError = IoError::Success;
+        auto ioError = IoError::Success;
         bool exists = true;
 
         if (opTypeFromOS == OperationType::Delete) {
             // Check if exists with same nodeId
             NodeId prevNodeId = _snapshot->itemId(relativePath);
-            bool existsWithSameId = false;
-            NodeId otherNodeId;
             if (!prevNodeId.empty()) {
-                if (_syncPal->isTmpBlacklisted(prevNodeId, ReplicaSide::Local))
-                    _syncPal->removeItemFromTmpBlacklist(relativePath);
+                bool existsWithSameId = false;
+                NodeId otherNodeId;
                 if (auto checkError = IoError::Success;
                     IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, prevNodeId, existsWithSameId, otherNodeId,
                                                               checkError) &&
@@ -131,19 +130,10 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         }
 
         NodeId nodeId;
-        NodeType nodeType = NodeType::Unknown;
+        auto nodeType = NodeType::Unknown;
         bool isLink = false;
         if (exists) {
             nodeId = std::to_string(fileStat.inode);
-
-            if (_syncPal->isTmpBlacklisted(nodeId, ReplicaSide::Local)) {
-                _syncPal->removeItemFromTmpBlacklist(relativePath);
-                if (opTypeFromOS == OperationType::Edit) {
-                    NodeId itemId = _snapshot->itemId(relativePath);
-                    if (!itemId.empty()) _snapshot->setLastModified(itemId, 0);
-                }
-            }
-
             ItemType itemType;
             if (!IoHelper::getItemType(absolutePath, itemType)) {
                 LOGW_SYNCPAL_WARN(_logger,
@@ -206,8 +196,6 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 continue;
             }
 
-            _syncPal->removeItemFromTmpBlacklist(itemId, ReplicaSide::Local);
-
             if (_snapshot->removeItem(itemId)) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath)
                                                                                   << L" (" << Utility::s2ws(itemId) << L")");
@@ -250,12 +238,8 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
             if (!changed) {
 #ifdef _WIN32
-                bool isPlaceholder = false;
-                bool isHydrated = false;
-                bool isSyncing = false;
-                int progress = 0;
-                if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, isPlaceholder, isHydrated, isSyncing, progress);
-                    !exitInfo) {
+                VfsStatus vfsStatus;
+                if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, vfsStatus); !exitInfo) {
                     LOGW_SYNCPAL_WARN(_logger,
                                       L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
                     tryToInvalidateSnapshot();
@@ -263,8 +247,9 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 }
 
                 PinState pinState = _syncPal->vfs()->pinState(absolutePath);
-                if (isPlaceholder) {
-                    if ((isHydrated && pinState == PinState::OnlineOnly) || (!isHydrated && pinState == PinState::AlwaysLocal)) {
+                if (vfsStatus.isPlaceholder) {
+                    if ((vfsStatus.isHydrated && pinState == PinState::OnlineOnly) ||
+                        (!vfsStatus.isHydrated && pinState == PinState::AlwaysLocal)) {
                         // Change status in order to start hydration/dehydration
                         // TODO : FileSystemObserver should not change file status, it should only monitor file system
                         if (!_syncPal->vfs()->fileStatusChanged(absolutePath, SyncFileStatus::Syncing)) {
@@ -416,7 +401,6 @@ void LocalFileSystemObserverWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
-
     auto timerStart = std::chrono::steady_clock::now();
 
     // Sync loop
@@ -464,10 +448,9 @@ void LocalFileSystemObserverWorker::execute() {
                 }
             }
         }
-
+        if (_initializing) _initializing = false;
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
-
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
     setDone(exitCode);
 }
@@ -508,16 +491,13 @@ ExitCode LocalFileSystemObserverWorker::generateInitialSnapshot() {
 }
 
 bool LocalFileSystemObserverWorker::canComputeChecksum(const SyncPath &absolutePath) {
-    bool isPlaceholder = false;
-    bool isHydrated = false;
-    bool isSyncing = false;
-    int progress = 0;
-    if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
+    VfsStatus vfsStatus;
+    if (const auto exitInfo = _syncPal->vfs()->status(absolutePath, vfsStatus); !exitInfo) {
         LOGW_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
         return exitInfo;
     }
 
-    return !isPlaceholder || (isHydrated && !isSyncing);
+    return !vfsStatus.isPlaceholder || (vfsStatus.isHydrated && !vfsStatus.isSyncing);
 }
 
 #ifdef __APPLE__
@@ -525,20 +505,16 @@ bool LocalFileSystemObserverWorker::canComputeChecksum(const SyncPath &absoluteP
 ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const SyncPath &path, SyncTime lastModifiedLocal,
                                                     bool &valid) const {
     // If the item is a dehydrated placeholder, only metadata update are possible
-
-    bool isPlaceholder = false;
-    bool isHydrated = false;
-    bool isSyncing = false;
-    int progress = 0;
-    if (!_syncPal->vfs()->status(path.native(), isPlaceholder, isHydrated, isSyncing, progress)) {
+    VfsStatus vfsStatus;
+    if (!_syncPal->vfs()->status(path.native(), vfsStatus)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::vfsStatus");
         return ExitCode::SystemError;
     }
 
-    if (isPlaceholder && !isHydrated) {
+    if (vfsStatus.isPlaceholder && !vfsStatus.isHydrated) {
         // Check if it is a metadata update
-        DbNodeId dbNodeId;
-        bool found;
+        DbNodeId dbNodeId = 0;
+        bool found = false;
         if (!_syncPal->_syncDb->dbId(ReplicaSide::Local, nodeId, dbNodeId, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
             return ExitCode::DbError;
@@ -590,7 +566,7 @@ void LocalFileSystemObserverWorker::sendAccessDeniedError(const SyncPath &absolu
 
 ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParentDirPath, bool fromChangeDetected) {
     // Check if root dir exists
-    IoError ioError = IoError::Success;
+    auto ioError = IoError::Success;
 
     ItemType itemType;
     if (!IoHelper::getItemType(absoluteParentDirPath, itemType)) {
@@ -651,11 +627,10 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 return ExitCode::Ok;
             }
 
-            const SyncPath absolutePath = entry.path();
-            const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
+            const auto &absolutePath = entry.path();
+            const auto relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
 
             bool toExclude = false;
-            bool denyFullControl = false;
             bool isLink = false;
 
             // Check if the directory entry is managed
@@ -689,7 +664,6 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 // Check template exclusion
                 bool isWarning = false;
                 bool isExcluded = false;
-                IoError ioError = IoError::Success;
                 const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), relativePath,
                                                                                            isWarning, isExcluded, ioError);
                 if (!success) {
@@ -708,7 +682,6 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             FileStat fileStat;
             NodeId nodeId;
             if (!toExclude) {
-                IoError ioError = IoError::Success;
                 if (!IoHelper::getFileStat(absolutePath, &fileStat, ioError)) {
                     LOGW_SYNCPAL_DEBUG(_logger,
                                        L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, ioError));
@@ -731,10 +704,6 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             }
 
             if (toExclude) {
-                if (!denyFullControl) {
-                    _syncPal->vfs()->exclude(absolutePath);
-                }
-
                 dirIt.disableRecursionPending();
                 continue;
             }
@@ -745,7 +714,6 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 parentNodeId = *_syncPal->_syncDb->rootNode().nodeIdLocal();
             } else {
                 FileStat parentFileStat;
-                IoError ioError = IoError::Success;
                 if (!IoHelper::getFileStat(absolutePath.parent_path(), &parentFileStat, ioError)) {
                     LOGW_WARN(_logger,
                               L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath.parent_path(), ioError));

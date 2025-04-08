@@ -17,8 +17,7 @@
  */
 
 #include "fileitemwidget.h"
-
-#include <utility/utility.h>
+#include "utility/utility.h"
 
 #include <QFileInfo>
 #include <QDir>

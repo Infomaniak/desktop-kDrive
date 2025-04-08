@@ -19,30 +19,19 @@
 <!DOCTYPE html>
 <html>
 <body>
-<h1>Release notes - kDrive 3.6.8</h1>
-<h2><b>New features</b></h2>
-  <ul>
-    <li>Allow the user to receive Beta versions of the app.</li>
-  </ul>
-<h2><b>Optimizations</b></h2>
-  <ul>
-    <li>Fine tune some database requests.</li>
-    <li>Keep items path in cache to reduce the number of database requests.</li>
-  </ul>
+<h1>Release notes - kDrive 3.6.10</h1>
 <h2><b>Bug fixes</b></h2>
   <ul>
-    <li>Fixed synchronization issues with items whose name contains `:`.</li>
-    <li>Fixed memory leaks.</li>
-    <li>Enhance handling of file access errors.</li>
-    <li>Fixed a bug where a folder could be synchronized locally but not its content.</li>
-    <li>Fixed updater behavior in case of error.</li>
-    <li>Fixed a crash due to concurrent access.</li>
-    <li>Fixed a bug causing the blacklisting of items.</li>
-    <li>Fixed a migration issue.</li>
-    <li>Fixed a crash when removing a sync before it has started.</li>
-    <li>Linux - Fixed synchronization issues with big files.</li>
-    <li>Win - Handle errors when trashing an item.</li>
-    <li>macOS - Fixed a bug where a file's status could be set to "online only" before it was fully synced.</li>
+    <li>Fixed a bug leading to file duplication in case of access error.</li>
+    <li>Fixed a crash that may occur during conflict resolution.</li>
+    <li>Fixed a bug allowing to free the space occupied a file although it is not yet synchronized.</li>
+    <li>Fixed a bug where the sync might remain stuck after pausing it.</li>
+    <li>Improved the management of access denied errors.</li>
+    <li>Improved user experience for sending logs.</li>
+    <li>macOS - Improved German translation in installer.</li>
+    <li>macOS - Fixed a bug which makes the synchronization loop when renaming a file or a directory while only changing the type case.</li>
+    <li>linux - Fixed a bug where new changes were not synchronized if a parent folder had been moved.</li>
+    <li>win - Fixed a bug which could cause some remotely created files to be blacklisted when LiteSync was enabled.</li>
   </ul>
 </body>
 </html>

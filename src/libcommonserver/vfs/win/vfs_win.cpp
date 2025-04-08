@@ -129,8 +129,7 @@ void VfsWin::hydrate(const SyncPath &pathStd) {
     QString path = SyncName2QStr(pathStd.native());
     LOGW_DEBUG(logger(), L"hydrate: " << Utility::formatSyncPath(QStr2Path(path)).c_str());
 
-    if (vfsHydratePlaceHolder(std::to_wstring(_vfsSetupParams.driveId).c_str(),
-                              std::to_wstring(_vfsSetupParams.syncDbId).c_str(),
+    if (vfsHydratePlaceHolder(std::to_wstring(_vfsSetupParams.driveId).c_str(), std::to_wstring(_vfsSetupParams.syncDbId).c_str(),
                               QStr2Path(QDir::toNativeSeparators(path)).c_str()) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsHydratePlaceHolder: " << Utility::formatSyncPath(QStr2Path(path)).c_str());
     }
@@ -239,14 +238,6 @@ ExitInfo VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
                              relativeLocalPath.lexically_normal().native().c_str(),
                              _vfsSetupParams.localPath.lexically_normal().native().c_str(), &findData) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsCreatePlaceHolder: " << Utility::formatSyncPath(fullPath).c_str());
-        return defaultVfsError(); // handleVfsError is not suitable here, the file dosen't exist but we don't want to return
-                                  // NotFound as this make no sense in the context of a create
-    }
-
-    // !!! Creating a placeholder DOESN'T triggers any file system event !!!
-    // Setting the pin state triggers an EDIT event and then the insertion into the local snapshot
-    if (vfsSetPinState(fullPath.lexically_normal().native().c_str(), VFS_PIN_STATE_INHERIT) != S_OK) {
-        LOGW_WARN(logger(), L"Error in vfsSetPinState: " << Utility::formatSyncPath(fullPath).c_str());
         return defaultVfsError(); // handleVfsError is not suitable here, the file dosen't exist but we don't want to return
                                   // NotFound as this make no sense in the context of a create
     }
@@ -420,16 +411,16 @@ ExitInfo VfsWin::updateFetchStatus(const SyncPath &tmpPathStd, const SyncPath &p
         return handleVfsError(fullPath);
     }
 
-    if (vfsUpdateFetchStatus(std::to_wstring(_vfsSetupParams.driveId).c_str(),
-                             std::to_wstring(_vfsSetupParams.syncDbId).c_str(), fullPath.lexically_normal().native().c_str(),
-                             fullTmpPath.lexically_normal().native().c_str(), received, &canceled, &finished) != S_OK) {
+    if (vfsUpdateFetchStatus(std::to_wstring(_vfsSetupParams.driveId).c_str(), std::to_wstring(_vfsSetupParams.syncDbId).c_str(),
+                             fullPath.lexically_normal().native().c_str(), fullTmpPath.lexically_normal().native().c_str(),
+                             received, &canceled, &finished) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(fullPath).c_str());
         return handleVfsError(fullPath);
     }
     return ExitCode::Ok;
 }
 
-ExitInfo VfsWin::forceStatus(const SyncPath &absolutePathStd, bool isSyncing, int, bool) {
+ExitInfo VfsWin::forceStatus(const SyncPath &absolutePathStd, const VfsStatus &vfsStatus) {
     QString absolutePath = SyncName2QStr(absolutePathStd.native());
     if (ExitInfo exitInfo = checkIfPathIsValid(absolutePathStd, true); !exitInfo) {
         return exitInfo;
@@ -458,7 +449,7 @@ ExitInfo VfsWin::forceStatus(const SyncPath &absolutePathStd, bool isSyncing, in
     // placeholder
     if (!isPlaceholder) {
         FileStat filestat;
-        IoError ioError = IoError::Success;
+        auto ioError = IoError::Success;
         if (!IoHelper::getFileStat(absolutePathStd, &filestat, ioError)) {
             LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePathStd, ioError).c_str());
             return ExitCode::SystemError;
@@ -481,9 +472,9 @@ ExitInfo VfsWin::forceStatus(const SyncPath &absolutePathStd, bool isSyncing, in
     }
 
     // Set status
-    LOGW_DEBUG(logger(),
-               L"Setting syncing status to: " << isSyncing << L" for file: " << Utility::formatSyncPath(absolutePathStd));
-    if (ExitInfo exitInfo = setPlaceholderStatus(absolutePathStd.native(), isSyncing); !exitInfo) {
+    LOGW_DEBUG(logger(), L"Setting syncing status to: " << vfsStatus.isSyncing << L" for file: "
+                                                        << Utility::formatSyncPath(absolutePathStd));
+    if (ExitInfo exitInfo = setPlaceholderStatus(absolutePathStd.native(), vfsStatus.isSyncing); !exitInfo) {
         LOGW_WARN(logger(), L"Error in setPlaceholderStatus: " << Utility::formatSyncPath(absolutePathStd) << L" " << exitInfo);
         return exitInfo;
     }
@@ -575,16 +566,17 @@ PinState VfsWin::pinState(const SyncPath &relativePathStd) {
     return state;
 }
 
-ExitInfo VfsWin::status(const SyncPath &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &) {
+ExitInfo VfsWin::status(const SyncPath &filePath, VfsStatus &vfsStatus) {
     // Check if the file is a placeholder
     bool isDehydrated = false;
-    if (vfsGetPlaceHolderStatus(filePath.lexically_normal().native().c_str(), &isPlaceholder, &isDehydrated, nullptr) != S_OK) {
+    if (vfsGetPlaceHolderStatus(filePath.lexically_normal().native().c_str(), &vfsStatus.isPlaceholder, &isDehydrated, nullptr) !=
+        S_OK) {
         LOGW_WARN(logger(), L"Error in vfsGetPlaceHolderStatus: " << Utility::formatSyncPath(filePath).c_str());
         return handleVfsError(filePath);
     }
 
-    isHydrated = !isDehydrated;
-    isSyncing = false;
+    vfsStatus.isHydrated = !isDehydrated;
+    vfsStatus.isSyncing = false;
 
     return ExitCode::Ok;
 }
@@ -623,7 +615,8 @@ bool VfsWin::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
                               L"Error in isDehydratedPlaceholder: " << Utility::formatSyncPath(fullPath) << L" - " << exitInfo);
                     return false;
                 }
-                forceStatus(fullPath, false, 100, !isDehydrated);
+                VfsStatus vfsStatus = {.isHydrated = !isDehydrated, .progress = 100};
+                forceStatus(fullPath, vfsStatus);
             }
         } break;
         case SyncFileStatus::Syncing: {

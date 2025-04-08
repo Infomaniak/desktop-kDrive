@@ -39,6 +39,5 @@ class GetAvatarJob : public AbstractNetworkJob {
 
         std::string _avatarUrl;
         std::shared_ptr<std::vector<char>> _avatar;
-        std::string _errorCode;
 };
 } // namespace KDC

@@ -30,6 +30,8 @@
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
 #include "gui/updater/updatedialog.h"
+#include "log/sentry/handler.h"
+
 #include <QDir>
 #include <QFileInfo>
 #include <QMenu>
@@ -46,7 +48,6 @@
 #include <stdlib.h>
 
 #include <sentry.h>
-#include <log/sentry/handler.h>
 
 #define CONNECTION_TRIALS 3
 #define CHECKCOMMSTATUS_TRIALS 3

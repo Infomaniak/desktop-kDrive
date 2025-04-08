@@ -35,13 +35,13 @@ class VfsWorker : public QObject {
         Q_OBJECT
 
     public:
-        VfsWorker(Vfs *vfs, int type, int num, log4cplus::Logger logger);
+        VfsWorker(Vfs *vfs, size_t type, size_t num, log4cplus::Logger logger);
         void start();
 
     private:
         Vfs *_vfs;
-        int _type;
-        int _num;
+        size_t _type;
+        size_t _num;
         log4cplus::Logger _logger;
 
         inline log4cplus::Logger logger() { return _logger; }

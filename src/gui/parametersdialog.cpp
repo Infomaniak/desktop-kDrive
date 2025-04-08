@@ -41,6 +41,7 @@
 #include <QGraphicsDropShadowEffect>
 #include <QLabel>
 #include <QLoggingCategory>
+#include <QOperatingSystemVersion>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QScrollBar>
@@ -387,7 +388,6 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
                     .arg(err);
             break;
         case ExitCode::Ok:
-        case ExitCode::NeedRestart:
         case ExitCode::LogicError:
         case ExitCode::TokenRefreshed:
         case ExitCode::RateLimited:
@@ -424,12 +424,22 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, ExitCaus
             return tr(
                     "There is not enough memory left on your machine.<br>"
                     "The synchronization has been stopped.");
-        case ExitCause::LiteSyncNotAllowed:
-            return tr("Unable to start synchronization (error %1).<br>"
-                      "You must allow:<br>"
-                      "- kDrive in System Settings >> Privacy & Security >> Security<br>"
-                      "- kDrive LiteSync Extension in System Settings >> Privacy & Security >> Full Disk Access.")
-                    .arg(err);
+        case ExitCause::LiteSyncNotAllowed: {
+            if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS &&
+                QOperatingSystemVersion::current().majorVersion() >= 15) {
+                return tr("Unable to start synchronization (error %1).<br>"
+                          "You must allow:<br>"
+                          "- kDrive in System Settings >> General >> Login Items & Extensions >> Endpoint Security Extensions<br>"
+                          "- kDrive LiteSync Extension in System Settings >> Privacy & Security >> Full Disk Access.")
+                        .arg(err);
+            } else {
+                return tr("Unable to start synchronization (error %1).<br>"
+                          "You must allow:<br>"
+                          "- kDrive in System Settings >> Privacy & Security >> Security<br>"
+                          "- kDrive LiteSync Extension in System Settings >> Privacy & Security >> Full Disk Access.")
+                        .arg(err);
+            }
+        }
         case ExitCause::UnableToCreateVfs: {
             if (OldUtility::isWindows()) {
                 return tr("Unable to start Lite Sync plugin (error %1).<br>"
@@ -562,7 +572,6 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
             }
             break;
         case ExitCode::Ok:
-        case ExitCode::NeedRestart:
         case ExitCode::TokenRefreshed:
         case ExitCode::RateLimited:
         case ExitCode::OperationCanceled:
@@ -1120,7 +1129,7 @@ void ParametersDialog::onClearErrors(int driveDbId, bool autoResolved) {
     QListWidget *listWidgetToClear = nullptr;
 
     if (driveDbId == 0) {
-        ASSERT(_errorsStackedWidget->currentIndex() == static_cast<int>(DriveInfoClient::ParametersStackedWidget::General));
+        LOG_IF_FAIL(_errorsStackedWidget->currentIndex() == static_cast<int>(DriveInfoClient::ParametersStackedWidget::General));
 
         errorTabWidget = static_cast<ErrorTabWidget *>(_errorsStackedWidget->widget(_errorTabWidgetStackPosition));
 

@@ -55,9 +55,7 @@ RemoteFileSystemObserverWorker::~RemoteFileSystemObserverWorker() {
 
 void RemoteFileSystemObserverWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
-
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
-
     // Sync loop
     for (;;) {
         if (stopAsked()) {
@@ -80,10 +78,9 @@ void RemoteFileSystemObserverWorker::execute() {
             LOG_SYNCPAL_DEBUG(_logger, "Error in processEvents: code=" << exitCode);
             break;
         }
-
+        _initializing = false;
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
-
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
     setDone(exitCode);
 }
@@ -142,7 +139,7 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
         return exitCode;
     }
 
-    if (!_updating) {
+    if (!_updating && !_initializing) {
         // Send long poll request
         bool changes = false;
         exitCode = sendLongPoll(changes);
@@ -608,6 +605,8 @@ ExitCode RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
 }
 
 ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, std::set<NodeId, std::less<>> &movedItems) {
+    _syncPal->removeItemFromTmpBlacklist(actionInfo.snapshotItem.id(), ReplicaSide::Remote);
+
     // Process action
     switch (actionInfo.actionCode) {
         // Item added
@@ -635,7 +634,6 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
             const bool exploreDir = actionInfo.snapshotItem.type() == NodeType::Directory &&
                                     actionInfo.actionCode != ActionCode::actionCodeCreate &&
                                     !_snapshot->exists(actionInfo.snapshotItem.id());
-            _syncPal->removeItemFromTmpBlacklist(actionInfo.snapshotItem.id(), ReplicaSide::Remote);
             _snapshot->updateItem(actionInfo.snapshotItem);
             if (exploreDir) {
                 // Retrieve all children
@@ -687,7 +685,6 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
             if (movedItems.find(actionInfo.snapshotItem.id()) != movedItems.end()) break;
             [[fallthrough]];
         case ActionCode::actionCodeTrash:
-            _syncPal->removeItemFromTmpBlacklist(actionInfo.snapshotItem.id(), ReplicaSide::Remote);
             if (!_snapshot->removeItem(actionInfo.snapshotItem.id())) {
                 LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: "
                                                    << SyncName2WStr(actionInfo.snapshotItem.name()).c_str() << L" ("

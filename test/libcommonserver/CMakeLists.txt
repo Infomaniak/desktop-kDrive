@@ -1,4 +1,9 @@
-project(testcommonserver)
+cmake_minimum_required(VERSION 3.16)
+if(APPLE)
+    project(testcommonserver LANGUAGES C CXX OBJC OBJCXX)
+else()
+    project(testcommonserver LANGUAGES C CXX)
+endif()
 
 find_package(Poco REQUIRED Foundation)
 find_package(log4cplus 2.1.0 REQUIRED)
@@ -7,9 +12,10 @@ set(testcommonserver_NAME ${APPLICATION_NAME}_test_common_server)
 
 set(testcommonserver_SRCS
         ../test.cpp
-        ../test_utility/localtemporarydirectory.cpp
+        ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
         ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
-        ../test_utility/timechecker.h
+        ../test_utility/timeouthelper.h ../test_utility/timeouthelper.cpp
+        ../test_utility/testbase.h
         test.cpp
         # Utility
         utility/testutility.h utility/testutility.cpp
@@ -40,6 +46,14 @@ endif ()
 
 add_executable(${testcommonserver_NAME} ${testcommonserver_SRCS})
 
+# Precompiled headers
+set(PC_HEADER_FILES
+    # std c++
+    "$<$<COMPILE_LANGUAGE:CXX>:<filesystem$<ANGLE-R>>"
+)
+
+target_precompile_headers(${testcommonserver_NAME} PRIVATE ${PC_HEADER_FILES})
+
 set_target_properties(${testcommonserver_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY})
 
@@ -65,5 +79,12 @@ if (APPLE)
     install(CODE "
         message(STATUS \"Fixing library paths for ${testcommonserver_NAME}...\")
         execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.8.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testcommonserver_NAME})
+        execute_process(COMMAND \"install_name_tool\" -change /usr/local/lib/libcppunit-1.15.2.dylib @rpath/libcppunit-1.15.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testcommonserver_NAME})
+        execute_process(COMMAND \"install_name_tool\" -change /opt/homebrew/opt/openssl@3/lib/libssl.3.dylib @rpath/libssl.3.dylib ${BIN_OUTPUT_DIRECTORY}/${testcommonserver_NAME})
+        execute_process(COMMAND \"install_name_tool\" -change /opt/homebrew/opt/openssl@3/lib/libcrypto.3.dylib @rpath/libcrypto.3.dylib ${BIN_OUTPUT_DIRECTORY}/${testcommonserver_NAME})
+        execute_process(COMMAND \"install_name_tool\" -add_rpath /usr/local/lib ${BIN_OUTPUT_DIRECTORY}/${testcommonserver_NAME})
+        execute_process(COMMAND \"install_name_tool\" -add_rpath @executable_path ${BIN_OUTPUT_DIRECTORY}/${testcommonserver_NAME})
+        execute_process(COMMAND \"install_name_tool\" -add_rpath /opt/homebrew/opt/openssl@3/lib ${BIN_OUTPUT_DIRECTORY}/${testcommonserver_NAME})
+
         " COMPONENT RUNTIME)
 endif ()

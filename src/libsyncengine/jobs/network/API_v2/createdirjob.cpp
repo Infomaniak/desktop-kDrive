@@ -38,7 +38,10 @@ CreateDirJob::~CreateDirJob() {
         LOGW_WARN(_logger,
                   L"Error in CreateDirJob::vfsSetPinState for " << Utility::formatSyncPath(_filePath) << L" : " << exitInfo);
     }
-    if (const ExitInfo exitInfo = _vfs->forceStatus(_filePath, false, 0, true); !exitInfo) {
+
+    if (const ExitInfo exitInfo =
+                _vfs->forceStatus(_filePath, VfsStatus({.isHydrated = true, .isSyncing = false, .progress = 0}));
+        !exitInfo) {
         LOGW_WARN(_logger,
                   L"Error in CreateDirJob::vfsForceStatus for " << Utility::formatSyncPath(_filePath) << L" : " << exitInfo);
     }
@@ -80,7 +83,8 @@ bool CreateDirJob::handleResponse(std::istream &is) {
         }
 
         if (!_filePath.empty() && _vfs) {
-            if (ExitInfo exitInfo = _vfs->forceStatus(_filePath, false, 100, true); !exitInfo) {
+            constexpr VfsStatus vfsStatus({.isHydrated = true, .isSyncing = false, .progress = 0});
+            if (const auto exitInfo = _vfs->forceStatus(_filePath, vfsStatus); !exitInfo) {
                 LOGW_WARN(_logger, L"Error in CreateDirJob::_vfsForceStatus for " << Utility::formatSyncPath(_filePath) << L" : "
                                                                                   << exitInfo);
             }

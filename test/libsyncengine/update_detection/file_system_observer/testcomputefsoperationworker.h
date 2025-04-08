@@ -18,13 +18,23 @@
 
 #pragma once
 
+#include "update_detection/file_system_observer/computefsoperationworker.h"
 #include "testincludes.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "syncpal/syncpal.h"
+#include "test_classes/testinitialsituationgenerator.h"
 
 namespace KDC {
 
-class TestComputeFSOperationWorker : public CppUnit::TestFixture {
+class MockComputeFSOperationWorker : public ComputeFSOperationWorker {
+    public:
+        MockComputeFSOperationWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
+
+    private:
+        ExitInfo checkIfOkToDelete(ReplicaSide, const SyncPath &, const NodeId &, bool &);
+};
+
+class TestComputeFSOperationWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestComputeFSOperationWorker);
         CPPUNIT_TEST(testNoOps);
         CPPUNIT_TEST(testMultipleOps);
@@ -35,6 +45,9 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testDifferentEncoding_NFC_NFC);
         CPPUNIT_TEST(testCreateDuplicateNamesWithDistinctEncodings);
         CPPUNIT_TEST(testDeletionOfNestedFolders);
+        CPPUNIT_TEST(testAccessDenied);
+        CPPUNIT_TEST(testExclusion);
+        CPPUNIT_TEST(testIsInUnsyncedList);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -73,10 +86,19 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture {
          * Deletion of a blacklisted subfolder should not generate any operation.
          */
         void testDeletionOfNestedFolders();
+        // Test Access Denied error in ComputeFSOperationWorker::inferChangeFromDbNode
+        void testAccessDenied();
+
+        // Test exclusions
+        void testExclusion();
+        void testIsInUnsyncedList();
 
     private:
+        void testIsInUnsyncedList(bool expectedResult, const NodeId &nodeId, ReplicaSide side) const;
+
         std::shared_ptr<SyncPal> _syncPal;
         LocalTemporaryDirectory _localTempDir{"TestSyncPal"};
+        TestInitialSituationGenerator _situationGenerator;
 };
 
 } // namespace KDC

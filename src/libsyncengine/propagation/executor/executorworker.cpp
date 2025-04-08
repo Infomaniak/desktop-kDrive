@@ -88,19 +88,6 @@ void ExecutorWorker::execute() {
                 break;
             }
 
-            while (pauseAsked() || isPaused()) {
-                if (!isPaused()) {
-                    setPauseDone();
-                    cancelAllOngoingJobs(true);
-                }
-
-                Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-
-                if (unpauseAsked()) {
-                    setUnpauseDone();
-                }
-            }
-
             if (JobManager::instance()->countManagedJobs() > static_cast<size_t>(JobManager::instance()->maxNbThreads()) * 2) {
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOG_SYNCPAL_DEBUG(_logger, "Maximum number of jobs reached");
@@ -326,8 +313,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
     if (isLiteSyncActivated() && !syncOp->omit()) {
         bool isDehydratedPlaceholder = false;
         if (ExitInfo exitInfo = checkLiteSyncInfoForCreate(syncOp, absoluteLocalFilePath, isDehydratedPlaceholder); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in checkLiteSyncInfoForCreate"
-                                              << " " << exitInfo);
+            LOG_SYNCPAL_WARN(_logger, "Error in checkLiteSyncInfoForCreate" << " " << exitInfo);
             return exitInfo;
         }
 
@@ -413,8 +399,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
                     if (const ExitInfo exitInfoCheckAlreadyExcluded =
                                 checkAlreadyExcluded(absoluteLocalFilePath, createDirJob->parentDirId());
                         !exitInfoCheckAlreadyExcluded) {
-                        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::checkAlreadyExcluded"
-                                                          << " " << exitInfoCheckAlreadyExcluded);
+                        LOG_SYNCPAL_WARN(_logger,
+                                         "Error in ExecutorWorker::checkAlreadyExcluded" << " " << exitInfoCheckAlreadyExcluded);
                         return exitInfoCheckAlreadyExcluded;
                     }
 
@@ -715,16 +701,13 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForCreate(SyncOpPtr syncOp, const Sync
             return ExitCode::Ok;
         }
 
-        bool isPlaceholder = false;
-        bool isHydrated = false;
-        bool isSyncing = false;
-        int progress = 0;
-        if (ExitInfo exitInfo = _syncPal->vfs()->status(path, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
+        VfsStatus vfsStatus;
+        if (ExitInfo exitInfo = _syncPal->vfs()->status(path, vfsStatus); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(path) << L" " << exitInfo);
             return exitInfo;
         }
 
-        if (isPlaceholder && !isHydrated && !isSyncing) {
+        if (vfsStatus.isPlaceholder && !vfsStatus.isHydrated && !vfsStatus.isSyncing) {
             LOGW_SYNCPAL_INFO(_logger, L"Do not upload dehydrated placeholders: " << Utility::formatSyncPath(path));
             isDehydratedPlaceholder = true;
         }
@@ -958,27 +941,26 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
                                                   bool &isSyncing) {
     ignoreItem = false;
 
-    bool isPlaceholder = false;
-    bool isHydrated = false;
-    int progress = 0;
-    if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
+    VfsStatus vfsStatus;
+    if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, vfsStatus); !exitInfo) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
         return exitInfo;
     }
+    isSyncing = vfsStatus.isSyncing;
 
     switch (syncOp->targetSide()) {
         case ReplicaSide::Remote:
-            if (isPlaceholder && !isHydrated) {
+            if (vfsStatus.isPlaceholder && !vfsStatus.isHydrated) {
                 ignoreItem = true;
                 return fixModificationDate(syncOp, absolutePath);
             }
             break;
         case ReplicaSide::Local:
-            if (isPlaceholder && !isSyncing) {
-                if (!isHydrated) {
+            if (vfsStatus.isPlaceholder && !isSyncing) {
+                if (!vfsStatus.isHydrated) {
                     // Update metadata
                     std::string error;
-                    if (ExitInfo exitInfo = _syncPal->vfs()->updateMetadata(
+                    if (const auto exitInfo = _syncPal->vfs()->updateMetadata(
                                 absolutePath,
                                 syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : 0,
                                 syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified() : 0,
@@ -1035,17 +1017,17 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
             }
         }
 
-        if (ExitInfo exitInfo = propagateMoveToDbAndTree(syncOp); !exitInfo) {
+        if (const auto exitInfo = propagateMoveToDbAndTree(syncOp); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
             return exitInfo;
         }
-    } else {
-        if (ExitInfo exitInfo = generateMoveJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
-            LOGW_SYNCPAL_WARN(_logger, L"Failed to generate move job for: " << SyncName2WStr(syncOp->affectedNode()->name())
-                                                                            << L" " << exitInfo);
-            return exitInfo;
-        }
+    }
+
+    if (const auto exitInfo = generateMoveJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to generate move job for: " << Utility::formatSyncName(syncOp->affectedNode()->name())
+                                                                        << L" " << exitInfo);
+        return exitInfo;
     }
     return ExitCode::Ok;
 }
@@ -1153,12 +1135,11 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
     job->setAffectedFilePath(relativeDestLocalFilePath);
     job->runSynchronously();
 
-    bool isPlaceholder = false;
-    bool isHydrated = false;
-    bool isSyncing = false;
-    int progress = 0;
-    _syncPal->vfs()->status(absoluteOriginLocalFilePath, isPlaceholder, isHydrated, isSyncing, progress);
-    _syncPal->vfs()->forceStatus(absoluteDestLocalFilePath, false, 100, isHydrated);
+    VfsStatus vfsStatus;
+    _syncPal->vfs()->status(absoluteOriginLocalFilePath, vfsStatus);
+    vfsStatus.isSyncing = false;
+    vfsStatus.progress = 100;
+    _syncPal->vfs()->forceStatus(absoluteDestLocalFilePath, vfsStatus);
 
     if (job->exitCode() == ExitCode::Ok && syncOp->conflict().type() != ConflictType::None) {
         // Conflict fixing job finished successfully
@@ -1255,18 +1236,13 @@ ExitInfo ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool
     if (syncOp->targetSide() == ReplicaSide::Local) {
         bool isDehydratedPlaceholder = false;
         if (_syncPal->vfsMode() != VirtualFileMode::Off) {
-            bool isPlaceholder = false;
-            bool isHydrated = false;
-            bool isSyncing = false;
-            int progress = 0;
-            if (ExitInfo exitInfo =
-                        _syncPal->vfs()->status(absoluteLocalFilePath, isPlaceholder, isHydrated, isSyncing, progress);
-                !exitInfo) {
+            VfsStatus vfsStatus;
+            if (ExitInfo exitInfo = _syncPal->vfs()->status(absoluteLocalFilePath, vfsStatus); !exitInfo) {
                 LOGW_SYNCPAL_WARN(
                         _logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absoluteLocalFilePath) << L" : " << exitInfo);
                 return exitInfo;
             }
-            isDehydratedPlaceholder = isPlaceholder && !isHydrated;
+            isDehydratedPlaceholder = vfsStatus.isPlaceholder && !vfsStatus.isHydrated;
         }
 
         NodeId remoteNodeId = syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : "";
@@ -1359,19 +1335,6 @@ ExitInfo ExecutorWorker::waitForAllJobsToFinish() {
         if (stopAsked()) {
             cancelAllOngoingJobs();
             break;
-        }
-
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-                cancelAllOngoingJobs(true);
-            }
-
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-
-            if (unpauseAsked()) {
-                setUnpauseDone();
-            }
         }
 
         if (ExitInfo exitInfo = deleteFinishedAsyncJobs(); !exitInfo) {
@@ -1507,12 +1470,6 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, Syn
     ignored = false;
     bypassProgressComplete = false;
 
-    if (job->exitCode() == ExitCode::NeedRestart) {
-        cancelAllOngoingJobs();
-        _syncPal->setRestart(true);
-        return ExitCode::Ok;
-    }
-
     NodeId locaNodeId;
     NodeId remoteNodeId;
     if (syncOp->targetSide() == ReplicaSide::Local) {
@@ -1548,6 +1505,7 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, Syn
             LOGW_DEBUG(_logger, L"Error successfully managed: " << job->exitCode() << L" " << job->exitCause() << L" on "
                                                                 << syncOp->type() << L" operation for "
                                                                 << Utility::formatSyncPath(syncOp->affectedNode()->getPath()));
+            bypassProgressComplete = true;
             return {ExitCode::Ok, ExitCause::OperationCanceled};
         }
     } else {
@@ -2242,7 +2200,7 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
     return ExitCode::Ok;
 }
 
-void ExecutorWorker::cancelAllOngoingJobs(bool reschedule /*= false*/) {
+void ExecutorWorker::cancelAllOngoingJobs() {
     LOG_SYNCPAL_DEBUG(_logger, "Cancelling all queued executor jobs");
 
     const std::scoped_lock lock(_opListMutex);
@@ -2255,9 +2213,6 @@ void ExecutorWorker::cancelAllOngoingJobs(bool reschedule /*= false*/) {
             LOG_SYNCPAL_DEBUG(_logger, "Cancelling job: " << job.second->jobId());
             job.second->setAdditionalCallback(nullptr);
             job.second->abort();
-            if (reschedule) {
-                _opList.push_front(_jobToSyncOpMap[job.first]->id());
-            }
         } else {
             remainingJobs.push_back(job.second);
         }
@@ -2268,16 +2223,9 @@ void ExecutorWorker::cancelAllOngoingJobs(bool reschedule /*= false*/) {
         LOG_SYNCPAL_DEBUG(_logger, "Cancelling job: " << job->jobId());
         job->setAdditionalCallback(nullptr);
         job->abort();
-
-        if (reschedule) {
-            _opList.push_front(_jobToSyncOpMap[job->jobId()]->id());
-        }
     }
     _ongoingJobs.clear();
-    if (!reschedule) {
-        _opList.clear();
-    }
-
+    _opList.clear();
     LOG_SYNCPAL_DEBUG(_logger, "All queued executor jobs cancelled.");
 }
 
@@ -2377,7 +2325,7 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
         default: {
             break;
         }
-    };
+    }
     LOG_WARN(_logger, "Unhandled error in ExecutorWorker::handleExecutorError: " << opsExitInfo);
     return opsExitInfo;
 }
@@ -2424,10 +2372,7 @@ ExitInfo ExecutorWorker::handleOpsAlreadyExistError(SyncOpPtr syncOp, const Exit
     }
 
     SyncPath relativeLocalPath;
-    SyncPath relativeRemotePath;
     if (syncOp->targetSide() == ReplicaSide::Local) {
-        relativeRemotePath = syncOp->affectedNode()->getPath();
-
         if (syncOp->type() == OperationType::Create) {
             relativeLocalPath = syncOp->localCreationTargetPath();
         } else {

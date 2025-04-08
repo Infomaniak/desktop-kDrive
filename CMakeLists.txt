@@ -1,7 +1,23 @@
 cmake_minimum_required(VERSION 3.1)
 set(CMAKE_CXX_STANDARD 20)
+if(APPLE)
+    enable_language(OBJC)
+    enable_language(OBJCXX)
+endif()
 
 project(client)
+
+##### Submodules
+
+# utf8proc
+if (UNIX)
+    add_subdirectory(src/3rdparty/utf8proc)
+endif ()
+
+# keychain
+add_subdirectory(src/3rdparty/keychain)
+
+#####
 
 if (WIN32 AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     # Use fallback library types for imported dependencies
@@ -171,6 +187,10 @@ if (UNIX)
     endif()
 endif()
 
+if (WIN32)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+endif()
+
 if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconcepts")
 endif()
@@ -204,14 +224,6 @@ endif ()
 if (BUILD_UNIT_TESTS)
     add_subdirectory("test")
 endif ()
-
-# utf8proc
-if (UNIX)
-    add_subdirectory(src/3rdparty/utf8proc)
-endif ()
-
-# keychain
-add_subdirectory(src/3rdparty/keychain)
 
 message(STATUS "Configure files")
 configure_file(config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)

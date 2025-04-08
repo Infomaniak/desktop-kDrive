@@ -17,17 +17,27 @@
  */
 #pragma once
 
-#include <string>
+#ifdef __GNUC__
+// /!\ moc issue => filesystem must be included after QApplication
+// https://bugreports.qt.io/browse/QTBUG-73263
+#include <QApplication>
+#endif
+
+#include "sourcelocation.h"
+
 #include <filesystem>
 #include <functional>
 #include <cctype>
 #include <optional>
 #include <sstream>
+#include <string>
 #include <unordered_set>
 #include <variant>
-#include <qdebug.h>
+
 #include <signal.h>
 #include "sourcelocation.h"
+
+#include <QDebug>
 
 namespace KDC {
 
@@ -158,7 +168,7 @@ using ExecuteCommand = std::function<void(const char *)>;
 enum class ReplicaSide { Unknown, Local, Remote };
 std::string toString(ReplicaSide e);
 
-inline ReplicaSide otherSide(ReplicaSide side) {
+inline ReplicaSide otherSide(const ReplicaSide side) {
     if (side == ReplicaSide::Unknown) return ReplicaSide::Unknown;
     return side == ReplicaSide::Local ? ReplicaSide::Remote : ReplicaSide::Local;
 }
@@ -185,8 +195,6 @@ std::string toString(OperationType e);
 enum class ExitCode {
     Ok,
     Unknown,
-    NeedRestart, // A propagation job cannot be executed because the situation that led to its creation is no longer
-                 // verified
     NetworkError,
     InvalidToken,
     DataError, // Corruption of data
@@ -504,22 +512,27 @@ enum class UpdateState {
 };
 std::string toString(UpdateState e);
 
-enum class DistributionChannel { Prod, Next, Beta, Internal, Unknown };
-std::string toString(DistributionChannel e);
+enum class VersionChannel { Prod, Next, Beta, Internal, Legacy, Unknown };
+std::string toString(VersionChannel e);
 
 enum class Platform { MacOS, Windows, LinuxAMD, LinuxARM, Unknown };
 std::string toString(Platform e);
 
 struct VersionInfo {
-        DistributionChannel channel = DistributionChannel::Unknown;
+        VersionChannel channel = VersionChannel::Unknown;
         std::string tag; // Version number. Example: 3.6.4
         // std::string changeLog; // List of changes in this version, not used for now.
         uint64_t buildVersion{0}; // Example: 20240816
         std::string buildMinOsVersion; // Optionnal. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
         std::string downloadUrl; // URL to download the version
 
+        bool operator==(const VersionInfo& other) const {
+            return channel == other.channel && tag == other.tag && buildVersion == other.buildVersion &&
+                   buildMinOsVersion == other.buildMinOsVersion && downloadUrl == other.downloadUrl;
+        }
+
         [[nodiscard]] bool isValid() const {
-            return channel != DistributionChannel::Unknown && !tag.empty() && buildVersion != 0 && !downloadUrl.empty();
+            return channel != VersionChannel::Unknown && !tag.empty() && buildVersion != 0 && !downloadUrl.empty();
         }
 
         [[nodiscard]] std::string fullVersion() const {
@@ -535,7 +548,7 @@ struct VersionInfo {
         }
 
         void clear() {
-            channel = DistributionChannel::Unknown;
+            channel = VersionChannel::Unknown;
             tag.clear();
             buildVersion = 0;
             buildMinOsVersion.clear();
@@ -562,7 +575,7 @@ struct VersionInfo {
             return out;
         }
 };
-using AllVersionsInfo = std::unordered_map<DistributionChannel, VersionInfo>;
+using AllVersionsInfo = std::unordered_map<VersionChannel, VersionInfo>;
 
 namespace sentry {
 enum class ConfidentialityLevel {

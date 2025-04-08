@@ -25,33 +25,32 @@
 
 namespace KDC {
 
-class MockVfs : public VfsOff {
+class MockVfs final : public VfsOff {
     public:
-        explicit MockVfs() : VfsOff(vfsSetupParams) {}
-        inline void setVfsStatusOutput(bool isPlaceholder, bool isHydrated, bool isSyncing, int progress) {
-            vfsStatusIsHydrated = isHydrated;
-            vfsStatusIsSyncing = isSyncing;
-            vfsStatusIsPlaceholder = isPlaceholder;
-            vfsStatusProgress = progress;
+        explicit MockVfs() : VfsOff(_vfsSetupParams) {}
+        void setVfsStatusOutput(const VfsStatus &vfsStatus) {
+            _vfsStatusIsHydrated = vfsStatus.isHydrated;
+            _vfsStatusIsSyncing = vfsStatus.isSyncing;
+            _vfsStatusIsPlaceholder = vfsStatus.isPlaceholder;
+            _vfsStatusProgress = vfsStatus.progress;
         }
-        inline ExitInfo status([[maybe_unused]] const SyncPath &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
-                        int &progress) override {
-            isHydrated = vfsStatusIsHydrated;
-            isSyncing = vfsStatusIsSyncing;
-            isPlaceholder = vfsStatusIsPlaceholder;
-            progress = vfsStatusProgress;
+        ExitInfo status([[maybe_unused]] const SyncPath &filePath, VfsStatus &vfsStatus) override {
+            vfsStatus.isHydrated = _vfsStatusIsHydrated;
+            vfsStatus.isSyncing = _vfsStatusIsSyncing;
+            vfsStatus.isPlaceholder = _vfsStatusIsPlaceholder;
+            vfsStatus.progress = _vfsStatusProgress;
             return ExitCode::Ok;
         }
 
     private:
-        bool vfsStatusIsHydrated = false;
-        bool vfsStatusIsSyncing = false;
-        bool vfsStatusIsPlaceholder = false;
-        int vfsStatusProgress = 0;
-        VfsSetupParams vfsSetupParams;
+        bool _vfsStatusIsHydrated = false;
+        bool _vfsStatusIsSyncing = false;
+        bool _vfsStatusIsPlaceholder = false;
+        int16_t _vfsStatusProgress = 0;
+        VfsSetupParams _vfsSetupParams;
 };
 
-class TestExecutorWorker : public CppUnit::TestFixture {
+class TestExecutorWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestExecutorWorker);
         CPPUNIT_TEST(testCheckLiteSyncInfoForCreate);
         CPPUNIT_TEST(testFixModificationDate);

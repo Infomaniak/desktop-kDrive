@@ -24,13 +24,7 @@
 #include <memory>
 
 #include <QString>
-#include <QByteArray>
 #include <QDateTime>
-#include <QElapsedTimer>
-#include <QLoggingCategory>
-#include <QMap>
-#include <QUrl>
-#include <QUrlQuery>
 
 #include <log4cplus/logger.h>
 

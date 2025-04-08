@@ -390,10 +390,31 @@ bool Utility::endsWithInsensitive(const std::string &str, const std::string &suf
                       [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
 }
 
-bool Utility::isEqualInsensitive(const std::string &strA, const std::string &strB) {
-    return strA.size() == strB.size() && std::equal(strA.begin(), strA.end(), strB.begin(), strB.end(), [](char a, char b) {
-               return std::tolower(a, std::locale()) == std::tolower(b, std::locale());
-           });
+bool Utility::checkIfEqualUpToCaseAndEncoding(const SyncPath &a, const SyncPath &b, bool &isEqual) {
+    isEqual = false;
+
+    SyncPath normalizedA;
+    if (!Utility::normalizedSyncPath(a, normalizedA)) {
+        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(a));
+        return false;
+    }
+
+    SyncPath normalizedB;
+    if (!Utility::normalizedSyncPath(b, normalizedB)) {
+        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(b));
+        return false;
+    }
+
+    const SyncName normalizedAStr{normalizedA.native()};
+    const SyncName normalizedBStr{normalizedB.native()};
+
+    isEqual = normalizedAStr.size() == normalizedBStr.size() &&
+              std::equal(normalizedAStr.begin(), normalizedAStr.end(), normalizedBStr.begin(), normalizedBStr.end(),
+                         [](const SyncChar c1, const SyncChar c2) {
+                             return std::toupper(c1, std::locale()) == std::toupper(c2, std::locale());
+                         });
+
+    return true;
 }
 
 #ifdef _WIN32
@@ -417,12 +438,6 @@ bool Utility::endsWithInsensitive(const SyncName &str, const SyncName &suffix) {
     return str.size() >= suffix.size() &&
            std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
                       [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
-}
-
-bool Utility::isEqualInsensitive(const SyncName &a, const SyncName &b) {
-    return a.size() == b.size() && std::equal(a.begin(), a.end(), b.begin(), b.end(), [](SyncChar a, SyncChar b) {
-               return std::tolower(a, std::locale()) == std::tolower(b, std::locale());
-           });
 }
 #endif
 
@@ -456,9 +471,9 @@ bool Utility::checkIfSameNormalization(const SyncPath &a, const SyncPath &b, boo
     return true;
 }
 
-bool Utility::isDescendantOrEqual(const SyncPath &potentialChild, const SyncPath &path) {
-    if (path == potentialChild) return true;
-    for (auto it = potentialChild.begin(), it2 = path.begin(); it != potentialChild.end(); ++it, ++it2) {
+bool Utility::isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path) {
+    if (path == potentialDescendant) return true;
+    for (auto it = potentialDescendant.begin(), it2 = path.begin(); it != potentialDescendant.end(); ++it, ++it2) {
         if (it2 == path.end()) {
             return true;
         }
@@ -637,7 +652,8 @@ std::string Utility::_errId(const char *file, int line) {
 
 // Be careful, some characters have 2 different encodings in Unicode
 // For example 'é' can be coded as 0x65 + 0xcc + 0x81  or 0xc3 + 0xa9
-bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName, UnicodeNormalization normalization) noexcept {
+bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
+                                 const UnicodeNormalization normalization) noexcept {
     if (name.empty()) {
         normalizedName = name;
         return true;
@@ -648,8 +664,7 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
     LPWSTR strResult = nullptr;
     HANDLE hHeap = GetProcessHeap();
 
-    int iSizeEstimated = NormalizeString(normalization == UnicodeNormalization::NFD ? NormalizationD : NormalizationC,
-                                         name.c_str(), -1, nullptr, 0);
+    int64_t iSizeEstimated = static_cast<int64_t>(name.length() + 1) * 2;
     for (int i = 0; i < maxIterations; i++) {
         if (strResult) {
             HeapFree(hHeap, 0, strResult);
@@ -663,7 +678,7 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
         }
 
         if (iSizeEstimated <= 0) {
-            DWORD dwError = GetLastError();
+            const DWORD dwError = GetLastError();
             if (dwError != ERROR_INSUFFICIENT_BUFFER) {
                 // Real error, not buffer error
                 LOGW_DEBUG(logger(), L"Failed to normalize " << formatSyncName(name) << L" ("
@@ -683,7 +698,7 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
         return false;
     }
 
-    normalizedName = SyncName(strResult);
+    (void) normalizedName.assign(strResult, iSizeEstimated - 1);
     HeapFree(hHeap, 0, strResult);
     return true;
 #else
@@ -707,14 +722,15 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
 #endif
 }
 
-bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath) noexcept {
+bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
+                                 const UnicodeNormalization normalization /*= UnicodeNormalization::NFC*/) noexcept {
     auto segmentIt = path.begin();
     if (segmentIt == path.end()) return true;
 
     auto segment = *segmentIt;
     if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
         SyncName normalizedName;
-        if (!normalizedSyncName(segment, normalizedName)) {
+        if (!normalizedSyncName(segment, normalizedName, normalization)) {
             LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << formatSyncName(segment));
             return false;
         }
@@ -726,7 +742,7 @@ bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath)
     for (; segmentIt != path.end(); ++segmentIt) {
         if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
             SyncName normalizedName;
-            if (!normalizedSyncName(*segmentIt, normalizedName)) {
+            if (!normalizedSyncName(*segmentIt, normalizedName, normalization)) {
                 LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << formatSyncName(*segmentIt));
                 return false;
             }

@@ -26,7 +26,7 @@ using namespace CppUnit;
 
 namespace KDC {
 
-class TestPlatformInconsistencyCheckerWorker : public CppUnit::TestFixture {
+class TestPlatformInconsistencyCheckerWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestPlatformInconsistencyCheckerWorker);
         CPPUNIT_TEST(testFixNameSize);
         CPPUNIT_TEST(testCheckNameForbiddenChars);

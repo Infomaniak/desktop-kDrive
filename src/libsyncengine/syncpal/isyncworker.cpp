@@ -24,8 +24,8 @@ namespace KDC {
 
 ISyncWorker::ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
                          const std::chrono::seconds &startDelay, bool testing /*= false*/) :
-    _logger(Log::instance()->getLogger()),
-    _syncPal(syncPal), _testing(testing), _name(name), _shortName(shortName), _startDelay(startDelay) {}
+    _logger(Log::instance()->getLogger()), _syncPal(syncPal), _testing(testing), _name(name), _shortName(shortName),
+    _startDelay(startDelay) {}
 
 ISyncWorker::~ISyncWorker() {
     if (_isRunning) {
@@ -44,46 +44,11 @@ void ISyncWorker::start() {
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " start");
 
-    _stopAsked = false;
+    init();
     _isRunning = true;
-    _exitCause = ExitCause::Unknown;
-
-    _thread.reset(new std::thread(executeFunc, this));
+    _thread = (std::make_unique<std::thread>(executeFunc, this));
 }
 
-void ISyncWorker::pause() {
-    if (!_isRunning) {
-        LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " is not running");
-        return;
-    }
-
-    if (_isPaused || _pauseAsked) {
-        LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " is already paused");
-        return;
-    }
-
-    LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " pause");
-
-    _pauseAsked = true;
-    _unpauseAsked = false;
-}
-
-void ISyncWorker::unpause() {
-    if (!_isRunning) {
-        LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " is not running");
-        return;
-    }
-
-    if (!_isPaused || _unpauseAsked) {
-        LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " is already unpaused");
-        return;
-    }
-
-    LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " unpause");
-
-    _unpauseAsked = true;
-    _pauseAsked = false;
-}
 
 void ISyncWorker::stop() {
     if (!_isRunning) {
@@ -99,9 +64,6 @@ void ISyncWorker::stop() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " stop");
 
     _stopAsked = true;
-    _pauseAsked = false;
-    _unpauseAsked = false;
-    _isPaused = false;
 }
 
 void ISyncWorker::waitForExit() {
@@ -110,6 +72,12 @@ void ISyncWorker::waitForExit() {
     if (_thread && _thread->joinable()) {
         _thread->join();
     }
+}
+
+void ISyncWorker::init() {
+    _stopAsked = false;
+    _exitCode = ExitCode::Unknown;
+    _exitCause = ExitCause::Unknown;
 }
 
 void ISyncWorker::sleepUntilStartDelay(bool &awakenByStop) {
@@ -126,22 +94,6 @@ void ISyncWorker::sleepUntilStartDelay(bool &awakenByStop) {
             delay -= std::chrono::seconds(1);
         }
     }
-}
-
-void ISyncWorker::setPauseDone() {
-    LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " is paused");
-
-    _isPaused = true;
-    _pauseAsked = false;
-    _unpauseAsked = false;
-}
-
-void ISyncWorker::setUnpauseDone() {
-    LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " is unpaused");
-
-    _isPaused = false;
-    _pauseAsked = false;
-    _unpauseAsked = false;
 }
 
 void ISyncWorker::setDone(ExitCode exitCode) {

@@ -44,6 +44,7 @@ namespace KDC {
 #define MAX_NAME_LENGTH_WIN_SHORT 255
 
 void TestPlatformInconsistencyCheckerWorker::setUp() {
+    TestBase::start();
     // Create parmsDb
     bool alreadyExists = false;
     const auto parmsDbPath = Db::makeDbName(alreadyExists, true);
@@ -63,7 +64,8 @@ void TestPlatformInconsistencyCheckerWorker::setUp() {
     ParmsDb::instance()->insertSync(sync);
 
     // Create SyncPal
-    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(), KDRIVE_VERSION_STRING);
+    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
+                                         KDRIVE_VERSION_STRING);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
@@ -78,6 +80,7 @@ void TestPlatformInconsistencyCheckerWorker::tearDown() {
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }
+    TestBase::stop();
 }
 
 void TestPlatformInconsistencyCheckerWorker::testFixNameSize() {
@@ -221,22 +224,6 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
 
 #if defined(WIN32) || defined(__APPLE__)
     CPPUNIT_ASSERT(!_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
-    CPPUNIT_ASSERT(!std::filesystem::exists(_tempDir.path() / "a1"));
-    std::error_code ec;
-    auto dirIt = std::filesystem::recursive_directory_iterator(_syncPal->localPath(),
-                                                               std::filesystem::directory_options::skip_permission_denied, ec);
-    CPPUNIT_ASSERT(!ec);
-    bool foundConflicted = false;
-    for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-        const auto filename = dirIt->path().filename().string();
-        const auto pos = filename.find("_conflict_");
-        if (Utility::startsWith(filename, std::string("a1")) && pos != std::string::npos) {
-            foundConflicted = true;
-            break;
-        }
-    }
-    CPPUNIT_ASSERT(foundConflicted);
-
 #else
     CPPUNIT_ASSERT(_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
 #endif

@@ -18,7 +18,7 @@
 
 #include "parmsdb.h"
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/utility/asserts.h"
+#include "libcommonserver/utility/logiffail.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <3rdparty/sqlite3/sqlite3.h>
@@ -572,37 +572,37 @@ bool ParmsDb::insertDefaultParameters() {
     int errId = 0;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(INSERT_PARAMETERS_REQUEST_ID));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 1, static_cast<int>(parameters.language())));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 2, parameters.monoIcons()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 3, parameters.autoStart()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 4, parameters.moveToTrash()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 5, static_cast<int>(parameters.notificationsDisabled())));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 6, parameters.useLog()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 7, static_cast<int>(parameters.logLevel())));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 8, parameters.purgeOldLogs()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 9, parameters.syncHiddenFiles()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 10, static_cast<int>(parameters.proxyConfig().type())));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 11, parameters.proxyConfig().hostName()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 12, parameters.proxyConfig().port()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 13, parameters.proxyConfig().needsAuth()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 14, parameters.proxyConfig().user()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 15, parameters.proxyConfig().token()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 16, parameters.useBigFolderSizeLimit()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 17, parameters.bigFolderSizeLimit()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 18, parameters.darkTheme()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 19, parameters.showShortcuts()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 20, parameters.updateFileAvailable()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 21, parameters.updateTargetVersion()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 22, parameters.updateTargetVersionString()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 23, parameters.autoUpdateAttempted()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 24, parameters.seenVersion()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 25, parameters.dialogGeometry()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 26, static_cast<int>(_test ? true : parameters.extendedLog())));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 27, parameters.maxAllowedCpu()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 28, parameters.uploadSessionParallelJobs()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 29, parameters.jobPoolCapacityFactor()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 30, static_cast<int>(parameters.distributionChannel())));
+    LOG_IF_FAIL(queryResetAndClearBindings(INSERT_PARAMETERS_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 1, static_cast<int>(parameters.language())));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 2, parameters.monoIcons()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 3, parameters.autoStart()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 4, parameters.moveToTrash()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 5, static_cast<int>(parameters.notificationsDisabled())));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 6, parameters.useLog()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 7, static_cast<int>(parameters.logLevel())));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 8, parameters.purgeOldLogs()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 9, parameters.syncHiddenFiles()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 10, static_cast<int>(parameters.proxyConfig().type())));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 11, parameters.proxyConfig().hostName()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 12, parameters.proxyConfig().port()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 13, parameters.proxyConfig().needsAuth()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 14, parameters.proxyConfig().user()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 15, parameters.proxyConfig().token()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 16, parameters.useBigFolderSizeLimit()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 17, parameters.bigFolderSizeLimit()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 18, parameters.darkTheme()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 19, parameters.showShortcuts()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 20, parameters.updateFileAvailable()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 21, parameters.updateTargetVersion()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 22, parameters.updateTargetVersionString()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 23, parameters.autoUpdateAttempted()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 24, parameters.seenVersion()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 25, parameters.dialogGeometry()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 26, static_cast<int>(_test ? true : parameters.extendedLog())));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 27, parameters.maxAllowedCpu()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 28, parameters.uploadSessionParallelJobs()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 29, parameters.jobPoolCapacityFactor()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 30, static_cast<int>(parameters.distributionChannel())));
 
     if (!queryExec(INSERT_PARAMETERS_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_PARAMETERS_REQUEST_ID);
@@ -970,7 +970,13 @@ bool ParmsDb::prepare() {
     return true;
 }
 
-bool ParmsDb::upgrade(const std::string & /*fromVersion*/, const std::string & /*toVersion*/) {
+bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersion) {
+    if (CommonUtility::isVersionLower(fromVersion, toVersion)) {
+        LOG_INFO(_logger, "Upgrade " << dbType() << " DB from " << fromVersion << " to " << toVersion);
+    } else {
+        LOG_INFO(_logger, "Apply generic upgrade fixes to " << dbType() << " DB version " << fromVersion);
+    }
+
     const std::string tableName = "parameters";
     std::string columnName = "maxAllowedCpu";
     if (!addIntegerColumnIfMissing(tableName, columnName)) {
@@ -993,9 +999,9 @@ bool ParmsDb::upgrade(const std::string & /*fromVersion*/, const std::string & /
         std::string error;
 
         if (!createAndPrepareRequest(UPDATE_PARAMETERS_JOB_REQUEST_ID, UPDATE_PARAMETERS_JOB_REQUEST)) return false;
-        ASSERT(queryResetAndClearBindings(UPDATE_PARAMETERS_JOB_REQUEST_ID));
-        ASSERT(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 1, Parameters::_uploadSessionParallelJobsDefault));
-        ASSERT(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 2, Parameters::_jobPoolCapacityFactorDefault));
+        LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_PARAMETERS_JOB_REQUEST_ID));
+        LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 1, Parameters::_uploadSessionParallelJobsDefault));
+        LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 2, Parameters::_jobPoolCapacityFactorDefault));
         if (!queryExec(UPDATE_PARAMETERS_JOB_REQUEST_ID, errId, error)) {
             queryFree(UPDATE_PARAMETERS_JOB_REQUEST_ID);
             return sqlFail(UPDATE_PARAMETERS_JOB_REQUEST_ID, error);
@@ -1070,37 +1076,37 @@ bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(UPDATE_PARAMETERS_REQUEST_ID));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 1, static_cast<int>(parameters.language())));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 2, parameters.monoIcons()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 3, parameters.autoStart()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 4, parameters.moveToTrash()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 5, static_cast<int>(parameters.notificationsDisabled())));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 6, parameters.useLog()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 7, static_cast<int>(parameters.logLevel())));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 8, parameters.purgeOldLogs()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 9, parameters.syncHiddenFiles()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 10, static_cast<int>(parameters.proxyConfig().type())));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 11, parameters.proxyConfig().hostName()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 12, parameters.proxyConfig().port()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 13, parameters.proxyConfig().needsAuth()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 14, parameters.proxyConfig().user()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 15, parameters.proxyConfig().token()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 16, parameters.useBigFolderSizeLimit()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 17, parameters.bigFolderSizeLimit()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 18, parameters.darkTheme()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 19, parameters.showShortcuts()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 20, parameters.updateFileAvailable()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 21, parameters.updateTargetVersion()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 22, parameters.updateTargetVersionString()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 23, parameters.autoUpdateAttempted()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 24, parameters.seenVersion()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 25, parameters.dialogGeometry()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 26, static_cast<int>(parameters.extendedLog())));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 27, parameters.maxAllowedCpu()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 28, parameters.uploadSessionParallelJobs()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 29, parameters.jobPoolCapacityFactor()));
-    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 30, static_cast<int>(parameters.distributionChannel())));
+    LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_PARAMETERS_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 1, static_cast<int>(parameters.language())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 2, parameters.monoIcons()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 3, parameters.autoStart()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 4, parameters.moveToTrash()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 5, static_cast<int>(parameters.notificationsDisabled())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 6, parameters.useLog()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 7, static_cast<int>(parameters.logLevel())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 8, parameters.purgeOldLogs()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 9, parameters.syncHiddenFiles()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 10, static_cast<int>(parameters.proxyConfig().type())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 11, parameters.proxyConfig().hostName()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 12, parameters.proxyConfig().port()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 13, parameters.proxyConfig().needsAuth()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 14, parameters.proxyConfig().user()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 15, parameters.proxyConfig().token()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 16, parameters.useBigFolderSizeLimit()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 17, parameters.bigFolderSizeLimit()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 18, parameters.darkTheme()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 19, parameters.showShortcuts()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 20, parameters.updateFileAvailable()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 21, parameters.updateTargetVersion()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 22, parameters.updateTargetVersionString()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 23, parameters.autoUpdateAttempted()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 24, parameters.seenVersion()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 25, parameters.dialogGeometry()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 26, static_cast<int>(parameters.extendedLog())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 27, parameters.maxAllowedCpu()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 28, parameters.uploadSessionParallelJobs()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 29, parameters.jobPoolCapacityFactor()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 30, static_cast<int>(parameters.distributionChannel())));
 
     if (!queryExec(UPDATE_PARAMETERS_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_PARAMETERS_REQUEST_ID);
@@ -1119,7 +1125,7 @@ bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
 bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    ASSERT(queryResetAndClearBindings(SELECT_PARAMETERS_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_PARAMETERS_REQUEST_ID));
     if (!queryNext(SELECT_PARAMETERS_REQUEST_ID, found)) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_PARAMETERS_REQUEST_ID);
         return false;
@@ -1129,31 +1135,31 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     }
 
     int intResult;
-    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 0, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 0, intResult));
     parameters.setLanguage(static_cast<Language>(intResult));
 
-    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 1, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 1, intResult));
     parameters.setMonoIcons(intResult);
 
-    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 2, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 2, intResult));
     parameters.setAutoStart(intResult);
 
-    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 3, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 3, intResult));
     parameters.setMoveToTrash(intResult);
 
-    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 4, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 4, intResult));
     parameters.setNotificationsDisabled(static_cast<NotificationsDisabled>(intResult));
 
-    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 5, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 5, intResult));
     parameters.setUseLog(intResult);
 
-    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 6, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 6, intResult));
     parameters.setLogLevel(static_cast<LogLevel>(intResult));
 
-    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 7, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 7, intResult));
     parameters.setPurgeOldLogs(intResult);
 
-    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 8, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 8, intResult));
     parameters.setSyncHiddenFiles(intResult);
 
     ProxyType type;
@@ -1162,67 +1168,67 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     bool needsAuth;
     std::string user;
     std::string token;
-    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 9, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 9, intResult));
     type = static_cast<ProxyType>(intResult);
-    ASSERT(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 10, hostName));
-    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 11, port));
-    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 12, intResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 10, hostName));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 11, port));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 12, intResult));
     needsAuth = static_cast<bool>(intResult);
-    ASSERT(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 13, user));
-    ASSERT(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 14, token));
+    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 13, user));
+    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 14, token));
     parameters.setProxyConfig(ProxyConfig(type, hostName, port, needsAuth, user, token));
 
     bool useBigFolderSizeLimit;
-    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 15, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 15, intResult));
     useBigFolderSizeLimit = static_cast<bool>(intResult);
     parameters.setUseBigFolderSizeLimit(useBigFolderSizeLimit);
 
     int64_t int64Result;
-    ASSERT(queryInt64Value(SELECT_PARAMETERS_REQUEST_ID, 16, int64Result));
+    LOG_IF_FAIL(queryInt64Value(SELECT_PARAMETERS_REQUEST_ID, 16, int64Result));
     parameters.setBigFolderSizeLimit(int64Result);
 
-    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 17, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 17, intResult));
     parameters.setDarkTheme(intResult);
 
-    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 18, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 18, intResult));
     parameters.setShowShortcuts(intResult);
 
     std::string strResult;
-    ASSERT(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 19, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 19, strResult));
     parameters.setUpdateFileAvailable(strResult);
 
-    ASSERT(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 20, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 20, strResult));
     parameters.setUpdateTargetVersion(strResult);
 
-    ASSERT(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 21, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 21, strResult));
     parameters.setUpdateTargetVersionString(strResult);
 
-    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 22, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 22, intResult));
     parameters.setAutoUpdateAttempted(intResult);
 
-    ASSERT(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 23, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 23, strResult));
     parameters.setSeenVersion(strResult);
 
     std::shared_ptr<std::vector<char>> blobResult;
-    ASSERT(queryBlobValue(SELECT_PARAMETERS_REQUEST_ID, 24, blobResult));
+    LOG_IF_FAIL(queryBlobValue(SELECT_PARAMETERS_REQUEST_ID, 24, blobResult));
     parameters.setDialogGeometry(blobResult);
 
-    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 25, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 25, intResult));
     parameters.setExtendedLog(intResult);
 
-    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 26, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 26, intResult));
     parameters.setMaxAllowedCpu(intResult);
 
-    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 27, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 27, intResult));
     parameters.setUploadSessionParallelJobs(intResult);
 
-    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 28, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 28, intResult));
     parameters.setJobPoolCapacityFactor(intResult);
 
-    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 29, intResult));
-    parameters.setDistributionChannel(static_cast<DistributionChannel>(intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 29, intResult));
+    parameters.setDistributionChannel(static_cast<VersionChannel>(intResult));
 
-    ASSERT(queryResetAndClearBindings(SELECT_PARAMETERS_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_PARAMETERS_REQUEST_ID));
 
     return true;
 }
@@ -1233,15 +1239,15 @@ bool ParmsDb::insertUser(const User &user) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(INSERT_USER_REQUEST_ID));
-    ASSERT(queryBindValue(INSERT_USER_REQUEST_ID, 1, user.dbId()));
-    ASSERT(queryBindValue(INSERT_USER_REQUEST_ID, 2, user.userId()));
-    ASSERT(queryBindValue(INSERT_USER_REQUEST_ID, 3, user.keychainKey()));
-    ASSERT(queryBindValue(INSERT_USER_REQUEST_ID, 4, user.name()));
-    ASSERT(queryBindValue(INSERT_USER_REQUEST_ID, 5, user.email()));
-    ASSERT(queryBindValue(INSERT_USER_REQUEST_ID, 6, user.avatarUrl()));
-    ASSERT(queryBindValue(INSERT_USER_REQUEST_ID, 7, user.avatar()));
-    ASSERT(queryBindValue(INSERT_USER_REQUEST_ID, 8, user.toMigrate()));
+    LOG_IF_FAIL(queryResetAndClearBindings(INSERT_USER_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 1, user.dbId()));
+    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 2, user.userId()));
+    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 3, user.keychainKey()));
+    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 4, user.name()));
+    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 5, user.email()));
+    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 6, user.avatarUrl()));
+    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 7, user.avatar()));
+    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 8, user.toMigrate()));
     if (!queryExec(INSERT_USER_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_USER_REQUEST_ID);
         return false;
@@ -1256,15 +1262,15 @@ bool ParmsDb::updateUser(const User &user, bool &found) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(UPDATE_USER_REQUEST_ID));
-    ASSERT(queryBindValue(UPDATE_USER_REQUEST_ID, 1, user.userId()));
-    ASSERT(queryBindValue(UPDATE_USER_REQUEST_ID, 2, user.keychainKey()));
-    ASSERT(queryBindValue(UPDATE_USER_REQUEST_ID, 3, user.name()));
-    ASSERT(queryBindValue(UPDATE_USER_REQUEST_ID, 4, user.email()));
-    ASSERT(queryBindValue(UPDATE_USER_REQUEST_ID, 5, user.avatarUrl()));
-    ASSERT(queryBindValue(UPDATE_USER_REQUEST_ID, 6, user.avatar()));
-    ASSERT(queryBindValue(UPDATE_USER_REQUEST_ID, 7, user.toMigrate()));
-    ASSERT(queryBindValue(UPDATE_USER_REQUEST_ID, 8, user.dbId()));
+    LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_USER_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 1, user.userId()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 2, user.keychainKey()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 3, user.name()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 4, user.email()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 5, user.avatarUrl()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 6, user.avatar()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 7, user.toMigrate()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 8, user.dbId()));
     if (!queryExec(UPDATE_USER_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_USER_REQUEST_ID);
         return false;
@@ -1285,8 +1291,8 @@ bool ParmsDb::deleteUser(int dbId, bool &found) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(DELETE_USER_REQUEST_ID));
-    ASSERT(queryBindValue(DELETE_USER_REQUEST_ID, 1, dbId));
+    LOG_IF_FAIL(queryResetAndClearBindings(DELETE_USER_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(DELETE_USER_REQUEST_ID, 1, dbId));
     if (!queryExec(DELETE_USER_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << DELETE_USER_REQUEST_ID);
         return false;
@@ -1304,8 +1310,8 @@ bool ParmsDb::deleteUser(int dbId, bool &found) {
 bool ParmsDb::selectUser(int dbId, User &user, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    ASSERT(queryResetAndClearBindings(SELECT_USER_REQUEST_ID));
-    ASSERT(queryBindValue(SELECT_USER_REQUEST_ID, 1, dbId));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_USER_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(SELECT_USER_REQUEST_ID, 1, dbId));
     if (!queryNext(SELECT_USER_REQUEST_ID, found)) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_USER_REQUEST_ID);
         return false;
@@ -1317,30 +1323,30 @@ bool ParmsDb::selectUser(int dbId, User &user, bool &found) {
     user.setDbId(dbId);
 
     int intResult;
-    ASSERT(queryIntValue(SELECT_USER_REQUEST_ID, 0, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_USER_REQUEST_ID, 0, intResult));
     user.setUserId(intResult);
 
     std::string strResult;
-    ASSERT(queryStringValue(SELECT_USER_REQUEST_ID, 1, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_USER_REQUEST_ID, 1, strResult));
     user.setKeychainKey(strResult);
 
-    ASSERT(queryStringValue(SELECT_USER_REQUEST_ID, 2, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_USER_REQUEST_ID, 2, strResult));
     user.setName(strResult);
 
-    ASSERT(queryStringValue(SELECT_USER_REQUEST_ID, 3, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_USER_REQUEST_ID, 3, strResult));
     user.setEmail(strResult);
 
-    ASSERT(queryStringValue(SELECT_USER_REQUEST_ID, 4, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_USER_REQUEST_ID, 4, strResult));
     user.setAvatarUrl(strResult);
 
     std::shared_ptr<std::vector<char>> blobResult;
-    ASSERT(queryBlobValue(SELECT_USER_REQUEST_ID, 5, blobResult));
+    LOG_IF_FAIL(queryBlobValue(SELECT_USER_REQUEST_ID, 5, blobResult));
     user.setAvatar(blobResult);
 
-    ASSERT(queryIntValue(SELECT_USER_REQUEST_ID, 6, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_USER_REQUEST_ID, 6, intResult));
     user.setToMigrate(static_cast<bool>(intResult));
 
-    ASSERT(queryResetAndClearBindings(SELECT_USER_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_USER_REQUEST_ID));
 
     return true;
 }
@@ -1348,8 +1354,8 @@ bool ParmsDb::selectUser(int dbId, User &user, bool &found) {
 bool ParmsDb::selectUserByUserId(int userId, User &user, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    ASSERT(queryResetAndClearBindings(SELECT_USER_BY_USERID_REQUEST_ID));
-    ASSERT(queryBindValue(SELECT_USER_BY_USERID_REQUEST_ID, 1, userId));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_USER_BY_USERID_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(SELECT_USER_BY_USERID_REQUEST_ID, 1, userId));
     if (!queryNext(SELECT_USER_BY_USERID_REQUEST_ID, found)) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_USER_BY_USERID_REQUEST_ID);
         return false;
@@ -1361,30 +1367,30 @@ bool ParmsDb::selectUserByUserId(int userId, User &user, bool &found) {
     user.setUserId(userId);
 
     int intResult;
-    ASSERT(queryIntValue(SELECT_USER_BY_USERID_REQUEST_ID, 0, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_USER_BY_USERID_REQUEST_ID, 0, intResult));
     user.setDbId(intResult);
 
     std::string strResult;
-    ASSERT(queryStringValue(SELECT_USER_BY_USERID_REQUEST_ID, 1, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_USER_BY_USERID_REQUEST_ID, 1, strResult));
     user.setKeychainKey(strResult);
 
-    ASSERT(queryStringValue(SELECT_USER_BY_USERID_REQUEST_ID, 2, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_USER_BY_USERID_REQUEST_ID, 2, strResult));
     user.setName(strResult);
 
-    ASSERT(queryStringValue(SELECT_USER_BY_USERID_REQUEST_ID, 3, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_USER_BY_USERID_REQUEST_ID, 3, strResult));
     user.setEmail(strResult);
 
-    ASSERT(queryStringValue(SELECT_USER_BY_USERID_REQUEST_ID, 4, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_USER_BY_USERID_REQUEST_ID, 4, strResult));
     user.setAvatarUrl(strResult);
 
     std::shared_ptr<std::vector<char>> blobResult;
-    ASSERT(queryBlobValue(SELECT_USER_BY_USERID_REQUEST_ID, 5, blobResult));
+    LOG_IF_FAIL(queryBlobValue(SELECT_USER_BY_USERID_REQUEST_ID, 5, blobResult));
     user.setAvatar(blobResult);
 
-    ASSERT(queryIntValue(SELECT_USER_BY_USERID_REQUEST_ID, 6, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_USER_BY_USERID_REQUEST_ID, 6, intResult));
     user.setToMigrate(static_cast<bool>(intResult));
 
-    ASSERT(queryResetAndClearBindings(SELECT_USER_BY_USERID_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_USER_BY_USERID_REQUEST_ID));
 
     return true;
 }
@@ -1420,7 +1426,7 @@ bool ParmsDb::selectUserFromDriveDbId(int dbId, User &user, bool &found) {
 bool ParmsDb::selectLastConnectedUser(User &user, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    ASSERT(queryResetAndClearBindings(SELECT_LAST_CONNECTED_USER_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_LAST_CONNECTED_USER_REQUEST_ID));
     if (!queryNext(SELECT_LAST_CONNECTED_USER_REQUEST_ID, found)) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_LAST_CONNECTED_USER_REQUEST_ID);
         return false;
@@ -1430,33 +1436,33 @@ bool ParmsDb::selectLastConnectedUser(User &user, bool &found) {
     }
 
     int intResult;
-    ASSERT(queryIntValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 0, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 0, intResult));
     user.setDbId(intResult);
 
-    ASSERT(queryIntValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 1, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 1, intResult));
     user.setUserId(intResult);
 
     std::string strResult;
-    ASSERT(queryStringValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 2, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 2, strResult));
     user.setKeychainKey(strResult);
 
-    ASSERT(queryStringValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 3, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 3, strResult));
     user.setName(strResult);
 
-    ASSERT(queryStringValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 4, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 4, strResult));
     user.setEmail(strResult);
 
-    ASSERT(queryStringValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 5, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 5, strResult));
     user.setAvatarUrl(strResult);
 
     std::shared_ptr<std::vector<char>> blobResult;
-    ASSERT(queryBlobValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 6, blobResult));
+    LOG_IF_FAIL(queryBlobValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 6, blobResult));
     user.setAvatar(blobResult);
 
-    ASSERT(queryIntValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 7, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 7, intResult));
     user.setToMigrate(static_cast<bool>(intResult));
 
-    ASSERT(queryResetAndClearBindings(SELECT_LAST_CONNECTED_USER_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_LAST_CONNECTED_USER_REQUEST_ID));
 
     return true;
 }
@@ -1466,7 +1472,7 @@ bool ParmsDb::selectAllUsers(std::vector<User> &userList) {
 
     userList.clear();
 
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_USERS_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_USERS_REQUEST_ID));
 
     bool found;
     for (;;) {
@@ -1479,25 +1485,25 @@ bool ParmsDb::selectAllUsers(std::vector<User> &userList) {
         }
 
         int id;
-        ASSERT(queryIntValue(SELECT_ALL_USERS_REQUEST_ID, 0, id));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_USERS_REQUEST_ID, 0, id));
         int userId;
-        ASSERT(queryIntValue(SELECT_ALL_USERS_REQUEST_ID, 1, userId));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_USERS_REQUEST_ID, 1, userId));
         std::string keychainKey;
-        ASSERT(queryStringValue(SELECT_ALL_USERS_REQUEST_ID, 2, keychainKey));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_USERS_REQUEST_ID, 2, keychainKey));
         std::string name;
-        ASSERT(queryStringValue(SELECT_ALL_USERS_REQUEST_ID, 3, name));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_USERS_REQUEST_ID, 3, name));
         std::string email;
-        ASSERT(queryStringValue(SELECT_ALL_USERS_REQUEST_ID, 4, email));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_USERS_REQUEST_ID, 4, email));
         std::string avatarUrl;
-        ASSERT(queryStringValue(SELECT_ALL_USERS_REQUEST_ID, 5, avatarUrl));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_USERS_REQUEST_ID, 5, avatarUrl));
         std::shared_ptr<std::vector<char>> avatar;
-        ASSERT(queryBlobValue(SELECT_ALL_USERS_REQUEST_ID, 6, avatar));
+        LOG_IF_FAIL(queryBlobValue(SELECT_ALL_USERS_REQUEST_ID, 6, avatar));
         int toMigrate;
-        ASSERT(queryIntValue(SELECT_ALL_USERS_REQUEST_ID, 7, toMigrate));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_USERS_REQUEST_ID, 7, toMigrate));
 
         userList.push_back(User(id, userId, keychainKey, name, email, avatarUrl, avatar, static_cast<bool>(toMigrate)));
     }
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_USERS_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_USERS_REQUEST_ID));
 
     return true;
 }
@@ -1527,10 +1533,10 @@ bool ParmsDb::insertAccount(const Account &account) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(INSERT_ACCOUNT_REQUEST_ID));
-    ASSERT(queryBindValue(INSERT_ACCOUNT_REQUEST_ID, 1, account.dbId()));
-    ASSERT(queryBindValue(INSERT_ACCOUNT_REQUEST_ID, 2, account.accountId()));
-    ASSERT(queryBindValue(INSERT_ACCOUNT_REQUEST_ID, 3, account.userDbId()));
+    LOG_IF_FAIL(queryResetAndClearBindings(INSERT_ACCOUNT_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(INSERT_ACCOUNT_REQUEST_ID, 1, account.dbId()));
+    LOG_IF_FAIL(queryBindValue(INSERT_ACCOUNT_REQUEST_ID, 2, account.accountId()));
+    LOG_IF_FAIL(queryBindValue(INSERT_ACCOUNT_REQUEST_ID, 3, account.userDbId()));
     if (!queryExec(INSERT_ACCOUNT_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_ACCOUNT_REQUEST_ID);
         return false;
@@ -1545,10 +1551,10 @@ bool ParmsDb::updateAccount(const Account &account, bool &found) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(UPDATE_ACCOUNT_REQUEST_ID));
-    ASSERT(queryBindValue(UPDATE_ACCOUNT_REQUEST_ID, 1, account.accountId()));
-    ASSERT(queryBindValue(UPDATE_ACCOUNT_REQUEST_ID, 2, account.userDbId()));
-    ASSERT(queryBindValue(UPDATE_ACCOUNT_REQUEST_ID, 3, account.dbId()));
+    LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_ACCOUNT_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(UPDATE_ACCOUNT_REQUEST_ID, 1, account.accountId()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_ACCOUNT_REQUEST_ID, 2, account.userDbId()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_ACCOUNT_REQUEST_ID, 3, account.dbId()));
     if (!queryExec(UPDATE_ACCOUNT_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_ACCOUNT_REQUEST_ID);
         return false;
@@ -1569,8 +1575,8 @@ bool ParmsDb::deleteAccount(int dbId, bool &found) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(DELETE_ACCOUNT_REQUEST_ID));
-    ASSERT(queryBindValue(DELETE_ACCOUNT_REQUEST_ID, 1, dbId));
+    LOG_IF_FAIL(queryResetAndClearBindings(DELETE_ACCOUNT_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(DELETE_ACCOUNT_REQUEST_ID, 1, dbId));
     if (!queryExec(DELETE_ACCOUNT_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << DELETE_ACCOUNT_REQUEST_ID);
         return false;
@@ -1588,8 +1594,8 @@ bool ParmsDb::deleteAccount(int dbId, bool &found) {
 bool ParmsDb::selectAccount(int dbId, Account &account, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    ASSERT(queryResetAndClearBindings(SELECT_ACCOUNT_REQUEST_ID));
-    ASSERT(queryBindValue(SELECT_ACCOUNT_REQUEST_ID, 1, dbId));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ACCOUNT_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(SELECT_ACCOUNT_REQUEST_ID, 1, dbId));
     if (!queryNext(SELECT_ACCOUNT_REQUEST_ID, found)) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_ACCOUNT_REQUEST_ID);
         return false;
@@ -1601,13 +1607,13 @@ bool ParmsDb::selectAccount(int dbId, Account &account, bool &found) {
     account.setDbId(dbId);
 
     int intResult;
-    ASSERT(queryIntValue(SELECT_ACCOUNT_REQUEST_ID, 0, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_ACCOUNT_REQUEST_ID, 0, intResult));
     account.setAccountId(intResult);
 
-    ASSERT(queryIntValue(SELECT_ACCOUNT_REQUEST_ID, 1, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_ACCOUNT_REQUEST_ID, 1, intResult));
     account.setUserDbId(intResult);
 
-    ASSERT(queryResetAndClearBindings(SELECT_ACCOUNT_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ACCOUNT_REQUEST_ID));
 
     return true;
 }
@@ -1617,7 +1623,7 @@ bool ParmsDb::selectAllAccounts(std::vector<Account> &accountList) {
 
     accountList.clear();
 
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_ACCOUNTS_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_ACCOUNTS_REQUEST_ID));
 
     bool found;
     for (;;) {
@@ -1630,15 +1636,15 @@ bool ParmsDb::selectAllAccounts(std::vector<Account> &accountList) {
         }
 
         int id;
-        ASSERT(queryIntValue(SELECT_ALL_ACCOUNTS_REQUEST_ID, 0, id));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ACCOUNTS_REQUEST_ID, 0, id));
         int accountId;
-        ASSERT(queryIntValue(SELECT_ALL_ACCOUNTS_REQUEST_ID, 1, accountId));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ACCOUNTS_REQUEST_ID, 1, accountId));
         int userDbId;
-        ASSERT(queryIntValue(SELECT_ALL_ACCOUNTS_REQUEST_ID, 2, userDbId));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ACCOUNTS_REQUEST_ID, 2, userDbId));
 
         accountList.push_back(Account(id, accountId, userDbId));
     }
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_ACCOUNTS_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_ACCOUNTS_REQUEST_ID));
 
     return true;
 }
@@ -1648,8 +1654,8 @@ bool ParmsDb::selectAllAccounts(int userDbId, std::vector<Account> &accountList)
 
     accountList.clear();
 
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID));
-    ASSERT(queryBindValue(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID, 1, userDbId));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID, 1, userDbId));
 
     bool found;
     for (;;) {
@@ -1662,13 +1668,13 @@ bool ParmsDb::selectAllAccounts(int userDbId, std::vector<Account> &accountList)
         }
 
         int id;
-        ASSERT(queryIntValue(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID, 0, id));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID, 0, id));
         int accountId;
-        ASSERT(queryIntValue(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID, 1, accountId));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID, 1, accountId));
 
         accountList.push_back(Account(id, accountId, userDbId));
     }
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID));
 
     return true;
 }
@@ -1716,15 +1722,15 @@ bool ParmsDb::insertDrive(const Drive &drive) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(INSERT_DRIVE_REQUEST_ID));
-    ASSERT(queryBindValue(INSERT_DRIVE_REQUEST_ID, 1, drive.dbId()));
-    ASSERT(queryBindValue(INSERT_DRIVE_REQUEST_ID, 2, drive.driveId()));
-    ASSERT(queryBindValue(INSERT_DRIVE_REQUEST_ID, 3, drive.accountDbId()));
-    ASSERT(queryBindValue(INSERT_DRIVE_REQUEST_ID, 4, drive.name()));
-    ASSERT(queryBindValue(INSERT_DRIVE_REQUEST_ID, 5, drive.size()));
-    ASSERT(queryBindValue(INSERT_DRIVE_REQUEST_ID, 6, drive.color()));
-    ASSERT(queryBindValue(INSERT_DRIVE_REQUEST_ID, 7, drive.notifications()));
-    ASSERT(queryBindValue(INSERT_DRIVE_REQUEST_ID, 8, drive.admin()));
+    LOG_IF_FAIL(queryResetAndClearBindings(INSERT_DRIVE_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(INSERT_DRIVE_REQUEST_ID, 1, drive.dbId()));
+    LOG_IF_FAIL(queryBindValue(INSERT_DRIVE_REQUEST_ID, 2, drive.driveId()));
+    LOG_IF_FAIL(queryBindValue(INSERT_DRIVE_REQUEST_ID, 3, drive.accountDbId()));
+    LOG_IF_FAIL(queryBindValue(INSERT_DRIVE_REQUEST_ID, 4, drive.name()));
+    LOG_IF_FAIL(queryBindValue(INSERT_DRIVE_REQUEST_ID, 5, drive.size()));
+    LOG_IF_FAIL(queryBindValue(INSERT_DRIVE_REQUEST_ID, 6, drive.color()));
+    LOG_IF_FAIL(queryBindValue(INSERT_DRIVE_REQUEST_ID, 7, drive.notifications()));
+    LOG_IF_FAIL(queryBindValue(INSERT_DRIVE_REQUEST_ID, 8, drive.admin()));
     if (!queryExec(INSERT_DRIVE_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_DRIVE_REQUEST_ID);
         return false;
@@ -1739,15 +1745,15 @@ bool ParmsDb::updateDrive(const Drive &drive, bool &found) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(UPDATE_DRIVE_REQUEST_ID));
-    ASSERT(queryBindValue(UPDATE_DRIVE_REQUEST_ID, 1, drive.driveId()));
-    ASSERT(queryBindValue(UPDATE_DRIVE_REQUEST_ID, 2, drive.accountDbId()));
-    ASSERT(queryBindValue(UPDATE_DRIVE_REQUEST_ID, 3, drive.name()));
-    ASSERT(queryBindValue(UPDATE_DRIVE_REQUEST_ID, 4, drive.size()));
-    ASSERT(queryBindValue(UPDATE_DRIVE_REQUEST_ID, 5, drive.color()));
-    ASSERT(queryBindValue(UPDATE_DRIVE_REQUEST_ID, 6, drive.notifications()));
-    ASSERT(queryBindValue(UPDATE_DRIVE_REQUEST_ID, 7, drive.admin()));
-    ASSERT(queryBindValue(UPDATE_DRIVE_REQUEST_ID, 8, drive.dbId()));
+    LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_DRIVE_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(UPDATE_DRIVE_REQUEST_ID, 1, drive.driveId()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_DRIVE_REQUEST_ID, 2, drive.accountDbId()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_DRIVE_REQUEST_ID, 3, drive.name()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_DRIVE_REQUEST_ID, 4, drive.size()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_DRIVE_REQUEST_ID, 5, drive.color()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_DRIVE_REQUEST_ID, 6, drive.notifications()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_DRIVE_REQUEST_ID, 7, drive.admin()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_DRIVE_REQUEST_ID, 8, drive.dbId()));
     if (!queryExec(UPDATE_DRIVE_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_DRIVE_REQUEST_ID);
         return false;
@@ -1768,8 +1774,8 @@ bool ParmsDb::deleteDrive(int dbId, bool &found) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(DELETE_DRIVE_REQUEST_ID));
-    ASSERT(queryBindValue(DELETE_DRIVE_REQUEST_ID, 1, dbId));
+    LOG_IF_FAIL(queryResetAndClearBindings(DELETE_DRIVE_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(DELETE_DRIVE_REQUEST_ID, 1, dbId));
     if (!queryExec(DELETE_DRIVE_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << DELETE_DRIVE_REQUEST_ID);
         return false;
@@ -1787,8 +1793,8 @@ bool ParmsDb::deleteDrive(int dbId, bool &found) {
 bool ParmsDb::selectDrive(int dbId, Drive &drive, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    ASSERT(queryResetAndClearBindings(SELECT_DRIVE_REQUEST_ID));
-    ASSERT(queryBindValue(SELECT_DRIVE_REQUEST_ID, 1, dbId));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_DRIVE_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(SELECT_DRIVE_REQUEST_ID, 1, dbId));
     if (!queryNext(SELECT_DRIVE_REQUEST_ID, found)) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_DRIVE_REQUEST_ID);
         return false;
@@ -1800,27 +1806,27 @@ bool ParmsDb::selectDrive(int dbId, Drive &drive, bool &found) {
     drive.setDbId(dbId);
 
     int intResult;
-    ASSERT(queryIntValue(SELECT_DRIVE_REQUEST_ID, 0, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_DRIVE_REQUEST_ID, 0, intResult));
     drive.setDriveId(intResult);
 
-    ASSERT(queryIntValue(SELECT_DRIVE_REQUEST_ID, 1, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_DRIVE_REQUEST_ID, 1, intResult));
     drive.setAccountDbId(intResult);
 
     std::string strResult;
-    ASSERT(queryStringValue(SELECT_DRIVE_REQUEST_ID, 2, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_DRIVE_REQUEST_ID, 2, strResult));
     drive.setName(strResult);
 
     int64_t int64Result;
-    ASSERT(queryInt64Value(SELECT_DRIVE_REQUEST_ID, 3, int64Result));
+    LOG_IF_FAIL(queryInt64Value(SELECT_DRIVE_REQUEST_ID, 3, int64Result));
     drive.setSize(int64Result);
 
-    ASSERT(queryStringValue(SELECT_DRIVE_REQUEST_ID, 4, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_DRIVE_REQUEST_ID, 4, strResult));
     drive.setColor(strResult);
 
-    ASSERT(queryIntValue(SELECT_DRIVE_REQUEST_ID, 5, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_DRIVE_REQUEST_ID, 5, intResult));
     drive.setNotifications(static_cast<bool>(intResult));
 
-    ASSERT(queryResetAndClearBindings(SELECT_DRIVE_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_DRIVE_REQUEST_ID));
 
     return true;
 }
@@ -1828,8 +1834,8 @@ bool ParmsDb::selectDrive(int dbId, Drive &drive, bool &found) {
 bool ParmsDb::selectDriveByDriveId(int driveId, Drive &drive, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    ASSERT(queryResetAndClearBindings(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID));
-    ASSERT(queryBindValue(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID, 1, driveId));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID, 1, driveId));
     if (!queryNext(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID, found)) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_DRIVE_BY_DRIVEID_REQUEST_ID);
         return false;
@@ -1841,27 +1847,27 @@ bool ParmsDb::selectDriveByDriveId(int driveId, Drive &drive, bool &found) {
     drive.setDriveId(driveId);
 
     int intResult;
-    ASSERT(queryIntValue(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID, 0, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID, 0, intResult));
     drive.setDbId(intResult);
 
-    ASSERT(queryIntValue(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID, 1, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID, 1, intResult));
     drive.setAccountDbId(intResult);
 
     std::string strResult;
-    ASSERT(queryStringValue(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID, 2, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID, 2, strResult));
     drive.setName(strResult);
 
     int64_t int64Result;
-    ASSERT(queryInt64Value(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID, 3, int64Result));
+    LOG_IF_FAIL(queryInt64Value(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID, 3, int64Result));
     drive.setSize(int64Result);
 
-    ASSERT(queryStringValue(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID, 4, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID, 4, strResult));
     drive.setColor(strResult);
 
-    ASSERT(queryIntValue(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID, 5, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID, 5, intResult));
     drive.setNotifications(static_cast<bool>(intResult));
 
-    ASSERT(queryResetAndClearBindings(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID));
 
     return true;
 }
@@ -1871,7 +1877,7 @@ bool ParmsDb::selectAllDrives(std::vector<Drive> &driveList) {
 
     driveList.clear();
 
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_DRIVES_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_DRIVES_REQUEST_ID));
 
     bool found;
     for (;;) {
@@ -1884,26 +1890,26 @@ bool ParmsDb::selectAllDrives(std::vector<Drive> &driveList) {
         }
 
         int id;
-        ASSERT(queryIntValue(SELECT_ALL_DRIVES_REQUEST_ID, 0, id));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_DRIVES_REQUEST_ID, 0, id));
         int driveId;
-        ASSERT(queryIntValue(SELECT_ALL_DRIVES_REQUEST_ID, 1, driveId));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_DRIVES_REQUEST_ID, 1, driveId));
         int accountDbId;
-        ASSERT(queryIntValue(SELECT_ALL_DRIVES_REQUEST_ID, 2, accountDbId));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_DRIVES_REQUEST_ID, 2, accountDbId));
         std::string driveName;
-        ASSERT(queryStringValue(SELECT_ALL_DRIVES_REQUEST_ID, 3, driveName));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_DRIVES_REQUEST_ID, 3, driveName));
         int64_t size;
-        ASSERT(queryInt64Value(SELECT_ALL_DRIVES_REQUEST_ID, 4, size));
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_DRIVES_REQUEST_ID, 4, size));
         std::string color;
-        ASSERT(queryStringValue(SELECT_ALL_DRIVES_REQUEST_ID, 5, color));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_DRIVES_REQUEST_ID, 5, color));
         int notifications;
-        ASSERT(queryIntValue(SELECT_ALL_DRIVES_REQUEST_ID, 6, notifications));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_DRIVES_REQUEST_ID, 6, notifications));
         int admin;
-        ASSERT(queryIntValue(SELECT_ALL_DRIVES_REQUEST_ID, 7, admin));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_DRIVES_REQUEST_ID, 7, admin));
 
         driveList.push_back(Drive(id, driveId, accountDbId, driveName, size, color, static_cast<bool>(notifications),
                                   static_cast<bool>(admin)));
     }
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_DRIVES_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_DRIVES_REQUEST_ID));
 
     return true;
 }
@@ -1913,8 +1919,8 @@ bool ParmsDb::selectAllDrives(int accountDbId, std::vector<Drive> &driveList) {
 
     driveList.clear();
 
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID));
-    ASSERT(queryBindValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 1, accountDbId));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 1, accountDbId));
 
     bool found;
     for (;;) {
@@ -1927,24 +1933,24 @@ bool ParmsDb::selectAllDrives(int accountDbId, std::vector<Drive> &driveList) {
         }
 
         int id;
-        ASSERT(queryIntValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 0, id));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 0, id));
         int driveId;
-        ASSERT(queryIntValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 1, driveId));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 1, driveId));
         std::string driveName;
-        ASSERT(queryStringValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 2, driveName));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 2, driveName));
         int64_t size;
-        ASSERT(queryInt64Value(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 3, size));
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 3, size));
         std::string color;
-        ASSERT(queryStringValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 4, color));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 4, color));
         int notifications;
-        ASSERT(queryIntValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 5, notifications));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 5, notifications));
         int admin;
-        ASSERT(queryIntValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 6, admin));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 6, admin));
 
         driveList.push_back(Drive(id, driveId, accountDbId, driveName, size, color, static_cast<bool>(notifications),
                                   static_cast<bool>(admin)));
     }
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID));
 
     return true;
 }
@@ -1996,21 +2002,21 @@ bool ParmsDb::insertSync(const Sync &sync) {
     sync.listingCursor(listingCursor, listingCursorTimestamp);
 
     // Insert sync record
-    ASSERT(queryResetAndClearBindings(requestId));
-    ASSERT(queryBindValue(requestId, 1, sync.dbId()));
-    ASSERT(queryBindValue(requestId, 2, sync.driveDbId()));
-    ASSERT(queryBindValue(requestId, 3, sync.localPath().native()));
-    ASSERT(queryBindValue(requestId, 4, sync.targetPath().native()));
-    ASSERT(queryBindValue(requestId, 5, sync.targetNodeId()));
-    ASSERT(queryBindValue(requestId, 6, sync.dbPath().native()));
-    ASSERT(queryBindValue(requestId, 7, static_cast<int>(sync.paused())));
-    ASSERT(queryBindValue(requestId, 8, static_cast<int>(sync.supportVfs())));
-    ASSERT(queryBindValue(requestId, 9, static_cast<int>(sync.virtualFileMode())));
-    ASSERT(queryBindValue(requestId, 10, static_cast<int>(sync.notificationsDisabled())));
-    ASSERT(queryBindValue(requestId, 11, static_cast<int>(sync.hasFullyCompleted())));
-    ASSERT(queryBindValue(requestId, 12, sync.navigationPaneClsid()));
-    ASSERT(queryBindValue(requestId, 13, listingCursor));
-    ASSERT(queryBindValue(requestId, 14, listingCursorTimestamp));
+    LOG_IF_FAIL(queryResetAndClearBindings(requestId));
+    LOG_IF_FAIL(queryBindValue(requestId, 1, sync.dbId()));
+    LOG_IF_FAIL(queryBindValue(requestId, 2, sync.driveDbId()));
+    LOG_IF_FAIL(queryBindValue(requestId, 3, sync.localPath().native()));
+    LOG_IF_FAIL(queryBindValue(requestId, 4, sync.targetPath().native()));
+    LOG_IF_FAIL(queryBindValue(requestId, 5, sync.targetNodeId()));
+    LOG_IF_FAIL(queryBindValue(requestId, 6, sync.dbPath().native()));
+    LOG_IF_FAIL(queryBindValue(requestId, 7, static_cast<int>(sync.paused())));
+    LOG_IF_FAIL(queryBindValue(requestId, 8, static_cast<int>(sync.supportVfs())));
+    LOG_IF_FAIL(queryBindValue(requestId, 9, static_cast<int>(sync.virtualFileMode())));
+    LOG_IF_FAIL(queryBindValue(requestId, 10, static_cast<int>(sync.notificationsDisabled())));
+    LOG_IF_FAIL(queryBindValue(requestId, 11, static_cast<int>(sync.hasFullyCompleted())));
+    LOG_IF_FAIL(queryBindValue(requestId, 12, sync.navigationPaneClsid()));
+    LOG_IF_FAIL(queryBindValue(requestId, 13, listingCursor));
+    LOG_IF_FAIL(queryBindValue(requestId, 14, listingCursorTimestamp));
 
     int errId = -1;
     std::string error;
@@ -2032,21 +2038,21 @@ bool ParmsDb::updateSync(const Sync &sync, bool &found) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(UPDATE_SYNC_REQUEST_ID));
-    ASSERT(queryBindValue(UPDATE_SYNC_REQUEST_ID, 1, sync.driveDbId()));
-    ASSERT(queryBindValue(UPDATE_SYNC_REQUEST_ID, 2, sync.localPath().native()));
-    ASSERT(queryBindValue(UPDATE_SYNC_REQUEST_ID, 3, sync.targetPath().native()));
-    ASSERT(queryBindValue(UPDATE_SYNC_REQUEST_ID, 4, sync.targetNodeId()));
-    ASSERT(queryBindValue(UPDATE_SYNC_REQUEST_ID, 5, sync.dbPath().native()));
-    ASSERT(queryBindValue(UPDATE_SYNC_REQUEST_ID, 6, static_cast<int>(sync.paused())));
-    ASSERT(queryBindValue(UPDATE_SYNC_REQUEST_ID, 7, static_cast<int>(sync.supportVfs())));
-    ASSERT(queryBindValue(UPDATE_SYNC_REQUEST_ID, 8, static_cast<int>(sync.virtualFileMode())));
-    ASSERT(queryBindValue(UPDATE_SYNC_REQUEST_ID, 9, static_cast<int>(sync.notificationsDisabled())));
-    ASSERT(queryBindValue(UPDATE_SYNC_REQUEST_ID, 10, static_cast<int>(sync.hasFullyCompleted())));
-    ASSERT(queryBindValue(UPDATE_SYNC_REQUEST_ID, 11, sync.navigationPaneClsid()));
-    ASSERT(queryBindValue(UPDATE_SYNC_REQUEST_ID, 12, listingCursor));
-    ASSERT(queryBindValue(UPDATE_SYNC_REQUEST_ID, 13, listingCursorTimestamp));
-    ASSERT(queryBindValue(UPDATE_SYNC_REQUEST_ID, 14, sync.dbId()));
+    LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_SYNC_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 1, sync.driveDbId()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 2, sync.localPath().native()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 3, sync.targetPath().native()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 4, sync.targetNodeId()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 5, sync.dbPath().native()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 6, static_cast<int>(sync.paused())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 7, static_cast<int>(sync.supportVfs())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 8, static_cast<int>(sync.virtualFileMode())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 9, static_cast<int>(sync.notificationsDisabled())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 10, static_cast<int>(sync.hasFullyCompleted())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 11, sync.navigationPaneClsid()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 12, listingCursor));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 13, listingCursorTimestamp));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 14, sync.dbId()));
     if (!queryExec(UPDATE_SYNC_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_SYNC_REQUEST_ID);
         return false;
@@ -2067,9 +2073,9 @@ bool ParmsDb::setSyncPaused(int dbId, bool value, bool &found) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(UPDATE_SYNC_PAUSED_REQUEST_ID));
-    ASSERT(queryBindValue(UPDATE_SYNC_PAUSED_REQUEST_ID, 1, value));
-    ASSERT(queryBindValue(UPDATE_SYNC_PAUSED_REQUEST_ID, 2, dbId));
+    LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_SYNC_PAUSED_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_PAUSED_REQUEST_ID, 1, value));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_PAUSED_REQUEST_ID, 2, dbId));
     if (!queryExec(UPDATE_SYNC_PAUSED_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_SYNC_PAUSED_REQUEST_ID);
         return false;
@@ -2090,9 +2096,9 @@ bool ParmsDb::setSyncHasFullyCompleted(int dbId, bool value, bool &found) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST_ID));
-    ASSERT(queryBindValue(UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST_ID, 1, value));
-    ASSERT(queryBindValue(UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST_ID, 2, dbId));
+    LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST_ID, 1, value));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST_ID, 2, dbId));
     if (!queryExec(UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST_ID);
         return false;
@@ -2113,8 +2119,8 @@ bool ParmsDb::deleteSync(int dbId, bool &found) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(DELETE_SYNC_REQUEST_ID));
-    ASSERT(queryBindValue(DELETE_SYNC_REQUEST_ID, 1, dbId));
+    LOG_IF_FAIL(queryResetAndClearBindings(DELETE_SYNC_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(DELETE_SYNC_REQUEST_ID, 1, dbId));
     if (!queryExec(DELETE_SYNC_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << DELETE_SYNC_REQUEST_ID);
         return false;
@@ -2134,48 +2140,48 @@ void ParmsDb::fillSyncWithQueryResult(Sync &sync, const char *requestId) {
            std::string(requestId) == std::string(SELECT_SYNC_REQUEST_ID));
 
     int intResult = -1;
-    ASSERT(queryIntValue(requestId, 0, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, 0, intResult));
     sync.setDbId(intResult);
 
-    ASSERT(queryIntValue(requestId, 1, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, 1, intResult));
     sync.setDriveDbId(intResult);
 
     SyncName syncNameResult;
-    ASSERT(querySyncNameValue(requestId, 2, syncNameResult));
+    LOG_IF_FAIL(querySyncNameValue(requestId, 2, syncNameResult));
     sync.setLocalPath(SyncPath(syncNameResult));
 
-    ASSERT(querySyncNameValue(requestId, 3, syncNameResult));
+    LOG_IF_FAIL(querySyncNameValue(requestId, 3, syncNameResult));
     sync.setTargetPath(SyncPath(syncNameResult));
 
     std::string strResult;
-    ASSERT(queryStringValue(requestId, 4, strResult));
+    LOG_IF_FAIL(queryStringValue(requestId, 4, strResult));
     sync.setTargetNodeId(strResult);
 
-    ASSERT(querySyncNameValue(requestId, 5, syncNameResult));
+    LOG_IF_FAIL(querySyncNameValue(requestId, 5, syncNameResult));
     sync.setDbPath(SyncPath(syncNameResult));
 
-    ASSERT(queryIntValue(requestId, 6, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, 6, intResult));
     sync.setPaused(static_cast<bool>(intResult));
 
-    ASSERT(queryIntValue(requestId, 7, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, 7, intResult));
     sync.setSupportVfs(static_cast<bool>(intResult));
 
-    ASSERT(queryIntValue(requestId, 8, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, 8, intResult));
     sync.setVirtualFileMode(static_cast<VirtualFileMode>(intResult));
 
-    ASSERT(queryIntValue(requestId, 9, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, 9, intResult));
     sync.setNotificationsDisabled(static_cast<bool>(intResult));
 
-    ASSERT(queryIntValue(requestId, 10, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, 10, intResult));
     sync.setHasFullyCompleted(static_cast<bool>(intResult));
 
-    ASSERT(queryStringValue(requestId, 11, strResult));
+    LOG_IF_FAIL(queryStringValue(requestId, 11, strResult));
     sync.setNavigationPaneClsid(strResult);
 
-    ASSERT(queryStringValue(requestId, 12, strResult));
+    LOG_IF_FAIL(queryStringValue(requestId, 12, strResult));
 
     int64_t int64Result;
-    ASSERT(queryInt64Value(requestId, 13, int64Result));
+    LOG_IF_FAIL(queryInt64Value(requestId, 13, int64Result));
     sync.setListingCursor(strResult, int64Result);
 }
 
@@ -2184,8 +2190,8 @@ bool ParmsDb::selectSync(const SyncPath &syncDbPath, Sync &sync, bool &found) {
 
     const std::scoped_lock lock(_mutex);
 
-    ASSERT(queryResetAndClearBindings(requestId));
-    ASSERT(queryBindValue(requestId, 1, syncDbPath));
+    LOG_IF_FAIL(queryResetAndClearBindings(requestId));
+    LOG_IF_FAIL(queryBindValue(requestId, 1, syncDbPath));
     if (!queryNext(requestId, found)) {
         LOG_WARN(_logger, "Error getting query result: " << requestId);
         return false;
@@ -2196,7 +2202,7 @@ bool ParmsDb::selectSync(const SyncPath &syncDbPath, Sync &sync, bool &found) {
 
     fillSyncWithQueryResult(sync, requestId);
 
-    ASSERT(queryResetAndClearBindings(requestId));
+    LOG_IF_FAIL(queryResetAndClearBindings(requestId));
 
     return true;
 }
@@ -2206,8 +2212,8 @@ bool ParmsDb::selectSync(int dbId, Sync &sync, bool &found) {
 
     const std::scoped_lock lock(_mutex);
 
-    ASSERT(queryResetAndClearBindings(requestId));
-    ASSERT(queryBindValue(requestId, 1, dbId));
+    LOG_IF_FAIL(queryResetAndClearBindings(requestId));
+    LOG_IF_FAIL(queryBindValue(requestId, 1, dbId));
     if (!queryNext(requestId, found)) {
         LOG_WARN(_logger, "Error getting query result: " << requestId);
         return false;
@@ -2218,7 +2224,7 @@ bool ParmsDb::selectSync(int dbId, Sync &sync, bool &found) {
 
     fillSyncWithQueryResult(sync, requestId);
 
-    ASSERT(queryResetAndClearBindings(requestId));
+    LOG_IF_FAIL(queryResetAndClearBindings(requestId));
 
     return true;
 }
@@ -2228,7 +2234,7 @@ bool ParmsDb::selectAllSyncs(std::vector<Sync> &syncList) {
 
     syncList.clear();
 
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_SYNCS_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNCS_REQUEST_ID));
     bool found;
     for (;;) {
         if (!queryNext(SELECT_ALL_SYNCS_REQUEST_ID, found)) {
@@ -2240,40 +2246,40 @@ bool ParmsDb::selectAllSyncs(std::vector<Sync> &syncList) {
         }
 
         int id;
-        ASSERT(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 0, id));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 0, id));
         int driveDbId;
-        ASSERT(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 1, driveDbId));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 1, driveDbId));
         SyncName localPath;
-        ASSERT(querySyncNameValue(SELECT_ALL_SYNCS_REQUEST_ID, 2, localPath));
+        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_REQUEST_ID, 2, localPath));
         SyncName targetPath;
-        ASSERT(querySyncNameValue(SELECT_ALL_SYNCS_REQUEST_ID, 3, targetPath));
+        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_REQUEST_ID, 3, targetPath));
         std::string targetNodeId;
-        ASSERT(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 4, targetNodeId));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 4, targetNodeId));
         SyncName dbPath;
-        ASSERT(querySyncNameValue(SELECT_ALL_SYNCS_REQUEST_ID, 5, dbPath));
+        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_REQUEST_ID, 5, dbPath));
         int paused;
-        ASSERT(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 6, paused));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 6, paused));
         int supportVfs;
-        ASSERT(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 7, supportVfs));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 7, supportVfs));
         int virtualFileMode;
-        ASSERT(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 8, virtualFileMode));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 8, virtualFileMode));
         int notificationsDisabled;
-        ASSERT(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 9, notificationsDisabled));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 9, notificationsDisabled));
         int hasFullyCompleted;
-        ASSERT(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 10, hasFullyCompleted));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 10, hasFullyCompleted));
         std::string navigationPaneClsid;
-        ASSERT(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 11, navigationPaneClsid));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 11, navigationPaneClsid));
         std::string listingCursor;
-        ASSERT(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 12, listingCursor));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 12, listingCursor));
         int64_t listingCursorTimestamp;
-        ASSERT(queryInt64Value(SELECT_ALL_SYNCS_REQUEST_ID, 13, listingCursorTimestamp));
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_REQUEST_ID, 13, listingCursorTimestamp));
 
         syncList.push_back(Sync(id, driveDbId, SyncPath(localPath), SyncPath(targetPath), targetNodeId, static_cast<bool>(paused),
                                 static_cast<bool>(supportVfs), static_cast<VirtualFileMode>(virtualFileMode),
                                 static_cast<bool>(notificationsDisabled), SyncPath(dbPath), static_cast<bool>(hasFullyCompleted),
                                 navigationPaneClsid, listingCursor, listingCursorTimestamp));
     }
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_SYNCS_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNCS_REQUEST_ID));
 
     return true;
 }
@@ -2283,8 +2289,8 @@ bool ParmsDb::selectAllSyncs(int driveDbId, std::vector<Sync> &syncList) {
 
     syncList.clear();
 
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID));
-    ASSERT(queryBindValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 1, driveDbId));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 1, driveDbId));
     bool found;
     for (;;) {
         if (!queryNext(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, found)) {
@@ -2296,38 +2302,38 @@ bool ParmsDb::selectAllSyncs(int driveDbId, std::vector<Sync> &syncList) {
         }
 
         int id;
-        ASSERT(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 0, id));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 0, id));
         SyncName localPath;
-        ASSERT(querySyncNameValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 1, localPath));
+        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 1, localPath));
         SyncName targetPath;
-        ASSERT(querySyncNameValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 2, targetPath));
+        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 2, targetPath));
         std::string targetNodeId;
-        ASSERT(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 3, targetNodeId));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 3, targetNodeId));
         SyncName dbPath;
-        ASSERT(querySyncNameValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 4, dbPath));
+        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 4, dbPath));
         int paused;
-        ASSERT(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 5, paused));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 5, paused));
         int supportVfs;
-        ASSERT(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 6, supportVfs));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 6, supportVfs));
         int virtualFileMode;
-        ASSERT(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 7, virtualFileMode));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 7, virtualFileMode));
         int notificationsDisabled;
-        ASSERT(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 8, notificationsDisabled));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 8, notificationsDisabled));
         int hasFullyCompleted;
-        ASSERT(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 9, hasFullyCompleted));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 9, hasFullyCompleted));
         std::string navigationPaneClsid;
-        ASSERT(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 10, navigationPaneClsid));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 10, navigationPaneClsid));
         std::string listingCursor;
-        ASSERT(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 11, listingCursor));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 11, listingCursor));
         int64_t listingCursorTimestamp;
-        ASSERT(queryInt64Value(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 12, listingCursorTimestamp));
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 12, listingCursorTimestamp));
 
         syncList.push_back(Sync(id, driveDbId, SyncPath(localPath), SyncPath(targetPath), targetNodeId, static_cast<bool>(paused),
                                 static_cast<bool>(supportVfs), static_cast<VirtualFileMode>(virtualFileMode),
                                 static_cast<bool>(notificationsDisabled), SyncPath(dbPath), static_cast<bool>(hasFullyCompleted),
                                 navigationPaneClsid, listingCursor, listingCursorTimestamp));
     }
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID));
 
     return true;
 }
@@ -2358,11 +2364,11 @@ bool ParmsDb::insertExclusionTemplate(const ExclusionTemplate &exclusionTemplate
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID));
-    ASSERT(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 1, exclusionTemplate.templ()));
-    ASSERT(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 2, exclusionTemplate.warning()));
-    ASSERT(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 3, exclusionTemplate.def()));
-    ASSERT(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 4, exclusionTemplate.deleted()));
+    LOG_IF_FAIL(queryResetAndClearBindings(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 1, exclusionTemplate.templ()));
+    LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 2, exclusionTemplate.warning()));
+    LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 3, exclusionTemplate.def()));
+    LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 4, exclusionTemplate.deleted()));
     if (!queryExec(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_EXCLUSION_TEMPLATE_REQUEST_ID);
         constraintError = (errId == SQLITE_CONSTRAINT);
@@ -2378,11 +2384,11 @@ bool ParmsDb::updateExclusionTemplate(const ExclusionTemplate &exclusionTemplate
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID));
-    ASSERT(queryBindValue(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, 1, exclusionTemplate.warning()));
-    ASSERT(queryBindValue(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, 2, exclusionTemplate.def()));
-    ASSERT(queryBindValue(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, 3, exclusionTemplate.deleted()));
-    ASSERT(queryBindValue(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, 4, exclusionTemplate.templ()));
+    LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, 1, exclusionTemplate.warning()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, 2, exclusionTemplate.def()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, 3, exclusionTemplate.deleted()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, 4, exclusionTemplate.templ()));
     if (!queryExec(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID);
         return false;
@@ -2403,8 +2409,8 @@ bool ParmsDb::deleteExclusionTemplate(const std::string &templ, bool &found) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(DELETE_EXCLUSION_TEMPLATE_REQUEST_ID));
-    ASSERT(queryBindValue(DELETE_EXCLUSION_TEMPLATE_REQUEST_ID, 1, templ));
+    LOG_IF_FAIL(queryResetAndClearBindings(DELETE_EXCLUSION_TEMPLATE_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(DELETE_EXCLUSION_TEMPLATE_REQUEST_ID, 1, templ));
     if (!queryExec(DELETE_EXCLUSION_TEMPLATE_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << DELETE_EXCLUSION_TEMPLATE_REQUEST_ID);
         return false;
@@ -2424,7 +2430,7 @@ bool ParmsDb::selectAllExclusionTemplates(std::vector<ExclusionTemplate> &exclus
 
     exclusionTemplateList.clear();
 
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID));
     bool found;
     for (;;) {
         if (!queryNext(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, found)) {
@@ -2436,18 +2442,18 @@ bool ParmsDb::selectAllExclusionTemplates(std::vector<ExclusionTemplate> &exclus
         }
 
         std::string templ;
-        ASSERT(queryStringValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 0, templ));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 0, templ));
         int warning;
-        ASSERT(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 1, warning));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 1, warning));
         int def;
-        ASSERT(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 2, def));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 2, def));
         int deleted;
-        ASSERT(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 3, deleted));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 3, deleted));
 
         exclusionTemplateList.push_back(
                 ExclusionTemplate(templ, static_cast<bool>(warning), static_cast<bool>(def), static_cast<bool>(deleted)));
     }
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID));
 
     return true;
 }
@@ -2457,8 +2463,8 @@ bool ParmsDb::selectAllExclusionTemplates(bool def, std::vector<ExclusionTemplat
 
     exclusionTemplateList.clear();
 
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID));
-    ASSERT(queryBindValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 1, def));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 1, def));
     bool found;
     for (;;) {
         if (!queryNext(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, found)) {
@@ -2470,15 +2476,15 @@ bool ParmsDb::selectAllExclusionTemplates(bool def, std::vector<ExclusionTemplat
         }
 
         std::string templ;
-        ASSERT(queryStringValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 0, templ));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 0, templ));
         int warning;
-        ASSERT(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 1, warning));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 1, warning));
         int deleted;
-        ASSERT(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 2, deleted));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 2, deleted));
 
         exclusionTemplateList.push_back(ExclusionTemplate(templ, static_cast<bool>(warning), def, static_cast<bool>(deleted)));
     }
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID));
 
     return true;
 }
@@ -2492,8 +2498,8 @@ bool ParmsDb::updateAllExclusionTemplates(bool def, const std::vector<ExclusionT
     startTransaction();
 
     // Delete existing ExclusionTemplates
-    ASSERT(queryResetAndClearBindings(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID));
-    ASSERT(queryBindValue(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 1, def));
+    LOG_IF_FAIL(queryResetAndClearBindings(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 1, def));
     if (!queryExec(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID);
         rollbackTransaction();
@@ -2502,11 +2508,11 @@ bool ParmsDb::updateAllExclusionTemplates(bool def, const std::vector<ExclusionT
 
     // Insert new ExclusionTemplates
     for (const ExclusionTemplate &exclusionTemplate: exclusionTemplateList) {
-        ASSERT(queryResetAndClearBindings(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID));
-        ASSERT(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 1, exclusionTemplate.templ()));
-        ASSERT(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 2, exclusionTemplate.warning()));
-        ASSERT(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 3, exclusionTemplate.def()));
-        ASSERT(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 4, exclusionTemplate.deleted()));
+        LOG_IF_FAIL(queryResetAndClearBindings(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID));
+        LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 1, exclusionTemplate.templ()));
+        LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 2, exclusionTemplate.warning()));
+        LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 3, exclusionTemplate.def()));
+        LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 4, exclusionTemplate.deleted()));
         if (!queryExec(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, errId, error)) {
             LOG_WARN(_logger, "Error running query: " << INSERT_EXCLUSION_TEMPLATE_REQUEST_ID);
             rollbackTransaction();
@@ -2526,10 +2532,10 @@ bool ParmsDb::insertExclusionApp(const ExclusionApp &exclusionApp, bool &constra
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(INSERT_EXCLUSION_APP_REQUEST_ID));
-    ASSERT(queryBindValue(INSERT_EXCLUSION_APP_REQUEST_ID, 1, exclusionApp.appId()));
-    ASSERT(queryBindValue(INSERT_EXCLUSION_APP_REQUEST_ID, 2, exclusionApp.description()));
-    ASSERT(queryBindValue(INSERT_EXCLUSION_APP_REQUEST_ID, 3, exclusionApp.def()));
+    LOG_IF_FAIL(queryResetAndClearBindings(INSERT_EXCLUSION_APP_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_APP_REQUEST_ID, 1, exclusionApp.appId()));
+    LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_APP_REQUEST_ID, 2, exclusionApp.description()));
+    LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_APP_REQUEST_ID, 3, exclusionApp.def()));
     if (!queryExec(INSERT_EXCLUSION_APP_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_EXCLUSION_APP_REQUEST_ID);
         constraintError = (errId == SQLITE_CONSTRAINT);
@@ -2545,10 +2551,10 @@ bool ParmsDb::updateExclusionApp(const ExclusionApp &exclusionApp, bool &found) 
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(UPDATE_EXCLUSION_APP_REQUEST_ID));
-    ASSERT(queryBindValue(UPDATE_EXCLUSION_APP_REQUEST_ID, 1, exclusionApp.description()));
-    ASSERT(queryBindValue(UPDATE_EXCLUSION_APP_REQUEST_ID, 2, exclusionApp.def()));
-    ASSERT(queryBindValue(UPDATE_EXCLUSION_APP_REQUEST_ID, 3, exclusionApp.appId()));
+    LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_EXCLUSION_APP_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(UPDATE_EXCLUSION_APP_REQUEST_ID, 1, exclusionApp.description()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_EXCLUSION_APP_REQUEST_ID, 2, exclusionApp.def()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_EXCLUSION_APP_REQUEST_ID, 3, exclusionApp.appId()));
     if (!queryExec(UPDATE_EXCLUSION_APP_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_EXCLUSION_APP_REQUEST_ID);
         return false;
@@ -2569,8 +2575,8 @@ bool ParmsDb::deleteExclusionApp(const std::string &appId, bool &found) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(DELETE_EXCLUSION_APP_REQUEST_ID));
-    ASSERT(queryBindValue(DELETE_EXCLUSION_APP_REQUEST_ID, 1, appId));
+    LOG_IF_FAIL(queryResetAndClearBindings(DELETE_EXCLUSION_APP_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(DELETE_EXCLUSION_APP_REQUEST_ID, 1, appId));
     if (!queryExec(DELETE_EXCLUSION_APP_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << DELETE_EXCLUSION_APP_REQUEST_ID);
         return false;
@@ -2590,7 +2596,7 @@ bool ParmsDb::selectAllExclusionApps(std::vector<ExclusionApp> &exclusionAppList
 
     exclusionAppList.clear();
 
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_APP_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_APP_REQUEST_ID));
     bool found;
     for (;;) {
         if (!queryNext(SELECT_ALL_EXCLUSION_APP_REQUEST_ID, found)) {
@@ -2602,15 +2608,15 @@ bool ParmsDb::selectAllExclusionApps(std::vector<ExclusionApp> &exclusionAppList
         }
 
         std::string appId;
-        ASSERT(queryStringValue(SELECT_ALL_EXCLUSION_APP_REQUEST_ID, 0, appId));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_EXCLUSION_APP_REQUEST_ID, 0, appId));
         std::string description;
-        ASSERT(queryStringValue(SELECT_ALL_EXCLUSION_APP_REQUEST_ID, 1, description));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_EXCLUSION_APP_REQUEST_ID, 1, description));
         int def;
-        ASSERT(queryIntValue(SELECT_ALL_EXCLUSION_APP_REQUEST_ID, 2, def));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_APP_REQUEST_ID, 2, def));
 
         exclusionAppList.push_back(ExclusionApp(appId, description, static_cast<bool>(def)));
     }
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_APP_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_APP_REQUEST_ID));
 
     return true;
 }
@@ -2620,8 +2626,8 @@ bool ParmsDb::selectAllExclusionApps(bool def, std::vector<ExclusionApp> &exclus
 
     exclusionAppList.clear();
 
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID));
-    ASSERT(queryBindValue(SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID, 1, def));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID, 1, def));
     bool found;
     for (;;) {
         if (!queryNext(SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID, found)) {
@@ -2633,13 +2639,13 @@ bool ParmsDb::selectAllExclusionApps(bool def, std::vector<ExclusionApp> &exclus
         }
 
         std::string appId;
-        ASSERT(queryStringValue(SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID, 0, appId));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID, 0, appId));
         std::string description;
-        ASSERT(queryStringValue(SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID, 1, description));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID, 1, description));
 
         exclusionAppList.push_back(ExclusionApp(appId, description, def));
     }
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID));
 
     return true;
 }
@@ -2653,8 +2659,8 @@ bool ParmsDb::updateAllExclusionApps(bool def, const std::vector<ExclusionApp> &
     startTransaction();
 
     // Delete existing ExclusionApps
-    ASSERT(queryResetAndClearBindings(DELETE_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID));
-    ASSERT(queryBindValue(DELETE_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID, 1, def));
+    LOG_IF_FAIL(queryResetAndClearBindings(DELETE_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(DELETE_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID, 1, def));
     if (!queryExec(DELETE_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << DELETE_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID);
         rollbackTransaction();
@@ -2663,10 +2669,10 @@ bool ParmsDb::updateAllExclusionApps(bool def, const std::vector<ExclusionApp> &
 
     // Insert new ExclusionApps
     for (const ExclusionApp &exclusionApp: exclusionAppList) {
-        ASSERT(queryResetAndClearBindings(INSERT_EXCLUSION_APP_REQUEST_ID));
-        ASSERT(queryBindValue(INSERT_EXCLUSION_APP_REQUEST_ID, 1, exclusionApp.appId()));
-        ASSERT(queryBindValue(INSERT_EXCLUSION_APP_REQUEST_ID, 2, exclusionApp.description()));
-        ASSERT(queryBindValue(INSERT_EXCLUSION_APP_REQUEST_ID, 3, exclusionApp.def()));
+        LOG_IF_FAIL(queryResetAndClearBindings(INSERT_EXCLUSION_APP_REQUEST_ID));
+        LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_APP_REQUEST_ID, 1, exclusionApp.appId()));
+        LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_APP_REQUEST_ID, 2, exclusionApp.description()));
+        LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_APP_REQUEST_ID, 3, exclusionApp.def()));
         if (!queryExec(INSERT_EXCLUSION_APP_REQUEST_ID, errId, error)) {
             LOG_WARN(_logger, "Error running query: " << INSERT_EXCLUSION_APP_REQUEST_ID);
             rollbackTransaction();
@@ -2686,23 +2692,23 @@ bool ParmsDb::insertError(const Error &err) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(INSERT_ERROR_REQUEST_ID));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 1, err.time()));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 2, toInt(err.level())));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 3, err.functionName()));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 4, err.syncDbId() ? dbtype(err.syncDbId()) : std::monostate()));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 5, err.workerName()));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 6, toInt(err.exitCode())));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 7, toInt(err.exitCause())));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 8, err.localNodeId()));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 9, err.remoteNodeId()));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 10, toInt(err.nodeType())));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 11, err.path().native()));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 12, 0)); // TODO : Not used anymore
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 13, toInt(err.conflictType())));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 14, toInt(err.inconsistencyType())));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 15, toInt(err.cancelType())));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 16, err.destinationPath()));
+    LOG_IF_FAIL(queryResetAndClearBindings(INSERT_ERROR_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 1, err.time()));
+    LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 2, toInt(err.level())));
+    LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 3, err.functionName()));
+    LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 4, err.syncDbId() ? dbtype(err.syncDbId()) : std::monostate()));
+    LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 5, err.workerName()));
+    LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 6, toInt(err.exitCode())));
+    LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 7, toInt(err.exitCause())));
+    LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 8, err.localNodeId()));
+    LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 9, err.remoteNodeId()));
+    LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 10, toInt(err.nodeType())));
+    LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 11, err.path().native()));
+    LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 12, 0)); // TODO : Not used anymore
+    LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 13, toInt(err.conflictType())));
+    LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 14, toInt(err.inconsistencyType())));
+    LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 15, toInt(err.cancelType())));
+    LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 16, err.destinationPath()));
     if (!queryExec(INSERT_ERROR_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_ERROR_REQUEST_ID);
         return false;
@@ -2717,10 +2723,10 @@ bool ParmsDb::updateError(const Error &err, bool &found) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(UPDATE_ERROR_REQUEST_ID));
-    ASSERT(queryBindValue(UPDATE_ERROR_REQUEST_ID, 1, err.time()));
-    ASSERT(queryBindValue(UPDATE_ERROR_REQUEST_ID, 2, err.path()));
-    ASSERT(queryBindValue(UPDATE_ERROR_REQUEST_ID, 3, err.dbId()));
+    LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_ERROR_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(UPDATE_ERROR_REQUEST_ID, 1, err.time()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_ERROR_REQUEST_ID, 2, err.path()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_ERROR_REQUEST_ID, 3, err.dbId()));
     if (!queryExec(UPDATE_ERROR_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_ERROR_REQUEST_ID);
         return false;
@@ -2741,8 +2747,8 @@ bool ParmsDb::deleteAllErrorsByExitCode(ExitCode exitCode) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(DELETE_ALL_ERROR_BY_EXITCODE_REQUEST_ID));
-    ASSERT(queryBindValue(DELETE_ALL_ERROR_BY_EXITCODE_REQUEST_ID, 1, static_cast<int>(exitCode)));
+    LOG_IF_FAIL(queryResetAndClearBindings(DELETE_ALL_ERROR_BY_EXITCODE_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(DELETE_ALL_ERROR_BY_EXITCODE_REQUEST_ID, 1, static_cast<int>(exitCode)));
     if (!queryExec(DELETE_ALL_ERROR_BY_EXITCODE_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << DELETE_ALL_ERROR_BY_EXITCODE_REQUEST_ID);
         return false;
@@ -2757,8 +2763,8 @@ bool ParmsDb::deleteAllErrorsByExitCause(ExitCause exitCause) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID));
-    ASSERT(queryBindValue(DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID, 1, static_cast<int>(exitCause)));
+    LOG_IF_FAIL(queryResetAndClearBindings(DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID, 1, static_cast<int>(exitCause)));
     if (!queryExec(DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID);
         return false;
@@ -2770,10 +2776,10 @@ bool ParmsDb::deleteAllErrorsByExitCause(ExitCause exitCause) {
 bool ParmsDb::selectAllErrors(ErrorLevel level, int syncDbId, int limit, std::vector<Error> &errs) {
     const std::scoped_lock lock(_mutex);
 
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID));
-    ASSERT(queryBindValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 1, toInt(level)));
-    ASSERT(queryBindValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 2, syncDbId));
-    ASSERT(queryBindValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 3, limit));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 1, toInt(level)));
+    LOG_IF_FAIL(queryBindValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 2, syncDbId));
+    LOG_IF_FAIL(queryBindValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 3, limit));
     bool found;
     for (;;) {
         if (!queryNext(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, found)) {
@@ -2785,35 +2791,35 @@ bool ParmsDb::selectAllErrors(ErrorLevel level, int syncDbId, int limit, std::ve
         }
 
         int64_t dbId;
-        ASSERT(queryInt64Value(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 0, dbId));
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 0, dbId));
         int64_t time;
-        ASSERT(queryInt64Value(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 1, time));
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 1, time));
         std::string functionName;
-        ASSERT(queryStringValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 2, functionName));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 2, functionName));
         std::string workerName;
-        ASSERT(queryStringValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 3, workerName));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 3, workerName));
         int exitCode;
-        ASSERT(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 4, exitCode));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 4, exitCode));
         int exitCause;
-        ASSERT(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 5, exitCause));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 5, exitCause));
         std::string localNodeId;
-        ASSERT(queryStringValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 6, localNodeId));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 6, localNodeId));
         std::string remoteNodeId;
-        ASSERT(queryStringValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 7, remoteNodeId));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 7, remoteNodeId));
         int nodeType;
-        ASSERT(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 8, nodeType));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 8, nodeType));
         SyncName path;
-        ASSERT(querySyncNameValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 9, path));
+        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 9, path));
         int status;
-        ASSERT(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 10, status));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 10, status));
         int conflictType;
-        ASSERT(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 11, conflictType));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 11, conflictType));
         int inconsistencyType;
-        ASSERT(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 12, inconsistencyType));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 12, inconsistencyType));
         int cancelType;
-        ASSERT(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 13, cancelType));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 13, cancelType));
         SyncName destinationPath;
-        ASSERT(querySyncNameValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 14, destinationPath));
+        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 14, destinationPath));
 
         errs.push_back(Error(dbId, time, static_cast<ErrorLevel>(level), functionName, syncDbId, workerName,
                              static_cast<ExitCode>(exitCode), static_cast<ExitCause>(exitCause), static_cast<NodeId>(localNodeId),
@@ -2821,7 +2827,7 @@ bool ParmsDb::selectAllErrors(ErrorLevel level, int syncDbId, int limit, std::ve
                              static_cast<ConflictType>(conflictType), static_cast<InconsistencyType>(inconsistencyType),
                              static_cast<CancelType>(cancelType), static_cast<SyncPath>(destinationPath)));
     }
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID));
 
     return true;
 }
@@ -2832,9 +2838,9 @@ bool ParmsDb::selectConflicts(int syncDbId, ConflictType filter, std::vector<Err
     std::string requestId = (filter == ConflictType::None ? SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID
                                                           : SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST_ID);
 
-    ASSERT(queryResetAndClearBindings(requestId));
-    ASSERT(queryBindValue(requestId, 1, syncDbId));
-    ASSERT(queryBindValue(requestId, 2, std::to_string(toInt(filter))));
+    LOG_IF_FAIL(queryResetAndClearBindings(requestId));
+    LOG_IF_FAIL(queryBindValue(requestId, 1, syncDbId));
+    LOG_IF_FAIL(queryBindValue(requestId, 2, std::to_string(toInt(filter))));
 
     bool found = false;
     for (;;) {
@@ -2847,35 +2853,35 @@ bool ParmsDb::selectConflicts(int syncDbId, ConflictType filter, std::vector<Err
         }
 
         int64_t dbId = 0;
-        ASSERT(queryInt64Value(requestId, 0, dbId));
+        LOG_IF_FAIL(queryInt64Value(requestId, 0, dbId));
         int64_t time = 0;
-        ASSERT(queryInt64Value(requestId, 1, time));
+        LOG_IF_FAIL(queryInt64Value(requestId, 1, time));
         std::string functionName;
-        ASSERT(queryStringValue(requestId, 2, functionName));
+        LOG_IF_FAIL(queryStringValue(requestId, 2, functionName));
         std::string workerName;
-        ASSERT(queryStringValue(requestId, 3, workerName));
+        LOG_IF_FAIL(queryStringValue(requestId, 3, workerName));
         int exitCode = 0;
-        ASSERT(queryIntValue(requestId, 4, exitCode));
+        LOG_IF_FAIL(queryIntValue(requestId, 4, exitCode));
         int exitCause = 0;
-        ASSERT(queryIntValue(requestId, 5, exitCause));
+        LOG_IF_FAIL(queryIntValue(requestId, 5, exitCause));
         std::string localNodeId;
-        ASSERT(queryStringValue(requestId, 6, localNodeId));
+        LOG_IF_FAIL(queryStringValue(requestId, 6, localNodeId));
         std::string remoteNodeId;
-        ASSERT(queryStringValue(requestId, 7, remoteNodeId));
+        LOG_IF_FAIL(queryStringValue(requestId, 7, remoteNodeId));
         int nodeType = 0;
-        ASSERT(queryIntValue(requestId, 8, nodeType));
+        LOG_IF_FAIL(queryIntValue(requestId, 8, nodeType));
         SyncName path;
-        ASSERT(querySyncNameValue(requestId, 9, path));
+        LOG_IF_FAIL(querySyncNameValue(requestId, 9, path));
         int status = 0;
-        ASSERT(queryIntValue(requestId, 10, status));
+        LOG_IF_FAIL(queryIntValue(requestId, 10, status));
         int conflictType = 0;
-        ASSERT(queryIntValue(requestId, 11, conflictType));
+        LOG_IF_FAIL(queryIntValue(requestId, 11, conflictType));
         int inconsistencyType = 0;
-        ASSERT(queryIntValue(requestId, 12, inconsistencyType));
+        LOG_IF_FAIL(queryIntValue(requestId, 12, inconsistencyType));
         int cancelType = 0;
-        ASSERT(queryIntValue(requestId, 13, cancelType));
+        LOG_IF_FAIL(queryIntValue(requestId, 13, cancelType));
         SyncName destinationPath;
-        ASSERT(querySyncNameValue(requestId, 14, destinationPath));
+        LOG_IF_FAIL(querySyncNameValue(requestId, 14, destinationPath));
 
         errs.push_back(Error(dbId, time, ErrorLevel::Node, functionName, syncDbId, workerName, static_cast<ExitCode>(exitCode),
                              static_cast<ExitCause>(exitCause), static_cast<NodeId>(localNodeId),
@@ -2883,7 +2889,7 @@ bool ParmsDb::selectConflicts(int syncDbId, ConflictType filter, std::vector<Err
                              static_cast<ConflictType>(conflictType), static_cast<InconsistencyType>(inconsistencyType),
                              static_cast<CancelType>(cancelType), static_cast<SyncPath>(destinationPath)));
     }
-    ASSERT(queryResetAndClearBindings(requestId));
+    LOG_IF_FAIL(queryResetAndClearBindings(requestId));
 
     return true;
 }
@@ -2894,8 +2900,8 @@ bool ParmsDb::deleteErrors(ErrorLevel level) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID));
-    ASSERT(queryBindValue(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID, 1, toInt(level)));
+    LOG_IF_FAIL(queryResetAndClearBindings(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID, 1, toInt(level)));
     if (!queryExec(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID);
         return false;
@@ -2910,8 +2916,8 @@ bool ParmsDb::deleteError(int64_t dbId, bool &found) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(DELETE_ERROR_BY_DBID_REQUEST_ID));
-    ASSERT(queryBindValue(DELETE_ERROR_BY_DBID_REQUEST_ID, 1, dbId));
+    LOG_IF_FAIL(queryResetAndClearBindings(DELETE_ERROR_BY_DBID_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(DELETE_ERROR_BY_DBID_REQUEST_ID, 1, dbId));
     if (!queryExec(DELETE_ERROR_BY_DBID_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << DELETE_ERROR_BY_DBID_REQUEST_ID);
         return false;
@@ -2932,10 +2938,10 @@ bool ParmsDb::insertMigrationSelectiveSync(const MigrationSelectiveSync &migrati
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID));
-    ASSERT(queryBindValue(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, 1, migrationSelectiveSync.syncDbId()));
-    ASSERT(queryBindValue(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, 2, migrationSelectiveSync.path().native()));
-    ASSERT(queryBindValue(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, 3, toInt(migrationSelectiveSync.type())));
+    LOG_IF_FAIL(queryResetAndClearBindings(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, 1, migrationSelectiveSync.syncDbId()));
+    LOG_IF_FAIL(queryBindValue(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, 2, migrationSelectiveSync.path().native()));
+    LOG_IF_FAIL(queryBindValue(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, 3, toInt(migrationSelectiveSync.type())));
     if (!queryExec(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID);
         return false;
@@ -2949,7 +2955,7 @@ bool ParmsDb::selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync
 
     migrationSelectiveSyncList.clear();
 
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID));
     bool found;
     for (;;) {
         if (!queryNext(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, found)) {
@@ -2961,17 +2967,17 @@ bool ParmsDb::selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync
         }
 
         int syncDbId;
-        ASSERT(queryIntValue(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, 0, syncDbId));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, 0, syncDbId));
 
         SyncName path;
-        ASSERT(querySyncNameValue(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, 1, path));
+        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, 1, path));
 
         int type;
-        ASSERT(queryIntValue(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, 2, type));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, 2, type));
 
         migrationSelectiveSyncList.push_back(MigrationSelectiveSync(syncDbId, SyncPath(path), fromInt<SyncNodeType>(type)));
     }
-    ASSERT(queryResetAndClearBindings(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID));
 
     return true;
 }

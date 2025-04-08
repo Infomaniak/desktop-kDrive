@@ -24,6 +24,7 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestConflictFinderWorker::setUp() {
+    TestBase::start();
     // Create SyncPal
     bool alreadyExists;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
@@ -31,7 +32,8 @@ void TestConflictFinderWorker::setUp() {
 
     SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
     std::filesystem::remove(syncDbPath);
-    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), syncDbPath, KDRIVE_VERSION_STRING, true);
+    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), syncDbPath,
+                                         KDRIVE_VERSION_STRING, true);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
 
@@ -46,6 +48,7 @@ void TestConflictFinderWorker::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
     _syncPal->syncDb()->close();
+    TestBase::stop();
 }
 
 void TestConflictFinderWorker::setUpTreesAndDb() {

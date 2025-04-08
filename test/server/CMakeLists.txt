@@ -1,4 +1,9 @@
-project(testserver)
+cmake_minimum_required(VERSION 3.16)
+if(APPLE)
+    project(testserver LANGUAGES C CXX OBJC OBJCXX)
+else()
+    project(testserver LANGUAGES C CXX)
+endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Svg)
 find_package(Poco 1.13.3 REQUIRED XML Net)
@@ -10,11 +15,11 @@ set(testserver_NAME ${APPLICATION_NAME}_test_server)
 set(server_srcs_path ${CMAKE_SOURCE_DIR}/src/server)
 
 set(server_SRCS
-    ${server_srcs_path}/logarchiver/logarchiver.h ${server_srcs_path}/logarchiver/logarchiver.cpp
     ${server_srcs_path}/socketapi.h ${server_srcs_path}/socketapi.cpp
     ${server_srcs_path}/socketlistener.h ${server_srcs_path}/socketlistener.cpp
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
     ${server_srcs_path}/updater/updatechecker.h ${server_srcs_path}/updater/updatechecker.cpp
+    ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
 )
 
 if(APPLE)
@@ -38,19 +43,25 @@ else ()
 endif()
 
 set(testserver_SRCS
+    ../libsyncengine/jobs/network/mockgetappversionjob.h
+    updater/mockupdater.h
+    updater/mockupdatechecker.h
     ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
+    ../test_utility/testbase.h
     ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
+    ../test_utility/remotetemporarydirectory.h ../test_utility/remotetemporarydirectory.cpp
     ../test.cpp
 
     test.cpp
-    logarchiver/testlogarchiver.h logarchiver/testlogarchiver.cpp
     updater/testupdatechecker.h updater/testupdatechecker.cpp
     updater/testabstractupdater.h updater/testabstractupdater.cpp
     workers/testworkers.h workers/testworkers.cpp
+    requests/testserverrequests.h requests/testserverrequests.cpp
 )
 
 if(APPLE)
     list(APPEND testserver_SRCS vfs/mac/testlitesyncextconnector.h vfs/mac/testlitesyncextconnector.cpp)
+    list(APPEND testserver_SRCS vfs/mac/testvfsmac.h vfs/mac/testvfsmac.cpp)
 endif()
 
 if (WIN32)
@@ -109,9 +120,15 @@ if (APPLE)
 
     install(CODE "
         message(STATUS \"Fixing library paths for ${testserver_NAME}...\")
+        execute_process(COMMAND \"install_name_tool\" -change /usr/local/lib/libcppunit-1.15.2.dylib @rpath/libcppunit-1.15.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
         execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.8.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
+        execute_process(COMMAND \"install_name_tool\" -change /opt/homebrew/opt/openssl@3/lib/libssl.3.dylib @rpath/libssl.3.dylib ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
+        execute_process(COMMAND \"install_name_tool\" -change /opt/homebrew/opt/openssl@3/lib/libcrypto.3.dylib @rpath/libcrypto.3.dylib ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
         execute_process(COMMAND \"install_name_tool\" -delete_rpath ${USER_FRAMEWORK_PATH} ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
         execute_process(COMMAND \"install_name_tool\" -add_rpath ${INSTALL_OUTPUT_DIRECTORY}/${KDRIVE_OSX_BUNDLE}/Contents/Frameworks ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
         execute_process(COMMAND \"install_name_tool\" -add_rpath ${INSTALL_OUTPUT_DIRECTORY}/${KDRIVE_OSX_BUNDLE}/Contents/Plugins ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
+        execute_process(COMMAND \"install_name_tool\" -add_rpath /usr/local/lib ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
+        execute_process(COMMAND \"install_name_tool\" -add_rpath /opt/homebrew/opt/openssl@3/lib ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
+        execute_process(COMMAND \"install_name_tool\" -add_rpath @executable_path ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
         " COMPONENT RUNTIME)
 endif()

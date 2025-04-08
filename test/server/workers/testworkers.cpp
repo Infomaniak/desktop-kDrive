@@ -49,6 +49,11 @@ constexpr bool connectorsAreAlreadyInstalled = false;
 #endif
 
 void TestWorkers::setUp() {
+    TestBase::start();
+#ifdef _WIN32
+    if (!testhelpers::isExtendedTest(false)) return;
+#endif
+
     _logger = Log::instance()->getLogger();
 
     const testhelpers::TestVariables testVariables;
@@ -107,6 +112,7 @@ void TestWorkers::setUp() {
     vfsSetupParams.localPath = _sync.localPath();
     vfsSetupParams.targetPath = _sync.targetPath();
     vfsSetupParams.logger = _logger;
+    vfsSetupParams.sentryHandler = sentry::Handler::instance();
     vfsSetupParams.executeCommand = [](const char *) {};
 
 #if defined(__APPLE__)
@@ -153,6 +159,9 @@ void TestWorkers::setUp() {
 }
 
 void TestWorkers::tearDown() {
+#ifdef _WIN32
+    if (!testhelpers::isExtendedTest(false)) return;
+#endif
     ParmsDb::instance()->close();
     ParmsDb::reset();
     if (_syncPal && _syncPal->syncDb()) {
@@ -163,9 +172,13 @@ void TestWorkers::tearDown() {
         _vfsPtr->stopImpl(true);
         _vfsPtr = nullptr;
     }
+    TestBase::stop();
 }
 
 void TestWorkers::testStartVfs() {
+#ifdef _WIN32
+    if (!testhelpers::isExtendedTest()) return;
+#endif
 #if defined(__APPLE__)
     if (connectorsAreAlreadyInstalled) {
         // Make sure that Vfs is installed/activated/connected
@@ -187,6 +200,9 @@ void TestWorkers::testStartVfs() {
 }
 
 void TestWorkers::testCreatePlaceholder() {
+#ifdef _WIN32
+    if (!testhelpers::isExtendedTest()) return;
+#endif
     _syncPal->resetEstimateUpdates();
     ExitInfo exitInfo;
     // Progress not intialized
@@ -277,6 +293,9 @@ void TestWorkers::testCreatePlaceholder() {
 }
 
 void TestWorkers::testConvertToPlaceholder() {
+#ifdef _WIN32
+    if (!testhelpers::isExtendedTest()) return;
+#endif
     _syncPal->resetEstimateUpdates();
     ExitInfo exitInfo;
     // Progress not intialized

@@ -20,10 +20,11 @@
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include "test_utility/testbase.h"
 
 namespace KDC {
 
-class TestUtility : public CppUnit::TestFixture {
+class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestUtility);
         CPPUNIT_TEST(testGetAppSupportDir);
         CPPUNIT_TEST(testIsVersionLower);
@@ -35,10 +36,15 @@ class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST(testGenerateRandomStringAlphaNum);
         CPPUNIT_TEST(testLanguageCode);
         CPPUNIT_TEST(testIsSupportedLanguage);
+        CPPUNIT_TEST(testTruncateLongLogMessage);
 #ifdef _WIN32
         CPPUNIT_TEST(testGetLastErrorMessage);
 #endif
         CPPUNIT_TEST_SUITE_END();
+
+    public:
+        void setUp(void) override { TestBase::start(); }
+        void tearDown(void) override { TestBase::stop(); }
 
     protected:
         void testGetAppSupportDir();
@@ -51,6 +57,7 @@ class TestUtility : public CppUnit::TestFixture {
         void testGenerateRandomStringAlphaNum();
         void testLanguageCode();
         void testIsSupportedLanguage();
+        void testTruncateLongLogMessage();
 #ifdef _WIN32
         void testGetLastErrorMessage();
 #endif
