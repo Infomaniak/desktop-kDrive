@@ -517,10 +517,12 @@ void TestConflictFinderWorker::testConflictCmp() {
     rNodeAA->setChangeEvents(allOp);
 
     constexpr size_t nbConflictType = conflictTypes.size();
+    std::random_device rd; // Will be used to obtain a seed for the random number engine
+    std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+    std::uniform_int_distribution<> dis(1, nbConflictType);
     for (size_t i = 0; i < 100; i++) {
-        const auto index = rand() % nbConflictType;
+        const auto index = dis(gen) % nbConflictType;
         const Conflict c1(lNodeAA, rNodeAA, conflictTypes[index]);
-        queue.push(c1);
     }
 
     // Ensure that all the operations are grouped and sorted by type
