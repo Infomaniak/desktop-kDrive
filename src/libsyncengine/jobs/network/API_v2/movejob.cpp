@@ -56,14 +56,12 @@ bool MoveJob::canRun() {
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_destFilepath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_destFilepath, ioError).c_str());
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::Unknown;
+        _exitInfo = ExitCode::SystemError;
         return false;
     }
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_destFilepath));
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::FileAccessError;
+        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         return false;
     }
 
@@ -71,8 +69,7 @@ bool MoveJob::canRun() {
         LOGW_DEBUG(_logger, L"File " << Path2WStr(_destFilepath).c_str()
 
                                      << L" is not in its destination folder. Aborting current sync and restart.");
-        _exitCode = ExitCode::DataError; // Data error so the snapshots will be re-created
-        _exitCause = ExitCause::UnexpectedFileSystemEvent;
+        _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent}; // Data error so the snapshots will be re-created
         return false;
     }
 
@@ -88,10 +85,15 @@ std::string MoveJob::getSpecificUrl() {
     return str;
 }
 
+void MoveJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
+    uri.addQueryParameter(conflictKey, conflictErrorValue);
+    canceled = false;
+}
+
 ExitInfo MoveJob::setData() {
-    Poco::JSON::Object json;
     if (!_name.empty()) {
-        json.set("name", _name);
+        Poco::JSON::Object json;
+        (void) json.set("name", _name);
 
         std::stringstream ss;
         json.stringify(ss);

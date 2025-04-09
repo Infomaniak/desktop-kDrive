@@ -47,7 +47,7 @@ class FolderTreeItemWidget : public QTreeWidget {
         qint64 nodeSize(QTreeWidgetItem *item) const;
 
     signals:
-        void terminated(bool error, bool empty = false);
+        void terminated(bool error, ExitCause exitCause, bool empty = false);
         void needToSave(bool isBlackListed);
 
     private:

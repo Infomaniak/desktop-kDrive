@@ -22,6 +22,8 @@
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommonserver/network/proxy.h"
 #include "libcommonserver/io/iohelper.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+
 #include "test_utility/testhelpers.h"
 
 #ifdef _WIN32
@@ -62,28 +64,28 @@ void TestWorkers::setUp() {
 
     // Insert api token into keystore
     std::string keychainKey("123");
-    KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(true);
     KeyChainManager::instance()->writeToken(keychainKey, testVariables.apiToken);
 
     // Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     std::filesystem::remove(parmsDbPath);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
     int userId(12321);
     User user(1, userId, keychainKey);
-    ParmsDb::instance()->insertUser(user);
+    (void) ParmsDb::instance()->insertUser(user);
 
     int accountId(atoi(testVariables.accountId.c_str()));
     Account account(1, accountId, user.dbId());
-    ParmsDb::instance()->insertAccount(account);
+    (void) ParmsDb::instance()->insertAccount(account);
 
     int driveDbId = 1;
     int driveId = atoi(testVariables.driveId.c_str());
     Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
-    ParmsDb::instance()->insertDrive(drive);
+    (void) ParmsDb::instance()->insertDrive(drive);
 
     _sync = Sync(1, drive.dbId(), localPathStr, testVariables.remotePath);
 #if defined(__APPLE__)
@@ -94,7 +96,7 @@ void TestWorkers::setUp() {
     _sync.setVirtualFileMode(VirtualFileMode::Off);
 #endif
 
-    ParmsDb::instance()->insertSync(_sync);
+    (void) ParmsDb::instance()->insertSync(_sync);
 
     // Setup proxy
     Parameters parameters;
@@ -232,7 +234,7 @@ void TestWorkers::testCreatePlaceholder() {
 #if defined(__APPLE__) || defined(_WIN32)
         // Folder already exists
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFolderPath);
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAlreadyExist), exitInfo);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAlreadyExists), exitInfo);
 #endif
     }
 
@@ -287,7 +289,7 @@ void TestWorkers::testCreatePlaceholder() {
 #if defined(__APPLE__) || defined(_WIN32)
         // File already exists
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFilePath);
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAlreadyExist), exitInfo);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAlreadyExists), exitInfo);
 #endif
     }
 }

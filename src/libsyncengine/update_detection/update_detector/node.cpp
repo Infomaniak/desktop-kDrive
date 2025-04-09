@@ -19,6 +19,7 @@
 #include "node.h"
 
 #include "libcommon/utility/utility.h"
+#include "libcommon/utility/logiffail.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/log/log.h"
 
@@ -26,19 +27,27 @@ namespace KDC {
 
 Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
            OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
-           std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode,
-           std::optional<SyncPath> moveOrigin, std::optional<DbNodeId> moveOriginParentDbId) :
-    _idb(idb), _side(side), _name(name), _type(type), _changeEvents(changeEvents), _id(id), _createdAt(createdAt),
-    _lastModified(lastmodified), _size(size), _moveOrigin(moveOrigin), _moveOriginParentDbId(moveOriginParentDbId),
+           std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode) :
+    _idb(idb), _side(side), _name(name), _type(type), _id(id), _createdAt(createdAt), _lastModified(lastmodified), _size(size),
     _conflictsAlreadyConsidered(std::vector<ConflictType>()) {
     setParentNode(parentNode);
+    setChangeEvents(changeEvents);
+}
+
+Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
+           OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
+           std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode,
+           const MoveOriginInfos &moveOriginInfos) :
+    Node(idb, side, name, type, OperationType::None, id, createdAt, lastmodified, size, parentNode) {
+    setParentNode(parentNode);
+    setMoveOriginInfos(moveOriginInfos);
+    setChangeEvents(changeEvents);
 }
 
 Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, OperationType changeEvents,
            const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified, int64_t size,
-           std::shared_ptr<Node> parentNode, std::optional<SyncPath> moveOrigin, std::optional<DbNodeId> moveOriginParentDbId) :
-    Node(std::nullopt, side, name, type, changeEvents, id, createdAt, lastmodified, size, parentNode, moveOrigin,
-         moveOriginParentDbId) {}
+           std::shared_ptr<Node> parentNode) :
+    Node(std::nullopt, side, name, type, changeEvents, id, createdAt, lastmodified, size, parentNode) {}
 
 Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::shared_ptr<Node> parentNode) :
     _side(side), _name(name), _type(type), _isTmp(true) {
@@ -72,6 +81,16 @@ std::shared_ptr<Node> Node::getChildExcept(SyncName name, OperationType except) 
         }
     }
     return nullptr;
+}
+
+void Node::setChangeEvents(const OperationType ops) {
+    _changeEvents = ops;
+    LOG_IF_FAIL(Log::instance()->getLogger(), (!hasChangeEvent(OperationType::Move) || _moveOriginInfos.isValid()));
+}
+
+void Node::insertChangeEvent(const OperationType &op) {
+    _changeEvents |= op;
+    LOG_IF_FAIL(Log::instance()->getLogger(), (!hasChangeEvent(OperationType::Move) || _moveOriginInfos.isValid()));
 }
 
 std::shared_ptr<Node> Node::findChildren(const SyncName &name, const NodeId &nodeId /*= ""*/) {
@@ -198,6 +217,20 @@ bool Node::isParentOf(std::shared_ptr<const Node> potentialChild) const {
 
 bool Node::isParentValid(std::shared_ptr<const Node> parentNode) const {
     return !isParentOf(parentNode);
+}
+
+bool Node::MoveOriginInfos::isValid() const {
+    return _isValid;
+}
+
+const SyncPath &Node::MoveOriginInfos::path() const {
+    LOG_IF_FAIL(Log::instance()->getLogger(), isValid());
+    return _path;
+}
+
+const NodeId &Node::MoveOriginInfos::parentNodeId() const {
+    LOG_IF_FAIL(Log::instance()->getLogger(), isValid());
+    return _parentNodeId;
 }
 
 } // namespace KDC

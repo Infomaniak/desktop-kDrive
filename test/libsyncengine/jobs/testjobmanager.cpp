@@ -27,10 +27,12 @@
 #include "jobs/network/API_v2/uploadjob.h"
 #include "jobs/network/API_v2/upload_session/driveuploadsession.h"
 #include "network/proxy.h"
+#include "requests/parameterscache.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
-#include "requests/parameterscache.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
 
@@ -53,27 +55,27 @@ void KDC::TestJobManager::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     std::string keychainKey("123");
-    KeyChainManager::instance(true);
-    KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Insert user, account & drive
     int userId(atoi(testVariables.userId.c_str()));
     User user(1, userId, keychainKey);
-    ParmsDb::instance()->insertUser(user);
+    (void) ParmsDb::instance()->insertUser(user);
 
     int accountId(atoi(testVariables.accountId.c_str()));
     Account account(1, accountId, user.dbId());
-    ParmsDb::instance()->insertAccount(account);
+    (void) ParmsDb::instance()->insertAccount(account);
 
     int driveId = atoi(testVariables.driveId.c_str());
     Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
-    ParmsDb::instance()->insertDrive(drive);
+    (void) ParmsDb::instance()->insertDrive(drive);
 
     // Setup proxy
     Parameters parameters;
@@ -86,6 +88,10 @@ void KDC::TestJobManager::setUp() {
 void KDC::TestJobManager::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
+    ParametersCache::reset();
+    JobManager::stop();
+    JobManager::clear();
+    JobManager::reset();
     TestBase::stop();
 }
 
@@ -471,9 +477,10 @@ void TestJobManager::callback(uint64_t jobId) {
     auto jobHandle = _ongoingJobs.extract(jobId);
     if (!jobHandle.empty()) {
         auto networkJob = jobHandle.mapped();
-        if (networkJob->exitCode() == ExitCode::NetworkError && networkJob->exitCause() == ExitCause::SocketsDefuncted) {
+        if (networkJob->exitInfo().code() == ExitCode::NetworkError &&
+            networkJob->exitInfo().cause() == ExitCause::SocketsDefuncted) {
             _jobErrorSocketsDefuncted = true;
-        } else if (networkJob->exitCode() != ExitCode::Ok) {
+        } else if (networkJob->exitInfo().code() != ExitCode::Ok) {
             _jobErrorOther = true;
         }
     }

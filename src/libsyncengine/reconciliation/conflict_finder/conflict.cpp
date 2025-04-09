@@ -22,18 +22,18 @@
 namespace KDC {
 
 Conflict::Conflict(std::shared_ptr<Node> localNode, std::shared_ptr<Node> remoteNode, ConflictType type) :
-    _node(localNode), _correspondingNode(remoteNode), _type(type) {}
+    _node(localNode), _otherNode(remoteNode), _type(type) {}
 
 Conflict::~Conflict() {
     _node.reset();
-    _correspondingNode.reset();
+    _otherNode.reset();
 }
 
 ReplicaSide Conflict::sideOfEvent(OperationType opType) const {
     if (node()->hasChangeEvent(opType)) {
         return node()->side();
-    } else if (correspondingNode()->hasChangeEvent(opType)) {
-        return correspondingNode()->side();
+    } else if (otherNode()->hasChangeEvent(opType)) {
+        return otherNode()->side();
     } else {
         return ReplicaSide::Unknown;
     }
@@ -42,15 +42,15 @@ ReplicaSide Conflict::sideOfEvent(OperationType opType) const {
 std::shared_ptr<Node> Conflict::localNode() const {
     if (node()->side() == ReplicaSide::Local) {
         return node();
-    } else if (correspondingNode()->side() == ReplicaSide::Local) {
-        return correspondingNode();
+    } else if (otherNode()->side() == ReplicaSide::Local) {
+        return otherNode();
     } else {
         return nullptr;
     }
 }
 
 std::shared_ptr<Node> Conflict::remoteNode() const {
-    return localNode() == _node ? _correspondingNode : _node;
+    return localNode() == _node ? _otherNode : _node;
 }
 
 ConflictCmp::ConflictCmp(std::shared_ptr<UpdateTree> localUpdateTree, std::shared_ptr<UpdateTree> remoteUpdateTree) :
@@ -61,7 +61,7 @@ ConflictCmp::~ConflictCmp() {
     _remoteUpdateTree.reset();
 }
 
-bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) {
+bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) const {
     bool ret = false;
 
     // Compare conflicts types
@@ -84,12 +84,12 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) {
             case ConflictType::MoveMoveSource:
                 // Move origin path of the local node
                 localNode = c1.localNode();
-                if (localNode && localNode->moveOrigin().has_value()) {
-                    path1 = *c1.node()->moveOrigin();
+                if (localNode) {
+                    path1 = c1.node()->moveOriginInfos().path();
                 }
                 localNode = c2.localNode();
-                if (localNode && localNode->moveOrigin().has_value()) {
-                    path2 = *c2.correspondingNode()->moveOrigin();
+                if (localNode) {
+                    path2 = c2.otherNode()->moveOriginInfos().path();
                 }
                 break;
             case ConflictType::MoveMoveDest:
@@ -132,7 +132,7 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) {
 SyncPath ConflictCmp::pathOfEvent(const Conflict &conflict, OperationType optype) const {
     ReplicaSide side = conflict.sideOfEvent(optype);
     SyncPath path = (side == ReplicaSide::Local    ? conflict.node()->getPath()
-                     : side == ReplicaSide::Remote ? conflict.correspondingNode()->getPath()
+                     : side == ReplicaSide::Remote ? conflict.otherNode()->getPath()
                                                    : std::filesystem::path());
 
     return path;

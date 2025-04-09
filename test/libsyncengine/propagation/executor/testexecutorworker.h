@@ -21,34 +21,9 @@
 #include "testincludes.h"
 #include "propagation/executor/executorworker.h"
 #include "test_utility/localtemporarydirectory.h"
-#include "libcommonserver/vfs/vfs.h"
+#include "mocks/libsyncengine/vfs/mockvfs.h"
 
 namespace KDC {
-
-class MockVfs final : public VfsOff {
-    public:
-        explicit MockVfs() : VfsOff(_vfsSetupParams) {}
-        void setVfsStatusOutput(const VfsStatus &vfsStatus) {
-            _vfsStatusIsHydrated = vfsStatus.isHydrated;
-            _vfsStatusIsSyncing = vfsStatus.isSyncing;
-            _vfsStatusIsPlaceholder = vfsStatus.isPlaceholder;
-            _vfsStatusProgress = vfsStatus.progress;
-        }
-        ExitInfo status([[maybe_unused]] const SyncPath &filePath, VfsStatus &vfsStatus) override {
-            vfsStatus.isHydrated = _vfsStatusIsHydrated;
-            vfsStatus.isSyncing = _vfsStatusIsSyncing;
-            vfsStatus.isPlaceholder = _vfsStatusIsPlaceholder;
-            vfsStatus.progress = _vfsStatusProgress;
-            return ExitCode::Ok;
-        }
-
-    private:
-        bool _vfsStatusIsHydrated = false;
-        bool _vfsStatusIsSyncing = false;
-        bool _vfsStatusIsPlaceholder = false;
-        int16_t _vfsStatusProgress = 0;
-        VfsSetupParams _vfsSetupParams;
-};
 
 class TestExecutorWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestExecutorWorker);
@@ -61,6 +36,7 @@ class TestExecutorWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testTerminatedJobsQueue);
         CPPUNIT_TEST(testPropagateConflictToDbAndTree);
         CPPUNIT_TEST(testDeleteOpNodes);
+        CPPUNIT_TEST(testInitSyncFileItem);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -76,6 +52,7 @@ class TestExecutorWorker : public CppUnit::TestFixture, public TestBase {
         void testIsValidDestination();
         void testTerminatedJobsQueue();
         void testPropagateConflictToDbAndTree();
+        void testInitSyncFileItem();
         void testDeleteOpNodes();
 
         bool opsExist(SyncOpPtr op);
@@ -85,6 +62,7 @@ class TestExecutorWorker : public CppUnit::TestFixture, public TestBase {
                                                        const OperationType opType, const NodeType nodeType);
 
         std::shared_ptr<SyncPal> _syncPal;
+        std::shared_ptr<MockVfs<VfsOff>> _mockVfs;
         Sync _sync;
         std::shared_ptr<ExecutorWorker> _executorWorker;
         LocalTemporaryDirectory _localTempDir{"TestExecutorWorker"};

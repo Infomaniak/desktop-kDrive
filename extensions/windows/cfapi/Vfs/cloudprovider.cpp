@@ -310,19 +310,13 @@ bool CloudProvider::updateTransfer(const wchar_t *filePath, const wchar_t *fromF
             opParams.TransferData.Offset = fetchInfo._offset;
             opParams.TransferData.Length = lengthToRead;
 
-            Utilities::traceFileDates(filePath);
-
             try {
-                TRACE_DEBUG(L"Execute transfer: offset = %lld, size = %lld", opParams.TransferData.Offset.QuadPart,
-                            opParams.TransferData.Length.QuadPart);
                 winrt::check_hresult(CfExecute(&opInfo, &opParams));
             } catch (winrt::hresult_error const &ex) {
                 TRACE_ERROR(L"Error caught : hr %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
                 res = false;
                 break;
             }
-
-            Utilities::traceFileDates(filePath);
 
             fetchInfo._offset.QuadPart += lengthToRead.QuadPart;
             totalLengthToRead.QuadPart -= lengthToRead.QuadPart;

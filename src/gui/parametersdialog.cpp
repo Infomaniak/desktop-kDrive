@@ -31,7 +31,7 @@
 #include "guirequests.h"
 #include "parameterscache.h"
 #include "libcommongui/logger.h"
-#include "libcommon/asserts.h"
+#include "libcommon/utility/qlogiffail.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
 
@@ -257,7 +257,7 @@ void ParametersDialog::initUI() {
 
     // Create General level errors list
     _errorTabWidgetStackPosition = _errorsStackedWidget->addWidget(
-            new ErrorTabWidget(toInt(DriveInfoClient::ParametersStackedWidget::General), true, this));
+            new ErrorTabWidget(_gui, toInt(DriveInfoClient::ParametersStackedWidget::General), true, this));
     refreshErrorList(0);
 
     // Init labels and setup connection for on the fly translation
@@ -274,7 +274,6 @@ void ParametersDialog::initUI() {
     connect(_drivePreferencesWidget, &DrivePreferencesWidget::displayErrors, this, &ParametersDialog::onDisplayDriveErrors);
     connect(_drivePreferencesWidget, &DrivePreferencesWidget::openFolder, this, &ParametersDialog::onOpenFolder);
     connect(_drivePreferencesWidget, &DrivePreferencesWidget::removeDrive, this, &ParametersDialog::onRemoveDrive);
-    connect(_drivePreferencesWidget, &DrivePreferencesWidget::runSync, this, &ParametersDialog::onRunSync);
     connect(_drivePreferencesWidget, &DrivePreferencesWidget::pauseSync, this, &ParametersDialog::onPauseSync);
     connect(_drivePreferencesWidget, &DrivePreferencesWidget::resumeSync, this, &ParametersDialog::onResumeSync);
     connect(_preferencesMenuBarWidget, &PreferencesMenuBarWidget::backButtonClicked, this,
@@ -314,7 +313,7 @@ void ParametersDialog::reset() {
     _noDrivePagewidget->setVisible(true);
 }
 
-QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause) const {
+QString ParametersDialog::getAppErrorText(const QString &fctCode, const ExitCode exitCode, const ExitCause exitCause) const {
     const QString err = QString("%1:%2:%3").arg(fctCode).arg(toInt(exitCode)).arg(toInt(exitCause));
     // TODO: USELESS CODE : this switch should be simplified !!!!
     switch (exitCode) {
@@ -394,8 +393,10 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
         case ExitCode::InvalidSync:
         case ExitCode::OperationCanceled:
         case ExitCode::InvalidOperation:
-        case ExitCode::UpdateFailed:
             break;
+        case ExitCode::EnumEnd: {
+            assert(false && "Invalid enum value in switch statement.");
+        }
     }
 
     qCDebug(lcParametersDialog()) << "Unmanaged exit code: code=" << exitCode;
@@ -403,7 +404,7 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
     return {};
 }
 
-QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, ExitCause exitCause) const {
+QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, const ExitCause exitCause) const {
     switch (exitCause) {
         case ExitCause::SyncDirDoesntExist:
             return tr("The synchronization folder is no longer accessible (error %1).<br>"
@@ -464,7 +465,7 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, ExitCaus
     }
 }
 
-QString ParametersDialog::getSyncPalBackErrorText(const QString &err, ExitCause exitCause, bool userIsAdmin) const {
+QString ParametersDialog::getSyncPalBackErrorText(const QString &err, const ExitCause exitCause, const bool userIsAdmin) const {
     switch (exitCause) {
         case ExitCause::DriveMaintenance:
             return tr(
@@ -477,12 +478,28 @@ QString ParametersDialog::getSyncPalBackErrorText(const QString &err, ExitCause 
                         "The kDrive is blocked.<br>"
                         "Please renew kDrive. If no action is taken, the data will be permanently deleted and it will be "
                         "impossible to recover them.");
-            } else {
-                return tr(
-                        "The kDrive is blocked.<br>"
-                        "Please contact an administrator to renew the kDrive. If no action is taken, the data will be "
-                        "permanently deleted and it will be impossible to recover them.");
             }
+            return tr(
+                    "The kDrive is blocked.<br>"
+                    "Please contact an administrator to renew the kDrive. If no action is taken, the data will be "
+                    "permanently deleted and it will be impossible to recover them.");
+        }
+        case ExitCause::DriveWakingUp: {
+            return tr(
+                    "The kDrive is waking up.<br>"
+                    "Synchronization will begin again as soon as possible. Please contact our support team if the error "
+                    "persists.");
+        }
+        case ExitCause::DriveAsleep: {
+            if (const auto &driveInfoMapIt = _gui->driveInfoMap().find(_currentDriveDbId);
+                driveInfoMapIt != _gui->driveInfoMap().end()) {
+                QString driveLink = QString(APPLICATION_PREVIEW_URL).arg(driveInfoMapIt->second.id()).arg("");
+                return tr(R"(The kDrive is asleep.<br>)"
+                          R"(Please, login to the <a style="%1" href="%2">web version</a> to check your kDrive's status, or contact your administrator.)")
+                        .arg(CommonUtility::linkStyle, driveLink);
+            }
+            return tr(R"(The kDrive is asleep.<br>)"
+                      R"(Please, login to the web version to check your kDrive's status, or contact your administrator.)");
         }
         case ExitCause::DriveAccessError:
             return tr(
@@ -496,7 +513,8 @@ QString ParametersDialog::getSyncPalBackErrorText(const QString &err, ExitCause 
     }
 }
 
-QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause, bool userIsAdmin) const {
+QString ParametersDialog::getSyncPalErrorText(const QString &fctCode, const ExitCode exitCode, const ExitCause exitCause,
+                                              bool userIsAdmin) const {
     const QString err = QString("%1:%2:%3").arg(fctCode).arg(toInt(exitCode)).arg(toInt(exitCause));
 
     switch (exitCode) {
@@ -587,74 +605,39 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
     return {};
 }
 
-QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTypeResolution resolution) const {
+QString ParametersDialog::getConflictText(const ConflictType conflictType) const {
     switch (conflictType) {
         case ConflictType::None:
-            break;
-        case ConflictType::MoveParentDelete:
-            return tr(
-                    "An element was moved to a deleted folder.<br>"
-                    "The move has been canceled.");
-            break;
-        case ConflictType::MoveDelete:
-            return tr(
-                    "This element was moved by another user.<br>"
-                    "The deletion has been canceled.");
-            break;
-        case ConflictType::CreateParentDelete:
-            return tr(
-                    "An element was created in this folder while it was being deleted.<br>"
-                    "The delete operation has been propagated anyway.");
             break;
         case ConflictType::MoveMoveSource:
             return tr(
                     "This element has been moved somewhere else.<br>"
                     "The local operation has been canceled.");
-            break;
         case ConflictType::MoveMoveDest:
-            return tr(
-                    "An element with the same name already exists in this location.<br>"
-                    "The local element has been renamed.");
-            break;
         case ConflictType::MoveCreate:
             return tr(
                     "An element with the same name already exists in this location.<br>"
                     "The local operation has been canceled.");
-            break;
-        case ConflictType::EditDelete:
-            if (resolution == ConflictTypeResolution::DeleteCanceled) {
-                return tr(
-                        "The content of the file was modified while it was being deleted.<br>"
-                        "The deletion has been canceled.");
-            } else if (resolution == ConflictTypeResolution::FileMovedToRoot) {
-                return tr(
-                        "The content of a synchronized element was modified while a parent folder was being deleted (e.g. the "
-                        "folder "
-                        "containing the current folder).<br>"
-                        "The file has been moved to the root of your kDrive.");
-            } else {
-                // Should not happen
-                return tr(
-                        "The content of an already synchronized file has been modified while this one or one of its parent "
-                        "folders "
-                        "has been deleted.<br>");
-            }
-            break;
+
+
         case ConflictType::CreateCreate:
             return tr(
                     "An element with the same name already exists in this location.<br>"
                     "The local element has been renamed.");
-            break;
         case ConflictType::EditEdit:
             return tr(
                     "The file was modified at the same time by another user.<br>"
                     "Your modifications have been saved in a copy.");
-            break;
         case ConflictType::MoveMoveCycle:
             return tr(
                     "Another user has moved a parent folder of the destination.<br>"
                     "The local operation has been canceled.");
-            break;
+        case ConflictType::EditDelete:
+        case ConflictType::MoveParentDelete:
+        case ConflictType::MoveDelete:
+        case ConflictType::CreateParentDelete:
+            // Those conflicts do not generate error message. If needed, a message is shown using CancelType::FileRescued.
+            return {};
     }
 
     qCDebug(lcParametersDialog()) << "Unmanaged conflict type: " << conflictType;
@@ -662,7 +645,7 @@ QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTyp
     return {};
 }
 
-QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyType) const {
+QString ParametersDialog::getInconsistencyText(const InconsistencyType inconsistencyType) const {
     QString text;
     if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::Case)) {
         text +=
@@ -706,11 +689,17 @@ QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyTy
                 tr("The item name coincides with the name of another item in the same directory.<br>"
                    "It has been temporarily blacklisted. Consider removing duplicate items.");
     }
+    if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::ForbiddenCharOnlySpaces)) {
+        text += (text.isEmpty() ? "" : "\n");
+        text +=
+                tr("The item name contains only spaces.<br>"
+                   "It has been temporarily blacklisted.");
+    }
 
     return text;
 }
 
-QString ParametersDialog::getCancelText(CancelType cancelType, const QString &path,
+QString ParametersDialog::getCancelText(const CancelType cancelType, const QString &path,
                                         const QString &destinationPath /*= ""*/) const {
     switch (cancelType) {
         case CancelType::Create: {
@@ -724,19 +713,18 @@ QString ParametersDialog::getCancelText(CancelType cancelType, const QString &pa
                     "The file containing your modifications has been renamed and excluded from synchronization.");
         }
         case CancelType::Move: {
-            QFileInfo fileInfo(path);
-            QFileInfo destFileInfo(destinationPath);
-            if (fileInfo.dir() == destFileInfo.dir()) {
+            const QFileInfo fileInfo(path);
+            if (const QFileInfo destFileInfo(destinationPath); fileInfo.dir() == destFileInfo.dir()) {
                 // Rename
                 return tr(
                         "You are not allowed to rename item.<br>"
                         "It will be restored with its original name.");
-            } else {
-                // Move
-                return tr("You are not allowed to move item to \"%1\".<br>"
-                          "It will be restored to its original location.")
-                        .arg(destinationPath);
             }
+
+            // Move
+            return tr("You are not allowed to move item to \"%1\".<br>"
+                      "It will be restored into its original parent folder.")
+                    .arg(destinationPath);
         }
         case CancelType::Delete: {
             return tr(
@@ -744,7 +732,7 @@ QString ParametersDialog::getCancelText(CancelType cancelType, const QString &pa
                     "It will be restored to its original location.");
         }
         case CancelType::AlreadyExistRemote: {
-            return tr("This item already exists on remote kDrive. It is not synced because it has been blacklisted.");
+            return tr("This item already exists on remote kDrive. It is not synced.");
         }
         case CancelType::MoveToBinFailed: {
             return tr("Failed to move this item to trash, it has been blacklisted.");
@@ -764,6 +752,11 @@ QString ParametersDialog::getCancelText(CancelType cancelType, const QString &pa
         }
         case CancelType::Hardlink: {
             return tr("This item has been excluded from sync because it is an hard link");
+        }
+        case CancelType::FileRescued: {
+            return tr(
+                    "The file has been modified locally while it has been deleted on the remote kDrive.<br>"
+                    "Local copy has been saved in the rescue folder.");
         }
         default: {
             break;
@@ -804,7 +797,7 @@ QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const {
 
 QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) const {
     if (errorInfo.conflictType() != ConflictType::None) {
-        return getConflictText(errorInfo.conflictType(), ConflictTypeResolution::None);
+        return getConflictText(errorInfo.conflictType());
     }
 
     if (errorInfo.inconsistencyType() != InconsistencyType::None) {
@@ -831,10 +824,18 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
         case ExitCode::BackError: {
             return getBackErrorText(errorInfo);
         }
-
+        case ExitCode::DataError: {
+            if (errorInfo.exitCause() == ExitCause::FileAlreadyExists) {
+                return tr(
+                        "Item already exists on other side.<br>"
+                        "It has been temporarily blacklisted.");
+            }
+        }
+            [[fallthrough]];
         default:
-            return tr("Synchronization error.");
+            break;
     }
+    return tr("Synchronization error.");
 }
 
 QString ParametersDialog::getErrorMessage(const ErrorInfo &errorInfo) const {
@@ -930,7 +931,7 @@ void ParametersDialog::onConfigRefreshed() {
     for (auto &[driveId, driveInfo]: _gui->driveInfoMap()) {
         if (driveInfo.errorTabWidgetStackPosition() == 0 && driveHasSyncs(driveInfo.dbId())) {
             driveInfo.setErrorTabWidgetStackPosition(
-                    _errorsStackedWidget->addWidget(new ErrorTabWidget(driveInfo.dbId(), false, this)));
+                    _errorsStackedWidget->addWidget(new ErrorTabWidget(_gui, driveInfo.dbId(), false, this)));
         }
         refreshErrorList(driveId);
     }
@@ -1118,20 +1119,14 @@ void ParametersDialog::onResumeSync(int syncDbId) {
     emit executeSyncAction(ActionType::Start, ActionTarget::Sync, syncDbId);
 }
 
-void ParametersDialog::onRunSync(int syncDbId) {
-    Q_UNUSED(syncDbId)
-
-    // TODO: useless?
-}
-
-void ParametersDialog::onClearErrors(int driveDbId, bool autoResolved) {
+void ParametersDialog::onClearErrors(const int driveDbId, const bool autoResolved) {
     ErrorTabWidget *errorTabWidget = nullptr;
     QListWidget *listWidgetToClear = nullptr;
 
     if (driveDbId == 0) {
-        LOG_IF_FAIL(_errorsStackedWidget->currentIndex() == static_cast<int>(DriveInfoClient::ParametersStackedWidget::General));
+        QLOG_IF_FAIL(_errorsStackedWidget->currentIndex() == static_cast<int>(DriveInfoClient::ParametersStackedWidget::General));
 
-        errorTabWidget = static_cast<ErrorTabWidget *>(_errorsStackedWidget->widget(_errorTabWidgetStackPosition));
+        errorTabWidget = dynamic_cast<ErrorTabWidget *>(_errorsStackedWidget->widget(_errorTabWidgetStackPosition));
 
         if (GuiRequests::deleteErrorsServer() != ExitCode::Ok) {
             qCWarning(lcParametersDialog()) << "Error in GuiRequests::deleteErrorsServer";
@@ -1144,13 +1139,13 @@ void ParametersDialog::onClearErrors(int driveDbId, bool autoResolved) {
             return;
         }
 
-        errorTabWidget =
-                static_cast<ErrorTabWidget *>(_errorsStackedWidget->widget(driveInfoMapIt->second.errorTabWidgetStackPosition()));
+        errorTabWidget = dynamic_cast<ErrorTabWidget *>(
+                _errorsStackedWidget->widget(driveInfoMapIt->second.errorTabWidgetStackPosition()));
 
-        for (const auto &syncInfoMapIt: _gui->syncInfoMap()) {
-            if (syncInfoMapIt.second.driveDbId() == driveDbId) {
-                if (GuiRequests::deleteErrorsForSync(syncInfoMapIt.first, autoResolved) != ExitCode::Ok) {
-                    qCWarning(lcParametersDialog()) << "Error in GuiRequests::deleteErrorsForSync syncId=" << syncInfoMapIt.first;
+        for (const auto &[syncDbId, syncInfo]: _gui->syncInfoMap()) {
+            if (syncInfo.driveDbId() == driveDbId) {
+                if (GuiRequests::deleteErrorsForSync(syncDbId, autoResolved) != ExitCode::Ok) {
+                    qCWarning(lcParametersDialog()) << "Error in GuiRequests::deleteErrorsForSync syncId=" << syncDbId;
                     return;
                 }
             }
@@ -1270,6 +1265,8 @@ void ParametersDialog::refreshErrorList(int driveDbId) {
     } else {
         _drivePreferencesWidget->showErrorBanner(unresolvedErrorCount > 0);
     }
+
+    errorTabWidget->setCurrentIndex(autoresolvedErrorCount ? ErrorTabWidget::AutoResolveIndex : ErrorTabWidget::ToResolveIndex);
 }
 
 bool ParametersDialog::driveHasSyncs(int driveDbId) const {

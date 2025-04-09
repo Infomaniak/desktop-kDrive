@@ -26,7 +26,7 @@
 #include <fstream>
 #include <sstream>
 
-#include <asserts.h>
+#include <cassert>
 #include <random>
 
 namespace KDC::sentry {
@@ -278,7 +278,7 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     // Init sentry
     int res = sentry_init(options);
     std::cerr << "sentry_init returned " << res << std::endl;
-    LOG_IF_FAIL(res == 0);
+    assert(res == 0);
     _instance->_isSentryActivated = true;
     _instance->setDistributionChannel(VersionChannel::Unknown);
 }

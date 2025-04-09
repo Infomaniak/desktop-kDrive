@@ -17,6 +17,7 @@
  */
 
 #include "testparmsdb.h"
+#include "mocks/libcommonserver/db/mockdb.h"
 
 using namespace CppUnit;
 
@@ -26,7 +27,7 @@ void TestParmsDb::setUp() {
     TestBase::start();
     // Create a temp parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = ParmsDb::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, "3.6.1", true, true);
 }
 
@@ -387,6 +388,7 @@ void TestParmsDb::testAppState(void) {
     while (true) {
         AppStateKey key = static_cast<AppStateKey>(i); // Test for all known keys
         if (key == AppStateKey::Unknown) {
+            CPPUNIT_ASSERT_EQUAL(AppStateKey::EnumEnd, fromInt<AppStateKey>(i + 1));
             break;
         }
         AppStateValue valueRes = "";
@@ -447,6 +449,18 @@ void TestParmsDb::testError() {
     // there is no sync, drive or account Fin the database
     CPPUNIT_ASSERT(!ParmsDb::instance()->insertError(error2));
     CPPUNIT_ASSERT(!ParmsDb::instance()->insertError(error3));
+
+    {
+        Error error("Fct", {ExitCode::DbError, ExitCause::DbAccessError});
+        CPPUNIT_ASSERT_EQUAL(ExitCode::DbError, error.exitCode());
+        CPPUNIT_ASSERT_EQUAL(ExitCause::DbAccessError, error.exitCause());
+    }
+
+    {
+        Error error(1, "Worker", {ExitCode::DataError, ExitCause::SyncDirDoesntExist});
+        CPPUNIT_ASSERT_EQUAL(ExitCode::DataError, error.exitCode());
+        CPPUNIT_ASSERT_EQUAL(ExitCause::SyncDirDoesntExist, error.exitCause());
+    }
 }
 
 } // namespace KDC
