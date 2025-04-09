@@ -50,8 +50,7 @@ Snapshot &Snapshot::operator=(const Snapshot &other) {
         *_versionHandlder = *other._versionHandlder;
 
         for (const auto &item: other._items) {
-            _items.try_emplace(item.first, std::make_shared<SnapshotItem>(*item.second))
-                    .first->second->setSnapshotVersionHandler(_versionHandlder);
+            _items.try_emplace(item.first, std::make_shared<SnapshotItem>(*item.second));
         }
 
         // Update the child list

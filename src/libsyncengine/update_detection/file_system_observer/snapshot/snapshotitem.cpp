@@ -111,7 +111,8 @@ void SnapshotItem::setLastChangedSnapshotVersion(SnapshotVersion snapshotVersion
         LOGW_WARN(Log::instance()->getLogger(),
                   L"SnapshotItem::setLastChangedSnapshotVersion: "
                   L"Trying to set a lower version than the current one. Current version: "
-                          << _lastChangedSnapshotVersion << L", new version: " << snapshotVersion << L" on " << Utility::s2ws(_id));
+                          << _lastChangedSnapshotVersion << L", new version: " << snapshotVersion << L" on "
+                          << Utility::s2ws(_id));
     }
 }
 
@@ -137,7 +138,7 @@ void SnapshotItem::copyExceptChildren(const SnapshotItem &other) {
     _canWrite = other.canWrite();
     _canShare = other.canShare();
     _path = other.path();
-    _lastChangedSnapshotVersion = _snapshotVersionHandler ? _snapshotVersionHandler->nextVersion() : 0;
+    _lastChangedSnapshotVersion = other.lastChangedSnapshotVersion();
 }
 
 void SnapshotItem::addChild(const std::shared_ptr<SnapshotItem> &child) {
