@@ -318,10 +318,10 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
 
 
 ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet,
-                                                      NodeIdsSet &remainingDbNodesIds) {
-    for (auto dbNodesIdsIt = remainingDbNodesIds.begin(); dbNodesIdsIt != remainingDbNodesIds.end();) {
-        if (dbNodesIdsIt->dbNodeId == _syncPal->syncDb()->rootNode().nodeId()) {
-            dbNodesIdsIt = remainingDbNodesIds.erase(dbNodesIdsIt);
+                                                      NodeIdsSet &remainingNodesIds) {
+    for (auto nodesIdsIt = remainingNodesIds.begin(); nodesIdsIt != remainingNodesIds.end();) {
+        if (nodesIdsIt->dbNodeId == _syncPal->syncDb()->rootNode().nodeId()) {
+            nodesIdsIt = remainingNodesIds.erase(nodesIdsIt);
             continue; // Ignore root folder
         }
 
@@ -330,34 +330,34 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
         }
 
         // Check if the item has change since the last sync
-        bool snapshotChanged = 0;
+        bool snapshotItemChanged = false;
         for (const auto side: std::array<ReplicaSide, 2>{ReplicaSide::Local, ReplicaSide::Remote}) {
-            const auto lastChangedSnapshotVersion =
-                    _syncPal->snapshotCopy(side)->lastChangedSnapshotVersion(dbNodesIdsIt->nodeId(side));
+            const auto lastItemChangedSnapshotVersion =
+                    _syncPal->snapshotCopy(side)->lastChangedSnapshotVersion(nodesIdsIt->nodeId(side));
             const auto lastSyncedSnapshotVersion =
                     side == ReplicaSide::Local ? _lastLocalSnapshotSyncedVersion : _lastRemoteSnapshotSyncedVersion;
-            if (lastChangedSnapshotVersion == 0 || lastChangedSnapshotVersion > lastSyncedSnapshotVersion) {
-                snapshotChanged = true;
+            if (lastItemChangedSnapshotVersion == 0 || lastItemChangedSnapshotVersion > lastSyncedSnapshotVersion) {
+                snapshotItemChanged = true;
                 break;
             } 
         }
-        if (!snapshotChanged) {
-            localIdsSet.insert(dbNodesIdsIt->localNodeId);
-            remoteIdsSet.insert(dbNodesIdsIt->remoteNodeId);
-            dbNodesIdsIt = remainingDbNodesIds.erase(dbNodesIdsIt);
+        if (!snapshotItemChanged) {
+            (void) localIdsSet.insert(nodesIdsIt->localNodeId);
+            (void) remoteIdsSet.insert(nodesIdsIt->remoteNodeId);
+            nodesIdsIt = remainingNodesIds.erase(nodesIdsIt);
             continue;
         }
         DbNode dbNode;
         bool dbNodeIsFound = false;
-        const auto dbNodeIds = *dbNodesIdsIt;
-        if (!_syncDb->node(dbNodesIdsIt->dbNodeId, dbNode, dbNodeIsFound)) {
+        const auto dbNodeIds = *nodesIdsIt;
+        if (!_syncDb->node(nodesIdsIt->dbNodeId, dbNode, dbNodeIsFound)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
             setExitCause(ExitCause::DbAccessError);
             return ExitCode::DbError;
         }
         if (!dbNodeIsFound) {
             // The node is not anymore in the DB (one of its parents has been blacklisted)
-            dbNodesIdsIt = remainingDbNodesIds.erase(dbNodesIdsIt);
+            nodesIdsIt = remainingNodesIds.erase(nodesIdsIt);
             continue;
         }
 
@@ -365,11 +365,11 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
         if (dbNode.nodeIdRemote()) remoteIdsSet.insert(*dbNode.nodeIdRemote());
 
         if (dbNode.type() != nodeType) {
-            ++dbNodesIdsIt;
+            ++nodesIdsIt;
             continue;
         }
 
-        dbNodesIdsIt = remainingDbNodesIds.erase(dbNodesIdsIt);
+        nodesIdsIt = remainingNodesIds.erase(nodesIdsIt);
 
         SyncPath localDbPath;
         SyncPath remoteDbPath;
@@ -380,7 +380,7 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
             return ExitCode::DbError;
         }
         if (!dbPathsAreFound) {
-            LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << dbNodesIdsIt->dbNodeId);
+            LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << nodesIdsIt->dbNodeId);
             setExitCause(ExitCause::DbEntryNotFound);
             return ExitCode::DataError;
         }

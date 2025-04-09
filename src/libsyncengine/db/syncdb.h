@@ -72,13 +72,13 @@ class SyncDb : public Db {
         bool node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &found);
 
         // Getters with db IDs
-
         bool dbIds(std::unordered_set<DbNodeId> &ids, bool &found);
+
         struct NodeIds {
                 DbNodeId dbNodeId;
                 NodeId localNodeId;
                 NodeId remoteNodeId;
-                NodeId nodeId(ReplicaSide side) const { return side == ReplicaSide::Local ? localNodeId : remoteNodeId; }
+                NodeId nodeId(const ReplicaSide side) const { return side == ReplicaSide::Local ? localNodeId : remoteNodeId; }
                 struct hashNodeIdsFunction {
                         std::size_t operator()(const NodeIds &nodeIds) const { return std::hash<DbNodeId>()(nodeIds.dbNodeId); }
                 };

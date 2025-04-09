@@ -2095,7 +2095,7 @@ bool SyncDb::selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyCol
         dbNode.setSize(size);
         dbNode.setLastModifiedLocal(lastModifiedLocal);
         dbNode.setLastModifiedRemote(lastModifiedDrive);
-        dbNode.setChecksum(cs);
+        ²dbNode.setChecksum(cs);
         dbNode.setStatus(status);
         dbNode.setSyncing(syncing);
 
@@ -2129,7 +2129,6 @@ bool SyncDb::pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<DbNodeId
     while (!dbNodeIdQueue.empty()) {
         DbNodeId dbNodeId = dbNodeIdQueue.front();
         dbNodeIdQueue.pop();
-        
         LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID));
         LOG_IF_FAIL(queryBindValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 1, dbNodeId));
         for (;;) {

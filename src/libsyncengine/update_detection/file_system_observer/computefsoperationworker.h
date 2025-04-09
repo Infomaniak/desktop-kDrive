@@ -50,7 +50,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
         // Detect changes based on the database records: delete, move and edit operations
         ExitCode inferChangesFromDb(NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet);
         ExitCode inferChangesFromDb(const NodeType nodeType, NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet,
-                                    NodeIdsSet &remainingDbIds); // Restrict change detection to a node type.
+                                    NodeIdsSet &remainingNodesIds); // Restrict change detection to a node type.
         ExitCode inferChangeFromDbNode(const ReplicaSide side, const DbNode &dbNode, const SyncPath &localDbPath,
                                        const SyncPath &remoteDbPath); // Detect change for a single node on a specific side.
 

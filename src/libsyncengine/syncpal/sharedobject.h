@@ -22,9 +22,8 @@ namespace KDC {
 
 class SharedObject {
     public:
-        virtual ~SharedObject() = default;
         [[nodiscard]] bool updated() const { return _updated; }
-        virtual void startUpdate() { _updated = true; }
+        void startUpdate() { _updated = true; }
         void startRead() { _updated = false; }
 
     private:

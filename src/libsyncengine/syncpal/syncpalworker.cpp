@@ -549,7 +549,6 @@ void SyncPalWorker::stopAndWaitForExitOfAllWorkers(std::shared_ptr<ISyncWorker> 
 }
 
 bool SyncPalWorker::resetVfsFilesStatus() {
-    return true;
     bool ok = true;
     try {
         std::error_code ec;
