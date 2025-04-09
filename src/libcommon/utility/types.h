@@ -35,6 +35,7 @@
 #include <variant>
 
 #include <signal.h>
+#include "sourcelocation.h"
 
 #include <QDebug>
 
@@ -555,6 +556,11 @@ struct VersionInfo {
         uint64_t buildVersion{0}; // Example: 20240816
         std::string buildMinOsVersion; // Optional. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
         std::string downloadUrl; // URL to download the version
+
+        bool operator==(const VersionInfo& other) const {
+            return channel == other.channel && tag == other.tag && buildVersion == other.buildVersion &&
+                   buildMinOsVersion == other.buildMinOsVersion && downloadUrl == other.downloadUrl;
+        }
 
         [[nodiscard]] bool isValid() const {
             return channel != VersionChannel::Unknown && !tag.empty() && buildVersion != 0 && !downloadUrl.empty();
