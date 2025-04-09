@@ -36,20 +36,20 @@ static const int toolBarSpacing = 10;
 static const int logoIconSize = 30;
 
 const std::map<NotificationsDisabled, QString> SynthesisBar::_notificationsDisabledMap = {
-        {NotificationsDisabled::Never, QString(tr("Never"))},
-        {NotificationsDisabled::OneHour, QString(tr("During 1 hour"))},
-        {NotificationsDisabled::UntilTomorrow, QString(tr("Until tomorrow 8:00AM"))},
-        {NotificationsDisabled::TreeDays, QString(tr("During 3 days"))},
-        {NotificationsDisabled::OneWeek, QString(tr("During 1 week"))},
-        {NotificationsDisabled::Always, QString(tr("Always"))}};
+        {NotificationsDisabled::Never, tr("Never")},
+        {NotificationsDisabled::OneHour, tr("During 1 hour")},
+        {NotificationsDisabled::UntilTomorrow, tr("Until tomorrow 8:00AM")},
+        {NotificationsDisabled::TreeDays, tr("During 3 days")},
+        {NotificationsDisabled::OneWeek, tr("During 1 week")},
+        {NotificationsDisabled::Always, tr("Always")}};
 
 const std::map<NotificationsDisabled, QString> SynthesisBar::_notificationsDisabledForPeriodMap = {
-        {NotificationsDisabled::Never, QString(tr("Never"))},
-        {NotificationsDisabled::OneHour, QString(tr("For 1 more hour"))},
-        {NotificationsDisabled::UntilTomorrow, QString(tr("Until tomorrow 8:00AM"))},
-        {NotificationsDisabled::TreeDays, QString(tr("For 3 more days"))},
-        {NotificationsDisabled::OneWeek, QString(tr("For 1 more week"))},
-        {NotificationsDisabled::Always, QString(tr("Always"))}};
+        {NotificationsDisabled::Never, tr("Never")},
+        {NotificationsDisabled::OneHour, tr("For 1 more hour")},
+        {NotificationsDisabled::UntilTomorrow, tr("Until tomorrow 8:00AM")},
+        {NotificationsDisabled::TreeDays, tr("For 3 more days")},
+        {NotificationsDisabled::OneWeek, tr("For 1 more week")},
+        {NotificationsDisabled::Always, tr("Always")}};
 
 Q_LOGGING_CATEGORY(lcSynthesisBar, "gui.synthesisbar", QtInfoMsg)
 
@@ -59,7 +59,7 @@ SynthesisBar::SynthesisBar(std::shared_ptr<ClientGui> gui, bool debugCrash, QWid
 
     QCoreApplication::instance()->installEventFilter(this);
 
-    QHBoxLayout *hBox = new QHBoxLayout();
+    auto *hBox = new QHBoxLayout();
     setLayout(hBox);
 
     hBox->setContentsMargins(toolBarHMargin, toolBarVMargin, toolBarHMargin, toolBarVMargin);
@@ -94,11 +94,11 @@ SynthesisBar::SynthesisBar(std::shared_ptr<ClientGui> gui, bool debugCrash, QWid
     retranslateUi();
     auto *languageFilter = new LanguageChangeFilter(this);
     installEventFilter(languageFilter);
-    connect(languageFilter, &LanguageChangeFilter::retranslate, this, &SynthesisBar::retranslateUi);
+    (void) connect(languageFilter, &LanguageChangeFilter::retranslate, this, &SynthesisBar::retranslateUi);
 
-    connect(_errorsButton, &CustomToolButton::clicked, this, &SynthesisBar::onOpenErrorsMenu);
-    connect(_infosButton, &CustomToolButton::clicked, this, &SynthesisBar::onOpenErrorsMenu);
-    connect(_menuButton, &CustomToolButton::clicked, this, &SynthesisBar::onOpenMiscellaneousMenu);
+    (void) connect(_errorsButton, &CustomToolButton::clicked, this, &SynthesisBar::onOpenErrorsMenu);
+    (void) connect(_infosButton, &CustomToolButton::clicked, this, &SynthesisBar::onOpenErrorsMenu);
+    (void) connect(_menuButton, &CustomToolButton::clicked, this, &SynthesisBar::onOpenMiscellaneousMenu);
 }
 
 void SynthesisBar::refreshErrorsButton() {
@@ -212,7 +212,7 @@ void SynthesisBar::onOpenErrorsMenu() {
         CustomToolButton *button = qobject_cast<CustomToolButton *>(sender());
         const QPoint position = QWidget::mapToGlobal(button->geometry().center());
         ErrorsPopup *errorsPopup = new ErrorsPopup(driveErrorList, _gui->generalErrorsCount(), position, this);
-        connect(errorsPopup, &ErrorsPopup::accountSelected, this, &SynthesisBar::onDisplayErrors);
+        (void) connect(errorsPopup, &ErrorsPopup::accountSelected, this, &SynthesisBar::onDisplayErrors);
         errorsPopup->show();
         errorsPopup->setModal(true);
     }
@@ -233,7 +233,7 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
         if (syncInfoMap.size() == 1) {
             auto const &syncInfoMapElt = syncInfoMap.begin();
             foldersMenuAction->setProperty(MenuWidget::actionTypeProperty.c_str(), syncInfoMapElt->first);
-            connect(foldersMenuAction, &QWidgetAction::triggered, this, &SynthesisBar::onOpenFolder);
+            (void) connect(foldersMenuAction, &QWidgetAction::triggered, this, &SynthesisBar::onOpenFolder);
         } else if (syncInfoMap.size() > 1) {
             foldersMenuItemWidget->setHasSubmenu(true);
 
@@ -249,7 +249,7 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
                 auto *openFolderMenuItemWidget = new MenuItemWidget(syncInfo.name());
                 openFolderMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/folder.svg");
                 openFolderAction->setDefaultWidget(openFolderMenuItemWidget);
-                connect(openFolderAction, &QWidgetAction::triggered, this, &SynthesisBar::onOpenFolder);
+                (void) connect(openFolderAction, &QWidgetAction::triggered, this, &SynthesisBar::onOpenFolder);
                 openFolderActionGroup->addAction(openFolderAction);
             }
 
@@ -266,7 +266,7 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
     driveOpenWebViewMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/webview.svg");
     driveOpenWebViewAction->setDefaultWidget(driveOpenWebViewMenuItemWidget);
     driveOpenWebViewAction->setVisible(_gui->currentDriveDbId() != 0);
-    connect(driveOpenWebViewAction, &QWidgetAction::triggered, this, &SynthesisBar::onOpenWebview);
+    (void) connect(driveOpenWebViewAction, &QWidgetAction::triggered, this, &SynthesisBar::onOpenWebview);
     menu->addAction(driveOpenWebViewAction);
 
     // Drive parameters
@@ -275,7 +275,7 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
         auto *driveParametersMenuItemWidget = new MenuItemWidget(tr("Drive parameters"));
         driveParametersMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/drive.svg");
         driveParametersAction->setDefaultWidget(driveParametersMenuItemWidget);
-        connect(driveParametersAction, &QWidgetAction::triggered, this, &SynthesisBar::onOpenDriveParameters);
+        (void) connect(driveParametersAction, &QWidgetAction::triggered, this, &SynthesisBar::onOpenDriveParameters);
         menu->addAction(driveParametersAction);
     }
 
@@ -310,7 +310,7 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
         auto *notificationMenuItemWidget = new MenuItemWidget(text);
         notificationMenuItemWidget->setChecked(notifDisabled == _notificationsDisabled);
         notificationAction->setDefaultWidget(notificationMenuItemWidget);
-        connect(notificationAction, &QWidgetAction::triggered, this, &SynthesisBar::onNotificationActionTriggered);
+        (void) connect(notificationAction, &QWidgetAction::triggered, this, &SynthesisBar::onNotificationActionTriggered);
         notificationActionGroup->addAction(notificationAction);
     }
 
@@ -322,7 +322,7 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
     auto *preferencesMenuItemWidget = new MenuItemWidget(tr("Application preferences"));
     preferencesMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/parameters.svg");
     preferencesAction->setDefaultWidget(preferencesMenuItemWidget);
-    connect(preferencesAction, &QWidgetAction::triggered, this, &SynthesisBar::onOpenPreferences);
+    (void) connect(preferencesAction, &QWidgetAction::triggered, this, &SynthesisBar::onOpenPreferences);
     menu->addAction(preferencesAction);
 
     // Help
@@ -330,7 +330,7 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
     auto *helpMenuItemWidget = new MenuItemWidget(tr("Need help"));
     helpMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/help.svg");
     helpAction->setDefaultWidget(helpMenuItemWidget);
-    connect(helpAction, &QWidgetAction::triggered, this, &SynthesisBar::onDisplayHelp);
+    (void) connect(helpAction, &QWidgetAction::triggered, this, &SynthesisBar::onDisplayHelp);
     menu->addAction(helpAction);
 
     // Send feedbacks
@@ -338,7 +338,7 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
     auto *feedbacksMenuItemWidget = new MenuItemWidget(tr("Send feedbacks"));
     feedbacksMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/messages-bubble-square-typing.svg");
     feedbacksAction->setDefaultWidget(feedbacksMenuItemWidget);
-    connect(feedbacksAction, &QWidgetAction::triggered, this, &SynthesisBar::onSendFeedback);
+    (void) connect(feedbacksAction, &QWidgetAction::triggered, this, &SynthesisBar::onSendFeedback);
     menu->addAction(feedbacksAction);
 
     // Quit
@@ -346,7 +346,7 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
     auto *exitMenuItemWidget = new MenuItemWidget(tr("Quit kDrive"));
     exitMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/error-sync.svg");
     exitAction->setDefaultWidget(exitMenuItemWidget);
-    connect(exitAction, &QWidgetAction::triggered, this, &SynthesisBar::onExit);
+    (void) connect(exitAction, &QWidgetAction::triggered, this, &SynthesisBar::onExit);
     menu->addAction(exitAction);
 
     if (_debugCrash) {
@@ -354,28 +354,28 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
         auto *crashAction = new QWidgetAction(this);
         auto *crashMenuItemWidget = new MenuItemWidget("Emulate a crash");
         crashAction->setDefaultWidget(crashMenuItemWidget);
-        connect(crashAction, &QWidgetAction::triggered, this, &SynthesisBar::onCrash);
+        (void) connect(crashAction, &QWidgetAction::triggered, this, &SynthesisBar::onCrash);
         menu->addAction(crashAction);
 
         // Emulate a server crash
         auto *crashServerAction = new QWidgetAction(this);
         auto *crashServerMenuItemWidget = new MenuItemWidget("Emulate a server crash");
         crashServerAction->setDefaultWidget(crashServerMenuItemWidget);
-        connect(crashServerAction, &QWidgetAction::triggered, this, &SynthesisBar::onCrashServer);
+        (void) connect(crashServerAction, &QWidgetAction::triggered, this, &SynthesisBar::onCrashServer);
         menu->addAction(crashServerAction);
 
         // Emulate an ENFORCE crash
         auto *crashEnforceAction = new QWidgetAction(this);
         auto *crashEnforceMenuItemWidget = new MenuItemWidget("Emulate an ENFORCE crash");
         crashEnforceAction->setDefaultWidget(crashEnforceMenuItemWidget);
-        connect(crashEnforceAction, &QWidgetAction::triggered, this, &SynthesisBar::onCrashEnforce);
+        (void) connect(crashEnforceAction, &QWidgetAction::triggered, this, &SynthesisBar::onCrashEnforce);
         menu->addAction(crashEnforceAction);
 
         // Emulate a qFatal crash
         auto *crashFatalAction = new QWidgetAction(this);
         auto *crashFatalMenuItemWidget = new MenuItemWidget("Emulate a qFatal crash");
         crashFatalAction->setDefaultWidget(crashFatalMenuItemWidget);
-        connect(crashFatalAction, &QWidgetAction::triggered, this, &SynthesisBar::onCrashFatal);
+        (void) connect(crashFatalAction, &QWidgetAction::triggered, this, &SynthesisBar::onCrashFatal);
         menu->addAction(crashFatalAction);
     }
 

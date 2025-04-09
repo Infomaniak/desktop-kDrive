@@ -77,8 +77,8 @@ SynthesisPopover::SynthesisPopover(std::shared_ptr<ClientGui> gui, bool debugCra
 
     initUI();
 
-    connect(this, &SynthesisPopover::updateItemList, this, &SynthesisPopover::onUpdateSynchronizedListWidget,
-            Qt::QueuedConnection);
+    (void) connect(this, &SynthesisPopover::updateItemList, this, &SynthesisPopover::onUpdateSynchronizedListWidget,
+                   Qt::QueuedConnection);
 }
 
 SynthesisPopover::~SynthesisPopover() {}
@@ -536,25 +536,26 @@ void SynthesisPopover::initUI() {
     retranslateUi();
     auto *languageFilter = new LanguageChangeFilter(this);
     installEventFilter(languageFilter);
-    connect(languageFilter, &LanguageChangeFilter::retranslate, this, &SynthesisPopover::retranslateUi);
+    (void) connect(languageFilter, &LanguageChangeFilter::retranslate, this, &SynthesisPopover::retranslateUi);
 
-    connect(_synthesisBar, &SynthesisBar::showParametersDialog, this, &SynthesisPopover::showParametersDialog);
-    connect(_synthesisBar, &SynthesisBar::disableNotifications, this, &SynthesisPopover::disableNotifications);
-    connect(_synthesisBar, &SynthesisBar::exit, this, &SynthesisPopover::exit);
-    connect(_synthesisBar, &SynthesisBar::crash, this, &SynthesisPopover::crash);
-    connect(_synthesisBar, &SynthesisBar::crashServer, this, &SynthesisPopover::crashServer);
-    connect(_synthesisBar, &SynthesisBar::crashEnforce, this, &SynthesisPopover::crashEnforce);
-    connect(_synthesisBar, &SynthesisBar::crashFatal, this, &SynthesisPopover::crashEnforce);
-    connect(_driveSelectionWidget, &DriveSelectionWidget::driveSelected, this, &SynthesisPopover::onDriveSelected);
-    connect(_driveSelectionWidget, &DriveSelectionWidget::addDrive, this, &SynthesisPopover::onAddDrive);
-    connect(_statusBarWidget, &StatusBarWidget::pauseSync, this, &SynthesisPopover::onPauseSync);
-    connect(_statusBarWidget, &StatusBarWidget::resumeSync, this, &SynthesisPopover::onResumeSync);
-    connect(_statusBarWidget, &StatusBarWidget::linkActivated, this, &SynthesisPopover::onLinkActivated);
-    connect(_buttonsBarWidget, &ButtonsBarWidget::buttonToggled, this, &SynthesisPopover::onButtonBarToggled);
+    (void) connect(_synthesisBar, &SynthesisBar::showParametersDialog, this, &SynthesisPopover::showParametersDialog);
+    (void) connect(_synthesisBar, &SynthesisBar::disableNotifications, this, &SynthesisPopover::disableNotifications);
+    (void) connect(_synthesisBar, &SynthesisBar::exit, this, &SynthesisPopover::exit);
+    (void) connect(_synthesisBar, &SynthesisBar::crash, this, &SynthesisPopover::crash);
+    (void) connect(_synthesisBar, &SynthesisBar::crashServer, this, &SynthesisPopover::crashServer);
+    (void) connect(_synthesisBar, &SynthesisBar::crashEnforce, this, &SynthesisPopover::crashEnforce);
+    (void) connect(_synthesisBar, &SynthesisBar::crashFatal, this, &SynthesisPopover::crashEnforce);
+    (void) connect(_driveSelectionWidget, &DriveSelectionWidget::driveSelected, this, &SynthesisPopover::onDriveSelected);
+    (void) connect(_driveSelectionWidget, &DriveSelectionWidget::addDrive, this, &SynthesisPopover::onAddDrive);
+    (void) connect(_statusBarWidget, &StatusBarWidget::pauseSync, this, &SynthesisPopover::onPauseSync);
+    (void) connect(_statusBarWidget, &StatusBarWidget::resumeSync, this, &SynthesisPopover::onResumeSync);
+    (void) connect(_statusBarWidget, &StatusBarWidget::linkActivated, this, &SynthesisPopover::onLinkActivated);
+    (void) connect(_buttonsBarWidget, &ButtonsBarWidget::buttonToggled, this, &SynthesisPopover::onButtonBarToggled);
 
-    connect(_lockedAppUpdateButton, &QPushButton::clicked, this, &SynthesisPopover::onStartInstaller, Qt::UniqueConnection);
-    connect(_gui.get(), &ClientGui::updateStateChanged, this, &SynthesisPopover::onUpdateAvailabilityChange,
-            Qt::UniqueConnection);
+    (void) connect(_lockedAppUpdateButton, &QPushButton::clicked, this, &SynthesisPopover::onStartInstaller,
+                   Qt::UniqueConnection);
+    (void) connect(_gui.get(), &ClientGui::updateStateChanged, this, &SynthesisPopover::onUpdateAvailabilityChange,
+                   Qt::UniqueConnection);
 }
 
 QUrl SynthesisPopover::syncUrl(int syncDbId, const QString &filePath) {
@@ -713,7 +714,7 @@ void SynthesisPopover::setSynchronizedDefaultPage(QWidget **widget, QWidget *par
         vboxLayout->addStretch();
         (*widget)->setLayout(vboxLayout);
 
-        connect(_defaultTextLabel, &QLabel::linkActivated, this, &SynthesisPopover::onLinkActivated);
+        (void) connect(_defaultTextLabel, &QLabel::linkActivated, this, &SynthesisPopover::onLinkActivated);
     }
 
     // Set text
@@ -917,13 +918,13 @@ void SynthesisPopover::addSynchronizedListWidgetItem(DriveInfoClient &driveInfoC
     driveInfoClient.synchronizedListWidget()->insertItem(row, widgetItem);
     driveInfoClient.synchronizedListWidget()->setItemWidget(widgetItem, widget);
 
-    connect(widget, &SynchronizedItemWidget::openFolder, this, &SynthesisPopover::onOpenFolderItem);
-    connect(widget, &SynchronizedItemWidget::open, this, &SynthesisPopover::onOpenItem);
-    connect(widget, &SynchronizedItemWidget::addToFavourites, this, &SynthesisPopover::onAddToFavouriteItem);
-    connect(widget, &SynchronizedItemWidget::copyLink, this, &SynthesisPopover::onCopyLinkItem);
-    connect(widget, &SynchronizedItemWidget::displayOnWebview, this, &SynthesisPopover::onOpenWebviewItem);
-    connect(widget, &SynchronizedItemWidget::selectionChanged, this, &SynthesisPopover::onSelectionChanged);
-    connect(this, &SynthesisPopover::cannotSelect, widget, &SynchronizedItemWidget::onCannotSelect);
+    (void) connect(widget, &SynchronizedItemWidget::openFolder, this, &SynthesisPopover::onOpenFolderItem);
+    (void) connect(widget, &SynchronizedItemWidget::open, this, &SynthesisPopover::onOpenItem);
+    (void) connect(widget, &SynchronizedItemWidget::addToFavourites, this, &SynthesisPopover::onAddToFavouriteItem);
+    (void) connect(widget, &SynchronizedItemWidget::copyLink, this, &SynthesisPopover::onCopyLinkItem);
+    (void) connect(widget, &SynchronizedItemWidget::displayOnWebview, this, &SynthesisPopover::onOpenWebviewItem);
+    (void) connect(widget, &SynchronizedItemWidget::selectionChanged, this, &SynthesisPopover::onSelectionChanged);
+    (void) connect(this, &SynthesisPopover::cannotSelect, widget, &SynchronizedItemWidget::onCannotSelect);
 }
 
 void SynthesisPopover::onUpdateSynchronizedListWidget() {

@@ -65,15 +65,15 @@ class SynthesisBar : public QWidget {
          * @note Wayland does not allow programmatically to set a top level window position. In this case, the position of the
          * synthesis popup is therefore not aligned with the system tray icon and the user is allowed to move it.
          */
-        bool allowMove() {
-            static const bool value = qApp->platformName() == "wayland";
+        bool allowMove() const {
+            static const bool value = QApplication::platformName() == "wayland";
             return value;
         }
 
         bool event(QEvent *event) override;
         void showEvent(QShowEvent *event) override;
         void mousePressEvent(QMouseEvent *event) override;
-        bool eventFilter(QObject *obj, QEvent *event);
+        bool eventFilter(QObject *obj, QEvent *event) override;
 
     signals:
         void showParametersDialog(int driveDbId = 0, bool errorPage = false);
