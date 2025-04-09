@@ -185,10 +185,9 @@ void SynthesisBar::showEvent(QShowEvent *event) {
 void SynthesisBar::mousePressEvent(QMouseEvent *event) {
     if (allowMove() && event->buttons() == Qt::LeftButton) {
         _systemMove = true;
-        window()->windowHandle()->startSystemMove();
-    } else {
-        QWidget::mousePressEvent(event);
+        (void) window()->windowHandle()->startSystemMove();
     }
+    QWidget::mousePressEvent(event);
 }
 
 bool SynthesisBar::eventFilter(QObject *obj, QEvent *event) {

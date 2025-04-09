@@ -113,10 +113,9 @@ CustomSystemBar::CustomSystemBar(bool popup, QWidget *parent) : QWidget(parent),
 
 void CustomSystemBar::mousePressEvent(QMouseEvent *event) {
     if (event->buttons() == Qt::LeftButton) {
-        window()->windowHandle()->startSystemMove();
-    } else {
-        QWidget::mousePressEvent(event);
+        (void) window()->windowHandle()->startSystemMove();
     }
+    QWidget::mousePressEvent(event);
 }
 
 bool CustomSystemBar::event(QEvent *event) {
