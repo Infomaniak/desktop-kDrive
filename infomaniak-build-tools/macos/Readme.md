@@ -292,6 +292,10 @@ Add `CMake install` in the `Before launch` steps:
 
 `CMake install` also needs to be run only once in order to copy mandatory files into the package (e.g.: sync-exclude-osx.lst) and correct rpath. Once it has run once, you can remove it from the `Before launch` steps in order to start the app faster.
 
+However, link to library `xxHash` seems to brake from time to time and a correction of the rpath in sometime needed. To avoid that, you can either always do the `CMake install` step (~15sec) or create a new step just to correct the rpath for `xxHash`.
+
+![alt text](fix_rpath_step.png)
+
 ### Sign package
 
 Add a `Run external tool` in the `Before launch` steps:
