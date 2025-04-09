@@ -42,8 +42,7 @@ bool DeleteJob::canRun() {
                                    << Utility::s2ws(_remoteItemId).c_str() << L", local ID: "
                                    << Utility::s2ws(_localItemId).c_str() << L", "
                                    << Utility::formatSyncPath(_absoluteLocalFilepath));
-        _exitCode = ExitCode::DataError;
-        _exitCause = ExitCause::Unknown;
+        _exitInfo = ExitCode::DataError;
         return false;
     }
 
@@ -55,13 +54,11 @@ bool DeleteJob::canRun() {
                                                    ioError)) {
         LOGW_WARN(_logger,
                   L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absoluteLocalFilepath, ioError).c_str());
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::Unknown;
+        _exitInfo = ExitCode::SystemError;
         return false;
     }
     if (ioError == IoError::AccessDenied) {
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::FileAccessError;
+        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         return false;
     }
 
@@ -71,20 +68,17 @@ bool DeleteJob::canRun() {
         if (!IoHelper::getFileStat(_absoluteLocalFilepath, &filestat, ioError)) {
             LOGW_WARN(_logger,
                       L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_absoluteLocalFilepath, ioError).c_str());
-            _exitCode = ExitCode::SystemError;
-            _exitCause = ExitCause::Unknown;
+            _exitInfo = ExitCode::SystemError;
             return false;
         }
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str());
-            _exitCode = ExitCode::DataError;
-            _exitCause = ExitCause::InvalidSnapshot;
+            _exitInfo = {ExitCode::DataError, ExitCause::InvalidSnapshot};
             return false;
         } else if (ioError == IoError::AccessDenied) {
             LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str());
-            _exitCode = ExitCode::SystemError;
-            _exitCause = ExitCause::FileAccessError;
+            _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
             return false;
         }
 
@@ -95,8 +89,7 @@ bool DeleteJob::canRun() {
 
         LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str()
                                       << L" still exist on local replica. Aborting current sync and restart.");
-        _exitCode = ExitCode::DataError; // Data error so the snapshots will be re-created
-        _exitCause = ExitCause::UnexpectedFileSystemEvent;
+        _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent}; // Data error so the snapshots will be re-created
         return false;
     } else if (!otherNodeId.empty() && _localItemId != otherNodeId) {
         LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str()

@@ -115,7 +115,7 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
         void onUnsyncTriggered(int syncDbId);
         void onDisplayFolderDetail(int syncDbId, bool display);
         void onOpenFolder(const QString &filePath);
-        void onSubfoldersLoaded(bool error, bool empty);
+        void onSubfoldersLoaded(bool error, ExitCause exitCause, bool empty);
         void onNeedToSave(bool isFolderItemBlackListed);
         void onCancelUpdate(int syncDbId);
         void onValidateUpdate(int syncDbId);

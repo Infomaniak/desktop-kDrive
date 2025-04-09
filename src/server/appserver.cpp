@@ -1413,13 +1413,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> withPath;
 
             QList<NodeInfo> subfoldersList;
-            ExitCode exitCode = ServerRequests::getSubFolders(userDbId, driveId, nodeId, subfoldersList, withPath);
-            if (exitCode != ExitCode::Ok) {
+            const auto exitInfo = ServerRequests::getSubFolders(userDbId, driveId, nodeId, subfoldersList, withPath);
+            if (exitInfo.code() != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::getSubFolders");
-                addError(Error(errId(), exitCode, ExitCause::Unknown));
+                addError(Error(errId(), exitInfo.code(), exitInfo.cause()));
             }
 
-            resultStream << toInt(exitCode);
+            resultStream << toInt(exitInfo);
             resultStream << subfoldersList;
             break;
         }
@@ -1433,13 +1433,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> withPath;
 
             QList<NodeInfo> subfoldersList;
-            ExitCode exitCode = ServerRequests::getSubFolders(driveDbId, nodeId, subfoldersList, withPath);
-            if (exitCode != ExitCode::Ok) {
+            const auto exitInfo = ServerRequests::getSubFolders(driveDbId, nodeId, subfoldersList, withPath);
+            if (exitInfo.code() != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::getSubFolders");
-                addError(Error(errId(), exitCode, ExitCause::Unknown));
+                addError(Error(errId(), exitInfo.code(), exitInfo.cause()));
             }
 
-            resultStream << toInt(exitCode);
+            resultStream << toInt(exitInfo);
             resultStream << subfoldersList;
             break;
         }
@@ -2418,7 +2418,7 @@ ExitCode AppServer::updateUserInfo(User &user) {
                 return exitCode;
             }
 
-            if (drive.accessDenied() || drive.maintenance()) {
+            if (drive.accessDenied() || drive.maintenanceInfo()._maintenance) {
                 LOG_WARN(_logger, "Access denied for driveId=" << drive.driveId());
 
                 std::vector<Sync> syncs;
@@ -2431,8 +2431,15 @@ ExitCode AppServer::updateUserInfo(User &user) {
                     // Pause sync
                     sync.setPaused(true);
                     ExitCause exitCause = ExitCause::DriveAccessError;
-                    if (drive.maintenance()) {
-                        exitCause = drive.notRenew() ? ExitCause::DriveNotRenew : ExitCause::DriveMaintenance;
+                    if (drive.maintenanceInfo()._maintenance) {
+                        if (drive.maintenanceInfo()._notRenew)
+                            exitCause = ExitCause::DriveNotRenew;
+                        else if (drive.maintenanceInfo()._asleep)
+                            exitCause = ExitCause::DriveAsleep;
+                        else if (drive.maintenanceInfo()._wakingUp)
+                            exitCause = ExitCause::DriveWakingUp;
+                        else
+                            exitCause = ExitCause::DriveMaintenance;
                     }
                     addError(Error(sync.dbId(), errId(), ExitCode::BackError, exitCause));
                 }
@@ -2791,6 +2798,8 @@ void AppServer::logUsefulInformation() const {
 
     LOG_INFO(_logger, "version: " << _theme->version().toStdString());
     LOG_INFO(_logger, "os: " << CommonUtility::platformName().toStdString());
+    LOG_INFO(_logger, "kernel version : " << QSysInfo::kernelVersion().toStdString());
+    LOG_INFO(_logger, "kernel type : " << QSysInfo::kernelType().toStdString());
     LOG_INFO(_logger, "locale: " << QLocale::system().name().toStdString());
 
     // Log app ID
@@ -3630,8 +3639,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         _vfsMap.erase(syncDbId);
 
         if (ExitInfo exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
-            LOG_WARN(_logger, "Error in tryCreateAndStartVfs "
-                                      << " : " << exitInfo);
+            LOG_WARN(_logger, "Error in tryCreateAndStartVfs " << " : " << exitInfo);
             return exitInfo;
         }
 

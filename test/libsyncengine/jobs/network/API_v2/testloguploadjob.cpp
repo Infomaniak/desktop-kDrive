@@ -36,7 +36,7 @@ void TestLogUploadJob::setUp() {
     deleteFakeFiles();
 
     bool parmsDbExist = std::filesystem::exists(CommonUtility::getAppSupportDir() / ".parms.db");
-  
+
     // Create parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath;
@@ -228,8 +228,7 @@ void TestLogUploadJob::checkArchiveContent(const SyncPath &archivePath, const st
                                  numFiles);
 }
 
-void TestLogUploadJob::getLogDirInfo(std::set<SyncPath> &activeSessionFiles,
-                                     std::set<SyncPath> &archivedSessionFiles,
+void TestLogUploadJob::getLogDirInfo(std::set<SyncPath> &activeSessionFiles, std::set<SyncPath> &archivedSessionFiles,
                                      std::set<SyncPath> &otherFiles) {
     const SyncPath currentLogFile = Log::instance()->getLogFilePath();
     const SyncPath logDir = currentLogFile.parent_path();

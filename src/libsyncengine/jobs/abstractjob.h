@@ -40,52 +40,49 @@ class AbstractJob : public Poco::Runnable {
          * Callback to get reply
          * Job ID is passed as argument
          */
-        inline void setMainCallback(const std::function<void(uint64_t)> &newCallback) { _mainCallback = newCallback; }
-        inline void setAdditionalCallback(const std::function<void(uint64_t)> &newCallback) {
+        void setMainCallback(const std::function<void(uint64_t)> &newCallback) { _mainCallback = newCallback; }
+        void setAdditionalCallback(const std::function<void(uint64_t)> &newCallback) {
             std::scoped_lock lock(_additionalCallbackMutex);
             _additionalCallback = newCallback;
         }
-        inline void setProgressPercentCallback(const std::function<void(UniqueId, int)> &newCallback) {
+        void setProgressPercentCallback(const std::function<void(UniqueId, int)> &newCallback) {
             _progressPercentCallback = newCallback;
         }
-        inline ExitInfo exitInfo() const { return ExitInfo(_exitCode, _exitCause); }
-        inline ExitCode exitCode() const { return _exitCode; }
-        inline ExitCause exitCause() const { return _exitCause; }
+        ExitInfo exitInfo() const { return _exitInfo; }
 
-        inline void setProgressExpectedFinalValue(int64_t newExpectedFinishProgress) {
+        void setProgressExpectedFinalValue(int64_t newExpectedFinishProgress) {
             _expectedFinishProgress = newExpectedFinishProgress;
         }
-        inline virtual int64_t getProgress() { return _progress; }
+        virtual int64_t getProgress() { return _progress; }
         void setProgress(int64_t newProgress);
         void addProgress(int64_t progressToAdd);
         bool progressChanged();
-        inline const SyncPath &affectedFilePath() const { return _affectedFilePath; }
-        inline void setAffectedFilePath(const SyncPath &newAffectedFilePath) { _affectedFilePath = newAffectedFilePath; }
-        inline bool isProgressTracked() const { return _progress > -1; }
+        const SyncPath &affectedFilePath() const { return _affectedFilePath; }
+        void setAffectedFilePath(const SyncPath &newAffectedFilePath) { _affectedFilePath = newAffectedFilePath; }
+        bool isProgressTracked() const { return _progress > -1; }
 
-        inline UniqueId jobId() const { return _jobId; }
-        inline UniqueId parentJobId() const { return _parentJobId; }
-        inline void setParentJobId(UniqueId newParentId) { _parentJobId = newParentId; }
-        inline bool hasParentJob() const { return _parentJobId > -1; }
+        UniqueId jobId() const { return _jobId; }
+        UniqueId parentJobId() const { return _parentJobId; }
+        void setParentJobId(UniqueId newParentId) { _parentJobId = newParentId; }
+        bool hasParentJob() const { return _parentJobId > -1; }
 
-        inline bool isExtendedLog() const { return _isExtendedLog; }
-        inline bool isRunning() const { return _isRunning; }
+        bool isExtendedLog() const { return _isExtendedLog; }
+        bool isRunning() const { return _isRunning; }
 
         virtual void abort();
         bool isAborted() const;
 
-        [[nodiscard]] inline bool bypassCheck() const { return _bypassCheck; }
-        inline void setBypassCheck(bool newBypassCheck) { _bypassCheck = newBypassCheck; }
+        [[nodiscard]] bool bypassCheck() const { return _bypassCheck; }
+        void setBypassCheck(bool newBypassCheck) { _bypassCheck = newBypassCheck; }
 
     protected:
         virtual bool canRun() { return true; }
 
         log4cplus::Logger _logger;
-        ExitCode _exitCode = ExitCode::Unknown;
-        ExitCause _exitCause = ExitCause::Unknown;
+        ExitInfo _exitInfo;
 
     private:
-        virtual void run() final;
+        void run() final;
         virtual void callback(UniqueId) final;
 
         std::function<void(UniqueId)> _mainCallback = nullptr; // Used by the job manager to keep track of running jobs

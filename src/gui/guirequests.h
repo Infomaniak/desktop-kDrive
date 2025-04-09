@@ -98,9 +98,9 @@ struct GuiRequests {
                                 const QSet<QString> &whiteList, int &syncDbId);
         static ExitCode startSyncs(int userDbId);
         static ExitCode getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo, bool withPath = false);
-        static ExitCode getSubFolders(int userDbId, int driveId, const QString &nodeId, QList<NodeInfo> &list,
+        static ExitInfo getSubFolders(int userDbId, int driveId, const QString &nodeId, QList<NodeInfo> &list,
                                       bool withPath = false);
-        static ExitCode getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath = false);
+        static ExitInfo getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath = false);
         static ExitCode createMissingFolders(int driveDbId, const QList<QPair<QString, QString>> &serverFolderList,
                                              QString &nodeId);
         static ExitCode getPublicLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl);
