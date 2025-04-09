@@ -52,7 +52,7 @@ struct StringHash {
 using SyncTime = int64_t;
 using DbNodeId = int64_t;
 using UniqueId = int64_t;
-using SnapshotVersion = uint64_t;
+using SnapshotRevision = uint64_t;
 using NodeId = std::string;
 using SyncPath = std::filesystem::path;
 using SyncName = std::filesystem::path::string_type;

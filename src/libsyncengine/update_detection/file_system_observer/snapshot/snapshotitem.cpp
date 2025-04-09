@@ -104,7 +104,7 @@ void SnapshotItem::setCanShare(bool canShare) {
     _canShare = canShare;
 }
 
-void SnapshotItem::setLastChangedSnapshotVersion(SnapshotVersion snapshotVersion) {
+void SnapshotItem::setLastChangedSnapshotVersion(SnapshotRevision snapshotVersion) {
     if (snapshotVersion > _lastChangedSnapshotVersion) {
         _lastChangedSnapshotVersion = snapshotVersion;
     } else {
