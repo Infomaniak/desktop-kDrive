@@ -37,8 +37,7 @@ bool LocalMoveJob::canRun() {
     bool isEqual = false;
     if (!Utility::checkIfEqualUpToCaseAndEncoding(_source, _dest, isEqual)) {
         LOG_WARN(_logger, "Error in Utility::checkIfEqualUpToCaseAndEncoding");
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::Unknown;
+        _exitInfo = {ExitCode::SystemError, ExitCause::Unknown};
         return false;
     }
 
