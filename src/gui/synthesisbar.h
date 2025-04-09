@@ -66,7 +66,7 @@ class SynthesisBar : public QWidget {
          * synthesis popup is therefore not aligned with the system tray icon and the user is allowed to move it.
          */
         bool allowMove() {
-            const bool value = qApp->platformName() == "wayland";
+            static const bool value = qApp->platformName() == "wayland";
             return value;
         }
 

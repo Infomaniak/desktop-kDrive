@@ -131,15 +131,15 @@ void SynthesisBar::reset() {
 }
 
 QUrl SynthesisBar::syncUrl(int syncDbId, const QString &filePath) {
-    QString fullFilePath = _gui->folderPath(syncDbId, filePath);
+    const QString fullFilePath = _gui->folderPath(syncDbId, filePath);
     return KDC::GuiUtility::getUrlFromLocalPath(fullFilePath);
 }
 
 void SynthesisBar::getDriveErrorList(QList<ErrorsPopup::DriveError> &list) {
     list.clear();
     for (auto const &driveInfoElt: _gui->driveInfoMap()) {
-        int driveUnresolvedErrorsCount = _gui->driveErrorsCount(driveInfoElt.first, true);
-        int driveAutoresolvedErrorsCount = _gui->driveErrorsCount(driveInfoElt.first, false);
+        const int driveUnresolvedErrorsCount = _gui->driveErrorsCount(driveInfoElt.first, true);
+        const int driveAutoresolvedErrorsCount = _gui->driveErrorsCount(driveInfoElt.first, false);
         if (driveUnresolvedErrorsCount > 0 || driveAutoresolvedErrorsCount > 0) {
             ErrorsPopup::DriveError driveError;
             driveError.driveDbId = driveInfoElt.first;
@@ -156,7 +156,7 @@ void SynthesisBar::displayErrors(int driveDbId) {
 }
 
 void SynthesisBar::openUrl(int syncDbId, const QString &filePath) {
-    QUrl url = syncUrl(syncDbId, filePath);
+    const QUrl url = syncUrl(syncDbId, filePath);
     if (url.isValid()) {
         if (!QDesktopServices::openUrl(url)) {
             CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open folder url %1.").arg(url.toString()),
@@ -168,7 +168,7 @@ void SynthesisBar::openUrl(int syncDbId, const QString &filePath) {
 
 bool SynthesisBar::event(QEvent *event) {
     if (event->type() == QEvent::WindowActivate || event->type() == QEvent::WindowDeactivate) {
-        QList<QToolButton *> buttonList = findChildren<QToolButton *>();
+        const QList<QToolButton *> buttonList = findChildren<QToolButton *>();
         for (QToolButton *button: buttonList) {
             button->setEnabled(event->type() == QEvent::WindowActivate ? true : false);
         }
@@ -210,7 +210,7 @@ void SynthesisBar::onOpenErrorsMenu() {
 
     if (driveErrorList.size() > 0 || _gui->generalErrorsCount() > 0) {
         CustomToolButton *button = qobject_cast<CustomToolButton *>(sender());
-        QPoint position = QWidget::mapToGlobal(button->geometry().center());
+        const QPoint position = QWidget::mapToGlobal(button->geometry().center());
         ErrorsPopup *errorsPopup = new ErrorsPopup(driveErrorList, _gui->generalErrorsCount(), position, this);
         connect(errorsPopup, &ErrorsPopup::accountSelected, this, &SynthesisBar::onDisplayErrors);
         errorsPopup->show();
@@ -306,7 +306,7 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
     for (auto const &[notifDisabled, str]: notificationMap) {
         auto *notificationAction = new QWidgetAction(this);
         notificationAction->setProperty(MenuWidget::actionTypeProperty.c_str(), toInt(notifDisabled));
-        QString text = QCoreApplication::translate("KDC::SynthesisPopover", str.toStdString().c_str());
+        const QString text = QCoreApplication::translate("KDC::SynthesisPopover", str.toStdString().c_str());
         auto *notificationMenuItemWidget = new MenuItemWidget(text);
         notificationMenuItemWidget->setChecked(notifDisabled == _notificationsDisabled);
         notificationAction->setDefaultWidget(notificationMenuItemWidget);
@@ -383,7 +383,7 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
 }
 
 void SynthesisBar::onOpenFolder() {
-    int syncDbId = qvariant_cast<int>(sender()->property(MenuWidget::actionTypeProperty.c_str()));
+    const auto syncDbId = qvariant_cast<int>(sender()->property(MenuWidget::actionTypeProperty.c_str()));
     openUrl(syncDbId);
 }
 
@@ -416,7 +416,7 @@ void SynthesisBar::onOpenDriveParameters() {
 }
 
 void SynthesisBar::onNotificationActionTriggered() {
-    bool notificationAlreadyDisabledForPeriod =
+    const bool notificationAlreadyDisabledForPeriod =
             _notificationsDisabled != NotificationsDisabled::Never && _notificationsDisabled != NotificationsDisabled::Always;
 
     _notificationsDisabled = qvariant_cast<NotificationsDisabled>(sender()->property(MenuWidget::actionTypeProperty.c_str()));

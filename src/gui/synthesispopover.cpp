@@ -349,11 +349,9 @@ void SynthesisPopover::paintEvent(QPaintEvent *event) {
 
 bool SynthesisPopover::event(QEvent *event) {
     bool ret = QDialog::event(event);
-    if (event->type() == QEvent::WindowDeactivate) {
-        if (!_synthesisBar->systemMove()) {
-            setGraphicsEffect(nullptr);
-            done(QDialog::Accepted);
-        }
+    if (event->type() == QEvent::WindowDeactivate && !_synthesisBar->systemMove()) {
+        setGraphicsEffect(nullptr);
+        done(QDialog::Accepted);
     } else if (event->type() == QEvent::Show || event->type() == QEvent::Hide) {
         if (_gui->isConnected()) {
             // Activate/deactivate requests
