@@ -84,6 +84,19 @@ class DbNode {
         inline void setStatus(SyncFileStatus status) { _status = status; }
         inline void setSyncing(bool syncing) { _syncing = syncing; }
 
+
+        struct hashFunction {
+                std::size_t operator()(const DbNode &dbNode) const { return std::hash<DbNodeId>()(dbNode._nodeId); }
+        };
+        bool operator==(const DbNode &other) const {
+            return _nodeId == other._nodeId && _parentNodeId == other._parentNodeId && _nodeIdLocal == other._nodeIdLocal &&
+                   _nodeIdRemote == other._nodeIdRemote && _created == other._created && _nameLocal == other._nameLocal &&
+                   _nameRemote == other._nameRemote && _checksum == other._checksum &&
+                   _lastModifiedLocal == other._lastModifiedLocal && _lastModifiedRemote == other._lastModifiedRemote &&
+                   _type == other._type && _size == other._size && _status == other._status && _syncing == other._syncing;
+        }
+
+
     protected:
         DbNodeId _nodeId;
         std::optional<DbNodeId> _parentNodeId;

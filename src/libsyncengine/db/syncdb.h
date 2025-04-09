@@ -93,6 +93,8 @@ class SyncDb : public Db {
         bool pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<DbNodeId> &ids);
         bool pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction> &ids);
 
+        bool dbNodes(std::unordered_set<DbNode, DbNode::hashFunction> &nodes, SyncDbRevision& revision, bool &found);
+
         bool status(ReplicaSide side, const SyncPath &path, SyncFileStatus &status, bool &found);
         bool status(ReplicaSide side, const NodeId &nodeId, SyncFileStatus &status, bool &found);
         bool setStatus(ReplicaSide side, const SyncPath &path, SyncFileStatus status, bool &found);
@@ -116,13 +118,15 @@ class SyncDb : public Db {
 
         bool setTargetNodeId(const std::string &targetNodeId, bool &found);
 
+        SyncDbRevision revision() const;
     protected:
         virtual bool updateNames(const char *requestId, const SyncName &localName, const SyncName &remoteName);
 
     private:
         static DbNode _driveRootNode;
         DbNode _rootNode;
-
+        SyncDbRevision _revision = 1;
+        void invalidateCache() { ++_revision; }
         bool pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, std::vector<NodeId> &ids);
         bool pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, NodeSet &ids);
 

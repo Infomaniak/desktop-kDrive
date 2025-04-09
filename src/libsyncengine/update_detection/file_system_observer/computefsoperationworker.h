@@ -20,6 +20,7 @@
 
 #include "syncpal/isyncworker.h"
 #include "db/syncdb.h"
+#include "db/syncdbcache.h"
 #include "syncpal/syncpal.h"
 
 namespace KDC {
@@ -94,6 +95,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
         ExitInfo blacklistItem(const SyncPath &relativeLocalPath);
 
         const std::shared_ptr<SyncDb> _syncDb;
+        mutable SyncDbCache _syncDbCache; // Cache for the SyncDb, mutable because const function can refresh the cache
         Sync _sync;
 
         NodeIdSet _remoteUnsyncedList;

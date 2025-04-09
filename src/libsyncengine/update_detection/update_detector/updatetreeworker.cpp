@@ -32,12 +32,13 @@ namespace KDC {
 UpdateTreeWorker::UpdateTreeWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
                                    ReplicaSide side) :
     ISyncWorker(syncPal, name, shortName), _syncDb(syncPal->_syncDb), _operationSet(syncPal->operationSet(side)),
-    _updateTree(syncPal->updateTree(side)), _side(side) {}
+    _updateTree(syncPal->updateTree(side)), _side(side), _syncDbCache(syncPal->syncDb()) {}
 
 UpdateTreeWorker::UpdateTreeWorker(std::shared_ptr<SyncDb> syncDb, std::shared_ptr<FSOperationSet> operationSet,
                                    std::shared_ptr<UpdateTree> updateTree, const std::string &name, const std::string &shortName,
                                    ReplicaSide side) :
-    ISyncWorker(nullptr, name, shortName), _syncDb(syncDb), _operationSet(operationSet), _updateTree(updateTree), _side(side) {}
+    ISyncWorker(nullptr, name, shortName), _syncDb(syncDb), _operationSet(operationSet), _updateTree(updateTree), _side(side),
+    _syncDbCache(syncDb) {}
 
 UpdateTreeWorker::~UpdateTreeWorker() {
     _operationSet.reset();
@@ -189,7 +190,7 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
             // Find dbNodeId
             DbNodeId idb = 0;
             bool found = false;
-            if (!_syncDb->dbId(_side, deleteOp->nodeId(), idb, found)) {
+            if (!_syncDbCache.dbId(_side, deleteOp->nodeId(), idb, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
                 return ExitCode::DbError;
             }
@@ -455,7 +456,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
                 // create node
                 DbNodeId idb = 0;
                 bool found = false;
-                if (!_syncDb->dbId(_side, deleteOp->nodeId(), idb, found)) {
+                if (!_syncDbCache.dbId(_side, deleteOp->nodeId(), idb, found)) {
                     LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
                     return ExitCode::DbError;
                 }
@@ -683,7 +684,7 @@ ExitCode UpdateTreeWorker::step7EditFile() {
         // create node
         DbNodeId idb;
         bool found = false;
-        if (!_syncDb->dbId(_side, editOp->nodeId(), idb, found)) {
+        if (!_syncDbCache.dbId(_side, editOp->nodeId(), idb, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
             return ExitCode::DbError;
         }
@@ -729,8 +730,8 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
     }
 
     bool found = false;
-    std::vector<NodeId> dbNodeIds;
-    if (!_syncDb->ids(_side, dbNodeIds, found)) {
+    std::set<NodeId> dbNodeIds;
+    if (!_syncDbCache.ids(_side, dbNodeIds, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbNodeIds");
         return ExitCode::DbError;
     }
@@ -757,18 +758,22 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
             (_side == ReplicaSide::Local ? _syncDb->rootNode().nodeIdLocal() : _syncDb->rootNode().nodeIdRemote());
 
     // creating missing nodes
-    for (const NodeId &dbNodeId: dbNodeIds) {
+    auto dbNodeIdIt = dbNodeIds.begin();
+    while (dbNodeIds.size() != 0) {
         // worker stop or pause
         if (stopAsked()) {
             return ExitCode::Ok;
         }
-
+        if (dbNodeIdIt == dbNodeIds.end()) {
+            dbNodeIdIt = dbNodeIds.begin();
+        }
+        const NodeId dbNodeId = *dbNodeIdIt;
         if (dbNodeId == rootNodeId.value()) {
             // Ignore root folder
+            dbNodeIdIt = dbNodeIds.erase(dbNodeIdIt);
             continue;
         }
-
-        NodeId previousNodeId = dbNodeId;
+        const NodeId previousNodeId = dbNodeId;
 
         NodeId newNodeId = dbNodeId;
         auto previousToNewIdIt = _updateTree->previousIdSet().find(dbNodeId);
@@ -779,7 +784,7 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
         if (_updateTree->nodes().find(newNodeId) == _updateTree->nodes().end()) {
             // create node
             NodeId parentId;
-            if (!_syncDb->parent(_side, previousNodeId, parentId, found)) {
+            if (!_syncDbCache.parent(_side, previousNodeId, parentId, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::parent");
                 return ExitCode::DbError;
             }
@@ -792,10 +797,16 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
             auto parentIt = _updateTree->nodes().find(parentId);
             if (parentIt != _updateTree->nodes().end()) {
                 parentNode = parentIt->second;
+            } else {
+                const auto dbNodeIdIt2 = dbNodeIds.find(parentId);
+                if (dbNodeIdIt2 != dbNodeIds.end()) {
+                    dbNodeIdIt = dbNodeIdIt2;
+                }
+                continue; // Create the parent node first
             }
 
             DbNode dbNode;
-            if (!_syncDb->node(_side, previousNodeId, dbNode, found)) {
+            if (!_syncDbCache.node(_side, previousNodeId, dbNode, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
                 return ExitCode::DbError;
             }
@@ -833,6 +844,7 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
                                        << L"') inserted. Without change events.");
             }
         }
+        dbNodeIdIt = dbNodeIds.erase(dbNodeIdIt);
     }
 
     return exitCode;
@@ -945,7 +957,7 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
             // create node
             DbNodeId idb = 0;
             bool found = false;
-            if (!_syncDb->dbId(_side, moveOp->nodeId(), idb, found)) {
+            if (!_syncDbCache.dbId(_side, moveOp->nodeId(), idb, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
                 return ExitCode::DbError;
             }
@@ -1178,7 +1190,7 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
         }
 
         DbNode dbNode;
-        if (!_syncDb->node(_side, usableNodeId, dbNode, found)) {
+        if (!_syncDbCache.node(_side, usableNodeId, dbNode, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
             return ExitCode::DbError;
         }
@@ -1266,7 +1278,7 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
     }
 
     DbNodeId dbId;
-    if (!_syncDb->dbId(_side, *id, dbId, found)) {
+    if (!_syncDbCache.dbId(_side, *id, dbId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
         return ExitCode::DbError;
     }
@@ -1359,7 +1371,7 @@ ExitCode UpdateTreeWorker::getOriginPath(const std::shared_ptr<Node> node, SyncP
             // Get origin parent
             DbNode dbNode;
             bool found = false;
-            if (!_syncDb->node(tmpNode->side(), tmpNode->moveOriginInfos().parentNodeId(), dbNode, found)) {
+            if (!_syncDbCache.node(tmpNode->side(), tmpNode->moveOriginInfos().parentNodeId(), dbNode, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
                 return ExitCode::DbError;
             }
