@@ -477,9 +477,10 @@ void TestJobManager::callback(uint64_t jobId) {
     auto jobHandle = _ongoingJobs.extract(jobId);
     if (!jobHandle.empty()) {
         auto networkJob = jobHandle.mapped();
-        if (networkJob->exitCode() == ExitCode::NetworkError && networkJob->exitCause() == ExitCause::SocketsDefuncted) {
+        if (networkJob->exitInfo().code() == ExitCode::NetworkError &&
+            networkJob->exitInfo().cause() == ExitCause::SocketsDefuncted) {
             _jobErrorSocketsDefuncted = true;
-        } else if (networkJob->exitCode() != ExitCode::Ok) {
+        } else if (networkJob->exitInfo().code() != ExitCode::Ok) {
             _jobErrorOther = true;
         }
     }

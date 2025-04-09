@@ -268,6 +268,9 @@ enum class ExitCause {
     ShareLinkAlreadyExists,
     InvalidArgument,
     InvalidDestination,
+    DriveAsleep,
+    DriveWakingUp,
+    ServiceUnavailable,
     EnumEnd
 };
 std::string toString(ExitCause e);
@@ -283,6 +286,7 @@ struct ExitInfo {
 
         const ExitCode &code() const { return _code; }
         const ExitCause &cause() const { return _cause; }
+        void setCause(const ExitCause cause) { _cause = cause; }
         operator ExitCode() const { return _code; }
         operator ExitCause() const { return _cause; }
         explicit operator std::string() const {
@@ -302,6 +306,9 @@ struct ExitInfo {
           \param exitCodeList is a vector of ExitCode(s) ranked by decreasing priority.
         */
         void merge(const ExitInfo &exitInfoToMerge, const std::vector<ExitCode> &exitCodeList);
+        static ExitInfo fromInt(const int val) {
+            return ExitInfo(static_cast<ExitCode>(val / 100), static_cast<ExitCause>(val % 100));
+        }
 
     private:
         ExitCode _code{ExitCode::Unknown};

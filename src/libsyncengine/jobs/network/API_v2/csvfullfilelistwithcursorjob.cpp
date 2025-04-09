@@ -261,8 +261,8 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
 
 CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(int driveDbId, const NodeId &dirId, NodeSet blacklist /*= {}*/,
                                                            bool zip /*= true*/) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
-    _dirId(dirId), _blacklist(blacklist), _zip(zip), _snapshotItemHandler(_logger) {
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _dirId(dirId), _blacklist(blacklist), _zip(zip),
+    _snapshotItemHandler(_logger) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = API_TIMEOUT + 15;
 
