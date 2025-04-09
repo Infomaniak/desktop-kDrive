@@ -347,6 +347,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             inputSharedObject[1] = nullptr;
             _syncPal->resetEstimateUpdates();
             _syncPal->refreshTmpBlacklist();
+            _syncPal->freeSnapshotsCopies();
             break;
         case SyncStep::UpdateDetection1:
             workers[0] = _syncPal->computeFSOperationsWorker();
