@@ -57,6 +57,7 @@ class VersionInfoCmp {
 };
 
 const VersionInfo &UpdateChecker::versionInfo(const VersionChannel choosedChannel) {
+    if (!_isVersionReceived) return _defaultVersionInfo;
     const VersionInfo &prodVersion = prodVersionInfo();
 
     // If the user wants only `Production` versions, just return the current `Production` version.
