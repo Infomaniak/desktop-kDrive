@@ -52,12 +52,12 @@ class SynthesisBar : public QWidget {
         bool _debugCrash{false};
         bool _systemMove{false};
 
-        static const std::map<NotificationsDisabled, QString> _notificationsDisabledMap;
-        static const std::map<NotificationsDisabled, QString> _notificationsDisabledForPeriodMap;
+        static const std::map<NotificationsDisabled, QString> &notificationsDisabledMap();
+        static const std::map<NotificationsDisabled, QString> &notificationsDisabledForPeriodMap();
 
         void getDriveErrorList(QList<ErrorsPopup::DriveError> &list);
         QUrl syncUrl(int syncDbId, const QString &filePath);
-        void openUrl(int syncDbId, const QString &filePath = QString());
+        void openUrl(int syncDbId, const QString &filePath = "");
 
         /**
          * This method determines if the user is allowed to move the top level dialog.

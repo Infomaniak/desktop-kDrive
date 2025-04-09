@@ -1469,8 +1469,7 @@ bool ClientGui::osRequireMenuTray() const {
 }
 
 void ClientGui::raiseDialog(QWidget *raiseWidget) {
-    QWidget *activeWindow = QApplication::activeWindow();
-    if (activeWindow && activeWindow != raiseWidget) {
+    if (auto *activeWindow = QApplication::activeWindow(); activeWindow && activeWindow != raiseWidget) {
         activeWindow->hide();
     }
     if (raiseWidget && !raiseWidget->parentWidget()) {

@@ -35,23 +35,29 @@ static const int toolBarVMargin = 10;
 static const int toolBarSpacing = 10;
 static const int logoIconSize = 30;
 
-const std::map<NotificationsDisabled, QString> SynthesisBar::_notificationsDisabledMap = {
-        {NotificationsDisabled::Never, tr("Never")},
-        {NotificationsDisabled::OneHour, tr("During 1 hour")},
-        {NotificationsDisabled::UntilTomorrow, tr("Until tomorrow 8:00AM")},
-        {NotificationsDisabled::TreeDays, tr("During 3 days")},
-        {NotificationsDisabled::OneWeek, tr("During 1 week")},
-        {NotificationsDisabled::Always, tr("Always")}};
-
-const std::map<NotificationsDisabled, QString> SynthesisBar::_notificationsDisabledForPeriodMap = {
-        {NotificationsDisabled::Never, tr("Never")},
-        {NotificationsDisabled::OneHour, tr("For 1 more hour")},
-        {NotificationsDisabled::UntilTomorrow, tr("Until tomorrow 8:00AM")},
-        {NotificationsDisabled::TreeDays, tr("For 3 more days")},
-        {NotificationsDisabled::OneWeek, tr("For 1 more week")},
-        {NotificationsDisabled::Always, tr("Always")}};
-
 Q_LOGGING_CATEGORY(lcSynthesisBar, "gui.synthesisbar", QtInfoMsg)
+
+const std::map<NotificationsDisabled, QString> &SynthesisBar::notificationsDisabledMap() {
+    static const std::map<NotificationsDisabled, QString> map = {
+            {NotificationsDisabled::Never, tr("Never")},
+            {NotificationsDisabled::OneHour, tr("During 1 hour")},
+            {NotificationsDisabled::UntilTomorrow, tr("Until tomorrow 8:00AM")},
+            {NotificationsDisabled::TreeDays, tr("During 3 days")},
+            {NotificationsDisabled::OneWeek, tr("During 1 week")},
+            {NotificationsDisabled::Always, tr("Always")}};
+    return map;
+}
+
+const std::map<NotificationsDisabled, QString> &SynthesisBar::notificationsDisabledForPeriodMap() {
+    static const std::map<NotificationsDisabled, QString> map = {
+            {NotificationsDisabled::Never, tr("Never")},
+            {NotificationsDisabled::OneHour, tr("For 1 more hour")},
+            {NotificationsDisabled::UntilTomorrow, tr("Until tomorrow 8:00AM")},
+            {NotificationsDisabled::TreeDays, tr("For 3 more days")},
+            {NotificationsDisabled::OneWeek, tr("For 1 more week")},
+            {NotificationsDisabled::Always, tr("Always")}};
+    return map;
+}
 
 SynthesisBar::SynthesisBar(std::shared_ptr<ClientGui> gui, bool debugCrash, QWidget *parent) :
     QWidget(parent), _gui(gui), _debugCrash(debugCrash) {
@@ -208,10 +214,10 @@ void SynthesisBar::onOpenErrorsMenu() {
     QList<ErrorsPopup::DriveError> driveErrorList;
     getDriveErrorList(driveErrorList);
 
-    if (driveErrorList.size() > 0 || _gui->generalErrorsCount() > 0) {
+    if (!driveErrorList.empty() || _gui->generalErrorsCount() > 0) {
         CustomToolButton *button = qobject_cast<CustomToolButton *>(sender());
         const QPoint position = QWidget::mapToGlobal(button->geometry().center());
-        ErrorsPopup *errorsPopup = new ErrorsPopup(driveErrorList, _gui->generalErrorsCount(), position, this);
+        auto *errorsPopup = new ErrorsPopup(driveErrorList, _gui->generalErrorsCount(), position, this);
         (void) connect(errorsPopup, &ErrorsPopup::accountSelected, this, &SynthesisBar::onDisplayErrors);
         errorsPopup->show();
         errorsPopup->setModal(true);
@@ -255,6 +261,7 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
 
             submenu->addActions(openFolderActionGroup->actions());
             foldersMenuAction->setMenu(submenu);
+        } else {
         }
 
         menu->addAction(foldersMenuAction);
@@ -300,8 +307,8 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
 
     const std::map<NotificationsDisabled, QString> &notificationMap =
             _notificationsDisabled == NotificationsDisabled::Never || _notificationsDisabled == NotificationsDisabled::Always
-                    ? _notificationsDisabledMap
-                    : _notificationsDisabledForPeriodMap;
+                    ? notificationsDisabledMap()
+                    : notificationsDisabledForPeriodMap();
 
     for (auto const &[notifDisabled, str]: notificationMap) {
         auto *notificationAction = new QWidgetAction(this);
