@@ -262,6 +262,7 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
             submenu->addActions(openFolderActionGroup->actions());
             foldersMenuAction->setMenu(submenu);
         } else {
+            // Sonar compliant
         }
 
         menu->addAction(foldersMenuAction);

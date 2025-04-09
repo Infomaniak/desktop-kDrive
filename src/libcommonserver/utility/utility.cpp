@@ -74,13 +74,10 @@ static const SyncName excludedAppFileName(Str("litesync-exclude.lst"));
 // Resources relative path from working dir
 #if defined(__APPLE__)
 static const SyncName resourcesPath(Str("../../Contents/Resources"));
-static const SyncName testResourcesPath(Str("kDrive.app/Contents/Resources/"));
 #elif defined(__unix__)
 static const SyncName resourcesPath(Str(""));
-static const SyncName testResourcesPath(Str(""));
 #elif defined(_WIN32)
 static const SyncName resourcesPath(Str(""));
-static const SyncName testResourcesPath(Str(""));
 static const std::string NTFS("NTFS");
 #endif
 

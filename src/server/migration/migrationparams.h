@@ -35,7 +35,9 @@ class MigrationParams {
         ExitCode migrateGeneralParams();
         ExitCode migrateAccountsParams();
         ExitCode migrateTemplateExclusion();
+#ifdef __APPLE__
         ExitCode migrateAppExclusion();
+#endif
         ExitCode migrateProxySettings(ProxyConfig &proxyConfig);
         ExitCode migrateSelectiveSyncs();
 
