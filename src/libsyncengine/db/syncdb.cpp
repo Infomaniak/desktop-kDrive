@@ -2095,7 +2095,7 @@ bool SyncDb::selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyCol
         dbNode.setSize(size);
         dbNode.setLastModifiedLocal(lastModifiedLocal);
         dbNode.setLastModifiedRemote(lastModifiedDrive);
-        ²dbNode.setChecksum(cs);
+        dbNode.setChecksum(cs);
         dbNode.setStatus(status);
         dbNode.setSyncing(syncing);
 
