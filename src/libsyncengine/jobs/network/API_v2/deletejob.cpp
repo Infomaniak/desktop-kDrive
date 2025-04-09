@@ -82,11 +82,6 @@ bool DeleteJob::canRun() {
             return false;
         }
 
-        if (!ParametersCache::instance()->parameters().syncHiddenFiles() && filestat.isHidden) {
-            // The item is hidden, remove it from sync
-            return true;
-        }
-
         LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str()
                                       << L" still exist on local replica. Aborting current sync and restart.");
         _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent}; // Data error so the snapshots will be re-created

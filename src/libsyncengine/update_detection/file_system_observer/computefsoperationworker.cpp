@@ -206,27 +206,16 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         }
 
         if (checkTemplate) {
-            IoError ioError = IoError::Success;
-            bool warn = false;
-            bool isExcluded = false;
-            if (!ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), dbPath, warn, isExcluded,
-                                                                       ioError) ||
-                ioError == IoError::AccessDenied) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
-                                                   << Utility::formatIoError(dbPath, ioError));
-                return ExitCode::SystemError;
-            }
-
-            if (isExcluded) {
+            if (ExclusionTemplateCache::instance()->isExcluded(dbPath)) {
                 // The item is excluded
                 return ExitCode::Ok;
             }
         }
 
         // Delete operation
-        FSOpPtr fsOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(),
-                                                     dbNode.created().has_value() ? dbNode.created().value() : 0, dbLastModified,
-                                                     dbNode.size(), dbPath);
+        const FSOpPtr fsOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(),
+                                                           dbNode.created().has_value() ? dbNode.created().value() : 0,
+                                                           dbLastModified, dbNode.size(), dbPath);
         opSet->insertOp(fsOp);
         logOperationGeneration(snapshot->side(), fsOp);
 
@@ -484,19 +473,6 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const N
             }
 
             if (side == ReplicaSide::Local) {
-                // Check if a local file is hidden, hence excluded.
-                bool isExcluded = false;
-                IoError ioError = IoError::Success;
-                const bool success = ExclusionTemplateCache::instance()->checkIfIsExcludedBecauseHidden(
-                        _syncPal->localPath(), snapshotPath, isExcluded, ioError);
-                if (!success || ioError != IoError::Success || isExcluded) {
-                    if (_testing && ioError == IoError::NoSuchFileOrDirectory) {
-                        // Files does exist in test, this fine, ignore ioError.
-                    } else {
-                        continue;
-                    }
-                }
-
                 // TODO : this portion of code aimed to wait for a file to be available locally before starting to synchronize it
                 // For example, on Windows, when copying a big file inside the sync folder, the creation event is received
                 // immediately but the copy will take some time. Therefor, the file will appear locked during the copy.
@@ -842,25 +818,7 @@ ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
     if (!existsWithSameId) return ExitCode::Ok;
 
     // Check if file is synced
-    bool isWarning = false;
-    ioError = IoError::Success;
-    const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), relativePath, isWarning,
-                                                                               isExcluded, ioError);
-    if (!success) {
-        LOGW_SYNCPAL_WARN(_logger,
-                          L"Error in ExclusionTemplateCache::isExcluded: " << Utility::formatIoError(absolutePath, ioError));
-        setExitCause(ExitCause::Unknown);
-        return ExitCode::SystemError;
-    }
-
-    if (ioError == IoError::AccessDenied) {
-        LOGW_SYNCPAL_WARN(_logger, L"Item with " << Utility::formatSyncPath(absolutePath) << L" misses search permissions!");
-        setExitCause(ExitCause::FileAccessError);
-        return ExitCode::SystemError;
-    }
-
-    if (isExcluded) return ExitCode::Ok;
-
+    if (ExclusionTemplateCache::instance()->isExcluded(relativePath)) return ExitCode::Ok;
     if (_syncPal->snapshotCopy(ReplicaSide::Local)->isOrphan(nodeId)) {
         // This can happen if the propagation of template exclusions has been unexpectedly interrupted.
         // This special handling should be removed once the app keeps track on such interruptions.
