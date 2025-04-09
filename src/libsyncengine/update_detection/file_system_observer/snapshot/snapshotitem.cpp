@@ -138,7 +138,8 @@ void SnapshotItem::copyExceptChildren(const SnapshotItem &other) {
     _canWrite = other.canWrite();
     _canShare = other.canShare();
     _path = other.path();
-    _lastChangedSnapshotVersion = std::max(other.lastChangedSnapshotVersion(), _lastChangedSnapshotVersion);
+    _lastChangedSnapshotVersion =
+            other.lastChangedSnapshotVersion() == 0 ? _snapshotVersionHandler->nextVersion() : other.lastChangedSnapshotVersion();
 }
 
 void SnapshotItem::addChild(const std::shared_ptr<SnapshotItem> &child) {
