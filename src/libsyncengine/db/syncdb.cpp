@@ -1750,6 +1750,7 @@ bool SyncDb::updateAllSyncNodes(SyncNodeType type, const NodeSet &nodeIdSet) {
 
     int errId;
     std::string error;
+    invalidateCache();
 
     startTransaction();
 

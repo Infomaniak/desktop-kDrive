@@ -114,7 +114,7 @@ bool SyncDbCache::correspondingNodeId(ReplicaSide side, const NodeId& nodeIdIn, 
         return true;
     }
     found = true;
-    nodeIdOut = dbNodeIt->second.nodeId(side);
+    nodeIdOut = dbNodeIt->second.nodeId(otherSide(side));
     return true;
 }
 
