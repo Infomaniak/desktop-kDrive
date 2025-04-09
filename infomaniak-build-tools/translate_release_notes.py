@@ -81,9 +81,9 @@ target_languages = [
 ]
 
 os_list = [
-    'Win',
-    'Linux',
-    'macOS'
+    'win',
+    'linux',
+    'macos'
 ]
 
 def split_os(lang, fullName):
@@ -96,8 +96,9 @@ def split_os(lang, fullName):
             lines = f.readlines()
         with open(f"{fullName}-{os_ext}-{lang_ext}.html", "w") as f:
             for line in lines:
-                if any(os_note in line for os_note in os_list):
-                    if (f"<li>{os_name}" in line):
+                lowered = line.lower()
+                if any(os_note in lowered for os_note in os_list):
+                    if (f"<li>{os_name} -" in lowered):
                         f.write(f"\t\t<li>{line[line.find('-') + 2:]}")
                 else:
                     f.write(line)
