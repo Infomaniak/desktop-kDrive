@@ -1488,27 +1488,6 @@ void ClientGui::raiseDialog(QWidget *raiseWidget) {
         raiseWidget->showNormal();
         raiseWidget->raise();
         raiseWidget->activateWindow();
-
-#if defined(Q_OS_X11)
-        WId wid = raiseWidget->winId();
-        NETWM::init();
-
-        XEvent e;
-        e.xclient.type = ClientMessage;
-        e.xclient.message_type = NETWM::NET_ACTIVE_WINDOW;
-        e.xclient.display = QX11Info::display();
-        e.xclient.window = wid;
-        e.xclient.format = 32;
-        e.xclient.data.l[0] = 2;
-        e.xclient.data.l[1] = QX11Info::appTime();
-        e.xclient.data.l[2] = 0;
-        e.xclient.data.l[3] = 0l;
-        e.xclient.data.l[4] = 0l;
-        Display *display = QX11Info::display();
-        XSendEvent(display, RootWindow(display, DefaultScreen(display)),
-                   False, // propagate
-                   SubstructureRedirectMask | SubstructureNotifyMask, &e);
-#endif
     }
 }
 

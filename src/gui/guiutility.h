@@ -115,6 +115,7 @@ QString getDateForCurrentLanguage(const QDateTime &dateTime, const QString &date
 #ifdef Q_OS_LINUX
 bool getLinuxDesktopType(QString &type, QString &version);
 #endif
+
 template<class C>
 void setEnabledRecursively(C *root, bool enabled) {
     if (!root) return;

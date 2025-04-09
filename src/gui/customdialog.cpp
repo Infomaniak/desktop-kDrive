@@ -51,10 +51,10 @@ CustomDialog::CustomDialog(const bool popup, QWidget *parent) :
     QDialog(parent), _backgroundColor(QColor()), _buttonIconColor(QColor()), _backgroundForcedColor(QColor()), _layout(nullptr) {
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
+    setAttribute(Qt::WA_Hover, true);
 
     setMinimumSize(windowMinimumSize);
 
-    setAttribute(Qt::WA_Hover, true);
     installEventFilter(this);
 
     setContentsMargins(hMargin, vMargin, hMargin, vMargin);
