@@ -20,26 +20,26 @@
 #include "libcommon/utility/types.h"
 namespace KDC {
 
-class SnapshotVersionHandler {
+class SnapshotRevisionHandler {
     public:
-        SnapshotVersionHandler& operator=(const SnapshotVersionHandler& other) {
-            std::scoped_lock lock(_mutex);
-            _version = other._version;
+        SnapshotRevisionHandler& operator=(const SnapshotRevisionHandler& other) {
+            const std::scoped_lock lock(_mutex);
+            _revision = other._revision;
             return *this;
         }
-        const SnapshotVersion& version() const {
-            std::scoped_lock lock(_mutex);
-            return _version;
+        const SnapshotRevision& revision() const {
+            const std::scoped_lock lock(_mutex);
+            return _revision;
         }
 
-        SnapshotVersion nextVersion() {
-            std::scoped_lock lock(_mutex);
-            return ++_version;
+        SnapshotRevision nextVersion() {
+            const std::scoped_lock lock(_mutex);
+            return ++_revision;
         }
 
     private:
         mutable std::mutex _mutex;
-        SnapshotVersion _version = 1; // Version 0 is reserved for the initial state
+        SnapshotRevision _revision = 1; // Version 0 is reserved for the initial state
 };
 
 } // namespace KDC

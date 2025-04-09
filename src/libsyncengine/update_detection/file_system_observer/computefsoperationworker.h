@@ -45,8 +45,8 @@ class ComputeFSOperationWorker : public ISyncWorker {
         using NodeIdSet = NodeSet;
         using DbNodeIdSet = std::unordered_set<DbNodeId>;
         using NodeIdsSet = std::unordered_set<SyncDb::NodeIds, SyncDb::NodeIds::hashNodeIdsFunction>;
-        SnapshotVersion _lastLocalSnapshotSyncedVersion = 0;
-        SnapshotVersion _lastRemoteSnapshotSyncedVersion = 0;
+        SnapshotRevision _lastLocalSnapshotSyncedRevision = 0;
+        SnapshotRevision _lastRemoteSnapshotSyncedRevision = 0;
 
         // Detect changes based on the database records: delete, move and edit operations
         ExitCode inferChangesFromDb(NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet);

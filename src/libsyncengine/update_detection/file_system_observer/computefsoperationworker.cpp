@@ -105,10 +105,10 @@ void ComputeFSOperationWorker::execute() {
 
     } else {
         if (_syncPal->operationSet(ReplicaSide::Local)->nbOps() == 0) {
-            _lastLocalSnapshotSyncedVersion = _syncPal->snapshotCopy(ReplicaSide::Local)->version();
+            _lastLocalSnapshotSyncedRevision = _syncPal->snapshotCopy(ReplicaSide::Local)->revision();
         }
         if (_syncPal->operationSet(ReplicaSide::Remote)->nbOps() == 0) {
-            _lastRemoteSnapshotSyncedVersion = _syncPal->snapshotCopy(ReplicaSide::Remote)->version();
+            _lastRemoteSnapshotSyncedRevision = _syncPal->snapshotCopy(ReplicaSide::Remote)->revision();
         }
         exitCode = ExitCode::Ok;
         LOG_SYNCPAL_INFO(_logger, "FS operation sets generated in: " << elapsedSeconds.count() << "s");
@@ -334,11 +334,11 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
         // Check if the item has change since the last sync
         bool snapshotItemChanged = false;
         for (const auto side: std::array<ReplicaSide, 2>{ReplicaSide::Local, ReplicaSide::Remote}) {
-            const auto lastItemChangedSnapshotVersion =
+            const auto lastItemChangedSnapshotRevision =
                     _syncPal->snapshotCopy(side)->lastChangedSnapshotVersion(nodesIdsIt->nodeId(side));
-            const auto lastSyncedSnapshotVersion =
-                    side == ReplicaSide::Local ? _lastLocalSnapshotSyncedVersion : _lastRemoteSnapshotSyncedVersion;
-            if (lastItemChangedSnapshotVersion == 0 || lastItemChangedSnapshotVersion > lastSyncedSnapshotVersion) {
+            const auto lastSyncedSnapshotRevision =
+                    side == ReplicaSide::Local ? _lastLocalSnapshotSyncedRevision : _lastRemoteSnapshotSyncedRevision;
+            if (lastItemChangedSnapshotRevision == 0 || lastItemChangedSnapshotRevision > lastSyncedSnapshotRevision) {
                 snapshotItemChanged = true;
                 break;
             }

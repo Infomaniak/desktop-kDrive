@@ -61,10 +61,10 @@ class SnapshotItem {
         void setCanWrite(const bool canWrite);
         [[nodiscard]] bool canShare() const { return _canShare; }
         void setCanShare(bool canShare);
-        void setLastChangedSnapshotVersion(SnapshotVersion snapshotVersion);
-        SnapshotVersion lastChangedSnapshotVersion() const { return _lastChangedSnapshotVersion; }
+        void setLastChangedSnapshotVersion(SnapshotRevision snapshotVersion);
+        SnapshotRevision lastChangedSnapshotVersion() const { return _lastChangedSnapshotVersion; }
 
-        void setSnapshotVersionHandler(const std::shared_ptr<SnapshotVersionHandler> &snapshotVersionHandler) {
+        void setSnapshotVersionHandler(const std::shared_ptr<SnapshotRevisionHandler> &snapshotVersionHandler) {
             _snapshotVersionHandler = snapshotVersionHandler;
             _lastChangedSnapshotVersion = _snapshotVersionHandler ? _snapshotVersionHandler->nextVersion() : 0;
         }
@@ -90,9 +90,9 @@ class SnapshotItem {
         bool _canWrite = true;
         bool _canShare = true;
         std::unordered_set<std::shared_ptr<SnapshotItem>> _children;
-        SnapshotVersion _lastChangedSnapshotVersion =
+        SnapshotRevision _lastChangedSnapshotVersion =
                 0; // The verison of the snapshot corresponding to the last change of this item.
-        std::shared_ptr<SnapshotVersionHandler> _snapshotVersionHandler;
+        std::shared_ptr<SnapshotRevisionHandler> _snapshotVersionHandler;
         mutable SyncPath _path; // The item relative path. Cached value. To use only on a snapshot copy, not a real time one.
 
         [[nodiscard]] SyncPath path() const { return _path; }

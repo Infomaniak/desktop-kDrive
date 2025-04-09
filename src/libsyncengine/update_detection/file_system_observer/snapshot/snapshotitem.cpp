@@ -104,7 +104,7 @@ void SnapshotItem::setCanShare(bool canShare) {
     _canShare = canShare;
 }
 
-void SnapshotItem::setLastChangedSnapshotVersion(SnapshotVersion snapshotVersion) {
+void SnapshotItem::setLastChangedSnapshotVersion(SnapshotRevision snapshotVersion) {
     if (snapshotVersion > _lastChangedSnapshotVersion) {
         _lastChangedSnapshotVersion = snapshotVersion;
     } else {
@@ -138,7 +138,7 @@ void SnapshotItem::copyExceptChildren(const SnapshotItem &other) {
     _canWrite = other.canWrite();
     _canShare = other.canShare();
     _path = other.path();
-    _lastChangedSnapshotVersion = other.lastChangedSnapshotVersion();
+    _lastChangedSnapshotVersion = std::max(other.lastChangedSnapshotVersion(), _lastChangedSnapshotVersion);
 }
 
 void SnapshotItem::addChild(const std::shared_ptr<SnapshotItem> &child) {

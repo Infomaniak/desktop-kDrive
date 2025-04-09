@@ -31,7 +31,7 @@ namespace KDC {
 
 Snapshot::Snapshot(ReplicaSide side, const DbNode &dbNode) :
     _side(side), _rootFolderId(side == ReplicaSide::Local ? dbNode.nodeIdLocal().value() : dbNode.nodeIdRemote().value()) {
-    _versionHandlder = std::make_shared<SnapshotVersionHandler>();
+    _versionHandlder = std::make_shared<SnapshotRevisionHandler>();
     _items.try_emplace(_rootFolderId, std::make_shared<SnapshotItem>(_rootFolderId))
             .first->second->setSnapshotVersionHandler(_versionHandlder);
 }
@@ -430,7 +430,7 @@ bool Snapshot::isLink(const NodeId &itemId) const {
     return false;
 }
 
-SnapshotVersion Snapshot::lastChangedSnapshotVersion(const NodeId &itemId) const {
+SnapshotRevision Snapshot::lastChangedSnapshotVersion(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
     if (const auto item = findItem(itemId); item) {
         return item->lastChangedSnapshotVersion();
@@ -538,8 +538,8 @@ void Snapshot::setValid(bool newIsValid) {
     _isValid = newIsValid;
 }
 
-SnapshotVersion Snapshot::version() const {
-    return _versionHandlder->version();
+SnapshotRevision Snapshot::revision() const {
+    return _versionHandlder->revision();
 }
 
 bool Snapshot::checkIntegrityRecursively() const {
