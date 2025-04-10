@@ -52,7 +52,13 @@ class SynthesisBar : public QWidget {
         bool _debugCrash{false};
         bool _systemMove{false};
 
+        /**
+         * @brief Map of the `Disable notifications` submenu items when notifications are never or always disabled
+         */
         static const std::map<NotificationsDisabled, QString> &notificationsDisabledMap();
+        /**
+         * @brief Map of the `Disable notifications` submenu items when notifications are disabled until a date and time
+         */
         static const std::map<NotificationsDisabled, QString> &notificationsDisabledForPeriodMap();
 
         void getDriveErrorList(QList<ErrorsPopup::DriveError> &list);

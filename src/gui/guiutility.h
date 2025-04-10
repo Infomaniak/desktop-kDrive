@@ -75,7 +75,7 @@ QPixmap getAvatarFromImage(const QImage &image);
 QIcon getIconWithColor(const QString &path, const QColor &color = QColor());
 QIcon getIconMenuWithColor(const QString &path, const QColor &color = QColor());
 
-systrayPosition getSystrayPosition(QScreen *screen);
+systrayPosition getSystrayPosition(const QScreen *const screen);
 bool isPointInSystray(QScreen *screen, const QPoint &point);
 
 bool isDarkTheme();
