@@ -63,6 +63,7 @@ bool SyncDbCache::reloadCacheIfNeeded() {
         }
     }
     LOG_DEBUG(Log::instance()->getLogger(), "SyncDbCache: cache updated, revision=" << _syncDb->revision());
+    return true;
 }
 
 bool SyncDbCache::parent(ReplicaSide side, const NodeId& nodeId, NodeId& parentNodeId, bool& found) {
