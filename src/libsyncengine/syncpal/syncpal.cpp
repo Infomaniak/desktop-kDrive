@@ -1392,10 +1392,21 @@ void SyncPal::copySnapshots() {
     LOG_IF_FAIL(_localSnapshot)
     LOG_IF_FAIL(_remoteSnapshot)
 
+    if (!_localSnapshotCopy) _localSnapshotCopy = std::make_shared<Snapshot>(ReplicaSide::Local, _syncDb->rootNode());
+    if (!_remoteSnapshotCopy) _remoteSnapshotCopy = std::make_shared<Snapshot>(ReplicaSide::Remote, _syncDb->rootNode());
     *_localSnapshotCopy = *_localSnapshot;
     *_remoteSnapshotCopy = *_remoteSnapshot;
     _localSnapshot->startRead();
     _remoteSnapshot->startRead();
+}
+
+void SyncPal::freeSnapshotsCopies() {
+    if (_localSnapshotCopy) {
+        _localSnapshotCopy.reset();
+    }
+    if (_remoteSnapshotCopy) {
+        _remoteSnapshotCopy.reset();
+    }
 }
 
 void SyncPal::invalideSnapshots() {
