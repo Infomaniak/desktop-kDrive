@@ -54,8 +54,6 @@ class UpdateTree : public SharedObject {
         void clear();
         void init();
 
-        inline bool inconsistencyCheckDone() const { return _inconsistencyCheckDone; }
-        inline void setInconsistencyCheckDone() { _inconsistencyCheckDone = true; }
         [[nodiscard]] bool updateNodeId(std::shared_ptr<Node> node, const NodeId &newId);
         inline void setRootFolderId(const NodeId &nodeId) { _rootNode->setId(std::make_optional<NodeId>(nodeId)); }
 
@@ -73,8 +71,6 @@ class UpdateTree : public SharedObject {
 
         // key : previousID, value : newID
         std::unordered_map<NodeId, NodeId> _previousIdSet;
-
-        bool _inconsistencyCheckDone = false;
 
         friend class TestUpdateTree;
         friend class TestUpdateTreeWorker;
