@@ -129,8 +129,8 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) const {
     return ret;
 }
 
-SyncPath ConflictCmp::pathOfEvent(const Conflict &conflict, OperationType optype) const {
-    ReplicaSide side = conflict.sideOfEvent(optype);
+SyncPath ConflictCmp::pathOfEvent(const Conflict &conflict, const OperationType optype) const {
+    const auto side = conflict.sideOfEvent(optype);
     SyncPath path = (side == ReplicaSide::Local    ? conflict.node()->getPath()
                      : side == ReplicaSide::Remote ? conflict.otherNode()->getPath()
                                                    : std::filesystem::path());
@@ -138,7 +138,8 @@ SyncPath ConflictCmp::pathOfEvent(const Conflict &conflict, OperationType optype
     return path;
 }
 
-ConflictQueue::ConflictQueue(std::shared_ptr<UpdateTree> localUpdateTree, std::shared_ptr<UpdateTree> remoteUpdateTree) :
+ConflictQueue::ConflictQueue(const std::shared_ptr<UpdateTree> localUpdateTree,
+                             const std::shared_ptr<UpdateTree> remoteUpdateTree) :
     _conflictCmp(localUpdateTree, remoteUpdateTree) {
     initQueue();
 }
@@ -154,7 +155,6 @@ void ConflictQueue::push(Conflict c) {
 }
 
 void ConflictQueue::clear() {
-    //_queue.reset(new std::priority_queue<Conflict, std::vector<Conflict>, ConflictCmp>(_conflictCmp));
     while (!_queue->empty()) {
         _queue->pop();
     }
@@ -162,8 +162,7 @@ void ConflictQueue::clear() {
 }
 
 void ConflictQueue::initQueue() {
-    _queue = std::unique_ptr<std::priority_queue<Conflict, std::vector<Conflict>, ConflictCmp>>(
-            new std::priority_queue<Conflict, std::vector<Conflict>, ConflictCmp>(_conflictCmp));
+    _queue = std::make_unique<std::priority_queue<Conflict, std::vector<Conflict>, ConflictCmp>>(_conflictCmp);
 }
 
 } // namespace KDC
