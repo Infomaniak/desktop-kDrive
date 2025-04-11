@@ -23,7 +23,9 @@
 #include <Poco/JSON/Object.h>
 
 namespace KDC {
-
+class SyncDb;
+class Snapshot;
+class UpdateTree;
 class Node;
 class SyncPal;
 
@@ -54,11 +56,22 @@ class SyncPal;
  */
 class TestSituationGenerator {
     public:
-        TestSituationGenerator() = default;
-        explicit TestSituationGenerator(const std::shared_ptr<SyncPal> &syncpal) : _syncpal(syncpal) {}
+        TestSituationGenerator();
+        explicit TestSituationGenerator(std::shared_ptr<SyncPal> syncpal);
+        explicit TestSituationGenerator(std::shared_ptr<SyncDb> syncDb, std::shared_ptr<Snapshot> localSnapshot,
+                                        std::shared_ptr<Snapshot> remoteSnapshot, std::shared_ptr<UpdateTree> localUpdateTree,
+                                        std::shared_ptr<UpdateTree> remoteUpdateTree);
 
-        void setSyncpal(const std::shared_ptr<SyncPal> &syncpal) { _syncpal = syncpal; }
+        void setSyncpal(std::shared_ptr<SyncPal> syncpal);
+        void setSyncDb(const std::shared_ptr<SyncDb> syncDb) { _syncDb = syncDb; }
+        void setLocalSnapshot(const std::shared_ptr<Snapshot> localSnapshot) { _localSnapshot = localSnapshot; }
+        void setRemoteSnapshot(const std::shared_ptr<Snapshot> remoteSnapshot) { _remoteSnapshot = remoteSnapshot; }
+        void setLocalUpdateTree(const std::shared_ptr<UpdateTree> localUpdateTree) { _localUpdateTree = localUpdateTree; }
+        void setRemoteUpdateTree(const std::shared_ptr<UpdateTree> remoteUpdateTree) { _remoteUpdateTree = remoteUpdateTree; }
+
         void generateInitialSituation(const std::string &jsonInputStr);
+        void addItem(NodeType itemType, const std::string &id, const std::string &parentId) const;
+        [[nodiscard]] size_t size() const;
 
         [[nodiscard]] std::shared_ptr<Node> getNode(ReplicaSide side, const NodeId &id) const;
         bool getDbNode(const NodeId &id, DbNode &dbNode) const;
@@ -85,7 +98,6 @@ class TestSituationGenerator {
         [[nodiscard]] NodeId generateId(ReplicaSide side, const NodeId &id) const;
 
         void addItem(Poco::JSON::Object::Ptr obj, const std::string &parentId = {});
-        void addItem(NodeType itemType, const std::string &id, const std::string &parentId) const;
 
         void insertInAllSnapshot(NodeType itemType, const NodeId &id, const NodeId &parentId) const;
         [[nodiscard]] DbNodeId insertInDb(NodeType itemType, const NodeId &id, const NodeId &parentId) const;
@@ -102,7 +114,18 @@ class TestSituationGenerator {
                                                                const NodeId &parentId, std::optional<DbNodeId> dbNodeId) const;
         void insertInAllUpdateTrees(NodeType itemType, const NodeId &id, const NodeId &parentId, DbNodeId dbNodeId) const;
 
-        std::shared_ptr<SyncPal> _syncpal;
+        std::shared_ptr<Snapshot> snapshot(const ReplicaSide side) const {
+            return side == ReplicaSide::Local ? _localSnapshot : _remoteSnapshot;
+        }
+        std::shared_ptr<UpdateTree> updateTree(const ReplicaSide side) const {
+            return side == ReplicaSide::Local ? _localUpdateTree : _remoteUpdateTree;
+        }
+
+        std::shared_ptr<SyncDb> _syncDb;
+        std::shared_ptr<Snapshot> _localSnapshot;
+        std::shared_ptr<Snapshot> _remoteSnapshot;
+        std::shared_ptr<UpdateTree> _localUpdateTree;
+        std::shared_ptr<UpdateTree> _remoteUpdateTree;
 };
 
 } // namespace KDC
