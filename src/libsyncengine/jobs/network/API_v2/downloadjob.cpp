@@ -43,8 +43,9 @@ namespace KDC {
 
 DownloadJob::DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
                          int64_t expectedSize, SyncTime creationTime, SyncTime modtime, bool isCreate) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false), _remoteFileId(remoteFileId), _localpath(localpath),
-    _expectedSize(expectedSize), _creationTime(creationTime), _modtimeIn(modtime), _isCreate(isCreate), _vfs(vfs) {
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
+    _remoteFileId(remoteFileId), _localpath(localpath), _expectedSize(expectedSize), _creationTime(creationTime),
+    _modtimeIn(modtime), _isCreate(isCreate), _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = 60;
     _trials = TRIALS;
@@ -52,8 +53,8 @@ DownloadJob::DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const N
 
 DownloadJob::DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
                          int64_t expectedSize) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false), _remoteFileId(remoteFileId), _localpath(localpath),
-    _expectedSize(expectedSize), _ignoreDateTime(true), _vfs(vfs) {
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
+    _remoteFileId(remoteFileId), _localpath(localpath), _expectedSize(expectedSize), _ignoreDateTime(true), _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = 60;
     _trials = TRIALS;
@@ -183,12 +184,11 @@ bool DownloadJob::handleResponse(std::istream &is) {
         isLink = true;
     }
 
+    bool isHydrated = true;
     if (_vfs) {
         VfsStatus vfsStatus;
         _vfs->status(_localpath, vfsStatus);
-        _isHydrated = vfsStatus.isHydrated;
-    } else {
-        _isHydrated = true;
+        isHydrated = vfsStatus.isHydrated;
     }
 
     // Process download
@@ -215,7 +215,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
 
         bool restartSync = false;
         if (!_responseHandlingCanceled) {
-            if (_vfs && !_isHydrated && !fetchFinished) { // updateFetchStatus is used only for hydration.
+            if (_vfs && !isHydrated && !fetchFinished) { // updateFetchStatus is used only for hydration.
                 // Update fetch status
                 if (ExitInfo exitInfo =
                             _vfs->updateFetchStatus(_tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished);
@@ -230,7 +230,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
                 }
 
                 _responseHandlingCanceled = fetchCanceled || fetchError || (!fetchFinished);
-            } else if (_isHydrated) {
+            } else if (isHydrated) {
                 // Replace file by tmp one
                 if (!moveTmpFile(restartSync)) {
                     LOGW_WARN(_logger, L"Failed to replace file by tmp one: " << Utility::formatSyncPath(_tmpPath));
@@ -658,7 +658,7 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
                     }
                 }
 
-                if (_vfs && !_isHydrated) { // updateFetchStatus is used only for hydration.
+                if (_vfs && !isHydrated) { // updateFetchStatus is used only for hydration.
                     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - fileProgressTimer;
                     if (elapsed_seconds.count() > NOTIFICATION_DELAY || done) {
                         // Update fetch status

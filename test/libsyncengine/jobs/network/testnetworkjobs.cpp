@@ -344,7 +344,6 @@ void TestNetworkJobs::testDownload() {
             DownloadJob job(vfs, _driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
-            CPPUNIT_ASSERT_EQUAL(true, job._isHydrated);
         }
 
         // Check file content
