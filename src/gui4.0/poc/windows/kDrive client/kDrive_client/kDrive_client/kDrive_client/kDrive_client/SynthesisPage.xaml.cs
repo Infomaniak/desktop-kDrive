@@ -1,3 +1,4 @@
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -27,5 +28,29 @@ namespace kDrive_client
         {
             this.InitializeComponent();
         }
+
+        private void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)
+        {
+            s_window = new MainWindow();
+            s_window.Activate();
+            s_window.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(600, 500, 500, 600));
+            var mainWindow = (Application.Current as App)?.Window;
+            if (mainWindow != null && mainWindow.AppWindow.Presenter is OverlappedPresenter presenter)
+            {
+                presenter.Minimize();
+                s_window.Closed += (s, args) =>
+                {
+                    presenter.Restore();
+                };
+            }
+
+            
+
+
+
+
+        }
+        private Window? s_window;
+
     }
 }

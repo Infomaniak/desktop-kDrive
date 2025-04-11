@@ -47,6 +47,11 @@
   <ItemGroup>
     <Folder Include="Assets\NewFolder\" />
   </ItemGroup>
+  <ItemGroup>
+    <Page Update="SettingsWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
 
   <!--
     Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution

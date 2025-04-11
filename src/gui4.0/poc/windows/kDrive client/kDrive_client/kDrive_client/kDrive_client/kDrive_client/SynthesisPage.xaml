@@ -34,7 +34,7 @@
                                         <FontIcon Glyph="&#xeb41;"/>
                                     </MenuFlyoutItem.Icon>
                                 </MenuFlyoutItem>
-                                <MenuFlyoutItem Text="Gerer mes drives">
+                                <MenuFlyoutItem Text="Gerer mes drives" Click="MenuFlyoutItem_Click">
                                     <MenuFlyoutItem.Icon>
                                         <FontIcon Glyph="&#xe8ce;"/>
                                     </MenuFlyoutItem.Icon>
@@ -88,7 +88,7 @@
                         </MenuFlyout>
                     </DropDownButton.Flyout>
                 </DropDownButton>
-                <!-- Progress -->
+                <!-- Usage -->
                 <ProgressBar Value="3" Height="6" Margin="0,10,0,0"/>
                 <TextBlock Text="166 Go / 76 800 Go" FontSize="12" Foreground="Gray" Margin="0,4,0,0"/>
 

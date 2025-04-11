@@ -56,6 +56,7 @@ namespace kDrive_client
         {
             throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
         }
+        public Window Window => m_window;
 
         private Window? m_window;
     }
