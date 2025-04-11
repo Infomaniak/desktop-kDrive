@@ -187,3 +187,5 @@ cmake-build-debug*
 /extensions/windows/cfapi/FileExplorerExtension/Generated Files
 /CMakeSettings.json
 /out/
+/src/gui4.0/poc/windows/kDrive client/.vs/kDrive client
+/src/gui4.0/poc/windows/kDrive client/kDrive_client/kDrive_client/kDrive_client/.vs
