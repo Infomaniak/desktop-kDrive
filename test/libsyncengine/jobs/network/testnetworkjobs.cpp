@@ -977,7 +977,7 @@ void TestNetworkJobs::testUpload(const SyncTime timeInput, SyncTime &timeOutput)
 void TestNetworkJobs::testUpload() {
     const auto epochNow = std::chrono::system_clock::now().time_since_epoch();
     auto timeInput = std::chrono::duration_cast<std::chrono::seconds>(epochNow);
-    SyncTime timeOutput;
+    SyncTime timeOutput = 0;
 
     testUpload(timeInput.count(), timeOutput);
     CPPUNIT_ASSERT_EQUAL(timeInput.count(), timeOutput);
