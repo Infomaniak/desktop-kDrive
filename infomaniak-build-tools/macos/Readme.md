@@ -256,10 +256,13 @@ xcrun notarytool store-credentials "notarytool" --apple-id <email address> --tea
 
 # Build in Debug
 
-## Linking dependencies
+## Deploying dependencies
 
-In order for `CMake` to be able to find all dependencies, you might need to define `DYLD_LIBRARY_PATH=/usr/local/lib` in your environment variables.
-Either add `export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/lib` in your personal `.zshrc` file or add the environment variable in your IDE.
+Dependencies are deployed using utilitary tool `macdeployqt` provided with the Qt binaries:
+
+`/Users/<user_name>/Qt/6.2.3/macos/bin/macdeployqt /Users/<user_name>/Projects/CLion-build-debug/install/kDrive.app -libpath=/usr/local/lib -no-strip -executable=/Users/<user_name>/Projects/CLion-build-debug/install/kDrive.app/Contents/MacOS/kDrive`.
+
+This command is run each time we build in release mode. However, since it takes some time to find all dependencies, this program is run manually in debug mode every time we need to rebuild the binary directory.
 
 ## Using CLion
 
@@ -287,6 +290,12 @@ Add `CMake install` in the `Before launch` steps:
 
 ![alt text](cmake_install.png)
 
+`CMake install` also needs to be run only once in order to copy mandatory files into the package (e.g.: sync-exclude-osx.lst) and correct rpath. Once it has run once, you can remove it from the `Before launch` steps in order to start the app faster.
+
+However, link to library `xxHash` seems to brake from time to time and a correction of the rpath in sometime needed. To avoid that, you can either always do the `CMake install` step (~15sec) or create a new step just to correct the rpath for `xxHash`.
+
+![alt text](fix_rpath_step.png)
+
 ### Sign package
 
 Add a `Run external tool` in the `Before launch` steps:
@@ -296,6 +305,8 @@ Add a `Run external tool` in the `Before launch` steps:
 Create the external tool to run `sign_app_debug.sh`:
 
 ![alt text](sign_package.png)
+
+Signing package is mandatory only if you need to use the LiteSync in debug mode. Otherwise you can remove this step in order to start the app faster.
 
 ## Using Qt Creator
 

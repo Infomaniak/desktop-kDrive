@@ -353,7 +353,7 @@ bool Utilities::checkIfIsLink(const wchar_t *path, bool &isSymlink, bool &isJunc
     HANDLE hFile = CreateFileW(path, FILE_WRITE_ATTRIBUTES, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                                OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
     if (hFile == INVALID_HANDLE_VALUE) {
-        exists = KDC::utility_base::isLikeFileNotFoundError(GetLastError());
+        exists = !KDC::utility_base::isLikeFileNotFoundError(GetLastError());
         return !exists;
     }
 
@@ -369,7 +369,7 @@ bool Utilities::checkIfIsLink(const wchar_t *path, bool &isSymlink, bool &isJunc
             return true;
         }
 
-        exists = KDC::utility_base::isLikeFileNotFoundError(GetLastError());
+        exists = !KDC::utility_base::isLikeFileNotFoundError(GetLastError());
         return !exists;
     }
 
@@ -387,7 +387,7 @@ bool Utilities::checkIfIsDirectory(const wchar_t *path, bool &isDirectory, bool 
     std::error_code ec;
     isDirectory = std::filesystem::is_directory(std::filesystem::path(path), ec);
     if (!isDirectory && ec.value() != 0) {
-        exists = KDC::utility_base::isLikeFileNotFoundError(ec);
+        exists = !KDC::utility_base::isLikeFileNotFoundError(ec);
         if (!exists) {
             return true;
         }

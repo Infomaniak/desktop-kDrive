@@ -59,7 +59,9 @@ bool Placeholders::create(const PCWSTR fileId, const PCWSTR relativePath, const 
         return false;
     }
 
-    return true;
+    // !!! Creating a placeholder DOESN'T triggers any file system event !!!
+    // Updating the placeholder generate an EDIT event and then the insertion into the local snapshot
+    return update(fullPath.c_str(), findData);
 }
 
 bool Placeholders::convert(const PCWSTR fileId, const PCWSTR filePath) {
