@@ -81,6 +81,7 @@ set(syncengine_SRCS
     update_detection/file_system_observer/localfilesystemobserverworker.h update_detection/file_system_observer/localfilesystemobserverworker.cpp
     update_detection/file_system_observer/snapshot/snapshot.h update_detection/file_system_observer/snapshot/snapshot.cpp
     update_detection/file_system_observer/snapshot/snapshotitem.h update_detection/file_system_observer/snapshot/snapshotitem.cpp
+    update_detection/file_system_observer/snapshot/snapshotversionhandler.h
     update_detection/file_system_observer/computefsoperationworker.h update_detection/file_system_observer/computefsoperationworker.cpp
     update_detection/file_system_observer/fsoperation.h update_detection/file_system_observer/fsoperation.cpp
     update_detection/file_system_observer/fsoperationset.h update_detection/file_system_observer/fsoperationset.cpp
@@ -115,7 +116,7 @@ set(syncengine_SRCS
     # SyncPal
     syncpal/isyncworker.h syncpal/isyncworker.cpp
     syncpal/operationprocessor.h syncpal/operationprocessor.cpp
-    syncpal/sharedobject.h syncpal/sharedobject.cpp
+    syncpal/sharedobject.h
     syncpal/syncpal.h syncpal/syncpal.cpp
     syncpal/syncpalworker.h syncpal/syncpalworker.cpp
     syncpal/virtualfilescleaner.h syncpal/virtualfilescleaner.cpp

@@ -22,14 +22,12 @@ namespace KDC {
 
 class SharedObject {
     public:
-        SharedObject();
-
         [[nodiscard]] bool updated() const { return _updated; }
         void startUpdate() { _updated = true; }
         void startRead() { _updated = false; }
 
     private:
-        bool _updated;
+        bool _updated = false;
 };
 
 } // namespace KDC

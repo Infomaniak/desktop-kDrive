@@ -16,10 +16,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "sharedobject.h"
-
+#pragma once
+#include "libcommon/utility/types.h"
 namespace KDC {
 
-SharedObject::SharedObject() : _updated(false) {}
+class SnapshotRevisionHandler {
+    public:
+        SnapshotRevisionHandler& operator=(const SnapshotRevisionHandler& other) {
+            const std::scoped_lock lock(_mutex);
+            _revision = other._revision;
+            return *this;
+        }
+        const SnapshotRevision& revision() const {
+            const std::scoped_lock lock(_mutex);
+            return _revision;
+        }
+
+        SnapshotRevision nextVersion() {
+            const std::scoped_lock lock(_mutex);
+            return ++_revision;
+        }
+
+    private:
+        mutable std::mutex _mutex;
+        SnapshotRevision _revision = 1; // Version 0 is reserved for the initial state
+};
 
 } // namespace KDC

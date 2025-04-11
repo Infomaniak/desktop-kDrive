@@ -651,11 +651,13 @@ bool CommonUtility::isSubDir(const SyncPath &path1, const SyncPath &path2) {
 
     auto it1 = path1.begin();
     auto it2 = path2.begin();
-    while (it1 != path1.end() && it2 != path2.end() && *it1 == *it2) {
+    const auto it1End = path1.end();
+    const auto it2End = path2.end();
+    while (it1 != it1End && it2 != it2End && *it1 == *it2) {
         it1++;
         it2++;
     }
-    return (it1 == path1.end());
+    return (it1 == it1End);
 }
 
 const std::string CommonUtility::dbVersionNumber(const std::string &dbVersion) {
