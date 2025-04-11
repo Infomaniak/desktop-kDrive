@@ -106,12 +106,12 @@ void QProgressIndicator::paintEvent(QPaintEvent* /*event*/) {
 
     for (int i = 0; i < 12; i++) {
         QColor color = m_color;
-        color.setAlphaF(1.0f - (i / 12.0f));
+        color.setAlphaF(1.0f - (static_cast<float>(i) / 12.0f));
         p.setPen(Qt::NoPen);
         p.setBrush(color);
         p.save();
         p.translate(rect().center());
-        p.rotate(m_angle - i * 30.0f);
+        p.rotate(static_cast<float>(m_angle - i) * 30.0f);
         p.drawRoundedRect(static_cast<int>(std::round(-capsuleWidth * 0.5)), -(innerRadius + capsuleHeight), capsuleWidth,
                           capsuleHeight, capsuleRadius, capsuleRadius);
         p.restore();
