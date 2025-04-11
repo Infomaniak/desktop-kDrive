@@ -82,7 +82,6 @@ class DownloadJob : public AbstractTokenNetworkJob {
 
         NodeId _localNodeId;
         const std::shared_ptr<Vfs> _vfs;
-        bool _isHydrated{true};
 
         friend class TestNetworkJobs;
 };
