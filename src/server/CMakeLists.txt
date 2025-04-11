@@ -57,7 +57,8 @@ set(updater_SRCS
 )
 
 if(APPLE)
-    list(APPEND server_SRCS socketapisocket_mac.mm ../common/utility_mac.cpp)
+    list(APPEND server_SRCS ../common/utility_mac.cpp)
+    list(APPEND server_SRCS socketapisocket_mac.mm)
     set_property(SOURCE socketapisocket_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
     list(APPEND server_SRCS ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m)
@@ -76,9 +77,11 @@ if(APPLE)
                 DESTINATION "${KDRIVE_OSX_BUNDLE}/Contents/Frameworks" USE_SOURCE_PERMISSIONS)
     endif()
 elseif (WIN32)
-    list(APPEND updater_SRCS updater/windowsupdater.h updater/windowsupdater.cpp ../common/utility_win.cpp)
+    list(APPEND server_SRCS ../common/utility_win.cpp)
+    list(APPEND updater_SRCS updater/windowsupdater.h updater/windowsupdater.cpp)
 else ()
-    list(APPEND updater_SRCS updater/linuxupdater.h updater/linuxupdater.cpp ../common/utility_linux.cpp)
+    list(APPEND server_SRCS ../common/utility_linux.cpp)
+    list(APPEND updater_SRCS updater/linuxupdater.h updater/linuxupdater.cpp)
 endif()
 
 set(3rdparty_SRC
