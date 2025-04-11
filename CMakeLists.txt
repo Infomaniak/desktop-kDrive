@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 3.1)
 set(CMAKE_CXX_STANDARD 20)
+project(client)
 if(APPLE)
     enable_language(OBJC)
     enable_language(OBJCXX)
 endif()
-
-project(client)
 
 ##### Submodules
 
@@ -226,8 +225,12 @@ if (BUILD_UNIT_TESTS)
 endif ()
 
 message(STATUS "Configure files")
+message("prefix: ${CMAKE_FIND_LIBRARY_PREFIXES}")
+message("suffix: ${CMAKE_FIND_LIBRARY_SUFFIXES}")
 configure_file(config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
+
+set(QTDIR $ENV{QTDIR})
 
 if (BUILD_KDRIVE_OSX_BUNDLE)
     # Provision profile
