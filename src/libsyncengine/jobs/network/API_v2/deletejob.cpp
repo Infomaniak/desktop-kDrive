@@ -25,10 +25,10 @@
 
 namespace KDC {
 
-DeleteJob::DeleteJob(int driveDbId, const NodeId &remoteItemId, const NodeId &localItemId,
-                     const SyncPath &absoluteLocalFilepath) :
+DeleteJob::DeleteJob(const int driveDbId, const NodeId &remoteItemId, const NodeId &localItemId, const SyncPath &absoluteLocalFilepath,
+                     const NodeType nodeType) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _remoteItemId(remoteItemId), _localItemId(localItemId),
-    _absoluteLocalFilepath(absoluteLocalFilepath) {
+    _absoluteLocalFilepath(absoluteLocalFilepath), _nodeType(nodeType) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_DELETE;
 }
 
@@ -84,6 +84,13 @@ bool DeleteJob::canRun() {
 
         if (!ParametersCache::instance()->parameters().syncHiddenFiles() && filestat.isHidden) {
             // The item is hidden, remove it from sync
+            return true;
+        }
+
+        if (filestat.nodeType != _nodeType && filestat.nodeType != NodeType::Unknown && _nodeType != NodeType::Unknown) {
+            // The nodeId has been reused by a new item: we remove the old one from sync.
+            LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath)
+                                          << L" has been reused by a new item. Removing the old item from sync.");
             return true;
         }
 

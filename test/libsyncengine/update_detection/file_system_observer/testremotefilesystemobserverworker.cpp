@@ -103,7 +103,7 @@ void TestRemoteFileSystemObserverWorker::tearDown() {
 
     // Delete file
     if (!_testFileId.empty()) {
-        DeleteJob job(_driveDbId, _testFileId, "", "");
+        DeleteJob job(_driveDbId, _testFileId, "", "", NodeType::Directory);
         job.setBypassCheck(true);
         job.runSynchronously();
     }
@@ -218,7 +218,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     {
         LOG_DEBUG(_logger, "***** test delete file *****");
 
-        DeleteJob job(_driveDbId, _testFileId, "", "");
+        DeleteJob job(_driveDbId, _testFileId, "", "", NodeType::File);
         job.setBypassCheck(true);
         job.runSynchronously();
 

@@ -78,6 +78,7 @@ void TestSyncPal::setUp() {
 
     _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
                                          KDRIVE_VERSION_STRING);
+    _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 }

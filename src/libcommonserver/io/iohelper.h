@@ -148,13 +148,14 @@ struct IoHelper {
          \param path is a file system path to a directory entry (we also call it an item).
          \param previousSize is a file size in bytes to be checked against.
          \param previousMtime is the previous modification date to be checked against.
+         \param previousBirthtime is the previous creation date to be checked against.
          \param ioError holds the error returned when an underlying OS API call fails.
          \param changed is a boolean set with true if the check is successful and the file has changed with respect to size or
          modification time. False otherwise.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool checkIfFileChanged(const SyncPath &path, int64_t previousSize, time_t previousMtime, bool &changed,
-                                       IoError &ioError) noexcept;
+        static bool checkIfFileChanged(const SyncPath &path, int64_t previousSize, SyncTime previousMtime,
+                                       SyncTime previousCreationTime, bool &changed, IoError &ioError) noexcept;
 
         //! Check if the item indicated by path is hidden.
         /*!
@@ -461,6 +462,9 @@ struct IoHelper {
         // Can be modified in tests.
         static std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> _readAlias;
 #endif
+        static std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> _getFileStat;
+        static bool _getFileStatFn(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept;
+        static bool _unsuportedFSLogged;
 
     private:
         static log4cplus::Logger _logger;

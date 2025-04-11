@@ -25,8 +25,8 @@ namespace KDC {
 
 class DeleteJob : public AbstractTokenNetworkJob {
     public:
-        DeleteJob(int driveDbId, const NodeId &remoteItemId, const NodeId &localItemId, const SyncPath &absoluteLocalFilepath);
-
+        DeleteJob(int driveDbId, const NodeId &remoteItemId, const NodeId &localItemId, const SyncPath &absoluteLocalFilepath,
+                  NodeType nodeType);
         virtual bool canRun() override;
 
     private:
@@ -37,6 +37,8 @@ class DeleteJob : public AbstractTokenNetworkJob {
         const NodeId _remoteItemId;
         const NodeId _localItemId;
         SyncPath _absoluteLocalFilepath;
+        NodeType _nodeType;
+
 };
 
 } // namespace KDC

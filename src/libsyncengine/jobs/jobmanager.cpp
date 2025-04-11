@@ -73,8 +73,10 @@ void JobManager::stop() {
 void JobManager::clear() {
     if (_instance) {
         Poco::ThreadPool::defaultPool().stopAll();
-        _instance->_thread->join();
-        _instance->_thread = nullptr;
+        if (_instance->_thread) {
+            if (_instance->_thread->joinable()) _instance->_thread->join();
+            _instance->_thread = nullptr;
+        }
     }
 
     const std::scoped_lock lock(_mutex);
@@ -153,6 +155,11 @@ JobManager::JobManager() : _logger(Log::instance()->getLogger()) {
 
     _thread = std::make_unique<StdLoggingThread>(run);
     LOG_DEBUG(_logger, "Network Job Manager started with max " << _maxNbThread << " threads");
+}
+
+JobManager::~JobManager() {
+    stop();
+    clear();
 }
 
 void JobManager::run() noexcept {
