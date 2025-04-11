@@ -148,9 +148,8 @@ IF( APPLE )
 
     list(APPEND client_SRCS systray.mm)
     set_property(SOURCE systray.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
-ENDIF()
 
-IF( UNIX )
+ELSEIF( UNIX )
     list(APPEND client_SRCS ../libcommongui/utility/utility_linux.cpp)
 ENDIF()
 
