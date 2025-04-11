@@ -82,6 +82,14 @@ cp -P -r /opt/qt6.2.3/translations ./usr
 
 mv ./usr/lib/x86_64-linux-gnu/* ./usr/lib/
 
+cp -P /usr/local/lib/libssl.so* ./usr/lib/
+cp -P /usr/local/lib/libcrypto.so* ./usr/lib/
+
+cp -P -r /usr/lib/x86_64-linux-gnu/nss ./usr/lib/
+
+cp -P /opt/qt6.2.3/lib/libQt6WaylandClient.so* ./usr/lib
+cp -P /opt/qt6.2.3/lib/libQt6WaylandEglClientHwIntegration.so* ./usr/lib
+
 mkdir -p ./usr/qml
 
 rm -rf ./usr/lib/x86_64-linux-gnu/
@@ -98,13 +106,6 @@ cp /src/sync-exclude-linux.lst ./usr/bin/sync-exclude.lst
 rm -rf ./etc
 
 cp ./usr/share/icons/hicolor/512x512/apps/kdrive-win.png . # Workaround for linuxeployqt bug, FIXME
-
-# Because distros need to get their shit together
-cp -P /usr/local/lib/libssl.so* ./usr/lib/
-cp -P /usr/local/lib/libcrypto.so* ./usr/lib/
-
-# NSS fun
-cp -P -r /usr/lib/x86_64-linux-gnu/nss ./usr/lib/
 
 # Build AppImage
 export LD_LIBRARY_PATH=/app/usr/lib/:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH

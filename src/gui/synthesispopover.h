@@ -18,13 +18,13 @@
 
 #pragma once
 
+#include "synthesisbar.h"
 #include "customtoolbutton.h"
 #include "driveselectionwidget.h"
 #include "progressbarwidget.h"
 #include "statusbarwidget.h"
 #include "buttonsbarwidget.h"
 #include "synchronizeditemwidget.h"
-#include "errorspopup.h"
 #include "menuitemwidget.h"
 #include "info/driveinfoclient.h"
 #include "info/syncfileiteminfo.h"
@@ -53,9 +53,6 @@ class SynthesisPopover : public QDialog {
             defaultTextLabelTypeNoDrive,
             defaultTextLabelTypeCanSync
         };
-
-        static const std::map<NotificationsDisabled, QString> _notificationsDisabledMap;
-        static const std::map<NotificationsDisabled, QString> _notificationsDisabledForPeriodMap;
 
         explicit SynthesisPopover(std::shared_ptr<ClientGui> gui, bool debugCrash, QWidget *parent = nullptr);
         ~SynthesisPopover();
@@ -97,9 +94,7 @@ class SynthesisPopover : public QDialog {
         QRect _sysTrayIconRect;
 
         QColor _backgroundMainColor;
-        CustomToolButton *_errorsButton{nullptr};
-        CustomToolButton *_infosButton{nullptr};
-        CustomToolButton *_menuButton{nullptr};
+        SynthesisBar *_synthesisBar{nullptr};
         DriveSelectionWidget *_driveSelectionWidget{nullptr};
         ProgressBarWidget *_progressBarWidget{nullptr};
         StatusBarWidget *_statusBarWidget{nullptr};
@@ -108,8 +103,6 @@ class SynthesisPopover : public QDialog {
         QWidget *_defaultSynchronizedPageWidget{nullptr};
         QWidget *_mainWidget{nullptr};
         QWidget *_lockedAppVersionWidget{nullptr};
-        NotificationsDisabled _notificationsDisabled{NotificationsDisabled::Never};
-        QDateTime _notificationsDisabledUntilDateTime;
         QLabel *_notImplementedLabel{nullptr};
         QLabel *_notImplementedLabel2{nullptr};
         QLabel *_defaultTitleLabel{nullptr};
@@ -124,6 +117,7 @@ class SynthesisPopover : public QDialog {
 #ifdef Q_OS_LINUX
         QLabel *_lockedAppUpdateManualLabel{nullptr};
 #endif
+
         void changeEvent(QEvent *event) override;
         void paintEvent(QPaintEvent *event) override;
         bool event(QEvent *event) override;
@@ -139,30 +133,12 @@ class SynthesisPopover : public QDialog {
         void refreshStatusBar(const DriveInfoClient &driveInfo);
         void refreshStatusBar(std::map<int, DriveInfoClient>::const_iterator driveInfoIt);
         void refreshStatusBar(int userDbId);
-        void refreshErrorsButton();
         void setSynchronizedDefaultPage(QWidget **widget, QWidget *parent);
-        void displayErrors(int userDbId);
         void reset();
         void addSynchronizedListWidgetItem(DriveInfoClient &driveInfoClient, int row = 0);
-        void getDriveErrorList(QList<ErrorsPopup::DriveError> &list);
         void handleRemovedDrives();
 
     private slots:
-        void onOpenErrorsMenu();
-        void onDisplayErrors(int syncDbId);
-        void onOpenFolder();
-        void onOpenWebview();
-        void onOpenMiscellaneousMenu();
-        void onOpenPreferences();
-        void onNotificationActionTriggered();
-        void onOpenDriveParameters();
-        void onDisplayHelp();
-        void onSendFeedback();
-        void onExit();
-        void onCrash();
-        void onCrashServer();
-        void onCrashEnforce();
-        void onCrashFatal();
         void onDriveSelected(int driveDbId);
         void onAddDrive();
         void onPauseSync(ActionTarget target, int syncDbId = 0);

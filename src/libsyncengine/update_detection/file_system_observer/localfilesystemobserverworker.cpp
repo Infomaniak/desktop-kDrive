@@ -88,7 +88,6 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         _syncPal->removeItemFromTmpBlacklist(relativePath);
 
         auto ioError = IoError::Success;
-        bool exists = true;
 
         if (opTypeFromOS == OperationType::Delete) {
             // Check if exists with same nodeId
@@ -111,21 +110,20 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         }
 
         FileStat fileStat;
-        if (exists) {
-            ioError = IoError::Success;
-            if (!IoHelper::getFileStat(absolutePath, &fileStat, ioError)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, ioError));
-                tryToInvalidateSnapshot();
-                return;
-            }
+        ioError = IoError::Success;
+        if (!IoHelper::getFileStat(absolutePath, &fileStat, ioError)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, ioError));
+            tryToInvalidateSnapshot();
+            return;
+        }
 
-            if (ioError == IoError::AccessDenied) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absolutePath) << L" misses search permissions!");
-                sendAccessDeniedError(absolutePath);
-                continue;
-            } else if (ioError == IoError::NoSuchFileOrDirectory) {
-                exists = false;
-            }
+        bool exists = true;
+        if (ioError == IoError::AccessDenied) {
+            LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absolutePath) << L" misses search permissions!");
+            sendAccessDeniedError(absolutePath);
+            continue;
+        } else if (ioError == IoError::NoSuchFileOrDirectory) {
+            exists = false;
         }
 
         NodeId nodeId;
@@ -272,10 +270,13 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             }
         }
 
-        bool itemExistsInSnapshot = _snapshot->exists(nodeId);
-        if (!itemExistsInSnapshot) {
+        if (const bool itemExistsInSnapshot = _snapshot->exists(nodeId); !itemExistsInSnapshot) {
             if (opTypeFromOS == OperationType::Delete) {
-                // This is a delete operation but a file with the same name has been recreated immediately
+                // The node ID of the deleted item is different from `nodeId`. The latter is the identifier of an item with the
+                // same path as the deleted item and that exists on the file system at the time of the last check. This situation
+                // happens for instance if a file is deleted while another file with the same path has is recreated shortly
+                // afterward. Typically, editors of the MS suite (xlsx, docx) or Adobe suite (pdf) perform a
+                // Delete-followed-by-Create operation during a single edit.
                 NodeId itemId = _snapshot->itemId(relativePath);
                 if (_snapshot->removeItem(itemId)) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath)
@@ -291,9 +292,9 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
             if (_snapshot->pathExists(relativePath)) {
                 NodeId previousItemId = _snapshot->itemId(relativePath);
-                // If an item with same path already exist remove it from snapshot because its ID might have changed (i.e. the
-                // file has been downloaded in the tmp folder then moved to override the existing one) The item will be inserted
-                // below anyway
+                // If an item with the same path already exists, remove it from snapshot because its ID might have changed (i.e.
+                // the file has been downloaded in the tmp folder then moved to override the existing one). The item will be
+                // inserted below anyway.
                 if (_snapshot->removeItem(previousItemId)) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath)
                                                                                       << L" (" << Utility::s2ws(previousItemId)
@@ -641,7 +642,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                                                     << L". Blacklisting it temporarily");
                 sendAccessDeniedError(absolutePath);
             }
-            
+
             bool toExclude = false;
             const bool isLink = itemType.linkType != LinkType::None;
 

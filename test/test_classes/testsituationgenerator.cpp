@@ -27,6 +27,11 @@ namespace KDC {
 static const std::string localIdSuffix = "l_";
 static const std::string remoteIdSuffix = "r_";
 
+class TestSituationGeneratorException final : public std::runtime_error {
+    public:
+        explicit TestSituationGeneratorException(const std::string &what) : std::runtime_error(what) {}
+};
+
 TestSituationGenerator::TestSituationGenerator() :
     _syncDb(std::make_shared<SyncDb>("dummySyncDb_" + CommonUtility::generateRandomStringAlphaNum(), "3.6.10")) {
     (void) _syncDb->init("3.6.10");
@@ -68,7 +73,7 @@ void TestSituationGenerator::generateInitialSituation(const std::string &jsonInp
         Poco::JSON::Parser parser;
         obj = parser.parse(jsonInputStr).extract<Poco::JSON::Object::Ptr>();
     } catch (Poco::Exception &) {
-        throw std::runtime_error("Invalid JSON input");
+        throw TestSituationGeneratorException("Invalid JSON input");
     }
 
     addItem(obj);
@@ -113,9 +118,10 @@ std::shared_ptr<Node> TestSituationGenerator::renameNode(const ReplicaSide side,
 }
 
 [[maybe_unused]] std::shared_ptr<Node> TestSituationGenerator::editNode(const ReplicaSide side, const NodeId &id) const {
-    const auto node = updateTree(side)->getNodeById(generateId(side, id));
-    auto lastModifiedDate = node->lastmodified().value();
-    node->setLastModified(++lastModifiedDate);
+    static uint64_t editCounter = 0; // Make sure that 2 consecutive edit operations do not generate the same operation.
+    const auto node = _syncpal->updateTree(side)->getNodeById(generateId(side, id));
+    const auto lastModifiedDate = node->lastmodified().value();
+    node->setLastModified(++editCounter + lastModifiedDate);
     node->insertChangeEvent(OperationType::Edit);
     return node;
 }
@@ -176,10 +182,10 @@ DbNodeId TestSituationGenerator::insertInDb(const NodeType itemType, const NodeI
     } else {
         bool found = false;
         if (!_syncDb->node(ReplicaSide::Local, generateId(ReplicaSide::Local, parentId), parentNode, found)) {
-            throw std::runtime_error("Failed to find parent node");
+            throw TestSituationGeneratorException("Failed to find parent node");
         }
         if (!found) {
-            throw std::runtime_error("Failed to find parent node");
+            throw TestSituationGeneratorException("Failed to find parent node");
         }
     }
 
