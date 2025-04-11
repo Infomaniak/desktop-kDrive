@@ -950,59 +950,42 @@ void TestNetworkJobs::testRename() {
     CPPUNIT_ASSERT(name == filename);
 }
 
-void TestNetworkJobs::testUpload() {
+void TestNetworkJobs::testUpload(const SyncTime timeInput, SyncTime &timeOutput) {
     const LocalTemporaryDirectory temporaryDirectory("testUpload");
     const SyncName filename = Str("test_file.txt");
     const SyncPath localFilePath = temporaryDirectory.path() / filename;
     testhelpers::generateOrEditTestFile(localFilePath);
+
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUpload");
+    UploadJob job(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), timeInput);
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+
+    GetFileInfoJob fileInfoJob(_driveDbId, job.nodeId());
+    exitCode = fileInfoJob.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+
+    Poco::JSON::Object::Ptr dataObj = fileInfoJob.jsonRes()->getObject(dataKey);
+    std::string name;
+    if (dataObj) {
+        (void) JsonParserUtility::extractValue(dataObj, nameKey, name, false);
+        (void) JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, timeOutput, false);
+    }
+    CPPUNIT_ASSERT(filename == Str2SyncName(name));
+}
+
+void TestNetworkJobs::testUpload() {
     const auto epochNow = std::chrono::system_clock::now().time_since_epoch();
     auto timeInput = std::chrono::duration_cast<std::chrono::seconds>(epochNow);
+    SyncTime timeOutput;
 
-    {
-        const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUpload");
-        UploadJob job(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
-                      timeInput.count());
-        ExitCode exitCode = job.runSynchronously();
-        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
-
-        GetFileInfoJob fileInfoJob(_driveDbId, job.nodeId());
-        exitCode = fileInfoJob.runSynchronously();
-        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
-
-        Poco::JSON::Object::Ptr dataObj = fileInfoJob.jsonRes()->getObject(dataKey);
-        std::string name;
-        SyncTime timeOutput = 0;
-        if (dataObj) {
-            (void) JsonParserUtility::extractValue(dataObj, nameKey, name, false);
-            (void) JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, timeOutput, false);
-        }
-        CPPUNIT_ASSERT(filename == Str2SyncName(name));
-        CPPUNIT_ASSERT_EQUAL(timeInput.count(), timeOutput);
-    }
+    testUpload(timeInput.count(), timeOutput);
+    CPPUNIT_ASSERT_EQUAL(timeInput.count(), timeOutput);
 
     // Upload job but local file has a modification far in the future (more than 24h).
-    {
-        const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUpload");
-        timeInput += std::chrono::days(10); // Set the modification time 10 days in the future.
-        UploadJob job(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
-                      timeInput.count());
-        ExitCode exitCode = job.runSynchronously();
-        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
-
-        GetFileInfoJob fileInfoJob(_driveDbId, job.nodeId());
-        exitCode = fileInfoJob.runSynchronously();
-        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
-
-        Poco::JSON::Object::Ptr dataObj = fileInfoJob.jsonRes()->getObject(dataKey);
-        std::string name;
-        SyncTime timeOutput = 0;
-        if (dataObj) {
-            (void) JsonParserUtility::extractValue(dataObj, nameKey, name, false);
-            (void) JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, timeOutput, false);
-        }
-        CPPUNIT_ASSERT(filename == Str2SyncName(name));
-        CPPUNIT_ASSERT_LESS(timeInput.count(), timeOutput);
-    }
+    timeInput += std::chrono::days(10);
+    testUpload(timeInput.count(), timeOutput);
+    CPPUNIT_ASSERT_LESS(timeInput.count(), timeOutput);
 }
 
 void TestNetworkJobs::testUploadAborted() {
