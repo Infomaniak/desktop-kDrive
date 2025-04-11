@@ -638,6 +638,7 @@ void ClientGui::computeTrayOverallStatus(SyncStatus &status, bool &unresolvedCon
                         abortOrPausedSeen++;
                         break;
                     case SyncStatus::Undefined:
+                        break;
                     case SyncStatus::Starting:
                         break;
                     case SyncStatus::EnumEnd: {
