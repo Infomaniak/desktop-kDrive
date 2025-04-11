@@ -158,16 +158,16 @@ void CommServer::onReadyRead() {
         // Read from socket
         _buffer.append(_tcpSocket->readAll());
 
-        while (_buffer.count()) {
+        while (_buffer.size()) {
             // Read size
-            if (_buffer.count() < (int) sizeof(qint32)) {
+            if (_buffer.size() < (int) sizeof(qint32)) {
                 break;
             }
 
             int size = CommonUtility::toInt(_buffer.mid(0, (qint32) sizeof(qint32)));
 
             // Read data
-            if (_buffer.count() < (int) sizeof(qint32) + size) {
+            if (_buffer.size() < (int) sizeof(qint32) + size) {
                 break;
             }
 

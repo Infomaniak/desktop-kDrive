@@ -75,7 +75,7 @@ QPixmap getAvatarFromImage(const QImage &image);
 QIcon getIconWithColor(const QString &path, const QColor &color = QColor());
 QIcon getIconMenuWithColor(const QString &path, const QColor &color = QColor());
 
-systrayPosition getSystrayPosition(QScreen *screen);
+systrayPosition getSystrayPosition(const QScreen *const screen);
 bool isPointInSystray(QScreen *screen, const QPoint &point);
 
 bool isDarkTheme();
@@ -115,6 +115,7 @@ QString getDateForCurrentLanguage(const QDateTime &dateTime, const QString &date
 #ifdef Q_OS_LINUX
 bool getLinuxDesktopType(QString &type, QString &version);
 #endif
+
 template<class C>
 void setEnabledRecursively(C *root, bool enabled) {
     if (!root) return;
