@@ -126,7 +126,8 @@ class Node {
         size_t deleteChildren(std::shared_ptr<Node> child);
         size_t deleteChildren(const NodeId &childId);
         /**
-         * @brief Retrieve the child node based on its name, which is assumed to be normalized. Filter out the nodes with change events of type `except`.
+         * @brief Retrieve the child node based on its name, which is assumed to be normalized. Filter out the nodes with change
+         * events of type `except`.
          * @param normalizedName Make sure to provide a normalized name.
          * @param except The event type to filter out.
          * @return A pointer to the node if found, `nullptr` otherwise.

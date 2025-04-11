@@ -557,7 +557,7 @@ struct VersionInfo {
         std::string buildMinOsVersion; // Optional. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
         std::string downloadUrl; // URL to download the version
 
-        bool operator==(const VersionInfo& other) const {
+        bool operator==(const VersionInfo &other) const {
             return channel == other.channel && tag == other.tag && buildVersion == other.buildVersion &&
                    buildMinOsVersion == other.buildMinOsVersion && downloadUrl == other.downloadUrl;
         }

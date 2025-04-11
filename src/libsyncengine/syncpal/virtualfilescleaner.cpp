@@ -62,17 +62,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_DEBUG(_logger, L"VirtualFilesCleaner: processing item " << Utility::formatSyncPath(absolutePath));
             }
-            bool isWarning = false;
-            bool isExcluded = false;
-            IoError ioError = IoError::Success;
-            const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_rootPath, relativePath, isWarning,
-                                                                                       isExcluded, ioError);
-            if (!success || ioError != IoError::Success) {
-                LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::isExcluded: "
-                                           << Utility::formatIoError(absolutePath, ioError).c_str());
-                continue;
-            }
-            if (isExcluded) {
+            if (ExclusionTemplateCache::instance()->isExcluded(relativePath)) {
                 LOGW_DEBUG(_logger, L"Ignore " << Utility::formatSyncPath(absolutePath) << L" because it is excluded");
                 dirIt.disable_recursion_pending();
                 continue;

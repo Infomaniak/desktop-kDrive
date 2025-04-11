@@ -32,8 +32,8 @@ class ParametersInfo {
     public:
         ParametersInfo(Language language, bool monoIcons, bool autoStart, bool moveToTrash,
                        NotificationsDisabled notificationsDisabled, bool useLog, LogLevel logLevel, bool extendedLog,
-                       bool purgeOldLogs, bool syncHiddenFiles, bool useBigFolderSizeLimit, qint64 bigFolderSizeLimit,
-                       bool darkTheme, bool showShortcuts, QMap<QString, QByteArray> dialogGeometry, int maxAllowedCpu);
+                       bool purgeOldLogs, bool useBigFolderSizeLimit, qint64 bigFolderSizeLimit, bool darkTheme,
+                       bool showShortcuts, QMap<QString, QByteArray> dialogGeometry, int maxAllowedCpu);
         ParametersInfo();
 
         inline void setLanguage(Language language) { _language = language; }
@@ -56,8 +56,6 @@ class ParametersInfo {
         inline bool extendedLog() const { return _extendedLog; }
         inline void setPurgeOldLogs(bool purgeOldLogs) { _purgeOldLogs = purgeOldLogs; }
         inline bool purgeOldLogs() const { return _purgeOldLogs; }
-        inline void setSyncHiddenFiles(bool syncHiddenFiles) { _syncHiddenFiles = syncHiddenFiles; }
-        inline bool syncHiddenFiles() const { return _syncHiddenFiles; }
         inline const ProxyConfigInfo &proxyConfigInfo() const { return _proxyConfigInfo; }
         inline void setProxyConfigInfo(const ProxyConfigInfo &proxyConfigInfo) { _proxyConfigInfo = proxyConfigInfo; }
         inline void setUseBigFolderSizeLimit(bool useBigFolderSizeLimit) { _useBigFolderSizeLimit = useBigFolderSizeLimit; }
@@ -91,7 +89,6 @@ class ParametersInfo {
         LogLevel _logLevel;
         bool _extendedLog;
         bool _purgeOldLogs;
-        bool _syncHiddenFiles;
         ProxyConfigInfo _proxyConfigInfo;
         bool _useBigFolderSizeLimit;
         qint64 _bigFolderSizeLimit;

@@ -39,7 +39,6 @@ class FileExclusionDialog : public CustomDialog {
     private:
         enum tableColumn { Pattern = 0, Warning, Action };
 
-        CustomCheckBox *_hiddenFilesCheckBox;
         QStandardItemModel *_filesTableModel;
         QTableView *_filesTableView;
         QPushButton *_saveButton;
@@ -65,7 +64,6 @@ class FileExclusionDialog : public CustomDialog {
 
     private slots:
         void onExit();
-        void onHiddenFilesCheckBoxClicked(bool checked = false);
         void onAddFileButtonTriggered(bool checked = false);
         void onTableViewClicked(const QModelIndex &index);
         void onWarningCheckBoxClicked(bool checked = false);

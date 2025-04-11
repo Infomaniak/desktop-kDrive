@@ -59,9 +59,6 @@ class PARMS_EXPORT Parameters {
         inline bool purgeOldLogs() const { return _purgeOldLogs; }
         inline void setPurgeOldLogs(bool purgeOldLogs) { _purgeOldLogs = purgeOldLogs; }
 
-        inline bool syncHiddenFiles() const { return _syncHiddenFiles; }
-        inline void setSyncHiddenFiles(bool syncHiddenFiles) { _syncHiddenFiles = syncHiddenFiles; }
-
         inline const ProxyConfig &proxyConfig() const { return _proxyConfig; }
         inline void setProxyConfig(const ProxyConfig &proxyConfig) { _proxyConfig = proxyConfig; }
 
@@ -127,7 +124,6 @@ class PARMS_EXPORT Parameters {
         LogLevel _logLevel;
         bool _extendedLog;
         bool _purgeOldLogs;
-        bool _syncHiddenFiles;
         ProxyConfig _proxyConfig;
         bool _useBigFolderSizeLimit;
         int64_t _bigFolderSizeLimit; // MB
