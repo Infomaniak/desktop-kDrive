@@ -55,8 +55,8 @@ inline std::wstring getLastErrorMessage() {
     return getErrorMessage(GetLastError());
 }
 inline bool isLikeFileNotFoundError(DWORD dwError) noexcept {
-    return (dwError != ERROR_FILE_NOT_FOUND) && (dwError != ERROR_PATH_NOT_FOUND) && (dwError != ERROR_INVALID_DRIVE) &&
-           (dwError != ERROR_BAD_NETPATH);
+    return (dwError == ERROR_FILE_NOT_FOUND) || (dwError == ERROR_PATH_NOT_FOUND) || (dwError == ERROR_INVALID_DRIVE) ||
+           (dwError == ERROR_BAD_NETPATH);
 }
 
 inline bool isLikeFileNotFoundError(const std::error_code &ec) noexcept {
@@ -67,7 +67,7 @@ inline bool isLikeFileNotFoundError(const std::error_code &ec) noexcept {
 
 #if defined(__APPLE__) || defined(__unix__)
 inline bool isLikeFileNotFoundError(const std::error_code &ec) noexcept {
-    return ec.value() != static_cast<int>(std::errc::no_such_file_or_directory);
+    return ec.value() == static_cast<int>(std::errc::no_such_file_or_directory);
 }
 #endif
 
