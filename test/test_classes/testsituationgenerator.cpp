@@ -88,7 +88,7 @@ std::shared_ptr<Node> TestSituationGenerator::renameNode(const ReplicaSide side,
     static uint64_t editCounter = 0; // Make sure that 2 consecutive edit operations do not generate the same operation.
     const auto node = _syncpal->updateTree(side)->getNodeById(generateId(side, id));
     const auto lastModifiedDate = node->lastmodified().value();
-    node->setLastModified(++editCounter + lastModifiedDate);
+    node->setLastModified(static_cast<SyncTime>(++editCounter) + lastModifiedDate);
     node->insertChangeEvent(OperationType::Edit);
     return node;
 }
