@@ -135,20 +135,25 @@ QIcon GuiUtility::getIconWithColor(const QString &path, const QColor &color) {
     return icon;
 }
 
-GuiUtility::systrayPosition GuiUtility::getSystrayPosition(QScreen *screen) {
-    QRect displayRect = screen->geometry();
-    QRect desktopRect = screen->availableGeometry();
-    if (desktopRect.height() < displayRect.height()) {
-        if (desktopRect.y() > displayRect.y()) {
-            return systrayPosition::Top;
-        } else {
-            return systrayPosition::Bottom;
-        }
+GuiUtility::systrayPosition GuiUtility::getSystrayPosition(const QScreen *const screen) {
+    const QRect displayRect = screen->geometry();
+    const QRect desktopRect = screen->availableGeometry();
+    if (displayRect == desktopRect) {
+        // Unable to get systray position
+        return systrayPosition::Top;
     } else {
-        if (desktopRect.x() > displayRect.x()) {
-            return systrayPosition::Left;
+        if (desktopRect.height() < displayRect.height()) {
+            if (desktopRect.y() > displayRect.y()) {
+                return systrayPosition::Top;
+            } else {
+                return systrayPosition::Bottom;
+            }
         } else {
-            return systrayPosition::Right;
+            if (desktopRect.x() > displayRect.x()) {
+                return systrayPosition::Left;
+            } else {
+                return systrayPosition::Right;
+            }
         }
     }
 }

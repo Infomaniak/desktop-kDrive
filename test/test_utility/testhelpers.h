@@ -31,7 +31,7 @@ namespace KDC::testhelpers {
 
 const SyncPath localTestDirPath(Utility::s2ws(TEST_DIR) + L"/test_ci");
 const SyncTime defaultTime = std::time(nullptr);
-constexpr int64_t defaultFileSize = 1654788079;
+constexpr int64_t defaultFileSize = 123;
 constexpr int64_t defaultDirSize = 0;
 
 SyncName makeNfdSyncName();
