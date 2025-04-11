@@ -181,6 +181,11 @@ bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> 
         return false;
     }
 
+    if (PlatformInconsistencyCheckerUtility::nameEndsWithSpace(remoteNode->name())) {
+        blacklistNode(remoteNode, InconsistencyType::ForbiddenCharEndWithSpace);
+        return false;
+    }
+
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(remoteNode->name())) {
         blacklistNode(remoteNode, InconsistencyType::ReservedName);
         return false;

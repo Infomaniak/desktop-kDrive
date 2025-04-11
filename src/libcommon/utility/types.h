@@ -351,15 +351,16 @@ inline bool isConflictsWithLocalRename(const ConflictType type) {
 }
 
 enum class InconsistencyType {
-    None = 0x00,
-    Case = 0x01,
-    ForbiddenChar = 0x02, // Char unsupported by OS
-    ReservedName = 0x04,
-    NameLength = 0x08,
-    PathLength = 0x10,
-    NotYetSupportedChar = 0x20, // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
-    DuplicateNames = 0x40, // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
-    ForbiddenCharOnlySpaces = 0x80, // The name contains only spaces (not supported by back end)
+    None = 0x000,
+    Case = 0x001,
+    ForbiddenChar = 0x002, // Char unsupported by OS
+    ReservedName = 0x004,
+    NameLength = 0x008,
+    PathLength = 0x010,
+    NotYetSupportedChar = 0x020, // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
+    DuplicateNames = 0x040, // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
+    ForbiddenCharOnlySpaces = 0x080, // The name contains only spaces (not supported by back end)
+    ForbiddenCharEndWithSpace = 0x100, // The name ends with a space
 };
 std::string toString(InconsistencyType e);
 
@@ -557,7 +558,7 @@ struct VersionInfo {
         std::string buildMinOsVersion; // Optional. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
         std::string downloadUrl; // URL to download the version
 
-        bool operator==(const VersionInfo& other) const {
+        bool operator==(const VersionInfo &other) const {
             return channel == other.channel && tag == other.tag && buildVersion == other.buildVersion &&
                    buildMinOsVersion == other.buildMinOsVersion && downloadUrl == other.downloadUrl;
         }
