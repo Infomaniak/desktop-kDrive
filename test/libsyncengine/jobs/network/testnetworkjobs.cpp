@@ -976,7 +976,7 @@ void TestNetworkJobs::testUpload() {
             (void) JsonParserUtility::extractValue(dataObj, nameKey, name, false);
             (void) JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, timeOutput, false);
         }
-        CPPUNIT_ASSERT_EQUAL(filename, name);
+        CPPUNIT_ASSERT(filename == Str2SyncName(name));
         CPPUNIT_ASSERT_EQUAL(timeInput.count(), timeOutput);
     }
 
@@ -1000,7 +1000,7 @@ void TestNetworkJobs::testUpload() {
             (void) JsonParserUtility::extractValue(dataObj, nameKey, name, false);
             (void) JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, timeOutput, false);
         }
-        CPPUNIT_ASSERT(name == std::string(filename));
+        CPPUNIT_ASSERT(filename == Str2SyncName(name));
         CPPUNIT_ASSERT_LESS(timeInput.count(), timeOutput);
     }
 }
