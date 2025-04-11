@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "libcommongui/utility/utility.h"
+
 #include <shlobj.h>
 #include <winbase.h>
 #include <windows.h>
@@ -28,7 +30,7 @@
 
 namespace KDC {
 
-static void setupFavLink_private(const QString &folder) {
+void CommonGuiUtility::setupFavLink(const QString &folder) {
     // First create a Desktop.ini so that the folder and favorite link show our application's icon.
     QFile desktopIni(folder + QLatin1String("/Desktop.ini"));
     if (!desktopIni.exists()) {

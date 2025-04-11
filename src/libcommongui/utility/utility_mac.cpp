@@ -17,6 +17,7 @@
  */
 
 #include "libcommon/utility/types.h"
+#include "libcommongui/utility/utility.h"
 
 #include <QLoggingCategory>
 #include <QDir>
@@ -30,7 +31,7 @@ namespace KDC {
 
 // Q_LOGGING_CATEGORY(lcUtility, "common.utility", QtInfoMsg)
 
-static void setupFavLink_private(const QString &folder) {
+void CommonGuiUtility::setupFavLink(const QString &folder) {
     // Finder: Place under "Places"/"Favorites" on the left sidebar
     CFStringRef folderCFStr = CFStringCreateWithCString(0, folder.toUtf8().data(), kCFStringEncodingUTF8);
     CFURLRef urlRef = CFURLCreateWithFileSystemPath(0, folderCFStr, kCFURLPOSIXPathStyle, true);

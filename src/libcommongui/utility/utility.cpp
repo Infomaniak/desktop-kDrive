@@ -18,14 +18,6 @@
 
 #include "utility.h"
 
-#if defined(Q_OS_WIN)
-#include "utility_win.cpp"
-#elif defined(Q_OS_MAC)
-#include "utility_mac.cpp"
-#else
-#include "utility_linux.cpp"
-#endif
-
 #include <QCollator>
 #include <QCoreApplication>
 #include <QThread>
@@ -67,10 +59,6 @@ QString CommonGuiUtility::durationToDescriptiveString1(quint64 msecs) {
 
     int amount = qRound(static_cast<double>(msecs) / static_cast<double>(periods[p].msec));
     return periods[p].description(amount);
-}
-
-void CommonGuiUtility::setupFavLink(const QString &folder) {
-    KDC::setupFavLink_private(folder);
 }
 
 bool compareSubfolders(const KDC::NodeInfo &s1, const KDC::NodeInfo &s2) {

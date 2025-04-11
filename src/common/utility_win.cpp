@@ -41,51 +41,19 @@ static const char lightThemeKeyC[] = "SystemUsesLightTheme";
 
 namespace KDC {
 
-static void setupFavLink_private(const QString &folder) {
-    // First create a Desktop.ini so that the folder and favorite link show our application's icon.
-    QFile desktopIni(folder + QLatin1String("/Desktop.ini"));
-    if (!desktopIni.exists()) {
-        desktopIni.open(QFile::WriteOnly);
-        desktopIni.write("[.ShellClassInfo]\r\nIconResource=");
-        desktopIni.write(QDir::toNativeSeparators(qApp->applicationFilePath()).toUtf8());
-        desktopIni.write(",0\r\n");
-        desktopIni.close();
-
-        // Set the folder as system and Desktop.ini as hidden+system for explorer to pick it.
-        // https://msdn.microsoft.com/en-us/library/windows/desktop/cc144102
-        DWORD folderAttrs = GetFileAttributesW((wchar_t *) folder.utf16());
-        SetFileAttributesW((wchar_t *) folder.utf16(), folderAttrs | FILE_ATTRIBUTE_SYSTEM);
-        SetFileAttributesW((wchar_t *) desktopIni.fileName().utf16(), FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM);
-    }
-
-    // Windows Explorer: Place under "Favorites" (Links)
-    QString linkName;
-    QDir folderDir(QDir::fromNativeSeparators(folder));
-
-    /* Use new WINAPI functions */
-    PWSTR path;
-
-    if (SHGetKnownFolderPath(FOLDERID_Links, 0, NULL, &path) == S_OK) {
-        QString links = QDir::fromNativeSeparators(QString::fromWCharArray(path));
-        linkName = QDir(links).filePath(folderDir.dirName() + QLatin1String(".lnk"));
-        CoTaskMemFree(path);
-    }
-    QFile::link(folder, linkName);
-}
-
-bool hasSystemLaunchOnStartup_private(const QString &appName, log4cplus::Logger logger) {
+bool OldUtility::hasSystemLaunchOnStartup(const QString &appName, log4cplus::Logger logger) {
     QString runPath = QLatin1String(systemRunPathC);
     QSettings settings(runPath, QSettings::NativeFormat);
     return settings.contains(appName);
 }
 
-bool hasLaunchOnStartup_private(const QString &appName, log4cplus::Logger logger) {
+bool OldUtility::hasLaunchOnStartup(const QString &appName, log4cplus::Logger logger) {
     QString runPath = QLatin1String(runPathC);
     QSettings settings(runPath, QSettings::NativeFormat);
     return settings.contains(appName);
 }
 
-void setLaunchOnStartup_private(const QString &appName, const QString &guiName, bool enable, log4cplus::Logger logger) {
+void OldUtility::setLaunchOnStartup(const QString &appName, const QString &guiName, bool enable, log4cplus::Logger logger) {
     Q_UNUSED(guiName);
     QString runPath = QLatin1String(runPathC);
     QSettings settings(runPath, QSettings::NativeFormat);

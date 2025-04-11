@@ -22,6 +22,7 @@
 #include <sys/types.h>
 #include <pwd.h>
 
+#include "common/utility.h"
 #include "libcommon/utility/types.h"
 
 #include <log4cplus/logger.h>
@@ -31,39 +32,28 @@
 #include <Poco/File.h>
 #include <Poco/Exception.h>
 
+#include <QDir>
 #include <QStandardPaths>
 
 namespace KDC {
 
-static void setupFavLink_private(const QString &folder) {
-    // Nautilus: add to ~/.gtk-bookmarks
-    QFile gtkBookmarks(QDir::homePath() + QLatin1String("/.gtk-bookmarks"));
-    QByteArray folderUrl = "file://" + folder.toUtf8();
-    if (gtkBookmarks.open(QFile::ReadWrite)) {
-        QByteArray places = gtkBookmarks.readAll();
-        if (!places.contains(folderUrl)) {
-            places += folderUrl;
-            gtkBookmarks.reset();
-            gtkBookmarks.write(places + '\n');
-        }
-    }
-}
-
-// returns the autostart directory the linux way
+namespace {
+// Returns the autostart directory the linux way
 // and respects the XDG_CONFIG_HOME env variable
-QString getUserAutostartDir_private() {
+QString getUserAutostartDir() {
     QString config = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
     config += QLatin1String("/autostart/");
     return config;
 }
+} // namespace
 
-bool hasLaunchOnStartup_private(const QString &appName, log4cplus::Logger /*logger*/) {
-    QString desktopFileLocation = getUserAutostartDir_private() + appName + QLatin1String(".desktop");
+bool OldUtility::hasLaunchOnStartup(const QString &appName, log4cplus::Logger /*logger*/) {
+    QString desktopFileLocation = getUserAutostartDir() + appName + QLatin1String(".desktop");
     return QFile::exists(desktopFileLocation);
 }
 
-void setLaunchOnStartup_private(const QString &appName, const QString &guiName, bool enable, log4cplus::Logger logger) {
-    QString userAutoStartPath = getUserAutostartDir_private();
+void OldUtility::setLaunchOnStartup(const QString &appName, const QString &guiName, bool enable, log4cplus::Logger logger) {
+    QString userAutoStartPath = getUserAutostartDir();
     QString desktopFileLocation = userAutoStartPath + appName + QLatin1String(".desktop");
     if (enable) {
         if (!QDir().exists(userAutoStartPath) && !QDir().mkpath(userAutoStartPath)) {
@@ -95,6 +85,12 @@ void setLaunchOnStartup_private(const QString &appName, const QString &guiName, 
             LOG4CPLUS_WARN(logger, "Could not remove autostart desktop file");
         }
     }
+}
+
+bool OldUtility::hasSystemLaunchOnStartup(const QString &appName, log4cplus::Logger logger) {
+    Q_UNUSED(appName)
+    Q_UNUSED(logger)
+    return false;
 }
 
 } // namespace KDC

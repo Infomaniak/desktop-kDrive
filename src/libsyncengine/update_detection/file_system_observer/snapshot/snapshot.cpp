@@ -95,7 +95,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
 
     // Check if `newItem` already exists with the same path but a different Id
     if (const auto newParent = findItem(newItem.parentId()); newParent) {
-        for (const auto& child: newParent->children()) {
+        for (const auto &child: newParent->children()) {
             if (child->normalizedName() == newItem.normalizedName() && child->id() != newItem.id()) {
                 LOGW_DEBUG(Log::instance()->getLogger(),
                            L"Item: " << SyncName2WStr(newItem.name()) << L" (" << Utility::s2ws(newItem.id())
@@ -530,7 +530,7 @@ bool Snapshot::checkIntegrityRecursively() const {
 bool Snapshot::checkIntegrityRecursively(const std::shared_ptr<SnapshotItem> &parentItem) const {
     // Check that we do not have the same file twice in the same folder
     std::set<SyncName> names;
-    for (const auto child: parentItem->children()) {
+    for (const auto &child: parentItem->children()) {
         if (!checkIntegrityRecursively(child)) {
             return false;
         }

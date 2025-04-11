@@ -9,6 +9,14 @@ set(libcommongui_SRCS
     utility/widgetsignalblocker.h
 )
 
+if(APPLE)
+    list(APPEND libcommongui_SRCS utility/utility_mac.cpp)
+elseif (WIN32)
+    list(APPEND libcommongui_SRCS utility/utility_win.cpp)
+else ()
+    list(APPEND libcommongui_SRCS utility/utility_linux.cpp)
+endif()
+
 add_library(${libcommongui_NAME} STATIC ${libcommongui_SRCS})
 
 # Precompiled headers
