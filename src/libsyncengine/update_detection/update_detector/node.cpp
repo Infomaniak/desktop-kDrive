@@ -73,11 +73,17 @@ bool Node::setParentNode(const std::shared_ptr<Node> &parentNode) {
     return true;
 }
 
-std::shared_ptr<Node> Node::getChildExcept(SyncName name, OperationType except) {
-    for (auto &child: this->children()) {
+std::shared_ptr<Node> Node::getChildExcept(const SyncName &normalizedName, const OperationType except) {
+    for (auto &[_, child]: this->children()) {
+        SyncName normalizedChildName;
+        if (!Utility::normalizedSyncName(child->name(), normalizedChildName)) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncName(child->name()));
+            return nullptr;
+        }
+
         // return only non excluded type
-        if (child.second->name() == name && !child.second->hasChangeEvent(except)) {
-            return child.second;
+        if (normalizedChildName == normalizedName && !child->hasChangeEvent(except)) {
+            return child;
         }
     }
     return nullptr;
@@ -88,7 +94,7 @@ void Node::setChangeEvents(const OperationType ops) {
     LOG_IF_FAIL(Log::instance()->getLogger(), (!hasChangeEvent(OperationType::Move) || _moveOriginInfos.isValid()));
 }
 
-void Node::insertChangeEvent(const OperationType &op) {
+void Node::insertChangeEvent(const OperationType op) {
     _changeEvents |= op;
     LOG_IF_FAIL(Log::instance()->getLogger(), (!hasChangeEvent(OperationType::Move) || _moveOriginInfos.isValid()));
 }

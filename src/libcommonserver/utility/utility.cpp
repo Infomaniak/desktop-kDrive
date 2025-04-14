@@ -74,13 +74,10 @@ static const SyncName excludedAppFileName(Str("litesync-exclude.lst"));
 // Resources relative path from working dir
 #if defined(__APPLE__)
 static const SyncName resourcesPath(Str("../../Contents/Resources"));
-static const SyncName testResourcesPath(Str("kDrive.app/Contents/Resources/"));
 #elif defined(__unix__)
 static const SyncName resourcesPath(Str(""));
-static const SyncName testResourcesPath(Str(""));
 #elif defined(_WIN32)
 static const SyncName resourcesPath(Str(""));
-static const SyncName testResourcesPath(Str(""));
 static const std::string NTFS("NTFS");
 #endif
 
@@ -414,10 +411,31 @@ bool Utility::endsWithInsensitive(const std::string &str, const std::string &suf
                       [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
 }
 
-bool Utility::isEqualInsensitive(const std::string &strA, const std::string &strB) {
-    return strA.size() == strB.size() && std::equal(strA.begin(), strA.end(), strB.begin(), strB.end(), [](char a, char b) {
-               return std::tolower(a, std::locale()) == std::tolower(b, std::locale());
-           });
+bool Utility::checkIfEqualUpToCaseAndEncoding(const SyncPath &a, const SyncPath &b, bool &isEqual) {
+    isEqual = false;
+
+    SyncPath normalizedA;
+    if (!Utility::normalizedSyncPath(a, normalizedA)) {
+        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(a));
+        return false;
+    }
+
+    SyncPath normalizedB;
+    if (!Utility::normalizedSyncPath(b, normalizedB)) {
+        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(b));
+        return false;
+    }
+
+    const SyncName normalizedAStr{normalizedA.native()};
+    const SyncName normalizedBStr{normalizedB.native()};
+
+    isEqual = normalizedAStr.size() == normalizedBStr.size() &&
+              std::equal(normalizedAStr.begin(), normalizedAStr.end(), normalizedBStr.begin(), normalizedBStr.end(),
+                         [](const SyncChar c1, const SyncChar c2) {
+                             return std::toupper(c1, std::locale()) == std::toupper(c2, std::locale());
+                         });
+
+    return true;
 }
 
 bool Utility::contains(const std::string &str, const std::string &substr) {
@@ -445,12 +463,6 @@ bool Utility::endsWithInsensitive(const SyncName &str, const SyncName &suffix) {
     return str.size() >= suffix.size() &&
            std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
                       [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
-}
-
-bool Utility::isEqualInsensitive(const SyncName &a, const SyncName &b) {
-    return a.size() == b.size() && std::equal(a.begin(), a.end(), b.begin(), b.end(), [](SyncChar a, SyncChar b) {
-               return std::tolower(a, std::locale()) == std::tolower(b, std::locale());
-           });
 }
 #endif
 
@@ -827,7 +839,7 @@ bool Utility::getLinuxDesktopType(std::string &currentDesktop) {
 bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound) {
     int length = GetLongPathNameW(shortPathIn.native().c_str(), 0, 0);
     if (!length) {
-        const bool exists = CommonUtility::isLikeFileNotFoundError(GetLastError());
+        const bool exists = !CommonUtility::isLikeFileNotFoundError(GetLastError());
         if (!exists) {
             notFound = true;
         }
@@ -841,7 +853,7 @@ bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool 
 
     length = GetLongPathNameW(shortPathIn.native().c_str(), buffer, length);
     if (!length) {
-        const bool exists = CommonUtility::isLikeFileNotFoundError(GetLastError());
+        const bool exists = !CommonUtility::isLikeFileNotFoundError(GetLastError());
         if (!exists) {
             notFound = true;
         }
