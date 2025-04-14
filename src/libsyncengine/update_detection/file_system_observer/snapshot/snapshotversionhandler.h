@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2025 Infomaniak Network SA
  *
@@ -34,6 +34,15 @@ class SnapshotRevisionHandler {
 
         SnapshotRevision nextVersion() {
             const std::scoped_lock lock(_mutex);
+
+            // Increment the revision number and return it. 1 169 884
+
+            if (_revision >= std::numeric_limits<SnapshotRevision>::max() - 1) {
+                /* Throw an exception if the revision number is too high.This is acceptable because the revision number is
+                 * a 64  bit integer. Even at the insane rate of 500,000 snapshot changes per second, 
+                 * it would take 1,169,884 years to reach this limit.*/
+                throw std::overflow_error("Snapshot revision number overflow");
+            }
             return ++_revision;
         }
 
