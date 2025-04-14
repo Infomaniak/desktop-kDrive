@@ -103,15 +103,21 @@ struct COMMONSERVER_EXPORT Utility {
         static bool startsWithInsensitive(const std::string &str, const std::string &prefix);
         static bool endsWith(const std::string &str, const std::string &suffix);
         static bool endsWithInsensitive(const std::string &str, const std::string &suffix);
-        static bool isEqualInsensitive(const std::string &strA, const std::string &strB);
         static bool contains(const std::string &str, const std::string &substr);
 #ifdef _WIN32
         static bool startsWithInsensitive(const SyncName &str, const SyncName &prefix);
         static bool startsWith(const SyncName &str, const SyncName &prefix);
         static bool endsWith(const SyncName &str, const SyncName &suffix);
         static bool endsWithInsensitive(const SyncName &str, const SyncName &suffix);
-        static bool isEqualInsensitive(const SyncName &a, const SyncName &b);
 #endif
+        /**
+         * Check if two paths coincide up to case and encoding of file names.
+         * @param a SyncPath value to be compared.
+         * @param b Other SyncPath value to be compared.
+         * @param isEqual true if a is equal to b up to case and NFC-normalization.
+         * @return true if no normalization issue occurs when comparing.
+         */
+        static bool checkIfEqualUpToCaseAndEncoding(const SyncPath &a, const SyncPath &b, bool &isEqual);
         static bool isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path);
         /**
          * Normalize the SyncName parameters before comparing them.

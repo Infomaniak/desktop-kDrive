@@ -188,7 +188,7 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
         // Only update DB and tree
         op->setOmit(true);
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Only Creation date is different. Operation Edit to be propagated in DB only for item "
+            LOGW_SYNCPAL_DEBUG(_logger, L"Among dates, only the creation date has changed. Operation Edit to be propagated in DB only for item with "
                                                 << Utility::formatSyncPath(currentNode->getPath()).c_str());
         }
     }
