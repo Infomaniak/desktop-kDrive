@@ -545,12 +545,7 @@ SyncPath CommonUtility::getAppSupportDir() {
     std::error_code ec;
     if (!std::filesystem::is_directory(dirPath, ec)) {
         bool exists = false;
-#ifdef _WIN32
-        exists = CommonUtility::isLikeFileNotFoundError(ec);
-#else
-        exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
-#endif
-
+        exists = !CommonUtility::isLikeFileNotFoundError(ec);
         if (exists) return SyncPath();
         if (!std::filesystem::create_directory(dirPath, ec)) return SyncPath();
     }
