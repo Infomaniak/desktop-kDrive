@@ -332,14 +332,14 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
         // Check if the item has change since the last sync
         bool snapshotItemChanged = false;
         for (const auto side: std::array<ReplicaSide, 2>{ReplicaSide::Local, ReplicaSide::Remote}) {
-            const auto lastItemChangedSnapshotRevision =
-                    _syncPal->snapshotCopy(side)->lastChangedSnapshotVersion(nodesIdsIt->nodeId(side));
+            const auto lastItemChangeSnapshotRevision =
+                    _syncPal->snapshotCopy(side)->lastChangeSnapshotRevision(nodesIdsIt->nodeId(side));
             const auto lastSyncedSnapshotRevision =
                     side == ReplicaSide::Local ? _lastLocalSnapshotSyncedRevision : _lastRemoteSnapshotSyncedRevision;
-            if (lastItemChangedSnapshotRevision == 0 || lastItemChangedSnapshotRevision > lastSyncedSnapshotRevision) {
+            if (lastItemChangeSnapshotRevision == 0 || lastItemChangeSnapshotRevision > lastSyncedSnapshotRevision) {
                 snapshotItemChanged = true;
                 break;
-            } 
+            }
         }
         if (!snapshotItemChanged) {
             (void) localIdsSet.insert(nodesIdsIt->localNodeId);
@@ -361,14 +361,14 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
             continue;
         }
 
-        if (dbNode.nodeIdLocal()) localIdsSet.insert(*dbNode.nodeIdLocal());
-        if (dbNode.nodeIdRemote()) remoteIdsSet.insert(*dbNode.nodeIdRemote());
 
         if (dbNode.type() != nodeType) {
             ++nodesIdsIt;
             continue;
         }
 
+        if (dbNode.nodeIdLocal()) (void) localIdsSet.insert(*dbNode.nodeIdLocal());
+        if (dbNode.nodeIdRemote()) (void) remoteIdsSet.insert(*dbNode.nodeIdRemote());
         nodesIdsIt = remainingNodesIds.erase(nodesIdsIt);
 
         SyncPath localDbPath;
@@ -411,8 +411,8 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
 
 ExitCode ComputeFSOperationWorker::inferChangesFromDb(NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet) {
     bool dbIdsArefound = false;
-    NodeIdsSet remainingDbIds;
-    if (!_syncDb->dbIds(remainingDbIds, dbIdsArefound)) {
+    NodeIdsSet remainingNodesIds;
+    if (!_syncDb->ids(remainingNodesIds, dbIdsArefound)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::ids");
         setExitCause(ExitCause::DbAccessError);
         return ExitCode::DbError;
@@ -425,7 +425,7 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(NodeIdSet &localIdsSet, No
     // Second, detect changes for files. This is made faster thanks to exclusion lists.
     _dirPathToDeleteSet.clear();
     for (const auto nodeType: std::array<NodeType, 2>{NodeType::Directory, NodeType::File}) {
-        if (const auto exitCode = inferChangesFromDb(nodeType, localIdsSet, remoteIdsSet, remainingDbIds);
+        if (const auto exitCode = inferChangesFromDb(nodeType, localIdsSet, remoteIdsSet, remainingNodesIds);
             exitCode != ExitCode::Ok) {
             return exitCode;
         }

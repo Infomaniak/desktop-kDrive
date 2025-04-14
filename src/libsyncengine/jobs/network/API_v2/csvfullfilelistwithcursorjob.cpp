@@ -150,7 +150,8 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
 
                 return;
             }
-        }        
+        }
+
         if (c == ',' && (!state.readingDoubleQuotedValue || state.prevCharDoubleQuotes)) {
             state.readingDoubleQuotedValue = false;
             state.prevCharDoubleQuotes = false;

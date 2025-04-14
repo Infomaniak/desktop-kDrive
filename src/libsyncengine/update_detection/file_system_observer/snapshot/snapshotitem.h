@@ -55,18 +55,18 @@ class SnapshotItem {
         void setSize(const int64_t newSize);
         [[nodiscard]] bool isLink() const { return _isLink; }
         void setIsLink(const bool isLink);
-        [[nodiscard]] const std::string &contentChecksum() const { return _contentChecksum; }  
+        [[nodiscard]] const std::string &contentChecksum() const { return _contentChecksum; }
         void setContentChecksum(const std::string &newChecksum);
         [[nodiscard]] bool canWrite() const { return _canWrite; }
         void setCanWrite(const bool canWrite);
         [[nodiscard]] bool canShare() const { return _canShare; }
         void setCanShare(bool canShare);
         void setLastChangedSnapshotVersion(SnapshotRevision snapshotVersion);
-        SnapshotRevision lastChangedSnapshotVersion() const { return _lastChangedSnapshotRevision; }
+        SnapshotRevision lastChangeSnapshotRevision() const { return _lastChangeSnapshotRevision; }
 
         void setSnapshotRevisionHandler(const std::shared_ptr<SnapshotRevisionHandler> &snapshotRevisionHandler) {
             _snapshotRevisionHandler = snapshotRevisionHandler;
-            _lastChangedSnapshotRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
+            _lastChangeSnapshotRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
         }
         SnapshotItem &operator=(const SnapshotItem &other);
 
@@ -90,8 +90,8 @@ class SnapshotItem {
         bool _canWrite = true;
         bool _canShare = true;
         std::unordered_set<std::shared_ptr<SnapshotItem>> _children;
-        SnapshotRevision _lastChangedSnapshotRevision =
-                0; // The verison of the snapshot corresponding to the last change of this item.
+        SnapshotRevision _lastChangeSnapshotRevision =
+                0; // The revision of the snapshot corresponding to the last change of this item.
         std::shared_ptr<SnapshotRevisionHandler> _snapshotRevisionHandler;
         mutable SyncPath _path; // The item relative path. Cached value. To use only on a snapshot copy, not a real time one.
 

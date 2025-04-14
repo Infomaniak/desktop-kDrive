@@ -62,7 +62,7 @@ class Snapshot : public SharedObject {
         bool exists(const NodeId &itemId) const;
         bool pathExists(const SyncPath &path) const;
         bool isLink(const NodeId &itemId) const;
-        SnapshotRevision lastChangedSnapshotVersion(const NodeId &itemId) const;
+        SnapshotRevision lastChangeSnapshotRevision(const NodeId &itemId) const;
         bool getChildrenIds(const NodeId &itemId, NodeSet &childrenIds) const;
 
         void ids(NodeSet &ids) const;
@@ -87,7 +87,7 @@ class Snapshot : public SharedObject {
         bool checkIntegrityRecursively() const;
 
     private:
-        std::shared_ptr<SnapshotRevisionHandler> _versionHandlder;
+        std::shared_ptr<SnapshotRevisionHandler> _revisionHandlder;
         bool getChildren(const NodeId &itemId, std::unordered_set<std::shared_ptr<SnapshotItem>> &children) const;
         bool removeItem(std::shared_ptr<SnapshotItem> &item);
 

@@ -51,7 +51,7 @@ class SnapshotRevisionHandler {
 
     private:
         mutable std::mutex _mutex;
-        SnapshotRevision _revision = 1; // Version 0 is reserved for the initial state
+        SnapshotRevision _revision = 1; // Version 0 is reserved for the initial or unknown state
 };
 
 } // namespace KDC

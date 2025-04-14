@@ -86,7 +86,7 @@ class SyncDb : public Db {
                     return dbNodeId == other.dbNodeId && localNodeId == other.localNodeId && remoteNodeId == other.remoteNodeId;
                 }
         };
-        bool dbIds(std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction> &ids, bool &found);
+        bool ids(std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction> &ids, bool &found);
 
         bool path(DbNodeId dbNodeId, SyncPath &localPath, SyncPath &remotePath, bool &found);
         bool node(DbNodeId dbNodeId, DbNode &dbNode, bool &found);
