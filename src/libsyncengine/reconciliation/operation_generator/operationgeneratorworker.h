@@ -42,7 +42,10 @@ class OperationGeneratorWorker : public OperationProcessor {
         void generateDeleteOperation(std::shared_ptr<Node> currentNode, std::shared_ptr<Node> correspondingNode);
 
         void findAndMarkAllChildNodes(std::shared_ptr<Node> parentNode);
-        bool editHasChangedToPropagate(std::shared_ptr<Node> currentNode, std::shared_ptr<Node> correspondingNode);
+
+        // Return false if only elements that are not synced with the corresponding side change (e.g., creation date). Else return
+        // true.
+        bool editChangeShouldBePropagated(std::shared_ptr<Node> currentNode, std::shared_ptr<Node> correspondingNode);
 
         std::queue<std::shared_ptr<Node>> _queuedToExplore;
         NodeSet _deletedNodes;
