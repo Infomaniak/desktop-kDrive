@@ -81,7 +81,7 @@ set(syncengine_SRCS
     update_detection/file_system_observer/localfilesystemobserverworker.h update_detection/file_system_observer/localfilesystemobserverworker.cpp
     update_detection/file_system_observer/snapshot/snapshot.h update_detection/file_system_observer/snapshot/snapshot.cpp
     update_detection/file_system_observer/snapshot/snapshotitem.h update_detection/file_system_observer/snapshot/snapshotitem.cpp
-    update_detection/file_system_observer/snapshot/snapshotversionhandler.h
+    update_detection/file_system_observer/snapshot/snapshotrevisionhandler.h
     update_detection/file_system_observer/computefsoperationworker.h update_detection/file_system_observer/computefsoperationworker.cpp
     update_detection/file_system_observer/fsoperation.h update_detection/file_system_observer/fsoperation.cpp
     update_detection/file_system_observer/fsoperationset.h update_detection/file_system_observer/fsoperationset.cpp

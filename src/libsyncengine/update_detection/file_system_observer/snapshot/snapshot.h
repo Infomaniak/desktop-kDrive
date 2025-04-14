@@ -20,7 +20,7 @@
 
 #include "syncpal/sharedobject.h"
 #include "snapshotitem.h"
-#include "snapshotversionhandler.h"
+#include "snapshotrevisionhandler.h"
 #include "db/dbnode.h"
 
 #include <unordered_map>

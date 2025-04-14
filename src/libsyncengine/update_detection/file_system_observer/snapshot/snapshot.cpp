@@ -33,7 +33,7 @@ Snapshot::Snapshot(ReplicaSide side, const DbNode &dbNode) :
     _side(side), _rootFolderId(side == ReplicaSide::Local ? dbNode.nodeIdLocal().value() : dbNode.nodeIdRemote().value()) {
     _versionHandlder = std::make_shared<SnapshotRevisionHandler>();
     _items.try_emplace(_rootFolderId, std::make_shared<SnapshotItem>(_rootFolderId))
-            .first->second->setSnapshotVersionHandler(_versionHandlder);
+            .first->second->setSnapshotRevisionHandler(_versionHandlder);
 }
 
 Snapshot::~Snapshot() {
@@ -78,7 +78,7 @@ void Snapshot::init() {
 
     _items.clear();
     (void) _items.try_emplace(_rootFolderId, std::make_shared<SnapshotItem>(_rootFolderId))
-            .first->second->setSnapshotVersionHandler(_versionHandlder);
+            .first->second->setSnapshotRevisionHandler(_versionHandlder);
 
     _isValid = false;
 }
@@ -129,7 +129,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
         // Item does not exist yet, create it
         parentChanged = true;
         item = std::make_shared<SnapshotItem>(newItem.id());
-        item->setSnapshotVersionHandler(_versionHandlder);
+        item->setSnapshotRevisionHandler(_versionHandlder);
         (void) _items.try_emplace(newItem.id(), item);
     }
 
@@ -143,7 +143,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
             LOG_DEBUG(Log::instance()->getLogger(),
                       "Parent " << newItem.parentId().c_str() << " does not exist yet, creating it");
             newParent = std::make_shared<SnapshotItem>(newItem.parentId());
-            newParent->setSnapshotVersionHandler(_versionHandlder);
+            newParent->setSnapshotRevisionHandler(_versionHandlder);
             (void) _items.try_emplace(newItem.parentId(), newParent);
             newParent->addChild(item);
         } else {
