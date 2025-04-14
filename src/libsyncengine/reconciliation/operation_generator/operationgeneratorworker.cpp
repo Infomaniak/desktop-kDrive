@@ -168,7 +168,7 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
 }
 
 void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> currentNode, std::shared_ptr<Node> correspondingNode) {
-    SyncOpPtr op = std::make_shared<SyncOperation>();
+    const auto op = std::make_shared<SyncOperation>();
 
     assert(correspondingNode); // Node must exists on both replica (except for create operations)
 
@@ -183,10 +183,8 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
         }
     }
 
-    // If only the creation date is different, we can omit the operation
-    if (currentNode->side() == ReplicaSide::Local && currentNode->size() == correspondingNode->size() &&
-        currentNode->lastmodified() == correspondingNode->lastmodified() &&
-        currentNode->createdAt() != correspondingNode->createdAt()) {
+    // If only elements that are not synced with the corresponding side change (e.g., creation date), the operation can be omitted
+    if (!editChangeShouldBePropagated(currentNode, correspondingNode)) {
         // Only update DB and tree
         op->setOmit(true);
         if (ParametersCache::isExtendedLogEnabled()) {
@@ -321,6 +319,23 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
     }
 
     _deletedNodes.insert(*currentNode->id());
+}
+
+bool OperationGeneratorWorker::editChangeShouldBePropagated(std::shared_ptr<Node> currentNode,
+                                                         std::shared_ptr<Node> correspondingNode) {
+    if (!currentNode || !correspondingNode) {
+        LOG_SYNCPAL_WARN(_logger,
+                         "hasChangeToPropagate: provided node is(are) null: " << (currentNode ? "" : "currentNode")
+                                                                              << (correspondingNode ? "" : " correspondingNode"));
+        return true;
+    }
+
+    if (currentNode->side() == ReplicaSide::Local && currentNode->size() == correspondingNode->size() &&
+        currentNode->lastmodified() == correspondingNode->lastmodified() &&
+        currentNode->createdAt() != correspondingNode->createdAt()) {
+        return false;
+    }
+    return true;
 }
 
 void OperationGeneratorWorker::findAndMarkAllChildNodes(std::shared_ptr<Node> parentNode) {
