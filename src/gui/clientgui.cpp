@@ -474,9 +474,9 @@ void ClientGui::setupSynthesisPopover() {
     _workaroundManualVisibility = true;
 #endif
 
-    qCInfo(lcClientGui) << "Tray menu workarounds:" << "noabouttoshow:" << _workaroundNoAboutToShowUpdate
-                        << "fakedoubleclick:" << _workaroundFakeDoubleClick << "showhide:" << _workaroundShowAndHideTray
-                        << "manualvisibility:" << _workaroundManualVisibility;
+    qCInfo(lcClientGui) << "Tray menu workarounds:"
+                        << "noabouttoshow:" << _workaroundNoAboutToShowUpdate << "fakedoubleclick:" << _workaroundFakeDoubleClick
+                        << "showhide:" << _workaroundShowAndHideTray << "manualvisibility:" << _workaroundManualVisibility;
 
     connect(&_delayedTrayUpdateTimer, &QTimer::timeout, this, &ClientGui::onUpdateSystray);
     _delayedTrayUpdateTimer.setInterval(2 * 1000);
@@ -638,7 +638,6 @@ void ClientGui::computeTrayOverallStatus(SyncStatus &status, bool &unresolvedCon
                         abortOrPausedSeen++;
                         break;
                     case SyncStatus::Undefined:
-                        break;
                     case SyncStatus::Starting:
                         break;
                     case SyncStatus::EnumEnd: {
