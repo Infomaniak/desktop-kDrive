@@ -549,7 +549,7 @@ bool Snapshot::checkIntegrityRecursively() const {
 bool Snapshot::checkIntegrityRecursively(const std::shared_ptr<SnapshotItem> &parentItem) const {
     // Check that we do not have the same file twice in the same folder
     std::set<SyncName> names;
-    for (const auto child: parentItem->children()) {
+    for (const auto &child: parentItem->children()) {
         if (!checkIntegrityRecursively(child)) {
             return false;
         }
