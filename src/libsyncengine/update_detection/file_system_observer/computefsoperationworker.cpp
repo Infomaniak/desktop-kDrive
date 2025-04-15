@@ -964,7 +964,7 @@ bool ComputeFSOperationWorker::hasChangedSinceLastSeen(const SyncDb::NodeIds& no
     // Check if the item has change since the last sync
     for (const auto side: std::array<ReplicaSide, 2>{ReplicaSide::Local, ReplicaSide::Remote}) {
         const auto lastItemChangeSnapshotRevision =
-                _syncPal->snapshotCopy(side)->lastChangeSnapshotRevision(nodeIds.nodeId(side));
+                _syncPal->snapshotCopy(side)->lastChangeRevision(nodeIds.nodeId(side));
         const auto lastSyncedSnapshotRevision =
                 side == ReplicaSide::Local ? _lastLocalSnapshotSyncedRevision : _lastRemoteSnapshotSyncedRevision;
         if (lastItemChangeSnapshotRevision == 0 || lastItemChangeSnapshotRevision > lastSyncedSnapshotRevision) {

@@ -430,10 +430,10 @@ bool Snapshot::isLink(const NodeId &itemId) const {
     return false;
 }
 
-SnapshotRevision Snapshot::lastChangeSnapshotRevision(const NodeId &itemId) const {
+SnapshotRevision Snapshot::lastChangeRevision(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
     if (const auto item = findItem(itemId); item) {
-        return item->lastChangeSnapshotRevision();
+        return item->lastChangeRevision();
     }
     return 0;
 }

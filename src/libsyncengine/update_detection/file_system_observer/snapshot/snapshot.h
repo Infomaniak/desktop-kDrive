@@ -62,7 +62,7 @@ class Snapshot : public SharedObject {
         bool exists(const NodeId &itemId) const;
         bool pathExists(const SyncPath &path) const;
         bool isLink(const NodeId &itemId) const;
-        SnapshotRevision lastChangeSnapshotRevision(const NodeId &itemId) const;
+        SnapshotRevision lastChangeRevision(const NodeId &itemId) const;
         bool getChildrenIds(const NodeId &itemId, NodeSet &childrenIds) const;
 
         void ids(NodeSet &ids) const;

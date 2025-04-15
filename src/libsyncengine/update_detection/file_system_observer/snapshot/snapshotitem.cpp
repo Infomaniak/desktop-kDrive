@@ -36,12 +36,12 @@ SnapshotItem::SnapshotItem(const SnapshotItem &other) {
 
 void SnapshotItem::setId(const NodeId &id) {
     _id = id;
-    _lastChangeSnapshotRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
+    _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
 }
 
 void SnapshotItem::setParentId(const NodeId &newParentId) {
     _parentId = newParentId;
-    _lastChangeSnapshotRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
+    _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
 }
 
 void SnapshotItem::setName(const SyncName &newName) {
@@ -50,22 +50,22 @@ void SnapshotItem::setName(const SyncName &newName) {
         _normalizedName = newName;
         LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncName(newName));
     }
-    _lastChangeSnapshotRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
+    _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
 }
 
 void SnapshotItem::setCreatedAt(const SyncTime newCreatedAt) {
     _createdAt = newCreatedAt;
-    _lastChangeSnapshotRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
+    _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
 }
 
 void SnapshotItem::setLastModified(const SyncTime newLastModified) {
     _lastModified = newLastModified;
-    _lastChangeSnapshotRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
+    _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
 }
 
 void SnapshotItem::setType(const NodeType type) {
     _type = type;
-    _lastChangeSnapshotRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
+    _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
 }
 
 int64_t SnapshotItem::size() const {
@@ -82,22 +82,22 @@ int64_t SnapshotItem::size() const {
 
 void SnapshotItem::setSize(const int64_t newSize) {
     _size = newSize;
-    _lastChangeSnapshotRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
+    _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
 }
 
 void SnapshotItem::setIsLink(const bool isLink) {
     _isLink = isLink;
-    _lastChangeSnapshotRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
+    _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
 }
 
 void SnapshotItem::setContentChecksum(const std::string &newChecksum) {
     _contentChecksum = newChecksum;
-    _lastChangeSnapshotRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
+    _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
 }
 
 void SnapshotItem::setCanWrite(const bool canWrite) {
     _canWrite = canWrite;
-    _lastChangeSnapshotRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
+    _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
 }
 
 void SnapshotItem::setCanShare(bool canShare) {
@@ -105,13 +105,13 @@ void SnapshotItem::setCanShare(bool canShare) {
 }
 
 void SnapshotItem::setLastChangedSnapshotVersion(SnapshotRevision snapshotVersion) {
-    if (snapshotVersion > _lastChangeSnapshotRevision) {
-        _lastChangeSnapshotRevision = snapshotVersion;
+    if (snapshotVersion > _lastChangeRevision) {
+        _lastChangeRevision = snapshotVersion;
     } else {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"SnapshotItem::setLastChangedSnapshotVersion: "
                   L"Trying to set a lower version than the current one. Current version: "
-                          << _lastChangeSnapshotRevision << L", new version: " << snapshotVersion << L" on "
+                          << _lastChangeRevision << L", new version: " << snapshotVersion << L" on "
                           << Utility::s2ws(_id));
     }
 }
@@ -138,10 +138,10 @@ void SnapshotItem::copyExceptChildren(const SnapshotItem &other) {
     _canWrite = other.canWrite();
     _canShare = other.canShare();
     _path = other.path();
-    if (other.lastChangeSnapshotRevision() == 0 && _snapshotRevisionHandler) {
-        _lastChangeSnapshotRevision = _snapshotRevisionHandler->nextVersion();
+    if (other.lastChangeRevision() == 0 && _snapshotRevisionHandler) {
+        _lastChangeRevision = _snapshotRevisionHandler->nextVersion();
     } else {
-        _lastChangeSnapshotRevision = other.lastChangeSnapshotRevision();
+        _lastChangeRevision = other.lastChangeRevision();
     }
 }
 
