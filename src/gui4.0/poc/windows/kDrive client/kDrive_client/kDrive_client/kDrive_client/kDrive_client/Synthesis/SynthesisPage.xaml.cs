@@ -31,9 +31,9 @@ namespace kDrive_client
 
         private void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)
         {
-            s_window = new MainWindow();
+            s_window = new SettingsWindow();
             s_window.Activate();
-            s_window.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(600, 500, 500, 600));
+            //s_window.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(600, 500, 500, 600));
             var mainWindow = (Application.Current as App)?.Window;
             if (mainWindow != null && mainWindow.AppWindow.Presenter is OverlappedPresenter presenter)
             {
@@ -43,12 +43,6 @@ namespace kDrive_client
                     presenter.Restore();
                 };
             }
-
-            
-
-
-
-
         }
         private Window? s_window;
 

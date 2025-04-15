@@ -26,6 +26,10 @@ namespace kDrive_client
         public SettingsWindow()
         {
             this.InitializeComponent();
+            Frame rootFrame = new Frame();
+            rootFrame.Navigate(typeof(SettingsPage));
+
+            this.Content = rootFrame;
         }
     }
 }

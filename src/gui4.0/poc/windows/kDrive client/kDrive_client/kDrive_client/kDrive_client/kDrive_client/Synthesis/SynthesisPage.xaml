@@ -6,14 +6,13 @@
     xmlns:local="using:kDrive_client"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    Background="LightGray">
+    mc:Ignorable="d">
 
 
     <StackPanel Margin="0,-10,0,0">
 
         <!-- Header card -->
-        <Border Background="DarkGray" CornerRadius="10" Padding="16" Margin="0,0,0,0">
+        <Border Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}" CornerRadius="10" Padding="16" Margin="0,0,0,0">
             <StackPanel>
                 <!-- Title bar -->
                 <RelativePanel>
@@ -107,16 +106,18 @@
         </Border>
 
         <!-- Empty state -->
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
-            <Image Source="file_icon.png" Width="48" Height="48" Opacity="0.4"/>
-            <TextBlock TextWrapping="Wrap" TextAlignment="Center">
+        <Border CornerRadius="10" Padding="16" Margin="0,100,0,0">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+                <Image Source="/Assets/resources/icons/document types/file-default.svg" Width="48" Height="48" Opacity="0.4"/>
+                <TextBlock TextWrapping="Wrap" TextAlignment="Center">
                 <Run Text="Vous pouvez synchroniser les fichiers " />
                 <Run Text="depuis votre ordinateur" Foreground="Blue" />
                 <Run Text=" ou sur " />
                 <Run Text="kdrive.infomaniak.com" Foreground="Blue" />
                 <Run Text="." />
-            </TextBlock>
-        </StackPanel>
+                </TextBlock>
+            </StackPanel>
+        </Border>
 
     </StackPanel>
 </Page>

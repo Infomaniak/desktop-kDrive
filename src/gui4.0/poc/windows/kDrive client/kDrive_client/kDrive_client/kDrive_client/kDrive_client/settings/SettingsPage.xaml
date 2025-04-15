@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="kDrive_client.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:kDrive_client"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <Grid>
+        <NavigationView x:Name="Drive_selection" IsBackButtonVisible="Collapsed" Visibility="Visible" IsEnabled="True"     IsSettingsVisible="True"
+    IsBackEnabled="True"
+    AlwaysShowHeader="True"
+    PaneTitle="kDirve"
+    PaneDisplayMode="Left"
+    ExpandedModeThresholdWidth="500"
+    SelectionFollowsFocus="Disabled"
+    IsTabStop="False">
+            <NavigationView.MenuItems>
+                <NavigationViewItem Icon="MapDrive"  Tapped="NavigationViewItem_Tapped_drive1">
+                    <RelativePanel>
+                        <TextBlock> Mon drive perso</TextBlock>
+                        <PersonPicture ProfilePicture="/Assets/Mock_to_delete_before_release/profile_herve.png"  RelativePanel.AlignRightWithPanel="True" Height="20" Width="20"/>
+                    </RelativePanel>
+                </NavigationViewItem>
+                <NavigationViewItem Icon="MapDrive" Tapped="NavigationViewItem_Tapped_drive2">
+                    <RelativePanel>
+                        <TextBlock> Drive Infomaniak</TextBlock>
+                        <PersonPicture ProfilePicture="/Assets/Mock_to_delete_before_release/profile_herve.png"  RelativePanel.AlignRightWithPanel="True" Height="20" Width="20"/>
+                    </RelativePanel>
+                </NavigationViewItem>
+
+                <NavigationViewItem Icon="Add" Content="Ajouter un drive" SelectsOnInvoked="False" Tapped="NavigationViewItem_Tapped"/>
+            </NavigationView.MenuItems>
+            <NavigationView.FooterMenuItems>
+                <NavigationViewItem Tag="SamplePage4">
+                    <StackPanel Orientation="Horizontal">
+                        <PersonPicture ProfilePicture="/Assets/Mock_to_delete_before_release/profile_herve.png"  Height="20" Width="20" Margin="0,0,10,0"/>
+                        <TextBlock> Account</TextBlock>
+                    </StackPanel>
+                </NavigationViewItem>
+            </NavigationView.FooterMenuItems>
+            <Frame x:Name="contentFrame"/>
+        </NavigationView>
+
+    </Grid>
+</Page>

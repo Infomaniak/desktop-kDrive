@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="kDrive_client.AddDrivePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:kDrive_client"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+
+    <StackPanel Orientation="Vertical">
+        <ListView
+    x:Name="BaseExample"
+    BorderThickness="1"
+    Width="350"
+    Height="400"
+    HorizontalAlignment="Left">
+            <ListViewItem Padding="12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Image Source="/Assets/resources/icons/actions/drive.svg"
+               Width="40" Height="40"
+               Margin="0,0,12,0"
+               VerticalAlignment="Center"/>
+
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Drive de test dev infomaniak"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       Margin="0,2,0,2"
+                       TextTrimming="CharacterEllipsis" />
+
+                        <!-- Secondary info (e.g., Description) -->
+                        <TextBlock Text="250 GB used of 5 TB"
+                       FontSize="13"
+                       Foreground="Gray"
+                       Margin="0,0,0,2"
+                       TextTrimming="WordEllipsis" />
+
+                    </StackPanel>
+                </Grid>
+            </ListViewItem>
+            <ListViewItem Padding="12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Image Source="/Assets/resources/icons/actions/drive.svg"
+   Width="40" Height="40"
+   Margin="0,0,12,0"
+   VerticalAlignment="Center"/>
+
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Drive de test dev infomaniak"
+           FontSize="16"
+           FontWeight="SemiBold"
+           Foreground="Black"
+           Margin="0,2,0,2"
+           TextTrimming="CharacterEllipsis" />
+
+                        <!-- Secondary info (e.g., Description) -->
+                        <TextBlock Text="250 GB used of 5 TB"
+           FontSize="13"
+           Foreground="Gray"
+           Margin="0,0,0,2"
+           TextTrimming="WordEllipsis" />
+
+                    </StackPanel>
+                </Grid>
+            </ListViewItem>
+            <ListViewItem Padding="12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Image Source="/Assets/resources/icons/actions/drive.svg"
+   Width="40" Height="40"
+   Margin="0,0,12,0"
+   VerticalAlignment="Center"/>
+
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Drive de test dev infomaniak"
+           FontSize="16"
+           FontWeight="SemiBold"
+           Foreground="Black"
+           Margin="0,2,0,2"
+           TextTrimming="CharacterEllipsis" />
+
+                        <!-- Secondary info (e.g., Description) -->
+                        <TextBlock Text="250 GB used of 5 TB"
+           FontSize="13"
+           Foreground="Gray"
+           Margin="0,0,0,2"
+           TextTrimming="WordEllipsis" />
+
+                    </StackPanel>
+                </Grid>
+            </ListViewItem>
+        </ListView>
+    </StackPanel>
+</Page>
