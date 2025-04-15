@@ -456,6 +456,40 @@ void TestComputeFSOperationWorker::testIsInUnsyncedList() {
     testIsInUnsyncedList(true, "r_bb", ReplicaSide::Remote);
 }
 
+void TestComputeFSOperationWorker::testHasChangedSinceLastSeen() {
+    _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision = 0;
+    _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision = 0;
+
+
+    SyncDb::NodeIds nodeIds;
+    nodeIds.localNodeId = "l_test";
+    nodeIds.remoteNodeId = "r_test";
+
+    SnapshotItem localItem(nodeIds.localNodeId, *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("test.txt"),
+                           testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize,
+                           false, true, true);
+    SnapshotItem remoteItem(nodeIds.remoteNodeId, *_syncPal->syncDb()->rootNode().nodeIdRemote(), Str("test.txt"),
+                            testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize,
+                            false, true, true);
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->updateItem(localItem));
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Remote)->updateItem(remoteItem));
+    _syncPal->copySnapshots();
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
+
+    _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision =
+            _syncPal->snapshotCopy(ReplicaSide::Local)->lastChangeSnapshotRevision(nodeIds.localNodeId);
+    _syncPal->computeFSOperationsWorker()->_lastRemoteSnapshotSyncedRevision =
+            _syncPal->snapshotCopy(ReplicaSide::Remote)->lastChangeSnapshotRevision(nodeIds.remoteNodeId);
+
+    CPPUNIT_ASSERT(!_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
+
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->updateItem(localItem));
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Remote)->updateItem(remoteItem));
+    _syncPal->copySnapshots();
+
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
+}
+
 void TestComputeFSOperationWorker::testIsInUnsyncedList(const bool expectedResult, const NodeId &nodeId,
                                                         const ReplicaSide side) const {
     CPPUNIT_ASSERT_EQUAL(expectedResult, _syncPal->computeFSOperationsWorker()->isInUnsyncedListParentSearchInDb(nodeId, side));

@@ -107,7 +107,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
 
         bool addFolderToDelete(const SyncPath &path);
         bool checkIfPathIsInDeletedFolder(const SyncPath &path, bool &isInDeletedFolder);
-
+        bool hasChangedSinceLastSeen(const SyncDb::NodeIds &nodeIds) const;
         friend class TestComputeFSOperationWorker;
 };
 

@@ -329,24 +329,13 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
             return ExitCode::Ok;
         }
 
-        // Check if the item has change since the last sync
-        bool snapshotItemChanged = false;
-        for (const auto side: std::array<ReplicaSide, 2>{ReplicaSide::Local, ReplicaSide::Remote}) {
-            const auto lastItemChangeSnapshotRevision =
-                    _syncPal->snapshotCopy(side)->lastChangeSnapshotRevision(nodesIdsIt->nodeId(side));
-            const auto lastSyncedSnapshotRevision =
-                    side == ReplicaSide::Local ? _lastLocalSnapshotSyncedRevision : _lastRemoteSnapshotSyncedRevision;
-            if (lastItemChangeSnapshotRevision == 0 || lastItemChangeSnapshotRevision > lastSyncedSnapshotRevision) {
-                snapshotItemChanged = true;
-                break;
-            }
-        }
-        if (!snapshotItemChanged) {
+        if (!hasChangedSinceLastSeen(*nodesIdsIt)) {
             (void) localIdsSet.insert(nodesIdsIt->localNodeId);
             (void) remoteIdsSet.insert(nodesIdsIt->remoteNodeId);
             nodesIdsIt = remainingNodesIds.erase(nodesIdsIt);
             continue;
         }
+
         DbNode dbNode;
         bool dbNodeIsFound = false;
         const auto dbNodeIds = *nodesIdsIt;
@@ -969,6 +958,20 @@ bool ComputeFSOperationWorker::checkIfPathIsInDeletedFolder(const SyncPath &path
     }
 
     return true;
+}
+
+bool ComputeFSOperationWorker::hasChangedSinceLastSeen(const SyncDb::NodeIds& nodeIds) const {
+    // Check if the item has change since the last sync
+    for (const auto side: std::array<ReplicaSide, 2>{ReplicaSide::Local, ReplicaSide::Remote}) {
+        const auto lastItemChangeSnapshotRevision =
+                _syncPal->snapshotCopy(side)->lastChangeSnapshotRevision(nodeIds.nodeId(side));
+        const auto lastSyncedSnapshotRevision =
+                side == ReplicaSide::Local ? _lastLocalSnapshotSyncedRevision : _lastRemoteSnapshotSyncedRevision;
+        if (lastItemChangeSnapshotRevision == 0 || lastItemChangeSnapshotRevision > lastSyncedSnapshotRevision) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void ComputeFSOperationWorker::notifyIgnoredItem(const NodeId &nodeId, const SyncPath &relativePath, const NodeType nodeType) {
