@@ -184,6 +184,7 @@ bool AbstractTokenNetworkJob::handleError(std::istream &is, const Poco::URI &uri
         case Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED:
             return handleUnauthorizedResponse();
         case Poco::Net::HTTPResponse::HTTP_NOT_FOUND: {
+            noRetry();
             _exitInfo = {ExitCode::BackError, ExitCause::NotFound};
             return false;
         }

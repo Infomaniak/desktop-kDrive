@@ -19,6 +19,8 @@
 #include "copytodirectoryjob.h"
 #include "libcommon/utility/jsonparserutility.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 CopyToDirectoryJob::CopyToDirectoryJob(int driveDbId, const NodeId &remoteFileId, const NodeId &remoteDestId,

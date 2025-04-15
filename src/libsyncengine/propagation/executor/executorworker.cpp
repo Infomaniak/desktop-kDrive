@@ -1371,9 +1371,8 @@ ExitInfo ExecutorWorker::deleteFinishedAsyncJobs() {
     return exitInfo;
 }
 
-ExitInfo ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool invalidName,
-                                                bool downloadImpossible) {
-    if (jobExitCause == ExitCause::NotFound && !downloadImpossible) {
+ExitInfo ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool invalidName) {
+    if (jobExitCause == ExitCause::NotFound) {
         // The operation failed because the destination does not exist anymore
         LOG_SYNCPAL_DEBUG(_logger, "Destination does not exist anymore, restarting sync.");
         return ExitCode::DataError;
@@ -1433,8 +1432,7 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, Syn
     auto networkJob(std::dynamic_pointer_cast<AbstractNetworkJob>(job));
     if (const bool invalidName = job->exitInfo().cause() == ExitCause::InvalidName;
         job->exitInfo().code() == ExitCode::BackError && details::isManagedBackError(job->exitInfo().cause())) {
-        return handleManagedBackError(job->exitInfo().cause(), syncOp, invalidName,
-                                      networkJob && networkJob->isDownloadImpossible());
+        return handleManagedBackError(job->exitInfo().cause(), syncOp, invalidName);
     }
 
     if (job->exitInfo().code() != ExitCode::Ok) {

@@ -29,9 +29,7 @@
 #include <Poco/Net/HTTPResponse.h>
 #include <Poco/URI.h>
 #include <Poco/DOM/DOMParser.h>
-#include <Poco/DOM/Document.h>
 #include <Poco/DOM/AutoPtr.h>
-#include <Poco/SAX/InputSource.h>
 #include <Poco/SharedPtr.h>
 #include <Poco/InflatingStream.h>
 #include <Poco/Error.h>
@@ -39,6 +37,7 @@
 #include <iostream> // std::ios, std::istream, std::cout, std::cerr
 #include <functional>
 #include <Poco/JSON/Parser.h>
+#include <Poco/Net/HTTPRequest.h>
 
 #define BUF_SIZE 1024
 
@@ -513,7 +512,7 @@ bool AbstractNetworkJob::followRedirect() {
         return false;
     }
 
-    Poco::URI uri(redirectUrl);
+    const Poco::URI uri(redirectUrl);
 
     // Follow redirection
     LOG_DEBUG(_logger, "Request " << jobId() << ", following redirection: " << redirectUrl.c_str());
@@ -522,13 +521,7 @@ bool AbstractNetworkJob::followRedirect() {
     if (!sendRequest(uri)) {
         return false;
     }
-    bool receiveOk = receiveResponse(uri);
-    if (!receiveOk && _resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
-        // Special cases where the file exist in DB but not in storage
-        _downloadImpossible = true;
-        return true;
-    }
-    return receiveOk;
+    return receiveResponse(uri);
 }
 
 bool AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId) {

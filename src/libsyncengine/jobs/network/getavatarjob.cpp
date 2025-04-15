@@ -23,7 +23,7 @@
 #include <Poco/DOM/DOMParser.h>
 #include <Poco/DOM/Document.h>
 #include <Poco/DOM/AutoPtr.h>
-#include <Poco/SharedPtr.h>
+#include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
 

@@ -18,6 +18,8 @@
 
 #include "getinfodriveuserjob.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 GetInfoDriveUserJob::GetInfoDriveUserJob(int userDbId, int driveId) :

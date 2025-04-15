@@ -21,7 +21,6 @@
 #include "config.h"
 #include "db/parmsdb.h"
 #include "jobs/jobmanager.h"
-#include "jobs/network/API_v2/createdirjob.h"
 #include "jobs/network/API_v2/deletejob.h"
 #include "jobs/network/API_v2/getfilelistjob.h"
 #include "jobs/network/API_v2/uploadjob.h"
@@ -37,6 +36,7 @@
 #include "test_utility/remotetemporarydirectory.h"
 
 #include <unordered_set>
+#include <Poco/Net/HTTPRequest.h>
 
 using namespace CppUnit;
 

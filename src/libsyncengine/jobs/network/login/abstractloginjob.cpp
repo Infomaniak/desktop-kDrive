@@ -17,14 +17,13 @@
  */
 
 #include "abstractloginjob.h"
-#include "config.h"
 #include "jobs/network/networkjobsparams.h"
 #include "libcommonserver/utility/utility.h"
-#include "requests/parameterscache.h"
 #include "utility/jsonparserutility.h"
 #include "utility/urlhelper.h"
 
 #include <Poco/JSON/Parser.h>
+#include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
 

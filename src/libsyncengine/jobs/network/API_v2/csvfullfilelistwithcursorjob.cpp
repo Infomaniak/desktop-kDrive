@@ -23,7 +23,7 @@
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #endif
 
-#include <Poco/JSON/Parser.h>
+#include <Poco/Net/HTTPRequest.h>
 
 #define API_TIMEOUT 900
 
