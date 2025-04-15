@@ -86,7 +86,7 @@ void UpdateTreeWorker::execute() {
         _updateTree->drawUpdateTree();
     }
 
-    const auto elapsed_seconds = std::chrono::steady_clock::now() - start;
+    const std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
 
     if (exitCode == ExitCode::Ok) {
         LOG_SYNCPAL_DEBUG(_logger, "Update Tree " << _side << " updated in: " << elapsed_seconds.count() << "s");
