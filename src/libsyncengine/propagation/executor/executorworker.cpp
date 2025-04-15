@@ -1371,14 +1371,8 @@ ExitInfo ExecutorWorker::deleteFinishedAsyncJobs() {
     return exitInfo;
 }
 
-ExitInfo ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool invalidName) {
-    if (jobExitCause == ExitCause::NotFound) {
-        // The operation failed because the destination does not exist anymore
-        LOG_SYNCPAL_DEBUG(_logger, "Destination does not exist anymore, restarting sync.");
-        return ExitCode::DataError;
-    }
-
-    if (jobExitCause == ExitCause::QuotaExceeded) {
+ExitInfo ExecutorWorker::handleManagedBackError(const ExitInfo &jobExitInfo, const SyncOpPtr syncOp, const bool invalidName) {
+    if (jobExitInfo.cause() == ExitCause::QuotaExceeded) {
         _syncPal->pause();
     } else {
         // The item should be temporarily blacklisted
@@ -1403,7 +1397,7 @@ ExitInfo ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPt
     } else {
         error = Error(_syncPal->syncDbId(), localNodeId, remoteNodeId, syncOp->affectedNode()->type(),
                       syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyType::None, CancelType::None, "",
-                      ExitCode::BackError, jobExitCause);
+                      jobExitInfo.code(), jobExitInfo.cause());
     }
     _syncPal->addError(error);
 
@@ -1432,7 +1426,7 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, Syn
     auto networkJob(std::dynamic_pointer_cast<AbstractNetworkJob>(job));
     if (const bool invalidName = job->exitInfo().cause() == ExitCause::InvalidName;
         job->exitInfo().code() == ExitCode::BackError && details::isManagedBackError(job->exitInfo().cause())) {
-        return handleManagedBackError(job->exitInfo().cause(), syncOp, invalidName);
+        return handleManagedBackError(job->exitInfo(), syncOp, invalidName);
     }
 
     if (job->exitInfo().code() != ExitCode::Ok) {
