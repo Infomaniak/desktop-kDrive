@@ -227,6 +227,8 @@ void TestComputeFSOperationWorker::testCreateDuplicateNamesWithDistinctEncodings
     // TODO: Use the default tmp directory
     _syncPal->setLocalPath(testhelpers::localTestDirPath);
 
+    _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision = _syncPal->_localSnapshot->revision();
+    _syncPal->computeFSOperationsWorker()->_lastRemoteSnapshotSyncedRevision = _syncPal->_remoteSnapshot->revision();
     // Duplicated items with distinct encodings are not supported, and only one of them will be synced. We do not guarantee
     // that it will always be the same one.
     _syncPal->_localSnapshot->updateItem(SnapshotItem("l_a_nfc", "l_a", testhelpers::makeNfcSyncName(), testhelpers::defaultTime,
@@ -247,6 +249,9 @@ void TestComputeFSOperationWorker::testCreateDuplicateNamesWithDistinctEncodings
 void TestComputeFSOperationWorker::testMultipleOps() {
     // TODO: Use the default tmp directory
     _syncPal->setLocalPath(testhelpers::localTestDirPath);
+
+    _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision = _syncPal->_localSnapshot->revision();
+    _syncPal->computeFSOperationsWorker()->_lastRemoteSnapshotSyncedRevision = _syncPal->_remoteSnapshot->revision();
 
     // On local replica
     // Create operation
