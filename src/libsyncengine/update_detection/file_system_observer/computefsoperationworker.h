@@ -82,7 +82,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
         bool isWhitelisted(const std::shared_ptr<const Snapshot> snapshot, const NodeId &nodeId) const;
         bool isTooBig(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId, int64_t size);
         bool isPathTooLong(const SyncPath &path, const NodeId &nodeId, NodeType type) const;
-
+        ExitInfo isReusedNodeId(const NodeId &nodeId, const DbNode &dbNode, const std::shared_ptr<const Snapshot> &snapshot, bool &isReused) const;
         ExitInfo checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId, bool &isExcluded);
 
         void deleteChildOpRecursively(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId,
