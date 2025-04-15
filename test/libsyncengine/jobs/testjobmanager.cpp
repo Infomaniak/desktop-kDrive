@@ -445,6 +445,77 @@ void TestJobManager::testReuseSocket() {
     CPPUNIT_ASSERT(!session.socket().impl()->initialized());
 }
 
+void runBenchmark(const SyncPath &benchFilePath, const int nbThread, const std::string &driveId,
+                  const SyncPath &localTestFolderPath) {
+    constexpr uint8_t rep = 50;
+    double averageTime = 0.0;
+
+    std::cout << "**********************************************" << std::endl;
+    JobManager::instance()->setPoolCapacity(nbThread);
+
+    std::ofstream testFile(benchFilePath, std::ios_base::in | std::ios_base::ate);
+    testFile << std::to_string(nbThread);
+
+    std::cout << "Test : 100 files of 1MB each / " << nbThread << " thread in parallel" << std::endl;
+    for (int i = 0; i < rep; i++) {
+        const RemoteTemporaryDirectory remoteTmpDir(driveDbId, driveId, "TestJobManager benchmarkParallelJobs");
+
+        std::queue<UniqueId> jobIds;
+
+        const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+
+        for (auto &dirEntry: std::filesystem::directory_iterator(localTestFolderPath)) {
+            if (dirEntry.path().filename() == ".DS_Store") {
+                continue;
+            }
+
+            const auto job = std::make_shared<UploadJob>(nullptr, driveDbId, dirEntry.path(), dirEntry.path().filename().native(),
+                                                         remoteTmpDir.id(), 0);
+            if (nbThread == 1) {
+                job->runSynchronously();
+            } else {
+                JobManager::instance()->queueAsyncJob(job);
+                jobIds.push(job->jobId());
+            }
+        }
+
+        // Wait for all uploads to finish
+        while (!jobIds.empty()) {
+            Utility::msleep(10); // Wait 10ms
+            while (!jobIds.empty() && JobManager::instance()->isJobFinished(jobIds.front())) {
+                jobIds.pop();
+            }
+        }
+
+        const std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
+        std::cout << "Test executed in : " << elapsed_seconds.count() << "s" << std::endl;
+        averageTime += elapsed_seconds.count();
+
+        testFile << ";" << std::to_string(elapsed_seconds.count());
+    }
+
+    testFile << std::endl;
+    testFile.close();
+
+    std::cout << "Test average time: " << averageTime / rep << "s" << std::endl;
+}
+
+void TestJobManager::benchmarkParallelJobs() {
+    /* Test case : 100 files of 10MB each */
+    const auto homePath = CommonUtility::envVarValue("HOME");
+    const SyncPath benchFilePath(SyncPath(homePath) / "bench.txt");
+    const LocalTemporaryDirectory localTmpDir("TestJobManager benchmarkParallelJobs");
+    generateBigFiles(localTmpDir.path(), 1, 100);
+    std::cout << "Local test files generated" << std::endl;
+
+    runBenchmark(benchFilePath, 100, _testVariables.remoteDirId, localTmpDir.path());
+    runBenchmark(benchFilePath, 30, _testVariables.remoteDirId, localTmpDir.path());
+    runBenchmark(benchFilePath, 10, _testVariables.remoteDirId, localTmpDir.path());
+    runBenchmark(benchFilePath, 5, _testVariables.remoteDirId, localTmpDir.path());
+    runBenchmark(benchFilePath, 3, _testVariables.remoteDirId, localTmpDir.path());
+    runBenchmark(benchFilePath, 1, _testVariables.remoteDirId, localTmpDir.path());
+}
+
 void TestJobManager::generateBigFiles(const SyncPath &dirPath, int size, int count) {
     // Generate 1st big file
     SyncPath bigFilePath;
