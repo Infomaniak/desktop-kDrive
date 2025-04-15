@@ -126,7 +126,6 @@ void TestIntegration::setUp() {
     _syncPal->createSharedObjects();
     _syncPal->syncDb()->setAutoDelete(true);
     ParametersCache::instance()->parameters().setExtendedLog(true); // Enable extended log to see more details in the logs
-    ParametersCache::instance()->parameters().setSyncHiddenFiles(true); // Enable sync of hidden files
 
     // Insert items to blacklist
     SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {test_beaucoupRemoteId});
