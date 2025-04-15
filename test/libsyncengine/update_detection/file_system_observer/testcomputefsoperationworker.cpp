@@ -477,9 +477,9 @@ void TestComputeFSOperationWorker::testHasChangedSinceLastSeen() {
     CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
 
     _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision =
-            _syncPal->snapshotCopy(ReplicaSide::Local)->lastChangeSnapshotRevision(nodeIds.localNodeId);
+            _syncPal->snapshotCopy(ReplicaSide::Local)->lastChangeRevision(nodeIds.localNodeId);
     _syncPal->computeFSOperationsWorker()->_lastRemoteSnapshotSyncedRevision =
-            _syncPal->snapshotCopy(ReplicaSide::Remote)->lastChangeSnapshotRevision(nodeIds.remoteNodeId);
+            _syncPal->snapshotCopy(ReplicaSide::Remote)->lastChangeRevision(nodeIds.remoteNodeId);
 
     CPPUNIT_ASSERT(!_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
 

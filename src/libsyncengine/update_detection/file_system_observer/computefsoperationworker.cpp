@@ -105,9 +105,9 @@ void ComputeFSOperationWorker::execute() {
     } else {
         /* If the current snapshot state DOES NOT reveal any operation, we store the current revision number.
          * On the next call to compute filesystem operations, only items from the snapshot that were modified in a higher revision
-         * will be processed. 
-         * If the current snapshot state DOES reveal any operation, the last synced revision number remains unchanged. A new compute
-         * filesystem operation will be triggered at the end of the sync. If all changes have been successfully synced, no
+         * will be processed.
+         * If the current snapshot state DOES reveal any operation, the last synced revision number remains unchanged. A new
+         * compute filesystem operation will be triggered at the end of the sync. If all changes have been successfully synced, no
          * operations should be detected anymore, and the last synced revision number will be updated accordingly.
          */
         if (_syncPal->operationSet(ReplicaSide::Local)->nbOps() == 0) {
@@ -275,23 +275,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         return ExitCode::DataError;
     }
 
-    if (side == ReplicaSide::Local && !_testing) {
-        // OS might fail to notify all delete events, therefore we check that the file still exists.
-        SyncPath absolutePath = _syncPal->localPath() / snapshotPath;
-        bool exists = false;
-        IoError ioError = IoError::Success;
-        if (!IoHelper::checkIfPathExists(absolutePath, exists, ioError) || ioError == IoError::AccessDenied) {
-            LOGW_SYNCPAL_WARN(_logger,
-                              L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absolutePath, ioError));
-            return ExitCode::SystemError;
-        }
-        if (!exists) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Item does not exist anymore on local replica. Snapshot will be rebuilt - "
-                                                << Utility::formatSyncPath(absolutePath));
-            setExitCause(ExitCause::InvalidSnapshot);
-            return ExitCode::DataError;
-        }
-    } else if (isPathTooLong(snapshotPath, nodeId, snapshot->type(nodeId))) {
+    if (side == ReplicaSide::Remote && isPathTooLong(snapshotPath, nodeId, snapshot->type(nodeId))) {
         return ExitCode::Ok;
     }
 
@@ -301,11 +285,12 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     const SyncTime dbCreatedAt = dbNode.created().has_value() ? dbNode.created().value() : 0;
     // Size can differ for links between remote and local replica, do not check it in that case
     if (const auto sameSize = snapshot->isLink(nodeId) || snapshot->size(nodeId) == dbNode.size();
-        (snapshotLastModified != dbLastModified || !sameSize ||( snapshotCreatedAt != dbCreatedAt && side == ReplicaSide::Local)) &&
+        (snapshotLastModified != dbLastModified || !sameSize ||
+         (snapshotCreatedAt != dbCreatedAt && side == ReplicaSide::Local)) &&
         dbNode.type() == NodeType::File) {
         // Edit operation
         const auto fsOp = std::make_shared<FSOperation>(OperationType::Edit, nodeId, NodeType::File, snapshot->createdAt(nodeId),
-                                                  snapshotLastModified, snapshot->size(nodeId), snapshotPath);
+                                                        snapshotLastModified, snapshot->size(nodeId), snapshotPath);
         opSet->insertOp(fsOp);
         logOperationGeneration(snapshot->side(), fsOp);
     }
@@ -899,8 +884,8 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
         return ExitCode::Ok;
     }
 
-    LOGW_SYNCPAL_DEBUG(_logger, L"Path, size, creation date and modification date have all changed for " << Utility::s2ws(localNodeId)
-                                                                                                    << L". Node is reused.");
+    LOGW_SYNCPAL_DEBUG(_logger, L"Path, size, creation date and modification date have all changed for "
+                                        << Utility::s2ws(localNodeId) << L". Node is reused.");
     isReused = true;
     return ExitCode::Ok;
 }
