@@ -36,6 +36,12 @@ class SnapshotRevisionHandler {
 
         SnapshotRevision nextVersion() {
             const std::scoped_lock lock(_mutex);
+
+            /* This file is included by some files that also include "windef.h", which defines a macro "max()".
+             * This causes std::numeric_limits<SnapshotRevision>::max() to be expanded as
+             * std::numeric_limits<SnapshotRevision>::(((a) > (b)) ? (a) : (b)), which obviously doesn't compile.
+             * The following pragma allows temporarily disabling this macro.
+             */
 #pragma push_macro("max")
 #undef max
             if (++_revision == std::numeric_limits<SnapshotRevision>::max()) {
