@@ -22,9 +22,12 @@
 
 @interface AppDelegate : NSObject <NSXPCListenerDelegate, XPCLoginItemProtocol>
 
-@property(retain) NSXPCConnection *appConnection;
-@property(retain) NSXPCListenerEndpoint *appEndpoint;
+@property(retain) NSXPCConnection *serverConnection;
+@property(retain) NSXPCConnection *guiConnection;
 @property(retain) NSXPCConnection *extensionConnection;
+
+@property(retain) NSXPCListenerEndpoint *serverExtEndpoint;
+@property(retain) NSXPCListenerEndpoint *serverGuiEndpoint;
 
 - (instancetype)init;
 

@@ -23,9 +23,11 @@
 - (instancetype)init {
     self = [super init];
     
-    _appConnection = nil;
-    _appEndpoint = nil;
+    _serverConnection = nil;
+    _serverExtEndpoint = nil;
+    _serverGuiEndpoint = nil;
     _extensionConnection = nil;
+    _guiConnection = nil;
     
     return self;
 }
@@ -44,24 +46,36 @@
     // Set connection handlers
     NSLog(@"[KD] Setup connection handlers");
     newConnection.interruptionHandler = ^{
-        if (self->_appConnection && self->_appConnection == newConnection) {
-            NSLog(@"[KD] Connection with app interrupted");
-            self->_appEndpoint = nil;
-        }
-        else {
-            NSLog(@"[KD] Connection with ext interrupted");
-            self->_extensionConnection = nil;
+        if (self->_serverConnection) {
+            if (self->_serverConnection == newConnection) {
+                NSLog(@"[KD] Connection with server interrupted");
+                self->_serverConnection = nil;
+                self->_serverExtEndpoint = nil;
+                self->_serverGuiEndpoint = nil;
+            } else if (self->_guiConnection == newConnection) {
+                NSLog(@"[KD] Connection with gui interrupted");
+                self->_guiConnection = nil;
+            } else if (self->_extensionConnection == newConnection) {
+                NSLog(@"[KD] Connection with ext interrupted");
+                self->_extensionConnection = nil;
+            }
         }
     };
 
     newConnection.invalidationHandler = ^{
-        if (self->_appConnection && self->_appConnection == newConnection) {
-            NSLog(@"[KD] Connection with app invalidated");
-            self->_appEndpoint = nil;
-        }
-        else {
-            NSLog(@"[KD] Connection with ext invalidated");
-            self->_extensionConnection = nil;
+        if (self->_serverConnection) {
+            if (self->_serverConnection == newConnection) {
+                NSLog(@"[KD] Connection with server invalidated");
+                self->_serverConnection = nil;
+                self->_serverExtEndpoint = nil;
+                self->_serverGuiEndpoint = nil;
+            } else if (self->_guiConnection == newConnection) {
+                NSLog(@"[KD] Connection with gui invalidated");
+                self->_guiConnection = nil;
+            } else if (self->_extensionConnection == newConnection) {
+                NSLog(@"[KD] Connection with ext invalidated");
+                self->_extensionConnection = nil;
+            }
         }
     };
     
@@ -70,12 +84,15 @@
     [newConnection resume];
     
     // Get remote object role
-    [[newConnection remoteObjectProxy] isApp:^(BOOL value) {
-        NSLog(@"[KD] isApp: %@", value ? @"TRUE" : @"FALSE");
-        if (value) {
-            self->_appConnection = newConnection;
-        }
-        else {
+    [[newConnection remoteObjectProxy] processType:^(ProcessType value) {
+        if (value == server) {
+            NSLog(@"[KD] Process server connected");
+            self->_serverConnection = newConnection;
+        } else if (value == client) {
+            NSLog(@"[KD] Process gui connected");
+            self->_guiConnection = newConnection;
+        } else if (value == finderExt) {
+            NSLog(@"[KD] Process ext connected");
             self->_extensionConnection = newConnection;
         }
     }];
@@ -83,20 +100,38 @@
     return YES;
 }
 
-- (void)setEndpoint:(NSXPCListenerEndpoint *)endPoint
+- (void)setServerExtEndpoint:(NSXPCListenerEndpoint *)endPoint
 {
-    NSLog(@"[KD] Set app endpoint");
-    _appEndpoint = endPoint;
+    NSLog(@"[KD] Set server ext endpoint %@", endPoint);
+    _serverExtEndpoint = endPoint;
     
     // Inform extension
     if (_extensionConnection) {
-        [[_extensionConnection remoteObjectProxy] appIsRunning:endPoint];
+        [[_extensionConnection remoteObjectProxy] serverIsRunning:endPoint];
     }
 }
 
-- (void)getEndpoint:(void (^)(NSXPCListenerEndpoint *))callback
+- (void)getServerExtEndpoint:(void (^)(NSXPCListenerEndpoint *))callback
 {
-    callback(_appEndpoint);
+    NSLog(@"[KD] Server ext endpoint asked %@", _serverExtEndpoint);
+    callback(_serverExtEndpoint);
+}
+
+- (void)setServerGuiEndpoint:(NSXPCListenerEndpoint *)endPoint
+{
+    NSLog(@"[KD] Set server gui endpoint %@", endPoint);
+    _serverGuiEndpoint = endPoint;
+    
+    // Inform gui
+    if (_guiConnection) {
+        [[_guiConnection remoteObjectProxy] serverIsRunning:endPoint];
+    }
+}
+
+- (void)getServerGuiEndpoint:(void (^)(NSXPCListenerEndpoint *))callback
+{
+    NSLog(@"[KD] Server gui endpoint asked %@", _serverGuiEndpoint);
+    callback(_serverGuiEndpoint);
 }
 
 @end

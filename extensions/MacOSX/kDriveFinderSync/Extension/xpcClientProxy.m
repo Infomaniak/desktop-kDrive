@@ -17,7 +17,7 @@
  */
 
 #import "xpcClientProxy.h"
-#import "../kDrive/xpcExtensionRemoteProtocol.h"
+#import "xpcExtensionProtocol.h"
 
 @implementation XPCClientProxy
 
@@ -91,17 +91,17 @@
     NSLog(@"[KD] Resume connection with login item agent");
     [_loginItemAgentConnection resume];
     
-    // Get app endpoint from login item agent
-    NSLog(@"[KD] Get listener endpoint from login item agent");
-    [[_loginItemAgentConnection remoteObjectProxy] getEndpoint:^(NSXPCListenerEndpoint *endpoint) {
-        NSLog(@"[KD] Listener endpoint received");
+    // Get server endpoint from login item agent
+    NSLog(@"[KD] Get server ext endpoint from login item agent");
+    [[_loginItemAgentConnection remoteObjectProxy] getServerExtEndpoint:^(NSXPCListenerEndpoint *endpoint) {
+        NSLog(@"[KD] Server ext endpoint received");
         if (endpoint) {
-            [self connectToApp:endpoint];
+            [self connectToServer:endpoint];
         }
     }];
 }
 
-- (void)connectToApp:(NSXPCListenerEndpoint *)endpoint
+- (void)connectToServer:(NSXPCListenerEndpoint *)endpoint
 {
     if (endpoint == nil) {
         NSLog(@"[KD] Invalid parameter");
@@ -119,12 +119,12 @@
     
     // Set exported interface
     NSLog(@"[KD] Set exported interface for connection with app");
-    _appConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionProtocol)];
+    _appConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionRemoteProtocol)];
     _appConnection.exportedObject = self;
     
     // Set remote object interface
     NSLog(@"[KD] Set remote object interface for connection with app");
-    [_appConnection setRemoteObjectInterface:[NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionRemoteProtocol)]];
+    [_appConnection setRemoteObjectInterface:[NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionProtocol)]];
     
     // Set connection handlers
     NSLog(@"[KD] Setup connection handlers for connection with app");
@@ -233,16 +233,16 @@
 }
 
 // XPCLoginItemRemoteProtocol protocol implementation
-- (void)isApp:(void (^)(BOOL))callback
+- (void)processType:(void (^)(ProcessType))callback
 {
-    NSLog(@"[KD] isApp called");
-    callback(false);
+    NSLog(@"[KD] Process type asked");
+    callback(finderExt);
 }
 
-- (void)appIsRunning:(NSXPCListenerEndpoint *)endpoint
+- (void)serverIsRunning:(NSXPCListenerEndpoint *)endpoint
 {
-    NSLog(@"[KD] appIsRunning called");
-    [self connectToApp:endpoint];
+    NSLog(@"[KD] Server is running");
+    [self connectToServer:endpoint];
 }
 
 @end

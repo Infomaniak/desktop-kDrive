@@ -18,9 +18,14 @@
 
 #import <Foundation/Foundation.h>
 
-@protocol XPCExtensionRemoteProtocol
+@protocol XPCGuiProtocol
 
-- (void)initConnection:(void (^)(BOOL))callback;
-- (void)sendMessage:(NSData*)msg;
+- (void)sendQuery:(NSData*)msg;
+
+@end
+
+@protocol XPCGuiRemoteProtocol
+
+- (void)sendSignal:(NSData*)msg;
 
 @end

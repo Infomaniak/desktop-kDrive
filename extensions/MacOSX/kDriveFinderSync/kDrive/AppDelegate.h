@@ -16,17 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#import "xpcExtensionRemoteProtocol.h"
+#import "xpcGuiProtocol.h"
+#import "../Extension/xpcExtensionProtocol.h"
 #import "../LoginItemAgent/xpcLoginItemProtocol.h"
 
 #import <Cocoa/Cocoa.h>
 
 @interface AppDelegate
-    : NSObject <NSApplicationDelegate, NSXPCListenerDelegate, XPCExtensionRemoteProtocol, XPCLoginItemRemoteProtocol>
+    : NSObject <NSApplicationDelegate, NSXPCListenerDelegate, XPCExtensionRemoteProtocol, XPCLoginItemRemoteProtocol, XPCGuiProtocol>
 
-@property(retain) NSXPCListener *listener;
+@property(retain) NSXPCListener *extListener;
+@property(retain) NSXPCListener *guiListener;
+
 @property(retain) NSXPCConnection *loginItemAgentConnection;
-@property(retain) NSXPCConnection *extensionConnection;
+@property(retain) NSXPCConnection *extConnection;
+@property(retain) NSXPCConnection *guiConnection;
 
 - (void)connectToLoginAgent;
 - (void)scheduleRetryToConnectToLoginAgent;
