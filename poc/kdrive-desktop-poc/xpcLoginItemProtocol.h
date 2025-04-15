@@ -27,10 +27,10 @@ typedef enum {
 @protocol XPCLoginItemProtocol
 
 - (void)setServerExtEndpoint:(NSXPCListenerEndpoint *)endPoint;
-- (void)getServerExtEndpoint:(void (^)(NSXPCListenerEndpoint *))callback;
+- (void)serverExtEndpoint:(void (^)(NSXPCListenerEndpoint *))callback;
 
 - (void)setServerGuiEndpoint:(NSXPCListenerEndpoint *)endPoint;
-- (void)getServerGuiEndpoint:(void (^)(NSXPCListenerEndpoint *))callback;
+- (void)serverGuiEndpoint:(void (^)(NSXPCListenerEndpoint *))callback;
 
 @end
 

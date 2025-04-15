@@ -37,7 +37,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }) as? XPCLoginItemProtocol
         print("[KD] Get server gui endpoint from login item agent")
-        loginItemService?.getServerGuiEndpoint({ endPoint in
+        loginItemService?.serverGuiEndpoint({ endPoint in
             if endPoint != nil {
                 print("[KD] Server gui endpoint received \(endPoint!)")
                 self.connectToServer(endPoint: endPoint!)

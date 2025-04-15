@@ -93,8 +93,8 @@
     
     // Get server endpoint from login item agent
     NSLog(@"[KD] Get server ext endpoint from login item agent");
-    [[_loginItemAgentConnection remoteObjectProxy] getServerExtEndpoint:^(NSXPCListenerEndpoint *endpoint) {
-        NSLog(@"[KD] Server ext endpoint received");
+    [[_loginItemAgentConnection remoteObjectProxy] serverExtEndpoint:^(NSXPCListenerEndpoint *endpoint) {
+        NSLog(@"[KD] Server ext endpoint received %@", endpoint);
         if (endpoint) {
             [self connectToServer:endpoint];
         }
@@ -119,12 +119,12 @@
     
     // Set exported interface
     NSLog(@"[KD] Set exported interface for connection with app");
-    _appConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionRemoteProtocol)];
+    _appConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionProtocol)];
     _appConnection.exportedObject = self;
     
     // Set remote object interface
     NSLog(@"[KD] Set remote object interface for connection with app");
-    [_appConnection setRemoteObjectInterface:[NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionProtocol)]];
+    [_appConnection setRemoteObjectInterface:[NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionRemoteProtocol)]];
     
     // Set connection handlers
     NSLog(@"[KD] Setup connection handlers for connection with app");

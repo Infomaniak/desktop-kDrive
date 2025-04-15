@@ -17,12 +17,11 @@
  */
 
 #include "socketapisocket_mac.h"
-#import "../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.h"
-#include "../extensions/MacOSX/kDriveFinderSync/kDrive/xpcExtensionRemoteProtocol.h"
-#include "../extensions/MacOSX/kDriveFinderSync/Extension/xpcExtensionProtocol.h"
-#include "../extensions/MacOSX/kDriveFinderSync/LoginItemAgent/xpcLoginItemProtocol.h"
+#import "../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.h"
+#include "../../extensions/MacOSX/kDriveFinderSync/Extension/xpcExtensionProtocol.h"
+#include "../../extensions/MacOSX/kDriveFinderSync/LoginItemAgent/xpcLoginItemProtocol.h"
 
-#include "libcommon/utility/utility.h"
+#include "../libcommon/utility/utility.h"
 
 #include <QCoreApplication>
 
@@ -249,43 +248,45 @@ class SocketApiServerPrivate {
     // Send app endpoint to login item agent
     NSLog(@"[KD] Send listener endpoint to login item agent");
     NSXPCListenerEndpoint *endpoint = [_listener endpoint];
-    [[_loginItemAgentConnection remoteObjectProxy] setEndpoint:endpoint];
+    [[_loginItemAgentConnection remoteObjectProxy] setServerExtEndpoint:endpoint];
 }
 
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection {
-    SocketApiServer *server = _wrapper->_q_ptr;
-    SocketApiSocketPrivate *socketPrivate = new SocketApiSocketPrivate(newConnection);
-    SocketApiSocket *socket = new SocketApiSocket(server, socketPrivate);
-    _wrapper->_pendingConnections.append(socket);
+    if (listener == _listener) {
+        SocketApiServer *server = _wrapper->_q_ptr;
+        SocketApiSocketPrivate *socketPrivate = new SocketApiSocketPrivate(newConnection);
+        SocketApiSocket *socket = new SocketApiSocket(server, socketPrivate);
+        _wrapper->_pendingConnections.append(socket);
 
-    // Set exported interface
-    NSLog(@"[KD] Set exported interface for connection with ext");
-    newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionRemoteProtocol)];
-    newConnection.exportedObject = socketPrivate->_localEnd;
+        // Set exported interface
+        NSLog(@"[KD] Set exported interface for connection with ext");
+        newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionRemoteProtocol)];
+        newConnection.exportedObject = socketPrivate->_localEnd;
 
-    // Set remote object interface
-    NSLog(@"[KD] Set remote object interface for connection with ext");
-    newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionProtocol)];
+        // Set remote object interface
+        NSLog(@"[KD] Set remote object interface for connection with ext");
+        newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionProtocol)];
 
-    // Set connection handlers
-    NSLog(@"[KD] Set connection handlers for connection with ext");
-    newConnection.interruptionHandler = ^{
-      // The extension has exited or crashed
-      NSLog(@"[KD] Connection with ext interrupted");
-      socketPrivate->_remoteEnd.extensionConnection = nil;
-    };
+        // Set connection handlers
+        NSLog(@"[KD] Set connection handlers for connection with ext");
+        newConnection.interruptionHandler = ^{
+          // The extension has exited or crashed
+          NSLog(@"[KD] Connection with ext interrupted");
+          socketPrivate->_remoteEnd.extensionConnection = nil;
+        };
 
-    newConnection.invalidationHandler = ^{
-      // Connection can not be formed or has terminated and may not be re-established
-      NSLog(@"[KD] Connection with ext invalidated");
-      socketPrivate->_remoteEnd.extensionConnection = nil;
-    };
+        newConnection.invalidationHandler = ^{
+          // Connection can not be formed or has terminated and may not be re-established
+          NSLog(@"[KD] Connection with ext invalidated");
+          socketPrivate->_remoteEnd.extensionConnection = nil;
+        };
 
-    // Start processing incoming messages.
-    NSLog(@"[KD] Resume connection with ext");
-    [newConnection resume];
+        // Start processing incoming messages.
+        NSLog(@"[KD] Resume connection with ext");
+        [newConnection resume];
 
-    emit server->newConnection();
+        emit server->newConnection();
+    }
 
     return YES;
 }
@@ -298,13 +299,13 @@ class SocketApiServerPrivate {
 }
 
 // XPCLoginItemRemoteProtocol protocol implementation
-- (void)isApp:(void (^)(BOOL))callback {
-    NSLog(@"[KD] isApp called");
-    callback(true);
+- (void)processType:(void (^)(ProcessType))callback {
+    NSLog(@"[KD] Process type asked");
+    callback(server);
 }
 
-- (void)appIsRunning:(NSXPCListenerEndpoint *)endpoint {
-    NSLog(@"[KD] appIsRunning called");
+- (void)serverIsRunning:(NSXPCListenerEndpoint *)endpoint {
+    NSLog(@"[KD] Server is running");
 }
 
 @end
