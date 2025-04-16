@@ -122,7 +122,7 @@ void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
     CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
     forbiddenName = Str("test ");
     CPPUNIT_ASSERT(!PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::nameEndsWithSpace(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::nameEndWithForbiddenSpace(forbiddenName));
 #elif defined(__unix__) && !defined(__APPLE__)
     forbiddenName = std::string("test");
     forbiddenName.append(1, '\0');
