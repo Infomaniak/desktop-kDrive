@@ -824,7 +824,7 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
                                                   const std::shared_ptr<const Snapshot> &snapshot, bool &isReused) const {
     isReused = false;
     // Check if the node is in the snapshot
-    if (!snapshot->exists(localNodeId)) {
+    if (snapshot->side() != ReplicaSide::Local || !snapshot->exists(localNodeId)) {
         return ExitCode::Ok;
     }
 
