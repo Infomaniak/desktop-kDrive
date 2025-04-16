@@ -3,6 +3,7 @@ AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 AlignOperands: true
 AlignTrailingComments: false
+AllowShortEnumsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Inline
 BraceWrapping: 
   AfterCaseLabel: false
@@ -27,7 +28,8 @@ BreakConstructorInitializersBeforeComma: false
 ColumnLimit: 130
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
 ContinuationIndentWidth: 8
-IncludeBlocks: Preserve
+EmptyLineBeforeAccessModifier: Always
+IncludeBlocks: Regroup
 IncludeCategories: 
   - Regex: '^<.*'
     Priority: 1
@@ -42,6 +44,8 @@ InsertNewlineAtEOF: true
 MacroBlockBegin: ''
 MacroBlockEnd: ''
 MaxEmptyLinesToKeep: 2
+PackConstructorInitializers: Never
+PointerAlignment: Right
 SortIncludes: Never
 SpaceAfterCStyleCast: true
 SpaceAfterTemplateKeyword: false
