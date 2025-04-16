@@ -99,7 +99,9 @@ bool UploadJob::handleResponse(std::istream &is) {
         // The backend refused the modification time. To avoid further EDIT operations, we apply the backend's time on local file.
         bool exists = false;
         (void) Utility::setFileDates(_absoluteFilePath, 0, _modtimeOut, false, exists);
-        LOG_INFO(_logger, "Modification time refused by the backend. The modification time has been updated on local file.");
+        LOG_INFO(_logger, "Modification time refused "
+                                  << _modtimeIn << " by the backend. The modification time has been updated to " << _modtimeOut
+                                  << " on local file.");
     }
 
     return true;
