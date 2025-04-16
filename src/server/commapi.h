@@ -19,9 +19,9 @@
 
 #pragma once
 
-#include "libcommonserver/vfs/vfs.h"
-#include "socketlistener.h"
+#include "commlistener.h"
 #include "libcommon/utility/types.h"
+#include "libcommonserver/vfs/vfs.h"
 #include "libsyncengine/syncpal/syncpal.h"
 
 #include <unordered_map>
@@ -33,10 +33,10 @@
 #include <QTimer>
 
 #if defined(Q_OS_MAC)
-#include "socketapisocket_mac.h"
+#include "commserver_mac.h"
 #else
 #include <QLocalServer>
-typedef QLocalServer SocketApiServer;
+typedef QLocalServer CommServer;
 #endif
 
 class QUrl;
@@ -64,13 +64,13 @@ struct FileData {
         KDC::VirtualFileMode virtualFileMode{KDC::VirtualFileMode::Off};
 };
 
-class SocketApi : public QObject {
+class CommApi : public QObject {
         Q_OBJECT
 
     public:
-        explicit SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> &syncPalMap,
-                           const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap, QObject *parent = 0);
-        virtual ~SocketApi();
+        explicit CommApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> &syncPalMap,
+                         const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap, QObject *parent = 0);
+        virtual ~CommApi();
 
         inline void setAddErrorCallback(void (*addError)(const KDC::Error &)) { _addError = addError; }
         inline void setGetThumbnailCallback(KDC::ExitCode (*getThumbnail)(int, KDC::NodeId, int, std::string &)) {
@@ -88,10 +88,11 @@ class SocketApi : public QObject {
         void executeCommandDirect(const QString &commandLine);
 
     private slots:
-        void slotNewConnection();
+        void onNewExtConnection();
+        void onNewGuiConnection();
         void onLostConnection();
-        void slotSocketDestroyed(QObject *obj);
-        void slotReadSocket();
+        void onListenerDestroyed(QObject *obj);
+        void onRead();
 
         static void copyUrlToClipboard(const QString &link);
         static void openPrivateLink(const QString &link);
@@ -101,8 +102,8 @@ class SocketApi : public QObject {
         const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &_vfsMap;
 
         QSet<int> _registeredSyncs;
-        QList<SocketListener> _listeners;
-        SocketApiServer _localServer;
+        QList<CommListener> _listeners;
+        CommServer _localServer;
 
         bool _dehydrationCanceled = false;
         unsigned _nbOngoingDehydration = 0;
@@ -114,19 +115,19 @@ class SocketApi : public QObject {
         KDC::ExitCode (*_getPublicLinkUrl)(int driveDbId, const QString &nodeId, QString &linkUrl);
 
         void broadcastMessage(const QString &msg, bool doWait = false);
-        void executeCommand(const QString &commandLine, const SocketListener *listener);
+        void executeCommand(const QString &commandLine, const CommListener *listener);
 
-        Q_INVOKABLE void command_RETRIEVE_FOLDER_STATUS(const QString &argument, SocketListener *listener);
-        Q_INVOKABLE void command_RETRIEVE_FILE_STATUS(const QString &argument, SocketListener *listener);
+        Q_INVOKABLE void command_RETRIEVE_FOLDER_STATUS(const QString &argument, CommListener *listener);
+        Q_INVOKABLE void command_RETRIEVE_FILE_STATUS(const QString &argument, CommListener *listener);
 
-        Q_INVOKABLE void command_VERSION(const QString &argument, SocketListener *listener);
+        Q_INVOKABLE void command_VERSION(const QString &argument, CommListener *listener);
 
         // The context menu actions
-        Q_INVOKABLE void command_COPY_PUBLIC_LINK(const QString &localFile, SocketListener *listener);
-        Q_INVOKABLE void command_COPY_PRIVATE_LINK(const QString &localFile, SocketListener *listener);
-        Q_INVOKABLE void command_OPEN_PRIVATE_LINK(const QString &localFile, SocketListener *listener);
+        Q_INVOKABLE void command_COPY_PUBLIC_LINK(const QString &localFile, CommListener *listener);
+        Q_INVOKABLE void command_COPY_PRIVATE_LINK(const QString &localFile, CommListener *listener);
+        Q_INVOKABLE void command_OPEN_PRIVATE_LINK(const QString &localFile, CommListener *listener);
         Q_INVOKABLE void command_MAKE_AVAILABLE_LOCALLY_DIRECT(const QString &filesArg);
-        Q_INVOKABLE void command_MAKE_ONLINE_ONLY_DIRECT(const QString &filesArg, SocketListener *listener);
+        Q_INVOKABLE void command_MAKE_ONLINE_ONLY_DIRECT(const QString &filesArg, CommListener *listener);
         Q_INVOKABLE void command_CANCEL_DEHYDRATION_DIRECT(const QString &);
         Q_INVOKABLE void command_CANCEL_HYDRATION_DIRECT(const QString &);
 
@@ -134,11 +135,11 @@ class SocketApi : public QObject {
         void fetchPrivateLinkUrlHelper(const QString &localFile, const std::function<void(const QString &url)> &targetFun);
 
         /** Sends translated/branded strings that may be useful to the integration */
-        Q_INVOKABLE void command_GET_STRINGS(const QString &argument, SocketListener *listener);
+        Q_INVOKABLE void command_GET_STRINGS(const QString &argument, CommListener *listener);
 
         /** Sends the request URL to get a thumbnail */
 #ifdef Q_OS_WIN
-        Q_INVOKABLE void command_GET_THUMBNAIL(const QString &argument, SocketListener *listener);
+        Q_INVOKABLE void command_GET_THUMBNAIL(const QString &argument, CommListener *listener);
 #endif
 
 #ifdef Q_OS_MAC
@@ -146,7 +147,7 @@ class SocketApi : public QObject {
 #endif
 
         // Sends the context menu options relating to sharing to listener
-        void sendSharingContextMenuOptions(const FileData &fileData, const SocketListener *listener);
+        void sendSharingContextMenuOptions(const FileData &fileData, const CommListener *listener);
         void addSharingContextMenuOptions(const FileData &fileData, QTextStream &response);
 
         /** Send the list of menu item. (added in version 1.1)
@@ -157,15 +158,15 @@ class SocketApi : public QObject {
          * and ends with GET_MENU_ITEMS:END
          */
         // Mac and Windows (sync without Lite Sync) menu
-        Q_INVOKABLE void command_GET_MENU_ITEMS(const QString &argument, SocketListener *listener);
-        void manageActionsOnSingleFile(SocketListener *listener, const QStringList &files,
+        Q_INVOKABLE void command_GET_MENU_ITEMS(const QString &argument, CommListener *listener);
+        void manageActionsOnSingleFile(CommListener *listener, const QStringList &files,
                                        std::unordered_map<int, std::shared_ptr<KDC::SyncPal>>::const_iterator syncPalMapIt,
                                        std::unordered_map<int, std::shared_ptr<KDC::Vfs>>::const_iterator vfsMapIt,
                                        const KDC::Sync &sync);
 
 #ifdef Q_OS_WIN
         // Windows (sync with Lite Sync) menu
-        Q_INVOKABLE void command_GET_ALL_MENU_ITEMS(const QString &argument, SocketListener *listener);
+        Q_INVOKABLE void command_GET_ALL_MENU_ITEMS(const QString &argument, CommListener *listener);
 #endif
 
         QString buildRegisterPathMessage(const QString &path);

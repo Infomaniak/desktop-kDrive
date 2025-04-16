@@ -16,27 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "socketapisocket_mac.h"
+#include "commserver_mac.h"
 #import "../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.h"
 #include "../../extensions/MacOSX/kDriveFinderSync/Extension/xpcExtensionProtocol.h"
 #include "../../extensions/MacOSX/kDriveFinderSync/LoginItemAgent/xpcLoginItemProtocol.h"
+#include "../../poc/kdrive-desktop-poc/xpcGuiProtocol.h"
 
 #include "../libcommon/utility/utility.h"
 
 #include <QCoreApplication>
 
-@interface LocalEnd : NSObject <XPCExtensionRemoteProtocol>
+@interface LocalEnd : NSObject <XPCExtensionRemoteProtocol, XPCGuiProtocol>
 
-@property SocketApiSocketPrivate *wrapper;
+@property CommChannelPrivate *wrapper;
 
-- (instancetype)initWithWrapper:(SocketApiSocketPrivate *)wrapper;
+- (instancetype)initWithWrapper:(CommChannelPrivate *)wrapper;
 
 @end
 
 
 @interface RemoteEnd : NSObject <XPCExtensionProtocol>
 
-@property(retain) NSXPCConnection *extensionConnection;
+@property(retain) NSXPCConnection *connection;
 
 - (id)init:(NSXPCConnection *)connection;
 
@@ -45,23 +46,24 @@
 
 @interface Server : NSObject <NSXPCListenerDelegate, XPCLoginItemRemoteProtocol>
 
-@property SocketApiServerPrivate *wrapper;
-@property(retain) NSXPCListener *listener;
+@property CommServerPrivate *wrapper;
+@property(retain) NSXPCListener *extListener;
+@property(retain) NSXPCListener *guiListener;
 @property(retain) NSXPCConnection *loginItemAgentConnection;
 
-- (instancetype)initWithWrapper:(SocketApiServerPrivate *)wrapper;
+- (instancetype)initWithWrapper:(CommServerPrivate *)wrapper;
 - (void)start;
 - (void)dealloc;
 
 @end
 
 
-class SocketApiSocketPrivate {
+class CommChannelPrivate {
     public:
-        SocketApiSocket *_q_ptr;
+        CommChannel *_q_ptr;
 
-        SocketApiSocketPrivate(NSXPCConnection *remoteConnection);
-        ~SocketApiSocketPrivate();
+        CommChannelPrivate(NSXPCConnection *remoteConnection);
+        ~CommChannelPrivate();
 
         // release remoteEnd
         void disconnectRemote();
@@ -73,14 +75,14 @@ class SocketApiSocketPrivate {
 };
 
 
-class SocketApiServerPrivate {
+class CommServerPrivate {
     public:
-        SocketApiServer *_q_ptr;
+        CommServer *_q_ptr;
 
-        SocketApiServerPrivate();
-        ~SocketApiServerPrivate();
+        CommServerPrivate();
+        ~CommServerPrivate();
 
-        QList<SocketApiSocket *> _pendingConnections;
+        QList<CommChannel *> _pendingChannels;
         Server *_server;
 };
 
@@ -88,12 +90,33 @@ class SocketApiServerPrivate {
 // LocalEnd implementation
 @implementation LocalEnd
 
-- (instancetype)initWithWrapper:(SocketApiSocketPrivate *)wrapper {
+- (instancetype)initWithWrapper:(CommChannelPrivate *)wrapper {
     self = [super init];
 
     _wrapper = wrapper;
 
     return self;
+}
+
+// XPCGuiProtocol protocol implementation
+- (void)sendQuery:(NSData *)msg {
+    NSString *answer = [[NSString alloc] initWithData:msg encoding:NSUTF8StringEncoding];
+    NSLog(@"[KD] Query received %@", answer);
+
+    NSArray *answerArr = [answer componentsSeparatedByString:@";"];
+
+    // Send ack
+    NSString *query = [NSString stringWithFormat:@"%@", answerArr[0]];
+    NSLog(@"[KD] Send ack signal %@", query);
+
+    @try {
+        if (_wrapper && _wrapper->_remoteEnd.connection) {
+            [[_wrapper->_remoteEnd.connection remoteObjectProxy] sendSignal:[query dataUsingEncoding:NSUTF8StringEncoding]];
+        }
+    } @catch (NSException *e) {
+        // Do nothing and wait for invalidationHandler
+        NSLog(@"[KD] Error sending ack signal: %@", e.name);
+    }
 }
 
 // XPCExtensionRemoteProtocol protocol implementation
@@ -104,7 +127,7 @@ class SocketApiServerPrivate {
 
 - (void)sendMessage:(NSData *)msg {
     NSString *answer = [[NSString alloc] initWithData:msg encoding:NSUTF8StringEncoding];
-    NSLog(@"[KD] Received message %@", answer);
+    NSLog(@"[KD] Message received %@", answer);
 
     if (_wrapper) {
         _wrapper->_inBuffer += QByteArray::fromRawNSData(msg);
@@ -120,14 +143,14 @@ class SocketApiServerPrivate {
 
 - (id)init:(NSXPCConnection *)connection {
     if (self = [super init]) {
-        _extensionConnection = connection;
+        _connection = connection;
     }
     return self;
 }
 
 // XPCExtensionProtocol protocol implementation
 - (void)sendMessage:(NSData *)msg {
-    if (_extensionConnection == nil) {
+    if (_connection == nil) {
         return;
     }
 
@@ -135,7 +158,7 @@ class SocketApiServerPrivate {
     NSLog(@"[KD] Send message %@", query);
 
     @try {
-        [[_extensionConnection remoteObjectProxy] sendMessage:msg];
+        [[_connection remoteObjectProxy] sendMessage:msg];
     } @catch (NSException *e) {
         NSLog(@"[KD] Send message error %@", e.name);
     }
@@ -147,11 +170,12 @@ class SocketApiServerPrivate {
 // Server implementation
 @implementation Server
 
-- (instancetype)initWithWrapper:(SocketApiServerPrivate *)wrapper {
+- (instancetype)initWithWrapper:(CommServerPrivate *)wrapper {
     self = [super init];
 
     _wrapper = wrapper;
-    _listener = nil;
+    _extListener = nil;
+    _guiListener = nil;
     _loginItemAgentConnection = nil;
 
     return self;
@@ -163,7 +187,8 @@ class SocketApiServerPrivate {
 
 - (void)dealloc {
     NSLog(@"[KD] App terminating");
-    [_listener invalidate];
+    [_extListener invalidate];
+    [_guiListener invalidate];
     [_loginItemAgentConnection invalidate];
 }
 
@@ -239,29 +264,39 @@ class SocketApiServerPrivate {
     NSLog(@"[KD] Resume connection with login item agent");
     [_loginItemAgentConnection resume];
 
-    // Create anonymous listener
-    NSLog(@"[KD] Create anonymous listener");
-    _listener = [NSXPCListener anonymousListener];
-    [_listener setDelegate:self];
-    [_listener resume];
+    // Create anonymous ext listener
+    NSLog(@"[KD] Create anonymous ext listener");
+    _extListener = [NSXPCListener anonymousListener];
+    [_extListener setDelegate:self];
+    [_extListener resume];
 
-    // Send app endpoint to login item agent
-    NSLog(@"[KD] Send listener endpoint to login item agent");
-    NSXPCListenerEndpoint *endpoint = [_listener endpoint];
-    [[_loginItemAgentConnection remoteObjectProxy] setServerExtEndpoint:endpoint];
+    // Create anonymous gui listener
+    NSLog(@"[KD] Create anonymous gui listener");
+    _guiListener = [NSXPCListener anonymousListener];
+    [_guiListener setDelegate:self];
+    [_guiListener resume];
+
+    // Send server endpoint to login item agent
+    NSLog(@"[KD] Send server endpoint to login item agent");
+    [[_loginItemAgentConnection remoteObjectProxy] setServerExtEndpoint:[_extListener endpoint]];
+
+    // Send gui endpoint to login item agent
+    NSLog(@"[KD] Send gui endpoint to login item agent");
+    [[_loginItemAgentConnection remoteObjectProxy] setServerGuiEndpoint:[_guiListener endpoint]];
 }
 
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection {
-    if (listener == _listener) {
-        SocketApiServer *server = _wrapper->_q_ptr;
-        SocketApiSocketPrivate *socketPrivate = new SocketApiSocketPrivate(newConnection);
-        SocketApiSocket *socket = new SocketApiSocket(server, socketPrivate);
-        _wrapper->_pendingConnections.append(socket);
+    CommChannelPrivate *channelPrivate = new CommChannelPrivate(newConnection);
+    CommServer *server = _wrapper->_q_ptr;
+
+    if (listener == _extListener) {
+        CommChannel *channel = new CommChannel(server, channelPrivate);
+        _wrapper->_pendingChannels.append(channel);
 
         // Set exported interface
         NSLog(@"[KD] Set exported interface for connection with ext");
         newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionRemoteProtocol)];
-        newConnection.exportedObject = socketPrivate->_localEnd;
+        newConnection.exportedObject = channelPrivate->_localEnd;
 
         // Set remote object interface
         NSLog(@"[KD] Set remote object interface for connection with ext");
@@ -272,20 +307,49 @@ class SocketApiServerPrivate {
         newConnection.interruptionHandler = ^{
           // The extension has exited or crashed
           NSLog(@"[KD] Connection with ext interrupted");
-          socketPrivate->_remoteEnd.extensionConnection = nil;
+          channelPrivate->_remoteEnd.connection = nil;
         };
 
         newConnection.invalidationHandler = ^{
           // Connection can not be formed or has terminated and may not be re-established
           NSLog(@"[KD] Connection with ext invalidated");
-          socketPrivate->_remoteEnd.extensionConnection = nil;
+          channelPrivate->_remoteEnd.connection = nil;
         };
 
         // Start processing incoming messages.
         NSLog(@"[KD] Resume connection with ext");
         [newConnection resume];
 
-        emit server->newConnection();
+        emit server->newExtConnection();
+    } else if (listener == _guiListener) {
+        // Set exported interface
+        NSLog(@"[KD] Set exported interface for connection with gui");
+        newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCGuiProtocol)];
+        newConnection.exportedObject = channelPrivate->_localEnd;
+
+        // Set remote object interface
+        NSLog(@"[KD] Set remote object interface for connection with gui");
+        newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCGuiRemoteProtocol)];
+
+        // Set connection handlers
+        NSLog(@"[KD] Set connection handlers for connection with gui");
+        newConnection.interruptionHandler = ^{
+          // The extension has exited or crashed
+          NSLog(@"[KD] Connection with gui interrupted");
+          channelPrivate->_remoteEnd.connection = nil;
+        };
+
+        newConnection.invalidationHandler = ^{
+          // Connection can not be formed or has terminated and may not be re-established
+          NSLog(@"[KD] Connection with gui invalidated");
+          channelPrivate->_remoteEnd.connection = nil;
+        };
+
+        // Start processing incoming messages.
+        NSLog(@"[KD] Resume connection with gui");
+        [newConnection resume];
+
+        emit server->newGuiConnection();
     }
 
     return YES;
@@ -310,52 +374,52 @@ class SocketApiServerPrivate {
 
 @end
 
-// SocketApiSocketPrivate implementation
-SocketApiSocketPrivate::SocketApiSocketPrivate(NSXPCConnection *remoteConnection)
-    : _remoteEnd([[RemoteEnd alloc] init:remoteConnection]), _localEnd([[LocalEnd alloc] initWithWrapper:this]) {}
+// CommChannelPrivate implementation
+CommChannelPrivate::CommChannelPrivate(NSXPCConnection *remoteConnection) :
+    _remoteEnd([[RemoteEnd alloc] init:remoteConnection]), _localEnd([[LocalEnd alloc] initWithWrapper:this]) {}
 
-SocketApiSocketPrivate::~SocketApiSocketPrivate() {
+CommChannelPrivate::~CommChannelPrivate() {
     disconnectRemote();
 
     // The DO vended localEnd might still be referenced by the connection
     _localEnd.wrapper = nil;
 }
 
-void SocketApiSocketPrivate::disconnectRemote() {
+void CommChannelPrivate::disconnectRemote() {
     if (_isRemoteDisconnected) return;
     _isRemoteDisconnected = true;
 }
 
 
-// SocketApiServerPrivate implementation
-SocketApiServerPrivate::SocketApiServerPrivate() {
+// CommServerPrivate implementation
+CommServerPrivate::CommServerPrivate() {
     _server = [[Server alloc] initWithWrapper:this];
 }
 
-SocketApiServerPrivate::~SocketApiServerPrivate() {
+CommServerPrivate::~CommServerPrivate() {
     _server.wrapper = nil;
 }
 
 
-// SocketApiSocket implementation
-SocketApiSocket::SocketApiSocket(QObject *parent, SocketApiSocketPrivate *p) : QIODevice(parent), d_ptr(p) {
-    Q_D(SocketApiSocket);
+// CommChannel implementation
+CommChannel::CommChannel(QObject *parent, CommChannelPrivate *p) : QIODevice(parent), d_ptr(p) {
+    Q_D(CommChannel);
     d->_q_ptr = this;
     open(ReadWrite);
 }
 
-SocketApiSocket::~SocketApiSocket() {}
+CommChannel::~CommChannel() {}
 
-qint64 SocketApiSocket::readData(char *data, qint64 maxlen) {
-    Q_D(SocketApiSocket);
+qint64 CommChannel::readData(char *data, qint64 maxlen) {
+    Q_D(CommChannel);
     qint64 len = std::min(maxlen, static_cast<qint64>(d->_inBuffer.size()));
     memcpy(data, d->_inBuffer.constData(), static_cast<size_t>(len));
     d->_inBuffer.remove(0, len);
     return len;
 }
 
-qint64 SocketApiSocket::writeData(const char *data, qint64 len) {
-    Q_D(SocketApiSocket);
+qint64 CommChannel::writeData(const char *data, qint64 len) {
+    Q_D(CommChannel);
     if (d->_isRemoteDisconnected) return -1;
 
     @try {
@@ -370,39 +434,39 @@ qint64 SocketApiSocket::writeData(const char *data, qint64 len) {
     }
 }
 
-qint64 SocketApiSocket::bytesAvailable() const {
-    Q_D(const SocketApiSocket);
+qint64 CommChannel::bytesAvailable() const {
+    Q_D(const CommChannel);
     return d->_inBuffer.size() + QIODevice::bytesAvailable();
 }
 
-bool SocketApiSocket::canReadLine() const {
-    Q_D(const SocketApiSocket);
+bool CommChannel::canReadLine() const {
+    Q_D(const CommChannel);
     return d->_inBuffer.indexOf('\n', int(pos())) != -1 || QIODevice::canReadLine();
 }
 
 
-// SocketApiServer implementation
-SocketApiServer::SocketApiServer() : d_ptr(new SocketApiServerPrivate) {
-    Q_D(SocketApiServer);
+// CommServer implementation
+CommServer::CommServer() : d_ptr(new CommServerPrivate) {
+    Q_D(CommServer);
     d->_q_ptr = this;
 }
 
-SocketApiServer::~SocketApiServer() {}
+CommServer::~CommServer() {}
 
-void SocketApiServer::close() {
+void CommServer::close() {
     // Assume we'll be destroyed right after
 }
 
-bool SocketApiServer::listen(const QString &name) {
+bool CommServer::listen(const QString &name) {
     Q_UNUSED(name)
-    Q_D(SocketApiServer);
+    Q_D(CommServer);
 
     [d->_server start];
 
     return TRUE;
 }
 
-SocketApiSocket *SocketApiServer::nextPendingConnection() {
-    Q_D(SocketApiServer);
-    return d->_pendingConnections.takeFirst();
+CommChannel *CommServer::nextPendingConnection() {
+    Q_D(CommServer);
+    return d->_pendingChannels.takeFirst();
 }

@@ -17,7 +17,7 @@
  */
 
 #include "testincludes.h"
-#include "socketapi.h"
+#include "commapi.h"
 
 #if defined(__APPLE__)
 #include "libcommonserver/vfs/mac/vfs_mac.h"
@@ -54,7 +54,7 @@ class TestWorkers : public CppUnit::TestFixture, public TestBase {
         Sync _sync;
         LocalTemporaryDirectory _localTempDir{"TestExecutorWorker"};
 
-        std::unique_ptr<SocketApi> _socketApi;
+        std::unique_ptr<CommApi> _commApi;
 
 #if defined(__APPLE__)
         static std::shared_ptr<VfsMac> _vfsPtr;

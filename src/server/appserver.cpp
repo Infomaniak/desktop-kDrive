@@ -19,7 +19,6 @@
 #include "appserver.h"
 #include "common/utility.h"
 #include "migration/migrationparams.h"
-#include "socketapi.h"
 #include "keychainmanager/keychainmanager.h"
 #include "requests/serverrequests.h"
 #include "libcommon/theme/theme.h"
@@ -318,11 +317,11 @@ void AppServer::init() {
 #endif
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
 
-    // Init socket api
-    _socketApi.reset(new SocketApi(_syncPalMap, _vfsMap));
-    _socketApi->setAddErrorCallback(&addError);
-    _socketApi->setGetThumbnailCallback(&ServerRequests::getThumbnail);
-    _socketApi->setGetPublicLinkUrlCallback(&ServerRequests::getPublicLinkUrl);
+    // Init comm api
+    _commApi.reset(new CommApi(_syncPalMap, _vfsMap));
+    _commApi->setAddErrorCallback(&addError);
+    _commApi->setGetThumbnailCallback(&ServerRequests::getThumbnail);
+    _commApi->setGetPublicLinkUrlCallback(&ServerRequests::getPublicLinkUrl);
 
     // Init CommServer instance
     if (!CommServer::instance()) {
@@ -1587,14 +1586,14 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QTimer::singleShot(100, [=, this]() {
                 for (auto &syncPalMapElt: _syncPalMap) {
                     if (!syncPalMapElt.second) continue;
-                    if (_socketApi) {
-                        _socketApi->unregisterSync(syncPalMapElt.second->syncDbId());
+                    if (_commApi) {
+                        _commApi->unregisterSync(syncPalMapElt.second->syncDbId());
                     }
 
                     _syncPalMap[syncPalMapElt.first]->excludeListUpdated();
 
-                    if (_socketApi) {
-                        _socketApi->registerSync(syncPalMapElt.second->syncDbId());
+                    if (_commApi) {
+                        _commApi->registerSync(syncPalMapElt.second->syncDbId());
                     }
                 }
             });
@@ -3348,8 +3347,8 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, cons
     }
 
     // Register the folder with the socket API
-    if (_socketApi) {
-        _socketApi->registerSync(sync.dbId());
+    if (_commApi) {
+        _commApi->registerSync(sync.dbId());
     }
 
     return ExitCode::Ok;
@@ -3387,8 +3386,8 @@ ExitInfo AppServer::stopSyncPal(int syncDbId, bool pausedByUser, bool quit, bool
     LOG_DEBUG(_logger, "Stop SyncPal for syncDbId=" << syncDbId);
 
     // Unregister the folder with the socket API
-    if (_socketApi) {
-        _socketApi->unregisterSync(syncDbId);
+    if (_commApi) {
+        _commApi->unregisterSync(syncDbId);
     }
 
     // Stop SyncPal
@@ -3463,8 +3462,8 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 #endif
         vfsSetupParams.localPath = sync.localPath();
         vfsSetupParams.targetPath = sync.targetPath();
-        connect(this, &AppServer::socketApiExecuteCommandDirect, _socketApi.data(), &SocketApi::executeCommandDirect);
-        vfsSetupParams.executeCommand = [this](const char *command) { emit socketApiExecuteCommandDirect(QString(command)); };
+        connect(this, &AppServer::commApiExecuteCommandDirect, _commApi.data(), &CommApi::executeCommandDirect);
+        vfsSetupParams.executeCommand = [this](const char *command) { emit commApiExecuteCommandDirect(QString(command)); };
         vfsSetupParams.logger = _logger;
         vfsSetupParams.sentryHandler = sentry::Handler::instance();
         QString error;

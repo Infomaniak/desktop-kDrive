@@ -42,8 +42,8 @@ endif()
 set(server_SRCS
     commserver.h commserver.cpp
     navigationpanehelper.h navigationpanehelper.cpp
-    socketapi.h socketapi.cpp
-    socketlistener.h socketlistener.cpp
+    commapi.h commapi.cpp
+    commlistener.h commlistener.cpp
     appserver.h appserver.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
@@ -57,8 +57,8 @@ set(updater_SRCS
 )
 
 if(APPLE)
-    list(APPEND server_SRCS socketapisocket_mac.mm)
-    set_property(SOURCE socketapisocket_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    list(APPEND server_SRCS commserver_mac.mm)
+    set_property(SOURCE commserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
     list(APPEND server_SRCS ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m)
     set_property(SOURCE ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")

@@ -23,8 +23,8 @@ set(server_srcs_path ${CMAKE_SOURCE_DIR}/src/server)
 
 set(server_SRCS
     ${server_srcs_path}/appserver.h ${server_srcs_path}/appserver.cpp
-    ${server_srcs_path}/socketapi.h ${server_srcs_path}/socketapi.cpp
-    ${server_srcs_path}/socketlistener.h ${server_srcs_path}/socketlistener.cpp
+    ${server_srcs_path}/commapi.h ${server_srcs_path}/commapi.cpp
+    ${server_srcs_path}/commlistener.h ${server_srcs_path}/commlistener.cpp
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
     ${server_srcs_path}/updater/updatechecker.h ${server_srcs_path}/updater/updatechecker.cpp
     ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
@@ -35,8 +35,8 @@ set(server_SRCS
 )
 
 if(APPLE)
-    list(APPEND server_SRCS ${server_srcs_path}/socketapisocket_mac.mm)
-    set_property(SOURCE ${server_srcs_path}/socketapisocket_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    list(APPEND server_SRCS ${server_srcs_path}/commserver_mac.mm)
+    set_property(SOURCE ${server_srcs_path}/commserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
     message(STATUS "server_srcs_path=${server_srcs_path}")
     list(APPEND server_SRCS ${server_srcs_path}/../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m)
