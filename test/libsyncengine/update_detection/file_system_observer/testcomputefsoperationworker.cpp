@@ -227,6 +227,8 @@ void TestComputeFSOperationWorker::testCreateDuplicateNamesWithDistinctEncodings
     // TODO: Use the default tmp directory
     _syncPal->setLocalPath(testhelpers::localTestDirPath);
 
+    _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision = _syncPal->_localSnapshot->revision();
+    _syncPal->computeFSOperationsWorker()->_lastRemoteSnapshotSyncedRevision = _syncPal->_remoteSnapshot->revision();
     // Duplicated items with distinct encodings are not supported, and only one of them will be synced. We do not guarantee
     // that it will always be the same one.
     _syncPal->_localSnapshot->updateItem(SnapshotItem("l_a_nfc", "l_a", testhelpers::makeNfcSyncName(), testhelpers::defaultTime,
@@ -248,6 +250,9 @@ void TestComputeFSOperationWorker::testMultipleOps() {
     // TODO: Use the default tmp directory
     _syncPal->setLocalPath(testhelpers::localTestDirPath);
 
+    _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision = _syncPal->_localSnapshot->revision();
+    _syncPal->computeFSOperationsWorker()->_lastRemoteSnapshotSyncedRevision = _syncPal->_remoteSnapshot->revision();
+
     // On local replica
     // Create operation
     _syncPal->_localSnapshot->updateItem(SnapshotItem("l_ad", "l_a", Str("AD"), testhelpers::defaultTime,
@@ -257,7 +262,7 @@ void TestComputeFSOperationWorker::testMultipleOps() {
     // Move operation
     _syncPal->_localSnapshot->removeItem("l_ab");
     _syncPal->_localSnapshot->updateItem(SnapshotItem("l_ab", "l_b", Str("AB"), testhelpers::defaultTime,
-                                                      testhelpers::defaultTime, NodeType::Directory, 0, false, true, true));
+                                                      testhelpers::defaultTime, NodeType::File, 0, false, true, true));
 
     // Rename operation
     _syncPal->_localSnapshot->setName("l_ba", Str("BA-renamed"));
@@ -454,6 +459,40 @@ void TestComputeFSOperationWorker::testIsInUnsyncedList() {
     testIsInUnsyncedList(true, "r_b", ReplicaSide::Remote);
     testIsInUnsyncedList(true, "l_bb", ReplicaSide::Local);
     testIsInUnsyncedList(true, "r_bb", ReplicaSide::Remote);
+}
+
+void TestComputeFSOperationWorker::testHasChangedSinceLastSeen() {
+    _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision = 0;
+    _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision = 0;
+
+
+    SyncDb::NodeIds nodeIds;
+    nodeIds.localNodeId = "l_test";
+    nodeIds.remoteNodeId = "r_test";
+
+    SnapshotItem localItem(nodeIds.localNodeId, *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("test.txt"),
+                           testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize,
+                           false, true, true);
+    SnapshotItem remoteItem(nodeIds.remoteNodeId, *_syncPal->syncDb()->rootNode().nodeIdRemote(), Str("test.txt"),
+                            testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize,
+                            false, true, true);
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->updateItem(localItem));
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Remote)->updateItem(remoteItem));
+    _syncPal->copySnapshots();
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
+
+    _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision =
+            _syncPal->snapshotCopy(ReplicaSide::Local)->lastChangeRevision(nodeIds.localNodeId);
+    _syncPal->computeFSOperationsWorker()->_lastRemoteSnapshotSyncedRevision =
+            _syncPal->snapshotCopy(ReplicaSide::Remote)->lastChangeRevision(nodeIds.remoteNodeId);
+
+    CPPUNIT_ASSERT(!_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
+
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->updateItem(localItem));
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Remote)->updateItem(remoteItem));
+    _syncPal->copySnapshots();
+
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
 }
 
 void TestComputeFSOperationWorker::testIsInUnsyncedList(const bool expectedResult, const NodeId &nodeId,

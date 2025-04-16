@@ -156,6 +156,14 @@ package_release() {
 	cp -P -r $QTDIR/translations/ $app_dir/usr
 	
 	mv $app_dir/usr/lib/x86_64-linux-gnu/* $app_dir/usr/lib/
+
+	cp -P /usr/local/lib64/libssl.so* $app_dir/usr/lib/
+	cp -P /usr/local/lib64/libcrypto.so* $app_dir/usr/lib/
+
+	cp -P -r /usr/lib/x86_64-linux-gnu/nss/ $app_dir/usr/lib/
+
+	cp -P $QTDIR/lib/libQt6WaylandClient.so* $app_dir/usr/lib
+	cp -P $QTDIR/lib/libQt6WaylandEglClientHwIntegration.so* $app_dir/usr/lib
 	
 	mkdir -p $app_dir/usr/qml
 	
@@ -165,9 +173,6 @@ package_release() {
 	cp $src_dir/sync-exclude-linux.lst $app_dir/usr/bin/sync-exclude.lst
 	cp $app_dir/usr/share/icons/hicolor/512x512/apps/kdrive-win.png $app_dir
 	
-	cp -P /usr/local/lib64/libssl.so* $app_dir/usr/lib/
-	cp -P /usr/local/lib64/libcrypto.so* $app_dir/usr/lib/
-	cp -P -r /usr/lib/x86_64-linux-gnu/nss/ $app_dir/usr/lib/
 	cp ~/Qt/Tools/QtCreator/lib/Qt/lib/libQt6SerialPort.so.6 $app_dir/usr/lib/
 	
 	$HOME/desktop-setup/linuxdeploy-x86_64.AppImage --appdir $app_dir -e $app_dir/usr/bin/kDrive -i $app_dir/kdrive-win.png -d $app_dir/usr/share/applications/kDrive_client.desktop --plugin qt --output appimage -v0

@@ -567,6 +567,12 @@ bool SyncDb::insertNode(const DbNode &node, DbNodeId &dbNodeId, bool &constraint
     return true;
 }
 
+bool SyncDb::insertNode(const DbNode &node) {
+    DbNodeId dummyNodeId = 0;
+    bool dummyConstraintError = false;
+    return insertNode(node, dummyNodeId, dummyConstraintError);
+}
+
 bool SyncDb::updateNode(const DbNode &node, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
@@ -998,8 +1004,8 @@ bool SyncDb::dbIds(std::unordered_set<DbNodeId> &ids, bool &found) {
     return true;
 }
 
-bool SyncDb::dbIds(std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction> &ids, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+bool SyncDb::ids(std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction> &ids, bool &found) {
+    const std::scoped_lock lock(_mutex);
 
     // Find root node
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
@@ -1015,7 +1021,7 @@ bool SyncDb::dbIds(std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction> &id
     LOG_IF_FAIL(queryStringValue(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, 3, nodeIds.localNodeId));
     LOG_IF_FAIL(queryStringValue(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, 0, nodeIds.remoteNodeId));
 
-    ids.insert(nodeIds);
+    (void) ids.insert(nodeIds);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
 
@@ -2192,7 +2198,7 @@ bool SyncDb::pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<NodeIds,
         LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID));
         LOG_IF_FAIL(queryBindValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 1, dbNodeId));
         for (;;) {
-            bool found;
+            bool found = false;
             if (!queryNext(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, found)) {
                 LOG_WARN(_logger, "Error getting query result: " << SELECT_NODE_BY_PARENTNODEID_REQUEST_ID
                                                                  << " - parentNodeId=" << std::to_string(dbNodeId));
@@ -2201,7 +2207,7 @@ bool SyncDb::pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<NodeIds,
             if (!found) {
                 break;
             }
-            bool nodeIdIsNull;
+            bool nodeIdIsNull = false;
             LOG_IF_FAIL(queryIsNullValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 0, nodeIdIsNull));
             if (!nodeIdIsNull) {
                 // The node exists in the snapshot
@@ -2210,9 +2216,9 @@ bool SyncDb::pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<NodeIds,
                 LOG_IF_FAIL(queryStringValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 3, childNodeIds.localNodeId));
                 LOG_IF_FAIL(queryStringValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 4, childNodeIds.remoteNodeId));
 
-                ids.insert(childNodeIds);
+                (void) ids.insert(childNodeIds);
 
-                int type;
+                int type = 0;
                 LOG_IF_FAIL(queryIntValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 5, type));
                 if (static_cast<NodeType>(type) == NodeType::Directory) {
                     dbNodeIdQueue.push(childNodeIds.dbNodeId);

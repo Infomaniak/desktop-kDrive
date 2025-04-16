@@ -23,7 +23,7 @@
 
 #include <string>
 #include <unordered_set>
-#include "snapshotversionhandler.h"
+#include "snapshotrevisionhandler.h"
 
 namespace KDC {
 
@@ -55,18 +55,18 @@ class SnapshotItem {
         void setSize(const int64_t newSize);
         [[nodiscard]] bool isLink() const { return _isLink; }
         void setIsLink(const bool isLink);
-        [[nodiscard]] const std::string &contentChecksum() const { return _contentChecksum; }  
+        [[nodiscard]] const std::string &contentChecksum() const { return _contentChecksum; }
         void setContentChecksum(const std::string &newChecksum);
         [[nodiscard]] bool canWrite() const { return _canWrite; }
         void setCanWrite(const bool canWrite);
         [[nodiscard]] bool canShare() const { return _canShare; }
         void setCanShare(bool canShare);
         void setLastChangedSnapshotVersion(SnapshotRevision snapshotVersion);
-        SnapshotRevision lastChangedSnapshotVersion() const { return _lastChangedSnapshotVersion; }
+        SnapshotRevision lastChangeRevision() const { return _lastChangeRevision; }
 
-        void setSnapshotVersionHandler(const std::shared_ptr<SnapshotRevisionHandler> &snapshotVersionHandler) {
-            _snapshotVersionHandler = snapshotVersionHandler;
-            _lastChangedSnapshotVersion = _snapshotVersionHandler ? _snapshotVersionHandler->nextVersion() : 0;
+        void setSnapshotRevisionHandler(const std::shared_ptr<SnapshotRevisionHandler> &snapshotRevisionHandler) {
+            _snapshotRevisionHandler = snapshotRevisionHandler;
+            _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
         }
         SnapshotItem &operator=(const SnapshotItem &other);
 
@@ -90,9 +90,9 @@ class SnapshotItem {
         bool _canWrite = true;
         bool _canShare = true;
         std::unordered_set<std::shared_ptr<SnapshotItem>> _children;
-        SnapshotRevision _lastChangedSnapshotVersion =
-                0; // The verison of the snapshot corresponding to the last change of this item.
-        std::shared_ptr<SnapshotRevisionHandler> _snapshotVersionHandler;
+        SnapshotRevision _lastChangeRevision =
+                0; // The revision of the snapshot corresponding to the last change of this item.
+        std::shared_ptr<SnapshotRevisionHandler> _snapshotRevisionHandler;
         mutable SyncPath _path; // The item relative path. Cached value. To use only on a snapshot copy, not a real time one.
 
         [[nodiscard]] SyncPath path() const { return _path; }
