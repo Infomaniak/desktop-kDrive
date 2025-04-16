@@ -314,14 +314,17 @@ void ParametersDialog::reset() {
 }
 
 QString ParametersDialog::getAppErrorText(const QString &fctCode, const ExitCode exitCode, const ExitCause exitCause) const {
-    const QString err = QString("%1:%2:%3").arg(fctCode).arg(toInt(exitCode)).arg(toInt(exitCause));
-    // TODO: USELESS CODE : this switch should be simplified !!!!
+    const auto err = QString("%1:%2:%3").arg(fctCode).arg(toInt(exitCode)).arg(toInt(exitCause));
     switch (exitCode) {
         case ExitCode::Unknown:
+        case ExitCode::DataError:
+        case ExitCode::DbError:
+        case ExitCode::BackError:
+        case ExitCode::SystemError:
+        case ExitCode::FatalError:
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")
                     .arg(err);
-            break;
         case ExitCode::NetworkError:
             if (exitCause == ExitCause::NetworkTimeout) {
                 return tr("It seems that your network connection is configured with too low a timeout for the application to "
@@ -333,59 +336,18 @@ QString ParametersDialog::getAppErrorText(const QString &fctCode, const ExitCode
                           "Attempting reconnection. Please check your Internet connection and your firewall.")
                         .arg(err);
             }
-            break;
         case ExitCode::InvalidToken:
             return tr("A login problem has occurred (error %1).<br>"
                       "Please log in again and if the error persists, contact our support team.")
                     .arg(err);
-            break;
-        case ExitCode::DataError:
-            return tr("A technical error has occurred (error %1).<br>"
-                      "Please empty the history and if the error persists, contact our support team.")
-                    .arg(err);
-            break;
-        case ExitCode::DbError:
-            if (exitCause == ExitCause::DbAccessError) {
-                return tr("A technical error has occurred (error %1).<br>"
-                          "Please empty the history and if the error persists, contact our support team.")
-                        .arg(err);
-            } else {
-                return tr("A technical error has occurred (error %1).<br>"
-                          "Please empty the history and if the error persists, contact our support team.")
-                        .arg(err);
-            }
-            break;
-        case ExitCode::BackError:
-            return tr("A technical error has occurred (error %1).<br>"
-                      "Please empty the history and if the error persists, contact our support team.")
-                    .arg(err);
-            break;
-        case ExitCode::SystemError:
-            if (exitCause == ExitCause::MigrationError) {
-                return tr(
-                        "Old synchronisation database doesn't exist or is not accessible.<br>"
-                        "Old blacklist data haven't been migrated.");
-            } else {
-                return tr("A technical error has occurred (error %1).<br>"
-                          "Please empty the history and if the error persists, contact our support team.")
-                        .arg(err);
-            }
-            break;
-        case ExitCode::FatalError:
-            return tr("A technical error has occurred (error %1).<br>"
-                      "Please empty the history and if the error persists, contact our support team.")
-                    .arg(err);
-            break;
         case ExitCode::UpdateRequired:
             return tr("A new version of the application is available.<br>"
                       "Please update the application to continue using it.")
                     .arg(err);
-            break;
         case ExitCode::LogUploadFailed:
             return tr("The log upload failed (error %1).<br>"
                       "Please try again later.")
                     .arg(err);
-            break;
         case ExitCode::Ok:
         case ExitCode::LogicError:
         case ExitCode::TokenRefreshed:
@@ -393,6 +355,7 @@ QString ParametersDialog::getAppErrorText(const QString &fctCode, const ExitCode
         case ExitCode::InvalidSync:
         case ExitCode::OperationCanceled:
         case ExitCode::InvalidOperation:
+        case ExitCode::UpdateFailed:
             break;
         case ExitCode::EnumEnd: {
             assert(false && "Invalid enum value in switch statement.");
@@ -533,7 +496,6 @@ QString ParametersDialog::getSyncPalErrorText(const QString &fctCode, const Exit
                           "Attempting reconnection. Please check your Internet connection and your firewall.")
                         .arg(err);
             }
-            break;
         case ExitCode::DataError:
             if (exitCause == ExitCause::MigrationError) {
                 return tr(
@@ -551,7 +513,6 @@ QString ParametersDialog::getSyncPalErrorText(const QString &fctCode, const Exit
                           "contact our support team.")
                         .arg(err);
             }
-            break;
         case ExitCode::DbError:
             if (exitCause == ExitCause::DbAccessError) {
                 return tr("A technical error has occurred (error %1).<br>"
@@ -562,7 +523,6 @@ QString ParametersDialog::getSyncPalErrorText(const QString &fctCode, const Exit
                           "Synchronization has been stopped.")
                         .arg(err);
             }
-            break;
         case ExitCode::BackError:
             return getSyncPalBackErrorText(err, exitCause, userIsAdmin);
         case ExitCode::SystemError:
@@ -571,12 +531,10 @@ QString ParametersDialog::getSyncPalErrorText(const QString &fctCode, const Exit
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")
                     .arg(err);
-            break;
         case ExitCode::InvalidToken:
             return tr("A login problem has occurred (error %1).<br>"
                       "Token invalid or revoked.")
                     .arg(err);
-            break;
         case ExitCode::InvalidSync:
             return tr("Nested synchronizations are prohibited (error %1).<br>"
                       "You should only keep synchronizations whose folders are not nested.")
@@ -598,6 +556,9 @@ QString ParametersDialog::getSyncPalErrorText(const QString &fctCode, const Exit
         case ExitCode::LogUploadFailed:
         case ExitCode::UpdateFailed:
             break;
+        case ExitCode::EnumEnd: {
+            assert(false && "Invalid enum value in switch statement.");
+        }
     }
 
     qCDebug(lcParametersDialog()) << "Unmanaged exit code: code=" << exitCode;
@@ -618,8 +579,6 @@ QString ParametersDialog::getConflictText(const ConflictType conflictType) const
             return tr(
                     "An element with the same name already exists in this location.<br>"
                     "The local operation has been canceled.");
-
-
         case ConflictType::CreateCreate:
             return tr(
                     "An element with the same name already exists in this location.<br>"
@@ -638,6 +597,9 @@ QString ParametersDialog::getConflictText(const ConflictType conflictType) const
         case ConflictType::CreateParentDelete:
             // Those conflicts do not generate error message. If needed, a message is shown using CancelType::FileRescued.
             return {};
+        case ConflictType::EnumEnd: {
+            assert(false && "Invalid enum value in switch statement.");
+        }
     }
 
     qCDebug(lcParametersDialog()) << "Unmanaged conflict type: " << conflictType;
@@ -850,11 +812,9 @@ QString ParametersDialog::getErrorMessage(const ErrorInfo &errorInfo) const {
             return tr(
                     "A technical error has occurred.<br>"
                     "Please empty the history and if the error persists, contact our support team.");
-            break;
         }
         case ErrorLevel::Server: {
             return getAppErrorText(errorInfo.functionName(), errorInfo.exitCode(), errorInfo.exitCause());
-            break;
         }
         case ErrorLevel::SyncPal: {
             if (const auto &syncInfoMapIt = _gui->syncInfoMap().find(errorInfo.syncDbId());
@@ -873,6 +833,9 @@ QString ParametersDialog::getErrorMessage(const ErrorInfo &errorInfo) const {
         }
         case ErrorLevel::Node:
             return getErrorLevelNodeText(errorInfo);
+        case ErrorLevel::EnumEnd: {
+            assert(false && "Invalid enum value in switch statement.");
+        }
     }
 
     qCDebug(lcParametersDialog()) << "Unmanaged error level : " << errorInfo.level();
