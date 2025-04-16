@@ -1216,7 +1216,8 @@ ExitInfo ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool
         try {
             job = std::make_shared<DeleteJob>(
                     _syncPal->driveDbId(), syncOp->correspondingNode()->id() ? *syncOp->correspondingNode()->id() : std::string(),
-                    syncOp->affectedNode()->id() ? *syncOp->affectedNode()->id() : std::string(), absoluteLocalFilePath);
+                    syncOp->affectedNode()->id() ? *syncOp->affectedNode()->id() : std::string(), absoluteLocalFilePath,
+                    syncOp->affectedNode()->type());
         } catch (std::exception const &e) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in DeleteJob::DeleteJob for driveDbId=" << _syncPal->driveDbId() << L" : "
                                                                                        << Utility::s2ws(e.what()));
@@ -1870,6 +1871,7 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
     dbNode.setNodeIdRemote(remoteId);
     dbNode.setLastModifiedLocal(newLastModTime);
     dbNode.setLastModifiedRemote(newLastModTime);
+    dbNode.setCreated(syncOp->affectedNode()->createdAt());
     dbNode.setSize(syncOp->affectedNode()->size());
     dbNode.setChecksum(""); // TODO : change it once we start using content checksum
     if (syncOp->omit()) {

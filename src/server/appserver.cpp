@@ -2339,7 +2339,9 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
             {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
             {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
             {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+#ifdef __APPLE__
             {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+#endif
             {&MigrationParams::migrateSelectiveSyncs, "migrateSelectiveSyncs"}};
 
     for (const auto &migrate: migrateArr) {

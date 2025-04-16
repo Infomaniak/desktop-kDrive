@@ -37,6 +37,7 @@ class TestOperationGeneratorWorker : public CppUnit::TestFixture, public TestBas
         CPPUNIT_TEST(testDeleteOp);
         CPPUNIT_TEST(testDeleteOpWithPseudoConflict);
         CPPUNIT_TEST(testMoveEditOps);
+        CPPUNIT_TEST(testEditChangeShouldBePropagated);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -54,7 +55,7 @@ class TestOperationGeneratorWorker : public CppUnit::TestFixture, public TestBas
         void testDeleteOp();
         void testDeleteOpWithPseudoConflict();
         void testMoveEditOps();
-
+        void testEditChangeShouldBePropagated();
     private:
         std::shared_ptr<SyncPal> _syncPal = nullptr;
         log4cplus::Logger _logger;
