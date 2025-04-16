@@ -94,7 +94,7 @@ void ComputeFSOperationWorker::execute() {
         if (ok) perfMonitor.stop();
     }
 
-    std::chrono::duration<double> elapsedSeconds = std::chrono::steady_clock::now() - start;
+    const std::chrono::duration<double> elapsedSeconds = std::chrono::steady_clock::now() - start;
 
     if (!ok || stopAsked()) {
         // Do not keep operations if there was an error or sync was stopped
@@ -103,6 +103,19 @@ void ComputeFSOperationWorker::execute() {
         LOG_SYNCPAL_INFO(_logger, "FS operation aborted after: " << elapsedSeconds.count() << "s");
 
     } else {
+        /* If the current snapshot state does not reveal any operation, we store the current revision number.
+         * On the next call to compute filesystem operations, only items from the snapshot that were modified in a higher revision
+         * will be processed.
+         * It is important not to update the CFSO's lastSyncedRevision if an operation is detected, otherwise, we may fail to 
+         * detect it again if, for any reason, the propagation of the change fails.
+         */
+
+        if (_syncPal->operationSet(ReplicaSide::Local)->nbOps() == 0) {
+            _lastLocalSnapshotSyncedRevision = _syncPal->snapshotCopy(ReplicaSide::Local)->revision();
+        }
+        if (_syncPal->operationSet(ReplicaSide::Remote)->nbOps() == 0) {
+            _lastRemoteSnapshotSyncedRevision = _syncPal->snapshotCopy(ReplicaSide::Remote)->revision();
+        }
         exitCode = ExitCode::Ok;
         LOG_SYNCPAL_INFO(_logger, "FS operation sets generated in: " << elapsedSeconds.count() << "s");
     }
@@ -145,6 +158,12 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     bool remoteItemUnsynced = false;
     bool movedIntoUnsyncedFolder = false;
     const auto nodeExistsInSnapshot = snapshot->exists(nodeId);
+    bool nodeIdReused = false;
+    if (const ExitInfo exitInfo = isReusedNodeId(nodeId, dbNode, snapshot, nodeIdReused); !exitInfo) {
+        setExitCause(exitInfo.cause());
+        return exitInfo.code();
+    }
+
     if (side == ReplicaSide::Remote) {
         // In case of a move inside an excluded folder, the item must be removed in this sync
         if (isInUnsyncedListParentSearchInDb(nodeId, ReplicaSide::Remote)) {
@@ -157,7 +176,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         return ExitCode::Ok;
     }
 
-    if (!nodeExistsInSnapshot || movedIntoUnsyncedFolder) {
+    if (!nodeExistsInSnapshot || movedIntoUnsyncedFolder || nodeIdReused) {
         bool isInDeletedFolder = false;
         if (!checkIfPathIsInDeletedFolder(dbPath, isInDeletedFolder)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::checkIfPathIsInDeletedFolder: " << Utility::formatSyncPath(dbPath));
@@ -182,7 +201,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
 
         bool checkTemplate = side == ReplicaSide::Remote;
         if (side == ReplicaSide::Local) {
-            SyncPath localPath = _syncPal->localPath() / dbPath;
+            const SyncPath localPath = _syncPal->localPath() / dbPath;
 
             // Do not propagate delete if the path is too long.
             const size_t pathSize = localPath.native().size();
@@ -224,18 +243,16 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         }
 
         // Delete operation
-        FSOpPtr fsOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(),
-                                                     dbNode.created().has_value() ? dbNode.created().value() : 0, dbLastModified,
-                                                     dbNode.size(), dbPath);
+        const auto fsOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(),
+                                                        dbNode.created().has_value() ? dbNode.created().value() : 0,
+                                                        dbLastModified, dbNode.size(), dbPath);
         opSet->insertOp(fsOp);
         logOperationGeneration(snapshot->side(), fsOp);
 
-        if (dbNode.type() == NodeType::Directory) {
-            if (!addFolderToDelete(dbPath)) {
-                LOGW_SYNCPAL_WARN(_logger,
-                                  L"Error in ComputeFSOperationWorker::addFolderToDelete: " << Utility::formatSyncPath(dbPath));
-                return ExitCode::SystemError;
-            }
+        if (dbNode.type() == NodeType::Directory && !addFolderToDelete(dbPath)) {
+            LOGW_SYNCPAL_WARN(_logger,
+                              L"Error in ComputeFSOperationWorker::addFolderToDelete: " << Utility::formatSyncPath(dbPath));
+            return ExitCode::SystemError;
         }
         return ExitCode::Ok;
     }
@@ -258,34 +275,22 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         return ExitCode::DataError;
     }
 
-    if (side == ReplicaSide::Local && !_testing) {
-        // OS might fail to notify all delete events, therefore we check that the file still exists.
-        SyncPath absolutePath = _syncPal->localPath() / snapshotPath;
-        bool exists = false;
-        IoError ioError = IoError::Success;
-        if (!IoHelper::checkIfPathExists(absolutePath, exists, ioError) || ioError == IoError::AccessDenied) {
-            LOGW_SYNCPAL_WARN(_logger,
-                              L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absolutePath, ioError));
-            return ExitCode::SystemError;
-        }
-        if (!exists) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Item does not exist anymore on local replica. Snapshot will be rebuilt - "
-                                                << Utility::formatSyncPath(absolutePath));
-            setExitCause(ExitCause::InvalidSnapshot);
-            return ExitCode::DataError;
-        }
-    } else if (isPathTooLong(snapshotPath, nodeId, snapshot->type(nodeId))) {
+    if (side == ReplicaSide::Remote && isPathTooLong(snapshotPath, nodeId, snapshot->type(nodeId))) {
         return ExitCode::Ok;
     }
 
     // Detect EDIT
     const SyncTime snapshotLastModified = snapshot->lastModified(nodeId);
+    const SyncTime snapshotCreatedAt = snapshot->createdAt(nodeId);
+    const SyncTime dbCreatedAt = dbNode.created().has_value() ? dbNode.created().value() : 0;
     // Size can differ for links between remote and local replica, do not check it in that case
     if (const auto sameSize = snapshot->isLink(nodeId) || snapshot->size(nodeId) == dbNode.size();
-        (snapshotLastModified != dbLastModified || !sameSize) && dbNode.type() == NodeType::File) {
+        (snapshotLastModified != dbLastModified || !sameSize ||
+         (snapshotCreatedAt != dbCreatedAt && side == ReplicaSide::Local)) &&
+        dbNode.type() == NodeType::File) {
         // Edit operation
-        auto fsOp = std::make_shared<FSOperation>(OperationType::Edit, nodeId, NodeType::File, snapshot->createdAt(nodeId),
-                                                  snapshotLastModified, snapshot->size(nodeId), snapshotPath);
+        const auto fsOp = std::make_shared<FSOperation>(OperationType::Edit, nodeId, NodeType::File, snapshot->createdAt(nodeId),
+                                                        snapshotLastModified, snapshot->size(nodeId), snapshotPath);
         opSet->insertOp(fsOp);
         logOperationGeneration(snapshot->side(), fsOp);
     }
@@ -312,10 +317,10 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
 
 
 ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet,
-                                                      std::unordered_set<DbNodeId> &remainingDbIds) {
-    for (auto dbIdIt = remainingDbIds.begin(); dbIdIt != remainingDbIds.end();) {
-        if (*dbIdIt == _syncPal->syncDb()->rootNode().nodeId()) {
-            dbIdIt = remainingDbIds.erase(dbIdIt);
+                                                      NodeIdsSet &remainingNodesIds) {
+    for (auto nodesIdsIt = remainingNodesIds.begin(); nodesIdsIt != remainingNodesIds.end();) {
+        if (nodesIdsIt->dbNodeId == _syncPal->syncDb()->rootNode().nodeId()) {
+            nodesIdsIt = remainingNodesIds.erase(nodesIdsIt);
             continue; // Ignore root folder
         }
 
@@ -323,40 +328,47 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
             return ExitCode::Ok;
         }
 
+        if (!hasChangedSinceLastSeen(*nodesIdsIt)) {
+            (void) localIdsSet.insert(nodesIdsIt->localNodeId);
+            (void) remoteIdsSet.insert(nodesIdsIt->remoteNodeId);
+            nodesIdsIt = remainingNodesIds.erase(nodesIdsIt);
+            continue;
+        }
+
         DbNode dbNode;
         bool dbNodeIsFound = false;
-        const DbNodeId dbId = *dbIdIt;
-        if (!_syncDb->node(dbId, dbNode, dbNodeIsFound)) {
+        const auto dbNodeIds = *nodesIdsIt;
+        if (!_syncDb->node(nodesIdsIt->dbNodeId, dbNode, dbNodeIsFound)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
             setExitCause(ExitCause::DbAccessError);
             return ExitCode::DbError;
         }
         if (!dbNodeIsFound) {
             // The node is not anymore in the DB (one of its parents has been blacklisted)
-            dbIdIt = remainingDbIds.erase(dbIdIt);
+            nodesIdsIt = remainingNodesIds.erase(nodesIdsIt);
             continue;
         }
 
-        if (dbNode.nodeIdLocal()) localIdsSet.insert(*dbNode.nodeIdLocal());
-        if (dbNode.nodeIdRemote()) remoteIdsSet.insert(*dbNode.nodeIdRemote());
 
         if (dbNode.type() != nodeType) {
-            ++dbIdIt;
+            ++nodesIdsIt;
             continue;
         }
 
-        dbIdIt = remainingDbIds.erase(dbIdIt);
+        if (dbNode.nodeIdLocal()) (void) localIdsSet.insert(*dbNode.nodeIdLocal());
+        if (dbNode.nodeIdRemote()) (void) remoteIdsSet.insert(*dbNode.nodeIdRemote());
+        nodesIdsIt = remainingNodesIds.erase(nodesIdsIt);
 
         SyncPath localDbPath;
         SyncPath remoteDbPath;
         bool dbPathsAreFound = false;
-        if (!_syncDb->path(dbId, localDbPath, remoteDbPath, dbPathsAreFound)) {
+        if (!_syncDb->path(dbNodeIds.dbNodeId, localDbPath, remoteDbPath, dbPathsAreFound)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
             setExitCause(ExitCause::DbAccessError);
             return ExitCode::DbError;
         }
         if (!dbPathsAreFound) {
-            LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << dbId);
+            LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << nodesIdsIt->dbNodeId);
             setExitCause(ExitCause::DbEntryNotFound);
             return ExitCode::DataError;
         }
@@ -387,8 +399,8 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
 
 ExitCode ComputeFSOperationWorker::inferChangesFromDb(NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet) {
     bool dbIdsArefound = false;
-    DbNodeIdSet remainingDbIds;
-    if (!_syncDb->dbIds(remainingDbIds, dbIdsArefound)) {
+    NodeIdsSet remainingNodesIds;
+    if (!_syncDb->ids(remainingNodesIds, dbIdsArefound)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::ids");
         setExitCause(ExitCause::DbAccessError);
         return ExitCode::DbError;
@@ -401,7 +413,7 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(NodeIdSet &localIdsSet, No
     // Second, detect changes for files. This is made faster thanks to exclusion lists.
     _dirPathToDeleteSet.clear();
     for (const auto nodeType: std::array<NodeType, 2>{NodeType::Directory, NodeType::File}) {
-        if (const auto exitCode = inferChangesFromDb(nodeType, localIdsSet, remoteIdsSet, remainingDbIds);
+        if (const auto exitCode = inferChangesFromDb(nodeType, localIdsSet, remoteIdsSet, remainingNodesIds);
             exitCode != ExitCode::Ok) {
             return exitCode;
         }
@@ -644,7 +656,7 @@ bool ComputeFSOperationWorker::isExcludedFromSync(const std::shared_ptr<const Sn
         }
     } else {
         if (!_testing) {
-            SyncPath absoluteFilePath = _syncPal->localPath() / path;
+            const SyncPath absoluteFilePath = _syncPal->localPath() / path;
 
             // Check that file exists
             bool exists = false;
@@ -808,6 +820,76 @@ bool ComputeFSOperationWorker::isPathTooLong(const SyncPath &path, const NodeId 
     return false;
 }
 
+ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const DbNode &dbNode,
+                                                  const std::shared_ptr<const Snapshot> &snapshot, bool &isReused) const {
+    isReused = false;
+    // Check if the node is in the snapshot
+    if (snapshot->side() != ReplicaSide::Local || !snapshot->exists(localNodeId)) {
+        return ExitCode::Ok;
+    }
+
+    // Check if the node type has changed
+    if (snapshot->type(localNodeId) != NodeType::Unknown && dbNode.type() != NodeType::Unknown &&
+        snapshot->type(localNodeId) != dbNode.type()) {
+        isReused = true;
+        LOGW_SYNCPAL_DEBUG(_logger, L"Node type has changed for " << Utility::s2ws(localNodeId) << L" from " << dbNode.type()
+                                                                  << L" to " << snapshot->type(localNodeId));
+        return ExitCode::Ok;
+    }
+
+    /* The nodeId will be considered as reused if each of the following has changed :
+     * - the creation date,
+     * - the modification date,
+     * - the size,
+     * - the path (this is needed as some software might delete and recreate a file when saving it, wich will change all the
+     *             previous properties, but the file is still the same)
+     */
+
+    // Check if the creation date has changed
+    if (snapshot->createdAt(localNodeId) == dbNode.created().value()) {
+        return ExitCode::Ok;
+    }
+
+    // Check if the mtime has changed (for a directory, the mtime is updated when a child is added or removed or when the
+    // directory is renamed)
+    if (snapshot->lastModified(localNodeId) == dbNode.lastModified(ReplicaSide::Local)) {
+        return ExitCode::Ok;
+    }
+
+    // Check if the node size has changed
+    if (snapshot->size(localNodeId) == dbNode.size()) {
+        return ExitCode::Ok;
+    }
+
+    // Check if the node path has changed
+    SyncPath localDbPath;
+    if (bool found = false; !_syncDb->path(ReplicaSide::Local, localNodeId, localDbPath, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
+        return {ExitCode::DbError, ExitCause::DbAccessError};
+    } else if (!found) {
+        LOG_SYNCPAL_WARN(_logger, "Node not found in DB");
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
+    }
+
+    SyncPath localSnapshotPath;
+    if (bool ignore = false; !snapshot->path(localNodeId, localSnapshotPath, ignore)) {
+        if (ignore) {
+            return ExitCode::Ok;
+        }
+        LOG_SYNCPAL_WARN(_logger, "Failed to retrieve path from snapshot for item " << localNodeId);
+        return {ExitCode::DataError, ExitCause::InvalidSnapshot};
+    }
+
+    if (localDbPath == localSnapshotPath) {
+        return ExitCode::Ok;
+    }
+
+    LOGW_SYNCPAL_DEBUG(_logger, L"Path, size, creation date and modification date have all changed for "
+                                        << Utility::s2ws(localNodeId) << L". Node is reused.");
+    isReused = true;
+    return ExitCode::Ok;
+}
+
 ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId,
                                                      bool &isExcluded) {
     if (side != ReplicaSide::Local) return ExitCode::Ok;
@@ -945,6 +1027,19 @@ bool ComputeFSOperationWorker::checkIfPathIsInDeletedFolder(const SyncPath &path
     }
 
     return true;
+}
+
+bool ComputeFSOperationWorker::hasChangedSinceLastSeen(const SyncDb::NodeIds &nodeIds) const {
+    // Check if the item has change since the last sync
+    for (const auto side: std::array<ReplicaSide, 2>{ReplicaSide::Local, ReplicaSide::Remote}) {
+        const auto lastItemChangeSnapshotRevision = _syncPal->snapshotCopy(side)->lastChangeRevision(nodeIds.nodeId(side));
+        const auto lastSyncedSnapshotRevision =
+                side == ReplicaSide::Local ? _lastLocalSnapshotSyncedRevision : _lastRemoteSnapshotSyncedRevision;
+        if (lastItemChangeSnapshotRevision == 0 || lastItemChangeSnapshotRevision > lastSyncedSnapshotRevision) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void ComputeFSOperationWorker::notifyIgnoredItem(const NodeId &nodeId, const SyncPath &relativePath, const NodeType nodeType) {

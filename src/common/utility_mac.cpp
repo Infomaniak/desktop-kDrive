@@ -16,7 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "common/utility.h"
 #include "libcommon/utility/types.h"
+
 
 #include <QCoreApplication>
 #include <QDir>
@@ -34,7 +36,7 @@ namespace KDC {
 
 Q_LOGGING_CATEGORY(lcUtility, "common.utility", QtInfoMsg)
 
-bool hasLaunchOnStartup_private(const QString &, log4cplus::Logger logger) {
+bool OldUtility::hasLaunchOnStartup(const QString &, log4cplus::Logger logger) {
     // this is quite some duplicate code with setLaunchOnStartup, at some point we should fix this FIXME.
     bool returnValue = false;
     QString filePath = QDir(QCoreApplication::applicationDirPath() + QLatin1String("/../..")).absolutePath();
@@ -68,7 +70,7 @@ bool hasLaunchOnStartup_private(const QString &, log4cplus::Logger logger) {
     return returnValue;
 }
 
-void setLaunchOnStartup_private(const QString &appName, const QString &guiName, bool enable, log4cplus::Logger logger) {
+void OldUtility::setLaunchOnStartup(const QString &appName, const QString &guiName, bool enable, log4cplus::Logger logger) {
     Q_UNUSED(appName)
     Q_UNUSED(guiName)
     QString filePath = QDir(QCoreApplication::applicationDirPath() + QLatin1String("/../..")).absolutePath();
@@ -122,6 +124,12 @@ void setLaunchOnStartup_private(const QString &appName, const QString &guiName, 
 
     CFRelease(folderCFStr);
     CFRelease(urlRef);
+}
+
+bool OldUtility::hasSystemLaunchOnStartup(const QString &appName, log4cplus::Logger logger) {
+    Q_UNUSED(appName)
+    Q_UNUSED(logger)
+    return false;
 }
 
 } // namespace KDC

@@ -397,4 +397,40 @@ void TestOperationGeneratorWorker::testMoveEditOps() {
     CPPUNIT_ASSERT(op->omit() == false);
 }
 
+void TestOperationGeneratorWorker::testEditChangeShouldBePropagated() {
+    LOGW_DEBUG(_logger, L"$$$$$ TestOperationGeneratorWorker::testEditHasChangedToPropagate $$$$$");
+    const std::shared_ptr<Node> lNodeA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lA");
+    const std::shared_ptr<Node> rNodeA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rA");
+
+    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(lNodeA, rNodeA));
+
+    // Edit of mtime are always propagated
+    lNodeA->setLastModified(testhelpers::defaultTime + 1);
+    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(lNodeA, rNodeA));
+    lNodeA->setLastModified(testhelpers::defaultTime);
+    rNodeA->setLastModified(testhelpers::defaultTime + 1);
+    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(lNodeA, rNodeA));
+    rNodeA->setLastModified(testhelpers::defaultTime);
+
+    // Edit of size are always propagated
+    lNodeA->setSize(testhelpers::defaultFileSize + 1);
+    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(lNodeA, rNodeA));
+    lNodeA->setSize(testhelpers::defaultFileSize);
+    rNodeA->setSize(testhelpers::defaultFileSize + 1);
+    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(lNodeA, rNodeA));
+    rNodeA->setSize(testhelpers::defaultFileSize);
+
+    // Local Edit of createdAt are not propagated if the other attributes are the same
+    lNodeA->setCreatedAt(testhelpers::defaultTime + 1);
+    CPPUNIT_ASSERT(!_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(lNodeA, rNodeA));
+    lNodeA->setCreatedAt(testhelpers::defaultTime);
+    lNodeA->setSize(testhelpers::defaultFileSize + 1);
+    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(lNodeA, rNodeA));
+    lNodeA->setSize(testhelpers::defaultFileSize);
+
+    // Remote Edit of createdAt are always propagated
+    rNodeA->setCreatedAt(testhelpers::defaultTime + 1);
+    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(lNodeA, rNodeA));
+}
+
 } // namespace KDC

@@ -138,7 +138,7 @@ void TestNetworkJobs::tearDown() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Tear Down");
 
     if (!_dummyRemoteFileId.empty()) {
-        DeleteJob job(_driveDbId, _dummyRemoteFileId, "", "");
+        DeleteJob job(_driveDbId, _dummyRemoteFileId, "", "", NodeType::File);
         job.setBypassCheck(true);
         job.runSynchronously();
     }
@@ -212,15 +212,15 @@ void TestNetworkJobs::testDelete() {
     CPPUNIT_ASSERT(createTestFiles());
 
     // Delete file - Empty local id & path provided => canRun == false
-    DeleteJob jobEmptyLocalFileId(_driveDbId, _dummyRemoteFileId, "", "");
+    DeleteJob jobEmptyLocalFileId(_driveDbId, _dummyRemoteFileId, "", "", NodeType::File);
     CPPUNIT_ASSERT(!jobEmptyLocalFileId.canRun());
 
     // Delete file - A local file exists with the same path & id => canRun == false
-    DeleteJob jobLocalFileExists(_driveDbId, _dummyRemoteFileId, _dummyLocalFileId, _dummyLocalFilePath);
+    DeleteJob jobLocalFileExists(_driveDbId, _dummyRemoteFileId, _dummyLocalFileId, _dummyLocalFilePath, NodeType::File);
     CPPUNIT_ASSERT(!jobLocalFileExists.canRun());
 
     // Delete file - A local file exists with the same path but not the same id => canRun == true
-    DeleteJob jobLocalFileSynonymExists(_driveDbId, _dummyRemoteFileId, "1234", _dummyLocalFilePath);
+    DeleteJob jobLocalFileSynonymExists(_driveDbId, _dummyRemoteFileId, "1234", _dummyLocalFilePath, NodeType::File);
     CPPUNIT_ASSERT(jobLocalFileSynonymExists.canRun());
     ExitCode exitCode = jobLocalFileSynonymExists.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -247,15 +247,15 @@ void TestNetworkJobs::testDelete() {
     const LocalTemporaryDirectory localTmpDir("testDelete");
 
     // Delete directory - Empty local id & path provided => canRun == false
-    DeleteJob jobEmptyLocalDirId(_driveDbId, remoteTmpDir.id(), "", "");
+    DeleteJob jobEmptyLocalDirId(_driveDbId, remoteTmpDir.id(), "", "", NodeType::Directory);
     CPPUNIT_ASSERT(!jobEmptyLocalDirId.canRun());
 
     // Delete directory - A local dir exists with the same path & id => canRun == false
-    DeleteJob jobLocalDirExists(_driveDbId, remoteTmpDir.id(), localTmpDir.id(), localTmpDir.path());
+    DeleteJob jobLocalDirExists(_driveDbId, remoteTmpDir.id(), localTmpDir.id(), localTmpDir.path(), NodeType::Directory);
     CPPUNIT_ASSERT(!jobLocalDirExists.canRun());
 
     // Delete directory - A local dir exists with the same path but not the same id => canRun == true
-    DeleteJob jobLocalDirSynonymExists(_driveDbId, remoteTmpDir.id(), "1234", localTmpDir.path());
+    DeleteJob jobLocalDirSynonymExists(_driveDbId, remoteTmpDir.id(), "1234", localTmpDir.path(), NodeType::Directory);
     CPPUNIT_ASSERT(jobLocalDirSynonymExists.canRun());
     exitCode = jobLocalDirSynonymExists.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
