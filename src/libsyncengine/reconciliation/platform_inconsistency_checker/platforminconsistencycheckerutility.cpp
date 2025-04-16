@@ -122,7 +122,7 @@ bool PlatformInconsistencyCheckerUtility::isNameOnlySpaces(const SyncName &name)
 bool PlatformInconsistencyCheckerUtility::nameEndWithForbiddenSpace([[maybe_unused]] const SyncName &name) {
 #ifdef _WIN32
     // Can't finish with a space
-    if (SyncName nameStr(name.native()); nameStr[nameStr.size() - 1] == ' ') {
+    if (SyncName nameStr(name); nameStr[nameStr.size() - 1] == ' ') {
         return true;
     }
 #endif
