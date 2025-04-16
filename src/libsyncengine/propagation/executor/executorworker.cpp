@@ -73,7 +73,7 @@ void ExecutorWorker::execute() {
     // Keep a copy of the sorted list
     _opList = _syncPal->_syncOps->opSortedList();
     initProgressManager();
-    uint64_t changesCounter = 0;
+    uint64_t localChangeCounter = 0;
     while (!_opList.empty()) { // Same loop twice because we might reschedule the jobs after a pause TODO : refactor double loop
         // Create all the jobs
         sentry::pTraces::scoped::JobGeneration perfMonitor(syncDbId());
@@ -115,8 +115,6 @@ void ExecutorWorker::execute() {
                 LOG_SYNCPAL_WARN(_logger, "Operation doesn't exist anymore: id=" << opId);
                 continue;
             }
-
-            changesCounter++;
 
             std::shared_ptr<AbstractJob> job = nullptr;
             bool ignored = false;
@@ -163,7 +161,6 @@ void ExecutorWorker::execute() {
                     if (!bypassProgressComplete) setProgressComplete(syncOp, SyncFileStatus::Error);
                     continue;
                 }
-                if (!bypassProgressComplete) setProgressComplete(syncOp, SyncFileStatus::Error);
             }
 
             if (job) {
@@ -194,6 +191,8 @@ void ExecutorWorker::execute() {
                     }
                 }
             }
+
+            if (syncOp->targetSide() == ReplicaSide::Local) ++localChangeCounter;
         }
         perfMonitor.stop();
         sentry::pTraces::scoped::waitForAllJobsToFinish perfMonitorwaitForAllJobsToFinish(syncDbId());
@@ -207,7 +206,7 @@ void ExecutorWorker::execute() {
     _syncPal->_syncOps->clear();
     _syncPal->_remoteFSObserverWorker->forceUpdate();
 
-    if (changesCounter > SNAPSHOT_INVALIDATION_THRESHOLD) {
+    if (localChangeCounter > SNAPSHOT_INVALIDATION_THRESHOLD) {
         // If there are too many changes on the local filesystem, the OS stops sending events at some point.
         LOG_SYNCPAL_INFO(_logger,
                          "Local snapshot is potentially invalid because of too many file system events. Forcing invalidation.");
@@ -316,7 +315,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
     if (isLiteSyncActivated() && !syncOp->omit()) {
         bool isDehydratedPlaceholder = false;
         if (ExitInfo exitInfo = checkLiteSyncInfoForCreate(syncOp, absoluteLocalFilePath, isDehydratedPlaceholder); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in checkLiteSyncInfoForCreate" << " " << exitInfo);
+            LOG_SYNCPAL_WARN(_logger, "Error in checkLiteSyncInfoForCreate"
+                                              << " " << exitInfo);
             return exitInfo;
         }
 
@@ -400,8 +400,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
                     if (const ExitInfo exitInfoCheckAlreadyExcluded =
                                 checkAlreadyExcluded(absoluteLocalFilePath, createDirJob->parentDirId());
                         !exitInfoCheckAlreadyExcluded) {
-                        LOG_SYNCPAL_WARN(_logger,
-                                         "Error in ExecutorWorker::checkAlreadyExcluded" << " " << exitInfoCheckAlreadyExcluded);
+                        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::checkAlreadyExcluded"
+                                                          << " " << exitInfoCheckAlreadyExcluded);
                         return exitInfoCheckAlreadyExcluded;
                     }
 
