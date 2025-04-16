@@ -288,11 +288,12 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     const SyncTime dbCreatedAt = dbNode.created().has_value() ? dbNode.created().value() : 0;
     // Size can differ for links between remote and local replica, do not check it in that case
     if (const auto sameSize = snapshot->isLink(nodeId) || snapshot->size(nodeId) == dbNode.size();
-        (snapshotLastModified != dbLastModified || !sameSize ||( snapshotCreatedAt != dbCreatedAt && side == ReplicaSide::Local)) &&
+        (snapshotLastModified != dbLastModified || !sameSize ||
+         (snapshotCreatedAt != dbCreatedAt && side == ReplicaSide::Local)) &&
         dbNode.type() == NodeType::File) {
         // Edit operation
         const auto fsOp = std::make_shared<FSOperation>(OperationType::Edit, nodeId, NodeType::File, snapshot->createdAt(nodeId),
-                                                  snapshotLastModified, snapshot->size(nodeId), snapshotPath);
+                                                        snapshotLastModified, snapshot->size(nodeId), snapshotPath);
         opSet->insertOp(fsOp);
         logOperationGeneration(snapshot->side(), fsOp);
     }
@@ -819,7 +820,7 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
                                                   const std::shared_ptr<const Snapshot> &snapshot, bool &isReused) const {
     isReused = false;
     // Check if the node is in the snapshot
-    if (!snapshot->exists(localNodeId)) {
+    if (snapshot->side() != ReplicaSide::Local || !snapshot->exists(localNodeId)) {
         return ExitCode::Ok;
     }
 
@@ -879,8 +880,8 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
         return ExitCode::Ok;
     }
 
-    LOGW_SYNCPAL_DEBUG(_logger, L"Path, size, creation date and modification date have all changed for " << Utility::s2ws(localNodeId)
-                                                                                                    << L". Node is reused.");
+    LOGW_SYNCPAL_DEBUG(_logger, L"Path, size, creation date and modification date have all changed for "
+                                        << Utility::s2ws(localNodeId) << L". Node is reused.");
     isReused = true;
     return ExitCode::Ok;
 }
