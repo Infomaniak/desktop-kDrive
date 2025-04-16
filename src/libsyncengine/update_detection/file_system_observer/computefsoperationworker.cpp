@@ -103,13 +103,13 @@ void ComputeFSOperationWorker::execute() {
         LOG_SYNCPAL_INFO(_logger, "FS operation aborted after: " << elapsedSeconds.count() << "s");
 
     } else {
-        /* If the current snapshot state DOES NOT reveal any operation, we store the current revision number.
+        /* If the current snapshot state does not reveal any operation, we store the current revision number.
          * On the next call to compute filesystem operations, only items from the snapshot that were modified in a higher revision
          * will be processed.
-         * If the current snapshot state DOES reveal any operation, the last synced revision number remains unchanged. A new
-         * compute filesystem operation will be triggered at the end of the sync. If all changes have been successfully synced, no
-         * operations should be detected anymore, and the last synced revision number will be updated accordingly.
+         * It is important not to update the CFSO's lastSyncedRevision if an operation is detected, otherwise, we may fail to 
+         * detect it again if, for any reason, the propagation of the change fails.
          */
+
         if (_syncPal->operationSet(ReplicaSide::Local)->nbOps() == 0) {
             _lastLocalSnapshotSyncedRevision = _syncPal->snapshotCopy(ReplicaSide::Local)->revision();
         }
