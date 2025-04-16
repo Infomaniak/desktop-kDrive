@@ -43,6 +43,7 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="H.NotifyIcon.WinUI" Version="2.3.0" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250401001" />
   </ItemGroup>
@@ -86,6 +87,11 @@
     <Content Remove="Assets\Mock_to_delete_before_release\profile_herve.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Synthesis\" />
+    <None Remove="Synthesis\TrayIconView\TrayIconView.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Synthesis\TrayIconView\TrayIconView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 </Project>

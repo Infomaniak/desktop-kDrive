@@ -45,7 +45,6 @@
     </Page.Resources>
 
     <Grid>
-
         <TreeView x:Name="FolderTree" ItemsSource="{x:Bind DataSource}" ScrollViewer.VerticalScrollMode="Enabled"
                    ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}" SelectionMode="Multiple" Expanding="FolderTree_Expanding"/>
 

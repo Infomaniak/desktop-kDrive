@@ -6,6 +6,7 @@
     xmlns:local="using:kDrive_client"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tb="using:H.NotifyIcon"
     mc:Ignorable="d"
     Title="kDrive_client">
     <Window.SystemBackdrop>

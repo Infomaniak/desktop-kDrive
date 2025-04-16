@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using H.NotifyIcon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -43,12 +44,20 @@ namespace kDrive_client
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            m_window = new MainWindow();
-            Frame rootFrame = new Frame();
-            rootFrame.NavigationFailed += OnNavigationFailed;
-            rootFrame.Navigate(typeof(SynthesisPage), args.Arguments);
+            m_window = new MainWindow
+            {
+                Content = new Frame
+                {
+                    Content = new SynthesisPage(),
+                },
+            };
+            m_window.Closed += (sender, args) =>
+            {
 
-            m_window.Content = rootFrame;
+                args.Handled = true;
+                m_window.Hide();
+
+            };
             m_window.Activate();
         }
 
@@ -58,6 +67,8 @@ namespace kDrive_client
         }
         public Window Window => m_window;
 
-        private Window? m_window;
+        private static Window? m_window;
+        public static Window? MainWindow { get { return m_window; } }
+
     }
 }

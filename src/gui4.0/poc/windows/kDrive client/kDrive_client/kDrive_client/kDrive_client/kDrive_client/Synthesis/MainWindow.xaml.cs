@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using H.NotifyIcon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -27,7 +28,16 @@ namespace kDrive_client
         {
             this.InitializeComponent();
             this.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(300, 215, 500, 600));
-
+            this.Activated += WindowActivated;
         }
+
+        private void WindowActivated(Object sender, WindowActivatedEventArgs args)
+        {
+            if (args.WindowActivationState == WindowActivationState.Deactivated)
+            {
+                DispatcherQueue.TryEnqueue(() => this.Hide());
+            }
+        }
+
     }
 }
