@@ -11,7 +11,7 @@ import Cocoa
 class AppDelegate: NSObject, NSApplicationDelegate {
     var _serverConnection: NSXPCConnection?
     var _serverGuiService: XPCGuiProtocol?
-    var _queryId: Int = 0
+    var _queryId: Int = 1000000
         
     override init() {
         super.init()
@@ -30,8 +30,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         connection.exportedObject = self
         print("[KD] Set remote object interface for connection with login agent")
         connection.remoteObjectInterface = NSXPCInterface(with: XPCLoginItemProtocol.self)
-        connection.resume()
         print("[KD] Resume connection with login item agent")
+        connection.activate()
+        print("[KD] Set remote object proxy for connection with login agent")
         let loginItemService: XPCLoginItemProtocol? = connection.remoteObjectProxyWithErrorHandler({ error in
             print("[KD] Connection with login item agent invalidated/interrupted:", error)
             return
@@ -66,8 +67,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         _serverConnection!.exportedObject = self
         print("[KD] Set remote object interface for connection with server")
         _serverConnection!.remoteObjectInterface = NSXPCInterface(with: XPCGuiProtocol.self)
-        _serverConnection!.resume()
-        print("[KD] Resume connection with app")
+        print("[KD] Resume connection with server")
+        _serverConnection!.activate()
+        print("[KD] Set remote object proxy for connection with server")
         _serverGuiService = _serverConnection!.remoteObjectProxyWithErrorHandler({ error in
             print("[KD] Connection with server invalidated/interrupted:", error)
             self._serverConnection = nil

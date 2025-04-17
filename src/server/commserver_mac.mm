@@ -82,7 +82,8 @@ class CommServerPrivate {
         CommServerPrivate();
         ~CommServerPrivate();
 
-        QList<CommChannel *> _pendingChannels;
+        QList<CommChannel *> _pendingExtChannels;
+        CommChannel *_guiChannel;
         Server *_server;
 };
 
@@ -103,9 +104,8 @@ class CommServerPrivate {
     NSString *answer = [[NSString alloc] initWithData:msg encoding:NSUTF8StringEncoding];
     NSLog(@"[KD] Query received %@", answer);
 
-    NSArray *answerArr = [answer componentsSeparatedByString:@";"];
-
     // Send ack
+    NSArray *answerArr = [answer componentsSeparatedByString:@";"];
     NSString *query = [NSString stringWithFormat:@"%@", answerArr[0]];
     NSLog(@"[KD] Send ack signal %@", query);
 
@@ -116,6 +116,12 @@ class CommServerPrivate {
     } @catch (NSException *e) {
         // Do nothing and wait for invalidationHandler
         NSLog(@"[KD] Error sending ack signal: %@", e.name);
+    }
+
+    if (_wrapper && _wrapper->_q_ptr) {
+        _wrapper->_inBuffer += QByteArray::fromRawNSData(msg);
+        _wrapper->_inBuffer += "\n";
+        emit _wrapper->_q_ptr->readyRead();
     }
 }
 
@@ -291,7 +297,7 @@ class CommServerPrivate {
 
     if (listener == _extListener) {
         CommChannel *channel = new CommChannel(server, channelPrivate);
-        _wrapper->_pendingChannels.append(channel);
+        _wrapper->_pendingExtChannels.append(channel);
 
         // Set exported interface
         NSLog(@"[KD] Set exported interface for connection with ext");
@@ -308,12 +314,14 @@ class CommServerPrivate {
           // The extension has exited or crashed
           NSLog(@"[KD] Connection with ext interrupted");
           channelPrivate->_remoteEnd.connection = nil;
+          emit channel->disconnected();
         };
 
         newConnection.invalidationHandler = ^{
           // Connection can not be formed or has terminated and may not be re-established
           NSLog(@"[KD] Connection with ext invalidated");
           channelPrivate->_remoteEnd.connection = nil;
+          emit channel->disconnected();
         };
 
         // Start processing incoming messages.
@@ -322,6 +330,8 @@ class CommServerPrivate {
 
         emit server->newExtConnection();
     } else if (listener == _guiListener) {
+        _wrapper->_guiChannel = new CommChannel(server, channelPrivate);
+
         // Set exported interface
         NSLog(@"[KD] Set exported interface for connection with gui");
         newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCGuiProtocol)];
@@ -337,12 +347,14 @@ class CommServerPrivate {
           // The extension has exited or crashed
           NSLog(@"[KD] Connection with gui interrupted");
           channelPrivate->_remoteEnd.connection = nil;
+          emit _wrapper->_guiChannel->disconnected();
         };
 
         newConnection.invalidationHandler = ^{
           // Connection can not be formed or has terminated and may not be re-established
           NSLog(@"[KD] Connection with gui invalidated");
           channelPrivate->_remoteEnd.connection = nil;
+          emit _wrapper->_guiChannel->disconnected();
         };
 
         // Start processing incoming messages.
@@ -468,5 +480,10 @@ bool CommServer::listen(const QString &name) {
 
 CommChannel *CommServer::nextPendingConnection() {
     Q_D(CommServer);
-    return d->_pendingChannels.takeFirst();
+    return d->_pendingExtChannels.takeFirst();
+}
+
+CommChannel *CommServer::guiConnection() {
+    Q_D(CommServer);
+    return d->_guiChannel;
 }

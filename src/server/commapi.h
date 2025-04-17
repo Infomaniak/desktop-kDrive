@@ -84,15 +84,18 @@ class CommApi : public QObject {
         void registerSync(int syncDbId);
 
         static bool syncForPath(const std::filesystem::path &path, KDC::Sync &sync);
+
     public slots:
         void executeCommandDirect(const QString &commandLine);
 
     private slots:
         void onNewExtConnection();
+        void onLostExtConnection();
+        void onExtListenerDestroyed(QObject *obj);
+        void onReadyRead();
         void onNewGuiConnection();
-        void onLostConnection();
-        void onListenerDestroyed(QObject *obj);
-        void onRead();
+        void onLostGuiConnection();
+        void onQueryReceived();
 
         static void copyUrlToClipboard(const QString &link);
         static void openPrivateLink(const QString &link);

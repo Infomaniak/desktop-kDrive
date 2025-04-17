@@ -28,7 +28,7 @@ set(server_SRCS
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
     ${server_srcs_path}/updater/updatechecker.h ${server_srcs_path}/updater/updatechecker.cpp
     ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
-    ${server_srcs_path}/commserver.h ${server_srcs_path}/commserver.cpp
+    ${server_srcs_path}/oldcommserver.h ${server_srcs_path}/oldcommserver.cpp
     ${server_srcs_path}/navigationpanehelper.h ${server_srcs_path}/navigationpanehelper.cpp
     ${server_srcs_path}/migration/migrationparams.h ${server_srcs_path}/migration/migrationparams.cpp
     ${server_srcs_path}/app_resources.rc

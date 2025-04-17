@@ -26,14 +26,14 @@ class ViewController: NSViewController {
     @IBAction func pauseClicked(_ sender: NSButton) {
         let msg = "\(syncIdField.intValue)"
         if let appDelegate = NSApplication.shared.delegate as? AppDelegate {
-            appDelegate.sendQuery(queryType: 1, msg: msg)
+            appDelegate.sendQuery(queryType: 17, msg: msg)
         }
     }
     
     @IBAction func resumeClicked(_ sender: NSButton) {
         let msg = "\(syncIdField.intValue)"
         if let appDelegate = NSApplication.shared.delegate as? AppDelegate {
-            appDelegate.sendQuery(queryType: 2, msg: msg)
+            appDelegate.sendQuery(queryType: 16, msg: msg)
         }
     }
 }

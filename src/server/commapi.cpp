@@ -27,6 +27,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
+#include "oldcommserver.h"
 
 #include <array>
 
@@ -194,9 +195,9 @@ void CommApi::onNewExtConnection() {
     if (!ioDevice) return;
 
     LOG_INFO(KDC::Log::instance()->getLogger(), "New ext connection - ioDevice=" << ioDevice);
-    connect(ioDevice, &QIODevice::readyRead, this, &CommApi::onRead);
-    connect(ioDevice, SIGNAL(disconnected()), this, SLOT(onLostConnection()));
-    connect(ioDevice, &QObject::destroyed, this, &CommApi::onListenerDestroyed);
+    connect(ioDevice, &QIODevice::readyRead, this, &CommApi::onReadyRead);
+    connect(ioDevice, SIGNAL(disconnected()), this, SLOT(onLostExtConnection()));
+    connect(ioDevice, &QObject::destroyed, this, &CommApi::onExtListenerDestroyed);
 
     _listeners.append(CommListener(ioDevice));
     CommListener &listener = _listeners.last();
@@ -217,12 +218,8 @@ void CommApi::onNewExtConnection() {
     }
 }
 
-void CommApi::onNewGuiConnection() {
-    LOG_INFO(KDC::Log::instance()->getLogger(), "New gui connection");
-}
-
-void CommApi::onLostConnection() {
-    LOG_INFO(KDC::Log::instance()->getLogger(), "Lost connection - sender=" << sender());
+void CommApi::onLostExtConnection() {
+    LOG_INFO(KDC::Log::instance()->getLogger(), "Lost ext connection - sender=" << sender());
     sender()->deleteLater();
 
     auto ioDevice = qobject_cast<QIODevice *>(sender());
@@ -230,12 +227,50 @@ void CommApi::onLostConnection() {
     _listeners.erase(std::remove_if(_listeners.begin(), _listeners.end(), ListenerHasSocketPred(ioDevice)), _listeners.end());
 }
 
-void CommApi::onListenerDestroyed(QObject *obj) {
+void CommApi::onExtListenerDestroyed(QObject *obj) {
     auto *ioDevice = static_cast<QIODevice *>(obj);
     _listeners.erase(std::remove_if(_listeners.begin(), _listeners.end(), ListenerHasSocketPred(ioDevice)), _listeners.end());
 }
 
-void CommApi::onRead() {
+void CommApi::onNewGuiConnection() {
+    QIODevice *ioDevice = _localServer.guiConnection();
+    if (!ioDevice) return;
+
+    LOG_INFO(KDC::Log::instance()->getLogger(), "New gui connection - ioDevice=" << ioDevice);
+    connect(ioDevice, &QIODevice::readyRead, this, &CommApi::onQueryReceived);
+    connect(ioDevice, SIGNAL(disconnected()), this, SLOT(onLostGuiConnection()));
+}
+
+void CommApi::onLostGuiConnection() {
+    LOG_INFO(KDC::Log::instance()->getLogger(), "Lost gui connection - sender=" << sender());
+    sender()->deleteLater();
+}
+
+void CommApi::onQueryReceived() {
+    LOG_INFO(KDC::Log::instance()->getLogger(), "onQueryReceived");
+    auto *ioDevice = qobject_cast<QIODevice *>(sender());
+    LOG_IF_FAIL(Log::instance()->getLogger(), ioDevice)
+
+    while (ioDevice->canReadLine()) {
+        QString query = ioDevice->readLine().trimmed();
+        LOG_INFO(KDC::Log::instance()->getLogger(), "Query received: " << query.toStdString());
+
+        QStringList queryArr = query.split(";");
+        const int id = queryArr[0].toInt();
+        const RequestNum num = static_cast<RequestNum>(queryArr[1].toInt());
+
+        if (num == RequestNum::SYNC_START || num == RequestNum::SYNC_STOP) {
+            const int syncDbId = queryArr[2].toInt();
+            QByteArray params;
+            QDataStream paramsStream(&params, QIODevice::WriteOnly);
+            paramsStream << syncDbId;
+
+            emit OldCommServer::instance().get()->requestReceived(id, num, params);
+        }
+    }
+}
+
+void CommApi::onReadyRead() {
     auto *ioDevice = qobject_cast<QIODevice *>(sender());
     LOG_IF_FAIL(Log::instance()->getLogger(), ioDevice)
 

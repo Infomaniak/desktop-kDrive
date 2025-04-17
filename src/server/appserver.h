@@ -19,7 +19,7 @@
 #pragma once
 
 #include "qtsingleapplication.h"
-#include "commserver.h"
+#include "oldcommserver.h"
 #include "navigationpanehelper.h"
 #include "commapi.h"
 #include "config.h"
