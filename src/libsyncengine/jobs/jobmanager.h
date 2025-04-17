@@ -54,7 +54,6 @@ class JobManager {
         static std::shared_ptr<JobManager> instance() noexcept;
 
         JobManager(JobManager const &) = delete;
-        ~JobManager();
         void operator=(JobManager const &) = delete;
 
         static void stop();
