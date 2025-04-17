@@ -33,6 +33,11 @@ if [ ! -d "infomaniak-build-tools/conan" ]; then
   exit 1
 fi
 
+if [ ! "$(command -v conan)" ]; then
+  echo "Conan is not installed. Please install it first."
+  exit 1
+fi
+
 CONAN_REMOTE_BASE_FOLDER="$PWD/infomaniak-build-tools/conan/"
 CONAN_RECIPES_FOLDER="$CONAN_REMOTE_BASE_FOLDER/recipes"
 
@@ -45,11 +50,10 @@ else
 fi
 
 # Build conan recipe for the platforms x86_64 & arm64
-echo "Creating package xxHash"
 MACOS_ARCH=""
 if [ "$PLATFORM" = "Darwin" ]; then
-#  echo "Building universal binary for macOS."
-  MACOS_ARCH="-s:a=arch=armv8|x86_64"
+  echo "Building universal binary for macOS."
+  MACOS_ARCH="-s:a=arch=armv8|x86_64" # Making universal binary. See https://docs.conan.io/2/reference/tools/cmake/cmaketoolchain.html#conan-tools-cmaketoolchain-universal-binaries
 fi
 
 BUILD_TYPE="Debug"
@@ -59,11 +63,16 @@ if [ "$BUILD_TYPE" = "Debug" ]; then
   OUTPUT_DIR="../CLion-build-debug/"
 else
   echo "Building in Release mode."
-  OUTPUT_DIR="./build-$PLATFORM/client" # TODO Fix $PLATFORM (Darwin => macOS)
+  if [ "$PLATFORM" = "Darwin" ]; then
+    OUTPUT_DIR="./build-macos/client"
+  else
+    OUTPUT_DIR="./build-linux/client"
+  fi
 fi
 
 
 # Create the conan package for xxHash
+echo "Creating package xxHash"
 conan create "$CONAN_RECIPES_FOLDER/xxhash/all/" --build=missing $MACOS_ARCH -s:a=build_type="$BUILD_TYPE" -r=$LOCAL_RECIPE_REMOTE_NAME
 
 # Install this packet in the build folder.
