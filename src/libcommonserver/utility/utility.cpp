@@ -775,10 +775,40 @@ bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
     return true;
 }
 
-bool Utility::checkIfDirEntryIsManaged(const std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,
-                                       IoError &ioError) {
-    return checkIfDirEntryIsManaged(*dirIt, isManaged, isLink, ioError);
+bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, IoError &ioError) {
+    isManaged = true;
+    ioError = IoError::Success;
+    if (!dirEntry.is_regular_file() && !dirEntry.is_directory()) {
+        ItemType itemType;
+        bool result = IoHelper::getItemType(dirEntry.path(), itemType);
+        ioError = itemType.ioError;
+        if (!result) {
+            LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
+            return false;
+        }
+
+        if (itemType.ioError == IoError::NoSuchFileOrDirectory || itemType.ioError == IoError::AccessDenied) {
+            LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
+            return true;
+        }
+        if (itemType.linkType == LinkType::None) {
+            LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirEntry.path())
+                                           << L" because it is not a directory, a regular file or a symlink");
+            isManaged = false;
+            return true;
+        }
+    }
+
+    if (dirEntry.path().native().length() > CommonUtility::maxPathLength()) {
+        LOGW_WARN(logger(),
+                  L"Ignore " << formatSyncPath(dirEntry.path()) << L" because size > " << CommonUtility::maxPathLength());
+        isManaged = false;
+        return true;
+    }
+
+    return true;
 }
+
 bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, const ItemType &itemType,
                                        IoError &ioError) {
     isManaged = true;
@@ -798,24 +828,6 @@ bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isM
     }
 
     return true;
-}
-
-bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, bool &isLink, IoError &ioError) {
-    ItemType itemType;
-    bool result = IoHelper::getItemType(dirEntry.path(), itemType);
-    ioError = itemType.ioError;
-    if (!result) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
-        return false;
-    }
-
-    if (itemType.ioError == IoError::NoSuchFileOrDirectory || itemType.ioError == IoError::AccessDenied) {
-        LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
-        return true;
-    }
-
-    isLink = itemType.linkType != LinkType::None;
-    return checkIfDirEntryIsManaged(dirEntry, isManaged, itemType, ioError);
 }
 
 bool Utility::getLinuxDesktopType(std::string &currentDesktop) {

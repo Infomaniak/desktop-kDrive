@@ -562,102 +562,91 @@ bool SyncPalWorker::resetVfsFilesStatus() {
             if (stopAsked()) {
                 return true;
             }
-#ifdef _WIN32
-            // skip_permission_denied doesn't work on Windows
             try {
-                bool dummy = dirIt->exists();
-                (void) (dummy);
+                if (dirIt->is_directory()) {
+                    continue;
+                }
+                const SyncPath absolutePath = dirIt->path();
+
+                // Check if the directory entry is managed
+                bool isManaged = true;
+                IoError ioError = IoError::Success;
+                if (!Utility::checkIfDirEntryIsManaged(*dirIt, isManaged, ioError)) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged : "
+                                                       << Utility::formatSyncPath(absolutePath).c_str());
+                    dirIt.disable_recursion_pending();
+                    ok = false;
+                    continue;
+                }
+
+                if (ioError == IoError::NoSuchFileOrDirectory) {
+                    LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry does not exist anymore : "
+                                                        << Utility::formatSyncPath(absolutePath).c_str());
+                    dirIt.disable_recursion_pending();
+                    continue;
+                }
+
+                if (ioError == IoError::AccessDenied) {
+                    LOGW_SYNCPAL_DEBUG(_logger,
+                                       L"Directory misses search permission : " << Utility::formatSyncPath(absolutePath).c_str());
+                    dirIt.disable_recursion_pending();
+                    continue;
+                }
+
+                if (!isManaged) {
+                    LOGW_SYNCPAL_DEBUG(_logger,
+                                       L"Directory entry is not managed : " << Utility::formatSyncPath(absolutePath).c_str());
+                    dirIt.disable_recursion_pending();
+                    continue;
+                }
+
+                VfsStatus vfsStatus;
+                if (ExitInfo exitInfo = _syncPal->vfs()->status(dirIt->path(), vfsStatus); !exitInfo) {
+                    LOGW_SYNCPAL_WARN(_logger,
+                                      L"Error in vfsStatus : " << Utility::formatSyncPath(dirIt->path()) << L": " << exitInfo);
+                    ok = false;
+                    continue;
+                }
+
+                if (!vfsStatus.isPlaceholder) continue;
+
+                PinState pinState = _syncPal->vfs()->pinState(dirIt->path());
+
+                if (vfsStatus.isSyncing) {
+                    // Force status to dehydrate
+                    if (ExitInfo exitInfo = _syncPal->vfs()->forceStatus(dirIt->path(), VfsStatus()); !exitInfo) {
+                        LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(dirIt->path())
+                                                                                 << L": " << exitInfo);
+                        ok = false;
+                        continue;
+                    }
+                    vfsStatus.isHydrated = false;
+                }
+
+                bool hydrationOrDehydrationInProgress = false;
+                const SyncPath relativePath =
+                        CommonUtility::relativePath(_syncPal->localPath(), dirIt->path()); // Get the relative path of the file
+                _syncPal->fileSyncing(ReplicaSide::Local, relativePath, hydrationOrDehydrationInProgress);
+                if (hydrationOrDehydrationInProgress) {
+                    _syncPal->vfs()->cancelHydrate(
+                            dirIt->path()); // Cancel any (de)hydration that could still be in progress on the OS side.
+                }
+
+                // Fix hydration state if needed.
+                if ((vfsStatus.isHydrated && pinState == PinState::OnlineOnly) ||
+                    (!vfsStatus.isHydrated && pinState == PinState::AlwaysLocal)) {
+                    if (!_syncPal->vfs()->fileStatusChanged(dirIt->path(), SyncFileStatus::Syncing)) {
+                        LOGW_SYNCPAL_WARN(_logger,
+                                          L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
+                        ok = false;
+                        continue;
+                    }
+                }
             } catch (std::filesystem::filesystem_error &) {
                 dirIt.disable_recursion_pending();
                 continue;
             }
-#endif
-
-            const SyncPath absolutePath = dirIt->path();
-
-            // Check if the directory entry is managed
-            bool isManaged = true;
-            bool isLink = false;
-            IoError ioError = IoError::Success;
-            if (!Utility::checkIfDirEntryIsManaged(dirIt, isManaged, isLink, ioError)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged : "
-                                                   << Utility::formatSyncPath(absolutePath).c_str());
-                dirIt.disable_recursion_pending();
-                ok = false;
-                continue;
-            }
-
-            if (ioError == IoError::NoSuchFileOrDirectory) {
-                LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Directory entry does not exist anymore : " << Utility::formatSyncPath(absolutePath).c_str());
-                dirIt.disable_recursion_pending();
-                continue;
-            }
-
-            if (ioError == IoError::AccessDenied) {
-                LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Directory misses search permission : " << Utility::formatSyncPath(absolutePath).c_str());
-                dirIt.disable_recursion_pending();
-                continue;
-            }
-
-            if (!isManaged) {
-                LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Directory entry is not managed : " << Utility::formatSyncPath(absolutePath).c_str());
-                dirIt.disable_recursion_pending();
-                continue;
-            }
-
-            if (dirIt->is_directory()) {
-                continue;
-            }
-
-            VfsStatus vfsStatus;
-            if (ExitInfo exitInfo = _syncPal->vfs()->status(dirIt->path(), vfsStatus); !exitInfo) {
-                LOGW_SYNCPAL_WARN(_logger,
-                                  L"Error in vfsStatus : " << Utility::formatSyncPath(dirIt->path()) << L": " << exitInfo);
-                ok = false;
-                continue;
-            }
-
-            if (!vfsStatus.isPlaceholder) continue;
-
-            PinState pinState = _syncPal->vfs()->pinState(dirIt->path());
-
-            if (vfsStatus.isSyncing) {
-                // Force status to dehydrate
-                if (ExitInfo exitInfo = _syncPal->vfs()->forceStatus(dirIt->path(), VfsStatus()); !exitInfo) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(dirIt->path()) << L": "
-                                                                             << exitInfo);
-                    ok = false;
-                    continue;
-                }
-                vfsStatus.isHydrated = false;
-            }
-
-            bool hydrationOrDehydrationInProgress = false;
-            const SyncPath relativePath =
-                    CommonUtility::relativePath(_syncPal->localPath(), dirIt->path()); // Get the relative path of the file
-            _syncPal->fileSyncing(ReplicaSide::Local, relativePath, hydrationOrDehydrationInProgress);
-            if (hydrationOrDehydrationInProgress) {
-                _syncPal->vfs()->cancelHydrate(
-                        dirIt->path()); // Cancel any (de)hydration that could still be in progress on the OS side.
-            }
-
-            // Fix hydration state if needed.
-            if ((vfsStatus.isHydrated && pinState == PinState::OnlineOnly) ||
-                (!vfsStatus.isHydrated && pinState == PinState::AlwaysLocal)) {
-                if (!_syncPal->vfs()->fileStatusChanged(dirIt->path(), SyncFileStatus::Syncing)) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
-                    ok = false;
-                    continue;
-                }
-            }
         }
-    } catch (std::filesystem::filesystem_error &e) {
-        LOG_SYNCPAL_WARN(_logger,
-                         "Error caught in SyncPalWorker::resetVfsFilesStatus: code=" << e.code() << " error=" << e.what());
-        ok = false;
     } catch (...) {
         LOG_SYNCPAL_WARN(_logger, "Error caught in SyncPalWorker::resetVfsFilesStatus");
         ok = false;
