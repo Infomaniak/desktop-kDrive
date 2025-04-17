@@ -20,7 +20,6 @@
 
 #include "jobs/abstractjob.h"
 #include "utility/types.h"
-#include "db/syncdb.h"
 #include "uploadsessionchunkjob.h"
 #include "uploadsessionfinishjob.h"
 #include "uploadsessionstartjob.h"
@@ -35,8 +34,8 @@ class UploadSessionChunkJob;
 
 class AbstractUploadSession : public AbstractJob {
     public:
-        AbstractUploadSession(const SyncPath &filepath, const SyncName &filename, uint64_t nbParalleleThread = 1);
-        inline virtual ~AbstractUploadSession() = default;
+        AbstractUploadSession(const SyncPath &filepath, const SyncName &filename, uint64_t nbParallelThread = 1);
+        virtual ~AbstractUploadSession() = default;
         void uploadChunkCallback(UniqueId jobId);
         void abort() override;
         UploadSessionType _uploadSessionType = UploadSessionType::Unknown;
@@ -45,21 +44,22 @@ class AbstractUploadSession : public AbstractJob {
         virtual std::shared_ptr<UploadSessionCancelJob> createCancelJob() = 0;
         virtual std::shared_ptr<UploadSessionStartJob> createStartJob() = 0;
         virtual std::shared_ptr<UploadSessionFinishJob> createFinishJob() = 0;
-        virtual std::shared_ptr<UploadSessionChunkJob> createChunkJob(const std::string &chunckContent, uint64_t chunkNb,
+        virtual std::shared_ptr<UploadSessionChunkJob> createChunkJob(const std::string &chunkContent, uint64_t chunkNb,
                                                                       std::streamsize actualChunkSize) = 0;
 
         virtual bool runJobInit() = 0;
-        virtual bool handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) = 0;
+        virtual bool handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob,
+                                          const std::string &uploadToken) = 0;
         virtual bool handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) = 0;
         virtual bool handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob);
 
-        inline SyncPath getFilePath() const { return _filePath; }
-        inline log4cplus::Logger &getLogger() { return _logger; }
-        inline uint64_t getTotalChunks() const { return _totalChunks; }
-        inline std::string getTotalChunkHash() const { return _totalChunkHash; }
-        inline uint64_t getFileSize() const { return _filesize; }
-        inline SyncName getFileName() const { return _filename; }
-        inline std::string getSessionToken() const { return _sessionToken; }
+        SyncPath getFilePath() const { return _filePath; }
+        log4cplus::Logger &getLogger() { return _logger; }
+        uint64_t getTotalChunks() const { return _totalChunks; }
+        std::string getTotalChunkHash() const { return _totalChunkHash; }
+        uint64_t getFileSize() const { return _filesize; }
+        SyncName getFileName() const { return _filename; }
+        std::string getSessionToken() const { return _sessionToken; }
 
     private:
         enum UploadSessionState {
@@ -85,8 +85,8 @@ class AbstractUploadSession : public AbstractJob {
         SyncPath _filePath;
         SyncName _filename;
         uint64_t _filesize = 0;
-        uint64_t _nbParalleleThread = 1;
-        bool _isAsynchrounous = false;
+        uint64_t _nbParallelThread = 1;
+        bool _isAsynchronous = false;
         bool _sessionStarted = false;
         bool _sessionCancelled = false;
         bool _jobExecutionError = false;

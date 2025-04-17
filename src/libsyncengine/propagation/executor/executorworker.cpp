@@ -27,13 +27,13 @@
 #include "jobs/network/API_v2/downloadjob.h"
 #include "jobs/network/API_v2/movejob.h"
 #include "jobs/network/API_v2/renamejob.h"
-#include "jobs/network/API_v2/uploadjob.h"
 #include "jobs/network/API_v2/getfilelistjob.h"
-#include "jobs/network/API_v2/upload_session/driveuploadsession.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "update_detection/update_detector/updatetree.h"
 #include "jobs/jobmanager.h"
+#include "jobs/network/API_v2/upload/upload_session/driveuploadsession.h"
+#include "../../jobs/network/API_v2/upload/uploadjob.h"
 #include "libcommon/log/sentry/ptraces.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
@@ -41,7 +41,6 @@
 #include "requests/parameterscache.h"
 #include "requests/syncnodecache.h"
 #include "utility/jsonparserutility.h"
-#include "utility/logiffail.h"
 
 #include <iostream>
 #include <log4cplus/loggingmacros.h>

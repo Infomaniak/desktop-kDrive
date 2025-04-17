@@ -21,11 +21,10 @@
 #include "config.h"
 #include "db/parmsdb.h"
 #include "jobs/jobmanager.h"
-#include "jobs/network/API_v2/createdirjob.h"
 #include "jobs/network/API_v2/deletejob.h"
 #include "jobs/network/API_v2/getfilelistjob.h"
-#include "jobs/network/API_v2/uploadjob.h"
-#include "jobs/network/API_v2/upload_session/driveuploadsession.h"
+#include "jobs/network/API_v2/upload/upload_session/driveuploadsession.h"
+#include "../../../src/libsyncengine/jobs/network/API_v2/upload/uploadjob.h"
 #include "network/proxy.h"
 #include "requests/parameterscache.h"
 #include "libcommon/utility/utility.h"
@@ -42,11 +41,10 @@ using namespace CppUnit;
 
 namespace KDC {
 
-static const SyncPath localTestDirPath(std::wstring(L"" TEST_DIR) + L"/test_ci");
 static const SyncPath localTestDirPath_manyFiles(std::wstring(L"" TEST_DIR) + L"/test_ci/many_files_dir");
 static const SyncPath localTestDirPath_pictures(std::wstring(L"" TEST_DIR) + L"/test_ci/test_pictures");
 static const int driveDbId = 1;
-void KDC::TestJobManager::setUp() {
+void TestJobManager::setUp() {
     TestBase::start();
     const testhelpers::TestVariables testVariables;
 

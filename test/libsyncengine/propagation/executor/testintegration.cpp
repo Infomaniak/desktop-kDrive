@@ -40,7 +40,7 @@
 #include "libsyncengine/jobs/network/API_v2/getfilelistjob.h"
 #include "libsyncengine/jobs/network/API_v2/movejob.h"
 #include "libsyncengine/jobs/network/API_v2/renamejob.h"
-#include "libsyncengine/jobs/network/API_v2/uploadjob.h"
+#include "../../../../src/libsyncengine/jobs/network/API_v2/upload/uploadjob.h"
 #include "libsyncengine/update_detection/file_system_observer/filesystemobserverworker.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
@@ -2185,9 +2185,7 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     MockIoHelperFileStat mockIoHelper;
     // Create a file with a custom inode on the local side
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile", 2);
-    {
-        const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string());
-    }
+    { const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string()); }
     waitForSyncToFinish();
     CPPUNIT_ASSERT_EQUAL(NodeId("2"), localSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile"));
     const NodeId remoteFileId = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
@@ -2223,9 +2221,7 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     }
     IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseDir", ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    {
-        const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string());
-    }
+    { const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string()); }
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     _syncPal->unpause();
@@ -2258,9 +2254,7 @@ void TestIntegration::testNodeIdReuseFile2File() {
 
     MockIoHelperFileStat mockIoHelper;
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile", 2);
-    {
-        const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string());
-    }
+    { const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string()); }
     waitForSyncToFinish();
     CPPUNIT_ASSERT_EQUAL(NodeId("2"), localSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile"));
     const NodeId remoteFileId = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
@@ -2288,9 +2282,7 @@ void TestIntegration::testNodeIdReuseFile2File() {
     IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseFile", ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile2", 2);
-    {
-        std::ofstream((absoluteLocalWorkingDir / "testNodeIdReuseFile2").string()) << "New content";
-    }
+    { std::ofstream((absoluteLocalWorkingDir / "testNodeIdReuseFile2").string()) << "New content"; }
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     _syncPal->unpause();
