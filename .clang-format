@@ -5,7 +5,7 @@ AlignOperands: true
 AlignTrailingComments: false
 AllowShortEnumsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Inline
-BraceWrapping: 
+BraceWrapping:
   AfterCaseLabel: false
   AfterClass: false
   AfterControlStatement: false
@@ -30,7 +30,7 @@ ConstructorInitializerAllOnOneLineOrOnePerLine: false
 ContinuationIndentWidth: 8
 EmptyLineBeforeAccessModifier: Always
 IncludeBlocks: Regroup
-IncludeCategories: 
+IncludeCategories:
   - Regex: '^<.*'
     Priority: 1
   - Regex: '^".*'
@@ -38,7 +38,8 @@ IncludeCategories:
   - Regex: '.*'
     Priority: 3
 IncludeIsMainRegex: '([-_](test|unittest))?$'
-IndentAccessModifiers: True
+IndentAccessModifiers: true
+IndentCaseLabels: true
 IndentWidth: 4
 InsertNewlineAtEOF: true
 MacroBlockBegin: ''
@@ -60,7 +61,7 @@ TabWidth: 4
 
 ---
 Language: Cpp
-ForEachMacros: 
+ForEachMacros:
   - foreach
   - Q_FOREACH
   - BOOST_FOREACH
