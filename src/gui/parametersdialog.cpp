@@ -621,6 +621,12 @@ QString ParametersDialog::getInconsistencyText(const InconsistencyType inconsist
                 tr("The item name contains an unsupported character.<br>"
                    "It has been temporarily blacklisted.");
     }
+    if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::ForbiddenCharEndWithSpace)) {
+        text += (text.isEmpty() ? "" : "\n");
+        text +=
+                tr("The item name ends with a space, which is forbidden on your operating system.<br>"
+                   "It has been temporarily blacklisted.");
+    }
     if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::ReservedName)) {
         text += (text.isEmpty() ? "" : "\n");
         text +=
@@ -1201,7 +1207,8 @@ void ParametersDialog::refreshErrorList(int driveDbId) {
         if (isConflictsWithLocalRename(errorInfo.conflictType())) {
             errorTabWidget->showResolveConflicts(true);
         }
-        if (errorInfo.inconsistencyType() == InconsistencyType::ForbiddenChar) {
+        if (errorInfo.inconsistencyType() == InconsistencyType::ForbiddenChar ||
+            errorInfo.inconsistencyType() == InconsistencyType::ForbiddenCharEndWithSpace) {
             errorTabWidget->showResolveUnsupportedCharacters(true);
         }
 
