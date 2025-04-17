@@ -16,6 +16,7 @@
 
 #include "uploadjob.h"
 
+#include "uploadjobreplyhandler.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/jsonparserutility.h"
@@ -87,20 +88,10 @@ bool UploadJob::handleResponse(std::istream &is) {
         return false;
     }
 
-    if (!jsonRes()) return false;
-    const Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
-    if (!dataObj) return false;
-    if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeIdOut)) return false;
-    if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtimeOut)) return false;
-
-    if (_modtimeIn != _modtimeOut) {
-        // The backend refused the modification time. To avoid further EDIT operations, we apply the backend's time on local file.
-        bool exists = false;
-        (void) Utility::setFileDates(_absoluteFilePath, 0, _modtimeOut, false, exists);
-        LOG_INFO(_logger, "Modification time refused "
-                                  << _modtimeIn << " by the backend. The modification time has been updated to " << _modtimeOut
-                                  << " on local file.");
-    }
+    UploadJobReplyHandler replyHandler(_absoluteFilePath, _modtimeIn);
+    if (!replyHandler.extractData(jsonRes())) return false;
+    _nodeIdOut = replyHandler.nodeId();
+    _modtimeOut = replyHandler.modtime();
 
     return true;
 }

@@ -53,7 +53,8 @@ std::shared_ptr<UploadSessionCancelJob> LogUploadSession::createCancelJob() {
     return std::make_shared<UploadSessionCancelJob>(UploadSessionType::Log, getSessionToken());
 }
 
-bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob, std::string uploadToken) {
+bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob,
+                                            const std::string &uploadToken) {
     (void) startJob;
 
     AppStateValue appStateValue = "";
