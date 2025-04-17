@@ -99,3 +99,4 @@ class XxHashConan(ConanFile):
         self.cpp_info.set_property("pkg_config_name", "libxxhash")
         self.cpp_info.components["libxxhash"].libs = ["xxhash"]
         self.cpp_info.components["libxxhash"].set_property("cmake_target_name", "xxHash::xxhash")
+        self.cpp_info.components["libxxhash"].includedirs.append(os.path.join(self.package_folder, "include"))
