@@ -144,11 +144,11 @@ target_link_libraries(${libcommonserver_NAME}
     ${SQLITE3_LIBRARIES}
     Poco::Foundation Poco::Net Poco::JSON Poco::Util
     OpenSSL::SSL OpenSSL::Crypto
+    xxHash::xxhash
     libzip::zip)
 
 if (WIN32)
     target_link_libraries(${libcommonserver_NAME}
-        xxHash::xxhash
         Secur32)
 elseif(APPLE)
     # utility_mac.mm
@@ -157,13 +157,11 @@ elseif(APPLE)
     find_library(APPKIT_LIBRARY NAMES AppKit)
 
     target_link_libraries(${libcommonserver_NAME}
-        xxHash::xxhash
         ${FOUNDATION_LIBRARY}
         ${CORESERVICES_LIBRARY}
         ${APPKIT_LIBRARY}
         utf8proc)
 else()
     target_link_libraries(${libcommonserver_NAME}
-        "/usr/local/lib/libxxhash.so"
         utf8proc)
 endif()
