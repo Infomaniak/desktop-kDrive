@@ -22,7 +22,8 @@ namespace KDC {
 
 UniqueId SyncOperation::_nextId = 1;
 
-SyncOperation::SyncOperation() : _id(_nextId++) {}
+SyncOperation::SyncOperation() :
+    _id(_nextId++) {}
 
 SyncName SyncOperation::nodeName(const ReplicaSide side) const {
     const auto node = affectedNode()->side() == side ? affectedNode() : correspondingNode();
