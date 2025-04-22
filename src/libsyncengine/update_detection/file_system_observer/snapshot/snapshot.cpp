@@ -31,7 +31,9 @@ namespace KDC {
 
 Snapshot::Snapshot(ReplicaSide side, const DbNode &dbNode) :
     _side(side), _rootFolderId(side == ReplicaSide::Local ? dbNode.nodeIdLocal().value() : dbNode.nodeIdRemote().value()) {
-    (void) _items.try_emplace(_rootFolderId, std::make_shared<SnapshotItem>(_rootFolderId));
+    _revisionHandlder = std::make_shared<SnapshotRevisionHandler>();
+    _items.try_emplace(_rootFolderId, std::make_shared<SnapshotItem>(_rootFolderId))
+            .first->second->setSnapshotRevisionHandler(_revisionHandlder);
 }
 
 Snapshot::~Snapshot() {
@@ -45,6 +47,8 @@ Snapshot &Snapshot::operator=(const Snapshot &other) {
         assert(_side == other._side);
         assert(_rootFolderId == other._rootFolderId);
         _items.clear();
+        *_revisionHandlder = *other._revisionHandlder;
+
         for (const auto &item: other._items) {
             _items.try_emplace(item.first, std::make_shared<SnapshotItem>(*item.second));
         }
@@ -73,7 +77,8 @@ void Snapshot::init() {
     startUpdate();
 
     _items.clear();
-    (void) _items.try_emplace(_rootFolderId, std::make_shared<SnapshotItem>(_rootFolderId));
+    (void) _items.try_emplace(_rootFolderId, std::make_shared<SnapshotItem>(_rootFolderId))
+            .first->second->setSnapshotRevisionHandler(_revisionHandlder);
 
     _isValid = false;
 }
@@ -124,6 +129,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
         // Item does not exist yet, create it
         parentChanged = true;
         item = std::make_shared<SnapshotItem>(newItem.id());
+        item->setSnapshotRevisionHandler(_revisionHandlder);
         (void) _items.try_emplace(newItem.id(), item);
     }
 
@@ -137,6 +143,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
             LOG_DEBUG(Log::instance()->getLogger(),
                       "Parent " << newItem.parentId().c_str() << " does not exist yet, creating it");
             newParent = std::make_shared<SnapshotItem>(newItem.parentId());
+            newParent->setSnapshotRevisionHandler(_revisionHandlder);
             (void) _items.try_emplace(newItem.parentId(), newParent);
             newParent->addChild(item);
         } else {
@@ -423,6 +430,14 @@ bool Snapshot::isLink(const NodeId &itemId) const {
     return false;
 }
 
+SnapshotRevision Snapshot::lastChangeRevision(const NodeId &itemId) const {
+    const std::scoped_lock lock(_mutex);
+    if (const auto item = findItem(itemId); item) {
+        return item->lastChangeRevision();
+    }
+    return 0;
+}
+
 bool Snapshot::getChildren(const NodeId &itemId, std::unordered_set<std::shared_ptr<SnapshotItem>> &children) const {
     const std::scoped_lock lock(_mutex);
     if (const auto item = findItem(itemId); item) {
@@ -521,6 +536,10 @@ bool Snapshot::isValid() const {
 void Snapshot::setValid(bool newIsValid) {
     const std::scoped_lock lock(_mutex);
     _isValid = newIsValid;
+}
+
+SnapshotRevision Snapshot::revision() const {
+    return _revisionHandlder->revision();
 }
 
 bool Snapshot::checkIntegrityRecursively() const {
