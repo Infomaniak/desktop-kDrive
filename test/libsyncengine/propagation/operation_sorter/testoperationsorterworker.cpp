@@ -385,15 +385,12 @@ void TestOperationSorterWorker::testFixEditBeforeMove() {
 // move before move (parent-child flip), e.g. user moves directory "A/B" to "D", then moves directory "A" to "D/A" (parent-child
 // relationships are now flipped).
 void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFlip() {
-    const auto nodeA = _testSituationGenerator.getNode(ReplicaSide::Local, "a");
-    const auto nodeAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aa");
-
     // Move A/AA to D
-    (void) _testSituationGenerator.moveNode(ReplicaSide::Local, *nodeAA->id(), {}, Str("D"));
+    const auto nodeAA = _testSituationGenerator.moveNode(ReplicaSide::Local, "aa", {}, Str("D"));
     const auto moveOp1 = generateSyncOperation(OperationType::Move, nodeAA);
 
     // Move A to D
-    (void) _testSituationGenerator.moveNode(ReplicaSide::Local, *nodeA->id(), *nodeAA->id());
+    const auto nodeA = _testSituationGenerator.moveNode(ReplicaSide::Local, "a", *nodeAA->id());
     const auto moveOp2 = generateSyncOperation(OperationType::Move, nodeA);
 
     (void) _syncPal->_syncOps->pushOp(moveOp2);
@@ -404,6 +401,50 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFlip() {
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
     CPPUNIT_ASSERT_EQUAL(moveOp1->id(), _syncPal->_syncOps->opSortedList().front());
     CPPUNIT_ASSERT_EQUAL(moveOp2->id(), _syncPal->_syncOps->opSortedList().back());
+}
+
+// move before move (parent-child flip), but it is not the direct parent that is moved
+void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFlip2() {
+    // Move A/AA/AAB to AAB
+    const auto nodeAAB = _testSituationGenerator.moveNode(ReplicaSide::Local, "aab", {});
+    const auto moveOp1 = generateSyncOperation(OperationType::Move, nodeAAB);
+
+    // Move A to AAB/A
+    const auto nodeA = _testSituationGenerator.moveNode(ReplicaSide::Local, "a", *nodeAAB->id());
+    const auto moveOp2 = generateSyncOperation(OperationType::Move, nodeA);
+
+    (void) _syncPal->_syncOps->pushOp(moveOp2);
+    (void) _syncPal->_syncOps->pushOp(moveOp1);
+
+    _syncPal->_operationsSorterWorker->fixMoveBeforeMoveHierarchyFlip();
+
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
+    CPPUNIT_ASSERT_EQUAL(moveOp1->id(), _syncPal->_syncOps->opSortedList().front());
+    CPPUNIT_ASSERT_EQUAL(moveOp2->id(), _syncPal->_syncOps->opSortedList().back());
+}
+
+void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFlip3() {
+    // Move A/AA/AAB to AAB
+    const auto nodeAAB = _testSituationGenerator.moveNode(ReplicaSide::Local, "aab", {});
+    const auto moveOp1 = generateSyncOperation(OperationType::Move, nodeAAB);
+
+    // Move A/AA to AAB/AA
+    const auto nodeAA = _testSituationGenerator.moveNode(ReplicaSide::Local, "aa", *nodeAAB->id());
+    const auto moveOp2 = generateSyncOperation(OperationType::Move, nodeAA);
+
+    // Move A to AA/A
+    const auto nodeA = _testSituationGenerator.moveNode(ReplicaSide::Local, "a", *nodeAA->id());
+    const auto moveOp3 = generateSyncOperation(OperationType::Move, nodeA);
+
+    (void) _syncPal->_syncOps->pushOp(moveOp3);
+    (void) _syncPal->_syncOps->pushOp(moveOp2);
+    (void) _syncPal->_syncOps->pushOp(moveOp1);
+
+    _syncPal->_operationsSorterWorker->fixMoveBeforeMoveHierarchyFlip();
+
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
+    CPPUNIT_ASSERT_EQUAL(moveOp1->id(), _syncPal->_syncOps->opSortedList().front());
+    CPPUNIT_ASSERT_EQUAL(moveOp3->id(), _syncPal->_syncOps->opSortedList().back());
 }
 
 void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {
@@ -456,7 +497,7 @@ void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {
     _testSituationGenerator.renameNode(ReplicaSide::Remote, rNodeC->id().value(), Str("C*"));
     const auto rMoveOpC = generateSyncOperation(OperationType::Move, rNodeC);
 
-    // Move A/AA/AAA to A/AA/AAA*
+    // Rename A/AA/AAA to A/AA/AAA*
     _testSituationGenerator.renameNode(ReplicaSide::Remote, rNodeAAA->id().value(), Str("AAA*"));
     const auto rMoveOpAAA = generateSyncOperation(OperationType::Move, rNodeAAA);
 
