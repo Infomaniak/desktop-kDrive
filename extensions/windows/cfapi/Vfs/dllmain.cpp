@@ -155,8 +155,8 @@ DLL_EXP int __cdecl vfsSetPlaceHolderStatus(const wchar_t *path, bool syncOngoin
 }
 
 DLL_EXP int __cdecl vfsCreatePlaceHolder(const wchar_t *fileId, const wchar_t *relativePath, const wchar_t *destPath,
-                                         const WIN32_FIND_DATA *findData) {
-    if (!Placeholders::create(fileId, relativePath, destPath, findData)) {
+                                         const WIN32_FIND_DATA *findData, bool canDehydrate) {
+    if (!Placeholders::create(fileId, relativePath, destPath, findData, canDehydrate)) {
         TRACE_ERROR(L"Error in Placeholders::create : %ls, %ls", relativePath, destPath);
         return E_ABORT;
     }

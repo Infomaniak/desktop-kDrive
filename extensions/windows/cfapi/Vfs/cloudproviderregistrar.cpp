@@ -19,7 +19,7 @@
 #include "cloudproviderregistrar.h"
 #include "..\Common\utilities.h"
 
-#include <winrt\windows.storage.provider.h>
+#include <winrt\Windows.Storage.Provider.h>
 #include <winrt\windows.security.cryptography.h>
 
 namespace winrt {
@@ -50,7 +50,7 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
         // Find if the provider is already registered
         bool found(false);
         auto infoVector = winrt::StorageProviderSyncRootManager::GetCurrentSyncRoots();
-        for (uint32_t i = 0; i < infoVector.Size(); i++) {
+        for (uint32_t i = 0; i < uint32_t(infoVector.Size()); i++) {
             if (syncRootID.compare(infoVector.GetAt(i).Id().c_str()) == 0) {
                 found = true;
                 break;
@@ -116,7 +116,7 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
             // Silent WINRT_ASSERT(!is_sta())
             int reportMode = _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
 #endif
-            auto folder = winrt::StorageFolder::GetFolderFromPathAsync(providerInfo->folderPath()).get();
+            winrt::IStorageFolder folder = winrt::StorageFolder::GetFolderFromPathAsync(providerInfo->folderPath()).get();
 #ifndef NDEBUG
             // Restore old report mode
             _CrtSetReportMode(_CRT_ASSERT, reportMode);

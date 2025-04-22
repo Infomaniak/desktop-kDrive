@@ -30,7 +30,7 @@ using namespace Windows::Storage::Provider;
 class Placeholders {
     public:
         static bool create(const PCWSTR fileId, const PCWSTR relativePath, const PCWSTR destPath,
-                           const WIN32_FIND_DATA *findData);
+                           const WIN32_FIND_DATA *findData, bool canDehydrate);
 
         static bool convert(const PCWSTR fileId, const PCWSTR filePath);
 

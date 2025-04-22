@@ -2,6 +2,7 @@ find_package(Qt6)
 
 set(libcommonserver_vfs_win_SRCS
     vfs_win.h vfs_win.cpp
+    vfs_win_off.h vfs_win_off.cpp
     ../../../common/filepermissionholder.h ../../../common/filepermissionholder.cpp
     ../../../common/filesystembase.h ../../../common/filesystembase.cpp
 )

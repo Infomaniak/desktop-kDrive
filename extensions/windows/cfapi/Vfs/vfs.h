@@ -53,7 +53,7 @@ DLL_EXP int __cdecl vfsDehydratePlaceHolder(const wchar_t *path);
 DLL_EXP int __cdecl vfsHydratePlaceHolder(const wchar_t *driveId, const wchar_t *folderId, const wchar_t *path);
 
 DLL_EXP int __cdecl vfsCreatePlaceHolder(const wchar_t *fileId, const wchar_t *relativePath, const wchar_t *destPath,
-                                         const WIN32_FIND_DATA *findData);
+                                         const WIN32_FIND_DATA *findData, bool canDehydrate);
 
 DLL_EXP int __cdecl vfsConvertToPlaceHolder(const wchar_t *fileId, const wchar_t *filePath);
 

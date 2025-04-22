@@ -27,7 +27,7 @@ using namespace Windows::Storage;
 }
 
 bool Placeholders::create(const PCWSTR fileId, const PCWSTR relativePath, const PCWSTR destPath,
-                          const WIN32_FIND_DATA *findData) {
+                          const WIN32_FIND_DATA *findData, bool canDehydrate) {
     std::filesystem::path fullPath = std::filesystem::path(destPath) / std::filesystem::path(relativePath);
 
     std::wstring fileName(fullPath.filename().c_str());
@@ -48,6 +48,7 @@ bool Placeholders::create(const PCWSTR fileId, const PCWSTR relativePath, const 
         cloudEntry.Flags |= CF_PLACEHOLDER_CREATE_FLAG_DISABLE_ON_DEMAND_POPULATION;
         cloudEntry.FsMetadata.FileSize.QuadPart = 0;
     } else {
+        if (!canDehydrate) cloudEntry.Flags |= CF_PLACEHOLDER_CREATE_FLAG_ALWAYS_FULL; 
         cloudEntry.FsMetadata.FileSize.QuadPart = ((ULONGLONG) findData->nFileSizeHigh << 32) + findData->nFileSizeLow;
     }
 
