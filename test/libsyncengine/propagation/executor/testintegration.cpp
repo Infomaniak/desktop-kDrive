@@ -2172,7 +2172,7 @@ void TestIntegration::testMoveMoveCycleConflict() {
 }
 
 void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
-    //if (!testhelpers::isExtendedTest()) return;
+    if (!testhelpers::isExtendedTest()) return;
     SyncNodeCache::instance()->update(_driveDbId, SyncNodeType::BlackList,
                                       {test_commonDocumentsNodeId}); // Exclude common documents folder
     const RemoteTemporaryDirectory remoteTempDir(_driveDbId, "1", "testNodeIdReuseFile2DirAndDir2File");
@@ -2246,7 +2246,7 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
 }
 
 void TestIntegration::testNodeIdReuseFile2File() {
-    //if (!testhelpers::isExtendedTest()) return;
+    if (!testhelpers::isExtendedTest()) return;
     SyncNodeCache::instance()->update(_driveDbId, SyncNodeType::BlackList,
                                       {test_commonDocumentsNodeId}); // Exclude common documents folder
     const RemoteTemporaryDirectory remoteTempDir(_driveDbId, "1", "testNodeIdReuseFile2File");
@@ -2327,25 +2327,30 @@ void TestIntegration::testNodeIdReuseFile2File() {
 }
 
 void TestIntegration::waitForSyncToFinish() {
-    using namespace std::chrono;
-    const auto waitForSyncToFinishStart = steady_clock::now();
-    const auto timeOutDuration = minutes(2);
-
-    // Wait for end of sync (A sync is considered ended when it stay in Idle for more than 3s
-    bool ended = false;
-    while (!ended) {
-        CPPUNIT_ASSERT(duration_cast<seconds>(steady_clock::now() - waitForSyncToFinishStart) < timeOutDuration);
-
-        if (_syncPal->isIdle() && !_syncPal->_localFSObserverWorker->updating() &&
-            !_syncPal->_remoteFSObserverWorker->updating()) {
-            const auto idleStart = steady_clock::now();
-            while (_syncPal->isIdle() && duration_cast<seconds>(steady_clock::now() - idleStart) < seconds(3)) {
-                CPPUNIT_ASSERT(duration_cast<seconds>(steady_clock::now() - waitForSyncToFinishStart) < timeOutDuration);
-                Utility::msleep(5);
-            }
-            ended = duration_cast<seconds>(steady_clock::now() - idleStart) >= seconds(3);
+    Utility::msleep(2000);
+    int timeOutCounter = 0;
+    // Wait for end of sync
+    while (!_syncPal->isIdle()) {
+        CPPUNIT_ASSERT_LESS(60, timeOutCounter++);
+        Utility::msleep(2000);
+        while (!_syncPal->isIdle()) {
+            CPPUNIT_ASSERT_LESS(60, timeOutCounter++);
+            Utility::msleep(2000);
         }
-        Utility::msleep(100);
+    }
+
+    Utility::msleep(1000);
+
+    // Wait for the snapshot to be updated.
+    while (_syncPal->_localFSObserverWorker->updating()) {
+        CPPUNIT_ASSERT_LESS(60, timeOutCounter++);
+        Utility::msleep(1000);
+    }
+
+    while (_syncPal->_remoteFSObserverWorker->updating()) {
+        CPPUNIT_ASSERT_LESS(60, timeOutCounter++);
+        Utility::msleep(1000);
     }
 }
+
 } // namespace KDC
