@@ -19,6 +19,7 @@
 #import "AppDelegate.h"
 #import "NSXPCConnection+LoginItem.h"
 #import "../Extension/xpcExtensionProtocol.h"
+#import "xpcGuiProtocol.h"
 
 #import <Foundation/Foundation.h>
 
@@ -28,9 +29,11 @@
 {
     self = [super init];
     
-    _listener = nil;
+    _extListener = nil;
+    _guiListener = nil;
     _loginItemAgentConnection = nil;
-    _extensionConnection = nil;
+    _extConnection = nil;
+    _guiConnection = nil;
 
     return self;
 }
@@ -41,8 +44,11 @@
 
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
     NSLog(@"[KD] App will terminate");
-    [_listener invalidate];
+    [_extListener invalidate];
+    [_guiListener invalidate];
     [_loginItemAgentConnection invalidate];
+    [_extConnection invalidate];
+    [_guiConnection invalidate];
 }
 
 - (void)connectToLoginAgent
@@ -101,45 +107,82 @@
     NSLog(@"[KD] Resume connection with login item agent");
     [_loginItemAgentConnection resume];
 
-    // Create anonymous listener
-    NSLog(@"[KD] Create anonymous listener");
-    _listener = [NSXPCListener anonymousListener];
-    [_listener setDelegate:self];
-    [_listener resume];
+    // Create anonymous ext listener
+    NSLog(@"[KD] Create anonymous ext listener");
+    _extListener = [NSXPCListener anonymousListener];
+    [_extListener setDelegate:self];
+    [_extListener resume];
     
-    // Send app endpoint to login item agent
-    NSLog(@"[KD] Send listener endpoint to login item agent");
-    [[_loginItemAgentConnection remoteObjectProxy] setEndpoint:[_listener endpoint]];
+    // Create anonymous gui listener
+    NSLog(@"[KD] Create anonymous gui listener");
+    _guiListener = [NSXPCListener anonymousListener];
+    [_guiListener setDelegate:self];
+    [_guiListener resume];
+    
+    // Send endpoints to login item agent
+    NSLog(@"[KD] Send server endpoint to login item agent");
+    [[_loginItemAgentConnection remoteObjectProxy] setServerExtEndpoint:[_extListener endpoint]];
+    NSLog(@"[KD] Send gui endpoint to login item agent");
+    [[_loginItemAgentConnection remoteObjectProxy] setServerGuiEndpoint:[_guiListener endpoint]];
 }
 
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection
 {
-    // Set exported interface
-    NSLog(@"[KD] Set exported interface for connection with ext");
-    newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionRemoteProtocol)];
-    newConnection.exportedObject = self;
-    
-    // Set remote object interface
-    NSLog(@"[KD] Set remote object interface for connection with ext");
-    newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionProtocol)];
-    
-    // Set connection handlers
-    NSLog(@"[KD] Set connection handlers for connection with ext");
-    newConnection.interruptionHandler = ^{
-        // The extension has exited or crashed
-        NSLog(@"[KD] Connection with ext interrupted");
-    };
+    if (listener == _extListener) {
+        // Set exported interface
+        NSLog(@"[KD] Set exported interface for connection with ext");
+        newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionRemoteProtocol)];
+        newConnection.exportedObject = self;
+        
+        // Set remote object interface
+        NSLog(@"[KD] Set remote object interface for connection with ext");
+        newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionProtocol)];
+        
+        // Set connection handlers
+        NSLog(@"[KD] Set connection handlers for connection with ext");
+        newConnection.interruptionHandler = ^{
+            // The extension has exited or crashed
+            NSLog(@"[KD] Connection with ext interrupted");
+        };
 
-    newConnection.invalidationHandler = ^{
-        // Connection can not be formed or has terminated and may not be re-established
-        NSLog(@"[KD] Connection with ext invalidated");
-    };
-    
-    // Start processing incoming messages.
-    NSLog(@"[KD] Resume connection with ext");
-    [newConnection resume];
-    
-    _extensionConnection = newConnection;
+        newConnection.invalidationHandler = ^{
+            // Connection can not be formed or has terminated and may not be re-established
+            NSLog(@"[KD] Connection with ext invalidated");
+        };
+        
+        // Start processing incoming messages.
+        NSLog(@"[KD] Resume connection with ext");
+        [newConnection resume];
+        
+        _extConnection = newConnection;
+    } else if (listener == _guiListener) {
+        // Set exported interface
+        NSLog(@"[KD] Set exported interface for connection with gui");
+        newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCGuiProtocol)];
+        newConnection.exportedObject = self;
+        
+        // Set remote object interface
+        NSLog(@"[KD] Set remote object interface for connection with gui");
+        newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCGuiRemoteProtocol)];
+        
+        // Set connection handlers
+        NSLog(@"[KD] Set connection handlers for connection with gui");
+        newConnection.interruptionHandler = ^{
+            // The extension has exited or crashed
+            NSLog(@"[KD] Connection with gui interrupted");
+        };
+
+        newConnection.invalidationHandler = ^{
+            // Connection can not be formed or has terminated and may not be re-established
+            NSLog(@"[KD] Connection with gui invalidated");
+        };
+        
+        // Start processing incoming messages.
+        NSLog(@"[KD] Resume connection with gui");
+        [newConnection resume];
+        
+        _guiConnection = newConnection;
+    }
 
     return YES;
 }
@@ -152,7 +195,27 @@
     });
 }
 
-// XPCAppProtocol protocol implementation
+// XPCGuiProtocol protocol implementation
+- (void)sendQuery:(NSData*)msg
+{
+    NSString *answer = [[NSString alloc] initWithData:msg encoding:NSUTF8StringEncoding];
+    NSLog(@"[KD] Query received %@", answer);
+
+    NSArray *answerArr = [answer componentsSeparatedByString:@";"];
+    
+    // Send ack
+    NSString *query = [NSString stringWithFormat:@"%@", answerArr[0]];
+    NSLog(@"[KD] Send ack signal %@", query);
+
+    @try {
+        [[_guiConnection remoteObjectProxy] sendSignal:[query dataUsingEncoding:NSUTF8StringEncoding]];
+    } @catch(NSException* e) {
+        // Do nothing and wait for invalidationHandler
+        NSLog(@"[KD] Error sending ack signal: %@", e.name);
+    }
+}
+
+// XPCExtensionRemoteProtocol protocol implementation
 - (void)initConnection:(void (^)(BOOL))reply
 {
     NSLog(@"[KD] initConnection called");
@@ -169,22 +232,23 @@
     NSLog(@"[KD] Send message %@", query);
 
     @try {
-        [[_extensionConnection remoteObjectProxy] sendMessage:[query dataUsingEncoding:NSUTF8StringEncoding]];
+        [[_extConnection remoteObjectProxy] sendMessage:[query dataUsingEncoding:NSUTF8StringEncoding]];
     } @catch(NSException* e) {
         // Do nothing and wait for invalidationHandler
-        NSLog(@"[KD] Send message error %@", e.name);
+        NSLog(@"[KD] Error sending message: %@", e.name);
     }
 }
 
 // XPCLoginItemRemoteProtocol protocol implementation
-- (void)isApp:(void (^)(BOOL))callback
+- (void)processType:(void (^)(ProcessType))callback
 {
-    NSLog(@"[KD] isApp called");
-    callback(true);
+    NSLog(@"[KD] Process type asked");
+    callback(server);
 }
 
-- (void)appIsRunning:(NSXPCListenerEndpoint *)endPoint
+- (void)serverIsRunning:(NSXPCListenerEndpoint *)endPoint
 {
+    NSLog(@"[KD] Server is running");
 }
 
 - (IBAction) okButtonAction : (id) sender {

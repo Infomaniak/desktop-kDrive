@@ -21,6 +21,7 @@
 #include <QBitArray>
 #include <QIODevice>
 #include <QPointer>
+
 #include <thread>
 
 namespace KDC {
@@ -41,11 +42,11 @@ class BloomFilter {
         QBitArray hashBits;
 };
 
-class SocketListener {
+class CommListener {
     public:
-        QPointer<QIODevice> socket;
+        QPointer<QIODevice> ioDevice;
 
-        explicit SocketListener(QIODevice *socket);
+        explicit CommListener(QIODevice *ioDevice);
 
         void sendMessage(const QString &message, bool doWait = false) const;
 

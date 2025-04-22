@@ -34,15 +34,15 @@ namespace KDC {
 
 class Worker;
 
-class CommServer : public QObject {
+class OldCommServer : public QObject {
         Q_OBJECT
 
     public:
-        static std::shared_ptr<CommServer> instance(QObject *parent = nullptr);
-        ~CommServer();
+        static std::shared_ptr<OldCommServer> instance(QObject *parent = nullptr);
+        ~OldCommServer();
 
-        CommServer(CommServer const &) = delete;
-        void operator=(CommServer const &) = delete;
+        OldCommServer(OldCommServer const &) = delete;
+        void operator=(OldCommServer const &) = delete;
 
         void sendReply(int id, const QByteArray &result);
         bool sendSignal(SignalNum num, const QByteArray &params);
@@ -60,7 +60,7 @@ class CommServer : public QObject {
         void restartClient();
 
     private:
-        static std::shared_ptr<CommServer> _instance;
+        static std::shared_ptr<OldCommServer> _instance;
         QtLoggingThread *_requestWorkerThread;
         Worker *_requestWorker;
         QTcpServer _tcpServer;
@@ -69,7 +69,7 @@ class CommServer : public QObject {
 
         bool _hasQuittedProperly;
 
-        explicit CommServer(QObject *parent = nullptr);
+        explicit OldCommServer(QObject *parent = nullptr);
 
     private slots:
         void onNewConnection();

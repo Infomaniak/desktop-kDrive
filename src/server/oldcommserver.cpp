@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "commserver.h"
+#include "oldcommserver.h"
 #include "common/utility.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
@@ -36,12 +36,12 @@
 
 namespace KDC {
 
-std::shared_ptr<CommServer> CommServer::_instance = nullptr;
+std::shared_ptr<OldCommServer> OldCommServer::_instance = nullptr;
 
-std::shared_ptr<CommServer> CommServer::instance(QObject *parent) {
+std::shared_ptr<OldCommServer> OldCommServer::instance(QObject *parent) {
     if (_instance == nullptr) {
         try {
-            _instance = std::shared_ptr<CommServer>(new CommServer(parent));
+            _instance = std::shared_ptr<OldCommServer>(new OldCommServer(parent));
         } catch (...) {
             return nullptr;
         }
@@ -50,7 +50,7 @@ std::shared_ptr<CommServer> CommServer::instance(QObject *parent) {
     return _instance;
 }
 
-CommServer::CommServer(QObject *parent) :
+OldCommServer::OldCommServer(QObject *parent) :
     QObject(parent), _requestWorkerThread(new QtLoggingThread()), _requestWorker(new Worker()), _tcpSocket(nullptr),
     _buffer(QByteArray()), _hasQuittedProperly(false) {
     // Start worker thread
@@ -59,9 +59,9 @@ CommServer::CommServer(QObject *parent) :
     connect(_requestWorker, &Worker::finished, _requestWorkerThread, &QThread::quit);
     connect(_requestWorker, &Worker::finished, _requestWorker, &Worker::deleteLater);
     connect(_requestWorkerThread, &QThread::finished, _requestWorkerThread, &QObject::deleteLater);
-    connect(_requestWorker, &Worker::requestReceived, this, &CommServer::onRequestReceived);
-    connect(_requestWorker, &Worker::sendReply, this, &CommServer::onSendReply);
-    connect(_requestWorker, &Worker::sendSignal, this, &CommServer::onSendSignal);
+    connect(_requestWorker, &Worker::requestReceived, this, &OldCommServer::onRequestReceived);
+    connect(_requestWorker, &Worker::sendReply, this, &OldCommServer::onSendReply);
+    connect(_requestWorker, &Worker::sendSignal, this, &OldCommServer::onSendSignal);
 
     _requestWorkerThread->start();
     _requestWorkerThread->setPriority(QThread::Priority::HighestPriority);
@@ -70,7 +70,7 @@ CommServer::CommServer(QObject *parent) :
     start();
 }
 
-CommServer::~CommServer() {
+OldCommServer::~OldCommServer() {
     if (_tcpSocket) {
         if (_tcpSocket->isOpen()) {
             _tcpSocket->close();
@@ -84,18 +84,18 @@ CommServer::~CommServer() {
     _instance = nullptr;
 }
 
-void CommServer::sendReply(int id, const QByteArray &result) {
+void OldCommServer::sendReply(int id, const QByteArray &result) {
     if (_tcpSocket && _tcpSocket->isOpen()) {
         _requestWorker->addReply(id, result);
     }
 }
 
-bool CommServer::sendSignal(const SignalNum num, const QByteArray &params) {
+bool OldCommServer::sendSignal(const SignalNum num, const QByteArray &params) {
     int id = 0;
     return sendSignal(num, params, id);
 }
 
-bool CommServer::sendSignal(SignalNum num, const QByteArray &params, int &id) {
+bool OldCommServer::sendSignal(SignalNum num, const QByteArray &params, int &id) {
     if (_tcpSocket && _tcpSocket->isOpen()) {
         _requestWorker->addSignal(num, params, id);
         return true;
@@ -103,12 +103,12 @@ bool CommServer::sendSignal(SignalNum num, const QByteArray &params, int &id) {
     return false;
 }
 
-void CommServer::start() {
+void OldCommServer::start() {
     // (Re)start tcp server
     if (_tcpServer.isListening()) {
         _tcpServer.close();
     } else {
-        connect(&_tcpServer, &QTcpServer::newConnection, this, &CommServer::onNewConnection);
+        connect(&_tcpServer, &QTcpServer::newConnection, this, &OldCommServer::onNewConnection);
     }
 
     _tcpServer.listen(QHostAddress::LocalHost);
@@ -125,7 +125,7 @@ void CommServer::start() {
 #endif
 }
 
-void CommServer::onNewConnection() {
+void OldCommServer::onNewConnection() {
     LOG_DEBUG(Log::instance()->getLogger(), "New connection");
 
     if (_tcpSocket) {
@@ -142,18 +142,18 @@ void CommServer::onNewConnection() {
         return;
     }
 
-    connect(_tcpSocket, &QTcpSocket::errorOccurred, this, &CommServer::onErrorOccurred);
-    connect(_tcpSocket, &QTcpSocket::readyRead, this, &CommServer::onReadyRead);
-    connect(_tcpSocket, &QTcpSocket::bytesWritten, this, &CommServer::onBytesWritten);
+    connect(_tcpSocket, &QTcpSocket::errorOccurred, this, &OldCommServer::onErrorOccurred);
+    connect(_tcpSocket, &QTcpSocket::readyRead, this, &OldCommServer::onReadyRead);
+    connect(_tcpSocket, &QTcpSocket::bytesWritten, this, &OldCommServer::onBytesWritten);
 }
 
-void CommServer::onBytesWritten(qint64 numBytes) {
+void OldCommServer::onBytesWritten(qint64 numBytes) {
     Q_UNUSED(numBytes)
 
     // LOG_DEBUG(Log::instance()->getLogger(), "Bytes written" << numBytes);
 }
 
-void CommServer::onReadyRead() {
+void OldCommServer::onReadyRead() {
     while (_tcpSocket && _tcpSocket->bytesAvailable() > 0) {
         // Read from socket
         _buffer.append(_tcpSocket->readAll());
@@ -204,7 +204,7 @@ void CommServer::onReadyRead() {
     }
 }
 
-void CommServer::onErrorOccurred(QAbstractSocket::SocketError socketError) {
+void OldCommServer::onErrorOccurred(QAbstractSocket::SocketError socketError) {
     QTcpSocket *socket = reinterpret_cast<QTcpSocket *>(sender());
 
     if (!_hasQuittedProperly) {
@@ -224,11 +224,11 @@ void CommServer::onErrorOccurred(QAbstractSocket::SocketError socketError) {
     }
 }
 
-void CommServer::onRequestReceived(int id, RequestNum num, const QByteArray &params) {
+void OldCommServer::onRequestReceived(int id, RequestNum num, const QByteArray &params) {
     QTimer::singleShot(0, this, [=, this]() { emit requestReceived(id, (RequestNum) num, params); });
 }
 
-void CommServer::onSendReply(int id, const QByteArray &result) {
+void OldCommServer::onSendReply(int id, const QByteArray &result) {
     if (!_tcpSocket) {
         LOG_WARN(Log::instance()->getLogger(), "Not connected!");
         return;
@@ -261,7 +261,7 @@ void CommServer::onSendReply(int id, const QByteArray &result) {
     }
 }
 
-void CommServer::onSendSignal(int id, SignalNum num, const QByteArray &params) {
+void OldCommServer::onSendSignal(int id, SignalNum num, const QByteArray &params) {
     if (!_tcpSocket) {
         // LOG_WARN(Log::instance()->getLogger(), "Not connected!");
         return;

@@ -16,19 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#import "xpcLoginItemProtocol.h"
-
 #import <Foundation/Foundation.h>
 
-@interface AppDelegate : NSObject <NSXPCListenerDelegate, XPCLoginItemProtocol>
+@protocol XPCGuiProtocol
 
-@property(retain) NSXPCConnection *srvConnection;
-@property(retain) NSXPCConnection *guiConnection;
-@property(retain) NSXPCConnection *extConnection;
+- (void)sendQuery:(NSData*)msg;
 
-@property(retain) NSXPCListenerEndpoint *srvExtEndpoint;
-@property(retain) NSXPCListenerEndpoint *srvGuiEndpoint;
+@end
 
-- (instancetype)init;
+@protocol XPCGuiRemoteProtocol
+
+- (void)sendSignal:(NSData*)msg;
 
 @end

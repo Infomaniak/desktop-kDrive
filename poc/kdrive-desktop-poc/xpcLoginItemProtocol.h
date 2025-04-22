@@ -18,9 +18,25 @@
 
 #import <Foundation/Foundation.h>
 
-@protocol XPCExtensionRemoteProtocol
+typedef enum {
+    server,
+    client,
+    finderExt
+} ProcessType;
 
-- (void)initConnection:(void (^)(BOOL))callback;
-- (void)sendMessage:(NSData*)msg;
+@protocol XPCLoginItemProtocol
+
+- (void)setServerExtEndpoint:(NSXPCListenerEndpoint *)endPoint;
+- (void)serverExtEndpoint:(void (^)(NSXPCListenerEndpoint *))callback;
+
+- (void)setServerGuiEndpoint:(NSXPCListenerEndpoint *)endPoint;
+- (void)serverGuiEndpoint:(void (^)(NSXPCListenerEndpoint *))callback;
+
+@end
+
+@protocol XPCLoginItemRemoteProtocol
+
+- (void)processType:(void (^)(ProcessType))callback;
+- (void)serverIsRunning:(NSXPCListenerEndpoint *)endPoint;
 
 @end

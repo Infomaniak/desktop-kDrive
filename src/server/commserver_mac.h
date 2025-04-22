@@ -16,20 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SOCKETAPISOCKET_OSX_H
-#define SOCKETAPISOCKET_OSX_H
+#pragma once
 
 #include <QAbstractSocket>
 #include <QIODevice>
 
-class SocketApiServerPrivate;
-class SocketApiSocketPrivate;
+class CommServerPrivate;
+class CommChannelPrivate;
 
-class SocketApiSocket : public QIODevice {
+class CommChannel : public QIODevice {
         Q_OBJECT
     public:
-        SocketApiSocket(QObject *parent, SocketApiSocketPrivate *p);
-        ~SocketApiSocket();
+        CommChannel(QObject *parent, CommChannelPrivate *p);
+        ~CommChannel();
 
         qint64 readData(char *data, qint64 maxlen) override;
         qint64 writeData(const char *data, qint64 len) override;
@@ -43,29 +42,29 @@ class SocketApiSocket : public QIODevice {
 
     private:
         // Use Qt's p-impl system to hide objective-c types from C++ code including this file
-        Q_DECLARE_PRIVATE(SocketApiSocket)
-        QScopedPointer<SocketApiSocketPrivate> d_ptr;
-        friend class SocketApiServerPrivate;
+        Q_DECLARE_PRIVATE(CommChannel)
+        QScopedPointer<CommChannelPrivate> d_ptr;
+        friend class CommServerPrivate;
 };
 
-class SocketApiServer : public QObject {
+class CommServer : public QObject {
         Q_OBJECT
     public:
-        SocketApiServer();
-        ~SocketApiServer();
+        CommServer();
+        ~CommServer();
 
         void close();
         bool listen(const QString &name);
-        SocketApiSocket *nextPendingConnection();
+        CommChannel *nextPendingConnection();
+        CommChannel *guiConnection();
 
         static bool removeServer(const QString &) { return false; }
 
     signals:
-        void newConnection();
+        void newExtConnection();
+        void newGuiConnection();
 
     private:
-        Q_DECLARE_PRIVATE(SocketApiServer)
-        QScopedPointer<SocketApiServerPrivate> d_ptr;
+        Q_DECLARE_PRIVATE(CommServer)
+        QScopedPointer<CommServerPrivate> d_ptr;
 };
-
-#endif // SOCKETAPISOCKET_OSX_H

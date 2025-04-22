@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "socketlistener.h"
+#include "commlistener.h"
 #include "libcommonserver/log/log.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
@@ -36,23 +36,23 @@ bool BloomFilter::isHashMaybeStored(uint hash) const {
     return hashBits.testBit((hash & 0xFFFF) % NumBits) && hashBits.testBit((hash >> 16) % NumBits);
 }
 
-SocketListener::SocketListener(QIODevice *socket) : socket(socket) {
+CommListener::CommListener(QIODevice *ioDevice) : ioDevice(ioDevice) {
     _threadId = std::this_thread::get_id();
 }
 
 
-void SocketListener::sendMessage(const QString &message, bool doWait) const {
-    assert(_threadId == std::this_thread::get_id() && "SocketListener::sendMessage should only be called from the main thread");
+void CommListener::sendMessage(const QString &message, bool doWait) const {
+    assert(_threadId == std::this_thread::get_id() && "CommListener::sendMessage should only be called from the main thread");
 
-    if (!socket) {
-        LOGW_INFO(KDC::Log::instance()->getLogger(), L"Not sending message to dead socket: " << message.toStdWString().c_str());
+    if (!ioDevice) {
+        LOGW_INFO(KDC::Log::instance()->getLogger(), L"Not sending message to dead ioDevice: " << message.toStdWString().c_str());
         return;
     }
 
     const QString truncatedLogMessage = CommonUtility::truncateLongLogMessage(message);
 
     LOGW_INFO(KDC::Log::instance()->getLogger(),
-              L"Sending SocketAPI message --> " << truncatedLogMessage.toStdWString() << L" to " << socket);
+              L"Sending message: " << truncatedLogMessage.toStdWString() << L" to: " << ioDevice);
 
     QString localMessage = message;
     if (!localMessage.endsWith(QLatin1Char('\n'))) {
@@ -60,20 +60,20 @@ void SocketListener::sendMessage(const QString &message, bool doWait) const {
     }
 
     QByteArray bytesToSend = localMessage.toUtf8();
-    qint64 sent = socket->write(bytesToSend);
+    qint64 sent = ioDevice->write(bytesToSend);
     if (doWait) {
-        socket->waitForBytesWritten(1000);
+        ioDevice->waitForBytesWritten(1000);
     }
     if (sent != bytesToSend.length()) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Could not send all data on socket for " << localMessage.toStdWString());
+        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Could not send all data on ioDevice for " << localMessage.toStdWString());
     }
 }
 
-void SocketListener::sendMessageIfDirectoryMonitored(const QString &message, uint systemDirectoryHash) const {
+void CommListener::sendMessageIfDirectoryMonitored(const QString &message, uint systemDirectoryHash) const {
     if (_monitoredDirectoriesBloomFilter.isHashMaybeStored(systemDirectoryHash)) sendMessage(message, false);
 }
 
-void SocketListener::registerMonitoredDirectory(uint systemDirectoryHash) {
+void CommListener::registerMonitoredDirectory(uint systemDirectoryHash) {
     _monitoredDirectoriesBloomFilter.storeHash(systemDirectoryHash);
 }
 
