@@ -18,7 +18,7 @@
 
 #include "vfs_mac.h"
 #include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <QDir>

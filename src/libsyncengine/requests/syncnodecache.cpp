@@ -18,7 +18,7 @@
 
 #include "syncnodecache.h"
 #include "db/syncdb.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 
 #include <log4cplus/loggingmacros.h>
 

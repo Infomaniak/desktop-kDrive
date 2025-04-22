@@ -24,7 +24,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/handler.h"
 #include "libcommon/log/sentry/ptraces.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 
 #include <QtGlobal>
 #include <QTimer>

@@ -17,7 +17,7 @@
  */
 
 #include "user.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 
 #include <Poco/URIStreamOpener.h>
 

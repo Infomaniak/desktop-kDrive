@@ -9,6 +9,7 @@ find_package(Qt6 REQUIRED COMPONENTS Network Widgets Gui Sql)
 find_package(Poco 1.13.3 REQUIRED Foundation JSON Util)
 find_package(log4cplus 2.1.0 REQUIRED)
 find_package(sentry REQUIRED)
+find_package(xxHash 0.8.2 REQUIRED)
 
 if (UNIX AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     # Use fallback library types for imported dependencies
@@ -111,6 +112,7 @@ if (WIN32)
         ${CMAKE_CURRENT_BINARY_DIR}
         "C:/Program Files (x86)/log4cplus/include"
         "C:/Program Files (x86)/libzip/include"
+        "C:/Program Files (x86)/xxHash/include"
         ${CMAKE_SOURCE_DIR}/src/3rdparty/keychain/include)
 else()
     target_include_directories(${libcommon_NAME} PUBLIC
@@ -130,16 +132,25 @@ target_link_libraries(${libcommon_NAME}
     libzip::zip
     )
 
-if(APPLE)
+if (WIN32)
+    target_link_libraries(${libcommon_NAME}
+        xxHash::xxhash)
+elseif(APPLE)
     # For utility_mac.mm
     find_library(FOUNDATION_LIBRARY NAMES Foundation)
     find_library(CORESERVICES_LIBRARY NAMES CoreServices)
     find_library(APPKIT_LIBRARY NAMES AppKit)
 
     target_link_libraries(${libcommon_NAME}
+        xxHash::xxhash
         ${FOUNDATION_LIBRARY}
         ${CORESERVICES_LIBRARY}
-        ${APPKIT_LIBRARY})
+        ${APPKIT_LIBRARY}
+        utf8proc)
+else()
+    target_link_libraries(${libcommon_NAME}
+        "/usr/local/lib/libxxhash.so"
+        utf8proc)
 endif()
 
 if(ZLIB_FOUND)

@@ -21,7 +21,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/logiffail.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 
 namespace KDC {
 

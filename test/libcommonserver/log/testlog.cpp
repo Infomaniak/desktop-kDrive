@@ -19,7 +19,7 @@
 #include "test_utility/testhelpers.h"
 #include "testlog.h"
 
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommon/utility/utility.h"

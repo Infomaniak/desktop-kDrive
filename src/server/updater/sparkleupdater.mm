@@ -24,7 +24,7 @@
 #include "libparms/db/parmsdb.h"
 #include "requests/parameterscache.h"
 
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 #include <log4cplus/loggingmacros.h>
 
 #include <Sparkle/Sparkle.h>

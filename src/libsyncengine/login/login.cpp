@@ -19,7 +19,7 @@
 #include "login.h"
 #include "jobs/network/login/gettokenjob.h"
 #include "jobs/network/login/refreshtokenjob.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 

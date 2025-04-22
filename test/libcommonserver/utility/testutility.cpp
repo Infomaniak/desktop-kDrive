@@ -21,7 +21,7 @@
 #include "test_utility/testhelpers.h"
 #include "config.h"
 #include "libcommon/utility/utility.h" // CommonUtility::isSubDir
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 
 #include <Poco/URI.h>
 

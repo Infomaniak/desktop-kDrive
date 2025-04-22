@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 #include "libcommonserver/commonserverlib.h"
 #include "libcommonserver/db/dbdefs.h"
 #include "libcommon/utility/filename.h"

@@ -21,7 +21,7 @@
 #include "libcommon/utility/logiffail.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 
 #include "libparms/db/sync.h"
 #include "libparms/db/parmsdb.h"

@@ -34,7 +34,7 @@
 #include "libcommon/log/sentry/handler.h"
 #include "libcommon/log/sentry/ptraces.h"
 #include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 #include "libcommonserver/network/proxy.h"
 #include "libcommonserver/vfs/vfs.h"
 #include "libcommonserver/utility/utility.h"

@@ -21,7 +21,7 @@
 #include "libcommon/utility/utility.h"
 #include "version.h"
 #include "config.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"

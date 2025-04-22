@@ -19,7 +19,7 @@
 #include "config.h"
 #include "testsentryhandler.h"
 #include "libcommon/log/sentry/handler.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 #include "test_utility/testhelpers.h"
 
 #include <thread>

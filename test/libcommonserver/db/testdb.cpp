@@ -18,7 +18,7 @@
 
 #include "testdb.h"
 #include "libcommon/utility/logiffail.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 
 #define CREATE_TEST_TABLE_ID "testdb1"
 #define CREATE_TEST_TABLE              \

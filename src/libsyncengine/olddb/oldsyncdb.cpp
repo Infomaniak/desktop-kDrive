@@ -18,7 +18,7 @@
 
 #include "oldsyncdb.h"
 #include "libcommon/utility/logiffail.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 
 #include <3rdparty/sqlite3/sqlite3.h>
 

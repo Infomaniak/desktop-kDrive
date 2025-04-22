@@ -19,7 +19,7 @@
 #include "config.h"
 #include "testutility.h"
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 #include "testtypes.h"
 
 #include "utility/utility.h"

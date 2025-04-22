@@ -21,7 +21,7 @@
 #include "common/utility.h"
 #include "libparms/db/parmsdb.h"
 #include "libparms/db/parameters.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 #include "libcommonserver/utility/utility.h"
 #include "libsyncengine/requests/parameterscache.h"
 #include "libparms/db/parmsdb.h"
