@@ -48,6 +48,7 @@ set(testsyncengine_SRCS
         update_detection/update_detector/testupdatetree.h update_detection/update_detector/testupdatetree.cpp
         update_detection/update_detector/testupdatetreeworker.h update_detection/update_detector/testupdatetreeworker.cpp
         update_detection/update_detector/testnode.h update_detection/update_detector/testnode.cpp
+        update_detection/update_detector/benchupdatetreeworker.h update_detection/update_detector/benchupdatetreeworker.cpp
         # Reconciliation
         reconciliation/platform_inconsistency_checker/testplatforminconsistencycheckerworker.h reconciliation/platform_inconsistency_checker/testplatforminconsistencycheckerworker.cpp
         reconciliation/conflict_finder/testconflictfinderworker.h reconciliation/conflict_finder/testconflictfinderworker.cpp
