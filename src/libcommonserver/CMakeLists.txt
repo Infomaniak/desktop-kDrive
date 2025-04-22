@@ -34,9 +34,6 @@ set(libcommonserver_SRCS
     db/sqlitequery.h db/sqlitequery.cpp
     db/db.h db/db.cpp
     db/dbdefs.h
-    # Log
-    log/log.h log/log.cpp
-    log/customrollingfileappender.h log/customrollingfileappender.cpp
     # Network
     network/proxy.h network/proxy.cpp
     network/proxyconfig.h network/proxyconfig.cpp

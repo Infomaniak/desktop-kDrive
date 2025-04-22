@@ -53,6 +53,8 @@ set(libcommon_SRCS
     log/sentry/ptracedescriptor.h
     log/sentry/ptrace.h log/sentry/utility.h
     log/customlogstreams.h
+    log/log.h log/log.cpp
+    log/customrollingfileappender.h log/customrollingfileappender.cpp
     theme/theme.h theme/theme.cpp
 )
 
