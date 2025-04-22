@@ -28,9 +28,9 @@
 
 namespace KDC {
 
-UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &filepath, const SyncName &filename,
+UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &absoluteFilePath, const SyncName &filename,
                      const NodeId &remoteParentDirId, SyncTime modtime) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _filePath(filepath), _filename(filename),
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _absoluteFilePath(absoluteFilePath), _filename(filename),
     _remoteParentDirId(remoteParentDirId), _modtimeIn(modtime), _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _customTimeout = 60;
@@ -38,20 +38,20 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncP
     setProgress(0);
 }
 
-UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &filepath, const NodeId &fileId,
-                     SyncTime modtime) : UploadJob(vfs, driveDbId, filepath, SyncName(), "", modtime) {
+UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &absoluteFilePath, const NodeId &fileId,
+                     SyncTime modtime) : UploadJob(vfs, driveDbId, absoluteFilePath, SyncName(), "", modtime) {
     _fileId = fileId;
 }
 
 UploadJob::~UploadJob() {
     if (!_vfs || isAborted()) return;
     constexpr VfsStatus vfsStatus({.isHydrated = true, .isSyncing = false, .progress = 100});
-    if (const auto exitInfo = _vfs->forceStatus(_filePath, vfsStatus); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in vfsForceStatus - " << Utility::formatSyncPath(_filePath) << L": " << exitInfo);
+    if (const auto exitInfo = _vfs->forceStatus(_absoluteFilePath, vfsStatus); !exitInfo) {
+        LOGW_WARN(_logger, L"Error in vfsForceStatus - " << Utility::formatSyncPath(_absoluteFilePath) << L": " << exitInfo);
     }
 
-    if (const auto exitInfo = _vfs->setPinState(_filePath, PinState::AlwaysLocal); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in vfsSetPinState - " << Utility::formatSyncPath(_filePath) << L": " << exitInfo);
+    if (const auto exitInfo = _vfs->setPinState(_absoluteFilePath, PinState::AlwaysLocal); !exitInfo) {
+        LOGW_WARN(_logger, L"Error in vfsSetPinState - " << Utility::formatSyncPath(_absoluteFilePath) << L": " << exitInfo);
     }
 }
 
@@ -61,22 +61,22 @@ bool UploadJob::canRun() {
     }
 
     // Check that the item still exist
-    bool exists;
+    bool exists = false;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(_filePath, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_filePath, ioError));
+    if (!IoHelper::checkIfPathExists(_absoluteFilePath, exists, ioError)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absoluteFilePath, ioError));
         _exitInfo = ExitCode::SystemError;
         return false;
     }
     if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_filePath));
+        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_absoluteFilePath));
         _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         return false;
     }
 
     if (!exists) {
-        LOGW_DEBUG(_logger,
-                   L"Item does not exist anymore. Aborting current sync and restart " << Utility::formatSyncPath(_filePath));
+        LOGW_DEBUG(_logger, L"Item does not exist anymore. Aborting current sync and restart "
+                                    << Utility::formatSyncPath(_absoluteFilePath));
         _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent};
         return false;
     }
@@ -89,16 +89,19 @@ bool UploadJob::handleResponse(std::istream &is) {
         return false;
     }
 
-    if (jsonRes()) {
-        Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
-        if (dataObj) {
-            if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeIdOut)) {
-                return false;
-            }
-            if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtimeOut)) {
-                return false;
-            }
-        }
+    if (!jsonRes()) return false;
+    const Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
+    if (!dataObj) return false;
+    if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeIdOut)) return false;
+    if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtimeOut)) return false;
+
+    if (_modtimeIn != _modtimeOut) {
+        // The backend refused the modification time. To avoid further EDIT operations, we apply the backend's time on local file.
+        bool exists = false;
+        (void) Utility::setFileDates(_absoluteFilePath, 0, _modtimeOut, false, exists);
+        LOG_INFO(_logger, "Modification time refused "
+                                  << _modtimeIn << " by the backend. The modification time has been updated to " << _modtimeOut
+                                  << " on local file.");
     }
 
     return true;
@@ -137,18 +140,18 @@ void UploadJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
 
 ExitInfo UploadJob::setData() {
     ItemType itemType;
-    if (!IoHelper::getItemType(_filePath, itemType)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getItemType - " << Utility::formatSyncPath(_filePath).c_str());
+    if (!IoHelper::getItemType(_absoluteFilePath, itemType)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getItemType - " << Utility::formatSyncPath(_absoluteFilePath));
         return ExitCode::SystemError;
     }
 
     if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-        LOGW_DEBUG(_logger, L"Item does not exist anymore - " << Utility::formatSyncPath(_filePath).c_str());
+        LOGW_DEBUG(_logger, L"Item does not exist anymore - " << Utility::formatSyncPath(_absoluteFilePath));
         return {ExitCode::SystemError, ExitCause::UnexpectedFileSystemEvent};
     }
 
     if (itemType.ioError == IoError::AccessDenied) {
-        LOGW_DEBUG(_logger, L"Item misses search permission - " << Utility::formatSyncPath(_filePath).c_str());
+        LOGW_DEBUG(_logger, L"Item misses search permission - " << Utility::formatSyncPath(_absoluteFilePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
@@ -189,8 +192,8 @@ ExitInfo UploadJob::readFile() {
     // locked after 10 seconds, a file access error is displayed to the user. Proper handling is also implemented for
     // "file not found" errors.
     std::ifstream file;
-    if (ExitInfo exitInfo = IoHelper::openFile(_filePath, file, 10); !exitInfo) {
-        LOGW_WARN(_logger, L"Failed to open file " << Utility::formatSyncPath(_filePath));
+    if (ExitInfo exitInfo = IoHelper::openFile(_absoluteFilePath, file, 10); !exitInfo) {
+        LOGW_WARN(_logger, L"Failed to open file " << Utility::formatSyncPath(_absoluteFilePath));
         return exitInfo;
     }
 
@@ -198,28 +201,28 @@ ExitInfo UploadJob::readFile() {
     ostrm << file.rdbuf();
     if (ostrm.bad()) {
         // Read/writing error or logical error
-        LOGW_WARN(_logger, L"Failed to insert file content into string stream - path=" << Path2WStr(_filePath).c_str());
+        LOGW_WARN(_logger, L"Failed to insert file content into string stream - path=" << Path2WStr(_absoluteFilePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     ostrm.flush();
     if (ostrm.bad()) {
         // Read/writing error or logical error
-        LOGW_WARN(_logger, L"Failed to flush string stream - path=" << Path2WStr(_filePath).c_str());
+        LOGW_WARN(_logger, L"Failed to flush string stream - path=" << Path2WStr(_absoluteFilePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     file.close();
     if (file.bad()) {
         // Read/writing error or logical error
-        LOGW_WARN(_logger, L"Failed to close file - path=" << Path2WStr(_filePath).c_str());
+        LOGW_WARN(_logger, L"Failed to close file - path=" << Path2WStr(_absoluteFilePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     try {
         _data = ostrm.str();
     } catch (const std::bad_alloc &) {
-        LOGW_WARN(_logger, L"Memory allocation error when setting data content - path=" << Path2WStr(_filePath).c_str());
+        LOGW_WARN(_logger, L"Memory allocation error when setting data content - path=" << Path2WStr(_absoluteFilePath));
         return {ExitCode::SystemError, ExitCause::NotEnoughtMemory};
     }
 
@@ -229,7 +232,7 @@ ExitInfo UploadJob::readFile() {
 ExitInfo UploadJob::readLink() {
     if (_linkType == LinkType::Symlink) {
         std::error_code ec;
-        _linkTarget = std::filesystem::read_symlink(_filePath, ec);
+        _linkTarget = std::filesystem::read_symlink(_absoluteFilePath, ec);
         if (ec.value() != 0) {
 #ifdef _WIN32
             bool exists = (ec.value() != ERROR_FILE_NOT_FOUND && ec.value() != ERROR_PATH_NOT_FOUND &&
@@ -238,57 +241,56 @@ ExitInfo UploadJob::readLink() {
             bool exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
 #endif
             if (!exists) {
-                LOGW_DEBUG(_logger, L"File doesn't exist - path=" << Path2WStr(_filePath).c_str());
+                LOGW_DEBUG(_logger, L"File doesn't exist - path=" << Path2WStr(_absoluteFilePath));
                 return {ExitCode::SystemError, ExitCause::NotFound};
             }
 
-            LOGW_WARN(_logger, L"Failed to read symlink - path=" << Path2WStr(_filePath).c_str() << L": "
-                                                                 << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value()
-                                                                 << L")");
+            LOGW_WARN(_logger, L"Failed to read symlink - path=" << Path2WStr(_absoluteFilePath) << L": "
+                                                                 << Utility::s2ws(ec.message()) << L" (" << ec.value() << L")");
             return ExitCode::SystemError;
         }
 
         _data = Path2Str(_linkTarget);
     } else if (_linkType == LinkType::Hardlink) {
         if (ExitInfo exitInfo = readFile(); !exitInfo) {
-            LOGW_WARN(_logger, L"Failed to read file - path=" << Path2WStr(_filePath).c_str());
+            LOGW_WARN(_logger, L"Failed to read file - path=" << Path2WStr(_absoluteFilePath));
             return exitInfo;
         }
 
-        _linkTarget = _filePath;
+        _linkTarget = _absoluteFilePath;
     } else if (_linkType == LinkType::Junction) {
 #ifdef _WIN32
         IoError ioError = IoError::Success;
-        if (!IoHelper::readJunction(_filePath, _data, _linkTarget, ioError)) {
-            LOGW_WARN(_logger, L"Failed to read junction - " << Utility::formatIoError(_filePath, ioError).c_str());
+        if (!IoHelper::readJunction(_absoluteFilePath, _data, _linkTarget, ioError)) {
+            LOGW_WARN(_logger, L"Failed to read junction - " << Utility::formatIoError(_absoluteFilePath, ioError));
             return ExitCode::SystemError;
         }
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_DEBUG(_logger, L"File doesn't exist - " << Utility::formatSyncPath(_filePath).c_str());
+            LOGW_DEBUG(_logger, L"File doesn't exist - " << Utility::formatSyncPath(_absoluteFilePath));
             return {ExitCode::SystemError, ExitCause::NotFound};
         }
 
         if (ioError == IoError::AccessDenied) {
-            LOGW_DEBUG(_logger, L"File misses search permissions - " << Utility::formatSyncPath(_filePath).c_str());
+            LOGW_DEBUG(_logger, L"File misses search permissions - " << Utility::formatSyncPath(_absoluteFilePath));
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 #endif
     } else if (_linkType == LinkType::FinderAlias) {
 #ifdef __APPLE__
         IoError ioError = IoError::Success;
-        if (!IoHelper::readAlias(_filePath, _data, _linkTarget, ioError)) {
-            LOGW_WARN(_logger, L"Failed to read alias - path=" << Path2WStr(_filePath).c_str());
+        if (!IoHelper::readAlias(_absoluteFilePath, _data, _linkTarget, ioError)) {
+            LOGW_WARN(_logger, L"Failed to read alias - path=" << Path2WStr(_absoluteFilePath));
             return ExitCode::SystemError;
         }
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_DEBUG(_logger, L"File doesn't exist - path=" << Path2WStr(_filePath).c_str());
+            LOGW_DEBUG(_logger, L"File doesn't exist - path=" << Path2WStr(_absoluteFilePath));
             return {ExitCode::SystemError, ExitCause::NotFound};
         }
 
         if (ioError == IoError::AccessDenied) {
-            LOGW_DEBUG(_logger, L"File with insufficient access rights - path=" << Path2WStr(_filePath).c_str());
+            LOGW_DEBUG(_logger, L"File with insufficient access rights - path=" << Path2WStr(_absoluteFilePath));
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
