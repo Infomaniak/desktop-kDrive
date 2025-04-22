@@ -24,6 +24,7 @@
 #include "jobs/local/localcopyjob.h"
 #include "jobs/local/localdeletejob.h"
 #include "jobs/local/localmovejob.h"
+#include "jobs/jobmanager.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
 #include "libcommon/utility/utility.h"
@@ -41,9 +42,19 @@
 #include "libsyncengine/jobs/network/API_v2/movejob.h"
 #include "libsyncengine/jobs/network/API_v2/renamejob.h"
 #include "libsyncengine/jobs/network/API_v2/uploadjob.h"
+#include "libsyncengine/update_detection/file_system_observer/filesystemobserverworker.h"
+#include "requests/syncnodecache.h"
+#include "requests/exclusiontemplatecache.h"
+#include "libcommon/utility/utility.h"
+#include "libcommon/keychainmanager/keychainmanager.h"
+#include "libcommonserver/io/filestat.h"
+#include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/utility/utility.h"
+#include "libcommonserver/network/proxy.h"
 #include "mocks/libcommonserver/db/mockdb.h"
-
 #include "test_utility/testhelpers.h"
+#include "requests/parameterscache.h"
+#include "test_utility/remotetemporarydirectory.h"
 
 using namespace CppUnit;
 
@@ -62,6 +73,7 @@ const std::string testInconsistencyFileRemoteId = "60765";
 const std::string testLongFileRemoteId = "19146";
 
 const std::string test_beaucoupRemoteId = "24642";
+const NodeId test_commonDocumentsNodeId = "3";
 
 void TestIntegration::setUp() {
     TestBase::start();
@@ -113,6 +125,9 @@ void TestIntegration::setUp() {
     _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
                                          KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
+    _syncPal->syncDb()->setAutoDelete(true);
+    ParametersCache::instance()->parameters().setExtendedLog(true); // Enable extended log to see more details in the logs
+    ParametersCache::instance()->parameters().setSyncHiddenFiles(true); // Enable sync of hidden files
 
     // Insert items to blacklist
     SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {test_beaucoupRemoteId});
@@ -165,6 +180,9 @@ void TestIntegration::tearDown() {
     _syncPal->stop(false, true, false);
     ParmsDb::instance()->close();
     ParmsDb::reset();
+    JobManager::stop();
+    JobManager::clear();
+    JobManager::reset();
     TestBase::stop();
 }
 
@@ -408,8 +426,8 @@ void TestIntegration::testDeleteRemote() {
     LOGW_DEBUG(_logger, L"$$$$$ test delete remote file");
     std::cout << "test delete remote file : ";
 
-    DeleteJob job(_driveDbId, _newTestFileRemoteId, "",
-                  ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob job(_driveDbId, _newTestFileRemoteId, "", "",
+                  NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     job.runSynchronously();
 
     waitForSyncToFinish();
@@ -452,7 +470,8 @@ void TestIntegration::testSimultaneousChanges() {
     CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(localId));
 
     // Remove the test file
-    DeleteJob deleteJob(_driveDbId, remoteId, "", ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob deleteJob(_driveDbId, remoteId, "", "",
+                        NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     deleteJob.runSynchronously();
 
     waitForSyncToFinish();
@@ -544,23 +563,23 @@ void TestIntegration::testInconsistency() {
     CPPUNIT_ASSERT(!found);
 
     // Remove the test file
-    DeleteJob deleteJob(_driveDbId, testSizeRemoteId, "",
-                        ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob deleteJob(_driveDbId, testSizeRemoteId, "", "",
+                        NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     deleteJob.runSynchronously();
-    DeleteJob deleteJob2(_driveDbId, testSpecialCharsRemoteId, "",
-                         ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob deleteJob2(_driveDbId, testSpecialCharsRemoteId, "", "",
+                         NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     deleteJob2.runSynchronously();
-    DeleteJob deleteJob3(_driveDbId, testCaseSensitiveRemoteId1, "",
-                         ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob deleteJob3(_driveDbId, testCaseSensitiveRemoteId1, "", "",
+                         NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     deleteJob3.runSynchronously();
-    DeleteJob deleteJob4(_driveDbId, testCaseSensitiveRemoteId2, "",
-                         ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob deleteJob4(_driveDbId, testCaseSensitiveRemoteId2, "", "",
+                         NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     deleteJob4.runSynchronously();
-    DeleteJob deleteJob5(_driveDbId, testCaseSensitiveRemoteId3, "",
-                         ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob deleteJob5(_driveDbId, testCaseSensitiveRemoteId3, "", "",
+                         NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     deleteJob5.runSynchronously();
-    DeleteJob deleteJob6(_driveDbId, testLongFilePathRemoteId, "",
-                         ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob deleteJob6(_driveDbId, testLongFilePathRemoteId, "", "",
+                         NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     deleteJob6.runSynchronously();
 
     waitForSyncToFinish();
@@ -605,7 +624,8 @@ void TestIntegration::testCreateCreatePseudoConflict() {
     CPPUNIT_ASSERT(newLocalId == prevLocalId);
 
     // Remove the test files
-    DeleteJob deleteJob(_driveDbId, remoteId, "", ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob deleteJob(_driveDbId, remoteId, "", "",
+                        NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     deleteJob.runSynchronously();
 
     waitForSyncToFinish();
@@ -662,7 +682,8 @@ void TestIntegration::testCreateCreateConflict() {
     CPPUNIT_ASSERT(found);
 
     // Remove the test files
-    DeleteJob deleteJob(_driveDbId, remoteId, "", ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob deleteJob(_driveDbId, remoteId, "", "",
+                        NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     deleteJob.runSynchronously();
 
     std::filesystem::remove(localExcludedPath);
@@ -849,11 +870,11 @@ void TestIntegration::testMoveCreateConflict() {
 
     Utility::msleep(5000);
 
-    DeleteJob deleteJob1(_driveDbId, initRemoteId, "",
-                         ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob deleteJob1(_driveDbId, initRemoteId, "", "",
+                         NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     deleteJob1.runSynchronously();
-    DeleteJob deleteJob2(_driveDbId, remoteId, "",
-                         ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob deleteJob2(_driveDbId, remoteId, "", "",
+                         NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     deleteJob2.runSynchronously();
 
     std::filesystem::remove(localExcludedPath);
@@ -882,8 +903,8 @@ void TestIntegration::testEditDeleteConflict1() {
     _syncPal->pause();
 
     // Delete file on remote replica
-    DeleteJob deleteJob(_driveDbId, initRemoteId, "",
-                        ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob deleteJob(_driveDbId, initRemoteId, "", "",
+                        NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     deleteJob.runSynchronously();
 
     // Edit file on local replica
@@ -936,8 +957,8 @@ void TestIntegration::testEditDeleteConflict1() {
     CPPUNIT_ASSERT(fileInfoJob.hasHttpError());
 
     // Remove the test files
-    DeleteJob deleteJob1(_driveDbId, remoteId, "",
-                         ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob deleteJob1(_driveDbId, remoteId, "", "",
+                         NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     deleteJob1.runSynchronously();
 
     waitForSyncToFinish();
@@ -970,8 +991,8 @@ void TestIntegration::testEditDeleteConflict2() {
     _syncPal->pause();
 
     // Delete dir on remote replica
-    DeleteJob deleteJob(_driveDbId, dirRemoteId, "",
-                        ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob deleteJob(_driveDbId, dirRemoteId, "", "",
+                        NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     deleteJob.runSynchronously();
 
     // Edit file on local replica
@@ -1099,8 +1120,8 @@ void TestIntegration::testMoveDeleteConflict1() {
     // On remote replica
     // Delete A
     {
-        DeleteJob deleteJob(_driveDbId, aRemoteId, "",
-                            ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+        DeleteJob deleteJob(_driveDbId, aRemoteId, "", "",
+                            NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
         deleteJob.runSynchronously();
     }
 
@@ -1187,8 +1208,8 @@ void TestIntegration::testMoveDeleteConflict1() {
     LOGW_DEBUG(_logger, L"----- test Move-Delete conflict 1 : Clean phase");
 
     // Remove the test files
-    DeleteJob finalDeleteJob(_driveDbId, aRemoteId, "",
-                             ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob finalDeleteJob(_driveDbId, aRemoteId, "", "",
+                             NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     finalDeleteJob.runSynchronously();
 
     waitForSyncToFinish();
@@ -1340,8 +1361,8 @@ void TestIntegration::testMoveDeleteConflict2() {
     LOGW_DEBUG(_logger, L"----- test Move-Delete conflict 2 : Clean phase");
 
     // Remove the test files
-    DeleteJob finalDeleteJob(_driveDbId, aRemoteId, "",
-                             ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob finalDeleteJob(_driveDbId, aRemoteId, "", "",
+                             NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     finalDeleteJob.runSynchronously();
 
     waitForSyncToFinish();
@@ -1382,8 +1403,8 @@ void TestIntegration::testMoveDeleteConflict3() {
 
     // On remote replica
     // Delete A
-    DeleteJob setupDeleteJob(_driveDbId, aRemoteId, "",
-                             ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob setupDeleteJob(_driveDbId, aRemoteId, "", "",
+                             NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     setupDeleteJob.runSynchronously();
 
     Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
@@ -1465,12 +1486,12 @@ void TestIntegration::testMoveDeleteConflict3() {
     LOGW_DEBUG(_logger, L"----- test Move-Delete conflict 3 : Clean phase");
 
     // Remove the test files
-    DeleteJob finalDeleteJob1(_driveDbId, aRemoteId, "",
-                              ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob finalDeleteJob1(_driveDbId, aRemoteId, "", "",
+                              NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     finalDeleteJob1.runSynchronously();
 
-    DeleteJob finalDeleteJob2(_driveDbId, sRemoteId, "",
-                              ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob finalDeleteJob2(_driveDbId, sRemoteId, "", "",
+                              NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     finalDeleteJob2.runSynchronously();
 
     waitForSyncToFinish();
@@ -1592,12 +1613,12 @@ void TestIntegration::testMoveDeleteConflict4() {
     LOGW_DEBUG(_logger, L"----- test Move-Delete conflict 4 : Clean phase");
 
     // Remove the test files
-    DeleteJob finalDeleteJob1(_driveDbId, aRemoteId, "",
-                              ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob finalDeleteJob1(_driveDbId, aRemoteId, "", "",
+                              NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     finalDeleteJob1.runSynchronously();
 
-    DeleteJob finalDeleteJob2(_driveDbId, sRemoteId, "",
-                              ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob finalDeleteJob2(_driveDbId, sRemoteId, "", "",
+                              NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     finalDeleteJob2.runSynchronously();
 
     waitForSyncToFinish();
@@ -1635,8 +1656,8 @@ void TestIntegration::testMoveDeleteConflict5() {
 
     // On remote replica
     // Rename A into B
-    DeleteJob setupDeleteJob(_driveDbId, aRemoteId, "",
-                             ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob setupDeleteJob(_driveDbId, aRemoteId, "", "",
+                             NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     setupDeleteJob.runSynchronously();
 
     Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
@@ -1749,8 +1770,8 @@ void TestIntegration::testMoveParentDeleteConflict() {
     LOGW_DEBUG(_logger, L"----- test MoveParent-Delete conflict : Clean phase");
 
     // Remove the test files
-    DeleteJob finalDeleteJob(_driveDbId, aRemoteId, "",
-                             ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob finalDeleteJob(_driveDbId, aRemoteId, "", "",
+                             NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     finalDeleteJob.runSynchronously();
 
     waitForSyncToFinish();
@@ -1788,8 +1809,8 @@ void TestIntegration::testCreateParentDeleteConflict() {
 
     // On remote replica
     // Delete A
-    DeleteJob setupDeleteJob(_driveDbId, aRemoteId, "",
-                             ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob setupDeleteJob(_driveDbId, aRemoteId, "", "",
+                             NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     setupDeleteJob.runSynchronously();
 
     Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
@@ -1923,8 +1944,8 @@ void TestIntegration::testMoveMoveSourcePseudoConflict() {
     LOGW_DEBUG(_logger, L"----- test Move-MoveSource pseudo conflict : Clean phase");
 
     // Remove the test files
-    DeleteJob finalDeleteJob(_driveDbId, testFileRemoteId, "",
-                             ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob finalDeleteJob(_driveDbId, testFileRemoteId, "", "",
+                             NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     finalDeleteJob.runSynchronously();
 
     waitForSyncToFinish();
@@ -1990,8 +2011,8 @@ void TestIntegration::testMoveMoveSourceConflict() {
     LOGW_DEBUG(_logger, L"----- test Move-MoveSource conflict : Clean phase");
 
     // Remove the test files
-    DeleteJob finalDeleteJob(_driveDbId, testFileRemoteId, "",
-                             ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob finalDeleteJob(_driveDbId, testFileRemoteId, "", "",
+                             NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     finalDeleteJob.runSynchronously();
 
     waitForSyncToFinish();
@@ -2072,8 +2093,8 @@ void TestIntegration::testMoveMoveDestConflict() {
     LOGW_DEBUG(_logger, L"----- test Move-MoveDest conflict : Clean phase");
 
     // Remove the test files
-    DeleteJob finalDeleteJob(_driveDbId, testFileRemoteId, "",
-                             ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob finalDeleteJob(_driveDbId, testFileRemoteId, "", "",
+                             NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     finalDeleteJob.runSynchronously();
 
     std::filesystem::remove(localExcludedPath);
@@ -2141,8 +2162,8 @@ void TestIntegration::testMoveMoveCycleConflict() {
     LOGW_DEBUG(_logger, L"----- test Move-MoveCycle conflict : Clean phase");
 
     // Remove the test files
-    DeleteJob finalDeleteJob(_driveDbId, testDirRemoteIdB, "",
-                             ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob finalDeleteJob(_driveDbId, testDirRemoteIdB, "", "",
+                             NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     finalDeleteJob.runSynchronously();
 
     waitForSyncToFinish();
@@ -2150,16 +2171,186 @@ void TestIntegration::testMoveMoveCycleConflict() {
     std::cout << "OK" << std::endl;
 }
 
-void TestIntegration::waitForSyncToFinish() {
-    Utility::msleep(1000);
+void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
+    if (!testhelpers::isExtendedTest()) return;
+    SyncNodeCache::instance()->update(_driveDbId, SyncNodeType::BlackList,
+                                      {test_commonDocumentsNodeId}); // Exclude common documents folder
+    const RemoteTemporaryDirectory remoteTempDir(_driveDbId, "1", "testNodeIdReuseFile2DirAndDir2File");
+    const SyncPath relativeWorkingDirPath = remoteTempDir.name();
+    const SyncPath absoluteLocalWorkingDir = _localPath / relativeWorkingDirPath;
+    _syncPal->start();
+    waitForSyncToFinish();
 
+    const auto localSnapshot = _syncPal->snapshot(ReplicaSide::Local);
+    const auto remoteSnapshot = _syncPal->snapshot(ReplicaSide::Remote);
+    CPPUNIT_ASSERT(!localSnapshot->itemId(relativeWorkingDirPath).empty());
+    CPPUNIT_ASSERT(!remoteSnapshot->itemId(relativeWorkingDirPath).empty());
+
+    MockIoHelperFileStat mockIoHelper;
+    // Create a file with a custom inode on the local side
+    mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile", 2);
+    {
+        const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string());
+    }
+    waitForSyncToFinish();
+    CPPUNIT_ASSERT_EQUAL(NodeId("2"), localSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile"));
+    const NodeId remoteFileId = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
+    CPPUNIT_ASSERT(!remoteFileId.empty());
+    CPPUNIT_ASSERT_EQUAL(NodeType::File, remoteSnapshot->type(remoteFileId));
+
+    // Replace the file with a directory on the local side (with the same id)
+    _syncPal->pause();
+    while (!_syncPal->isPaused()) {
+        Utility::msleep(100);
+    }
+    IoError ioError = IoError::Success;
+    IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseFile", ioError);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseDir", 2);
+    IoHelper::createDirectory(absoluteLocalWorkingDir / "testNodeIdReuseDir", ioError);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+    _syncPal->unpause();
+    waitForSyncToFinish();
+
+    // Check that the file has been replaced by a directory on the remote with a different ID
+    const NodeId newRemoteDirId = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseDir");
+    CPPUNIT_ASSERT(!newRemoteDirId.empty());
+    CPPUNIT_ASSERT(newRemoteDirId != remoteFileId);
+    CPPUNIT_ASSERT_EQUAL(NodeType::Directory, remoteSnapshot->type(newRemoteDirId));
+    CPPUNIT_ASSERT(!remoteSnapshot->exists(remoteFileId));
+
+    // Replace the directory with a file on the local side with the same id
+    _syncPal->pause();
+    while (!_syncPal->isPaused()) {
+        Utility::msleep(100);
+    }
+    IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseDir", ioError);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    {
+        const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string());
+    }
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+    _syncPal->unpause();
+    waitForSyncToFinish();
+
+    // Check that the directory has been replaced by a file on the remote with a different ID
+    const NodeId newRemoteFileId = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
+    CPPUNIT_ASSERT(newRemoteFileId != "");
+    CPPUNIT_ASSERT(newRemoteFileId != newRemoteDirId);
+    CPPUNIT_ASSERT(newRemoteFileId != remoteFileId);
+    CPPUNIT_ASSERT(!remoteSnapshot->exists(remoteFileId));
+    CPPUNIT_ASSERT(!remoteSnapshot->exists(newRemoteDirId));
+    CPPUNIT_ASSERT_EQUAL(NodeType::File, remoteSnapshot->type(newRemoteFileId));
+}
+
+void TestIntegration::testNodeIdReuseFile2File() {
+    if (!testhelpers::isExtendedTest()) return;
+    SyncNodeCache::instance()->update(_driveDbId, SyncNodeType::BlackList,
+                                      {test_commonDocumentsNodeId}); // Exclude common documents folder
+    const RemoteTemporaryDirectory remoteTempDir(_driveDbId, "1", "testNodeIdReuseFile2File");
+    const SyncPath relativeWorkingDirPath = remoteTempDir.name();
+    const SyncPath absoluteLocalWorkingDir = _localPath / relativeWorkingDirPath;
+    _syncPal->start();
+    waitForSyncToFinish();
+
+    const auto localSnapshot = _syncPal->snapshot(ReplicaSide::Local);
+    const auto remoteSnapshot = _syncPal->snapshot(ReplicaSide::Remote);
+    CPPUNIT_ASSERT(!localSnapshot->itemId(relativeWorkingDirPath).empty());
+    CPPUNIT_ASSERT(!remoteSnapshot->itemId(relativeWorkingDirPath).empty());
+
+    MockIoHelperFileStat mockIoHelper;
+    mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile", 2);
+    {
+        const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string());
+    }
+    waitForSyncToFinish();
+    CPPUNIT_ASSERT_EQUAL(NodeId("2"), localSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile"));
+    const NodeId remoteFileId = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
+    CPPUNIT_ASSERT(!remoteFileId.empty());
+    CPPUNIT_ASSERT_EQUAL(NodeType::File, remoteSnapshot->type(remoteFileId));
+
+    // Expected behavior:
+    // - changed: ctime, mtime/size/content, path (chmod or + edit + move)
+    //   unchanged: inode
+    //   - new file on remote side
+    //
+    // - changed: mtime/size/content, path (edit + move)
+    //   unchanged: inode, ctime
+    //   - Edit + Move on remote side
+
+
+    // Delete a file and create an other file with the same inode at a different path with different content and ctime
+    // Expected behavior: new file on remote side
+    _syncPal->pause();
+    while (!_syncPal->isPaused()) {
+        Utility::msleep(100);
+    }
+
+    IoError ioError = IoError::Success;
+    IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseFile", ioError);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile2", 2);
+    {
+        std::ofstream((absoluteLocalWorkingDir / "testNodeIdReuseFile2").string()) << "New content";
+    }
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+    _syncPal->unpause();
+    waitForSyncToFinish();
+    _syncPal->pause();
+    const NodeId newRemoteFileId = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile2");
+    CPPUNIT_ASSERT(!newRemoteFileId.empty());
+    CPPUNIT_ASSERT(remoteFileId != newRemoteFileId);
+    CPPUNIT_ASSERT(!remoteSnapshot->exists(remoteFileId));
+
+    // Edit a file and move it to a different path.
+    // Expected behavior: Edit + Move on remote side
+    {
+        std::ofstream file(absoluteLocalWorkingDir / "testNodeIdReuseFile2");
+        file << "New content2"; // Content change -> edit
+        file.close();
+    }
+    mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile3", 2);
+    IoHelper::moveItem(absoluteLocalWorkingDir / "testNodeIdReuseFile2", absoluteLocalWorkingDir / "testNodeIdReuseFile3",
+                       ioError);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+    _syncPal->unpause();
+    waitForSyncToFinish();
+    CPPUNIT_ASSERT(remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile2").empty());
+    const NodeId newRemoteFileId2 = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile3");
+    CPPUNIT_ASSERT(!newRemoteFileId2.empty());
+    CPPUNIT_ASSERT_EQUAL(newRemoteFileId, newRemoteFileId2);
+    CPPUNIT_ASSERT_EQUAL(remoteSnapshot->size(newRemoteFileId2), localSnapshot->size("2"));
+}
+
+void TestIntegration::waitForSyncToFinish() {
+    Utility::msleep(2000);
+    int timeOutCounter = 0;
     // Wait for end of sync
     while (!_syncPal->isIdle()) {
+        CPPUNIT_ASSERT_LESS(60, timeOutCounter++);
+        Utility::msleep(2000);
+        while (!_syncPal->isIdle()) {
+            CPPUNIT_ASSERT_LESS(60, timeOutCounter++);
+            Utility::msleep(2000);
+        }
+    }
+
+    Utility::msleep(1000);
+
+    // Wait for the snapshot to be updated.
+    while (_syncPal->_localFSObserverWorker->updating()) {
+        CPPUNIT_ASSERT_LESS(60, timeOutCounter++);
         Utility::msleep(1000);
     }
 
-    Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
-                            // request is implemented)
+    while (_syncPal->_remoteFSObserverWorker->updating()) {
+        CPPUNIT_ASSERT_LESS(60, timeOutCounter++);
+        Utility::msleep(1000);
+    }
 }
 
 } // namespace KDC
