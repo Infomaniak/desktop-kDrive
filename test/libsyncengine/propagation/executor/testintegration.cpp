@@ -2172,7 +2172,7 @@ void TestIntegration::testMoveMoveCycleConflict() {
 }
 
 void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
-    // if (!testhelpers::isExtendedTest()) return;
+    if (!testhelpers::isExtendedTest()) return;
     LOGW_DEBUG(_logger, L"$$$$$ testNodeIdReuseFile2DirAndDir2File");
 
     SyncNodeCache::instance()->update(_driveDbId, SyncNodeType::BlackList,
@@ -2248,7 +2248,7 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
 }
 
 void TestIntegration::testNodeIdReuseFile2File() {
-    // if (!testhelpers::isExtendedTest()) return;
+    if (!testhelpers::isExtendedTest()) return;
     LOGW_DEBUG(_logger, L"$$$$$ testNodeIdReuseFile2File");
 
     SyncNodeCache::instance()->update(_driveDbId, SyncNodeType::BlackList,
