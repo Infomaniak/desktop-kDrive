@@ -34,6 +34,7 @@ class TestSnapshot : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSnapshotInsertionWithDifferentEncodings);
         CPPUNIT_TEST(testPath);
         CPPUNIT_TEST(testCopySnapshot);
+        CPPUNIT_TEST(testSnapshotRevision);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -48,6 +49,7 @@ class TestSnapshot : public CppUnit::TestFixture, public TestBase {
         void testSnapshotInsertionWithDifferentEncodings();
         void testPath();
         void testCopySnapshot();
+        void testSnapshotRevision();
 
         std::unique_ptr<Snapshot> _snapshot;
         NodeId _rootNodeId;
