@@ -268,11 +268,6 @@ elseif(BUILD_CLIENT)
         find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
         message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
         install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
-
-        # xxHash
-        find_library(XXHASH_SHARED_LIBRARY NAMES xxHash PATH_SUFFIXES "bin" NO_CACHE)
-        message(STATUS "xxHash dll found in ${XXHASH_SHARED_LIBRARY}")
-        install(FILES ${XXHASH_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
     else ()
         # Default sync exclude list
         if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -298,10 +293,5 @@ elseif(BUILD_CLIENT)
                 install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
             endif ()
         endif ()
-
-        # xxHash
-        find_library(XXHASH_SHARED_LIBRARY NAMES xxhash NO_CACHE)
-        message(STATUS "xxHash dll found in ${XXHASH_SHARED_LIBRARY}")
-        install(FILES ${XXHASH_SHARED_LIBRARY} DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME})
     endif ()
 endif ()
