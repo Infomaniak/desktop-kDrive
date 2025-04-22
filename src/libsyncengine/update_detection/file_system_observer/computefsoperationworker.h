@@ -43,10 +43,14 @@ class ComputeFSOperationWorker : public ISyncWorker {
     private:
         using NodeIdSet = NodeSet;
         using DbNodeIdSet = std::unordered_set<DbNodeId>;
+        using NodeIdsSet = std::unordered_set<SyncDb::NodeIds, SyncDb::NodeIds::hashNodeIdsFunction>;
+        SnapshotRevision _lastLocalSnapshotSyncedRevision = 0;
+        SnapshotRevision _lastRemoteSnapshotSyncedRevision = 0;
+
         // Detect changes based on the database records: delete, move and edit operations
         ExitCode inferChangesFromDb(NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet);
         ExitCode inferChangesFromDb(const NodeType nodeType, NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet,
-                                    DbNodeIdSet &remainingDbIds); // Restrict change detection to a node type.
+                                    NodeIdsSet &remainingNodesIds); // Restrict change detection to a node type.
         ExitCode inferChangeFromDbNode(const ReplicaSide side, const DbNode &dbNode, const SyncPath &localDbPath,
                                        const SyncPath &remoteDbPath); // Detect change for a single node on a specific side.
 
@@ -78,7 +82,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
         bool isWhitelisted(const std::shared_ptr<const Snapshot> snapshot, const NodeId &nodeId) const;
         bool isTooBig(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId, int64_t size);
         bool isPathTooLong(const SyncPath &path, const NodeId &nodeId, NodeType type) const;
-        ExitInfo isReusedNodeId(const NodeId &nodeId, const DbNode &dbNode, const std::shared_ptr<const Snapshot> &snapshot,
+        ExitInfo isReusedNodeId(const NodeId &localNodeId, const DbNode &dbNode, const std::shared_ptr<const Snapshot> &snapshot,
                                 bool &isReused) const;
         ExitInfo checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId, bool &isExcluded);
 
@@ -104,7 +108,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
 
         bool addFolderToDelete(const SyncPath &path);
         bool checkIfPathIsInDeletedFolder(const SyncPath &path, bool &isInDeletedFolder);
-
+        bool hasChangedSinceLastSeen(const SyncDb::NodeIds &nodeIds) const;
         friend class TestComputeFSOperationWorker;
 };
 

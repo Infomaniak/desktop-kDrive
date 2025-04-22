@@ -143,11 +143,14 @@ set(client_SRCS
 )
 
 IF( APPLE )
-    list(APPEND client_SRCS cocoainitializer_mac.mm)
+    list(APPEND client_SRCS cocoainitializer_mac.mm ../libcommongui/utility/utility_mac.cpp)
     set_property(SOURCE cocoainitializer_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
     list(APPEND client_SRCS systray.mm)
     set_property(SOURCE systray.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+
+ELSEIF( UNIX )
+    list(APPEND client_SRCS ../libcommongui/utility/utility_linux.cpp)
 ENDIF()
 
 set(3rdparty_SRC

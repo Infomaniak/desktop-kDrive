@@ -414,6 +414,11 @@ void TestSnapshot::testCopySnapshot() {
     CPPUNIT_ASSERT(Str2SyncName("newFile1.1") == snapshot.name("file1.1"));
     CPPUNIT_ASSERT(Str2SyncName("file1.1") == snapShotCopy.name("file1.1"));
 
+    // Ensure the snapshot revision is correctly handled
+    snapshot.setName("file1.1", Str("File1.1")); // Ensure the live snapshot revision increase
+    CPPUNIT_ASSERT_GREATER(snapShotCopy.revision(), snapshot.revision());
+    CPPUNIT_ASSERT_GREATER(snapShotCopy.lastChangeRevision("file1.1"), snapshot.lastChangeRevision("file1.1"));
+
     // Ensure SnapshotItems::_children elements are copied, not just the pointer
     const auto snapshotDir1 = snapshot.findItem("dir1");
     const auto snapshotCopyDir1 = snapShotCopy.findItem("dir1");
@@ -433,6 +438,51 @@ void TestSnapshot::testCopySnapshot() {
     CPPUNIT_ASSERT(snapshotDir1ChildPtr != snapshotCopyDir1ChildPtr);
     CPPUNIT_ASSERT_EQUAL(snapshot.findItem("file1.1").get(), snapshotDir1ChildPtr);
     CPPUNIT_ASSERT_EQUAL(snapShotCopy.findItem("file1.1").get(), snapshotCopyDir1ChildPtr);
+}
+
+void TestSnapshot::testSnapshotRevision() {
+    const NodeId rootNodeId = *SyncDb::driveRootNode().nodeIdLocal();
+    const DbNode dummyRootNode(0, std::nullopt, Str("Local Drive"), SyncName(), "1", "1", std::nullopt, std::nullopt,
+                               std::nullopt, NodeType::Directory, 0, std::nullopt);
+
+    Snapshot snapshot(ReplicaSide::Local, dummyRootNode);
+    SnapshotRevision lastRevision = snapshot.revision();
+    const SnapshotItem dir1("dir1", rootNodeId, Str("dir1"), testhelpers::defaultTime, testhelpers::defaultTime,
+                            NodeType::Directory, testhelpers::defaultDirSize, false, true, true);
+    const SnapshotItem file11("file1.1", "dir1", Str("file1.1"), testhelpers::defaultTime, testhelpers::defaultTime,
+                              NodeType::File, testhelpers::defaultFileSize, false, true, true);
+
+    snapshot.updateItem(dir1);
+    CPPUNIT_ASSERT_GREATER(lastRevision, snapshot.revision());
+    lastRevision = snapshot.revision();
+
+    snapshot.updateItem(file11);
+    CPPUNIT_ASSERT_GREATER(lastRevision, snapshot.revision());
+    lastRevision = snapshot.revision();
+
+    snapshot.setCreatedAt("dir1", 123);
+    CPPUNIT_ASSERT_GREATER(lastRevision, snapshot.revision());
+    lastRevision = snapshot.revision();
+
+    snapshot.setLastModified("dir1", 123);
+    CPPUNIT_ASSERT_GREATER(lastRevision, snapshot.revision());
+    lastRevision = snapshot.revision();
+
+    snapshot.setName("dir1", Str2SyncName("dir1b"));
+    CPPUNIT_ASSERT_GREATER(lastRevision, snapshot.revision());
+    lastRevision = snapshot.revision();
+
+    snapshot.setContentChecksum("file1.1", "abcd");
+    CPPUNIT_ASSERT_GREATER(lastRevision, snapshot.revision());
+    lastRevision = snapshot.revision();
+
+    snapshot.updateItem(dir1);
+    CPPUNIT_ASSERT_GREATER(lastRevision, snapshot.revision());
+    lastRevision = snapshot.revision();
+
+    snapshot.updateItem(dir1);
+    CPPUNIT_ASSERT_GREATER(lastRevision, snapshot.revision());
+    lastRevision = snapshot.revision();
 }
 
 } // namespace KDC

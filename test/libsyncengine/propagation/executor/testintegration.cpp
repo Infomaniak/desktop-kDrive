@@ -24,6 +24,7 @@
 #include "jobs/local/localcopyjob.h"
 #include "jobs/local/localdeletejob.h"
 #include "jobs/local/localmovejob.h"
+#include "jobs/jobmanager.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
 #include "libcommon/utility/utility.h"
@@ -178,6 +179,9 @@ void TestIntegration::tearDown() {
     _syncPal->stop(false, true, false);
     ParmsDb::instance()->close();
     ParmsDb::reset();
+    JobManager::stop();
+    JobManager::clear();
+    JobManager::reset();
     TestBase::stop();
 }
 

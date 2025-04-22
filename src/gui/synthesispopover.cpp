@@ -797,6 +797,7 @@ void SynthesisPopover::onConfigRefreshed() {
 
     setSynchronizedDefaultPage(&_defaultSynchronizedPageWidget, this);
     _synthesisBar->refreshErrorsButton();
+    retranslateUi();
     forceRedraw();
 }
 
@@ -1023,6 +1024,8 @@ void SynthesisPopover::onDriveSelected(int driveDbId) {
     if (this->isVisible() && newAccountSelected) {
         emit updateItemList();
     }
+
+    retranslateUi();
 }
 
 void SynthesisPopover::onAddDrive() {
