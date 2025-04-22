@@ -270,6 +270,8 @@ std::string toString(const InconsistencyType e) {
             return "DuplicateNames";
         case InconsistencyType::ForbiddenCharOnlySpaces:
             return "ForbiddenCharOnlySpaces";
+        case InconsistencyType::ForbiddenCharEndWithSpace:
+            return "ForbiddenCharEndWithSpace";
         default:
             return noConversionStr;
     }

@@ -32,8 +32,41 @@ class TestSituationGeneratorException final : public std::runtime_error {
         explicit TestSituationGeneratorException(const std::string &what) : std::runtime_error(what) {}
 };
 
+TestSituationGenerator::TestSituationGenerator() :
+    _syncDb(std::make_shared<SyncDb>("dummySyncDb_" + CommonUtility::generateRandomStringAlphaNum(), "3.6.10")) {
+    (void) _syncDb->init("3.6.10");
+    _syncDb->setAutoDelete(true);
+
+    _localUpdateTree = std::make_shared<UpdateTree>(ReplicaSide::Local, SyncDb::driveRootNode());
+    _remoteUpdateTree = std::make_shared<UpdateTree>(ReplicaSide::Remote, SyncDb::driveRootNode());
+    _localSnapshot = std::make_shared<Snapshot>(ReplicaSide::Local, SyncDb::driveRootNode());
+    _remoteSnapshot = std::make_shared<Snapshot>(ReplicaSide::Remote, SyncDb::driveRootNode());
+}
+
+TestSituationGenerator::TestSituationGenerator(const std::shared_ptr<SyncPal> syncpal) :
+    _syncDb(syncpal->syncDb()), _localSnapshot(syncpal->snapshot(ReplicaSide::Local)),
+    _remoteSnapshot(syncpal->snapshot(ReplicaSide::Remote)), _localUpdateTree(syncpal->updateTree(ReplicaSide::Local)),
+    _remoteUpdateTree(syncpal->updateTree(ReplicaSide::Remote)) {}
+
+TestSituationGenerator::TestSituationGenerator(const std::shared_ptr<SyncDb> syncDb,
+                                               const std::shared_ptr<Snapshot> localSnapshot,
+                                               const std::shared_ptr<Snapshot> remoteSnapshot,
+                                               const std::shared_ptr<UpdateTree> localUpdateTree,
+                                               const std::shared_ptr<UpdateTree> remoteUpdateTree) :
+    _syncDb(syncDb), _localSnapshot(localSnapshot), _remoteSnapshot(remoteSnapshot), _localUpdateTree(localUpdateTree),
+    _remoteUpdateTree(remoteUpdateTree) {}
+
+void TestSituationGenerator::setSyncpal(const std::shared_ptr<SyncPal> syncpal) {
+    _syncDb = syncpal->syncDb();
+    _localSnapshot = syncpal->snapshot(ReplicaSide::Local);
+    _remoteSnapshot = syncpal->snapshot(ReplicaSide::Remote);
+    _localUpdateTree = syncpal->updateTree(ReplicaSide::Local);
+    _remoteUpdateTree = syncpal->updateTree(ReplicaSide::Remote);
+}
+
 void TestSituationGenerator::generateInitialSituation(const std::string &jsonInputStr) {
-    if (!_syncpal) throw TestSituationGeneratorException("Invalid SyncPal pointer!");
+    if (!_syncDb || !_localSnapshot || !_remoteSnapshot || !_localUpdateTree || !_remoteUpdateTree)
+        throw std::runtime_error("Invalid parameters!");
 
     Poco::JSON::Object::Ptr obj;
     try {
@@ -45,16 +78,16 @@ void TestSituationGenerator::generateInitialSituation(const std::string &jsonInp
 
     addItem(obj);
 
-    _syncpal->updateTree(ReplicaSide::Local)->drawUpdateTree();
+    _localUpdateTree->drawUpdateTree();
 }
 
 std::shared_ptr<Node> TestSituationGenerator::getNode(const ReplicaSide side, const NodeId &id) const {
-    return _syncpal->updateTree(side)->getNodeById(generateId(side, id));
+    return updateTree(side)->getNodeById(generateId(side, id));
 }
 
 bool TestSituationGenerator::getDbNode(const NodeId &id, DbNode &dbNode) const {
     bool found = false;
-    if (!_syncpal->syncDb()->node(ReplicaSide::Local, generateId(ReplicaSide::Local, id), dbNode, found)) {
+    if (!_syncDb->node(ReplicaSide::Local, generateId(ReplicaSide::Local, id), dbNode, found)) {
         return false;
     }
     return found;
@@ -62,9 +95,9 @@ bool TestSituationGenerator::getDbNode(const NodeId &id, DbNode &dbNode) const {
 
 std::shared_ptr<Node> TestSituationGenerator::moveNode(const ReplicaSide side, const NodeId &id, const NodeId &newParentId,
                                                        const SyncName &newName /*= {}*/) const {
-    const auto newParentNode = newParentId.empty() ? _syncpal->updateTree(side)->rootNode()
-                                                   : _syncpal->updateTree(side)->getNodeById(generateId(side, newParentId));
-    const auto node = _syncpal->updateTree(side)->getNodeById(generateId(side, id));
+    const auto newParentNode =
+            newParentId.empty() ? updateTree(side)->rootNode() : updateTree(side)->getNodeById(generateId(side, newParentId));
+    const auto node = updateTree(side)->getNodeById(generateId(side, id));
 
     node->setMoveOriginInfos({node->getPath(), node->parentNode()->id().value()});
     (void) node->parentNode()->deleteChildren(node);
@@ -77,7 +110,7 @@ std::shared_ptr<Node> TestSituationGenerator::moveNode(const ReplicaSide side, c
 
 std::shared_ptr<Node> TestSituationGenerator::renameNode(const ReplicaSide side, const NodeId &id,
                                                          const SyncName &newName) const {
-    const auto node = _syncpal->updateTree(side)->getNodeById(generateId(side, id));
+    const auto node = updateTree(side)->getNodeById(generateId(side, id));
     node->setName(newName);
     node->setMoveOriginInfos({node->getPath(), node->parentNode()->id().value()});
     node->insertChangeEvent(OperationType::Move);
@@ -86,7 +119,7 @@ std::shared_ptr<Node> TestSituationGenerator::renameNode(const ReplicaSide side,
 
 [[maybe_unused]] std::shared_ptr<Node> TestSituationGenerator::editNode(const ReplicaSide side, const NodeId &id) const {
     static uint64_t editCounter = 0; // Make sure that 2 consecutive edit operations do not generate the same operation.
-    const auto node = _syncpal->updateTree(side)->getNodeById(generateId(side, id));
+    const auto node = updateTree(side)->getNodeById(generateId(side, id));
     const auto lastModifiedDate = node->lastmodified().value();
     node->setLastModified(static_cast<SyncTime>(++editCounter) + lastModifiedDate);
     node->insertChangeEvent(OperationType::Edit);
@@ -127,6 +160,10 @@ void TestSituationGenerator::addItem(const NodeType itemType, const NodeId &id, 
     insertInAllUpdateTrees(itemType, id, parentId, dbNodeId);
 }
 
+size_t TestSituationGenerator::size() const {
+    return _localUpdateTree->nodes().size();
+}
+
 void TestSituationGenerator::insertInAllSnapshot(const NodeType itemType, const NodeId &id, const NodeId &parentId) const {
     if (id.empty()) return;
     for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote}) {
@@ -134,17 +171,17 @@ void TestSituationGenerator::insertInAllSnapshot(const NodeType itemType, const 
         const auto parentFinalId = parentId.empty() ? "1" : generateId(side, parentId);
         const SnapshotItem item(generateId(side, id), parentFinalId, Str2SyncName(Utility::toUpper(id)), testhelpers::defaultTime,
                                 testhelpers::defaultTime, itemType, size, false, true, true);
-        (void) _syncpal->snapshot(side)->updateItem(item);
+        (void) snapshot(side)->updateItem(item);
     }
 }
 
 DbNodeId TestSituationGenerator::insertInDb(const NodeType itemType, const NodeId &id, const NodeId &parentId) const {
     DbNode parentNode;
     if (parentId.empty()) {
-        parentNode = _syncpal->syncDb()->rootNode();
+        parentNode = _syncDb->rootNode();
     } else {
         bool found = false;
-        if (!_syncpal->syncDb()->node(ReplicaSide::Local, generateId(ReplicaSide::Local, parentId), parentNode, found)) {
+        if (!_syncDb->node(ReplicaSide::Local, generateId(ReplicaSide::Local, parentId), parentNode, found)) {
             throw TestSituationGeneratorException("Failed to find parent node");
         }
         if (!found) {
@@ -158,20 +195,20 @@ DbNodeId TestSituationGenerator::insertInDb(const NodeType itemType, const NodeI
                         testhelpers::defaultTime, testhelpers::defaultTime, itemType, size);
     DbNodeId dbNodeId = 0;
     bool constraintError = false;
-    (void) _syncpal->syncDb()->insertNode(dbNode, dbNodeId, constraintError);
+    (void) _syncDb->insertNode(dbNode, dbNodeId, constraintError);
     return dbNodeId;
 }
 
 std::shared_ptr<Node> TestSituationGenerator::insertInUpdateTree(
         const ReplicaSide side, const NodeType itemType, const NodeId &id, const NodeId &parentId /*= ""*/,
         const std::optional<DbNodeId> dbNodeId /*= std::nullopt*/) const {
-    const auto parentNode = parentId.empty() ? _syncpal->updateTree(side)->rootNode()
-                                             : _syncpal->updateTree(side)->getNodeById(generateId(side, parentId));
+    const auto parentNode =
+            parentId.empty() ? updateTree(side)->rootNode() : updateTree(side)->getNodeById(generateId(side, parentId));
     const auto size = itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
     const auto node =
             std::make_shared<Node>(dbNodeId, side, Str2SyncName(Utility::toUpper(id)), itemType, OperationType::None,
                                    generateId(side, id), testhelpers::defaultTime, testhelpers::defaultTime, size, parentNode);
-    _syncpal->updateTree(side)->insertNode(node);
+    updateTree(side)->insertNode(node);
     (void) parentNode->insertChildren(node);
     return node;
 }

@@ -157,11 +157,6 @@ JobManager::JobManager() : _logger(Log::instance()->getLogger()) {
     LOG_DEBUG(_logger, "Network Job Manager started with max " << _maxNbThread << " threads");
 }
 
-JobManager::~JobManager() {
-    stop();
-    clear();
-}
-
 void JobManager::run() noexcept {
     while (true) {
         if (_stop) {
