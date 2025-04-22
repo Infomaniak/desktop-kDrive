@@ -101,6 +101,7 @@ bool GenericErrorItemWidget::openInWebview() const {
     return _errorInfo.inconsistencyType() == InconsistencyType::PathLength ||
            _errorInfo.inconsistencyType() == InconsistencyType::Case ||
            _errorInfo.inconsistencyType() == InconsistencyType::ForbiddenChar ||
+           _errorInfo.inconsistencyType() == InconsistencyType::ForbiddenCharEndWithSpace ||
            _errorInfo.inconsistencyType() == InconsistencyType::ReservedName ||
            _errorInfo.inconsistencyType() == InconsistencyType::NameLength ||
            _errorInfo.inconsistencyType() == InconsistencyType::NotYetSupportedChar ||
