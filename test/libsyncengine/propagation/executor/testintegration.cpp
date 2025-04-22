@@ -2334,13 +2334,13 @@ void TestIntegration::waitForSyncToFinish() {
     // Wait for end of sync (A sync is considered ended when it stay in Idle for more than 3s
     bool ended = false;
     while (!ended) {
-        CPPUNIT_ASSERT(duration_cast<seconds>(steady_clock::now() - waitForSyncToFinishStart) < timeOutDuration);
+        CPPUNIT_ASSERT(duration_cast<minutes>(steady_clock::now() - waitForSyncToFinishStart) < timeOutDuration);
 
         if (_syncPal->isIdle() && !_syncPal->_localFSObserverWorker->updating() &&
             !_syncPal->_remoteFSObserverWorker->updating()) {
             const auto idleStart = steady_clock::now();
             while (_syncPal->isIdle() && duration_cast<seconds>(steady_clock::now() - idleStart) < seconds(3)) {
-                CPPUNIT_ASSERT(duration_cast<seconds>(steady_clock::now() - waitForSyncToFinishStart) < timeOutDuration);
+                CPPUNIT_ASSERT(duration_cast<minutes>(steady_clock::now() - waitForSyncToFinishStart) < timeOutDuration);
                 Utility::msleep(5);
             }
             ended = duration_cast<seconds>(steady_clock::now() - idleStart) >= seconds(3);
