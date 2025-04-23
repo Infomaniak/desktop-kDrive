@@ -34,7 +34,7 @@ class AbstractUploadSessionJob : public AbstractTokenNetworkJob {
 
     protected:
         std::string _sessionToken;
-        SyncPath _filePath;
+        SyncPath _absoluteFilePath;
 };
 
 } // namespace KDC
