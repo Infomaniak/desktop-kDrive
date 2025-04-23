@@ -542,6 +542,9 @@ void TestIo::testCheckIfPathExistWithDistinctEncodings() {
 }
 
 void TestIo::testCheckIfPathExistsMixedSeparators(void) {
+    // Run only on Windows
+    // On Unix systems, '\' is not considered a path separator, it can be used like any other character in a file name.
+
     const LocalTemporaryDirectory temporaryDirectory("TestIo_checkIfPathExistsMixedSeparators"); // The separ
     const SyncPath subDirForward = temporaryDirectory.path().string() + "/sub_dir";
     const SyncPath subFileForward = subDirForward.string() + "/sub_file.txt";
@@ -585,7 +588,11 @@ void TestIo::testCheckIfPathExists() {
     testCheckIfPathExistsSimpleCases();
     testCheckIfPathExistsWithSameNodeIdSimpleCases();
     testCheckIfPathExistWithDistinctEncodings();
+#ifdef WIN32
+    // On Unix systems, '\' is not considered a path separator, it can be used like any other character in a file name.
     testCheckIfPathExistsMixedSeparators();
+#endif // WIN32
+
 }
 
 } // namespace KDC
