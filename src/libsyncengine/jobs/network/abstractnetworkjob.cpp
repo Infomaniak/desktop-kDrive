@@ -472,7 +472,7 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
         case Poco::Net::HTTPResponse::HTTP_SERVICE_UNAVAILABLE: {
             _exitInfo = {ExitCode::BackError, ExitCause::ServiceUnavailable};
             LOG_WARN(_logger, "Service unavailable");
-            noRetry();
+            disableRetry();
             break;
         }
         default: {

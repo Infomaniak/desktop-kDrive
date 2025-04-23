@@ -64,7 +64,7 @@ class AbstractNetworkJob : public AbstractJob {
         [[nodiscard]] std::string errorText(Poco::Exception const &e) const;
         [[nodiscard]] std::string errorText(std::exception const &e) const;
 
-        void noRetry() { _trials = 0; }
+        void disableRetry() { _trials = 0; }
 
         virtual bool handleJsonResponse(std::istream &is);
         virtual bool handleOctetStreamResponse(std::istream &is);

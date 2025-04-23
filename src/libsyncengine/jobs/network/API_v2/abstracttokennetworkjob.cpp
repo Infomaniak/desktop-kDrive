@@ -134,7 +134,7 @@ bool AbstractTokenNetworkJob::handleUnauthorizedResponse() {
         // The token has not already been refreshed or was refreshed more than its lifetime ago
         if (!refreshToken()) {
             LOG_WARN(_logger, "Refresh token failed");
-            noRetry();
+            disableRetry();
 
             return false;
         }
@@ -184,7 +184,7 @@ bool AbstractTokenNetworkJob::handleError(std::istream &is, const Poco::URI &uri
         case Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED:
             return handleUnauthorizedResponse();
         case Poco::Net::HTTPResponse::HTTP_NOT_FOUND: {
-            noRetry();
+            disableRetry();
             _exitInfo = {ExitCode::BackError, ExitCause::NotFound};
             return false;
         }
@@ -220,7 +220,7 @@ bool AbstractTokenNetworkJob::handleError(std::istream &is, const Poco::URI &uri
         case NetworkErrorCode::ProductMaintenance:
         case NetworkErrorCode::DriveIsInMaintenanceError: {
             LOG_DEBUG(_logger, "Product in maintenance");
-            noRetry();
+            disableRetry();
             if (const auto contextObj = errorObjPtr->getObject(contextKey); contextObj != nullptr) {
                 std::string context;
                 JsonParserUtility::extractValue(contextObj, reasonKey, context, false);
@@ -274,7 +274,7 @@ bool AbstractTokenNetworkJob::handleJsonResponse(std::istream &is) {
         }
 
         if (getNetworkErrorReason(maintenanceReason) == NetworkErrorReason::NotRenew) {
-            noRetry();
+            disableRetry();
             _exitInfo = {ExitCode::BackError, ExitCause::DriveNotRenew};
             return false;
         }
@@ -288,13 +288,13 @@ bool AbstractTokenNetworkJob::handleJsonResponse(std::istream &is) {
                 if (std::string val; JsonParserUtility::extractValue(maintenanceInfoObj, codeKey, val) && val == "asleep") {
                     LOG_DEBUG(_logger, "Drive is asleep");
                     _exitInfo.setCause(ExitCause::DriveAsleep);
-                    noRetry();
+                    disableRetry();
                     return false;
                 }
                 if (std::string val; JsonParserUtility::extractValue(maintenanceInfoObj, codeKey, val) && val == "waking_up") {
                     LOG_DEBUG(_logger, "Drive is waking up");
                     _exitInfo.setCause(ExitCause::DriveWakingUp);
-                    noRetry();
+                    disableRetry();
                     return false;
                 }
             }

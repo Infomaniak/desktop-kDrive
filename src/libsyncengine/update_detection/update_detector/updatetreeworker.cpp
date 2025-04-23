@@ -86,12 +86,13 @@ void UpdateTreeWorker::execute() {
         _updateTree->drawUpdateTree();
     }
 
-    const std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
+    const std::chrono::milliseconds elapsedSeconds =
+            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start);
 
     if (exitCode == ExitCode::Ok) {
-        LOG_SYNCPAL_DEBUG(_logger, "Update Tree " << _side << " updated in: " << elapsed_seconds.count() << "s");
+        LOG_SYNCPAL_DEBUG(_logger, "Update Tree " << _side << " updated in: " << elapsedSeconds.count() << "ms");
     } else {
-        LOG_SYNCPAL_WARN(_logger, "Update Tree " << _side << " generation failed after: " << elapsed_seconds.count() << "s");
+        LOG_SYNCPAL_WARN(_logger, "Update Tree " << _side << " generation failed after: " << elapsedSeconds.count() << "ms");
     }
 
     // Clear unexpected operation set once used

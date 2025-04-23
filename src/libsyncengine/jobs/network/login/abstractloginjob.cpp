@@ -105,7 +105,7 @@ bool AbstractLoginJob::handleError(std::istream &inputStream, const Poco::URI &u
             getNetworkErrorReason(errorReason) == NetworkErrorReason::RefreshTokenRevoked) {
             _errorDescr = errorReason;
             LOG_WARN(_logger, "Error in request " << uri.toString().c_str() << " : refresh token has been revoked ");
-            noRetry();
+            disableRetry();
             _exitInfo = ExitCode::InvalidToken;
         } else {
             LOG_WARN(_logger, "Error in request " << uri.toString().c_str() << " : " << errorReason.c_str());
