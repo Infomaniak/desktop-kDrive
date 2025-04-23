@@ -358,11 +358,24 @@ jobs:
       - name: Clean up log directory
         run: powershell -ExecutionPolicy Bypass -Command "if (Test-Path '$env:TEMP\kDrive-logdir') { Remove-Item -Path '$env:TEMP\kDrive-logdir\*' -Recurse -Force }"
 
+      - name: Load cached dependencies
+        id: cache
+        uses: corca-ai/local-cache@v2
+        with:
+          path: build-windows/cache
+          base: ${{ github.workspace }}/../local-cache
+          key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+          clean-key: true        
+
       - name: Download common files
+        if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
         with:
           name: windows-build-common-files
-          path: ${{ github.workspace }}/build-windows/test/
+          path: ${{ github.workspace }}/build-windows/cache/
+
+      - name: Copy the cache to the test directory
+        run: cp -r ${{ github.workspace }}/build-windows/cache/* ${{ github.workspace }}/build-windows/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
@@ -402,11 +415,24 @@ jobs:
       - name: Clean up log directory
         run: powershell -ExecutionPolicy Bypass -Command "if (Test-Path '$env:TEMP\kDrive-logdir') { Remove-Item -Path '$env:TEMP\kDrive-logdir\*' -Recurse -Force }"
 
+      - name: Load cached dependencies
+        id: cache
+        uses: corca-ai/local-cache@v2
+        with:
+          path: build-windows/cache
+          base: ${{ github.workspace }}/../local-cache
+          key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+          clean-key: true        
+
       - name: Download common files
+        if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
         with:
           name: windows-build-common-files
-          path: ${{ github.workspace }}/build-windows/test/
+          path: ${{ github.workspace }}/build-windows/cache/
+
+      - name: Copy the cache to the test directory
+        run: cp -r ${{ github.workspace }}/build-windows/cache/* ${{ github.workspace }}/build-windows/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
@@ -446,11 +472,24 @@ jobs:
       - name: Clean up log directory
         run: powershell -ExecutionPolicy Bypass -Command "if (Test-Path '$env:TEMP\kDrive-logdir') { Remove-Item -Path '$env:TEMP\kDrive-logdir\*' -Recurse -Force }"
 
+      - name: Load cached dependencies
+        id: cache
+        uses: corca-ai/local-cache@v2
+        with:
+          path: build-windows/cache
+          base: ${{ github.workspace }}/../local-cache
+          key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+          clean-key: true        
+
       - name: Download common files
+        if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
         with:
           name: windows-build-common-files
-          path: ${{ github.workspace }}/build-windows/test/
+          path: ${{ github.workspace }}/build-windows/cache/
+
+      - name: Copy the cache to the test directory
+        run: cp -r ${{ github.workspace }}/build-windows/cache/* ${{ github.workspace }}/build-windows/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
@@ -490,11 +529,24 @@ jobs:
       - name: Clean up log directory
         run: powershell -ExecutionPolicy Bypass -Command "if (Test-Path '$env:TEMP\kDrive-logdir') { Remove-Item -Path '$env:TEMP\kDrive-logdir\*' -Recurse -Force }"
 
+      - name: Load cached dependencies
+        id: cache
+        uses: corca-ai/local-cache@v2
+        with:
+          path: build-windows/cache
+          base: ${{ github.workspace }}/../local-cache
+          key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+          clean-key: true        
+
       - name: Download common files
+        if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
         with:
           name: windows-build-common-files
-          path: ${{ github.workspace }}/build-windows/test/
+          path: ${{ github.workspace }}/build-windows/cache/
+
+      - name: Copy the cache to the test directory
+        run: cp -r ${{ github.workspace }}/build-windows/cache/* ${{ github.workspace }}/build-windows/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
@@ -534,11 +586,24 @@ jobs:
       - name: Clean up log directory
         run: powershell -ExecutionPolicy Bypass -Command "if (Test-Path '$env:TEMP\kDrive-logdir') { Remove-Item -Path '$env:TEMP\kDrive-logdir\*' -Recurse -Force }"
 
+      - name: Load cached dependencies
+        id: cache
+        uses: corca-ai/local-cache@v2
+        with:
+          path: build-windows/cache
+          base: ${{ github.workspace }}/../local-cache
+          key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+          clean-key: true        
+
       - name: Download common files
+        if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
         with:
           name: windows-build-common-files
-          path: ${{ github.workspace }}/build-windows/test/
+          path: ${{ github.workspace }}/build-windows/cache/
+
+      - name: Copy the cache to the test directory
+        run: cp -r ${{ github.workspace }}/build-windows/cache/* ${{ github.workspace }}/build-windows/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
