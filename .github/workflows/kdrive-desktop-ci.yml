@@ -2,10 +2,10 @@ name: kDrive desktop CI
 
 on:
   workflow_dispatch:  
-  #pull_request:
-  #  branches-ignore:
-  #      - 'release/**'
-  #  types: [synchronize, review_requested]
+  pull_request:
+    branches-ignore:
+        - 'release/**'
+    types: [synchronize, review_requested, opened]
 
 concurrency:
   group: kDrive-desktop-ci-${{ github.head_ref }}
