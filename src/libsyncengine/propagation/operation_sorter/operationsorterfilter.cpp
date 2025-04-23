@@ -21,25 +21,33 @@ namespace KDC {
 OperationSorterFilter::OperationSorterFilter(const std::unordered_map<UniqueId, SyncOpPtr> &ops) : _ops(ops) {}
 
 void OperationSorterFilter::filterOperations() {
-    std::unordered_map<SyncName, SyncOpPtr, StringHashFunction, std::equal_to<>> deleteBeforeMove;
-    std::unordered_map<SyncName, SyncOpPtr, StringHashFunction, std::equal_to<>> moveBeforeCreate;
+    NameToOpMap deleteBeforeMoveCandidates;
+    NameToOpMap moveBeforeCreateCandidates;
     std::unordered_map<SyncPath, SyncOpPtr> deletedDirectoryPaths;
     std::unordered_map<SyncPath, SyncOpPtr> moveOriginPaths;
+    std::unordered_map<SyncPath, SyncOpPtr> createdDirectoryPaths;
+    std::unordered_map<SyncPath, SyncOpPtr> moveDestinationPaths;
+    NameToOpMap deleteBeforeCreateCandidates;
+    NameToOpMap moveOriginNames;
+    NameToOpMap moveDestinationNames;
+    std::list<SyncOpPtr> moveBeforeMoveHierarchyFlipCandidates;
 
     for (const auto &[_, op]: _ops) {
-        filterFixDeleteBeforeMoveCandidates(op, deleteBeforeMove);
-        filterFixMoveBeforeCreateCandidates(op, moveBeforeCreate);
-        filterFixMoveBeforeDeleteCandidates(op, deletedDirectoryPaths, moveOriginPaths);
-
-        filterFixEditBeforeMoveCandidates(op);
+        filterDeleteBeforeMoveCandidates(op, deleteBeforeMoveCandidates);
+        filterMoveBeforeCreateCandidates(op, moveBeforeCreateCandidates);
+        filterMoveBeforeDeleteCandidates(op, deletedDirectoryPaths, moveOriginPaths);
+        filterCreateBeforeMoveCandidates(op, createdDirectoryPaths, moveDestinationPaths);
+        filterDeleteBeforeCreateCandidates(op, deleteBeforeCreateCandidates);
+        filterMoveBeforeMoveOccupiedCandidates(op, moveOriginNames, moveDestinationNames);
+        filterEditBeforeMoveCandidates(op);
+        filterMoveBeforeMoveHierarchyFlipCandidates(op, moveBeforeMoveHierarchyFlipCandidates);
     }
 }
 
-void OperationSorterFilter::filterFixDeleteBeforeMoveCandidates(
-        const SyncOpPtr &op, std::unordered_map<SyncName, SyncOpPtr, StringHashFunction, std::equal_to<>> &deleteBeforeMove) {
+void OperationSorterFilter::filterDeleteBeforeMoveCandidates(const SyncOpPtr &op, NameToOpMap &deleteBeforeMoveCandidates) {
     if (op->affectedNode()->hasChangeEvent(OperationType::Delete)) {
-        if (const auto [_, ok] = deleteBeforeMove.try_emplace(op->affectedNode()->name(), op); !ok) {
-            const auto &otherOp = deleteBeforeMove.at(op->affectedNode()->name());
+        if (const auto [_, ok] = deleteBeforeMoveCandidates.try_emplace(op->affectedNode()->name(), op); !ok) {
+            const auto &otherOp = deleteBeforeMoveCandidates.at(op->affectedNode()->name());
             if (op->targetSide() != otherOp->targetSide()) {
                 return;
             }
@@ -47,8 +55,8 @@ void OperationSorterFilter::filterFixDeleteBeforeMoveCandidates(
         }
     }
     if (op->affectedNode()->hasChangeEvent(OperationType::Move)) {
-        if (const auto [_, ok] = deleteBeforeMove.try_emplace(op->affectedNode()->name(), op); !ok) {
-            const auto &otherOp = deleteBeforeMove.at(op->affectedNode()->name());
+        if (const auto [_, ok] = deleteBeforeMoveCandidates.try_emplace(op->affectedNode()->name(), op); !ok) {
+            const auto &otherOp = deleteBeforeMoveCandidates.at(op->affectedNode()->name());
             if (op->targetSide() != otherOp->targetSide()) {
                 return;
             }
@@ -57,11 +65,10 @@ void OperationSorterFilter::filterFixDeleteBeforeMoveCandidates(
     }
 }
 
-void OperationSorterFilter::filterFixMoveBeforeCreateCandidates(
-        const SyncOpPtr &op, std::unordered_map<SyncName, SyncOpPtr, StringHashFunction, std::equal_to<>> &moveBeforeCreate) {
+void OperationSorterFilter::filterMoveBeforeCreateCandidates(const SyncOpPtr &op, NameToOpMap &moveBeforeCreateCandidates) {
     if (op->affectedNode()->hasChangeEvent(OperationType::Create)) {
-        if (const auto [_, ok] = moveBeforeCreate.try_emplace(op->affectedNode()->name(), op); !ok) {
-            const auto &otherOp = moveBeforeCreate.at(op->affectedNode()->name());
+        if (const auto [_, ok] = moveBeforeCreateCandidates.try_emplace(op->affectedNode()->name(), op); !ok) {
+            const auto &otherOp = moveBeforeCreateCandidates.at(op->affectedNode()->name());
             if (op->targetSide() != otherOp->targetSide()) {
                 return;
             }
@@ -69,10 +76,10 @@ void OperationSorterFilter::filterFixMoveBeforeCreateCandidates(
         }
     }
     if (op->affectedNode()->hasChangeEvent(OperationType::Move)) {
-        if (const auto [_, ok] =
-                    moveBeforeCreate.try_emplace(Str2SyncName(op->affectedNode()->moveOriginInfos().path().filename()), op);
+        if (const auto [_, ok] = moveBeforeCreateCandidates.try_emplace(
+                    Str2SyncName(op->affectedNode()->moveOriginInfos().path().filename()), op);
             !ok) {
-            const auto &otherOp = moveBeforeCreate.at(op->affectedNode()->name());
+            const auto &otherOp = moveBeforeCreateCandidates.at(op->affectedNode()->name());
             if (op->targetSide() != otherOp->targetSide()) {
                 return;
             }
@@ -81,9 +88,9 @@ void OperationSorterFilter::filterFixMoveBeforeCreateCandidates(
     }
 }
 
-void OperationSorterFilter::filterFixMoveBeforeDeleteCandidates(const SyncOpPtr &op,
-                                                                std::unordered_map<SyncPath, SyncOpPtr> &deletedDirectoryPaths,
-                                                                std::unordered_map<SyncPath, SyncOpPtr> &moveOriginPaths) {
+void OperationSorterFilter::filterMoveBeforeDeleteCandidates(const SyncOpPtr &op,
+                                                             std::unordered_map<SyncPath, SyncOpPtr> &deletedDirectoryPaths,
+                                                             std::unordered_map<SyncPath, SyncOpPtr> &moveOriginPaths) {
     if (op->affectedNode()->hasChangeEvent(OperationType::Delete)) {
         if (op->affectedNode()->type() != NodeType::Directory) {
             return;
@@ -118,10 +125,119 @@ void OperationSorterFilter::filterFixMoveBeforeDeleteCandidates(const SyncOpPtr 
     }
 }
 
-void OperationSorterFilter::filterFixEditBeforeMoveCandidates(const SyncOpPtr &op) {
+void OperationSorterFilter::filterCreateBeforeMoveCandidates(const SyncOpPtr &op,
+                                                             std::unordered_map<SyncPath, SyncOpPtr> &createdDirectoryPaths,
+                                                             std::unordered_map<SyncPath, SyncOpPtr> &moveDestinationPaths) {
+    if (op->affectedNode()->hasChangeEvent(OperationType::Create)) {
+        if (op->affectedNode()->type() != NodeType::Directory) {
+            return;
+        }
+        const auto createdPath = op->affectedNode()->getPath();
+        (void) createdDirectoryPaths.try_emplace(createdPath, op);
+
+        // Check if any of the moved item destination path is inside the created folder.
+        for (const auto &[path, moveOp]: moveDestinationPaths) {
+            if (op->targetSide() != moveOp->targetSide()) {
+                continue;
+            }
+            if (Utility::isDescendantOrEqual(path, createdPath)) {
+                (void) _fixCreateBeforeMoveCandidates.emplace_back(op, moveOp);
+            }
+        }
+        return;
+    }
+
+    if (op->affectedNode()->hasChangeEvent(OperationType::Move)) {
+        const auto destinationPath = op->affectedNode()->getPath();
+        (void) moveDestinationPaths.try_emplace(destinationPath, op);
+
+        // Check if any of the created path contains the destination path.
+        for (const auto &[path, createOp]: createdDirectoryPaths) {
+            if (op->targetSide() != createOp->targetSide()) {
+                continue;
+            }
+            if (Utility::isDescendantOrEqual(destinationPath, path)) {
+                (void) _fixCreateBeforeMoveCandidates.emplace_back(op, createOp);
+            }
+        }
+    }
+}
+void OperationSorterFilter::filterDeleteBeforeCreateCandidates(const SyncOpPtr &op, NameToOpMap &deleteBeforeCreateCandidates) {
+    if (op->affectedNode()->hasChangeEvent(OperationType::Delete)) {
+        if (const auto [_, ok] = deleteBeforeCreateCandidates.try_emplace(op->affectedNode()->name(), op); !ok) {
+            const auto &otherOp = deleteBeforeCreateCandidates.at(op->affectedNode()->name());
+            if (op->targetSide() != otherOp->targetSide()) {
+                return;
+            }
+            (void) _fixDeleteBeforeCreateCandidates.emplace_back(op, otherOp);
+        }
+    }
+    if (op->affectedNode()->hasChangeEvent(OperationType::Create)) {
+        if (const auto [_, ok] = deleteBeforeCreateCandidates.try_emplace(op->affectedNode()->name(), op); !ok) {
+            const auto &otherOp = deleteBeforeCreateCandidates.at(op->affectedNode()->name());
+            if (op->targetSide() != otherOp->targetSide()) {
+                return;
+            }
+            (void) _fixDeleteBeforeCreateCandidates.emplace_back(op, otherOp);
+        }
+    }
+}
+
+void OperationSorterFilter::filterMoveBeforeMoveOccupiedCandidates(const SyncOpPtr &op, NameToOpMap &moveOriginNames,
+                                                                   NameToOpMap &moveDestinationNames) {
+    if (!op->affectedNode()->hasChangeEvent(OperationType::Move)) return;
+
+    const SyncName originName = op->affectedNode()->moveOriginInfos().path().filename().native();
+    const SyncName destinationName = op->affectedNode()->name();
+
+    if (moveOriginNames.contains(destinationName)) {
+        const auto &otherOp = moveOriginNames.at(destinationName);
+        if (op->targetSide() != otherOp->targetSide()) {
+            return;
+        }
+        (void) _fixMoveBeforeMoveOccupiedCandidates.emplace_back(op, otherOp);
+    }
+    if (moveDestinationNames.contains(originName)) {
+        const auto &otherOp = moveDestinationNames.at(originName);
+        if (op->targetSide() != otherOp->targetSide()) {
+            return;
+        }
+        (void) _fixMoveBeforeMoveOccupiedCandidates.emplace_back(op, otherOp);
+    }
+
+    (void) moveOriginNames.try_emplace(originName, op);
+    (void) moveDestinationNames.try_emplace(destinationName, op);
+}
+
+void OperationSorterFilter::filterEditBeforeMoveCandidates(const SyncOpPtr &op) {
     if (op->affectedNode()->hasChangeEvent(OperationType::Edit) && op->affectedNode()->hasChangeEvent(OperationType::Move)) {
         (void) _fixEditBeforeMoveCandidates[op->affectedNode()->id().value()].emplace_back(op);
     }
+}
+
+void OperationSorterFilter::filterMoveBeforeMoveHierarchyFlipCandidates(
+        const SyncOpPtr &op, std::list<SyncOpPtr> &moveBeforeMoveHierarchyFlipCandidates) {
+    if (!op->affectedNode()->hasChangeEvent(OperationType::Move) || op->nodeType() != NodeType::Directory) return;
+
+    const auto &originPath = op->affectedNode()->moveOriginInfos().path();
+    const auto &destinationPath = op->affectedNode()->getPath();
+
+    // Check if any of the created path contains the destination path.
+    for (const auto &otherOp: moveBeforeMoveHierarchyFlipCandidates) {
+        if (op->targetSide() != otherOp->targetSide()) {
+            continue;
+        }
+
+        const auto &otherOriginPath = otherOp->affectedNode()->moveOriginInfos().path();
+        const auto &otherDestinationPath = otherOp->affectedNode()->getPath();
+
+        if (Utility::isDescendantOrEqual(destinationPath, otherDestinationPath) &&
+            Utility::isDescendantOrEqual(otherOriginPath, originPath)) {
+            (void) _fixMoveBeforeMoveHierarchyFlipCandidates.emplace_back(op, otherOp);
+        }
+    }
+
+    (void) moveBeforeMoveHierarchyFlipCandidates.emplace_back(op);
 }
 
 } // namespace KDC

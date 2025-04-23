@@ -42,41 +42,31 @@ class OperationSorterWorker : public OperationProcessor {
          * @brief delete before move, e.g. user deletes an object at path "x" and moves another object "a" to "x".
          */
         void fixDeleteBeforeMove();
-        // Idea : Insert in set the names of the deleted file and the destination names of the moved file. If same name inserted
-        // twice, check fixDeleteBeforeMove.
         void fixDeleteBeforeMoveOptimized();
         /**
          * @brief move before create, e.g. user moves an object "a" to "b" and creates another object at "a".
          */
         void fixMoveBeforeCreate();
-        // Idea : Insert in set the names of the created file and the origin names of the moved file. If same name inserted
-        // twice, check fixMoveBeforeCreate.
         void fixMoveBeforeCreateOptimized();
         /**
          * @brief move before delete, e.g. user moves object "X/y" outside of directory "X" and then deletes "X".
          */
         void fixMoveBeforeDelete();
-        // Idea : keep all deleted file paths. Check for each move if the origin path is inside a deleted path.
         void fixMoveBeforeDeleteOptimized();
         /**
          * @brief create before move, e.g. user creates directory "X" and moves object "y" into "X".
          */
         void fixCreateBeforeMove();
-        // Idea : ???
         void fixCreateBeforeMoveOptimized();
         /**
          * @brief delete before create, e.g. user deletes object "x" and then creates a new object at "x".
          */
         void fixDeleteBeforeCreate();
-        // Idea :Insert in set the names of the created file and the names of the deleted file. If same name inserted
-        // twice, check fixDeleteBeforeCreate.
         void fixDeleteBeforeCreateOptimized();
         /**
          * @brief move before move (occupation), e.g. user moves file "a" to "temp" and then moves file "b" to "a".
          */
         void fixMoveBeforeMoveOccupied();
-        // Idea : Insert in set the origin and destination names of the moved file. If same name inserted
-        // twice, check fixMoveBeforeMoveOccupied.
         void fixMoveBeforeMoveOccupiedOptimized();
         /**
          * @brief create before create, e.g. user creates directory "X" and then creates an object inside it.
@@ -86,7 +76,6 @@ class OperationSorterWorker : public OperationProcessor {
          * @brief edit before move, e.g. user moves an object "a" to "b" and then edit it.
          */
         void fixEditBeforeMove();
-        // Idea : List just the files that have both EDIT and MOVE operations.
         void fixEditBeforeMoveOptimized();
         /**
          * @brief move before move (parent-child flip), e.g. user moves directory "A/B" to "C", then moves directory "A" to
@@ -94,7 +83,7 @@ class OperationSorterWorker : public OperationProcessor {
          */
         void fixMoveBeforeMoveHierarchyFlip();
         // Idea : check just the files whose parent has a MOVE event too. WHAT ABOUT HIERARCHY FLIP WITH A GRAND PARENT????
-        void fixMoveBeforeMoveHierarchyOptimized();
+        void fixMoveBeforeMoveHierarchyFlipOptimized();
 
         std::optional<SyncOperationList> fixImpossibleFirstMoveOp();
         bool breakCycle(SyncOperationList &cycle, const SyncOpPtr &renameResolutionOp);
@@ -128,6 +117,9 @@ class OperationSorterWorker : public OperationProcessor {
                                       SyncOpPtr &ancestorOpWithHighestDistance, int32_t &relativeDepth) const;
 
         bool getIdFromDb(ReplicaSide side, const SyncPath &path, NodeId &id) const;
+
+        std::pair<SyncOpPtr, SyncOpPtr> extractOpsByType(OperationType type1, OperationType type2, SyncOpPtr op,
+                                                         SyncOpPtr otherOp) const;
 
         std::list<std::pair<SyncOpPtr, SyncOpPtr>> _reorderings;
         bool _hasOrderChanged{false};

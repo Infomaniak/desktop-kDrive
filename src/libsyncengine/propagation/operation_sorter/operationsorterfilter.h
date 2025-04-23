@@ -20,6 +20,9 @@
 
 namespace KDC {
 
+using NameToOpMap = std::unordered_map<SyncName, SyncOpPtr, StringHashFunction, std::equal_to<>>;
+using NodeIdToOpListMap = std::unordered_map<NodeId, std::list<SyncOpPtr>, StringHashFunction, std::equal_to<>>;
+
 class OperationSorterFilter {
     public:
         explicit OperationSorterFilter(const std::unordered_map<UniqueId, SyncOpPtr> &ops);
@@ -35,30 +38,90 @@ class OperationSorterFilter {
         [[nodiscard]] const std::list<std::pair<SyncOpPtr, SyncOpPtr>> &fixMoveBeforeDeleteCandidates() const {
             return _fixMoveBeforeDeleteCandidates;
         }
-        [[nodiscard]] const std::unordered_map<NodeId, std::list<SyncOpPtr>, StringHashFunction, std::equal_to<>> &
-        fixEditBeforeMoveCandidates() const {
-            return _fixEditBeforeMoveCandidates;
+        [[nodiscard]] const std::list<std::pair<SyncOpPtr, SyncOpPtr>> &fixCreateBeforeMoveCandidates() const {
+            return _fixCreateBeforeMoveCandidates;
+        }
+        [[nodiscard]] const std::list<std::pair<SyncOpPtr, SyncOpPtr>> &fixDeleteBeforeCreateCandidates() const {
+            return _fixDeleteBeforeCreateCandidates;
+        }
+        [[nodiscard]] const std::list<std::pair<SyncOpPtr, SyncOpPtr>> &fixMoveBeforeMoveOccupiedCandidates() const {
+            return _fixMoveBeforeMoveOccupiedCandidates;
+        }
+        [[nodiscard]] const NodeIdToOpListMap &fixEditBeforeMoveCandidates() const { return _fixEditBeforeMoveCandidates; }
+        [[nodiscard]] const std::list<std::pair<SyncOpPtr, SyncOpPtr>> &fixMoveBeforeMoveHierarchyFlipCandidates() const {
+            return _fixMoveBeforeMoveHierarchyFlipCandidates;
         }
 
     private:
         const std::unordered_map<UniqueId, SyncOpPtr> &_ops;
 
-        void filterFixDeleteBeforeMoveCandidates(
-                const SyncOpPtr &op,
-                std::unordered_map<SyncName, SyncOpPtr, StringHashFunction, std::equal_to<>> &deleteBeforeMove);
-        void filterFixMoveBeforeCreateCandidates(
-                const SyncOpPtr &op,
-                std::unordered_map<SyncName, SyncOpPtr, StringHashFunction, std::equal_to<>> &moveBeforeCreate);
-        void filterFixMoveBeforeDeleteCandidates(const SyncOpPtr &op,
-                                                 std::unordered_map<SyncPath, SyncOpPtr> &deletedDirectoryPaths,
-                                                 std::unordered_map<SyncPath, SyncOpPtr> &moveOriginPaths);
-
-        void filterFixEditBeforeMoveCandidates(const SyncOpPtr &op);
+        /**
+         * @brief Insert in a set the names of the deleted items and the destination names of the moved items. If the same name is
+         * inserted twice, fixDeleteBeforeMove will be checked for the corresponding operations.
+         * @param op The SyncOperation to be checked.
+         * @param deleteBeforeMoveCandidates The map storing the names of affected items.
+         */
+        void filterDeleteBeforeMoveCandidates(const SyncOpPtr &op, NameToOpMap &deleteBeforeMoveCandidates);
+        /**
+         * @brief Insert in a set the names of the created items and the origin names of the moved items. If the same name is
+         * inserted twice, fixMoveBeforeCreate will be checked for the corresponding operations.
+         * @param op The SyncOperation to be checked.
+         * @param moveBeforeCreateCandidates The map storing the names of affected items.
+         */
+        void filterMoveBeforeCreateCandidates(const SyncOpPtr &op, NameToOpMap &moveBeforeCreateCandidates);
+        /**
+         * @brief For each move operation, check if the origin path is inside a deleted path.
+         * @param op The SyncOperation to be checked.
+         * @param deletedDirectoryPaths The map storing all the deleted directory paths.
+         * @param moveOriginPaths The map storing all move operation origin paths.
+         */
+        void filterMoveBeforeDeleteCandidates(const SyncOpPtr &op, std::unordered_map<SyncPath, SyncOpPtr> &deletedDirectoryPaths,
+                                              std::unordered_map<SyncPath, SyncOpPtr> &moveOriginPaths);
+        /**
+         * @brief For each move operation, check if the destination path is inside a created path.
+         * @param op The SyncOperation to be checked.
+         * @param createdDirectoryPaths The map storing the all created directory paths.
+         * @param moveDestinationPaths The map storing all move operation destination paths.
+         */
+        void filterCreateBeforeMoveCandidates(const SyncOpPtr &op, std::unordered_map<SyncPath, SyncOpPtr> &createdDirectoryPaths,
+                                              std::unordered_map<SyncPath, SyncOpPtr> &moveDestinationPaths);
+        /**
+         * @brief Insert in a set the names of the deleted items and the names of the created items. If the same name is
+         * inserted twice, fixDeleteBeforeCreate will be checked for the corresponding operations.
+         * @param op The SyncOperation to be checked.
+         * @param deleteBeforeCreateCandidates The map storing the names of affected items.
+         */
+        void filterDeleteBeforeCreateCandidates(const SyncOpPtr &op, NameToOpMap &deleteBeforeCreateCandidates);
+        /**
+         * @brief Insert in a set the origin and destination names of the moved items. If the same name is inserted twice,
+         * fixMoveBeforeMoveOccupied will be checked for the corresponding operations.
+         * @param op The SyncOperation to be checked.
+         * @param moveBeforeMoveOccupiedCandidates The map storing the names of affected items.
+         */
+        void filterMoveBeforeMoveOccupiedCandidates(const SyncOpPtr &op, NameToOpMap &moveOriginNames,
+                                                    NameToOpMap &moveDestinationNames);
+        /**
+         * @brief Select only the operations that have both an EDIT and a MOVE operation.
+         * @param op The SyncOperation to be checked.
+         */
+        void filterEditBeforeMoveCandidates(const SyncOpPtr &op);
+        /**
+         * @brief If the origin path of opA contains the origin path of opB and, the destination path of opB contains the
+         * destination path of opA, then we are in a case of moveMoveHierarchyFlip.
+         * @param op The SyncOperation to be checked.
+         * @param moveBeforeMoveHierarchyFlipCandidates The list storing every move operations.
+         */
+        void filterMoveBeforeMoveHierarchyFlipCandidates(const SyncOpPtr &op,
+                                                         std::list<SyncOpPtr> &moveBeforeMoveHierarchyFlipCandidates);
 
         std::list<std::pair<SyncOpPtr, SyncOpPtr>> _fixDeleteBeforeMoveCandidates;
         std::list<std::pair<SyncOpPtr, SyncOpPtr>> _fixMoveBeforeCreateCandidates;
         std::list<std::pair<SyncOpPtr, SyncOpPtr>> _fixMoveBeforeDeleteCandidates;
-        std::unordered_map<NodeId, std::list<SyncOpPtr>, StringHashFunction, std::equal_to<>> _fixEditBeforeMoveCandidates;
+        std::list<std::pair<SyncOpPtr, SyncOpPtr>> _fixCreateBeforeMoveCandidates;
+        std::list<std::pair<SyncOpPtr, SyncOpPtr>> _fixDeleteBeforeCreateCandidates;
+        std::list<std::pair<SyncOpPtr, SyncOpPtr>> _fixMoveBeforeMoveOccupiedCandidates;
+        NodeIdToOpListMap _fixEditBeforeMoveCandidates;
+        std::list<std::pair<SyncOpPtr, SyncOpPtr>> _fixMoveBeforeMoveHierarchyFlipCandidates;
 };
 
 } // namespace KDC

@@ -20,15 +20,30 @@ namespace KDC {
 
 class TimerUtility {
     public:
-        static UniqueId startTimer();
-        static SecondsDuration elapsed(UniqueId timerId, const std::string_view consoleMsg = {});
-        static SecondsDuration lap(UniqueId timerId, const std::string_view consoleMsg = {});
-        static SecondsDuration stopTimer(UniqueId timerId, const std::string_view consoleMsg = {});
+        /**
+         * @brief Timer is started at creation.
+         */
+        TimerUtility();
+
+        /**
+         * @brief Restart the timer.
+         */
+        void restartTimer();
+        /**
+         * @brief Return the elapsed time since start.
+         * @param consoleMsg Optional. Print the message and the elapsed time in console is not empty.
+         * @return Elapsed time in seconds.
+         */
+        SecondsDuration elapsed(const std::string_view consoleMsg = {}) const;
+        /**
+         * @brief Return the elapsed time since start and restart the timer.
+         * @param consoleMsg Optional. Print the message and the elapsed time in console is not empty.
+         * @return Elapsed time in seconds.
+         */
+        SecondsDuration lap(const std::string_view consoleMsg = {});
 
     private:
-        static std::unordered_map<UniqueId, std::chrono::time_point<std::chrono::steady_clock>> _timers;
-        static UniqueId _timerId;
-        static std::mutex _mutex;
+        std::chrono::time_point<std::chrono::steady_clock> _startTime;
 };
 
 } // namespace KDC

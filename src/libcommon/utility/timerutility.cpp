@@ -20,36 +20,23 @@
 
 namespace KDC {
 
-std::unordered_map<UniqueId, std::chrono::time_point<std::chrono::steady_clock>> TimerUtility::_timers;
-UniqueId TimerUtility::_timerId = 0;
-std::mutex TimerUtility::_mutex;
+TimerUtility::TimerUtility() : _startTime(std::chrono::steady_clock::now()) {}
 
-UniqueId TimerUtility::startTimer() {
-    const std::scoped_lock<std::mutex> lock(_mutex);
-    _timerId++;
-    (void) _timers.try_emplace(_timerId, std::chrono::steady_clock::now());
-    return _timerId;
+void TimerUtility::restartTimer() {
+    _startTime = std::chrono::steady_clock::now();
 }
 
-SecondsDuration TimerUtility::elapsed(const UniqueId timerId, const std::string_view consoleMsg /*= {}*/) {
-    if (!_timers.contains(timerId)) return SecondsDuration();
-
-    const SecondsDuration elapsedSeconds = std::chrono::steady_clock::now() - _timers[timerId];
+SecondsDuration TimerUtility::elapsed(const std::string_view consoleMsg /*= {}*/) const {
+    const SecondsDuration elapsedSeconds = std::chrono::steady_clock::now() - _startTime;
     if (!consoleMsg.empty()) {
         std::cout << consoleMsg << " : " << elapsedSeconds << std::endl;
     }
     return elapsedSeconds;
 }
 
-SecondsDuration TimerUtility::lap(const UniqueId timerId, const std::string_view consoleMsg /*= {}*/) {
-    const auto elapsedSeconds = elapsed(timerId, consoleMsg);
-    _timers[timerId] = std::chrono::steady_clock::now();
-    return elapsedSeconds;
-}
-
-SecondsDuration TimerUtility::stopTimer(const UniqueId timerId, const std::string_view consoleMsg /*= {}*/) {
-    const auto elapsedSeconds = elapsed(timerId, consoleMsg);
-    (void) _timers.erase(timerId);
+SecondsDuration TimerUtility::lap(const std::string_view consoleMsg /*= {}*/) {
+    const auto elapsedSeconds = elapsed(consoleMsg);
+    restartTimer();
     return elapsedSeconds;
 }
 

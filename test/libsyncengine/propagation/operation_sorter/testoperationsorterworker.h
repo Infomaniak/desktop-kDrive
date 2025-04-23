@@ -34,23 +34,24 @@ class TestOperationSorterWorker final : public CppUnit::TestFixture, public Test
         CPPUNIT_TEST(testFixMoveBeforeCreateOptimized);
         CPPUNIT_TEST(testFixMoveBeforeDelete);
         CPPUNIT_TEST(testFixMoveBeforeDeleteOptimized);
-        // CPPUNIT_TEST(testFixCreateBeforeMove);
-        // CPPUNIT_TEST(testFixCreateBeforeMoveOptimized);
-        // CPPUNIT_TEST(testFixDeleteBeforeCreate);
-        // CPPUNIT_TEST(testFixDeleteBeforeCreateOptimized);
-        // CPPUNIT_TEST(testFixMoveBeforeMoveOccupied);
-        // CPPUNIT_TEST(testFixMoveBeforeMoveOccupiedOptimized);
-        // CPPUNIT_TEST(testFixCreateBeforeCreate);
+        CPPUNIT_TEST(testFixCreateBeforeMove);
+        CPPUNIT_TEST(testFixCreateBeforeMoveOptimized);
+        CPPUNIT_TEST(testFixDeleteBeforeCreate);
+        CPPUNIT_TEST(testFixDeleteBeforeCreateOptimized);
+        CPPUNIT_TEST(testFixMoveBeforeMoveOccupied);
+        CPPUNIT_TEST(testFixMoveBeforeMoveOccupiedOptimized);
+        CPPUNIT_TEST(testFixCreateBeforeCreate);
         CPPUNIT_TEST(testFixEditBeforeMove);
         CPPUNIT_TEST(testFixEditBeforeMoveOptimized);
-        // CPPUNIT_TEST(testFixMoveBeforeMoveParentChildFlip);
-        // CPPUNIT_TEST(testFixMoveBeforeMoveParentChildFlip2);
-        // CPPUNIT_TEST(testFixMoveBeforeMoveParentChildFlip3);
-        // CPPUNIT_TEST(testFixMoveBeforeMoveParentChildFlipOptimized);
-        // CPPUNIT_TEST(testFixImpossibleFirstMoveOp);
-        // CPPUNIT_TEST(testFindCompleteCycles);
-        // CPPUNIT_TEST(testBreakCycle);
-        // CPPUNIT_TEST(testBreakCycle2);
+        CPPUNIT_TEST(testFixMoveBeforeMoveParentChildFlip);
+        CPPUNIT_TEST(testFixMoveBeforeMoveParentChildFlipOptimized);
+        CPPUNIT_TEST(testFixMoveBeforeMoveParentChildFlip2);
+        CPPUNIT_TEST(testFixMoveBeforeMoveParentChildFlip3);
+        CPPUNIT_TEST(testFixImpossibleFirstMoveOp);
+        CPPUNIT_TEST(testFindCompleteCycles);
+        CPPUNIT_TEST(testBreakCycle);
+        CPPUNIT_TEST(testBreakCycle2);
+        CPPUNIT_TEST(testExtractOpsByType);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -74,13 +75,14 @@ class TestOperationSorterWorker final : public CppUnit::TestFixture, public Test
         void testFixEditBeforeMove();
         void testFixEditBeforeMoveOptimized();
         void testFixMoveBeforeMoveParentChildFlip();
+        void testFixMoveBeforeMoveParentChildFlipOptimized();
         void testFixMoveBeforeMoveParentChildFlip2();
         void testFixMoveBeforeMoveParentChildFlip3();
-        void testFixMoveBeforeMoveParentChildFlipOptimized();
         void testFixImpossibleFirstMoveOp();
         void testFindCompleteCycles();
         void testBreakCycle();
         void testBreakCycle2();
+        void testExtractOpsByType();
 
     private:
         SyncOpPtr generateSyncOperation(OperationType opType, const std::shared_ptr<Node> &affectedNode) const;
