@@ -51,7 +51,7 @@
 #include <sys/resource.h>
 #endif
 
-#ifdef Q_OS_WIN
+#ifdef _WIN32
 #include <windows.h>
 #endif
 
@@ -102,7 +102,7 @@ static const QString crashMsg = SharedTools::QtSingleApplication::tr("kDrive app
 
 
 // Helpers for displaying messages. Note that there is no console on Windows.
-#ifdef Q_OS_WIN
+#ifdef _WIN32
 static void displayHelpText(const QString &t) // No console on Windows.
 {
     QString spaces(80, ' '); // Add a line of non-wrapped space to make the messagebox wide enough.
@@ -260,7 +260,7 @@ void AppServer::init() {
         throw std::runtime_error("Unable to initialize exclusion template cache.");
     }
 
-#ifdef Q_OS_WIN
+#ifdef _WIN32
     // Update shortcuts
     _navigationPaneHelper = std::unique_ptr<NavigationPaneHelper>(new NavigationPaneHelper(_vfsMap));
     _navigationPaneHelper->setShowInExplorerNavigationPane(false);
@@ -311,9 +311,9 @@ void AppServer::init() {
 
     // Check vfs plugins
     QString error;
-#ifdef Q_OS_WIN
+#ifdef _WIN32
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Win, error)) LOG_INFO(_logger, "VFS windows plugin is available");
-#elif defined(Q_OS_MAC)
+#elif defined(__APPLE__)
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Mac, error)) LOG_INFO(_logger, "VFS mac plugin is available");
 #endif
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
@@ -351,7 +351,7 @@ void AppServer::init() {
     // Update checks
     _updateManager = std::make_unique<UpdateManager>();
     connect(_updateManager.get(), &UpdateManager::requestRestart, this, &AppServer::onScheduleAppRestart);
-#ifdef Q_OS_MACOS
+#ifdef __APPLE__
     const std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);
     _updateManager.get()->setQuitCallback(quitCallback);
 #endif
@@ -557,6 +557,30 @@ void AppServer::handleClientCrash(bool &quit) {
         }
     }
 }
+
+#ifdef __APPLE__
+bool AppServer::noMacVfsSync() const {
+    for (const auto &[_, vfsMapElt]: _vfsMap) {
+        if (vfsMapElt->mode() == VirtualFileMode::Mac) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool AppServer::areMacVfsAuthsOk() const {
+    std::string liteSyncExtErrorDescr;
+    bool ret = CommonUtility::isLiteSyncExtEnabled() && CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(liteSyncExtErrorDescr);
+    if (!ret) {
+        if (liteSyncExtErrorDescr.empty()) {
+            LOG_WARN(_logger, "LiteSync extension is not enabled or doesn't have full disk access");
+        } else {
+            LOG_WARN(_logger, "LiteSync extension is not enabled or doesn't have full disk access: " << liteSyncExtErrorDescr);
+        }
+    }
+    return ret;
+}
+#endif
 
 void AppServer::crash() const {
     // SIGSEGV crash
@@ -992,24 +1016,31 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 break;
             }
 
-            bool resumedByUser = true;
-            if (ExitInfo exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
+            ExitInfo mainExitInfo = ExitCode::Ok;
+            bool start = true;
+            if (const auto exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
                 LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo);
-                resumedByUser = false; // Don't start SyncPal
+                if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
+                    addError(Error(sync.dbId(), errId(), exitInfo));
+                    resultStream << toInt(exitInfo.code());
+                    break;
+                }
+                // Continue (ie. Init SyncPal but don't start it)
+                mainExitInfo = exitInfo;
+                start = false;
             }
 
             if (const auto exitInfo =
-                        initSyncPal(sync, NodeSet(), NodeSet(), NodeSet(), true, std::chrono::seconds(0), resumedByUser, false);
+                        initSyncPal(sync, NodeSet(), NodeSet(), NodeSet(), start, std::chrono::seconds(0), true, false);
                 !exitInfo) {
                 LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " : " << exitInfo);
                 addError(Error(errId(), exitInfo));
-                resultStream << toInt(exitInfo.code());
-                break;
+                mainExitInfo.merge(exitInfo, {ExitCode::SystemError});
             }
 
             Utility::restartFinderExtension();
 
-            resultStream << ExitCode::Ok;
+            resultStream << mainExitInfo.code();
             break;
         }
         case RequestNum::SYNC_STOP: {
@@ -1088,7 +1119,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             // Add sync in DB
             bool showInNavigationPane = false;
-#ifdef Q_OS_WIN
+#ifdef _WIN32
             showInNavigationPane = _navigationPaneHelper->showInExplorerNavigationPane();
 #endif
 
@@ -1154,14 +1185,20 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     return;
                 }
 
-                if (ExitInfo exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
-                    LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " : "
-                                                                                    << " " << exitInfo);
+                bool start = true;
+                if (const auto exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
+                    LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo);
+                    if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
+                        addError(Error(sync.dbId(), errId(), exitInfo));
+                        return;
+                    }
+                    // Continue (ie. Init SyncPal but don't start it)
+                    start = false;
                 }
 
                 // Create and start SyncPal
                 if (const auto exitInfo =
-                            initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, std::chrono::seconds(0), false, true);
+                            initSyncPal(sync, blackList, QSet<QString>(), whiteList, start, std::chrono::seconds(0), false, true);
                     !exitInfo) {
                     LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << syncInfo.dbId() << " : " << exitInfo);
                     addError(Error(errId(), exitInfo));
@@ -1601,7 +1638,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             break;
         }
-#ifdef Q_OS_MAC
+#ifdef __APPLE__
         case RequestNum::EXCLAPP_GETLIST: {
             bool def;
             QDataStream paramsStream(params);
@@ -1757,7 +1794,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << mode;
             break;
         }
-#ifdef Q_OS_WIN
+#ifdef _WIN32
         case RequestNum::UTILITY_SHOWSHORTCUT: {
             bool show = _navigationPaneHelper->showInExplorerNavigationPane();
 
@@ -2312,7 +2349,7 @@ void AppServer::setSyncFileSyncing(int syncDbId, const SyncPath &path, bool sync
     }
 }
 
-#ifdef Q_OS_MAC
+#ifdef __APPLE__
 void AppServer::exclusionAppList(QString &appList) {
     for (bool def: {false, true}) {
         std::vector<ExclusionApp> exclusionList;
@@ -2659,12 +2696,18 @@ ExitInfo AppServer::startSyncs(User &user) {
                     continue;
                 }
 
+                bool start = !user.keychainKey().empty();
+
                 if (const auto exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
                     LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo);
                     mainExitInfo.merge(exitInfo, {ExitCode::SystemError});
-                    continue;
+                    if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
+                        addError(Error(sync.dbId(), errId(), exitInfo));
+                        continue;
+                    }
+                    // Continue (ie. Init SyncPal but don't start it)
+                    start = false;
                 }
-                const bool start = !user.keychainKey().empty();
 
                 // Create and start SyncPal
                 startDelay += std::chrono::seconds(START_SYNCPALS_TIME_GAP);
@@ -3232,7 +3275,7 @@ bool AppServer::startClient() {
         // Start the client
         QString pathToExecutable = QCoreApplication::applicationDirPath();
 
-#if defined(Q_OS_WIN)
+#if defined(_WIN32)
         pathToExecutable += QString("/%1.exe").arg(APPLICATION_CLIENT_EXECUTABLE);
 #else
         pathToExecutable += QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
@@ -3422,8 +3465,19 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
         return {ExitCode::SystemError, ExitCause::SyncDirDoesntExist};
     }
 
+#ifdef __APPLE__
+    if (sync.virtualFileMode() == VirtualFileMode::Mac) {
+        // If the sync is the first with Mac vfs mode, reset installation/activation/connection flags
+        if (noMacVfsSync()) {
+            _vfsInstallationDone = false;
+            _vfsActivationDone = false;
+            _vfsConnectionDone = false;
+        }
+    }
+#endif
+
     if (_vfsMap.find(sync.dbId()) == _vfsMap.end()) {
-#ifdef Q_OS_WIN
+#ifdef _WIN32
         Drive drive;
         bool found;
         if (!ParmsDb::instance()->selectDrive(sync.driveDbId(), drive, found)) {
@@ -3459,7 +3513,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
         // Create VFS instance
         VfsSetupParams vfsSetupParams;
         vfsSetupParams.syncDbId = sync.dbId();
-#ifdef Q_OS_WIN
+#ifdef _WIN32
         vfsSetupParams.driveId = drive.driveId();
         vfsSetupParams.userId = user.userId();
 #endif
@@ -3483,7 +3537,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
         _vfsMap[sync.dbId()]->setSyncFileStatusCallback(&syncFileStatus);
         _vfsMap[sync.dbId()]->setSyncFileSyncingCallback(&syncFileSyncing);
         _vfsMap[sync.dbId()]->setSetSyncFileSyncingCallback(&setSyncFileSyncing);
-#ifdef Q_OS_MAC
+#ifdef __APPLE__
         _vfsMap[sync.dbId()]->setExclusionAppListCallback(&exclusionAppList);
 #endif
     }
@@ -3491,22 +3545,11 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
     // Start VFS
     if (ExitInfo exitInfo = _vfsMap[sync.dbId()]->start(_vfsInstallationDone, _vfsActivationDone, _vfsConnectionDone);
         !exitInfo) {
-#ifdef Q_OS_MAC
-        if (sync.virtualFileMode() == VirtualFileMode::Mac) {
-            if (_vfsInstallationDone && !_vfsActivationDone) {
-                // Check LiteSync ext authorizations
-                std::string liteSyncExtErrorDescr;
-                bool liteSyncExtOk = CommonUtility::isLiteSyncExtEnabled() &&
-                                     CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(liteSyncExtErrorDescr);
-                if (!liteSyncExtOk) {
-                    if (liteSyncExtErrorDescr.empty()) {
-                        LOG_WARN(_logger, "LiteSync extension is not enabled or doesn't have full disk access");
-                    } else {
-                        LOG_WARN(_logger,
-                                 "LiteSync extension is not enabled or doesn't have full disk access: " << liteSyncExtErrorDescr);
-                    }
-                    return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
-                }
+#ifdef __APPLE__
+        if (sync.virtualFileMode() == VirtualFileMode::Mac && _vfsInstallationDone && !_vfsActivationDone) {
+            // Check LiteSync ext authorizations
+            if (!areMacVfsAuthsOk()) {
+                return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
             }
         }
 #endif
@@ -3515,7 +3558,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
         return exitInfo;
     }
 
-#ifdef Q_OS_WIN
+#ifdef _WIN32
     // Save sync
     Sync tmpSync(sync);
     tmpSync.setNavigationPaneClsid(_vfsMap[sync.dbId()]->namespaceCLSID());
@@ -3566,7 +3609,7 @@ ExitInfo AppServer::stopVfs(int syncDbId, bool unregister) {
 
 ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
     Sync sync;
-    bool found;
+    bool found = false;
     if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectSync");
         return {ExitCode::DbError, ExitCause::DbAccessError};
@@ -3601,7 +3644,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         }
 
         if (newMode == VirtualFileMode::Off) {
-#ifdef Q_OS_WIN
+#ifdef _WIN32
             LOG_INFO(_logger, "Clearing node DB");
             _syncPalMap[syncDbId]->clearNodes();
 #else
@@ -3610,7 +3653,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
 #endif
         }
 
-#ifdef Q_OS_WIN
+#ifdef _WIN32
         if (newMode == VirtualFileMode::Win) {
             // Remove legacy sync root keys
             OldUtility::removeLegacySyncRootKeys(QUuid(QString::fromStdString(sync.navigationPaneClsid())));
@@ -3637,13 +3680,28 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
             return {ExitCode::DataError, ExitCause::DbEntryNotFound};
         }
 
-        // Delete previous vfs
+        // Delete/create Vfs
         _vfsMap.erase(syncDbId);
 
-        if (ExitInfo exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
+        ExitInfo mainExitInfo = ExitCode::Ok;
+        bool start = true;
+        if (const auto exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
             LOG_WARN(_logger, "Error in tryCreateAndStartVfs " << " : " << exitInfo);
+            if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
+                return exitInfo;
+            }
+            // Continue (ie. Update SyncPal and convert the sync dir but don't start SyncPal)
+            mainExitInfo = exitInfo;
+            start = false;
+        }
+
+        // Update SyncPal
+        std::shared_ptr<Vfs> vfsPtr;
+        if (const auto exitInfo = getVfsPtr(sync.dbId(), vfsPtr); !exitInfo) {
+            LOG_WARN(_logger, "Error in getVfsPtr for syncDbId=" << sync.dbId() << " : " << exitInfo);
             return exitInfo;
         }
+        _syncPalMap[sync.dbId()]->setVfs(vfsPtr);
 
         QTimer::singleShot(100, this, [=, this]() {
             if (newMode != VirtualFileMode::Off) {
@@ -3659,9 +3717,13 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
             // Notify conversion completed
             sendVfsConversionCompleted(sync.dbId());
 
-            // Re-start sync
-            _syncPalMap[syncDbId]->start();
+            if (start) {
+                // Re-start sync
+                _syncPalMap[syncDbId]->start();
+            }
         });
+
+        return mainExitInfo;
     }
 
     return ExitCode::Ok;
@@ -4088,29 +4150,10 @@ void AppServer::onSendFilesNotifications() {
 }
 
 void AppServer::onRestartSyncs() {
-#ifdef Q_OS_MAC
-    // Check if at least one LiteSync sync exists
-    bool vfsSync = false;
-    for (const auto &vfsMapElt: _vfsMap) {
-        if (vfsMapElt.second->mode() == VirtualFileMode::Mac) {
-            vfsSync = true;
-            break;
-        }
-    }
-
-    if (vfsSync && _vfsInstallationDone && !_vfsActivationDone) {
+#ifdef __APPLE__
+    if (!noMacVfsSync() && _vfsInstallationDone && !_vfsActivationDone) {
         // Check LiteSync ext authorizations
-        std::string liteSyncExtErrorDescr;
-        bool liteSyncExtOk =
-                CommonUtility::isLiteSyncExtEnabled() && CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(liteSyncExtErrorDescr);
-        if (!liteSyncExtOk) {
-            if (liteSyncExtErrorDescr.empty()) {
-                LOG_WARN(_logger, "LiteSync extension is not enabled or doesn't have full disk access");
-            } else {
-                LOG_WARN(_logger,
-                         "LiteSync extension is not enabled or doesn't have full disk access: " << liteSyncExtErrorDescr);
-            }
-        } else {
+        if (areMacVfsAuthsOk()) {
             LOG_INFO(Log::instance()->getLogger(), "LiteSync extension activation done");
             _vfsActivationDone = true;
 

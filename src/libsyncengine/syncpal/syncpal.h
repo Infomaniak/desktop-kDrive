@@ -102,9 +102,8 @@ struct SyncPalInfo {
 
 class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
     public:
-        SyncPal(const std::shared_ptr<Vfs> &vfs, const SyncPath &syncDbPath, const std::string &version,
-                const bool hasFullyCompleted);
-        SyncPal(const std::shared_ptr<Vfs> &vfs, const int syncDbId, const std::string &version);
+        SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted);
+        SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId, const std::string &version);
         virtual ~SyncPal();
 
         ExitCode setTargetNodeId(const std::string &targetNodeId);
@@ -117,6 +116,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             _sendSignal = sendSignal;
         }
 
+        void setVfs(std::shared_ptr<Vfs> vfs);
         inline std::shared_ptr<Vfs> vfs() { return _vfs; }
 
         // SyncPalInfo
@@ -264,7 +264,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::function<void(const Error &error)> _addError;
         std::function<void(int syncDbId, const SyncFileItem &item, bool notify)> _addCompletedItem;
         std::function<void(SignalNum sigId, int syncDbId, const SigValueType &val)> _sendSignal;
-        const std::shared_ptr<Vfs> _vfs;
+        std::shared_ptr<Vfs> _vfs;
 
         // DB
         std::shared_ptr<SyncDb> _syncDb{nullptr};
