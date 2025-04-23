@@ -8,7 +8,7 @@ on:
   #  types: [synchronize, review_requested]
 
 concurrency:
-  group: windows-${{ github.head_ref }}
+  group: kDrive-desktop-ci-${{ github.head_ref }}
   cancel-in-progress: true
 
 env:
@@ -114,6 +114,7 @@ jobs:
         run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all
         
   build-Linux:
+    if: false
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
 
     steps:
@@ -221,6 +222,7 @@ jobs:
         run : rm -rf build-linux
 
   build-MacOS:
+    if: false
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
 
     steps:
