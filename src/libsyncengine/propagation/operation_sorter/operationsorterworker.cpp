@@ -629,10 +629,10 @@ void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
             const auto nodeY = opY->affectedNode();
             LOG_IF_FAIL(nodeY)
 
-            if (!Utility::isDescendantOrEqual(nodeDestinationPathX, nodeY->getPath())) {
+            if (!Utility::isStrictDescendant(nodeDestinationPathX, nodeY->getPath())) {
                 continue;
             }
-            if (!Utility::isDescendantOrEqual(nodeY->moveOriginInfos().path(), nodeOriginPathX)) {
+            if (!Utility::isStrictDescendant(nodeY->moveOriginInfos().path(), nodeOriginPathX)) {
                 continue;
             }
 

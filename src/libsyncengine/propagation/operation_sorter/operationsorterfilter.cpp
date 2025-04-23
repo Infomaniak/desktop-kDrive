@@ -30,7 +30,7 @@ void OperationSorterFilter::filterOperations() {
     NameToOpMap deleteBeforeCreateCandidates;
     NameToOpMap moveOriginNames;
     NameToOpMap moveDestinationNames;
-    std::list<SyncOpPtr> moveBeforeMoveHierarchyFlipCandidates;
+    std::list<std::pair<SyncOpPtr, SyncPath>> moveBeforeMoveHierarchyFlipCandidates;
 
     for (const auto &[_, op]: _ops) {
         filterDeleteBeforeMoveCandidates(op, deleteBeforeMoveCandidates);
@@ -216,28 +216,27 @@ void OperationSorterFilter::filterEditBeforeMoveCandidates(const SyncOpPtr &op) 
 }
 
 void OperationSorterFilter::filterMoveBeforeMoveHierarchyFlipCandidates(
-        const SyncOpPtr &op, std::list<SyncOpPtr> &moveBeforeMoveHierarchyFlipCandidates) {
+        const SyncOpPtr &op, std::list<std::pair<SyncOpPtr, SyncPath>> &moveBeforeMoveHierarchyFlipCandidates) {
     if (!op->affectedNode()->hasChangeEvent(OperationType::Move) || op->nodeType() != NodeType::Directory) return;
 
     const auto &originPath = op->affectedNode()->moveOriginInfos().path();
     const auto &destinationPath = op->affectedNode()->getPath();
 
     // Check if any of the created path contains the destination path.
-    for (const auto &otherOp: moveBeforeMoveHierarchyFlipCandidates) {
+    for (const auto &[otherOp, otherDestinationPath]: moveBeforeMoveHierarchyFlipCandidates) {
         if (op->targetSide() != otherOp->targetSide()) {
             continue;
         }
 
         const auto &otherOriginPath = otherOp->affectedNode()->moveOriginInfos().path();
-        const auto &otherDestinationPath = otherOp->affectedNode()->getPath();
 
-        if (Utility::isDescendantOrEqual(destinationPath, otherDestinationPath) &&
-            Utility::isDescendantOrEqual(otherOriginPath, originPath)) {
+        if (Utility::isStrictDescendant(destinationPath, otherDestinationPath) &&
+            Utility::isStrictDescendant(otherOriginPath, originPath)) {
             (void) _fixMoveBeforeMoveHierarchyFlipCandidates.emplace_back(op, otherOp);
         }
     }
 
-    (void) moveBeforeMoveHierarchyFlipCandidates.emplace_back(op);
+    (void) moveBeforeMoveHierarchyFlipCandidates.emplace_back(op, destinationPath);
 }
 
 } // namespace KDC

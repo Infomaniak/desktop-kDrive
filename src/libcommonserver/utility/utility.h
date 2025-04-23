@@ -119,6 +119,7 @@ struct COMMONSERVER_EXPORT Utility {
          */
         static bool checkIfEqualUpToCaseAndEncoding(const SyncPath &a, const SyncPath &b, bool &isEqual);
         static bool isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path);
+        static bool isStrictDescendant(const SyncPath &potentialDescendant, const SyncPath &path);
         /**
          * Normalize the SyncName parameters before comparing them.
          * @param a SyncName value to be compared.
@@ -192,7 +193,8 @@ struct COMMONSERVER_EXPORT Utility {
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);
         static bool runDetachedProcess(std::wstring cmd);
 #endif
-        static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, const ItemType &itemType, IoError &ioError);
+        static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, const ItemType &itemType,
+                                             IoError &ioError);
         static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, bool &isLink, IoError &ioError);
         static bool checkIfDirEntryIsManaged(const std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged,
                                              bool &isLink, IoError &ioError);

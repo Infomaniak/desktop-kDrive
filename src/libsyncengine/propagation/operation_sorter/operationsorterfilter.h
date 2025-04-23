@@ -111,8 +111,8 @@ class OperationSorterFilter {
          * @param op The SyncOperation to be checked.
          * @param moveBeforeMoveHierarchyFlipCandidates The list storing every move operations.
          */
-        void filterMoveBeforeMoveHierarchyFlipCandidates(const SyncOpPtr &op,
-                                                         std::list<SyncOpPtr> &moveBeforeMoveHierarchyFlipCandidates);
+        void filterMoveBeforeMoveHierarchyFlipCandidates(
+                const SyncOpPtr &op, std::list<std::pair<SyncOpPtr, SyncPath>> &moveBeforeMoveHierarchyFlipCandidates);
 
         std::list<std::pair<SyncOpPtr, SyncOpPtr>> _fixDeleteBeforeMoveCandidates;
         std::list<std::pair<SyncOpPtr, SyncOpPtr>> _fixMoveBeforeCreateCandidates;

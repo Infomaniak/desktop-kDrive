@@ -27,7 +27,7 @@ namespace KDC {
 
 class TestOperationSorterWorker final : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestOperationSorterWorker);
-        // CPPUNIT_TEST(testMoveFirstAfterSecond);
+        CPPUNIT_TEST(testMoveFirstAfterSecond);
         CPPUNIT_TEST(testFixDeleteBeforeMove);
         CPPUNIT_TEST(testFixDeleteBeforeMoveOptimized);
         CPPUNIT_TEST(testFixMoveBeforeCreate);
