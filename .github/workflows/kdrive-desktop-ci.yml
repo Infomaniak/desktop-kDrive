@@ -375,7 +375,7 @@ jobs:
           path: ${{ github.workspace }}/build-windows/cache/
 
       - name: Copy the cache to the test directory
-        run: cp -r ${{ github.workspace }}/build-windows/cache/* ${{ github.workspace }}/build-windows/test/
+        run: cp -r ${{ github.workspace }}/build-windows/cache/ ${{ github.workspace }}/build-windows/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
@@ -432,7 +432,7 @@ jobs:
           path: ${{ github.workspace }}/build-windows/cache/
 
       - name: Copy the cache to the test directory
-        run: cp -r ${{ github.workspace }}/build-windows/cache/* ${{ github.workspace }}/build-windows/test/
+        run: cp -r ${{ github.workspace }}/build-windows/cache/ ${{ github.workspace }}/build-windows/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
@@ -489,7 +489,7 @@ jobs:
           path: ${{ github.workspace }}/build-windows/cache/
 
       - name: Copy the cache to the test directory
-        run: cp -r ${{ github.workspace }}/build-windows/cache/* ${{ github.workspace }}/build-windows/test/
+        run: cp -r ${{ github.workspace }}/build-windows/cache/ ${{ github.workspace }}/build-windows/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
@@ -546,7 +546,7 @@ jobs:
           path: ${{ github.workspace }}/build-windows/cache/
 
       - name: Copy the cache to the test directory
-        run: cp -r ${{ github.workspace }}/build-windows/cache/* ${{ github.workspace }}/build-windows/test/
+        run: cp -r ${{ github.workspace }}/build-windows/cache/ ${{ github.workspace }}/build-windows/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
@@ -603,7 +603,7 @@ jobs:
           path: ${{ github.workspace }}/build-windows/cache/
 
       - name: Copy the cache to the test directory
-        run: cp -r ${{ github.workspace }}/build-windows/cache/* ${{ github.workspace }}/build-windows/test/
+        run: cp -r ${{ github.workspace }}/build-windows/cache/ ${{ github.workspace }}/build-windows/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
