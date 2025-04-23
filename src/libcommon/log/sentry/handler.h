@@ -178,7 +178,7 @@ class Handler {
         void updateEffectiveSentryUser(const SentryUser &user = SentryUser());
 
         // The events that have been recently captured, used to prevent flood from a single user.
-        std::unordered_map<std::string, SentryEvent, StringHash, std::equal_to<>> _events;
+        std::unordered_map<std::string, SentryEvent, StringHashFunction, std::equal_to<>> _events;
 
         // Number of captures before rate limiting an event
         unsigned int _sentryMaxCaptureCountBeforeRateLimit = 10;
