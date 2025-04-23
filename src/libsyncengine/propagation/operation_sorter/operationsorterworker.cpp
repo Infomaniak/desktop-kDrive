@@ -153,10 +153,6 @@ void OperationSorterWorker::fixDeleteBeforeMoveOptimized() {
             continue;
         }
 
-        if (moveOp->targetSide() != deleteOp->targetSide()) {
-            continue;
-        }
-
         const auto deleteNode = deleteOp->affectedNode();
         LOG_IF_FAIL(deleteNode)
         const auto deleteNodeParentPath = deleteNode->getPath().parent_path();
@@ -241,10 +237,6 @@ void OperationSorterWorker::fixMoveBeforeCreateOptimized() {
             continue;
         }
 
-        if (moveOp->targetSide() != createOp->targetSide()) {
-            continue;
-        }
-
         const auto moveNode = moveOp->affectedNode();
         LOG_IF_FAIL(moveNode)
         NodeId moveNodeOriginParentId;
@@ -307,31 +299,18 @@ void OperationSorterWorker::fixMoveBeforeDelete() {
 
 void OperationSorterWorker::fixMoveBeforeDeleteOptimized() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeDeleteOptimized");
+    for (const auto &[op1, op2]: _filter.fixMoveBeforeDeleteCandidates()) {
+        const auto moveOp = op1->type() == OperationType::Move ? op1 : op2;
+        LOG_IF_FAIL(moveOp)
+        const auto deleteOp = op1->type() == OperationType::Delete ? op1 : op2;
+        LOG_IF_FAIL(deleteOp)
+        if (moveOp->type() != OperationType::Move || deleteOp->type() != OperationType::Delete) {
+            continue;
+        }
 
-    // const auto deleteOp = _syncPal->_syncOps->getOp(deleteOpId);
-    // LOG_IF_FAIL(deleteOp)
-    // if (deleteOp->affectedNode()->type() != NodeType::Directory) {
-    //     continue;
-    // }
-    // const auto deleteNode = deleteOp->affectedNode();
-    // LOG_IF_FAIL(deleteNode)
-    // const auto deleteNodePath = deleteNode->getPath();
-    //
-    //
-    // const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
-    // LOG_IF_FAIL(moveOp)
-    // if (moveOp->targetSide() != deleteOp->targetSide()) {
-    //     continue;
-    // }
-    //
-    // LOG_IF_FAIL(moveOp->affectedNode())
-    // if (const auto moveNodeOriginPath = moveOp->affectedNode()->moveOriginInfos().path();
-    //     Utility::isDescendantOrEqual(moveNodeOriginPath, deleteNodePath)) {
-    //     // move only if deleteOp is before moveOp
-    //     moveFirstAfterSecond(deleteOp, moveOp);
-    // }
-
-
+        // move only if deleteOp is before moveOp
+        moveFirstAfterSecond(deleteOp, moveOp);
+    }
     LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeDeleteOptimized");
 }
 
@@ -580,10 +559,6 @@ void OperationSorterWorker::fixEditBeforeMoveOptimized() {
         LOG_IF_FAIL(editOp)
         LOG_IF_FAIL(moveOp)
         if (editOp->type() != OperationType::Edit || moveOp->type() != OperationType::Move) {
-            continue;
-        }
-
-        if (moveOp->targetSide() != editOp->targetSide() || moveOp->affectedNode()->id() != editOp->affectedNode()->id()) {
             continue;
         }
 

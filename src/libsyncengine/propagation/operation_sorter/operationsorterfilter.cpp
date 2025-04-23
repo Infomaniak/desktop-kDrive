@@ -29,27 +29,9 @@ void OperationSorterFilter::filterOperations() {
     for (const auto &[_, op]: _ops) {
         filterFixDeleteBeforeMoveCandidates(op, deleteBeforeMove);
         filterFixMoveBeforeCreateCandidates(op, moveBeforeCreate);
-
-        // Move before Delete (just fill the list with deleted path and move origin paths on first loop)
-        if (op->affectedNode()->hasChangeEvent(OperationType::Delete)) {
-            if (op->affectedNode()->type() != NodeType::Directory) {
-                continue;
-            }
-
-            (void) deletedDirectoryPaths.try_emplace(op->affectedNode()->getPath(), op);
-        }
-        if (op->affectedNode()->hasChangeEvent(OperationType::Move)) {
-            (void) moveOriginPaths.try_emplace(op->affectedNode()->moveOriginInfos().path(), op);
-        }
+        filterFixMoveBeforeDeleteCandidates(op, deletedDirectoryPaths, moveOriginPaths);
 
         filterFixEditBeforeMoveCandidates(op);
-    }
-
-    // Go through all operations once again to detect the move operations inside deleted path...
-    for (const auto &[_, op]: _ops) {
-        if (op->type() != OperationType::Move) {
-            continue;
-        }
     }
 }
 
@@ -58,12 +40,18 @@ void OperationSorterFilter::filterFixDeleteBeforeMoveCandidates(
     if (op->affectedNode()->hasChangeEvent(OperationType::Delete)) {
         if (const auto [_, ok] = deleteBeforeMove.try_emplace(op->affectedNode()->name(), op); !ok) {
             const auto &otherOp = deleteBeforeMove.at(op->affectedNode()->name());
+            if (op->targetSide() != otherOp->targetSide()) {
+                return;
+            }
             (void) _fixDeleteBeforeMoveCandidates.emplace_back(op, otherOp);
         }
     }
     if (op->affectedNode()->hasChangeEvent(OperationType::Move)) {
         if (const auto [_, ok] = deleteBeforeMove.try_emplace(op->affectedNode()->name(), op); !ok) {
             const auto &otherOp = deleteBeforeMove.at(op->affectedNode()->name());
+            if (op->targetSide() != otherOp->targetSide()) {
+                return;
+            }
             (void) _fixDeleteBeforeMoveCandidates.emplace_back(op, otherOp);
         }
     }
@@ -74,6 +62,9 @@ void OperationSorterFilter::filterFixMoveBeforeCreateCandidates(
     if (op->affectedNode()->hasChangeEvent(OperationType::Create)) {
         if (const auto [_, ok] = moveBeforeCreate.try_emplace(op->affectedNode()->name(), op); !ok) {
             const auto &otherOp = moveBeforeCreate.at(op->affectedNode()->name());
+            if (op->targetSide() != otherOp->targetSide()) {
+                return;
+            }
             (void) _fixMoveBeforeCreateCandidates.emplace_back(op, otherOp);
         }
     }
@@ -82,10 +73,51 @@ void OperationSorterFilter::filterFixMoveBeforeCreateCandidates(
                     moveBeforeCreate.try_emplace(Str2SyncName(op->affectedNode()->moveOriginInfos().path().filename()), op);
             !ok) {
             const auto &otherOp = moveBeforeCreate.at(op->affectedNode()->name());
+            if (op->targetSide() != otherOp->targetSide()) {
+                return;
+            }
             (void) _fixMoveBeforeCreateCandidates.emplace_back(op, otherOp);
         }
     }
 }
+
+void OperationSorterFilter::filterFixMoveBeforeDeleteCandidates(const SyncOpPtr &op,
+                                                                std::unordered_map<SyncPath, SyncOpPtr> &deletedDirectoryPaths,
+                                                                std::unordered_map<SyncPath, SyncOpPtr> &moveOriginPaths) {
+    if (op->affectedNode()->hasChangeEvent(OperationType::Delete)) {
+        if (op->affectedNode()->type() != NodeType::Directory) {
+            return;
+        }
+        const auto deletedPath = op->affectedNode()->getPath();
+        (void) deletedDirectoryPaths.try_emplace(deletedPath, op);
+
+        // Check if any of the moved item origin path is inside the deleted folder.
+        for (const auto &[path, moveOp]: moveOriginPaths) {
+            if (op->targetSide() != moveOp->targetSide()) {
+                continue;
+            }
+            if (Utility::isDescendantOrEqual(path, deletedPath)) {
+                (void) _fixMoveBeforeDeleteCandidates.emplace_back(op, moveOp);
+            }
+        }
+        return;
+    }
+
+    if (op->affectedNode()->hasChangeEvent(OperationType::Move)) {
+        (void) moveOriginPaths.try_emplace(op->affectedNode()->moveOriginInfos().path(), op);
+
+        // Check if any of the deleted path contains the origin path.
+        for (const auto &[path, deleteOp]: deletedDirectoryPaths) {
+            if (op->targetSide() != deleteOp->targetSide()) {
+                continue;
+            }
+            if (Utility::isDescendantOrEqual(op->affectedNode()->moveOriginInfos().path(), path)) {
+                (void) _fixMoveBeforeDeleteCandidates.emplace_back(op, deleteOp);
+            }
+        }
+    }
+}
+
 void OperationSorterFilter::filterFixEditBeforeMoveCandidates(const SyncOpPtr &op) {
     if (op->affectedNode()->hasChangeEvent(OperationType::Edit) && op->affectedNode()->hasChangeEvent(OperationType::Move)) {
         (void) _fixEditBeforeMoveCandidates[op->affectedNode()->id().value()].emplace_back(op);

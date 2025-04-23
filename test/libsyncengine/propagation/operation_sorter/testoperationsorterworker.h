@@ -32,8 +32,8 @@ class TestOperationSorterWorker final : public CppUnit::TestFixture, public Test
         CPPUNIT_TEST(testFixDeleteBeforeMoveOptimized);
         CPPUNIT_TEST(testFixMoveBeforeCreate);
         CPPUNIT_TEST(testFixMoveBeforeCreateOptimized);
-        // CPPUNIT_TEST(testFixMoveBeforeDelete);
-        // CPPUNIT_TEST(testFixMoveBeforeDeleteOptimized);
+        CPPUNIT_TEST(testFixMoveBeforeDelete);
+        CPPUNIT_TEST(testFixMoveBeforeDeleteOptimized);
         // CPPUNIT_TEST(testFixCreateBeforeMove);
         // CPPUNIT_TEST(testFixCreateBeforeMoveOptimized);
         // CPPUNIT_TEST(testFixDeleteBeforeCreate);
@@ -84,9 +84,10 @@ class TestOperationSorterWorker final : public CppUnit::TestFixture, public Test
 
     private:
         SyncOpPtr generateSyncOperation(OperationType opType, const std::shared_ptr<Node> &affectedNode) const;
-        void generateLotsOfDummySyncOperations(OperationType opType1, OperationType opType2 = OperationType::None) const;
+        void generateLotsOfDummySyncOperations(OperationType opType1, OperationType opType2 = OperationType::None,
+                                               NodeType nodeType = NodeType::File) const;
 
-        void findIndexesInOpList(std::unordered_map<UniqueId, uint32_t> &mapIndex);
+        void findIndexesInOpList(std::unordered_map<UniqueId, uint32_t> &mapIndex) const;
 
         std::shared_ptr<SyncPal> _syncPal = nullptr;
         TestSituationGenerator _testSituationGenerator;

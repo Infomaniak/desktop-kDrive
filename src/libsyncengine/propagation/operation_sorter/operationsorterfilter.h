@@ -49,6 +49,9 @@ class OperationSorterFilter {
         void filterFixMoveBeforeCreateCandidates(
                 const SyncOpPtr &op,
                 std::unordered_map<SyncName, SyncOpPtr, StringHashFunction, std::equal_to<>> &moveBeforeCreate);
+        void filterFixMoveBeforeDeleteCandidates(const SyncOpPtr &op,
+                                                 std::unordered_map<SyncPath, SyncOpPtr> &deletedDirectoryPaths,
+                                                 std::unordered_map<SyncPath, SyncOpPtr> &moveOriginPaths);
 
         void filterFixEditBeforeMoveCandidates(const SyncOpPtr &op);
 

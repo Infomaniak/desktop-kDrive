@@ -22,6 +22,7 @@
 
 #include "test_classes/testsituationgenerator.h"
 #include "test_utility/testhelpers.h"
+#include "utility/timerutility.h"
 
 using namespace CppUnit;
 
@@ -104,10 +105,9 @@ void TestOperationSorterWorker::testFixDeleteBeforeMove() {
     (void) _syncPal->syncOps()->pushOp(moveOp);
     (void) _syncPal->syncOps()->pushOp(deleteOp);
 
-    const auto start = std::chrono::steady_clock::now();
+    const auto timerId = TimerUtility::startTimer();
     _syncPal->_operationsSorterWorker->fixDeleteBeforeMove();
-    const std::chrono::duration<double> elapsedSeconds = std::chrono::steady_clock::now() - start;
-    std::cout << "Operation sorted in " << elapsedSeconds.count() << " s" << std::endl;
+    TimerUtility::stopTimer(timerId, "Operation sorted in");
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
     std::unordered_map<UniqueId, uint32_t> mapIndex = {{moveOp->id(), 0}, {deleteOp->id(), 0}};
@@ -129,11 +129,10 @@ void TestOperationSorterWorker::testFixDeleteBeforeMoveOptimized() {
     (void) _syncPal->syncOps()->pushOp(moveOp);
     (void) _syncPal->syncOps()->pushOp(deleteOp);
 
-    const auto start = std::chrono::steady_clock::now();
+    const auto timerId = TimerUtility::startTimer();
     _syncPal->_operationsSorterWorker->_filter.filterOperations();
     _syncPal->_operationsSorterWorker->fixDeleteBeforeMoveOptimized();
-    const std::chrono::duration<double> elapsedSeconds = std::chrono::steady_clock::now() - start;
-    std::cout << "Operation sorted in " << elapsedSeconds.count() << " s" << std::endl;
+    TimerUtility::stopTimer(timerId, "Operation sorted in");
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
     std::unordered_map<UniqueId, uint32_t> mapIndex = {{moveOp->id(), 0}, {deleteOp->id(), 0}};
@@ -157,10 +156,9 @@ void TestOperationSorterWorker::testFixMoveBeforeCreate() {
     (void) _syncPal->syncOps()->pushOp(createOp);
     (void) _syncPal->syncOps()->pushOp(moveOp);
 
-    const auto start = std::chrono::steady_clock::now();
+    const auto timerId = TimerUtility::startTimer();
     _syncPal->_operationsSorterWorker->fixMoveBeforeCreate();
-    const std::chrono::duration<double> elapsedSeconds = std::chrono::steady_clock::now() - start;
-    std::cout << "Operation sorted in " << elapsedSeconds.count() << " s" << std::endl;
+    TimerUtility::stopTimer(timerId, "Operation sorted in");
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
     std::unordered_map<UniqueId, uint32_t> mapIndex = {{moveOp->id(), 0}, {createOp->id(), 0}};
@@ -183,11 +181,10 @@ void TestOperationSorterWorker::testFixMoveBeforeCreateOptimized() {
     (void) _syncPal->syncOps()->pushOp(createOp);
     (void) _syncPal->syncOps()->pushOp(moveOp);
 
-    const auto start = std::chrono::steady_clock::now();
+    const auto timerId = TimerUtility::startTimer();
     _syncPal->_operationsSorterWorker->_filter.filterOperations();
     _syncPal->_operationsSorterWorker->fixMoveBeforeCreateOptimized();
-    const std::chrono::duration<double> elapsedSeconds = std::chrono::steady_clock::now() - start;
-    std::cout << "Operation sorted in " << elapsedSeconds.count() << " s" << std::endl;
+    TimerUtility::stopTimer(timerId, "Operation sorted in");
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
     std::unordered_map<UniqueId, uint32_t> mapIndex = {{moveOp->id(), 0}, {createOp->id(), 0}};
@@ -197,6 +194,8 @@ void TestOperationSorterWorker::testFixMoveBeforeCreateOptimized() {
 
 // move before delete, e.g. user moves object "X/y" outside of directory "X" (e.g. to "z") and then deletes "X".
 void TestOperationSorterWorker::testFixMoveBeforeDelete() {
+    generateLotsOfDummySyncOperations(OperationType::Move, OperationType::Delete, NodeType::Directory);
+
     // Move A/AA/AAA to AAA
     const auto nodeAAA = _testSituationGenerator.moveNode(ReplicaSide::Local, "aaa", "");
     const auto moveOp = generateSyncOperation(OperationType::Move, nodeAAA);
@@ -208,10 +207,9 @@ void TestOperationSorterWorker::testFixMoveBeforeDelete() {
     (void) _syncPal->syncOps()->pushOp(deleteOp);
     (void) _syncPal->syncOps()->pushOp(moveOp);
 
-    const auto start = std::chrono::steady_clock::now();
+    const auto timerId = TimerUtility::startTimer();
     _syncPal->_operationsSorterWorker->fixMoveBeforeDelete();
-    const std::chrono::duration<double> elapsedSeconds = std::chrono::steady_clock::now() - start;
-    std::cout << "Operation sorted in " << elapsedSeconds.count() << " s" << std::endl;
+    TimerUtility::stopTimer(timerId, "Operation sorted in");
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
     std::unordered_map<UniqueId, uint32_t> mapIndex = {{deleteOp->id(), 0}, {moveOp->id(), 0}};
@@ -219,7 +217,30 @@ void TestOperationSorterWorker::testFixMoveBeforeDelete() {
     CPPUNIT_ASSERT_LESS(mapIndex[deleteOp->id()], mapIndex[moveOp->id()]);
 }
 
-void TestOperationSorterWorker::testFixMoveBeforeDeleteOptimized() {}
+void TestOperationSorterWorker::testFixMoveBeforeDeleteOptimized() {
+    generateLotsOfDummySyncOperations(OperationType::Move, OperationType::Delete, NodeType::Directory);
+
+    // Move A/AA/AAA to AAA
+    const auto nodeAAA = _testSituationGenerator.moveNode(ReplicaSide::Local, "aaa", "");
+    const auto moveOp = generateSyncOperation(OperationType::Move, nodeAAA);
+
+    // Delete A
+    const auto nodeA = _testSituationGenerator.deleteNode(ReplicaSide::Local, "a");
+    const auto deleteOp = generateSyncOperation(OperationType::Delete, nodeA);
+
+    (void) _syncPal->syncOps()->pushOp(deleteOp);
+    (void) _syncPal->syncOps()->pushOp(moveOp);
+
+    const auto timerId = TimerUtility::startTimer();
+    _syncPal->_operationsSorterWorker->_filter.filterOperations();
+    _syncPal->_operationsSorterWorker->fixMoveBeforeDeleteOptimized();
+    TimerUtility::stopTimer(timerId, "Operation sorted in");
+
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
+    std::unordered_map<UniqueId, uint32_t> mapIndex = {{deleteOp->id(), 0}, {moveOp->id(), 0}};
+    findIndexesInOpList(mapIndex);
+    CPPUNIT_ASSERT_LESS(mapIndex[deleteOp->id()], mapIndex[moveOp->id()]);
+}
 
 // create before move, e.g. user creates directory "X" and moves object "y" into "X".
 void TestOperationSorterWorker::testFixCreateBeforeMove() {
@@ -443,10 +464,9 @@ void TestOperationSorterWorker::testFixEditBeforeMove() {
     (void) _syncPal->syncOps()->pushOp(editOp);
     (void) _syncPal->syncOps()->pushOp(moveOp);
 
-    const auto start = std::chrono::steady_clock::now();
+    const auto timerId = TimerUtility::startTimer();
     _syncPal->_operationsSorterWorker->fixEditBeforeMove();
-    const std::chrono::duration<double> elapsedSeconds = std::chrono::steady_clock::now() - start;
-    std::cout << "Operation sorted in " << elapsedSeconds.count() << " s" << std::endl;
+    TimerUtility::stopTimer(timerId, "Operation sorted in");
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
     std::unordered_map<UniqueId, uint32_t> mapIndex = {{editOp->id(), 0}, {moveOp->id(), 0}};
@@ -468,11 +488,10 @@ void TestOperationSorterWorker::testFixEditBeforeMoveOptimized() {
     (void) _syncPal->syncOps()->pushOp(editOp);
     (void) _syncPal->syncOps()->pushOp(moveOp);
 
-    const auto start = std::chrono::steady_clock::now();
+    const auto timerId = TimerUtility::startTimer();
     _syncPal->_operationsSorterWorker->_filter.filterOperations();
     _syncPal->_operationsSorterWorker->fixEditBeforeMoveOptimized();
-    const std::chrono::duration<double> elapsedSeconds = std::chrono::steady_clock::now() - start;
-    std::cout << "Operation sorted in " << elapsedSeconds.count() << " s" << std::endl;
+    TimerUtility::stopTimer(timerId, "Operation sorted in");
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
     std::unordered_map<UniqueId, uint32_t> mapIndex = {{editOp->id(), 0}, {moveOp->id(), 0}};
@@ -815,10 +834,9 @@ SyncOpPtr TestOperationSorterWorker::generateSyncOperation(const OperationType o
 }
 
 void TestOperationSorterWorker::generateLotsOfDummySyncOperations(const OperationType opType1,
-                                                                  const OperationType opType2 /*= OperationType::None*/) const {
-    const auto start = std::chrono::steady_clock::now();
-
-    const auto dummyNode = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "dummy", "", false);
+                                                                  const OperationType opType2 /*= OperationType::None*/,
+                                                                  NodeType nodeType /*= NodeType::File*/) const {
+    const auto dummyNode = _testSituationGenerator.createNode(ReplicaSide::Local, nodeType, "dummy", "", false);
     dummyNode->setMoveOriginInfos({dummyNode->getPath(), "1"});
     for (const auto type: {opType1, opType2}) {
         if (type != OperationType::None) {
@@ -828,12 +846,9 @@ void TestOperationSorterWorker::generateLotsOfDummySyncOperations(const Operatio
             }
         }
     }
-
-    const std::chrono::duration<double> elapsedSeconds = std::chrono::steady_clock::now() - start;
-    std::cout << "Dummy operations generated in " << elapsedSeconds.count() << " s" << std::endl;
 }
 
-void TestOperationSorterWorker::findIndexesInOpList(std::unordered_map<UniqueId, uint32_t> &mapIndex) {
+void TestOperationSorterWorker::findIndexesInOpList(std::unordered_map<UniqueId, uint32_t> &mapIndex) const {
     uint32_t index = 0;
     uint32_t counter = 0;
     for (auto &id: _syncPal->syncOps()->opSortedList()) {

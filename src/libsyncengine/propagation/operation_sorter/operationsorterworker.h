@@ -56,8 +56,7 @@ class OperationSorterWorker : public OperationProcessor {
          * @brief move before delete, e.g. user moves object "X/y" outside of directory "X" and then deletes "X".
          */
         void fixMoveBeforeDelete();
-        // Idea : keep all deleted file paths. Check for each move if the origin path is inside a deleted path. IS THIS REALLY
-        // MORE OPTIMIZED????
+        // Idea : keep all deleted file paths. Check for each move if the origin path is inside a deleted path.
         void fixMoveBeforeDeleteOptimized();
         /**
          * @brief create before move, e.g. user creates directory "X" and moves object "y" into "X".
