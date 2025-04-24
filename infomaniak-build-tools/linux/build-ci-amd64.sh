@@ -94,7 +94,7 @@ mkdir -p $APPDIR
 mkdir -p $build_dir
 
 export QMAKE=$QTDIR/bin/qmake
-export PATH=$QTDIR/bin:$QTDIR/libexec:$PATH
+export PATH=$QTDIR/bin:$QTDIR/libexec:/home/runner/.local/bin:$PATH
 export LD_LIBRARY_PATH=$QTDIR/lib:$LD_LIBRARY_PATH
 export PKG_CONFIG_PATH=$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH
 
