@@ -52,8 +52,6 @@ void PlatformInconsistencyCheckerWorker::execute() {
     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
     LOG_SYNCPAL_DEBUG(_logger, "Platform Inconsistency checked tree in: " << elapsed_seconds.count() << "s");
 
-    _syncPal->updateTree(ReplicaSide::Remote)->setInconsistencyCheckDone();
-
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
     setDone(ExitCode::Ok);
 }
@@ -178,6 +176,11 @@ bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> 
     const SyncPath relativePath = remoteNode->getPath();
     if (PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(remoteNode->name())) {
         blacklistNode(remoteNode, InconsistencyType::ForbiddenChar);
+        return false;
+    }
+
+    if (PlatformInconsistencyCheckerUtility::nameEndWithForbiddenSpace(remoteNode->name())) {
+        blacklistNode(remoteNode, InconsistencyType::ForbiddenCharEndWithSpace);
         return false;
     }
 

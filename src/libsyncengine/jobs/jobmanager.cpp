@@ -73,8 +73,10 @@ void JobManager::stop() {
 void JobManager::clear() {
     if (_instance) {
         Poco::ThreadPool::defaultPool().stopAll();
-        _instance->_thread->join();
-        _instance->_thread = nullptr;
+        if (_instance->_thread) {
+            if (_instance->_thread->joinable()) _instance->_thread->join();
+            _instance->_thread = nullptr;
+        }
     }
 
     const std::scoped_lock lock(_mutex);

@@ -37,8 +37,7 @@ static const int waitForUpdateDelay = 1000; // 1sec
 
 LocalFileSystemObserverWorker::LocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                              const std::string &shortName) :
-    FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Local),
-    _rootFolder(syncPal->localPath()) {}
+    FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Local), _rootFolder(syncPal->localPath()) {}
 
 LocalFileSystemObserverWorker::~LocalFileSystemObserverWorker() {
     LOG_SYNCPAL_DEBUG(_logger, "~LocalFileSystemObserverWorker");
@@ -221,8 +220,9 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         if (opTypeFromOS == OperationType::Edit || opTypeFromOS == OperationType::Rights) {
             // Filter out hydration/dehydration
             bool changed = false;
-            const bool success = IoHelper::checkIfFileChanged(absolutePath, _snapshot->size(nodeId),
-                                                              _snapshot->lastModified(nodeId), changed, ioError);
+            const bool success =
+                    IoHelper::checkIfFileChanged(absolutePath, _snapshot->size(nodeId), _snapshot->lastModified(nodeId),
+                                                 _snapshot->createdAt(nodeId), changed, ioError);
             if (!success) {
                 LOGW_SYNCPAL_WARN(_logger,
                                   L"Error in IoHelper::checkIfFileChanged: " << Utility::formatIoError(absolutePath, ioError));
@@ -753,8 +753,8 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 }
             }
 
-            SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime, fileStat.modtime,
-                              itemType.nodeType, fileStat.size, isLink, true, true);
+            const SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime,
+                                    fileStat.modtime, itemType.nodeType, fileStat.size, isLink, true, true);
             if (_snapshot->updateItem(item)) {
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: "
