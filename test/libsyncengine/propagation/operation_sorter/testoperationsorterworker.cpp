@@ -954,11 +954,11 @@ void TestOperationSorterWorker::generateLotsOfDummySyncOperations(const Operatio
                                                                   const OperationType opType2 /*= OperationType::None*/,
                                                                   const NodeType nodeType /*= NodeType::File*/) const {
     const auto dummyNode = _testSituationGenerator.createNode(ReplicaSide::Local, nodeType, "dummy", "", false);
-    dummyNode->setMoveOriginInfos({dummyNode->getPath(), "1"});
+    dummyNode->setMoveOriginInfos({"/dumm", "1"});
     for (const auto type: {opType1, opType2}) {
         if (type != OperationType::None) {
-            // Generate 100 dummy operation
-            for (uint32_t i = 0; i < 100; i++) {
+            // Generate dummy operations
+            for (uint32_t i = 0; i < 10000; i++) {
                 (void) _syncPal->syncOps()->pushOp(generateSyncOperation(type, dummyNode));
             }
         }
