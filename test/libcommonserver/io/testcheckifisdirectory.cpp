@@ -217,7 +217,7 @@ void TestIo::testCheckIfIsDirectory() {
         const SyncPath path = temporaryDirectory.path() / "regular_dir_alias";
 
         IoError aliasError;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
 
         IoError ioError = IoError::Unknown;
         bool isDirectory = true;
