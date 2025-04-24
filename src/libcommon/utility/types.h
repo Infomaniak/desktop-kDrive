@@ -57,8 +57,8 @@ using SecondsDuration = std::chrono::duration<double>; // Use double instead of 
 struct StringHashFunction {
         using is_transparent = void; // Enables heterogeneous operations.
 
-        std::size_t operator()(const std::string_view sv) const {
-            constexpr std::hash<std::string_view> hasher;
+        std::size_t operator()(const std::string &sv) const {
+            constexpr std::hash<std::string> hasher;
             return hasher(sv);
         }
 };
