@@ -1021,7 +1021,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             if (const auto exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
                 LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo);
                 if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
-                    addError(Error(sync.dbId(), errId(), exitInfo));
                     resultStream << toInt(exitInfo.code());
                     break;
                 }
@@ -1189,7 +1188,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 if (const auto exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
                     LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo);
                     if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
-                        addError(Error(sync.dbId(), errId(), exitInfo));
                         return;
                     }
                     // Continue (ie. Init SyncPal but don't start it)
@@ -1400,7 +1398,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
                 LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
                 resultStream << ExitCode::DataError;
-                resultStream << QString();
+                resultStream << "";
                 break;
             }
 
@@ -2609,7 +2607,7 @@ std::string liteSyncActivationLogMessage(bool enabled, int syncDbId) {
 }
 
 // This function will pause the synchronization in case of errors.
-ExitInfo AppServer::tryCreateAndStartVfs(Sync &sync) noexcept {
+ExitInfo AppServer::tryCreateAndStartVfs(const Sync &sync) noexcept {
     const std::string liteSyncMsg = liteSyncActivationLogMessage(sync.virtualFileMode() != VirtualFileMode::Off, sync.dbId());
     LOG_INFO(_logger, liteSyncMsg);
     if (const auto exitInfo = createAndStartVfs(sync); !exitInfo) {
@@ -2625,7 +2623,6 @@ ExitInfo AppServer::startSyncs(User &user) {
     logExtendedLogActivationMessage(ParametersCache::isExtendedLogEnabled());
 
     ExitInfo mainExitInfo = ExitCode::Ok;
-    bool found = false;
 
     // Load account list
     std::vector<Account> accountList;
@@ -2671,6 +2668,7 @@ ExitInfo AppServer::startSyncs(User &user) {
 
                         if (syncUpdated) {
                             // Update sync
+                            bool found = false;
                             if (!ParmsDb::instance()->updateSync(sync, found)) {
                                 LOG_WARN(_logger, "Error in ParmsDb::updateSync");
                                 return {ExitCode::DbError, ExitCause::DbAccessError};
@@ -2686,6 +2684,7 @@ ExitInfo AppServer::startSyncs(User &user) {
                         }
                     }
                 }
+
                 // Clear old errors for this sync
                 clearErrors(sync.dbId(), false);
                 clearErrors(sync.dbId(), true);
@@ -2702,7 +2701,6 @@ ExitInfo AppServer::startSyncs(User &user) {
                     LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo);
                     mainExitInfo.merge(exitInfo, {ExitCode::SystemError});
                     if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
-                        addError(Error(sync.dbId(), errId(), exitInfo));
                         continue;
                     }
                     // Continue (ie. Init SyncPal but don't start it)
@@ -2727,6 +2725,7 @@ ExitInfo AppServer::startSyncs(User &user) {
         user.setToMigrate(false);
 
         // Update user
+        bool found = false;
         if (!ParmsDb::instance()->updateUser(user, found)) {
             LOG_WARN(_logger, "Error in ParmsDb::updateUser");
             return {ExitCode::DbError, ExitCause::DbAccessError};
@@ -3117,7 +3116,7 @@ void AppServer::clearSyncNodes() {
     }
 
     // Clear node tables
-    for (const Sync &sync: syncList) {
+    for (const auto &sync: syncList) {
         SyncPath dbPath = sync.dbPath();
         auto syncDbPtr = std::make_shared<SyncDb>(dbPath.string(), _theme->version().toStdString());
         syncDbPtr->clearNodes();
@@ -4068,68 +4067,88 @@ void AppServer::onUpdateSyncsProgress() {
     int64_t totalSize;
     int64_t estimatedRemainingTime;
 
-    for (const auto &[syncDbId, syncPal]: _syncPalMap) {
-        if (!syncPal) continue;
-        // Get progress
-        status = syncPal->status();
-        step = syncPal->step();
-        if (status == SyncStatus::Running && step == SyncStep::Propagation2) {
-            syncPal->loadProgress(currentFile, totalFiles, completedSize, totalSize, estimatedRemainingTime);
+    std::vector<Sync> syncList;
+    if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
+        addError(Error(errId(), ExitCode::DbError, ExitCause::Unknown));
+        return;
+    }
+
+    for (const auto &sync: syncList) {
+        const auto syncPalIt = _syncPalMap.find(sync.dbId());
+        if (syncPalIt == _syncPalMap.end()) {
+            // No SyncPal for this sync
+            sendSyncProgressInfo(sync.dbId(), SyncStatus::Error, SyncStep::None, 0, 0, 0, 0, 0);
         } else {
-            currentFile = 0;
-            totalFiles = 0;
-            completedSize = 0;
-            totalSize = 0;
-            estimatedRemainingTime = 0;
-        }
-
-        if (_syncCacheMap.find(syncDbId) == _syncCacheMap.end() || _syncCacheMap[syncDbId]._status != status ||
-            _syncCacheMap[syncDbId]._step != step || _syncCacheMap[syncDbId]._currentFile != currentFile ||
-            _syncCacheMap[syncDbId]._totalFiles != totalFiles || _syncCacheMap[syncDbId]._completedSize != completedSize ||
-            _syncCacheMap[syncDbId]._totalSize != totalSize ||
-            _syncCacheMap[syncDbId]._estimatedRemainingTime != estimatedRemainingTime) {
-            _syncCacheMap[syncDbId] =
-                    SyncCache({status, step, currentFile, totalFiles, completedSize, totalSize, estimatedRemainingTime});
-            sendSyncProgressInfo(syncDbId, status, step, currentFile, totalFiles, completedSize, totalSize,
-                                 estimatedRemainingTime);
-        }
-
-        // New big folders detection
-        NodeSet undecidedSet;
-        ExitCode exitCode = syncPal->syncIdSet(SyncNodeType::UndecidedList, undecidedSet);
-        if (exitCode != ExitCode::Ok) {
-            addError(Error(syncDbId, errId(), exitCode, ExitCause::Unknown));
-            LOG_WARN(_logger, "Error in SyncPal::syncIdSet: code=" << exitCode);
-            return;
-        }
-
-        bool undecidedSetUpdated = false;
-        for (const NodeId &nodeId: undecidedSet) {
-            if (_undecidedListCacheMap[syncDbId].find(nodeId) == _undecidedListCacheMap[syncDbId].end()) {
-                undecidedSetUpdated = true;
-
-                QString path;
-                exitCode = ServerRequests::getPathByNodeId(syncPal->userDbId(), syncPal->driveId(),
-                                                           QString::fromStdString(nodeId), path);
-                if (exitCode != ExitCode::Ok) {
-                    LOG_WARN(_logger, "Error in Requests::getPathByNodeId: code=" << exitCode);
-                    continue;
-                }
-
-                // Send newBigFolder signal to client
-                sendNewBigFolder(syncDbId, path);
-
-                // Ask client to display notification
-                sendShowNotification(Theme::instance()->appNameGUI(),
-                                     tr("A new folder larger than %1 MB has been added in the drive %2, you must validate its "
-                                        "synchronization: %3.\n")
-                                             .arg(ParametersCache::instance()->parameters().bigFolderSizeLimit())
-                                             .arg(QString::fromStdString(syncPal->driveName()), path));
+            const auto syncPal = syncPalIt->second;
+            if (!syncPal) {
+                assert(false);
+                continue;
             }
-        }
 
-        if (undecidedSetUpdated || _undecidedListCacheMap[syncDbId].size() != undecidedSet.size()) {
-            _undecidedListCacheMap[syncDbId] = undecidedSet;
+            // Get progress
+            status = syncPal->status();
+            step = syncPal->step();
+            if (status == SyncStatus::Running && step == SyncStep::Propagation2) {
+                syncPal->loadProgress(currentFile, totalFiles, completedSize, totalSize, estimatedRemainingTime);
+            } else {
+                currentFile = 0;
+                totalFiles = 0;
+                completedSize = 0;
+                totalSize = 0;
+                estimatedRemainingTime = 0;
+            }
+
+            if (_syncCacheMap.find(sync.dbId()) == _syncCacheMap.end() || _syncCacheMap[sync.dbId()]._status != status ||
+                _syncCacheMap[sync.dbId()]._step != step || _syncCacheMap[sync.dbId()]._currentFile != currentFile ||
+                _syncCacheMap[sync.dbId()]._totalFiles != totalFiles ||
+                _syncCacheMap[sync.dbId()]._completedSize != completedSize ||
+                _syncCacheMap[sync.dbId()]._totalSize != totalSize ||
+                _syncCacheMap[sync.dbId()]._estimatedRemainingTime != estimatedRemainingTime) {
+                _syncCacheMap[sync.dbId()] =
+                        SyncCache({status, step, currentFile, totalFiles, completedSize, totalSize, estimatedRemainingTime});
+                sendSyncProgressInfo(sync.dbId(), status, step, currentFile, totalFiles, completedSize, totalSize,
+                                     estimatedRemainingTime);
+            }
+
+            // New big folders detection
+            NodeSet undecidedSet;
+            ExitCode exitCode = syncPal->syncIdSet(SyncNodeType::UndecidedList, undecidedSet);
+            if (exitCode != ExitCode::Ok) {
+                addError(Error(sync.dbId(), errId(), exitCode, ExitCause::Unknown));
+                LOG_WARN(_logger, "Error in SyncPal::syncIdSet: code=" << exitCode);
+                return;
+            }
+
+            bool undecidedSetUpdated = false;
+            for (const NodeId &nodeId: undecidedSet) {
+                if (_undecidedListCacheMap[sync.dbId()].find(nodeId) == _undecidedListCacheMap[sync.dbId()].end()) {
+                    undecidedSetUpdated = true;
+
+                    QString path;
+                    exitCode = ServerRequests::getPathByNodeId(syncPal->userDbId(), syncPal->driveId(),
+                                                               QString::fromStdString(nodeId), path);
+                    if (exitCode != ExitCode::Ok) {
+                        LOG_WARN(_logger, "Error in Requests::getPathByNodeId: code=" << exitCode);
+                        continue;
+                    }
+
+                    // Send newBigFolder signal to client
+                    sendNewBigFolder(sync.dbId(), path);
+
+                    // Ask client to display notification
+                    sendShowNotification(
+                            Theme::instance()->appNameGUI(),
+                            tr("A new folder larger than %1 MB has been added in the drive %2, you must validate its "
+                               "synchronization: %3.\n")
+                                    .arg(ParametersCache::instance()->parameters().bigFolderSizeLimit())
+                                    .arg(QString::fromStdString(syncPal->driveName()), path));
+                }
+            }
+
+            if (undecidedSetUpdated || _undecidedListCacheMap[sync.dbId()].size() != undecidedSet.size()) {
+                _undecidedListCacheMap[sync.dbId()] = undecidedSet;
+            }
         }
     }
 }
