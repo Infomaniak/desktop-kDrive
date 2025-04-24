@@ -150,7 +150,7 @@ void TestIo::testGetNodeId() {
         const SyncPath path = temporaryDirectory.path() / "regular_file_alias";
 
         IoError aliasError;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
@@ -166,7 +166,7 @@ void TestIo::testGetNodeId() {
         const SyncPath path = temporaryDirectory.path() / "regular_dir_alias";
 
         IoError aliasError;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
@@ -187,7 +187,7 @@ void TestIo::testGetNodeId() {
         }
 
         IoError aliasError;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
@@ -208,7 +208,7 @@ void TestIo::testGetNodeId() {
         const SyncPath path = temporaryDirectory.path() / "dangling_directory_alias";
 
         IoError aliasError;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
