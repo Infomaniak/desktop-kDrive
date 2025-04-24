@@ -36,7 +36,7 @@
 
 param(
     [Parameter(Mandatory = $false, Position = 0, HelpMessage = "Debug or Release")]
-    [ValidateSet("Debug","Release")]
+    [ValidateSet("Debug","Release", "RelWithDebInfo")]
     [string]$BuildType = "Debug",
 
     [Parameter(Mandatory = $false, HelpMessage = "Show help message")]
