@@ -23,6 +23,7 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/filestat.h"
+#include "libcommon/utility/sourcelocation.h"
 
 using namespace CppUnit;
 
@@ -110,7 +111,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testNodeIdReuseFile2DirAndDir2File();
         void testNodeIdReuseFile2File();
 
-        void waitForSyncToFinish();
+        void waitForSyncToFinish(const SourceLocation& srcLoc);
 
         log4cplus::Logger _logger;
 
