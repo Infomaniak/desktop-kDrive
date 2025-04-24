@@ -34,9 +34,8 @@ jobs:
         shell: cmd
 
       - name: Checkout the PR
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
           submodules: recursive
 
       - name: Restore extension packages
@@ -67,6 +66,24 @@ jobs:
           path: |
               ${{ github.workspace }}/build-windows/install/bin/*.dll
               ${{ github.workspace }}/build-windows/install/bin/sync-exclude.lst
+          retention-days: 1
+        if: steps.build.outcome == 'success'
+
+      - name: Upload build qt libs
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-qt-libs
+          path: |
+              C:\Qt\6.2.3\msvc2019_64\bin\Qt6Widgets.dll
+              C:\Qt\6.2.3\msvc2019_64\bin\Qt6Gui.dll
+              C:\Qt\6.2.3\msvc2019_64\bin\Qt6Network.dll
+              C:\Qt\6.2.3\msvc2019_64\bin\Qt6Sql.dll
+              C:\Qt\6.2.3\msvc2019_64\bin\Qt6Core.dll
+              C:\Qt\6.2.3\msvc2019_64\bin\Qt6DBus.dll
+              C:\Qt\6.2.3\msvc2019_64\bin\icui18n.dll
+              C:\Qt\6.2.3\msvc2019_64\bin\icuuc.dll
+              C:\Qt\6.2.3\msvc2019_64\bin\icudata.dll
+              C:\Qt\6.2.3\msvc2019_64\bin\Qt6Svg.dll
           retention-days: 1
         if: steps.build.outcome == 'success'
 
@@ -374,6 +391,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: windows-build-common-files
+          path: ${{ github.workspace }}/build-windows/cache/
+
+      - name: Download qt files
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build-qt-libs
           path: ${{ github.workspace }}/build-windows/cache/
 
       - name: Copy the cache to the test directory
