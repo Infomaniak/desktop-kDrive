@@ -101,6 +101,8 @@ export PKG_CONFIG_PATH=$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH
 # Set defaults
 export SUFFIX=""
 
+bash $BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh $build_type
+
 # Build client
 cd $build_dir
 mkdir -p $build_dir/client
@@ -123,6 +125,7 @@ cmake -B$build_dir -H$BASEPATH \
     -DKDRIVE_THEME_DIR="$BASEPATH/infomaniak" \
     -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
     -DBUILD_UNIT_TESTS=$unit_tests \
+    -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
     "${CMAKE_PARAMS[@]}" \
 
 make -j$(nproc)

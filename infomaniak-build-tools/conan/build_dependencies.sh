@@ -72,7 +72,7 @@ else
   if [ "$PLATFORM" = "darwin" ]; then
     OUTPUT_DIR="./build-macos/client"
   else
-    OUTPUT_DIR="./build-linux/client"
+    OUTPUT_DIR="./build-linux/build"
   fi
 fi
 mkdir -p "$OUTPUT_DIR"
