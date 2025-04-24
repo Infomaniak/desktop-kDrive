@@ -82,7 +82,6 @@ class OperationSorterWorker : public OperationProcessor {
          * "C/A" (parent-child relationships are now flipped).
          */
         void fixMoveBeforeMoveHierarchyFlip();
-        // Idea : check just the files whose parent has a MOVE event too. WHAT ABOUT HIERARCHY FLIP WITH A GRAND PARENT????
         void fixMoveBeforeMoveHierarchyFlipOptimized();
 
         std::optional<SyncOperationList> fixImpossibleFirstMoveOp();
