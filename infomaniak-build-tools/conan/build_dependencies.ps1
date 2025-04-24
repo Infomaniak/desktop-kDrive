@@ -58,9 +58,9 @@ function Get-ConanExePath {
     } catch { }
 
     try {
-        $py = Get-Command $Python -ErrorAction Stop
+        $py = Get-Command python3 -ErrorAction Stop
     } catch {
-        Write-Error "Interpreter '$Python' not found. Please install Python 3 and/or add it to the PATH."
+        Write-Error "Interpreter 'python3' not found. Please install Python 3 and/or add it to the PATH."
         return $null
     }
 
