@@ -67,7 +67,7 @@ void OperationSorterFilter::filterDeleteBeforeMoveCandidates(const SyncOpPtr &op
 
 void OperationSorterFilter::filterMoveBeforeCreateCandidates(const SyncOpPtr &op, NameToOpMap &moveBeforeCreateCandidates) {
     if (op->affectedNode()->hasChangeEvent(OperationType::Create)) {
-        if (const auto [_, ok] = moveBeforeCreateCandidates.try_emplace(op->affectedNode()->name(), op); !ok) {
+        if (const auto &[_, ok] = moveBeforeCreateCandidates.try_emplace(op->affectedNode()->name(), op); !ok) {
             const auto &otherOp = moveBeforeCreateCandidates.at(op->affectedNode()->name());
             if (op->targetSide() != otherOp->targetSide()) {
                 return;
@@ -76,8 +76,8 @@ void OperationSorterFilter::filterMoveBeforeCreateCandidates(const SyncOpPtr &op
         }
     }
     if (op->affectedNode()->hasChangeEvent(OperationType::Move)) {
-        if (const auto [_, ok] = moveBeforeCreateCandidates.try_emplace(
-                    Str2SyncName(op->affectedNode()->moveOriginInfos().path().filename()), op);
+        if (const auto &[_, ok] =
+                    moveBeforeCreateCandidates.try_emplace(op->affectedNode()->moveOriginInfos().path().filename().native(), op);
             !ok) {
             const auto &otherOp = moveBeforeCreateCandidates.at(op->affectedNode()->name());
             if (op->targetSide() != otherOp->targetSide()) {
