@@ -23,6 +23,8 @@ env:
 
 
 jobs:
+
+# Build apps
   build-Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
 
@@ -339,6 +341,7 @@ jobs:
       - name: Clean-up generated code
         run : rm -rf build-macos
 
+# Tests Windows
   test-common-Windows:
     runs-on: [ self-hosted, Windows ]
     env:
@@ -623,7 +626,8 @@ jobs:
 
       - name: Clean up
         run : rm -r -force ${{ github.workspace }}/build-windows/test/
-
+  
+# Tests Linux
   test-common-Linux:
     runs-on: [ self-hosted, Linux, X64]
     env:
@@ -996,6 +1000,7 @@ jobs:
         if: always()
         run : rm -rf /tmp/kDrive-logdir/* || true
 
+# Tests macOS
   test-common-MacOS:
     runs-on: [ self-hosted, macOS]
     env:
@@ -1145,7 +1150,8 @@ jobs:
         run : rm -rf ${{ github.workspace }}/build-macos/client/bin/*
 
   test-server-MacOS:
-    runs-on: [ self-hosted, macOS ]
+    # Looking for a solution to run this test on any mac without the following error: qt.qpa.plugin: Could not find the Qt platform plugin "cocoa" in "" 
+    runs-on: [ self-hosted, macOS, desktop-kdrive ] 
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
     needs: build-MacOS
