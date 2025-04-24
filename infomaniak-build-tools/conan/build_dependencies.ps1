@@ -28,14 +28,14 @@
     Usage: infomaniak-build-tools\conan\build_dependencies.ps1 [-Help] [Debug|Release]
 
 .PARAMETER BuildType
-    Build configuration: Debug (default) or Release.
+    Build configuration: Debug (default), Release or RelWithDebInfo.
 
 .PARAMETER Help
     Show this help message.
 #>
 
 param(
-    [Parameter(Mandatory = $false, Position = 0, HelpMessage = "Debug or Release")]
+    [Parameter(Mandatory = $false, Position = 0, HelpMessage = "Debug, Release or RelWithDebInfo")]
     [ValidateSet("Debug","Release", "RelWithDebInfo")]
     [string]$BuildType = "Debug",
 
@@ -43,7 +43,7 @@ param(
     [switch]$Help
 )
 
-function Show-Help { Write-Host "Usage: $($MyInvocation.MyCommand.Name) [-Help] [Debug|Release]" ; exit 0 }
+function Show-Help { Write-Host "Usage: $($MyInvocation.MyCommand.Name) [-Help] [Debug|Release|RelWithDebInfo]" ; exit 0 }
 if ($Help) { Show-Help }
 
 $ErrorActionPreference = "Stop"
@@ -51,13 +51,48 @@ $ErrorActionPreference = "Stop"
 function Log { Write-Host "[INFO] $($args -join ' ')" }
 function Err { Write-Error "[ERROR] $($args -join ' ')" ; exit 1 }
 
+function Get-ConanExePath {
+    try {
+        $cmd = Get-Command conan.exe -ErrorAction Stop
+        return $cmd.Path
+    } catch { }
+
+    try {
+        $py = Get-Command $Python -ErrorAction Stop
+    } catch {
+        Write-Error "Interpreter '$Python' not found. Please install Python 3 and/or add it to the PATH."
+        return $null
+    }
+
+    $pythonCode = @"
+import os, sys
+try:
+    import conans
+except ImportError:
+    sys.exit(1)
+modpath = conans.__file__
+prefix = modpath.split(os.sep + 'Lib' + os.sep)[0]
+exe = os.path.join(prefix, 'Scripts', 'conan.exe')
+print(exe)
+"@
+
+    $path = & $py.Path -c $pythonCode 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not (Test-Path $path.Trim())) {
+        Write-Error "Unable to locate 'conan.exe' via Python."
+        return $null
+    }
+
+    return $path.Trim()
+}
+
+# Locate Conan executable
+$ConanExe = Get-ConanExePath
+if (-not $ConanExe) {
+    Err "Conan executable not found. Please ensure Conan is installed and accessible."
+}
 
 if (-not (Test-Path -Path "infomaniak-build-tools/conan" -PathType Container)) {
     Err "Please run this script from the repository root."
-}
-
-if (-not (Get-Command conan -ErrorAction SilentlyContinue)) {
-    Err "Conan is not installed. Please install Conan first."
 }
 
 $CurrentDir            = (Get-Location).Path
@@ -65,11 +100,11 @@ $ConanRemoteBaseFolder = Join-Path $CurrentDir "infomaniak-build-tools/conan"
 $LocalRemoteName       = "localrecipes"
 $RecipesFolder         = Join-Path $ConanRemoteBaseFolder "recipes"
 
-# Create local remote for local conan recipes
-$remotes = conan remote list
-if (! $remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]") {
+# Create local remote for local Conan recipes
+$remotes = & $ConanExe remote list
+if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
     Log "Adding local Conan remote."
-    conan remote add $LocalRemoteName $ConanRemoteBaseFolder | Out-Null
+    & $ConanExe remote add $LocalRemoteName $ConanRemoteBaseFolder | Out-Null
 } else {
     Log "Local Conan remote already exists."
 }
@@ -86,10 +121,9 @@ if ($BuildType -eq "Debug") {
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null # mkdir
 
 Log "Creating xxHash Conan package..."
-# Here we build xxhash with Release build type as said in `infomaniak-build-tools/windows/Readme.md`
-conan create "$RecipesFolder/xxhash/all/" --build=missing -s build_type=Release -r $LocalRemoteName
+& $ConanExe create "$RecipesFolder/xxhash/all/" --build=missing -s build_type=Release -r $LocalRemoteName
 
 Log "Installing Conan dependencies..."
-conan install . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType -r $LocalRemoteName
+& $ConanExe install . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType -r $LocalRemoteName
 
 Log "Conan dependencies successfully installed in: $OutputDir"
