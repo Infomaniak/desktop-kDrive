@@ -43,7 +43,7 @@ void DataExtractor::push(const std::string& data) {
 void DataExtractor::print() {
     if (_absolutePath.empty()) {
         const auto homePath = CommonUtility::envVarValue("HOME");
-        _absolutePath = SyncPath(homePath) / "bench.txt";
+        _absolutePath = SyncPath(homePath) / "kDrive_data.txt";
     }
 
     std::ofstream file(_absolutePath);

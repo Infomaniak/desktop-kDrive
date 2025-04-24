@@ -23,6 +23,7 @@
 #include "jobs/jobmanager.h"
 #include "jobs/network/API_v2/createdirjob.h"
 #include "jobs/network/API_v2/deletejob.h"
+#include "jobs/network/API_v2/downloadjob.h"
 #include "jobs/network/API_v2/getfilelistjob.h"
 #include "jobs/network/API_v2/uploadjob.h"
 #include "jobs/network/API_v2/upload_session/driveuploadsession.h"
@@ -446,15 +447,21 @@ void TestJobManager::testReuseSocket() {
     CPPUNIT_ASSERT(!session.socket().impl()->initialized());
 }
 
-void runBenchmark(DataExtractor &dataExtractor, const int nbThread, const std::string &driveId,
-                  const SyncPath &localTestFolderPath) {
+enum class BenchmarkType {
+    Upload = 0x00,
+    Download = 0x01,
+    UploadDownload = (Upload | Download),
+    UploadSession = 0x02,
+};
+
+void runUploadBenchmark(DataExtractor &dataExtractor, const int nbThread, const std::string &driveId,
+                        const SyncPath &localTestFolderPath) {
     constexpr uint8_t rep = 5;
     double averageTime = 0.0;
 
     std::cout << "**********************************************" << std::endl;
     JobManager::instance()->setPoolCapacity(nbThread);
 
-    std::cout << "Test : 100 files of 1MB each / " << nbThread << " thread in parallel" << std::endl;
     for (int i = 0; i < rep; i++) {
         const RemoteTemporaryDirectory remoteTmpDir(driveDbId, driveId, "TestJobManager benchmarkParallelJobs");
 
@@ -494,27 +501,93 @@ void runBenchmark(DataExtractor &dataExtractor, const int nbThread, const std::s
     std::cout << "Test average time: " << averageTime / rep << "s" << std::endl;
 }
 
-void TestJobManager::benchmarkParallelJobs() {
-    /* Test case : 100 files of 10MB each */
-    const auto homePath = CommonUtility::envVarValue("HOME");
-    const SyncPath benchFilePath(SyncPath(homePath) / "bench.txt");
-    const LocalTemporaryDirectory localTmpDir("TestJobManager benchmarkParallelJobs");
-    generateBigFiles(localTmpDir.path(), 1, 100);
+void runDownloadBenchmark(DataExtractor &dataExtractor, const int nbThread, const std::string &driveId,
+                          const SyncPath &localTestFolderPath) {
+    constexpr uint8_t rep = 5;
+    double averageTime = 0.0;
 
-    DataExtractor dataExtractor(benchFilePath);
-    dataExtractor.addRow(std::to_string(1));
-    runBenchmark(dataExtractor, 1, _testVariables.remoteDirId, localTmpDir.path());
-    dataExtractor.addRow(std::to_string(3));
-    runBenchmark(dataExtractor, 3, _testVariables.remoteDirId, localTmpDir.path());
-    dataExtractor.addRow(std::to_string(5));
-    runBenchmark(dataExtractor, 5, _testVariables.remoteDirId, localTmpDir.path());
-    dataExtractor.addRow(std::to_string(10));
-    runBenchmark(dataExtractor, 10, _testVariables.remoteDirId, localTmpDir.path());
-    dataExtractor.addRow(std::to_string(30));
-    runBenchmark(dataExtractor, 30, _testVariables.remoteDirId, localTmpDir.path());
-    dataExtractor.addRow(std::to_string(100));
-    runBenchmark(dataExtractor, 100, _testVariables.remoteDirId, localTmpDir.path());
-    dataExtractor.print();
+    std::cout << "**********************************************" << std::endl;
+    JobManager::instance()->setPoolCapacity(nbThread);
+
+    for (uint32_t i = 0; i < rep; i++) {
+        std::queue<UniqueId> jobIds;
+
+        const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+
+        for (uint32_t j = 0; j < 100; j++) {
+            static const std::string benchmarkFileId = "3459273";
+            const auto job = std::make_shared<DownloadJob>(nullptr, driveDbId, benchmarkFileId, localTestFolderPath, 1000000);
+
+            if (nbThread == 1) {
+                (void) job->runSynchronously();
+            } else {
+                JobManager::instance()->queueAsyncJob(job);
+                jobIds.push(job->jobId());
+            }
+        }
+
+        // Wait for all jobs to finish
+        while (!jobIds.empty()) {
+            Utility::msleep(10); // Wait 10ms
+            while (!jobIds.empty() && JobManager::instance()->isJobFinished(jobIds.front())) {
+                jobIds.pop();
+            }
+        }
+
+        const std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
+        std::cout << "Test executed in : " << elapsed_seconds.count() << "s" << std::endl;
+        averageTime += elapsed_seconds.count();
+        dataExtractor.push(std::to_string(elapsed_seconds.count()));
+    }
+
+    std::cout << "Test average time: " << averageTime / rep << "s" << std::endl;
+}
+
+void TestJobManager::benchmarkParallelJobs() {
+    const auto homePath = CommonUtility::envVarValue("HOME");
+
+    // {
+    //     /* Test case : uploads 100 files of 1MB each */
+    //     const SyncPath benchFilePath(SyncPath(homePath) / "benchUpload.txt");
+    //     const LocalTemporaryDirectory localTmpDir("benchUpload");
+    //     generateBigFiles(localTmpDir.path(), 1, 100);
+    //
+    //     DataExtractor dataExtractor(benchFilePath);
+    //     dataExtractor.addRow(std::to_string(1));
+    //     runUploadBenchmark(dataExtractor, 1, _testVariables.remoteDirId, localTmpDir.path());
+    //     dataExtractor.addRow(std::to_string(3));
+    //     runUploadBenchmark(dataExtractor, 3, _testVariables.remoteDirId, localTmpDir.path());
+    //     dataExtractor.addRow(std::to_string(5));
+    //     runUploadBenchmark(dataExtractor, 5, _testVariables.remoteDirId, localTmpDir.path());
+    //     dataExtractor.addRow(std::to_string(10));
+    //     runUploadBenchmark(dataExtractor, 10, _testVariables.remoteDirId, localTmpDir.path());
+    //     dataExtractor.addRow(std::to_string(30));
+    //     runUploadBenchmark(dataExtractor, 30, _testVariables.remoteDirId, localTmpDir.path());
+    //     dataExtractor.addRow(std::to_string(100));
+    //     runUploadBenchmark(dataExtractor, 100, _testVariables.remoteDirId, localTmpDir.path());
+    //     dataExtractor.print();
+    // }
+
+    {
+        /* Test case : download 100 files of 1MB each */
+        const SyncPath benchFilePath(SyncPath(homePath) / "benchDownload.txt");
+        const LocalTemporaryDirectory localTmpDir("benchDownload");
+
+        DataExtractor dataExtractor(benchFilePath);
+        dataExtractor.addRow(std::to_string(1));
+        runDownloadBenchmark(dataExtractor, 1, _testVariables.remoteDirId, localTmpDir.path());
+        dataExtractor.addRow(std::to_string(3));
+        runDownloadBenchmark(dataExtractor, 3, _testVariables.remoteDirId, localTmpDir.path());
+        dataExtractor.addRow(std::to_string(5));
+        runDownloadBenchmark(dataExtractor, 5, _testVariables.remoteDirId, localTmpDir.path());
+        dataExtractor.addRow(std::to_string(10));
+        runDownloadBenchmark(dataExtractor, 10, _testVariables.remoteDirId, localTmpDir.path());
+        dataExtractor.addRow(std::to_string(30));
+        runDownloadBenchmark(dataExtractor, 30, _testVariables.remoteDirId, localTmpDir.path());
+        dataExtractor.addRow(std::to_string(100));
+        runDownloadBenchmark(dataExtractor, 100, _testVariables.remoteDirId, localTmpDir.path());
+        dataExtractor.print();
+    }
 }
 
 void TestJobManager::generateBigFiles(const SyncPath &dirPath, int size, int count) {
