@@ -377,7 +377,7 @@ void TestIo::testGetFileStat() {
         const SyncPath path = temporaryDirectory.path() / "dangling_directory_alias";
 
         IoError aliasError;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
         std::filesystem::remove_all(targetPath);
 
         FileStat fileStat;
