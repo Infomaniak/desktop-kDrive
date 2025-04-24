@@ -96,54 +96,6 @@ void OperationSorterWorker::sortOperations() {
 
 void OperationSorterWorker::fixDeleteBeforeMove() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixDeleteBeforeMove");
-    const std::unordered_set<UniqueId> deleteOps = _syncPal->_syncOps->opListIdByType(OperationType::Delete);
-    const std::unordered_set<UniqueId> moveOps = _syncPal->_syncOps->opListIdByType(OperationType::Move);
-    if (deleteOps.empty() || moveOps.empty()) {
-        return;
-    }
-
-    for (const auto &deleteOpId: deleteOps) {
-        const auto deleteOp = _syncPal->_syncOps->getOp(deleteOpId);
-        LOG_IF_FAIL(deleteOp)
-        const auto deleteNode = deleteOp->affectedNode();
-        LOG_IF_FAIL(deleteNode)
-        const auto deleteNodeParentPath = deleteNode->getPath().parent_path();
-        NodeId deleteNodeParentId;
-        if (!getIdFromDb(deleteNode->side(), deleteNodeParentPath.parent_path(), deleteNodeParentId)) {
-            continue;
-        }
-
-        for (const auto &moveOpId: moveOps) {
-            const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
-            LOG_IF_FAIL(moveOp)
-            if (moveOp->targetSide() != deleteOp->targetSide()) {
-                continue;
-            }
-
-            const auto moveNode = moveOp->affectedNode();
-            LOG_IF_FAIL(moveNode)
-            const auto moveNodeParent = moveNode->parentNode();
-            LOG_IF_FAIL(moveNodeParent)
-            if (!moveNodeParent->id().has_value()) {
-                LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(moveNodeParent->name()));
-                continue;
-            }
-
-            if (const auto moveNodeParentId = moveNodeParent->id(); deleteNodeParentId != moveNodeParentId.value()) {
-                continue;
-            }
-
-            if (deleteNode->name() == moveNode->name()) {
-                // move only if moveOp is before deleteOp
-                moveFirstAfterSecond(moveOp, deleteOp);
-            }
-        }
-    }
-    LOG_SYNCPAL_DEBUG(_logger, "End fixDeleteBeforeMove");
-}
-
-void OperationSorterWorker::fixDeleteBeforeMoveOptimized() {
-    LOG_SYNCPAL_DEBUG(_logger, "Start fixDeleteBeforeMoveOptimized");
     for (const auto &[op1, op2]: _filter.fixDeleteBeforeMoveCandidates()) {
         const auto [deleteOp, moveOp] = extractOpsByType(OperationType::Delete, OperationType::Move, op1, op2);
 
@@ -173,55 +125,11 @@ void OperationSorterWorker::fixDeleteBeforeMoveOptimized() {
             moveFirstAfterSecond(moveOp, deleteOp);
         }
     }
-    LOG_SYNCPAL_DEBUG(_logger, "End fixDeleteBeforeMoveOptimized");
+    LOG_SYNCPAL_DEBUG(_logger, "End fixDeleteBeforeMove");
 }
 
 void OperationSorterWorker::fixMoveBeforeCreate() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeCreate");
-    const std::unordered_set<UniqueId> moveOps = _syncPal->_syncOps->opListIdByType(OperationType::Move);
-    const std::unordered_set<UniqueId> createOps = _syncPal->_syncOps->opListIdByType(OperationType::Create);
-    for (const auto &moveOpId: moveOps) {
-        const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
-        LOG_IF_FAIL(moveOp)
-        const auto moveNode = moveOp->affectedNode();
-        LOG_IF_FAIL(moveNode)
-
-        for (const auto &createOpId: createOps) {
-            const auto createOp = _syncPal->_syncOps->getOp(createOpId);
-            LOG_IF_FAIL(createOp)
-            if (createOp->targetSide() != moveOp->targetSide()) {
-                continue;
-            }
-
-            NodeId moveNodeOriginParentId;
-            if (!getIdFromDb(moveNode->side(), moveNode->moveOriginInfos().path().parent_path(), moveNodeOriginParentId)) {
-                continue;
-            }
-
-            const auto createNode = createOp->affectedNode();
-            LOG_IF_FAIL(createNode)
-            const auto createParentNode = createNode->parentNode();
-            LOG_IF_FAIL(createParentNode)
-            if (!createParentNode->id().has_value()) {
-                LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createParentNode->name()));
-                continue;
-            }
-
-            if (const auto createParentId = *createParentNode->id(); moveNodeOriginParentId != createParentId) {
-                continue;
-            }
-
-            if (moveNode->moveOriginInfos().path().filename() == createNode->name()) {
-                // move only if createOp is before moveOp
-                moveFirstAfterSecond(createOp, moveOp);
-            }
-        }
-    }
-    LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeCreate");
-}
-
-void OperationSorterWorker::fixMoveBeforeCreateOptimized() {
-    LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeCreateOptimized");
     for (const auto &[op1, op2]: _filter.fixMoveBeforeCreateCandidates()) {
         const auto [moveOp, createOp] = extractOpsByType(OperationType::Move, OperationType::Create, op1, op2);
 
@@ -250,146 +158,31 @@ void OperationSorterWorker::fixMoveBeforeCreateOptimized() {
             moveFirstAfterSecond(createOp, moveOp);
         }
     }
-    LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeCreateOptimized");
+    LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeCreate");
 }
 
 void OperationSorterWorker::fixMoveBeforeDelete() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeDelete");
-    const std::unordered_set<UniqueId> deleteOps = _syncPal->_syncOps->opListIdByType(OperationType::Delete);
-    const std::unordered_set<UniqueId> moveOps = _syncPal->_syncOps->opListIdByType(OperationType::Move);
-    for (const auto &deleteOpId: deleteOps) {
-        const auto deleteOp = _syncPal->_syncOps->getOp(deleteOpId);
-        LOG_IF_FAIL(deleteOp)
-        if (deleteOp->affectedNode()->type() != NodeType::Directory) {
-            continue;
-        }
-        const auto deleteNode = deleteOp->affectedNode();
-        LOG_IF_FAIL(deleteNode)
-        const auto deleteNodePath = deleteNode->getPath();
-
-        for (const auto &moveOpId: moveOps) {
-            const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
-            LOG_IF_FAIL(moveOp)
-            if (moveOp->targetSide() != deleteOp->targetSide()) {
-                continue;
-            }
-
-            LOG_IF_FAIL(moveOp->affectedNode())
-            if (const auto moveNodeOriginPath = moveOp->affectedNode()->moveOriginInfos().path();
-                Utility::isDescendantOrEqual(moveNodeOriginPath, deleteNodePath)) {
-                // move only if deleteOp is before moveOp
-                moveFirstAfterSecond(deleteOp, moveOp);
-            }
-        }
-    }
-    LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeDelete");
-}
-
-void OperationSorterWorker::fixMoveBeforeDeleteOptimized() {
-    LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeDeleteOptimized");
     for (const auto &[op1, op2]: _filter.fixMoveBeforeDeleteCandidates()) {
         const auto [moveOp, deleteOp] = extractOpsByType(OperationType::Move, OperationType::Delete, op1, op2);
         // move only if deleteOp is before moveOp
         moveFirstAfterSecond(deleteOp, moveOp);
     }
-    LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeDeleteOptimized");
+    LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeDelete");
 }
 
 void OperationSorterWorker::fixCreateBeforeMove() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixCreateBeforeMove");
-    const std::unordered_set<UniqueId> createOps = _syncPal->_syncOps->opListIdByType(OperationType::Create);
-    const std::unordered_set<UniqueId> moveOps = _syncPal->_syncOps->opListIdByType(OperationType::Move);
-    for (const auto &createOpId: createOps) {
-        const auto createOp = _syncPal->_syncOps->getOp(createOpId);
-        LOG_IF_FAIL(createOp)
-        if (createOp->affectedNode()->type() != NodeType::Directory) {
-            continue;
-        }
-
-        const auto createNode = createOp->affectedNode();
-        LOG_IF_FAIL(createNode)
-        if (!createNode->id().has_value()) {
-            LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createNode->name()));
-            continue;
-        }
-
-        for (const auto &moveOpId: moveOps) {
-            const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
-            if (moveOp->targetSide() != createOp->targetSide()) {
-                continue;
-            }
-
-            const auto moveNode = moveOp->affectedNode();
-            LOG_IF_FAIL(moveNode)
-            const auto moveParentNode = moveNode->parentNode();
-            LOG_IF_FAIL(moveParentNode)
-            if (!moveParentNode->id().has_value()) {
-                LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(moveParentNode->name()));
-                continue;
-            }
-
-            if (*moveParentNode->id() == *createNode->id()) {
-                // move only if moveOp is before createOp
-                moveFirstAfterSecond(moveOp, createOp);
-            }
-        }
-    }
-    LOG_SYNCPAL_DEBUG(_logger, "End fixCreateBeforeMove");
-}
-
-void OperationSorterWorker::fixCreateBeforeMoveOptimized() {
-    LOG_SYNCPAL_DEBUG(_logger, "Start fixCreateBeforeMoveOptimized");
     for (const auto &[op1, op2]: _filter.fixCreateBeforeMoveCandidates()) {
         const auto [createOp, moveOp] = extractOpsByType(OperationType::Create, OperationType::Move, op1, op2);
         // move only if moveOp is before createOp
         moveFirstAfterSecond(moveOp, createOp);
     }
-    LOG_SYNCPAL_DEBUG(_logger, "End fixCreateBeforeMoveOptimized");
+    LOG_SYNCPAL_DEBUG(_logger, "End fixCreateBeforeMove");
 }
 
 void OperationSorterWorker::fixDeleteBeforeCreate() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixDeleteBeforeCreate");
-    const std::unordered_set<UniqueId> deleteOps = _syncPal->_syncOps->opListIdByType(OperationType::Delete);
-    const std::unordered_set<UniqueId> createOps = _syncPal->_syncOps->opListIdByType(OperationType::Create);
-    for (const auto &deleteOpId: deleteOps) {
-        const auto deleteOp = _syncPal->_syncOps->getOp(deleteOpId);
-        LOG_IF_FAIL(deleteOp)
-        const auto deleteNode = deleteOp->affectedNode();
-        LOG_IF_FAIL(deleteNode)
-        const auto deleteNodeParentPath = deleteNode->getPath().parent_path();
-        NodeId deleteNodeParentId;
-        if (!getIdFromDb(deleteNode->side(), deleteNodeParentPath, deleteNodeParentId)) {
-            continue;
-        }
-
-        for (const auto &createOpId: createOps) {
-            const auto createOp = _syncPal->_syncOps->getOp(createOpId);
-            LOG_IF_FAIL(createOp)
-            if (createOp->targetSide() != deleteOp->targetSide()) {
-                continue;
-            }
-
-            const auto createNode = createOp->affectedNode();
-            LOG_IF_FAIL(createNode)
-            if (!createNode->parentNode()) {
-                continue;
-            }
-
-            if (const auto createNodeParentId = createNode->parentNode()->id(); deleteNodeParentId != createNodeParentId) {
-                continue;
-            }
-
-            if (createNode->name() == deleteNode->name()) {
-                // move only if createOp is before deleteOp
-                moveFirstAfterSecond(createOp, deleteOp);
-            }
-        }
-    }
-    LOG_SYNCPAL_DEBUG(_logger, "End fixDeleteBeforeCreate");
-}
-
-void OperationSorterWorker::fixDeleteBeforeCreateOptimized() {
-    LOG_SYNCPAL_DEBUG(_logger, "Start fixDeleteBeforeCreateOptimized");
     for (const auto &[op1, op2]: _filter.fixDeleteBeforeCreateCandidates()) {
         const auto [deleteOp, createOp] = extractOpsByType(OperationType::Delete, OperationType::Create, op1, op2);
 
@@ -416,48 +209,11 @@ void OperationSorterWorker::fixDeleteBeforeCreateOptimized() {
             moveFirstAfterSecond(createOp, deleteOp);
         }
     }
-    LOG_SYNCPAL_DEBUG(_logger, "End fixDeleteBeforeCreateOptimized");
+    LOG_SYNCPAL_DEBUG(_logger, "End fixDeleteBeforeCreate");
 }
 
 void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeMoveOccupied");
-    for (const auto opIds = _syncPal->_syncOps->opListIdByType(OperationType::Move); const auto &opId: opIds) {
-        const auto op = _syncPal->_syncOps->getOp(opId);
-        LOG_IF_FAIL(op)
-        const auto node = op->affectedNode();
-        LOG_IF_FAIL(node)
-        if (!node->parentNode()) {
-            continue;
-        }
-        const auto nodePath = node->getPath();
-        const auto nodeParentId = node->parentNode()->id();
-
-        for (const auto &otherOpId: opIds) {
-            const auto otherOp = _syncPal->_syncOps->getOp(otherOpId);
-            LOG_IF_FAIL(otherOp)
-            if (op == otherOp || otherOp->targetSide() != op->targetSide()) {
-                continue;
-            }
-
-            const auto otherNode = otherOp->affectedNode();
-            LOG_IF_FAIL(otherNode)
-            const auto otherNodeOriginPath = otherNode->moveOriginInfos().path();
-            NodeId otherNodeOriginParentId;
-            if (!getIdFromDb(otherNode->side(), otherNodeOriginPath.parent_path(), otherNodeOriginParentId)) {
-                continue;
-            }
-
-            if (nodeParentId == otherNodeOriginParentId && nodePath.filename() == otherNodeOriginPath.filename()) {
-                // move only if op is before otherOp
-                moveFirstAfterSecond(op, otherOp);
-            }
-        }
-    }
-    LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeMoveOccupied");
-}
-
-void OperationSorterWorker::fixMoveBeforeMoveOccupiedOptimized() {
-    LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeMoveOccupiedOptimized");
     for (const auto &[moveOp, otherMoveOp]: _filter.fixMoveBeforeMoveOccupiedCandidates()) {
         const auto node = moveOp->affectedNode();
         LOG_IF_FAIL(node)
@@ -480,7 +236,7 @@ void OperationSorterWorker::fixMoveBeforeMoveOccupiedOptimized() {
             moveFirstAfterSecond(moveOp, otherMoveOp);
         }
     }
-    LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeMoveOccupiedOptimized");
+    LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeMoveOccupied");
 }
 
 class SyncOpDepthCmp {
@@ -570,28 +326,6 @@ bool OperationSorterWorker::hasParentWithHigherIndex(const std::unordered_map<Un
 
 void OperationSorterWorker::fixEditBeforeMove() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixEditBeforeMove");
-    const auto moveOpIds = _syncPal->_syncOps->opListIdByType(OperationType::Move);
-    for (const auto editOpIds = _syncPal->_syncOps->opListIdByType(OperationType::Edit); const auto &editOpId: editOpIds) {
-        const auto editOp = _syncPal->_syncOps->getOp(editOpId);
-        LOG_IF_FAIL(editOp)
-
-        for (const auto &moveOpId: moveOpIds) {
-            const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
-            LOG_IF_FAIL(moveOp)
-            if (moveOp->targetSide() != editOp->targetSide() || moveOp->affectedNode()->id() != editOp->affectedNode()->id()) {
-                continue;
-            }
-
-            // Since in case of move op, the node already contains the new name
-            // we always want to execute move operation first
-            moveFirstAfterSecond(editOp, moveOp);
-        }
-    }
-    LOG_SYNCPAL_DEBUG(_logger, "End fixEditBeforeMove");
-}
-
-void OperationSorterWorker::fixEditBeforeMoveOptimized() {
-    LOG_SYNCPAL_DEBUG(_logger, "Start fixEditBeforeMoveOptimized");
     for (const auto &[_, opList]: _filter.fixEditBeforeMoveCandidates()) {
         if (opList.size() != 2) {
             continue; // We are looking for nodes affected by both EDIT and MOVE operations
@@ -602,53 +336,16 @@ void OperationSorterWorker::fixEditBeforeMoveOptimized() {
         // we always want to execute move operation first
         moveFirstAfterSecond(editOp, moveOp);
     }
-    LOG_SYNCPAL_DEBUG(_logger, "End fixEditBeforeMoveOptimized");
+    LOG_SYNCPAL_DEBUG(_logger, "End fixEditBeforeMove");
 }
 
 void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeMoveHierarchyFlip");
-    for (const auto moveOpIds = _syncPal->_syncOps->opListIdByType(OperationType::Move); const auto &opIdX: moveOpIds) {
-        const auto opX = _syncPal->_syncOps->getOp(opIdX);
-        LOG_IF_FAIL(opX)
-        if (opX->affectedNode()->type() != NodeType::Directory) {
-            continue;
-        }
-
-        const auto nodeX = opX->affectedNode();
-        LOG_IF_FAIL(nodeX);
-        const auto nodeOriginPathX = nodeX->moveOriginInfos().path();
-        const auto nodeDestinationPathX = nodeX->getPath();
-
-        for (const auto &opIdY: moveOpIds) {
-            const auto opY = _syncPal->_syncOps->getOp(opIdY);
-            LOG_IF_FAIL(opY)
-            if (opY->affectedNode()->type() != NodeType::Directory || opX == opY || opX->targetSide() != opY->targetSide()) {
-                continue;
-            }
-
-            const auto nodeY = opY->affectedNode();
-            LOG_IF_FAIL(nodeY)
-
-            if (!Utility::isStrictDescendant(nodeDestinationPathX, nodeY->getPath())) {
-                continue;
-            }
-            if (!Utility::isStrictDescendant(nodeY->moveOriginInfos().path(), nodeOriginPathX)) {
-                continue;
-            }
-
-            moveFirstAfterSecond(opX, opY);
-        }
-    }
-    LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeMoveHierarchyFlip");
-}
-
-void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlipOptimized() {
-    LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeMoveHierarchyFlipOptimized");
     for (const auto &[op, otherOp]: _filter.fixMoveBeforeMoveHierarchyFlipCandidates()) {
         // move only if op is before opOtherOp
         moveFirstAfterSecond(op, otherOp);
     }
-    LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeMoveHierarchyFlipOptimized");
+    LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeMoveHierarchyFlip");
 }
 
 std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp() {

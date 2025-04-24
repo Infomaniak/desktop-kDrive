@@ -42,32 +42,26 @@ class OperationSorterWorker : public OperationProcessor {
          * @brief delete before move, e.g. user deletes an object at path "x" and moves another object "a" to "x".
          */
         void fixDeleteBeforeMove();
-        void fixDeleteBeforeMoveOptimized();
         /**
          * @brief move before create, e.g. user moves an object "a" to "b" and creates another object at "a".
          */
         void fixMoveBeforeCreate();
-        void fixMoveBeforeCreateOptimized();
         /**
          * @brief move before delete, e.g. user moves object "X/y" outside of directory "X" and then deletes "X".
          */
         void fixMoveBeforeDelete();
-        void fixMoveBeforeDeleteOptimized();
         /**
          * @brief create before move, e.g. user creates directory "X" and moves object "y" into "X".
          */
         void fixCreateBeforeMove();
-        void fixCreateBeforeMoveOptimized();
         /**
          * @brief delete before create, e.g. user deletes object "x" and then creates a new object at "x".
          */
         void fixDeleteBeforeCreate();
-        void fixDeleteBeforeCreateOptimized();
         /**
          * @brief move before move (occupation), e.g. user moves file "a" to "temp" and then moves file "b" to "a".
          */
         void fixMoveBeforeMoveOccupied();
-        void fixMoveBeforeMoveOccupiedOptimized();
         /**
          * @brief create before create, e.g. user creates directory "X" and then creates an object inside it.
          */
@@ -76,13 +70,11 @@ class OperationSorterWorker : public OperationProcessor {
          * @brief edit before move, e.g. user moves an object "a" to "b" and then edit it.
          */
         void fixEditBeforeMove();
-        void fixEditBeforeMoveOptimized();
         /**
          * @brief move before move (parent-child flip), e.g. user moves directory "A/B" to "C", then moves directory "A" to
          * "C/A" (parent-child relationships are now flipped).
          */
         void fixMoveBeforeMoveHierarchyFlip();
-        void fixMoveBeforeMoveHierarchyFlipOptimized();
 
         std::optional<SyncOperationList> fixImpossibleFirstMoveOp();
         bool breakCycle(SyncOperationList &cycle, const SyncOpPtr &renameResolutionOp);
