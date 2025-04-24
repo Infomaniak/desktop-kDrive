@@ -169,8 +169,10 @@ function CMake-Build-And-Install {
         [string] $installPath,
         [string] $vfsDir
     )
+    Write-Host "1) Installing Conan dependencies…"
+    & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" -buildType $buildType
 
-    Write-Host "Building the application with CMake ..."
+    Write-Host "2) Configuring and building with CMake ..."
 
     $compiler = "cl.exe"
 
@@ -187,6 +189,7 @@ function CMake-Build-And-Install {
 
     $flags = @(
         "'-DCMAKE_EXPORT_COMPILE_COMMANDS=1'",
+        "'-DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake'",
         "'-DCMAKE_MAKE_PROGRAM=C:\Qt\Tools\Ninja\ninja.exe'",
         "'-DQT_QMAKE_EXECUTABLE:STRING=C:\Qt\Tools\CMake_64\bin\cmake.exe'",
         "'-DCMAKE_C_COMPILER:STRING=$compiler'",
@@ -211,6 +214,7 @@ function CMake-Build-And-Install {
 
     $args += ("'-B$buildPath'")
     $args += ("'-H$path'")
+    $args += ("'-DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake'")
 
     $cmake = ('cmake {0}' -f ($args -Join ' '))
 

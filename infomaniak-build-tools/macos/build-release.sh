@@ -76,6 +76,9 @@ if [ -n "$TEAM_IDENTIFIER" -a -n "$SIGN_IDENTITY" ]; then
 	CMAKE_PARAMS+=(-DSOCKETAPI_TEAM_IDENTIFIER_PREFIX="$TEAM_IDENTIFIER.")
 fi
 
+bash infomaniak-build-tools/conan/build_dependencies.sh Release
+
+
 # Configure
 pushd "$BUILDDIR"
 
@@ -86,6 +89,7 @@ cmake \
 	-DSPARKLE_LIBRARY="$SPARKLE_DIR/Sparkle.framework" \
 	-DKDRIVE_THEME_DIR="$KDRIVE_DIR" \
 	-DBUILD_UNIT_TESTS=0 \
+	-DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
 	"${CMAKE_PARAMS[@]}" \
 	"$SRCDIR"
 
