@@ -22,6 +22,7 @@
 #include "syncpal/syncpal.h"
 #include "reconciliation/syncoperation.h"
 #include "jobs/abstractjob.h"
+#include "utility/timerutility.h"
 
 #include <queue>
 #include <unordered_map>
@@ -164,7 +165,7 @@ class ExecutorWorker : public OperationProcessor {
         std::list<UniqueId> _opList;
         std::recursive_mutex _opListMutex;
 
-        std::chrono::steady_clock::time_point _fileProgressTimer = std::chrono::steady_clock::now();
+        TimerUtility _timer;
 
         bool _snapshotToInvalidate = false;
 

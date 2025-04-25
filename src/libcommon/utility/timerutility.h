@@ -28,7 +28,7 @@ class TimerUtility {
         /**
          * @brief Restart the timer.
          */
-        void restartTimer();
+        void restart();
         /**
          * @brief Return the elapsed time since start.
          * @param consoleMsg Optional. Print the message and the elapsed time in console is not empty.

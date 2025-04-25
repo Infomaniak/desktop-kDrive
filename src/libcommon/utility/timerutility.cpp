@@ -24,7 +24,7 @@ namespace KDC {
 
 TimerUtility::TimerUtility() : _startTime(std::chrono::steady_clock::now()) {}
 
-void TimerUtility::restartTimer() {
+void TimerUtility::restart() {
     _startTime = std::chrono::steady_clock::now();
 }
 
@@ -38,7 +38,7 @@ SecondsDuration TimerUtility::elapsed(const std::string_view consoleMsg /*= {}*/
 
 SecondsDuration TimerUtility::lap(const std::string_view consoleMsg /*= {}*/) {
     const auto elapsedSeconds = elapsed(consoleMsg);
-    restartTimer();
+    restart();
     return elapsedSeconds;
 }
 

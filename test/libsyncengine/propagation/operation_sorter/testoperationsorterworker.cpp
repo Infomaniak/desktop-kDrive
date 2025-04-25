@@ -445,6 +445,7 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFlip2() {
     (void) _syncPal->syncOps()->pushOp(moveOp2);
     (void) _syncPal->syncOps()->pushOp(moveOp1);
 
+    _syncPal->_operationsSorterWorker->_filter.filterOperations();
     _syncPal->_operationsSorterWorker->fixMoveBeforeMoveHierarchyFlip();
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
@@ -469,6 +470,7 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFlip3() {
     (void) _syncPal->syncOps()->pushOp(moveOp2);
     (void) _syncPal->syncOps()->pushOp(moveOp1);
 
+    _syncPal->_operationsSorterWorker->_filter.filterOperations();
     _syncPal->_operationsSorterWorker->fixMoveBeforeMoveHierarchyFlip();
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
