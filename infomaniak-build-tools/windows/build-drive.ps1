@@ -213,7 +213,7 @@ function CMake-Build-And-Install {
 
     $args += ("'-B$buildPath'")
     $args += ("'-H$path'")
-    $args += ("'-DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake'")
+    $args += ("'-DCMAKE_TOOLCHAIN_FILE=$buildPath\conan_toolchain.cmake'")
 
     $cmake = ('cmake {0}' -f ($args -Join ' '))
 
