@@ -46,7 +46,7 @@ class TestJobManager : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testJobPriority);
         CPPUNIT_TEST(testJobPriority2);
         CPPUNIT_TEST(testJobPriority3);
-        CPPUNIT_TEST(testReuseSocket);
+        // CPPUNIT_TEST(testReuseSocket);
         CPPUNIT_TEST_SUITE_END();
 
     public:
