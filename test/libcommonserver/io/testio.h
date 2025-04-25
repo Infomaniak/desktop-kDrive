@@ -140,6 +140,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testOpenFileAccessDenied();
         void testOpenFileNonExisting();
         void testOpenLockedFileRemovedBeforeTimedOut();
+        void testCheckIfPathExistsMixedSeparators();
 
     private:
         IoHelperTests *_testObj;

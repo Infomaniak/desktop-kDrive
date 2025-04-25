@@ -25,7 +25,7 @@
 
 namespace KDC {
 
-static void setupFavLink_private(const QString &folder) {
+void CommonGuiUtility::setupFavLink(const QString &folder) {
     // Nautilus: add to ~/.gtk-bookmarks
     QFile gtkBookmarks(QDir::homePath() + QLatin1String("/.gtk-bookmarks"));
     QByteArray folderUrl = "file://" + folder.toUtf8();

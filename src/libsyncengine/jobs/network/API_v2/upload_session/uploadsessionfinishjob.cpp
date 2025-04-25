@@ -23,9 +23,9 @@
 namespace KDC {
 
 UploadSessionFinishJob::UploadSessionFinishJob(const std::shared_ptr<Vfs> &vfs, UploadSessionType uploadType, int driveDbId,
-                                               const SyncPath &filepath, const std::string &sessionToken,
+                                               const SyncPath &absoluteFilePath, const std::string &sessionToken,
                                                const std::string &totalChunkHash, uint64_t totalChunks, SyncTime modtime) :
-    AbstractUploadSessionJob(uploadType, driveDbId, filepath, sessionToken), _totalChunkHash(totalChunkHash),
+    AbstractUploadSessionJob(uploadType, driveDbId, absoluteFilePath, sessionToken), _totalChunkHash(totalChunkHash),
     _totalChunks(totalChunks), _modtimeIn(modtime), _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
@@ -38,8 +38,8 @@ UploadSessionFinishJob::UploadSessionFinishJob(UploadSessionType uploadType, con
 UploadSessionFinishJob::~UploadSessionFinishJob() {
     if (!_vfs) return;
     constexpr VfsStatus vfsStatus({.isHydrated = true, .isSyncing = false, .progress = 0});
-    if (const ExitInfo exitInfo = _vfs->forceStatus(_filePath, vfsStatus); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in vfsForceStatus for " << Utility::formatSyncPath(_filePath) << L": " << exitInfo);
+    if (const ExitInfo exitInfo = _vfs->forceStatus(_absoluteFilePath, vfsStatus); !exitInfo) {
+        LOGW_WARN(_logger, L"Error in vfsForceStatus for " << Utility::formatSyncPath(_absoluteFilePath) << L": " << exitInfo);
     }
 }
 
@@ -48,19 +48,21 @@ bool UploadSessionFinishJob::handleResponse(std::istream &is) {
         return false;
     }
 
-    if (jsonRes()) {
-        Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
-        if (dataObj) {
-            Poco::JSON::Object::Ptr fileObj = dataObj->getObject(fileKey);
-            if (fileObj) {
-                if (!JsonParserUtility::extractValue(fileObj, idKey, _nodeId)) {
-                    return false;
-                }
-                if (!JsonParserUtility::extractValue(fileObj, lastModifiedAtKey, _modtimeOut)) {
-                    return false;
-                }
-            }
-        }
+    if (!jsonRes()) return false;
+    const Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
+    if (!dataObj) return false;
+    const Poco::JSON::Object::Ptr fileObj = dataObj->getObject(fileKey);
+    if (!fileObj) return false;
+    if (!JsonParserUtility::extractValue(fileObj, idKey, _nodeId)) return false;
+    if (!JsonParserUtility::extractValue(fileObj, lastModifiedAtKey, _modtimeOut)) return false;
+
+    if (_modtimeIn != _modtimeOut) {
+        // The backend refused the modification time. To avoid further EDIT operations, we apply the backend's time on local file.
+        bool exists = false;
+        (void) Utility::setFileDates(_absoluteFilePath, 0, _modtimeOut, false, exists);
+        LOG_INFO(_logger, "Modification time refused "
+                                  << _modtimeIn << " by the backend. The modification time has been updated to " << _modtimeOut
+                                  << " on local file.");
     }
 
     return true;

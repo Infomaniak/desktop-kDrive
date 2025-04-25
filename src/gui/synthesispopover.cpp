@@ -26,7 +26,6 @@
 #include "guiutility.h"
 #include "languagechangefilter.h"
 #include "parameterscache.h"
-#include "config.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/handler.h"
 #include "guirequests.h"
@@ -60,31 +59,11 @@ static const int triangleWidth = 20;
 static const int trianglePosition = 100; // Position from side
 static const int cornerRadius = 5;
 static const int shadowBlurRadius = 20;
-static const int toolBarHMargin = 10;
-static const int toolBarVMargin = 10;
-static const int toolBarSpacing = 10;
 static const int driveBoxHMargin = 10;
 static const int driveBoxVMargin = 10;
 static const int defaultPageSpacing = 20;
-static const int logoIconSize = 30;
 static const int defaultLogoIconSize = 50;
 static const int maxSynchronizedItems = 50;
-
-const std::map<NotificationsDisabled, QString> SynthesisPopover::_notificationsDisabledMap = {
-        {NotificationsDisabled::Never, QString(tr("Never"))},
-        {NotificationsDisabled::OneHour, QString(tr("During 1 hour"))},
-        {NotificationsDisabled::UntilTomorrow, QString(tr("Until tomorrow 8:00AM"))},
-        {NotificationsDisabled::TreeDays, QString(tr("During 3 days"))},
-        {NotificationsDisabled::OneWeek, QString(tr("During 1 week"))},
-        {NotificationsDisabled::Always, QString(tr("Always"))}};
-
-const std::map<NotificationsDisabled, QString> SynthesisPopover::_notificationsDisabledForPeriodMap = {
-        {NotificationsDisabled::Never, QString(tr("Never"))},
-        {NotificationsDisabled::OneHour, QString(tr("For 1 more hour"))},
-        {NotificationsDisabled::UntilTomorrow, QString(tr("Until tomorrow 8:00AM"))},
-        {NotificationsDisabled::TreeDays, QString(tr("For 3 more days"))},
-        {NotificationsDisabled::OneWeek, QString(tr("For 1 more week"))},
-        {NotificationsDisabled::Always, QString(tr("Always"))}};
 
 Q_LOGGING_CATEGORY(lcSynthesisPopover, "gui.synthesispopover", QtInfoMsg)
 
@@ -96,12 +75,10 @@ SynthesisPopover::SynthesisPopover(std::shared_ptr<ClientGui> gui, bool debugCra
     setMinimumSize(windowSize);
     setMaximumSize(windowSize);
 
-    _notificationsDisabled = ParametersCache::instance()->parametersInfo().notificationsDisabled();
-
     initUI();
 
-    connect(this, &SynthesisPopover::updateItemList, this, &SynthesisPopover::onUpdateSynchronizedListWidget,
-            Qt::QueuedConnection);
+    (void) connect(this, &SynthesisPopover::updateItemList, this, &SynthesisPopover::onUpdateSynchronizedListWidget,
+                   Qt::QueuedConnection);
 }
 
 SynthesisPopover::~SynthesisPopover() {}
@@ -372,7 +349,7 @@ void SynthesisPopover::paintEvent(QPaintEvent *event) {
 
 bool SynthesisPopover::event(QEvent *event) {
     bool ret = QDialog::event(event);
-    if (event->type() == QEvent::WindowDeactivate) {
+    if (event->type() == QEvent::WindowDeactivate && !_synthesisBar->systemMove()) {
         setGraphicsEffect(nullptr);
         done(QDialog::Accepted);
     } else if (event->type() == QEvent::Show || event->type() == QEvent::Hide) {
@@ -381,7 +358,7 @@ bool SynthesisPopover::event(QEvent *event) {
             _gui->activateLoadInfo(event->type() == QEvent::Show);
 
             if (event->type() == QEvent::Show) {
-                refreshErrorsButton();
+                _synthesisBar->refreshErrorsButton();
                 // Update the list of synchronized items
                 qCDebug(lcSynthesisPopover) << "Show event";
                 emit updateItemList();
@@ -395,11 +372,7 @@ void SynthesisPopover::initUI() {
     /*
      *  _mainWidget
      *    mainVBox
-     *      hBoxToolBar
-     *          iconLabel
-     *          _errorsButton
-     *          _infosButton
-     *          _menuButton
+     *      _synthesisBar
      *      hBoxDriveBar
      *          _driveSelectionWidget
      *      _progressBarWidget
@@ -437,36 +410,10 @@ void SynthesisPopover::initUI() {
     auto *mainVBox = new QVBoxLayout(_mainWidget);
     mainVBox->setContentsMargins(triangleHeight, triangleHeight, triangleHeight, triangleHeight);
     mainVBox->setSpacing(0);
+
     // Tool bar
-    auto *hBoxToolBar = new QHBoxLayout();
-    hBoxToolBar->setContentsMargins(toolBarHMargin, toolBarVMargin, toolBarHMargin, toolBarVMargin);
-    hBoxToolBar->setSpacing(toolBarSpacing);
-    mainVBox->addLayout(hBoxToolBar);
-
-    auto *iconLabel = new QLabel(this);
-    iconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-without-text.svg")
-                                 .pixmap(logoIconSize, logoIconSize));
-    hBoxToolBar->addWidget(iconLabel);
-
-    hBoxToolBar->addStretch();
-
-    _errorsButton = new CustomToolButton(this);
-    _errorsButton->setObjectName("errorsButton");
-    _errorsButton->setIconPath(":/client/resources/icons/actions/warning.svg");
-    _errorsButton->setVisible(false);
-    _errorsButton->setWithMenu(true);
-    hBoxToolBar->addWidget(_errorsButton);
-
-    _infosButton = new CustomToolButton(this);
-    _infosButton->setObjectName("informationButton");
-    _infosButton->setIconPath(":/client/resources/icons/actions/information.svg");
-    _infosButton->setVisible(false);
-    _infosButton->setWithMenu(true);
-    hBoxToolBar->addWidget(_infosButton);
-
-    _menuButton = new CustomToolButton(this);
-    _menuButton->setIconPath(":/client/resources/icons/actions/menu.svg");
-    hBoxToolBar->addWidget(_menuButton);
+    _synthesisBar = new SynthesisBar(_gui, _debugCrash);
+    mainVBox->addWidget(_synthesisBar);
 
     // Drive selection
     auto *hBoxDriveBar = new QHBoxLayout();
@@ -589,21 +536,26 @@ void SynthesisPopover::initUI() {
     retranslateUi();
     auto *languageFilter = new LanguageChangeFilter(this);
     installEventFilter(languageFilter);
-    connect(languageFilter, &LanguageChangeFilter::retranslate, this, &SynthesisPopover::retranslateUi);
+    (void) connect(languageFilter, &LanguageChangeFilter::retranslate, this, &SynthesisPopover::retranslateUi);
 
-    connect(_errorsButton, &CustomToolButton::clicked, this, &SynthesisPopover::onOpenErrorsMenu);
-    connect(_infosButton, &CustomToolButton::clicked, this, &SynthesisPopover::onOpenErrorsMenu);
-    connect(_menuButton, &CustomToolButton::clicked, this, &SynthesisPopover::onOpenMiscellaneousMenu);
-    connect(_driveSelectionWidget, &DriveSelectionWidget::driveSelected, this, &SynthesisPopover::onDriveSelected);
-    connect(_driveSelectionWidget, &DriveSelectionWidget::addDrive, this, &SynthesisPopover::onAddDrive);
-    connect(_statusBarWidget, &StatusBarWidget::pauseSync, this, &SynthesisPopover::onPauseSync);
-    connect(_statusBarWidget, &StatusBarWidget::resumeSync, this, &SynthesisPopover::onResumeSync);
-    connect(_statusBarWidget, &StatusBarWidget::linkActivated, this, &SynthesisPopover::onLinkActivated);
-    connect(_buttonsBarWidget, &ButtonsBarWidget::buttonToggled, this, &SynthesisPopover::onButtonBarToggled);
+    (void) connect(_synthesisBar, &SynthesisBar::showParametersDialog, this, &SynthesisPopover::showParametersDialog);
+    (void) connect(_synthesisBar, &SynthesisBar::disableNotifications, this, &SynthesisPopover::disableNotifications);
+    (void) connect(_synthesisBar, &SynthesisBar::exit, this, &SynthesisPopover::exit);
+    (void) connect(_synthesisBar, &SynthesisBar::crash, this, &SynthesisPopover::crash);
+    (void) connect(_synthesisBar, &SynthesisBar::crashServer, this, &SynthesisPopover::crashServer);
+    (void) connect(_synthesisBar, &SynthesisBar::crashEnforce, this, &SynthesisPopover::crashEnforce);
+    (void) connect(_synthesisBar, &SynthesisBar::crashFatal, this, &SynthesisPopover::crashEnforce);
+    (void) connect(_driveSelectionWidget, &DriveSelectionWidget::driveSelected, this, &SynthesisPopover::onDriveSelected);
+    (void) connect(_driveSelectionWidget, &DriveSelectionWidget::addDrive, this, &SynthesisPopover::onAddDrive);
+    (void) connect(_statusBarWidget, &StatusBarWidget::pauseSync, this, &SynthesisPopover::onPauseSync);
+    (void) connect(_statusBarWidget, &StatusBarWidget::resumeSync, this, &SynthesisPopover::onResumeSync);
+    (void) connect(_statusBarWidget, &StatusBarWidget::linkActivated, this, &SynthesisPopover::onLinkActivated);
+    (void) connect(_buttonsBarWidget, &ButtonsBarWidget::buttonToggled, this, &SynthesisPopover::onButtonBarToggled);
 
-    connect(_lockedAppUpdateButton, &QPushButton::clicked, this, &SynthesisPopover::onStartInstaller, Qt::UniqueConnection);
-    connect(_gui.get(), &ClientGui::updateStateChanged, this, &SynthesisPopover::onUpdateAvailabilityChange,
-            Qt::UniqueConnection);
+    (void) connect(_lockedAppUpdateButton, &QPushButton::clicked, this, &SynthesisPopover::onStartInstaller,
+                   Qt::UniqueConnection);
+    (void) connect(_gui.get(), &ClientGui::updateStateChanged, this, &SynthesisPopover::onUpdateAvailabilityChange,
+                   Qt::UniqueConnection);
 }
 
 QUrl SynthesisPopover::syncUrl(int syncDbId, const QString &filePath) {
@@ -732,30 +684,6 @@ void SynthesisPopover::refreshStatusBar(int driveDbId) {
     refreshStatusBar(_gui->driveInfoMap().find(driveDbId));
 }
 
-void SynthesisPopover::refreshErrorsButton() {
-    bool drivesWithErrors = false;
-    bool drivesWithInfos = false;
-
-    for (auto &[driveId, driveInfo]: _gui->driveInfoMap()) {
-        std::map<int, SyncInfoClient> syncInfoMap;
-        _gui->loadSyncInfoMap(driveId, syncInfoMap);
-        if (syncInfoMap.empty()) {
-            driveInfo.setUnresolvedErrorsCount(0);
-            driveInfo.setAutoresolvedErrorsCount(0);
-        }
-
-        drivesWithErrors = drivesWithErrors || _gui->driveErrorsCount(driveId, true) > 0;
-        drivesWithInfos = drivesWithInfos || _gui->driveErrorsCount(driveId, false) > 0;
-    }
-
-    _errorsButton->setVisible(_gui->hasGeneralErrors() || drivesWithErrors);
-    if (_gui->hasGeneralErrors() || drivesWithErrors) {
-        _infosButton->setVisible(false);
-    } else {
-        _infosButton->setVisible(drivesWithInfos);
-    }
-}
-
 void SynthesisPopover::setSynchronizedDefaultPage(QWidget **widget, QWidget *parent) {
     if (!*widget) {
         *widget = new QWidget(parent);
@@ -786,7 +714,7 @@ void SynthesisPopover::setSynchronizedDefaultPage(QWidget **widget, QWidget *par
         vboxLayout->addStretch();
         (*widget)->setLayout(vboxLayout);
 
-        connect(_defaultTextLabel, &QLabel::linkActivated, this, &SynthesisPopover::onLinkActivated);
+        (void) connect(_defaultTextLabel, &QLabel::linkActivated, this, &SynthesisPopover::onLinkActivated);
     }
 
     // Set text
@@ -868,7 +796,8 @@ void SynthesisPopover::onConfigRefreshed() {
         handleRemovedDrives();
 
     setSynchronizedDefaultPage(&_defaultSynchronizedPageWidget, this);
-    refreshErrorsButton();
+    _synthesisBar->refreshErrorsButton();
+    retranslateUi();
     forceRedraw();
 }
 
@@ -970,31 +899,8 @@ void SynthesisPopover::onItemCompleted(int syncDbId, const SyncFileItemInfo &ite
     }
 }
 
-void SynthesisPopover::onOpenErrorsMenu() {
-    QList<ErrorsPopup::DriveError> driveErrorList;
-    getDriveErrorList(driveErrorList);
-
-    if (driveErrorList.size() > 0 || _gui->generalErrorsCount() > 0) {
-        CustomToolButton *button = qobject_cast<CustomToolButton *>(sender());
-        QPoint position = QWidget::mapToGlobal(button->geometry().center());
-        ErrorsPopup *errorsPopup = new ErrorsPopup(driveErrorList, _gui->generalErrorsCount(), position, this);
-        connect(errorsPopup, &ErrorsPopup::accountSelected, this, &SynthesisPopover::onDisplayErrors);
-        errorsPopup->show();
-        errorsPopup->setModal(true);
-    }
-}
-
-void SynthesisPopover::onDisplayErrors(int driveDbId) {
-    displayErrors(driveDbId);
-}
-
-void SynthesisPopover::displayErrors(int driveDbId) {
-    emit showParametersDialog(driveDbId, true);
-}
-
 void SynthesisPopover::reset() {
-    _errorsButton->setVisible(false);
-    _infosButton->setVisible(false);
+    _synthesisBar->reset();
     _driveSelectionWidget->clear();
     _progressBarWidget->reset();
     _statusBarWidget->reset();
@@ -1006,7 +912,6 @@ void SynthesisPopover::addSynchronizedListWidgetItem(DriveInfoClient &driveInfoC
         return;
     }
 
-
     SynchronizedItemWidget *widget =
             new SynchronizedItemWidget(driveInfoClient.synchronizedItemList()[row], driveInfoClient.synchronizedListWidget());
 
@@ -1014,30 +919,13 @@ void SynthesisPopover::addSynchronizedListWidgetItem(DriveInfoClient &driveInfoC
     driveInfoClient.synchronizedListWidget()->insertItem(row, widgetItem);
     driveInfoClient.synchronizedListWidget()->setItemWidget(widgetItem, widget);
 
-    connect(widget, &SynchronizedItemWidget::openFolder, this, &SynthesisPopover::onOpenFolderItem);
-    connect(widget, &SynchronizedItemWidget::open, this, &SynthesisPopover::onOpenItem);
-    connect(widget, &SynchronizedItemWidget::addToFavourites, this, &SynthesisPopover::onAddToFavouriteItem);
-    // connect(widget, &SynchronizedItemWidget::manageRightAndSharing, this, &SynthesisPopover::onManageRightAndSharingItem);
-    connect(widget, &SynchronizedItemWidget::copyLink, this, &SynthesisPopover::onCopyLinkItem);
-    connect(widget, &SynchronizedItemWidget::displayOnWebview, this, &SynthesisPopover::onOpenWebviewItem);
-    connect(widget, &SynchronizedItemWidget::selectionChanged, this, &SynthesisPopover::onSelectionChanged);
-    connect(this, &SynthesisPopover::cannotSelect, widget, &SynchronizedItemWidget::onCannotSelect);
-}
-
-void SynthesisPopover::getDriveErrorList(QList<ErrorsPopup::DriveError> &list) {
-    list.clear();
-    for (auto const &driveInfoElt: _gui->driveInfoMap()) {
-        int driveUnresolvedErrorsCount = _gui->driveErrorsCount(driveInfoElt.first, true);
-        int driveAutoresolvedErrorsCount = _gui->driveErrorsCount(driveInfoElt.first, false);
-        if (driveUnresolvedErrorsCount > 0 || driveAutoresolvedErrorsCount > 0) {
-            ErrorsPopup::DriveError driveError;
-            driveError.driveDbId = driveInfoElt.first;
-            driveError.driveName = driveInfoElt.second.name();
-            driveError.unresolvedErrorsCount = driveUnresolvedErrorsCount;
-            driveError.autoresolvedErrorsCount = driveAutoresolvedErrorsCount;
-            list << driveError;
-        }
-    }
+    (void) connect(widget, &SynchronizedItemWidget::openFolder, this, &SynthesisPopover::onOpenFolderItem);
+    (void) connect(widget, &SynchronizedItemWidget::open, this, &SynthesisPopover::onOpenItem);
+    (void) connect(widget, &SynchronizedItemWidget::addToFavourites, this, &SynthesisPopover::onAddToFavouriteItem);
+    (void) connect(widget, &SynchronizedItemWidget::copyLink, this, &SynthesisPopover::onCopyLinkItem);
+    (void) connect(widget, &SynchronizedItemWidget::displayOnWebview, this, &SynthesisPopover::onOpenWebviewItem);
+    (void) connect(widget, &SynchronizedItemWidget::selectionChanged, this, &SynthesisPopover::onSelectionChanged);
+    (void) connect(this, &SynthesisPopover::cannotSelect, widget, &SynchronizedItemWidget::onCannotSelect);
 }
 
 void SynthesisPopover::onUpdateSynchronizedListWidget() {
@@ -1112,277 +1000,7 @@ void SynthesisPopover::onAppVersionLocked(bool currentVersionLocked) {
 }
 
 void SynthesisPopover::onRefreshErrorList(int /*driveDbId*/) {
-    refreshErrorsButton();
-}
-
-void SynthesisPopover::onOpenFolder() {
-    int syncDbId = qvariant_cast<int>(sender()->property(MenuWidget::actionTypeProperty.c_str()));
-    openUrl(syncDbId);
-}
-
-void SynthesisPopover::onOpenWebview() {
-    if (_gui->currentDriveDbId() != 0) {
-        const auto driveInfoIt = _gui->driveInfoMap().find(_gui->currentDriveDbId());
-        if (driveInfoIt == _gui->driveInfoMap().end()) {
-            qCWarning(lcSynthesisPopover()) << "Drive not found in drive map for driveDbId=" << _gui->currentDriveDbId();
-            return;
-        }
-
-        QString driveLink;
-        _gui->getWebviewDriveLink(_gui->currentDriveDbId(), driveLink);
-        if (driveLink.isEmpty()) {
-            qCWarning(lcSynthesisPopover) << "Error in onOpenWebviewDrive " << _gui->currentDriveDbId();
-            return;
-        }
-
-        if (!QDesktopServices::openUrl(driveLink)) {
-            qCWarning(lcSynthesisPopover) << "QDesktopServices::openUrl failed for " << driveLink;
-            CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to access web site %1.").arg(driveLink), QMessageBox::Ok,
-                                    this);
-            msgBox.exec();
-        }
-    }
-}
-
-void SynthesisPopover::onOpenMiscellaneousMenu() {
-    auto *menu = new MenuWidget(MenuWidget::Menu, this);
-
-    // Open Folder
-    std::map<int, SyncInfoClient> syncInfoMap;
-    _gui->loadSyncInfoMap(_gui->currentDriveDbId(), syncInfoMap);
-    if (!syncInfoMap.empty()) {
-        auto *foldersMenuAction = new QWidgetAction(this);
-        auto *foldersMenuItemWidget = new MenuItemWidget(tr("Open in folder"));
-        foldersMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/folder.svg");
-        foldersMenuAction->setDefaultWidget(foldersMenuItemWidget);
-
-        if (syncInfoMap.size() == 1) {
-            auto const &syncInfoMapElt = syncInfoMap.begin();
-            foldersMenuAction->setProperty(MenuWidget::actionTypeProperty.c_str(), syncInfoMapElt->first);
-            connect(foldersMenuAction, &QWidgetAction::triggered, this, &SynthesisPopover::onOpenFolder);
-        } else if (syncInfoMap.size() > 1) {
-            foldersMenuItemWidget->setHasSubmenu(true);
-
-            // Open folders submenu
-            auto *submenu = new MenuWidget(MenuWidget::Submenu, menu);
-
-            auto *openFolderActionGroup = new QActionGroup(this);
-            openFolderActionGroup->setExclusive(true);
-
-            for (auto const &[syncId, syncInfo]: syncInfoMap) {
-                auto *openFolderAction = new QWidgetAction(this);
-                openFolderAction->setProperty(MenuWidget::actionTypeProperty.c_str(), syncId);
-                auto *openFolderMenuItemWidget = new MenuItemWidget(syncInfo.name());
-                openFolderMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/folder.svg");
-                openFolderAction->setDefaultWidget(openFolderMenuItemWidget);
-                connect(openFolderAction, &QWidgetAction::triggered, this, &SynthesisPopover::onOpenFolder);
-                openFolderActionGroup->addAction(openFolderAction);
-            }
-
-            submenu->addActions(openFolderActionGroup->actions());
-            foldersMenuAction->setMenu(submenu);
-        }
-
-        menu->addAction(foldersMenuAction);
-    }
-
-    // Open web version
-    auto *driveOpenWebViewAction = new QWidgetAction(this);
-    auto *driveOpenWebViewMenuItemWidget = new MenuItemWidget(tr("Open %1 web version").arg(APPLICATION_SHORTNAME));
-    driveOpenWebViewMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/webview.svg");
-    driveOpenWebViewAction->setDefaultWidget(driveOpenWebViewMenuItemWidget);
-    driveOpenWebViewAction->setVisible(_gui->currentDriveDbId() != 0);
-    connect(driveOpenWebViewAction, &QWidgetAction::triggered, this, &SynthesisPopover::onOpenWebview);
-    menu->addAction(driveOpenWebViewAction);
-
-    // Drive parameters
-    if (!_gui->driveInfoMap().empty()) {
-        auto *driveParametersAction = new QWidgetAction(this);
-        auto *driveParametersMenuItemWidget = new MenuItemWidget(tr("Drive parameters"));
-        driveParametersMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/drive.svg");
-        driveParametersAction->setDefaultWidget(driveParametersMenuItemWidget);
-        connect(driveParametersAction, &QWidgetAction::triggered, this, &SynthesisPopover::onOpenDriveParameters);
-        menu->addAction(driveParametersAction);
-    }
-
-    // Disable Notifications
-    auto *notificationsMenuAction = new QWidgetAction(this);
-    const auto notificationAlreadyDisabledForPeriod =
-            _notificationsDisabled != NotificationsDisabled::Never && _notificationsDisabled != NotificationsDisabled::Always;
-    auto *notificationsMenuItemWidget =
-            new MenuItemWidget(notificationAlreadyDisabledForPeriod
-                                       ? tr("Notifications disabled until %1").arg(_notificationsDisabledUntilDateTime.toString())
-                                       : tr("Disable Notifications"));
-    notificationsMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/notification-off.svg");
-    notificationsMenuItemWidget->setHasSubmenu(true);
-    notificationsMenuAction->setDefaultWidget(notificationsMenuItemWidget);
-    menu->addAction(notificationsMenuAction);
-
-    // Disable Notifications submenu
-    auto *submenu = new MenuWidget(MenuWidget::Submenu, menu);
-
-    auto *notificationActionGroup = new QActionGroup(this);
-    notificationActionGroup->setExclusive(true);
-
-    const std::map<NotificationsDisabled, QString> &notificationMap =
-            _notificationsDisabled == NotificationsDisabled::Never || _notificationsDisabled == NotificationsDisabled::Always
-                    ? _notificationsDisabledMap
-                    : _notificationsDisabledForPeriodMap;
-
-    for (auto const &[notifDisabled, str]: notificationMap) {
-        auto *notificationAction = new QWidgetAction(this);
-        notificationAction->setProperty(MenuWidget::actionTypeProperty.c_str(), toInt(notifDisabled));
-        QString text = QCoreApplication::translate("KDC::SynthesisPopover", str.toStdString().c_str());
-        auto *notificationMenuItemWidget = new MenuItemWidget(text);
-        notificationMenuItemWidget->setChecked(notifDisabled == _notificationsDisabled);
-        notificationAction->setDefaultWidget(notificationMenuItemWidget);
-        connect(notificationAction, &QWidgetAction::triggered, this, &SynthesisPopover::onNotificationActionTriggered);
-        notificationActionGroup->addAction(notificationAction);
-    }
-
-    submenu->addActions(notificationActionGroup->actions());
-    notificationsMenuAction->setMenu(submenu);
-
-    // Application preferences
-    auto *preferencesAction = new QWidgetAction(this);
-    auto *preferencesMenuItemWidget = new MenuItemWidget(tr("Application preferences"));
-    preferencesMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/parameters.svg");
-    preferencesAction->setDefaultWidget(preferencesMenuItemWidget);
-    connect(preferencesAction, &QWidgetAction::triggered, this, &SynthesisPopover::onOpenPreferences);
-    menu->addAction(preferencesAction);
-
-    // Help
-    auto *helpAction = new QWidgetAction(this);
-    auto *helpMenuItemWidget = new MenuItemWidget(tr("Need help"));
-    helpMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/help.svg");
-    helpAction->setDefaultWidget(helpMenuItemWidget);
-    connect(helpAction, &QWidgetAction::triggered, this, &SynthesisPopover::onDisplayHelp);
-    menu->addAction(helpAction);
-
-    // Send feedbacks
-    auto *feedbacksAction = new QWidgetAction(this);
-    auto *feedbacksMenuItemWidget = new MenuItemWidget(tr("Send feedbacks"));
-    feedbacksMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/messages-bubble-square-typing.svg");
-    feedbacksAction->setDefaultWidget(feedbacksMenuItemWidget);
-    connect(feedbacksAction, &QWidgetAction::triggered, this, &SynthesisPopover::onSendFeedback);
-    menu->addAction(feedbacksAction);
-
-    // Quit
-    auto *exitAction = new QWidgetAction(this);
-    auto *exitMenuItemWidget = new MenuItemWidget(tr("Quit kDrive"));
-    exitMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/error-sync.svg");
-    exitAction->setDefaultWidget(exitMenuItemWidget);
-    connect(exitAction, &QWidgetAction::triggered, this, &SynthesisPopover::onExit);
-    menu->addAction(exitAction);
-
-    if (_debugCrash) {
-        // Emulate a crash
-        auto *crashAction = new QWidgetAction(this);
-        auto *crashMenuItemWidget = new MenuItemWidget("Emulate a crash");
-        crashAction->setDefaultWidget(crashMenuItemWidget);
-        connect(crashAction, &QWidgetAction::triggered, this, &SynthesisPopover::onCrash);
-        menu->addAction(crashAction);
-
-        // Emulate a server crash
-        auto *crashServerAction = new QWidgetAction(this);
-        auto *crashServerMenuItemWidget = new MenuItemWidget("Emulate a server crash");
-        crashServerAction->setDefaultWidget(crashServerMenuItemWidget);
-        connect(crashServerAction, &QWidgetAction::triggered, this, &SynthesisPopover::onCrashServer);
-        menu->addAction(crashServerAction);
-
-        // Emulate an ENFORCE crash
-        auto *crashEnforceAction = new QWidgetAction(this);
-        auto *crashEnforceMenuItemWidget = new MenuItemWidget("Emulate an ENFORCE crash");
-        crashEnforceAction->setDefaultWidget(crashEnforceMenuItemWidget);
-        connect(crashEnforceAction, &QWidgetAction::triggered, this, &SynthesisPopover::onCrashEnforce);
-        menu->addAction(crashEnforceAction);
-
-        // Emulate a qFatal crash
-        auto *crashFatalAction = new QWidgetAction(this);
-        auto *crashFatalMenuItemWidget = new MenuItemWidget("Emulate a qFatal crash");
-        crashFatalAction->setDefaultWidget(crashFatalMenuItemWidget);
-        connect(crashFatalAction, &QWidgetAction::triggered, this, &SynthesisPopover::onCrashFatal);
-        menu->addAction(crashFatalAction);
-    }
-
-    menu->exec(QWidget::mapToGlobal(_menuButton->geometry().center()));
-}
-
-void SynthesisPopover::onOpenPreferences() {
-    emit showParametersDialog();
-}
-
-void SynthesisPopover::onDisplayHelp() {
-    QDesktopServices::openUrl(QUrl(Theme::instance()->helpUrl()));
-}
-
-void SynthesisPopover::onSendFeedback() {
-    const auto url = QUrl(Theme::instance()->feedbackUrl(ParametersCache::instance()->parametersInfo().language()));
-    QDesktopServices::openUrl(url);
-}
-
-void SynthesisPopover::onExit() {
-    hide();
-    emit exit();
-}
-
-void SynthesisPopover::onCrash() {
-    emit crash();
-}
-
-void SynthesisPopover::onCrashServer() {
-    emit crashServer();
-}
-
-void SynthesisPopover::onCrashEnforce() {
-    emit crashEnforce();
-}
-
-void SynthesisPopover::onCrashFatal() {
-    emit crashFatal();
-}
-
-void SynthesisPopover::onNotificationActionTriggered() {
-    bool notificationAlreadyDisabledForPeriod =
-            _notificationsDisabled != NotificationsDisabled::Never && _notificationsDisabled != NotificationsDisabled::Always;
-
-    _notificationsDisabled = qvariant_cast<NotificationsDisabled>(sender()->property(MenuWidget::actionTypeProperty.c_str()));
-    switch (_notificationsDisabled) {
-        case NotificationsDisabled::Never:
-            _notificationsDisabledUntilDateTime = QDateTime();
-            break;
-        case NotificationsDisabled::OneHour:
-            _notificationsDisabledUntilDateTime = notificationAlreadyDisabledForPeriod
-                                                          ? _notificationsDisabledUntilDateTime.addSecs(60 * 60)
-                                                          : QDateTime::currentDateTime().addSecs(60 * 60);
-            break;
-        case NotificationsDisabled::UntilTomorrow:
-            _notificationsDisabledUntilDateTime = QDateTime(QDateTime::currentDateTime().addDays(1).date(), QTime(8, 0));
-            break;
-        case NotificationsDisabled::TreeDays:
-            _notificationsDisabledUntilDateTime = notificationAlreadyDisabledForPeriod
-                                                          ? _notificationsDisabledUntilDateTime.addDays(3)
-                                                          : QDateTime::currentDateTime().addDays(3);
-            break;
-        case NotificationsDisabled::OneWeek:
-            _notificationsDisabledUntilDateTime = notificationAlreadyDisabledForPeriod
-                                                          ? _notificationsDisabledUntilDateTime.addDays(7)
-                                                          : QDateTime::currentDateTime().addDays(7);
-            break;
-        case NotificationsDisabled::Always:
-            _notificationsDisabledUntilDateTime = QDateTime();
-            break;
-
-        case NotificationsDisabled::EnumEnd: {
-            assert(false && "Invalid enum value in switch statement.");
-        }
-    }
-
-    emit disableNotifications(_notificationsDisabled, _notificationsDisabledUntilDateTime);
-}
-
-void SynthesisPopover::onOpenDriveParameters() {
-    emit showParametersDialog(_gui->currentDriveDbId());
+    _synthesisBar->refreshErrorsButton();
 }
 
 void SynthesisPopover::onDriveSelected(int driveDbId) {
@@ -1406,6 +1024,8 @@ void SynthesisPopover::onDriveSelected(int driveDbId) {
     if (this->isVisible() && newAccountSelected) {
         emit updateItemList();
     }
+
+    retranslateUi();
 }
 
 void SynthesisPopover::onAddDrive() {
@@ -1511,7 +1131,7 @@ void SynthesisPopover::onSelectionChanged(bool isSelected) {
 
 void SynthesisPopover::onLinkActivated(const QString &link) {
     if (link == KDC::GuiUtility::learnMoreLink) {
-        displayErrors(_gui->currentDriveDbId());
+        _synthesisBar->displayErrors(_gui->currentDriveDbId());
     } else if (link == KDC::GuiUtility::loginLink) {
         _gui->openLoginDialog(_gui->currentUserDbId(), true);
     } else {
@@ -1532,9 +1152,6 @@ void SynthesisPopover::onLinkActivated(const QString &link) {
 }
 
 void SynthesisPopover::retranslateUi() {
-    _errorsButton->setToolTip(tr("Show errors and informations"));
-    _infosButton->setToolTip(tr("Show informations"));
-    _menuButton->setToolTip(tr("More actions"));
     _notImplementedLabel->setText(tr("Not implemented!"));
     _lockedAppupdateAppLabel->setText(tr("Update kDrive App"));
     _lockedAppLabel->setText(tr(
