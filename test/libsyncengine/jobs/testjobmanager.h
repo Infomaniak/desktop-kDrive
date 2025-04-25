@@ -37,17 +37,16 @@ namespace KDC {
 class TestJobManager : public CppUnit::TestFixture, public TestBase {
     public:
         CPPUNIT_TEST_SUITE(TestJobManager);
-        // CPPUNIT_TEST(testWithoutCallback);
-        // CPPUNIT_TEST(testWithCallback);
-        // CPPUNIT_TEST(testWithCallbackMediumFiles);
-        // CPPUNIT_TEST(testWithCallbackBigFiles);
-        // CPPUNIT_TEST(testCancelJobs);
-        // CPPUNIT_TEST(testJobDependencies);
-        // CPPUNIT_TEST(testJobPriority);
-        // CPPUNIT_TEST(testJobPriority2);
-        // CPPUNIT_TEST(testJobPriority3);
-        // CPPUNIT_TEST(testReuseSocket);
-        CPPUNIT_TEST(benchmarkParallelJobs);
+        CPPUNIT_TEST(testWithoutCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallbackMediumFiles);
+        CPPUNIT_TEST(testWithCallbackBigFiles);
+        CPPUNIT_TEST(testCancelJobs);
+        CPPUNIT_TEST(testJobDependencies);
+        CPPUNIT_TEST(testJobPriority);
+        CPPUNIT_TEST(testJobPriority2);
+        CPPUNIT_TEST(testJobPriority3);
+        CPPUNIT_TEST(testReuseSocket);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -72,9 +71,6 @@ class TestJobManager : public CppUnit::TestFixture, public TestBase {
                                  // https://gitlab.infomaniak.ch/infomaniak/desktop-app/multi/kdrive/-/issues/320)
 
         void testReuseSocket();
-        void benchmarkParallelJobs();
-
-        void generateBigFiles(const SyncPath &dirPath, int size, int count);
 
     private:
         const testhelpers::TestVariables _testVariables;

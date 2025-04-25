@@ -68,6 +68,8 @@ set(testsyncengine_SRCS
         syncpal/testoperationprocessor.h syncpal/testoperationprocessor.cpp
         # Requests
         requests/testexclusiontemplatecache.h requests/testexclusiontemplatecache.cpp
+
+        benchmark/benchmarkparalleljobs.h benchmark/benchmarkparalleljobs.cpp
 )
 
 if (APPLE)
