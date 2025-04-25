@@ -35,6 +35,7 @@ jobs:
           name: test-ci-folder
           path:  ${{ github.workspace }}/test/test_ci/
           retention-days: 1
+          if-no-files-found: error
 # Build apps
   build-Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
