@@ -251,9 +251,9 @@ void TestUtility::testCompressFile() {
     CommonUtility::compressFile(filePath.string(), outPath.string());
 
     bool exists = false;
-    IoError error = IoError::Unknown;
-    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(outPath, exists, error));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, error);
+    IoError ioError = IoError::Unknown;
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(outPath, exists, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(exists);
 
     // Test with a non empty file
@@ -264,40 +264,40 @@ void TestUtility::testCompressFile() {
     file.close();
 
     uint64_t size = 0;
-    CPPUNIT_ASSERT(IoHelper::getFileSize(filePath, size, error));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, error);
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getFileSize(filePath, size, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     outPath = tmpDir.path() / "resFile.zip";
     CommonUtility::compressFile(filePath.string(), outPath.string());
 
-    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(outPath, exists, error));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, error);
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(outPath, exists, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(exists);
 
     uint64_t compressedSize = 0;
-    CPPUNIT_ASSERT(IoHelper::getFileSize(outPath, compressedSize, error));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, error);
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getFileSize(outPath, compressedSize, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(compressedSize < size);
 
     // Test with a non existing file
     outPath = tmpDir.path() / "resNonExistingFile.zip";
     CPPUNIT_ASSERT(!CommonUtility::compressFile("nonExistingFile.txt", outPath.string()));
-    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(outPath, exists, error));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, error);
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(outPath, exists, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(!exists);
 
     // Test with a non existing output dir
     outPath = tmpDir.path() / "nonExistingDir" / "resNonExistingDir.zip";
     CPPUNIT_ASSERT(!CommonUtility::compressFile(filePath.string(), outPath.string()));
-    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(outPath, exists, error));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, error);
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(outPath, exists, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(!exists);
 
     // Test with wstring path
     outPath = tmpDir.path() / "resWstring.zip";
     CommonUtility::compressFile(filePath.wstring(), outPath.wstring());
-    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(outPath, exists, error));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, error);
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(outPath, exists, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(exists);
 }
 

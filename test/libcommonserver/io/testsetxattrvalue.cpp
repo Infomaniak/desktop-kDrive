@@ -41,18 +41,18 @@ void TestIo::testSetXAttrValue() {
         }
         IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "corrupted", ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         std::string value;
         CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(value == "corrupted");
 
         CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "sound", ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(value == "sound");
     }
 
@@ -108,21 +108,21 @@ void TestIo::testSetXAttrValue() {
         }
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->setXAttrValue(path, FILE_ATTRIBUTE_HIDDEN, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         bool value = false;
         ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->getXAttrValue(path, FILE_ATTRIBUTE_HIDDEN, value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(value);
 
         ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->setXAttrValue(path, FILE_ATTRIBUTE_NORMAL, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->getXAttrValue(path, FILE_ATTRIBUTE_HIDDEN, value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(!value);
     }
 

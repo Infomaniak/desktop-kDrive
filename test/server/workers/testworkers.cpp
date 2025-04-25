@@ -254,7 +254,7 @@ void TestWorkers::testCreatePlaceholder() {
 #if defined(__APPLE__) || defined(_WIN32)
         // Folder access denied
         IoError ioError{IoError::Unknown};
-        CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, false, false, false, ioError) &&
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, false, false, false, ioError) &&
                        ioError == IoError::Success);
 
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFilePath);
@@ -277,7 +277,7 @@ void TestWorkers::testCreatePlaceholder() {
 #endif
 
         ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, true, true, true, ioError) &&
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, true, true, true, ioError) &&
                        ioError == IoError::Success);
 #endif
 
@@ -342,7 +342,7 @@ void TestWorkers::testConvertToPlaceholder() {
 #if defined(__APPLE__) || defined(_WIN32)
         // Folder access denied
         IoError ioError{IoError::Unknown};
-        CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, false, false, false, ioError) &&
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, false, false, false, ioError) &&
                        ioError == IoError::Success);
 
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFilePath);
@@ -352,12 +352,12 @@ void TestWorkers::testConvertToPlaceholder() {
         // Strangely (bug?), the Windows api is able to create a placeholder in a folder for which the user does not have
         // rights
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
-        CPPUNIT_ASSERT(IoHelper::deleteItem(_syncPal->localPath() / relativeFilePath, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::deleteItem(_syncPal->localPath() / relativeFilePath, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 #endif
 
         ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, true, true, true, ioError) &&
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, true, true, true, ioError) &&
                        ioError == IoError::Success);
 
         // File doesn't exist

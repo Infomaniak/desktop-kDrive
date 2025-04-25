@@ -416,7 +416,7 @@ void TestNetworkJobs::testDownload() {
 
         MockIoHelperTestNetworkJobs::resetStdFunctions();
     }
-    if (testhelpers::isRunningOnCI()) {
+    if (testhelpers::isRunningOnCI() && testhelpers::isExtendedTest(false)) {
         // Not Enough disk space (Only run on CI because it requires a small partition to be set up)
         const SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
         if (smallPartitionPath.empty()) return;
@@ -437,9 +437,9 @@ void TestNetworkJobs::testDownload() {
         CPPUNIT_ASSERT(!smallPartitionPath.empty());
         IoError ioError = IoError::Unknown;
         bool exist = false;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(smallPartitionPath, exist, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(smallPartitionPath, exist, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-        CPPUNIT_ASSERT(exist);
+        CPPUNIT_ASSERT_MESSAGE("Small partition is not found", exist);
 
         // Not Enough disk space (tmp dir)
         {
@@ -1070,7 +1070,7 @@ void TestNetworkJobs::testDriveUploadSessionSynchronous() {
     ofs.close();
     uint64_t fileSizeLocal = 0;
     auto ioError = IoError::Unknown;
-    CPPUNIT_ASSERT(IoHelper::getFileSize(localFilePath, fileSizeLocal, ioError));
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getFileSize(localFilePath, fileSizeLocal, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     DriveUploadSession driveUploadSessionJobEdit(nullptr, _driveDbId, nullptr, localFilePath, newNodeId, false, 1);
@@ -1140,7 +1140,7 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
     ofs << "test";
     ofs.close();
     uint64_t fileSizeLocal = 0;
-    CPPUNIT_ASSERT(IoHelper::getFileSize(localFilePath, fileSizeLocal, ioError));
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getFileSize(localFilePath, fileSizeLocal, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     while (_nbParalleleThreads > 0) {
         LOG_DEBUG(Log::instance()->getLogger(),
@@ -1327,7 +1327,7 @@ bool TestNetworkJobs::createTestFiles() {
     FileStat fileStat;
     IoError ioError = IoError::Success;
     IoHelper::getFileStat(_dummyLocalFilePath, &fileStat, ioError);
-    CPPUNIT_ASSERT(ioError == IoError::Success);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     _dummyLocalFileId = std::to_string(fileStat.inode);
 
     // Create remote test file
