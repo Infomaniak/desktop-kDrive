@@ -111,13 +111,7 @@ if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
 
 # Output folder
 $BaseOutput = Join-Path $CurrentDir "build-windows\build"
-if ($BuildType -eq "Debug") {
-    Log "Selected Debug build."
-    $OutputDir = Join-Path $BaseOutput "Debug"
-} else {
-    Log "Selected Release build."
-    $OutputDir = Join-Path $BaseOutput "Release"
-}
+
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null # mkdir
 
 Log "Creating xxHash Conan package..."
