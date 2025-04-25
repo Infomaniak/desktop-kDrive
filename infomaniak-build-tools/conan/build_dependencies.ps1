@@ -92,7 +92,7 @@ print(exe)
 }
 
 # Locate Conan executable
-$ConanExe = ""
+$ConanExe = Get-ConanExePath
 if (-not $ConanExe) {
     Err "Conan executable not found. Please ensure Conan is installed and accessible."
 }
