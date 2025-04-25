@@ -472,7 +472,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: test-ci-folder
-          path: ${{ github.workspace }}/desktop-kdirve/build-windows/cache/
+          path: ${{ github.workspace }}/desktop-kdirve/test/test_ci
 
       - name: Download test executable
         uses: actions/download-artifact@v4
