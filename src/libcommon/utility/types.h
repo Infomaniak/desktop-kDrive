@@ -38,7 +38,6 @@
 #include "sourcelocation.h"
 
 #include <QDebug>
-#include <xxhash.h>
 
 namespace KDC {
 
