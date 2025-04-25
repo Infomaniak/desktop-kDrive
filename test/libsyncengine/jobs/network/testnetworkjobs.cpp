@@ -416,7 +416,7 @@ void TestNetworkJobs::testDownload() {
 
         MockIoHelperTestNetworkJobs::resetStdFunctions();
     }
-    if (testhelpers::isRunningOnCI()) {
+    if (testhelpers::isRunningOnCI() && testhelpers::isExtendedTest(false)) {
         // Not Enough disk space (Only run on CI because it requires a small partition to be set up)
         const SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
         if (smallPartitionPath.empty()) return;
@@ -439,7 +439,7 @@ void TestNetworkJobs::testDownload() {
         bool exist = false;
         CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(smallPartitionPath, exist, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-        CPPUNIT_ASSERT(exist);
+        CPPUNIT_ASSERT_MESSAGE("Small partition is not found", exist);
 
         // Not Enough disk space (tmp dir)
         {

@@ -173,7 +173,7 @@ void TestJobManager::testWithCallback() {
         cancelAllOngoingJobs();
     }
 
-    CPPUNIT_ASSERT(ongoingJobsCount() == 0);
+    CPPUNIT_ASSERT_EQUAL(size_t(0), ongoingJobsCount());
     CPPUNIT_ASSERT(!_jobErrorSocketsDefuncted);
     CPPUNIT_ASSERT(!_jobErrorOther);
 
