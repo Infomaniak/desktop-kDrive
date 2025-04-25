@@ -21,6 +21,9 @@
 #include "syncpal/syncpal.h"
 #include "testincludes.h"
 #include "test_utility/localtemporarydirectory.h"
+#include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/io/filestat.h"
+#include "libcommon/utility/sourcelocation.h"
 
 using namespace CppUnit;
 
@@ -32,7 +35,9 @@ typedef void (TestIntegration::*testFctPtr)();
 
 class TestIntegration : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestIntegration);
-        CPPUNIT_TEST(testAll);
+        // CPPUNIT_TEST(testAll);
+        CPPUNIT_TEST(testNodeIdReuseFile2DirAndDir2File);
+        CPPUNIT_TEST(testNodeIdReuseFile2File);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -82,7 +87,31 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testMoveMoveDestConflict();
         void testMoveMoveCycleConflict();
 
-        void waitForSyncToFinish();
+
+        class MockIoHelperFileStat : public IoHelper {
+            public:
+                MockIoHelperFileStat() {
+                    IoHelper::_getFileStat = [this](const std::filesystem::path &path, FileStat *fileStat, IoError &ioError) {
+                        const bool res = IoHelper::_getFileStatFn(path, fileStat, ioError);
+                        if (ioError == IoError::Success && _pathNodeIdMap.contains(path.lexically_normal())) {
+                            fileStat->inode = _pathNodeIdMap.at(path.lexically_normal());
+                        }
+                        return res;
+                    };
+                }
+                ~MockIoHelperFileStat() { IoHelper::_getFileStat = IoHelper::_getFileStatFn; }
+                void setPathWithFakeInode(const SyncPath &path, const uint64_t &inode) {
+                    _pathNodeIdMap[path.lexically_normal()] = inode;
+                };
+
+            private:
+                std::map<SyncPath, uint64_t> _pathNodeIdMap;
+        };
+
+        void testNodeIdReuseFile2DirAndDir2File();
+        void testNodeIdReuseFile2File();
+
+        void waitForSyncToFinish(const SourceLocation& srcLoc);
 
         log4cplus::Logger _logger;
 

@@ -154,6 +154,10 @@ ExitCode ConflictResolverWorker::generateLocalRenameOperation(const Conflict &co
     op->setRelativeOriginPath(originPath);
     op->setRelativeDestinationPath(originPath.parent_path() / newName);
 
+    // Update node
+    conflict.remoteNode()->setMoveOriginInfos({conflict.remoteNode()->getPath(), *conflict.remoteNode()->parentNode()->id()});
+    conflict.remoteNode()->setChangeEvents(OperationType::Move);
+
     LOGW_SYNCPAL_INFO(_logger, getLogString(op));
 
     (void) _syncPal->syncOps()->pushOp(op);
@@ -282,6 +286,10 @@ void ConflictResolverWorker::generateRescueOperation(const Conflict &conflict, c
     moveOp->setRelativeOriginPath(node->getPath());
     moveOp->setConflict(conflict);
     moveOp->setIsRescueOperation(true);
+
+    // Update node
+    node->setMoveOriginInfos({conflict.remoteNode()->getPath(), *conflict.remoteNode()->parentNode()->id()});
+    node->setChangeEvents(OperationType::Move);
     node->setStatus(NodeStatus::ConflictOpGenerated);
 
     LOGW_SYNCPAL_INFO(_logger, getLogString(moveOp) << L" because it has been modified locally.");

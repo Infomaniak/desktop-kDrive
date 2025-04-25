@@ -316,7 +316,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
     if (isLiteSyncActivated() && !syncOp->omit()) {
         bool isDehydratedPlaceholder = false;
         if (ExitInfo exitInfo = checkLiteSyncInfoForCreate(syncOp, absoluteLocalFilePath, isDehydratedPlaceholder); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in checkLiteSyncInfoForCreate" << " " << exitInfo);
+            LOG_SYNCPAL_WARN(_logger, "Error in checkLiteSyncInfoForCreate"
+                                              << " " << exitInfo);
             return exitInfo;
         }
 
@@ -400,8 +401,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
                     if (const ExitInfo exitInfoCheckAlreadyExcluded =
                                 checkAlreadyExcluded(absoluteLocalFilePath, createDirJob->parentDirId());
                         !exitInfoCheckAlreadyExcluded) {
-                        LOG_SYNCPAL_WARN(_logger,
-                                         "Error in ExecutorWorker::checkAlreadyExcluded" << " " << exitInfoCheckAlreadyExcluded);
+                        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::checkAlreadyExcluded"
+                                                          << " " << exitInfoCheckAlreadyExcluded);
                         return exitInfoCheckAlreadyExcluded;
                     }
 
@@ -1216,7 +1217,8 @@ ExitInfo ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool
         try {
             job = std::make_shared<DeleteJob>(
                     _syncPal->driveDbId(), syncOp->correspondingNode()->id() ? *syncOp->correspondingNode()->id() : std::string(),
-                    syncOp->affectedNode()->id() ? *syncOp->affectedNode()->id() : std::string(), absoluteLocalFilePath);
+                    syncOp->affectedNode()->id() ? *syncOp->affectedNode()->id() : std::string(), absoluteLocalFilePath,
+                    syncOp->affectedNode()->type());
         } catch (std::exception const &e) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in DeleteJob::DeleteJob for driveDbId=" << _syncPal->driveDbId() << L" : "
                                                                                        << Utility::s2ws(e.what()));
@@ -1870,6 +1872,7 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
     dbNode.setNodeIdRemote(remoteId);
     dbNode.setLastModifiedLocal(newLastModTime);
     dbNode.setLastModifiedRemote(newLastModTime);
+    dbNode.setCreated(syncOp->affectedNode()->createdAt());
     dbNode.setSize(syncOp->affectedNode()->size());
     dbNode.setChecksum(""); // TODO : change it once we start using content checksum
     if (syncOp->omit()) {

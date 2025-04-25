@@ -91,9 +91,10 @@ void GenericErrorItemWidget::openFolder(const QString &path) {
             return;
         }
     }
-
     // Open on local filesystem (open the parent folder for an item of file type).
-    const auto folderPath = GuiUtility::getFolderPath(syncInfoMapIt->second.localPath() + "/" + path, _errorInfo.nodeType());
+    const auto absolutePath =
+            SyncPath(path.toStdString()).is_absolute() ? path : (syncInfoMapIt->second.localPath() + "/" + path);
+    const auto folderPath = GuiUtility::getFolderPath(absolutePath, _errorInfo.nodeType());
     AbstractFileItemWidget::openFolder(folderPath);
 }
 
@@ -101,6 +102,7 @@ bool GenericErrorItemWidget::openInWebview() const {
     return _errorInfo.inconsistencyType() == InconsistencyType::PathLength ||
            _errorInfo.inconsistencyType() == InconsistencyType::Case ||
            _errorInfo.inconsistencyType() == InconsistencyType::ForbiddenChar ||
+           _errorInfo.inconsistencyType() == InconsistencyType::ForbiddenCharEndWithSpace ||
            _errorInfo.inconsistencyType() == InconsistencyType::ReservedName ||
            _errorInfo.inconsistencyType() == InconsistencyType::NameLength ||
            _errorInfo.inconsistencyType() == InconsistencyType::NotYetSupportedChar ||

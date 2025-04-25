@@ -88,9 +88,6 @@ void createBigTextFile(const SyncPath &path) {
     ofs << std::string(sizeInBytes, 'a');
 }
 
-void createEmptyFile(const SyncPath &path) {
-    std::ofstream{path};
-}
 } // namespace
 
 void TestNetworkJobs::setUp() {
@@ -141,7 +138,7 @@ void TestNetworkJobs::tearDown() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Tear Down");
 
     if (!_dummyRemoteFileId.empty()) {
-        DeleteJob job(_driveDbId, _dummyRemoteFileId, "", "");
+        DeleteJob job(_driveDbId, _dummyRemoteFileId, "", "", NodeType::File);
         job.setBypassCheck(true);
         job.runSynchronously();
     }
@@ -215,15 +212,15 @@ void TestNetworkJobs::testDelete() {
     CPPUNIT_ASSERT(createTestFiles());
 
     // Delete file - Empty local id & path provided => canRun == false
-    DeleteJob jobEmptyLocalFileId(_driveDbId, _dummyRemoteFileId, "", "");
+    DeleteJob jobEmptyLocalFileId(_driveDbId, _dummyRemoteFileId, "", "", NodeType::File);
     CPPUNIT_ASSERT(!jobEmptyLocalFileId.canRun());
 
     // Delete file - A local file exists with the same path & id => canRun == false
-    DeleteJob jobLocalFileExists(_driveDbId, _dummyRemoteFileId, _dummyLocalFileId, _dummyLocalFilePath);
+    DeleteJob jobLocalFileExists(_driveDbId, _dummyRemoteFileId, _dummyLocalFileId, _dummyLocalFilePath, NodeType::File);
     CPPUNIT_ASSERT(!jobLocalFileExists.canRun());
 
     // Delete file - A local file exists with the same path but not the same id => canRun == true
-    DeleteJob jobLocalFileSynonymExists(_driveDbId, _dummyRemoteFileId, "1234", _dummyLocalFilePath);
+    DeleteJob jobLocalFileSynonymExists(_driveDbId, _dummyRemoteFileId, "1234", _dummyLocalFilePath, NodeType::File);
     CPPUNIT_ASSERT(jobLocalFileSynonymExists.canRun());
     ExitCode exitCode = jobLocalFileSynonymExists.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -250,15 +247,15 @@ void TestNetworkJobs::testDelete() {
     const LocalTemporaryDirectory localTmpDir("testDelete");
 
     // Delete directory - Empty local id & path provided => canRun == false
-    DeleteJob jobEmptyLocalDirId(_driveDbId, remoteTmpDir.id(), "", "");
+    DeleteJob jobEmptyLocalDirId(_driveDbId, remoteTmpDir.id(), "", "", NodeType::Directory);
     CPPUNIT_ASSERT(!jobEmptyLocalDirId.canRun());
 
     // Delete directory - A local dir exists with the same path & id => canRun == false
-    DeleteJob jobLocalDirExists(_driveDbId, remoteTmpDir.id(), localTmpDir.id(), localTmpDir.path());
+    DeleteJob jobLocalDirExists(_driveDbId, remoteTmpDir.id(), localTmpDir.id(), localTmpDir.path(), NodeType::Directory);
     CPPUNIT_ASSERT(!jobLocalDirExists.canRun());
 
     // Delete directory - A local dir exists with the same path but not the same id => canRun == true
-    DeleteJob jobLocalDirSynonymExists(_driveDbId, remoteTmpDir.id(), "1234", localTmpDir.path());
+    DeleteJob jobLocalDirSynonymExists(_driveDbId, remoteTmpDir.id(), "1234", localTmpDir.path(), NodeType::Directory);
     CPPUNIT_ASSERT(jobLocalDirSynonymExists.canRun());
     exitCode = jobLocalDirSynonymExists.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -953,29 +950,42 @@ void TestNetworkJobs::testRename() {
     CPPUNIT_ASSERT(name == filename);
 }
 
-void TestNetworkJobs::testUpload() {
-    // Successful upload
-    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUpload");
+void TestNetworkJobs::testUpload(const SyncTime timeInput, SyncTime &timeOutput) {
     const LocalTemporaryDirectory temporaryDirectory("testUpload");
-    const SyncPath localFilePath = temporaryDirectory.path() / "empty_file.txt";
-    createEmptyFile(localFilePath);
+    const SyncName filename = Str("test_file.txt");
+    const SyncPath localFilePath = temporaryDirectory.path() / filename;
+    testhelpers::generateOrEditTestFile(localFilePath);
 
-    UploadJob job(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 0);
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUpload");
+    UploadJob job(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), timeInput);
     ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
-    NodeId newNodeId = job.nodeId();
-
-    GetFileInfoJob fileInfoJob(_driveDbId, newNodeId);
+    GetFileInfoJob fileInfoJob(_driveDbId, job.nodeId());
     exitCode = fileInfoJob.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
     Poco::JSON::Object::Ptr dataObj = fileInfoJob.jsonRes()->getObject(dataKey);
     std::string name;
     if (dataObj) {
-        name = dataObj->get(nameKey).toString();
+        (void) JsonParserUtility::extractValue(dataObj, nameKey, name, false);
+        (void) JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, timeOutput, false);
     }
-    CPPUNIT_ASSERT(name == std::string("empty_file.txt"));
+    CPPUNIT_ASSERT(filename == Str2SyncName(name));
+}
+
+void TestNetworkJobs::testUpload() {
+    const auto epochNow = std::chrono::system_clock::now().time_since_epoch();
+    auto timeInput = std::chrono::duration_cast<std::chrono::seconds>(epochNow);
+    SyncTime timeOutput = 0;
+
+    testUpload(timeInput.count(), timeOutput);
+    CPPUNIT_ASSERT_EQUAL(timeInput.count(), timeOutput);
+
+    // Upload job but local file has a modification far in the future (more than 24h).
+    timeInput += std::chrono::days(10);
+    testUpload(timeInput.count(), timeOutput);
+    CPPUNIT_ASSERT_LESS(timeInput.count(), timeOutput);
 }
 
 void TestNetworkJobs::testUploadAborted() {
