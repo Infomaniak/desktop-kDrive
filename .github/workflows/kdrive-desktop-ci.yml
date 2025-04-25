@@ -507,7 +507,7 @@ jobs:
         run : rm -r -force ${{ github.workspace }}/build-windows/test/
 
   test-server-Windows:
-    runs-on: [ self-hosted, Windows ]
+    runs-on: [ self-hosted, Windows , desktop-kdrive]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
     needs: build-Windows
