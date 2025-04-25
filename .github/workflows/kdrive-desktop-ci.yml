@@ -33,7 +33,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-ci-folder
-          path:  ${{ github.workspace }}/test/test-ci/*
+          path:  ${{ github.workspace }}/test/test_ci/
           retention-days: 1
 # Build apps
   build-Windows:
