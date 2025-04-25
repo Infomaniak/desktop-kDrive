@@ -66,7 +66,7 @@ function Get-ConanExePath {
     try {
         $py = Get-Command python3 -ErrorAction Stop
     } catch {
-        Write-Error "Interpreter 'python3' not found. Please install Python 3 and/or add it to the PATH."
+        Err "Interpreter 'python3' not found. Please install Python 3 and/or add it to the PATH."
         return $null
     }
 
@@ -84,7 +84,7 @@ print(exe)
 
     $path = & $py.Path -c $pythonCode 2>$null
     if ($LASTEXITCODE -ne 0 -or -not (Test-Path $path.Trim())) {
-        Write-Error "Unable to locate 'conan.exe' via Python."
+        Err "Unable to locate 'conan.exe' via Python."
         return $null
     }
 
@@ -92,7 +92,7 @@ print(exe)
 }
 
 # Locate Conan executable
-$ConanExe = Get-ConanExePath
+$ConanExe = ""
 if (-not $ConanExe) {
     Err "Conan executable not found. Please ensure Conan is installed and accessible."
 }
