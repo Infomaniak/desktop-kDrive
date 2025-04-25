@@ -99,10 +99,8 @@ void BenchmarkParallelJobs::benchmarkParallelJobs() {
         const std::string filename = "benchUpload_" + std::to_string(size) + "MB";
         const SyncPath benchFilePath(SyncPath(homePath) / (filename + ".txt"));
         DataExtractor dataExtractor(benchFilePath);
-
         const LocalTemporaryDirectory localTmpDir(filename);
         testhelpers::generateBigFiles(localTmpDir.path(), static_cast<uint16_t>(size), nbFiles);
-
         for (const auto nbThreads: {1, 3, 5, 10, 30, 100}) {
             dataExtractor.addRow(std::to_string(nbThreads));
             for (uint16_t i = 0; i < nbRepetition; i++) {
@@ -113,16 +111,13 @@ void BenchmarkParallelJobs::benchmarkParallelJobs() {
         }
         dataExtractor.print();
     }
-
     /* Test case : download 100 files */
     for (const auto size: {1, 10}) {
         const std::string filename = "benchDownload_" + std::to_string(size) + "MB";
         const SyncPath benchFilePath(SyncPath(homePath) / (filename + ".txt"));
         DataExtractor dataExtractor(benchFilePath);
-
         const LocalTemporaryDirectory localTmpDir(filename);
         const NodeId remoteDirId = size == 1 ? "3477086" : "3477931";
-
         for (const auto nbThreads: {1, 3, 5, 10, 30, 100}) {
             dataExtractor.addRow(std::to_string(nbThreads));
             for (uint16_t i = 0; i < nbRepetition; i++) {
@@ -132,31 +127,27 @@ void BenchmarkParallelJobs::benchmarkParallelJobs() {
         }
         dataExtractor.print();
     }
-
     /* Test case : uploads 50 files and download 50 files */
     for (const auto size: {1, 10}) {
-        const std::string filename = "benchDownload_" + std::to_string(size) + "MB";
+        const std::string filename = "benchUploadDownload_" + std::to_string(size) + "MB";
         const SyncPath benchFilePath(SyncPath(homePath) / (filename + ".txt"));
         DataExtractor dataExtractor(benchFilePath);
-
         for (const auto nbThreads: {1, 3, 5, 10, 30, 100}) {
             dataExtractor.addRow(std::to_string(nbThreads));
             for (uint16_t i = 0; i < nbRepetition; i++) {
                 // Generate upload jobs
-                std::list<std::shared_ptr<AbstractNetworkJob>> uploadJobs;
+                std::list<std::shared_ptr<AbstractJob>> uploadJobs;
                 const LocalTemporaryDirectory localTmpDirUploads(filename);
                 testhelpers::generateBigFiles(localTmpDirUploads.path(), static_cast<uint16_t>(size), nbFiles / 2);
                 const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, filename);
                 uploadJobs = generateUploadJobs(remoteTmpDir.id(), localTmpDirUploads.path());
-
                 // Generate download jobs
-                std::list<std::shared_ptr<AbstractNetworkJob>> downloadJobs;
+                std::list<std::shared_ptr<AbstractJob>> downloadJobs;
                 const LocalTemporaryDirectory localTmpDirDownload(filename);
                 const NodeId remoteDirId = size == 1 ? "3477086" : "3477931";
                 downloadJobs = generateDownloadJobs(remoteDirId, localTmpDirDownload.path(), size * 1000 * 1000, nbFiles / 2);
-
                 // Mix jobs in list
-                std::list<std::shared_ptr<AbstractNetworkJob>> jobs;
+                std::list<std::shared_ptr<AbstractJob>> jobs;
                 auto it1 = uploadJobs.begin();
                 auto it2 = downloadJobs.begin();
                 for (; it1 != uploadJobs.end() && it2 != downloadJobs.end(); it1++, it2++) {
@@ -170,31 +161,77 @@ void BenchmarkParallelJobs::benchmarkParallelJobs() {
 
         dataExtractor.print();
     }
+
+    /* Test case : uploads 20 big files */
+    {
+        for (const auto nbParallelChunkJobs: {1, 3, 5}) {
+            const auto size = 110;
+            const std::string filename = "benchUploadSession_" + std::to_string(nbParallelChunkJobs) + "_chunk_job";
+            const SyncPath benchFilePath(SyncPath(homePath) / (filename + ".txt"));
+            DataExtractor dataExtractor(benchFilePath);
+
+            const LocalTemporaryDirectory localTmpDir(filename);
+            testhelpers::generateBigFiles(localTmpDir.path(), static_cast<uint16_t>(size), 20);
+
+            for (const auto nbThreads: {1, 3, 5, 10, 30, 100}) {
+                dataExtractor.addRow(std::to_string(nbThreads));
+                for (uint16_t i = 0; i < nbRepetition; i++) {
+                    const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, filename);
+                    runJobs(static_cast<uint16_t>(nbThreads), dataExtractor,
+                            generateUploadSessionJobs(remoteTmpDir.id(), localTmpDir.path(),
+                                                      static_cast<uint16_t>(nbParallelChunkJobs)));
+                }
+            }
+
+            dataExtractor.print();
+        }
+    }
 }
 
-std::list<std::shared_ptr<AbstractNetworkJob>> BenchmarkParallelJobs::generateUploadJobs(
-        const NodeId &remoteTmpDirId, const SyncPath &localTestFolderPath) const {
-    std::list<std::shared_ptr<AbstractNetworkJob>> jobs;
+std::list<std::shared_ptr<AbstractJob>> BenchmarkParallelJobs::generateUploadJobs(const NodeId &remoteTmpDirId,
+                                                                                  const SyncPath &localTestFolderPath) const {
+    std::list<std::shared_ptr<AbstractJob>> jobs;
     for (auto &dirEntry: std::filesystem::directory_iterator(localTestFolderPath)) {
         if (dirEntry.path().filename() == ".DS_Store") {
             continue;
         }
 
+        const auto timeInput =
+                std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
         const auto job = std::make_shared<UploadJob>(nullptr, driveDbId, dirEntry.path(), dirEntry.path().filename().native(),
-                                                     remoteTmpDirId, 0);
+                                                     remoteTmpDirId, timeInput.count());
         (void) jobs.push_back(job);
     }
     return jobs;
 }
 
-std::list<std::shared_ptr<AbstractNetworkJob>> BenchmarkParallelJobs::generateDownloadJobs(
-        const NodeId &remoteDirId, const SyncPath &localTestFolderPath, const uint64_t expectedSize,
-        const uint16_t nbMaxJob /*= 0*/) const {
+std::list<std::shared_ptr<AbstractJob>> BenchmarkParallelJobs::generateUploadSessionJobs(
+        const NodeId &remoteTmpDirId, const SyncPath &localTestFolderPath, const uint16_t nbParallelChunkJobs) const {
+    std::list<std::shared_ptr<AbstractJob>> jobs;
+    for (auto &dirEntry: std::filesystem::directory_iterator(localTestFolderPath)) {
+        if (dirEntry.path().filename() == ".DS_Store") {
+            continue;
+        }
+
+        const auto timeInput =
+                std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
+        const auto job = std::make_shared<DriveUploadSession>(nullptr, driveDbId, nullptr, dirEntry.path(),
+                                                              dirEntry.path().filename().native(), remoteTmpDirId,
+                                                              timeInput.count(), false, nbParallelChunkJobs);
+        (void) jobs.push_back(job);
+    }
+    return jobs;
+}
+
+std::list<std::shared_ptr<AbstractJob>> BenchmarkParallelJobs::generateDownloadJobs(const NodeId &remoteDirId,
+                                                                                    const SyncPath &localTestFolderPath,
+                                                                                    const uint64_t expectedSize,
+                                                                                    const uint16_t nbMaxJob /*= 0*/) const {
     std::list<NodeId> remoteFileIds;
     (void) retrieveRemoteFileIds(remoteDirId, remoteFileIds);
 
     uint64_t counter = 0;
-    std::list<std::shared_ptr<AbstractNetworkJob>> jobs;
+    std::list<std::shared_ptr<AbstractJob>> jobs;
     for (const auto &remoteFileId: remoteFileIds) {
         const auto job = std::make_shared<DownloadJob>(nullptr, driveDbId, remoteFileId, localTestFolderPath, expectedSize);
         (void) jobs.push_back(job);
@@ -207,7 +244,7 @@ std::list<std::shared_ptr<AbstractNetworkJob>> BenchmarkParallelJobs::generateDo
 }
 
 void BenchmarkParallelJobs::runJobs(const uint16_t nbThread, DataExtractor &dataExtractor,
-                                    const std::list<std::shared_ptr<AbstractNetworkJob>> &jobs) const {
+                                    const std::list<std::shared_ptr<AbstractJob>> &jobs) const {
     JobManager::instance()->setPoolCapacity(nbThread);
     std::queue<UniqueId> jobIds;
 
