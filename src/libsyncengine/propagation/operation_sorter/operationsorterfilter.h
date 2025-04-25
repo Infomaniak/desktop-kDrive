@@ -20,6 +20,10 @@
 
 namespace KDC {
 
+struct SyncNameHashFunction {
+        using is_transparent = void; // Enables heterogeneous operations.
+        std::size_t operator()(const SyncName &name) const { return XXH3_64bits(name.data(), name.size()); }
+};
 using NameToOpMap = std::unordered_map<SyncName, SyncOpPtr, SyncNameHashFunction, std::equal_to<>>;
 using NodeIdToOpListMap = std::unordered_map<NodeId, std::list<SyncOpPtr>, StringHashFunction, std::equal_to<>>;
 

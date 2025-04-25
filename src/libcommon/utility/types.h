@@ -38,6 +38,7 @@
 #include "sourcelocation.h"
 
 #include <QDebug>
+#include <xxhash.h>
 
 namespace KDC {
 
@@ -60,15 +61,6 @@ struct StringHashFunction {
         std::size_t operator()(const std::string_view sv) const {
             constexpr std::hash<std::string_view> hasher;
             return hasher(sv);
-        }
-};
-
-struct SyncNameHashFunction {
-        using is_transparent = void; // Enables heterogeneous operations.
-
-        std::size_t operator()(const SyncName &name) const {
-            constexpr std::hash<SyncName> hasher;
-            return hasher(name);
         }
 };
 
