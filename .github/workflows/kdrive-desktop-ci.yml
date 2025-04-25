@@ -56,6 +56,9 @@ jobs:
         id: build
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
+          set COVFILE=%cd%\src\test.cov  
+          call "cov01.exe" -1
+
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
         shell: cmd
 
@@ -736,7 +739,11 @@ jobs:
 
       - name: Clean up
         run : rm -r -force ${{ github.workspace }}/build-windows/test/
-  
+
+  test-validate-all-Windows:
+    runs-on: [ self-hosted ]
+    needs: [test-common-Windows, test-commonServer-Windows, test-server-Windows, test-syncengine-Windows, test-parms-Windows]
+
 # Tests Linux
   test-common-Linux:
     runs-on: [ self-hosted, Linux, X64]
