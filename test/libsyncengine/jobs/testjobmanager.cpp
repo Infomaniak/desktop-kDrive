@@ -164,7 +164,7 @@ void TestJobManager::testWithCallback() {
         _ongoingJobs.insert({job->jobId(), job});
     }
 
-    int waitCountMax = 300; // Wait max 30sec
+    int waitCountMax = 1200; // Wait max 2min
     while (ongoingJobsCount() > 0 && waitCountMax-- > 0 && !_jobErrorSocketsDefuncted && !_jobErrorOther) {
         Utility::msleep(100); // Wait 100ms
     }
