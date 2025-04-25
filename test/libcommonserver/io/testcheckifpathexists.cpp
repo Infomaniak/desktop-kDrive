@@ -103,7 +103,9 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
     {
         LocalTemporaryDirectory temporaryDirectory("TestIo");
         const SyncPath path = temporaryDirectory.path() / "test.txt";
-        { std::ofstream ofs(path); }
+        {
+            std::ofstream ofs(path);
+        }
         IoError ioError = IoError::Unknown;
         const bool setRightResults = IoHelper::setRights(path, false, false, false, ioError) && ioError == IoError::Success;
         if (!setRightResults) {
@@ -336,7 +338,9 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
     {
         LocalTemporaryDirectory temporaryDirectory("TestIo");
         const SyncPath path = temporaryDirectory.path() / "test.txt";
-        { std::ofstream ofs(path); }
+        {
+            std::ofstream ofs(path);
+        }
 
         IoError ioError = IoError::Unknown;
         bool existsWithSameId = false;
@@ -384,7 +388,9 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         const LocalTemporaryDirectory temporaryDirectory("TestIo");
         const SyncPath targetPath = temporaryDirectory.path() / "file_to_be_deleted.png"; // This file will be deleted.
         const SyncPath path = temporaryDirectory.path() / "dangling_file_alias";
-        { std::ofstream ofs(targetPath); }
+        {
+            std::ofstream ofs(targetPath);
+        }
 
         IoError aliasError;
         CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
@@ -535,10 +541,58 @@ void TestIo::testCheckIfPathExistWithDistinctEncodings() {
     }
 }
 
+void TestIo::testCheckIfPathExistsMixedSeparators(void) {
+    // Run only on Windows
+    // On Unix systems, '\' is not considered a path separator, it can be used like any other character in a file name.
+
+    const LocalTemporaryDirectory temporaryDirectory("TestIo_checkIfPathExistsMixedSeparators"); // The separ
+    const SyncPath subDirForward = temporaryDirectory.path().string() + "/sub_dir";
+    const SyncPath subFileForward = subDirForward.string() + "/sub_file.txt";
+    const SyncPath subDirBackward = temporaryDirectory.path().string() + "\\sub_dir";
+    const SyncPath subFileBackward = subDirBackward.string() + "\\sub_file.txt";
+
+    // Ensure the separators are not automatically converted
+    CPPUNIT_ASSERT_EQUAL(temporaryDirectory.path().string() + "/" + "sub_dir", subDirForward.string());
+    CPPUNIT_ASSERT_EQUAL(subDirForward.string() + "/" + "sub_file.txt", subFileForward.string());
+
+    CPPUNIT_ASSERT_EQUAL(temporaryDirectory.path().string() + "\\" + "sub_dir", subDirBackward.string());
+    CPPUNIT_ASSERT_EQUAL(subDirBackward.string() + "\\" + "sub_file.txt", subFileBackward.string());
+
+    // Create subDir and subFile
+    IoError ioError = IoError::Success;
+    CPPUNIT_ASSERT(IoHelper::createDirectory(subDirForward.lexically_normal(), ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    testhelpers::generateOrEditTestFile(subFileForward.lexically_normal());
+
+    // Checked that CheckIfPathExist can handle all the directory separators
+    bool exist = false;
+    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(subDirForward, exist, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(exist);
+
+    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(subFileForward, exist, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(exist);
+
+    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(subDirBackward, exist, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(exist);
+
+    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(subFileBackward, exist, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(exist);
+}
+
+
 void TestIo::testCheckIfPathExists() {
     testCheckIfPathExistsSimpleCases();
     testCheckIfPathExistsWithSameNodeIdSimpleCases();
     testCheckIfPathExistWithDistinctEncodings();
+#ifdef WIN32
+    // On Unix systems, '\' is not considered a path separator, it can be used like any other character in a file name.
+    testCheckIfPathExistsMixedSeparators();
+#endif // WIN32
+
 }
 
 } // namespace KDC
