@@ -58,6 +58,7 @@ function Log { Write-Host "[INFO] $($args -join ' ')" }
 function Err { Write-Error "[ERROR] $($args -join ' ')" ; exit 1 }
 
 function Get-ConanExePath {
+    $env:PATH = "C:\Program Files\Python313;C:\Program Files\Python313\Scripts;" + $env:PATH
     try {
         $cmd = Get-Command conan.exe -ErrorAction Stop
         return $cmd.Path
