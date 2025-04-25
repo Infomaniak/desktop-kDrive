@@ -393,7 +393,7 @@ jobs:
           name: windows-build-common-files
           path: ${{ github.workspace }}/build-windows/cache/
 
-      - name: Download qt files
+      - name: Download qt libs
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
         with:
@@ -416,7 +416,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-logs-tests-common
-          path: C:/Windows/Temp/kDrive-logdir/*
+          path: ${{ env.TEMP }}\kDrive-logdir\*
           retention-days: 1
         if: always()
 
@@ -473,7 +473,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-logs-tests-common-server
-          path: C:/Windows/Temp/kDrive-logdir/*
+          path: ${{ env.TEMP }}\kDrive-logdir\*
           retention-days: 1
         if: always()
 
@@ -507,6 +507,13 @@ jobs:
           key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
           clean-key: true        
 
+      - name: Download qt libs
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build-qt-libs
+          path: ${{ github.workspace }}/build-windows/cache/
+
       - name: Download common files
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
@@ -530,7 +537,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-logs-tests-server
-          path: C:/Windows/Temp/kDrive-logdir/*
+          path: ${{ env.TEMP }}\kDrive-logdir\*
           retention-days: 1
         if: always()
 
@@ -564,6 +571,13 @@ jobs:
           key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
           clean-key: true        
 
+      - name: Download qt libs
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build-qt-libs
+          path: ${{ github.workspace }}/build-windows/cache/
+
       - name: Download common files
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
@@ -587,7 +601,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-logs-tests-syncengine
-          path: C:/Windows/Temp/kDrive-logdir/*
+          path: ${{ env.TEMP }}\kDrive-logdir\*
           retention-days: 1
         if: always()
 
@@ -611,6 +625,13 @@ jobs:
 
       - name: Clean up log directory
         run: powershell -ExecutionPolicy Bypass -Command "if (Test-Path '$env:TEMP\kDrive-logdir') { Remove-Item -Path '$env:TEMP\kDrive-logdir\*' -Recurse -Force }"
+
+      - name: Download qt libs
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build-qt-libs
+          path: ${{ github.workspace }}/build-windows/cache/
 
       - name: Load cached dependencies
         id: cache
@@ -644,7 +665,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-logs-tests-parms
-          path: C:/Windows/Temp/kDrive-logdir/*
+          path: ${{ env.TEMP }}\kDrive-logdir\*
           retention-days: 1
         if: always()
 
