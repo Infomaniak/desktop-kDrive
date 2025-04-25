@@ -170,7 +170,7 @@ function CMake-Build-And-Install {
         [string] $vfsDir
     )
     Write-Host "1) Installing Conan dependencies…"
-    & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" -buildType $buildType
+    & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" -buildType $buildType -ci
 
     Write-Host "2) Configuring and building with CMake ..."
 

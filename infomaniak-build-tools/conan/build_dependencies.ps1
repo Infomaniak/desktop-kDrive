@@ -32,6 +32,9 @@
 
 .PARAMETER Help
     Show this help message.
+
+.PARAMETER CI
+    Switch indicating that the script is running on a CI service.
 #>
 
 param(
@@ -40,10 +43,13 @@ param(
     [string]$BuildType = "Debug",
 
     [Parameter(Mandatory = $false, HelpMessage = "Show help message")]
-    [switch]$Help
+    [switch]$Help,
+
+    [Parameter(Mandatory = $false, HelpMessage = "Indicate running on CI")]
+    [switch]$CI
 )
 
-function Show-Help { Write-Host "Usage: $($MyInvocation.MyCommand.Name) [-Help] [Debug|Release|RelWithDebInfo]" ; exit 0 }
+function Show-Help { Write-Host "Usage: $($MyInvocation.MyCommand.Name) [-Help] [Debug|Release|RelWithDebInfo] [-CI]" ; exit 0 }
 if ($Help) { Show-Help }
 
 $ErrorActionPreference = "Stop"
@@ -90,6 +96,13 @@ $ConanExe = Get-ConanExePath
 if (-not $ConanExe) {
     Err "Conan executable not found. Please ensure Conan is installed and accessible."
 }
+
+# If we are running in CI mode, set $ConanProfile
+if ($CI) {
+    $env:CONAN_USER_HOME = "C:\actions-runner\_work\desktop-kDrive"
+    Log "[INFO] CI mode enabled. Conan user home set to: $env:CONAN_USER_HOME"
+}
+
 
 if (-not (Test-Path -Path "infomaniak-build-tools/conan" -PathType Container)) {
     Err "Please run this script from the repository root."
