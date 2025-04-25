@@ -23,7 +23,18 @@ env:
 
 
 jobs:
-
+  Upload-test_ci-folder:
+    runs-on: [ self-hosted ]
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+        
+      - name: Upload test-ci folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-ci-folder
+          path:  ${{ github.workspace }}/test/test-ci/*
+          retention-days: 1
 # Build apps
   build-Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
@@ -363,7 +374,7 @@ jobs:
     runs-on: [ self-hosted, Windows ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
-    needs: build-Windows
+    needs: [ build-Windows, Upload-test_ci-folder ]
     steps:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
@@ -427,16 +438,11 @@ jobs:
     runs-on: [ self-hosted, Windows]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
-    needs: build-Windows
+    needs: [ build-Windows, Upload-test_ci-folder ]
     steps:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
-
-      - name: Checkout the PR
-        uses: actions/checkout@v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
 
       - name: Clean up log directory
         run: powershell -ExecutionPolicy Bypass -Command "if (Test-Path '$env:TEMP\kDrive-logdir') { Remove-Item -Path '$env:TEMP\kDrive-logdir\*' -Recurse -Force }"
@@ -446,7 +452,7 @@ jobs:
         uses: herve-er/local-cache@v2
         with:
           path: build-windows/cache
-          base: ${{ github.workspace }}/../local-cache
+          base: ${{ github.workspace }}/local-cache
           key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
           clean-key: true        
 
@@ -457,8 +463,15 @@ jobs:
           name: windows-build-common-files
           path: ${{ github.workspace }}/build-windows/cache/
 
+          
       - name: Copy the cache to the test directory
         run: cp -r ${{ github.workspace }}/build-windows/cache/ ${{ github.workspace }}/build-windows/test/
+
+      - name: Download test-ci folder
+        uses: actions/download-artifact@v4
+        with:
+          name: test-ci-folder
+          path: ${{ github.workspace }}/desktop-kdirve/build-windows/cache/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
@@ -484,7 +497,7 @@ jobs:
     runs-on: [ self-hosted, Windows ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
-    needs: build-Windows
+    needs: [ build-Windows, Upload-test_ci-folder ]
     steps:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
@@ -548,7 +561,7 @@ jobs:
     runs-on: [ self-hosted, Windows ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
-    needs: build-Windows
+    needs: [ build-Windows, Upload-test_ci-folder ]
     steps:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
@@ -612,7 +625,7 @@ jobs:
     runs-on: [ self-hosted, Windows ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
-    needs: build-Windows
+    needs: [ build-Windows, Upload-test_ci-folder ]
     steps:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
@@ -677,7 +690,7 @@ jobs:
     runs-on: [ self-hosted, Linux, X64]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
-    needs: build-Linux
+    needs: [ build-Linux, Upload-test_ci-folder ]
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
@@ -752,7 +765,7 @@ jobs:
     runs-on: [ self-hosted, Linux, X64 ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
-    needs: build-Linux
+    needs: [ build-Linux, Upload-test_ci-folder ]
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
@@ -827,7 +840,7 @@ jobs:
     runs-on: [ self-hosted, Linux, X64 ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
-    needs: build-Linux
+    needs: [ build-Linux, Upload-test_ci-folder ]
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
@@ -902,7 +915,7 @@ jobs:
     runs-on: [ self-hosted, Linux, X64 ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
-    needs: build-Linux
+    needs: [ build-Linux, Upload-test_ci-folder ]
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
@@ -977,7 +990,7 @@ jobs:
     runs-on: [ self-hosted, Linux, X64 ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
-    needs: build-Linux
+    needs: [ build-Linux, Upload-test_ci-folder ]
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
@@ -1050,7 +1063,7 @@ jobs:
     runs-on: [ self-hosted, macOS]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
-    needs: build-MacOS
+    needs: [ build-MacOS, Upload-test_ci-folder ]
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
@@ -1124,7 +1137,7 @@ jobs:
     runs-on: [ self-hosted, macOS ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
-    needs: build-MacOS
+    needs: [ build-MacOS, Upload-test_ci-folder ]
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
@@ -1199,7 +1212,7 @@ jobs:
     runs-on: [ self-hosted, macOS, desktop-kdrive ] 
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
-    needs: build-MacOS
+    needs: [ build-MacOS, Upload-test_ci-folder ]
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
@@ -1273,7 +1286,7 @@ jobs:
     runs-on: [ self-hosted, macOS]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
-    needs: build-MacOS
+    needs: [ build-MacOS, Upload-test_ci-folder ]
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
@@ -1347,7 +1360,7 @@ jobs:
     runs-on: [ self-hosted, macOS]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
-    needs: build-MacOS
+    needs: [ build-MacOS, Upload-test_ci-folder ]
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
