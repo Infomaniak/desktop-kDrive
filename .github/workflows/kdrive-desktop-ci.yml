@@ -90,6 +90,14 @@ jobs:
           retention-days: 1
         if: steps.build.outcome == 'success'
 
+      - name: Upload qt plugins
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-qt-plugin
+          path: C:\Qt\6.2.3\msvc2019_64\plugins\platforms\*
+          retention-days: 1
+        if: steps.build.outcome == 'success'
+
       - name: Upload build test common executable
         uses: actions/upload-artifact@v4
         with:
@@ -510,7 +518,7 @@ jobs:
         run : rm -r -force ${{ github.workspace }}/build-windows/test/
 
   test-server-Windows:
-    runs-on: [ self-hosted, Windows , desktop-kdrive]
+    runs-on: [ self-hosted, Windows ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
     needs: build-Windows
@@ -542,6 +550,13 @@ jobs:
         with:
           name: windows-build-qt-libs
           path: ${{ github.workspace }}/build-windows/cache/
+
+      - name: Download qt plugins
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build-qt-plugin
+          path: ${{ github.workspace }}/build-windows/cache/platforms
 
       - name: Download common files
         if: steps.cache.outputs.cache-hit != 'true'
