@@ -63,6 +63,15 @@ struct StringHashFunction {
         }
 };
 
+struct SyncNameHashFunction {
+        using is_transparent = void; // Enables heterogeneous operations.
+
+        std::size_t operator()(const SyncName &name) const {
+            constexpr std::hash<SyncName> hasher;
+            return hasher(name);
+        }
+};
+
 struct PathHashFunction {
         std::size_t operator()(const std::optional<SyncPath> &path) const { return path ? hash_value(path.value()) : 0; }
 };
