@@ -99,8 +99,9 @@ if (-not $ConanExe) {
 
 # If we are running in CI mode, set $ConanProfile
 if ($CI) {
-    $env:CONAN_USER_HOME = "C:\actions-runner\_work\desktop-kDrive"
-    Log "[INFO] CI mode enabled. Conan user home set to: $env:CONAN_USER_HOME"
+    $env:CONAN_USER_HOME = "C:\ProgramData\.conan2"
+
+    Log "CI mode enabled. Conan user home set to: $env:CONAN_USER_HOME"
 }
 
 
