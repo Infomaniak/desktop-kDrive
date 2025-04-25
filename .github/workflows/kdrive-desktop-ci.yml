@@ -23,19 +23,7 @@ env:
 
 
 jobs:
-  Upload-test_ci-folder:
-    runs-on: [ self-hosted ]
-    steps:
-      - name: Checkout the PR
-        uses: actions/checkout@v4
-        
-      - name: Upload test-ci folder
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-ci-folder
-          path:  ${{ github.workspace }}/test/test_ci/
-          retention-days: 1
-          if-no-files-found: error
+
 # Build apps
   build-Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
@@ -375,7 +363,7 @@ jobs:
     runs-on: [ self-hosted, Windows ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
-    needs: [ build-Windows, Upload-test_ci-folder ]
+    needs: build-Windows
     steps:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
@@ -424,11 +412,24 @@ jobs:
       - name: Execute tests
         run: powershell ./infomaniak-build-tools/run-test.ps1 ./build-windows/test/ kDrive_test_common.exe
 
+      - name: Copy logs to workspace
+        run: |
+            $logSource = "$env:TEMP\kDrive-logdir"
+            $logDest = "${{ github.workspace }}\build-windows\logs"
+
+            if (Test-Path $logSource) {
+              New-Item -ItemType Directory -Force -Path $logDest | Out-Null
+              Copy-Item -Path "$logSource\*" -Destination $logDest -Recurse -Force
+            } else {
+              Write-Output "No logs found to copy."
+            }
+        if: always()
+
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
         with:
           name: windows-logs-tests-common
-          path: ${{ env.TEMP }}\kDrive-logdir\*
+          path: ${{ github.workspace }}\build-windows\logs\*
           retention-days: 1
         if: always()
 
@@ -439,11 +440,16 @@ jobs:
     runs-on: [ self-hosted, Windows]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
-    needs: [ build-Windows, Upload-test_ci-folder ]
+    needs: build-Windows
     steps:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
+
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
 
       - name: Clean up log directory
         run: powershell -ExecutionPolicy Bypass -Command "if (Test-Path '$env:TEMP\kDrive-logdir') { Remove-Item -Path '$env:TEMP\kDrive-logdir\*' -Recurse -Force }"
@@ -464,15 +470,8 @@ jobs:
           name: windows-build-common-files
           path: ${{ github.workspace }}/build-windows/cache/
 
-          
       - name: Copy the cache to the test directory
         run: cp -r ${{ github.workspace }}/build-windows/cache/ ${{ github.workspace }}/build-windows/test/
-
-      - name: Download test-ci folder
-        uses: actions/download-artifact@v4
-        with:
-          name: test-ci-folder
-          path: ${{ github.workspace }}/test/test_ci
 
       - name: Download test executable
         uses: actions/download-artifact@v4
@@ -483,11 +482,24 @@ jobs:
       - name: Execute tests
         run: powershell ./infomaniak-build-tools/run-test.ps1 ./build-windows/test/ kDrive_test_common_server.exe
 
+      - name: Copy logs to workspace
+        run: |
+            $logSource = "$env:TEMP\kDrive-logdir"
+            $logDest = "${{ github.workspace }}\build-windows\logs"
+
+            if (Test-Path $logSource) {
+              New-Item -ItemType Directory -Force -Path $logDest | Out-Null
+              Copy-Item -Path "$logSource\*" -Destination $logDest -Recurse -Force
+            } else {
+              Write-Output "No logs found to copy."
+            }
+        if: always()
+
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: windows-logs-tests-common-server
-          path: ${{ env.TEMP }}\kDrive-logdir\*
+          name: windows-logs-tests-common
+          path: ${{ github.workspace }}\build-windows\logs\*
           retention-days: 1
         if: always()
 
@@ -498,7 +510,7 @@ jobs:
     runs-on: [ self-hosted, Windows ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
-    needs: [ build-Windows, Upload-test_ci-folder ]
+    needs: build-Windows
     steps:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
@@ -547,11 +559,24 @@ jobs:
       - name: Execute tests
         run: powershell ./infomaniak-build-tools/run-test.ps1 ./build-windows/test/ kDrive_test_server.exe 
 
+      - name: Copy logs to workspace
+        run: |
+            $logSource = "$env:TEMP\kDrive-logdir"
+            $logDest = "${{ github.workspace }}\build-windows\logs"
+
+            if (Test-Path $logSource) {
+              New-Item -ItemType Directory -Force -Path $logDest | Out-Null
+              Copy-Item -Path "$logSource\*" -Destination $logDest -Recurse -Force
+            } else {
+              Write-Output "No logs found to copy."
+            }
+        if: always()
+
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: windows-logs-tests-server
-          path: ${{ env.TEMP }}\kDrive-logdir\*
+          name: windows-logs-tests-common
+          path: ${{ github.workspace }}\build-windows\logs\*
           retention-days: 1
         if: always()
 
@@ -562,7 +587,7 @@ jobs:
     runs-on: [ self-hosted, Windows ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
-    needs: [ build-Windows, Upload-test_ci-folder ]
+    needs: build-Windows
     steps:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
@@ -611,11 +636,24 @@ jobs:
       - name: Execute tests
         run: powershell ./infomaniak-build-tools/run-test.ps1 ./build-windows/test/ kDrive_test_syncengine.exe
 
+      - name: Copy logs to workspace
+        run: |
+            $logSource = "$env:TEMP\kDrive-logdir"
+            $logDest = "${{ github.workspace }}\build-windows\logs"
+
+            if (Test-Path $logSource) {
+              New-Item -ItemType Directory -Force -Path $logDest | Out-Null
+              Copy-Item -Path "$logSource\*" -Destination $logDest -Recurse -Force
+            } else {
+              Write-Output "No logs found to copy."
+            }
+        if: always()
+
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: windows-logs-tests-syncengine
-          path: ${{ env.TEMP }}\kDrive-logdir\*
+          name: windows-logs-tests-common
+          path: ${{ github.workspace }}\build-windows\logs\*
           retention-days: 1
         if: always()
 
@@ -626,7 +664,7 @@ jobs:
     runs-on: [ self-hosted, Windows ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
-    needs: [ build-Windows, Upload-test_ci-folder ]
+    needs: build-Windows
     steps:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
@@ -675,11 +713,24 @@ jobs:
       - name: Execute tests
         run: powershell ./infomaniak-build-tools/run-test.ps1 ./build-windows/test/ kDrive_test_parms.exe
 
+      - name: Copy logs to workspace
+        run: |
+            $logSource = "$env:TEMP\kDrive-logdir"
+            $logDest = "${{ github.workspace }}\build-windows\logs"
+
+            if (Test-Path $logSource) {
+              New-Item -ItemType Directory -Force -Path $logDest | Out-Null
+              Copy-Item -Path "$logSource\*" -Destination $logDest -Recurse -Force
+            } else {
+              Write-Output "No logs found to copy."
+            }
+        if: always()
+
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: windows-logs-tests-parms
-          path: ${{ env.TEMP }}\kDrive-logdir\*
+          name: windows-logs-tests-common
+          path: ${{ github.workspace }}\build-windows\logs\*
           retention-days: 1
         if: always()
 
@@ -691,7 +742,7 @@ jobs:
     runs-on: [ self-hosted, Linux, X64]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
-    needs: [ build-Linux, Upload-test_ci-folder ]
+    needs: build-Linux
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
@@ -766,7 +817,7 @@ jobs:
     runs-on: [ self-hosted, Linux, X64 ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
-    needs: [ build-Linux, Upload-test_ci-folder ]
+    needs: build-Linux
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
@@ -841,7 +892,7 @@ jobs:
     runs-on: [ self-hosted, Linux, X64 ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
-    needs: [ build-Linux, Upload-test_ci-folder ]
+    needs: build-Linux
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
@@ -916,7 +967,7 @@ jobs:
     runs-on: [ self-hosted, Linux, X64 ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
-    needs: [ build-Linux, Upload-test_ci-folder ]
+    needs: build-Linux
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
@@ -991,7 +1042,7 @@ jobs:
     runs-on: [ self-hosted, Linux, X64 ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
-    needs: [ build-Linux, Upload-test_ci-folder ]
+    needs: build-Linux
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
@@ -1064,7 +1115,7 @@ jobs:
     runs-on: [ self-hosted, macOS]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
-    needs: [ build-MacOS, Upload-test_ci-folder ]
+    needs: build-MacOS
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
@@ -1138,7 +1189,7 @@ jobs:
     runs-on: [ self-hosted, macOS ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
-    needs: [ build-MacOS, Upload-test_ci-folder ]
+    needs: build-MacOS
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
@@ -1213,7 +1264,7 @@ jobs:
     runs-on: [ self-hosted, macOS, desktop-kdrive ] 
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
-    needs: [ build-MacOS, Upload-test_ci-folder ]
+    needs: build-MacOS
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
@@ -1287,7 +1338,7 @@ jobs:
     runs-on: [ self-hosted, macOS]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
-    needs: [ build-MacOS, Upload-test_ci-folder ]
+    needs: build-MacOS
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
@@ -1361,7 +1412,7 @@ jobs:
     runs-on: [ self-hosted, macOS]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
-    needs: [ build-MacOS, Upload-test_ci-folder ]
+    needs: build-MacOS
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
