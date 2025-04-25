@@ -110,7 +110,7 @@ if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
 }
 
 # Output folder
-$BaseOutput = Join-Path $CurrentDir "build-windows\build"
+$OutputDir = Join-Path $CurrentDir "build-windows\build"
 
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null # mkdir
 
