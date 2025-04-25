@@ -498,7 +498,7 @@ jobs:
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: windows-logs-tests-common
+          name: windows-logs-tests-commonServer
           path: ${{ github.workspace }}\build-windows\logs\*
           retention-days: 1
         if: always()
@@ -575,7 +575,7 @@ jobs:
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: windows-logs-tests-common
+          name: windows-logs-tests-server
           path: ${{ github.workspace }}\build-windows\logs\*
           retention-days: 1
         if: always()
@@ -652,7 +652,7 @@ jobs:
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: windows-logs-tests-common
+          name: windows-logs-tests-syncengine
           path: ${{ github.workspace }}\build-windows\logs\*
           retention-days: 1
         if: always()
@@ -729,7 +729,7 @@ jobs:
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: windows-logs-tests-common
+          name: windows-logs-tests-parms
           path: ${{ github.workspace }}\build-windows\logs\*
           retention-days: 1
         if: always()
