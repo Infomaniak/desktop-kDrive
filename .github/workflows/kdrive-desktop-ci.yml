@@ -453,7 +453,7 @@ jobs:
         uses: herve-er/local-cache@v2
         with:
           path: build-windows/cache
-          base: ${{ github.workspace }}/local-cache
+          base: ${{ github.workspace }}/../local-cache
           key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
           clean-key: true        
 
@@ -472,7 +472,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: test-ci-folder
-          path: ${{ github.workspace }}/desktop-kdirve/test/test_ci
+          path: ${{ github.workspace }}/test/test_ci
 
       - name: Download test executable
         uses: actions/download-artifact@v4
