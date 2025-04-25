@@ -110,7 +110,7 @@ if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
 }
 
 # Output folder
-$BaseOutput = Join-Path $CurrentDir "build-windows\conan"
+$BaseOutput = Join-Path $CurrentDir "build-windows\build"
 if ($BuildType -eq "Debug") {
     Log "Selected Debug build."
     $OutputDir = Join-Path $BaseOutput "Debug"
