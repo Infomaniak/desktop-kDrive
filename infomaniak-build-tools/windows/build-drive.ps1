@@ -189,7 +189,6 @@ function CMake-Build-And-Install {
 
     $flags = @(
         "'-DCMAKE_EXPORT_COMPILE_COMMANDS=1'",
-        "'-DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake'",
         "'-DCMAKE_MAKE_PROGRAM=C:\Qt\Tools\Ninja\ninja.exe'",
         "'-DQT_QMAKE_EXECUTABLE:STRING=C:\Qt\Tools\CMake_64\bin\cmake.exe'",
         "'-DCMAKE_C_COMPILER:STRING=$compiler'",
