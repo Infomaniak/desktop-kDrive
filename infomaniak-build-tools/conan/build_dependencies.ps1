@@ -149,7 +149,7 @@ Log "Creating xxHash Conan package..."
 & $ConanExe create "$RecipesFolder/xxhash/all/" --build=missing -s build_type=Release -r $LocalRemoteName
 
 Log "Installing Conan dependencies..."
-& $ConanExe install . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType -r $LocalRemoteNamel
+& $ConanExe install . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType -r $LocalRemoteName
 
 Log "Conan dependencies successfully installed in: $OutputDir"
 
