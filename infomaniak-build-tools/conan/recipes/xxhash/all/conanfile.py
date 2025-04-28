@@ -74,10 +74,17 @@ class XxHashConan(ConanFile):
     def source(self):
         get(self, "https://github.com/Cyan4973/xxHash/archive/v0.8.2.tar.gz", sha256="baee0c6afd4f03165de7a4e67988d16f0f2b257b51d0e3cb91909302a26a79c4", strip_root=True)
 
+    def build_requirements(self):
+        if self.settings.os == "Windows":
+            self.tool_requires("ninja/1.11.1")
+
     def generate(self):
         tc = CMakeToolchain(self)
         tc.cache_variables["CMAKE_MACOSX_BUNDLE"] = False
         tc.cache_variables["CMAKE_POLICY_VERSION_MINIMUM"] = "3.5" # CMake 4 support
+        # Use Ninja in windows.
+        if self.settings.os == "Windows":
+            tc.cache_variables["CMAKE_GENERATOR"] = "Ninja"
         tc.generate()
 
     def build(self):
