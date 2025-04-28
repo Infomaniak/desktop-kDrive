@@ -1,8 +1,7 @@
-sudo apt-get install libgl1-mesa-dev# kDrive Desktop Configuration - Linux
-
 - [kDrive files](#kdrive-files)
 - [Installation Requirements](#installation-requirements)
-    - [aPckages](#packages)
+    - [Conan](#conan)
+    - [Packages](#packages)
     - [Qt 6.2.3](#qt-623)
     - [log4cplus](#log4cplus)
     - [OpenSSL](#openssl)
@@ -41,7 +40,56 @@ Currently, the build for Linux release is created from a podman container
 You will need cmake and clang to compile the libraries and the kDrive project  
 This documentation was made for Ubuntu 22.04 LTS
 
-## Packages :
+We are migrating the dependency management from manually to using conan.
+Currently, only the dependency `xxHash` is managed by conan. 
+
+## Conan
+You can find the official Conan installation guide [here](https://docs.conan.io/2/installation.html).
+
+### Prerequisites
+
+You need Python 3.6 or higher to install Conan:
+```bash
+sudo apt install -y python3
+```
+
+### Recommended Installation
+
+It is recommended to install Conan with `pip` inside a Python virtual environment:
+```bash
+python3 -m venv .venv        # Create a virtual environment in './.venv'
+source .venv/bin/activate    # Activate the virtual environment
+pip install --upgrade pip    # Upgrade pip
+pip install conan            # Install Conan
+```
+
+Verify that Conan was installed correctly:
+```bash
+conan --version
+```
+You should see an output similar to:
+```
+Conan version 2.15.1
+```
+
+### Configure a Conan Profile
+
+Next, create the default Conan profile for your system:
+```bash
+conan profile detect
+```
+This will generate a profile at `~/.conan2/profiles/default`.  
+Edit that file if you need to adjust any settings for your environment.
+
+### Install Project Dependencies
+Finally, run the provided script from the root of the repository to install the dependencies currently managed by Conan for this project:
+```bash
+./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release]
+```
+
+> **Note:** At the moment, only **xxHash** is installed via this Conan-based workflow. Additional dependencies (Qt, OpenSSL, Poco, etc.) will be added in the future.
+
+## Packages
 
 If not already installed, you will need **git**, **cmake** and **clang** (clang-18 or higher) packages.
 
@@ -69,6 +117,10 @@ sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/lib/llvm-18/bin
 ```
 
 Check the version again with `clang --version` to ensure that the version is now 18 or higher.
+
+## xxHash
+
+See [Conan](#conan) part.
 
 ## Qt 6.2.3
 
@@ -192,22 +244,6 @@ cd ../..
 cmake -B build -DSENTRY_INTEGRATION_QT=YES -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_PREFIX_PATH=~/Qt/6.2.3/gcc_64
 cmake --build build --parallel
 sudo cmake --install build
-
-
-```
-
-## xxHash
-
-```bash
-cd ~/Projects
-git clone https://github.com/Cyan4973/xxHash.git
-cd xxHash
-git checkout tags/v0.8.2
-cd cmake_unofficial
-mkdir build
-cd build
-cmake ..
-sudo cmake --build . --target install
 ```
 
 ## libzip
