@@ -102,6 +102,9 @@ print(exe)
 if ($CI) {
     # Activate the python virtual environment.
     & "C:\Program Files\Python313\.venv\Scripts\activate.ps1"
+
+    # Call vcvarsall.bat to set up the environment for MSVC
+    & "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
     Log "CI mode enabled."
 }
 
