@@ -18,7 +18,8 @@
 
 namespace KDC {
 
-OperationSorterFilter::OperationSorterFilter(const std::unordered_map<UniqueId, SyncOpPtr> &ops) : _ops(ops) {}
+OperationSorterFilter::OperationSorterFilter(const std::unordered_map<UniqueId, SyncOpPtr> &ops) :
+    _ops(ops) {}
 
 void OperationSorterFilter::filterOperations() {
     NameToOpMap deleteBeforeMoveCandidates;
@@ -45,16 +46,7 @@ void OperationSorterFilter::filterOperations() {
 }
 
 void OperationSorterFilter::filterDeleteBeforeMoveCandidates(const SyncOpPtr &op, NameToOpMap &deleteBeforeMoveCandidates) {
-    if (op->affectedNode()->hasChangeEvent(OperationType::Delete)) {
-        if (const auto [_, ok] = deleteBeforeMoveCandidates.try_emplace(op->affectedNode()->name(), op); !ok) {
-            const auto &otherOp = deleteBeforeMoveCandidates.at(op->affectedNode()->name());
-            if (op->targetSide() != otherOp->targetSide()) {
-                return;
-            }
-            (void) _fixDeleteBeforeMoveCandidates.emplace_back(op, otherOp);
-        }
-    }
-    if (op->affectedNode()->hasChangeEvent(OperationType::Move)) {
+    if (op->affectedNode()->hasChangeEvent(OperationType::Delete) || op->affectedNode()->hasChangeEvent(OperationType::Move)) {
         if (const auto [_, ok] = deleteBeforeMoveCandidates.try_emplace(op->affectedNode()->name(), op); !ok) {
             const auto &otherOp = deleteBeforeMoveCandidates.at(op->affectedNode()->name());
             if (op->targetSide() != otherOp->targetSide()) {
