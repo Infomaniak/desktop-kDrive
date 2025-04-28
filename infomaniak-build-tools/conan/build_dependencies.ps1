@@ -114,11 +114,6 @@ if (-not $ConanExe) {
     Err "Conan executable not found. Please ensure Conan is installed and accessible."
 }
 
-if ($CI) {
-    # Set ninja as the default generator for Conan, instead of msvc (ninja is faster)
-    & $ConanExe config set general.default_generator=ninja
-}
-
 if (-not (Test-Path -Path "infomaniak-build-tools/conan" -PathType Container)) {
     Err "Please run this script from the repository root."
 }
