@@ -4,6 +4,7 @@
 - [Installation Requirements](#installation-requirements)
 	- [SIP](#sip)
 	- [Xcode](#xcode)
+    - [Conan](#conan)
 	- [Qt 6.2.3](#qt-623)
 	- [Sentry](#sentry)
 	- [log4cplus](#log4cplus)
@@ -40,6 +41,9 @@ cd desktop-kDrive && git submodule update --init --recursive
 
 # Installation Requirements
 
+We are migrating the dependency management from manually to using conan.
+Currently, only the dependency `xxHash` is managed by conan. See [Conan](#conan) for more information.
+
 ## SIP
 
 With some VM software, it isn't possible to boot in recovery mode after the initial installation (ex: VMWare Fusion, Parallels Desktop).  
@@ -54,6 +58,54 @@ Once installed, run the following command :
 ```bash
 sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 ```
+
+### Conan
+
+The **recommended** way to install Conan is via `pip` inside a Python virtual environment (venv) using Python 3.6+.
+This ensures isolation and compatibility with your project’s dependencies.
+Other installation methods (system packages, pipx, installer scripts, etc.) are also supported. See https://conan.io/downloads for the full list of options.
+
+#### Prerequisites
+
+- **Python 3.6+**
+- **pip**: ensure pip is up to date:
+  ```bash
+  pip install --upgrade pip
+  ```
+
+#### Recommended Installation
+
+Install Conan inside a Python virtual environment:
+```bash
+cd ~/Projects/desktop-kDrive
+python3 -m venv .venv        # Create a virtual environment in './.venv'
+source .venv/bin/activate    # Activate the virtual environment
+pip install conan            # Install Conan
+```
+Verify the installation:
+```bash
+conan --version
+```
+Expected output similar to:
+```
+Conan version 2.x.x
+```
+
+#### Configure a Conan Profile
+
+Generate and detect your default profile:
+```bash
+conan profile detect
+```
+This creates `~/.conan2/profiles/default`. Edit it to customize settings (compiler, arch, etc.) for macOS.
+
+#### Install Project Dependencies
+
+From the root of the repository, run the provided script:
+```bash
+./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release]
+```
+> **Note:** At the moment, only **xxHash** is installed via this Conan-based workflow. Additional dependencies (Qt, OpenSSL, Poco, etc.) will be added in the future.
 
 ## QT 6.2.3
 
@@ -208,7 +260,7 @@ cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET=
 sudo cmake --build . --target install
 ```
 
-## libzip  
+## libzip
 
 > :warning: because the cmake builds in multi-architecture, `libzip` and its dependencies (in this case `zstd` must be installed in multi-architecture as well).
 

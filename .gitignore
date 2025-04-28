@@ -191,3 +191,5 @@ cmake-build-debug*
 
 # Conan / CMake generated file
 /CMakeUserPresets.json
+# Python virtual environment folder, used by the installation of conan.
+.venv/
