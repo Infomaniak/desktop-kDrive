@@ -188,6 +188,7 @@ function CMake-Build-And-Install {
     $buildVersion = Get-Date -Format "yyyyMMdd"
 
     $flags = @(
+        "'-DCMAKE_TOOLCHAIN_FILE=$buildPath\conan_toolchain.cmake'",
         "'-DCMAKE_EXPORT_COMPILE_COMMANDS=1'",
         "'-DCMAKE_MAKE_PROGRAM=C:\Qt\Tools\Ninja\ninja.exe'",
         "'-DQT_QMAKE_EXECUTABLE:STRING=C:\Qt\Tools\CMake_64\bin\cmake.exe'",
@@ -213,7 +214,6 @@ function CMake-Build-And-Install {
 
     $args += ("'-B$buildPath'")
     $args += ("'-H$path'")
-    $args += ("'-DCMAKE_TOOLCHAIN_FILE=$buildPath\conan_toolchain.cmake'")
 
     $cmake = ('cmake {0}' -f ($args -Join ' '))
 
