@@ -202,13 +202,15 @@ function CMake-Build-And-Install {
         "'-DZLIB_INCLUDE_DIR:PATH=C:/Program Files (x86)/zlib-1.2.11/include'",
         "'-DZLIB_LIBRARY_RELEASE:FILEPATH=C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib'",
         "'-DAPPLICATION_NAME:STRING=kDrive'",
-        "'-DKDRIVE_VERSION_BUILD=$buildVersion'",
-        "'-DCMAKE_GENERATOR_PLATFORM='" # Clear the platform to avoid issues with CMake / Ninja
+        "'-DKDRIVE_VERSION_BUILD=$buildVersion'"
     )
 
     if ($ci) {
         $flags += ("'-DBUILD_UNIT_TESTS:BOOL=TRUE'")
         $flags += ("'-DKD_COVERAGE:BOOL=TRUE'")
+
+        $flags += ("'-DCMAKE_POLICY_DEFAULT_CMP0091=NEW'")
+        $flags += ("'-U CMAKE_GENERATOR_PLATFORM'")
     }
 
     $args += $flags
