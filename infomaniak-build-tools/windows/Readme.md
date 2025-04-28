@@ -47,7 +47,7 @@ cd desktop-kDrive && git submodule update --init --recursive
 
 # Installation Requirements
 
-Once `Visual Studio 2019` is installed, all commands should to be run using the `x64 Native Tools Command Prompt` with administrator permissions.  
+Once `Visual Studio 2019` is installed, **all** commands should to be run using the `x64 Native Tools Command Prompt` with administrator permissions.  
 
 ## Visual Studio 2019
 
@@ -62,6 +62,54 @@ When installing `Visual Studio 2019`, select the following components:
 - Windows 11 SDK (10.0.22000.0)
 - Windows 10 SDK (10.0.17763.0)
 - Windows 10 SDK (10.0.20348.0)
+
+## Conan
+
+The **recommended** way to install Conan is via `pip` inside a Python virtual environment (venv) using Python 3.6+.
+This ensures isolation and compatibility with your project’s dependencies.
+Other installation methods (system packages, pipx, installer scripts, etc.) are also supported. See https://conan.io/downloads for the full list of options.
+
+### Prerequisites
+- **Python 3.6+**
+- **pip**: ensure pip is up to date:
+  ```powershell
+  pip install --upgrade pip
+  ```
+
+#### Recommended Installation
+
+Install Conan inside a Python virtual environment:
+```powershell
+python3 -m venv .venv        # Create a virtual environment in './.venv'
+& .venv/bin/activate.ps1    # Activate the virtual environment
+pip install conan            # Install Conan
+```
+Verify the installation:
+```bash
+conan --version
+```
+Expected output similar to:
+```
+Conan version 2.x.x
+```
+
+#### Configure a Conan Profile
+
+Generate and detect your default profile:
+```bash
+conan profile detect
+```
+This creates `%USERPROFILE%/.conan2/profiles/default`. 
+Edit it to customize settings (compiler, arch, etc.) for Windows.
+
+#### Install Project Dependencies
+
+From the root of the repository, run the provided script:
+```powershell
+./infomaniak-build-tools/conan/build_dependencies.ps1 [Debug|Release|RelWithDebInfo]
+```
+> **Note:** At the moment, only **xxHash** is installed via this Conan-based workflow. Additional dependencies (Qt, OpenSSL, Poco, etc.) will be added in the future.
+
 
 ## Qt 6.2.3
 
@@ -102,19 +150,7 @@ cmake --install build --config RelWithDebInfo
 
 ## xxHash
 
-Clone and build `xxHash`:
-
-```bash
-cd F:\Projects
-git clone https://github.com/Cyan4973/xxHash.git
-cd xxHash
-git checkout tags/v0.8.2
-mkdir build
-cd build
-cmake ../cmake_unofficial
-cmake --build .
-cmake --build . --target install --config Release
-```
+See [Conan](#conan) for installation instructions.
 
 ## OpenSSL
 
@@ -280,24 +316,10 @@ In order for CMake to be able to find all dependencies, add all libraries instal
 C:\Program Files (x86)\Poco\bin
 C:\Program Files (x86)\libzip\bin
 C:\Program Files (x86)\zlib-1.2.11\bin
-C:\Program Files (x86)\xxHash\bin
 C:\Program Files (x86)\Sentry-Native\bin
 C:\Program Files (x86)\log4cplus\bin
 C:\Program Files (x86)\cppunit\bin
 C:\Program Files\OpenSSL\bin
-```
-
-## Prerequisites
-Add all the necessary libraries to your path environment variable:
-```bash
-C:\Program Files (x86)\Poco\bin;
-C:\Program Files (x86)\libzip\bin;
-C:\Program Files (x86)\zlib-1.2.11\bin;
-C:\Program Files (x86)\xxHash\bin;
-C:\Program Files (x86)\Sentry-Native\bin;
-C:\Program Files (x86)\log4cplus\bin;
-C:\Program Files (x86)\cppunit\bin;
-C:\Program Files\OpenSSL\bin;
 ```
 
 ## Using CLion
@@ -317,7 +339,10 @@ Copy the following list of `CMake` variables in the CMake options field:
 -DZLIB_LIBRARY_RELEASE:FILEPATH=F:/Projects/zlib-1.2.11/lib/zlib.lib
 -DVFS_STATIC_LIBRARY:FILEPATH=F:\Projects\desktop-kDrive\extensions\windows\cfapi\x64\Debug/Vfs.lib
 -DVFS_DIRECTORY:PATH=F:\Projects\desktop-kDrive\extensions\windows\cfapi\x64\Release
+-DCMAKE_TOOLCHAIN_FILE=F:\Projects\desktop-kDrive\build-windows\build\conan_toolchain.cmake
 ```
+*For the `CMAKE_TOOLCHAIN_FILE` variable, ensure that you have executed the `build_dependencies.ps1` script in advance.*
+
 ![alt text](CLion_cmake_options-1.png)
 
 ## Using Qt Creator
@@ -353,6 +378,7 @@ Then copy the following list of `CMake` variables in "Initial CMake Parameters" 
 -DZLIB_INCLUDE_DIR:PATH=C:/Program Files (x86)/zlib-1.2.11/include
 -DZLIB_LIBRARY_RELEASE:FILEPATH=C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib
 -DBUILD_TESTING=OFF
+-DCMAKE_TOOLCHAIN_FILE=F:\Projects\desktop-kDrive\build-windows\build\conan_toolchain.cmake
 ```
 
 Then click "Re-configure with Initial Parameters".
