@@ -80,11 +80,12 @@ class XxHashConan(ConanFile):
 
     def generate(self):
         tc = CMakeToolchain(self)
-        tc.cache_variables["CMAKE_MACOSX_BUNDLE"] = False
+        tc.cache_variables["CMAKE_MACOSX_BUNDLE"] = False;
         tc.cache_variables["CMAKE_POLICY_VERSION_MINIMUM"] = "3.5" # CMake 4 support
         # Use Ninja in windows.
         if self.settings.os == "Windows":
             tc.cache_variables["CMAKE_GENERATOR"] = "Ninja"
+            tc.generator = "Ninja"
         tc.generate()
 
     def build(self):
