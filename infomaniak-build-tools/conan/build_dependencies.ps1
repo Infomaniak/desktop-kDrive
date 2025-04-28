@@ -106,7 +106,7 @@ if ($CI) {
     # Activate the python virtual environment.
     & "C:\Program Files\Python313\.venv\Scripts\activate.ps1"
 
-    Log "CI mode enabled. Conan user home set to: $env:CONAN_USER_HOME"
+    Log "CI mode enabled. Using Conan profile: $ConanProfileParam"
 }
 
 # Locate Conan executable
@@ -124,6 +124,8 @@ $ConanRemoteBaseFolder = Join-Path $CurrentDir "infomaniak-build-tools/conan"
 $LocalRemoteName       = "localrecipes"
 $RecipesFolder         = Join-Path $ConanRemoteBaseFolder "recipes"
 
+Log "Current conan home configuration: $($ConanExe config home)"
+
 # Create local remote for local Conan recipes
 $remotes = & $ConanExe remote list
 if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
@@ -139,10 +141,10 @@ $OutputDir = Join-Path $CurrentDir "build-windows\build"
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null # mkdir
 
 Log "Creating xxHash Conan package..."
-& $ConanExe create $ConanProfileParam "$RecipesFolder/xxhash/all/" --build=missing -s build_type=Release -r $LocalRemoteName
+& $ConanExe create "$RecipesFolder/xxhash/all/" --build=missing -s build_type=Release -r $LocalRemoteName $ConanProfileParam
 
 Log "Installing Conan dependencies..."
-& $ConanExe install $ConanProfileParam . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType -r $LocalRemoteName
+& $ConanExe instal . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType -r $LocalRemoteNamel $ConanProfileParam
 
 Log "Conan dependencies successfully installed in: $OutputDir"
 
