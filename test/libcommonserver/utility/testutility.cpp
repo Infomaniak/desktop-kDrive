@@ -336,7 +336,7 @@ void TestUtility::testcheckIfDirEntryIsManaged() {
     CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
     CPPUNIT_ASSERT(isManaged);
     CPPUNIT_ASSERT(!isLink);
-    CPPUNIT_ASSERT(ioError == IoError::Success);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
     // Check with a simlink (managed)
     const SyncPath simLinkDir = tempDir.path() / "simLinkDir";
@@ -346,14 +346,14 @@ void TestUtility::testcheckIfDirEntryIsManaged() {
     CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
     CPPUNIT_ASSERT(isManaged);
     CPPUNIT_ASSERT(isLink);
-    CPPUNIT_ASSERT(ioError == IoError::Success);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
     // Check with a directory
     entry = std::filesystem::recursive_directory_iterator(tempDir.path());
     CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
     CPPUNIT_ASSERT(isManaged);
     CPPUNIT_ASSERT(!isLink);
-    CPPUNIT_ASSERT(ioError == IoError::Success);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 }
 
 void TestUtility::testFormatStdError() {
