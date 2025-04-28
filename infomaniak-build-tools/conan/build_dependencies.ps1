@@ -57,8 +57,11 @@ $ErrorActionPreference = "Stop"
 function Log { Write-Host "[INFO] $($args -join ' ')" }
 function Err { Write-Error "[ERROR] $($args -join ' ')" ; exit 1 }
 
+if(!$CI) {
+    Err "This script is only ready for the CI. Please perform the installation manually."
+}
+
 function Get-ConanExePath {
-#    $env:PATH = "C:\Program Files\Python313;C:\Program Files\Python313\Scripts;" + $env:PATH
     try {
         $cmd = Get-Command conan.exe -ErrorAction Stop
         return $cmd.Path
@@ -91,22 +94,22 @@ print(exe)
 
     return $path.Trim()
 }
-# Activate the python virtual environment.
-& "C:\Program Files\Python313\.venv\Scripts\activate.ps1"
+# If we are running in CI mode, set $ConanProfile
+$ConanProfileParam = ""
+if ($CI) {
+    $ConanProfileParam = "--profile C:\ProgramData\.conan2\profiles\default"
+
+    # Activate the python virtual environment.
+    & "C:\Program Files\Python313\.venv\Scripts\activate.ps1"
+
+    Log "CI mode enabled. Conan user home set to: $env:CONAN_USER_HOME"
+}
 
 # Locate Conan executable
 $ConanExe = Get-ConanExePath
 if (-not $ConanExe) {
     Err "Conan executable not found. Please ensure Conan is installed and accessible."
 }
-
-# If we are running in CI mode, set $ConanProfile
-if ($CI) {
-    $env:CONAN_USER_HOME = "C:\ProgramData\.conan2"
-
-    Log "CI mode enabled. Conan user home set to: $env:CONAN_USER_HOME"
-}
-
 
 if (-not (Test-Path -Path "infomaniak-build-tools/conan" -PathType Container)) {
     Err "Please run this script from the repository root."
@@ -121,7 +124,7 @@ $RecipesFolder         = Join-Path $ConanRemoteBaseFolder "recipes"
 $remotes = & $ConanExe remote list
 if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
     Log "Adding local Conan remote."
-    & $ConanExe remote add $LocalRemoteName $ConanRemoteBaseFolder | Out-Null
+    & $ConanExe remote add $LocalRemoteName $ConanRemoteBaseFolder $ConanProfileParam | Out-Null
 } else {
     Log "Local Conan remote already exists."
 }
@@ -132,12 +135,14 @@ $OutputDir = Join-Path $CurrentDir "build-windows\build"
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null # mkdir
 
 Log "Creating xxHash Conan package..."
-& $ConanExe create "$RecipesFolder/xxhash/all/" --build=missing -s build_type=Release -r $LocalRemoteName
+& $ConanExe create "$RecipesFolder/xxhash/all/" --build=missing -s build_type=Release -r $LocalRemoteName $ConanProfileParam
 
 Log "Installing Conan dependencies..."
-& $ConanExe install . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType -r $LocalRemoteName
+& $ConanExe install . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType -r $LocalRemoteName $ConanProfileParam
 
 Log "Conan dependencies successfully installed in: $OutputDir"
 
-# Exit the python virtual environment.
-deactivate
+if ($CI)  {
+    # Exit the python virtual environment.
+    deactivate
+}
