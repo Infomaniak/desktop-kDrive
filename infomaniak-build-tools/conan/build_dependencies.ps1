@@ -101,7 +101,7 @@ print(exe)
 # If we are running in CI mode, set $ConanProfile
 $ConanProfileParam = ""
 if ($CI) {
-    $ConanProfileParam = "--profile C:\ProgramData\.conan2\profiles\default"
+    $ConanProfileParam = "-pr C:\ProgramData\.conan2\profiles\default"
 
     # Activate the python virtual environment.
     & "C:\Program Files\Python313\.venv\Scripts\activate.ps1"
@@ -139,10 +139,10 @@ $OutputDir = Join-Path $CurrentDir "build-windows\build"
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null # mkdir
 
 Log "Creating xxHash Conan package..."
-& $ConanExe create "$RecipesFolder/xxhash/all/" --build=missing -s build_type=Release -r $LocalRemoteName $ConanProfileParam
+& $ConanExe create $ConanProfileParam "$RecipesFolder/xxhash/all/" --build=missing -s build_type=Release -r $LocalRemoteName
 
 Log "Installing Conan dependencies..."
-& $ConanExe install . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType -r $LocalRemoteName $ConanProfileParam
+& $ConanExe install $ConanProfileParam . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType -r $LocalRemoteName
 
 Log "Conan dependencies successfully installed in: $OutputDir"
 
