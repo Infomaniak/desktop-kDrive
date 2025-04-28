@@ -8,7 +8,7 @@ class KDriveDesktop(ConanFile):
     url = "https://github.com/Infomaniak/desktop-kdrive"
 
     settings = "os", "compiler", "build_type", "arch"
-    generators = "CMakeToolchain", "CMakeDeps"
+    generators = "CMakeDeps"
 
     def generate(self):
         """
