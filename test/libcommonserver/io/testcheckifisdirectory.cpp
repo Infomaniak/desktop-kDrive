@@ -33,7 +33,7 @@ void TestIo::testCheckIfIsDirectory() {
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A regular directory
@@ -44,7 +44,7 @@ void TestIo::testCheckIfIsDirectory() {
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(isDirectory);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A regular symbolic link on a file
@@ -76,7 +76,7 @@ void TestIo::testCheckIfIsDirectory() {
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A regular symbolic link on a folder
@@ -92,12 +92,12 @@ void TestIo::testCheckIfIsDirectory() {
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         /* For comparison with the standard implementation, the following test passes:
         // std::error_code ec;
         // CPPUNIT_ASSERT(std::filesystem::is_directory(path, ec));
-        // CPPUNIT_ASSERT(ec.value() == 0);
+        // CPPUNIT_ASSERT_MESSAGE(ec.message(), ec.value() == 0);
         */
     }
 
@@ -124,7 +124,7 @@ void TestIo::testCheckIfIsDirectory() {
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
-        CPPUNIT_ASSERT(ioError == IoError::Success); // Although the target path is invalid.
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError); // Although the target path is invalid.
     }
 
     // A regular directory missing all permissions: no error expected
@@ -140,7 +140,7 @@ void TestIo::testCheckIfIsDirectory() {
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(isDirectory);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::add);
     }
@@ -181,7 +181,7 @@ void TestIo::testCheckIfIsDirectory() {
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
 #ifdef _WIN32
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(isDirectory);
 #else
         CPPUNIT_ASSERT(ioError == IoError::AccessDenied);
@@ -207,7 +207,7 @@ void TestIo::testCheckIfIsDirectory() {
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A MacOSX Finder alias on a regular folder.
@@ -217,14 +217,14 @@ void TestIo::testCheckIfIsDirectory() {
         const SyncPath path = temporaryDirectory.path() / "regular_dir_alias";
 
         IoError aliasError;
-        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
 
         IoError ioError = IoError::Unknown;
         bool isDirectory = true;
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A dangling MacOSX Finder alias on a non-existing directory.
@@ -244,7 +244,7 @@ void TestIo::testCheckIfIsDirectory() {
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 #endif
 }
@@ -257,14 +257,14 @@ void TestIo::testCreateDirectory() {
 
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->createDirectory(path, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         ioError = IoError::Unknown;
         bool isDirectory = false;
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(isDirectory);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // Fails to create a directory because the dir path indicates an existing directory
@@ -301,7 +301,7 @@ void TestIo::testCreateDirectory() {
         IoError ioError = IoError::Success;
 #ifdef _WIN32
         CPPUNIT_ASSERT(_testObj->createDirectory(path, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 #else
         CPPUNIT_ASSERT(!_testObj->createDirectory(path, ioError));
         CPPUNIT_ASSERT(ioError == IoError::AccessDenied);
