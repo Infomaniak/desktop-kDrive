@@ -188,6 +188,7 @@ function CMake-Build-And-Install {
     $buildVersion = Get-Date -Format "yyyyMMdd"
 
     $flags = @(
+        "'-U CMAKE_GENERATOR_PLATFORM'", # As we use Ninja, that do not support platform, we need to unset it
         "'-DCMAKE_TOOLCHAIN_FILE=$buildPath\conan_toolchain.cmake'",
         "'-DCMAKE_EXPORT_COMPILE_COMMANDS=1'",
         "'-DCMAKE_MAKE_PROGRAM=C:\Qt\Tools\Ninja\ninja.exe'",
@@ -210,7 +211,6 @@ function CMake-Build-And-Install {
         $flags += ("'-DKD_COVERAGE:BOOL=TRUE'")
 
         $flags += ("'-DCMAKE_POLICY_DEFAULT_CMP0091=NEW'")
-        $flags += ("'-U CMAKE_GENERATOR_PLATFORM'")
     }
 
     $args += $flags
