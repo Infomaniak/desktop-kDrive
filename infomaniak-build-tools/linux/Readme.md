@@ -171,6 +171,8 @@ sudo make install
 
 If the server does not reply to the `git clone` command, you can download the source from https://www.freedesktop.org/wiki/Software/cppunit/.
 
+You can also download cppunit version 1.15.1 using the ["Wayback Machine"](https://web.archive.org/) here: https://web.archive.org/web/20231118010938/http://dev-www.libreoffice.org/src/cppunit-1.15.1.tar.gz
+
 ## Sentry
 
 You will need to install the dev libcurl package to build sentry-native
@@ -219,7 +221,6 @@ sudo apt-get install zlib1g-dev
 Clone and install libzip
 
 ```bash
-sudo apt install zlib1g-dev
 cd ~/Projects
 git clone https://github.com/nih-at/libzip.git
 cd libzip
@@ -234,10 +235,11 @@ sudo make install
 
 ## Linking dependencies
 
-sudo apt-get install libgl1-mesa-dev
-sudo apt-get install sqlite3 libsqlite3-dev
-sudo apt-get install libsecret-1-dev
-
+```bash
+sudo apt-get install -y libgl1-mesa-dev \
+   sqlite3 libsqlite3-dev \
+   libsecret-1-dev
+```
 In order for CMake to be able to find all dependencies, you might need to define `LD_LIBRARY_PATH=/usr/local/lib` in your environment variables.
 
 ## Using CLion
@@ -270,7 +272,7 @@ CMake options:
 -DQT_DEBUG_FIND_PACKAGE=ON
 ```
 
-## Using Qt Creator 
+## Using Qt Creator
 
 ### Configuration
 
