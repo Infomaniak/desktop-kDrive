@@ -99,7 +99,7 @@ void TestIo::testTempDirectoryPath() {
         IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(_testObj->tempDirectoryPath(tmpPath, ioError));
         CPPUNIT_ASSERT(!tmpPath.empty());
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     {
@@ -125,7 +125,7 @@ void TestIo::testLogDirectoryPath() {
         IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(_testObj->logDirectoryPath(logDirPath, ioError));
         CPPUNIT_ASSERT(!logDirPath.empty());
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     {
