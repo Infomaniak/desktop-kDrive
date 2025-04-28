@@ -64,11 +64,12 @@ if(!$CI) {
 function Get-ConanExePath {
     try {
         $cmd = Get-Command conan.exe -ErrorAction Stop
+        Log "Conan executable found at: $($cmd.Path)"
         return $cmd.Path
     } catch { }
 
     try {
-        $py = Get-Command python -ErrorAction Stop
+        $pythonCmd = Get-Command python -ErrorAction Stop
     } catch {
         Err "Interpreter 'python' not found. Please install Python 3 and/or add it to the PATH."
         return $null
@@ -86,14 +87,17 @@ exe = os.path.join(prefix, 'Scripts', 'conan.exe')
 print(exe)
 "@
 
-    $path = & $py.Path -c $pythonCode 2>$null
-    if ($LASTEXITCODE -ne 0 -or -not (Test-Path $path.Trim())) {
+    $rawPath = & $pythonCmd.Path -c $pythonCode 2>$null
+    $exePath = $rawPath.Trim()
+    if ($LASTEXITCODE -ne 0 -or -not (Test-Path $exePath)) {
         Err "Unable to locate 'conan.exe' via Python."
         return $null
     }
 
-    return $path.Trim()
+    Log "Conan executable found at: $exePath"
+    return $exePath
 }
+
 # If we are running in CI mode, set $ConanProfile
 $ConanProfileParam = ""
 if ($CI) {
