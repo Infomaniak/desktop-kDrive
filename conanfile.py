@@ -1,4 +1,5 @@
 from conan import ConanFile
+from conan.tools.cmake import CMake, CMakeToolchain
 
 
 class KDriveDesktop(ConanFile):
@@ -8,6 +9,18 @@ class KDriveDesktop(ConanFile):
 
     settings = "os", "compiler", "build_type", "arch"
     generators = "CMakeToolchain", "CMakeDeps"
+
+    def generate(self):
+        """
+        Generate the CMake toolchain file.
+        Removes the "generic_system" block from the toolchain file to avoid conflicts with msvc in windows.
+            - Conan set in the generic_system block the vars "CMAKE_GENERATOR_PLATFORM" and "CMAKE_GENERATOR_TOOLSET" needed by msvc but Ninja,
+               don't understand it and fails to build.
+        """
+        tc = CMakeToolchain(self)
+        if self.settings.os == "Windows":
+            tc.blocks.remove("generic_system")
+        tc.generate()
 
     def requirements(self):
         """
