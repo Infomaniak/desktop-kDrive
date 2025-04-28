@@ -131,7 +131,7 @@ Log "Current conan home configuration:"
 $remotes = & $ConanExe remote list
 if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
     Log "Adding local Conan remote."
-    & $ConanExe remote add $LocalRemoteName $ConanRemoteBaseFolder $ConanProfileParam | Out-Null
+    & $ConanExe remote add $LocalRemoteName $ConanRemoteBaseFolder $ConanProfileParam
 } else {
     Log "Local Conan remote already exists."
 }
