@@ -131,6 +131,9 @@ $remotes = & $ConanExe remote list
 if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
     Log "Adding local Conan remote."
     & $ConanExe remote add $LocalRemoteName $ConanRemoteBaseFolder
+    if ($LASTEXITCODE -ne 0) {
+        Err "Failed to add local Conan remote."
+    }
 } else {
     Log "Local Conan remote already exists."
 }
@@ -142,9 +145,15 @@ New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null # mkdir
 
 Log "Creating xxHash Conan package..."
 & $ConanExe create "$RecipesFolder/xxhash/all/" --build=missing -s build_type=Release -r $LocalRemoteName -r conancenter
+if ($LASTEXITCODE -ne 0) {
+    Err "Failed to create xxHash Conan package."
+}
 
 Log "Installing Conan dependencies..."
 & $ConanExe install . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType -r $LocalRemoteName -r conancenter
+if ($LASTEXITCODE -ne 0) {
+    Err "Failed to install Conan dependencies."
+}
 
 Log "Conan dependencies successfully installed in: $OutputDir"
 
