@@ -182,14 +182,14 @@ void OperationSorterFilter::filterMoveBeforeMoveOccupiedCandidates(const SyncOpP
 
     if (moveOriginNames.contains(destinationName)) {
         const auto &otherOp = moveOriginNames.at(destinationName);
-        if (op->targetSide() != otherOp->targetSide()) {
+        if (op == otherOp || op->targetSide() != otherOp->targetSide()) {
             return;
         }
         (void) _fixMoveBeforeMoveOccupiedCandidates.emplace_back(op, otherOp);
     }
     if (moveDestinationNames.contains(originName)) {
         const auto &otherOp = moveDestinationNames.at(originName);
-        if (op->targetSide() != otherOp->targetSide()) {
+        if (op == otherOp || op->targetSide() != otherOp->targetSide()) {
             return;
         }
         (void) _fixMoveBeforeMoveOccupiedCandidates.emplace_back(op, otherOp);
