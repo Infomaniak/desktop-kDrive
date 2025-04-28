@@ -34,7 +34,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A regular directory
@@ -44,7 +44,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A regular symbolic link on a file
@@ -58,7 +58,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A regular symbolic link on a folder
@@ -72,7 +72,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A non-existing file
@@ -82,7 +82,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(!exists);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A dangling symbolic link
@@ -96,16 +96,14 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A regular file without read/write permission
     {
         LocalTemporaryDirectory temporaryDirectory("TestIo");
         const SyncPath path = temporaryDirectory.path() / "test.txt";
-        {
-            std::ofstream ofs(path);
-        }
+        { std::ofstream ofs(path); }
         IoError ioError = IoError::Unknown;
         const bool setRightResults = IoHelper::setRights(path, false, false, false, ioError) && ioError == IoError::Success;
         if (!setRightResults) {
@@ -118,7 +116,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
 
         CPPUNIT_ASSERT(checkIfPathExistsResult);
         CPPUNIT_ASSERT(exists);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // Checking existence of a subdirectory inside a directory that has been deleted and replaced with a file with the same name.
@@ -140,13 +138,13 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         const SyncPath path = temporaryDirectory.path() / "regular_file_alias";
 
         IoError aliasError;
-        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
 
         bool exists = false;
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A dangling MacOSX Finder alias on a non-existing file.
@@ -161,7 +159,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         }
 
         IoError aliasError;
-        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
 
         std::filesystem::remove(targetPath);
 
@@ -169,7 +167,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 #endif
 
@@ -182,12 +180,12 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
 
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         bool exists = false;
         CPPUNIT_ASSERT(_testObj->checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A Windows junction on a non-existing target directory.
@@ -198,12 +196,12 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
 
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         bool exists = false;
         CPPUNIT_ASSERT(_testObj->checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A Windows junction on a regular target file.
@@ -214,12 +212,12 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
 
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         bool exists = false;
 
         CPPUNIT_ASSERT(_testObj->checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 #endif
 }
@@ -236,7 +234,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
         CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
         CPPUNIT_ASSERT(existsWithSameId);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A regular directory
@@ -250,7 +248,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
         CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
         CPPUNIT_ASSERT(existsWithSameId);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A regular symbolic link on a file
@@ -268,7 +266,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
         CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
         CPPUNIT_ASSERT(existsWithSameId);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A regular symbolic link on a folder
@@ -286,7 +284,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
         CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
         CPPUNIT_ASSERT(existsWithSameId);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A non-existing file
@@ -300,7 +298,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         CPPUNIT_ASSERT(!_testObj->getNodeId(path, nodeId));
         CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
         CPPUNIT_ASSERT(!existsWithSameId);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A dangling symbolic link
@@ -318,7 +316,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
         CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
         CPPUNIT_ASSERT(existsWithSameId);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A regular file but the function is given a wrong node identifier
@@ -331,16 +329,14 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
 
         CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
         CPPUNIT_ASSERT(!existsWithSameId);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A regular file without read/write permission
     {
         LocalTemporaryDirectory temporaryDirectory("TestIo");
         const SyncPath path = temporaryDirectory.path() / "test.txt";
-        {
-            std::ofstream ofs(path);
-        }
+        { std::ofstream ofs(path); }
 
         IoError ioError = IoError::Unknown;
         bool existsWithSameId = false;
@@ -359,7 +355,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         IoHelper::setRights(path, true, true, true, ioError);
         CPPUNIT_ASSERT(checkIfPathExistsResult);
         CPPUNIT_ASSERT(existsWithSameId);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
 #if defined(__APPLE__)
@@ -370,7 +366,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         const SyncPath path = temporaryDirectory.path() / "regular_file_alias";
 
         IoError aliasError;
-        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
 
         bool existsWithSameId = false;
         NodeId otherNodeId;
@@ -380,7 +376,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
         CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
         CPPUNIT_ASSERT(existsWithSameId);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A dangling MacOSX Finder alias on a non-existing file.
@@ -388,12 +384,10 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         const LocalTemporaryDirectory temporaryDirectory("TestIo");
         const SyncPath targetPath = temporaryDirectory.path() / "file_to_be_deleted.png"; // This file will be deleted.
         const SyncPath path = temporaryDirectory.path() / "dangling_file_alias";
-        {
-            std::ofstream ofs(targetPath);
-        }
+        { std::ofstream ofs(targetPath); }
 
         IoError aliasError;
-        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
 
         std::filesystem::remove(targetPath);
         CPPUNIT_ASSERT(!std::filesystem::exists(targetPath));
@@ -406,7 +400,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
         CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
         CPPUNIT_ASSERT(existsWithSameId);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 #endif
 
@@ -419,7 +413,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
 
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         bool existsWithSameId = false;
         NodeId otherNodeId;
@@ -428,7 +422,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
         CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
         CPPUNIT_ASSERT(existsWithSameId);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A Windows junction on a non-existing target directory.
@@ -439,7 +433,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
 
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         bool existsWithSameId = false;
         NodeId otherNodeId;
@@ -448,7 +442,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
         CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
         CPPUNIT_ASSERT(existsWithSameId);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A Windows junction on a regular target file.
@@ -459,7 +453,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
 
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         bool existsWithSameId = false;
         NodeId otherNodeId;
@@ -468,7 +462,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
         CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
         CPPUNIT_ASSERT(existsWithSameId);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 #endif
 }
@@ -592,7 +586,6 @@ void TestIo::testCheckIfPathExists() {
     // On Unix systems, '\' is not considered a path separator, it can be used like any other character in a file name.
     testCheckIfPathExistsMixedSeparators();
 #endif // WIN32
-
 }
 
 } // namespace KDC
