@@ -39,7 +39,7 @@ void TestIo::testCheckSetAndGetRights() {
         const SyncPath path = temporaryDirectory.path() / "changePerm";
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::createDirectory(path, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(path, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         bool isReadable = false;
@@ -48,7 +48,7 @@ void TestIo::testCheckSetAndGetRights() {
 
 #ifdef _WIN32
         // Test for a directory without any Explicit ACE (ie no inherited rights)
-        CPPUNIT_ASSERT(IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError));
         CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
 #endif
 
@@ -159,7 +159,7 @@ void TestIo::testCheckSetAndGetRights() {
 
 #ifdef _WIN32
         // Test for a file without any Explicit ACE (ie no inherited rights)
-        CPPUNIT_ASSERT(IoHelper::getRights(filepath, isReadable, isWritable, isExecutable, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(filepath, isReadable, isWritable, isExecutable, ioError));
         CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
 #endif
 
@@ -261,10 +261,10 @@ void TestIo::testCheckSetAndGetRights() {
 
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::createDirectory(path, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(path, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-        CPPUNIT_ASSERT(IoHelper::createDirectory(subFolderPath, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(subFolderPath, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         std::ofstream file(subFilePath);
@@ -280,13 +280,15 @@ void TestIo::testCheckSetAndGetRights() {
         bool result = IoHelper::setRights(path, true, true, true, ioError);
         result = IoHelper::setRights(subFolderPath, true, true, true, ioError);
         result = IoHelper::setRights(subFilePath, true, true, true, ioError);
-        CPPUNIT_ASSERT(IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError));
         CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
 
-        CPPUNIT_ASSERT(IoHelper::getRights(subFolderPath, isReadable, isWritable, isExecutable, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(subFolderPath, isReadable, isWritable, isExecutable, ioError));
         CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
 
-        CPPUNIT_ASSERT(IoHelper::getRights(subFilePath, isReadable, isWritable, isExecutable, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(subFilePath, isReadable, isWritable, isExecutable, ioError));
         CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
 
         result = IoHelper::setRights(path, true, false, true, ioError);
@@ -296,11 +298,13 @@ void TestIo::testCheckSetAndGetRights() {
             CPPUNIT_ASSERT(false /* Failed to set base rights */);
         }
 
-        CPPUNIT_ASSERT(IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError));
         CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && !isWritable && isExecutable);
-        CPPUNIT_ASSERT(IoHelper::getRights(subFolderPath, isReadable, isWritable, isExecutable, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(subFolderPath, isReadable, isWritable, isExecutable, ioError));
         CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
-        CPPUNIT_ASSERT(IoHelper::getRights(subFilePath, isReadable, isWritable, isExecutable, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(subFilePath, isReadable, isWritable, isExecutable, ioError));
         CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
 
         // Restore the rights
@@ -318,10 +322,10 @@ void TestIo::testCheckSetAndGetRights() {
         const SyncPath subFolderPath = path / "subFolder";
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::createDirectory(path, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(path, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-        CPPUNIT_ASSERT(IoHelper::createDirectory(subFolderPath, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(subFolderPath, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         bool isReadable = false;
@@ -413,7 +417,7 @@ void TestIo::testCheckSetAndGetRights() {
         const SyncPath filePath = path / "file.txt";
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::createDirectory(path, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(path, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         std::ofstream file(filePath);
@@ -510,18 +514,18 @@ void TestIo::testCheckSetAndGetRights() {
         bool isExecutable = false;
         IoError ioError = IoError::Unknown;
 
-        CPPUNIT_ASSERT(IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError));
         CPPUNIT_ASSERT_EQUAL(ioError, IoError::NoSuchFileOrDirectory);
 
-        CPPUNIT_ASSERT(IoHelper::setRights(path, true, true, true, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::setRights(path, true, true, true, ioError));
         CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
 #ifdef _WIN32
         CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod); // Check that no error occurred with the wndows API
         IoHelper::_getAndSetRightsMethod = 1; // Set the method to use the std::filesystem method (fallback)
-        CPPUNIT_ASSERT(IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError));
         CPPUNIT_ASSERT_EQUAL(ioError, IoError::NoSuchFileOrDirectory);
 
-        CPPUNIT_ASSERT(IoHelper::setRights(path, true, true, true, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::setRights(path, true, true, true, ioError));
         CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
 
 #endif

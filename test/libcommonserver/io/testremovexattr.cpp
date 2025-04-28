@@ -41,13 +41,13 @@ void TestIo::testRemoveXAttr() {
 
         IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status1", "to-be-deleted", ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status2", "to-be-deleted", ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         CPPUNIT_ASSERT(_testObj->removeXAttrs(path, {"status1", "status2"}, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         std::string value;
         CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status1", value, ioError));
@@ -76,10 +76,10 @@ void TestIo::testRemoveXAttr() {
 
         IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(_testObj->setXAttrValue(linkPath, "link-status", "to-be-deleted", ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         CPPUNIT_ASSERT(_testObj->removeXAttrs(linkPath, {"link-status"}, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         std::string value;
         CPPUNIT_ASSERT(_testObj->getXAttrValue(linkPath, "link-status", value, ioError));
@@ -99,14 +99,14 @@ void TestIo::testRemoveXAttr() {
 
         const SyncPath aliasPath = temporaryDirectory.path() / "alias.txt";
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, aliasPath, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createAliasFromPath(targetPath, aliasPath, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         CPPUNIT_ASSERT(_testObj->setXAttrValue(aliasPath, "alias-status", "to-be-deleted", ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         CPPUNIT_ASSERT(_testObj->removeXAttrs(aliasPath, {"alias-status"}, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         std::string value;
         CPPUNIT_ASSERT(_testObj->getXAttrValue(aliasPath, "alias-status", value, ioError));
@@ -133,7 +133,7 @@ void TestIo::testRemoveXAttr() {
 
         IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "to-be-deleted", ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         std::filesystem::permissions(path, std::filesystem::perms::owner_write, std::filesystem::perm_options::remove);
 
