@@ -57,6 +57,7 @@ sudo apt install -y python3
 
 It is recommended to install Conan with `pip` inside a Python virtual environment:
 ```bash
+cd ~/Projects/desktop-kDrive
 python3 -m venv .venv        # Create a virtual environment in './.venv'
 source .venv/bin/activate    # Activate the virtual environment
 pip install --upgrade pip    # Upgrade pip
