@@ -334,7 +334,14 @@ bool AbstractUploadSession::sendChunks() {
                 const std::scoped_lock lock(_mutex);
                 _threadCounter++;
                 JobManager::instance()->queueAsyncJob(chunkJob, Poco::Thread::PRIO_NORMAL, callback);
-                (void) _ongoingChunkJobs.try_emplace(chunkJob->jobId(), chunkJob);
+                const auto &[_, inserted] = _ongoingChunkJobs.try_emplace(chunkJob->jobId(), chunkJob);
+                if (!inserted) {
+                    LOG_ERROR(_logger, "Session " << _sessionToken.c_str() << ", job " << chunkJob->jobId()
+                                                  << " not inserted in ongoing job list because its ID already exist!");
+                    sentry::Handler::captureMessage(sentry::Level::Warning, "Upload chunk error", "Job ID already exist");
+                    jobCreationError = true;
+                    break;
+                }
                 LOG_INFO(_logger, "Session " << _sessionToken.c_str() << ", job " << chunkJob->jobId() << " queued, "
                                              << _threadCounter << " jobs in queue");
             }
