@@ -866,7 +866,7 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
     return ExitCode::Ok;
 }
 
-ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId,
+ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(const ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId,
                                                      bool &isExcluded) {
     if (side != ReplicaSide::Local) return ExitCode::Ok;
 
@@ -900,7 +900,10 @@ ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
     if (!existsWithSameId) return ExitCode::Ok;
 
     // Check if file is synced
-    if (ExclusionTemplateCache::instance()->isExcluded(relativePath)) return ExitCode::Ok;
+    if (ExclusionTemplateCache::instance()->isExcluded(relativePath)) {
+        isExcluded = true;
+        return ExitCode::Ok;
+    }
     if (_syncPal->snapshotCopy(ReplicaSide::Local)->isOrphan(nodeId)) {
         // This can happen if the propagation of template exclusions has been unexpectedly interrupted.
         // This special handling should be removed once the app keeps track on such interruptions.

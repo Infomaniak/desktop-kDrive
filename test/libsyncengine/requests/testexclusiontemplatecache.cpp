@@ -134,8 +134,6 @@ void TestExclusionTemplateCache::testIsExcluded() {
         bool isWarning = false;
         CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded(str, isWarning));
         CPPUNIT_ASSERT(!isWarning);
-        CPPUNIT_ASSERT(isExcluded);
-        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // Test accepted files
@@ -143,8 +141,6 @@ void TestExclusionTemplateCache::testIsExcluded() {
         bool isWarning = true;
         CPPUNIT_ASSERT(!ExclusionTemplateCache::instance()->isExcluded(str, isWarning));
         CPPUNIT_ASSERT(!isWarning);
-        CPPUNIT_ASSERT(!isExcluded);
-        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
 #ifndef _WIN32
@@ -153,8 +149,6 @@ void TestExclusionTemplateCache::testIsExcluded() {
         const SyncPath testPath = testhelpers::localTestDirPath / ".my_hidden_file.txt";
         bool isWarning = true;
         CPPUNIT_ASSERT(!ExclusionTemplateCache::instance()->isExcluded(testPath, isWarning));
-        CPPUNIT_ASSERT(isExcluded);
-        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     {
@@ -162,8 +156,6 @@ void TestExclusionTemplateCache::testIsExcluded() {
         const SyncPath testPath = testhelpers::localTestDirPath / ".my_hidden_folder/AA/my_file.txt";
         bool isWarning = true;
         CPPUNIT_ASSERT(!ExclusionTemplateCache::instance()->isExcluded(testPath, isWarning));
-        CPPUNIT_ASSERT(isExcluded);
-        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 #endif
 }
