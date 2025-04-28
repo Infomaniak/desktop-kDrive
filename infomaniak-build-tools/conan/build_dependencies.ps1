@@ -124,7 +124,8 @@ $ConanRemoteBaseFolder = Join-Path $CurrentDir "infomaniak-build-tools/conan"
 $LocalRemoteName       = "localrecipes"
 $RecipesFolder         = Join-Path $ConanRemoteBaseFolder "recipes"
 
-Log "Current conan home configuration: $($ConanExe config home)"
+Log "Current conan home configuration:"
+& $ConanExe config home
 
 # Create local remote for local Conan recipes
 $remotes = & $ConanExe remote list
