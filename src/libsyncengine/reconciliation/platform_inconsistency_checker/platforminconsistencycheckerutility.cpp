@@ -146,7 +146,7 @@ bool PlatformInconsistencyCheckerUtility::fixNameWithBackslash(const SyncName &n
 #endif
 
 bool PlatformInconsistencyCheckerUtility::isNameTooLong(const SyncName &name) const {
-    return name.size() > maxNameLengh;
+    return SyncName2Str(name).size() > maxNameLengh;
 }
 
 // return false if the file name is ok
