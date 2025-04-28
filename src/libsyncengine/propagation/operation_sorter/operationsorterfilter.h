@@ -26,6 +26,7 @@ struct SyncNameHashFunction {
 };
 using NameToOpMap = std::unordered_map<SyncName, SyncOpPtr, SyncNameHashFunction, std::equal_to<>>;
 using NodeIdToOpListMap = std::unordered_map<NodeId, std::list<SyncOpPtr>, StringHashFunction, std::equal_to<>>;
+using SyncPathToSyncOpMap = std::unordered_map<SyncPath, SyncOpPtr, PathHashFunction>;
 
 class OperationSorterFilter {
     public:
@@ -79,16 +80,16 @@ class OperationSorterFilter {
          * @param deletedDirectoryPaths The map storing all the deleted directory paths.
          * @param moveOriginPaths The map storing all move operation origin paths.
          */
-        void filterMoveBeforeDeleteCandidates(const SyncOpPtr &op, std::unordered_map<SyncPath, SyncOpPtr> &deletedDirectoryPaths,
-                                              std::unordered_map<SyncPath, SyncOpPtr> &moveOriginPaths);
+        void filterMoveBeforeDeleteCandidates(const SyncOpPtr &op, SyncPathToSyncOpMap &deletedDirectoryPaths,
+                                              SyncPathToSyncOpMap &moveOriginPaths);
         /**
          * @brief For each move operation, check if the destination path is inside a created path.
          * @param op The SyncOperation to be checked.
          * @param createdDirectoryPaths The map storing the all created directory paths.
          * @param moveDestinationPaths The map storing all move operation destination paths.
          */
-        void filterCreateBeforeMoveCandidates(const SyncOpPtr &op, std::unordered_map<SyncPath, SyncOpPtr> &createdDirectoryPaths,
-                                              std::unordered_map<SyncPath, SyncOpPtr> &moveDestinationPaths);
+        void filterCreateBeforeMoveCandidates(const SyncOpPtr &op, SyncPathToSyncOpMap &createdDirectoryPaths,
+                                              SyncPathToSyncOpMap &moveDestinationPaths);
         /**
          * @brief Insert in a set the names of the deleted items and the names of the created items. If the same name is
          * inserted twice, fixDeleteBeforeCreate will be checked for the corresponding operations.

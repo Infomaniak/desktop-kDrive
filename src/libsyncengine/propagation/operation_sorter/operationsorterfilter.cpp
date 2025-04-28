@@ -23,10 +23,10 @@ OperationSorterFilter::OperationSorterFilter(const std::unordered_map<UniqueId, 
 void OperationSorterFilter::filterOperations() {
     NameToOpMap deleteBeforeMoveCandidates;
     NameToOpMap moveBeforeCreateCandidates;
-    std::unordered_map<SyncPath, SyncOpPtr> deletedDirectoryPaths;
-    std::unordered_map<SyncPath, SyncOpPtr> moveOriginPaths;
-    std::unordered_map<SyncPath, SyncOpPtr> createdDirectoryPaths;
-    std::unordered_map<SyncPath, SyncOpPtr> moveDestinationPaths;
+    SyncPathToSyncOpMap deletedDirectoryPaths;
+    SyncPathToSyncOpMap moveOriginPaths;
+    SyncPathToSyncOpMap createdDirectoryPaths;
+    SyncPathToSyncOpMap moveDestinationPaths;
     NameToOpMap deleteBeforeCreateCandidates;
     NameToOpMap moveOriginNames;
     NameToOpMap moveDestinationNames;
@@ -88,9 +88,8 @@ void OperationSorterFilter::filterMoveBeforeCreateCandidates(const SyncOpPtr &op
     }
 }
 
-void OperationSorterFilter::filterMoveBeforeDeleteCandidates(const SyncOpPtr &op,
-                                                             std::unordered_map<SyncPath, SyncOpPtr> &deletedDirectoryPaths,
-                                                             std::unordered_map<SyncPath, SyncOpPtr> &moveOriginPaths) {
+void OperationSorterFilter::filterMoveBeforeDeleteCandidates(const SyncOpPtr &op, SyncPathToSyncOpMap &deletedDirectoryPaths,
+                                                             SyncPathToSyncOpMap &moveOriginPaths) {
     if (op->affectedNode()->hasChangeEvent(OperationType::Delete)) {
         if (op->affectedNode()->type() != NodeType::Directory) {
             return;
@@ -125,9 +124,8 @@ void OperationSorterFilter::filterMoveBeforeDeleteCandidates(const SyncOpPtr &op
     }
 }
 
-void OperationSorterFilter::filterCreateBeforeMoveCandidates(const SyncOpPtr &op,
-                                                             std::unordered_map<SyncPath, SyncOpPtr> &createdDirectoryPaths,
-                                                             std::unordered_map<SyncPath, SyncOpPtr> &moveDestinationPaths) {
+void OperationSorterFilter::filterCreateBeforeMoveCandidates(const SyncOpPtr &op, SyncPathToSyncOpMap &createdDirectoryPaths,
+                                                             SyncPathToSyncOpMap &moveDestinationPaths) {
     if (op->affectedNode()->hasChangeEvent(OperationType::Create)) {
         if (op->affectedNode()->type() != NodeType::Directory) {
             return;
