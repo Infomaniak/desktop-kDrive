@@ -99,6 +99,16 @@ struct SyncPalInfo {
         bool isAdvancedSync() const { return !targetPath.empty(); }
 };
 
+struct SyncProgress {
+        int64_t _currentFile{0};
+        int64_t _totalFiles{0};
+        int64_t _completedSize{0};
+        int64_t _totalSize{0};
+        int64_t _estimatedRemainingTime{0};
+
+        bool operator==(const SyncProgress &) const = default;
+};
+
 
 class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
     public:
@@ -193,8 +203,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         bool wipeVirtualFiles();
         bool wipeOldPlaceholders();
 
-        void loadProgress(int64_t &currentFile, int64_t &totalFiles, int64_t &_completedSize, int64_t &_totalSize,
-                          int64_t &estimatedRemainingTime) const;
+        void loadProgress(SyncProgress &syncProgress) const;
         [[nodiscard]] bool getSyncFileItem(const SyncPath &path, SyncFileItem &item);
 
         bool isSnapshotValid(ReplicaSide side);

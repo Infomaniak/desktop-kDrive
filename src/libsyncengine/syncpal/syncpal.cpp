@@ -396,13 +396,12 @@ bool SyncPal::wipeOldPlaceholders() {
     return true;
 }
 
-void SyncPal::loadProgress(int64_t &currentFile, int64_t &totalFiles, int64_t &completedSize, int64_t &totalSize,
-                           int64_t &estimatedRemainingTime) const {
-    currentFile = _progressInfo->completedFiles();
-    totalFiles = std::max(_progressInfo->completedFiles(), _progressInfo->totalFiles());
-    completedSize = _progressInfo->completedSize();
-    totalSize = std::max(_progressInfo->completedSize(), _progressInfo->totalSize());
-    estimatedRemainingTime = _progressInfo->totalProgress().estimatedEta();
+void SyncPal::loadProgress(SyncProgress &syncProgress) const {
+    syncProgress._currentFile = _progressInfo->completedFiles();
+    syncProgress._totalFiles = std::max(_progressInfo->completedFiles(), _progressInfo->totalFiles());
+    syncProgress._completedSize = _progressInfo->completedSize();
+    syncProgress._totalSize = std::max(_progressInfo->completedSize(), _progressInfo->totalSize());
+    syncProgress._estimatedRemainingTime = _progressInfo->totalProgress().estimatedEta();
 }
 
 void SyncPal::createSharedObjects() {

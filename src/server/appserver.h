@@ -54,11 +54,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         struct SyncCache {
                 SyncStatus _status;
                 SyncStep _step;
-                int64_t _currentFile;
-                int64_t _totalFiles;
-                int64_t _completedSize;
-                int64_t _totalSize;
-                int64_t _estimatedRemainingTime;
+                SyncProgress _progress;
+
+                bool operator==(const SyncCache &) const = default;
         };
 
         struct Notification {
@@ -180,8 +178,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used);
         void sendDriveRemoved(int driveDbId);
         void sendDriveDeletionFailed(int driveDbId);
-        void sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
-                                  int64_t completedSize, int64_t totalSize, int64_t estimatedRemainingTime);
+        void sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, const SyncProgress &progress);
         void sendSyncAdded(const SyncInfo &syncInfo);
         void sendSyncUpdated(const SyncInfo &syncInfo);
         void sendSyncRemoved(int syncDbId);

@@ -3685,7 +3685,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         ExitInfo mainExitInfo = ExitCode::Ok;
         bool start = true;
         if (const auto exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
-            LOG_WARN(_logger, "Error in tryCreateAndStartVfs " << " : " << exitInfo);
+            LOG_WARN(_logger, "Error in tryCreateAndStartVfs: " << exitInfo);
             if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
                 return exitInfo;
             }
@@ -4004,8 +4004,7 @@ void AppServer::sendGetFolderSizeCompleted(const QString &nodeId, qint64 size) {
     CommServer::instance()->sendSignal(SignalNum::NODE_FOLDER_SIZE_COMPLETED, params, id);
 }
 
-void AppServer::sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
-                                     int64_t completedSize, int64_t totalSize, int64_t estimatedRemainingTime) {
+void AppServer::sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, const SyncProgress &progress) {
     int id = 0;
 
     QByteArray params;
@@ -4013,11 +4012,11 @@ void AppServer::sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep s
     paramsStream << syncDbId;
     paramsStream << status;
     paramsStream << step;
-    paramsStream << static_cast<qint64>(currentFile);
-    paramsStream << static_cast<qint64>(totalFiles);
-    paramsStream << static_cast<qint64>(completedSize);
-    paramsStream << static_cast<qint64>(totalSize);
-    paramsStream << static_cast<qint64>(estimatedRemainingTime);
+    paramsStream << static_cast<qint64>(progress._currentFile);
+    paramsStream << static_cast<qint64>(progress._totalFiles);
+    paramsStream << static_cast<qint64>(progress._completedSize);
+    paramsStream << static_cast<qint64>(progress._totalSize);
+    paramsStream << static_cast<qint64>(progress._estimatedRemainingTime);
     CommServer::instance()->sendSignal(SignalNum::SYNC_PROGRESSINFO, params, id);
 }
 
@@ -4059,14 +4058,6 @@ void AppServer::onLoadInfo() {
 }
 
 void AppServer::onUpdateSyncsProgress() {
-    SyncStatus status;
-    SyncStep step;
-    int64_t currentFile;
-    int64_t totalFiles;
-    int64_t completedSize;
-    int64_t totalSize;
-    int64_t estimatedRemainingTime;
-
     std::vector<Sync> syncList;
     if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
@@ -4075,60 +4066,54 @@ void AppServer::onUpdateSyncsProgress() {
     }
 
     for (const auto &sync: syncList) {
-        const auto syncPalIt = _syncPalMap.find(sync.dbId());
-        if (syncPalIt == _syncPalMap.end()) {
+        if (const auto syncPalIt = _syncPalMap.find(sync.dbId()); syncPalIt == _syncPalMap.end()) {
             // No SyncPal for this sync
-            sendSyncProgressInfo(sync.dbId(), SyncStatus::Error, SyncStep::None, 0, 0, 0, 0, 0);
+            sendSyncProgressInfo(sync.dbId(), SyncStatus::Error, SyncStep::None, SyncProgress());
         } else {
-            const auto syncPal = syncPalIt->second;
-            if (!syncPal) {
+            if (!syncPalIt->second) {
                 assert(false);
                 continue;
             }
 
+            const auto syncPal = syncPalIt->second;
+
             // Get progress
-            status = syncPal->status();
-            step = syncPal->step();
-            if (status == SyncStatus::Running && step == SyncStep::Propagation2) {
-                syncPal->loadProgress(currentFile, totalFiles, completedSize, totalSize, estimatedRemainingTime);
-            } else {
-                currentFile = 0;
-                totalFiles = 0;
-                completedSize = 0;
-                totalSize = 0;
-                estimatedRemainingTime = 0;
+            SyncProgress progress;
+            if (syncPal->status() == SyncStatus::Running && syncPal->step() == SyncStep::Propagation2) {
+                syncPal->loadProgress(progress);
             }
 
-            if (_syncCacheMap.find(sync.dbId()) == _syncCacheMap.end() || _syncCacheMap[sync.dbId()]._status != status ||
-                _syncCacheMap[sync.dbId()]._step != step || _syncCacheMap[sync.dbId()]._currentFile != currentFile ||
-                _syncCacheMap[sync.dbId()]._totalFiles != totalFiles ||
-                _syncCacheMap[sync.dbId()]._completedSize != completedSize ||
-                _syncCacheMap[sync.dbId()]._totalSize != totalSize ||
-                _syncCacheMap[sync.dbId()]._estimatedRemainingTime != estimatedRemainingTime) {
-                _syncCacheMap[sync.dbId()] =
-                        SyncCache({status, step, currentFile, totalFiles, completedSize, totalSize, estimatedRemainingTime});
-                sendSyncProgressInfo(sync.dbId(), status, step, currentFile, totalFiles, completedSize, totalSize,
-                                     estimatedRemainingTime);
+            const SyncCache syncCache{syncPal->status(), syncPal->step(), progress};
+            if (const auto syncCacheMapIt = _syncCacheMap.find(sync.dbId());
+                syncCacheMapIt == _syncCacheMap.end() || syncCacheMapIt->second != syncCache) {
+                // Set/update sync cache
+                if (syncCacheMapIt == _syncCacheMap.end())
+                    _syncCacheMap[sync.dbId()] = syncCache;
+                else
+                    syncCacheMapIt->second = syncCache;
+
+                // Send progress to the client
+                sendSyncProgressInfo(sync.dbId(), syncCache._status, syncCache._step, progress);
             }
 
             // New big folders detection
             NodeSet undecidedSet;
-            ExitCode exitCode = syncPal->syncIdSet(SyncNodeType::UndecidedList, undecidedSet);
-            if (exitCode != ExitCode::Ok) {
-                addError(Error(sync.dbId(), errId(), exitCode, ExitCause::Unknown));
+            if (const auto exitCode = syncPal->syncIdSet(SyncNodeType::UndecidedList, undecidedSet); exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in SyncPal::syncIdSet: code=" << exitCode);
+                addError(Error(sync.dbId(), errId(), exitCode, ExitCause::Unknown));
                 return;
             }
 
+            auto [undecidedListCacheMapIt, _] = _undecidedListCacheMap.try_emplace(sync.dbId(), NodeSet());
             bool undecidedSetUpdated = false;
             for (const NodeId &nodeId: undecidedSet) {
-                if (_undecidedListCacheMap[sync.dbId()].find(nodeId) == _undecidedListCacheMap[sync.dbId()].end()) {
+                if (!undecidedListCacheMapIt->second.contains(nodeId)) {
                     undecidedSetUpdated = true;
 
                     QString path;
-                    exitCode = ServerRequests::getPathByNodeId(syncPal->userDbId(), syncPal->driveId(),
-                                                               QString::fromStdString(nodeId), path);
-                    if (exitCode != ExitCode::Ok) {
+                    if (const auto exitCode = ServerRequests::getPathByNodeId(syncPal->userDbId(), syncPal->driveId(),
+                                                                              QString::fromStdString(nodeId), path);
+                        exitCode != ExitCode::Ok) {
                         LOG_WARN(_logger, "Error in Requests::getPathByNodeId: code=" << exitCode);
                         continue;
                     }
@@ -4146,8 +4131,8 @@ void AppServer::onUpdateSyncsProgress() {
                 }
             }
 
-            if (undecidedSetUpdated || _undecidedListCacheMap[sync.dbId()].size() != undecidedSet.size()) {
-                _undecidedListCacheMap[sync.dbId()] = undecidedSet;
+            if (undecidedSetUpdated || undecidedListCacheMapIt->second.size() != undecidedSet.size()) {
+                undecidedListCacheMapIt->second = undecidedSet;
             }
         }
     }
