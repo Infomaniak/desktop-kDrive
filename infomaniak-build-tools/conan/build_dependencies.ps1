@@ -25,7 +25,7 @@
     Infomaniak kDrive Desktop – build dependencies via Conan (Windows only)
 
 .DESCRIPTION
-    Usage: infomaniak-build-tools\conan\build_dependencies.ps1 [-Help] [Debug|Release|RelWithDebInfo] [-CI]
+    Usage: infomaniak-build-tools\conan\build_dependencies.ps1 [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>]
 
 .PARAMETER BuildType
     Build configuration: Debug (default), Release or RelWithDebInfo.
@@ -35,6 +35,9 @@
 
 .PARAMETER CI
     Switch indicating that the script is running on a CI service.
+
+.PARAMETER OutputDir
+    Custom output directory for Conan installation. If not provided, defaults to ./build-windows\build in the repo root.
 #>
 
 param(
@@ -46,10 +49,13 @@ param(
     [switch]$Help,
 
     [Parameter(Mandatory = $false, HelpMessage = "Indicate running on CI")]
-    [switch]$CI
+    [switch]$CI,
+
+    [Parameter(Mandatory = $false, HelpMessage = "Output directory for Conan installation")]
+    [string]$OutputDir
 )
 
-function Show-Help { Write-Host "Usage: $($MyInvocation.MyCommand.Name) [-Help] [Debug|Release|RelWithDebInfo] [-CI]" ; exit 0 }
+function Show-Help { Write-Host "Usage: $($MyInvocation.MyCommand.Name) [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>]" ; exit 0 }
 if ($Help) { Show-Help }
 
 $ErrorActionPreference = "Stop"
@@ -57,8 +63,20 @@ $ErrorActionPreference = "Stop"
 function Log { Write-Host "[INFO] $($args -join ' ')" }
 function Err { Write-Error "[ERROR] $($args -join ' ')" ; exit 1 }
 
-if(!$CI) {
+if(-not $CI) {
     Err "This script is only ready for the CI. Please perform the installation manually."
+}
+
+# Determine repository root and default output directory
+$CurrentDir = (Get-Location).Path
+$DefaultOutputDir = Join-Path $CurrentDir "build-windows\build"
+
+# If a custom output directory is provided, use it
+if ($OutputDir) {
+    Log "Using custom output directory: $OutputDir"
+} else {
+    $OutputDir = $DefaultOutputDir
+    Log "No custom output directory provided. Using default: $OutputDir"
 }
 
 function Get-ConanExePath {
@@ -118,7 +136,6 @@ if (-not (Test-Path -Path "infomaniak-build-tools/conan" -PathType Container)) {
     Err "Please run this script from the repository root."
 }
 
-$CurrentDir            = (Get-Location).Path
 $ConanRemoteBaseFolder = Join-Path $CurrentDir "infomaniak-build-tools/conan"
 $LocalRemoteName       = "localrecipes"
 $RecipesFolder         = Join-Path $ConanRemoteBaseFolder "recipes"
@@ -138,9 +155,7 @@ if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
     Log "Local Conan remote already exists."
 }
 
-# Output folder
-$OutputDir = Join-Path $CurrentDir "build-windows\build"
-
+# Ensure output directory exists
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null # mkdir
 
 Log "Creating xxHash Conan package..."
