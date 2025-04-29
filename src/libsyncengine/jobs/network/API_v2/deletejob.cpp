@@ -84,11 +84,6 @@ bool DeleteJob::canRun() {
             return false;
         }
 
-        if (!ParametersCache::instance()->parameters().syncHiddenFiles() && filestat.isHidden) {
-            // The item is hidden, remove it from sync
-            return true;
-        }
-
         if (filestat.nodeType != _nodeType && filestat.nodeType != NodeType::Unknown && _nodeType != NodeType::Unknown) {
             // The nodeId has been reused by a new item: we remove the old one from sync.
             LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath)

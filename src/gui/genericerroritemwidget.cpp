@@ -93,9 +93,10 @@ void GenericErrorItemWidget::openFolder(const QString &path) {
             return;
         }
     }
-
     // Open on local filesystem (open the parent folder for an item of file type).
-    const auto folderPath = GuiUtility::getFolderPath(syncInfoMapIt->second.localPath() + "/" + path, _errorInfo.nodeType());
+    const auto absolutePath =
+            SyncPath(path.toStdString()).is_absolute() ? path : (syncInfoMapIt->second.localPath() + "/" + path);
+    const auto folderPath = GuiUtility::getFolderPath(absolutePath, _errorInfo.nodeType());
     AbstractFileItemWidget::openFolder(folderPath);
 }
 
