@@ -1228,19 +1228,19 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronousAborted() {
                 return ExitCode::Ok;
             });
 
-    auto DriveUploadSessionJob =
+    auto driveUploadSessionJob =
             std::make_shared<DriveUploadSession>(vfs, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(),
                                                  remoteTmpDir.id(), 12345, false, _nbParalleleThreads);
-    JobManager::instance()->queueAsyncJob(DriveUploadSessionJob);
+    JobManager::instance()->queueAsyncJob(driveUploadSessionJob);
 
     int counter = 0;
-    while (!DriveUploadSessionJob->isRunning()) {
+    while (!JobManager::instance()->isJobFinished(driveUploadSessionJob->jobId())) {
         Utility::msleep(10);
         CPPUNIT_ASSERT_LESS(500, ++counter); // Wait at most 5sec
     }
 
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronousAborted - Abort");
-    DriveUploadSessionJob->abort();
+    driveUploadSessionJob->abort();
 
     Utility::msleep(1000); // Wait 1sec
 
@@ -1255,7 +1255,7 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronousAborted() {
     CPPUNIT_ASSERT(dataArray);
     CPPUNIT_ASSERT(dataArray->empty());
 
-    DriveUploadSessionJob.reset(); // Ensure forceStatus is not called after the job is aborted.
+    driveUploadSessionJob.reset(); // Ensure forceStatus is not called after the job is aborted.
     CPPUNIT_ASSERT_MESSAGE("forceStatus should not be called after an aborted UploadSession", !forceStatusCalled);
 }
 
