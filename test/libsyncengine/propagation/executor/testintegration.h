@@ -111,7 +111,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testNodeIdReuseFile2DirAndDir2File();
         void testNodeIdReuseFile2File();
 
-        void waitForSyncToFinish(const SourceLocation& srcLoc);
+        void waitForSyncToFinish(const SourceLocation &srcLoc);
 
         log4cplus::Logger _logger;
 

@@ -188,8 +188,10 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
         // Only update DB and tree
         op->setOmit(true);
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Among dates, only the creation date has changed. Operation Edit to be propagated in DB only for item with "
-                                                << Utility::formatSyncPath(currentNode->getPath()).c_str());
+            LOGW_SYNCPAL_DEBUG(
+                    _logger,
+                    L"Among dates, only the creation date has changed. Operation Edit to be propagated in DB only for item with "
+                            << Utility::formatSyncPath(currentNode->getPath()).c_str());
         }
     }
 
@@ -322,7 +324,7 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
 }
 
 bool OperationGeneratorWorker::editChangeShouldBePropagated(std::shared_ptr<Node> currentNode,
-                                                         std::shared_ptr<Node> correspondingNode) {
+                                                            std::shared_ptr<Node> correspondingNode) {
     if (!currentNode || !correspondingNode) {
         LOG_SYNCPAL_WARN(_logger,
                          "hasChangeToPropagate: provided node is(are) null: " << (currentNode ? "" : "currentNode")

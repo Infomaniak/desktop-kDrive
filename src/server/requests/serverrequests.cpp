@@ -671,7 +671,7 @@ ExitInfo ServerRequests::getSubFolders(int driveDbId, const QString &nodeId, QLi
 ExitCode ServerRequests::getNodeIdByPath(int userDbId, int driveId, const SyncPath &path, QString &nodeId) {
     // TODO: test
     QList<NodeInfo> list;
-    ExitCode exitCode = getSubFolders(userDbId, driveId, QString(), list);
+    ExitCode exitCode = getSubFolders(userDbId, driveId, "", list);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getSubFolders: code=" << exitCode);
         return exitCode;
@@ -2030,7 +2030,6 @@ void ServerRequests::parametersToParametersInfo(const Parameters &parameters, Pa
     parametersInfo.setLogLevel(parameters.logLevel());
     parametersInfo.setExtendedLog(parameters.extendedLog());
     parametersInfo.setPurgeOldLogs(parameters.purgeOldLogs());
-    parametersInfo.setSyncHiddenFiles(parameters.syncHiddenFiles());
 
     ProxyConfigInfo proxyConfigInfo;
     proxyConfigToProxyConfigInfo(parameters.proxyConfig(), proxyConfigInfo);
@@ -2066,7 +2065,6 @@ void ServerRequests::parametersInfoToParameters(const ParametersInfo &parameters
     parameters.setLogLevel(parametersInfo.logLevel());
     parameters.setExtendedLog(parametersInfo.extendedLog());
     parameters.setPurgeOldLogs(parametersInfo.purgeOldLogs());
-    parameters.setSyncHiddenFiles(parametersInfo.syncHiddenFiles());
 
     ProxyConfig proxyConfig;
     proxyConfigInfoToProxyConfig(parametersInfo.proxyConfigInfo(), proxyConfig);

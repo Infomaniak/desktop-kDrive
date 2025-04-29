@@ -54,7 +54,7 @@ ExitCode ExcludeListPropagator::checkItems() {
         auto dirIt = std::filesystem::recursive_directory_iterator(
                 _syncPal->localPath(), std::filesystem::directory_options::skip_permission_denied, ec);
         if (ec) {
-            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Error in checkItems: " << Utility::formatStdError(ec).c_str());
+            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Error in checkItems: " << Utility::formatStdError(ec));
             return ExitCode::SystemError;
         }
 
@@ -75,7 +75,7 @@ ExitCode ExcludeListPropagator::checkItems() {
 #endif
 
             if (dirIt->path().native().length() > CommonUtility::maxPathLength()) {
-                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Ignore " << Utility::formatSyncPath(dirIt->path()).c_str()
+                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Ignore " << Utility::formatSyncPath(dirIt->path())
                                                                            << L" because size > "
                                                                            << CommonUtility::maxPathLength());
                 dirIt.disable_recursion_pending();
@@ -83,17 +83,7 @@ ExitCode ExcludeListPropagator::checkItems() {
             }
 
             const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), dirIt->path());
-            bool isWarning = false;
-            bool isExcluded = false;
-            IoError ioError = IoError::Success;
-            const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), relativePath,
-                                                                                       isWarning, isExcluded, ioError);
-            if (!success) {
-                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
-                                  L"Error in ExclusionTemplateCache::isExcluded: "
-                                          << Utility::formatIoError(dirIt->path(), ioError).c_str());
-                return ExitCode::SystemError;
-            } else if (isExcluded) {
+            if (bool isWarning = false; ExclusionTemplateCache::instance()->isExcluded(relativePath, isWarning)) {
                 if (isWarning) {
                     NodeId localNodeId = _syncPal->snapshot(ReplicaSide::Local)->itemId(relativePath);
                     NodeType localNodeType = _syncPal->snapshot(ReplicaSide::Local)->type(localNodeId);
@@ -106,7 +96,7 @@ ExitCode ExcludeListPropagator::checkItems() {
                 bool found = false;
                 if (!_syncPal->_syncDb->dbId(ReplicaSide::Local, relativePath, dbNodeId, found)) {
                     LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
-                                      L"Error in SyncDb::dbId for path=" << Path2WStr(relativePath).c_str());
+                                      L"Error in SyncDb::dbId for path=" << Utility::formatSyncPath(relativePath));
                     return ExitCode::DbError;
                 }
 
@@ -115,13 +105,13 @@ ExitCode ExcludeListPropagator::checkItems() {
                 // Remove node (and children by cascade) from DB
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Removing node "
-                                                                             << Path2WStr(relativePath).c_str()
+                                                                             << Utility::formatSyncPath(relativePath)
                                                                              << L" from DB because it is excluded from sync");
                 }
 
                 if (!_syncPal->_syncDb->deleteNode(dbNodeId, found)) {
                     LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
-                                      L"Error in SyncDb::deleteNode for " << Utility::formatSyncPath(relativePath).c_str());
+                                      L"Error in SyncDb::deleteNode for " << Utility::formatSyncPath(relativePath));
                     return ExitCode::DbError;
                 }
                 if (!found) {
