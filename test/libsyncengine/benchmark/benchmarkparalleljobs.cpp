@@ -41,7 +41,7 @@ using namespace CppUnit;
 namespace KDC {
 
 static const int driveDbId = 1;
-constexpr uint16_t nbRepetition = 5;
+constexpr uint16_t nbRepetition = 10;
 
 void BenchmarkParallelJobs::setUp() {
     TestBase::start();
@@ -93,15 +93,17 @@ void BenchmarkParallelJobs::benchmarkParallelJobs() {
     std::cout << std::endl;
     const SyncPath homePath = CommonUtility::envVarValue("HOME");
     const uint16_t nbFiles = 100;
+    const auto testCasesNbThreads = {1, 3, 5, 8, 10, 15, 20, 25, 30, 100};
+    const auto testCasesFileSizes = {1, 10};
 
     /* Test case : uploads 100 files */
-    for (const auto size: {1, 10}) {
+    for (const auto size: testCasesFileSizes) {
         const std::string filename = "benchUpload_" + std::to_string(size) + "MB";
         const SyncPath benchFilePath(SyncPath(homePath) / (filename + ".txt"));
         DataExtractor dataExtractor(benchFilePath);
         const LocalTemporaryDirectory localTmpDir(filename);
         testhelpers::generateBigFiles(localTmpDir.path(), static_cast<uint16_t>(size), nbFiles);
-        for (const auto nbThreads: {1, 3, 5, 10, 30, 100}) {
+        for (const auto nbThreads: testCasesNbThreads) {
             dataExtractor.addRow(std::to_string(nbThreads));
             for (uint16_t i = 0; i < nbRepetition; i++) {
                 const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, filename);
@@ -112,13 +114,13 @@ void BenchmarkParallelJobs::benchmarkParallelJobs() {
         dataExtractor.print();
     }
     /* Test case : download 100 files */
-    for (const auto size: {1, 10}) {
+    for (const auto size: testCasesFileSizes) {
         const std::string filename = "benchDownload_" + std::to_string(size) + "MB";
         const SyncPath benchFilePath(SyncPath(homePath) / (filename + ".txt"));
         DataExtractor dataExtractor(benchFilePath);
         const LocalTemporaryDirectory localTmpDir(filename);
         const NodeId remoteDirId = size == 1 ? "3477086" : "3477931";
-        for (const auto nbThreads: {1, 3, 5, 10, 30, 100}) {
+        for (const auto nbThreads: testCasesNbThreads) {
             dataExtractor.addRow(std::to_string(nbThreads));
             for (uint16_t i = 0; i < nbRepetition; i++) {
                 runJobs(static_cast<uint16_t>(nbThreads), dataExtractor,
@@ -128,11 +130,11 @@ void BenchmarkParallelJobs::benchmarkParallelJobs() {
         dataExtractor.print();
     }
     /* Test case : uploads 50 files and download 50 files */
-    for (const auto size: {1, 10}) {
+    for (const auto size: testCasesFileSizes) {
         const std::string filename = "benchUploadDownload_" + std::to_string(size) + "MB";
         const SyncPath benchFilePath(SyncPath(homePath) / (filename + ".txt"));
         DataExtractor dataExtractor(benchFilePath);
-        for (const auto nbThreads: {1, 3, 5, 10, 30, 100}) {
+        for (const auto nbThreads: testCasesNbThreads) {
             dataExtractor.addRow(std::to_string(nbThreads));
             for (uint16_t i = 0; i < nbRepetition; i++) {
                 // Generate upload jobs
@@ -151,8 +153,8 @@ void BenchmarkParallelJobs::benchmarkParallelJobs() {
                 auto it1 = uploadJobs.begin();
                 auto it2 = downloadJobs.begin();
                 for (; it1 != uploadJobs.end() && it2 != downloadJobs.end(); it1++, it2++) {
-                    jobs.emplace_back(*it1);
-                    jobs.emplace_back(*it2);
+                    (void) jobs.emplace_back(*it1);
+                    (void) jobs.emplace_back(*it2);
                 }
 
                 runJobs(static_cast<uint16_t>(nbThreads), dataExtractor, jobs);
@@ -161,7 +163,6 @@ void BenchmarkParallelJobs::benchmarkParallelJobs() {
 
         dataExtractor.print();
     }
-
     /* Test case : uploads 20 big files */
     {
         for (const auto nbParallelChunkJobs: {1, 3, 5}) {
@@ -169,11 +170,9 @@ void BenchmarkParallelJobs::benchmarkParallelJobs() {
             const std::string filename = "benchUploadSession_" + std::to_string(nbParallelChunkJobs) + "_chunk_job";
             const SyncPath benchFilePath(SyncPath(homePath) / (filename + ".txt"));
             DataExtractor dataExtractor(benchFilePath);
-
             const LocalTemporaryDirectory localTmpDir(filename);
             testhelpers::generateBigFiles(localTmpDir.path(), static_cast<uint16_t>(size), 20);
-
-            for (const auto nbThreads: {1, 3, 5, 10, 30, 100}) {
+            for (const auto nbThreads: testCasesNbThreads) {
                 dataExtractor.addRow(std::to_string(nbThreads));
                 for (uint16_t i = 0; i < nbRepetition; i++) {
                     const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, filename);
