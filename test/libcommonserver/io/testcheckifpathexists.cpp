@@ -103,9 +103,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
     {
         LocalTemporaryDirectory temporaryDirectory("TestIo");
         const SyncPath path = temporaryDirectory.path() / "test.txt";
-        {
-            std::ofstream ofs(path);
-        }
+        { std::ofstream ofs(path); }
         IoError ioError = IoError::Unknown;
         const bool setRightResults = IoHelper::setRights(path, false, false, false, ioError) && ioError == IoError::Success;
         if (!setRightResults) {
@@ -338,9 +336,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
     {
         LocalTemporaryDirectory temporaryDirectory("TestIo");
         const SyncPath path = temporaryDirectory.path() / "test.txt";
-        {
-            std::ofstream ofs(path);
-        }
+        { std::ofstream ofs(path); }
 
         IoError ioError = IoError::Unknown;
         bool existsWithSameId = false;
@@ -388,9 +384,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         const LocalTemporaryDirectory temporaryDirectory("TestIo");
         const SyncPath targetPath = temporaryDirectory.path() / "file_to_be_deleted.png"; // This file will be deleted.
         const SyncPath path = temporaryDirectory.path() / "dangling_file_alias";
-        {
-            std::ofstream ofs(targetPath);
-        }
+        { std::ofstream ofs(targetPath); }
 
         IoError aliasError;
         CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
@@ -592,7 +586,6 @@ void TestIo::testCheckIfPathExists() {
     // On Unix systems, '\' is not considered a path separator, it can be used like any other character in a file name.
     testCheckIfPathExistsMixedSeparators();
 #endif // WIN32
-
 }
 
 } // namespace KDC
