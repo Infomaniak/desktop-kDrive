@@ -54,8 +54,8 @@
 
 namespace KDC {
 
-SyncPal::SyncPal(const std::shared_ptr<Vfs> &vfs, const SyncPath &syncDbPath, const std::string &version,
-                 const bool hasFullyCompleted) : _vfs(vfs), _logger(Log::instance()->getLogger()) {
+SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted) :
+    _vfs(vfs), _logger(Log::instance()->getLogger()) {
     _syncInfo.syncHasFullyCompleted = hasFullyCompleted;
     LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init: " << Utility::formatSyncPath(syncDbPath));
     assert(_vfs);
@@ -65,7 +65,7 @@ SyncPal::SyncPal(const std::shared_ptr<Vfs> &vfs, const SyncPath &syncDbPath, co
     }
 }
 
-SyncPal::SyncPal(const std::shared_ptr<Vfs> &vfs, const int syncDbId_, const std::string &version) :
+SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId_, const std::string &version) :
     _vfs(vfs), _logger(Log::instance()->getLogger()) {
     LOG_SYNCPAL_DEBUG(_logger, "SyncPal init");
     assert(_vfs);
@@ -193,6 +193,11 @@ ExitCode SyncPal::setTargetNodeId(const std::string &targetNodeId) {
     _remoteUpdateTree->setRootFolderId(targetNodeId);
 
     return ExitCode::Ok;
+}
+
+void SyncPal::setVfs(std::shared_ptr<Vfs> vfs) {
+    assert(!isRunning());
+    _vfs = vfs;
 }
 
 bool SyncPal::isRunning() const {
@@ -390,13 +395,12 @@ bool SyncPal::wipeOldPlaceholders() {
     return true;
 }
 
-void SyncPal::loadProgress(int64_t &currentFile, int64_t &totalFiles, int64_t &completedSize, int64_t &totalSize,
-                           int64_t &estimatedRemainingTime) const {
-    currentFile = _progressInfo->completedFiles();
-    totalFiles = std::max(_progressInfo->completedFiles(), _progressInfo->totalFiles());
-    completedSize = _progressInfo->completedSize();
-    totalSize = std::max(_progressInfo->completedSize(), _progressInfo->totalSize());
-    estimatedRemainingTime = _progressInfo->totalProgress().estimatedEta();
+void SyncPal::loadProgress(SyncProgress &syncProgress) const {
+    syncProgress._currentFile = _progressInfo->completedFiles();
+    syncProgress._totalFiles = std::max(_progressInfo->completedFiles(), _progressInfo->totalFiles());
+    syncProgress._completedSize = _progressInfo->completedSize();
+    syncProgress._totalSize = std::max(_progressInfo->completedSize(), _progressInfo->totalSize());
+    syncProgress._estimatedRemainingTime = _progressInfo->totalProgress().estimatedEta();
 }
 
 void SyncPal::createSharedObjects() {

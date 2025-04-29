@@ -671,7 +671,7 @@ ExitInfo ServerRequests::getSubFolders(int driveDbId, const QString &nodeId, QLi
 ExitCode ServerRequests::getNodeIdByPath(int userDbId, int driveId, const SyncPath &path, QString &nodeId) {
     // TODO: test
     QList<NodeInfo> list;
-    ExitCode exitCode = getSubFolders(userDbId, driveId, QString(), list);
+    ExitCode exitCode = getSubFolders(userDbId, driveId, "", list);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getSubFolders: code=" << exitCode);
         return exitCode;
