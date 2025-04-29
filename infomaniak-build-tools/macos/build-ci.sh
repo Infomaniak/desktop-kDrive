@@ -70,7 +70,7 @@ if [ -n "$TEAM_IDENTIFIER" -a -n "$SIGN_IDENTITY" ]; then
 	CMAKE_PARAMS+=(-DSOCKETAPI_TEAM_IDENTIFIER_PREFIX="$TEAM_IDENTIFIER.")
 fi
 
-bash infomaniak-build-tools/conan/build_dependencies.sh Release
+bash infomaniak-build-tools/conan/build_dependencies.sh Release "--output-dir=$BUILDDIR"
 
 # Configure
 pushd "$BUILDDIR"

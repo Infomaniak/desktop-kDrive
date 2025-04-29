@@ -101,8 +101,9 @@ export PKG_CONFIG_PATH=$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH
 # Set defaults
 export SUFFIX=""
 
-bash $BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh $build_type
 mkdir -p "$BUILD_DIR/client"
+
+bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$BUILD_TYPE" "--output-dir=$BUILD_DIR"
 
 # Build client
 cd $BUILD_DIR

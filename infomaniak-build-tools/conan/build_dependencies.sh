@@ -21,7 +21,7 @@
 # It will use conan to install the dependencies.
 
 if [[ "${1:-}" =~ ^-h|--help$ ]]; then
-  echo "Usage: $0 [Debug|Release]"
+  echo "Usage: $0 [Debug|Release] [--output-dir=<output_dir>]"
   exit 0
 fi
 
@@ -64,15 +64,24 @@ fi
 
 BUILD_TYPE="${1:-Debug}"
 OUTPUT_DIR=""
-if [ "$BUILD_TYPE" = "Debug" ]; then
-  log "Building in Debug mode."
-  OUTPUT_DIR="../CLion-build-debug/"
-else
-  log "Building in Release mode."
-  if [ "$PLATFORM" = "darwin" ]; then
-    OUTPUT_DIR="./build-macos/client"
+for arg in "$@"; do
+  if [[ "$arg" =~ ^--output-dir= ]]; then
+    OUTPUT_DIR="${arg#--output-dir=}"
+    break
+  fi
+done
+
+if [ -z "$OUTPUT_DIR" ]; then
+  if [ "$BUILD_TYPE" = "Debug" ]; then
+    log "Building in Debug mode."
+    OUTPUT_DIR="../CLion-build-debug/"
   else
-    OUTPUT_DIR="./build-linux/build"
+    log "Building in Release mode."
+    if [ "$PLATFORM" = "darwin" ]; then
+      OUTPUT_DIR="./build-macos/client"
+    else
+      OUTPUT_DIR="./build-linux/build"
+    fi
   fi
 fi
 mkdir -p "$OUTPUT_DIR"
