@@ -25,8 +25,11 @@ namespace KDC {
 UploadSessionFinishJob::UploadSessionFinishJob(const std::shared_ptr<Vfs> &vfs, UploadSessionType uploadType, int driveDbId,
                                                const SyncPath &absoluteFilePath, const std::string &sessionToken,
                                                const std::string &totalChunkHash, uint64_t totalChunks, SyncTime modtime) :
-    AbstractUploadSessionJob(uploadType, driveDbId, absoluteFilePath, sessionToken), _totalChunkHash(totalChunkHash),
-    _totalChunks(totalChunks), _modtimeIn(modtime), _vfs(vfs) {
+    AbstractUploadSessionJob(uploadType, driveDbId, absoluteFilePath, sessionToken),
+    _totalChunkHash(totalChunkHash),
+    _totalChunks(totalChunks),
+    _modtimeIn(modtime),
+    _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
@@ -58,8 +61,8 @@ bool UploadSessionFinishJob::handleResponse(std::istream &is) {
 
     if (_modtimeIn != _modtimeOut) {
         // The backend refused the modification time. To avoid further EDIT operations, we apply the backend's time on local file.
-        bool exists = false;
-        (void) Utility::setFileDates(_absoluteFilePath, 0, _modtimeOut, false, exists);
+        IoError ioError = IoError::Unknown;
+        (void) Utility::setFileDates(_absoluteFilePath, 0, _modtimeOut, false, ioError);
         LOG_INFO(_logger, "Modification time refused "
                                   << _modtimeIn << " by the backend. The modification time has been updated to " << _modtimeOut
                                   << " on local file.");

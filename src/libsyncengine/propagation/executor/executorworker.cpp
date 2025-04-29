@@ -911,11 +911,11 @@ ExitInfo ExecutorWorker::fixModificationDate(SyncOpPtr syncOp, const SyncPath &a
         return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
-    bool exists = false;
-    if (!Utility::setFileDates(absolutePath, dbNode.created(), dbNode.lastModifiedRemote(), false, exists)) {
+    IoError ioError = IoError::Unknown;
+    if (!Utility::setFileDates(absolutePath, dbNode.created(), dbNode.lastModifiedRemote(), false, ioError)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::setFileDates: " << Utility::formatSyncPath(absolutePath));
     }
-    if (exists) {
+    if (ioError == IoError::Success) {
         LOGW_SYNCPAL_INFO(_logger,
                           L"Last modification date updated locally to avoid further wrongly generated EDIT operations for file: "
                                   << Utility::formatSyncPath(absolutePath));

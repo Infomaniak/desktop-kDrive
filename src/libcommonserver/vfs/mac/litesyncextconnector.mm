@@ -87,7 +87,7 @@
 
 - (void)request:(nonnull OSSystemExtensionRequest *)request didFinishWithResult:(OSSystemExtensionRequestResult)result {
     if (result == OSSystemExtensionRequestWillCompleteAfterReboot) {
-        NSLog(@"[KD] System extension will apply after reboot - result=%ld", (long)result);
+        NSLog(@"[KD] System extension will apply after reboot - result=%ld", (long) result);
     } else {
         NSLog(@"[KD] Extension %@ registered", request.identifier);
     }
@@ -229,8 +229,7 @@
         }
     } else {
         // For testing
-        liteSyncExtMachName = [NSString
-            stringWithUTF8String:KDC::CommonUtility::liteSyncExtBundleId().c_str()];
+        liteSyncExtMachName = [NSString stringWithUTF8String:KDC::CommonUtility::liteSyncExtBundleId().c_str()];
     }
 
     _connection = [[NSXPCConnection alloc] initWithMachServiceName:liteSyncExtMachName options:0];
@@ -350,7 +349,7 @@
             NSBundle *bundle = [NSBundle bundleWithIdentifier:appId];
             NSString *appName;
             if (bundle != NULL) {
-                appName = [bundle objectForInfoDictionaryKey:(id)kCFBundleNameKey /*kCFBundleExecutableKey*/];
+                appName = [bundle objectForInfoDictionaryKey:(id) kCFBundleNameKey /*kCFBundleExecutableKey*/];
             } else {
                 appName = @"";
             }
@@ -383,7 +382,7 @@
 
     // Set modification date
     NSDictionary *fileAttribModificationDate =
-        [NSDictionary dictionaryWithObjectsAndKeys:modificationDate, NSFileModificationDate, NULL];
+            [NSDictionary dictionaryWithObjectsAndKeys:modificationDate, NSFileModificationDate, NULL];
     if (!fileAttribModificationDate) {
         NSLog(@"[KD] Error in NSDictionary::dictionaryWithObjectsAndKeys - path=%@", path);
         return false;
@@ -416,11 +415,7 @@ namespace KDC {
 
 LiteSyncExtConnector *LiteSyncExtConnector::_liteSyncExtConnector = nullptr;
 
-static bool getXAttrValue(const QString &path,
-                          const std::string_view &attrName,
-                          std::string &value,
-                          IoError &ioError)
-{
+static bool getXAttrValue(const QString &path, const std::string_view &attrName, std::string &value, IoError &ioError) {
     bool result = IoHelper::getXAttrValue(SyncPath(path.toStdString()), attrName, value, ioError);
     if (!result) {
         return false;
@@ -428,11 +423,8 @@ static bool getXAttrValue(const QString &path,
     return true;
 }
 
-static bool setXAttrValue(const QString &path,
-                          const std::string_view &attrName,
-                          const std::string_view &value,
-                          IoError &ioError)
-{
+static bool setXAttrValue(const QString &path, const std::string_view &attrName, const std::string_view &value,
+                          IoError &ioError) {
     bool result = IoHelper::setXAttrValue(QStr2Path(path), attrName, value, ioError);
 
     return result;
@@ -463,8 +455,8 @@ class LiteSyncExtConnectorPrivate {
 };
 
 // LiteSyncExtConnectorPrivate implementation
-LiteSyncExtConnectorPrivate::LiteSyncExtConnectorPrivate(log4cplus::Logger logger, ExecuteCommand executeCommand)
-    : _logger(logger) {
+LiteSyncExtConnectorPrivate::LiteSyncExtConnectorPrivate(log4cplus::Logger logger, ExecuteCommand executeCommand) :
+    _logger(logger) {
     LOG_DEBUG(_logger, "LiteSyncExtConnectorPrivate creation");
 
     _connector = [[Connector alloc] init:executeCommand];
@@ -496,7 +488,10 @@ bool LiteSyncExtConnectorPrivate::connect() {
 }
 
 namespace {
-enum LogMode : bool { Debug = true, Warn = false };
+enum LogMode : bool {
+    Debug = true,
+    Warn = false
+};
 //! Returns true and logs the specified IO error if it pertains to the existence of the folder or to its permissions.
 /*!
   \param ioError is the IO error that has been raised.
@@ -531,7 +526,7 @@ bool checkIoErrorAndLogIfNeeded(IoError ioError, const std::string &itemType, co
 
     return true;
 }
-}  // namespace
+} // namespace
 
 bool LiteSyncExtConnectorPrivate::vfsStart(const QString &folderPath) {
     if (!_connector) {
@@ -549,8 +544,7 @@ bool LiteSyncExtConnectorPrivate::vfsStart(const QString &folderPath) {
     IoError ioError = IoError::Success;
     const bool result = getXAttrValue(folderPath, litesync_attrs::status, value, ioError);
     if (!result) {
-        LOGW_WARN(_logger,
-                  L"Error in getXAttrValue: " << Utility::formatIoError(folderPath, ioError));
+        LOGW_WARN(_logger, L"Error in getXAttrValue: " << Utility::formatIoError(folderPath, ioError));
         return false;
     }
 
@@ -560,12 +554,8 @@ bool LiteSyncExtConnectorPrivate::vfsStart(const QString &folderPath) {
 
     if (value.empty()) {
         // Set default folder status
-        if (!setXAttrValue(folderPath,
-                           litesync_attrs::status,
-                           litesync_attrs::statusOnline,
-                           ioError)) {
-            LOGW_WARN(_logger,
-                      L"Error in setXAttrValue: " << Utility::formatIoError(folderPath, ioError));
+        if (!setXAttrValue(folderPath, litesync_attrs::status, litesync_attrs::statusOnline, ioError)) {
+            LOGW_WARN(_logger, L"Error in setXAttrValue: " << Utility::formatIoError(folderPath, ioError));
             return false;
         }
 
@@ -574,12 +564,8 @@ bool LiteSyncExtConnectorPrivate::vfsStart(const QString &folderPath) {
         }
 
         // Set default folder pin state
-        if (!setXAttrValue(folderPath,
-                           litesync_attrs::pinState,
-                           litesync_attrs::pinStateUnpinned,
-                           ioError)) {
-            LOGW_WARN(_logger,
-                      L"Error in setXAttrValue: " << Utility::formatIoError(folderPath, ioError));
+        if (!setXAttrValue(folderPath, litesync_attrs::pinState, litesync_attrs::pinStateUnpinned, ioError)) {
+            LOGW_WARN(_logger, L"Error in setXAttrValue: " << Utility::formatIoError(folderPath, ioError));
             return false;
         }
 
@@ -673,8 +659,7 @@ bool LiteSyncExtConnectorPrivate::setThumbnail(const QString &filePath, const QP
 
     if (![_connector updateThumbnailFetchStatus:filePath.toNSString()
                                      fileStatus:(error ? QString("KO") : QString("OK")).toNSString()]) {
-        LOGW_ERROR(_logger,
-                   L"Call to updateThumbnailFetchStatus failed: " << Utility::formatPath(filePath));
+        LOGW_ERROR(_logger, L"Call to updateThumbnailFetchStatus failed: " << Utility::formatPath(filePath));
         error = true;
     }
 
@@ -715,7 +700,8 @@ bool LiteSyncExtConnectorPrivate::getFetchingAppList(QHash<QString, QString> &ap
 }
 
 // LiteSyncExtConnector implementation
-LiteSyncExtConnector::LiteSyncExtConnector(log4cplus::Logger logger, ExecuteCommand executeCommand) : _logger(logger) {
+LiteSyncExtConnector::LiteSyncExtConnector(log4cplus::Logger logger, ExecuteCommand executeCommand) :
+    _logger(logger) {
     LOG_DEBUG(_logger, "LiteSyncExtConnector creation");
 
     _private = new LiteSyncExtConnectorPrivate(logger, executeCommand);
@@ -778,7 +764,9 @@ bool LiteSyncExtConnector::vfsStart(int syncDbId, const QString &folderPath, boo
     isPlaceholder = vfsStatus.isPlaceholder;
     isSyncing = vfsStatus.isSyncing;
 
-    if (!sendStatusToFinder(folderPath, VfsStatus({.isHydrated = vfsStatus.isHydrated, .isSyncing = vfsStatus.isSyncing, .progress = static_cast<int16_t>(vfsStatus.isSyncing ? 100 : 0)}))) {
+    if (!sendStatusToFinder(folderPath, VfsStatus({.isHydrated = vfsStatus.isHydrated,
+                                                   .isSyncing = vfsStatus.isSyncing,
+                                                   .progress = static_cast<int16_t>(vfsStatus.isSyncing ? 100 : 0)}))) {
         LOGW_WARN(_logger, L"Error in sendStatusToFinder: " << Utility::formatPath(folderPath));
         return false;
     }
@@ -874,27 +862,23 @@ bool LiteSyncExtConnector::vfsDehydratePlaceHolder(const QString &absoluteFilepa
 
         fd = open(stdPath.c_str(), O_WRONLY);
         if (fd == -1) {
-            LOGW_WARN(_logger,
-                      L"Call to open failed: " << Utility::formatErrno(absoluteFilepath, errno));
+            LOGW_WARN(_logger, L"Call to open failed: " << Utility::formatErrno(absoluteFilepath, errno));
             return false;
         }
     }
 
     if (ftruncate(fd, 0) == -1) {
-        LOGW_WARN(_logger,
-                  L"Call to ftruncate failed: " << Utility::formatErrno(absoluteFilepath, errno));
+        LOGW_WARN(_logger, L"Call to ftruncate failed: " << Utility::formatErrno(absoluteFilepath, errno));
         return false;
     }
 
     if (ftruncate(fd, fileStat.st_size) == -1) {
-        LOGW_WARN(_logger,
-                  L"Call to ftruncate failed: " << Utility::formatErrno(absoluteFilepath, errno));
+        LOGW_WARN(_logger, L"Call to ftruncate failed: " << Utility::formatErrno(absoluteFilepath, errno));
         return false;
     }
 
     if (close(fd) == -1) {
-        LOGW_WARN(_logger,
-                  L"Call to close failed: " << Utility::formatErrno(absoluteFilepath, errno));
+        LOGW_WARN(_logger, L"Call to close failed: " << Utility::formatErrno(absoluteFilepath, errno));
         return false;
     }
 
@@ -903,8 +887,7 @@ bool LiteSyncExtConnector::vfsDehydratePlaceHolder(const QString &absoluteFilepa
     tspec[0] = fileStat.st_atimespec;
     tspec[1] = fileStat.st_mtimespec;
     if (utimensat(0, stdPath.c_str(), tspec, 0) == -1) {
-        LOGW_WARN(_logger,
-                  L"Call to utimensat failed: " << Utility::formatErrno(absoluteFilepath, errno));
+        LOGW_WARN(_logger, L"Call to utimensat failed: " << Utility::formatErrno(absoluteFilepath, errno));
         return false;
     }
 
@@ -917,10 +900,7 @@ bool LiteSyncExtConnector::vfsDehydratePlaceHolder(const QString &absoluteFilepa
     return true;
 }
 
-bool LiteSyncExtConnector::vfsSetPinState(const QString &path,
-                                          const QString &localSyncPath,
-                                          const std::string_view &pinState)
-{
+bool LiteSyncExtConnector::vfsSetPinState(const QString &path, const QString &localSyncPath, const std::string_view &pinState) {
     FilePermissionHolder permHolder(path);
 
     // Try to temporarily change the write access right of the file
@@ -941,7 +921,7 @@ bool LiteSyncExtConnector::vfsSetPinState(const QString &path,
     if (info.isDir()) {
         const QFileInfoList infoList = QDir(path).entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
         bool foundChild = false;
-        for (const auto &tmpInfo : qAsConst(infoList)) {
+        for (const auto &tmpInfo: qAsConst(infoList)) {
             QString tmpPath(tmpInfo.filePath());
 
             std::string tmpPinState;
@@ -969,8 +949,7 @@ bool LiteSyncExtConnector::vfsSetPinState(const QString &path,
     return true;
 }
 
-bool LiteSyncExtConnector::vfsGetPinState(const QString &path, std::string &pinState)
-{
+bool LiteSyncExtConnector::vfsGetPinState(const QString &path, std::string &pinState) {
     // Read pin state
     std::string value;
     IoError ioError = IoError::Success;
@@ -996,12 +975,10 @@ bool LiteSyncExtConnector::vfsGetPinState(const QString &path, std::string &pinS
 
 bool LiteSyncExtConnector::vfsConvertToPlaceHolder(const QString &filePath, bool isHydrated) {
     // Set status
-    const std::string_view status = (isHydrated ? litesync_attrs::statusOffline
-                                                : litesync_attrs::statusOnline);
+    const std::string_view status = (isHydrated ? litesync_attrs::statusOffline : litesync_attrs::statusOnline);
     IoError ioError = IoError::Success;
     if (!setXAttrValue(filePath, litesync_attrs::status, status, ioError)) {
-        LOGW_WARN(_logger,
-                  L"Call to setXAttrValue failed: " << Utility::formatIoError(filePath, ioError));
+        LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << Utility::formatIoError(filePath, ioError));
         return false;
     }
 
@@ -1010,11 +987,9 @@ bool LiteSyncExtConnector::vfsConvertToPlaceHolder(const QString &filePath, bool
     }
 
     // Set pin state
-    const std::string_view pinState = (isHydrated ? litesync_attrs::pinStatePinned
-                                                  : litesync_attrs::pinStateUnpinned);
+    const std::string_view pinState = (isHydrated ? litesync_attrs::pinStatePinned : litesync_attrs::pinStateUnpinned);
     if (!setXAttrValue(filePath, litesync_attrs::pinState, pinState, ioError)) {
-        LOGW_WARN(_logger,
-                  L"Call to setXAttrValue failed: " << Utility::formatIoError(filePath, ioError));
+        LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << Utility::formatIoError(filePath, ioError));
         return false;
     }
 
@@ -1038,15 +1013,12 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
         SyncPath dirPath{QStr2Path(path)};
         IoError ioError = IoError::Success;
         if (!IoHelper::createDirectory(dirPath, ioError)) {
-            LOGW_WARN(_logger,
-                      L"Call to IoHelper::createDirectory failed: "
-                          << Utility::formatSyncPath(dirPath));
+            LOGW_WARN(_logger, L"Call to IoHelper::createDirectory failed: " << Utility::formatSyncPath(dirPath));
             return false;
         }
 
         if (ioError != IoError::Success) {
-            LOGW_WARN(_logger,
-                      L"Failed to create directory: " << Utility::formatIoError(dirPath, ioError));
+            LOGW_WARN(_logger, L"Failed to create directory: " << Utility::formatIoError(dirPath, ioError));
             return false;
         }
     } else if (fileStat->st_mode == S_IFREG) {
@@ -1062,8 +1034,7 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
 
         if (fileStat->st_mode == S_IFREG) {
             if (ftruncate(fd, fileStat->st_size) == -1) {
-                LOGW_WARN(_logger,
-                          L"Call to ftruncate failed: " << Utility::formatErrno(path, errno));
+                LOGW_WARN(_logger, L"Call to ftruncate failed: " << Utility::formatErrno(path, errno));
                 close(fd);
                 return false;
             }
@@ -1078,8 +1049,7 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
     // Set status
     IoError ioError = IoError::Success;
     if (!setXAttrValue(path, litesync_attrs::status, litesync_attrs::statusOnline, ioError)) {
-        LOGW_WARN(_logger,
-                  L"Call to setXAttrValue failed: " << Utility::formatIoError(path, ioError));
+        LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << Utility::formatIoError(path, ioError));
         return false;
     }
 
@@ -1089,8 +1059,7 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
 
     // Set pin state
     if (!setXAttrValue(path, litesync_attrs::pinState, litesync_attrs::pinStateUnpinned, ioError)) {
-        LOGW_WARN(_logger,
-                  L"Call to setXAttrValue failed: " << Utility::formatIoError(path, ioError));
+        LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << Utility::formatIoError(path, ioError));
         return false;
     }
 
@@ -1099,14 +1068,13 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
     }
 
     // Set file dates
-    bool exists = false;
     if (!Utility::setFileDates(QStr2Path(path), std::make_optional<KDC::SyncTime>(fileStat->st_birthtimespec.tv_sec),
-                               std::make_optional<KDC::SyncTime>(fileStat->st_mtimespec.tv_sec), false, exists)) {
+                               std::make_optional<KDC::SyncTime>(fileStat->st_mtimespec.tv_sec), false, ioError)) {
         LOGW_WARN(_logger, L"Call to Utility::setFileDates failed: " << Utility::formatPath(path));
         return false;
     }
 
-    if (!exists) {
+    if (ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_DEBUG(_logger, L"Item doesn't exist: " << Utility::formatPath(path));
         return false;
     }
@@ -1139,11 +1107,10 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
         // Get file attributes
         NSError *error = nil;
         NSDictionary<NSFileAttributeKey, id> *attributes =
-            [[NSFileManager defaultManager] attributesOfItemAtPath:filePath.toNSString() error:&error];
+                [[NSFileManager defaultManager] attributesOfItemAtPath:filePath.toNSString() error:&error];
         NSInteger errorCode = error ? error.code : 0;
         if (error) {
-            LOGW_WARN(_logger,
-                      L"Failed to get attributes: " << Utility::formatErrno(filePath, errorCode));
+            LOGW_WARN(_logger, L"Failed to get attributes: " << Utility::formatErrno(filePath, errorCode));
             return false;
         }
 
@@ -1154,9 +1121,8 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
 
             // Copy tmp file content to file
             @try {
-                LOGW_INFO(_logger,
-                          L"Copying temp file from " << Utility::formatPath(tmpFilePath) << L" to "
-                                                     << Utility::formatPath(filePath));
+                LOGW_INFO(_logger, L"Copying temp file from " << Utility::formatPath(tmpFilePath) << L" to "
+                                                              << Utility::formatPath(filePath));
 
                 NSFileHandle *tmpFileHandle = [NSFileHandle fileHandleForReadingAtPath:tmpFilePath.toNSString()];
                 NSFileHandle *fileHandle = [NSFileHandle fileHandleForWritingAtPath:filePath.toNSString()];
@@ -1167,8 +1133,7 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
                         if ((buffer = [tmpFileHandle readDataUpToLength:COPY_CHUNK_SIZE error:&error]) == nil) {
                             errorCode = error ? error.code : 0;
                             LOGW_ERROR(_logger,
-                                       L"Error while reading tmp file: "
-                                           << Utility::formatErrno(tmpFilePath, errorCode));
+                                       L"Error while reading tmp file: " << Utility::formatErrno(tmpFilePath, errorCode));
                             break;
                         }
                         errorCode = error ? error.code : 0;
@@ -1179,9 +1144,7 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
 
                         if (![fileHandle writeData:buffer error:&error]) {
                             errorCode = error ? error.code : 0;
-                            LOGW_ERROR(_logger,
-                                       L"Error while writing to file: "
-                                           << Utility::formatErrno(filePath, errorCode));
+                            LOGW_ERROR(_logger, L"Error while writing to file: " << Utility::formatErrno(filePath, errorCode));
                             break;
                         }
                     }
@@ -1190,20 +1153,16 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
                 [tmpFileHandle closeFile];
                 [fileHandle closeFile];
             } @catch (NSException *e) {
-                LOGW_WARN(_logger,
-                          L"Could not copy tmp file from "
-                              << Utility::formatPath(tmpFilePath) << L" to "
-                              << Utility::formatPath(filePath) << L" err="
-                              << Utility::s2ws(std::string([e.name UTF8String])));
+                LOGW_WARN(_logger, L"Could not copy tmp file from " << Utility::formatPath(tmpFilePath) << L" to "
+                                                                    << Utility::formatPath(filePath) << L" err="
+                                                                    << Utility::s2ws(std::string([e.name UTF8String])));
                 return false;
             }
 
             // Set attributes
             if (![[NSFileManager defaultManager] setAttributes:attributes ofItemAtPath:filePath.toNSString() error:&error]) {
                 errorCode = error ? error.code : 0;
-                LOGW_WARN(_logger,
-                          L"Could not set attributes to file: "
-                              << Utility::formatErrno(filePath, errorCode));
+                LOGW_WARN(_logger, L"Could not set attributes to file: " << Utility::formatErrno(filePath, errorCode));
                 return false;
             }
 
@@ -1214,22 +1173,19 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
             }
 
             if (!_private->updateFetchStatus(filePath, QString("OK"))) {
-                LOGW_WARN(_logger,
-                          L"Call to updateFetchStatus failed: " << Utility::formatPath(filePath));
+                LOGW_WARN(_logger, L"Call to updateFetchStatus failed: " << Utility::formatPath(filePath));
                 return false;
             }
 
             // Set file dates
-            bool exists = false;
+            IoError ioError = IoError::Unknown;
             if (!Utility::setFileDates(QStr2Path(filePath), std::make_optional<KDC::SyncTime>(creationDate), std::nullopt, false,
-                                       exists)) {
-                LOGW_WARN(_logger,
-                          L"Call to Utility::setFileDates failed: "
-                              << Utility::formatPath(filePath));
+                                       ioError)) {
+                LOGW_WARN(_logger, L"Call to Utility::setFileDates failed: " << Utility::formatPath(filePath));
                 return false;
             }
 
-            if (!exists) {
+            if (ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_DEBUG(_logger, L"Item doesn't exist: " << Utility::formatPath(filePath));
                 return false;
             }
@@ -1256,14 +1212,14 @@ bool LiteSyncExtConnector::vfsCancelHydrate(const QString &filePath) {
 bool LiteSyncExtConnector::vfsSetThumbnail(const QString &absoluteFilePath, const QPixmap &pixmap) {
     // Set thumbnail
     if (!_private->setThumbnail(absoluteFilePath, pixmap)) {
-        LOGW_WARN(_logger,
-                  L"Call to setThumbnail failed: " << Utility::formatPath(absoluteFilePath));
+        LOGW_WARN(_logger, L"Call to setThumbnail failed: " << Utility::formatPath(absoluteFilePath));
     }
 
     return true;
 }
 
-bool LiteSyncExtConnector::vfsGetStatus(const QString &absoluteFilePath, VfsStatus &vfsStatus, log4cplus::Logger &logger) noexcept {
+bool LiteSyncExtConnector::vfsGetStatus(const QString &absoluteFilePath, VfsStatus &vfsStatus,
+                                        log4cplus::Logger &logger) noexcept {
     constexpr auto isExpectedError = [](IoError error) -> bool {
         return error == IoError::Success || error == IoError::AttrNotFound || error == IoError::NoSuchFileOrDirectory;
     };
@@ -1271,15 +1227,12 @@ bool LiteSyncExtConnector::vfsGetStatus(const QString &absoluteFilePath, VfsStat
     // Read status
     std::string value;
     IoError ioError = IoError::Success;
-    if (!getXAttrValue(absoluteFilePath, litesync_attrs::status, value, ioError)
-        && !isExpectedError(ioError)) {
-        LOGW_WARN(logger,
-                  L"Error in getXAttrValue: " << Utility::formatIoError(absoluteFilePath, ioError));
+    if (!getXAttrValue(absoluteFilePath, litesync_attrs::status, value, ioError) && !isExpectedError(ioError)) {
+        LOGW_WARN(logger, L"Error in getXAttrValue: " << Utility::formatIoError(absoluteFilePath, ioError));
         return false;
     }
 
-    if (value.empty())
-        return true;
+    if (value.empty()) return true;
 
     vfsStatus.isPlaceholder = true;
     vfsStatus.isHydrated = (value == litesync_attrs::statusOffline);
@@ -1340,8 +1293,7 @@ bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, co
     }
 
     if (ftruncate(fd, fileStat->st_size) == -1) {
-        LOGW_WARN(_logger,
-                  L"Call to ftruncate failed - " << Utility::formatErrno(absoluteFilePath, errno));
+        LOGW_WARN(_logger, L"Call to ftruncate failed - " << Utility::formatErrno(absoluteFilePath, errno));
         return false;
     }
 
@@ -1351,16 +1303,14 @@ bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, co
     }
 
     // Set file dates
-    bool exists = false;
+    IoError ioError = IoError::Unknown;
     if (!Utility::setFileDates(QStr2Path(absoluteFilePath), fileStat->st_birthtimespec.tv_sec, fileStat->st_mtimespec.tv_sec,
-                               false, exists)) {
-        LOGW_WARN(_logger,
-                  L"Call to Utility::setFileDates failed: "
-                      << Utility::formatPath(absoluteFilePath));
+                               false, ioError)) {
+        LOGW_WARN(_logger, L"Call to Utility::setFileDates failed: " << Utility::formatPath(absoluteFilePath));
         return false;
     }
 
-    if (!exists) {
+    if (ioError != IoError::NoSuchFileOrDirectory) {
         LOGW_DEBUG(_logger, L"Item doesn't exist: " << Utility::formatPath(absoluteFilePath));
         return false;
     }
@@ -1394,13 +1344,13 @@ bool LiteSyncExtConnector::vfsSetStatus(const QString &path, const QString &loca
         roundedProgress = static_cast<int16_t>(ceil(float(vfsStatus.progress) / stepWidth) * stepWidth);
     }
 
-    if (vfsStatus.isSyncing != currentVfsStatus.isSyncing || roundedProgress != currentVfsStatus.progress || vfsStatus.isHydrated != currentVfsStatus.isHydrated) {
+    if (vfsStatus.isSyncing != currentVfsStatus.isSyncing || roundedProgress != currentVfsStatus.progress ||
+        vfsStatus.isHydrated != currentVfsStatus.isHydrated) {
         // Set status
         std::string status = IoHelper::statusXAttr(vfsStatus.isSyncing, roundedProgress, vfsStatus.isHydrated);
         IoError ioError = IoError::Success;
         if (!setXAttrValue(path, litesync_attrs::status, status, ioError)) {
-            LOGW_WARN(_logger,
-                      L"Call to setXAttrValue failed: " << Utility::formatIoError(path, ioError));
+            LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << Utility::formatIoError(path, ioError));
             return false;
         }
 
@@ -1408,7 +1358,9 @@ bool LiteSyncExtConnector::vfsSetStatus(const QString &path, const QString &loca
             return false;
         }
 
-        if (!sendStatusToFinder(path,  VfsStatus({.isHydrated=vfsStatus.isHydrated, .isSyncing=vfsStatus.isSyncing, .progress=roundedProgress}))) {
+        if (!sendStatusToFinder(path, VfsStatus({.isHydrated = vfsStatus.isHydrated,
+                                                 .isSyncing = vfsStatus.isSyncing,
+                                                 .progress = roundedProgress}))) {
             LOGW_WARN(_logger, L"Call to sendStatusToFinder failed: " << Utility::formatPath(path));
             return false;
         }
@@ -1424,7 +1376,8 @@ bool LiteSyncExtConnector::vfsSetStatus(const QString &path, const QString &loca
                     _syncingFolders[parentPath].insert(path);
                 }
 
-                vfsSetStatus(parentPath, localSyncPath, VfsStatus({.isSyncing = vfsStatus.isSyncing, .isHydrated = vfsStatus.isHydrated, .progress = 100}));
+                vfsSetStatus(parentPath, localSyncPath,
+                             VfsStatus({.isSyncing = vfsStatus.isSyncing, .isHydrated = vfsStatus.isHydrated, .progress = 100}));
             } else {
                 _mutex.lock();
                 _syncingFolders[parentPath].remove(path);
@@ -1477,7 +1430,7 @@ bool LiteSyncExtConnector::vfsProcessDirStatus(const QString &path, const QStrin
     const QFileInfoList infoList = dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
     bool hasASyncingChild = false;
     bool hasADehydratedChild = false;
-    for (const auto &tmpInfo : qAsConst(infoList)) {
+    for (const auto &tmpInfo: qAsConst(infoList)) {
         QString tmpPath(tmpInfo.filePath());
         if (!vfsGetPinState(tmpPath, pinState)) {
             continue;
@@ -1541,7 +1494,7 @@ bool LiteSyncExtConnector::checkFilesAttributes(const QString &path, const QStri
     const QFileInfoList infoList = dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
 
     bool atLeastOneChanged = false;
-    for (const auto &tmpInfo : qAsConst(infoList)) {
+    for (const auto &tmpInfo: qAsConst(infoList)) {
         QString tmpPath(tmpInfo.filePath());
         std::string pinState;
         if (!vfsGetPinState(tmpPath, pinState)) {
@@ -1565,8 +1518,8 @@ bool LiteSyncExtConnector::checkFilesAttributes(const QString &path, const QStri
                 }
                 atLeastOneChanged = true;
             } else {
-                if (pinState == litesync_attrs::pinStateUnpinned
-                    || (pinState == litesync_attrs::pinStatePinned && !vfsStatus.isHydrated)) {
+                if (pinState == litesync_attrs::pinStateUnpinned ||
+                    (pinState == litesync_attrs::pinStatePinned && !vfsStatus.isHydrated)) {
                     // A file should never be unpinned and syncing
                     // nor pinned and not completely hydrated
                     if (pinState == litesync_attrs::pinStatePinned && !vfsStatus.isHydrated) {
@@ -1598,4 +1551,4 @@ void LiteSyncExtConnector::resetConnector(log4cplus::Logger logger, ExecuteComma
     }
 }
 
-}  // namespace KDC
+} // namespace KDC
