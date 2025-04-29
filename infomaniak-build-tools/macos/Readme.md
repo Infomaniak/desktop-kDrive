@@ -336,27 +336,27 @@ CMake options:
 
 Edit the `kDrive` profile:
 
-![alt text](edit_profile.png)
+![alt text](doc-images/edit_profile.png)
 
 Add `CMake install` in the `Before launch` steps:
 
-![alt text](cmake_install.png)
+![alt text](doc-images/cmake_install.png)
 
 `CMake install` also needs to be run only once in order to copy mandatory files into the package (e.g.: sync-exclude-osx.lst) and correct rpath. Once it has run once, you can remove it from the `Before launch` steps in order to start the app faster.
 
 However, link to library `xxHash` seems to brake from time to time and a correction of the rpath in sometime needed. To avoid that, you can either always do the `CMake install` step (~15sec) or create a new step just to correct the rpath for `xxHash`.
 
-![alt text](fix_rpath_step.png)
+![alt text](doc-images/fix_rpath_step.png)
 
 ### Sign package
 
 Add a `Run external tool` in the `Before launch` steps:
 
-![alt text](run_ext_tool.png)
+![alt text](doc-images/run_ext_tool.png)
 
 Create the external tool to run `sign_app_debug.sh`:
 
-![alt text](sign_package.png)
+![alt text](doc-images/sign_package.png)
 
 Signing package is mandatory only if you need to use the LiteSync in debug mode. Otherwise you can remove this step in order to start the app faster.
 
