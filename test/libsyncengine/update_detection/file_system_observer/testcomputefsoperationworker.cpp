@@ -158,12 +158,14 @@ void TestComputeFSOperationWorker::testAccessDenied() {
             std::ofstream ofs(_syncPal->localPath() / bbNodePath);
             ofs << "Some content.\n";
         }
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::setRights(_syncPal->localPath() / bbNodePath, false, false, false, ioError) &&
-                       ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::setRights(_syncPal->localPath() / bbNodePath, false, false, false, ioError) &&
+                                       ioError == IoError::Success);
 #endif
 
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::setRights(_syncPal->localPath() / bNodePath, false, false, false, ioError) &&
-                       ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::setRights(_syncPal->localPath() / bNodePath, false, false, false, ioError) &&
+                                       ioError == IoError::Success);
 
         _syncPal->copySnapshots();
         _syncPal->computeFSOperationsWorker()->execute();
@@ -197,12 +199,14 @@ void TestComputeFSOperationWorker::testAccessDenied() {
             std::ofstream ofs(_syncPal->localPath() / aaNodePath);
             ofs << "Some content.\n";
         }
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::setRights(_syncPal->localPath() / aaNodePath, false, false, false, ioError) &&
-                       ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::setRights(_syncPal->localPath() / aaNodePath, false, false, false, ioError) &&
+                                       ioError == IoError::Success);
 #endif
 
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::setRights(_syncPal->localPath() / aNodePath, false, false, false, ioError) &&
-                       ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::setRights(_syncPal->localPath() / aNodePath, false, false, false, ioError) &&
+                                       ioError == IoError::Success);
 
         // Mock checkIfOkToDelete to simulate the Access Denied
         _syncPal->setComputeFSOperationsWorker(
