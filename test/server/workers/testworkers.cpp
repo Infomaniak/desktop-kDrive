@@ -254,8 +254,9 @@ void TestWorkers::testCreatePlaceholder() {
 #if defined(__APPLE__) || defined(_WIN32)
         // Folder access denied
         IoError ioError{IoError::Unknown};
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, false, false, false, ioError) &&
-                       ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, false, false, false, ioError) &&
+                                       ioError == IoError::Success);
 
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFilePath);
 #ifdef __APPLE__
@@ -277,8 +278,9 @@ void TestWorkers::testCreatePlaceholder() {
 #endif
 
         ioError = IoError::Unknown;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, true, true, true, ioError) &&
-                       ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, true, true, true, ioError) &&
+                                       ioError == IoError::Success);
 #endif
 
         // File doesn't exist (normal case)
@@ -342,8 +344,9 @@ void TestWorkers::testConvertToPlaceholder() {
 #if defined(__APPLE__) || defined(_WIN32)
         // Folder access denied
         IoError ioError{IoError::Unknown};
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, false, false, false, ioError) &&
-                       ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, false, false, false, ioError) &&
+                                       ioError == IoError::Success);
 
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFilePath);
 #if defined(__APPLE__)
@@ -357,8 +360,9 @@ void TestWorkers::testConvertToPlaceholder() {
 #endif
 
         ioError = IoError::Unknown;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, true, true, true, ioError) &&
-                       ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, true, true, true, ioError) &&
+                                       ioError == IoError::Success);
 
         // File doesn't exist
         exitInfo = _syncPal->_executorWorker->convertToPlaceholder(relativeFilePath, true);

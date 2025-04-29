@@ -38,7 +38,6 @@ class DeleteJob : public AbstractTokenNetworkJob {
         const NodeId _localItemId;
         SyncPath _absoluteLocalFilepath;
         NodeType _nodeType;
-
 };
 
 } // namespace KDC

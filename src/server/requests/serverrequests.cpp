@@ -2030,7 +2030,6 @@ void ServerRequests::parametersToParametersInfo(const Parameters &parameters, Pa
     parametersInfo.setLogLevel(parameters.logLevel());
     parametersInfo.setExtendedLog(parameters.extendedLog());
     parametersInfo.setPurgeOldLogs(parameters.purgeOldLogs());
-    parametersInfo.setSyncHiddenFiles(parameters.syncHiddenFiles());
 
     ProxyConfigInfo proxyConfigInfo;
     proxyConfigToProxyConfigInfo(parameters.proxyConfig(), proxyConfigInfo);
@@ -2066,7 +2065,6 @@ void ServerRequests::parametersInfoToParameters(const ParametersInfo &parameters
     parameters.setLogLevel(parametersInfo.logLevel());
     parameters.setExtendedLog(parametersInfo.extendedLog());
     parameters.setPurgeOldLogs(parametersInfo.purgeOldLogs());
-    parameters.setSyncHiddenFiles(parametersInfo.syncHiddenFiles());
 
     ProxyConfig proxyConfig;
     proxyConfigInfoToProxyConfig(parametersInfo.proxyConfigInfo(), proxyConfig);

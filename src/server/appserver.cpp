@@ -1579,7 +1579,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             bool isWarning = false;
 
             resultStream << ExitCode::Ok;
-            resultStream << ExclusionTemplateCache::instance()->isExcludedByTemplate(name.toStdString(), isWarning);
+            resultStream << ExclusionTemplateCache::instance()->isExcluded(name.toStdString(), isWarning);
             break;
         }
         case RequestNum::EXCLTEMPL_GETLIST: {

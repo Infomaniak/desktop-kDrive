@@ -41,7 +41,7 @@ void TestParmsDb::testParameters() {
 
     Parameters defaultParameters;
     Parameters parameters;
-    bool found;
+    bool found = false;
     CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parameters, found) && found);
     CPPUNIT_ASSERT(parameters.language() == defaultParameters.language());
     CPPUNIT_ASSERT(parameters.monoIcons() == defaultParameters.monoIcons());
@@ -51,7 +51,6 @@ void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(parameters.useLog() == defaultParameters.useLog());
     CPPUNIT_ASSERT(parameters.logLevel() == defaultParameters.logLevel());
     CPPUNIT_ASSERT(parameters.purgeOldLogs() == defaultParameters.purgeOldLogs());
-    CPPUNIT_ASSERT(parameters.syncHiddenFiles() == defaultParameters.syncHiddenFiles());
     CPPUNIT_ASSERT(parameters.proxyConfig().type() == defaultParameters.proxyConfig().type());
     CPPUNIT_ASSERT(parameters.proxyConfig().hostName() == defaultParameters.proxyConfig().hostName());
     CPPUNIT_ASSERT(parameters.proxyConfig().port() == defaultParameters.proxyConfig().port());
@@ -73,7 +72,6 @@ void TestParmsDb::testParameters() {
     parameters2.setUseLog(true);
     parameters2.setLogLevel(LogLevel::Warning);
     parameters2.setPurgeOldLogs(true);
-    parameters2.setSyncHiddenFiles(true);
     parameters2.setProxyConfig(ProxyConfig(ProxyType::HTTP, "host name", 44444444, true, "user", "token"));
     parameters2.setUseBigFolderSizeLimit(true);
     parameters2.setBigFolderSizeLimit(1000);
@@ -89,7 +87,6 @@ void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(parameters.autoStart() == parameters2.autoStart());
     CPPUNIT_ASSERT(parameters.moveToTrash() == parameters2.moveToTrash());
     CPPUNIT_ASSERT(parameters.notificationsDisabled() == parameters2.notificationsDisabled());
-    CPPUNIT_ASSERT(parameters.syncHiddenFiles() == parameters2.syncHiddenFiles());
     CPPUNIT_ASSERT(parameters.useLog() == parameters2.useLog());
     CPPUNIT_ASSERT(parameters.logLevel() == parameters2.logLevel());
     CPPUNIT_ASSERT(parameters.purgeOldLogs() == parameters2.purgeOldLogs());
