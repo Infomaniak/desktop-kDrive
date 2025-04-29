@@ -911,15 +911,15 @@ ExitInfo ExecutorWorker::fixModificationDate(SyncOpPtr syncOp, const SyncPath &a
         return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
-    IoError ioError = IoError::Unknown;
-    if (!Utility::setFileDates(absolutePath, dbNode.created(), dbNode.lastModifiedRemote(), false, ioError)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::setFileDates: " << Utility::formatSyncPath(absolutePath));
-    }
-    if (ioError == IoError::Success) {
+    if (const IoError ioError = Utility::setFileDates(absolutePath, dbNode.created(), dbNode.lastModifiedRemote(), false);
+        ioError == IoError::Success) {
         LOGW_SYNCPAL_INFO(_logger,
                           L"Last modification date updated locally to avoid further wrongly generated EDIT operations for file: "
                                   << Utility::formatSyncPath(absolutePath));
+    } else {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::setFileDates: " << Utility::formatSyncPath(absolutePath));
     }
+
     // If file does not exist anymore, do nothing special. This is fine, it will not generate EDIT operations anymore.
     return ExitCode::Ok;
 }

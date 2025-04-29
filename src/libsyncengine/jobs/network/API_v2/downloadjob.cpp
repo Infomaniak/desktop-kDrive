@@ -280,9 +280,9 @@ bool DownloadJob::handleResponse(std::istream &is) {
     }
 
     if (!_ignoreDateTime) {
-        IoError ioError = IoError::Unknown;
-        if (!Utility::setFileDates(_localpath, std::make_optional<KDC::SyncTime>(_creationTime),
-                                   std::make_optional<KDC::SyncTime>(_modtimeIn), isLink, ioError)) {
+        if (const IoError ioError = Utility::setFileDates(_localpath, std::make_optional<KDC::SyncTime>(_creationTime),
+                                                          std::make_optional<KDC::SyncTime>(_modtimeIn), isLink);
+            ioError == IoError::Unknown) {
             LOGW_WARN(_logger, L"Error in Utility::setFileDates: " << Utility::formatSyncPath(_localpath));
             // Do nothing (remote file will be updated during the next sync)
             sentry::Handler::captureMessage(sentry::Level::Warning, "DownloadJob::handleResponse", "Unable to set file dates");

@@ -61,8 +61,7 @@ bool UploadSessionFinishJob::handleResponse(std::istream &is) {
 
     if (_modtimeIn != _modtimeOut) {
         // The backend refused the modification time. To avoid further EDIT operations, we apply the backend's time on local file.
-        IoError ioError = IoError::Unknown;
-        (void) Utility::setFileDates(_absoluteFilePath, 0, _modtimeOut, false, ioError);
+        (void) Utility::setFileDates(_absoluteFilePath, 0, _modtimeOut, false);
         LOG_INFO(_logger, "Modification time refused "
                                   << _modtimeIn << " by the backend. The modification time has been updated to " << _modtimeOut
                                   << " on local file.");

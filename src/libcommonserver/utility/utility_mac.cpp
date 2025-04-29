@@ -31,8 +31,8 @@
 
 namespace KDC {
 
-bool setFileDates(const SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
-                  std::optional<KDC::SyncTime> modificationDate, bool symlink, IoError &ioError);
+IoError setFileDates(const SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
+                     std::optional<KDC::SyncTime> modificationDate, bool symlink);
 bool moveItemToTrash(const SyncPath &itemPath, std::wstring &errorStr);
 bool preventSleeping(bool enable);
 bool preventSleeping();
@@ -166,9 +166,9 @@ static bool cpuUsageByProcess_private(double &percent) {
     return true;
 }
 
-static bool setFileDates_private(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
-                                 std::optional<KDC::SyncTime> modificationDate, bool symlink, IoError &ioError) {
-    return KDC::setFileDates(filePath, creationDate, modificationDate, symlink, ioError);
+static IoError setFileDates_private(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
+                                    std::optional<KDC::SyncTime> modificationDate, bool symlink) {
+    return KDC::setFileDates(filePath, creationDate, modificationDate, symlink);
 }
 
 static std::string userName_private() {

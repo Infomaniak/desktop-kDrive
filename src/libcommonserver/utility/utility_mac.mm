@@ -96,10 +96,23 @@ void restartFinderExtension() {
     });
 }
 
-bool setFileDates(const SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
-                  std::optional<KDC::SyncTime> modificationDate, bool symlink, IoError &ioError) {
-    ioError = IoError::Success;
+IoError nsErrorToIoError(NSError *error) {
+    if (!error) {
+        return IoError::Unknown;
+    }
 
+    if (error.code == NSFileNoSuchFileError) {
+        return IoError::NoSuchFileOrDirectory;
+    }
+    if (error.code == NSFileReadNoPermissionError || error.code == NSFileWriteNoPermissionError) {
+        return IoError::AccessDenied;
+    }
+
+    return IoError::Unknown;
+}
+
+IoError setFileDates(const SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
+                     std::optional<KDC::SyncTime> modificationDate, bool symlink) {
     NSString *filePathStr = [NSString stringWithUTF8String:filePath.native().c_str()];
 
     NSDate *cDate = nil;
@@ -121,11 +134,7 @@ bool setFileDates(const SyncPath &filePath, std::optional<KDC::SyncTime> creatio
                                                                                 forKey:NSURLCreationDateKey
                                                                                  error:&error];
             if (!ret) {
-                if (error.code == NSFileNoSuchFileError) {
-                    ioError = IoError::NoSuchFileOrDirectory;
-                    return true;
-                }
-                return false;
+                return nsErrorToIoError(error);
             }
         }
 
@@ -134,11 +143,7 @@ bool setFileDates(const SyncPath &filePath, std::optional<KDC::SyncTime> creatio
                                                                                 forKey:NSURLContentModificationDateKey
                                                                                  error:&error];
             if (!ret) {
-                if (error.code == NSFileNoSuchFileError) {
-                    ioError = IoError::NoSuchFileOrDirectory;
-                    return true;
-                }
-                return false;
+                return nsErrorToIoError(error);
             }
         }
     } else {
@@ -155,16 +160,12 @@ bool setFileDates(const SyncPath &filePath, std::optional<KDC::SyncTime> creatio
             NSFileManager *fileManager = [NSFileManager defaultManager];
             ret = [fileManager setAttributes:attrDictionary ofItemAtPath:filePathStr error:&error];
             if (!ret) {
-                if (error.code == NSFileNoSuchFileError) {
-                    ioError = IoError::NoSuchFileOrDirectory;
-                    return true;
-                }
-                return false;
+                return nsErrorToIoError(error);
             }
         }
     }
 
-    return true;
+    return IoError::Success;
 }
 
 } // namespace KDC
