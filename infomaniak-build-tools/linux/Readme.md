@@ -1,6 +1,5 @@
 - [kDrive files](#kdrive-files)
 - [Installation Requirements](#installation-requirements)
-    - [Conan](#conan)
     - [Packages](#packages)
     - [Qt 6.2.3](#qt-623)
     - [log4cplus](#log4cplus)
@@ -10,6 +9,7 @@
     - [Sentry](#sentry)
     - [xxHash](#xxhash)
     - [libzip](#libzip)
+    - [Conan](#conan)
 - [Build in Debug](#build-in-debug)
     - [Using CLion](#using-clion)
         - [Prerequisites](#prerequisites)
@@ -43,61 +43,12 @@ This documentation was made for Ubuntu 22.04 LTS
 We are migrating the dependency management from manually to using conan.
 Currently, only the dependency `xxHash` is managed by conan. 
 
-## Conan
-You can find the official Conan installation guide [here](https://docs.conan.io/2/installation.html).
-
-### Prerequisites
-
-You need Python 3.6 or higher to install Conan:
-```bash
-sudo apt install -y python3
-```
-
-### Recommended Installation
-
-It is recommended to install Conan with `pip` inside a Python virtual environment:
-```bash
-cd ~/Projects/desktop-kDrive
-python3 -m venv .venv        # Create a virtual environment in './.venv'
-source .venv/bin/activate    # Activate the virtual environment
-pip install --upgrade pip    # Upgrade pip
-pip install conan            # Install Conan
-```
-
-Verify that Conan was installed correctly:
-```bash
-conan --version
-```
-You should see an output similar to:
-```
-Conan version 2.15.1
-```
-
-### Configure a Conan Profile
-
-Next, create the default Conan profile for your system:
-```bash
-conan profile detect
-```
-This will generate a profile at `~/.conan2/profiles/default`.  
-Edit that file if you need to adjust any settings for your environment.
-
-### Install Project Dependencies
-Finally, run the provided script from the root of the repository to install the dependencies currently managed by Conan for this project:
-```bash
-./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release]
-```
-
-> **Note:** At the moment, only **xxHash** is installed via this Conan-based workflow. Additional dependencies (Qt, OpenSSL, Poco, etc.) will be added in the future.
-
 ## Packages
 
 If not already installed, you will need **git**, **cmake** and **clang** (clang-18 or higher) packages.
 
 ```bash
-sudo apt install -y git
-sudo apt install -y cmake
-sudo apt install -y clang
+sudo apt update && sudo apt install -y git cmake clang
 ```
 
 Ensure that CLANG is installed with at least version 18 by running the following command :
@@ -268,6 +219,99 @@ make
 sudo make install
 ```
 
+---
+
+## Conan
+The recommended way to install Conan is via **pip** within a Python virtual environment (Python 3.6 or newer). This approach ensures isolation and compatibility with your project’s dependencies.
+
+> **Tip:** Other installation methods (system packages, pipx, installer scripts, etc.) are also supported. See [Conan Downloads](https://conan.io/downloads) for the full list of options.
+### Prerequisites
+- **Python 3.6+**
+- **pip** (upgrade to the latest version):
+  ```bash
+  pip install --upgrade pip
+  ```
+
+### 1. Create and Activate a Virtual Environment
+1. Create a virtual environment in `./.venv`:
+   ```bash
+   python3 -m venv .venv
+   ```
+2. Activate the virtual environment:
+   ```bash
+   source .venv/bin/activate
+   ```
+
+### 2. Install Conan
+
+With the virtual environment active, install Conan:
+```bash
+pip install conan
+```
+
+Verify the installation:
+```bash
+conan --version
+```
+You should see an output similar to:
+```
+Conan version 2.x.x
+```
+
+---
+
+### 3. Configure a Conan Profile
+1. Auto-generate the default profile:
+   ```bash
+   conan profile detect
+   ```
+   This creates `~/.conan2/profiles/default`.
+
+2. Open `~/.conan2/profiles/default` and customize the settings under the `[settings]` section. For example, to target Linux with C++20:
+   ```ini
+    [settings]
+    arch=x86_64
+    build_type=Release
+    compiler=gcc
+    compiler.cppstd=20
+    compiler.libcxx=libstdc++11
+    compiler.version=11.4
+    os=Linux
+   ```
+
+---
+
+### 4. Configure CMake Toolchain Injection
+The project requires additional CMake variables for a correct build. To inject these, create a file named `debug_vars.cmake` in your profiles directory (`~/.conan2/profiles`), and then reference it in the profile under `[conf]`:
+
+1. Create or open `~/.conan2/profiles/debug_vars.cmake` and add the cache entries, for example:
+   ```cmake
+   set(APPLICATION_CLIENT_EXECUTABLE "kdrive_client")
+   set(KDRIVE_THEME_DIR "$ENV{HOME}/Projects/desktop-kDrive/infomaniak")
+   set(BUILD_UNIT_TESTS "ON")      # Set to "OFF" to skip tests
+   set(SOCKETAPI_TEAM_IDENTIFIER_PREFIX "864VDCS2QY")
+   set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.2.3/macos")
+   set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/Projects/CLion-build-debug/install")
+   ```
+
+2. In your profile (`~/.conan2/profiles/default`), add under a new `[conf]` section:
+   ```ini
+   [conf]
+   tools.cmake.cmaketoolchain:user_toolchain+={{profile_dir}}/debug_vars.cmake
+   ```
+
+---
+
+### 5. Install Project Dependencies
+
+**From the repository root**, run the provided build script, specifying the desired configuration (`Debug` or `Release`) and the folder where the app will be builded.
+```bash
+./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release] [--output-dir=<output_dir>]
+```
+
+> **Note:** Currently only **xxHash** is managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+
+---
 # Build in Debug
 
 ## Linking dependencies
@@ -286,15 +330,24 @@ In order for CMake to be able to find all dependencies, you might need to define
 Install the following libraries:
 
 ```bash
-sudo apt-get install mesa-utils
-sudo apt-get install freeglut3-dev
-sudo apt-get install libsqlite3-dev
-sudo apt-get install -y pkg-config
-sudo apt-get install libglib2.0-dev
-sudo apt install libsecret-1-0 libsecret-1-dev libglib2.0-dev
+sudo apt update && sudo apt install -y mesa-utils freeglut3-dev \
+                    libsqlite3-dev pkg-config \
+                    libglib2.0-dev libsecret-1-0 \
+                    libsecret-1-dev libglib2.0-dev
 ```
 
-## CMake Parameters
+
+### Using Conan - CMakeUserPresets
+
+After you followed the [Conan](#conan) section, a file named `CMakeUserPresets.json` has been created at the root of the project.
+_Sometimes, CLion need to reload the CMake project to detect the presets. To do so, go, in the top bar, to `Tools` > `CMake`  and click `Reload CMake Project`._
+
+Now you can select the `conan-[debug|release]` profile in the CMake configuration.
+
+
+### Classical Way
+
+#### CMake Parameters
 
 CMake options:
 
@@ -307,6 +360,7 @@ CMake options:
 -DCMAKE_PREFIX_PATH:STRING=/home/<user>/Qt/6.7.2/gcc_arm64
 -DSOCKETAPI_TEAM_IDENTIFIER_PREFIX:STRING=864VDCS2QY
 -DQT_DEBUG_FIND_PACKAGE=ON
+-DCMAKE_TOOLCHAIN_FILE=/home/<user>/Projects/CLion-build-debug/conan_toolchain.cmake
 ```
 
 ## Using Qt Creator
