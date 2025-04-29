@@ -348,11 +348,10 @@ This command is run each time we build in release mode. However, since it takes 
 
 ### Using Conan - CMakeUserPresets
 
-After you followed the [Conan](#conan) section, a file named `CMakeUserPresets.json` has been created at the root of the project.
-_Sometimes, CLion need to reload the CMake project to detect the presets. To do so, go, in the top bar, to `Tools` > `CMake`  and click `Reload CMake Project`._
+After following the [Conan](#conan) section, a file named `CMakeUserPresets.json` will have been created at the root of the project.
+*Sometimes, CLion needs to reload the CMake project to detect the presets. To do this, go to the top menu, select `Tools` > `CMake`, then click `Reload CMake Project`.*
 
-Now you can select the `conan-[debug|release]` profile in the CMake configuration.
-
+You can now select the `conan-[debug|release]` profile in the CMake configuration.
 
 ### Classical way
 
