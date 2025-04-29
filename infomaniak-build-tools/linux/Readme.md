@@ -290,7 +290,7 @@ The project requires additional CMake variables for a correct build. To inject t
    set(KDRIVE_THEME_DIR "$ENV{HOME}/Projects/desktop-kDrive/infomaniak")
    set(BUILD_UNIT_TESTS "ON")      # Set to "OFF" to skip tests
    set(SOCKETAPI_TEAM_IDENTIFIER_PREFIX "864VDCS2QY")
-   set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.2.3/macos")
+   set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.7.2/gcc_arm64")
    set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/Projects/CLion-build-debug/install")
    ```
 
