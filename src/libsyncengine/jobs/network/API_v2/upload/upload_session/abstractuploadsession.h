@@ -35,7 +35,7 @@ class UploadSessionChunkJob;
 class AbstractUploadSession : public AbstractJob {
     public:
         enum UploadSessionState {
-            StateInitChunk,
+            StateInitChunk = 0,
             StateStartUploadSession,
             StateUploadChunks,
             StateStopUploadSession,
