@@ -114,7 +114,7 @@ void TestOperationSorterWorker::testFixDeleteBeforeMove() {
     }
     _syncPal->_syncOps->clear();
     {
-        // Test when the node is at a deeper level
+        // Test scenario with node positioned at a lower tree depth
         const auto nodeAAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aaa");
         const auto nodeAAB = _testSituationGenerator.getNode(ReplicaSide::Local, "aab");
 
