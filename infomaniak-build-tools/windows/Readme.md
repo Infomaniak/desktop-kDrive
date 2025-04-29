@@ -38,7 +38,7 @@
 The folder `F:\Projects` will be used for the installation of sources and dependencies.  
 Feel free to use any directory that suits you.
 
-```bash
+```powershell
 mkdir F:\Projects 
 cd F:\Projects
 git clone https://github.com/Infomaniak/desktop-kDrive.git
@@ -62,55 +62,6 @@ When installing `Visual Studio 2019`, select the following components:
 - Windows 11 SDK (10.0.22000.0)
 - Windows 10 SDK (10.0.17763.0)
 - Windows 10 SDK (10.0.20348.0)
-
-## Conan
-
-The **recommended** way to install Conan is via `pip` inside a Python virtual environment (venv) using Python 3.6+.
-This ensures isolation and compatibility with your project’s dependencies.
-Other installation methods (system packages, pipx, installer scripts, etc.) are also supported. See https://conan.io/downloads for the full list of options.
-
-### Prerequisites
-- **Python 3.6+**
-- **pip**: ensure pip is up to date:
-  ```powershell
-  pip install --upgrade pip
-  ```
-
-#### Recommended Installation
-
-Install Conan inside a Python virtual environment:
-```powershell
-python3 -m venv .venv        # Create a virtual environment in './.venv'
-& .venv/bin/activate.ps1    # Activate the virtual environment
-pip install conan            # Install Conan
-```
-Verify the installation:
-```bash
-conan --version
-```
-Expected output similar to:
-```
-Conan version 2.x.x
-```
-
-#### Configure a Conan Profile
-
-Generate and detect your default profile:
-```bash
-conan profile detect
-```
-This creates `%USERPROFILE%/.conan2/profiles/default`. 
-Edit it to customize settings (compiler, arch, etc.) for Windows.
-
-#### Install Project Dependencies
-
-From the root of the repository, run the provided script:
-```powershell
-./infomaniak-build-tools/conan/build_dependencies.ps1 [Debug|Release|RelWithDebInfo]
-```
-> **Note:** At the moment, only **xxHash** is installed via this Conan-based workflow. Additional dependencies (Qt, OpenSSL, Poco, etc.) will be added in the future.
-
-
 ## Qt 6.2.3
 
 From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4), 
@@ -141,7 +92,7 @@ Add to the following paths to your `PATH` or adapt them to the actual location o
 Download the [Sentry sources (`sentry-native.zip`)](https://github.com/getsentry/sentry-native/releases) and extract them to `F:\Projects`.
 After successful extraction, run:
 
-```bash
+```cmd
 cd F:\Projects\sentry-native
 cmake -B build -DSENTRY_INTEGRATION_QT=YES -DCMAKE_PREFIX_PATH=%QTDIR%
 cmake --build build --config RelWithDebInfo
@@ -156,7 +107,7 @@ See [Conan](#conan) for installation instructions.
 
 Clone `OpenSSL` sources:
 
-```bash
+```powershell
 cd F:\Projects
 git clone git://git.openssl.org/openssl.git
 cd openssl
@@ -172,7 +123,7 @@ Note that installing `NASM` is not required.
 
 Clone and build `Poco`:
 
-```bash
+```powershell
 cd F:\Projects
 git clone https://github.com/pocoproject/poco.git
 cd poco
@@ -189,7 +140,7 @@ Open the `poco.sln` solution in Visual Studio 2019 and add `C:\Program Files\Ope
 
 While still in the `cmake-build` directory, issue the following commands:
 
-```bash
+```powershell
 cmake --build . --target install --config Debug
 cmake --build . --target install --config Release
 ```
@@ -198,7 +149,7 @@ cmake --build . --target install --config Release
 
 Clone and build `log4cplus`:
 
-```bash
+```powershell
 cd F:\Projects
 git clone --recurse-submodules https://github.com/log4cplus/log4cplus.git
 cd log4cplus
@@ -214,7 +165,7 @@ cmake --build . --target install --config Release
 
 Clone `CPPUnit`:
 
-```bash
+```powershell
 cd "C:\Program Files (x86)"
 git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
 ```
@@ -232,7 +183,7 @@ Only the two directories `lib` and `include` are required, everything else can b
 ## Zlib
 
 Download [Zlib](https://zlib.net/fossils/zlib-1.2.11.tar.gz) then run the following:
-```bash
+```cmd
 tar -xvzf C:\Users\%username%\Downloads\zlib-1.2.11.tar.gz -C "C:\Program Files (x86)\"
 cd "C:/Program Files (x86)/zlib-1.2.11"
 nmake /f win32/Makefile.msc
@@ -254,7 +205,7 @@ copy zlib1.pdb bin\
 
 Clone and install libzip
 
-```bash
+```powershell
 cd F:\Projects
 git clone https://github.com/nih-at/libzip.git
 cd libzip
@@ -303,8 +254,105 @@ to create an environment variable for each certificate:
 - Copy the `AUMID` (located at the end of the `Family Name` field, after the underscore).
 - Create an environment variable named `KDC_VIRTUAL_AUMID` with the copied `AUMID` as value.
 - Repeat the same steps using the USB key certificate, in an environment variable named `KDC_PHYSICAL_AUMID`.
+---
 
+## Conan
+The recommended way to install Conan is via **pip** within a Python virtual environment (Python 3.6 or newer). This approach ensures isolation and compatibility with your project’s dependencies.
 
+> **Tip:** Other installation methods (system packages, pipx, installer scripts, etc.) are also supported. See [Conan Downloads](https://conan.io/downloads) for the full list of options.
+### Prerequisites
+- **Python 3.6+**
+- **pip**:
+
+### 1. Create and Activate a Virtual Environment
+1. Create a virtual environment in `./.venv`:
+   ```powershell
+   python -m venv .venv
+   ```
+2. Activate the virtual environment:
+   ```powershell
+   & ./.venv\Scripts\Activate.ps1
+   ```
+2.1 Update the `pip` version:
+   ```powershell
+   python -m pip install --upgrade pip
+   ```
+
+### 2. Install Conan
+
+With the virtual environment active, install Conan:
+```powershell
+pip install conan
+```
+
+Verify the installation:
+```powershell
+conan --version
+```
+You should see an output similar to:
+```
+Conan version 2.x.x
+```
+
+---
+
+### 3. Configure a Conan Profile
+1. Auto-generate the default profile:
+   ```cmd
+   conan profile detect
+   ```
+   This creates `%USERPROFILE%/.conan2/profiles/default`.
+
+2. Open `%USERPROFILE%/.conan2/profiles/default` and customize the settings under the `[settings]` section. For example, to target Linux with C++20:
+   
+   ```ini
+    [settings]
+    arch=x86_64
+    build_type=Release
+    compiler=msvc
+    compiler.cppstd=20
+    compiler.runtime=dynamic
+    compiler.version=192
+    os=Windows
+   ```
+
+---
+
+### 4. Configure CMake Toolchain Injection
+The project requires additional CMake variables for a correct build. To inject these, create a file named `debug_vars.cmake` in your profiles directory (`~/.conan2/profiles`), and then reference it in the profile under `[conf]`:
+
+1. Create or open `%USERPROFILE%/.conan2/profiles/debug_vars.cmake` and add the cache entries adapted to your installation, for example:
+   ```cmake
+   set(APPLICATION_CLIENT_EXECUTABLE "kdrive_client")
+   set(KDRIVE_THEME_DIR "F:/Projects/desktop-kDrive/infomaniak")
+   set(BUILD_UNIT_TESTS "ON")      # Set to "OFF" to skip tests
+   set(SOCKETAPI_TEAM_IDENTIFIER_PREFIX "864VDCS2QY")
+   set(CMAKE_PREFIX_PATH "C:/Qt/6.2.3/msvc2019_64")
+   set(CMAKE_INSTALL_PREFIX "F:/Projects/cmake-build-release_CLion")
+   set(ZLIB_INCLUDE_DIR:PATH "F:/Projects/zlib-1.2.11/include")
+   set(ZLIB_LIBRARY_RELEASE:FILEPATH "F:/Projects/zlib-1.2.11/lib/zlib.lib")
+   set(VFS_STATIC_LIBRARY:FILEPATH "F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug/Vfs.lib")
+   set(VFS_DIRECTORY:PATH "F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Release")
+   ```
+
+2. In your profile (`%USERPROFILE%/.conan2/profiles/default`), add under a new `[conf]` section:
+   ```ini
+   [conf]
+   tools.cmake.cmaketoolchain:user_toolchain+={{profile_dir}}/debug_vars.cmake
+   ```
+
+---
+
+### 5. Install Project Dependencies
+
+**From the repository root**, run the provided build script, specifying the desired configuration (`Debug` or `Release`) and the folder where the app will be builded.
+```powershell
+powershell ./infomaniak-build-tools/conan/build_dependencies.ps1 [Debug|Release] [--output-dir=<output_dir>]
+```
+
+> **Note:** Currently only **xxHash** is managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+
+---
 # Build in Debug
 
 To build in `Debug` mode, you will need to build and deploy the Windows extension first.
@@ -327,7 +375,7 @@ C:\Program Files\OpenSSL\bin
 ### CMake Parameters
 
 Copy the following list of `CMake` variables in the CMake options field:
-```bash
+```
 -DCMAKE_BUILD_TYPE:STRING=Debug
 -DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client
 -DKDRIVE_THEME_DIR=F:/Projects/desktop-kDrive/infomaniak
@@ -359,7 +407,7 @@ If you cannot see it, you need to tick the **Archive** box and filter again.
 Open the file `F:\Projects\desktop-kDrive\CMakeList.txt` in Qt Creator.  
 Then copy the following list of `CMake` variables in "Initial CMake Parameters" using batch editing:
 
-```bash
+```
 -GNinja
 -DCMAKE_BUILD_TYPE:String=Debug
 -DQT_QMAKE_EXECUTABLE:STRING=%{Qt:qmakeExecutable}
@@ -415,7 +463,7 @@ Open `Visual Studio 2019` and select `Open local folder`. Then choose `F:\Projec
    - Toolset: msvc_x64_x64
    - Build root: The folder set in the post-build events of the `kDriveExt` solution.
    - CMake command args: 
-    ```bash
+    ```
     -DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client 
     -DKDRIVE_THEME_DIR=F:/Projects/desktop-kDrive/infomaniak 
     -DBUILD_UNIT_TESTS:BOOL=ON 
@@ -478,20 +526,20 @@ Once `kDrive.exe` is running, right-click on the `kDrive_client` executable: `De
 To test the extension in Debug mode, you will first need to install a [release version](https://www.infomaniak.com/en/apps/download-kdrive) of `kDrive`.  
 Once installed and running, stop the `File Explorer` with the command:
 
-```bash
+```powershell
 taskkill /f /im explorer.exe
 ```
 
 Then, copy the DLLs :
 
-```bash
+```powershell
 copy "F:\Projects\build-kdrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug\bin\KDContextMenu.dll" "C:\Program Files (x86)\kDrive\shellext"
 copy "F:\Projects\build-kdrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug\bin\KDOverlays.dll" "C:\Program Files (x86)\kDrive\shellext"
 ```
 
 Then restart the `File Explorer`:
 
-```bash
+```powershell
 start explorer.exe
 ```
 
@@ -504,7 +552,7 @@ To get more information, call the script with the option `-h` or `-help`
 
 **Note.** For `CMake` to be able to build the project, you need to initialise the environment for `x64` with `vcvarsall.bat`, or `vcvars64.bat` (see the help output of `build-drive.ps1` for details).
 
-```bash
+```powershell
 cd F:\Projects\desktop-kDrive
 powershell infomaniak-build-tools\windows\build-drive.ps1
 ```
