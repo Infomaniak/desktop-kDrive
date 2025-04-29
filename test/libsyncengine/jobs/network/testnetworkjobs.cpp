@@ -437,7 +437,7 @@ void TestNetworkJobs::testDownload() {
         CPPUNIT_ASSERT(!smallPartitionPath.empty());
         IoError ioError = IoError::Unknown;
         bool exist = false;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(smallPartitionPath, exist, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(smallPartitionPath, exist, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT(exist);
 
@@ -992,7 +992,7 @@ void TestNetworkJobs::testDriveUploadSessionSynchronous() {
     ofs.close();
     uint64_t fileSizeLocal = 0;
     auto ioError = IoError::Unknown;
-    CPPUNIT_ASSERT(IoHelper::getFileSize(localFilePath, fileSizeLocal, ioError));
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getFileSize(localFilePath, fileSizeLocal, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     DriveUploadSession driveUploadSessionJobEdit(nullptr, _driveDbId, nullptr, localFilePath, newNodeId, false, 1);
@@ -1062,7 +1062,7 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
     ofs << "test";
     ofs.close();
     uint64_t fileSizeLocal = 0;
-    CPPUNIT_ASSERT(IoHelper::getFileSize(localFilePath, fileSizeLocal, ioError));
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getFileSize(localFilePath, fileSizeLocal, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     while (_nbParalleleThreads > 0) {
         LOG_DEBUG(Log::instance()->getLogger(),
@@ -1249,7 +1249,7 @@ bool TestNetworkJobs::createTestFiles() {
     FileStat fileStat;
     IoError ioError = IoError::Success;
     IoHelper::getFileStat(_dummyLocalFilePath, &fileStat, ioError);
-    CPPUNIT_ASSERT(ioError == IoError::Success);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     _dummyLocalFileId = std::to_string(fileStat.inode);
 
     // Create remote test file
