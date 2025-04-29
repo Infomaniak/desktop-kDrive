@@ -34,11 +34,21 @@ class UploadSessionChunkJob;
 
 class AbstractUploadSession : public AbstractJob {
     public:
+        enum UploadSessionState {
+            StateInitChunk,
+            StateStartUploadSession,
+            StateUploadChunks,
+            StateStopUploadSession,
+            StateFinished
+        };
+
         AbstractUploadSession(const SyncPath &filepath, const SyncName &filename, uint64_t nbParallelThread = 1);
         virtual ~AbstractUploadSession() = default;
         void uploadChunkCallback(UniqueId jobId);
         void abort() override;
         UploadSessionType _uploadSessionType = UploadSessionType::Unknown;
+
+        [[nodiscard]] UploadSessionState state() const { return _state; }
 
     protected:
         virtual std::shared_ptr<UploadSessionCancelJob> createCancelJob() = 0;
@@ -62,14 +72,6 @@ class AbstractUploadSession : public AbstractJob {
         std::string getSessionToken() const { return _sessionToken; }
 
     private:
-        enum UploadSessionState {
-            StateInitChunk,
-            StateStartUploadSession,
-            StateUploadChunks,
-            StateStopUploadSession,
-            StateFinished
-        };
-
         bool canRun() override;
         void runJob() override;
 
@@ -82,6 +84,7 @@ class AbstractUploadSession : public AbstractJob {
 
         log4cplus::Logger _logger;
         UploadSessionState _state = StateInitChunk;
+
         SyncPath _filePath;
         SyncName _filename;
         uint64_t _filesize = 0;

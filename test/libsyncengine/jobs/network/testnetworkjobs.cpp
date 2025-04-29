@@ -1234,7 +1234,7 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronousAborted() {
     JobManager::instance()->queueAsyncJob(driveUploadSessionJob);
 
     int counter = 0;
-    while (!JobManager::instance()->isJobFinished(driveUploadSessionJob->jobId())) {
+    while (driveUploadSessionJob->state() <= DriveUploadSession::StateStartUploadSession) {
         Utility::msleep(10);
         CPPUNIT_ASSERT_LESS(500, ++counter); // Wait at most 5sec
     }
