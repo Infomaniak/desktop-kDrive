@@ -4,7 +4,6 @@
 - [Installation Requirements](#installation-requirements)
 	- [SIP](#sip)
 	- [Xcode](#xcode)
-    - [Conan](#conan)
 	- [Qt 6.2.3](#qt-623)
 	- [Sentry](#sentry)
 	- [log4cplus](#log4cplus)
@@ -16,6 +15,7 @@
 	- [Sparkle](#sparkle)
 	- [Packages](#packages)
 	- [Notarytool](#notarytool)
+	- [Conan](#conan)
 - [Build in Debug](#build-in-debug)
 	- [Using CLion](#using-clion)
         - [CMake Parameters](#cmake-parameters)
@@ -58,54 +58,6 @@ Once installed, run the following command :
 ```bash
 sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 ```
-
-### Conan
-
-The **recommended** way to install Conan is via `pip` inside a Python virtual environment (venv) using Python 3.6+.
-This ensures isolation and compatibility with your project’s dependencies.
-Other installation methods (system packages, pipx, installer scripts, etc.) are also supported. See https://conan.io/downloads for the full list of options.
-
-#### Prerequisites
-
-- **Python 3.6+**
-- **pip**: ensure pip is up to date:
-  ```bash
-  pip install --upgrade pip
-  ```
-
-#### Recommended Installation
-
-Install Conan inside a Python virtual environment:
-```bash
-cd ~/Projects/desktop-kDrive
-python3 -m venv .venv        # Create a virtual environment in './.venv'
-source .venv/bin/activate    # Activate the virtual environment
-pip install conan            # Install Conan
-```
-Verify the installation:
-```bash
-conan --version
-```
-Expected output similar to:
-```
-Conan version 2.x.x
-```
-
-#### Configure a Conan Profile
-
-Generate and detect your default profile:
-```bash
-conan profile detect
-```
-This creates `~/.conan2/profiles/default`. Edit it to customize settings (compiler, arch, etc.) for macOS.
-
-#### Install Project Dependencies
-
-From the root of the repository, run the provided script:
-```bash
-./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release]
-```
-> **Note:** At the moment, only **xxHash** is installed via this Conan-based workflow. Additional dependencies (Qt, OpenSSL, Poco, etc.) will be added in the future.
 
 ## QT 6.2.3
 
@@ -244,22 +196,6 @@ cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET=
 sudo cmake --build . --target install
 ```
 
-## xxHash
-
-Download and build `xxHash`:
-
-```bash
-cd ~/Projects
-git clone https://github.com/Cyan4973/xxHash.git
-cd xxhash
-git checkout tags/v0.8.2
-cd cmake_unofficial
-mkdir build
-cd build
-cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15"
-sudo cmake --build . --target install
-```
-
 ## libzip
 
 > :warning: because the cmake builds in multi-architecture, `libzip` and its dependencies (in this case `zstd` must be installed in multi-architecture as well).
@@ -305,7 +241,99 @@ Copy the previously generated password to use in the command below:
 ```bash
 xcrun notarytool store-credentials "notarytool" --apple-id <email address> --team-id [team-id] --password <password>
 ```
+---
 
+## Conan
+The recommended way to install Conan is via **pip** within a Python virtual environment (Python 3.6 or newer). This approach ensures isolation and compatibility with your project’s dependencies.
+
+> **Tip:** Other installation methods (system packages, pipx, installer scripts, etc.) are also supported. See [Conan Downloads](https://conan.io/downloads) for the full list of options.
+### Prerequisites
+- **Python 3.6+**
+- **pip** (upgrade to the latest version):
+  ```bash
+  pip install --upgrade pip
+  ```
+
+### 1. Create and Activate a Virtual Environment
+1. Create a virtual environment in `./.venv`:
+   ```bash
+   python3 -m venv .venv
+   ```
+2. Activate the virtual environment:
+   ```bash
+   source .venv/bin/activate
+   ```
+
+### 2. Install Conan
+
+With the virtual environment active, install Conan:
+```bash
+pip install conan
+```
+
+Verify the installation:
+```bash
+conan --version
+```
+You should see an output similar to:
+```
+Conan version 2.x.x
+```
+
+---
+
+### 3. Configure a Conan Profile
+1. Auto-generate the default profile:
+   ```bash
+   conan profile detect
+   ```
+   This creates `~/.conan2/profiles/default`.
+
+2. Open `~/.conan2/profiles/default` and customize the settings under the `[settings]` section. For example, to target macOS with C++20:
+   ```ini
+   [settings]
+   os = Macos
+   arch = armv8
+   compiler = apple-clang
+   compiler.version = 16
+   compiler.cppstd = 20
+   compiler.libcxx = libc++
+   build_type = Debug
+   ```
+
+---
+
+### 4. Configure CMake Toolchain Injection
+The project requires additional CMake variables for a correct build. To inject these, create a file named `debug_vars.cmake` in your profiles directory (`~/.conan2/profiles`), and then reference it in the profile under `[conf]`:
+
+1. Create or open `~/.conan2/profiles/debug_vars.cmake` and add the cache entries, for example:
+   ```cmake
+   set(APPLICATION_CLIENT_EXECUTABLE "kdrive_client")
+   set(KDRIVE_THEME_DIR "$ENV{HOME}/Projects/desktop-kDrive/infomaniak")
+   set(BUILD_UNIT_TESTS "ON")      # Set to "OFF" to skip tests
+   set(SOCKETAPI_TEAM_IDENTIFIER_PREFIX "864VDCS2QY")
+   set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.2.3/macos")
+   set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/Projects/CLion-build-debug/install")
+   ```
+
+2. In your profile (`~/.conan2/profiles/default`), add under a new `[conf]` section:
+   ```ini
+   [conf]
+   tools.cmake.cmaketoolchain:user_toolchain+={{profile_dir}}/debug_vars.cmake
+   ```
+
+---
+
+### 5. Install Project Dependencies
+
+**From the repository root**, run the provided build script, specifying the desired configuration (`Debug` or `Release`) and the folder where the app will be builded.
+```bash
+./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release] [--output-dir=<output_dir>]
+```
+
+> **Note:** Currently only **xxHash** is managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+
+---
 # Build in Debug
 
 ## Deploying dependencies
@@ -318,7 +346,17 @@ This command is run each time we build in release mode. However, since it takes 
 
 ## Using CLion
 
-### CMake Parameters
+### Using Conan - CMakeUserPresets
+
+After you followed the [Conan](#conan) section, a file named `CMakeUserPresets.json` has been created at the root of the project.
+_Sometimes, CLion need to reload the CMake project to detect the presets. To do so, go, in the top bar, to `Tools` > `CMake`  and click `Reload CMake Project`._
+
+Now you can select the `conan-[debug|release]` profile in the CMake configuration.
+
+
+### Classical way
+
+#### CMake Parameters
 
 CMake options:
 
@@ -326,13 +364,14 @@ CMake options:
 -DCMAKE_BUILD_TYPE:STRING=Debug
 -DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client
 -DKDRIVE_THEME_DIR=/Users/<user_name>/Projects/desktop-kDrive/infomaniak
--DCMAKE_INSTALL_PREFIX=/Users/clementkunz/Projects/CLion-build-debug/install
+-DCMAKE_INSTALL_PREFIX=/Users/<user_name>/Projects/CLion-build-debug/install
 -DBUILD_UNIT_TESTS:BOOL=ON
 -DCMAKE_PREFIX_PATH:STRING=/Users/<user_name>/Qt/6.2.3/macos
 -DSOCKETAPI_TEAM_IDENTIFIER_PREFIX:STRING=864VDCS2QY
+-DCMAKE_TOOLCHAIN_FILE=/Users/<user_name>/Projects/CLion-build-debug/conan_toolchain.cmake
 ```
 
-### Run CMake install
+#### Run CMake install
 
 Edit the `kDrive` profile:
 
