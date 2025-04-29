@@ -79,6 +79,8 @@ if ($OutputDir) {
     Log "No custom output directory provided. Using default: $OutputDir"
 }
 
+
+
 function Get-ConanExePath {
     try {
         $cmd = Get-Command conan.exe -ErrorAction Stop
@@ -88,6 +90,11 @@ function Get-ConanExePath {
 
     try {
         $pythonCmd = Get-Command python -ErrorAction Stop
+
+        $venvCheck = & $pythonCmd -c 'import sys; print(sys.prefix != sys.base_prefix)'
+        if($venvCheck.Trim().ToLower() -ne "true") {
+            Write-Warning "Python virtual environment not activated. It is recommended to install conan with a virtual env."
+        }
     } catch {
         Err "Interpreter 'python' not found. Please install Python 3 and/or add it to the PATH."
         return $null
