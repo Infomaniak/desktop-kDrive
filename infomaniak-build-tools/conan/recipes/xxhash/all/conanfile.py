@@ -52,8 +52,8 @@ class XxHashConan(ConanFile):
         "utility": [True, False],
     }
     default_options = {
-        "shared": False,
-        "fPIC": True,
+        "shared": True,
+        "fPIC": False,
         "utility": True,
     }
 
@@ -67,6 +67,8 @@ class XxHashConan(ConanFile):
     def configure(self):
         if self.options.shared:
             self.options.rm_safe("fPIC")
+        if self.settings.os == "Macos":
+            self.settings.os.version = "11.0"
 
     def layout(self):
         cmake_layout(self, src_folder="src")
@@ -80,8 +82,10 @@ class XxHashConan(ConanFile):
 
     def generate(self):
         tc = CMakeToolchain(self)
-        tc.cache_variables["CMAKE_MACOSX_BUNDLE"] = False;
+        tc.cache_variables["CMAKE_MACOSX_BUNDLE"] = False
         tc.cache_variables["CMAKE_POLICY_VERSION_MINIMUM"] = "3.5" # CMake 4 support
+        tc.cache_variables["XXHASH_BUILD_XXHSUM"] = False
+        tc.cache_variables["CMAKE_MACOSX_RPATH"] = True
         # Use Ninja in windows.
         if self.settings.os == "Windows":
             tc.cache_variables["CMAKE_GENERATOR"] = "Ninja"
