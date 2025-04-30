@@ -1,7 +1,9 @@
-# xxHash 0.8.2
+# Old Dependencies Compilation Instructions
 
-## macOS
+> **Note:** This file contains the old instructions used to compile and use the dependencies that are now managed by Conan.
 
+## xxHash 0.8.2
+### macOS
 ```bash
 cd ~/Projects
 git clone https://github.com/Cyan4973/xxHash.git
@@ -14,8 +16,7 @@ cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET=
 sudo cmake --build . --target install
 ```
 
-## Linux
-
+### Linux
 ```bash
 cd ~/Projects
 git clone https://github.com/Cyan4973/xxHash.git
@@ -28,9 +29,8 @@ cmake ..
 sudo cmake --build . --target install
 ```
 
-## Windows
-
-```
+### Windows
+```cmd
 cd F:\Projects
 git clone https://github.com/Cyan4973/xxHash.git
 cd xxHash
