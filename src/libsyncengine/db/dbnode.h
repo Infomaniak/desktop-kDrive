@@ -96,7 +96,6 @@ class DbNode {
                    _type == other._type && _size == other._size && _status == other._status && _syncing == other._syncing;
         }
 
-
     protected:
         DbNodeId _nodeId;
         std::optional<DbNodeId> _parentNodeId;

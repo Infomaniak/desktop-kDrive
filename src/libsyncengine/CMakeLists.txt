@@ -16,7 +16,6 @@ set(syncengine_SRCS
     # Database
     db/dbnode.h db/dbnode.cpp
     db/syncdb.h db/syncdb.cpp
-    db/syncdbinmemory.h db/syncdbinmemory.cpp
     db/syncdbcache.h db/syncdbcache.cpp
     db/syncnode.h db/syncnode.cpp
     olddb/oldsyncdb.h olddb/oldsyncdb.cpp

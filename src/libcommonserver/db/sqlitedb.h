@@ -37,7 +37,6 @@ class SqliteDb {
 
         bool openOrCreateReadWrite(const std::filesystem::path &dbPath);
         bool openReadOnly(const std::filesystem::path &dbPath);
-        bool openInMemory(const std::filesystem::path &dbPath);
         bool isOpened() const;
         bool startTransaction();
         bool commit();

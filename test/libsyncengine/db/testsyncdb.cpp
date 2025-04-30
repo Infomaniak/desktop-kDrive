@@ -90,15 +90,15 @@ void TestSyncDb::setUp() {
     std::filesystem::remove(syncDbPath);
 
     // Create DB
-    // _testObj = new SyncDbMock(syncDbPath.string(), KDRIVE_VERSION_STRING);
-    //_testObj->init(KDRIVE_VERSION_STRING);
-    // _testObj->setAutoDelete(true);
+    _testObj = new SyncDbMock(syncDbPath.string(), KDRIVE_VERSION_STRING);
+    _testObj->init(KDRIVE_VERSION_STRING);
+    _testObj->setAutoDelete(true);
 }
 
 void TestSyncDb::tearDown() {
     // Close and delete DB
-    //  _testObj->close();
-    //  delete _testObj;
+    _testObj->close();
+    delete _testObj;
     TestBase::stop();
 }
 
@@ -811,98 +811,5 @@ void TestSyncDb::testCorrespondingNodeId() {
 
 void TestSyncDb::testDummyUpgrade() {
     CPPUNIT_ASSERT(_testObj->upgrade("3.6.4 (build 20240112)", "3.6.4 (build 20240112)"));
-}
-
-void TestSyncDb::benchmarkCacheSize() {
-    // Load all nodes
-    using NodeIdsSet = std::unordered_set<SyncDb::NodeIds, SyncDb::NodeIds::hashNodeIdsFunction>;
-    SyncDb _syncDb("C:\\Users\\Herve\\AppData\\Local\\kDrive\\.sync_323439316264.db", KDRIVE_VERSION_STRING);
-    CPPUNIT_ASSERT(_syncDb.init(KDRIVE_VERSION_STRING));
-    std::chrono::milliseconds totalDuration(0);
-
-    for (int i = 0; i < 2; i++) {
-        NodeIdsSet remainingNodesIds;
-        bool dbIdsArefound = false;
-        CPPUNIT_ASSERT(_syncDb.ids(remainingNodesIds, dbIdsArefound));
-        CPPUNIT_ASSERT(dbIdsArefound);
-        auto start = std::chrono::high_resolution_clock::now();
-        int a = 0;
-        for (auto nodesIdsIt = remainingNodesIds.begin(); nodesIdsIt != remainingNodesIds.end();) {
-            if (a % 10000 == 0)
-                std::cout << a << " in "
-                          << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() -
-                                                                                   start)
-                          << std::endl;
-            a++;
-            DbNode dbNode;
-            bool dbNodeIsFound = false;
-            const auto dbNodeIds = *nodesIdsIt;
-            CPPUNIT_ASSERT(_syncDb.node(nodesIdsIt->dbNodeId, dbNode, dbNodeIsFound));
-            CPPUNIT_ASSERT(dbNodeIsFound);
-
-            SyncPath localDbPath;
-            SyncPath remoteDbPath;
-            bool dbPathsAreFound = false;
-            CPPUNIT_ASSERT(_syncDb.path(dbNodeIds.dbNodeId, localDbPath, remoteDbPath, dbPathsAreFound));
-            CPPUNIT_ASSERT(dbPathsAreFound);
-            nodesIdsIt++;
-        }
-        std::chrono::milliseconds duration =
-                std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start);
-        std::cout << "Duration on " << i << ":" << duration << "ms" << std::endl;
-        totalDuration += duration;
-    }
-
-    std::cout << "Average duration:" << std::chrono::duration_cast<std::chrono::milliseconds>(totalDuration).count() / 2 << "ms"
-              << std::endl;
-    _syncDb.close();
-    
-}
-void TestSyncDb::benchmarkSyncDbCache() {
-    // Load all nodes
-    using NodeIdsSet = std::unordered_set<SyncDb::NodeIds, SyncDb::NodeIds::hashNodeIdsFunction>;
-    std::shared_ptr<SyncDb> _syncDb =
-            std::make_shared<SyncDb>("C:\\Users\\Herve\\AppData\\Local\\kDrive\\.sync_323439316264.db", KDRIVE_VERSION_STRING);
-    CPPUNIT_ASSERT(_syncDb->init(KDRIVE_VERSION_STRING));
-    std::chrono::milliseconds totalDuration(0);
-    for (int i = 0; i < 2; i++) {
-        auto start = std::chrono::high_resolution_clock::now();
-
-        SyncDbCache cache(_syncDb);
-        NodeIdsSet remainingNodesIds;
-        bool dbIdsArefound = false;
-
-        CPPUNIT_ASSERT(cache.ids(remainingNodesIds, dbIdsArefound));
-        CPPUNIT_ASSERT(dbIdsArefound);
-        int a = 0;
-        for (auto nodesIdsIt = remainingNodesIds.begin(); nodesIdsIt != remainingNodesIds.end();) {
-            if (a % 10000 == 0)
-                std::cout << a << " in "
-                          << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() -
-                                                                                   start)
-                          << std::endl;
-            a++;
-            DbNode dbNode;
-            bool dbNodeIsFound = false;
-            const auto dbNodeIds = *nodesIdsIt;
-            CPPUNIT_ASSERT(cache.node(nodesIdsIt->dbNodeId, dbNode, dbNodeIsFound));
-            CPPUNIT_ASSERT(dbNodeIsFound);
-
-            SyncPath localDbPath;
-            SyncPath remoteDbPath;
-            bool dbPathsAreFound = false;
-            CPPUNIT_ASSERT(cache.path(dbNodeIds.dbNodeId, localDbPath, remoteDbPath, dbPathsAreFound));
-            CPPUNIT_ASSERT(dbPathsAreFound);
-            nodesIdsIt++;
-        }
-        std::chrono::milliseconds duration =
-                std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start);
-        std::cout << "Duration on " << i << ":" << duration << "ms" << std::endl;
-        totalDuration += duration;
-    }
-
-    std::cout << "Average duration:" << std::chrono::duration_cast<std::chrono::milliseconds>(totalDuration).count() / 2 << "ms"
-              << std::endl;
-    _syncDb->close();
 }
 } // namespace KDC

@@ -111,42 +111,6 @@ bool SqliteDb::openReadOnly(const std::filesystem::path &dbPath) {
     return true;
 }
 
-bool SqliteDb::openInMemory(const std::filesystem::path &dbPath) {
-    openOrCreateReadWrite(dbPath);
-    std::shared_ptr<sqlite3> rwdb = _sqlite3Db;
-    _sqlite3Db.reset();
-    sqlite3 *sqlite3Db = nullptr;
-    sqlite3_open(":memory:", &sqlite3Db);
-    _sqlite3Db.reset(sqlite3Db, &sqlite3_close);
-
-
-    if (checkDb() != CheckDbResult::Ok) {
-        LOGW_WARN(_logger, L"Consistency check failed in readonly mode, giving up " << Path2WStr(dbPath).c_str());
-        close();
-        return false;
-    }
-
-    sqlite3_backup *pBackup = sqlite3_backup_init(_sqlite3Db.get(), "main", rwdb.get(), "main");
-    int rc = 0;
-    do {
-        rc = sqlite3_backup_step(pBackup, 50);
-        int a = sqlite3_backup_remaining(pBackup);
-        int b = sqlite3_backup_pagecount(pBackup);
-
-        if (rc == SQLITE_OK || rc == SQLITE_BUSY || rc == SQLITE_LOCKED) {
-            sqlite3_sleep(250);
-        }
-    } while (rc == SQLITE_OK || rc == SQLITE_BUSY || rc == SQLITE_LOCKED);
-
-
-    int c = sqlite3_backup_finish(pBackup);
-
-    SQLITE_OK;
-    rc = sqlite3_errcode(_sqlite3Db.get());
-
-    return true;
-}
-
 bool SqliteDb::startTransaction() {
     if (!isOpened()) {
         return false;
