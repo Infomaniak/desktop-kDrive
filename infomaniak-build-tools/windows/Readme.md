@@ -391,7 +391,7 @@ Copy the following list of `CMake` variables in the CMake options field:
 ```
 *For the `CMAKE_TOOLCHAIN_FILE` variable, ensure that you have executed the `build_dependencies.ps1` script in advance.*
 
-![alt text](CLion_cmake_options-1.png)
+![alt text](doc-images/CLion_cmake_options-1.png)
 
 ## Using Qt Creator
 
