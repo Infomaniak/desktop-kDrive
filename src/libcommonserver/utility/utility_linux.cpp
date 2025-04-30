@@ -239,21 +239,30 @@ static bool cpuUsageByProcess_private(double &percent) {
     return true;
 }
 
-static bool setFileDates_private(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
-                                 std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists) {
+static IoError setFileDates_private(const SyncPath &filePath, const std::optional<SyncTime> creationDate,
+                                 const std::optional<SyncTime> modificationDate, const bool symlink) {
     (void) creationDate;
     (void) symlink;
 
-    exists = true;
 
     try {
-        Poco::Timestamp lastModifiedTimestamp(Poco::Timestamp::fromEpochTime(modificationDate.value()));
+        const Poco::Timestamp lastModifiedTimestamp(Poco::Timestamp::fromEpochTime(modificationDate.value()));
         Poco::File(Path2Str(filePath)).setLastModified(lastModifiedTimestamp);
-    } catch (Poco::Exception &) {
-        return false;
+    }
+    catch (Poco::NotFoundException &) {
+        LOGW_WARN(Log::instance()->getLogger(), L"File not found : " << Utility::formatSyncPath(filePath));
+        return IoError::NoSuchFileOrDirectory;
+    }
+    catch (Poco::NoPermissionException &) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Access denied on file : " << Utility::formatSyncPath(filePath));
+        return IoError::AccessDenied;
+    }
+    catch (Poco::Exception &ex) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in setLastModified : " << ex.message() << " (" << ex.code() << ")");
+        return IoError::Unknown;
     }
 
-    return true;
+    return IoError::Success;
 }
 
 static std::string userName_private() {
