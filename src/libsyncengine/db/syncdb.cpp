@@ -2517,4 +2517,13 @@ bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumbe
     return true;
 }
 
+bool SyncDb::openDb(const std::filesystem::path &dbPath) {
+    if (!_sqliteDb->openOrCreateReadWrite(_dbPath)) {
+        std::string error = _sqliteDb->error();
+        LOG_WARN(_logger, "Error opening the db in memory: " << error.c_str());
+        return false;
+    }
+    return true;
+}
+
 } // namespace KDC

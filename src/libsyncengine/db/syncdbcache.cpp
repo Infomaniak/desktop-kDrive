@@ -205,4 +205,48 @@ bool SyncDbCache::ids(ReplicaSide side, std::set<NodeId>& ids, bool& found) {
     found = nodeIdsCache.size() > 0;
     return true;
 }
+bool SyncDbCache::ids(std::unordered_set<SyncDb::NodeIds, SyncDb::NodeIds::hashNodeIdsFunction>& ids, bool& found) {
+    if (!reloadCacheIfNeeded()) {
+        return false;
+    }
+    for (const auto& [dbNodeId, dbNode]: _dbNodesCache) {
+        SyncDb::NodeIds nodeIds;
+        nodeIds.dbNodeId = dbNodeId;
+        nodeIds.localNodeId = dbNode.nodeIdLocal().value();
+        nodeIds.remoteNodeId = dbNode.nodeIdRemote().value();
+        (void) ids.insert(nodeIds);
+    }
+    found = ids.size() > 0;
+
+    return true;
+}
+bool SyncDbCache::path(DbNodeId dbNodeId, SyncPath& localPath, SyncPath& remotePath, bool& found) {
+    if (!reloadCacheIfNeeded()) {
+        return false;
+    }
+    found = false;
+    if (_dbNodesPathCache.contains(dbNodeId)) {
+        localPath = _dbNodesPathCache.at(dbNodeId).first;
+        remotePath = _dbNodesPathCache.at(dbNodeId).second;
+        found = true;
+        return true;
+    }
+
+    auto dbNodeIt = _dbNodesCache.find(dbNodeId);
+    if (dbNodeIt == _dbNodesCache.end()) {
+        return false; // Not found
+    }
+    if (!dbNodeIt->second.parentNodeId()) {
+        localPath = dbNodeIt->second.nameLocal();
+        remotePath = dbNodeIt->second.nameRemote();
+    } else {
+        if (!path(dbNodeIt->second.parentNodeId().value(), localPath, remotePath, found) || !found) return true;
+        localPath /= dbNodeIt->second.nameLocal();
+        remotePath /= dbNodeIt->second.nameRemote();
+        
+    }
+    _dbNodesPathCache.try_emplace(dbNodeId, std::make_pair(localPath, remotePath));
+    found = true;
+    return true;
+}
 } // namespace KDC

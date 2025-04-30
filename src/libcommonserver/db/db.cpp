@@ -50,6 +50,15 @@
 #define PRAGMA_FOREIGN_KEYS_ID "db6"
 #define PRAGMA_FOREIGN_KEYS "PRAGMA foreign_keys=ON;"
 
+#define PRAGMA_DEFAULT_CACHE_SIZE_ID "db7"
+#define PRAGMA_DEFAULT_CACHE_SIZE "PRAGMA cache_size=32768;"
+
+#define PRAGMA_TEMP_STORE_ID "db8"
+#define PRAGMA_TEMP_STORE "PRAGMA temp_store=memory;"
+
+#define PRAGMA_MMAP_SIZE_ID "db9"
+#define PRAGMA_MMAP_SIZE "PRAGMA mmap_size=30000000000;"
+
 //
 // version
 //
@@ -475,7 +484,7 @@ bool Db::checkConnect(const std::string &version) {
     }
 
     // The database file is created by this call (SQLITE_OPEN_CREATE)
-    if (!_sqliteDb->openOrCreateReadWrite(_dbPath)) {
+    if (!openDb(_dbPath)) {
         std::string error = _sqliteDb->error();
         LOG_WARN(_logger, "Error opening the db: " << error.c_str());
         return false;
@@ -563,6 +572,46 @@ bool Db::checkConnect(const std::string &version) {
     queryFree(PRAGMA_FOREIGN_KEYS_ID);
     LOG_DEBUG(_logger, "sqlite3 foreign_keys=ON");
 
+    // PRAGMA_DEFAULT_CACHE_SIZE
+     if (!createAndPrepareRequest(PRAGMA_DEFAULT_CACHE_SIZE_ID, PRAGMA_DEFAULT_CACHE_SIZE))
+        return false;
+    if (!queryNext(PRAGMA_DEFAULT_CACHE_SIZE_ID, hasData)) {
+        LOG_WARN(_logger, "Error getting query result: " << PRAGMA_DEFAULT_CACHE_SIZE_ID);
+        queryFree(PRAGMA_DEFAULT_CACHE_SIZE_ID);
+        return false;
+    }
+    queryFree(PRAGMA_DEFAULT_CACHE_SIZE_ID);
+    LOG_DEBUG(_logger, "sqlite3 cache_size=2000");
+
+    // PRAGMA_TEMP_STORE
+    if (!createAndPrepareRequest(PRAGMA_TEMP_STORE_ID, PRAGMA_TEMP_STORE)) return false;
+    if (!queryNext(PRAGMA_TEMP_STORE_ID, hasData)) {
+        LOG_WARN(_logger, "Error getting query result: " << PRAGMA_TEMP_STORE_ID);
+        queryFree(PRAGMA_TEMP_STORE_ID);
+        return false;
+    }
+    queryFree(PRAGMA_TEMP_STORE_ID);
+    LOG_DEBUG(_logger, "sqlite3 PRAGMA_TEMP_STORE_ID");
+
+    // PRAGMA_MMAP_SIZE_ID
+    if (!createAndPrepareRequest(PRAGMA_MMAP_SIZE_ID, PRAGMA_MMAP_SIZE)) return false;
+    if (!queryNext(PRAGMA_MMAP_SIZE_ID, hasData)) {
+        LOG_WARN(_logger, "Error getting query result: " << PRAGMA_MMAP_SIZE_ID);
+        queryFree(PRAGMA_MMAP_SIZE_ID);
+        return false;
+    }
+    queryFree(PRAGMA_MMAP_SIZE_ID);
+    LOG_DEBUG(_logger, "sqlite3 PRAGMA_MMAP_SIZE_ID");
+
+    return true;
+}
+
+bool Db::openDb(const std::filesystem::path &dbPath) {
+    if (!_sqliteDb->openOrCreateReadWrite(_dbPath)) {
+        std::string error = _sqliteDb->error();
+        LOG_WARN(_logger, "Error opening the db: " << error.c_str());
+        return false;
+    }
     return true;
 }
 

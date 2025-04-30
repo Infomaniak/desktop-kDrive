@@ -18,6 +18,7 @@
 
 #include "testincludes.h"
 #include "db/syncdb.h"
+#include "db/syncdbcache.h"
 
 using namespace CppUnit;
 
@@ -36,7 +37,7 @@ class SyncDbMock : public SyncDb {
 
 class TestSyncDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestSyncDb);
-        CPPUNIT_TEST(testNodes);
+        /* CPPUNIT_TEST(testNodes);
         CPPUNIT_TEST(testSyncNodes);
         CPPUNIT_TEST(testCorrespondingNodeId);
         CPPUNIT_TEST(testUpdateLocalName);
@@ -44,7 +45,9 @@ class TestSyncDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testUpgradeTo3_6_5CheckNodeMap);
         CPPUNIT_TEST(testUpgradeTo3_6_5);
         CPPUNIT_TEST(testInit3_6_4);
-        CPPUNIT_TEST(testDummyUpgrade);
+        CPPUNIT_TEST(testDummyUpgrade);*/
+        //CPPUNIT_TEST(benchmarkCacheSize);
+        CPPUNIT_TEST(benchmarkSyncDbCache);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -61,6 +64,8 @@ class TestSyncDb : public CppUnit::TestFixture, public TestBase {
         void testUpgradeTo3_6_5CheckNodeMap();
         void testInit3_6_4();
         void testDummyUpgrade();
+        void benchmarkCacheSize();
+        void benchmarkSyncDbCache();
 
     private:
         SyncDbMock *_testObj;

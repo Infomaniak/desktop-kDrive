@@ -122,7 +122,7 @@ class SyncDb : public Db {
         SyncDbRevision revision() const;
     protected:
         virtual bool updateNames(const char *requestId, const SyncName &localName, const SyncName &remoteName);
-
+        bool openDb(const std::filesystem::path &dbPath) override;
     private:
         static DbNode _driveRootNode;
         DbNode _rootNode;

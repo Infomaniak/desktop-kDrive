@@ -37,11 +37,14 @@ class SyncDbCache {
         // Returns the list of IDs contained in snapshot
         bool ids(ReplicaSide side, std::vector<NodeId> &ids, bool &found);
         bool ids(ReplicaSide side, std::set<NodeId> &ids, bool &found);
+        bool ids(std::unordered_set<SyncDb::NodeIds, SyncDb::NodeIds::hashNodeIdsFunction> &ids, bool &found);
 
+        bool path(DbNodeId dbNodeId, SyncPath &localPath, SyncPath &remotePath, bool &found); 
     private:
         bool isChacheUpToDate() const;
         SyncDbRevision _cachedRevision = 0;
         std::shared_ptr<SyncDb> _syncDb;
+        std::unordered_map<DbNodeId, std::pair<SyncPath /*local*/, SyncPath /*remote*/>> _dbNodesPathCache;
         std::unordered_map<DbNodeId, DbNode> _dbNodesCache;
         std::unordered_map<NodeId, DbNodeId> _localNodeIdsCache;
         std::unordered_map<NodeId, DbNodeId> _remoteNodeIdsCache;

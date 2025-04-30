@@ -78,6 +78,7 @@ class COMMONSERVER_EXPORT Db {
         bool tableExists(const std::string &tableName, bool &exist);
         bool columnExists(const std::string &tableName, const std::string &columnName, bool &exist);
 
+        virtual bool openDb(const std::filesystem::path &dbPath);
     protected:
         void startTransaction();
         void commitTransaction();
