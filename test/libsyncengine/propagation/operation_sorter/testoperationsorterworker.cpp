@@ -91,25 +91,50 @@ void TestOperationSorterWorker::testMoveFirstAfterSecond() {
 
 // delete before move, e.g. user deletes an object at path "x" and moves another object "a" to "x".
 void TestOperationSorterWorker::testFixDeleteBeforeMove() {
-    const auto nodeA = _testSituationGenerator.getNode(ReplicaSide::Local, "a");
-    const auto nodeB = _testSituationGenerator.getNode(ReplicaSide::Local, "b");
+    {
+        const auto nodeA = _testSituationGenerator.getNode(ReplicaSide::Local, "a");
+        const auto nodeB = _testSituationGenerator.getNode(ReplicaSide::Local, "b");
 
-    // Delete node A
-    nodeA->insertChangeEvent(OperationType::Delete);
-    const auto deleteOp = generateSyncOperation(OperationType::Delete, nodeA);
+        // Delete node A
+        nodeA->insertChangeEvent(OperationType::Delete);
+        const auto deleteOp = generateSyncOperation(OperationType::Delete, nodeA);
 
-    // Rename B into A
-    _testSituationGenerator.renameNode(ReplicaSide::Local, nodeB->id().value(), Str("A"));
-    const auto moveOp = generateSyncOperation(OperationType::Move, nodeB);
+        // Rename B into A
+        _testSituationGenerator.renameNode(ReplicaSide::Local, nodeB->id().value(), Str("A"));
+        const auto moveOp = generateSyncOperation(OperationType::Move, nodeB);
 
-    (void) _syncPal->_syncOps->pushOp(moveOp);
-    (void) _syncPal->_syncOps->pushOp(deleteOp);
+        (void) _syncPal->_syncOps->pushOp(moveOp);
+        (void) _syncPal->_syncOps->pushOp(deleteOp);
 
-    _syncPal->_operationsSorterWorker->fixDeleteBeforeMove();
+        _syncPal->_operationsSorterWorker->fixDeleteBeforeMove();
 
-    CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
-    CPPUNIT_ASSERT_EQUAL(deleteOp->id(), _syncPal->_syncOps->opSortedList().front());
-    CPPUNIT_ASSERT_EQUAL(moveOp->id(), _syncPal->_syncOps->opSortedList().back());
+        CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
+        CPPUNIT_ASSERT_EQUAL(deleteOp->id(), _syncPal->_syncOps->opSortedList().front());
+        CPPUNIT_ASSERT_EQUAL(moveOp->id(), _syncPal->_syncOps->opSortedList().back());
+    }
+    _syncPal->_syncOps->clear();
+    {
+        // Test scenario with node positioned at a lower tree depth
+        const auto nodeAAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aaa");
+        const auto nodeAAB = _testSituationGenerator.getNode(ReplicaSide::Local, "aab");
+
+        // Delete node AAA
+        nodeAAA->insertChangeEvent(OperationType::Delete);
+        const auto deleteOp = generateSyncOperation(OperationType::Delete, nodeAAA);
+
+        // Rename AAB into AAA
+        _testSituationGenerator.renameNode(ReplicaSide::Local, nodeAAB->id().value(), Str("AAA"));
+        const auto moveOp = generateSyncOperation(OperationType::Move, nodeAAB);
+
+        (void) _syncPal->_syncOps->pushOp(moveOp);
+        (void) _syncPal->_syncOps->pushOp(deleteOp);
+
+        _syncPal->_operationsSorterWorker->fixDeleteBeforeMove();
+
+        CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
+        CPPUNIT_ASSERT_EQUAL(deleteOp->id(), _syncPal->_syncOps->opSortedList().front());
+        CPPUNIT_ASSERT_EQUAL(moveOp->id(), _syncPal->_syncOps->opSortedList().back());
+    }
 }
 
 // move before create, e.g. user moves an object "a" to "b" and creates another object at "a".
