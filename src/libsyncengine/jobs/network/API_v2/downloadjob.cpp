@@ -286,8 +286,9 @@ bool DownloadJob::handleResponse(std::istream &is) {
             LOGW_WARN(_logger, L"Error in Utility::setFileDates: " << Utility::formatSyncPath(_localpath));
             // Do nothing (remote file will be updated during the next sync)
             sentry::Handler::captureMessage(sentry::Level::Warning, "DownloadJob::handleResponse", "Unable to set file dates");
-        } else if (ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_INFO(_logger, L"Item does not exist anymore. Restarting sync: " << Utility::formatSyncPath(_localpath));
+        } else if (ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
+            LOGW_INFO(_logger, L"Item does not exist anymore or access is denied. Restarting sync: "
+                                       << Utility::formatSyncPath(_localpath));
             _exitInfo = {ExitCode::DataError, ExitCause::InvalidSnapshot};
             return false;
         }

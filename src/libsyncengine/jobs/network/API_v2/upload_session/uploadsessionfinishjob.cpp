@@ -61,10 +61,18 @@ bool UploadSessionFinishJob::handleResponse(std::istream &is) {
 
     if (_modtimeIn != _modtimeOut) {
         // The backend refused the modification time. To avoid further EDIT operations, we apply the backend's time on local file.
-        (void) Utility::setFileDates(_absoluteFilePath, 0, _modtimeOut, false);
-        LOG_INFO(_logger, "Modification time refused "
-                                  << _modtimeIn << " by the backend. The modification time has been updated to " << _modtimeOut
-                                  << " on local file.");
+        if (const auto ioError = Utility::setFileDates(_absoluteFilePath, 0, _modtimeOut, false); ioError == IoError::Success) {
+            LOG_INFO(_logger, "Modification time refused " << _modtimeIn
+                                                           << " by the backend. The modification time has been updated to "
+                                                           << _modtimeOut << " on local file.");
+        } else if (ioError == IoError::NoSuchFileOrDirectory) {
+            // The file has been removed from local replica. This is ok, the DELETE operation will be propagated on next sync.
+        } else {
+            LOGW_WARN(_logger, L"Failed to set modification date on local file " << Utility::formatSyncPath(_absoluteFilePath)
+                                                                                 << L" - error: "
+                                                                                 << Utility::formatIoError(ioError))
+            return false;
+        }
     }
 
     return true;

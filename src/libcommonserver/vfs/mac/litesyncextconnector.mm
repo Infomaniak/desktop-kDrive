@@ -1074,6 +1074,9 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
         tmpIoError == IoError::NoSuchFileOrDirectory) {
         LOGW_DEBUG(_logger, L"Item doesn't exist: " << Utility::formatPath(path));
         return false;
+    } else if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Access denied to " << Utility::formatPath(path));
+        return false;
     } else if (tmpIoError != IoError::Success) {
         LOGW_WARN(_logger, L"Call to Utility::setFileDates failed: " << Utility::formatPath(path));
         return false;
@@ -1182,6 +1185,9 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
                         QStr2Path(filePath), std::make_optional<KDC::SyncTime>(creationDate), std::nullopt, false);
                 ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_DEBUG(_logger, L"Item doesn't exist: " << Utility::formatPath(filePath));
+                return false;
+            } else if (ioError == IoError::AccessDenied) {
+                LOGW_WARN(_logger, L"Access denied to " << Utility::formatPath(filePath));
                 return false;
             } else if (ioError != IoError::Success) {
                 LOGW_WARN(_logger, L"Call to Utility::setFileDates failed: " << Utility::formatPath(filePath));
@@ -1305,6 +1311,9 @@ bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, co
                                                       fileStat->st_mtimespec.tv_sec, false);
         ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_DEBUG(_logger, L"Item doesn't exist: " << Utility::formatPath(absoluteFilePath));
+        return false;
+    } else if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Access denied to " << Utility::formatPath(absoluteFilePath));
         return false;
     } else if (ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Call to Utility::setFileDates failed: " << Utility::formatPath(absoluteFilePath));

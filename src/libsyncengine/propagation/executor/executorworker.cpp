@@ -916,11 +916,12 @@ ExitInfo ExecutorWorker::fixModificationDate(SyncOpPtr syncOp, const SyncPath &a
         LOGW_SYNCPAL_INFO(_logger,
                           L"Last modification date updated locally to avoid further wrongly generated EDIT operations for file: "
                                   << Utility::formatSyncPath(absolutePath));
+    } else if (ioError == IoError::NoSuchFileOrDirectory) {
+        // If file does not exist anymore, do nothing special. This is fine, it will not generate EDIT operations anymore.
     } else {
         LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::setFileDates: " << Utility::formatSyncPath(absolutePath));
     }
 
-    // If file does not exist anymore, do nothing special. This is fine, it will not generate EDIT operations anymore.
     return ExitCode::Ok;
 }
 
