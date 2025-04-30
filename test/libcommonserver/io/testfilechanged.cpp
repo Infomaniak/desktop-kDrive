@@ -142,9 +142,7 @@ void TestIo::testFileChanged() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path() / "visible_file.txt";
-        {
-            std::ofstream ofs(path);
-        }
+        { std::ofstream ofs(path); }
 
         FileStat fileStat;
         IoError ioError = IoError::Success;
@@ -189,9 +187,7 @@ void TestIo::testCheckIfIsHiddenFile() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path() / "hidden_file.txt";
-        {
-            std::ofstream ofs(path);
-        }
+        { std::ofstream ofs(path); }
 
         _testObj->setFileHidden(path, true);
         // On MacOSX, the '/var' folder is hidden.
@@ -217,9 +213,7 @@ void TestIo::testCheckIfIsHiddenFile() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path() / ".hidden_file.txt";
-        {
-            std::ofstream ofs(path);
-        }
+        { std::ofstream ofs(path); }
         bool isHidden = false;
         IoError ioError = IoError::Unknown;
 
@@ -292,9 +286,7 @@ void TestIo::testCheckIfIsHiddenFile() {
         const SyncPath hiddenSubdir = temporaryDirectory.path() / ".hidden";
         std::filesystem::create_directory(hiddenSubdir);
         const SyncPath path = hiddenSubdir / "visible_file.txt";
-        {
-            std::ofstream ofs(path);
-        }
+        { std::ofstream ofs(path); }
 
         bool isHidden = false;
         IoError ioError = IoError::Unknown;

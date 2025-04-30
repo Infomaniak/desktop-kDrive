@@ -39,7 +39,6 @@ static const int boxHMargin = 40;
 static const int boxHSpacing = 10;
 static const int titleBoxVMargin = 14;
 static const int descriptionBoxVMargin = 20;
-static const int hiddenFilesBoxVMargin = 15;
 static const int addFileBoxHMargin = 35;
 static const int addFileBoxVMargin = 12;
 static const int filesTableHeaderBoxVMargin = 15;
@@ -59,9 +58,7 @@ static const char patternProperty[] = "pattern";
 Q_LOGGING_CATEGORY(lcFileExclusionDialog, "gui.fileexclusiondialog", QtInfoMsg)
 
 FileExclusionDialog::FileExclusionDialog(QWidget *parent) :
-    CustomDialog(true, parent), _hiddenFilesCheckBox(nullptr), _filesTableModel(nullptr), _filesTableView(nullptr),
-    _saveButton(nullptr), _actionIconColor(QColor()), _actionIconSize(QSize()), _needToSave(false),
-    _defaultTemplateList(QList<ExclusionTemplateInfo>()), _userTemplateList(QList<ExclusionTemplateInfo>()) {
+    CustomDialog(true, parent), _filesTableModel(nullptr), _filesTableView(nullptr), _saveButton(nullptr), _needToSave(false) {
     initUI();
     updateUI();
 }
@@ -87,17 +84,6 @@ void FileExclusionDialog::initUI() {
     descriptionLabel->setWordWrap(true);
     mainLayout->addWidget(descriptionLabel);
     mainLayout->addSpacing(descriptionBoxVMargin);
-
-    // Synchronize hidden files
-    QHBoxLayout *hiddenFilesHBox = new QHBoxLayout();
-    hiddenFilesHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
-    mainLayout->addLayout(hiddenFilesHBox);
-    mainLayout->addSpacing(hiddenFilesBoxVMargin);
-
-    _hiddenFilesCheckBox = new CustomCheckBox(this);
-    _hiddenFilesCheckBox->setObjectName("hiddenFilesCheckBox");
-    _hiddenFilesCheckBox->setText(tr("Synchronize hidden files"));
-    hiddenFilesHBox->addWidget(_hiddenFilesCheckBox);
 
     // Add file button
     QHBoxLayout *addFileHBox = new QHBoxLayout();
@@ -168,7 +154,6 @@ void FileExclusionDialog::initUI() {
     buttonsHBox->addWidget(cancelButton);
     buttonsHBox->addStretch();
 
-    connect(_hiddenFilesCheckBox, &CustomCheckBox::clicked, this, &FileExclusionDialog::onHiddenFilesCheckBoxClicked);
     connect(addFileButton, &CustomPushButton::clicked, this, &FileExclusionDialog::onAddFileButtonTriggered);
     connect(_filesTableView, &QTableView::clicked, this, &FileExclusionDialog::onTableViewClicked);
     connect(_saveButton, &QPushButton::clicked, this, &FileExclusionDialog::onSaveButtonTriggered);
@@ -177,8 +162,6 @@ void FileExclusionDialog::initUI() {
 }
 
 void FileExclusionDialog::updateUI() {
-    _hiddenFilesCheckBox->setChecked(ParametersCache::instance()->parametersInfo().syncHiddenFiles());
-
     ExitCode exitCode;
     exitCode = GuiRequests::getExclusionTemplateList(true, _defaultTemplateList);
     if (exitCode != ExitCode::Ok) {
@@ -333,12 +316,6 @@ void FileExclusionDialog::onExit() {
     }
 }
 
-void FileExclusionDialog::onHiddenFilesCheckBoxClicked(bool checked) {
-    Q_UNUSED(checked)
-
-    setNeedToSave(true);
-}
-
 void FileExclusionDialog::onAddFileButtonTriggered(bool checked) {
     Q_UNUSED(checked)
 
@@ -468,7 +445,6 @@ void FileExclusionDialog::onSaveButtonTriggered(bool checked) {
         return;
     }
 
-    ParametersCache::instance()->parametersInfo().setSyncHiddenFiles(_hiddenFilesCheckBox->isChecked());
     ParametersCache::instance()->saveParametersInfo();
 
     exitCode = GuiRequests::propagateExcludeListChange();
