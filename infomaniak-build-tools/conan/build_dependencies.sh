@@ -52,7 +52,7 @@ if ! conan remote list | grep -qE "^$LOCAL_RECIPE_REMOTE_NAME.*\[.*Enabled: True
   log "Adding Conan remote '$LOCAL_RECIPE_REMOTE_NAME' at '$CONAN_REMOTE_BASE_FOLDER'. "
   conan remote add "$LOCAL_RECIPE_REMOTE_NAME" "$CONAN_REMOTE_BASE_FOLDER"
 else
-  log "Conan remote '$LocalConanRemoteName' already exists and is enabled."
+  log "Conan remote '$LOCAL_RECIPE_REMOTE_NAME' already exists and is enabled."
 fi
 
 # Build conan recipe for the platforms x86_64 & arm64
