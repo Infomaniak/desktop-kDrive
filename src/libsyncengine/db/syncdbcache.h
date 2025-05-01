@@ -17,14 +17,18 @@
  */
 
 #pragma once
-
-#include "syncdb.h"
+#include "libcommon/utility/types.h"
+#include <set>
+#include <unordered_map>
+#include <list>
+#include <mutex>
 
 namespace KDC {
-
+class SyncDb;
 class SyncDbCache {
     public:
-        SyncDbCache(std::shared_ptr<SyncDb> syncDb) : _syncDb(syncDb) {};
+        SyncDbCache(SyncDb &syncDb) :
+            _syncDb(syncDb) {};
         bool reloadCacheIfNeeded();
         void clear();
         // Getters with replica IDs
@@ -37,18 +41,27 @@ class SyncDbCache {
         // Returns the list of IDs contained in snapshot
         bool ids(ReplicaSide side, std::vector<NodeId> &ids, bool &found);
         bool ids(ReplicaSide side, std::set<NodeId> &ids, bool &found);
-        bool ids(std::unordered_set<SyncDb::NodeIds, SyncDb::NodeIds::hashNodeIdsFunction> &ids, bool &found);
+        bool ids(std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction> &ids, bool &found);
 
         bool path(DbNodeId dbNodeId, SyncPath &localPath, SyncPath &remotePath, bool &found, bool recursiveCall = false);
+        bool path(ReplicaSide side, const NodeId &nodeId, SyncPath &path, bool &found);
+
+        // Returns the id of the object from its path
+        // path is relative to the root directory
+        bool id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &nodeId, bool &found);
+
+        bool id(ReplicaSide side, DbNodeId dbNodeId, NodeId &nodeId, bool &found);
 
     private:
         bool isChacheUpToDate() const;
         DbNodeId getDbNodeIdFromNodeId(ReplicaSide side, const NodeId &nodeId, bool &found);
         const DbNode &getDbNodeFromDbNodeId(const DbNodeId &dbNodeId, bool &found);
         SyncDbRevision _cachedRevision = 0;
-        std::shared_ptr<SyncDb> _syncDb;
+        SyncDb &_syncDb;
+        std::recursive_mutex _mutex;
         std::unordered_map<DbNodeId, std::pair<SyncPath /*local*/, SyncPath /*remote*/>> _dbNodesPathCache;
         std::unordered_map<DbNodeId, DbNode> _dbNodesCache;
+        std::unordered_map<DbNodeId /*parent*/, std::list<DbNodeId /*children*/>> _dbNodesParentToChildrenMap;
         std::unordered_map<NodeId, DbNodeId> _localNodeIdToDbNodeIdMap;
         std::unordered_map<NodeId, DbNodeId> _remoteNodeIdToDbNodeIdMap;
 };

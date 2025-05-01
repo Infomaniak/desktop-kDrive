@@ -180,17 +180,17 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
     }
 
     // Set up DB
-    const DbNode dbNodeLower(2, _syncPal->_syncDb->rootNode().nodeId(), Str("a1"), Str("a1"), "la", "ra",
+    const DbNode dbNodeLower(2, _syncPal->syncDb()->rootNode().nodeId(), Str("a1"), Str("a1"), "la", "ra",
                              testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                              testhelpers::defaultFileSize, std::nullopt);
-    const DbNode dbNodeUpper(3, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "lA", "rA", testhelpers::defaultTime,
+    const DbNode dbNodeUpper(3, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "lA", "rA", testhelpers::defaultTime,
                              testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                              testhelpers::defaultFileSize, std::nullopt);
     DbNodeId dbNodeIdLower;
     DbNodeId dbNodeIdUpper;
     bool constraintError = false;
-    _syncPal->_syncDb->insertNode(dbNodeLower, dbNodeIdLower, constraintError);
-    _syncPal->_syncDb->insertNode(dbNodeUpper, dbNodeIdUpper, constraintError);
+    _syncPal->syncDb()->insertNode(dbNodeLower, dbNodeIdLower, constraintError);
+    _syncPal->syncDb()->insertNode(dbNodeUpper, dbNodeIdUpper, constraintError);
 
     // Set up remote tree
     const auto remoteParentNode = _syncPal->updateTree(ReplicaSide::Remote)->rootNode();

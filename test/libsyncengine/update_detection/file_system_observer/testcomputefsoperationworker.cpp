@@ -470,7 +470,7 @@ void TestComputeFSOperationWorker::testHasChangedSinceLastSeen() {
     _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision = 0;
 
 
-    SyncDb::NodeIds nodeIds;
+    NodeIds nodeIds;
     nodeIds.localNodeId = "l_test";
     nodeIds.remoteNodeId = "r_test";
 

@@ -293,7 +293,7 @@ DbNode SyncDb::_driveRootNode(0, std::nullopt, SyncName(), SyncName(), "1", "1",
                               NodeType::Directory, 0, std::nullopt);
 
 SyncDb::SyncDb(const std::string &dbPath, const std::string &version, const std::string &targetNodeId) :
-    Db(dbPath), _rootNode(_driveRootNode) {
+    Db(dbPath), _rootNode(_driveRootNode), _cache(*this){
     if (!targetNodeId.empty()) {
         _rootNode.setNodeIdRemote(targetNodeId);
     }

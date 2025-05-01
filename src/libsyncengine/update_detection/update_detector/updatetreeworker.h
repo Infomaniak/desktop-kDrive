@@ -21,7 +21,6 @@
 #include "syncpal/isyncworker.h"
 #include "syncpal/syncpal.h"
 #include "db/syncdb.h"
-#include "db/syncdbcache.h"
 
 #include "update_detection/file_system_observer/fsoperationset.h"
 #include "updatetree.h"
@@ -45,7 +44,6 @@ class UpdateTreeWorker : public ISyncWorker {
 
     private:
         std::shared_ptr<SyncDb> _syncDb;
-        SyncDbCache _syncDbCache;
         std::shared_ptr<FSOperationSet> _operationSet;
         std::shared_ptr<UpdateTree> _updateTree;
         using FSOpPtrMap = std::unordered_map<SyncPath, FSOpPtr, hashPathFunction>;

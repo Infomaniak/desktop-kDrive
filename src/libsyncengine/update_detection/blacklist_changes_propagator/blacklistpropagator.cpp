@@ -87,7 +87,7 @@ ExitCode BlacklistPropagator::checkNodes() {
         // Check if item still exist
         DbNodeId dbId;
         bool found = false;
-        if (!_syncPal->_syncDb->dbId(ReplicaSide::Remote, remoteNodeId, dbId, found)) {
+        if (!_syncPal->syncDb()->dbId(ReplicaSide::Remote, remoteNodeId, dbId, found)) {
             LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in SyncDb::dbId");
             exitCode = ExitCode::DbError;
             break;
@@ -97,7 +97,7 @@ ExitCode BlacklistPropagator::checkNodes() {
             noItemToRemoveFound = false;
 
             NodeId localNodeId;
-            if (!_syncPal->_syncDb->correspondingNodeId(ReplicaSide::Remote, remoteNodeId, localNodeId, found)) {
+            if (!_syncPal->syncDb()->correspondingNodeId(ReplicaSide::Remote, remoteNodeId, localNodeId, found)) {
                 LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in SyncDb::correspondingNodeId");
                 exitCode = ExitCode::DbError;
                 break;
@@ -128,7 +128,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
     SyncPath localPath;
     SyncPath remotePath;
     bool found = false;
-    if (!_syncPal->_syncDb->path(dbId, localPath, remotePath, found)) {
+    if (!_syncPal->syncDb()->path(dbId, localPath, remotePath, found)) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in SyncDb::path");
         return ExitCode::DbError;
     }
@@ -259,7 +259,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
     }
 
     // Remove node (and children by cascade) from DB
-    if (!_syncPal->_syncDb->deleteNode(dbId, found)) {
+    if (!_syncPal->syncDb()->deleteNode(dbId, found)) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in SyncDb::deleteNode");
         return ExitCode::DbError;
     }

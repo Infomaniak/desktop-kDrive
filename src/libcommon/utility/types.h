@@ -771,6 +771,19 @@ std::string toString(sentry::ConfidentialityLevel e);
 // Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
 using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
 
+struct NodeIds {
+        DbNodeId dbNodeId;
+        NodeId localNodeId;
+        NodeId remoteNodeId;
+        NodeId nodeId(const ReplicaSide side) const { return side == ReplicaSide::Local ? localNodeId : remoteNodeId; }
+        struct hashNodeIdsFunction {
+                std::size_t operator()(const NodeIds &nodeIds) const { return std::hash<DbNodeId>()(nodeIds.dbNodeId); }
+        };
+        bool operator==(const NodeIds &other) const {
+            return dbNodeId == other.dbNodeId && localNodeId == other.localNodeId && remoteNodeId == other.remoteNodeId;
+        }
+};
+
 /*
  * Define operator and converter for enum class
  */

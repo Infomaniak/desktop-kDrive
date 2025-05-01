@@ -62,7 +62,7 @@ void SyncPalWorker::execute() {
 
         if (_syncPal->vfsMode() == VirtualFileMode::Mac) {
             // Reset nodes syncing flag
-            if (!_syncPal->_syncDb->updateNodesSyncing(false)) {
+            if (!_syncPal->syncDb()->updateNodesSyncing(false)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::updateNodesSyncing for syncDbId=" << _syncPal->syncDbId());
             }
         }
@@ -348,6 +348,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             _syncPal->resetEstimateUpdates();
             _syncPal->refreshTmpBlacklist();
             _syncPal->freeSnapshotsCopies();
+            _syncPal->syncDb()->cache().clear();
             break;
         case SyncStep::UpdateDetection1:
             workers[0] = _syncPal->computeFSOperationsWorker();
@@ -403,6 +404,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
+            _syncPal->syncDb()->cache().clear(); // Cache is not needed anymore, free resources
             break;
         case SyncStep::Done:
             workers[0] = nullptr;

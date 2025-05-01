@@ -651,7 +651,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                 try {
                     int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
                     job = std::make_shared<DriveUploadSession>(
-                            _syncPal->vfs(), _syncPal->driveDbId(), _syncPal->_syncDb, absoluteLocalFilePath,
+                            _syncPal->vfs(), _syncPal->driveDbId(), _syncPal->syncDb(), absoluteLocalFilePath,
                             syncOp->affectedNode()->name(),
                             newCorrespondingParentNode->id().has_value() ? *newCorrespondingParentNode->id() : std::string(),
                             syncOp->affectedNode()->lastmodified() ? *syncOp->affectedNode()->lastmodified() : 0,
@@ -868,7 +868,7 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
             try {
                 int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
                 job = std::make_shared<DriveUploadSession>(
-                        _syncPal->vfs(), _syncPal->driveDbId(), _syncPal->_syncDb, absoluteLocalFilePath,
+                        _syncPal->vfs(), _syncPal->driveDbId(), _syncPal->syncDb(), absoluteLocalFilePath,
                         syncOp->correspondingNode()->id() ? *syncOp->correspondingNode()->id() : std::string(),
                         syncOp->affectedNode()->lastmodified() ? *syncOp->affectedNode()->lastmodified() : 0,
                         isLiteSyncActivated(), uploadSessionParallelJobs);
@@ -902,7 +902,7 @@ ExitInfo ExecutorWorker::fixModificationDate(SyncOpPtr syncOp, const SyncPath &a
     // Update last modification date in order to avoid generating more EDIT operations.
     bool found = false;
     DbNode dbNode;
-    if (!_syncPal->_syncDb->node(*syncOp->correspondingNode()->idb(), dbNode, found)) {
+    if (!_syncPal->syncDb()->node(*syncOp->correspondingNode()->idb(), dbNode, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
         return {ExitCode::DbError, ExitCause::DbAccessError};
     }
@@ -1754,7 +1754,7 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
 
     DbNodeId newDbNodeId;
     bool constraintError = false;
-    if (!_syncPal->_syncDb->insertNode(dbNode, newDbNodeId, constraintError)) {
+    if (!_syncPal->syncDb()->insertNode(dbNode, newDbNodeId, constraintError)) {
         LOGW_SYNCPAL_WARN(
                 _logger,
                 L"Failed to insert node into DB:"
@@ -1775,20 +1775,20 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
         // inserting the new node in DB
         DbNodeId dbNodeId;
         bool found = false;
-        if (!_syncPal->_syncDb->dbId(ReplicaSide::Remote, remoteId, dbNodeId, found)) {
+        if (!_syncPal->syncDb()->dbId(ReplicaSide::Remote, remoteId, dbNodeId, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
             return {ExitCode::DbError, ExitCause::DbAccessError};
         }
         if (found) {
             // Delete old node
-            if (!_syncPal->_syncDb->deleteNode(dbNodeId, found)) {
+            if (!_syncPal->syncDb()->deleteNode(dbNodeId, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::deleteNode");
                 return {ExitCode::DbError, ExitCause::DbAccessError};
             }
         }
 
         // Create new node
-        if (!_syncPal->_syncDb->insertNode(dbNode, newDbNodeId, constraintError)) {
+        if (!_syncPal->syncDb()->insertNode(dbNode, newDbNodeId, constraintError)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::insertNode");
             return {constraintError ? ExitCode::DataError : ExitCode::DbError, ExitCause::DbAccessError};
         }
@@ -1838,7 +1838,7 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
                                                   std::optional<SyncTime> newLastModTime, std::shared_ptr<Node> &node) {
     DbNode dbNode;
     bool found = false;
-    if (!_syncPal->_syncDb->node(*syncOp->correspondingNode()->idb(), dbNode, found)) {
+    if (!_syncPal->syncDb()->node(*syncOp->correspondingNode()->idb(), dbNode, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
         return {ExitCode::DbError, ExitCause::DbAccessError};
     }
@@ -1890,7 +1890,7 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
                                  << syncOp->affectedNode()->type());
     }
 
-    if (!_syncPal->_syncDb->updateNode(dbNode, found)) {
+    if (!_syncPal->syncDb()->updateNode(dbNode, found)) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to update node into DB: "
                                            << L"local ID: " << Utility::s2ws(localId) << L", remote ID: "
                                            << Utility::s2ws(remoteId) << L", local name: " << Utility::formatSyncName(localName)
@@ -1931,7 +1931,7 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
 
     DbNode dbNode;
     bool found = false;
-    if (!_syncPal->_syncDb->node(*correspondingNode->idb(), dbNode, found)) {
+    if (!_syncPal->syncDb()->node(*correspondingNode->idb(), dbNode, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
         return {ExitCode::DbError, ExitCause::DbAccessError};
     }
@@ -1987,7 +1987,7 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
                                  << L" / type=" << syncOp->affectedNode()->type());
     }
 
-    if (!_syncPal->_syncDb->updateNode(dbNode, found)) {
+    if (!_syncPal->syncDb()->updateNode(dbNode, found)) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to update node into DB: "
                                            << L"local ID: " << Utility::s2ws(localId) << L", remote ID: "
                                            << Utility::s2ws(remoteId) << L", local name: "
@@ -2051,7 +2051,7 @@ ExitInfo ExecutorWorker::deleteFromDb(std::shared_ptr<Node> node) {
 
     // Remove item (and children by cascade) from DB
     bool found = false;
-    if (!_syncPal->_syncDb->deleteNode(*node->idb(), found)) {
+    if (!_syncPal->syncDb()->deleteNode(*node->idb(), found)) {
         LOG_SYNCPAL_WARN(_logger, "Failed to remove node " << *node->idb() << " from DB");
         return {ExitCode::DbError, ExitCause::DbAccessError};
     }

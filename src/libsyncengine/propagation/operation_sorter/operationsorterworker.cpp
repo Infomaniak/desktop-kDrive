@@ -637,7 +637,7 @@ bool OperationSorterWorker::getIdFromDb(const ReplicaSide side, const SyncPath &
     bool found = false;
     std::optional<NodeId> tmpId;
 
-    if (!_syncPal->syncDb()->id(side, path, tmpId, found)) {
+    if (!_syncPal->syncDb()->cache().id(side, path, tmpId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
         return false;
     }

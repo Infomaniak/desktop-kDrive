@@ -44,7 +44,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
     private:
         using NodeIdSet = NodeSet;
         using DbNodeIdSet = std::unordered_set<DbNodeId>;
-        using NodeIdsSet = std::unordered_set<SyncDb::NodeIds, SyncDb::NodeIds::hashNodeIdsFunction>;
+        using NodeIdsSet = std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction>;
         SnapshotRevision _lastLocalSnapshotSyncedRevision = 0;
         SnapshotRevision _lastRemoteSnapshotSyncedRevision = 0;
 
@@ -96,7 +96,6 @@ class ComputeFSOperationWorker : public ISyncWorker {
         ExitInfo blacklistItem(const SyncPath &relativeLocalPath);
 
         const std::shared_ptr<SyncDb> _syncDb;
-        mutable SyncDbCache _syncDbCache; // Cache for the SyncDb, mutable because const function can refresh the cache
         Sync _sync;
 
         NodeIdSet _remoteUnsyncedList;
@@ -110,7 +109,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
 
         bool addFolderToDelete(const SyncPath &path);
         bool checkIfPathIsInDeletedFolder(const SyncPath &path, bool &isInDeletedFolder);
-        bool hasChangedSinceLastSeen(const SyncDb::NodeIds &nodeIds) const;
+        bool hasChangedSinceLastSeen(const NodeIds &nodeIds) const;
         friend class TestComputeFSOperationWorker;
 };
 

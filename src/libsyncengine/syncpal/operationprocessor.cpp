@@ -91,7 +91,7 @@ std::shared_ptr<Node> OperationProcessor::correspondingNodeInOtherTree(const std
         // Find node in DB
         DbNodeId tmpDbNodeId = -1;
         bool found = false;
-        if (!_syncPal->_syncDb->dbId(node->side(), *node->id(), tmpDbNodeId, found)) {
+        if (!_syncPal->syncDb()->cache().dbId(node->side(), *node->id(), tmpDbNodeId, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for nodeId=" << (*node->id()).c_str());
             return nullptr;
         }
@@ -118,7 +118,7 @@ std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(const st
             return nullptr;
         }
 
-        if (!_syncPal->_syncDb->dbId(node->side(), *parentNode->id(), parentDbNodeId, found)) {
+        if (!_syncPal->syncDb()->cache().dbId(node->side(), *parentNode->id(), parentDbNodeId, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for nodeId=" << (*parentNode->id()));
             return nullptr;
         }
@@ -136,7 +136,7 @@ std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(const st
 
     // Find corresponding ancestor node id
     NodeId parentNodeId;
-    if (!_syncPal->_syncDb->id(otherSide(node->side()), parentDbNodeId, parentNodeId, found)) {
+    if (!_syncPal->syncDb()->cache().id(otherSide(node->side()), parentDbNodeId, parentNodeId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id for dbNodeId=" << parentDbNodeId);
         return nullptr;
     }
@@ -166,7 +166,7 @@ std::shared_ptr<Node> OperationProcessor::correspondingNodeDirect(const std::sha
 
     bool found = false;
     NodeId correspondingId;
-    if (!_syncPal->_syncDb->id(otherSide(node->side()), *node->idb(), correspondingId, found)) {
+    if (!_syncPal->syncDb()->cache().id(otherSide(node->side()), *node->idb(), correspondingId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
         return nullptr;
     }
