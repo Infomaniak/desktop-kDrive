@@ -27,7 +27,8 @@
 namespace KDC {
 
 OperationSorterWorker::OperationSorterWorker(const std::shared_ptr<SyncPal> &syncPal, const std::string &name,
-                                             const std::string &shortName) : OperationProcessor(syncPal, name, shortName) {}
+                                             const std::string &shortName) :
+    OperationProcessor(syncPal, name, shortName) {}
 
 void OperationSorterWorker::execute() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
@@ -105,7 +106,7 @@ void OperationSorterWorker::fixDeleteBeforeMove() {
         LOG_IF_FAIL(deleteNode)
         const auto deleteNodeParentPath = deleteNode->getPath().parent_path();
         NodeId deleteNodeParentId;
-        if (!getIdFromDb(deleteNode->side(), deleteNodeParentPath.parent_path(), deleteNodeParentId)) continue;
+        if (!getIdFromDb(deleteNode->side(), deleteNodeParentPath, deleteNodeParentId)) continue;
 
         for (const auto &moveOpId: moveOps) {
             const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);

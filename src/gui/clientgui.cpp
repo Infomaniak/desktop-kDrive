@@ -722,31 +722,35 @@ void ClientGui::executeSyncAction(ActionType type, int syncDbId) {
                 currentStatus == SyncStatus::Stopped || currentStatus == SyncStatus::Error) {
                 return;
             }
+
+            syncInfoMapIt->second.setStatus(SyncStatus::PauseAsked);
+            emit updateProgress(syncDbId);
+
             exitCode = GuiRequests::syncStop(syncDbId);
             if (exitCode != ExitCode::Ok) {
                 qCWarning(lcClientGui()) << "Error in Requests::syncStop for syncDbId=" << syncDbId << " code=" << exitCode;
-                return;
             }
-            syncInfoMapIt->second.setStatus(SyncStatus::PauseAsked);
             break;
         case ActionType::Start:
             if (currentStatus == SyncStatus::Undefined || currentStatus == SyncStatus::Idle ||
                 currentStatus == SyncStatus::Running || currentStatus == SyncStatus::Starting) {
                 return;
             }
+
+            syncInfoMapIt->second.setStatus(SyncStatus::Starting);
+            emit updateProgress(syncDbId);
+
             exitCode = GuiRequests::syncStart(syncDbId);
             if (exitCode != ExitCode::Ok) {
                 qCWarning(lcClientGui()) << "Error in Requests::syncStart for syncDbId=" << syncDbId << " code=" << exitCode;
-                return;
+                syncInfoMapIt->second.setStatus(SyncStatus::Paused);
+                emit updateProgress(syncDbId);
             }
-            syncInfoMapIt->second.setStatus(SyncStatus::Starting);
             break;
         case ActionType::EnumEnd: {
             assert(false && "Invalid enum value in switch statement.");
         }
     }
-
-    emit updateProgress(syncDbId);
 }
 
 void ClientGui::refreshErrorList(int driveDbId) {

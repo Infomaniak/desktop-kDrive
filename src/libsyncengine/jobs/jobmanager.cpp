@@ -121,9 +121,11 @@ std::shared_ptr<AbstractJob> JobManager::getJob(const UniqueId &jobId) {
     return nullptr;
 }
 
-void JobManager::setPoolCapacity(int count) {
-    _maxNbThread = count;
+void JobManager::setPoolCapacity(const int count) {
+    _maxNbThread = std::max(count, 2); // Poco::ThreadPool throw an exception if the capacity is set to a value less than then
+                                       // minimum capacity (2 by default)
     Poco::ThreadPool::defaultPool().addCapacity(_maxNbThread - Poco::ThreadPool::defaultPool().capacity());
+    LOG_DEBUG(_logger, "Max number of thread changed to " << _maxNbThread << " threads");
 }
 
 void JobManager::decreasePoolCapacity() {
@@ -155,11 +157,6 @@ JobManager::JobManager() : _logger(Log::instance()->getLogger()) {
 
     _thread = std::make_unique<StdLoggingThread>(run);
     LOG_DEBUG(_logger, "Network Job Manager started with max " << _maxNbThread << " threads");
-}
-
-JobManager::~JobManager() {
-    stop();
-    clear();
 }
 
 void JobManager::run() noexcept {

@@ -74,10 +74,9 @@ bool UpdateTree::deleteNode(std::shared_ptr<Node> node, int depth) {
 }
 
 bool UpdateTree::deleteNode(const NodeId &id) {
-    std::shared_ptr<Node> node = getNodeById(id);
+    const auto node = getNodeById(id);
     return deleteNode(node);
 }
-
 
 std::shared_ptr<Node> UpdateTree::getNodeByNormalizedPath(const SyncPath &path) {
     if (path.empty()) {
@@ -188,7 +187,6 @@ void UpdateTree::markAllNodesUnprocessed() {
 
 void UpdateTree::init() {
     insertNode(_rootNode);
-    _inconsistencyCheckDone = false;
 }
 
 bool UpdateTree::updateNodeId(std::shared_ptr<Node> node, const NodeId &newId) {
@@ -225,13 +223,9 @@ bool UpdateTree::updateNodeId(std::shared_ptr<Node> node, const NodeId &newId) {
 }
 
 void UpdateTree::clear() {
-    std::unordered_map<NodeId, std::shared_ptr<Node>>::iterator it = _nodes.begin();
-    while (it != _nodes.end()) {
-        it->second->parentNode().reset();
-        it->second->children().clear();
-        it++;
-    }
     _nodes.clear();
+    _previousIdSet.clear();
+    init();
 }
 
 void UpdateTree::drawUpdateTree() {

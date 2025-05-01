@@ -20,6 +20,7 @@ set(testsyncengine_SRCS
         ../test_utility/testbase.h
         ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
         ../test_utility/remotetemporarydirectory.h ../test_utility/remotetemporarydirectory.cpp
+        ../test_utility/dataextractor.h ../test_utility/dataextractor.cpp
         # Mocks
         ../mocks/libsyncengine/vfs/mockvfs.h
         ../mocks/libsyncengine/jobs/network/API_v2/mockloguploadjob.h
@@ -48,6 +49,7 @@ set(testsyncengine_SRCS
         update_detection/update_detector/testupdatetree.h update_detection/update_detector/testupdatetree.cpp
         update_detection/update_detector/testupdatetreeworker.h update_detection/update_detector/testupdatetreeworker.cpp
         update_detection/update_detector/testnode.h update_detection/update_detector/testnode.cpp
+        update_detection/update_detector/benchupdatetreeworker.h update_detection/update_detector/benchupdatetreeworker.cpp
         # Reconciliation
         reconciliation/platform_inconsistency_checker/testplatforminconsistencycheckerworker.h reconciliation/platform_inconsistency_checker/testplatforminconsistencycheckerworker.cpp
         reconciliation/conflict_finder/testconflictfinderworker.h reconciliation/conflict_finder/testconflictfinderworker.cpp
@@ -66,6 +68,8 @@ set(testsyncengine_SRCS
         syncpal/testoperationprocessor.h syncpal/testoperationprocessor.cpp
         # Requests
         requests/testexclusiontemplatecache.h requests/testexclusiontemplatecache.cpp
+
+        benchmark/benchmarkparalleljobs.h benchmark/benchmarkparalleljobs.cpp
 )
 
 if (APPLE)
