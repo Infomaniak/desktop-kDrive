@@ -17,6 +17,7 @@
  */
 
 #include "testincludes.h"
+#include "benchmark/benchmarkparalleljobs.h"
 #include "db/testsyncdb.h"
 #include "olddb/testoldsyncdb.h"
 #include "syncpal/testsyncpal.h"
@@ -92,6 +93,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestFileRescuer);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPal);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPalWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestIntegration);
+
+// CPPUNIT_TEST_SUITE_REGISTRATION(BenchmarkParallelJobs);
 } // namespace KDC
 
 int main(int, char **) {
