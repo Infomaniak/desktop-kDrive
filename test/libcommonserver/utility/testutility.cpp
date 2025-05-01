@@ -20,6 +20,8 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/testhelpers.h"
 #include "config.h"
+#include "io/filestat.h"
+#include "io/iohelper.h"
 #include "libcommon/utility/utility.h" // CommonUtility::isSubDir
 #include "libcommonserver/log/log.h"
 
@@ -521,4 +523,39 @@ void TestUtility::testSplitPath() {
     CPPUNIT_ASSERT(Str("B") == fileNames[1]);
     CPPUNIT_ASSERT(Str("file.txt") == fileNames[0]);
 }
+
+void TestUtility::testSetFileDates() {
+    SyncPath filepath;
+    const auto timestamp = testhelpers::defaultTime;
+
+    {
+        const LocalTemporaryDirectory tempDir("testSetFileDates");
+        filepath = tempDir.path() / "test.text";
+        testhelpers::generateOrEditTestFile(filepath);
+        auto ioError = Utility::setFileDates(filepath, timestamp, timestamp, false);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+        FileStat filestat;
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError);
+        CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
+        CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modtime);
+
+        const auto timestamp2 = timestamp + 1;
+        bool result = IoHelper::setRights(tempDir.path(), false, false, false, ioError);
+        result &= ioError == IoError::Success;
+        if (!result) {
+            (void) IoHelper::setRights(tempDir.path(), true, true, true, ioError);
+            CPPUNIT_ASSERT_MESSAGE("setRights failed", false);
+        }
+        ioError = Utility::setFileDates(filepath, timestamp, timestamp2, false);
+        CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, ioError);
+
+        (void) IoHelper::setRights(tempDir.path(), true, true, true, ioError);
+    }
+
+    const auto timestamp3 = timestamp + 3;
+    const auto ioError = Utility::setFileDates(filepath, timestamp, timestamp3, false);
+    CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
+}
+
 } // namespace KDC

@@ -64,6 +64,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testIsSameOrParentPath);
         CPPUNIT_TEST(testUserName);
         CPPUNIT_TEST(testSplitPath);
+        CPPUNIT_TEST(testSetFileDates);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -111,6 +112,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testIsSameOrParentPath();
         void testUserName();
         void testSplitPath();
+        void testSetFileDates();
 
     private:
         std::unique_ptr<Utility> _testObj;
