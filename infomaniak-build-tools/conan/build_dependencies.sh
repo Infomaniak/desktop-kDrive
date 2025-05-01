@@ -21,7 +21,13 @@
 # It will use conan to install the dependencies.
 
 if [[ "${1:-}" =~ ^-h|--help$ ]]; then
-  echo "Usage: $0 [Debug|Release] [--output-dir=<output_dir>]"
+  cat << EOF >&2
+Usage: $0 [Debug|Release] [--output-dir=<output_dir>]
+  There is three ways to set the output directory:
+    1. --output-dir=<output_dir> argument
+    2. KDRIVE_OUTPUT_DIR environment variable
+    3. Default directory based on the system (macOS: build-macos/client, Linux: build-linux/build)
+EOF
   exit 0
 fi
 
@@ -44,7 +50,7 @@ if ! command -v conan >/dev/null 2>&1; then
   error "Conan is not installed. Please install it first."
 fi
 
-CONAN_REMOTE_BASE_FOLDER="$PWD/infomaniak-build-tools/conan/"
+CONAN_REMOTE_BASE_FOLDER="$PWD/infomaniak-build-tools/conan"
 CONAN_RECIPES_FOLDER="$CONAN_REMOTE_BASE_FOLDER/recipes"
 
 LOCAL_RECIPE_REMOTE_NAME="localrecipes"
@@ -63,7 +69,10 @@ if [ "$PLATFORM" = "darwin" ]; then
 fi
 
 BUILD_TYPE="${1:-Debug}"
-OUTPUT_DIR=""
+OUTPUT_DIR="${KDRIVE_OUTPUT_DIR:-}"
+if [ -n "${KDRIVE_OUTPUT_DIR:-}" ]; then
+  log "Using environment variable 'KDRIVE_OUTPUT_DIR' as conan output_dir : '$KDRIVE_OUTPUT_DIR'"
+fi
 for arg in "$@"; do
   if [[ "$arg" =~ ^--output-dir= ]]; then
     OUTPUT_DIR="${arg#--output-dir=}"
@@ -72,16 +81,10 @@ for arg in "$@"; do
 done
 
 if [ -z "$OUTPUT_DIR" ]; then
-  if [ "$BUILD_TYPE" = "Debug" ]; then
-    log "Building in Debug mode."
-    OUTPUT_DIR="../CLion-build-debug/"
+  if [ "$PLATFORM" = "darwin" ]; then
+    OUTPUT_DIR="./build-macos/client"
   else
-    log "Building in Release mode."
-    if [ "$PLATFORM" = "darwin" ]; then
-      OUTPUT_DIR="./build-macos/client"
-    else
-      OUTPUT_DIR="./build-linux/build"
-    fi
+    OUTPUT_DIR="./build-linux/build"
   fi
 fi
 mkdir -p "$OUTPUT_DIR"
