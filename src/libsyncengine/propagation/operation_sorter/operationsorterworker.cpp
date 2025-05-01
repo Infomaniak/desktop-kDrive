@@ -103,9 +103,7 @@ void OperationSorterWorker::fixDeleteBeforeMove() {
         LOG_IF_FAIL(deleteNode)
         const auto deleteNodeParentPath = deleteNode->getPath().parent_path();
         NodeId deleteNodeParentId;
-        if (!getIdFromDb(deleteNode->side(), deleteNodeParentPath.parent_path(), deleteNodeParentId)) {
-            continue;
-        }
+        if (!getIdFromDb(deleteNode->side(), deleteNodeParentPath, deleteNodeParentId)) continue;
 
         const auto moveNode = moveOp->affectedNode();
         LOG_IF_FAIL(moveNode)

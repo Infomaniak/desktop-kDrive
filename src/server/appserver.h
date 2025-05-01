@@ -54,11 +54,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         struct SyncCache {
                 SyncStatus _status;
                 SyncStep _step;
-                int64_t _currentFile;
-                int64_t _totalFiles;
-                int64_t _completedSize;
-                int64_t _totalSize;
-                int64_t _estimatedRemainingTime;
+                SyncProgress _progress;
+
+                bool operator==(const SyncCache &) const = default;
         };
 
         struct Notification {
@@ -153,7 +151,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         [[nodiscard]] ExitInfo createAndStartVfs(const Sync &sync) noexcept;
         // Call createAndStartVfs. Issue warnings, errors and pause the synchronization `sync` if needed.
-        [[nodiscard]] ExitInfo tryCreateAndStartVfs(Sync &sync) noexcept;
+        [[nodiscard]] ExitInfo tryCreateAndStartVfs(const Sync &sync) noexcept;
         [[nodiscard]] ExitInfo stopVfs(int syncDbId, bool unregister);
 
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value);
@@ -180,8 +178,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used);
         void sendDriveRemoved(int driveDbId);
         void sendDriveDeletionFailed(int driveDbId);
-        void sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
-                                  int64_t completedSize, int64_t totalSize, int64_t estimatedRemainingTime);
+        void sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, const SyncProgress &progress);
         void sendSyncAdded(const SyncInfo &syncInfo);
         void sendSyncUpdated(const SyncInfo &syncInfo);
         void sendSyncRemoved(int syncDbId);
@@ -209,7 +206,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         static void syncFileStatus(int syncDbId, const KDC::SyncPath &path, KDC::SyncFileStatus &status);
         static void syncFileSyncing(int syncDbId, const KDC::SyncPath &path, bool &syncing);
         static void setSyncFileSyncing(int syncDbId, const KDC::SyncPath &path, bool syncing);
-#ifdef Q_OS_MAC
+#ifdef __APPLE__
         static void exclusionAppList(QString &appList);
 #endif
         static void sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &item);
@@ -227,6 +224,11 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         bool clientHasCrashed() const;
         void handleClientCrash(bool &quit);
+
+#ifdef __APPLE__
+        bool noMacVfsSync() const;
+        bool areMacVfsAuthsOk() const;
+#endif
 
         // For testing purpose
         void crash() const;

@@ -342,7 +342,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         }
 
         bool isWarning = false;
-        if (ExclusionTemplateCache::instance()->isExcludedByTemplate(item.name(), isWarning)) {
+        if (ExclusionTemplateCache::instance()->isExcluded(item.name(), isWarning)) {
             continue;
         }
 
@@ -502,7 +502,7 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
         }
 
         bool isWarning = false;
-        if (ExclusionTemplateCache::instance()->isExcludedByTemplate(actionInfo.snapshotItem.name(), isWarning)) {
+        if (ExclusionTemplateCache::instance()->isExcluded(actionInfo.snapshotItem.name(), isWarning)) {
             if (isWarning) {
                 Error error(_syncPal->syncDbId(), "", actionInfo.snapshotItem.id(), actionInfo.snapshotItem.type(),
                             actionInfo.path, ConflictType::None, InconsistencyType::None, CancelType::ExcludedByTemplate);

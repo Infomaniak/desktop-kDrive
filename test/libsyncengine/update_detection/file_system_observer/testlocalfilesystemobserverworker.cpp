@@ -73,7 +73,6 @@ void TestLocalFileSystemObserverWorker::setUp() {
 
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
-    ParametersCache::instance()->parameters().setSyncHiddenFiles(true);
 
     bool constraintError = false;
     ParmsDb::instance()->insertExclusionTemplate(

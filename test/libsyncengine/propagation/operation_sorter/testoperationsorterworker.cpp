@@ -92,28 +92,53 @@ void TestOperationSorterWorker::testMoveFirstAfterSecond() {
 
 // delete before move, e.g. user deletes an object at path "x" and moves another object "a" to "x".
 void TestOperationSorterWorker::testFixDeleteBeforeMove() {
-    generateLotsOfDummySyncOperations(OperationType::Delete, OperationType::Move);
+    {
+        generateLotsOfDummySyncOperations(OperationType::Delete, OperationType::Move);
 
-    // Delete node A
-    const auto nodeA = _testSituationGenerator.deleteNode(ReplicaSide::Local, "a");
-    const auto deleteOp = generateSyncOperation(OperationType::Delete, nodeA);
+        // Delete node A
+        const auto nodeA = _testSituationGenerator.deleteNode(ReplicaSide::Local, "a");
+        const auto deleteOp = generateSyncOperation(OperationType::Delete, nodeA);
 
-    // Rename B into A
-    const auto nodeB = _testSituationGenerator.renameNode(ReplicaSide::Local, "b", Str("A"));
-    const auto moveOp = generateSyncOperation(OperationType::Move, nodeB);
+        // Rename B into A
+        const auto nodeB = _testSituationGenerator.renameNode(ReplicaSide::Local, "b", Str("A"));
+        const auto moveOp = generateSyncOperation(OperationType::Move, nodeB);
 
-    (void) _syncPal->syncOps()->pushOp(moveOp);
-    (void) _syncPal->syncOps()->pushOp(deleteOp);
+        (void) _syncPal->syncOps()->pushOp(moveOp);
+        (void) _syncPal->syncOps()->pushOp(deleteOp);
 
-    const TimerUtility timer;
-    _syncPal->_operationsSorterWorker->_filter.filterOperations();
-    _syncPal->_operationsSorterWorker->fixDeleteBeforeMove();
-    (void) timer.elapsed("Operations sorted in");
+        const TimerUtility timer;
+        _syncPal->_operationsSorterWorker->_filter.filterOperations();
+        _syncPal->_operationsSorterWorker->fixDeleteBeforeMove();
+        (void) timer.elapsed("Operations sorted in");
 
-    CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
-    std::unordered_map<UniqueId, uint32_t> mapIndex = {{moveOp->id(), 0}, {deleteOp->id(), 0}};
-    findIndexesInOpList(mapIndex);
-    CPPUNIT_ASSERT_LESS(mapIndex[moveOp->id()], mapIndex[deleteOp->id()]);
+        CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
+        std::unordered_map<UniqueId, uint32_t> mapIndex = {{moveOp->id(), 0}, {deleteOp->id(), 0}};
+        findIndexesInOpList(mapIndex);
+        CPPUNIT_ASSERT_LESS(mapIndex[moveOp->id()], mapIndex[deleteOp->id()]);
+    }
+
+    _syncPal->_syncOps->clear();
+    {
+        // Test scenario with node positioned at a lower tree depth
+
+        // Delete node AAA
+        const auto nodeAAA = _testSituationGenerator.deleteNode(ReplicaSide::Local, "aaa");
+        const auto deleteOp = generateSyncOperation(OperationType::Delete, nodeAAA);
+
+        // Rename AAB into AAA
+        const auto nodeAAB = _testSituationGenerator.renameNode(ReplicaSide::Local, "aab", Str("AAA"));
+        const auto moveOp = generateSyncOperation(OperationType::Move, nodeAAB);
+
+        (void) _syncPal->_syncOps->pushOp(moveOp);
+        (void) _syncPal->_syncOps->pushOp(deleteOp);
+
+        _syncPal->_operationsSorterWorker->_filter.filterOperations();
+        _syncPal->_operationsSorterWorker->fixDeleteBeforeMove();
+
+        CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
+        CPPUNIT_ASSERT_EQUAL(deleteOp->id(), _syncPal->_syncOps->opSortedList().front());
+        CPPUNIT_ASSERT_EQUAL(moveOp->id(), _syncPal->_syncOps->opSortedList().back());
+    }
 }
 
 // move before create, e.g. user moves an object "a" to "b" and creates another object at "a".
