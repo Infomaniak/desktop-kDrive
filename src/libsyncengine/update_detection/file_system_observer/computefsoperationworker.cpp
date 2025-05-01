@@ -73,7 +73,6 @@ void ComputeFSOperationWorker::execute() {
 
     _fileSizeMismatchMap.clear();
 
-    // Load syncDbCache
     NodeIdSet localIdsSet;
     NodeIdSet remoteIdsSet;
     if (!stopAsked()) {
@@ -121,7 +120,7 @@ void ComputeFSOperationWorker::execute() {
         LOG_SYNCPAL_INFO(_logger, "FS operation sets generated in: " << elapsedSeconds.count() << "s");
     }
 
-    _syncDbCache.clearCache(); // Free memory
+    _syncDbCache.clear(); // Free memory
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
     setDone(exitCode);
 }

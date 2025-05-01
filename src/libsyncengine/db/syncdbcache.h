@@ -24,9 +24,9 @@ namespace KDC {
 
 class SyncDbCache {
     public:
-        SyncDbCache(std::shared_ptr<SyncDb> syncDb);
+        SyncDbCache(std::shared_ptr<SyncDb> syncDb) : _syncDb(syncDb) {};
         bool reloadCacheIfNeeded();
-        void clearCache();
+        void clear();
         // Getters with replica IDs
         bool parent(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeid, bool &found);
         bool correspondingNodeId(ReplicaSide side, const NodeId &nodeIdIn, NodeId &nodeIdOut, bool &found);
@@ -39,15 +39,18 @@ class SyncDbCache {
         bool ids(ReplicaSide side, std::set<NodeId> &ids, bool &found);
         bool ids(std::unordered_set<SyncDb::NodeIds, SyncDb::NodeIds::hashNodeIdsFunction> &ids, bool &found);
 
-        bool path(DbNodeId dbNodeId, SyncPath &localPath, SyncPath &remotePath, bool &found); 
+        bool path(DbNodeId dbNodeId, SyncPath &localPath, SyncPath &remotePath, bool &found, bool recursiveCall = false);
+
     private:
         bool isChacheUpToDate() const;
+        DbNodeId getDbNodeIdFromNodeId(ReplicaSide side, const NodeId &nodeId, bool &found);
+        const DbNode &getDbNodeFromDbNodeId(const DbNodeId &dbNodeId, bool &found);
         SyncDbRevision _cachedRevision = 0;
         std::shared_ptr<SyncDb> _syncDb;
         std::unordered_map<DbNodeId, std::pair<SyncPath /*local*/, SyncPath /*remote*/>> _dbNodesPathCache;
         std::unordered_map<DbNodeId, DbNode> _dbNodesCache;
-        std::unordered_map<NodeId, DbNodeId> _localNodeIdsCache;
-        std::unordered_map<NodeId, DbNodeId> _remoteNodeIdsCache;
+        std::unordered_map<NodeId, DbNodeId> _localNodeIdToDbNodeIdMap;
+        std::unordered_map<NodeId, DbNodeId> _remoteNodeIdToDbNodeIdMap;
 };
 
 } // namespace KDC

@@ -99,7 +99,7 @@ void UpdateTreeWorker::execute() {
     _operationSet->clear();
 
     // Clear sync db cache
-    _syncDbCache.clearCache();
+    _syncDbCache.clear();
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
     setDone(exitCode);
 }

@@ -17,9 +17,7 @@
  */
 
 #include "syncdbcache.h"
-
 namespace KDC {
-SyncDbCache::SyncDbCache(std::shared_ptr<SyncDb> syncDb) : _syncDb(syncDb) {}
 
 bool SyncDbCache::isChacheUpToDate() const {
     if (_cachedRevision != _syncDb->revision()) {
@@ -29,162 +27,189 @@ bool SyncDbCache::isChacheUpToDate() const {
     return true;
 }
 
-void SyncDbCache::clearCache() {
+DbNodeId SyncDbCache::getDbNodeIdFromNodeId(ReplicaSide side, const NodeId& nodeId, bool& found) {
+    found = false;
+    const auto& nodeIdToDbNodeIdMap = side == ReplicaSide::Local ? _localNodeIdToDbNodeIdMap : _remoteNodeIdToDbNodeIdMap;
+    const auto dbNodeIdIt = nodeIdToDbNodeIdMap.find(nodeId);
+    if (dbNodeIdIt == nodeIdToDbNodeIdMap.end()) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "SyncDbCache::getDbNodeIdFromNodeId: node " << nodeId << " not found in nodeIdsCache");
+        return -1;
+    }
+    found = true;
+    return dbNodeIdIt->second;
+}
+
+const DbNode& SyncDbCache::getDbNodeFromDbNodeId(const DbNodeId& dbNodeId, bool& found) {
+    found = false;
+    const auto dbNodeIt = _dbNodesCache.find(dbNodeId);
+    if (dbNodeIt == _dbNodesCache.end()) {
+        LOG_ERROR(Log::instance()->getLogger(),
+                  "SyncDbCache::getDbNodeFromDbNodeId: dbNodeId " << dbNodeId << " not found in dbNodesCache");
+        return DbNode();
+    }
+    found = true;
+    return dbNodeIt->second;
+}
+
+void SyncDbCache::clear() {
     _dbNodesCache.clear();
-    _localNodeIdsCache.clear();
-    _remoteNodeIdsCache.clear();
+    _localNodeIdToDbNodeIdMap.clear();
+    _remoteNodeIdToDbNodeIdMap.clear();
+    _dbNodesPathCache.clear();
     _cachedRevision = 0;
 }
 
 bool SyncDbCache::reloadCacheIfNeeded() {
-    if (isChacheUpToDate()) {
-        return true;
-    }
-    clearCache();
+    if (isChacheUpToDate()) return true;
+
+    clear();
     if (!_syncDb) {
-        LOG_ERROR(Log::instance()->getLogger(), "SyncDbCache: SyncDb is null");
+        LOG_ERROR(Log::instance()->getLogger(), "SyncDbCache::reloadCacheIfNeeded: SyncDb is null");
         return false;
     }
 
     bool found = false;
-    std::unordered_set<DbNode, DbNode::hashFunction> foundDbNodes;
-    if (!_syncDb->dbNodes(foundDbNodes, _cachedRevision, found)) {
-        LOG_ERROR(Log::instance()->getLogger(), " SyncDbCache::reloadCacheIfNeeded: Error getting db nodes from SyncDb");
+    std::unordered_set<DbNode, DbNode::hashFunction> dbNodes;
+    if (!_syncDb->dbNodes(dbNodes, _cachedRevision, found)) {
+        LOG_ERROR(Log::instance()->getLogger(), " SyncDbCache::reloadCacheIfNeeded: Error getting dbNodes from SyncDb");
         return false;
     }
 
-    for (const auto& dbNode: foundDbNodes) {
+    for (const auto& dbNode: dbNodes) {
         (void) _dbNodesCache.try_emplace(dbNode.nodeId(), dbNode);
         if (dbNode.hasLocalNodeId()) {
-            (void) _localNodeIdsCache.try_emplace(NodeId(dbNode.nodeIdLocal().value()), dbNode.nodeId());
+            (void) _localNodeIdToDbNodeIdMap.try_emplace(dbNode.nodeIdLocal().value(), dbNode.nodeId());
         }
         if (dbNode.hasRemoteNodeId()) {
-            (void) _remoteNodeIdsCache.try_emplace(NodeId(dbNode.nodeIdRemote().value()), dbNode.nodeId());
+            (void) _remoteNodeIdToDbNodeIdMap.try_emplace(dbNode.nodeIdRemote().value(), dbNode.nodeId());
         }
     }
-    LOG_DEBUG(Log::instance()->getLogger(), "SyncDbCache: cache updated, revision=" << _syncDb->revision());
+    LOG_INFO(Log::instance()->getLogger(), "SyncDbCache updated, cached revision=" << _syncDb->revision());
     return true;
 }
 
 bool SyncDbCache::parent(ReplicaSide side, const NodeId& nodeId, NodeId& parentNodeId, bool& found) {
     if (!reloadCacheIfNeeded()) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::parent: Error reloading cache");
         return false;
     }
     found = false;
-    const std::unordered_map<NodeId, DbNodeId>& nodeIdsCache =
-            side == ReplicaSide::Local ? _localNodeIdsCache : _remoteNodeIdsCache;
-    const auto dbNodeIdIt = nodeIdsCache.find(nodeId);
-    if (dbNodeIdIt == nodeIdsCache.end()) {
+
+    DbNodeId dbNodeId = getDbNodeIdFromNodeId(side, nodeId, found);
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::parent: node " << nodeId << " not found in syncDbCache");
         return true;
     }
 
-    const auto dbNodeIt = _dbNodesCache.find(dbNodeIdIt->second);
-    if (dbNodeIt == _dbNodesCache.end()) {
+    const DbNode& dbNode = getDbNodeFromDbNodeId(dbNodeId, found);
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::parent: dbNodeId " << dbNodeId << " not found in syncDbCache");
         return true;
     }
-    const auto& dbNode = dbNodeIt->second;
 
     if (!dbNode.parentNodeId()) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::parent: node " << nodeId << " has no parentNodeId");
         return true;
     }
 
-    const auto parentDbNodeIt = _dbNodesCache.find(dbNode.parentNodeId().value());
-    if (parentDbNodeIt == _dbNodesCache.end()) {
+    const DbNode& parentDbNode = getDbNodeFromDbNodeId(dbNode.parentNodeId().value(), found);
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::parent: dbNodeId " << dbNodeId << " not found in syncDbCache");
         return true;
     }
 
-    parentNodeId = parentDbNodeIt->second.nodeId(side);
-    found = true;
+    parentNodeId = parentDbNode.nodeId(side);
+    found = !parentNodeId.empty();
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::parent: node " << nodeId << " has a parent with an empty nodeId");
+    }
     return true;
 }
 
 bool SyncDbCache::correspondingNodeId(ReplicaSide side, const NodeId& nodeIdIn, NodeId& nodeIdOut, bool& found) {
     if (!reloadCacheIfNeeded()) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::parent: Error reloading cache");
         return false;
     }
     found = false;
-    const std::unordered_map<NodeId, DbNodeId>& nodeIdsCache =
-            side == ReplicaSide::Local ? _localNodeIdsCache : _remoteNodeIdsCache;
-    const auto dbNodeIdIt = nodeIdsCache.find(nodeIdIn);
-    if (dbNodeIdIt == nodeIdsCache.end()) {
+
+    DbNodeId dbNodeId = getDbNodeIdFromNodeId(side, nodeIdIn, found);
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "SyncDbCache::correspondingNodeId: node " << nodeIdIn << " not found in syncDbCache");
         return true;
     }
 
-    const auto dbNodeIt = _dbNodesCache.find(dbNodeIdIt->second);
-    if (dbNodeIt == _dbNodesCache.end()) {
+    const DbNode& dbNode = getDbNodeFromDbNodeId(dbNodeId, found);
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "SyncDbCache::correspondingNodeId: dbNodeId " << dbNodeId << " not found in syncDbCache");
         return true;
     }
-    found = true;
-    nodeIdOut = dbNodeIt->second.nodeId(otherSide(side));
+
+    nodeIdOut = dbNode.nodeId(otherSide(side));
+    found = !nodeIdOut.empty();
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "SyncDbCache::correspondingNodeId: node " << nodeIdIn << " has a corresponding with an empty nodeId");
+    }
     return true;
 }
 
-// Returns database ID for the ID nodeId of the snapshot from replica `side`
 bool SyncDbCache::dbId(ReplicaSide side, const NodeId& nodeId, DbNodeId& dbNodeId, bool& found) {
     if (!reloadCacheIfNeeded()) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::parent: Error reloading cache");
         return false;
     }
     found = false;
-    dbNodeId = 0;
-    if (side == ReplicaSide::Unknown) {
-        LOG_ERROR(Log::instance()->getLogger(), "Call to SyncDb::dbId with snapshot=='ReplicaSide::Unknown'");
-        return false;
-    }
-    const std::unordered_map<NodeId, DbNodeId>& nodeIdsCache =
-            side == ReplicaSide::Local ? _localNodeIdsCache : _remoteNodeIdsCache;
 
-    const auto dbNodeIdIt = nodeIdsCache.find(nodeId);
-    if (dbNodeIdIt == nodeIdsCache.end()) {
-        return true;
+    dbNodeId = getDbNodeIdFromNodeId(side, nodeId, found);
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::dbId: node " << nodeId << " not found in syncDbCache");
     }
-    const auto dbNodeIt = _dbNodesCache.find(dbNodeIdIt->second);
-    if (dbNodeIt == _dbNodesCache.end()) {
-        return true;
-    }
-    found = true;
-    dbNodeId = dbNodeIt->second.nodeId();
     return true;
 }
 
 bool SyncDbCache::node(DbNodeId dbNodeId, DbNode& dbNode, bool& found) {
     if (!reloadCacheIfNeeded()) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::parent: Error reloading cache");
         return false;
     }
     found = false;
-    const auto dbNodeIt = _dbNodesCache.find(dbNodeId);
-    if (dbNodeIt == _dbNodesCache.end()) {
-        return true;
+    dbNode = getDbNodeFromDbNodeId(dbNodeId, found);
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::node: dbNodeId " << dbNodeId << " not found in syncDbCache");
     }
-    found = true;
-    dbNode = dbNodeIt->second;
     return true;
 }
+
 bool SyncDbCache::node(ReplicaSide side, const NodeId& nodeId, DbNode& dbNode, bool& found) {
     if (!reloadCacheIfNeeded()) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::parent: Error reloading cache");
         return false;
     }
     found = false;
+    DbNodeId dbNodeId = getDbNodeIdFromNodeId(side, nodeId, found);
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::node: node " << nodeId << " not found in syncDbCache");
+        return true;
+    }
 
-    const std::unordered_map<NodeId, DbNodeId>& nodeIdsCache =
-            side == ReplicaSide::Local ? _localNodeIdsCache : _remoteNodeIdsCache;
-    const auto dbNodeIdIt = nodeIdsCache.find(nodeId);
-    if (dbNodeIdIt == nodeIdsCache.end()) {
-        return true;
+    dbNode = getDbNodeFromDbNodeId(dbNodeId, found);
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::node: dbNodeId " << dbNodeId << " not found in syncDbCache");
     }
-    const auto dbNodeIt = _dbNodesCache.find(dbNodeIdIt->second);
-    if (dbNodeIt == _dbNodesCache.end()) {
-        return true;
-    }
-    found = true;
-    dbNode = dbNodeIt->second;
     return true;
 }
+
 bool SyncDbCache::ids(ReplicaSide side, std::vector<NodeId>& ids, bool& found) {
     if (!reloadCacheIfNeeded()) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::parent: Error reloading cache");
         return false;
     }
     const std::unordered_map<NodeId, DbNodeId>& nodeIdsCache =
-            side == ReplicaSide::Local ? _localNodeIdsCache : _remoteNodeIdsCache;
+            side == ReplicaSide::Local ? _localNodeIdToDbNodeIdMap : _remoteNodeIdToDbNodeIdMap;
 
     for (const auto& nodeIdIt: nodeIdsCache) {
         ids.push_back(nodeIdIt.first);
@@ -192,12 +217,14 @@ bool SyncDbCache::ids(ReplicaSide side, std::vector<NodeId>& ids, bool& found) {
     found = nodeIdsCache.size() > 0;
     return true;
 }
+
 bool SyncDbCache::ids(ReplicaSide side, std::set<NodeId>& ids, bool& found) {
     if (!reloadCacheIfNeeded()) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::parent: Error reloading cache");
         return false;
     }
     const std::unordered_map<NodeId, DbNodeId>& nodeIdsCache =
-            side == ReplicaSide::Local ? _localNodeIdsCache : _remoteNodeIdsCache;
+            side == ReplicaSide::Local ? _localNodeIdToDbNodeIdMap : _remoteNodeIdToDbNodeIdMap;
 
     for (const auto& [nodeId, _]: nodeIdsCache) {
         (void) ids.insert(nodeId);
@@ -205,8 +232,10 @@ bool SyncDbCache::ids(ReplicaSide side, std::set<NodeId>& ids, bool& found) {
     found = nodeIdsCache.size() > 0;
     return true;
 }
+
 bool SyncDbCache::ids(std::unordered_set<SyncDb::NodeIds, SyncDb::NodeIds::hashNodeIdsFunction>& ids, bool& found) {
     if (!reloadCacheIfNeeded()) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::parent: Error reloading cache");
         return false;
     }
     for (const auto& [dbNodeId, dbNode]: _dbNodesCache) {
@@ -220,11 +249,14 @@ bool SyncDbCache::ids(std::unordered_set<SyncDb::NodeIds, SyncDb::NodeIds::hashN
 
     return true;
 }
-bool SyncDbCache::path(DbNodeId dbNodeId, SyncPath& localPath, SyncPath& remotePath, bool& found) {
+
+bool SyncDbCache::path(DbNodeId dbNodeId, SyncPath& localPath, SyncPath& remotePath, bool& found, bool recursiveCall) {
     if (!reloadCacheIfNeeded()) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::parent: Error reloading cache");
         return false;
     }
     found = false;
+    // Check if the path is already cached
     if (_dbNodesPathCache.contains(dbNodeId)) {
         localPath = _dbNodesPathCache.at(dbNodeId).first;
         remotePath = _dbNodesPathCache.at(dbNodeId).second;
@@ -232,20 +264,22 @@ bool SyncDbCache::path(DbNodeId dbNodeId, SyncPath& localPath, SyncPath& remoteP
         return true;
     }
 
-    auto dbNodeIt = _dbNodesCache.find(dbNodeId);
-    if (dbNodeIt == _dbNodesCache.end()) {
+    auto& DbNode = getDbNodeFromDbNodeId(dbNodeId, found);
+    if (! found) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::path: dbNodeId " << dbNodeId << " not found in syncDbCache");
         return false; // Not found
     }
-    if (!dbNodeIt->second.parentNodeId()) {
-        localPath = dbNodeIt->second.nameLocal();
-        remotePath = dbNodeIt->second.nameRemote();
+    if (!DbNode.parentNodeId()) {
+        localPath = DbNode.nameLocal();
+        remotePath = DbNode.nameRemote();
     } else {
-        if (!path(dbNodeIt->second.parentNodeId().value(), localPath, remotePath, found) || !found) return true;
-        localPath /= dbNodeIt->second.nameLocal();
-        remotePath /= dbNodeIt->second.nameRemote();
-        
+        if (!path(DbNode.parentNodeId().value(), localPath, remotePath, found, true) || !found) return true;
+        localPath /= DbNode.nameLocal();
+        remotePath /= DbNode.nameRemote();
     }
-    _dbNodesPathCache.try_emplace(dbNodeId, std::make_pair(localPath, remotePath));
+
+    // Only cache the path of the parents to avoid too much memory usage 
+    if (recursiveCall) _dbNodesPathCache.try_emplace(dbNodeId, std::make_pair(localPath, remotePath));
     found = true;
     return true;
 }

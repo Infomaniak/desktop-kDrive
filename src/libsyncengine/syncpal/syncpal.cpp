@@ -171,7 +171,7 @@ SyncPal::SyncPal(const std::shared_ptr<Vfs> &vfs, const int syncDbId_, const std
 }
 
 SyncPal::~SyncPal() {
-    SyncNodeCache::instance()->clearCache(syncDbId());
+    SyncNodeCache::instance()->clear(syncDbId());
     LOG_SYNCPAL_DEBUG(_logger, "~SyncPal");
 }
 

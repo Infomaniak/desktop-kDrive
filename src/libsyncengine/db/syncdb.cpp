@@ -2233,8 +2233,6 @@ bool SyncDb::pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<NodeIds,
 
 bool SyncDb::dbNodes(std::unordered_set<DbNode, DbNode::hashFunction> &dbNodes, SyncDbRevision &revision, bool &found) {
     const std::scoped_lock lock(_mutex);
-
-
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_NODES_REQUEST_ID));
     bool atLeastOneFound = false;
     for (;;) {
