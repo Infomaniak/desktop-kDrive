@@ -409,12 +409,12 @@ void TestOperationSorterWorker::testFixEditBeforeMove() {
 // relationships are now flipped).
 void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFlip() {
     generateLotsOfDummySyncOperations(OperationType::Move, OperationType::Move, NodeType::Directory);
-
-    // Move A/AA to D
-    const auto nodeAA = _testSituationGenerator.moveNode(ReplicaSide::Local, "aa", {}, Str("D"));
+    
+    // Move A/AA to E
+    const auto nodeAA = _testSituationGenerator.moveNode(ReplicaSide::Local, "aa", {}, Str("E"));
     const auto moveOp1 = generateSyncOperation(OperationType::Move, nodeAA);
 
-    // Move A to D
+    // Move A to E
     const auto nodeA = _testSituationGenerator.moveNode(ReplicaSide::Local, "a", *nodeAA->id());
     const auto moveOp2 = generateSyncOperation(OperationType::Move, nodeA);
 

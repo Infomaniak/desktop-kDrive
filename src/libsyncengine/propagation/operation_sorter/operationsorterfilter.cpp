@@ -212,7 +212,7 @@ void OperationSorterFilter::filterMoveBeforeMoveHierarchyFlipCandidates(
     const auto &originPath = op->affectedNode()->moveOriginInfos().path();
     const auto &destinationPath = op->affectedNode()->getPath();
 
-    // Check if any of the created path contains the destination path.
+    // Check if any of the moved path contains the destination path.
     for (const auto &[otherOp, otherDestinationPath]: moveBeforeMoveHierarchyFlipCandidates) {
         if (op->targetSide() != otherOp->targetSide()) {
             continue;
@@ -222,7 +222,14 @@ void OperationSorterFilter::filterMoveBeforeMoveHierarchyFlipCandidates(
 
         if (Utility::isStrictDescendant(destinationPath, otherDestinationPath) &&
             Utility::isStrictDescendant(otherOriginPath, originPath)) {
+            // op must be executed after otherOp
             (void) _fixMoveBeforeMoveHierarchyFlipCandidates.emplace_back(op, otherOp);
+            continue;
+        }
+        if (Utility::isStrictDescendant(otherDestinationPath, destinationPath) &&
+            Utility::isStrictDescendant(originPath, otherOriginPath)) {
+            // otherOp must be executed after op
+            (void) _fixMoveBeforeMoveHierarchyFlipCandidates.emplace_back(otherOp, op);
         }
     }
 
