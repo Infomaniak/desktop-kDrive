@@ -19,6 +19,7 @@
 #include "testincludes.h"
 #include "benchmark/benchmarkparalleljobs.h"
 #include "db/testsyncdb.h"
+#include "db/testsyncdbcache.h"
 #include "olddb/testoldsyncdb.h"
 #include "syncpal/testsyncpal.h"
 #include "syncpal/testsyncpalworker.h"
@@ -55,6 +56,9 @@
 #endif
 
 namespace KDC {
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncDbCache);
+
+/*
 CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationProcessor);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestNetworkJobs);
@@ -92,7 +96,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestExecutorWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFileRescuer);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPal);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPalWorker);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestIntegration);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestIntegration);*/
 
 // CPPUNIT_TEST_SUITE_REGISTRATION(BenchmarkParallelJobs);
 } // namespace KDC

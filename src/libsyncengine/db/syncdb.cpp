@@ -2326,14 +2326,14 @@ bool SyncDb::dbNodes(std::unordered_set<DbNode, DbNode::hashFunction> &dbNodes, 
             cs = std::nullopt;
         } else {
             std::string csTmp;
-            LOG_IF_FAIL(queryStringValue(SELECT_ALL_NODES_REQUEST_ID, 9, csTmp));
+            LOG_IF_FAIL(queryStringValue(SELECT_ALL_NODES_REQUEST_ID, 11, csTmp));
             cs = std::make_optional(csTmp);
         }
 
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_NODES_REQUEST_ID, 10, intResult));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_NODES_REQUEST_ID, 12, intResult));
         SyncFileStatus status = static_cast<SyncFileStatus>(intResult);
 
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_NODES_REQUEST_ID, 11, intResult));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_NODES_REQUEST_ID, 13, intResult));
         bool syncing = static_cast<bool>(intResult);
         dbNodes.emplace(dbNodeId, parentNodeId, nameLocal, nameDrive, nodeIdLocal, nodeIdDrive, created, lastModifiedLocal,
                         lastModifiedDrive, type, size, cs, status, syncing);

@@ -76,7 +76,7 @@ bool SyncDbCache::reloadCacheIfNeeded() {
     for (const auto& dbNode: dbNodes) {
         (void) _dbNodesCache.try_emplace(dbNode.nodeId(), dbNode);
         if (dbNode.parentNodeId()) {
-            (void) _dbNodesParentToChildrenMap.try_emplace(dbNode.parentNodeId().value(), dbNode.nodeId());
+            (void) _dbNodesParentToChildrenMap[dbNode.parentNodeId().value()].push_back(dbNode.nodeId());
         }
         if (dbNode.hasLocalNodeId()) {
             (void) _localNodeIdToDbNodeIdMap.try_emplace(dbNode.nodeIdLocal().value(), dbNode.nodeId());
@@ -314,7 +314,7 @@ bool SyncDbCache::path(ReplicaSide side, const NodeId& nodeId, SyncPath& resPath
         return false;
     }
     resPath = side == ReplicaSide::Local ? localPath : remotePath;
-    return false;
+    return true;
 }
 
 bool SyncDbCache::id(ReplicaSide side, const SyncPath& path, std::optional<NodeId>& nodeId, bool& found) {
@@ -329,6 +329,7 @@ bool SyncDbCache::id(ReplicaSide side, const SyncPath& path, std::optional<NodeI
     DbNode tmpNode = _syncDb.rootNode();
     if (itemNames.empty()) {
         nodeId = tmpNode.nodeId(side);
+        found = true;
         return true;
     }
 
@@ -340,9 +341,9 @@ bool SyncDbCache::id(ReplicaSide side, const SyncPath& path, std::optional<NodeI
             return true;
         }
         const auto childIt =
-                std::find_if(children->second.begin(), children->second.end(), [this, &nameIt](const DbNodeId& childId) {
+                std::find_if(children->second.begin(), children->second.end(), [this, &nameIt, &side](const DbNodeId& childId) {
                     const DbNode& childNode = _dbNodesCache.at(childId);
-                    return childNode.nameLocal() == *nameIt;
+                    return childNode.name(side) == *nameIt;
                 });
         if (childIt == children->second.end()) {
             LOG_WARN(Log::instance()->getLogger(),
@@ -360,7 +361,7 @@ bool SyncDbCache::id(ReplicaSide side, const SyncPath& path, std::optional<NodeI
 }
 
 bool SyncDbCache::id(ReplicaSide side, DbNodeId dbNodeId, NodeId& nodeId, bool& found) {
-    const const std::scoped_lock lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     if (!reloadCacheIfNeeded()) {
         LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::id: Error reloading cache");
         return false;
@@ -376,4 +377,8 @@ bool SyncDbCache::id(ReplicaSide side, DbNodeId dbNodeId, NodeId& nodeId, bool& 
     return true;
 }
 
+SyncDbRevision SyncDbCache::revision() const {
+    const std::scoped_lock lock(_mutex);
+    return _cachedRevision;
+}
 } // namespace KDC

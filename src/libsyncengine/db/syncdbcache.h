@@ -52,13 +52,15 @@ class SyncDbCache {
 
         bool id(ReplicaSide side, DbNodeId dbNodeId, NodeId &nodeId, bool &found);
 
+        SyncDbRevision revision() const;
+
     private:
         bool isChacheUpToDate() const;
         DbNodeId getDbNodeIdFromNodeId(ReplicaSide side, const NodeId &nodeId, bool &found);
         const DbNode &getDbNodeFromDbNodeId(const DbNodeId &dbNodeId, bool &found);
         SyncDbRevision _cachedRevision = 0;
         SyncDb &_syncDb;
-        std::recursive_mutex _mutex;
+        mutable std::recursive_mutex _mutex;
         std::unordered_map<DbNodeId, std::pair<SyncPath /*local*/, SyncPath /*remote*/>> _dbNodesPathCache;
         std::unordered_map<DbNodeId, DbNode> _dbNodesCache;
         std::unordered_map<DbNodeId /*parent*/, std::list<DbNodeId /*children*/>> _dbNodesParentToChildrenMap;
