@@ -150,16 +150,16 @@ $RecipesFolder         = Join-Path $ConanRemoteBaseFolder "recipes"
 Log "Current conan home configuration:"
 & $ConanExe config home
 
-# Create local remote for local Conan recipes
+# Define a Conan "Remote" pointing at the on-disk recipe folder.
 $remotes = & $ConanExe remote list
 if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
-    Log "Adding local Conan remote."
+    Log "Adding Conan remote '$LocalRemoteName' at '$ConanRemoteBaseFolder'."
     & $ConanExe remote add $LocalRemoteName $ConanRemoteBaseFolder
     if ($LASTEXITCODE -ne 0) {
         Err "Failed to add local Conan remote."
     }
 } else {
-    Log "Local Conan remote already exists."
+    Log "Conan remote '$LocalConanRemoteName' already exists and is enabled."
 }
 
 # Ensure output directory exists
