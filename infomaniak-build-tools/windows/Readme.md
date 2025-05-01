@@ -303,7 +303,7 @@ Conan version 2.x.x
    ```
    This creates `%USERPROFILE%/.conan2/profiles/default`.
 
-2. Open `%USERPROFILE%/.conan2/profiles/default` and customize the settings under the `[settings]` section. For example, to target Linux with C++20:
+2. Open `%USERPROFILE%/.conan2/profiles/default` and customize the settings under the `[settings]` section. For example, to target Windows with C++20:
    
    ```ini
     [settings]
