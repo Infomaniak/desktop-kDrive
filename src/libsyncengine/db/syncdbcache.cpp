@@ -110,7 +110,7 @@ bool SyncDbCache::parent(ReplicaSide side, const NodeId& nodeId, NodeId& parentN
     }
 
     if (!dbNode.parentNodeId()) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::parent: node " << nodeId << " has no parentNodeId");
+        found = false;
         return true;
     }
 
