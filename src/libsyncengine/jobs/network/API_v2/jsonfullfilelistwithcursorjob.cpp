@@ -19,7 +19,7 @@
 #include "jsonfullfilelistwithcursorjob.h"
 #include "libcommonserver/utility/utility.h"
 
-#include <Poco/JSON/Parser.h>
+#include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
 

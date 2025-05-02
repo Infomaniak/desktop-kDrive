@@ -20,6 +20,8 @@
 #include "utility/jsonparserutility.h"
 #include "utility/utility.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 static const std::string prodVersionKey = "prod_version";
