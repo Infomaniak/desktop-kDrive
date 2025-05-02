@@ -39,8 +39,7 @@ Error::Error(int syncDbId, const std::string &workerName, const ExitInfo &exitIn
 
 Error::Error(int syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId, NodeType nodeType, const SyncPath &path,
              ConflictType conflictType, InconsistencyType inconsistencyType /*= InconsistencyType::None */,
-             CancelType cancelType /*= CancelType::None*/, const SyncPath &destinationPath /*= ""*/
-             ,
+             CancelType cancelType /*= CancelType::None*/, const SyncPath &destinationPath /*= ""*/,
              ExitCode exitCode /*= ExitCode::Unknown*/, ExitCause exitCause /*= ExitCause::Unknown*/) :
     _level(ErrorLevel::Node), _syncDbId(syncDbId), _exitCode(exitCode), _exitCause(exitCause), _localNodeId(localNodeId),
     _remoteNodeId(remoteNodeId), _nodeType(nodeType), _path(path), _conflictType(conflictType),

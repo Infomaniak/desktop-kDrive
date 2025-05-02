@@ -1371,16 +1371,12 @@ ExitInfo ExecutorWorker::deleteFinishedAsyncJobs() {
     return exitInfo;
 }
 
-ExitInfo ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool invalidName,
-                                                bool downloadImpossible) {
-    if (jobExitCause == ExitCause::NotFound && !downloadImpossible) {
-        // The operation failed because the destination does not exist anymore
-        LOG_SYNCPAL_DEBUG(_logger, "Destination does not exist anymore, restarting sync.");
-        return ExitCode::DataError;
-    }
-
-    if (jobExitCause == ExitCause::QuotaExceeded) {
+ExitInfo ExecutorWorker::handleManagedBackError(const ExitInfo &jobExitInfo, const SyncOpPtr syncOp, const bool invalidName) {
+    if (jobExitInfo.cause() == ExitCause::QuotaExceeded) {
         _syncPal->pause();
+    } else if (jobExitInfo.cause() == ExitCause::NotFound) {
+        // The file might have been already deleted, only increase error counter in this case.
+        increaseErrorCount(syncOp, jobExitInfo);
     } else {
         // The item should be temporarily blacklisted
         _syncPal->blacklistTemporarily(syncOp->affectedNode()->id() ? *syncOp->affectedNode()->id() : std::string(),
@@ -1401,10 +1397,11 @@ ExitInfo ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPt
     if (invalidName) {
         error = Error(_syncPal->syncDbId(), localNodeId, remoteNodeId, syncOp->affectedNode()->type(),
                       syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyType::ForbiddenChar);
-    } else {
+    }
+    if (jobExitInfo.cause() != ExitCause::NotFound) {
         error = Error(_syncPal->syncDbId(), localNodeId, remoteNodeId, syncOp->affectedNode()->type(),
                       syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyType::None, CancelType::None, "",
-                      ExitCode::BackError, jobExitCause);
+                      jobExitInfo.code(), jobExitInfo.cause());
     }
     _syncPal->addError(error);
 
@@ -1412,7 +1409,7 @@ ExitInfo ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPt
 }
 
 namespace details {
-bool isManagedBackError(ExitCause exitCause) {
+bool isManagedBackError(const ExitCause exitCause) {
     static const std::set<ExitCause> managedExitCauses = {ExitCause::InvalidName,   ExitCause::ApiErr,
                                                           ExitCause::FileTooBig,    ExitCause::NotFound,
                                                           ExitCause::QuotaExceeded, ExitCause::UploadNotTerminated};
@@ -1431,10 +1428,9 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, Syn
     getNodeIdsFromOp(syncOp, localNodeId, remoteNodeId);
 
     auto networkJob(std::dynamic_pointer_cast<AbstractNetworkJob>(job));
-    if (const bool invalidName = job->exitInfo().cause() == ExitCause::InvalidName;
-        job->exitInfo().code() == ExitCode::BackError && details::isManagedBackError(job->exitInfo().cause())) {
-        return handleManagedBackError(job->exitInfo().cause(), syncOp, invalidName,
-                                      networkJob && networkJob->isDownloadImpossible());
+    if (job->exitInfo().code() == ExitCode::BackError && details::isManagedBackError(job->exitInfo().cause())) {
+        bypassProgressComplete = true;
+        return handleManagedBackError(job->exitInfo(), syncOp, job->exitInfo().cause() == ExitCause::InvalidName);
     }
 
     if (job->exitInfo().code() != ExitCode::Ok) {
@@ -2173,10 +2169,10 @@ void ExecutorWorker::manageJobDependencies(SyncOpPtr syncOp, std::shared_ptr<Abs
     }
 }
 
-void ExecutorWorker::increaseErrorCount(SyncOpPtr syncOp) {
+void ExecutorWorker::increaseErrorCount(const SyncOpPtr syncOp, const ExitInfo exitInfo /*= ExitInfo()*/) {
     if (syncOp->affectedNode() && syncOp->affectedNode()->id().has_value()) {
         _syncPal->increaseErrorCount(*syncOp->affectedNode()->id(), syncOp->affectedNode()->type(),
-                                     syncOp->affectedNode()->getPath(), otherSide(syncOp->targetSide()));
+                                     syncOp->affectedNode()->getPath(), otherSide(syncOp->targetSide()), exitInfo);
 
         // Clear update tree
         if (!deleteOpNodes(syncOp)) {
