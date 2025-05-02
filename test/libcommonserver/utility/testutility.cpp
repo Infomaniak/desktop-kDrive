@@ -540,11 +540,17 @@ void TestUtility::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modtime);
 
+#ifdef _WIN32
+        // On Windows, we can edit a file even if we do not have access to its parent.
+        const auto rightPath = filepath;
+#else
+        const auto &rightPath = tempDir.path();
+#endif
         const auto timestamp2 = timestamp + 1;
-        bool result = IoHelper::setRights(filepath, false, false, false, ioError);
+        bool result = IoHelper::setRights(rightPath, false, false, false, ioError);
         result &= ioError == IoError::Success;
         if (!result) {
-            (void) IoHelper::setRights(filepath, true, true, true, ioError);
+            (void) IoHelper::setRights(rightPath, true, true, true, ioError);
             CPPUNIT_ASSERT_MESSAGE("setRights failed", false);
         }
         ioError = Utility::setFileDates(filepath, timestamp, timestamp2, false);
@@ -554,7 +560,7 @@ void TestUtility::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modtime);
 
-        (void) IoHelper::setRights(filepath, true, true, true, ioError);
+        (void) IoHelper::setRights(rightPath, true, true, true, ioError);
     }
 
     const auto timestamp3 = timestamp + 3;
