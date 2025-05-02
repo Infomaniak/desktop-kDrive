@@ -38,6 +38,7 @@
 #include "test_utility/remotetemporarydirectory.h"
 
 #include <unordered_set>
+#include <Poco/Net/HTTPRequest.h>
 
 using namespace CppUnit;
 

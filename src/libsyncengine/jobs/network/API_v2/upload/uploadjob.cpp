@@ -22,6 +22,7 @@
 #include "libcommon/utility/jsonparserutility.h"
 
 #include <fstream>
+#include <Poco/Net/HTTPRequest.h>
 
 #define TRIALS 5
 

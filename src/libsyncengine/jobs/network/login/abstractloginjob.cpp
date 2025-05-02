@@ -17,14 +17,13 @@
  */
 
 #include "abstractloginjob.h"
-#include "config.h"
 #include "jobs/network/networkjobsparams.h"
 #include "libcommonserver/utility/utility.h"
-#include "requests/parameterscache.h"
 #include "utility/jsonparserutility.h"
 #include "utility/urlhelper.h"
 
 #include <Poco/JSON/Parser.h>
+#include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
 
@@ -106,7 +105,7 @@ bool AbstractLoginJob::handleError(std::istream &inputStream, const Poco::URI &u
             getNetworkErrorReason(errorReason) == NetworkErrorReason::RefreshTokenRevoked) {
             _errorDescr = errorReason;
             LOG_WARN(_logger, "Error in request " << uri.toString().c_str() << " : refresh token has been revoked ");
-            noRetry();
+            disableRetry();
             _exitInfo = ExitCode::InvalidToken;
         } else {
             LOG_WARN(_logger, "Error in request " << uri.toString().c_str() << " : " << errorReason.c_str());

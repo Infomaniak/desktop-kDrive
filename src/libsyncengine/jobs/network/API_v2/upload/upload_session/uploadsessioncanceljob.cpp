@@ -18,6 +18,8 @@
 
 #include "uploadsessioncanceljob.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 UploadSessionCancelJob::UploadSessionCancelJob(const UploadSessionType uploadType, const int driveDbId, const SyncPath &filepath,

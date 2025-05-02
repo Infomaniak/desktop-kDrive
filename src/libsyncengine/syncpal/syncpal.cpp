@@ -1302,9 +1302,9 @@ void SyncPal::fixNodeTableDeleteItemsWithNullParentNodeId() {
     }
 }
 
-void SyncPal::increaseErrorCount(const NodeId &nodeId, const NodeType type, const SyncPath &relativePath,
-                                 const ReplicaSide side) {
-    _tmpBlacklistManager->increaseErrorCount(nodeId, type, relativePath, side);
+void SyncPal::increaseErrorCount(const NodeId &nodeId, const NodeType type, const SyncPath &relativePath, const ReplicaSide side,
+                                 const ExitInfo exitInfo /*= ExitInfo()*/) {
+    _tmpBlacklistManager->increaseErrorCount(nodeId, type, relativePath, side, exitInfo);
 }
 
 void SyncPal::blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, const ReplicaSide side) {

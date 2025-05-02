@@ -22,6 +22,8 @@
 #include "libcommonserver/utility/utility.h"
 #include "utility/jsonparserutility.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 UploadSessionFinishJob::UploadSessionFinishJob(const std::shared_ptr<Vfs> &vfs, const UploadSessionType uploadType,
