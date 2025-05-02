@@ -31,13 +31,20 @@ namespace KDC {
 
 UpdateTreeWorker::UpdateTreeWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
                                    ReplicaSide side) :
-    ISyncWorker(syncPal, name, shortName), _syncDb(syncPal->syncDb()), _operationSet(syncPal->operationSet(side)),
-    _updateTree(syncPal->updateTree(side)), _side(side) {}
+    ISyncWorker(syncPal, name, shortName),
+    _syncDb(syncPal->syncDb()),
+    _operationSet(syncPal->operationSet(side)),
+    _updateTree(syncPal->updateTree(side)),
+    _side(side) {}
 
 UpdateTreeWorker::UpdateTreeWorker(std::shared_ptr<SyncDb> syncDb, std::shared_ptr<FSOperationSet> operationSet,
                                    std::shared_ptr<UpdateTree> updateTree, const std::string &name, const std::string &shortName,
                                    ReplicaSide side) :
-    ISyncWorker(nullptr, name, shortName), _syncDb(syncDb), _operationSet(operationSet), _updateTree(updateTree), _side(side) {}
+    ISyncWorker(nullptr, name, shortName),
+    _syncDb(syncDb),
+    _operationSet(operationSet),
+    _updateTree(updateTree),
+    _side(side) {}
 
 UpdateTreeWorker::~UpdateTreeWorker() {
     _operationSet.reset();
@@ -791,17 +798,18 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
                 LOG_SYNCPAL_WARN(_logger, "Node or parent node not found for dbNodeId = " << previousNodeId.c_str());
                 return ExitCode::DataError;
             }
-            // not sure that parentId is already in _nodes ??
-            std::shared_ptr<Node> parentNode; // parentNode could be null
+
+            std::shared_ptr<Node> parentNode;
             auto parentIt = _updateTree->nodes().find(parentId);
             if (parentIt != _updateTree->nodes().end()) {
                 parentNode = parentIt->second;
-            } else {
-                const auto dbNodeIdIt2 = dbNodeIds.find(parentId);
-                if (dbNodeIdIt2 != dbNodeIds.end()) {
-                    dbNodeIdIt = dbNodeIdIt2;
-                }
+            } else if (const auto parentDbNodeIdIt = dbNodeIds.find(parentId); parentDbNodeIdIt != dbNodeIds.end()) {
+                dbNodeIdIt = parentDbNodeIdIt;
                 continue; // Create the parent node first
+            } else {
+                // parent node not found in _nodes and not in dbNodeIds
+                LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getOrCreateNodeFromDeletedPath");
+                return ExitCode::DataError;
             }
 
             DbNode dbNode;

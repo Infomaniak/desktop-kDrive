@@ -293,7 +293,7 @@ DbNode SyncDb::_driveRootNode(0, std::nullopt, SyncName(), SyncName(), "1", "1",
                               NodeType::Directory, 0, std::nullopt);
 
 SyncDb::SyncDb(const std::string &dbPath, const std::string &version, const std::string &targetNodeId) :
-    Db(dbPath), _rootNode(_driveRootNode), _cache(*this){
+    Db(dbPath), _cache(*this) {
     if (!targetNodeId.empty()) {
         _rootNode.setNodeIdRemote(targetNodeId);
     }
@@ -931,7 +931,7 @@ bool SyncDb::node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &
 
     int intResult;
     LOG_IF_FAIL(queryIntValue(id, SELECT_NODE_BY_REPLICAID_TYPE, intResult));
-    NodeType type = static_cast<NodeType>(intResult);
+    auto type = static_cast<NodeType>(intResult);
 
     int64_t size;
     LOG_IF_FAIL(queryInt64Value(id, SELECT_NODE_BY_REPLICAID_SIZE, size));
@@ -947,10 +947,10 @@ bool SyncDb::node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &
     }
 
     LOG_IF_FAIL(queryIntValue(id, SELECT_NODE_BY_REPLICAID_STATUS, intResult));
-    SyncFileStatus status = static_cast<SyncFileStatus>(intResult);
+    auto status = static_cast<SyncFileStatus>(intResult);
 
     LOG_IF_FAIL(queryIntValue(id, SELECT_NODE_BY_REPLICAID_SYNCING, intResult));
-    bool syncing = static_cast<bool>(intResult);
+    auto syncing = static_cast<bool>(intResult);
 
     LOG_IF_FAIL(queryResetAndClearBindings(id));
 

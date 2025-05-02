@@ -115,7 +115,7 @@ class SyncDb : public Db {
 
     private:
         static DbNode _driveRootNode;
-        DbNode _rootNode;
+        DbNode _rootNode = _driveRootNode;
         SyncDbRevision _revision = 1;
         SyncDbCache _cache;
         void invalidateCache() { ++_revision; }

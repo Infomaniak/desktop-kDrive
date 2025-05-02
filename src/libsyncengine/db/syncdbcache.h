@@ -27,7 +27,7 @@ namespace KDC {
 class SyncDb;
 class SyncDbCache {
     public:
-        SyncDbCache(SyncDb &syncDb) :
+        explicit SyncDbCache(SyncDb &syncDb) :
             _syncDb(syncDb) {};
         bool reloadCacheIfNeeded();
         void clear();

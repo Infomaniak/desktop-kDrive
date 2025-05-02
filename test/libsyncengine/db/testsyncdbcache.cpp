@@ -30,38 +30,6 @@
 using namespace CppUnit;
 
 namespace KDC {
-class DbNodeTest : public DbNode {
-    public:
-        DbNodeTest(std::optional<DbNodeId> parentNodeId, const SyncName &nameLocal, const SyncName &nameRemote,
-                   const std::optional<NodeId> &nodeIdLocal, const std::optional<NodeId> &nodeIdRemote,
-                   std::optional<SyncTime> created, std::optional<SyncTime> lastModifiedLocal,
-                   std::optional<SyncTime> lastModifiedRemote, NodeType type, int64_t size,
-                   const std::optional<std::string> &checksum, SyncFileStatus status = SyncFileStatus::Unknown,
-                   bool syncing = false) {
-            _nodeId = 0;
-            _parentNodeId = parentNodeId;
-            _nameLocal = nameLocal; // Don't check normalization
-            _nameRemote = nameRemote; // Don't check normalization
-            _nodeIdLocal = nodeIdLocal;
-            _nodeIdRemote = nodeIdRemote;
-            _created = created;
-            _lastModifiedLocal = lastModifiedLocal;
-            _lastModifiedRemote = lastModifiedRemote;
-            _type = type;
-            _size = size;
-            _checksum = checksum;
-            _status = status;
-            _syncing = syncing;
-        }
-
-        inline void setNameLocal(const SyncName &name) override {
-            _nameLocal = name; // Don't check normalization
-        }
-        inline void setNameRemote(const SyncName &name) override {
-            _nameRemote = name; // Don't check normalization
-        }
-};
-
 void TestSyncDbCache::setUp() {
     TestBase::start();
     bool alreadyExists = false;
@@ -118,15 +86,15 @@ void TestSyncDbCache::testReloadCacheIfNeeded() {
 
 void TestSyncDbCache::testNodes() {
     // Insert node
-    time_t tLoc = std::time(nullptr);
-    time_t tDrive = std::time(nullptr);
-
-    DbNode nodeDir1(0, _testObj->rootNode().nodeId(), Str("Dir loc 1"), Str("Dir drive 1"), "id loc 1", "id drive 1", tLoc, tLoc,
-                    tDrive, NodeType::Directory, 0, std::nullopt);
-    DbNode nodeDir2(0, _testObj->rootNode().nodeId(), Str("Dir loc 2"), Str("Dir drive 2"), "id loc 2", "id drive 2", tLoc, tLoc,
-                    tDrive, NodeType::Directory, 0, std::nullopt);
-    DbNode nodeDir3(0, _testObj->rootNode().nodeId(), Str("家屋香袈睷晦"), Str("家屋香袈睷晦"), "id loc 3", "id drive 3", tLoc,
-                    tLoc, tDrive, NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir1(0, _testObj->rootNode().nodeId(), Str("Dir loc 1"), Str("Dir drive 1"), "id loc 1", "id drive 1",
+                    testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0,
+                    std::nullopt);
+    DbNode nodeDir2(0, _testObj->rootNode().nodeId(), Str("Dir loc 2"), Str("Dir drive 2"), "id loc 2", "id drive 2",
+                    testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0,
+                    std::nullopt);
+    DbNode nodeDir3(0, _testObj->rootNode().nodeId(), Str("家屋香袈睷晦"), Str("家屋香袈睷晦"), "id loc 3", "id drive 3",
+                    testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0,
+                    std::nullopt);
     DbNodeId dbNodeIdDir1;
     DbNodeId dbNodeIdDir2;
     DbNodeId dbNodeIdDir3;
@@ -135,16 +103,16 @@ void TestSyncDbCache::testNodes() {
     CPPUNIT_ASSERT(_testObj->insertNode(nodeDir2, dbNodeIdDir2, constraintError));
     CPPUNIT_ASSERT(_testObj->insertNode(nodeDir3, dbNodeIdDir3, constraintError));
 
-    DbNode nodeFile1(dbNodeIdDir1, Str("File loc 1.1"), Str("File drive 1.1"), "id loc 1.1", "id drive 1.1", tLoc, tLoc, tDrive,
-                     NodeType::File, 0, "cs 1.1");
-    DbNode nodeFile2(dbNodeIdDir1, Str("File loc 1.2"), Str("File drive 1.2"), "id loc 1.2", "id drive 1.2", tLoc, tLoc, tDrive,
-                     NodeType::File, 0, "cs 1.2");
-    DbNode nodeFile3(dbNodeIdDir1, Str("File loc 1.3"), Str("File drive 1.3"), "id loc 1.3", "id drive 1.3", tLoc, tLoc, tDrive,
-                     NodeType::File, 0, "cs 1.3");
-    DbNode nodeFile4(dbNodeIdDir1, Str("File loc 1.4"), Str("File drive 1.4"), "id loc 1.4", "id drive 1.4", tLoc, tLoc, tDrive,
-                     NodeType::File, 0, "cs 1.4");
-    DbNode nodeFile5(dbNodeIdDir1, Str("File loc 1.5"), Str("File drive 1.5"), "id loc 1.5", "id drive 1.5", tLoc, tLoc, tDrive,
-                     NodeType::File, 0, "cs 1.5");
+    DbNode nodeFile1(dbNodeIdDir1, Str("File loc 1.1"), Str("File drive 1.1"), "id loc 1.1", "id drive 1.1",
+                     testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, "cs 1.1");
+    DbNode nodeFile2(dbNodeIdDir1, Str("File loc 1.2"), Str("File drive 1.2"), "id loc 1.2", "id drive 1.2",
+                     testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, "cs 1.2");
+    DbNode nodeFile3(dbNodeIdDir1, Str("File loc 1.3"), Str("File drive 1.3"), "id loc 1.3", "id drive 1.3",
+                     testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, "cs 1.3");
+    DbNode nodeFile4(dbNodeIdDir1, Str("File loc 1.4"), Str("File drive 1.4"), "id loc 1.4", "id drive 1.4",
+                     testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, "cs 1.4");
+    DbNode nodeFile5(dbNodeIdDir1, Str("File loc 1.5"), Str("File drive 1.5"), "id loc 1.5", "id drive 1.5",
+                     testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, "cs 1.5");
     DbNodeId dbNodeIdFile1;
     DbNodeId dbNodeIdFile2;
     DbNodeId dbNodeIdFile3;
@@ -156,8 +124,8 @@ void TestSyncDbCache::testNodes() {
     CPPUNIT_ASSERT(_testObj->insertNode(nodeFile4, dbNodeIdFile4, constraintError));
     CPPUNIT_ASSERT(_testObj->insertNode(nodeFile5, dbNodeIdFile5, constraintError));
 
-    DbNode nodeFile6(dbNodeIdDir2, Str("File loc 2.1"), Str("File drive 2.1"), "id loc 2.1", "id drive 2.1", tLoc, tLoc, tDrive,
-                     NodeType::File, 0, "cs 2.1");
+    DbNode nodeFile6(dbNodeIdDir2, Str("File loc 2.1"), Str("File drive 2.1"), "id loc 2.1", "id drive 2.1",
+                     testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, "cs 2.1");
     DbNodeId dbNodeIdFile6;
     CPPUNIT_ASSERT(_testObj->insertNode(nodeFile6, dbNodeIdFile6, constraintError));
     bool found = false;
@@ -180,10 +148,12 @@ void TestSyncDbCache::testNodes() {
     std::optional<NodeId> nodeIdFile3;
     CPPUNIT_ASSERT(_testObj->cache().id(ReplicaSide::Local, SyncPath("Dir loc 1/File loc 1.3"), nodeIdFile3, found) && found);
     CPPUNIT_ASSERT_EQUAL(nodeIdFile3.value(), nodeFile3.nodeIdLocal().value());
-    CPPUNIT_ASSERT(_testObj->cache().id(ReplicaSide::Remote, SyncPath("Dir drive 1/File drive 1.3"), nodeIdFile3, found) && found);
+    CPPUNIT_ASSERT(_testObj->cache().id(ReplicaSide::Remote, SyncPath("Dir drive 1/File drive 1.3"), nodeIdFile3, found) &&
+                   found);
     CPPUNIT_ASSERT_EQUAL(nodeIdFile3.value(), nodeFile3.nodeIdRemote().value());
     std::optional<NodeId> nodeIdFile4;
-    CPPUNIT_ASSERT(_testObj->cache().id(ReplicaSide::Remote, SyncPath("Dir drive 1/File drive 1.4"), nodeIdFile4, found) && found);
+    CPPUNIT_ASSERT(_testObj->cache().id(ReplicaSide::Remote, SyncPath("Dir drive 1/File drive 1.4"), nodeIdFile4, found) &&
+                   found);
     CPPUNIT_ASSERT(nodeIdFile4);
     std::optional<NodeId> nodeIdFile5;
     CPPUNIT_ASSERT(_testObj->cache().id(ReplicaSide::Local, SyncPath("Dir loc 1/File loc 1.5"), nodeIdFile5, found) && found);
@@ -191,14 +161,18 @@ void TestSyncDbCache::testNodes() {
 
     // parent
     NodeId parentNodeidFile3;
-    CPPUNIT_ASSERT(_testObj->cache().parent(ReplicaSide::Local, nodeFile3.nodeIdLocal().value(), parentNodeidFile3, found) && found);
+    CPPUNIT_ASSERT(_testObj->cache().parent(ReplicaSide::Local, nodeFile3.nodeIdLocal().value(), parentNodeidFile3, found) &&
+                   found);
     CPPUNIT_ASSERT(nodeDir1.nodeIdLocal() == parentNodeidFile3);
-    CPPUNIT_ASSERT(_testObj->cache().parent(ReplicaSide::Remote, nodeFile3.nodeIdRemote().value(), parentNodeidFile3, found) && found);
+    CPPUNIT_ASSERT(_testObj->cache().parent(ReplicaSide::Remote, nodeFile3.nodeIdRemote().value(), parentNodeidFile3, found) &&
+                   found);
     CPPUNIT_ASSERT(nodeDir1.nodeIdRemote() == parentNodeidFile3);
     NodeId parentNodeidDir1;
-    CPPUNIT_ASSERT(_testObj->cache().parent(ReplicaSide::Local, nodeDir1.nodeIdLocal().value(), parentNodeidDir1, found) && found);
+    CPPUNIT_ASSERT(_testObj->cache().parent(ReplicaSide::Local, nodeDir1.nodeIdLocal().value(), parentNodeidDir1, found) &&
+                   found);
     CPPUNIT_ASSERT(_testObj->rootNode().nodeIdLocal() == parentNodeidDir1);
-    CPPUNIT_ASSERT(_testObj->cache().parent(ReplicaSide::Remote, nodeDir1.nodeIdRemote().value(), parentNodeidDir1, found) && found);
+    CPPUNIT_ASSERT(_testObj->cache().parent(ReplicaSide::Remote, nodeDir1.nodeIdRemote().value(), parentNodeidDir1, found) &&
+                   found);
     CPPUNIT_ASSERT(_testObj->rootNode().nodeIdRemote() == parentNodeidDir1);
 
     // path
@@ -216,9 +190,11 @@ void TestSyncDbCache::testNodes() {
     CPPUNIT_ASSERT(_testObj->cache().path(ReplicaSide::Local, nodeDir3.nodeIdLocal().value(), pathDir3, found) && found);
     CPPUNIT_ASSERT_EQUAL(SyncPath(Str("家屋香袈睷晦")), pathDir3);
     SyncPath pathRoot;
-    CPPUNIT_ASSERT(_testObj->cache().path(ReplicaSide::Local, _testObj->rootNode().nodeIdLocal().value(), pathRoot, found) && found);
+    CPPUNIT_ASSERT(_testObj->cache().path(ReplicaSide::Local, _testObj->rootNode().nodeIdLocal().value(), pathRoot, found) &&
+                   found);
     CPPUNIT_ASSERT_EQUAL(SyncPath(Str("")), pathRoot);
-    CPPUNIT_ASSERT(_testObj->cache().path(ReplicaSide::Remote, _testObj->rootNode().nodeIdRemote().value(), pathRoot, found) && found);
+    CPPUNIT_ASSERT(_testObj->cache().path(ReplicaSide::Remote, _testObj->rootNode().nodeIdRemote().value(), pathRoot, found) &&
+                   found);
     CPPUNIT_ASSERT_EQUAL(SyncPath(Str("")), pathRoot);
 
     // ids
@@ -226,26 +202,28 @@ void TestSyncDbCache::testNodes() {
     CPPUNIT_ASSERT(_testObj->cache().ids(ReplicaSide::Local, ids, found) && found);
     CPPUNIT_ASSERT_EQUAL(size_t(10), ids.size());
     const auto rootNodeLocIt =
-            std::find_if(ids.begin(), ids.end(), [this](const NodeId &id) { return id == _testObj->rootNode().nodeIdLocal(); });
+            std::ranges::find_if(ids, [this](const NodeId &id) { return id == _testObj->rootNode().nodeIdLocal(); });
     const auto nodeFile5LocIt =
-            std::find_if(ids.begin(), ids.end(), [&nodeFile5](const NodeId &id) { return id == nodeFile5.nodeIdLocal(); });
+            std::ranges::find_if(ids, [&nodeFile5](const NodeId &id) { return id == nodeFile5.nodeIdLocal(); });
     CPPUNIT_ASSERT(rootNodeLocIt != ids.end());
     CPPUNIT_ASSERT(nodeFile5LocIt != ids.end());
     ids.clear();
     CPPUNIT_ASSERT(_testObj->cache().ids(ReplicaSide::Remote, ids, found) && found);
     CPPUNIT_ASSERT_EQUAL(size_t(10), ids.size());
     const auto rootNodeRemIt =
-            std::find_if(ids.begin(), ids.end(), [this](const NodeId &id) { return id == _testObj->rootNode().nodeIdRemote(); });
+            std::ranges::find_if(ids, [this](const NodeId &id) { return id == _testObj->rootNode().nodeIdRemote(); });
     const auto nodeFile5RemIt =
-            std::find_if(ids.begin(), ids.end(), [&nodeFile5](const NodeId &id) { return id == nodeFile5.nodeIdRemote(); });
+            std::ranges::find_if(ids, [&nodeFile5](const NodeId &id) { return id == nodeFile5.nodeIdRemote(); });
     CPPUNIT_ASSERT(rootNodeRemIt != ids.end());
     CPPUNIT_ASSERT(nodeFile5RemIt != ids.end());
 
     // dbId
     DbNodeId dbNodeId;
-    CPPUNIT_ASSERT(_testObj->cache().dbId(ReplicaSide::Local, _testObj->rootNode().nodeIdLocal().value(), dbNodeId, found) && found);
+    CPPUNIT_ASSERT(_testObj->cache().dbId(ReplicaSide::Local, _testObj->rootNode().nodeIdLocal().value(), dbNodeId, found) &&
+                   found);
     CPPUNIT_ASSERT(dbNodeId == _testObj->rootNode().nodeId());
-    CPPUNIT_ASSERT(_testObj->cache().dbId(ReplicaSide::Remote, _testObj->rootNode().nodeIdRemote().value(), dbNodeId, found) && found);
+    CPPUNIT_ASSERT(_testObj->cache().dbId(ReplicaSide::Remote, _testObj->rootNode().nodeIdRemote().value(), dbNodeId, found) &&
+                   found);
     CPPUNIT_ASSERT(dbNodeId == _testObj->rootNode().nodeId());
     CPPUNIT_ASSERT(_testObj->cache().dbId(ReplicaSide::Local, nodeFile3.nodeIdLocal().value(), dbNodeId, found) && found);
     CPPUNIT_ASSERT_EQUAL(dbNodeIdFile3, dbNodeId);
@@ -276,12 +254,14 @@ void TestSyncDbCache::testNodes() {
         CPPUNIT_ASSERT_EQUAL(nodeDir1.size(), nodeDirLocal.size());
 
         DbNode nodeDirRemote;
-        CPPUNIT_ASSERT(_testObj->cache().node(ReplicaSide::Remote, nodeDir1.nodeIdRemote().value(), nodeDirRemote, found) && found);
+        CPPUNIT_ASSERT(_testObj->cache().node(ReplicaSide::Remote, nodeDir1.nodeIdRemote().value(), nodeDirRemote, found) &&
+                       found);
         CPPUNIT_ASSERT(nodeDirRemote.nameRemote() == nodeDir1.nameRemote());
         CPPUNIT_ASSERT_EQUAL(nodeDir1.lastModifiedRemote().value(), nodeDirRemote.lastModifiedRemote().value());
 
         DbNode nodeFileLocal;
-        CPPUNIT_ASSERT(_testObj->cache().node(ReplicaSide::Local, nodeFile1.nodeIdLocal().value(), nodeFileLocal, found) && found);
+        CPPUNIT_ASSERT(_testObj->cache().node(ReplicaSide::Local, nodeFile1.nodeIdLocal().value(), nodeFileLocal, found) &&
+                       found);
         CPPUNIT_ASSERT_EQUAL(dbNodeIdFile1, nodeFileLocal.nodeId());
         CPPUNIT_ASSERT_EQUAL(nodeFile1.parentNodeId().value(), nodeFileLocal.parentNodeId().value());
         CPPUNIT_ASSERT(nodeFileLocal.nameLocal() == nodeFile1.nameLocal());
@@ -291,7 +271,8 @@ void TestSyncDbCache::testNodes() {
         CPPUNIT_ASSERT_EQUAL(nodeFile1.size(), nodeFileLocal.size());
 
         DbNode nodeFileRemote;
-        CPPUNIT_ASSERT(_testObj->cache().node(ReplicaSide::Remote, nodeFile1.nodeIdRemote().value(), nodeFileRemote, found) && found);
+        CPPUNIT_ASSERT(_testObj->cache().node(ReplicaSide::Remote, nodeFile1.nodeIdRemote().value(), nodeFileRemote, found) &&
+                       found);
         CPPUNIT_ASSERT(nodeFileRemote.nameRemote() == nodeFile1.nameRemote());
         CPPUNIT_ASSERT(nodeFileRemote.lastModifiedRemote() == nodeFile1.lastModifiedRemote());
     }

@@ -217,10 +217,10 @@ bool SyncDbCache::ids(ReplicaSide side, std::vector<NodeId>& ids, bool& found) {
     const std::unordered_map<NodeId, DbNodeId>& nodeIdsCache =
             side == ReplicaSide::Local ? _localNodeIdToDbNodeIdMap : _remoteNodeIdToDbNodeIdMap;
 
-    for (const auto& nodeIdIt: nodeIdsCache) {
-        ids.push_back(nodeIdIt.first);
+    for (const auto& [nodeId, _]: nodeIdsCache) {
+        ids.push_back(nodeId);
     }
-    found = nodeIdsCache.size() > 0;
+    found = !nodeIdsCache.empty();
     return true;
 }
 
@@ -288,7 +288,7 @@ bool SyncDbCache::path(DbNodeId dbNodeId, SyncPath& localPath, SyncPath& remoteP
     }
 
     // Only cache the path of the parents to avoid too much memory usage
-    if (recursiveCall) _dbNodesPathCache.try_emplace(dbNodeId, std::make_pair(localPath, remotePath));
+    if (recursiveCall) (void) _dbNodesPathCache.try_emplace(dbNodeId, localPath, remotePath);
     found = true;
     return true;
 }
@@ -341,7 +341,7 @@ bool SyncDbCache::id(ReplicaSide side, const SyncPath& path, std::optional<NodeI
             return true;
         }
         const auto childIt =
-                std::find_if(children->second.begin(), children->second.end(), [this, &nameIt, &side](const DbNodeId& childId) {
+                std::ranges::find_if(children->second, [this, &nameIt, &side](const DbNodeId& childId) {
                     const DbNode& childNode = _dbNodesCache.at(childId);
                     return childNode.name(side) == *nameIt;
                 });
