@@ -19,6 +19,8 @@
 #include "uploadsessionchunkjob.h"
 #include "libcommonserver/utility/utility.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 #define TRIALS 5
 
 namespace KDC {
