@@ -332,7 +332,7 @@ The project requires additional CMake variables for a correct build. To inject t
    set(ZLIB_INCLUDE_DIR "F:/Projects/zlib-1.2.11/include")
    set(ZLIB_LIBRARY_RELEASE "F:/Projects/zlib-1.2.11/lib/zlib.lib")
    set(VFS_STATIC_LIBRARY "F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug/Vfs.lib")
-   set(VFS_DIRECTORY "F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Release")
+   set(VFS_DIRECTORY "F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug")
    ```
 
 2. In your profile (`%USERPROFILE%/.conan2/profiles/default`), add under a new `[conf]` section:
@@ -386,7 +386,7 @@ Copy the following list of `CMake` variables in the CMake options field:
 -DZLIB_INCLUDE_DIR:PATH=F:/Projects/zlib-1.2.11/include
 -DZLIB_LIBRARY_RELEASE:FILEPATH=F:/Projects/zlib-1.2.11/lib/zlib.lib
 -DVFS_STATIC_LIBRARY:FILEPATH=F:\Projects\desktop-kDrive\extensions\windows\cfapi\x64\Debug/Vfs.lib
--DVFS_DIRECTORY:PATH=F:\Projects\desktop-kDrive\extensions\windows\cfapi\x64\Release
+-DVFS_DIRECTORY:PATH=F:\Projects\desktop-kDrive\extensions\windows\cfapi\x64\Debug
 -DCMAKE_TOOLCHAIN_FILE=F:\Projects\desktop-kDrive\build-windows\build\conan_toolchain.cmake
 ```
 *For the `CMAKE_TOOLCHAIN_FILE` variable, ensure that you have executed the `build_dependencies.ps1` script in advance.*
