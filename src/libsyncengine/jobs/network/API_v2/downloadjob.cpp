@@ -231,6 +231,14 @@ bool DownloadJob::handleResponse(std::istream &is) {
 
                 _responseHandlingCanceled = fetchCanceled || fetchError || (!fetchFinished);
             } else if (_isHydrated) {
+#ifdef _WIN32
+                if (indexingIsProblematic(_localpath)) {
+                    if (!SetFileAttributesA(_localpath.string().c_str(), FILE_ATTRIBUTE_NOT_CONTENT_INDEXED)) {
+                        LOGW_WARN(_logger, L"Error in SetFileAttributesA for " << Utility::formatSyncPath(_tmpPath));
+                    }
+                }
+#endif
+
                 // Replace file by tmp one
                 if (!moveTmpFile(restartSync)) {
                     LOGW_WARN(_logger, L"Failed to replace file by tmp one: " << Utility::formatSyncPath(_tmpPath));
