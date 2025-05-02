@@ -88,9 +88,6 @@ void createBigTextFile(const SyncPath &path) {
     ofs << std::string(sizeInBytes, 'a');
 }
 
-void createEmptyFile(const SyncPath &path) {
-    std::ofstream{path};
-}
 } // namespace
 
 void TestNetworkJobs::setUp() {
@@ -440,7 +437,7 @@ void TestNetworkJobs::testDownload() {
         CPPUNIT_ASSERT(!smallPartitionPath.empty());
         IoError ioError = IoError::Unknown;
         bool exist = false;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(smallPartitionPath, exist, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(smallPartitionPath, exist, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT(exist);
 
@@ -953,29 +950,42 @@ void TestNetworkJobs::testRename() {
     CPPUNIT_ASSERT(name == filename);
 }
 
-void TestNetworkJobs::testUpload() {
-    // Successful upload
-    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUpload");
+void TestNetworkJobs::testUpload(const SyncTime timeInput, SyncTime &timeOutput) {
     const LocalTemporaryDirectory temporaryDirectory("testUpload");
-    const SyncPath localFilePath = temporaryDirectory.path() / "empty_file.txt";
-    createEmptyFile(localFilePath);
+    const SyncName filename = Str("test_file.txt");
+    const SyncPath localFilePath = temporaryDirectory.path() / filename;
+    testhelpers::generateOrEditTestFile(localFilePath);
 
-    UploadJob job(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 0);
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUpload");
+    UploadJob job(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), timeInput);
     ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
-    NodeId newNodeId = job.nodeId();
-
-    GetFileInfoJob fileInfoJob(_driveDbId, newNodeId);
+    GetFileInfoJob fileInfoJob(_driveDbId, job.nodeId());
     exitCode = fileInfoJob.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
     Poco::JSON::Object::Ptr dataObj = fileInfoJob.jsonRes()->getObject(dataKey);
     std::string name;
     if (dataObj) {
-        name = dataObj->get(nameKey).toString();
+        (void) JsonParserUtility::extractValue(dataObj, nameKey, name, false);
+        (void) JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, timeOutput, false);
     }
-    CPPUNIT_ASSERT(name == std::string("empty_file.txt"));
+    CPPUNIT_ASSERT(filename == Str2SyncName(name));
+}
+
+void TestNetworkJobs::testUpload() {
+    const auto epochNow = std::chrono::system_clock::now().time_since_epoch();
+    auto timeInput = std::chrono::duration_cast<std::chrono::seconds>(epochNow);
+    SyncTime timeOutput = 0;
+
+    testUpload(timeInput.count(), timeOutput);
+    CPPUNIT_ASSERT_EQUAL(timeInput.count(), timeOutput);
+
+    // Upload job but local file has a modification far in the future (more than 24h).
+    timeInput += std::chrono::days(10);
+    testUpload(timeInput.count(), timeOutput);
+    CPPUNIT_ASSERT_LESS(timeInput.count(), timeOutput);
 }
 
 void TestNetworkJobs::testUploadAborted() {
@@ -1060,7 +1070,7 @@ void TestNetworkJobs::testDriveUploadSessionSynchronous() {
     ofs.close();
     uint64_t fileSizeLocal = 0;
     auto ioError = IoError::Unknown;
-    CPPUNIT_ASSERT(IoHelper::getFileSize(localFilePath, fileSizeLocal, ioError));
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getFileSize(localFilePath, fileSizeLocal, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     DriveUploadSession driveUploadSessionJobEdit(nullptr, _driveDbId, nullptr, localFilePath, newNodeId, false, 1);
@@ -1130,7 +1140,7 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
     ofs << "test";
     ofs.close();
     uint64_t fileSizeLocal = 0;
-    CPPUNIT_ASSERT(IoHelper::getFileSize(localFilePath, fileSizeLocal, ioError));
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getFileSize(localFilePath, fileSizeLocal, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     while (_nbParalleleThreads > 0) {
         LOG_DEBUG(Log::instance()->getLogger(),
@@ -1317,7 +1327,7 @@ bool TestNetworkJobs::createTestFiles() {
     FileStat fileStat;
     IoError ioError = IoError::Success;
     IoHelper::getFileStat(_dummyLocalFilePath, &fileStat, ioError);
-    CPPUNIT_ASSERT(ioError == IoError::Success);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     _dummyLocalFileId = std::to_string(fileStat.inode);
 
     // Create remote test file

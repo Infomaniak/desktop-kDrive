@@ -447,6 +447,7 @@ bool DrivePreferencesWidget::switchVfsOn(int syncDbId) {
         return false;
     }
 
+#ifdef Q_OS_MAC
     // Setup Vfs extension (Mac)
     VirtualFileMode virtualFileMode;
     exitCode = GuiRequests::bestAvailableVfsMode(virtualFileMode);
@@ -455,7 +456,6 @@ bool DrivePreferencesWidget::switchVfsOn(int syncDbId) {
         return false;
     }
 
-#ifdef Q_OS_MAC
     if (virtualFileMode == VirtualFileMode::Mac) {
         // Check LiteSync ext authorizations
         std::string liteSyncExtErrorDescr;
