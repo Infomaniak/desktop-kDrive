@@ -347,7 +347,7 @@ The project requires additional CMake variables for a correct build. To inject t
 
 **From the repository root**, run the provided build script, specifying the desired configuration (`Debug` or `Release`) and the folder where the app will be builded.
 ```powershell
-powershell ./infomaniak-build-tools/conan/build_dependencies.ps1 [Debug|Release] [--output-dir=<output_dir>]
+powershell ./infomaniak-build-tools/conan/build_dependencies.ps1 [Debug|Release] [-OutputDir <output_dir>]
 ```
 
 > **Note:** Currently only **xxHash** is managed via this Conan-based workflow. Additional dependencies will be added in future updates.
