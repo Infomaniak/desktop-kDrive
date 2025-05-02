@@ -101,7 +101,10 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
     // Check if `newItem` already exists with the same path but a different Id
     if (const auto newParent = findItem(newItem.parentId()); newParent) {
         for (const auto &child: newParent->children()) {
-            if (child->normalizedName() == newItem.normalizedName() && child->id() != newItem.id()) {
+            auto &childRef = *child;
+            if (childRef.normalizedNameSize() == newItem.normalizedNameSize() &&
+                childRef.normalizedName() == newItem.normalizedName() &&
+                child->id() != newItem.id()) {
                 LOGW_DEBUG(Log::instance()->getLogger(),
                            L"Item: " << SyncName2WStr(newItem.name()) << L" (" << Utility::s2ws(newItem.id())
                                      << L") already exists in parent: " << Utility::s2ws(newItem.parentId())
