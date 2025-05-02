@@ -34,7 +34,8 @@ class TmpBlacklistManager {
         explicit TmpBlacklistManager(std::shared_ptr<SyncPal> syncPal);
         ~TmpBlacklistManager();
 
-        void increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side);
+        void increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side,
+                                ExitInfo exitInfo = ExitInfo());
         void blacklistItem(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side);
         void refreshBlacklist();
 

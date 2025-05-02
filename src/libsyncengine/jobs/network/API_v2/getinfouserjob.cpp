@@ -20,6 +20,8 @@
 
 #include "utility/jsonparserutility.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 static const std::string displayNameKey = "display_name";
