@@ -329,10 +329,10 @@ The project requires additional CMake variables for a correct build. To inject t
    set(SOCKETAPI_TEAM_IDENTIFIER_PREFIX "864VDCS2QY")
    set(CMAKE_PREFIX_PATH "C:/Qt/6.2.3/msvc2019_64")
    set(CMAKE_INSTALL_PREFIX "F:/Projects/cmake-build-release_CLion")
-   set(ZLIB_INCLUDE_DIR:PATH "F:/Projects/zlib-1.2.11/include")
-   set(ZLIB_LIBRARY_RELEASE:FILEPATH "F:/Projects/zlib-1.2.11/lib/zlib.lib")
-   set(VFS_STATIC_LIBRARY:FILEPATH "F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug/Vfs.lib")
-   set(VFS_DIRECTORY:PATH "F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Release")
+   set(ZLIB_INCLUDE_DIR "F:/Projects/zlib-1.2.11/include")
+   set(ZLIB_LIBRARY_RELEASE "F:/Projects/zlib-1.2.11/lib/zlib.lib")
+   set(VFS_STATIC_LIBRARY "F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug/Vfs.lib")
+   set(VFS_DIRECTORY "F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Release")
    ```
 
 2. In your profile (`%USERPROFILE%/.conan2/profiles/default`), add under a new `[conf]` section:
