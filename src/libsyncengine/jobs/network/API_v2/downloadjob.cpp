@@ -35,6 +35,7 @@
 #include <fstream>
 
 #include <Poco/File.h>
+#include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
 

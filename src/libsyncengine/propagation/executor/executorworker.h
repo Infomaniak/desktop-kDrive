@@ -106,7 +106,7 @@ class ExecutorWorker : public OperationProcessor {
 
         ExitInfo waitForAllJobsToFinish();
         ExitInfo deleteFinishedAsyncJobs();
-        ExitInfo handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool invalidName, bool downloadImpossible);
+        ExitInfo handleManagedBackError(const ExitInfo &jobExitInfo, SyncOpPtr syncOp, bool invalidName);
         ExitInfo handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath,
                                    bool &ignored, bool &bypassProgressComplete);
         ExitInfo handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath, bool &ignored);
@@ -137,7 +137,7 @@ class ExecutorWorker : public OperationProcessor {
             return _syncPal->updateTree(syncOp->targetSide());
         }
 
-        void increaseErrorCount(SyncOpPtr syncOp);
+        void increaseErrorCount(SyncOpPtr syncOp, ExitInfo exitInfo = ExitInfo());
 
         ExitInfo getFileSize(const SyncPath &path, uint64_t &size);
 

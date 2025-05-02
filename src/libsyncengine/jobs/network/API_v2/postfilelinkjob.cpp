@@ -18,6 +18,8 @@
 
 #include "postfilelinkjob.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 PostFileLinkJob::PostFileLinkJob(int driveDbId, const NodeId &nodeId) :
