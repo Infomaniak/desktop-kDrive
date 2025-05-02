@@ -706,7 +706,15 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
 }
 
 bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept {
-    return _getFileStat(path, filestat, ioError);
+    try {
+        return _getFileStat(path, filestat, ioError);
+    } catch (std::filesystem::filesystem_error &e) {
+        LOGW_WARN(Log::instance()->getLogger(), L"IoHelper::getFileStat error: " << e.code().value() << L" error="
+                                                                                 << Utility::s2ws(e.what()) << L" "
+                                                                                 << Utility::formatSyncPath(path));
+        ioError = IoError::AccessDenied;
+        return isExpectedError(ioError);
+    }
 }
 
 void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists) {
@@ -867,7 +875,8 @@ bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, b
 // DirectoryIterator
 
 IoHelper::DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, bool recursive, IoError &ioError) :
-    _recursive(recursive), _directoryPath(directoryPath) {
+    _recursive(recursive),
+    _directoryPath(directoryPath) {
     std::error_code ec;
 
     _dirIterator = std::filesystem::begin(
