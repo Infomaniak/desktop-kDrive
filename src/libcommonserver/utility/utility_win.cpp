@@ -186,23 +186,19 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
 #define CSYNC_SECONDS_SINCE_1601 11644473600LL
 #define CSYNC_USEC_IN_SEC 1000000LL
 
-static void UnixTimevalToFileTime(struct timeval t, LPFILETIME pft) {
+static void UnixTimevalToFileTime(timeval t, LPFILETIME pft) {
     LONGLONG ll;
     ll = Int32x32To64(t.tv_sec, CSYNC_USEC_IN_SEC * 10) + t.tv_usec * 10 + CSYNC_SECONDS_SINCE_1601 * CSYNC_USEC_IN_SEC * 10;
     pft->dwLowDateTime = (DWORD) ll;
     pft->dwHighDateTime = ll >> 32;
 }
 
-static bool setFileDates_private(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
-                                 std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists) {
-    (void) symlink;
-
-    exists = true;
-
+static IoError setFileDates_private(const SyncPath &filePath, const std::optional<SyncTime> creationDate,
+                                    const std::optional<SyncTime> modificationDate, bool) {
     FILETIME creationTime;
     if (creationDate.has_value()) {
         // Set creation time
-        struct timeval times[1];
+        timeval times[1];
         times[0].tv_sec = creationDate.value();
         times[0].tv_usec = 0;
         UnixTimevalToFileTime(times[0], &creationTime);
@@ -213,7 +209,7 @@ static bool setFileDates_private(const KDC::SyncPath &filePath, std::optional<KD
     FILETIME modificationTime;
     if (modificationDate.has_value()) {
         // Set creation time
-        struct timeval times[1];
+        timeval times[1];
         times[0].tv_sec = modificationDate.value();
         times[0].tv_usec = 0;
         UnixTimevalToFileTime(times[0], &modificationTime);
@@ -232,36 +228,39 @@ static bool setFileDates_private(const KDC::SyncPath &filePath, std::optional<KD
                 continue;
             }
 
-            exists = !CommonUtility::isLikeFileNotFoundError(dwError);
-            if (!exists) {
-                // Path doesn't exist
-                return true;
+            if (CommonUtility::isLikeFileNotFoundError(dwError)) {
+                return IoError::NoSuchFileOrDirectory;
             }
 
-            return false;
+            return IoError::Unknown;
         } else {
             break;
         }
     }
 
     if (hFile == INVALID_HANDLE_VALUE) {
-        return false;
+        if (GetLastError() == ERROR_ACCESS_DENIED) {
+            return IoError::AccessDenied;
+        }
+        return IoError::Unknown;
     }
 
     if (!SetFileTime(hFile, &creationTime, NULL, &modificationTime)) {
-        exists = !CommonUtility::isLikeFileNotFoundError(GetLastError());
-        if (!exists) {
-            // Path doesn't exist
-            CloseHandle(hFile);
-            return true;
+        auto ioError = IoError::Unknown;
+        DWORD dwError = GetLastError();
+        if (CommonUtility::isLikeFileNotFoundError(dwError)) {
+            ioError = IoError::NoSuchFileOrDirectory;
+        }
+        if (dwError == ERROR_ACCESS_DENIED) {
+            ioError = IoError::AccessDenied;
         }
 
         CloseHandle(hFile);
-        return false;
+        return ioError;
     }
 
     CloseHandle(hFile);
-    return true;
+    return IoError::Success;
 }
 
 static bool totalRamAvailable_private(uint64_t &ram, int &errorCode) {

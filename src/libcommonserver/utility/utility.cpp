@@ -151,8 +151,8 @@ bool Utility::findNodeValue(const Poco::XML::Document &doc, const std::string &n
     }
 }
 
-IoError Utility::setFileDates(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
-                              const std::optional<KDC::SyncTime> modificationDate, const bool symlink) {
+IoError Utility::setFileDates(const SyncPath &filePath, std::optional<SyncTime> creationDate,
+                              const std::optional<SyncTime> modificationDate, const bool symlink) {
     return setFileDates_private(
             filePath, creationDate.has_value() && isCreationDateValid(creationDate.value()) ? creationDate : std::nullopt,
             modificationDate, symlink);

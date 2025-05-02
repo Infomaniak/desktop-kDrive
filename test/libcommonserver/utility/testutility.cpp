@@ -541,16 +541,20 @@ void TestUtility::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modtime);
 
         const auto timestamp2 = timestamp + 1;
-        bool result = IoHelper::setRights(tempDir.path(), false, false, false, ioError);
+        bool result = IoHelper::setRights(filepath, false, false, false, ioError);
         result &= ioError == IoError::Success;
         if (!result) {
-            (void) IoHelper::setRights(tempDir.path(), true, true, true, ioError);
+            (void) IoHelper::setRights(filepath, true, true, true, ioError);
             CPPUNIT_ASSERT_MESSAGE("setRights failed", false);
         }
         ioError = Utility::setFileDates(filepath, timestamp, timestamp2, false);
         CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, ioError);
 
-        (void) IoHelper::setRights(tempDir.path(), true, true, true, ioError);
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError);
+        CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
+        CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modtime);
+
+        (void) IoHelper::setRights(filepath, true, true, true, ioError);
     }
 
     const auto timestamp3 = timestamp + 3;
