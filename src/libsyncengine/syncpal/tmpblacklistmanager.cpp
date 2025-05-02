@@ -42,7 +42,7 @@ void TmpBlacklistManager::logMessage(const std::wstring &msg, const NodeId &id, 
 }
 
 void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, const NodeType type, const SyncPath &relativePath,
-                                             const ReplicaSide side) {
+                                             const ReplicaSide side, ExitInfo exitInfo /*= ExitInfo()*/) {
     auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
 
     if (const auto errorItem = errors.find(nodeId); errorItem != errors.end()) {
@@ -52,7 +52,7 @@ void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, const NodeTyp
         sentry::Handler::captureMessage(sentry::Level::Warning, "TmpBlacklistManager::increaseErrorCount",
                                         "Blacklisting item temporarily to avoid infinite loop");
         const Error err(_syncPal->syncDbId(), "", nodeId, type, relativePath, ConflictType::None, InconsistencyType::None,
-                        CancelType::TmpBlacklisted);
+                        exitInfo ? CancelType::TmpBlacklisted : CancelType::None, "", exitInfo.code(), exitInfo.cause());
         _syncPal->addError(err);
     } else {
         TmpErrorInfo errorInfo;

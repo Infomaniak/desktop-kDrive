@@ -20,16 +20,9 @@
 
 #include "abstractfileitemwidget.h"
 
-#include "synchronizeditem.h"
-#include "customwordwraplabel.h"
-#include "libcommon/info/driveinfo.h"
 #include "libcommon/info/errorinfo.h"
 
-#include <QLabel>
 #include <QWidget>
-#include <QBoxLayout>
-#include <QListWidgetItem>
-
 
 namespace KDC {
 
