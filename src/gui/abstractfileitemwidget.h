@@ -23,8 +23,6 @@
 #include <QLabel>
 #include <QWidget>
 #include <QBoxLayout>
-#include <QListWidgetItem>
-#include <QFileInfo>
 
 class QHBoxLayout;
 
@@ -58,9 +56,9 @@ class AbstractFileItemWidget : public QWidget {
         virtual void openFolder(const QString &path);
 
     private:
-        inline QColor backgroundColor() const { return _backgroundColor; }
-        inline void setBackgroundColor(const QColor &value) { _backgroundColor = value; }
-        inline QColor logoColor() const { return _logoColor; }
+        QColor backgroundColor() const { return _backgroundColor; }
+        void setBackgroundColor(const QColor &value) { _backgroundColor = value; }
+        QColor logoColor() const { return _logoColor; }
         void setLogoColor(const QColor &value);
         void paintEvent(QPaintEvent *event) override;
 

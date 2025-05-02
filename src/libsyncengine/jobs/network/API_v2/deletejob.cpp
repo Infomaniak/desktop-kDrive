@@ -23,6 +23,8 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 DeleteJob::DeleteJob(const int driveDbId, const NodeId &remoteItemId, const NodeId &localItemId,

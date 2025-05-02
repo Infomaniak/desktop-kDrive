@@ -17,12 +17,12 @@
  */
 
 #include "uploadjob.h"
-#include "common/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/jsonparserutility.h"
 
 #include <fstream>
+#include <Poco/Net/HTTPRequest.h>
 
 #define TRIALS 5
 
