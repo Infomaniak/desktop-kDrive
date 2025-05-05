@@ -257,6 +257,10 @@ static IoError setFileDates_private(const SyncPath &filePath, const std::optiona
         LOGW_WARN(Log::instance()->getLogger(), L"Access denied on file : " << Utility::formatSyncPath(filePath));
         return IoError::AccessDenied;
     }
+    catch (Poco::FileAccessDeniedException &) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Access denied on file : " << Utility::formatSyncPath(filePath));
+        return IoError::AccessDenied;
+    }
     catch (Poco::Exception &ex) {
         LOG_WARN(Log::instance()->getLogger(), "Error in setLastModified : " << ex.message() << " (" << ex.code() << ")");
         return IoError::Unknown;

@@ -530,14 +530,16 @@ void TestUtility::testSetFileDates() {
 
     {
         const LocalTemporaryDirectory tempDir("testSetFileDates");
-        filepath = tempDir.path() / "test.text";
+        filepath = tempDir.path() / "test.txt";
         testhelpers::generateOrEditTestFile(filepath);
         auto ioError = Utility::setFileDates(filepath, timestamp, timestamp, false);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         FileStat filestat;
         (void) IoHelper::getFileStat(filepath, &filestat, ioError);
+#if defined(__APPLE__) || defined(_WIN32)   //  Creation date not set on Linux
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
+#endif
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modtime);
 
 #ifdef _WIN32
@@ -557,7 +559,9 @@ void TestUtility::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, ioError);
 
         (void) IoHelper::getFileStat(filepath, &filestat, ioError);
+#if defined(__APPLE__) || defined(_WIN32)   //  Creation date not set on Linux
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
+#endif
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modtime);
 
         (void) IoHelper::setRights(rightPath, true, true, true, ioError);
