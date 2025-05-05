@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include "../abstractnetworkjob.h"
-#include "../networkjobsparams.h"
+#include "jobs/network/abstractnetworkjob.h"
+#include "jobs/network/networkjobsparams.h"
 #include "login/login.h"
 
 #include <unordered_map>

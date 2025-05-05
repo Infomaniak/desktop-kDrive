@@ -18,6 +18,8 @@
 
 #include "continuefilelistwithcursorjob.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 ContinueFileListWithCursorJob::ContinueFileListWithCursorJob(int driveDbId, const std::string &cursor) :
