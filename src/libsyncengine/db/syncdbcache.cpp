@@ -22,7 +22,8 @@ namespace KDC {
 
 bool SyncDbCache::isChacheUpToDate() const {
     if (_cachedRevision != _syncDb.revision()) {
-        LOG_INFO(Log::instance()->getLogger(), "SyncDbCache: cache is not up to date.");
+        LOG_INFO(Log::instance()->getLogger(), "SyncDbCache: cache is not up to date, cached revision="
+                                                       << _cachedRevision << ", current syncDb revision=" << _syncDb.revision());
         return false;
     }
     return true;
