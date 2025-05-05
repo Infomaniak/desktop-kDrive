@@ -44,7 +44,7 @@ class SnapshotItem {
         [[nodiscard]] const std::unordered_set<std::shared_ptr<SnapshotItem>> &children() const { return _children; }
         [[nodiscard]] const SyncName &name() const { return _name; }
         [[nodiscard]] const SyncName &normalizedName() const { return _normalizedName; }
-        [[nodiscard]] const size_t &normalizedNameSize() const { return _normalizedNameSize; }
+        [[nodiscard]] const int16_t &normalizedNameSize() const { return _normalizedNameSize; }
         void setName(const SyncName &newName);
         [[nodiscard]] SyncTime createdAt() const { return _createdAt; }
         void setCreatedAt(const SyncTime newCreatedAt);
