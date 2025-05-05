@@ -91,10 +91,9 @@ bool SyncDbCache::reloadCacheIfNeeded() {
 
 bool SyncDbCache::parent(ReplicaSide side, const NodeId& nodeId, NodeId& parentNodeId, bool& found) {
     const std::scoped_lock lock(_mutex);
-    if (_cachedRevision == 0) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::parent: Error cache is not loaded");
-        return false;
-    }
+    LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
+    if (_cachedRevision == 0) return false;
+
     found = false;
 
     DbNodeId dbNodeId = getDbNodeIdFromNodeId(side, nodeId, found);
@@ -130,12 +129,10 @@ bool SyncDbCache::parent(ReplicaSide side, const NodeId& nodeId, NodeId& parentN
 
 bool SyncDbCache::correspondingNodeId(ReplicaSide side, const NodeId& nodeIdIn, NodeId& nodeIdOut, bool& found) {
     const std::scoped_lock lock(_mutex);
-    if (_cachedRevision == 0) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::correspondingNodeId: Cache is not loaded");
-        return false;
-    }
-    found = false;
+    LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
+    if (_cachedRevision == 0) return false;
 
+    found = false;
     DbNodeId dbNodeId = getDbNodeIdFromNodeId(side, nodeIdIn, found);
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(),
@@ -161,10 +158,9 @@ bool SyncDbCache::correspondingNodeId(ReplicaSide side, const NodeId& nodeIdIn, 
 
 bool SyncDbCache::dbId(ReplicaSide side, const NodeId& nodeId, DbNodeId& dbNodeId, bool& found) {
     const std::scoped_lock lock(_mutex);
-    if (!_cachedRevision == 0) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::dbId: Cache is not loaded");
-        return false;
-    }
+    LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
+    if (_cachedRevision == 0) return false;
+
     found = false;
 
     dbNodeId = getDbNodeIdFromNodeId(side, nodeId, found);
@@ -176,10 +172,9 @@ bool SyncDbCache::dbId(ReplicaSide side, const NodeId& nodeId, DbNodeId& dbNodeI
 
 bool SyncDbCache::node(DbNodeId dbNodeId, DbNode& dbNode, bool& found) {
     const std::scoped_lock lock(_mutex);
-    if (!_cachedRevision == 0) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::node: Cache is not loaded");
-        return false;
-    }
+    LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
+    if (_cachedRevision == 0) return false;
+
     found = false;
     dbNode = getDbNodeFromDbNodeId(dbNodeId, found);
     if (!found) {
@@ -190,10 +185,9 @@ bool SyncDbCache::node(DbNodeId dbNodeId, DbNode& dbNode, bool& found) {
 
 bool SyncDbCache::node(ReplicaSide side, const NodeId& nodeId, DbNode& dbNode, bool& found) {
     const std::scoped_lock lock(_mutex);
-    if (!_cachedRevision == 0) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::node: Cache is not loaded");
-        return false;
-    }
+    LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
+    if (_cachedRevision == 0) return false;
+
     found = false;
     DbNodeId dbNodeId = getDbNodeIdFromNodeId(side, nodeId, found);
     if (!found) {
@@ -210,10 +204,9 @@ bool SyncDbCache::node(ReplicaSide side, const NodeId& nodeId, DbNode& dbNode, b
 
 bool SyncDbCache::ids(ReplicaSide side, std::vector<NodeId>& ids, bool& found) {
     const std::scoped_lock lock(_mutex);
-    if (!_cachedRevision == 0) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::ids: Cache is not loaded");
-        return false;
-    }
+    LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
+    if (_cachedRevision == 0) return false;
+
     const std::unordered_map<NodeId, DbNodeId>& nodeIdsCache =
             side == ReplicaSide::Local ? _localNodeIdToDbNodeIdMap : _remoteNodeIdToDbNodeIdMap;
 
@@ -226,10 +219,9 @@ bool SyncDbCache::ids(ReplicaSide side, std::vector<NodeId>& ids, bool& found) {
 
 bool SyncDbCache::ids(ReplicaSide side, std::set<NodeId>& ids, bool& found) {
     const std::scoped_lock lock(_mutex);
-    if (!_cachedRevision == 0) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::ids: Cache is not loaded");
-        return false;
-    }
+    LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
+    if (_cachedRevision == 0) return false;
+
     const std::unordered_map<NodeId, DbNodeId>& nodeIdsCache =
             side == ReplicaSide::Local ? _localNodeIdToDbNodeIdMap : _remoteNodeIdToDbNodeIdMap;
 
@@ -242,10 +234,9 @@ bool SyncDbCache::ids(ReplicaSide side, std::set<NodeId>& ids, bool& found) {
 
 bool SyncDbCache::ids(std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction>& ids, bool& found) {
     const std::scoped_lock lock(_mutex);
-    if (!_cachedRevision == 0) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::ids: Cache is not loaded");
-        return false;
-    }
+    LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
+    if (_cachedRevision == 0) return false;
+
     for (const auto& [dbNodeId, dbNode]: _dbNodesCache) {
         NodeIds nodeIds;
         nodeIds.dbNodeId = dbNodeId;
@@ -260,10 +251,9 @@ bool SyncDbCache::ids(std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction>&
 
 bool SyncDbCache::path(DbNodeId dbNodeId, SyncPath& localPath, SyncPath& remotePath, bool& found, bool recursiveCall) {
     const std::scoped_lock lock(_mutex);
-    if (!_cachedRevision == 0) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::path: Cache is not loaded");
-        return false;
-    }
+    LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
+    if (_cachedRevision == 0) return false;
+
     found = false;
     // Check if the path is already cached
     if (_dbNodesPathCache.contains(dbNodeId)) {
@@ -295,10 +285,8 @@ bool SyncDbCache::path(DbNodeId dbNodeId, SyncPath& localPath, SyncPath& remoteP
 
 bool SyncDbCache::path(ReplicaSide side, const NodeId& nodeId, SyncPath& resPath, bool& found) {
     const std::scoped_lock lock(_mutex);
-    if (!_cachedRevision == 0) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::path: Cache is not loaded");
-        return false;
-    }
+    LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
+    if (_cachedRevision == 0) return false;
 
     found = false;
     DbNodeId dbNodeId = getDbNodeIdFromNodeId(side, nodeId, found);
@@ -319,12 +307,10 @@ bool SyncDbCache::path(ReplicaSide side, const NodeId& nodeId, SyncPath& resPath
 
 bool SyncDbCache::id(ReplicaSide side, const SyncPath& path, std::optional<NodeId>& nodeId, bool& found) {
     const std::scoped_lock lock(_mutex);
-    if (!_cachedRevision == 0) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::id: Cache is not loaded");
-        return false;
-    }
-    found = false;
+    LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
+    if (_cachedRevision == 0) return false;
 
+    found = false;
     const std::vector<SyncName> itemNames = Utility::splitPath(path);
     DbNode tmpNode = _syncDb.rootNode();
     if (itemNames.empty()) {
@@ -361,12 +347,10 @@ bool SyncDbCache::id(ReplicaSide side, const SyncPath& path, std::optional<NodeI
 
 bool SyncDbCache::id(ReplicaSide side, DbNodeId dbNodeId, NodeId& nodeId, bool& found) {
     const std::scoped_lock lock(_mutex);
-    if (!_cachedRevision == 0) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::id: Cache is not loaded");
-        return false;
-    }
-    found = false;
+    LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
+    if (_cachedRevision == 0) return false;
 
+    found = false;
     const DbNode& dbNode = getDbNodeFromDbNodeId(dbNodeId, found);
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::id: dbNodeId " << dbNodeId << " not found in syncDbCache");
