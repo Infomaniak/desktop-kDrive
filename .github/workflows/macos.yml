@@ -51,7 +51,7 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-tests.sh
       - name: Set DYLD_LIBRARY_PATH
-        run : set DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/lib 
+        run : export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/lib 
       - name: Execute tests
         run : ./infomaniak-build-tools/run-tests.sh
 
