@@ -629,7 +629,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
 
             // Check if the directory entry is managed
             bool isManaged = false;
-            if (!Utility::checkIfDirEntryIsManaged(entry, isManaged, itemType, ioError)) {
+            if (!Utility::checkIfDirEntryIsManaged(entry, isManaged, ioError, itemType)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged: "
                                                    << Utility::formatIoError(absoluteParentDirPath, ioError));
                 dirIt.disableRecursionPending();

@@ -182,7 +182,10 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string _errId(const char *file, int line);
 
 
-        enum class UnicodeNormalization { NFC, NFD };
+        enum class UnicodeNormalization {
+            NFC,
+            NFD
+        };
         static bool normalizedSyncName(const SyncName &name, SyncName &normalizedName,
                                        UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
         static bool normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
@@ -192,10 +195,8 @@ struct COMMONSERVER_EXPORT Utility {
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);
         static bool runDetachedProcess(std::wstring cmd);
 #endif
-        static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, const ItemType &itemType, IoError &ioError);
-        //static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, bool &isLink, IoError &ioError);
-        static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, IoError &ioError);
-
+        static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, IoError &ioError,
+                                             const ItemType &itemType = ItemType());
         /* Resources analyser */
         static bool totalRamAvailable(uint64_t &ram, int &errorCode);
         static bool ramCurrentlyUsed(uint64_t &ram, int &errorCode);
@@ -216,7 +217,8 @@ struct COMMONSERVER_EXPORT Utility {
 };
 
 struct TimeCounter {
-        explicit TimeCounter(const std::string &name) : _name(name) {}
+        explicit TimeCounter(const std::string &name) :
+            _name(name) {}
         void start() { _start = clock(); }
         void end() {
             _end = clock();
