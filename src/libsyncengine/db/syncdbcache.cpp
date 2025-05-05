@@ -91,8 +91,8 @@ bool SyncDbCache::reloadCacheIfNeeded() {
 
 bool SyncDbCache::parent(ReplicaSide side, const NodeId& nodeId, NodeId& parentNodeId, bool& found) {
     const std::scoped_lock lock(_mutex);
-    if (!reloadCacheIfNeeded()) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::parent: Error reloading cache");
+    if (_cachedRevision == 0) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::parent: Error cache is not loaded");
         return false;
     }
     found = false;
@@ -130,8 +130,8 @@ bool SyncDbCache::parent(ReplicaSide side, const NodeId& nodeId, NodeId& parentN
 
 bool SyncDbCache::correspondingNodeId(ReplicaSide side, const NodeId& nodeIdIn, NodeId& nodeIdOut, bool& found) {
     const std::scoped_lock lock(_mutex);
-    if (!reloadCacheIfNeeded()) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::correspondingNodeId: Error reloading cache");
+    if (_cachedRevision == 0) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::correspondingNodeId: Cache is not loaded");
         return false;
     }
     found = false;
@@ -161,8 +161,8 @@ bool SyncDbCache::correspondingNodeId(ReplicaSide side, const NodeId& nodeIdIn, 
 
 bool SyncDbCache::dbId(ReplicaSide side, const NodeId& nodeId, DbNodeId& dbNodeId, bool& found) {
     const std::scoped_lock lock(_mutex);
-    if (!reloadCacheIfNeeded()) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::dbId: Error reloading cache");
+    if (!_cachedRevision == 0) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::dbId: Cache is not loaded");
         return false;
     }
     found = false;
@@ -176,8 +176,8 @@ bool SyncDbCache::dbId(ReplicaSide side, const NodeId& nodeId, DbNodeId& dbNodeI
 
 bool SyncDbCache::node(DbNodeId dbNodeId, DbNode& dbNode, bool& found) {
     const std::scoped_lock lock(_mutex);
-    if (!reloadCacheIfNeeded()) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::node: Error reloading cache");
+    if (!_cachedRevision == 0) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::node: Cache is not loaded");
         return false;
     }
     found = false;
@@ -190,8 +190,8 @@ bool SyncDbCache::node(DbNodeId dbNodeId, DbNode& dbNode, bool& found) {
 
 bool SyncDbCache::node(ReplicaSide side, const NodeId& nodeId, DbNode& dbNode, bool& found) {
     const std::scoped_lock lock(_mutex);
-    if (!reloadCacheIfNeeded()) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::node: Error reloading cache");
+    if (!_cachedRevision == 0) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::node: Cache is not loaded");
         return false;
     }
     found = false;
@@ -210,8 +210,8 @@ bool SyncDbCache::node(ReplicaSide side, const NodeId& nodeId, DbNode& dbNode, b
 
 bool SyncDbCache::ids(ReplicaSide side, std::vector<NodeId>& ids, bool& found) {
     const std::scoped_lock lock(_mutex);
-    if (!reloadCacheIfNeeded()) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::ids: Error reloading cache");
+    if (!_cachedRevision == 0) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::ids: Cache is not loaded");
         return false;
     }
     const std::unordered_map<NodeId, DbNodeId>& nodeIdsCache =
@@ -226,8 +226,8 @@ bool SyncDbCache::ids(ReplicaSide side, std::vector<NodeId>& ids, bool& found) {
 
 bool SyncDbCache::ids(ReplicaSide side, std::set<NodeId>& ids, bool& found) {
     const std::scoped_lock lock(_mutex);
-    if (!reloadCacheIfNeeded()) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::ids: Error reloading cache");
+    if (!_cachedRevision == 0) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::ids: Cache is not loaded");
         return false;
     }
     const std::unordered_map<NodeId, DbNodeId>& nodeIdsCache =
@@ -242,8 +242,8 @@ bool SyncDbCache::ids(ReplicaSide side, std::set<NodeId>& ids, bool& found) {
 
 bool SyncDbCache::ids(std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction>& ids, bool& found) {
     const std::scoped_lock lock(_mutex);
-    if (!reloadCacheIfNeeded()) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::ids: Error reloading cache");
+    if (!_cachedRevision == 0) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::ids: Cache is not loaded");
         return false;
     }
     for (const auto& [dbNodeId, dbNode]: _dbNodesCache) {
@@ -260,8 +260,8 @@ bool SyncDbCache::ids(std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction>&
 
 bool SyncDbCache::path(DbNodeId dbNodeId, SyncPath& localPath, SyncPath& remotePath, bool& found, bool recursiveCall) {
     const std::scoped_lock lock(_mutex);
-    if (!reloadCacheIfNeeded()) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::path: Error reloading cache");
+    if (!_cachedRevision == 0) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::path: Cache is not loaded");
         return false;
     }
     found = false;
@@ -295,8 +295,8 @@ bool SyncDbCache::path(DbNodeId dbNodeId, SyncPath& localPath, SyncPath& remoteP
 
 bool SyncDbCache::path(ReplicaSide side, const NodeId& nodeId, SyncPath& resPath, bool& found) {
     const std::scoped_lock lock(_mutex);
-    if (!reloadCacheIfNeeded()) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::path: Error reloading cache");
+    if (!_cachedRevision == 0) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::path: Cache is not loaded");
         return false;
     }
 
@@ -319,8 +319,8 @@ bool SyncDbCache::path(ReplicaSide side, const NodeId& nodeId, SyncPath& resPath
 
 bool SyncDbCache::id(ReplicaSide side, const SyncPath& path, std::optional<NodeId>& nodeId, bool& found) {
     const std::scoped_lock lock(_mutex);
-    if (!reloadCacheIfNeeded()) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::id: Error reloading cache");
+    if (!_cachedRevision == 0) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::id: Cache is not loaded");
         return false;
     }
     found = false;
@@ -340,11 +340,10 @@ bool SyncDbCache::id(ReplicaSide side, const SyncPath& path, std::optional<NodeI
             LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::id: node " << tmpNode.nodeId() << " not found in syncDbCache");
             return true;
         }
-        const auto childIt =
-                std::ranges::find_if(children->second, [this, &nameIt, &side](const DbNodeId& childId) {
-                    const DbNode& childNode = _dbNodesCache.at(childId);
-                    return childNode.name(side) == *nameIt;
-                });
+        const auto childIt = std::ranges::find_if(children->second, [this, &nameIt, &side](const DbNodeId& childId) {
+            const DbNode& childNode = _dbNodesCache.at(childId);
+            return childNode.name(side) == *nameIt;
+        });
         if (childIt == children->second.end()) {
             LOG_WARN(Log::instance()->getLogger(),
                      "SyncDbCache::id: node " << SyncName2Str(*nameIt) << " not found in syncDbCache");
@@ -362,8 +361,8 @@ bool SyncDbCache::id(ReplicaSide side, const SyncPath& path, std::optional<NodeI
 
 bool SyncDbCache::id(ReplicaSide side, DbNodeId dbNodeId, NodeId& nodeId, bool& found) {
     const std::scoped_lock lock(_mutex);
-    if (!reloadCacheIfNeeded()) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::id: Error reloading cache");
+    if (!_cachedRevision == 0) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::id: Cache is not loaded");
         return false;
     }
     found = false;

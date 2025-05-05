@@ -37,7 +37,8 @@
 namespace KDC {
 
 SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
-                             const std::chrono::seconds &startDelay) : ISyncWorker(syncPal, name, shortName, startDelay) {}
+                             const std::chrono::seconds &startDelay) :
+    ISyncWorker(syncPal, name, shortName, startDelay) {}
 
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
@@ -282,52 +283,7 @@ void SyncPalWorker::unpause() {
 }
 
 std::string SyncPalWorker::stepName(SyncStep step) {
-    std::string name;
-
-    name = "<";
-
-    switch (step) {
-        case SyncStep::None:
-            name += "None";
-            break;
-        case SyncStep::Idle:
-            name += "Idle";
-            break;
-        case SyncStep::UpdateDetection1:
-            name += "Compute FS operations";
-            break;
-        case SyncStep::UpdateDetection2:
-            name += "Update Trees";
-            break;
-        case SyncStep::Reconciliation1:
-            name += "Platform Inconsistency Checker";
-            break;
-        case SyncStep::Reconciliation2:
-            name += "Conflict Finder";
-            break;
-        case SyncStep::Reconciliation3:
-            name += "Conflict Resolver";
-            break;
-        case SyncStep::Reconciliation4:
-            name += "Operation Generator";
-            break;
-        case SyncStep::Propagation1:
-            name += "Sorter";
-            break;
-        case SyncStep::Propagation2:
-            name += "Executor";
-            break;
-        case SyncStep::Done:
-            name += "Done";
-            break;
-        case SyncStep::EnumEnd: {
-            assert(false && "Invalid enum value in switch statement.");
-        }
-    }
-
-    name += ">";
-
-    return name;
+    return "<" + toString(step) + ">";
 }
 
 void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&workers)[2],
@@ -354,6 +310,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             workers[0] = _syncPal->computeFSOperationsWorker();
             workers[1] = nullptr;
             _syncPal->copySnapshots();
+            _syncPal->syncDb()->cache().reloadCacheIfNeeded();
             assert(_syncPal->snapshotCopy(ReplicaSide::Local)->checkIntegrityRecursively() &&
                    "Local snapshot is corrupted, see logs for details");
             assert(_syncPal->snapshotCopy(ReplicaSide::Remote)->checkIntegrityRecursively() &&
