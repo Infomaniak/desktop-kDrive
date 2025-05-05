@@ -47,13 +47,11 @@ jobs:
         run : chmod +x ./infomaniak-build-tools/macos/build-ci.sh
       - name: Build kDrive desktop
         run : ./infomaniak-build-tools/macos/build-ci.sh
-      - name: test
-        run : ls -l /usr/local/lib
-      - name: test
-        run : otool -L /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_common
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-tests.sh
+      - name: Set DYLD_LIBRARY_PATH
+        run : set DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/lib 
       - name: Execute tests
         run : ./infomaniak-build-tools/run-tests.sh
 
