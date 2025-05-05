@@ -191,7 +191,7 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
     bool constraintError = false;
     _syncPal->syncDb()->insertNode(dbNodeLower, dbNodeIdLower, constraintError);
     _syncPal->syncDb()->insertNode(dbNodeUpper, dbNodeIdUpper, constraintError);
-
+    _syncPal->syncDb()->cache().reloadCacheIfNeeded();
     // Set up remote tree
     const auto remoteParentNode = _syncPal->updateTree(ReplicaSide::Remote)->rootNode();
     const auto remoteNodeLower = std::make_shared<Node>(

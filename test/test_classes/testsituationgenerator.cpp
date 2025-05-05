@@ -79,6 +79,7 @@ void TestSituationGenerator::generateInitialSituation(const std::string &jsonInp
     addItem(obj);
 
     _localUpdateTree->drawUpdateTree();
+    _syncDb->cache().reloadCacheIfNeeded();
 }
 
 std::shared_ptr<Node> TestSituationGenerator::getNode(const ReplicaSide side, const NodeId &id) const {

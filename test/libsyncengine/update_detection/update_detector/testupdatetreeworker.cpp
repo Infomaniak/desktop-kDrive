@@ -181,6 +181,7 @@ void TestUpdateTreeWorker::setUpDbTree() {
                            "id7l", "id7r", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime,
                            NodeType::File, testhelpers::defaultFileSize, std::nullopt);
     _syncDb->insertNode(nodeFile7, dbnodeIdfile7, constraintError);
+    _syncDb->cache().reloadCacheIfNeeded();
 }
 
 void TestUpdateTreeWorker::setUpUpdateTree(ReplicaSide side) {
