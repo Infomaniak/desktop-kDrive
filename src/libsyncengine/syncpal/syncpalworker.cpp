@@ -570,24 +570,28 @@ void SyncPalWorker::resetVfsFilesStatus() {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged : "
                                                    << Utility::formatSyncPath(absolutePath).c_str());
                 ok = false;
+                dirIt.disable_recursion_pending();
                 continue;
             }
 
             if (ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_SYNCPAL_DEBUG(_logger,
                                    L"Directory entry does not exist anymore : " << Utility::formatSyncPath(absolutePath).c_str());
+                dirIt.disable_recursion_pending();
                 continue;
             }
 
             if (ioError == IoError::AccessDenied) {
                 LOGW_SYNCPAL_DEBUG(_logger,
                                    L"Directory misses search permission : " << Utility::formatSyncPath(absolutePath).c_str());
+                dirIt.disable_recursion_pending();
                 continue;
             }
 
             if (!isManaged) {
                 LOGW_SYNCPAL_DEBUG(_logger,
                                    L"Directory entry is not managed : " << Utility::formatSyncPath(absolutePath).c_str());
+                dirIt.disable_recursion_pending();
                 continue;
             }
 
@@ -596,6 +600,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
                 LOGW_SYNCPAL_WARN(_logger,
                                   L"Error in vfsStatus : " << Utility::formatSyncPath(dirIt->path()) << L": " << exitInfo);
                 ok = false;
+                dirIt.disable_recursion_pending();
                 continue;
             }
 
@@ -609,6 +614,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(dirIt->path()) << L": "
                                                                              << exitInfo);
                     ok = false;
+                    *dirIt.disable_recursion_pending();
                     continue;
                 }
                 vfsStatus.isHydrated = false;
@@ -629,22 +635,25 @@ void SyncPalWorker::resetVfsFilesStatus() {
                 if (!_syncPal->vfs()->fileStatusChanged(dirIt->path(), SyncFileStatus::Syncing)) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
                     ok = false;
+                    dirIt.disable_recursion_pending();
                     continue;
                 }
             }
         }
+    }
+    catch (std::filesystem::filesystem_error &e) {
+        LOG_SYNCPAL_WARN(_logger,
+                         "Error caught in SyncPalWorker::resetVfsFilesStatus: code=" << e.code() << " error=" << e.what());
+        ok = false;
     } catch (...) {
         LOG_SYNCPAL_WARN(_logger, "Error caught in SyncPalWorker::resetVfsFilesStatus");
         ok = false;
     }
-    if (ok && _syncPal->vfsMode() == VirtualFileMode::Mac) {
-        // Reset nodes syncing flag
+
+    if (ok) {
         if (!_syncPal->_syncDb->updateNodesSyncing(false)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::updateNodesSyncing for syncDbId=" << _syncPal->syncDbId());
         }
-    }
-
-    if (ok) {
         LOG_SYNCPAL_DEBUG(_logger, "VFS files status reset");
         perfMonitor1.stop();
     } else {
