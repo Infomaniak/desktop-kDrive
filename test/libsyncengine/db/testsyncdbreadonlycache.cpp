@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testsyncdbcache.h"
+#include "testsyncDbReadOnlyCache.h"
 #include "test_utility/testhelpers.h"
 #include "test_utility/localtemporarydirectory.h"
 
@@ -30,7 +30,7 @@
 using namespace CppUnit;
 
 namespace KDC {
-void TestSyncDbCache::setUp() {
+void TestSyncDbReadOnlyCache::setUp() {
     TestBase::start();
     bool alreadyExists = false;
     const std::filesystem::path syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
@@ -44,14 +44,14 @@ void TestSyncDbCache::setUp() {
     _testObj->setAutoDelete(true);
 }
 
-void TestSyncDbCache::tearDown() {
+void TestSyncDbReadOnlyCache::tearDown() {
     // Close and delete DB
     _testObj->close();
     delete _testObj;
     TestBase::stop();
 }
 
-void TestSyncDbCache::testReloadCacheIfNeeded() {
+void TestSyncDbReadOnlyCache::testReloadCacheIfNeeded() {
     // Insert node
     time_t tLoc = std::time(nullptr);
     time_t tDrive = std::time(nullptr);
@@ -85,7 +85,7 @@ void TestSyncDbCache::testReloadCacheIfNeeded() {
     CPPUNIT_ASSERT(nodeDir1.nameLocal() == cachedNode.nameLocal());
 }
 
-void TestSyncDbCache::testNodes() {
+void TestSyncDbReadOnlyCache::testNodes() {
     // Insert node
     DbNode nodeDir1(0, _testObj->rootNode().nodeId(), Str("Dir loc 1"), Str("Dir drive 1"), "id loc 1", "id drive 1",
                     testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0,

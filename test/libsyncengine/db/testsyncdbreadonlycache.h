@@ -22,8 +22,8 @@
 using namespace CppUnit;
 
 namespace KDC {
-class TestSyncDbCache : public CppUnit::TestFixture, public TestBase {
-        CPPUNIT_TEST_SUITE(TestSyncDbCache);
+class TestSyncDbReadOnlyCache : public CppUnit::TestFixture, public TestBase {
+        CPPUNIT_TEST_SUITE(TestSyncDbReadOnlyCache);
         CPPUNIT_TEST(testReloadCacheIfNeeded);
         CPPUNIT_TEST(testNodes);
         CPPUNIT_TEST_SUITE_END();

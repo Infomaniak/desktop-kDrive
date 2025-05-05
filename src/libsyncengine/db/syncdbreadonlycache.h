@@ -25,9 +25,9 @@
 
 namespace KDC {
 class SyncDb;
-class SyncDbCache {
+class SyncDbReadOnlyCache {
     public:
-        explicit SyncDbCache(SyncDb &syncDb) :
+        explicit SyncDbReadOnlyCache(SyncDb &syncDb) :
             _syncDb(syncDb) {};
         bool reloadCacheIfNeeded();
         void clear();
@@ -52,6 +52,7 @@ class SyncDbCache {
 
         bool id(ReplicaSide side, DbNodeId dbNodeId, NodeId &nodeId, bool &found);
 
+        DbNode rootNode();
         SyncDbRevision revision() const;
 
     private:

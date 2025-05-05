@@ -30,11 +30,13 @@ namespace KDC {
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                    const std::string &shortName) :
-    ISyncWorker(syncPal, name, shortName), _syncDb(syncPal->syncDb()) {}
+    ISyncWorker(syncPal, name, shortName),
+    _syncDbReadOnlyCache(syncPal->syncDb()->cache()) {}
 
-ComputeFSOperationWorker::ComputeFSOperationWorker(const std::shared_ptr<SyncDb> testSyncDb, const std::string &name,
+ComputeFSOperationWorker::ComputeFSOperationWorker(SyncDbReadOnlyCache &testSyncDbReadOnlyCache, const std::string &name,
                                                    const std::string &shortName) :
-    ISyncWorker(nullptr, name, shortName, std::chrono::seconds(0), true), _syncDb(testSyncDb) {}
+    ISyncWorker(nullptr, name, shortName, std::chrono::seconds(0), true),
+    _syncDbReadOnlyCache(testSyncDbReadOnlyCache) {}
 
 void ComputeFSOperationWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
@@ -143,7 +145,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
 
     NodeId parentNodeid;
     bool parentNodeIsFoundInDb = false;
-    if (!_syncDb->cache().parent(side, nodeId, parentNodeid, parentNodeIsFoundInDb)) {
+    if (!_syncDbReadOnlyCache.parent(side, nodeId, parentNodeid, parentNodeIsFoundInDb)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::parent");
         setExitCause(ExitCause::DbAccessError);
         return ExitCode::DbError;
@@ -327,7 +329,7 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
         DbNode dbNode;
         bool dbNodeIsFound = false;
         const auto dbNodeIds = *nodesIdsIt;
-        if (!_syncDb->cache().node(nodesIdsIt->dbNodeId, dbNode, dbNodeIsFound)) {
+        if (!_syncDbReadOnlyCache.node(nodesIdsIt->dbNodeId, dbNode, dbNodeIsFound)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
             setExitCause(ExitCause::DbAccessError);
             return ExitCode::DbError;
@@ -351,7 +353,7 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
         SyncPath localDbPath;
         SyncPath remoteDbPath;
         bool dbPathsAreFound = false;
-        if (!_syncDb->cache().path(dbNodeIds.dbNodeId, localDbPath, remoteDbPath, dbPathsAreFound)) {
+        if (!_syncDbReadOnlyCache.path(dbNodeIds.dbNodeId, localDbPath, remoteDbPath, dbPathsAreFound)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
             setExitCause(ExitCause::DbAccessError);
             return ExitCode::DbError;
@@ -389,7 +391,7 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
 ExitCode ComputeFSOperationWorker::inferChangesFromDb(NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet) {
     bool dbIdsArefound = false;
     NodeIdsSet remainingNodesIds;
-    if (!_syncDb->cache().ids(remainingNodesIds, dbIdsArefound)) {
+    if (!_syncDbReadOnlyCache.ids(remainingNodesIds, dbIdsArefound)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::ids");
         setExitCause(ExitCause::DbAccessError);
         return ExitCode::DbError;
@@ -624,7 +626,7 @@ bool ComputeFSOperationWorker::isInUnsyncedListParentSearchInDb(const NodeId &no
     do {
         // Check if node already exists on other side
         NodeId otherTmpNodeId;
-        _syncDb->cache().correspondingNodeId(side, tmpNodeId, otherTmpNodeId, found);
+        _syncDbReadOnlyCache.correspondingNodeId(side, tmpNodeId, otherTmpNodeId, found);
 
         if (const NodeId localId = side == ReplicaSide::Local ? tmpNodeId : otherTmpNodeId;
             !localId.empty() && _localTmpUnsyncedList.contains(localId)) {
@@ -635,7 +637,7 @@ bool ComputeFSOperationWorker::isInUnsyncedListParentSearchInDb(const NodeId &no
             return true;
         }
 
-        if (!_syncDb->cache().parent(side, tmpNodeId, tmpNodeId, found)) {
+        if (!_syncDbReadOnlyCache.parent(side, tmpNodeId, tmpNodeId, found)) {
             LOG_WARN(_logger, "Error in SyncDb::parent");
             break;
         }
@@ -655,7 +657,7 @@ bool ComputeFSOperationWorker::isInUnsyncedListParentSearchInSnapshot(const std:
         // Check if node already exists on other side
         NodeId otherTmpNodeId;
         bool found = false;
-        _syncDb->cache().correspondingNodeId(side, tmpNodeId, otherTmpNodeId, found);
+        _syncDbReadOnlyCache.correspondingNodeId(side, tmpNodeId, otherTmpNodeId, found);
 
         if (const NodeId localId = side == ReplicaSide::Local ? tmpNodeId : otherTmpNodeId;
             !localId.empty() && _localTmpUnsyncedList.contains(localId)) {
@@ -697,7 +699,7 @@ bool ComputeFSOperationWorker::isTooBig(const std::shared_ptr<const Snapshot> re
     // Check if file already exist on local side
     NodeId localNodeId;
     bool found = false;
-    _syncDb->cache().correspondingNodeId(ReplicaSide::Remote, remoteNodeId, localNodeId, found);
+    _syncDbReadOnlyCache.correspondingNodeId(ReplicaSide::Remote, remoteNodeId, localNodeId, found);
     if (found) {
         // We already synchronize the item locally, keep it
         return false;
@@ -799,7 +801,7 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
 
     // Check if the node path has changed
     SyncPath localDbPath;
-    if (bool found = false; !_syncDb->cache().path(ReplicaSide::Local, localNodeId, localDbPath, found)) {
+    if (bool found = false; !_syncDbReadOnlyCache.path(ReplicaSide::Local, localNodeId, localDbPath, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
         return {ExitCode::DbError, ExitCause::DbAccessError};
     } else if (!found) {

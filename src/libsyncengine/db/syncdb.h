@@ -19,7 +19,7 @@
 #pragma once
 
 #include "dbnode.h"
-#include "syncdbcache.h"
+#include "syncDbReadOnlyCache.h"
 #include "libcommon/utility/types.h"
 #include "libcommonserver/db/db.h"
 #include "db/uploadsessiontoken.h"
@@ -81,9 +81,7 @@ class SyncDb : public Db {
         bool node(DbNodeId dbNodeId, DbNode &dbNode, bool &found);
         bool pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<DbNodeId> &ids);
         bool pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction> &ids);
-
         bool dbNodes(std::unordered_set<DbNode, DbNode::hashFunction> &nodes, SyncDbRevision &revision, bool &found);
-
         bool status(ReplicaSide side, const SyncPath &path, SyncFileStatus &status, bool &found);
         bool status(ReplicaSide side, const NodeId &nodeId, SyncFileStatus &status, bool &found);
         bool setStatus(ReplicaSide side, const SyncPath &path, SyncFileStatus status, bool &found);
@@ -108,7 +106,7 @@ class SyncDb : public Db {
         bool setTargetNodeId(const std::string &targetNodeId, bool &found);
 
         SyncDbRevision revision() const;
-        SyncDbCache &cache() { return _cache; }
+        SyncDbReadOnlyCache &cache() { return _cache; }
 
     protected:
         virtual bool updateNames(const char *requestId, const SyncName &localName, const SyncName &remoteName);
@@ -117,7 +115,7 @@ class SyncDb : public Db {
         static DbNode _driveRootNode;
         DbNode _rootNode = _driveRootNode;
         SyncDbRevision _revision = 1;
-        SyncDbCache _cache;
+        SyncDbReadOnlyCache _cache;
         void invalidateCache() { ++_revision; }
         bool pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, std::vector<NodeId> &ids);
         bool pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, NodeSet &ids);

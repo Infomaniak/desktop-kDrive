@@ -237,7 +237,6 @@
     "SELECT nodeId, parentNodeId, nameLocal, nameDrive, nodeIdLocal, nodeIdDrive, created, lastModifiedLocal, " \
     "lastModifiedDrive, type, size, checksum, status, syncing FROM node;"
 
-
 //
 // sync_node
 //
@@ -293,8 +292,7 @@ DbNode SyncDb::_driveRootNode(0, std::nullopt, SyncName(), SyncName(), "1", "1",
                               NodeType::Directory, 0, std::nullopt);
 
 SyncDb::SyncDb(const std::string &dbPath, const std::string &version, const std::string &targetNodeId) :
-    Db(dbPath),
-    _cache(*this) {
+    Db(dbPath), _cache(*this) {
     if (!targetNodeId.empty()) {
         _rootNode.setNodeIdRemote(targetNodeId);
     }

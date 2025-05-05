@@ -17,44 +17,44 @@
  */
 
 #include "syncdb.h"
-#include "syncdbcache.h"
+#include "syncDbReadOnlyCache.h"
 namespace KDC {
 
-bool SyncDbCache::isChacheUpToDate() const {
+bool SyncDbReadOnlyCache::isChacheUpToDate() const {
     if (_cachedRevision != _syncDb.revision()) {
-        LOG_INFO(Log::instance()->getLogger(), "SyncDbCache: cache is not up to date, cached revision="
+        LOG_INFO(Log::instance()->getLogger(), "SyncDbReadOnlyCache: cache is not up to date, cached revision="
                                                        << _cachedRevision << ", current syncDb revision=" << _syncDb.revision());
         return false;
     }
     return true;
 }
 
-DbNodeId SyncDbCache::getDbNodeIdFromNodeId(ReplicaSide side, const NodeId& nodeId, bool& found) {
+DbNodeId SyncDbReadOnlyCache::getDbNodeIdFromNodeId(ReplicaSide side, const NodeId& nodeId, bool& found) {
     found = false;
     const auto& nodeIdToDbNodeIdMap = side == ReplicaSide::Local ? _localNodeIdToDbNodeIdMap : _remoteNodeIdToDbNodeIdMap;
     const auto dbNodeIdIt = nodeIdToDbNodeIdMap.find(nodeId);
     if (dbNodeIdIt == nodeIdToDbNodeIdMap.end()) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "SyncDbCache::getDbNodeIdFromNodeId: node " << nodeId << " not found in nodeIdsCache");
+                 "SyncDbReadOnlyCache::getDbNodeIdFromNodeId: node " << nodeId << " not found in nodeIdsCache");
         return -1;
     }
     found = true;
     return dbNodeIdIt->second;
 }
 
-const DbNode& SyncDbCache::getDbNodeFromDbNodeId(const DbNodeId& dbNodeId, bool& found) {
+const DbNode& SyncDbReadOnlyCache::getDbNodeFromDbNodeId(const DbNodeId& dbNodeId, bool& found) {
     found = false;
     const auto dbNodeIt = _dbNodesCache.find(dbNodeId);
     if (dbNodeIt == _dbNodesCache.end()) {
         LOG_ERROR(Log::instance()->getLogger(),
-                  "SyncDbCache::getDbNodeFromDbNodeId: dbNodeId " << dbNodeId << " not found in dbNodesCache");
+                  "SyncDbReadOnlyCache::getDbNodeFromDbNodeId: dbNodeId " << dbNodeId << " not found in dbNodesCache");
         return DbNode();
     }
     found = true;
     return dbNodeIt->second;
 }
 
-void SyncDbCache::clear() {
+void SyncDbReadOnlyCache::clear() {
     const std::scoped_lock lock(_mutex);
     _dbNodesCache.clear();
     _dbNodesParentToChildrenMap.clear();
@@ -64,13 +64,13 @@ void SyncDbCache::clear() {
     _cachedRevision = 0;
 }
 
-bool SyncDbCache::reloadCacheIfNeeded() {
+bool SyncDbReadOnlyCache::reloadCacheIfNeeded() {
     if (isChacheUpToDate()) return true;
     clear();
     bool found = false;
     std::unordered_set<DbNode, DbNode::hashFunction> dbNodes;
     if (!_syncDb.dbNodes(dbNodes, _cachedRevision, found)) {
-        LOG_ERROR(Log::instance()->getLogger(), " SyncDbCache::reloadCacheIfNeeded: Error getting dbNodes from SyncDb");
+        LOG_ERROR(Log::instance()->getLogger(), " SyncDbReadOnlyCache::reloadCacheIfNeeded: Error getting dbNodes from SyncDb");
         return false;
     }
 
@@ -86,11 +86,11 @@ bool SyncDbCache::reloadCacheIfNeeded() {
             (void) _remoteNodeIdToDbNodeIdMap.try_emplace(dbNode.nodeIdRemote().value(), dbNode.nodeId());
         }
     }
-    LOG_INFO(Log::instance()->getLogger(), "SyncDbCache updated, cached revision=" << _syncDb.revision());
+    LOG_INFO(Log::instance()->getLogger(), "SyncDbReadOnlyCache updated, cached revision=" << _syncDb.revision());
     return true;
 }
 
-bool SyncDbCache::parent(ReplicaSide side, const NodeId& nodeId, NodeId& parentNodeId, bool& found) {
+bool SyncDbReadOnlyCache::parent(ReplicaSide side, const NodeId& nodeId, NodeId& parentNodeId, bool& found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return false;
@@ -99,13 +99,15 @@ bool SyncDbCache::parent(ReplicaSide side, const NodeId& nodeId, NodeId& parentN
 
     DbNodeId dbNodeId = getDbNodeIdFromNodeId(side, nodeId, found);
     if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::parent: node " << nodeId << " not found in syncDbCache");
+        LOG_WARN(Log::instance()->getLogger(),
+                 "SyncDbReadOnlyCache::parent: node " << nodeId << " not found in syncDbReadOnlyCache");
         return true;
     }
 
     const DbNode& dbNode = getDbNodeFromDbNodeId(dbNodeId, found);
     if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::parent: dbNodeId " << dbNodeId << " not found in syncDbCache");
+        LOG_WARN(Log::instance()->getLogger(),
+                 "SyncDbReadOnlyCache::parent: dbNodeId " << dbNodeId << " not found in syncDbReadOnlyCache");
         return true;
     }
 
@@ -116,19 +118,21 @@ bool SyncDbCache::parent(ReplicaSide side, const NodeId& nodeId, NodeId& parentN
 
     const DbNode& parentDbNode = getDbNodeFromDbNodeId(dbNode.parentNodeId().value(), found);
     if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::parent: dbNodeId " << dbNodeId << " not found in syncDbCache");
+        LOG_WARN(Log::instance()->getLogger(),
+                 "SyncDbReadOnlyCache::parent: dbNodeId " << dbNodeId << " not found in syncDbReadOnlyCache");
         return true;
     }
 
     parentNodeId = parentDbNode.nodeId(side);
     found = !parentNodeId.empty();
     if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::parent: node " << nodeId << " has a parent with an empty nodeId");
+        LOG_WARN(Log::instance()->getLogger(),
+                 "SyncDbReadOnlyCache::parent: node " << nodeId << " has a parent with an empty nodeId");
     }
     return true;
 }
 
-bool SyncDbCache::correspondingNodeId(ReplicaSide side, const NodeId& nodeIdIn, NodeId& nodeIdOut, bool& found) {
+bool SyncDbReadOnlyCache::correspondingNodeId(ReplicaSide side, const NodeId& nodeIdIn, NodeId& nodeIdOut, bool& found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return false;
@@ -137,14 +141,14 @@ bool SyncDbCache::correspondingNodeId(ReplicaSide side, const NodeId& nodeIdIn, 
     DbNodeId dbNodeId = getDbNodeIdFromNodeId(side, nodeIdIn, found);
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "SyncDbCache::correspondingNodeId: node " << nodeIdIn << " not found in syncDbCache");
+                 "SyncDbReadOnlyCache::correspondingNodeId: node " << nodeIdIn << " not found in syncDbReadOnlyCache");
         return true;
     }
 
     const DbNode& dbNode = getDbNodeFromDbNodeId(dbNodeId, found);
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "SyncDbCache::correspondingNodeId: dbNodeId " << dbNodeId << " not found in syncDbCache");
+                 "SyncDbReadOnlyCache::correspondingNodeId: dbNodeId " << dbNodeId << " not found in syncDbReadOnlyCache");
         return true;
     }
 
@@ -152,12 +156,12 @@ bool SyncDbCache::correspondingNodeId(ReplicaSide side, const NodeId& nodeIdIn, 
     found = !nodeIdOut.empty();
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "SyncDbCache::correspondingNodeId: node " << nodeIdIn << " has a corresponding with an empty nodeId");
+                 "SyncDbReadOnlyCache::correspondingNodeId: node " << nodeIdIn << " has a corresponding with an empty nodeId");
     }
     return true;
 }
 
-bool SyncDbCache::dbId(ReplicaSide side, const NodeId& nodeId, DbNodeId& dbNodeId, bool& found) {
+bool SyncDbReadOnlyCache::dbId(ReplicaSide side, const NodeId& nodeId, DbNodeId& dbNodeId, bool& found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return false;
@@ -166,12 +170,13 @@ bool SyncDbCache::dbId(ReplicaSide side, const NodeId& nodeId, DbNodeId& dbNodeI
 
     dbNodeId = getDbNodeIdFromNodeId(side, nodeId, found);
     if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::dbId: node " << nodeId << " not found in syncDbCache");
+        LOG_WARN(Log::instance()->getLogger(),
+                 "SyncDbReadOnlyCache::dbId: node " << nodeId << " not found in syncDbReadOnlyCache");
     }
     return true;
 }
 
-bool SyncDbCache::node(DbNodeId dbNodeId, DbNode& dbNode, bool& found) {
+bool SyncDbReadOnlyCache::node(DbNodeId dbNodeId, DbNode& dbNode, bool& found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return false;
@@ -179,12 +184,13 @@ bool SyncDbCache::node(DbNodeId dbNodeId, DbNode& dbNode, bool& found) {
     found = false;
     dbNode = getDbNodeFromDbNodeId(dbNodeId, found);
     if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::node: dbNodeId " << dbNodeId << " not found in syncDbCache");
+        LOG_WARN(Log::instance()->getLogger(),
+                 "SyncDbReadOnlyCache::node: dbNodeId " << dbNodeId << " not found in syncDbReadOnlyCache");
     }
     return true;
 }
 
-bool SyncDbCache::node(ReplicaSide side, const NodeId& nodeId, DbNode& dbNode, bool& found) {
+bool SyncDbReadOnlyCache::node(ReplicaSide side, const NodeId& nodeId, DbNode& dbNode, bool& found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return false;
@@ -192,18 +198,20 @@ bool SyncDbCache::node(ReplicaSide side, const NodeId& nodeId, DbNode& dbNode, b
     found = false;
     DbNodeId dbNodeId = getDbNodeIdFromNodeId(side, nodeId, found);
     if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::node: node " << nodeId << " not found in syncDbCache");
+        LOG_WARN(Log::instance()->getLogger(),
+                 "SyncDbReadOnlyCache::node: node " << nodeId << " not found in syncDbReadOnlyCache");
         return true;
     }
 
     dbNode = getDbNodeFromDbNodeId(dbNodeId, found);
     if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::node: dbNodeId " << dbNodeId << " not found in syncDbCache");
+        LOG_WARN(Log::instance()->getLogger(),
+                 "SyncDbReadOnlyCache::node: dbNodeId " << dbNodeId << " not found in syncDbReadOnlyCache");
     }
     return true;
 }
 
-bool SyncDbCache::ids(ReplicaSide side, std::vector<NodeId>& ids, bool& found) {
+bool SyncDbReadOnlyCache::ids(ReplicaSide side, std::vector<NodeId>& ids, bool& found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return false;
@@ -218,7 +226,7 @@ bool SyncDbCache::ids(ReplicaSide side, std::vector<NodeId>& ids, bool& found) {
     return true;
 }
 
-bool SyncDbCache::ids(ReplicaSide side, std::set<NodeId>& ids, bool& found) {
+bool SyncDbReadOnlyCache::ids(ReplicaSide side, std::set<NodeId>& ids, bool& found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return false;
@@ -233,7 +241,7 @@ bool SyncDbCache::ids(ReplicaSide side, std::set<NodeId>& ids, bool& found) {
     return true;
 }
 
-bool SyncDbCache::ids(std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction>& ids, bool& found) {
+bool SyncDbReadOnlyCache::ids(std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction>& ids, bool& found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return false;
@@ -250,7 +258,7 @@ bool SyncDbCache::ids(std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction>&
     return true;
 }
 
-bool SyncDbCache::path(DbNodeId dbNodeId, SyncPath& localPath, SyncPath& remotePath, bool& found, bool recursiveCall) {
+bool SyncDbReadOnlyCache::path(DbNodeId dbNodeId, SyncPath& localPath, SyncPath& remotePath, bool& found, bool recursiveCall) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return false;
@@ -266,7 +274,8 @@ bool SyncDbCache::path(DbNodeId dbNodeId, SyncPath& localPath, SyncPath& remoteP
 
     auto& DbNode = getDbNodeFromDbNodeId(dbNodeId, found);
     if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::path: dbNodeId " << dbNodeId << " not found in syncDbCache");
+        LOG_WARN(Log::instance()->getLogger(),
+                 "SyncDbReadOnlyCache::path: dbNodeId " << dbNodeId << " not found in syncDbReadOnlyCache");
         return false; // Not found
     }
     if (!DbNode.parentNodeId()) {
@@ -284,7 +293,7 @@ bool SyncDbCache::path(DbNodeId dbNodeId, SyncPath& localPath, SyncPath& remoteP
     return true;
 }
 
-bool SyncDbCache::path(ReplicaSide side, const NodeId& nodeId, SyncPath& resPath, bool& found) {
+bool SyncDbReadOnlyCache::path(ReplicaSide side, const NodeId& nodeId, SyncPath& resPath, bool& found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return false;
@@ -292,21 +301,23 @@ bool SyncDbCache::path(ReplicaSide side, const NodeId& nodeId, SyncPath& resPath
     found = false;
     DbNodeId dbNodeId = getDbNodeIdFromNodeId(side, nodeId, found);
     if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::path: node " << nodeId << " not found in syncDbCache");
+        LOG_WARN(Log::instance()->getLogger(),
+                 "SyncDbReadOnlyCache::path: node " << nodeId << " not found in syncDbReadOnlyCache");
         return true;
     }
 
     SyncPath localPath;
     SyncPath remotePath;
     if (!path(dbNodeId, localPath, remotePath, found)) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::path: dbNodeId " << dbNodeId << " not found in syncDbCache");
+        LOG_WARN(Log::instance()->getLogger(),
+                 "SyncDbReadOnlyCache::path: dbNodeId " << dbNodeId << " not found in syncDbReadOnlyCache");
         return false;
     }
     resPath = side == ReplicaSide::Local ? localPath : remotePath;
     return true;
 }
 
-bool SyncDbCache::id(ReplicaSide side, const SyncPath& path, std::optional<NodeId>& nodeId, bool& found) {
+bool SyncDbReadOnlyCache::id(ReplicaSide side, const SyncPath& path, std::optional<NodeId>& nodeId, bool& found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return false;
@@ -324,7 +335,8 @@ bool SyncDbCache::id(ReplicaSide side, const SyncPath& path, std::optional<NodeI
     for (auto nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
         auto children = _dbNodesParentToChildrenMap.find(tmpNode.nodeId());
         if (children == dbNodesParentToChildrenMap) {
-            LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::id: node " << tmpNode.nodeId() << " not found in syncDbCache");
+            LOG_WARN(Log::instance()->getLogger(),
+                     "SyncDbReadOnlyCache::id: node " << tmpNode.nodeId() << " not found in syncDbReadOnlyCache");
             return true;
         }
         const auto childIt = std::ranges::find_if(children->second, [this, &nameIt, &side](const DbNodeId& childId) {
@@ -333,12 +345,13 @@ bool SyncDbCache::id(ReplicaSide side, const SyncPath& path, std::optional<NodeI
         });
         if (childIt == children->second.end()) {
             LOG_WARN(Log::instance()->getLogger(),
-                     "SyncDbCache::id: node " << SyncName2Str(*nameIt) << " not found in syncDbCache");
+                     "SyncDbReadOnlyCache::id: node " << SyncName2Str(*nameIt) << " not found in syncDbReadOnlyCache");
             return true;
         }
         tmpNode = getDbNodeFromDbNodeId(*childIt, found);
         if (!found) {
-            LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::id: dbNodeId " << *childIt << " not found in syncDbCache");
+            LOG_WARN(Log::instance()->getLogger(),
+                     "SyncDbReadOnlyCache::id: dbNodeId " << *childIt << " not found in syncDbReadOnlyCache");
             return true;
         }
     }
@@ -346,7 +359,7 @@ bool SyncDbCache::id(ReplicaSide side, const SyncPath& path, std::optional<NodeI
     return true;
 }
 
-bool SyncDbCache::id(ReplicaSide side, DbNodeId dbNodeId, NodeId& nodeId, bool& found) {
+bool SyncDbReadOnlyCache::id(ReplicaSide side, DbNodeId dbNodeId, NodeId& nodeId, bool& found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return false;
@@ -354,14 +367,19 @@ bool SyncDbCache::id(ReplicaSide side, DbNodeId dbNodeId, NodeId& nodeId, bool& 
     found = false;
     const DbNode& dbNode = getDbNodeFromDbNodeId(dbNodeId, found);
     if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbCache::id: dbNodeId " << dbNodeId << " not found in syncDbCache");
+        LOG_WARN(Log::instance()->getLogger(),
+                 "SyncDbReadOnlyCache::id: dbNodeId " << dbNodeId << " not found in syncDbReadOnlyCache");
         return true;
     }
     nodeId = dbNode.nodeId(side);
     return true;
 }
 
-SyncDbRevision SyncDbCache::revision() const {
+DbNode SyncDbReadOnlyCache::rootNode() {
+    return _syncDb.rootNode();
+}
+
+SyncDbRevision SyncDbReadOnlyCache::revision() const {
     const std::scoped_lock lock(_mutex);
     return _cachedRevision;
 }
