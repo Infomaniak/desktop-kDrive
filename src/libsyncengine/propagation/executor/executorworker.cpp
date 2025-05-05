@@ -771,32 +771,6 @@ ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<Abstract
     // iteration.
     // 3. If the omit flag is False, update the updatetreeY structure to ensure that follow-up operations can execute correctly,
     // as they are based on the information in this structure.
-    ignored = false;
-
-    SyncPath relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
-
-    if (relativeLocalFilePath.empty()) {
-        return ExitCode::DataError;
-    }
-
-    if (isLiteSyncActivated()) {
-        SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
-        bool ignoreItem = false;
-        bool isSyncing = false;
-        if (ExitInfo exitInfo = checkLiteSyncInfoForEdit(syncOp, absoluteLocalFilePath, ignoreItem, isSyncing); !exitInfo) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in checkLiteSyncInfoForEdit " << exitInfo);
-            return exitInfo;
-        }
-
-        if (ignoreItem) {
-            ignored = true;
-            return ExitCode::Ok;
-        }
-
-        if (isSyncing) {
-            return ExitCode::Ok;
-        }
-    }
 
     if (syncOp->omit()) {
         // Do not generate job, only push changes in DB and update tree
@@ -810,6 +784,33 @@ ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<Abstract
             return exitInfo;
         }
     } else {
+        ignored = false;
+
+        SyncPath relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
+
+        if (relativeLocalFilePath.empty()) {
+            return ExitCode::DataError;
+        }
+
+        if (isLiteSyncActivated()) {
+            SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
+            bool ignoreItem = false;
+            bool isSyncing = false;
+            if (ExitInfo exitInfo = checkLiteSyncInfoForEdit(syncOp, absoluteLocalFilePath, ignoreItem, isSyncing); !exitInfo) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in checkLiteSyncInfoForEdit " << exitInfo);
+                return exitInfo;
+            }
+
+            if (ignoreItem) {
+                ignored = true;
+                return ExitCode::Ok;
+            }
+
+            if (isSyncing) {
+                return ExitCode::Ok;
+            }
+        }
+
         if (!enoughLocalSpace(syncOp)) {
             _syncPal->addError(Error(_syncPal->syncDbId(), name(), ExitCode::SystemError, ExitCause::NotEnoughDiskSpace));
             return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
