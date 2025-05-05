@@ -1190,15 +1190,47 @@ ExitCode ServerRequests::getExclusionTemplateList(bool def, QList<ExclusionTempl
     return ExitCode::Ok;
 }
 
+void tryToInsertNormalizedTemplates(const ExclusionTemplate &exclusionTemplate, std::vector<ExclusionTemplate> &exclusionList) {
+    SyncName nfcNormalizedTemplate;
+    bool nfcSuccess = false;
+    if (nfcSuccess =
+                Utility::normalizedSyncName(exclusionTemplate.templ(), nfcNormalizedTemplate, Utility::UnicodeNormalization::NFC);
+        !nfcSuccess) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Failed to NFC-normalize the template " << Utility::formatSyncName(exclusionTemplate.templ()));
+    }
+
+    SyncName nfdNormalizedTemplate;
+    bool nfdSuccess = false;
+    if (nfdSuccess =
+                Utility::normalizedSyncName(exclusionTemplate.templ(), nfdNormalizedTemplate, Utility::UnicodeNormalization::NFD);
+        !nfcSuccess) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Failed to NFD-normalize the template " << Utility::formatSyncName(exclusionTemplate.templ()));
+    }
+
+    if (nfcSuccess) {
+        exclusionList.emplace_back(nfcNormalizedTemplate);
+        if (nfdSuccess && nfcNormalizedTemplate != nfdNormalizedTemplate) {
+            exclusionList.emplace_back(nfdNormalizedTemplate);
+        }
+    } else {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Using template " << Utility::formatSyncName(exclusionTemplate.templ()) << L" as is.");
+        exclusionList.emplace_back(exclusionTemplate);
+    }
+}
+
 ExitCode ServerRequests::setExclusionTemplateList(bool def, const QList<ExclusionTemplateInfo> &list) {
     std::vector<ExclusionTemplate> exclusionList;
     for (const ExclusionTemplateInfo &exclusionTemplateInfo: list) {
         ExclusionTemplate exclusionTemplate;
         ServerRequests::exclusionTemplateInfoToExclusionTemplate(exclusionTemplateInfo, exclusionTemplate);
-        exclusionList.push_back(exclusionTemplate);
+
+        tryToInsertNormalizedTemplates(exclusionTemplate, exclusionList);
     }
-    ExitCode exitCode = ExclusionTemplateCache::instance()->update(def, exclusionList);
-    if (exitCode != ExitCode::Ok) {
+
+    if (ExitCode exitCode = ExclusionTemplateCache::instance()->update(def, exclusionList); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ExclusionTemplateCache::save");
         return exitCode;
     }
