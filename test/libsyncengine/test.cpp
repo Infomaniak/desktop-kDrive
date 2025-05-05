@@ -19,7 +19,7 @@
 #include "testincludes.h"
 #include "benchmark/benchmarkparalleljobs.h"
 #include "db/testsyncdb.h"
-#include "db/testsyncDbReadOnlyCache.h"
+#include "db/testsyncdbreadonlycache.h"
 #include "olddb/testoldsyncdb.h"
 #include "syncpal/testsyncpal.h"
 #include "syncpal/testsyncpalworker.h"

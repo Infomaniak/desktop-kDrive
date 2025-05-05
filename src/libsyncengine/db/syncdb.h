@@ -19,7 +19,7 @@
 #pragma once
 
 #include "dbnode.h"
-#include "syncDbReadOnlyCache.h"
+#include "syncdbreadonlycache.h"
 #include "libcommon/utility/types.h"
 #include "libcommonserver/db/db.h"
 #include "db/uploadsessiontoken.h"

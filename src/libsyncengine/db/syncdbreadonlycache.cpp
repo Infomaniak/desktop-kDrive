@@ -17,7 +17,7 @@
  */
 
 #include "syncdb.h"
-#include "syncDbReadOnlyCache.h"
+#include "syncdbreadonlycache.h"
 namespace KDC {
 
 bool SyncDbReadOnlyCache::isChacheUpToDate() const {

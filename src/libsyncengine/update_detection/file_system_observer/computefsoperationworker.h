@@ -20,7 +20,7 @@
 
 #include "syncpal/isyncworker.h"
 #include "db/syncdb.h"
-#include "db/syncDbReadOnlyCache.h"
+#include "db/syncdbreadonlycache.h"
 #include "syncpal/syncpal.h"
 
 namespace KDC {
