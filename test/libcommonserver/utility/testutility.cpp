@@ -334,7 +334,6 @@ void TestUtility::testcheckIfDirEntryIsManaged() {
     // Check with an existing file (managed)
     CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
     CPPUNIT_ASSERT(isManaged);
-    CPPUNIT_ASSERT(!isLink);
     CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
     // Check with a simlink (managed)
