@@ -3,10 +3,15 @@ project(libcommongui LANGUAGES C CXX)
 
 find_package(Qt6 REQUIRED COMPONENTS Core)
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
+include(qt-piwik-tracker)
+
 set(libcommongui_SRCS
     utility/utility.h utility/utility.cpp
     logger.h logger.cpp
     utility/widgetsignalblocker.h
+        MatomoClient.cpp
+        MatomoClient.h
 )
 
 if(APPLE)
@@ -47,4 +52,5 @@ set_target_properties(${libcommongui_NAME} PROPERTIES
 target_link_libraries(${libcommongui_NAME}
     ${libcommon_NAME}
     Qt6::Core
+    piwiktracker
 )
