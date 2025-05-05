@@ -239,27 +239,36 @@ static bool cpuUsageByProcess_private(double &percent) {
     return true;
 }
 
-static IoError setFileDates_private(const SyncPath &filePath, const std::optional<SyncTime> creationDate,
-                                 const std::optional<SyncTime> modificationDate, const bool symlink) {
-    (void) creationDate;
-    (void) symlink;
+IoError returnNoSuchFileOrDirectory(const SyncPath &filePath) {
+    LOGW_WARN(Log::instance()->getLogger(), L"File not found : " << Utility::formatSyncPath(filePath));
+    return IoError::NoSuchFileOrDirectory;
+}
 
+IoError returnAccessDenied(const SyncPath &filePath) {
+    LOGW_WARN(Log::instance()->getLogger(), L"Access denied on file : " << Utility::formatSyncPath(filePath));
+    return IoError::AccessDenied;
+}
 
+static IoError setFileDates_private(const SyncPath &filePath, const std::optional<SyncTime> ,
+                                 const std::optional<SyncTime> modificationDate, const bool ) {
     try {
         const Poco::Timestamp lastModifiedTimestamp(Poco::Timestamp::fromEpochTime(modificationDate.value()));
         Poco::File(Path2Str(filePath)).setLastModified(lastModifiedTimestamp);
     }
     catch (Poco::NotFoundException &) {
-        LOGW_WARN(Log::instance()->getLogger(), L"File not found : " << Utility::formatSyncPath(filePath));
-        return IoError::NoSuchFileOrDirectory;
+        return returnNoSuchFileOrDirectory(filePath);
+    }
+    catch (Poco::FileNotFoundException &) {
+        return returnNoSuchFileOrDirectory(filePath);
+    }
+    catch (Poco::FileExistsException &) {
+        return returnNoSuchFileOrDirectory(filePath);
     }
     catch (Poco::NoPermissionException &) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Access denied on file : " << Utility::formatSyncPath(filePath));
-        return IoError::AccessDenied;
+        return returnAccessDenied(filePath);
     }
     catch (Poco::FileAccessDeniedException &) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Access denied on file : " << Utility::formatSyncPath(filePath));
-        return IoError::AccessDenied;
+        return returnAccessDenied(filePath);
     }
     catch (Poco::Exception &ex) {
         LOG_WARN(Log::instance()->getLogger(), "Error in setLastModified : " << ex.message() << " (" << ex.code() << ")");
