@@ -293,7 +293,8 @@ DbNode SyncDb::_driveRootNode(0, std::nullopt, SyncName(), SyncName(), "1", "1",
                               NodeType::Directory, 0, std::nullopt);
 
 SyncDb::SyncDb(const std::string &dbPath, const std::string &version, const std::string &targetNodeId) :
-    Db(dbPath), _cache(*this) {
+    Db(dbPath),
+    _cache(*this) {
     if (!targetNodeId.empty()) {
         _rootNode.setNodeIdRemote(targetNodeId);
     }
@@ -2244,16 +2245,16 @@ bool SyncDb::dbNodes(std::unordered_set<DbNode, DbNode::hashFunction> &dbNodes, 
             break;
         }
         found = atLeastOneFound || found;
-        DbNodeId dbNodeId;
+        DbNodeId dbNodeId = 0;
         LOG_IF_FAIL(queryInt64Value(SELECT_ALL_NODES_REQUEST_ID, 0, dbNodeId));
 
-        bool ok;
+        bool ok = false;
         std::optional<DbNodeId> parentNodeId;
         LOG_IF_FAIL(queryIsNullValue(SELECT_ALL_NODES_REQUEST_ID, 1, ok));
         if (ok) {
             parentNodeId = std::nullopt;
         } else {
-            DbNodeId dbParentNodeId;
+            DbNodeId dbParentNodeId = 0;
             LOG_IF_FAIL(queryInt64Value(SELECT_ALL_NODES_REQUEST_ID, 1, dbParentNodeId));
             parentNodeId = std::make_optional(dbParentNodeId);
         }
@@ -2288,7 +2289,7 @@ bool SyncDb::dbNodes(std::unordered_set<DbNode, DbNode::hashFunction> &dbNodes, 
         if (ok) {
             created = std::nullopt;
         } else {
-            SyncTime timeTmp;
+            SyncTime timeTmp = 0;
             LOG_IF_FAIL(queryInt64Value(SELECT_ALL_NODES_REQUEST_ID, 6, timeTmp));
             created = std::make_optional(timeTmp);
         }
@@ -2298,7 +2299,7 @@ bool SyncDb::dbNodes(std::unordered_set<DbNode, DbNode::hashFunction> &dbNodes, 
         if (ok) {
             lastModifiedLocal = std::nullopt;
         } else {
-            SyncTime timeTmp;
+            SyncTime timeTmp = 0;
             LOG_IF_FAIL(queryInt64Value(SELECT_ALL_NODES_REQUEST_ID, 7, timeTmp));
             lastModifiedLocal = std::make_optional(timeTmp);
         }
@@ -2308,16 +2309,16 @@ bool SyncDb::dbNodes(std::unordered_set<DbNode, DbNode::hashFunction> &dbNodes, 
         if (ok) {
             lastModifiedDrive = std::nullopt;
         } else {
-            SyncTime timeTmp;
+            SyncTime timeTmp = 0;
             LOG_IF_FAIL(queryInt64Value(SELECT_ALL_NODES_REQUEST_ID, 8, timeTmp));
             lastModifiedDrive = std::make_optional(timeTmp);
         }
 
-        int intResult;
+        int intResult = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_NODES_REQUEST_ID, 9, intResult));
         NodeType type = static_cast<NodeType>(intResult);
 
-        int64_t size;
+        int64_t size = 0;
         LOG_IF_FAIL(queryInt64Value(SELECT_ALL_NODES_REQUEST_ID, 10, size));
 
         std::optional<std::string> cs;
