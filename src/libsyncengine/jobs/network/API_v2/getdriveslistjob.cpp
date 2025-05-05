@@ -18,6 +18,8 @@
 
 #include "getdriveslistjob.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 GetDrivesListJob::GetDrivesListJob(int userDbId) : AbstractTokenNetworkJob(ApiType::DriveByUser, userDbId, 0, 0, 0) {

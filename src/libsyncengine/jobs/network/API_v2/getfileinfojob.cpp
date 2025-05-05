@@ -20,6 +20,8 @@
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/jsonparserutility.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 GetFileInfoJob::GetFileInfoJob(int userDbId, int driveId, const NodeId &nodeId) :
