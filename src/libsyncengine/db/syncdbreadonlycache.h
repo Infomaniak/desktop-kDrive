@@ -29,7 +29,7 @@ class SyncDbReadOnlyCache {
     public:
         explicit SyncDbReadOnlyCache(SyncDb &syncDb) :
             _syncDb(syncDb) {};
-        bool reloadCacheIfNeeded();
+        bool reloadIfNeeded();
         void clear();
         // Getters with replica IDs
         bool parent(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeid, bool &found);

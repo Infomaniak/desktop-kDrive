@@ -292,7 +292,8 @@ DbNode SyncDb::_driveRootNode(0, std::nullopt, SyncName(), SyncName(), "1", "1",
                               NodeType::Directory, 0, std::nullopt);
 
 SyncDb::SyncDb(const std::string &dbPath, const std::string &version, const std::string &targetNodeId) :
-    Db(dbPath), _cache(*this) {
+    Db(dbPath),
+    _cache(*this) {
     if (!targetNodeId.empty()) {
         _rootNode.setNodeIdRemote(targetNodeId);
     }
@@ -532,12 +533,11 @@ bool SyncDb::checkNodeIds(const DbNode &node) {
 }
 
 bool SyncDb::insertNode(const DbNode &node, DbNodeId &dbNodeId, bool &constraintError) {
-    const char *queryId = INSERT_NODE_REQUEST_ID;
-
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     if (!checkNodeIds(node)) return false;
     invalidateCache();
 
+    const char *queryId = INSERT_NODE_REQUEST_ID;
     int errId;
     std::string error;
 
@@ -573,10 +573,10 @@ bool SyncDb::insertNode(const DbNode &node) {
 }
 
 bool SyncDb::updateNode(const DbNode &node, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
-
+    const std::scoped_lock lock(_mutex);
     if (!checkNodeIds(node)) return false;
     invalidateCache();
+
     SyncName remoteNormalizedName;
     if (!Utility::normalizedSyncName(node.nameRemote(), remoteNormalizedName)) {
         LOGW_DEBUG(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(node.nameRemote()));
@@ -622,7 +622,7 @@ bool SyncDb::updateNode(const DbNode &node, bool &found) {
 }
 
 bool SyncDb::updateNodeStatus(DbNodeId nodeId, SyncFileStatus status, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     invalidateCache();
 
     int errId;
@@ -646,10 +646,10 @@ bool SyncDb::updateNodeStatus(DbNodeId nodeId, SyncFileStatus status, bool &foun
 }
 
 bool SyncDb::updateNodeLocalName(DbNodeId nodeId, const SyncName &nameLocal, bool &found) {
+    const std::scoped_lock lock(_mutex);
+    invalidateCache();
+
     const char *queryId = UPDATE_NODE_NAME_LOCAL_REQUEST_ID;
-
-    const std::lock_guard<std::mutex> lock(_mutex);
-
     LOG_IF_FAIL(queryResetAndClearBindings(queryId));
     LOG_IF_FAIL(queryBindValue(queryId, 1, nameLocal));
     LOG_IF_FAIL(queryBindValue(queryId, 2, nodeId));
@@ -671,7 +671,7 @@ bool SyncDb::updateNodeLocalName(DbNodeId nodeId, const SyncName &nameLocal, boo
 }
 
 bool SyncDb::updateNodesSyncing(bool syncing) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     invalidateCache();
 
     int errId;
@@ -688,7 +688,7 @@ bool SyncDb::updateNodesSyncing(bool syncing) {
 }
 
 bool SyncDb::updateNodeSyncing(DbNodeId nodeId, bool syncing, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     invalidateCache();
 
     int errId;
@@ -712,7 +712,7 @@ bool SyncDb::updateNodeSyncing(DbNodeId nodeId, bool syncing, bool &found) {
 }
 
 bool SyncDb::deleteNode(DbNodeId nodeId, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     invalidateCache();
 
     int errId;
@@ -767,7 +767,7 @@ bool SyncDb::status(ReplicaSide side, const NodeId &nodeId, SyncFileStatus &stat
 }
 
 bool SyncDb::selectStatus(DbNodeId nodeId, SyncFileStatus &status, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_STATUS_BY_NODEID_REQUEST_ID));
     LOG_IF_FAIL(queryBindValue(SELECT_NODE_STATUS_BY_NODEID_REQUEST_ID, 1, nodeId));
@@ -837,7 +837,7 @@ bool SyncDb::syncing(ReplicaSide side, const SyncPath &path, bool &syncing, bool
 }
 
 bool SyncDb::selectSyncing(DbNodeId nodeId, bool &syncing, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_SYNCING_BY_NODEID_REQUEST_ID));
     LOG_IF_FAIL(queryBindValue(SELECT_NODE_SYNCING_BY_NODEID_REQUEST_ID, 1, nodeId));
@@ -875,7 +875,7 @@ bool SyncDb::setSyncing(ReplicaSide side, const SyncPath &path, bool syncing, bo
 }
 
 bool SyncDb::node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
     LOG_IF_FAIL(queryResetAndClearBindings(id));
@@ -973,7 +973,7 @@ bool SyncDb::node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &
 }
 
 bool SyncDb::dbIds(std::unordered_set<DbNodeId> &ids, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     // Find root node
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
@@ -1038,7 +1038,7 @@ bool SyncDb::ids(std::unordered_set<NodeIds, NodeIds::HashFunction> &ids, bool &
 }
 
 bool SyncDb::path(DbNodeId dbNodeId, SyncPath &localPath, SyncPath &remotePath, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     localPath.clear();
     remotePath.clear();
@@ -1084,7 +1084,7 @@ bool SyncDb::path(DbNodeId dbNodeId, SyncPath &localPath, SyncPath &remotePath, 
 }
 
 bool SyncDb::node(DbNodeId dbNodeId, DbNode &dbNode, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     std::string id = SELECT_NODE_BY_NODEID_FULL_ID;
     LOG_IF_FAIL(queryResetAndClearBindings(id));
@@ -1194,7 +1194,7 @@ bool SyncDb::node(DbNodeId dbNodeId, DbNode &dbNode, bool &found) {
 }
 
 bool SyncDb::dbId(ReplicaSide side, const SyncPath &path, DbNodeId &dbNodeId, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     const std::vector<SyncName> names = Utility::splitPath(path);
 
@@ -1241,7 +1241,7 @@ bool SyncDb::dbId(ReplicaSide side, const SyncPath &path, DbNodeId &dbNodeId, bo
 }
 
 bool SyncDb::clearNodes() {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     invalidateCache();
 
     int errId;
@@ -1259,7 +1259,7 @@ bool SyncDb::clearNodes() {
 // Returns the id of the object from its path
 // path is relative to the root directory
 bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &nodeId, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     const std::vector<SyncName> itemNames = Utility::splitPath(path);
 
@@ -1327,7 +1327,7 @@ bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &n
 
 // Returns the type of the object with ID nodeId
 bool SyncDb::type(ReplicaSide side, const NodeId &nodeId, NodeType &type, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
     LOG_IF_FAIL(queryResetAndClearBindings(id));
@@ -1350,7 +1350,7 @@ bool SyncDb::type(ReplicaSide side, const NodeId &nodeId, NodeType &type, bool &
 }
 
 bool SyncDb::size(ReplicaSide side, const NodeId &nodeId, int64_t &size, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
     LOG_IF_FAIL(queryResetAndClearBindings(id));
@@ -1371,7 +1371,7 @@ bool SyncDb::size(ReplicaSide side, const NodeId &nodeId, int64_t &size, bool &f
 }
 
 bool SyncDb::created(ReplicaSide side, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
     LOG_IF_FAIL(queryResetAndClearBindings(id));
@@ -1401,7 +1401,7 @@ bool SyncDb::created(ReplicaSide side, const NodeId &nodeId, std::optional<SyncT
 
 // Returns the lastmodified date of the object with ID nodeId
 bool SyncDb::lastModified(ReplicaSide side, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
     LOG_IF_FAIL(queryResetAndClearBindings(id));
@@ -1431,7 +1431,7 @@ bool SyncDb::lastModified(ReplicaSide side, const NodeId &nodeId, std::optional<
 
 // Returns the parent directory ID of the object with ID nodeId
 bool SyncDb::parent(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeid, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
     LOG_IF_FAIL(queryResetAndClearBindings(id));
@@ -1468,7 +1468,7 @@ bool SyncDb::parent(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeid
 // Returns the path from the root node to the node with ID nodeId, concatenating the respective names of the nodes along the
 // traversal-path
 bool SyncDb::path(ReplicaSide side, const NodeId &nodeId, SyncPath &path, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     path.clear();
     found = false;
@@ -1511,7 +1511,7 @@ bool SyncDb::path(ReplicaSide side, const NodeId &nodeId, SyncPath &path, bool &
 
 // Returns the name of the object with ID nodeId
 bool SyncDb::name(ReplicaSide side, const NodeId &nodeId, SyncName &name, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
     LOG_IF_FAIL(queryResetAndClearBindings(id));
@@ -1533,7 +1533,7 @@ bool SyncDb::name(ReplicaSide side, const NodeId &nodeId, SyncName &name, bool &
 
 // Returns the checksum of the object with ID nodeId
 bool SyncDb::checksum(ReplicaSide side, const NodeId &nodeId, std::optional<std::string> &cs, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
     LOG_IF_FAIL(queryResetAndClearBindings(id));
@@ -1562,7 +1562,7 @@ bool SyncDb::checksum(ReplicaSide side, const NodeId &nodeId, std::optional<std:
 
 // Returns the list of IDs contained in snapshot
 bool SyncDb::ids(ReplicaSide side, std::vector<NodeId> &ids, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     // Find root node
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
@@ -1591,7 +1591,7 @@ bool SyncDb::ids(ReplicaSide side, std::vector<NodeId> &ids, bool &found) {
 }
 
 bool SyncDb::ids(ReplicaSide side, NodeSet &ids, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     // Find root node
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
@@ -1621,7 +1621,7 @@ bool SyncDb::ids(ReplicaSide side, NodeSet &ids, bool &found) {
 
 // Returns whether node with ID nodeId1 is an ancestor of the node with ID nodeId2 in snapshot
 bool SyncDb::ancestor(ReplicaSide side, const NodeId &nodeId1, const NodeId &nodeId2, bool &ret, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     if (nodeId1 == nodeId2) {
         ret = true;
@@ -1720,7 +1720,7 @@ bool SyncDb::dbId(ReplicaSide side, const NodeId &nodeId, DbNodeId &dbNodeId, bo
 
 // Returns the ID of the `side` snapshot for the database ID dbNodeId
 bool SyncDb::id(ReplicaSide side, DbNodeId dbNodeId, NodeId &nodeId, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_NODEID_LITE_ID));
     LOG_IF_FAIL(queryBindValue(SELECT_NODE_BY_NODEID_LITE_ID, 1, dbNodeId));
@@ -1751,11 +1751,11 @@ bool SyncDb::correspondingNodeId(ReplicaSide side, const NodeId &nodeIdIn, NodeI
 }
 
 bool SyncDb::updateAllSyncNodes(SyncNodeType type, const NodeSet &nodeIdSet) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
+    invalidateCache();
 
     int errId;
     std::string error;
-    invalidateCache();
 
     startTransaction();
 
@@ -1786,7 +1786,7 @@ bool SyncDb::updateAllSyncNodes(SyncNodeType type, const NodeSet &nodeIdSet) {
 }
 
 bool SyncDb::selectAllSyncNodes(SyncNodeType type, NodeSet &nodeIdSet) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNC_NODE_REQUEST_ID));
     LOG_IF_FAIL(queryBindValue(SELECT_ALL_SYNC_NODE_REQUEST_ID, 1, toInt(type)));
@@ -1811,7 +1811,7 @@ bool SyncDb::selectAllSyncNodes(SyncNodeType type, NodeSet &nodeIdSet) {
 }
 
 bool SyncDb::insertUploadSessionToken(const UploadSessionToken &uploadSessionToken, int64_t &uploadSessionTokenDbId) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -1827,7 +1827,7 @@ bool SyncDb::insertUploadSessionToken(const UploadSessionToken &uploadSessionTok
 }
 
 bool SyncDb::deleteUploadSessionTokenByDbId(int64_t dbId, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -1850,7 +1850,7 @@ bool SyncDb::deleteUploadSessionTokenByDbId(int64_t dbId, bool &found) {
 }
 
 bool SyncDb::selectAllUploadSessionTokens(std::vector<UploadSessionToken> &uploadSessionTokenList) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     uploadSessionTokenList.clear();
 
@@ -1878,7 +1878,7 @@ bool SyncDb::selectAllUploadSessionTokens(std::vector<UploadSessionToken> &uploa
 }
 
 bool SyncDb::deleteAllUploadSessionToken() {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -1904,6 +1904,7 @@ SyncDbRevision SyncDb::revision() const {
 }
 
 bool SyncDb::pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, std::vector<NodeId> &ids) {
+    const std::scoped_lock lock(_mutex);
     std::queue<DbNodeId> dbNodeIdQueue;
     dbNodeIdQueue.push(parentNodeDbId);
 
@@ -1950,6 +1951,7 @@ bool SyncDb::pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, std::vector
 }
 
 bool SyncDb::pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, NodeSet &ids) {
+    const std::scoped_lock lock(_mutex);
     std::queue<DbNodeId> dbNodeIdQueue;
     dbNodeIdQueue.push(parentNodeDbId);
 
@@ -1996,7 +1998,7 @@ bool SyncDb::pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, NodeSet &id
 }
 
 bool SyncDb::selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyColon) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     dbNodeList.clear();
 
@@ -2131,11 +2133,11 @@ bool SyncDb::selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyCol
 }
 
 bool SyncDb::deleteNodesWithNullParentNodeId() {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
+    invalidateCache();
 
     int errId;
     std::string error;
-    invalidateCache();
 
     LOG_IF_FAIL(queryResetAndClearBindings(DELETE_NODES_WITH_NULL_PARENTNODEID_REQUEST_ID));
     if (!queryExec(DELETE_NODES_WITH_NULL_PARENTNODEID_REQUEST_ID, errId, error)) {
@@ -2147,6 +2149,7 @@ bool SyncDb::deleteNodesWithNullParentNodeId() {
 }
 
 bool SyncDb::pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<DbNodeId> &ids) {
+    const std::scoped_lock lock(_mutex);
     std::queue<DbNodeId> dbNodeIdQueue;
     dbNodeIdQueue.push(parentNodeDbId);
 
@@ -2187,6 +2190,7 @@ bool SyncDb::pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<DbNodeId
 }
 
 bool SyncDb::pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<NodeIds, NodeIds::HashFunction> &ids) {
+    const std::scoped_lock lock(_mutex);
     std::queue<DbNodeId> dbNodeIdQueue;
     dbNodeIdQueue.push(parentNodeDbId);
 
@@ -2349,7 +2353,7 @@ bool SyncDb::selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap) {
 
     if (!createAndPrepareRequest(requestId, query)) return false;
 
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     LOG_IF_FAIL(queryResetAndClearBindings(requestId));
     bool found = false;
@@ -2421,6 +2425,8 @@ bool SyncDb::updateNamesWithDistinctEncodings(const SyncNameMap &localNames) {
 }
 
 bool SyncDb::normalizeRemoteNames() {
+    const std::scoped_lock lock(_mutex);
+    invalidateCache();
     static const char *requestId = "normalize_remote_names";
     static const char *query =
             "UPDATE node "
