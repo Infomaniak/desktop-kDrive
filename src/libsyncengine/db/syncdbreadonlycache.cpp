@@ -64,7 +64,7 @@ void SyncDbReadOnlyCache::clear() {
     _cachedRevision = 0;
 }
 
-bool SyncDbReadOnlyCache::reloadCacheIfNeeded() {
+bool SyncDbReadOnlyCache::reloadIfNeeded() {
     if (isChacheUpToDate()) return true;
     clear();
     bool found = false;

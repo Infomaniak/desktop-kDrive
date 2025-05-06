@@ -310,7 +310,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             workers[0] = _syncPal->computeFSOperationsWorker();
             workers[1] = nullptr;
             _syncPal->copySnapshots();
-            _syncPal->syncDb()->cache().reloadCacheIfNeeded();
+            LOG_IF_FAIL(_syncPal->syncDb()->cache().reloadIfNeeded());
             assert(_syncPal->snapshotCopy(ReplicaSide::Local)->checkIntegrityRecursively() &&
                    "Local snapshot is corrupted, see logs for details");
             assert(_syncPal->snapshotCopy(ReplicaSide::Remote)->checkIntegrityRecursively() &&
