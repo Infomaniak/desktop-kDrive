@@ -59,7 +59,8 @@ class MockLocalFileSystemObserverWorker final : public LocalFileSystemObserverWo
             Utility::msleep(200);
             LocalFileSystemObserverWorker_unix::changesDetected(changes);
         }
-        void waitForUpdate(SnapshotRevision previousRevision, std::chrono::milliseconds timeoutMs = 10000) const;
+        void waitForUpdate(SnapshotRevision previousRevision,
+                           std::chrono::milliseconds timeoutMs = std::chrono::milliseconds(10000)) const;
 };
 #endif
 
