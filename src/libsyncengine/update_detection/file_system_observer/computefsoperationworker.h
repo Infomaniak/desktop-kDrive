@@ -44,7 +44,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
     private:
         using NodeIdSet = NodeSet;
         using DbNodeIdSet = std::unordered_set<DbNodeId>;
-        using NodeIdsSet = std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction>;
+        using NodeIdsSet = std::unordered_set<NodeIds, NodeIds::HashFunction>;
         SnapshotRevision _lastLocalSnapshotSyncedRevision = 0;
         SnapshotRevision _lastRemoteSnapshotSyncedRevision = 0;
 

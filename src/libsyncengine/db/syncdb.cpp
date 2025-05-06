@@ -1003,7 +1003,7 @@ bool SyncDb::dbIds(std::unordered_set<DbNodeId> &ids, bool &found) {
     return true;
 }
 
-bool SyncDb::ids(std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction> &ids, bool &found) {
+bool SyncDb::ids(std::unordered_set<NodeIds, NodeIds::HashFunction> &ids, bool &found) {
     const std::scoped_lock lock(_mutex);
 
     // Find root node
@@ -2186,7 +2186,7 @@ bool SyncDb::pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<DbNodeId
     return true;
 }
 
-bool SyncDb::pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction> &ids) {
+bool SyncDb::pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<NodeIds, NodeIds::HashFunction> &ids) {
     std::queue<DbNodeId> dbNodeIdQueue;
     dbNodeIdQueue.push(parentNodeDbId);
 
@@ -2230,7 +2230,7 @@ bool SyncDb::pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<NodeIds,
     return true;
 }
 
-bool SyncDb::dbNodes(std::unordered_set<DbNode, DbNode::hashFunction> &dbNodes, SyncDbRevision &revision, bool &found) {
+bool SyncDb::dbNodes(std::unordered_set<DbNode, DbNode::HashFunction> &dbNodes, SyncDbRevision &revision, bool &found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_NODES_REQUEST_ID));
     bool atLeastOneFound = false;

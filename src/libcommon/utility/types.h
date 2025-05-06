@@ -776,7 +776,7 @@ struct NodeIds {
         NodeId localNodeId;
         NodeId remoteNodeId;
         NodeId nodeId(const ReplicaSide side) const { return side == ReplicaSide::Local ? localNodeId : remoteNodeId; }
-        struct hashNodeIdsFunction {
+        struct HashFunction {
                 std::size_t operator()(const NodeIds &nodeIds) const { return std::hash<DbNodeId>()(nodeIds.dbNodeId); }
         };
         bool operator==(const NodeIds &other) const {

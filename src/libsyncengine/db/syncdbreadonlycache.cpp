@@ -68,7 +68,7 @@ bool SyncDbReadOnlyCache::reloadCacheIfNeeded() {
     if (isChacheUpToDate()) return true;
     clear();
     bool found = false;
-    std::unordered_set<DbNode, DbNode::hashFunction> dbNodes;
+    std::unordered_set<DbNode, DbNode::HashFunction> dbNodes;
     if (!_syncDb.dbNodes(dbNodes, _cachedRevision, found)) {
         LOG_ERROR(Log::instance()->getLogger(), " SyncDbReadOnlyCache::reloadCacheIfNeeded: Error getting dbNodes from SyncDb");
         return false;
@@ -241,7 +241,7 @@ bool SyncDbReadOnlyCache::ids(ReplicaSide side, std::set<NodeId>& ids, bool& fou
     return true;
 }
 
-bool SyncDbReadOnlyCache::ids(std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction>& ids, bool& found) {
+bool SyncDbReadOnlyCache::ids(std::unordered_set<NodeIds, NodeIds::HashFunction>& ids, bool& found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return false;

@@ -75,13 +75,13 @@ class SyncDb : public Db {
 
         // Getters with db IDs
         bool dbIds(std::unordered_set<DbNodeId> &ids, bool &found);
-        bool ids(std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction> &ids, bool &found);
+        bool ids(std::unordered_set<NodeIds, NodeIds::HashFunction> &ids, bool &found);
 
         bool path(DbNodeId dbNodeId, SyncPath &localPath, SyncPath &remotePath, bool &found);
         bool node(DbNodeId dbNodeId, DbNode &dbNode, bool &found);
         bool pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<DbNodeId> &ids);
-        bool pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<NodeIds, NodeIds::hashNodeIdsFunction> &ids);
-        bool dbNodes(std::unordered_set<DbNode, DbNode::hashFunction> &nodes, SyncDbRevision &revision, bool &found);
+        bool pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<NodeIds, NodeIds::HashFunction> &ids);
+        bool dbNodes(std::unordered_set<DbNode, DbNode::HashFunction> &nodes, SyncDbRevision &revision, bool &found);
         bool status(ReplicaSide side, const SyncPath &path, SyncFileStatus &status, bool &found);
         bool status(ReplicaSide side, const NodeId &nodeId, SyncFileStatus &status, bool &found);
         bool setStatus(ReplicaSide side, const SyncPath &path, SyncFileStatus status, bool &found);

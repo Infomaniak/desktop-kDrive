@@ -84,7 +84,7 @@ class DbNode {
         inline void setStatus(SyncFileStatus status) { _status = status; }
         inline void setSyncing(bool syncing) { _syncing = syncing; }
 
-        struct hashFunction {
+        struct HashFunction {
                 std::size_t operator()(const DbNode &dbNode) const { return std::hash<DbNodeId>()(dbNode._nodeId); }
         };
         bool operator==(const DbNode &other) const {
