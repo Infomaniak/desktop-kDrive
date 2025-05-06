@@ -503,6 +503,39 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFlip3() {
     CPPUNIT_ASSERT_EQUAL(moveOp3->id(), _syncPal->syncOps()->opSortedList().back());
 }
 
+void TestOperationSorterWorker::testCheckAllMethods() {
+    // Generate a MoveBeforeCreate situation ...
+    // Move A to B/A
+    const auto nodeA = _testSituationGenerator.moveNode(ReplicaSide::Local, "a", "b");
+    const auto moveOp = generateSyncOperation(OperationType::Move, nodeA);
+
+    // Create A
+    const auto nodeA2 = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "a2", "");
+    nodeA2->setName(Str("A"));
+    const auto createOp = generateSyncOperation(OperationType::Create, nodeA2);
+
+    (void) _syncPal->syncOps()->pushOp(createOp);
+    (void) _syncPal->syncOps()->pushOp(moveOp);
+
+    // ... but apply all sorter method
+    const TimerUtility timer;
+    _syncPal->_operationsSorterWorker->_filter.filterOperations();
+    _syncPal->_operationsSorterWorker->fixDeleteBeforeMove();
+    _syncPal->_operationsSorterWorker->fixMoveBeforeCreate();
+    _syncPal->_operationsSorterWorker->fixMoveBeforeDelete();
+    _syncPal->_operationsSorterWorker->fixCreateBeforeMove();
+    _syncPal->_operationsSorterWorker->fixDeleteBeforeCreate();
+    _syncPal->_operationsSorterWorker->fixMoveBeforeMoveOccupied();
+    _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
+    _syncPal->_operationsSorterWorker->fixEditBeforeMove();
+    _syncPal->_operationsSorterWorker->fixMoveBeforeMoveHierarchyFlip();
+    (void) timer.elapsed("Operations sorted in");
+
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
+    CPPUNIT_ASSERT_EQUAL(moveOp->id(), _syncPal->syncOps()->opSortedList().front());
+    CPPUNIT_ASSERT_EQUAL(createOp->id(), _syncPal->syncOps()->opSortedList().back());
+}
+
 void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {
     // Initial situation
     // .
