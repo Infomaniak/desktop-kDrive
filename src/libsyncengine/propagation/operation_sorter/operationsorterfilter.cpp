@@ -47,8 +47,8 @@ void OperationSorterFilter::filterOperations() {
 
 void OperationSorterFilter::filterDeleteBeforeMoveCandidates(const SyncOpPtr &op, NameToOpMap &deleteBeforeMoveCandidates) {
     if (op->affectedNode()->hasChangeEvent(OperationType::Delete) || op->affectedNode()->hasChangeEvent(OperationType::Move)) {
-        if (const auto [_, ok] = deleteBeforeMoveCandidates.try_emplace(op->affectedNode()->name(), op); !ok) {
-            const auto &otherOp = deleteBeforeMoveCandidates.at(op->affectedNode()->name());
+        if (const auto [_, ok] = deleteBeforeMoveCandidates.try_emplace(op->affectedNode()->normalizedName(), op); !ok) {
+            const auto &otherOp = deleteBeforeMoveCandidates.at(op->affectedNode()->normalizedName());
             if (op->targetSide() != otherOp->targetSide()) {
                 return;
             }
@@ -59,8 +59,8 @@ void OperationSorterFilter::filterDeleteBeforeMoveCandidates(const SyncOpPtr &op
 
 void OperationSorterFilter::filterMoveBeforeCreateCandidates(const SyncOpPtr &op, NameToOpMap &moveBeforeCreateCandidates) {
     if (op->affectedNode()->hasChangeEvent(OperationType::Create)) {
-        if (const auto &[_, ok] = moveBeforeCreateCandidates.try_emplace(op->affectedNode()->name(), op); !ok) {
-            const auto &otherOp = moveBeforeCreateCandidates.at(op->affectedNode()->name());
+        if (const auto &[_, ok] = moveBeforeCreateCandidates.try_emplace(op->affectedNode()->normalizedName(), op); !ok) {
+            const auto &otherOp = moveBeforeCreateCandidates.at(op->affectedNode()->normalizedName());
             if (op->targetSide() != otherOp->targetSide() || !otherOp->affectedNode()->hasChangeEvent(OperationType::Move)) {
                 return;
             }
@@ -71,7 +71,7 @@ void OperationSorterFilter::filterMoveBeforeCreateCandidates(const SyncOpPtr &op
         if (const auto &[_, ok] =
                     moveBeforeCreateCandidates.try_emplace(op->affectedNode()->moveOriginInfos().path().filename().native(), op);
             !ok) {
-            const auto &otherOp = moveBeforeCreateCandidates.at(op->affectedNode()->name());
+            const auto &otherOp = moveBeforeCreateCandidates.at(op->affectedNode()->normalizedName());
             if (op->targetSide() != otherOp->targetSide() || !otherOp->affectedNode()->hasChangeEvent(OperationType::Create)) {
                 return;
             }
@@ -154,11 +154,11 @@ void OperationSorterFilter::filterCreateBeforeMoveCandidates(const SyncOpPtr &op
 }
 void OperationSorterFilter::filterDeleteBeforeCreateCandidates(const SyncOpPtr &op, NameToOpMap &deleteBeforeCreateCandidates) {
     /**
-         * @brief delete before create, e.g. user deletes object "x" and then creates a new object at "x".
-         */
+     * @brief delete before create, e.g. user deletes object "x" and then creates a new object at "x".
+     */
     if (op->affectedNode()->hasChangeEvent(OperationType::Delete)) {
-        if (const auto [_, ok] = deleteBeforeCreateCandidates.try_emplace(op->affectedNode()->name(), op); !ok) {
-            const auto &otherOp = deleteBeforeCreateCandidates.at(op->affectedNode()->name());
+        if (const auto [_, ok] = deleteBeforeCreateCandidates.try_emplace(op->affectedNode()->normalizedName(), op); !ok) {
+            const auto &otherOp = deleteBeforeCreateCandidates.at(op->affectedNode()->normalizedName());
             if (op->targetSide() != otherOp->targetSide() || !otherOp->affectedNode()->hasChangeEvent(OperationType::Create)) {
                 return;
             }
@@ -166,8 +166,8 @@ void OperationSorterFilter::filterDeleteBeforeCreateCandidates(const SyncOpPtr &
         }
     }
     if (op->affectedNode()->hasChangeEvent(OperationType::Create)) {
-        if (const auto [_, ok] = deleteBeforeCreateCandidates.try_emplace(op->affectedNode()->name(), op); !ok) {
-            const auto &otherOp = deleteBeforeCreateCandidates.at(op->affectedNode()->name());
+        if (const auto [_, ok] = deleteBeforeCreateCandidates.try_emplace(op->affectedNode()->normalizedName(), op); !ok) {
+            const auto &otherOp = deleteBeforeCreateCandidates.at(op->affectedNode()->normalizedName());
             if (op->targetSide() != otherOp->targetSide() || !otherOp->affectedNode()->hasChangeEvent(OperationType::Delete)) {
                 return;
             }
@@ -181,7 +181,7 @@ void OperationSorterFilter::filterMoveBeforeMoveOccupiedCandidates(const SyncOpP
     if (!op->affectedNode()->hasChangeEvent(OperationType::Move)) return;
 
     const SyncName originName = op->affectedNode()->moveOriginInfos().path().filename().native();
-    const SyncName destinationName = op->affectedNode()->name();
+    const SyncName destinationName = op->affectedNode()->normalizedName();
 
     if (moveOriginNames.contains(destinationName)) {
         const auto &otherOp = moveOriginNames.at(destinationName);
