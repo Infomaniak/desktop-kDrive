@@ -239,45 +239,6 @@ static bool cpuUsageByProcess_private(double &percent) {
     return true;
 }
 
-IoError returnNoSuchFileOrDirectory(const SyncPath &filePath) {
-    LOGW_WARN(Log::instance()->getLogger(), L"File not found : " << Utility::formatSyncPath(filePath));
-    return IoError::NoSuchFileOrDirectory;
-}
-
-IoError returnAccessDenied(const SyncPath &filePath) {
-    LOGW_WARN(Log::instance()->getLogger(), L"Access denied on file : " << Utility::formatSyncPath(filePath));
-    return IoError::AccessDenied;
-}
-
-static IoError setFileDates_private(const SyncPath &filePath, const std::optional<SyncTime> ,
-                                 const std::optional<SyncTime> modificationDate, const bool ) {
-    try {
-        const Poco::Timestamp lastModifiedTimestamp(Poco::Timestamp::fromEpochTime(modificationDate.value()));
-        Poco::File(Path2Str(filePath)).setLastModified(lastModifiedTimestamp);
-    }
-    catch (Poco::NotFoundException &) {
-        return returnNoSuchFileOrDirectory(filePath);
-    }
-    catch (Poco::FileNotFoundException &) {
-        return returnNoSuchFileOrDirectory(filePath);
-    }
-    catch (Poco::FileExistsException &) {
-        return returnNoSuchFileOrDirectory(filePath);
-    }
-    catch (Poco::NoPermissionException &) {
-        return returnAccessDenied(filePath);
-    }
-    catch (Poco::FileAccessDeniedException &) {
-        return returnAccessDenied(filePath);
-    }
-    catch (Poco::Exception &ex) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in setLastModified : " << ex.message() << " (" << ex.code() << ")");
-        return IoError::Unknown;
-    }
-
-    return IoError::Success;
-}
-
 static std::string userName_private() {
     bool isSet = false;
     return CommonUtility::envVarValue("USER", isSet);
