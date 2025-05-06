@@ -73,7 +73,6 @@ void TestLocalFileSystemObserverWorker::setUp() {
 
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
-    ParametersCache::instance()->parameters().setSyncHiddenFiles(true);
 
     bool constraintError = false;
     ParmsDb::instance()->insertExclusionTemplate(
@@ -456,12 +455,17 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
 
     auto ioError = IoError::Unknown;
     const SyncPath destinationPath = _testFiles[0].second.parent_path() / (_testFiles[0].second.filename().string() + "2");
-    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::renameItem(_testFiles[0].second, destinationPath, ioError)); // test0.txt -> test0.txt2
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                           IoHelper::renameItem(_testFiles[0].second, destinationPath, ioError)); // test0.txt -> test0.txt2
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::deleteItem(destinationPath, ioError)); // Delete test0.txt2 (before the previous rename is processed)
+    CPPUNIT_ASSERT_MESSAGE(
+            toString(ioError),
+            IoHelper::deleteItem(destinationPath, ioError)); // Delete test0.txt2 (before the previous rename is processed)
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::renameItem(_testFiles[1].second, _testFiles[0].second,
-                                        ioError)); // test1.txt -> test0.txt (before the previous rename and delete is processed)
+    CPPUNIT_ASSERT_MESSAGE(
+            toString(ioError),
+            IoHelper::renameItem(_testFiles[1].second, _testFiles[0].second,
+                                 ioError)); // test1.txt -> test0.txt (before the previous rename and delete is processed)
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     LOG_DEBUG(_logger, "Operations finished")
@@ -521,10 +525,14 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingCh
     SyncPath destinationPath = tmpDirPath / (nfcFilePath.filename().string() + "2");
     CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::renameItem(nfcFilePath, destinationPath, ioError)); // nfcFile -> nfcFile2
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::deleteItem(destinationPath, ioError)); // Delete nfcFile2 (before the previous rename is processed)
+    CPPUNIT_ASSERT_MESSAGE(
+            toString(ioError),
+            IoHelper::deleteItem(destinationPath, ioError)); // Delete nfcFile2 (before the previous rename is processed)
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::renameItem(_testFiles[1].second, nfdFilePath,
-                                        ioError)); // test1.txt -> nfdFile (before the previous rename and delete is processed)
+    CPPUNIT_ASSERT_MESSAGE(
+            toString(ioError),
+            IoHelper::renameItem(_testFiles[1].second, nfdFilePath,
+                                 ioError)); // test1.txt -> nfdFile (before the previous rename and delete is processed)
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     slowObserver->waitForUpdate();

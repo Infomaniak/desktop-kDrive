@@ -19,6 +19,8 @@
 #include "uploadsessionstartjob.h"
 #include "libcommonserver/utility/utility.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 UploadSessionStartJob::UploadSessionStartJob(const UploadSessionType uploadType, const int driveDbId, const SyncName &filename,

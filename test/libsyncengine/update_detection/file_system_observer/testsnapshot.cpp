@@ -418,7 +418,7 @@ void TestSnapshot::testCopySnapshot() {
     snapshot.setName("file1.1", Str("File1.1")); // Ensure the live snapshot revision increase
     CPPUNIT_ASSERT_GREATER(snapShotCopy.revision(), snapshot.revision());
     CPPUNIT_ASSERT_GREATER(snapShotCopy.lastChangeRevision("file1.1"), snapshot.lastChangeRevision("file1.1"));
-    
+
     // Ensure SnapshotItems::_children elements are copied, not just the pointer
     const auto snapshotDir1 = snapshot.findItem("dir1");
     const auto snapshotCopyDir1 = snapShotCopy.findItem("dir1");
