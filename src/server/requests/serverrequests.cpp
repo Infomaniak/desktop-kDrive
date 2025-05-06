@@ -39,6 +39,7 @@
 #include "utility/jsonparserutility.h"
 #include "libparms/db/parmsdb.h"
 #include "libparms/db/user.h"
+#include "libcommon/utility/types.h" // QStr2SyncName(const QString &)
 #include "libcommon/utility/utility.h" // fileSystemName(const QString&)
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
@@ -1192,17 +1193,17 @@ ExitCode ServerRequests::getExclusionTemplateList(bool def, QList<ExclusionTempl
 
 namespace {
 void tryToInsertNormalizedTemplates(const ExclusionTemplate &exclusionTemplate, std::vector<ExclusionTemplate> &exclusionList) {
+    const auto &syncNameTemplate = Str2SyncName(exclusionTemplate.templ());
+
     SyncName nfcNormalizedTemplate;
-    bool nfcSuccess =
-            Utility::normalizedSyncName(exclusionTemplate.templ(), nfcNormalizedTemplate, Utility::UnicodeNormalization::NFC);
+    bool nfcSuccess = Utility::normalizedSyncName(syncNameTemplate, nfcNormalizedTemplate, Utility::UnicodeNormalization::NFC);
     if (!nfcSuccess) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Failed to NFC-normalize the template " << Utility::formatSyncName(exclusionTemplate.templ()));
     }
 
     SyncName nfdNormalizedTemplate;
-    bool nfdSuccess =
-            Utility::normalizedSyncName(exclusionTemplate.templ(), nfdNormalizedTemplate, Utility::UnicodeNormalization::NFD);
+    bool nfdSuccess = Utility::normalizedSyncName(syncNameTemplate, nfdNormalizedTemplate, Utility::UnicodeNormalization::NFD);
     if (!nfcSuccess) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Failed to NFD-normalize the template " << Utility::formatSyncName(exclusionTemplate.templ()));
@@ -1214,8 +1215,7 @@ void tryToInsertNormalizedTemplates(const ExclusionTemplate &exclusionTemplate, 
             exclusionList.emplace_back(nfdNormalizedTemplate);
         }
     } else {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Using template " << Utility::formatSyncName(exclusionTemplate.templ()) << L" as is.");
+        LOGW_WARN(Log::instance()->getLogger(), L"Using template " << Utility::formatSyncName(syncNameTemplate) << L" as is.");
         exclusionList.emplace_back(exclusionTemplate);
     }
 }
