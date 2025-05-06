@@ -517,7 +517,7 @@ void TestOperationSorterWorker::testCheckAllMethods() {
     (void) _syncPal->syncOps()->pushOp(createOp);
     (void) _syncPal->syncOps()->pushOp(moveOp);
 
-    // ... but apply all sorter method
+    // ... but apply all sorter methods
     const TimerUtility timer;
     _syncPal->_operationsSorterWorker->_filter.filterOperations();
     _syncPal->_operationsSorterWorker->fixDeleteBeforeMove();
