@@ -54,10 +54,10 @@ class SnapshotItemHandler {
         /**
          * @brief Extract one snapshot item from the full listing CSV file. An item can spread on several lines.
          * @param item output value
-         * @param ss stringstream contain the CSV file
+         * @param ss stringstream containing the CSV file
          * @param error `true` if parsing fails
          * @param ignore `true` if a line is ignored due to a non-critical parsing issue
-         * @param eof `true` if the end of file (i.e. a line contain the end of file delimiter) has been reached
+         * @param eof `true` if the end of file (i.e. a line contains the end of file delimiter) has been reached
          * @return `true` if there are more lines to be read
          */
         bool getItem(SnapshotItem &item, std::stringstream &ss, bool &error, bool &ignore, bool &eof);

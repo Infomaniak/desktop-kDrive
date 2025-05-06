@@ -20,11 +20,12 @@
 
 namespace KDC {
 
-#define API_TIMEOUT 50
+static const uint32_t apiTimout = 50;
 
 LongPollJob::LongPollJob(const int driveDbId, const std::string &cursor, const NodeSet &blacklist /*= {}*/) :
-    AbstractListingJob(ApiType::NotifyDrive, driveDbId, blacklist), _cursor(cursor) {
-    _customTimeout = API_TIMEOUT + 5; // Must be < 1 min (VPNs' default timeout)
+    AbstractListingJob(ApiType::NotifyDrive, driveDbId, blacklist),
+    _cursor(cursor) {
+    _customTimeout = apiTimout + 5; // Must be < 1 min (VPNs' default timeout)
 }
 
 std::string LongPollJob::getSpecificUrl() {
@@ -35,7 +36,7 @@ std::string LongPollJob::getSpecificUrl() {
 
 void LongPollJob::setSpecificQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("cursor", _cursor);
-    uri.addQueryParameter("timeout", std::to_string(API_TIMEOUT) + "s");
+    uri.addQueryParameter("timeout", std::to_string(apiTimout) + "s");
 }
 
 } // namespace KDC

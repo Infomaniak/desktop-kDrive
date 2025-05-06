@@ -22,14 +22,17 @@
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #endif
 
-#define API_TIMEOUT 900
-
 namespace KDC {
+
+static const uint32_t apiTimout = 900;
 
 CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(const int driveDbId, const NodeId &dirId,
                                                            const NodeSet &blacklist /*= {}*/, const bool zip /*= true*/) :
-    AbstractListingJob(driveDbId, blacklist), _dirId(dirId), _zip(zip), _snapshotItemHandler(_logger) {
-    _customTimeout = API_TIMEOUT + 15;
+    AbstractListingJob(driveDbId, blacklist),
+    _dirId(dirId),
+    _zip(zip),
+    _snapshotItemHandler(_logger) {
+    _customTimeout = apiTimout + 15;
 
     if (_zip) {
         addRawHeader("Accept-Encoding", "gzip");

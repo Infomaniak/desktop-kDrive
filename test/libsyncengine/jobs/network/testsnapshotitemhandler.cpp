@@ -17,9 +17,8 @@
  */
 
 #include "testsnapshotitemhandler.h"
-#include "../../../../src/libsyncengine/jobs/network/API_v2/listing/csvfullfilelistwithcursorjob.h"
 #include "libcommonserver/log/log.h"
-
+#include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
 using namespace CppUnit;
 
