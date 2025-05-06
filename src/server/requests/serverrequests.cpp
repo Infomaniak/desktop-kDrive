@@ -1190,21 +1190,20 @@ ExitCode ServerRequests::getExclusionTemplateList(bool def, QList<ExclusionTempl
     return ExitCode::Ok;
 }
 
+namespace {
 void tryToInsertNormalizedTemplates(const ExclusionTemplate &exclusionTemplate, std::vector<ExclusionTemplate> &exclusionList) {
     SyncName nfcNormalizedTemplate;
-    bool nfcSuccess = false;
-    if (nfcSuccess =
-                Utility::normalizedSyncName(exclusionTemplate.templ(), nfcNormalizedTemplate, Utility::UnicodeNormalization::NFC);
-        !nfcSuccess) {
+    bool nfcSuccess =
+            Utility::normalizedSyncName(exclusionTemplate.templ(), nfcNormalizedTemplate, Utility::UnicodeNormalization::NFC);
+    if (!nfcSuccess) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Failed to NFC-normalize the template " << Utility::formatSyncName(exclusionTemplate.templ()));
     }
 
     SyncName nfdNormalizedTemplate;
-    bool nfdSuccess = false;
-    if (nfdSuccess =
-                Utility::normalizedSyncName(exclusionTemplate.templ(), nfdNormalizedTemplate, Utility::UnicodeNormalization::NFD);
-        !nfcSuccess) {
+    bool nfdSuccess =
+            Utility::normalizedSyncName(exclusionTemplate.templ(), nfdNormalizedTemplate, Utility::UnicodeNormalization::NFD);
+    if (!nfcSuccess) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Failed to NFD-normalize the template " << Utility::formatSyncName(exclusionTemplate.templ()));
     }
@@ -1220,13 +1219,13 @@ void tryToInsertNormalizedTemplates(const ExclusionTemplate &exclusionTemplate, 
         exclusionList.emplace_back(exclusionTemplate);
     }
 }
+} // namespace
 
 ExitCode ServerRequests::setExclusionTemplateList(bool def, const QList<ExclusionTemplateInfo> &list) {
     std::vector<ExclusionTemplate> exclusionList;
     for (const ExclusionTemplateInfo &exclusionTemplateInfo: list) {
         ExclusionTemplate exclusionTemplate;
         ServerRequests::exclusionTemplateInfoToExclusionTemplate(exclusionTemplateInfo, exclusionTemplate);
-
         tryToInsertNormalizedTemplates(exclusionTemplate, exclusionList);
     }
 

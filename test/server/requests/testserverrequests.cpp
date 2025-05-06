@@ -96,4 +96,45 @@ void TestServerRequests::testGetPublicLink() {
     CPPUNIT_ASSERT(!url.isEmpty());
 }
 
+void TestServerRequests::testSetExclusionTemplateList() {
+    // Empty template list
+    QList<ExclusionTemplateInfo> inputList;
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::setExclusionTemplateList(true, inputList));
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::getExclusionTemplateList(true, inputList));
+    CPPUNIT_ASSERT(inputList.empty());
+
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::setExclusionTemplateList(false, inputList));
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::getExclusionTemplateList(false, inputList));
+    CPPUNIT_ASSERT(inputList.empty());
+
+    // The input default list contains a single template with a unique normalization (NFC = NFD)
+    const QString templateWithSameNormalizations = "a";
+    inputList.push_back({templateWithSameNormalizations});
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::setExclusionTemplateList(true, inputList));
+    QList<ExclusionTemplateInfo> outputList;
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::getExclusionTemplateList(true, outputList));
+    CPPUNIT_ASSERT_EQUAL(qsizetype(1), outputList.size());
+    CPPUNIT_ASSERT(outputList.contains({templateWithSameNormalizations}));
+
+    // The input default list contains a single template with a two distinct normalizations (NFC != NFD)
+    const QString templateWithDifferentNormalizations = "é";
+    inputList.clear();
+    inputList.push_back({templateWithDifferentNormalizations});
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::setExclusionTemplateList(true, inputList));
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::getExclusionTemplateList(true, outputList));
+    CPPUNIT_ASSERT_EQUAL(qsizetype(2), outputList.size());
+    CPPUNIT_ASSERT(outputList.contains({templateWithDifferentNormalizations}));
+    CPPUNIT_ASSERT(outputList.at(0).templ() != outputList.at(1).templ());
+
+    // The input user list contains a single template with a two distinct normalizations (NFC != NFD)
+    inputList.clear();
+    inputList.push_back({templateWithDifferentNormalizations});
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::setExclusionTemplateList(false, inputList));
+    outputList.clear();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::getExclusionTemplateList(false, outputList));
+    CPPUNIT_ASSERT_EQUAL(qsizetype(2), outputList.size());
+    CPPUNIT_ASSERT(outputList.contains({templateWithDifferentNormalizations}));
+    CPPUNIT_ASSERT(outputList.at(0).templ() != outputList.at(1).templ());
+}
+
 } // namespace KDC

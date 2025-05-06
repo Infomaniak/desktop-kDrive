@@ -38,6 +38,8 @@ class ExclusionTemplateInfo {
         inline void setDeleted(bool deleted) { _deleted = deleted; }
         inline bool deleted() const { return _deleted; }
 
+        bool operator==(const ExclusionTemplateInfo &) const = default;
+
         friend QDataStream &operator>>(QDataStream &in, ExclusionTemplateInfo &exclusionTemplateInfo);
         friend QDataStream &operator<<(QDataStream &out, const ExclusionTemplateInfo &exclusionTemplateInfo);
 
