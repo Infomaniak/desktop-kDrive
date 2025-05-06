@@ -25,7 +25,8 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
-export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/lib 
+export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/lib
+export DYLD_PRINT_BINDINGS=1
 
 testers=$(find . -type f -name "kDrive_test_*")
 errors=0
