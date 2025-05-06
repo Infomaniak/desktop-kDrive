@@ -584,11 +584,11 @@ void MockLocalFileSystemObserverWorker::waitForUpdate(SnapshotRevision previousR
     while (previousRevision == snapshot()->revision() && duration_cast<milliseconds>(system_clock::now() - start) < timeoutMs) {
         Utility::msleep(10);
     }
-    CPPUNIT_ASSERT_LESS(timeoutMs, duration_cast<milliseconds>(system_clock::now() - start));
+    CPPUNIT_ASSERT_LESS(timeoutMs.count(), duration_cast<milliseconds>(system_clock::now() - start).count());
     while (_updating && duration_cast<milliseconds>(system_clock::now() - start) < timeoutMs) {
         Utility::msleep(10);
     }
-    CPPUNIT_ASSERT_LESS(timeoutMs, duration_cast<milliseconds>(system_clock::now() - start));
+    CPPUNIT_ASSERT_LESS(timeoutMs.count(), duration_cast<milliseconds>(system_clock::now() - start).count());
 }
 
 } // namespace KDC
