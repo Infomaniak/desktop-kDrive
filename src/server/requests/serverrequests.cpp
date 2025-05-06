@@ -1212,9 +1212,13 @@ void tryToInsertNormalizedTemplates(const ExclusionTemplate &exclusionTemplate, 
     }
 
     if (nfcSuccess) {
-        exclusionList.emplace_back(nfcNormalizedTemplate);
+        ExclusionTemplate nfcTemplate = exclusionTemplate;
+        nfcTemplate.setTempl(SyncName2Str(nfcNormalizedTemplate));
+        exclusionList.emplace_back(nfcTemplate);
         if (nfdSuccess && nfcNormalizedTemplate != nfdNormalizedTemplate) {
-            exclusionList.emplace_back(nfdNormalizedTemplate);
+            ExclusionTemplate nfdTemplate = exclusionTemplate;
+            nfdTemplate.setTempl(SyncName2Str(nfdNormalizedTemplate));
+            exclusionList.emplace_back(nfdTemplate);
         }
     } else {
         LOGW_WARN(Log::instance()->getLogger(), L"Using template " << Utility::formatSyncName(syncNameTemplate) << L" as is.");

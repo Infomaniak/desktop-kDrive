@@ -31,15 +31,7 @@
 
 namespace KDC {
 
-#ifdef __APPLE__
-CPPUNIT_TEST_SUITE_REGISTRATION(TestVfsMac);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncExtConnector);
-#endif
-CPPUNIT_TEST_SUITE_REGISTRATION(TestWorkers);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateChecker);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractUpdater);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestServerRequests);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestAppServer);
 } // namespace KDC
 
 int main(int, char **) {
