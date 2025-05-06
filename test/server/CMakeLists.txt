@@ -173,11 +173,10 @@ if (APPLE)
 
     install(CODE "
         message(STATUS \"Fixing library paths for ${testserver_NAME}...\")
-        message(STATUS \"osx bundle ${INSTALL_OUTPUT_DIRECTORY}/${KDRIVE_OSX_BUNDLE}...\")
         execute_process(COMMAND \"install_name_tool\" -delete_rpath ${USER_FRAMEWORK_PATH} ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
+        execute_process(COMMAND \"install_name_tool\" -add_rpath ${INSTALL_OUTPUT_DIRECTORY}/${KDRIVE_OSX_BUNDLE}/Contents/Frameworks ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
         " COMPONENT RUNTIME)
 
-#    execute_process(COMMAND \"install_name_tool\" -add_rpath ${INSTALL_OUTPUT_DIRECTORY}/${KDRIVE_OSX_BUNDLE}/Contents/Frameworks ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
 #    execute_process(COMMAND \"install_name_tool\" -add_rpath ${INSTALL_OUTPUT_DIRECTORY}/${KDRIVE_OSX_BUNDLE}/Contents/Plugins ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
 
 endif()
