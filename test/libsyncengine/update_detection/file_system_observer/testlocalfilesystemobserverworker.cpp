@@ -577,7 +577,7 @@ void TestLocalFileSystemObserverWorker::testInvalidateCounter() {
     CPPUNIT_ASSERT_EQUAL(false, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot has been invalidated.
 }
 
-void MockLocalFileSystemObserverWorker::waitForUpdate(SnapshotRevision previousRevision, const long long timeoutMs) const {
+void MockLocalFileSystemObserverWorker::waitForUpdate(SnapshotRevision previousRevision, const std::chrono::milliseconds timeoutMs) const {
     using namespace std::chrono;
     const auto start = system_clock::now();
     while (previousRevision == snapshot()->revision() &&
