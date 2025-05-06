@@ -101,11 +101,10 @@ bool SyncDbReadOnlyCache::parent(ReplicaSide side, const NodeId& nodeId, NodeId&
     if (_cachedRevision == 0) return false;
 
     found = false;
-
     DbNodeId dbNodeId = getDbNodeIdFromNodeId(side, nodeId, found);
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "SyncDbReadOnlyCache::parent: node " << nodeId << " not found in syncDbReadOnlyCache");
+                 "SyncDbReadOnlyCache::parent: nodeId " << nodeId << " not found in syncDbReadOnlyCache");
         return true;
     }
 
@@ -132,7 +131,7 @@ bool SyncDbReadOnlyCache::parent(ReplicaSide side, const NodeId& nodeId, NodeId&
     found = !parentNodeId.empty();
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "SyncDbReadOnlyCache::parent: node " << nodeId << " has a parent with an empty nodeId");
+                 "SyncDbReadOnlyCache::parent: nodeId " << nodeId << " has a parent with an empty nodeId");
     }
     return true;
 }
@@ -146,7 +145,7 @@ bool SyncDbReadOnlyCache::correspondingNodeId(ReplicaSide side, const NodeId& no
     DbNodeId dbNodeId = getDbNodeIdFromNodeId(side, nodeIdIn, found);
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "SyncDbReadOnlyCache::correspondingNodeId: node " << nodeIdIn << " not found in syncDbReadOnlyCache");
+                 "SyncDbReadOnlyCache::correspondingNodeId: nodeIdIn " << nodeIdIn << " not found in syncDbReadOnlyCache");
         return true;
     }
 
@@ -160,8 +159,8 @@ bool SyncDbReadOnlyCache::correspondingNodeId(ReplicaSide side, const NodeId& no
     nodeIdOut = dbNode.nodeId(otherSide(side));
     found = !nodeIdOut.empty();
     if (!found) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "SyncDbReadOnlyCache::correspondingNodeId: node " << nodeIdIn << " has a corresponding with an empty nodeId");
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbReadOnlyCache::correspondingNodeId: nodeIdIn "
+                                                       << nodeIdIn << " has a corresponding node with an empty nodeId");
     }
     return true;
 }
@@ -172,11 +171,10 @@ bool SyncDbReadOnlyCache::dbId(ReplicaSide side, const NodeId& nodeId, DbNodeId&
     if (_cachedRevision == 0) return false;
 
     found = false;
-
     dbNodeId = getDbNodeIdFromNodeId(side, nodeId, found);
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "SyncDbReadOnlyCache::dbId: node " << nodeId << " not found in syncDbReadOnlyCache");
+                 "SyncDbReadOnlyCache::dbId: nodeId " << nodeId << " not found in syncDbReadOnlyCache");
     }
     return true;
 }
@@ -242,7 +240,7 @@ bool SyncDbReadOnlyCache::ids(ReplicaSide side, std::set<NodeId>& ids, bool& fou
     for (const auto& [nodeId, _]: nodeIdsCache) {
         (void) ids.insert(nodeId);
     }
-    found = nodeIdsCache.size() > 0;
+    found = !nodeIdsCache.empty();
     return true;
 }
 
@@ -258,7 +256,7 @@ bool SyncDbReadOnlyCache::ids(std::unordered_set<NodeIds, NodeIds::HashFunction>
         nodeIds.remoteNodeId = dbNode.nodeIdRemote().value();
         (void) ids.insert(nodeIds);
     }
-    found = ids.size() > 0;
+    found = !ids.empty();
 
     return true;
 }
@@ -270,9 +268,10 @@ bool SyncDbReadOnlyCache::path(DbNodeId dbNodeId, SyncPath& localPath, SyncPath&
 
     found = false;
     // Check if the path is already cached
-    if (_dbNodesPathCache.contains(dbNodeId)) {
-        localPath = _dbNodesPathCache.at(dbNodeId).first;
-        remotePath = _dbNodesPathCache.at(dbNodeId).second;
+    const auto cahcedPathIt = _dbNodesPathCache.find(dbNodeId);
+    if (cahcedPathIt != _dbNodesPathCache.end()) {
+        localPath = cahcedPathIt->second.first;
+        remotePath = cahcedPathIt->second.second;
         found = true;
         return true;
     }
@@ -281,13 +280,14 @@ bool SyncDbReadOnlyCache::path(DbNodeId dbNodeId, SyncPath& localPath, SyncPath&
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(),
                  "SyncDbReadOnlyCache::path: dbNodeId " << dbNodeId << " not found in syncDbReadOnlyCache");
-        return false; // Not found
+        return true;
     }
     if (!DbNode.parentNodeId()) {
         localPath = DbNode.nameLocal();
         remotePath = DbNode.nameRemote();
     } else {
-        if (!path(DbNode.parentNodeId().value(), localPath, remotePath, found, true) || !found) return true;
+        if (!path(DbNode.parentNodeId().value(), localPath, remotePath, found, true)) return true;
+        if (!found) return true;
         localPath /= DbNode.nameLocal();
         remotePath /= DbNode.nameRemote();
     }
@@ -314,9 +314,13 @@ bool SyncDbReadOnlyCache::path(ReplicaSide side, const NodeId& nodeId, SyncPath&
     SyncPath localPath;
     SyncPath remotePath;
     if (!path(dbNodeId, localPath, remotePath, found)) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "SyncDbReadOnlyCache::path: dbNodeId " << dbNodeId << " not found in syncDbReadOnlyCache");
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbReadOnlyCache::path: dbNodeId " << dbNodeId << " failed");
         return false;
+    }
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "SyncDbReadOnlyCache::path: node " << nodeId << " not found in syncDbReadOnlyCache");
+        return true;
     }
     resPath = side == ReplicaSide::Local ? localPath : remotePath;
     return true;
@@ -336,10 +340,10 @@ bool SyncDbReadOnlyCache::id(ReplicaSide side, const SyncPath& path, std::option
         return true;
     }
 
-    const auto dbNodesParentToChildrenMap = _dbNodesParentToChildrenMap.end();
+    const auto dbNodesParentToChildrenMapEnd = _dbNodesParentToChildrenMap.end();
     for (auto nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
         auto children = _dbNodesParentToChildrenMap.find(tmpNode.nodeId());
-        if (children == dbNodesParentToChildrenMap) {
+        if (children == dbNodesParentToChildrenMapEnd) {
             LOG_WARN(Log::instance()->getLogger(),
                      "SyncDbReadOnlyCache::id: node " << tmpNode.nodeId() << " not found in syncDbReadOnlyCache");
             return true;
