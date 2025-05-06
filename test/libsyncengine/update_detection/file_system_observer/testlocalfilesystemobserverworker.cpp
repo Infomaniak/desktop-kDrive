@@ -577,18 +577,18 @@ void TestLocalFileSystemObserverWorker::testInvalidateCounter() {
     CPPUNIT_ASSERT_EQUAL(false, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot has been invalidated.
 }
 
-void MockLocalFileSystemObserverWorker::waitForUpdate(SnapshotRevision previousRevision, const std::chrono::milliseconds timeoutMs) const {
+void MockLocalFileSystemObserverWorker::waitForUpdate(SnapshotRevision previousRevision,
+                                                      const std::chrono::milliseconds timeoutMs) const {
     using namespace std::chrono;
     const auto start = system_clock::now();
-    while (previousRevision == snapshot()->revision() &&
-           duration_cast<milliseconds>(system_clock::now() - start).count() < timeoutMs) {
+    while (previousRevision == snapshot()->revision() && duration_cast<milliseconds>(system_clock::now() - start) < timeoutMs) {
         Utility::msleep(10);
     }
-    CPPUNIT_ASSERT_LESS(timeoutMs, static_cast<long long>(duration_cast<milliseconds>(system_clock::now() - start).count()));
-    while (_updating && duration_cast<milliseconds>(system_clock::now() - start).count() < timeoutMs) {
+    CPPUNIT_ASSERT_LESS(timeoutMs, duration_cast<milliseconds>(system_clock::now() - start));
+    while (_updating && duration_cast<milliseconds>(system_clock::now() - start) < timeoutMs) {
         Utility::msleep(10);
     }
-    CPPUNIT_ASSERT_LESS(timeoutMs, static_cast<long long>(duration_cast<milliseconds>(system_clock::now() - start).count()));
+    CPPUNIT_ASSERT_LESS(timeoutMs, duration_cast<milliseconds>(system_clock::now() - start));
 }
 
 } // namespace KDC
