@@ -119,6 +119,7 @@ struct COMMONSERVER_EXPORT Utility {
          */
         static bool checkIfEqualUpToCaseAndEncoding(const SyncPath &a, const SyncPath &b, bool &isEqual);
         static bool isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path);
+        static bool isStrictDescendant(const SyncPath &potentialDescendant, const SyncPath &path);
         /**
          * Normalize the SyncName parameters before comparing them.
          * @param a SyncName value to be compared.
