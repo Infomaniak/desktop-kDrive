@@ -182,7 +182,7 @@ std::string UploadJob::getContentType(bool &canceled) {
         case LinkType::Junction:
             return mimeTypeJunction;
         default:
-            return AbstractTokenNetworkJob::getContentType(canceled);
+            return mimeTypeOctetStream;
     }
 }
 
