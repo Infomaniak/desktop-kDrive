@@ -22,6 +22,7 @@
 #include "libcommon/utility/logiffail.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
+#include "utility/timerutility.h"
 
 #include <iostream>
 #include <log4cplus/loggingmacros.h>
@@ -49,7 +50,7 @@ void UpdateTreeWorker::execute() {
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
 
-    const auto start = std::chrono::steady_clock::now();
+    const TimerUtility timer;
 
     _updateTree->startUpdate();
 
@@ -86,13 +87,10 @@ void UpdateTreeWorker::execute() {
         _updateTree->drawUpdateTree();
     }
 
-    const std::chrono::milliseconds elapsedSeconds =
-            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start);
-
     if (exitCode == ExitCode::Ok) {
-        LOG_SYNCPAL_DEBUG(_logger, "Update Tree " << _side << " updated in: " << elapsedSeconds.count() << "ms");
+        LOG_SYNCPAL_DEBUG(_logger, "Update Tree " << _side << " updated in: " << timer.elapsed().count() << "s");
     } else {
-        LOG_SYNCPAL_WARN(_logger, "Update Tree " << _side << " generation failed after: " << elapsedSeconds.count() << "ms");
+        LOG_SYNCPAL_WARN(_logger, "Update Tree " << _side << " generation failed after: " << timer.elapsed().count() << "s");
     }
 
     // Clear unexpected operation set once used
