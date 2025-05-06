@@ -1196,17 +1196,19 @@ void tryToInsertNormalizedTemplates(const ExclusionTemplate &exclusionTemplate, 
     const auto &syncNameTemplate = Str2SyncName(exclusionTemplate.templ());
 
     SyncName nfcNormalizedTemplate;
-    bool nfcSuccess = Utility::normalizedSyncName(syncNameTemplate, nfcNormalizedTemplate, Utility::UnicodeNormalization::NFC);
+    const bool nfcSuccess =
+            Utility::normalizedSyncName(syncNameTemplate, nfcNormalizedTemplate, Utility::UnicodeNormalization::NFC);
     if (!nfcSuccess) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Failed to NFC-normalize the template " << Utility::formatSyncName(exclusionTemplate.templ()));
+                  L"Failed to NFC-normalize the template " << Utility::formatSyncName(syncNameTemplate));
     }
 
     SyncName nfdNormalizedTemplate;
-    bool nfdSuccess = Utility::normalizedSyncName(syncNameTemplate, nfdNormalizedTemplate, Utility::UnicodeNormalization::NFD);
+    const bool nfdSuccess =
+            Utility::normalizedSyncName(syncNameTemplate, nfdNormalizedTemplate, Utility::UnicodeNormalization::NFD);
     if (!nfcSuccess) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Failed to NFD-normalize the template " << Utility::formatSyncName(exclusionTemplate.templ()));
+                  L"Failed to NFD-normalize the template " << Utility::formatSyncName(syncNameTemplate));
     }
 
     if (nfcSuccess) {
