@@ -39,6 +39,7 @@ IoError nsError2ioError(NSError *nsError) noexcept {
             case NSFileReadNoSuchFileError:
                 return IoError::NoSuchFileOrDirectory;
             case NSFileReadNoPermissionError:
+            case NSFileWriteNoPermissionError:
                 return IoError::AccessDenied;
             case NSFileReadInvalidFileNameError:
                 return IoError::InvalidFileName;
@@ -94,9 +95,7 @@ bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, I
     CFURLRef aliasUrl = CFURLCreateWithFileSystemPath(nil, aliasPathStr, kCFURLPOSIXPathStyle, false);
     CFRelease(aliasPathStr);
 
-    CFDataRef bookmarkRef = CFDataCreate(nullptr,
-                                         (const UInt8 *) data.data(),
-                                         static_cast<CFIndex>(data.size()));
+    CFDataRef bookmarkRef = CFDataCreate(nullptr, (const UInt8 *) data.data(), static_cast<CFIndex>(data.size()));
 
     CFErrorRef error = nil;
     bool ret = CFURLWriteBookmarkDataToFile(bookmarkRef, aliasUrl, kCFURLBookmarkCreationSuitableForBookmarkFile, &error);
@@ -150,16 +149,16 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
         return false;
     }
 
-    const uint32_t size = (uint32_t)CFDataGetLength(bookmarkRef);
+    const uint32_t size = (uint32_t) CFDataGetLength(bookmarkRef);
     unsigned char *buffer = new unsigned char[size];
-    CFDataGetBytes(bookmarkRef, CFRangeMake(0, size), (UInt8 *)buffer);
+    CFDataGetBytes(bookmarkRef, CFRangeMake(0, size), (UInt8 *) buffer);
     data = std::string(reinterpret_cast<char const *>(buffer), size);
     delete[] buffer;
 
     // Read target
     Boolean isStale;
     CFURLRef targetUrl =
-        CFURLCreateByResolvingBookmarkData(nil, bookmarkRef, kCFBookmarkResolutionWithoutUIMask, nil, nil, &isStale, &error);
+            CFURLCreateByResolvingBookmarkData(nil, bookmarkRef, kCFBookmarkResolutionWithoutUIMask, nil, nil, &isStale, &error);
     CFRelease(bookmarkRef);
     if (targetUrl == nil) {
         if (error) {
@@ -189,8 +188,8 @@ bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &a
 
     CFErrorRef error = nil;
     CFDataRef bookmarkRef = CFURLCreateBookmarkData(
-        // The obj-c/swift doc: https://developer.apple.com/documentation/corefoundation/1542923-cfurlcreatebookmarkdata
-        nullptr, targetUrl, kCFURLBookmarkCreationSuitableForBookmarkFile, CFArrayRef{}, nil, &error);
+            // The obj-c/swift doc: https://developer.apple.com/documentation/corefoundation/1542923-cfurlcreatebookmarkdata
+            nullptr, targetUrl, kCFURLBookmarkCreationSuitableForBookmarkFile, CFArrayRef{}, nil, &error);
 
     if (bookmarkRef == nil) {
         if (error) {
@@ -204,7 +203,7 @@ bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &a
     }
 
     const bool result =
-        CFURLWriteBookmarkDataToFile(bookmarkRef, aliasUrl, kCFURLBookmarkCreationSuitableForBookmarkFile, &error);
+            CFURLWriteBookmarkDataToFile(bookmarkRef, aliasUrl, kCFURLBookmarkCreationSuitableForBookmarkFile, &error);
 
     CFRelease(bookmarkRef);
     CFRelease(aliasUrl);
@@ -245,5 +244,53 @@ bool isLocked(const SyncPath &path) {
     return isLocked;
 }
 
+IoError IoHelper::setFileDates(const SyncPath &filePath, SyncTime creationDate, SyncTime modificationDate,
+                               bool symlink) noexcept {
+    NSString *filePathStr = [NSString stringWithUTF8String:filePath.native().c_str()];
 
-}  // namespace KDC
+    NSDate *cDate = [[NSDate alloc] initWithTimeIntervalSince1970:creationDate];
+    NSDate *mDate = [[NSDate alloc] initWithTimeIntervalSince1970:modificationDate];
+
+    NSError *error = nil;
+    bool ret = false;
+    if (symlink) {
+        if (cDate) {
+            ret = [[NSURL fileURLWithPath:filePathStr isDirectory:NO] setResourceValue:mDate
+                                                                                forKey:NSURLCreationDateKey
+                                                                                 error:&error];
+            if (!ret) {
+                return nsError2ioError(error);
+            }
+        }
+
+        if (mDate) {
+            ret = [[NSURL fileURLWithPath:filePathStr isDirectory:NO] setResourceValue:mDate
+                                                                                forKey:NSURLContentModificationDateKey
+                                                                                 error:&error];
+            if (!ret) {
+                return nsError2ioError(error);
+            }
+        }
+    } else {
+        NSMutableDictionary *attrDictionary = [[NSMutableDictionary alloc] init];
+        if (cDate) {
+            [attrDictionary setObject:cDate forKey:NSFileCreationDate];
+        }
+
+        if (mDate) {
+            [attrDictionary setObject:mDate forKey:NSFileModificationDate];
+        }
+
+        if ([[attrDictionary allKeys] count]) {
+            NSFileManager *fileManager = [NSFileManager defaultManager];
+            ret = [fileManager setAttributes:attrDictionary ofItemAtPath:filePathStr error:&error];
+            if (!ret) {
+                return nsError2ioError(error);
+            }
+        }
+    }
+
+    return IoError::Success;
+}
+
+} // namespace KDC

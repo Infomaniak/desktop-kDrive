@@ -166,11 +166,6 @@ static bool cpuUsageByProcess_private(double &percent) {
     return true;
 }
 
-static IoError setFileDates_private(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
-                                    std::optional<KDC::SyncTime> modificationDate, bool symlink) {
-    return KDC::setFileDates(filePath, creationDate, modificationDate, symlink);
-}
-
 static std::string userName_private() {
     bool isSet = false;
     return CommonUtility::envVarValue("USER", isSet);
