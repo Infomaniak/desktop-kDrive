@@ -46,7 +46,7 @@ class UpdateTreeWorker : public ISyncWorker {
         SyncDbReadOnlyCache &_syncDbReadOnlyCache;
         std::shared_ptr<FSOperationSet> _operationSet;
         std::shared_ptr<UpdateTree> _updateTree;
-        using FSOpPtrMap = std::unordered_map<SyncPath, FSOpPtr, hashPathFunction>;
+        using FSOpPtrMap = std::unordered_map<SyncPath, FSOpPtr, PathHashFunction>;
         FSOpPtrMap _createFileOperationSet;
         ReplicaSide _side;
 

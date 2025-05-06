@@ -25,6 +25,7 @@
 #include "requests/parameterscache.h"
 #include "requests/exclusiontemplatecache.h"
 #include "snapshot/snapshotitem.h"
+#include "utility/timerutility.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -447,7 +448,7 @@ void LocalFileSystemObserverWorker::execute() {
 
 ExitCode LocalFileSystemObserverWorker::generateInitialSnapshot() {
     LOG_SYNCPAL_INFO(_logger, "Starting local snapshot generation");
-    auto start = std::chrono::steady_clock::now();
+    const TimerUtility timer;
     auto perfMonitor = sentry::pTraces::scoped::LFSOGenerateInitialSnapshot(syncDbId());
 
     _snapshot->init();
@@ -455,16 +456,15 @@ ExitCode LocalFileSystemObserverWorker::generateInitialSnapshot() {
 
     ExitCode res = exploreDir(_rootFolder);
 
-    std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
     if (res == ExitCode::Ok && !stopAsked()) {
         _snapshot->setValid(true);
-        LOG_SYNCPAL_INFO(_logger, "Local snapshot generated in: " << elapsed_seconds.count() << "s for " << _snapshot->nbItems()
+        LOG_SYNCPAL_INFO(_logger, "Local snapshot generated in: " << timer.elapsed().count() << "s for " << _snapshot->nbItems()
                                                                   << " items");
         perfMonitor.stop();
     } else if (stopAsked()) {
-        LOG_SYNCPAL_INFO(_logger, "Local snapshot generation stopped after: " << elapsed_seconds.count() << "s");
+        LOG_SYNCPAL_INFO(_logger, "Local snapshot generation stopped after: " << timer.elapsed().count() << "s");
     } else {
-        LOG_SYNCPAL_WARN(_logger, "Local snapshot generation failed after: " << elapsed_seconds.count() << "s");
+        LOG_SYNCPAL_WARN(_logger, "Local snapshot generation failed after: " << timer.elapsed().count() << "s");
     }
 
     const std::lock_guard<std::recursive_mutex> lock(_recursiveMutex);

@@ -111,6 +111,7 @@ set(syncengine_SRCS
     ## Operation Sorter
     propagation/operation_sorter/operationsorterworker.h propagation/operation_sorter/operationsorterworker.cpp
     propagation/operation_sorter/cyclefinder.h propagation/operation_sorter/cyclefinder.cpp
+    propagation/operation_sorter/operationsorterfilter.h propagation/operation_sorter/operationsorterfilter.cpp
     ## Executor
     propagation/executor/executorworker.h propagation/executor/executorworker.cpp
     propagation/executor/filerescuer.h propagation/executor/filerescuer.cpp
