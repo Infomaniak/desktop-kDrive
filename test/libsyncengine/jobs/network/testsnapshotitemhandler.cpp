@@ -17,6 +17,8 @@
  */
 
 #include "testsnapshotitemhandler.h"
+
+#include "jobs/network/API_v2/listing/snapshotitemhandler.h"
 #include "libcommonserver/log/log.h"
 #include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
