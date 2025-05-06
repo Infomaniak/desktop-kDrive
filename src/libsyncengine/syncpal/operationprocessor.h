@@ -25,7 +25,8 @@ namespace KDC {
 
 class OperationProcessor : public ISyncWorker {
     public:
-        OperationProcessor(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
+        OperationProcessor(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
+                           bool useSyncDbCahce = true);
 
     protected:
         bool isPseudoConflict(std::shared_ptr<Node> node, std::shared_ptr<Node> correspondingNode);
@@ -60,6 +61,8 @@ class OperationProcessor : public ISyncWorker {
          * @return a shared pointer to the node in other tree. nullptr if not found.
          */
         std::shared_ptr<Node> findCorrespondingNodeFromPath(std::shared_ptr<Node> node);
+
+        bool _useSyncDbCache;
 };
 
 } // namespace KDC

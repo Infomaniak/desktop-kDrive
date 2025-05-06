@@ -737,7 +737,7 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
     }
 
     bool found = false;
-    std::set<NodeId> dbNodeIds;
+    NodeSet dbNodeIds;
     if (!_syncDbReadOnlyCache.ids(_side, dbNodeIds, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbNodeIds");
         return ExitCode::DbError;

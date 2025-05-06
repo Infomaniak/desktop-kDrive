@@ -40,7 +40,7 @@ class SyncDbReadOnlyCache {
         bool node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &found);
         // Returns the list of IDs contained in snapshot
         bool ids(ReplicaSide side, std::vector<NodeId> &ids, bool &found);
-        bool ids(ReplicaSide side, std::set<NodeId> &ids, bool &found);
+        bool ids(ReplicaSide side, NodeSet &ids, bool &found);
         bool ids(std::unordered_set<NodeIds, NodeIds::HashFunction> &ids, bool &found);
 
         bool path(DbNodeId dbNodeId, SyncPath &localPath, SyncPath &remotePath, bool &found, bool recursiveCall = false);

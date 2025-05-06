@@ -52,7 +52,7 @@ namespace KDC {
 #define SNAPSHOT_INVALIDATION_THRESHOLD 100 // Changes
 
 ExecutorWorker::ExecutorWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
-    OperationProcessor(syncPal, name, shortName) {}
+    OperationProcessor(syncPal, name, shortName, false) {}
 
 void ExecutorWorker::executorCallback(UniqueId jobId) {
     _terminatedJobs.push(jobId);
