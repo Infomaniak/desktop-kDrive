@@ -119,6 +119,7 @@ struct COMMONSERVER_EXPORT Utility {
          */
         static bool checkIfEqualUpToCaseAndEncoding(const SyncPath &a, const SyncPath &b, bool &isEqual);
         static bool isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path);
+        static bool isStrictDescendant(const SyncPath &potentialDescendant, const SyncPath &path);
         /**
          * Normalize the SyncName parameters before comparing them.
          * @param a SyncName value to be compared.
@@ -182,7 +183,10 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string _errId(const char *file, int line);
 
 
-        enum class UnicodeNormalization { NFC, NFD };
+        enum class UnicodeNormalization {
+            NFC,
+            NFD
+        };
         static bool normalizedSyncName(const SyncName &name, SyncName &normalizedName,
                                        UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
         static bool normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
@@ -218,7 +222,8 @@ struct COMMONSERVER_EXPORT Utility {
 };
 
 struct TimeCounter {
-        explicit TimeCounter(const std::string &name) : _name(name) {}
+        explicit TimeCounter(const std::string &name) :
+            _name(name) {}
         void start() { _start = clock(); }
         void end() {
             _end = clock();

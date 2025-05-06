@@ -79,7 +79,9 @@ class GetSizeJob;
 struct SyncPalInfo {
         SyncPalInfo() = default;
         SyncPalInfo(const int driveDbId_, const SyncPath &localPath_, const SyncPath targetPath_ = {}) :
-            driveDbId(driveDbId_), localPath(localPath_), targetPath(targetPath_) {}
+            driveDbId(driveDbId_),
+            localPath(localPath_),
+            targetPath(targetPath_) {}
 
         int syncDbId{0};
         int driveDbId{0};
@@ -267,7 +269,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<ConflictingFilesCorrector> _conflictingFilesCorrector = nullptr;
 
         std::unordered_map<UniqueId, std::shared_ptr<DownloadJob>> _directDownloadJobsMap;
-        std::unordered_map<SyncPath, UniqueId, hashPathFunction> _syncPathToDownloadJobMap;
+        std::unordered_map<SyncPath, UniqueId, PathHashFunction> _syncPathToDownloadJobMap;
         std::mutex _directDownloadJobsMapMutex;
 
         // Callbacks

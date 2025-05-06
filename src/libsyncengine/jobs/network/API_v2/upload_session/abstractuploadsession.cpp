@@ -25,6 +25,7 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "utility/jsonparserutility.h"
+#include "utility/timerutility.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -36,7 +37,10 @@ namespace KDC {
 
 AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const SyncName &filename,
                                              uint64_t nbParalleleThread /*= 1*/) :
-    _logger(Log::instance()->getLogger()), _filePath(filepath), _filename(filename), _nbParalleleThread(nbParalleleThread) {
+    _logger(Log::instance()->getLogger()),
+    _filePath(filepath),
+    _filename(filename),
+    _nbParalleleThread(nbParalleleThread) {
     IoError ioError = IoError::Success;
     if (!IoHelper::getFileSize(_filePath, _filesize, ioError)) {
         std::wstring exceptionMessage = L"Error in IoHelper::getFileSize for " + Utility::formatIoError(_filePath, ioError);
@@ -74,7 +78,7 @@ void AbstractUploadSession::runJob() {
                                                         << L" with " << _nbParalleleThread << L" threads");
     }
 
-    auto start = std::chrono::steady_clock::now();
+    const TimerUtility timer;
 
     assert(_uploadSessionType != UploadSessionType::Unknown);
 
@@ -111,10 +115,8 @@ void AbstractUploadSession::runJob() {
         }
     }
 
-    auto end = std::chrono::steady_clock::now();
-    std::chrono::duration<double> elapsed_seconds = end - start;
     LOGW_DEBUG(_logger, L"Upload session job " << jobId() << (isAborted() ? L" aborted after " : L" finished after ")
-                                               << elapsed_seconds.count() << L"s");
+                                               << timer.elapsed().count() << L"s");
 }
 
 void AbstractUploadSession::uploadChunkCallback(UniqueId jobId) {

@@ -33,6 +33,13 @@
 #include "requests/exclusiontemplatecache.h"
 #include "utility/jsonparserutility.h"
 
+#ifdef __APPLE__
+#include "utility/utility.h"
+#endif
+
+#include "utility/timerutility.h"
+
+
 #include <log4cplus/loggingmacros.h>
 
 #include <Poco/JSON/Object.h>
@@ -43,7 +50,8 @@ namespace KDC {
 
 RemoteFileSystemObserverWorker::RemoteFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                                const std::string &shortName) :
-    FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Remote), _driveDbId(syncPal->driveDbId()) {}
+    FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Remote),
+    _driveDbId(syncPal->driveDbId()) {}
 
 RemoteFileSystemObserverWorker::~RemoteFileSystemObserverWorker() {
     LOG_SYNCPAL_DEBUG(_logger, "~RemoteFileSystemObserverWorker");
@@ -308,7 +316,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
 
     // Parse reply
     LOG_SYNCPAL_DEBUG(_logger, "Begin parsing of the CSV reply");
-    const auto start = std::chrono::steady_clock::now();
+    const TimerUtility timer;
     SnapshotItem item;
     bool error = false;
     bool ignore = false;
@@ -397,8 +405,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         nodeIdIt++;
     }
 
-    std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
-    LOG_SYNCPAL_DEBUG(_logger, "End reply parsing in " << elapsed_seconds.count() << "s for " << itemCount << " items");
+    LOG_SYNCPAL_DEBUG(_logger, "End reply parsing in " << timer.elapsed().count() << "s for " << itemCount << " items");
 
     return ExitCode::Ok;
 }
