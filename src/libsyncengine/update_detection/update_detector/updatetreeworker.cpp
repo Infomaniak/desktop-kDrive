@@ -766,7 +766,7 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
 
     // creating missing nodes
     auto dbNodeIdIt = dbNodeIds.begin();
-    while (dbNodeIds.size() != 0) {
+    while (!dbNodeIds.empty()) {
         // worker stop or pause
         if (stopAsked()) {
             return ExitCode::Ok;

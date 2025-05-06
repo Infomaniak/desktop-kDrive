@@ -21,7 +21,6 @@
 #include "syncpal/isyncworker.h"
 #include "syncpal/syncpal.h"
 #include "db/syncdb.h"
-
 #include "update_detection/file_system_observer/fsoperationset.h"
 #include "updatetree.h"
 
