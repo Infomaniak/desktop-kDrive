@@ -25,9 +25,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
-if [ "$OSTYPE" == "darwin"* ]; then
-    export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/lib 
-fi
+export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/lib 
 
 testers=$(find . -type f -name "kDrive_test_*")
 errors=0
