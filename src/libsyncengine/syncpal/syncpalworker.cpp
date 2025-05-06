@@ -614,7 +614,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(dirIt->path()) << L": "
                                                                              << exitInfo);
                     ok = false;
-                    *dirIt.disable_recursion_pending();
+                    dirIt.disable_recursion_pending();
                     continue;
                 }
                 vfsStatus.isHydrated = false;
