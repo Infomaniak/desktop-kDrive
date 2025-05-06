@@ -25,8 +25,6 @@ export TEAM_IDENTIFIER="864VDCS2QY"
 export SIGN_IDENTITY="Developer ID Application: Infomaniak Network SA (864VDCS2QY)"
 export QTDIR="$HOME/Qt/6.2.3/macos"
 
-export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/lib 
-
 # Uncomment to build for testing
 # export KDRIVE_DEBUG=1
 
