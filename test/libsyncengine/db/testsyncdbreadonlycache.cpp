@@ -51,7 +51,7 @@ void TestSyncDbReadOnlyCache::tearDown() {
     TestBase::stop();
 }
 
-void TestSyncDbReadOnlyCache::testReloadCacheIfNeeded() {
+void TestSyncDbReadOnlyCache::testreloadIfNeeded() {
     // Insert node
     time_t tLoc = std::time(nullptr);
     time_t tDrive = std::time(nullptr);
@@ -66,7 +66,7 @@ void TestSyncDbReadOnlyCache::testReloadCacheIfNeeded() {
     CPPUNIT_ASSERT(!constraintError);
 
     CPPUNIT_ASSERT_GREATER(_testObj->cache().revision(), _testObj->revision());
-    CPPUNIT_ASSERT(_testObj->cache().reloadCacheIfNeeded());
+    CPPUNIT_ASSERT(_testObj->cache().reloadIfNeeded());
     CPPUNIT_ASSERT_EQUAL(_testObj->revision(), _testObj->cache().revision());
 
     // Update node
@@ -76,7 +76,7 @@ void TestSyncDbReadOnlyCache::testReloadCacheIfNeeded() {
     CPPUNIT_ASSERT(_testObj->updateNode(nodeDir1, found) && found);
 
     CPPUNIT_ASSERT_GREATER(_testObj->cache().revision(), _testObj->revision());
-    CPPUNIT_ASSERT(_testObj->cache().reloadCacheIfNeeded());
+    CPPUNIT_ASSERT(_testObj->cache().reloadIfNeeded());
     CPPUNIT_ASSERT_EQUAL(_testObj->revision(), _testObj->cache().revision());
 
     DbNode cachedNode;
@@ -139,7 +139,7 @@ void TestSyncDbReadOnlyCache::testNodes() {
     nodeFile6.setLastModifiedRemote(nodeFile6.lastModifiedRemote().value() + 100);
     nodeFile6.setChecksum(nodeFile6.checksum().value() + "new");
     CPPUNIT_ASSERT(_testObj->updateNode(nodeFile6, found) && found);
-    CPPUNIT_ASSERT(_testObj->cache().reloadCacheIfNeeded());
+    CPPUNIT_ASSERT(_testObj->cache().reloadIfNeeded());
 
     // id
     std::optional<NodeId> nodeIdRoot;
@@ -148,7 +148,7 @@ void TestSyncDbReadOnlyCache::testNodes() {
     CPPUNIT_ASSERT(_testObj->cache().id(ReplicaSide::Remote, SyncPath(""), nodeIdRoot, found) && found);
     CPPUNIT_ASSERT_EQUAL(nodeIdRoot.value(), _testObj->rootNode().nodeIdRemote().value());
 
-    CPPUNIT_ASSERT(_testObj->cache().reloadCacheIfNeeded());
+    CPPUNIT_ASSERT(_testObj->cache().reloadIfNeeded());
     std::optional<NodeId> nodeIdFile3;
     CPPUNIT_ASSERT(_testObj->cache().id(ReplicaSide::Local, SyncPath("Dir loc 1/File loc 1.3"), nodeIdFile3, found) && found);
     CPPUNIT_ASSERT_EQUAL(nodeIdFile3.value(), nodeFile3.nodeIdLocal().value());

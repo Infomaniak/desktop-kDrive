@@ -24,7 +24,7 @@ using namespace CppUnit;
 namespace KDC {
 class TestSyncDbReadOnlyCache : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestSyncDbReadOnlyCache);
-        CPPUNIT_TEST(testReloadCacheIfNeeded);
+        CPPUNIT_TEST(testreloadIfNeeded);
         CPPUNIT_TEST(testNodes);
         CPPUNIT_TEST_SUITE_END();
 
@@ -33,7 +33,7 @@ class TestSyncDbReadOnlyCache : public CppUnit::TestFixture, public TestBase {
         void tearDown() override;
 
     protected:
-        void testReloadCacheIfNeeded();
+        void testreloadIfNeeded();
         void testNodes();
     private:
         SyncDb *_testObj;

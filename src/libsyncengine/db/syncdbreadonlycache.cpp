@@ -70,11 +70,11 @@ bool SyncDbReadOnlyCache::reloadIfNeeded() {
     bool found = false;
     std::unordered_set<DbNode, DbNode::HashFunction> dbNodes;
     if (!_syncDb.dbNodes(dbNodes, _cachedRevision, found)) {
-        LOG_ERROR(Log::instance()->getLogger(), "SyncDbReadOnlyCache::reloadCacheIfNeeded: Error getting dbNodes from SyncDb");
+        LOG_ERROR(Log::instance()->getLogger(), "SyncDbReadOnlyCache::reloadIfNeeded: Error getting dbNodes from SyncDb");
         return false;
     }
     if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncDbReadOnlyCache::reloadCacheIfNeeded: SyncDb is empty.");
+        LOG_WARN(Log::instance()->getLogger(), "SyncDbReadOnlyCache::reloadIfNeeded: SyncDb is empty.");
         clear(); // Reset cachedRevision.
         return false;
     }
