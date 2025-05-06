@@ -1553,9 +1553,8 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
 }
 
 void ExecutorWorker::sendProgress() {
-    std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - _fileProgressTimer;
-    if (elapsed_seconds.count() > SEND_PROGRESS_DELAY) {
-        _fileProgressTimer = std::chrono::steady_clock::now();
+    if (_timer.elapsed().count() > SEND_PROGRESS_DELAY) {
+        _timer.restart();
 
         for (const auto &jobInfo: _ongoingJobs) {
             if (!_syncPal->setProgress(jobInfo.second->affectedFilePath(), jobInfo.second->getProgress())) {

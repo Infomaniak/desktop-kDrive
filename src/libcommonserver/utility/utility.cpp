@@ -511,6 +511,11 @@ bool Utility::isDescendantOrEqual(const SyncPath &potentialDescendant, const Syn
     return false;
 }
 
+bool Utility::isStrictDescendant(const SyncPath &potentialDescendant, const SyncPath &path) {
+    if (path == potentialDescendant) return false;
+    return isDescendantOrEqual(potentialDescendant, path);
+}
+
 bool Utility::moveItemToTrash(const SyncPath &itemPath) {
     return moveItemToTrash_private(itemPath);
 }
