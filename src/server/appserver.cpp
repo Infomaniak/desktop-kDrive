@@ -3613,7 +3613,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         LOG_WARN(_logger, msg.str());
         sentry::Handler::captureMessage(sentry::Level::Error, "Error in setSupportsVirtualFiles",
                                         msg.str());
-        return ExitCode::DataError;
+        return ExitCode::LogicError;
     }
 
     Sync sync;
