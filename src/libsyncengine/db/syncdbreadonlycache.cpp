@@ -20,7 +20,7 @@
 #include "syncdbreadonlycache.h"
 namespace KDC {
 
-bool SyncDbReadOnlyCache::isChacheUpToDate() const {
+bool SyncDbReadOnlyCache::isCacheUpToDate() const {
     if (_cachedRevision != _syncDb.revision()) {
         LOG_INFO(Log::instance()->getLogger(), "SyncDbReadOnlyCache: cache is not up to date, cached revision="
                                                        << _cachedRevision << ", current syncDb revision=" << _syncDb.revision());
@@ -65,7 +65,7 @@ void SyncDbReadOnlyCache::clear() {
 }
 
 bool SyncDbReadOnlyCache::reloadIfNeeded() {
-    if (isChacheUpToDate()) return true;
+    if (isCacheUpToDate()) return true;
     clear();
     bool found = false;
     std::unordered_set<DbNode, DbNode::HashFunction> dbNodes;

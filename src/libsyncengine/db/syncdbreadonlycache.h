@@ -56,7 +56,7 @@ class SyncDbReadOnlyCache {
         SyncDbRevision revision() const;
 
     private:
-        bool isChacheUpToDate() const;
+        bool isCacheUpToDate() const;
         DbNodeId getDbNodeIdFromNodeId(ReplicaSide side, const NodeId &nodeId, bool &found);
         const DbNode &getDbNodeFromDbNodeId(const DbNodeId &dbNodeId, bool &found);
         SyncDbRevision _cachedRevision = 0;

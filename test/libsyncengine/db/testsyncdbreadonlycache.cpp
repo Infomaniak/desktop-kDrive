@@ -51,7 +51,7 @@ void TestSyncDbReadOnlyCache::tearDown() {
     TestBase::stop();
 }
 
-void TestSyncDbReadOnlyCache::testreloadIfNeeded() {
+void TestSyncDbReadOnlyCache::testReloadIfNeeded() {
     // Insert node
     time_t tLoc = std::time(nullptr);
     time_t tDrive = std::time(nullptr);

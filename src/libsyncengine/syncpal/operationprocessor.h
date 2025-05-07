@@ -26,7 +26,7 @@ namespace KDC {
 class OperationProcessor : public ISyncWorker {
     public:
         OperationProcessor(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
-                           bool useSyncDbCahce = true);
+                           bool useSyncDbCache = true);
 
     protected:
         bool isPseudoConflict(std::shared_ptr<Node> node, std::shared_ptr<Node> correspondingNode);
