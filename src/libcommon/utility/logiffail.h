@@ -25,12 +25,17 @@
 #include <cassert>
 #include <log4cplus/loggingmacros.h>
 
+namespace KDC {
+struct LogIfFailSettings {
+        static inline bool enabled = true;
+};
+} // namespace KDC
 
 // Log failure message if 'cond' is false. Aborts execution in DEBUG only.
 #define LOG_IF_FAIL(...) KD_OVERLOAD_WITH_ARGS_SIZE(LOG_IF_FAIL, __VA_ARGS__)
 #define LOG_IF_FAIL_1(cond)                                                                                             \
     KD_COVERAGE_OFF                                                                                                     \
-    if (!(cond)) {                                                                                                      \
+    if (!(cond) && LogIfFailSettings::enabled) {                                                                        \
         LOG_FATAL(_logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__); \
         assert(cond);                                                                                                   \
     }                                                                                                                   \
@@ -38,7 +43,7 @@
 
 #define LOG_IF_FAIL_2(logger, cond)                                                                                    \
     KD_COVERAGE_OFF                                                                                                    \
-    if (!(cond)) {                                                                                                     \
+    if (!(cond) && LogIfFailSettings::enabled) {                                                                       \
         LOG_FATAL(logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__); \
         assert(cond);                                                                                                  \
     }                                                                                                                  \
@@ -48,7 +53,7 @@
 #define LOG_MSG_IF_FAIL(...) KD_OVERLOAD_WITH_ARGS_SIZE(LOG_MSG_IF_FAIL, __VA_ARGS__)
 #define LOG_MSG_IF_FAIL_2(cond, message)                                                                              \
     KD_COVERAGE_OFF                                                                                                   \
-    if (!(cond)) {                                                                                                    \
+    if (!(cond) && LogIfFailSettings::enabled) {                                                                      \
         LOG_FATAL(_logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__ \
                                                    << "with message: " << message);                                   \
         assert(cond);                                                                                                 \
@@ -57,7 +62,7 @@
 
 #define LOG_MSG_IF_FAIL_3(logger, cond, message)                                                                     \
     KD_COVERAGE_OFF                                                                                                  \
-    if (!(cond)) {                                                                                                   \
+    if (!(cond) && LogIfFailSettings::enabled) {                                                                     \
         LOG_FATAL(logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__ \
                                                   << "with message: " << message);                                   \
         assert(cond);                                                                                                \

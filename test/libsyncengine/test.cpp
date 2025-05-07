@@ -19,7 +19,6 @@
 #include "testincludes.h"
 #include "benchmark/benchmarkparalleljobs.h"
 #include "db/testsyncdb.h"
-#include "db/testsyncdbreadonlycache.h"
 #include "olddb/testoldsyncdb.h"
 #include "syncpal/testsyncpal.h"
 #include "syncpal/testsyncpalworker.h"
@@ -62,7 +61,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestNetworkJobs);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLogUploadJob);
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncDb);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncDbReadOnlyCache);
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalJobs);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestNetworkJobs);
