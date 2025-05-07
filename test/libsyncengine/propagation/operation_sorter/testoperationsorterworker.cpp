@@ -520,7 +520,15 @@ void TestOperationSorterWorker::testCheckAllMethods() {
     // ... but apply all sorter methods
     const TimerUtility timer;
     _syncPal->_operationsSorterWorker->_filter.filterOperations();
+    _syncPal->_operationsSorterWorker->fixDeleteBeforeMove();
     _syncPal->_operationsSorterWorker->fixMoveBeforeCreate();
+    _syncPal->_operationsSorterWorker->fixMoveBeforeDelete();
+    _syncPal->_operationsSorterWorker->fixCreateBeforeMove();
+    _syncPal->_operationsSorterWorker->fixDeleteBeforeCreate();
+    _syncPal->_operationsSorterWorker->fixMoveBeforeMoveOccupied();
+    _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
+    _syncPal->_operationsSorterWorker->fixEditBeforeMove();
+    _syncPal->_operationsSorterWorker->fixMoveBeforeMoveHierarchyFlip();
     (void) timer.elapsed("Operations sorted in");
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
@@ -534,7 +542,7 @@ void TestOperationSorterWorker::testDifferentEncodings() {
     nodeNfc->setName(testhelpers::makeNfcSyncName());
 
     // Move "ééé" to B/"ééé"
-    _testSituationGenerator.moveNode(ReplicaSide::Local, nodeNfc->id().value(), "b");
+    (void) _testSituationGenerator.moveNode(ReplicaSide::Local, nodeNfc->id().value(), "b");
     const auto moveOp = generateSyncOperation(OperationType::Move, nodeNfc);
 
     // Create "ééé" but NFD encoded
@@ -547,15 +555,7 @@ void TestOperationSorterWorker::testDifferentEncodings() {
 
     const TimerUtility timer;
     _syncPal->_operationsSorterWorker->_filter.filterOperations();
-    _syncPal->_operationsSorterWorker->fixDeleteBeforeMove();
     _syncPal->_operationsSorterWorker->fixMoveBeforeCreate();
-    _syncPal->_operationsSorterWorker->fixMoveBeforeDelete();
-    _syncPal->_operationsSorterWorker->fixCreateBeforeMove();
-    _syncPal->_operationsSorterWorker->fixDeleteBeforeCreate();
-    _syncPal->_operationsSorterWorker->fixMoveBeforeMoveOccupied();
-    _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
-    _syncPal->_operationsSorterWorker->fixEditBeforeMove();
-    _syncPal->_operationsSorterWorker->fixMoveBeforeMoveHierarchyFlip();
     (void) timer.elapsed("Operations sorted in");
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
