@@ -22,7 +22,8 @@
 namespace KDC {
 
 UploadJobReplyHandler::UploadJobReplyHandler(const SyncPath& absoluteFilePath, const SyncTime modtime) :
-    _absoluteFilePath(absoluteFilePath), _modtimeOut(modtime) {}
+    _absoluteFilePath(absoluteFilePath),
+    _modtimeOut(modtime) {}
 
 bool UploadJobReplyHandler::extractData(const Poco::JSON::Object::Ptr jsonRes) {
     if (!jsonRes) return false;
@@ -30,7 +31,7 @@ bool UploadJobReplyHandler::extractData(const Poco::JSON::Object::Ptr jsonRes) {
     Poco::JSON::Object::Ptr dataObj = jsonRes->getObject(dataKey);
     if (!dataObj) return false;
 
-    // For UploadSession, the info to extract are encapsulated inside a "file" JSON object.
+    // For UploadSession, the info to extract is encapsulated inside a "file" JSON object.
     if (const Poco::JSON::Object::Ptr fileObj = dataObj->getObject(fileKey); fileObj) {
         dataObj = fileObj;
     }
@@ -41,10 +42,13 @@ bool UploadJobReplyHandler::extractData(const Poco::JSON::Object::Ptr jsonRes) {
     if (_modtimeIn != _modtimeOut) {
         // The backend refused the modification time. To avoid further EDIT operations, we apply the backend's time on local file.
         bool exists = false;
-        (void) Utility::setFileDates(_absoluteFilePath, 0, _modtimeOut, false, exists);
-        LOG_INFO(Log::instance()->getLogger(),
-                 "Modification time refused " << _modtimeIn << " by the backend. The modification time has been updated to "
-                                              << _modtimeOut << " on local file.");
+        if (Utility::setFileDates(_absoluteFilePath, 0, _modtimeOut, false, exists)) {
+            LOG_INFO(Log::instance()->getLogger(),
+                     "Modification time " << _modtimeIn << " refused by the backend. The modification time has been updated to "
+                                          << _modtimeOut << " on local file.");
+        } else {
+            LOG_WARN(Log::instance()->getLogger(), "Failed to change modification time on local file.");
+        }
     }
     return true;
 }
