@@ -276,20 +276,20 @@ bool SyncDbReadOnlyCache::path(DbNodeId dbNodeId, SyncPath& localPath, SyncPath&
         return true;
     }
 
-    auto& DbNode = getDbNodeFromDbNodeId(dbNodeId, found);
+    auto& dbNode = getDbNodeFromDbNodeId(dbNodeId, found);
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(),
                  "SyncDbReadOnlyCache::path: dbNodeId " << dbNodeId << " not found in syncDbReadOnlyCache");
         return true;
     }
-    if (!DbNode.parentNodeId()) {
-        localPath = DbNode.nameLocal();
-        remotePath = DbNode.nameRemote();
+    if (!dbNode.parentNodeId()) {
+        localPath = dbNode.nameLocal();
+        remotePath = dbNode.nameRemote();
     } else {
-        if (!path(DbNode.parentNodeId().value(), localPath, remotePath, found, true)) return false;
+        if (!path(dbNode.parentNodeId().value(), localPath, remotePath, found, true)) return false;
         if (!found) return true;
-        localPath /= DbNode.nameLocal();
-        remotePath /= DbNode.nameRemote();
+        localPath /= dbNode.nameLocal();
+        remotePath /= dbNode.nameRemote();
     }
 
     // Only cache the path of the parents to avoid too much memory usage
