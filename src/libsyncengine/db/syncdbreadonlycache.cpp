@@ -268,10 +268,10 @@ bool SyncDbReadOnlyCache::path(DbNodeId dbNodeId, SyncPath& localPath, SyncPath&
 
     found = false;
     // Check if the path is already cached
-    const auto cahcedPathIt = _dbNodesPathCache.find(dbNodeId);
-    if (cahcedPathIt != _dbNodesPathCache.end()) {
-        localPath = cahcedPathIt->second.first;
-        remotePath = cahcedPathIt->second.second;
+    const auto cachedPathIt = _dbNodesPathCache.find(dbNodeId);
+    if (cachedPathIt != _dbNodesPathCache.end()) {
+        localPath = cachedPathIt->second.first;
+        remotePath = cachedPathIt->second.second;
         found = true;
         return true;
     }
