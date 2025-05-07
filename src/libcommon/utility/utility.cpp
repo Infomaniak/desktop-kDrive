@@ -661,7 +661,11 @@ bool CommonUtility::isSubDir(const SyncPath &path1, const SyncPath &path2) {
 }
 
 bool CommonUtility::isDiskRootFolder(const SyncPath &absolutePath) {
-    return absolutePath == absolutePath.root_path();
+    bool isRoot = absolutePath == absolutePath.root_path();
+#ifdef __APPLE__
+    isRoot |= absolutePath.parent_path() == "/Volumes";
+#endif
+    return isRoot;
 }
 
 const std::string CommonUtility::dbVersionNumber(const std::string &dbVersion) {

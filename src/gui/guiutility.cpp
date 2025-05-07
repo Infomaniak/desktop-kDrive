@@ -557,23 +557,25 @@ bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<
     const QString selectedFolderName = CommonUtility::getRelativePathFromHome(dirPath);
     const SyncPath directoryPath = QStr2Path(dirPath);
 
+    bool warn = false;
+    QString warningMsg;
     for (const auto &sync: syncInfoMap) {
         const QString syncFolderName = sync.second.name();
         const SyncPath syncLocalPath = QStr2Path(sync.second.localPath());
 
-        bool warn = false;
-        QString warningMsg;
         if (syncLocalPath == directoryPath) {
             warn = true;
             warningMsg = QCoreApplication::translate(
                                  "utility", "Folder <b>%1</b> cannot be selected because another sync is using the same folder.")
                                  .arg(selectedFolderName);
+            break;
         } else if (CommonUtility::isSubDir(directoryPath, syncLocalPath)) {
             warn = true;
             warningMsg = QCoreApplication::translate(
                                  "utility",
                                  "Folder <b>%1</b> cannot be selected because it contains the synchronized folder <b>%2</b>.")
                                  .arg(selectedFolderName, syncFolderName);
+            break;
         } else if (CommonUtility::isSubDir(syncLocalPath, directoryPath)) {
             warn = true;
             warningMsg =
@@ -581,13 +583,20 @@ bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<
                             "utility",
                             "Folder <b>%1</b> cannot be selected because it is contained in the synchronized folder <b>%2</b>.")
                             .arg(selectedFolderName, syncFolderName);
+            break;
         }
+    }
 
-        if (warn) {
-            CustomMessageBox msgBox(QMessageBox::Warning, warningMsg, QMessageBox::Ok, parent);
-            msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(parent));
-            return false;
-        }
+    if (CommonUtility::isDiskRootFolder(directoryPath)) {
+        warn = true;
+        warningMsg = QCoreApplication::translate("utility", "Folder <b>%1</b> cannot be selected because it is a disk root</b>.")
+                             .arg(selectedFolderName);
+    }
+
+    if (warn) {
+        CustomMessageBox msgBox(QMessageBox::Warning, warningMsg, QMessageBox::Ok, parent);
+        msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(parent));
+        return false;
     }
 
     return true;
