@@ -892,10 +892,10 @@ bool SyncDb::node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &
     DbNodeId dbNodeId;
     LOG_IF_FAIL(queryInt64Value(id, SELECT_NODE_BY_REPLICAID_DBID, dbNodeId));
 
-    bool ok;
+    bool isNull = false;
     std::optional<DbNodeId> parentNodeId;
-    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_REPLICAID_PARENTID, ok));
-    if (ok) {
+    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_REPLICAID_PARENTID, isNull));
+    if (isNull) {
         parentNodeId = std::nullopt;
     } else {
         DbNodeId dbParentNodeId;
@@ -909,8 +909,8 @@ bool SyncDb::node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &
     LOG_IF_FAIL(querySyncNameValue(id, SELECT_NODE_BY_REPLICAID_NAMEDRIVE, nameDrive));
 
     std::optional<SyncTime> created;
-    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_REPLICAID_CREATED, ok));
-    if (ok) {
+    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_REPLICAID_CREATED, isNull));
+    if (isNull) {
         created = std::nullopt;
     } else {
         SyncTime timeTmp;
@@ -919,8 +919,8 @@ bool SyncDb::node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &
     }
 
     std::optional<SyncTime> lastModified;
-    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_REPLICAID_LASTMOD, ok));
-    if (ok) {
+    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_REPLICAID_LASTMOD, isNull));
+    if (isNull) {
         lastModified = std::nullopt;
     } else {
         SyncTime timeTmp;
@@ -936,8 +936,8 @@ bool SyncDb::node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &
     LOG_IF_FAIL(queryInt64Value(id, SELECT_NODE_BY_REPLICAID_SIZE, size));
 
     std::optional<std::string> checksum;
-    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_REPLICAID_CHECKSUM, ok));
-    if (ok) {
+    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_REPLICAID_CHECKSUM, isNull));
+    if (isNull) {
         checksum = std::nullopt;
     } else {
         std::string checksumTmp;
@@ -1097,10 +1097,10 @@ bool SyncDb::node(DbNodeId dbNodeId, DbNode &dbNode, bool &found) {
         return true;
     }
 
-    bool ok;
+    bool isNull = false;
     std::optional<DbNodeId> parentNodeId;
-    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_NODEID_PARENTID, ok));
-    if (ok) {
+    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_NODEID_PARENTID, isNull));
+    if (isNull) {
         parentNodeId = std::nullopt;
     } else {
         DbNodeId dbParentNodeId;
@@ -1121,8 +1121,8 @@ bool SyncDb::node(DbNodeId dbNodeId, DbNode &dbNode, bool &found) {
     LOG_IF_FAIL(queryStringValue(id, SELECT_NODE_BY_NODEID_IDDRIVE, nodeIdDrive));
 
     std::optional<SyncTime> created;
-    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_NODEID_CREATED, ok));
-    if (ok) {
+    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_NODEID_CREATED, isNull));
+    if (isNull) {
         created = std::nullopt;
     } else {
         SyncTime timeTmp;
@@ -1131,8 +1131,8 @@ bool SyncDb::node(DbNodeId dbNodeId, DbNode &dbNode, bool &found) {
     }
 
     std::optional<SyncTime> lastModifiedLocal;
-    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_NODEID_LASTMODLOCAL, ok));
-    if (ok) {
+    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_NODEID_LASTMODLOCAL, isNull));
+    if (isNull) {
         lastModifiedLocal = std::nullopt;
     } else {
         SyncTime timeTmp;
@@ -1141,8 +1141,8 @@ bool SyncDb::node(DbNodeId dbNodeId, DbNode &dbNode, bool &found) {
     }
 
     std::optional<SyncTime> lastModifiedDrive;
-    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_NODEID_LASTMODDRIVE, ok));
-    if (ok) {
+    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_NODEID_LASTMODDRIVE, isNull));
+    if (isNull) {
         lastModifiedDrive = std::nullopt;
     } else {
         SyncTime timeTmp;
@@ -1158,8 +1158,8 @@ bool SyncDb::node(DbNodeId dbNodeId, DbNode &dbNode, bool &found) {
     LOG_IF_FAIL(queryInt64Value(id, SELECT_NODE_BY_NODEID_SIZE, size));
 
     std::optional<std::string> checksum;
-    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_NODEID_CHECKSUM, ok));
-    if (ok) {
+    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_NODEID_CHECKSUM, isNull));
+    if (isNull) {
         checksum = std::nullopt;
     } else {
         std::string checksumTmp;
@@ -1295,9 +1295,9 @@ bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &n
             }
             LOG_IF_FAIL(queryInt64Value(queryId, 0, nodeDbId));
         }
-        bool ok;
-        LOG_IF_FAIL(queryIsNullValue(queryId, 1, ok));
-        if (ok) {
+        bool isNull = false;
+        LOG_IF_FAIL(queryIsNullValue(queryId, 1, isNull));
+        if (isNull) {
             nodeId = std::nullopt;
         } else {
             NodeId idTmp;
@@ -1307,9 +1307,9 @@ bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &n
 
         LOG_IF_FAIL(queryResetAndClearBindings(queryId));
     } else {
-        bool ok;
-        LOG_IF_FAIL(queryIsNullValue(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, (side == ReplicaSide::Local ? 3 : 4), ok));
-        if (ok) {
+        bool isNull = false;
+        LOG_IF_FAIL(queryIsNullValue(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, (side == ReplicaSide::Local ? 3 : 4), isNull));
+        if (isNull) {
             nodeId = std::nullopt;
         } else {
             NodeId idTmp;
@@ -1384,9 +1384,9 @@ bool SyncDb::created(ReplicaSide side, const NodeId &nodeId, std::optional<SyncT
     if (!found) {
         return true;
     }
-    bool ok;
-    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_REPLICAID_CREATED, ok));
-    if (ok) {
+    bool isNull = false;
+    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_REPLICAID_CREATED, isNull));
+    if (isNull) {
         time = std::nullopt;
     } else {
         SyncTime timeTmp;
@@ -1414,9 +1414,9 @@ bool SyncDb::lastModified(ReplicaSide side, const NodeId &nodeId, std::optional<
     if (!found) {
         return true;
     }
-    bool ok;
-    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_REPLICAID_LASTMOD, ok));
-    if (ok) {
+    bool isNull = false;
+    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_REPLICAID_LASTMOD, isNull));
+    if (isNull) {
         time = std::nullopt;
     } else {
         SyncTime timeTmp;
@@ -1546,9 +1546,9 @@ bool SyncDb::checksum(ReplicaSide side, const NodeId &nodeId, std::optional<std:
     if (!found) {
         return true;
     }
-    bool ok;
-    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_REPLICAID_CHECKSUM, ok));
-    if (ok) {
+    bool isNull = false;
+    LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_REPLICAID_CHECKSUM, isNull));
+    if (isNull) {
         checksum = std::nullopt;
     } else {
         std::string checksumTmp;
@@ -2019,10 +2019,10 @@ bool SyncDb::selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyCol
         DbNodeId dbNodeId;
         LOG_IF_FAIL(queryInt64Value(requestId, 0, dbNodeId));
 
-        bool ok;
+        bool isNull = false;
         std::optional<DbNodeId> parentNodeId;
-        LOG_IF_FAIL(queryIsNullValue(requestId, 1, ok));
-        if (ok) {
+        LOG_IF_FAIL(queryIsNullValue(requestId, 1, isNull));
+        if (isNull) {
             parentNodeId = std::nullopt;
         } else {
             DbNodeId dbParentNodeId;
@@ -2036,8 +2036,8 @@ bool SyncDb::selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyCol
         LOG_IF_FAIL(querySyncNameValue(requestId, 3, nameDrive));
 
         std::optional<NodeId> nodeIdLocal;
-        LOG_IF_FAIL(queryIsNullValue(requestId, 4, ok));
-        if (ok) {
+        LOG_IF_FAIL(queryIsNullValue(requestId, 4, isNull));
+        if (isNull) {
             nodeIdLocal = std::nullopt;
         } else {
             NodeId nodeIdLocalTmp;
@@ -2046,8 +2046,8 @@ bool SyncDb::selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyCol
         }
 
         std::optional<NodeId> nodeIdDrive;
-        LOG_IF_FAIL(queryIsNullValue(requestId, 5, ok));
-        if (ok) {
+        LOG_IF_FAIL(queryIsNullValue(requestId, 5, isNull));
+        if (isNull) {
             nodeIdDrive = std::nullopt;
         } else {
             NodeId nodeIdDriveTmp;
@@ -2056,8 +2056,8 @@ bool SyncDb::selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyCol
         }
 
         std::optional<SyncTime> created;
-        LOG_IF_FAIL(queryIsNullValue(requestId, 6, ok));
-        if (ok) {
+        LOG_IF_FAIL(queryIsNullValue(requestId, 6, isNull));
+        if (isNull) {
             created = std::nullopt;
         } else {
             SyncTime timeTmp;
@@ -2066,8 +2066,8 @@ bool SyncDb::selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyCol
         }
 
         std::optional<SyncTime> lastModifiedLocal;
-        LOG_IF_FAIL(queryIsNullValue(requestId, 7, ok));
-        if (ok) {
+        LOG_IF_FAIL(queryIsNullValue(requestId, 7, isNull));
+        if (isNull) {
             lastModifiedLocal = std::nullopt;
         } else {
             SyncTime timeTmp;
@@ -2076,8 +2076,8 @@ bool SyncDb::selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyCol
         }
 
         std::optional<SyncTime> lastModifiedDrive;
-        LOG_IF_FAIL(queryIsNullValue(requestId, 8, ok));
-        if (ok) {
+        LOG_IF_FAIL(queryIsNullValue(requestId, 8, isNull));
+        if (isNull) {
             lastModifiedDrive = std::nullopt;
         } else {
             SyncTime timeTmp;
@@ -2093,8 +2093,8 @@ bool SyncDb::selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyCol
         LOG_IF_FAIL(queryInt64Value(requestId, 10, size));
 
         std::optional<std::string> checksum;
-        LOG_IF_FAIL(queryIsNullValue(requestId, 11, ok));
-        if (ok) {
+        LOG_IF_FAIL(queryIsNullValue(requestId, 11, isNull));
+        if (isNull) {
             checksum = std::nullopt;
         } else {
             std::string checksumTmp;
@@ -2250,10 +2250,10 @@ bool SyncDb::dbNodes(std::unordered_set<DbNode, DbNode::HashFunction> &dbNodes, 
         DbNodeId dbNodeId = 0;
         LOG_IF_FAIL(queryInt64Value(SELECT_ALL_NODES_REQUEST_ID, 0, dbNodeId));
 
-        bool ok = false;
+        bool isNull = false;
         std::optional<DbNodeId> parentNodeId;
-        LOG_IF_FAIL(queryIsNullValue(SELECT_ALL_NODES_REQUEST_ID, 1, ok));
-        if (ok) {
+        LOG_IF_FAIL(queryIsNullValue(SELECT_ALL_NODES_REQUEST_ID, 1, isNull));
+        if (isNull) {
             parentNodeId = std::nullopt;
         } else {
             DbNodeId dbParentNodeId = 0;
@@ -2267,8 +2267,8 @@ bool SyncDb::dbNodes(std::unordered_set<DbNode, DbNode::HashFunction> &dbNodes, 
         LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_NODES_REQUEST_ID, 3, nameDrive));
 
         std::optional<NodeId> nodeIdLocal;
-        LOG_IF_FAIL(queryIsNullValue(SELECT_ALL_NODES_REQUEST_ID, 4, ok));
-        if (ok) {
+        LOG_IF_FAIL(queryIsNullValue(SELECT_ALL_NODES_REQUEST_ID, 4, isNull));
+        if (isNull) {
             nodeIdLocal = std::nullopt;
         } else {
             NodeId nodeIdLocalTmp;
@@ -2277,8 +2277,8 @@ bool SyncDb::dbNodes(std::unordered_set<DbNode, DbNode::HashFunction> &dbNodes, 
         }
 
         std::optional<NodeId> nodeIdDrive;
-        LOG_IF_FAIL(queryIsNullValue(SELECT_ALL_NODES_REQUEST_ID, 5, ok));
-        if (ok) {
+        LOG_IF_FAIL(queryIsNullValue(SELECT_ALL_NODES_REQUEST_ID, 5, isNull));
+        if (isNull) {
             nodeIdDrive = std::nullopt;
         } else {
             NodeId nodeIdDriveTmp;
@@ -2287,8 +2287,8 @@ bool SyncDb::dbNodes(std::unordered_set<DbNode, DbNode::HashFunction> &dbNodes, 
         }
 
         std::optional<SyncTime> created;
-        LOG_IF_FAIL(queryIsNullValue(SELECT_ALL_NODES_REQUEST_ID, 6, ok));
-        if (ok) {
+        LOG_IF_FAIL(queryIsNullValue(SELECT_ALL_NODES_REQUEST_ID, 6, isNull));
+        if (isNull) {
             created = std::nullopt;
         } else {
             SyncTime timeTmp = 0;
@@ -2297,8 +2297,8 @@ bool SyncDb::dbNodes(std::unordered_set<DbNode, DbNode::HashFunction> &dbNodes, 
         }
 
         std::optional<SyncTime> lastModifiedLocal;
-        LOG_IF_FAIL(queryIsNullValue(SELECT_ALL_NODES_REQUEST_ID, 7, ok));
-        if (ok) {
+        LOG_IF_FAIL(queryIsNullValue(SELECT_ALL_NODES_REQUEST_ID, 7, isNull));
+        if (isNull) {
             lastModifiedLocal = std::nullopt;
         } else {
             SyncTime timeTmp = 0;
@@ -2307,8 +2307,8 @@ bool SyncDb::dbNodes(std::unordered_set<DbNode, DbNode::HashFunction> &dbNodes, 
         }
 
         std::optional<SyncTime> lastModifiedDrive;
-        LOG_IF_FAIL(queryIsNullValue(SELECT_ALL_NODES_REQUEST_ID, 8, ok));
-        if (ok) {
+        LOG_IF_FAIL(queryIsNullValue(SELECT_ALL_NODES_REQUEST_ID, 8, isNull));
+        if (isNull) {
             lastModifiedDrive = std::nullopt;
         } else {
             SyncTime timeTmp = 0;
@@ -2324,8 +2324,8 @@ bool SyncDb::dbNodes(std::unordered_set<DbNode, DbNode::HashFunction> &dbNodes, 
         LOG_IF_FAIL(queryInt64Value(SELECT_ALL_NODES_REQUEST_ID, 10, size));
 
         std::optional<std::string> checksum;
-        LOG_IF_FAIL(queryIsNullValue(SELECT_ALL_NODES_REQUEST_ID, 11, ok));
-        if (ok) {
+        LOG_IF_FAIL(queryIsNullValue(SELECT_ALL_NODES_REQUEST_ID, 11, isNull));
+        if (isNull) {
             checksum = std::nullopt;
         } else {
             std::string checksumTmp;
