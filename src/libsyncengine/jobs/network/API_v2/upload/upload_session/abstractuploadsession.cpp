@@ -46,7 +46,7 @@ AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const Syn
     }
 
     if (ioError == IoError::NoSuchFileOrDirectory) {
-        const std::wstring exceptionMessage = L"File doesn't exist: " + Utility::formatSyncPath(_filePath);
+        const std::wstring exceptionMessage = L"File does not exist: " + Utility::formatSyncPath(_filePath);
         LOGW_WARN(_logger, exceptionMessage.c_str());
         throw std::runtime_error(Utility::ws2s(exceptionMessage).c_str());
     }
@@ -336,8 +336,8 @@ bool AbstractUploadSession::sendChunks() {
                 const auto &[_, inserted] = _ongoingChunkJobs.try_emplace(chunkJob->jobId(), chunkJob);
                 if (!inserted) {
                     LOG_ERROR(_logger, "Session " << _sessionToken.c_str() << ", job " << chunkJob->jobId()
-                                                  << " not inserted in ongoing job list because its ID already exist!");
-                    sentry::Handler::captureMessage(sentry::Level::Warning, "Upload chunk error", "Job ID already exist");
+                                                  << " not inserted in ongoing job list because its ID already exists.");
+                    sentry::Handler::captureMessage(sentry::Level::Warning, "Upload chunk error", "Job ID already exists");
                     jobCreationError = true;
                     break;
                 }
