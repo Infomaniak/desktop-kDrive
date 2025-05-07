@@ -935,14 +935,14 @@ bool SyncDb::node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &
     int64_t size;
     LOG_IF_FAIL(queryInt64Value(id, SELECT_NODE_BY_REPLICAID_SIZE, size));
 
-    std::optional<std::string> cs;
+    std::optional<std::string> checksum;
     LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_REPLICAID_CHECKSUM, ok));
     if (ok) {
-        cs = std::nullopt;
+        checksum = std::nullopt;
     } else {
-        std::string csTmp;
-        LOG_IF_FAIL(queryStringValue(id, SELECT_NODE_BY_REPLICAID_CHECKSUM, csTmp));
-        cs = std::make_optional(csTmp);
+        std::string checksumTmp;
+        LOG_IF_FAIL(queryStringValue(id, SELECT_NODE_BY_REPLICAID_CHECKSUM, checksumTmp));
+        checksum = std::make_optional(checksumTmp);
     }
 
     LOG_IF_FAIL(queryIntValue(id, SELECT_NODE_BY_REPLICAID_STATUS, intResult));
@@ -965,7 +965,7 @@ bool SyncDb::node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &
     } else {
         dbNode.setLastModifiedRemote(lastModified);
     }
-    dbNode.setChecksum(cs);
+    dbNode.setChecksum(checksum);
     dbNode.setStatus(status);
     dbNode.setSyncing(syncing);
 
@@ -1157,14 +1157,14 @@ bool SyncDb::node(DbNodeId dbNodeId, DbNode &dbNode, bool &found) {
     int64_t size;
     LOG_IF_FAIL(queryInt64Value(id, SELECT_NODE_BY_NODEID_SIZE, size));
 
-    std::optional<std::string> cs;
+    std::optional<std::string> checksum;
     LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_NODEID_CHECKSUM, ok));
     if (ok) {
-        cs = std::nullopt;
+        checksum = std::nullopt;
     } else {
-        std::string csTmp;
-        LOG_IF_FAIL(queryStringValue(id, SELECT_NODE_BY_NODEID_CHECKSUM, csTmp));
-        cs = std::make_optional(csTmp);
+        std::string checksumTmp;
+        LOG_IF_FAIL(queryStringValue(id, SELECT_NODE_BY_NODEID_CHECKSUM, checksumTmp));
+        checksum = std::make_optional(checksumTmp);
     }
 
     LOG_IF_FAIL(queryIntValue(id, SELECT_NODE_BY_NODEID_STATUS, intResult));
@@ -1186,7 +1186,7 @@ bool SyncDb::node(DbNodeId dbNodeId, DbNode &dbNode, bool &found) {
     dbNode.setLastModifiedRemote(lastModifiedDrive);
     dbNode.setType(type);
     dbNode.setSize(size);
-    dbNode.setChecksum(cs);
+    dbNode.setChecksum(checksum);
     dbNode.setStatus(status);
     dbNode.setSyncing(syncing);
 
@@ -1532,7 +1532,7 @@ bool SyncDb::name(ReplicaSide side, const NodeId &nodeId, SyncName &name, bool &
 }
 
 // Returns the checksum of the object with ID nodeId
-bool SyncDb::checksum(ReplicaSide side, const NodeId &nodeId, std::optional<std::string> &cs, bool &found) {
+bool SyncDb::checksum(ReplicaSide side, const NodeId &nodeId, std::optional<std::string> &checksum, bool &found) {
     const std::scoped_lock lock(_mutex);
 
     std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
@@ -1549,11 +1549,11 @@ bool SyncDb::checksum(ReplicaSide side, const NodeId &nodeId, std::optional<std:
     bool ok;
     LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_REPLICAID_CHECKSUM, ok));
     if (ok) {
-        cs = std::nullopt;
+        checksum = std::nullopt;
     } else {
-        std::string csTmp;
-        LOG_IF_FAIL(queryStringValue(id, SELECT_NODE_BY_REPLICAID_CHECKSUM, csTmp));
-        cs = std::make_optional(csTmp);
+        std::string checksumTmp;
+        LOG_IF_FAIL(queryStringValue(id, SELECT_NODE_BY_REPLICAID_CHECKSUM, checksumTmp));
+        checksum = std::make_optional(checksumTmp);
     }
     LOG_IF_FAIL(queryResetAndClearBindings(id));
 
@@ -2092,14 +2092,14 @@ bool SyncDb::selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyCol
         int64_t size;
         LOG_IF_FAIL(queryInt64Value(requestId, 10, size));
 
-        std::optional<std::string> cs;
+        std::optional<std::string> checksum;
         LOG_IF_FAIL(queryIsNullValue(requestId, 11, ok));
         if (ok) {
-            cs = std::nullopt;
+            checksum = std::nullopt;
         } else {
-            std::string csTmp;
-            LOG_IF_FAIL(queryStringValue(requestId, 9, csTmp));
-            cs = std::make_optional(csTmp);
+            std::string checksumTmp;
+            LOG_IF_FAIL(queryStringValue(requestId, 9, checksumTmp));
+            checksum = std::make_optional(checksumTmp);
         }
 
         LOG_IF_FAIL(queryIntValue(requestId, 10, intResult));
@@ -2120,7 +2120,7 @@ bool SyncDb::selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyCol
         dbNode.setSize(size);
         dbNode.setLastModifiedLocal(lastModifiedLocal);
         dbNode.setLastModifiedRemote(lastModifiedDrive);
-        dbNode.setChecksum(cs);
+        dbNode.setChecksum(checksum);
         dbNode.setStatus(status);
         dbNode.setSyncing(syncing);
 
@@ -2323,14 +2323,14 @@ bool SyncDb::dbNodes(std::unordered_set<DbNode, DbNode::HashFunction> &dbNodes, 
         int64_t size = 0;
         LOG_IF_FAIL(queryInt64Value(SELECT_ALL_NODES_REQUEST_ID, 10, size));
 
-        std::optional<std::string> cs;
+        std::optional<std::string> checksum;
         LOG_IF_FAIL(queryIsNullValue(SELECT_ALL_NODES_REQUEST_ID, 11, ok));
         if (ok) {
-            cs = std::nullopt;
+            checksum = std::nullopt;
         } else {
-            std::string csTmp;
-            LOG_IF_FAIL(queryStringValue(SELECT_ALL_NODES_REQUEST_ID, 11, csTmp));
-            cs = std::make_optional(csTmp);
+            std::string checksumTmp;
+            LOG_IF_FAIL(queryStringValue(SELECT_ALL_NODES_REQUEST_ID, 11, checksumTmp));
+            checksum = std::make_optional(checksumTmp);
         }
 
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_NODES_REQUEST_ID, 12, intResult));
@@ -2339,7 +2339,7 @@ bool SyncDb::dbNodes(std::unordered_set<DbNode, DbNode::HashFunction> &dbNodes, 
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_NODES_REQUEST_ID, 13, intResult));
         bool syncing = static_cast<bool>(intResult);
         dbNodes.emplace(dbNodeId, parentNodeId, nameLocal, nameDrive, nodeIdLocal, nodeIdDrive, created, lastModifiedLocal,
-                        lastModifiedDrive, type, size, cs, status, syncing);
+                        lastModifiedDrive, type, size, checksum, status, syncing);
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID));
     revision = _revision;
