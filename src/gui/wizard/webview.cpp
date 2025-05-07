@@ -17,6 +17,8 @@
  */
 
 #include "webview.h"
+
+#include "MatomoClient.h"
 #include "../parameterscache.h"
 #include "ui_webview.h"
 #include "libcommon/utility/utility.h"
@@ -127,6 +129,20 @@ void WebView::loadStarted() {
 void WebView::loadFinished(bool ok) {
     qCInfo(lcWizardWebiew()) << ok;
     _ui->progressBar->setVisible(false);
+
+    if (ok) { // Send Matomo visitPage
+        const QString host = _webview->url().host();
+
+        if (host.contains("login.infomaniak.com", Qt::CaseSensitive)) {                          // Login Webview
+            MatomoClient::sendVisit(MatomoNameField::VW_LoginPage);
+#ifdef Q_OS_WIN
+        } else if (host.contains(QUrl(APPLICATION_STORAGE_URL).host(), Qt::CaseSensitive)) {     // Release Notes Webview (only on windows, see 'src/gui/updater/updatedialog.cpp')
+            MatomoClient::sendVisit(Matomo_NameField::WV_ReleaseNotes);
+#endif
+        } else {                                                                                 // Other Webview, shouldn't happen, there is no other Qt webview in the codebase.
+            MatomoClient::sendVisit(MatomoNameField::Unknown);
+        }
+    }
 }
 
 void WebView::renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus terminationStatus, int exitCode) {
