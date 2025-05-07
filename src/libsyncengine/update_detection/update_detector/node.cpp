@@ -82,6 +82,7 @@ void Node::setName(const SyncName &name) {
     _name = name;
     _normalizedName.clear();
 }
+
 bool Node::setParentNode(const std::shared_ptr<Node> &parentNode) {
     if (!parentNode) return true;
 
@@ -252,14 +253,46 @@ bool Node::MoveOriginInfos::isValid() const {
     return _isValid;
 }
 
+Node::MoveOriginInfos::MoveOriginInfos(const SyncPath &path, const NodeId &parentNodeId) :
+    _isValid(true),
+    _path(path),
+    _parentNodeId(parentNodeId) {
+    if (!Utility::normalizedSyncPath(_path, _normalizedPath)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(_path));
+        _normalizedPath = _path;
+    }
+}
+
+Node::MoveOriginInfos &Node::MoveOriginInfos::operator=(const MoveOriginInfos &newMoveOriginInfos) {
+    LOG_IF_FAIL(Log::instance()->getLogger(), newMoveOriginInfos.isValid());
+    _isValid = newMoveOriginInfos.isValid();
+    _path = newMoveOriginInfos.path();
+    _normalizedPath = newMoveOriginInfos.normalizedPath();
+    _parentNodeId = newMoveOriginInfos.parentNodeId();
+    return *this;
+}
+
 const SyncPath &Node::MoveOriginInfos::path() const {
     LOG_IF_FAIL(Log::instance()->getLogger(), isValid());
     return _path;
 }
 
+const SyncPath &Node::MoveOriginInfos::normalizedPath() const {
+    LOG_IF_FAIL(Log::instance()->getLogger(), isValid());
+    return _normalizedPath;
+}
+
 const NodeId &Node::MoveOriginInfos::parentNodeId() const {
     LOG_IF_FAIL(Log::instance()->getLogger(), isValid());
     return _parentNodeId;
+
+}
+
+void Node::MoveOriginInfos::clear() {
+    _isValid = false;
+    _path = defaultInvalidPath;
+    _normalizedPath = defaultInvalidPath;
+    _parentNodeId = defaultInvalidNodeId;
 }
 
 } // namespace KDC
