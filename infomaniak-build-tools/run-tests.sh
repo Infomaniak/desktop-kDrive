@@ -26,10 +26,6 @@ YELLOW='\033[0;33m'
 NC='\033[0m'
 
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/lib
-export DYLD_PRINT_BINDINGS=1
-export DYLD_PRINT_LIBRARIES=1
-export DYLD_PREBIND_DEBUG=1
-export DYLD_PRINT_INITIALIZERS=1
 
 testers=$(find . -type f -name "kDrive_test_*")
 errors=0
