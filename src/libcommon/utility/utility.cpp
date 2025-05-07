@@ -660,6 +660,10 @@ bool CommonUtility::isSubDir(const SyncPath &path1, const SyncPath &path2) {
     return (it1 == it1End);
 }
 
+bool CommonUtility::isDiskRootFolder(const SyncPath &absolutePath) {
+    return absolutePath == absolutePath.root_path();
+}
+
 const std::string CommonUtility::dbVersionNumber(const std::string &dbVersion) {
 #if defined(NDEBUG)
     // Release mode
