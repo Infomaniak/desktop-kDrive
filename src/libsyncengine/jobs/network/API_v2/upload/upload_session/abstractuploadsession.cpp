@@ -25,6 +25,7 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "utility/jsonparserutility.h"
+#include "utility/timerutility.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -74,7 +75,7 @@ void AbstractUploadSession::runJob() {
                                                         << L" with " << _nbParallelThread << L" threads");
     }
 
-    auto start = std::chrono::steady_clock::now();
+    const TimerUtility timer;
 
     assert(_uploadSessionType != UploadSessionType::Unknown);
 
@@ -111,10 +112,8 @@ void AbstractUploadSession::runJob() {
         }
     }
 
-    auto end = std::chrono::steady_clock::now();
-    std::chrono::duration<double> elapsed_seconds = end - start;
     LOGW_DEBUG(_logger, L"Upload session job " << jobId() << (isAborted() ? L" aborted after " : L" finished after ")
-                                               << elapsed_seconds.count() << L"s");
+                                               << timer.elapsed().count() << L"s");
 }
 
 void AbstractUploadSession::uploadChunkCallback(const UniqueId jobId) {
