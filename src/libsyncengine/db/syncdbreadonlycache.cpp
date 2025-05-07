@@ -286,7 +286,7 @@ bool SyncDbReadOnlyCache::path(DbNodeId dbNodeId, SyncPath& localPath, SyncPath&
         localPath = DbNode.nameLocal();
         remotePath = DbNode.nameRemote();
     } else {
-        if (!path(DbNode.parentNodeId().value(), localPath, remotePath, found, true)) return true;
+        if (!path(DbNode.parentNodeId().value(), localPath, remotePath, found, true)) return false;
         if (!found) return true;
         localPath /= DbNode.nameLocal();
         remotePath /= DbNode.nameRemote();
