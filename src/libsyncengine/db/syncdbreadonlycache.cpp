@@ -196,7 +196,7 @@ bool SyncDbReadOnlyCache::node(DbNodeId dbNodeId, DbNode& dbNode, bool& found) {
 bool SyncDbReadOnlyCache::node(ReplicaSide side, const NodeId& nodeId, DbNode& dbNode, bool& found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
-    if (_cachedRevision == 0) return _syncDb.node(side, nodeId, dbNode, found); // Fallback to a call in db.k
+    if (_cachedRevision == 0) return _syncDb.node(side, nodeId, dbNode, found); // Fallback to a call in db.
 
     found = false;
     DbNodeId dbNodeId = getDbNodeIdFromNodeId(side, nodeId, found);
