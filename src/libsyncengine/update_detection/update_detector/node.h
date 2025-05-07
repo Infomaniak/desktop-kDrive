@@ -36,7 +36,9 @@ class Node {
                 MoveOriginInfos() = default;
                 MoveOriginInfos(const MoveOriginInfos &) = default;
                 MoveOriginInfos(const SyncPath &path, const NodeId &parentNodeId) :
-                    _isValid(true), _path(path), _parentNodeId(parentNodeId) {}
+                    _isValid(true),
+                    _path(path),
+                    _parentNodeId(parentNodeId) {}
 
                 MoveOriginInfos &operator=(const MoveOriginInfos &newMoveOriginInfos) {
                     LOG_IF_FAIL(Log::instance()->getLogger(), newMoveOriginInfos.isValid());
@@ -91,6 +93,7 @@ class Node {
         inline std::optional<DbNodeId> idb() const { return _idb; }
         inline ReplicaSide side() const { return _side; }
         inline const SyncName &name() const { return _name; }
+        const SyncName &normalizedName();
         inline NodeType type() const { return _type; }
         inline InconsistencyType inconsistencyType() const { return _inconsistencyType; }
         inline OperationType changeEvents() const { return _changeEvents; }
@@ -108,7 +111,7 @@ class Node {
         }
 
         inline void setIdb(const std::optional<DbNodeId> &idb) { _idb = idb; }
-        void setName(const SyncName &name) { _name = name; }
+        void setName(const SyncName &name);
         inline void setInconsistencyType(InconsistencyType newInconsistencyType) { _inconsistencyType = newInconsistencyType; }
         inline void addInconsistencyType(InconsistencyType newInconsistencyType) { _inconsistencyType |= newInconsistencyType; }
         inline void setCreatedAt(const std::optional<SyncTime> &createdAt) { _createdAt = createdAt; }
@@ -126,7 +129,8 @@ class Node {
         size_t deleteChildren(std::shared_ptr<Node> child);
         size_t deleteChildren(const NodeId &childId);
         /**
-         * @brief Retrieve the child node based on its name, which is assumed to be normalized. Filter out the nodes with change events of type `except`.
+         * @brief Retrieve the child node based on its name, which is assumed to be normalized. Filter out the nodes with change
+         * events of type `except`.
          * @param normalizedName Make sure to provide a normalized name.
          * @param except The event type to filter out.
          * @return A pointer to the node if found, `nullptr` otherwise.
@@ -163,7 +167,8 @@ class Node {
 
         std::optional<DbNodeId> _idb = std::nullopt;
         ReplicaSide _side = ReplicaSide::Unknown;
-        SyncName _name; // This name is NFC-normalized by constructors and setters.
+        SyncName _name;
+        SyncName _normalizedName;
         InconsistencyType _inconsistencyType = InconsistencyType::None;
         NodeType _type = NodeType::Unknown;
         OperationType _changeEvents = OperationType::None;

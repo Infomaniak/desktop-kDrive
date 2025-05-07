@@ -25,6 +25,7 @@
 #include "requests/parameterscache.h"
 #include "requests/exclusiontemplatecache.h"
 #include "snapshot/snapshotitem.h"
+#include "utility/timerutility.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -37,8 +38,7 @@ static const int waitForUpdateDelay = 1000; // 1sec
 
 LocalFileSystemObserverWorker::LocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                              const std::string &shortName) :
-    FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Local),
-    _rootFolder(syncPal->localPath()) {}
+    FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Local), _rootFolder(syncPal->localPath()) {}
 
 LocalFileSystemObserverWorker::~LocalFileSystemObserverWorker() {
     LOG_SYNCPAL_DEBUG(_logger, "~LocalFileSystemObserverWorker");
@@ -151,28 +151,17 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             isLink = itemType.linkType != LinkType::None;
 
             // Check if excluded by a file exclusion rule
-            bool isWarning = false;
-            bool toExclude = false;
-            const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), relativePath,
-                                                                                       isWarning, toExclude, ioError);
-            if (!success) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in ExclusionTemplateCache::isExcluded: "
-                                                   << Utility::formatIoError(absolutePath, ioError));
-                tryToInvalidateSnapshot();
-                return;
-            }
-            if (toExclude) {
+            if (bool isWarning = false; ExclusionTemplateCache::instance()->isExcluded(relativePath, isWarning)) {
                 if (isWarning) {
-                    Error error(_syncPal->syncDbId(), "", nodeId, nodeType, relativePath, ConflictType::None,
-                                InconsistencyType::None, CancelType::ExcludedByTemplate);
+                    const Error error(_syncPal->syncDbId(), "", nodeId, nodeType, relativePath, ConflictType::None,
+                                      InconsistencyType::None, CancelType::ExcludedByTemplate);
                     _syncPal->addError(error);
                 }
 
                 // Check if item still exist in snapshot
-                NodeId itemId = _snapshot->itemId(relativePath);
-                if (!itemId.empty()) {
+                if (const auto itemId = _snapshot->itemId(relativePath); !itemId.empty()) {
                     // Remove it from snapshot
-                    _snapshot->removeItem(itemId);
+                    (void) _snapshot->removeItem(itemId);
                     LOGW_SYNCPAL_DEBUG(_logger,
                                        L"Item removed from sync because it is hidden: " << Utility::formatSyncPath(absolutePath));
                 } else {
@@ -188,7 +177,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         if (!exists) {
             // This is a delete operation
             // Get the ID from the snapshot
-            NodeId itemId = _snapshot->itemId(relativePath);
+            const auto itemId = _snapshot->itemId(relativePath);
             if (itemId.empty()) {
                 // The file does not exist anymore, ignore it
                 continue;
@@ -207,7 +196,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             continue;
         }
 
-        SyncPath parentPath = absolutePath.parent_path();
+        const auto parentPath = absolutePath.parent_path();
         NodeId parentNodeId;
         if (parentPath == _rootFolder) {
             parentNodeId = *_syncPal->_syncDb->rootNode().nodeIdLocal();
@@ -459,7 +448,7 @@ void LocalFileSystemObserverWorker::execute() {
 
 ExitCode LocalFileSystemObserverWorker::generateInitialSnapshot() {
     LOG_SYNCPAL_INFO(_logger, "Starting local snapshot generation");
-    auto start = std::chrono::steady_clock::now();
+    const TimerUtility timer;
     auto perfMonitor = sentry::pTraces::scoped::LFSOGenerateInitialSnapshot(syncDbId());
 
     _snapshot->init();
@@ -467,16 +456,15 @@ ExitCode LocalFileSystemObserverWorker::generateInitialSnapshot() {
 
     ExitCode res = exploreDir(_rootFolder);
 
-    std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
     if (res == ExitCode::Ok && !stopAsked()) {
         _snapshot->setValid(true);
-        LOG_SYNCPAL_INFO(_logger, "Local snapshot generated in: " << elapsed_seconds.count() << "s for " << _snapshot->nbItems()
+        LOG_SYNCPAL_INFO(_logger, "Local snapshot generated in: " << timer.elapsed().count() << "s for " << _snapshot->nbItems()
                                                                   << " items");
         perfMonitor.stop();
     } else if (stopAsked()) {
-        LOG_SYNCPAL_INFO(_logger, "Local snapshot generation stopped after: " << elapsed_seconds.count() << "s");
+        LOG_SYNCPAL_INFO(_logger, "Local snapshot generation stopped after: " << timer.elapsed().count() << "s");
     } else {
-        LOG_SYNCPAL_WARN(_logger, "Local snapshot generation failed after: " << elapsed_seconds.count() << "s");
+        LOG_SYNCPAL_WARN(_logger, "Local snapshot generation failed after: " << timer.elapsed().count() << "s");
     }
 
     const std::lock_guard<std::recursive_mutex> lock(_recursiveMutex);
@@ -551,19 +539,10 @@ void LocalFileSystemObserverWorker::sendAccessDeniedError(const SyncPath &absolu
     LOGW_SYNCPAL_INFO(_logger, L"Access denied on item: " << Utility::formatSyncPath(absolutePath));
 
     const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
-    bool isWarning = false;
-    bool isExcluded = false;
-    IoError ioError = IoError::Success;
-    const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), relativePath, isWarning,
-                                                                               isExcluded, ioError);
-    if (!success) {
-        LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::isExcluded: " << Utility::formatIoError(absolutePath, ioError));
+    if (ExclusionTemplateCache::instance()->isExcluded(relativePath)) {
         return;
     }
-    if (isExcluded) {
-        return;
-    }
-    _syncPal->handleAccessDeniedItem(relativePath);
+    (void) _syncPal->handleAccessDeniedItem(relativePath);
 }
 
 ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParentDirPath, bool fromChangeDetected) {
@@ -677,17 +656,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
 
             if (!toExclude) {
                 // Check template exclusion
-                bool isWarning = false;
-                bool isExcluded = false;
-                const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), relativePath,
-                                                                                           isWarning, isExcluded, ioError);
-                if (!success) {
-                    LOGW_SYNCPAL_DEBUG(_logger, L"Error in ExclusionTemplateCache::isExcluded: "
-                                                        << Utility::formatIoError(absolutePath, ioError));
-                    dirIt.disableRecursionPending();
-                    continue;
-                }
-                if (isExcluded) {
+                if (ExclusionTemplateCache::instance()->isExcluded(relativePath)) {
                     LOGW_SYNCPAL_INFO(_logger,
                                       L"Item: " << Utility::formatSyncPath(absolutePath) << L" rejected because it is excluded");
                     toExclude = true;

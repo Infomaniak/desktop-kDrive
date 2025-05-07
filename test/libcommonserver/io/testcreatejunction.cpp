@@ -33,7 +33,7 @@ void TestIo::testCreateJunction() {
 
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         bool isJunction = false;
         CPPUNIT_ASSERT(_testObj->checkIfIsJunction(path, isJunction, ioError));
@@ -56,7 +56,7 @@ void TestIo::testCreateJunction() {
 
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         bool isJunction = false;
         CPPUNIT_ASSERT(_testObj->checkIfIsJunction(path, isJunction, ioError));
@@ -71,7 +71,7 @@ void TestIo::testCreateJunction() {
 
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         bool isJunction = false;
         CPPUNIT_ASSERT(_testObj->checkIfIsJunction(path, isJunction, ioError));

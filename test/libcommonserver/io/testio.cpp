@@ -25,7 +25,8 @@ using namespace CppUnit;
 
 namespace KDC {
 
-IoHelperTests::IoHelperTests() : IoHelper() {}
+IoHelperTests::IoHelperTests() :
+    IoHelper() {}
 
 void IoHelperTests::setIsDirectoryFunction(std::function<bool(const SyncPath &path, std::error_code &ec)> f) {
     _isDirectory = f;
@@ -81,7 +82,9 @@ SyncPath makeFileNameWithEmojis() {
     return u8"🫃😋🌲👣🍔🕉️⛎";
 }
 
-TestIo::TestIo() : CppUnit::TestFixture(), _localTestDirPath(std::wstring(L"" TEST_DIR) + L"/test_ci") {}
+TestIo::TestIo() :
+    CppUnit::TestFixture(),
+    _localTestDirPath(std::wstring(L"" TEST_DIR) + L"/test_ci") {}
 
 void TestIo::setUp() {
     TestBase::start();
@@ -99,7 +102,7 @@ void TestIo::testTempDirectoryPath() {
         IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(_testObj->tempDirectoryPath(tmpPath, ioError));
         CPPUNIT_ASSERT(!tmpPath.empty());
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     {
@@ -125,7 +128,7 @@ void TestIo::testLogDirectoryPath() {
         IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(_testObj->logDirectoryPath(logDirPath, ioError));
         CPPUNIT_ASSERT(!logDirPath.empty());
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     {

@@ -23,10 +23,12 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
-DeleteJob::DeleteJob(const int driveDbId, const NodeId &remoteItemId, const NodeId &localItemId, const SyncPath &absoluteLocalFilepath,
-                     const NodeType nodeType) :
+DeleteJob::DeleteJob(const int driveDbId, const NodeId &remoteItemId, const NodeId &localItemId,
+                     const SyncPath &absoluteLocalFilepath, const NodeType nodeType) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _remoteItemId(remoteItemId), _localItemId(localItemId),
     _absoluteLocalFilepath(absoluteLocalFilepath), _nodeType(nodeType) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_DELETE;
@@ -80,11 +82,6 @@ bool DeleteJob::canRun() {
             LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str());
             _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
             return false;
-        }
-
-        if (!ParametersCache::instance()->parameters().syncHiddenFiles() && filestat.isHidden) {
-            // The item is hidden, remove it from sync
-            return true;
         }
 
         if (filestat.nodeType != _nodeType && filestat.nodeType != NodeType::Unknown && _nodeType != NodeType::Unknown) {

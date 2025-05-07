@@ -32,12 +32,12 @@ void TestIo::testCreateSymlink() {
         const SyncPath path = temporaryDirectory.path() / "regular_file_alias";
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::createSymlink(targetPath, path, false, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createSymlink(targetPath, path, false, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(std::filesystem::is_symlink(path));
 
         ItemType itemType;
-        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
+        CPPUNIT_ASSERT_MESSAGE(toString(itemType.ioError), IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoError::Success);
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::File);
         CPPUNIT_ASSERT(itemType.linkType == LinkType::Symlink);
@@ -54,12 +54,12 @@ void TestIo::testCreateSymlink() {
         CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == 0);
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::createSymlink(targetPath, path, true, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createSymlink(targetPath, path, true, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(std::filesystem::is_symlink(path));
 
         ItemType itemType;
-        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
+        CPPUNIT_ASSERT_MESSAGE(toString(itemType.ioError), IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoError::Success);
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::File);
         CPPUNIT_ASSERT(itemType.linkType == LinkType::Symlink);
@@ -73,12 +73,12 @@ void TestIo::testCreateSymlink() {
         const SyncPath path = temporaryDirectory.path() / "file_symlink";
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::createSymlink(targetPath, path, false, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createSymlink(targetPath, path, false, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(std::filesystem::is_symlink(path)); // Dangling link created.
 
         ItemType itemType;
-        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
+        CPPUNIT_ASSERT_MESSAGE(toString(itemType.ioError), IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoError::Success); // Although the target path is invalid.
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::File);
         CPPUNIT_ASSERT(itemType.linkType == LinkType::Symlink);
@@ -115,7 +115,7 @@ void TestIo::testCreateSymlink() {
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
         ItemType itemType;
-        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
+        CPPUNIT_ASSERT_MESSAGE(toString(itemType.ioError), IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoError::Success);
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::Directory);
         CPPUNIT_ASSERT(itemType.linkType == LinkType::None);
@@ -135,7 +135,7 @@ void TestIo::testCreateSymlink() {
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
         ItemType itemType;
-        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
+        CPPUNIT_ASSERT_MESSAGE(toString(itemType.ioError), IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoError::Success);
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::File);
         CPPUNIT_ASSERT(itemType.linkType == LinkType::None);
@@ -165,13 +165,13 @@ void TestIo::testCreateSymlink() {
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
 
         IoError aliasError;
-        CPPUNIT_ASSERT(IoHelper::createSymlink(targetPath, path, false, aliasError));
+        CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createSymlink(targetPath, path, false, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
 
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
         ItemType itemType;
-        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
+        CPPUNIT_ASSERT_MESSAGE(toString(itemType.ioError), IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoError::Success);
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::File);
         CPPUNIT_ASSERT(itemType.linkType == LinkType::Symlink);

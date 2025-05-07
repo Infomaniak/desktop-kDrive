@@ -304,7 +304,7 @@ std::optional<std::vector<Conflict>> ConflictFinderWorker::checkMoveParentDelete
         const std::optional<std::vector<std::shared_ptr<Node>>> subMoveNodes =
                 findChangeEventInSubNodes(OperationType::Move, correspondingDirNode);
         if (subMoveNodes) {
-            for (const auto node: *subMoveNodes) {
+            for (const auto &node: *subMoveNodes) {
                 moveNodes->push_back(Conflict(deleteNode, node, ConflictType::MoveParentDelete));
             }
         }
@@ -325,7 +325,7 @@ std::optional<std::vector<Conflict>> ConflictFinderWorker::checkCreateParentDele
         std::optional<std::vector<std::shared_ptr<Node>>> subMoveNodes =
                 findChangeEventInSubNodes(OperationType::Create, correspondingDirNode);
         if (subMoveNodes) {
-            for (const auto node: *subMoveNodes) {
+            for (const auto &node: *subMoveNodes) {
                 createNodes->push_back(Conflict(deleteNode, node, ConflictType::CreateParentDelete));
             }
         }
@@ -374,8 +374,8 @@ std::optional<std::vector<Conflict>> ConflictFinderWorker::determineMoveMoveCycl
         const std::vector<std::shared_ptr<Node>> &remoteMoveDirNodes) {
     std::optional<std::vector<Conflict>> conflicts = std::vector<Conflict>();
 
-    for (const auto localNode: localMoveDirNodes) {
-        for (const auto remoteNode: remoteMoveDirNodes) {
+    for (const auto &localNode: localMoveDirNodes) {
+        for (const auto &remoteNode: remoteMoveDirNodes) {
             if (*localNode->idb() == *remoteNode->idb()) {
                 continue;
             }
@@ -442,7 +442,7 @@ std::optional<std::vector<std::shared_ptr<Node>>> ConflictFinderWorker::findChan
         queue.pop_front();
 
         // visit children
-        for (const auto child: node->children()) {
+        for (const auto &child: node->children()) {
             if (!visited[child.second]) {
                 visited[child.second] = true;
                 queue.push_back(child.second);

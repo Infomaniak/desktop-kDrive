@@ -59,6 +59,14 @@ struct TestVariables {
 };
 
 void generateOrEditTestFile(const SyncPath& path);
+/**
+ * @brief Generate test files.
+ * @param dirPath Directory in which the files will be created.
+ * @param size The size of each file in MB.
+ * @param count The number of file to generate.
+ */
+void generateBigFiles(const SyncPath& dirPath, uint16_t size, uint16_t count);
+
 void setModificationDate(const SyncPath& path, const std::chrono::time_point<std::chrono::system_clock>& timePoint);
 
 inline bool isRunningOnCI(bool print = true) {
