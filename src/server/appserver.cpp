@@ -433,6 +433,7 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "ParmsDb closed");
 }
 
+
 void AppServer::reset() {
     _updateManager.reset();
 }
@@ -464,18 +465,6 @@ void AppServer::stopAllSyncsTask(const std::vector<int> &syncDbIdList) {
 }
 
 void AppServer::deleteAccount(int accountDbId) {
-    // Get the account in DB
-    bool found = false;
-    Account account;
-    if (!ParmsDb::instance()->selectAccount(accountDbId, account, found)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAccount");
-        addError(Error(errId(), ExitCode::DbError, ExitCause::Unknown));
-    }
-    if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "Account not found for selectAccount=" << accountDbId);
-        addError(Error(errId(), ExitCode::DataError, ExitCause::Unknown));
-    }
-
     // Delete the account
     const ExitCode exitCode = ServerRequests::deleteAccount(accountDbId);
     if (exitCode == ExitCode::Ok) {
@@ -484,22 +473,6 @@ void AppServer::deleteAccount(int accountDbId) {
         LOG_WARN(_logger, "Error in Requests::deleteAccount: code=" << exitCode);
         addError(Error(errId(), exitCode, ExitCause::Unknown));
         return;
-    }
-
-    // Delete the User if there is no remaining account
-    std::vector<Account> accountList;
-    if (!ParmsDb::instance()->selectAllAccounts(account.userDbId(), accountList)) {
-        LOG_WARN(_logger, "Error in ParmsDb::selectAllAccounts");
-        addError(Error(errId(), ExitCode::DbError, ExitCause::Unknown));
-    } else if (accountList.empty()) {
-        const ExitCode exitCode = ServerRequests::deleteUser(account.userDbId());
-        if (exitCode == ExitCode::Ok) {
-            sendUserRemoved(account.userDbId());
-        } else {
-            LOG_WARN(_logger, "Error in Requests::deleteUser: code=" << exitCode);
-            addError(Error(errId(), exitCode, ExitCause::Unknown));
-            return;
-        }
     }
 }
 
@@ -3374,6 +3347,17 @@ ExitCode AppServer::updateAllUsersInfo() {
     }
 
     for (auto &user: users) {
+        std::vector<Account> accounts;
+        if (!ParmsDb::instance()->selectAllAccounts(user.dbId(), accounts)) {
+            LOG_WARN(_logger, "Error in ParmsDb::selectAllUsers");
+            return ExitCode::DbError;
+        }
+        if (accounts.empty()) {
+            LOG_INFO(_logger,
+                     "User: " << user.email() << " (id:" << user.userId() << ") is not used anymore. It will be removed.");
+            ServerRequests::deleteUser(user.dbId());
+            continue;
+        }
         if (user.keychainKey().empty()) {
             LOG_DEBUG(_logger, "User " << user.dbId() << " is not connected");
             continue;
