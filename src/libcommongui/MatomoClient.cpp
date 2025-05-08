@@ -34,6 +34,9 @@ MatomoClient& MatomoClient::instance(const QString& clientId)
         qobject_cast<QCoreApplication*>(QCoreApplication::instance()),
         clientId
     );
+    // We needed to set the parent to the QCoreApplication instance to retrieve screen resolutions (and other details) in PiwikTracker,
+    // but we then set it to nullptr to prevent Qt from freeing this object when QCoreApplication is destroyed.
+    _inst.setParent(nullptr);
     return _inst;
 }
 
