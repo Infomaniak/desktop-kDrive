@@ -42,7 +42,7 @@ const std::map<NotificationsDisabled, QString> &SynthesisBar::notificationsDisab
             {NotificationsDisabled::Never, tr("Never")},
             {NotificationsDisabled::OneHour, tr("During 1 hour")},
             {NotificationsDisabled::UntilTomorrow, tr("Until tomorrow 8:00AM")},
-            {NotificationsDisabled::TreeDays, tr("During 3 days")},
+            {NotificationsDisabled::ThreeDays, tr("During 3 days")},
             {NotificationsDisabled::OneWeek, tr("During 1 week")},
             {NotificationsDisabled::Always, tr("Always")}};
     return map;
@@ -53,7 +53,7 @@ const std::map<NotificationsDisabled, QString> &SynthesisBar::notificationsDisab
             {NotificationsDisabled::Never, tr("Never")},
             {NotificationsDisabled::OneHour, tr("For 1 more hour")},
             {NotificationsDisabled::UntilTomorrow, tr("Until tomorrow 8:00AM")},
-            {NotificationsDisabled::TreeDays, tr("For 3 more days")},
+            {NotificationsDisabled::ThreeDays, tr("For 3 more days")},
             {NotificationsDisabled::OneWeek, tr("For 1 more week")},
             {NotificationsDisabled::Always, tr("Always")}};
     return map;
@@ -440,7 +440,7 @@ void SynthesisBar::onNotificationActionTriggered() {
         case NotificationsDisabled::UntilTomorrow:
             _notificationsDisabledUntilDateTime = QDateTime(QDateTime::currentDateTime().addDays(1).date(), QTime(8, 0));
             break;
-        case NotificationsDisabled::TreeDays:
+        case NotificationsDisabled::ThreeDays:
             _notificationsDisabledUntilDateTime = notificationAlreadyDisabledForPeriod
                                                           ? _notificationsDisabledUntilDateTime.addDays(3)
                                                           : QDateTime::currentDateTime().addDays(3);
