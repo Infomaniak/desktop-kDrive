@@ -1426,17 +1426,18 @@ bool LiteSyncExtConnector::vfsSetStatus(const QString &path, const QString &loca
 
                 vfsSetStatus(parentPath, localSyncPath, VfsStatus({.isSyncing = vfsStatus.isSyncing, .isHydrated = vfsStatus.isHydrated, .progress = 100}));
             } else {
-                _mutex.lock();
-                _syncingFolders[parentPath].remove(path);
-                if (_syncingFolders[parentPath].empty()) {
-                    _syncingFolders.remove(parentPath);
-                    _mutex.unlock();
+                {
+                    const std::lock_guard<std::mutex> lock(_mutex);
+                    _syncingFolders[parentPath].remove(path);
+                    if (_syncingFolders[parentPath].empty()) {
+                        _syncingFolders.remove(parentPath);
+                        _mutex.unlock();
 
-                    if (!vfsProcessDirStatus(parentPath, localSyncPath)) {
-                        return false;
+                        if (!vfsProcessDirStatus(parentPath, localSyncPath)) {
+                            return false;
+                        }
                     }
                 }
-                _mutex.unlock();
             }
         }
     }
@@ -1447,8 +1448,9 @@ bool LiteSyncExtConnector::vfsCleanUpStatuses(const QString &localSyncPath) {
     const std::lock_guard<std::mutex> lock(_mutex);
     QHashIterator<QString, QSet<QString>> it(_syncingFolders);
     while (it.hasNext()) {
-        if (!vfsProcessDirStatus(it.key(), localSyncPath)) return false;
         it.next();
+        if (!vfsProcessDirStatus(it.key(), localSyncPath))
+            return false;
     }
     _syncingFolders.clear();
     return true;
