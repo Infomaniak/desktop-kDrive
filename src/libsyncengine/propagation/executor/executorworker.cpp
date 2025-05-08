@@ -771,15 +771,14 @@ ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<Abstract
     // iteration.
     // 3. If the omit flag is False, update the updatetreeY structure to ensure that follow-up operations can execute correctly,
     // as they are based on the information in this structure.
+
     ignored = false;
-
     SyncPath relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
-
     if (relativeLocalFilePath.empty()) {
         return ExitCode::DataError;
     }
 
-    if (isLiteSyncActivated()) {
+    if (isLiteSyncActivated() && !syncOp->omit()) {
         SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
         bool ignoreItem = false;
         bool isSyncing = false;
@@ -809,17 +808,18 @@ ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<Abstract
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()));
             return exitInfo;
         }
-    } else {
-        if (!enoughLocalSpace(syncOp)) {
-            _syncPal->addError(Error(_syncPal->syncDbId(), name(), ExitCode::SystemError, ExitCause::NotEnoughDiskSpace));
-            return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
-        }
+        return ExitCode::Ok;
+    }
 
-        if (ExitInfo exitInfo = generateEditJob(syncOp, job); !exitInfo) {
-            LOGW_SYNCPAL_WARN(_logger, L"Failed to generate edit job for: " << SyncName2WStr(syncOp->affectedNode()->name())
-                                                                            << L" " << exitInfo);
-            return exitInfo;
-        }
+    if (!enoughLocalSpace(syncOp)) {
+        _syncPal->addError(Error(_syncPal->syncDbId(), name(), ExitCode::SystemError, ExitCause::NotEnoughDiskSpace));
+        return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
+    }
+
+    if (ExitInfo exitInfo = generateEditJob(syncOp, job); !exitInfo) {
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to generate edit job for: " << SyncName2WStr(syncOp->affectedNode()->name()) << L" "
+                                                                        << exitInfo);
+        return exitInfo;
     }
     return ExitCode::Ok;
 }
