@@ -1,0 +1,19 @@
+name: Convert PR to Draft on Non-Approval Review
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  convert-to-draft:
+    if: github.event.review.state != 'approved'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Convert PR to draft
+        uses: peter-evans/pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
