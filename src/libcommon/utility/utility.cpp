@@ -662,8 +662,12 @@ bool CommonUtility::isSubDir(const SyncPath &path1, const SyncPath &path2) {
 
 bool CommonUtility::isDiskRootFolder(const SyncPath &absolutePath) {
     bool isRoot = absolutePath == absolutePath.root_path();
-#ifdef __APPLE__
+#if defined(__APPLE__)
+    // on macOS, external drive appears under "/Volumes/<drivename>"
     isRoot |= absolutePath.parent_path() == "/Volumes";
+#elif defined(__unix__)
+    // on Linux, external drive appears under "/media/<username>/<drivename>"
+    isRoot |= absolutePath == "/media" || absolutePath.parent_path() == "/media" || absolutePath.parent_path().parent_path() == "/media";
 #endif
     return isRoot;
 }
