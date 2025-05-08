@@ -498,9 +498,6 @@ void OperationSorterWorker::moveFirstAfterSecond(const SyncOpPtr &opFirst, const
         }
     }
 
-    // Make sure that opFirst is finished before starting opSecond, even if they are in the correct order
-    opFirst->setParentId(opSecond->id());
-
     if (firstFound) {
         // make sure opSecond is executed after opFirst
         if (ParametersCache::isExtendedLogEnabled()) {

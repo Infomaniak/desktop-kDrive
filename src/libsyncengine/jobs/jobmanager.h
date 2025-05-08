@@ -85,21 +85,19 @@ class JobManager {
         static void defaultCallback(UniqueId jobId);
 
         static void run() noexcept;
-        static void startJob(std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority> nextJob);
+        static void startJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority);
         static void adjustMaxNbThread();
         static int countUploadSession();
-        static bool canRun(const std::shared_ptr<AbstractJob> job, int uploadSessionCount);
-        static void managePendingJobs(int uploadSessionCount);
+        static void managePendingJobs();
 
-        static bool isParentPendingOrRunning(UniqueId jobIb);
-        static bool canStartJob(std::shared_ptr<AbstractJob> job, int uploadSessionCount);
+        static int availableThreadsInPool();
+        static bool canRunjob(const std::shared_ptr<AbstractJob> job);
+        static bool isBigFileDownloadJob(const std::shared_ptr<AbstractJob> job);
+        static bool isBigFileUploadJob(const std::shared_ptr<AbstractJob> job);
 
         static std::shared_ptr<JobManager> _instance;
         static bool _stop;
         static int _maxNbThread;
-        static double _cpuUsageThreshold;
-        static int _threadAdjustmentStep;
-        static std::chrono::time_point<std::chrono::steady_clock> _maxNbThreadChrono;
 
         log4cplus::Logger _logger;
         std::unique_ptr<StdLoggingThread> _thread;
@@ -112,6 +110,7 @@ class JobManager {
         static std::unordered_map<UniqueId, std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>>
                 _pendingJobs; // jobs waiting for their parent job to be completed
         static std::recursive_mutex _mutex;
+        static UniqueId _uploadSessionJobId;
 
         friend class TestJobManager;
 };

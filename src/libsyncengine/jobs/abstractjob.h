@@ -42,7 +42,7 @@ class AbstractJob : public Poco::Runnable {
          */
         void setMainCallback(const std::function<void(uint64_t)> &newCallback) { _mainCallback = newCallback; }
         void setAdditionalCallback(const std::function<void(uint64_t)> &newCallback) {
-            std::scoped_lock lock(_additionalCallbackMutex);
+            const std::scoped_lock lock(_additionalCallbackMutex);
             _additionalCallback = newCallback;
         }
         void setProgressPercentCallback(const std::function<void(UniqueId, int)> &newCallback) {
@@ -50,7 +50,7 @@ class AbstractJob : public Poco::Runnable {
         }
         ExitInfo exitInfo() const { return _exitInfo; }
 
-        void setProgressExpectedFinalValue(int64_t newExpectedFinishProgress) {
+        void setProgressExpectedFinalValue(const int64_t newExpectedFinishProgress) {
             _expectedFinishProgress = newExpectedFinishProgress;
         }
         virtual int64_t getProgress() { return _progress; }
@@ -62,9 +62,6 @@ class AbstractJob : public Poco::Runnable {
         bool isProgressTracked() const { return _progress > -1; }
 
         UniqueId jobId() const { return _jobId; }
-        UniqueId parentJobId() const { return _parentJobId; }
-        void setParentJobId(UniqueId newParentId) { _parentJobId = newParentId; }
-        bool hasParentJob() const { return _parentJobId > -1; }
 
         bool isExtendedLog() const { return _isExtendedLog; }
         bool isRunning() const { return _isRunning; }
@@ -95,7 +92,6 @@ class AbstractJob : public Poco::Runnable {
         static std::mutex _nextJobIdMutex;
 
         UniqueId _jobId = 0;
-        UniqueId _parentJobId = -1; // ID of that parent job i.e. the job that must be completed before starting this one
 
         int64_t _expectedFinishProgress =
                 expectedFinishProgressNotSetValue; // Expected progress value when the job is finished. -2 means it is not set.
