@@ -118,7 +118,8 @@ static void displayHelpText(const QString &t) {
 }
 #endif
 
-AppServer::AppServer(int &argc, char **argv) : SharedTools::QtSingleApplication(Theme::instance()->appName(), argc, argv) {
+AppServer::AppServer(int &argc, char **argv) :
+    SharedTools::QtSingleApplication(Theme::instance()->appName(), argc, argv) {
     _arguments = arguments();
     _theme = Theme::instance();
 }
@@ -462,23 +463,60 @@ void AppServer::stopAllSyncsTask(const std::vector<int> &syncDbIdList) {
     }
 }
 
-void AppServer::deleteAccountIfNeeded(int accountDbId) {
-    std::vector<Drive> driveList;
-    if (!ParmsDb::instance()->selectAllDrives(accountDbId, driveList)) {
-        LOG_WARN(_logger, "Error in ParmsDb::selectAllDrives");
+void AppServer::deleteAccount(int accountDbId) {
+    // Get the account in DB
+    bool found = false;
+    Account account;
+    if (!ParmsDb::instance()->selectAccount(accountDbId, account, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAccount");
         addError(Error(errId(), ExitCode::DbError, ExitCause::Unknown));
-    } else if (driveList.empty()) {
-        const ExitCode exitCode = ServerRequests::deleteAccount(accountDbId);
+    }
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), "Account not found for selectAccount=" << accountDbId);
+        addError(Error(errId(), ExitCode::DataError, ExitCause::Unknown));
+    }
+
+    // Delete the account
+    const ExitCode exitCode = ServerRequests::deleteAccount(accountDbId);
+    if (exitCode == ExitCode::Ok) {
+        sendAccountRemoved(accountDbId);
+    } else {
+        LOG_WARN(_logger, "Error in Requests::deleteAccount: code=" << exitCode);
+        addError(Error(errId(), exitCode, ExitCause::Unknown));
+        return;
+    }
+
+    // Delete the User if there is no remaining account
+    std::vector<Account> accountList;
+    if (!ParmsDb::instance()->selectAllAccounts(account.userDbId(), accountList)) {
+        LOG_WARN(_logger, "Error in ParmsDb::selectAllAccounts");
+        addError(Error(errId(), ExitCode::DbError, ExitCause::Unknown));
+    } else if (accountList.empty()) {
+        const ExitCode exitCode = ServerRequests::deleteUser(account.userDbId());
         if (exitCode == ExitCode::Ok) {
-            sendAccountRemoved(accountDbId);
+            sendUserRemoved(account.userDbId());
         } else {
-            LOG_WARN(_logger, "Error in ServerRequests::deleteAccount: code=" << exitCode);
+            LOG_WARN(_logger, "Error in Requests::deleteUser: code=" << exitCode);
             addError(Error(errId(), exitCode, ExitCause::Unknown));
+            return;
         }
     }
 }
 
-void AppServer::deleteDrive(int driveDbId, int accountDbId) {
+void AppServer::deleteDrive(int driveDbId) {
+    // Get the drive in DB
+    bool found = false;
+    Drive drive;
+    if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectDrive");
+        addError(Error(errId(), ExitCode::DbError, ExitCause::Unknown));
+    }
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), "Drive not found for driveDbId=" << driveDbId);
+        addError(Error(errId(), ExitCode::DataError, ExitCause::Unknown));
+    }
+
+    // Delete the drive
     const ExitCode exitCode = ServerRequests::deleteDrive(driveDbId);
     if (exitCode == ExitCode::Ok) {
         sendDriveRemoved(driveDbId);
@@ -486,9 +524,51 @@ void AppServer::deleteDrive(int driveDbId, int accountDbId) {
         LOG_WARN(_logger, "Error in Requests::deleteDrive: code=" << exitCode);
         addError(Error(errId(), exitCode, ExitCause::Unknown));
         sendDriveDeletionFailed(driveDbId);
+        return;
     }
 
-    deleteAccountIfNeeded(accountDbId);
+    // Delete the account if there is no remaining drive
+    std::vector<Drive> driveList;
+    if (!ParmsDb::instance()->selectAllDrives(drive.accountDbId(), driveList)) {
+        LOG_WARN(_logger, "Error in ParmsDb::selectAllDrives");
+        addError(Error(errId(), ExitCode::DbError, ExitCause::Unknown));
+    } else if (driveList.empty()) {
+        deleteAccount(drive.accountDbId());
+    }
+}
+
+void AppServer::deleteSync(int syncDbId) {
+    // Get the sync in DB
+    bool found = false;
+    Sync sync;
+    if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync");
+        addError(Error(errId(), ExitCode::DbError, ExitCause::Unknown));
+    }
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), "Sync not found for syncDbId=" << syncDbId);
+        addError(Error(errId(), ExitCode::DataError, ExitCause::Unknown));
+    }
+
+    // Delete the sync
+    const ExitCode exitCode = ServerRequests::deleteSync(syncDbId);
+    if (exitCode == ExitCode::Ok) {
+        sendSyncRemoved(syncDbId);
+    } else {
+        LOG_WARN(_logger, "Error in Requests::deleteSync: code=" << exitCode);
+        addError(Error(errId(), exitCode, ExitCause::Unknown));
+        sendSyncDeletionFailed(syncDbId);
+        return;
+    }
+
+    // Delete the drive if there is no remaining sync
+    std::vector<Sync> syncList;
+    if (!ParmsDb::instance()->selectAllSyncs(sync.driveDbId(), syncList)) {
+        LOG_WARN(_logger, "Error in ParmsDb::selectAllSyncs");
+        addError(Error(errId(), ExitCode::DbError, ExitCause::Unknown));
+    } else if (syncList.empty()) {
+        deleteDrive(sync.driveDbId());
+    }
 }
 
 void AppServer::logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept {
@@ -954,20 +1034,18 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             ArgsWriter(params).write(driveDbId);
 
             // Get syncs do delete
-            int accountDbId = -1;
             std::vector<int> syncDbIdList;
             for (const auto &syncPalMapElt: _syncPalMap) {
                 if (!syncPalMapElt.second) continue;
                 if (syncPalMapElt.second->driveDbId() == driveDbId) {
                     syncDbIdList.push_back(syncPalMapElt.first);
-                    accountDbId = syncPalMapElt.second->accountDbId();
                 }
             }
 
             // Stop syncs for this drive and remove them from syncPalMap
-            QTimer::singleShot(100, [this, driveDbId, accountDbId, syncDbIdList]() {
+            QTimer::singleShot(100, [this, driveDbId, syncDbIdList]() {
                 AppServer::stopAllSyncsTask(syncDbIdList);
-                AppServer::deleteDrive(driveDbId, accountDbId);
+                AppServer::deleteDrive(driveDbId);
             });
 
             Utility::restartFinderExtension();
@@ -1270,18 +1348,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 AppServer::stopSyncTask(syncDbId); // This task can be long, hence blocking, on Windows.
 
                 // Delete sync from DB
-                const ExitCode exitCode = ServerRequests::deleteSync(syncDbId);
-
-                if (exitCode == ExitCode::Ok) {
-                    // Let the client remove the sync-related GUI elements.
-                    sendSyncRemoved(syncDbId);
-                } else {
-                    LOG_WARN(_logger, "Error in Requests::deleteSync: code=" << exitCode);
-                    addError(Error(errId(), exitCode, ExitCause::Unknown));
-                    // Let the client unlock the sync-related GUI elements.
-                    sendSyncDeletionFailed(syncDbId);
-                }
-
+                deleteSync(syncDbId);
                 Utility::restartFinderExtension();
             });
 
@@ -3611,8 +3678,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         std::stringstream msg;
         msg << "SyncPal not found in syncPalMap for syncDbId=" << syncDbId;
         LOG_WARN(_logger, msg.str());
-        sentry::Handler::captureMessage(sentry::Level::Error, "Error in setSupportsVirtualFiles",
-                                        msg.str());
+        sentry::Handler::captureMessage(sentry::Level::Error, "Error in setSupportsVirtualFiles", msg.str());
         return ExitCode::LogicError;
     }
 
