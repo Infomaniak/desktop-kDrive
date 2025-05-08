@@ -17,7 +17,7 @@
  */
 
 #include "testsyncdb.h"
-#include "test_utility/testjelpers.h"
+#include "test_utility/testhelpers.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "libcommon/utility/logiffail.h"
 #include "libcommonserver/io/iohelper.h"
