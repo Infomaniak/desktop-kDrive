@@ -96,7 +96,7 @@ void MatomoClient::sendEvent(const QString& category,
     switch (action) {
         case MatomoEventAction::Click:  actionStr = "click"; break;
         case MatomoEventAction::Input:  actionStr = "input"; break;
-        default:                          actionStr = "unknown"; break;
+        default:                        actionStr = "unknown"; break;
     }
 
     instance().PiwikTracker::sendEvent(
