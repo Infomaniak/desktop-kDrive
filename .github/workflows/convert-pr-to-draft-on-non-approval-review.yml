@@ -4,16 +4,21 @@ on:
   pull_request_review:
     types: [submitted]
 
-permissions:
-  pull-requests: write
-
 jobs:
   convert-to-draft:
     if: github.event.review.state != 'approved'
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - name: Convert PR to draft
-        uses: peter-evans/pull-request@v5
+        uses: actions/github-script@v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          draft: true
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              draft: true
+            });
