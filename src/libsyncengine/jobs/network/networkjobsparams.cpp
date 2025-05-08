@@ -24,7 +24,7 @@
 namespace KDC {
 
 ActionCode getActionCode(const std::string &action) noexcept {
-    static const std::unordered_map<std::string, ActionCode, StringHash, std::equal_to<>> actionMap = {
+    static const std::unordered_map<std::string, ActionCode, StringHashFunction, std::equal_to<>> actionMap = {
             {"file_create", ActionCode::ActionCodeCreate},
             {"file_rename", ActionCode::ActionCodeRename},
             {"file_update", ActionCode::ActionCodeEdit},
