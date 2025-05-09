@@ -18,7 +18,8 @@
 
 #pragma once
 
-#include "abstracttokennetworkjob.h"
+#include "jobs/abstractjob.h"
+
 #include <chrono>
 
 namespace KDC {

@@ -22,8 +22,8 @@
 
 namespace KDC {
 
-LogUploadSession::LogUploadSession(const SyncPath &filepath, uint64_t nbParalleleThread /*= 1*/) :
-    AbstractUploadSession(filepath, filepath.filename(), nbParalleleThread) {
+LogUploadSession::LogUploadSession(const SyncPath &filepath, const uint64_t nbParallelThread /*= 1*/) :
+    AbstractUploadSession(filepath, filepath.filename(), nbParallelThread) {
     _uploadSessionType = UploadSessionType::Log;
 }
 
@@ -35,9 +35,9 @@ std::shared_ptr<UploadSessionStartJob> LogUploadSession::createStartJob() {
     return std::make_shared<UploadSessionStartJob>(UploadSessionType::Log, getFileName(), getFileSize(), getTotalChunks());
 }
 
-std::shared_ptr<UploadSessionChunkJob> LogUploadSession::createChunkJob(const std::string &chunckContent, uint64_t chunkNb,
+std::shared_ptr<UploadSessionChunkJob> LogUploadSession::createChunkJob(const std::string &chunkContent, uint64_t chunkNb,
                                                                         std::streamsize actualChunkSize) {
-    return std::make_shared<UploadSessionChunkJob>(UploadSessionType::Log, getFilePath(), getSessionToken(), chunckContent,
+    return std::make_shared<UploadSessionChunkJob>(UploadSessionType::Log, getFilePath(), getSessionToken(), chunkContent,
                                                    chunkNb, actualChunkSize, jobId());
 }
 
@@ -53,7 +53,8 @@ std::shared_ptr<UploadSessionCancelJob> LogUploadSession::createCancelJob() {
     return std::make_shared<UploadSessionCancelJob>(UploadSessionType::Log, getSessionToken());
 }
 
-bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob, std::string uploadToken) {
+bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob,
+                                            const std::string &uploadToken) {
     (void) startJob;
 
     AppStateValue appStateValue = "";
