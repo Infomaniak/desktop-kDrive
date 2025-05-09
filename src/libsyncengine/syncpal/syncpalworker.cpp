@@ -599,8 +599,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
                 }
             }
         }
-    }
-    catch (std::filesystem::filesystem_error &e) {
+    } catch (std::filesystem::filesystem_error &e) {
         LOG_SYNCPAL_WARN(_logger,
                          "Error caught in SyncPalWorker::resetVfsFilesStatus: code=" << e.code() << " error=" << e.what());
         ok = false;
@@ -610,7 +609,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
     }
 
     if (ok) {
-        if (!_syncPal->_syncDb->updateNodesSyncing(false)) {
+        if (!_syncPal->syncDb()->updateNodesSyncing(false)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::updateNodesSyncing for syncDbId=" << _syncPal->syncDbId());
         }
         LOG_SYNCPAL_DEBUG(_logger, "VFS files status reset");
