@@ -476,6 +476,10 @@ void Handler::setDistributionChannel(const VersionChannel channel) {
     setTag("distribution_channel", channelStr);
 }
 
+void Handler::setAppUUID(std::string appUUID) {
+    setTag("appUUID", appUUID);
+}
+
 Handler::~Handler() {
     if (this == _instance.get()) {
         _instance.reset();
@@ -491,7 +495,11 @@ Handler::~Handler() {
 
 Handler::SentryEvent::SentryEvent(const std::string &title, const std::string &message, Level level,
                                   sentry::ConfidentialityLevel confidentialityLevel, const SentryUser &user) :
-    title(title), message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
+    title(title),
+    message(message),
+    level(level),
+    confidentialityLevel(confidentialityLevel),
+    userId(user.userId()) {}
 
 void Handler::stopPTrace(const pTraceId &id, PTraceStatus status) {
     if (id == 0) return;
