@@ -52,15 +52,17 @@ set(syncengine_SRCS
     jobs/network/API_v2/duplicatejob.h jobs/network/API_v2/duplicatejob.cpp
     jobs/network/API_v2/copytodirectoryjob.h jobs/network/API_v2/copytodirectoryjob.cpp
     jobs/network/API_v2/downloadjob.h jobs/network/API_v2/downloadjob.cpp
-    jobs/network/API_v2/uploadjob.h jobs/network/API_v2/uploadjob.cpp
-    jobs/network/API_v2/upload_session/abstractuploadsession.h jobs/network/API_v2/upload_session/abstractuploadsession.cpp
-    jobs/network/API_v2/upload_session/driveuploadsession.h jobs/network/API_v2/upload_session/driveuploadsession.cpp
-    jobs/network/API_v2/upload_session/loguploadsession.h jobs/network/API_v2/upload_session/loguploadsession.cpp
-    jobs/network/API_v2/upload_session/abstractuploadsessionjob.h jobs/network/API_v2/upload_session/abstractuploadsessionjob.cpp
-    jobs/network/API_v2/upload_session/uploadsessionstartjob.h jobs/network/API_v2/upload_session/uploadsessionstartjob.cpp
-    jobs/network/API_v2/upload_session/uploadsessionchunkjob.h jobs/network/API_v2/upload_session/uploadsessionchunkjob.cpp
-    jobs/network/API_v2/upload_session/uploadsessionfinishjob.h jobs/network/API_v2/upload_session/uploadsessionfinishjob.cpp
-    jobs/network/API_v2/upload_session/uploadsessioncanceljob.h jobs/network/API_v2/upload_session/uploadsessioncanceljob.cpp
+    jobs/network/API_v2/upload/upload_session/abstractuploadsession.h jobs/network/API_v2/upload/upload_session/abstractuploadsession.cpp
+    jobs/network/API_v2/upload/upload_session/driveuploadsession.h jobs/network/API_v2/upload/upload_session/driveuploadsession.cpp
+    jobs/network/API_v2/upload/upload_session/loguploadsession.h jobs/network/API_v2/upload/upload_session/loguploadsession.cpp
+    jobs/network/API_v2/upload/upload_session/abstractuploadsessionjob.h jobs/network/API_v2/upload/upload_session/abstractuploadsessionjob.cpp
+    jobs/network/API_v2/upload/upload_session/uploadsessionstartjob.h jobs/network/API_v2/upload/upload_session/uploadsessionstartjob.cpp
+    jobs/network/API_v2/upload/upload_session/uploadsessionchunkjob.h jobs/network/API_v2/upload/upload_session/uploadsessionchunkjob.cpp
+    jobs/network/API_v2/upload/upload_session/uploadsessionfinishjob.h jobs/network/API_v2/upload/upload_session/uploadsessionfinishjob.cpp
+    jobs/network/API_v2/upload/upload_session/uploadsessioncanceljob.h jobs/network/API_v2/upload/upload_session/uploadsessioncanceljob.cpp
+    jobs/network/API_v2/upload/uploadjob.h jobs/network/API_v2/upload/uploadjob.cpp
+    jobs/network/API_v2/upload/loguploadjob.h jobs/network/API_v2/upload/loguploadjob.cpp
+    jobs/network/API_v2/upload/uploadjobreplyhandler.h jobs/network/API_v2/upload/uploadjobreplyhandler.cpp
     jobs/network/API_v2/getinfodrivejob.h jobs/network/API_v2/getinfodrivejob.cpp
     jobs/network/API_v2/getinfodriveuserjob.h jobs/network/API_v2/getinfodriveuserjob.cpp
     jobs/network/API_v2/getdriveslistjob.h jobs/network/API_v2/getdriveslistjob.cpp
@@ -69,7 +71,6 @@ set(syncengine_SRCS
     jobs/network/API_v2/postfilelinkjob.h jobs/network/API_v2/postfilelinkjob.cpp
     jobs/network/API_v2/getfilelinkjob.h jobs/network/API_v2/getfilelinkjob.cpp
     jobs/network/API_v2/getsizejob.h jobs/network/API_v2/getsizejob.cpp
-    jobs/network/API_v2/loguploadjob.h jobs/network/API_v2/loguploadjob.cpp
     ## Local jobs
     jobs/local/localmovejob.h jobs/local/localmovejob.cpp
     jobs/local/localcopyjob.h jobs/local/localcopyjob.cpp

@@ -41,15 +41,14 @@
 #include "propagation/operation_sorter/operationsorterworker.h"
 #include "propagation/executor/executorworker.h"
 #include "requests/syncnodecache.h"
-#include "requests/parameterscache.h"
 #include "jobs/network/API_v2/downloadjob.h"
-#include "jobs/network/API_v2/upload_session/uploadsessioncanceljob.h"
 #include "jobs/local/localdeletejob.h"
 #include "jobs/jobmanager.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "tmpblacklistmanager.h"
+#include "jobs/network/API_v2/upload/upload_session/uploadsessioncanceljob.h"
 
 #define SYNCPAL_NEW_ERROR_MSG "Failed to create SyncPal instance!"
 

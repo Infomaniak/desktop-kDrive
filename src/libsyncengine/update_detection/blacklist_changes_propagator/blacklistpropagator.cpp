@@ -171,9 +171,8 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
 
                 // Check if the directory entry is managed
                 bool isManaged = true;
-                bool isLink = false;
                 IoError ioError = IoError::Success;
-                if (!Utility::checkIfDirEntryIsManaged(dirIt, isManaged, isLink, ioError)) {
+                if (!Utility::checkIfDirEntryIsManaged(*dirIt, isManaged, ioError)) {
                     LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
                                       L"Error in Utility::checkIfDirEntryIsManaged - path=" << Path2WStr(absolutePath).c_str());
                     dirIt.disable_recursion_pending();
