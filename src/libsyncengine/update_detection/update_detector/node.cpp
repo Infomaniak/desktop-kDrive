@@ -263,12 +263,12 @@ Node::MoveOriginInfos::MoveOriginInfos(const SyncPath &path, const NodeId &paren
     }
 }
 
-Node::MoveOriginInfos &Node::MoveOriginInfos::operator=(const MoveOriginInfos &newMoveOriginInfos) {
-    LOG_IF_FAIL(Log::instance()->getLogger(), newMoveOriginInfos.isValid());
-    _isValid = newMoveOriginInfos.isValid();
-    _path = newMoveOriginInfos.path();
-    _normalizedPath = newMoveOriginInfos.normalizedPath();
-    _parentNodeId = newMoveOriginInfos.parentNodeId();
+Node::MoveOriginInfos &Node::MoveOriginInfos::operator=(const MoveOriginInfos &other) {
+    LOG_IF_FAIL(Log::instance()->getLogger(), other.isValid());
+    _isValid = other.isValid();
+    _path = other.path();
+    _normalizedPath = other.normalizedPath();
+    _parentNodeId = other.parentNodeId();
     return *this;
 }
 
@@ -285,7 +285,6 @@ const SyncPath &Node::MoveOriginInfos::normalizedPath() const {
 const NodeId &Node::MoveOriginInfos::parentNodeId() const {
     LOG_IF_FAIL(Log::instance()->getLogger(), isValid());
     return _parentNodeId;
-
 }
 
 void Node::MoveOriginInfos::clear() {

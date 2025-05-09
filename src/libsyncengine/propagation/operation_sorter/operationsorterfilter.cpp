@@ -89,18 +89,19 @@ void OperationSorterFilter::filterMoveBeforeDeleteCandidates(const SyncOpPtr &op
         }
 
         SyncPath normalizedDeletedPath;
-        if (const auto deletedPath = op->affectedNode()->getPath(); !Utility::normalizedSyncPath(deletedPath, normalizedDeletedPath)) {
+        if (const auto deletedPath = op->affectedNode()->getPath();
+            !Utility::normalizedSyncPath(deletedPath, normalizedDeletedPath)) {
             LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncPath(deletedPath));
             normalizedDeletedPath = deletedPath;
         }
         (void) deletedDirectoryPaths.try_emplace(normalizedDeletedPath, op);
 
         // Check if any of the moved item origin path is inside the deleted folder.
-        for (const auto &[path, moveOp]: moveOriginPaths) {
+        for (const auto &[normalizedMovePath, moveOp]: moveOriginPaths) {
             if (op->targetSide() != moveOp->targetSide()) {
                 continue;
             }
-            if (Utility::isDescendantOrEqual(path, normalizedDeletedPath)) {
+            if (Utility::isDescendantOrEqual(normalizedMovePath, normalizedDeletedPath)) {
                 (void) _fixMoveBeforeDeleteCandidates.emplace_back(op, moveOp);
             }
         }
@@ -111,11 +112,11 @@ void OperationSorterFilter::filterMoveBeforeDeleteCandidates(const SyncOpPtr &op
         (void) moveOriginPaths.try_emplace(op->affectedNode()->moveOriginInfos().normalizedPath(), op);
 
         // Check if any of the deleted path contains the origin path.
-        for (const auto &[path, deleteOp]: deletedDirectoryPaths) {
+        for (const auto &[normalizedDeletePath, deleteOp]: deletedDirectoryPaths) {
             if (op->targetSide() != deleteOp->targetSide()) {
                 continue;
             }
-            if (Utility::isDescendantOrEqual(op->affectedNode()->moveOriginInfos().normalizedPath(), path)) {
+            if (Utility::isDescendantOrEqual(op->affectedNode()->moveOriginInfos().normalizedPath(), normalizedDeletePath)) {
                 (void) _fixMoveBeforeDeleteCandidates.emplace_back(op, deleteOp);
             }
         }
@@ -130,18 +131,19 @@ void OperationSorterFilter::filterCreateBeforeMoveCandidates(const SyncOpPtr &op
         }
 
         SyncPath normalizedCreatedPath;
-        if (const auto createdPath = op->affectedNode()->getPath(); !Utility::normalizedSyncPath(createdPath, normalizedCreatedPath)) {
+        if (const auto createdPath = op->affectedNode()->getPath();
+            !Utility::normalizedSyncPath(createdPath, normalizedCreatedPath)) {
             LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncPath(createdPath));
             normalizedCreatedPath = createdPath;
         }
         (void) createdDirectoryPaths.try_emplace(normalizedCreatedPath, op);
 
         // Check if any of the moved item destination path is inside the created folder.
-        for (const auto &[path, moveOp]: moveDestinationPaths) {
+        for (const auto &[normalizedMovePath, moveOp]: moveDestinationPaths) {
             if (op->targetSide() != moveOp->targetSide()) {
                 continue;
             }
-            if (Utility::isDescendantOrEqual(path, normalizedCreatedPath)) {
+            if (Utility::isDescendantOrEqual(normalizedMovePath, normalizedCreatedPath)) {
                 (void) _fixCreateBeforeMoveCandidates.emplace_back(op, moveOp);
             }
         }
@@ -150,18 +152,19 @@ void OperationSorterFilter::filterCreateBeforeMoveCandidates(const SyncOpPtr &op
 
     if (op->type() == OperationType::Move) {
         SyncPath normalizedDestinationPath;
-        if (const auto destinationPath = op->affectedNode()->getPath(); !Utility::normalizedSyncPath(destinationPath, normalizedDestinationPath)) {
+        if (const auto destinationPath = op->affectedNode()->getPath();
+            !Utility::normalizedSyncPath(destinationPath, normalizedDestinationPath)) {
             LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncPath(destinationPath));
             normalizedDestinationPath = destinationPath;
         }
         (void) moveDestinationPaths.try_emplace(normalizedDestinationPath, op);
 
         // Check if any of the created path contains the destination path.
-        for (const auto &[path, createOp]: createdDirectoryPaths) {
+        for (const auto &[normalizedCreatedPath, createOp]: createdDirectoryPaths) {
             if (op->targetSide() != createOp->targetSide()) {
                 continue;
             }
-            if (Utility::isDescendantOrEqual(normalizedDestinationPath, path)) {
+            if (Utility::isDescendantOrEqual(normalizedDestinationPath, normalizedCreatedPath)) {
                 (void) _fixCreateBeforeMoveCandidates.emplace_back(op, createOp);
             }
         }
@@ -229,7 +232,8 @@ void OperationSorterFilter::filterMoveBeforeMoveHierarchyFlipCandidates(
 
     const auto &originPath = op->affectedNode()->moveOriginInfos().normalizedPath();
     SyncPath normalizedDestinationPath;
-    if (const auto destinationPath = op->affectedNode()->getPath(); !Utility::normalizedSyncPath(destinationPath, normalizedDestinationPath)) {
+    if (const auto destinationPath = op->affectedNode()->getPath();
+        !Utility::normalizedSyncPath(destinationPath, normalizedDestinationPath)) {
         LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncPath(destinationPath));
         normalizedDestinationPath = destinationPath;
     }
