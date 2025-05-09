@@ -24,8 +24,7 @@ namespace KDC::sentry {
 enum class PTraceName {
     None,
     AppStart,
-    SyncInit,
-    /*SyncInit*/ ResetStatus,
+    ResetStatus,
     Sync,
     /*Sync*/ UpdateDetection1,
     /*Sync*/ /*UpdateDetection1*/ UpdateUnsyncedList,

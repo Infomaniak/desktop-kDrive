@@ -316,8 +316,12 @@ bool Placeholders::getInfo(const PCWSTR path, CF_PLACEHOLDER_STANDARD_INFO &info
     try {
         TRACE_DEBUG(L"Get placeholder info : path = %ls", path);
         DWORD retLength = 0;
-        winrt::check_hresult(
-                CfGetPlaceholderInfo(fileHandle.get(), CF_PLACEHOLDER_INFO_STANDARD, &info, sizeof(info), &retLength));
+        HRESULT res = CfGetPlaceholderInfo(fileHandle.get(), CF_PLACEHOLDER_INFO_STANDARD, &info, sizeof(info), &retLength);
+        if (res == HRESULT_FROM_WIN32(ERROR_MORE_DATA)) {
+            return true;
+        } else {
+            winrt::check_hresult(res);
+        }
     } catch (winrt::hresult_error const &ex) {
         if (ex.code() != HRESULT_FROM_WIN32(ERROR_MORE_DATA)) {
             TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
