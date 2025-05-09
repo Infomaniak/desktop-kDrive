@@ -36,7 +36,8 @@ ExitCode UpdateChecker::checkUpdateAvailability(UniqueId *id /*= nullptr*/) {
     LOG_INFO(Log::instance()->getLogger(), "Looking for new app version...");
 
     const std::function<void(UniqueId)> callback = std::bind_front(&UpdateChecker::versionInfoReceived, this);
-    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL, callback);
+    job->setAdditionalCallback(callback);
+    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
     return ExitCode::Ok;
 }
 

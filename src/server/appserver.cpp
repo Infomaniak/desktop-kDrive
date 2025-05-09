@@ -2137,7 +2137,8 @@ void AppServer::uploadLog(const bool includeArchivedLogs) {
             addError(Error(errId(), ExitCode::LogUploadFailed, exitInfo.cause()));
         }
     };
-    JobManager::instance()->queueAsyncJob(logUploadJob, Poco::Thread::PRIO_HIGH, jobResultCallback);
+    logUploadJob->setAdditionalCallback(jobResultCallback);
+    JobManager::instance()->queueAsyncJob(logUploadJob, Poco::Thread::PRIO_HIGH);
 }
 
 ExitInfo AppServer::checkIfSyncIsValid(const Sync &sync) {

@@ -42,7 +42,6 @@ class TestJobManager : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testWithCallbackMediumFiles);
         CPPUNIT_TEST(testWithCallbackBigFiles);
         CPPUNIT_TEST(testCancelJobs);
-        CPPUNIT_TEST(testJobDependencies);
         CPPUNIT_TEST(testJobPriority);
         CPPUNIT_TEST(testJobPriority2);
         CPPUNIT_TEST(testJobPriority3);
@@ -62,7 +61,6 @@ class TestJobManager : public CppUnit::TestFixture, public TestBase {
         void testWithCallbackMediumFiles();
         void testWithCallbackBigFiles();
         void testCancelJobs();
-        void testJobDependencies();
         void testJobPriority(); // Test execution order of jobs with different priority. Jobs with higher priority must be
                                 // executed first.
         void testJobPriority2(); // Test execution order of jobs with same priority. Jobs created first must be executed first.

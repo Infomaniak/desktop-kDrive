@@ -92,20 +92,15 @@ void JobManager::reset() {
     }
 }
 
-void JobManager::queueAsyncJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority /*= Poco::Thread::PRIO_NORMAL*/,
-                               std::function<void(UniqueId)> externalCallback /*= nullptr*/) noexcept {
+void JobManager::queueAsyncJob(std::shared_ptr<AbstractJob> job,
+                               Poco::Thread::Priority priority /*= Poco::Thread::PRIO_NORMAL*/) noexcept {
     const std::scoped_lock lock(_mutex);
     job->setMainCallback(defaultCallback);
-
-    if (externalCallback) {
-        job->setAdditionalCallback(externalCallback);
-    }
-
     _queuedJobs.emplace(job, priority);
     _managedJobs.try_emplace(job->jobId(), job);
 }
 
-bool JobManager::isJobFinished(const UniqueId &jobId) {
+bool JobManager::isJobFinished(const UniqueId &jobId) const {
     const std::scoped_lock lock(_mutex);
     return !_managedJobs.contains(jobId);
 }
@@ -140,6 +135,9 @@ void JobManager::decreasePoolCapacity() {
 
 void JobManager::defaultCallback(const UniqueId jobId) {
     const std::scoped_lock lock(_mutex);
+    if (_uploadSessionJobId == jobId) {
+        _uploadSessionJobId = 0;
+    }
     (void) _managedJobs.erase(jobId);
     (void) _runningJobs.erase(jobId);
 }
@@ -158,33 +156,32 @@ void JobManager::run() noexcept {
             break;
         }
 
-        {
-            const std::scoped_lock lock(_mutex);
+        auto availableThreads = availableThreadsInPool();
+        // Always keep 1 thread available for jobs with highest priority
+        while (availableThreads > 1 && !_stop && !_queuedJobs.empty()) {
+            auto &[job, priority] = _queuedJobs.top();
 
-            auto availableThreads = availableThreadsInPool();
-            // Always keep 1 thread available for jobs with highest priority
-            while (availableThreads > 1 && !_stop && !_queuedJobs.empty()) {
-                auto &[job, priority] = _queuedJobs.top();
-                _queuedJobs.pop();
-
-                if (canRunjob(job)) {
-                    startJob(job, priority);
-                } else {
-                    _pendingJobs.insert({job->jobId(), {job, priority}});
-                    LOG_DEBUG(Log::instance()->getLogger(),
-                              "Job " << job->jobId() << " is pending (thread pool maximum capacity reached)");
-                }
-
-                availableThreads = availableThreadsInPool();
+            if (canRunjob(job)) {
+                startJob(job, priority);
+            } else {
+                _pendingJobs.try_emplace(job->jobId(), job, priority);
+                LOG_DEBUG(Log::instance()->getLogger(),
+                          "Job " << job->jobId() << " is pending (thread pool maximum capacity reached)");
             }
 
-            // Start job with highest priority
+            availableThreads = availableThreadsInPool();
+            _queuedJobs.pop();
+        }
+
+        // Start job with highest priority
+        if (!_queuedJobs.empty()) {
             if (auto &[job, priority] = _queuedJobs.top(); priority == Poco::Thread::Priority::PRIO_HIGHEST) {
                 startJob(job, priority);
+                _queuedJobs.pop();
             }
-
-            managePendingJobs();
         }
+
+        managePendingJobs();
 
         Utility::msleep(100); // Sleep for 0.1 s
     }

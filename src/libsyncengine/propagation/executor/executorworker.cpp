@@ -90,6 +90,7 @@ void ExecutorWorker::execute() {
                 break;
             }
 
+            // TODO : useful???
             if (JobManager::instance()->countManagedJobs() > static_cast<size_t>(JobManager::instance()->maxNbThreads()) * 2) {
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOG_SYNCPAL_DEBUG(_logger, "Maximum number of jobs reached");
@@ -168,7 +169,8 @@ void ExecutorWorker::execute() {
             if (job) {
                 std::function<void(UniqueId)> callback =
                         std::bind(&ExecutorWorker::executorCallback, this, std::placeholders::_1);
-                JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL, callback);
+                job->setAdditionalCallback(callback);
+                JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
                 _ongoingJobs.insert({job->jobId(), job});
                 _jobToSyncOpMap.insert({job->jobId(), syncOp});
             } else {

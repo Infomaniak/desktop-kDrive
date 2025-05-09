@@ -37,7 +37,10 @@ namespace KDC {
 
 AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const SyncName &filename,
                                              uint64_t nbParalleleThread /*= 1*/) :
-    _logger(Log::instance()->getLogger()), _filePath(filepath), _filename(filename), _nbParalleleThread(nbParalleleThread) {
+    _logger(Log::instance()->getLogger()),
+    _filePath(filepath),
+    _filename(filename),
+    _nbParalleleThread(nbParalleleThread) {
     IoError ioError = IoError::Success;
     if (!IoHelper::getFileSize(_filePath, _filesize, ioError)) {
         std::wstring exceptionMessage = L"Error in IoHelper::getFileSize for " + Utility::formatIoError(_filePath, ioError);
@@ -331,7 +334,8 @@ bool AbstractUploadSession::sendChunks() {
             {
                 const std::scoped_lock lock(_mutex);
                 _threadCounter++;
-                JobManager::instance()->queueAsyncJob(chunkJob, Poco::Thread::PRIO_NORMAL, callback);
+                chunkJob->setAdditionalCallback(callback);
+                JobManager::instance()->queueAsyncJob(chunkJob, Poco::Thread::PRIO_NORMAL);
                 _ongoingChunkJobs.insert({chunkJob->jobId(), chunkJob});
                 LOG_INFO(_logger, "Session " << _sessionToken.c_str() << ", job " << chunkJob->jobId() << " queued, "
                                              << _threadCounter << " jobs in queue");

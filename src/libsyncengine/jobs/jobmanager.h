@@ -60,21 +60,20 @@ class JobManager {
         static void clear();
         static void reset();
 
-        /*
-         * Queue a job to be executed as soon as a thread is available in the default thread pool
-         * If a callback is passed as argument: JobManager will NOT keep a reference to the job. The caller MUST keep a reference
-         * to this job otherwise it could be deleted before or during its execution. Otherwise: JobManager will keep a reference
-         * to the job until it is finished. The caller should not keep a reference to this job.
+        /**
+         * @brief Queue a job to be executed as soon as a thread is available in the default thread pool.
+         * @param job The job to be run asynchronously.
+         * @param priority Job's priority level.
+         * @param externalCallback Callback to be run once the job is done.
          */
-        void queueAsyncJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority = Poco::Thread::PRIO_NORMAL,
-                           std::function<void(UniqueId)> externalCallback = nullptr) noexcept;
+        void queueAsyncJob(std::shared_ptr<AbstractJob> job,
+                           Poco::Thread::Priority priority = Poco::Thread::PRIO_NORMAL) noexcept;
 
-        inline bool hasAvailableThread() { return Poco::ThreadPool::defaultPool().available() > 0; }
-        bool isJobFinished(const UniqueId &jobId);
+        bool isJobFinished(const UniqueId &jobId) const;
 
         std::shared_ptr<AbstractJob> getJob(const UniqueId &jobId);
-        inline size_t countManagedJobs() { return _managedJobs.size(); }
-        inline int maxNbThreads() { return _maxNbThread; }
+        inline size_t countManagedJobs() const { return _managedJobs.size(); }
+        inline int maxNbThreads() const { return _maxNbThread; }
 
         void setPoolCapacity(int count); // For testing purpose
         void decreasePoolCapacity();
@@ -87,7 +86,6 @@ class JobManager {
         static void run() noexcept;
         static void startJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority);
         static void adjustMaxNbThread();
-        static int countUploadSession();
         static void managePendingJobs();
 
         static int availableThreadsInPool();
@@ -102,14 +100,15 @@ class JobManager {
         log4cplus::Logger _logger;
         std::unique_ptr<StdLoggingThread> _thread;
 
-        static std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _managedJobs; // queued + running + pending jobs
+        static std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _managedJobs; // queued + running + pending jobs.
         static std::priority_queue<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>,
                                    std::vector<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>>, JobPriorityCmp>
-                _queuedJobs; // jobs waiting for an available thread
-        static std::unordered_set<UniqueId> _runningJobs; // jobs currently running in a dedicated thread
+                _queuedJobs; // jobs waiting for an available thread.
+        static std::unordered_set<UniqueId> _runningJobs; // jobs currently running in a dedicated thread.
         static std::unordered_map<UniqueId, std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>>
-                _pendingJobs; // jobs waiting for their parent job to be completed
+                _pendingJobs; // jobs waiting to be able to start.
         static std::recursive_mutex _mutex;
+
         static UniqueId _uploadSessionJobId;
 
         friend class TestJobManager;

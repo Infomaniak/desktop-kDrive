@@ -56,7 +56,8 @@
 namespace KDC {
 
 SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted) :
-    _vfs(vfs), _logger(Log::instance()->getLogger()) {
+    _vfs(vfs),
+    _logger(Log::instance()->getLogger()) {
     _syncInfo.syncHasFullyCompleted = hasFullyCompleted;
     LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init: " << Utility::formatSyncPath(syncDbPath));
     assert(_vfs);
@@ -67,7 +68,8 @@ SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std
 }
 
 SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId_, const std::string &version) :
-    _vfs(vfs), _logger(Log::instance()->getLogger()) {
+    _vfs(vfs),
+    _logger(Log::instance()->getLogger()) {
     LOG_SYNCPAL_DEBUG(_logger, "SyncPal init");
     assert(_vfs);
 
@@ -714,7 +716,8 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
 
     // Queue job
     std::function<void(UniqueId)> callback = std::bind(&SyncPal::directDownloadCallback, this, std::placeholders::_1);
-    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGH, callback);
+    job->setAdditionalCallback(callback);
+    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGH);
 
     _directDownloadJobsMapMutex.lock();
     _directDownloadJobsMap.insert({job->jobId(), job});
@@ -985,7 +988,8 @@ ExitCode SyncPal::syncListUpdated(bool restartSync) {
     _blacklistPropagator.reset(new BlacklistPropagator(shared_from_this()));
     _blacklistPropagator->setRestartSyncPal(restartSync);
     std::function<void(UniqueId)> callback = std::bind(&SyncPal::syncPalStartCallback, this, std::placeholders::_1);
-    JobManager::instance()->queueAsyncJob(_blacklistPropagator, Poco::Thread::PRIO_HIGHEST, callback);
+    _blacklistPropagator->setAdditionalCallback(callback);
+    JobManager::instance()->queueAsyncJob(_blacklistPropagator, Poco::Thread::PRIO_HIGHEST);
 
     return ExitCode::Ok;
 }
@@ -1005,7 +1009,8 @@ ExitCode SyncPal::excludeListUpdated() {
     _excludeListPropagator.reset(new ExcludeListPropagator(shared_from_this()));
     _excludeListPropagator->setRestartSyncPal(restartSync);
     std::function<void(UniqueId)> callback = std::bind(&SyncPal::syncPalStartCallback, this, std::placeholders::_1);
-    JobManager::instance()->queueAsyncJob(_excludeListPropagator, Poco::Thread::PRIO_HIGHEST, callback);
+    _excludeListPropagator->setAdditionalCallback(callback);
+    JobManager::instance()->queueAsyncJob(_excludeListPropagator, Poco::Thread::PRIO_HIGHEST);
 
     return ExitCode::Ok;
 }
@@ -1025,7 +1030,8 @@ ExitCode SyncPal::fixConflictingFiles(bool keepLocalVersion, std::vector<Error> 
     _conflictingFilesCorrector.reset(new ConflictingFilesCorrector(shared_from_this(), keepLocalVersion, errorList));
     _conflictingFilesCorrector->setRestartSyncPal(restartSync);
     std::function<void(UniqueId)> callback = std::bind(&SyncPal::syncPalStartCallback, this, std::placeholders::_1);
-    JobManager::instance()->queueAsyncJob(_conflictingFilesCorrector, Poco::Thread::PRIO_HIGHEST, callback);
+    _conflictingFilesCorrector->setAdditionalCallback(callback);
+    JobManager::instance()->queueAsyncJob(_conflictingFilesCorrector, Poco::Thread::PRIO_HIGHEST);
 
     return ExitCode::Ok;
 }
