@@ -33,7 +33,7 @@ struct COMMONGUI_EXPORT CommonGuiUtility {
         static QString durationToDescriptiveString1(quint64 msecs);
 
         static void setupFavLink(const QString &folder);
-
+        static void removeDirIcon(const QString &folder);
         static void sortSubfolders(QList<::KDC::NodeInfo> subfolders);
 
         static QString octetsToString(qint64 octets);
