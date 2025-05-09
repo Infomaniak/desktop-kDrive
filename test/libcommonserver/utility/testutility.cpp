@@ -347,14 +347,12 @@ void TestUtility::testCheckIfDirEntryIsManaged() {
     file.close();
 
     bool isManaged = false;
-    bool isLink = false;
     IoError ioError = IoError::Success;
     std::filesystem::recursive_directory_iterator entry(tempDir.path());
 
     // Check with an existing file (managed)
-    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
+    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
     CPPUNIT_ASSERT(isManaged);
-    CPPUNIT_ASSERT(!isLink);
     CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
     // Check with a simlink (managed)
@@ -362,16 +360,14 @@ void TestUtility::testCheckIfDirEntryIsManaged() {
     std::filesystem::create_directory(simLinkDir);
     std::filesystem::create_symlink(path, simLinkDir / "testLink.txt");
     entry = std::filesystem::recursive_directory_iterator(simLinkDir);
-    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
+    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
     CPPUNIT_ASSERT(isManaged);
-    CPPUNIT_ASSERT(isLink);
     CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
     // Check with a directory
     entry = std::filesystem::recursive_directory_iterator(tempDir.path());
-    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
+    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
     CPPUNIT_ASSERT(isManaged);
-    CPPUNIT_ASSERT(!isLink);
     CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 }
 

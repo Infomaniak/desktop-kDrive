@@ -78,46 +78,6 @@ bool UpdateTree::deleteNode(const NodeId &id) {
     return deleteNode(node);
 }
 
-std::shared_ptr<Node> UpdateTree::getNodeByNormalizedPath(const SyncPath &path) {
-    if (path.empty()) {
-        return _rootNode;
-    }
-
-    const std::vector<SyncName> itemNames = Utility::splitPath(path);
-    std::shared_ptr<Node> tmpNode = _rootNode;
-
-    for (auto nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
-        std::shared_ptr<Node> tmpChildNode = nullptr;
-        SyncName normalizedSyncName;
-        if (!Utility::normalizedSyncName(*nameIt, normalizedSyncName)) {
-            LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(*nameIt));
-            return nullptr;
-        }
-
-        for (const auto &[_, childNode]: tmpNode->children()) {
-            SyncName normalizedChildSyncName;
-            if (!Utility::normalizedSyncName(childNode->name(), normalizedChildSyncName)) {
-                LOGW_WARN(Log::instance()->getLogger(),
-                          L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(childNode->name()));
-                return nullptr;
-            }
-            if (normalizedSyncName == normalizedChildSyncName) {
-                tmpChildNode = childNode;
-                break;
-            }
-        }
-
-        if (tmpChildNode == nullptr) {
-            return nullptr;
-        }
-        tmpNode = tmpChildNode;
-    }
-
-    return tmpNode;
-}
-
-
 std::shared_ptr<Node> UpdateTree::getNodeByPath(const SyncPath &path) {
     if (path.empty()) {
         return _rootNode;
@@ -145,6 +105,38 @@ std::shared_ptr<Node> UpdateTree::getNodeByPath(const SyncPath &path) {
     return tmpNode;
 }
 
+std::shared_ptr<Node> UpdateTree::getNodeByPathNormalized(const SyncPath &path) {
+    if (path.empty()) {
+        return _rootNode;
+    }
+
+    const std::vector<SyncName> itemNames = Utility::splitPath(path);
+    std::shared_ptr<Node> tmpNode = _rootNode;
+
+    for (auto nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
+        std::shared_ptr<Node> tmpChildNode = nullptr;
+        SyncName normalizedSyncName;
+        if (!Utility::normalizedSyncName(*nameIt, normalizedSyncName)) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(*nameIt));
+            return nullptr;
+        }
+
+        for (const auto &[_, childNode]: tmpNode->children()) {
+            if (normalizedSyncName == childNode->normalizedName()) {
+                tmpChildNode = childNode;
+                break;
+            }
+        }
+
+        if (tmpChildNode == nullptr) {
+            return nullptr;
+        }
+        tmpNode = tmpChildNode;
+    }
+
+    return tmpNode;
+}
 
 std::shared_ptr<Node> UpdateTree::getNodeById(const NodeId &nodeId) {
     auto it = _nodes.find(nodeId);

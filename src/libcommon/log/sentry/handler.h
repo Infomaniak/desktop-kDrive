@@ -101,6 +101,7 @@ class Handler {
         static void writeEvent(const std::string &eventStr, bool crash) noexcept;
 
         void setDistributionChannel(VersionChannel channel);
+        void setAppUUID(std::string appUUID);
 
     protected:
         Handler() = default;

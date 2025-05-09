@@ -62,12 +62,13 @@ void UpdateTreeWorker::execute() {
     _updateTree->startUpdate();
 
     // Reset nodes working properties
-    for (const auto &[_, nodeItem]: _updateTree->nodes()) {
-        nodeItem->clearChangeEvents();
-        nodeItem->clearConflictAlreadyConsidered();
-        nodeItem->setInconsistencyType(InconsistencyType::None);
-        nodeItem->setPreviousId(std::nullopt);
-        nodeItem->setStatus(NodeStatus::Unprocessed);
+    for (const auto &[_, node]: _updateTree->nodes()) {
+        node->clearChangeEvents();
+        node->clearConflictAlreadyConsidered();
+        node->setInconsistencyType(InconsistencyType::None);
+        node->setPreviousId(std::nullopt);
+        node->setStatus(NodeStatus::Unprocessed);
+        node->clearMoveOriginInfos();
     }
 
     _updateTree->previousIdSet().clear();
