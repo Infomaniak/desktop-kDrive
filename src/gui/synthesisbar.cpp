@@ -17,6 +17,7 @@
  */
 
 #include "synthesisbar.h"
+#include "MatomoClient.h"
 #include "errorspopup.h"
 #include "languagechangefilter.h"
 #include "config.h"
@@ -207,10 +208,12 @@ bool SynthesisBar::eventFilter(QObject *obj, QEvent *event) {
 }
 
 void SynthesisBar::onDisplayErrors(int driveDbId) {
+    MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "displayErrors", driveDbId);
     displayErrors(driveDbId);
 }
 
 void SynthesisBar::onOpenErrorsMenu() {
+    MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "openErrorsMenu");
     QList<ErrorsPopup::DriveError> driveErrorList;
     getDriveErrorList(driveErrorList);
 
@@ -227,6 +230,7 @@ void SynthesisBar::onOpenErrorsMenu() {
 void SynthesisBar::onOpenMiscellaneousMenu() {
     auto *menu = new MenuWidget(MenuWidget::Menu, this);
 
+    MatomoClient::sendVisit(MatomoNameField::PG_SynthesisPopover_KebabMenu);
     // Open Folder
     std::map<int, SyncInfoClient> syncInfoMap;
     _gui->loadSyncInfoMap(_gui->currentDriveDbId(), syncInfoMap);
@@ -391,11 +395,13 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
 }
 
 void SynthesisBar::onOpenFolder() {
+    MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "openDriveFolder");
     const auto syncDbId = qvariant_cast<int>(sender()->property(MenuWidget::actionTypeProperty.c_str()));
     openUrl(syncDbId);
 }
 
 void SynthesisBar::onOpenWebview() {
+    MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "openWebVersionButton");
     if (_gui->currentDriveDbId() != 0) {
         const auto driveInfoIt = _gui->driveInfoMap().find(_gui->currentDriveDbId());
         if (driveInfoIt == _gui->driveInfoMap().end()) {
@@ -420,6 +426,7 @@ void SynthesisBar::onOpenWebview() {
 }
 
 void SynthesisBar::onOpenDriveParameters() {
+    MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "driveParametersButton");
     emit showParametersDialog(_gui->currentDriveDbId());
 }
 
@@ -458,24 +465,28 @@ void SynthesisBar::onNotificationActionTriggered() {
             assert(false && "Invalid enum value in switch statement.");
         }
     }
-
+    MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "disableNotificationsFor", static_cast<int>(_notificationsDisabled));
     emit disableNotifications(_notificationsDisabled, _notificationsDisabledUntilDateTime);
 }
 
 void SynthesisBar::onOpenPreferences() {
+    MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "preferencesButton");
     emit showParametersDialog();
 }
 
 void SynthesisBar::onDisplayHelp() {
+    MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "helpButton");
     QDesktopServices::openUrl(QUrl(Theme::instance()->helpUrl()));
 }
 
 void SynthesisBar::onSendFeedback() {
+    MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "sendFeedbackButton");
     const auto url = QUrl(Theme::instance()->feedbackUrl(ParametersCache::instance()->parametersInfo().language()));
     QDesktopServices::openUrl(url);
 }
 
 void SynthesisBar::onExit() {
+    MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "exitButton");
     hide();
     emit exit();
 }

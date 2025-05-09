@@ -18,6 +18,7 @@
 
 #include "clientgui.h"
 #include "synthesispopover.h"
+#include "MatomoClient.h"
 #include "menuwidget.h"
 #include "bottomwidget.h"
 #include "customtogglepushbutton.h"
@@ -362,6 +363,7 @@ bool SynthesisPopover::event(QEvent *event) {
                 // Update the list of synchronized items
                 qCDebug(lcSynthesisPopover) << "Show event";
                 emit updateItemList();
+                MatomoClient::sendVisit(MatomoNameField::PG_SynthesisPopover);
             }
         }
     }
@@ -1029,10 +1031,17 @@ void SynthesisPopover::onDriveSelected(int driveDbId) {
 }
 
 void SynthesisPopover::onAddDrive() {
+    MatomoClient::sendEvent("synthesisPopover", MatomoEventAction::Click, "addDriveButton");
     emit addDrive();
 }
 
 void SynthesisPopover::onPauseSync(ActionTarget target, int syncDbId) {
+    const int driveToMatomo = (target == ActionTarget::AllDrives ?  -1 :
+                          (target == ActionTarget::Drive ?      _gui->currentDriveDbId() :
+                                                                syncDbId
+                          ));
+    MatomoClient::sendEvent("synthesisPopover", MatomoEventAction::Click, "pauseSyncButton", driveToMatomo);
+
     emit executeSyncAction(ActionType::Stop, target,
                            (target == ActionTarget::Sync    ? syncDbId
                             : target == ActionTarget::Drive ? _gui->currentDriveDbId()
@@ -1040,6 +1049,12 @@ void SynthesisPopover::onPauseSync(ActionTarget target, int syncDbId) {
 }
 
 void SynthesisPopover::onResumeSync(ActionTarget target, int syncDbId) {
+    const int driveToMatomo = (target == ActionTarget::AllDrives ?  -1 :
+                              (target == ActionTarget::Drive ?      _gui->currentDriveDbId() :
+                                                                    syncDbId
+                              ));
+    MatomoClient::sendEvent("synthesisPopover", MatomoEventAction::Click, "resumeSyncButton", driveToMatomo);
+
     emit executeSyncAction(ActionType::Start, target,
                            (target == ActionTarget::Sync    ? syncDbId
                             : target == ActionTarget::Drive ? _gui->currentDriveDbId()
@@ -1142,6 +1157,13 @@ void SynthesisPopover::onLinkActivated(const QString &link) {
                 qCWarning(lcSynthesisPopover) << "QDesktopServices::openUrl failed for " << link;
                 CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open link %1.").arg(link), QMessageBox::Ok, this);
                 msgBox.exec();
+            }
+            if (link == _localFolderUrl.toString()) {
+                MatomoClient::sendEvent("synthesisPopover", MatomoEventAction::Click, "localFolderLink");
+            } else if (link == _remoteFolderUrl.toString()) {
+                MatomoClient::sendEvent("synthesisPopover", MatomoEventAction::Click, "remoteFolderLink");
+            } else {
+                MatomoClient::sendEvent("synthesisPopover", MatomoEventAction::Click, "unknownLink");
             }
         } else {
             qCWarning(lcSynthesisPopover) << "Invalid link " << link;
