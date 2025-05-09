@@ -17,6 +17,8 @@
  */
 
 #include "uploadsessionfinishjob.h"
+
+#include "jobs/network/API_v2/upload/uploadjobreplyhandler.h"
 #include "libcommonserver/utility/utility.h"
 #include "utility/jsonparserutility.h"
 
@@ -24,18 +26,22 @@
 
 namespace KDC {
 
-UploadSessionFinishJob::UploadSessionFinishJob(const std::shared_ptr<Vfs> &vfs, UploadSessionType uploadType, int driveDbId,
-                                               const SyncPath &absoluteFilePath, const std::string &sessionToken,
-                                               const std::string &totalChunkHash, uint64_t totalChunks, SyncTime modtime) :
-    AbstractUploadSessionJob(uploadType, driveDbId, absoluteFilePath, sessionToken), _totalChunkHash(totalChunkHash),
-    _totalChunks(totalChunks), _modtimeIn(modtime), _vfs(vfs) {
+UploadSessionFinishJob::UploadSessionFinishJob(const std::shared_ptr<Vfs> &vfs, const UploadSessionType uploadType,
+                                               const int driveDbId, const SyncPath &absoluteFilePath,
+                                               const std::string &sessionToken, const std::string &totalChunkHash,
+                                               const uint64_t totalChunks, const SyncTime modtime) :
+    AbstractUploadSessionJob(uploadType, driveDbId, absoluteFilePath, sessionToken),
+    _totalChunkHash(totalChunkHash),
+    _totalChunks(totalChunks),
+    _modtimeIn(modtime),
+    _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
-UploadSessionFinishJob::UploadSessionFinishJob(UploadSessionType uploadType, const SyncPath &filepath,
+UploadSessionFinishJob::UploadSessionFinishJob(const UploadSessionType uploadType, const SyncPath &absoluteFilePath,
                                                const std::string &sessionToken, const std::string &totalChunkHash,
-                                               uint64_t totalChunks, SyncTime modtime) :
-    UploadSessionFinishJob(nullptr, uploadType, 0, filepath, sessionToken, totalChunkHash, totalChunks, modtime) {}
+                                               const uint64_t totalChunks, const SyncTime modtime) :
+    UploadSessionFinishJob(nullptr, uploadType, 0, absoluteFilePath, sessionToken, totalChunkHash, totalChunks, modtime) {}
 
 UploadSessionFinishJob::~UploadSessionFinishJob() {
     if (!_vfs) return;
@@ -50,22 +56,10 @@ bool UploadSessionFinishJob::handleResponse(std::istream &is) {
         return false;
     }
 
-    if (!jsonRes()) return false;
-    const Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
-    if (!dataObj) return false;
-    const Poco::JSON::Object::Ptr fileObj = dataObj->getObject(fileKey);
-    if (!fileObj) return false;
-    if (!JsonParserUtility::extractValue(fileObj, idKey, _nodeId)) return false;
-    if (!JsonParserUtility::extractValue(fileObj, lastModifiedAtKey, _modtimeOut)) return false;
-
-    if (_modtimeIn != _modtimeOut) {
-        // The backend refused the modification time. To avoid further EDIT operations, we apply the backend's time on local file.
-        bool exists = false;
-        (void) Utility::setFileDates(_absoluteFilePath, 0, _modtimeOut, false, exists);
-        LOG_INFO(_logger, "Modification time refused "
-                                  << _modtimeIn << " by the backend. The modification time has been updated to " << _modtimeOut
-                                  << " on local file.");
-    }
+    UploadJobReplyHandler replyHandler(_absoluteFilePath, _modtimeIn);
+    if (!replyHandler.extractData(jsonRes())) return false;
+    _nodeId = replyHandler.nodeId();
+    _modtimeOut = replyHandler.modtime();
 
     return true;
 }
@@ -80,9 +74,9 @@ std::string UploadSessionFinishJob::getSpecificUrl() {
 
 ExitInfo UploadSessionFinishJob::setData() {
     Poco::JSON::Object json;
-    json.set("total_chunk_hash", "xxh3:" + _totalChunkHash);
-    json.set("total_chunks", _totalChunks);
-    json.set(lastModifiedAtKey, _modtimeIn);
+    (void) json.set("total_chunk_hash", "xxh3:" + _totalChunkHash);
+    (void) json.set("total_chunks", _totalChunks);
+    (void) json.set(lastModifiedAtKey, _modtimeIn);
 
     std::stringstream ss;
     json.stringify(ss);

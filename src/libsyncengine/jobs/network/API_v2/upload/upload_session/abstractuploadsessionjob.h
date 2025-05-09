@@ -16,15 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "abstractuploadsessionjob.h"
+
+#pragma once
+
+#include "jobs/network/API_v2/abstracttokennetworkjob.h"
 
 namespace KDC {
 
-AbstractUploadSessionJob::AbstractUploadSessionJob(UploadSessionType uploadType, int driveDbId) :
-    AbstractTokenNetworkJob(uploadType == UploadSessionType::Drive ? ApiType::Drive : ApiType::Desktop, 0, 0, driveDbId, 0) {}
+class AbstractUploadSessionJob : public AbstractTokenNetworkJob {
+    public:
+        AbstractUploadSessionJob(UploadSessionType uploadType, int driveDbId);
+        AbstractUploadSessionJob(UploadSessionType uploadType, int driveDbId, const SyncPath &filepath,
+                                 const std::string &sessionToken);
+        ~AbstractUploadSessionJob() override = default;
 
-AbstractUploadSessionJob::AbstractUploadSessionJob(UploadSessionType uploadType, int driveDbId, const SyncPath &absoluteFilePath,
-                                                   const std::string &sessionToken) :
-    AbstractTokenNetworkJob(uploadType == UploadSessionType::Drive ? ApiType::Drive : ApiType::Desktop, 0, 0, driveDbId, 0),
-    _sessionToken(sessionToken), _absoluteFilePath(absoluteFilePath) {}
+        inline const std::string &sessionToken() const { return _sessionToken; }
+
+    protected:
+        std::string _sessionToken;
+        SyncPath _absoluteFilePath;
+};
+
 } // namespace KDC

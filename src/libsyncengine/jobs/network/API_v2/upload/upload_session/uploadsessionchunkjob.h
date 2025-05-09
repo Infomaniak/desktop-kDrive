@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "jobs/network/API_v2/upload_session/abstractuploadsessionjob.h"
+#include "abstractuploadsessionjob.h"
 
 namespace KDC {
 
@@ -30,17 +30,17 @@ class UploadSessionChunkJob : public AbstractUploadSessionJob {
 
         UploadSessionChunkJob(UploadSessionType uploadType, const SyncPath &filepath, const std::string &sessionToken,
                               const std::string &chunkContent, uint64_t chunkNb, uint64_t chunkSize, UniqueId sessionJobId);
-        ~UploadSessionChunkJob();
+        ~UploadSessionChunkJob() override;
 
-        inline const std::string &chunkHash() const { return _chunkHash; }
-        inline UniqueId sessionJobId() const { return _sessionJobId; }
-        inline uint64_t chunkSize() const { return _chunkSize; }
+        const std::string &chunkHash() const { return _chunkHash; }
+        UniqueId sessionJobId() const { return _sessionJobId; }
+        uint64_t chunkSize() const { return _chunkSize; }
 
     private:
-        virtual std::string getSpecificUrl() override;
-        virtual std::string getContentType(bool &canceled) override;
-        virtual void setQueryParameters(Poco::URI &, bool &canceled) override;
-        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
+        std::string getSpecificUrl() override;
+        std::string getContentType(bool &canceled) override;
+        void setQueryParameters(Poco::URI &, bool &canceled) override;
+        ExitInfo setData() override { return ExitCode::Ok; }
 
         std::string _chunkHash;
         uint64_t _chunkNb = 0;

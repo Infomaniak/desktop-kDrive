@@ -16,24 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
-#include "jobs/network/API_v2/upload_session/abstractuploadsessionjob.h"
+#include "abstractuploadsessionjob.h"
 
 namespace KDC {
 
-class UploadSessionCancelJob : public AbstractUploadSessionJob {
-    public:
-        UploadSessionCancelJob(UploadSessionType uploadType, int driveDbId, const SyncPath &filepath,
-                               const std::string &sessionToken);
-        UploadSessionCancelJob(UploadSessionType uploadType, const std::string &sessionToken);
+AbstractUploadSessionJob::AbstractUploadSessionJob(UploadSessionType uploadType, int driveDbId) :
+    AbstractTokenNetworkJob(uploadType == UploadSessionType::Drive ? ApiType::Drive : ApiType::Desktop, 0, 0, driveDbId, 0) {}
 
-    private:
-        virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &, bool &) override {}
-        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
-
-        virtual bool handleError(std::istream &is, const Poco::URI &uri) override;
-};
-
+AbstractUploadSessionJob::AbstractUploadSessionJob(UploadSessionType uploadType, int driveDbId, const SyncPath &absoluteFilePath,
+                                                   const std::string &sessionToken) :
+    AbstractTokenNetworkJob(uploadType == UploadSessionType::Drive ? ApiType::Drive : ApiType::Desktop, 0, 0, driveDbId, 0),
+    _sessionToken(sessionToken),
+    _absoluteFilePath(absoluteFilePath) {}
 } // namespace KDC

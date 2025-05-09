@@ -27,13 +27,13 @@
 #include "jobs/network/API_v2/downloadjob.h"
 #include "jobs/network/API_v2/movejob.h"
 #include "jobs/network/API_v2/renamejob.h"
-#include "jobs/network/API_v2/uploadjob.h"
 #include "jobs/network/API_v2/getfilelistjob.h"
-#include "jobs/network/API_v2/upload_session/driveuploadsession.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "update_detection/update_detector/updatetree.h"
 #include "jobs/jobmanager.h"
+#include "jobs/network/API_v2/upload/uploadjob.h"
+#include "jobs/network/API_v2/upload/upload_session/driveuploadsession.h"
 #include "libcommon/log/sentry/ptraces.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
@@ -41,7 +41,6 @@
 #include "requests/parameterscache.h"
 #include "requests/syncnodecache.h"
 #include "utility/jsonparserutility.h"
-#include "utility/logiffail.h"
 
 #include <iostream>
 #include <log4cplus/loggingmacros.h>
@@ -771,15 +770,14 @@ ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<Abstract
     // iteration.
     // 3. If the omit flag is False, update the updatetreeY structure to ensure that follow-up operations can execute correctly,
     // as they are based on the information in this structure.
+
     ignored = false;
-
     SyncPath relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
-
     if (relativeLocalFilePath.empty()) {
         return ExitCode::DataError;
     }
 
-    if (isLiteSyncActivated()) {
+    if (isLiteSyncActivated() && !syncOp->omit()) {
         SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
         bool ignoreItem = false;
         bool isSyncing = false;
@@ -809,17 +807,18 @@ ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<Abstract
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()));
             return exitInfo;
         }
-    } else {
-        if (!enoughLocalSpace(syncOp)) {
-            _syncPal->addError(Error(_syncPal->syncDbId(), name(), ExitCode::SystemError, ExitCause::NotEnoughDiskSpace));
-            return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
-        }
+        return ExitCode::Ok;
+    }
 
-        if (ExitInfo exitInfo = generateEditJob(syncOp, job); !exitInfo) {
-            LOGW_SYNCPAL_WARN(_logger, L"Failed to generate edit job for: " << SyncName2WStr(syncOp->affectedNode()->name())
-                                                                            << L" " << exitInfo);
-            return exitInfo;
-        }
+    if (!enoughLocalSpace(syncOp)) {
+        _syncPal->addError(Error(_syncPal->syncDbId(), name(), ExitCode::SystemError, ExitCause::NotEnoughDiskSpace));
+        return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
+    }
+
+    if (ExitInfo exitInfo = generateEditJob(syncOp, job); !exitInfo) {
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to generate edit job for: " << SyncName2WStr(syncOp->affectedNode()->name()) << L" "
+                                                                        << exitInfo);
+        return exitInfo;
     }
     return ExitCode::Ok;
 }

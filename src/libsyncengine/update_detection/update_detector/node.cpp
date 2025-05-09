@@ -28,7 +28,14 @@ namespace KDC {
 Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
            OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
            std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode) :
-    _idb(idb), _side(side), _name(name), _type(type), _id(id), _createdAt(createdAt), _lastModified(lastmodified), _size(size),
+    _idb(idb),
+    _side(side),
+    _name(name),
+    _type(type),
+    _id(id),
+    _createdAt(createdAt),
+    _lastModified(lastmodified),
+    _size(size),
     _conflictsAlreadyConsidered(std::vector<ConflictType>()) {
     setParentNode(parentNode);
     setChangeEvents(changeEvents);
@@ -50,7 +57,10 @@ Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, Operati
     Node(std::nullopt, side, name, type, changeEvents, id, createdAt, lastmodified, size, parentNode) {}
 
 Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::shared_ptr<Node> parentNode) :
-    _side(side), _name(name), _type(type), _isTmp(true) {
+    _side(side),
+    _name(name),
+    _type(type),
+    _isTmp(true) {
     _id = "tmp_" + CommonUtility::generateRandomStringAlphaNum();
     setParentNode(parentNode);
 }
@@ -59,6 +69,19 @@ bool Node::operator==(const Node &n) const {
     return n._idb == _idb && n._name == _name;
 }
 
+const SyncName &Node::normalizedName() {
+    if (!_normalizedName.empty()) return _normalizedName;
+    if (!Utility::normalizedSyncName(_name, _normalizedName)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncName(_name));
+        return _name;
+    }
+    return _normalizedName;
+}
+
+void Node::setName(const SyncName &name) {
+    _name = name;
+    _normalizedName.clear();
+}
 bool Node::setParentNode(const std::shared_ptr<Node> &parentNode) {
     if (!parentNode) return true;
 
