@@ -20,9 +20,9 @@
 #include "jobs/network/networkjobsparams.h"
 #include "jobs/network/abstractnetworkjob.h"
 #include "log/log.h"
-#include "jobs/network/API_v2/upload_session/abstractuploadsession.h"
 #include "libcommonserver/utility/utility.h"
 #include "network/API_v2/downloadjob.h"
+#include "network/API_v2/upload_session/driveuploadsession.h"
 #include "performance_watcher/performancewatcher.h"
 #include "requests/parameterscache.h"
 
@@ -197,6 +197,9 @@ void JobManager::startJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priori
             LOG_DEBUG(Log::instance()->getLogger(), "Starting job " << job->jobId() << " with priority " << priority);
             Poco::ThreadPool::defaultPool().startWithPriority(priority, *job);
             _runningJobs.insert(job->jobId());
+            if (isBigFileUploadJob(job)) {
+                _uploadSessionJobId = job->jobId();
+            }
         }
     } catch (Poco::NoThreadAvailableException &) {
         LOG_DEBUG(Log::instance()->getLogger(), "No more thread available, job " << job->jobId() << " queued");
@@ -208,15 +211,15 @@ void JobManager::startJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priori
 
 bool JobManager::canRunjob(const std::shared_ptr<AbstractJob> job) {
     if (isBigFileUploadJob(job)) {
-        if (!_uploadSessionJobId) {
-            // Allow only 1 upload session at a time
-            _uploadSessionJobId = job->jobId();
+        if (_uploadSessionJobId == 0) {
+            // Allow only 1 upload session at a time.
             return true;
         }
         return false;
     }
-    if (isBigFileDownloadJob(job)) {
-        // TODO...
+    if (isBigFileDownloadJob(job) && availableThreadsInPool() < 0.5 * Poco::ThreadPool::defaultPool().capacity()) {
+        // Allow big file download only if there is more than 50% of thread available in the pool.
+        return false;
     }
     return true;
 }
@@ -230,7 +233,7 @@ bool JobManager::isBigFileDownloadJob(const std::shared_ptr<AbstractJob> job) {
 }
 
 bool JobManager::isBigFileUploadJob(const std::shared_ptr<AbstractJob> job) {
-    if (std::dynamic_pointer_cast<AbstractUploadSession>(job)) {
+    if (std::dynamic_pointer_cast<DriveUploadSession>(job)) {
         // Upload sessions are only for big files
         return true;
     }
