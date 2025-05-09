@@ -115,6 +115,7 @@ struct COMMON_EXPORT CommonUtility {
         static size_t maxPathLength();
 
         static bool isSubDir(const SyncPath &path1, const SyncPath &path2);
+        static bool isDiskRootFolder(const SyncPath &absolutePath);
 
         static const std::string dbVersionNumber(const std::string &dbVersion);
         static bool isVersionLower(const std::string &currentVersion, const std::string &targetVersion);

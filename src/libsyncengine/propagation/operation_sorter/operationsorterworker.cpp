@@ -29,7 +29,8 @@ namespace KDC {
 
 OperationSorterWorker::OperationSorterWorker(const std::shared_ptr<SyncPal> &syncPal, const std::string &name,
                                              const std::string &shortName) :
-    OperationProcessor(syncPal, name, shortName), _filter(syncPal->_syncOps->allOps()) {}
+    OperationProcessor(syncPal, name, shortName),
+    _filter(syncPal->_syncOps->allOps()) {}
 
 void OperationSorterWorker::execute() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
@@ -118,7 +119,7 @@ void OperationSorterWorker::fixDeleteBeforeMove() {
             continue;
         }
 
-        if (deleteNode->name() == moveNode->name()) {
+        if (deleteNode->normalizedName() == moveNode->normalizedName()) {
             // move only if moveOp is before deleteOp
             moveFirstAfterSecond(moveOp, deleteOp);
         }
@@ -143,7 +144,7 @@ void OperationSorterWorker::fixMoveBeforeCreate() {
         const auto createParentNode = createNode->parentNode();
         LOG_IF_FAIL(createParentNode)
         if (!createParentNode->id().has_value()) {
-            LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createParentNode->name()));
+            LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createParentNode->normalizedName()));
             continue;
         }
 
@@ -151,7 +152,14 @@ void OperationSorterWorker::fixMoveBeforeCreate() {
             continue;
         }
 
-        if (moveNode->moveOriginInfos().path().filename() == createNode->name()) {
+        SyncPath normalizedPath;
+        if (!Utility::normalizedSyncPath(moveNode->moveOriginInfos().path(), normalizedPath)) {
+            LOGW_WARN(_logger,
+                      L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(moveNode->moveOriginInfos().path()));
+            normalizedPath = moveNode->moveOriginInfos().path();
+        }
+
+        if (normalizedPath.filename() == createNode->normalizedName()) {
             // move only if createOp is before moveOp
             moveFirstAfterSecond(createOp, moveOp);
         }
@@ -202,7 +210,7 @@ void OperationSorterWorker::fixDeleteBeforeCreate() {
             continue;
         }
 
-        if (createNode->name() == deleteNode->name()) {
+        if (createNode->normalizedName() == deleteNode->normalizedName()) {
             // move only if createOp is before deleteOp
             moveFirstAfterSecond(createOp, deleteOp);
         }

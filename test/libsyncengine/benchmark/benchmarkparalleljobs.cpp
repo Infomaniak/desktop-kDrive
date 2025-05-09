@@ -18,14 +18,13 @@
 
 #include "benchmarkparalleljobs.h"
 
-#include "config.h"
 #include "db/parmsdb.h"
 #include "gui/parameterscache.h"
 #include "jobs/jobmanager.h"
 #include "jobs/network/API_v2/downloadjob.h"
 #include "jobs/network/API_v2/getfilelistjob.h"
-#include "jobs/network/API_v2/uploadjob.h"
-#include "jobs/network/API_v2/upload_session/driveuploadsession.h"
+#include "jobs/network/API_v2/upload/uploadjob.h"
+#include "jobs/network/API_v2/upload/upload_session/driveuploadsession.h"
 #include "keychainmanager/keychainmanager.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "network/proxy.h"

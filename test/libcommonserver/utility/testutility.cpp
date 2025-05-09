@@ -307,7 +307,7 @@ void TestUtility::testErrId() {
     CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), errId());
 }
 
-void TestUtility::isSubDir() {
+void TestUtility::testIsSubDir() {
     SyncPath path1 = "A/AA/AAA";
     SyncPath path2 = "A/AA";
     CPPUNIT_ASSERT(CommonUtility::isSubDir(path2, path1));
@@ -320,7 +320,26 @@ void TestUtility::isSubDir() {
     CPPUNIT_ASSERT(!CommonUtility::isSubDir(path2, path1));
 }
 
-void TestUtility::testcheckIfDirEntryIsManaged() {
+void TestUtility::testIsDiskRootFolder() {
+    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("A/AA/AAA"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("/"));
+    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("/Users"));
+    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("/home"));
+#if defined(_WIN32)
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("C:\\"));
+    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("C:\\Users"));
+#elif defined(__APPLE__)
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("/Volumes/drivename"));
+    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("/Volumes/drivename/kDrive"));
+#else
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("/media"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("/media/username"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("/media/username/drivename"));
+    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("/media/username/drivename/kDrive"));
+#endif
+}
+
+void TestUtility::testCheckIfDirEntryIsManaged() {
     LocalTemporaryDirectory tempDir;
     SyncPath path = tempDir.path() / "test.txt";
     std::ofstream file(path);

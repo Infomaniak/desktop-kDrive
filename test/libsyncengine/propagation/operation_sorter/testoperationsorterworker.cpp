@@ -434,7 +434,7 @@ void TestOperationSorterWorker::testFixEditBeforeMove() {
 // relationships are now flipped).
 void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFlip() {
     generateLotsOfDummySyncOperations(OperationType::Move, OperationType::Move, NodeType::Directory);
-    
+
     // Move A/AA to E
     const auto nodeAA = _testSituationGenerator.moveNode(ReplicaSide::Local, "aa", {}, Str("E"));
     const auto moveOp1 = generateSyncOperation(OperationType::Move, nodeAA);
@@ -501,6 +501,66 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFlip3() {
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
     CPPUNIT_ASSERT_EQUAL(moveOp1->id(), _syncPal->syncOps()->opSortedList().front());
     CPPUNIT_ASSERT_EQUAL(moveOp3->id(), _syncPal->syncOps()->opSortedList().back());
+}
+
+void TestOperationSorterWorker::testCheckAllMethods() {
+    // Generate a MoveBeforeCreate situation ...
+    // Move A to B/A
+    const auto nodeA = _testSituationGenerator.moveNode(ReplicaSide::Local, "a", "b");
+    const auto moveOp = generateSyncOperation(OperationType::Move, nodeA);
+
+    // Create A
+    const auto nodeA2 = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "a2", "");
+    nodeA2->setName(Str("A"));
+    const auto createOp = generateSyncOperation(OperationType::Create, nodeA2);
+
+    (void) _syncPal->syncOps()->pushOp(createOp);
+    (void) _syncPal->syncOps()->pushOp(moveOp);
+
+    // ... but apply all sorter methods
+    const TimerUtility timer;
+    _syncPal->_operationsSorterWorker->_filter.filterOperations();
+    _syncPal->_operationsSorterWorker->fixDeleteBeforeMove();
+    _syncPal->_operationsSorterWorker->fixMoveBeforeCreate();
+    _syncPal->_operationsSorterWorker->fixMoveBeforeDelete();
+    _syncPal->_operationsSorterWorker->fixCreateBeforeMove();
+    _syncPal->_operationsSorterWorker->fixDeleteBeforeCreate();
+    _syncPal->_operationsSorterWorker->fixMoveBeforeMoveOccupied();
+    _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
+    _syncPal->_operationsSorterWorker->fixEditBeforeMove();
+    _syncPal->_operationsSorterWorker->fixMoveBeforeMoveHierarchyFlip();
+    (void) timer.elapsed("Operations sorted in");
+
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
+    CPPUNIT_ASSERT_EQUAL(moveOp->id(), _syncPal->syncOps()->opSortedList().front());
+    CPPUNIT_ASSERT_EQUAL(createOp->id(), _syncPal->syncOps()->opSortedList().back());
+}
+
+void TestOperationSorterWorker::testDifferentEncodings() {
+    // Generate a MoveBeforeCreate situation but with different encodings
+    const auto nodeNfc = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "nfc", "", false);
+    nodeNfc->setName(testhelpers::makeNfcSyncName());
+
+    // Move "ééé" to B/"ééé"
+    (void) _testSituationGenerator.moveNode(ReplicaSide::Local, nodeNfc->id().value(), "b");
+    const auto moveOp = generateSyncOperation(OperationType::Move, nodeNfc);
+
+    // Create "ééé" but NFD encoded
+    const auto nodeNfd = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "nfd", "");
+    nodeNfd->setName(testhelpers::makeNfdSyncName());
+    const auto createOp = generateSyncOperation(OperationType::Create, nodeNfd);
+
+    (void) _syncPal->syncOps()->pushOp(createOp);
+    (void) _syncPal->syncOps()->pushOp(moveOp);
+
+    const TimerUtility timer;
+    _syncPal->_operationsSorterWorker->_filter.filterOperations();
+    _syncPal->_operationsSorterWorker->fixMoveBeforeCreate();
+    (void) timer.elapsed("Operations sorted in");
+
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
+    CPPUNIT_ASSERT_EQUAL(moveOp->id(), _syncPal->syncOps()->opSortedList().front());
+    CPPUNIT_ASSERT_EQUAL(createOp->id(), _syncPal->syncOps()->opSortedList().back());
 }
 
 void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {
