@@ -189,14 +189,18 @@ static BOOL processAuthRename(const es_message_t *msg)
         
     // Check that the file is being monitored
     NSString *filePath = [NSString stringWithUTF8String:msg->event.rename.source->path.data];
+    
     if (!(g_xpcService && [g_xpcService isFileMonitored:filePath])) {
         return FALSE;
     }
     
+    /*NSLog(@"[KD] Move file %s to destination %s",
+          msg->event.rename.source->path.data, msg->event.rename.destination.new_path.dir->path.data);*/
+    
     // Check file status
     long bufferLength = getxattr([filePath UTF8String], [EXT_ATTR_STATUS UTF8String], NULL, 0, 0, 0);
-    char status[bufferLength];
     if (bufferLength >= 0) {
+        char status[bufferLength];
         if (getxattr([filePath UTF8String], [EXT_ATTR_STATUS UTF8String], status, bufferLength, 0, 0) != bufferLength) {
             NSLog(@"[KD] ERROR: fgetxattr() failed for file %@: %d", filePath, errno);
             return FALSE;
