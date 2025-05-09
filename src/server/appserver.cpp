@@ -2857,7 +2857,7 @@ void AppServer::logUsefulInformation() const {
     }
     const auto &appUid = std::get<std::string>(appStateValue);
     LOG_INFO(Log::instance()->getLogger(), "App ID: " << appUid);
-
+    sentry::Handler::instance()->setAppUUID(appUid);
     // Log user IDs
     std::vector<User> userList;
     if (!ParmsDb::instance()->selectAllUsers(userList)) {
