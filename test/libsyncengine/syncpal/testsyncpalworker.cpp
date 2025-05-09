@@ -158,7 +158,7 @@ void TestSyncPalWorker::testInternalPause1() {
     CPPUNIT_ASSERT(mockLfso->snapshot()->updated()); // Ensure the event is pending
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // wait for automatic restart
-            [&syncpalWorker]() { return syncpalWorker->_unpauseAsked; },
+            [&syncpalWorker]() { return (syncpalWorker->_unpauseAsked || !syncpalWorker->isPaused()); },
             [&syncpalWorker]() { CPPUNIT_ASSERT_EQUAL(SyncStep::Idle, syncpalWorker->step()); }, testTimeout, loopWait));
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the automatic re-pause
@@ -225,7 +225,7 @@ void TestSyncPalWorker::testInternalPause2() {
 
     // Ensure automatic restart & re-(ask)pausing while the current worker is still running
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the automatic restart
-            [&syncpalWorker]() { return syncpalWorker->_unpauseAsked; },
+            [&syncpalWorker]() { return syncpalWorker->_unpauseAsked || !syncpalWorker->isPaused(); },
             [&syncpalWorker, this]() {
                 CPPUNIT_ASSERT_EQUAL(SyncStep::Reconciliation1, syncpalWorker->step());
                 CPPUNIT_ASSERT_EQUAL(SyncStatus::Running, _syncPal->status());
