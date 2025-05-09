@@ -22,8 +22,6 @@
 #include "utility/types.h"
 #include "db/syncdb.h"
 
-#include <log4cplus/logger.h>
-
 namespace KDC {
 
 class DriveUploadSession : public AbstractUploadSession {
@@ -31,25 +29,26 @@ class DriveUploadSession : public AbstractUploadSession {
         // Using file ID, for file edition only.
         DriveUploadSession(const std::shared_ptr<Vfs> &vfs, int driveDbId, std::shared_ptr<SyncDb> syncDb,
                            const SyncPath &filepath, const NodeId &fileId, SyncTime modtime, bool liteSyncActivated,
-                           uint64_t nbParalleleThread = 1);
+                           uint64_t nbParallelThread = 1);
 
         // Using file name and parent ID, for file creation only.
         DriveUploadSession(const std::shared_ptr<Vfs> &vfs, int driveDbId, std::shared_ptr<SyncDb> syncDb,
                            const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId, SyncTime modtime,
-                           bool liteSyncActivated, uint64_t nbParalleleThread = 1);
+                           bool liteSyncActivated, uint64_t nbParallelThread = 1);
         ~DriveUploadSession() override;
 
-        inline const NodeId &nodeId() const { return _nodeId; }
-        inline SyncTime modtime() const { return _modtimeOut; }
+        const NodeId &nodeId() const { return _nodeId; }
+        SyncTime modtime() const { return _modtimeOut; }
 
     protected:
-        bool handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) override;
+        bool handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob,
+                                  const std::string &uploadToken) override;
         bool handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) override;
         bool handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) override;
         bool runJobInit() override;
 
         std::shared_ptr<UploadSessionStartJob> createStartJob() override;
-        std::shared_ptr<UploadSessionChunkJob> createChunkJob(const std::string &chunckContent, uint64_t chunkNb,
+        std::shared_ptr<UploadSessionChunkJob> createChunkJob(const std::string &chunkContent, uint64_t chunkNb,
                                                               std::streamsize actualChunkSize) override;
         std::shared_ptr<UploadSessionFinishJob> createFinishJob() override;
         std::shared_ptr<UploadSessionCancelJob> createCancelJob() override;
