@@ -30,8 +30,12 @@ namespace KDC {
 
 UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &absoluteFilePath, const SyncName &filename,
                      const NodeId &remoteParentDirId, SyncTime modtime) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _absoluteFilePath(absoluteFilePath), _filename(filename),
-    _remoteParentDirId(remoteParentDirId), _modtimeIn(modtime), _vfs(vfs) {
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+    _absoluteFilePath(absoluteFilePath),
+    _filename(filename),
+    _remoteParentDirId(remoteParentDirId),
+    _modtimeIn(modtime),
+    _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _customTimeout = 60;
     _trials = TRIALS;
@@ -39,7 +43,8 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncP
 }
 
 UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &absoluteFilePath, const NodeId &fileId,
-                     SyncTime modtime) : UploadJob(vfs, driveDbId, absoluteFilePath, SyncName(), "", modtime) {
+                     SyncTime modtime) :
+    UploadJob(vfs, driveDbId, absoluteFilePath, SyncName(), "", modtime) {
     _fileId = fileId;
 }
 

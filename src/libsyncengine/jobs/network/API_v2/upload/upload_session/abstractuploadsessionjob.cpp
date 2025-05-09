@@ -26,5 +26,6 @@ AbstractUploadSessionJob::AbstractUploadSessionJob(UploadSessionType uploadType,
 AbstractUploadSessionJob::AbstractUploadSessionJob(UploadSessionType uploadType, int driveDbId, const SyncPath &absoluteFilePath,
                                                    const std::string &sessionToken) :
     AbstractTokenNetworkJob(uploadType == UploadSessionType::Drive ? ApiType::Drive : ApiType::Desktop, 0, 0, driveDbId, 0),
-    _sessionToken(sessionToken), _absoluteFilePath(absoluteFilePath) {}
+    _sessionToken(sessionToken),
+    _absoluteFilePath(absoluteFilePath) {}
 } // namespace KDC

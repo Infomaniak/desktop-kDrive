@@ -47,8 +47,14 @@ namespace KDC {
 
 DownloadJob::DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
                          int64_t expectedSize, SyncTime creationTime, SyncTime modtime, bool isCreate) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false), _remoteFileId(remoteFileId), _localpath(localpath),
-    _expectedSize(expectedSize), _creationTime(creationTime), _modtimeIn(modtime), _isCreate(isCreate), _vfs(vfs) {
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
+    _remoteFileId(remoteFileId),
+    _localpath(localpath),
+    _expectedSize(expectedSize),
+    _creationTime(creationTime),
+    _modtimeIn(modtime),
+    _isCreate(isCreate),
+    _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = 60;
     _trials = TRIALS;
@@ -56,8 +62,12 @@ DownloadJob::DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const N
 
 DownloadJob::DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
                          int64_t expectedSize) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false), _remoteFileId(remoteFileId), _localpath(localpath),
-    _expectedSize(expectedSize), _ignoreDateTime(true), _vfs(vfs) {
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
+    _remoteFileId(remoteFileId),
+    _localpath(localpath),
+    _expectedSize(expectedSize),
+    _ignoreDateTime(true),
+    _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = 60;
     _trials = TRIALS;

@@ -39,10 +39,11 @@ set(syncengine_SRCS
     jobs/network/API_v2/getrootfilelistjob.h jobs/network/API_v2/getrootfilelistjob.cpp
     jobs/network/API_v2/getfilelistjob.h jobs/network/API_v2/getfilelistjob.cpp
     jobs/network/API_v2/initfilelistwithcursorjob.h jobs/network/API_v2/initfilelistwithcursorjob.cpp
-    jobs/network/API_v2/csvfullfilelistwithcursorjob.h jobs/network/API_v2/csvfullfilelistwithcursorjob.cpp
-    jobs/network/API_v2/jsonfullfilelistwithcursorjob.h jobs/network/API_v2/jsonfullfilelistwithcursorjob.cpp
-    jobs/network/API_v2/continuefilelistwithcursorjob.h jobs/network/API_v2/continuefilelistwithcursorjob.cpp
-    jobs/network/API_v2/longpolljob.h jobs/network/API_v2/longpolljob.cpp
+    jobs/network/API_v2/listing/abstractlistingjob.h jobs/network/API_v2/listing/abstractlistingjob.cpp
+    jobs/network/API_v2/listing/csvfullfilelistwithcursorjob.h jobs/network/API_v2/listing/csvfullfilelistwithcursorjob.cpp
+    jobs/network/API_v2/listing/snapshotitemhandler.h jobs/network/API_v2/listing/snapshotitemhandler.cpp
+    jobs/network/API_v2/listing/continuefilelistwithcursorjob.h jobs/network/API_v2/listing/continuefilelistwithcursorjob.cpp
+    jobs/network/API_v2/listing/longpolljob.h jobs/network/API_v2/listing/longpolljob.cpp
     jobs/network/API_v2/getfileinfojob.h jobs/network/API_v2/getfileinfojob.cpp
     jobs/network/API_v2/deletejob.h jobs/network/API_v2/deletejob.cpp
     jobs/network/API_v2/createdirjob.h jobs/network/API_v2/createdirjob.cpp

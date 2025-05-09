@@ -55,7 +55,8 @@
 namespace KDC {
 
 SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted) :
-    _vfs(vfs), _logger(Log::instance()->getLogger()) {
+    _vfs(vfs),
+    _logger(Log::instance()->getLogger()) {
     _syncInfo.syncHasFullyCompleted = hasFullyCompleted;
     LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init: " << Utility::formatSyncPath(syncDbPath));
     assert(_vfs);
@@ -66,7 +67,8 @@ SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std
 }
 
 SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId_, const std::string &version) :
-    _vfs(vfs), _logger(Log::instance()->getLogger()) {
+    _vfs(vfs),
+    _logger(Log::instance()->getLogger()) {
     LOG_SYNCPAL_DEBUG(_logger, "SyncPal init");
     assert(_vfs);
 

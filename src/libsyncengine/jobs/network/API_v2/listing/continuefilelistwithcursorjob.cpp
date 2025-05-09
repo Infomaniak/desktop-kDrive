@@ -16,19 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "continuefilelistwithcursorjob.h"
 
 namespace KDC {
 
-class UrlHelper {
-    public:
-        static std::string infomaniakApiUrl(uint8_t version = 2, bool forceProd = false);
-        static std::string kDriveApiUrl(uint8_t version = 2);
-        static std::string notifyApiUrl(uint8_t version = 2);
-        static std::string loginApiUrl();
+ContinueFileListWithCursorJob::ContinueFileListWithCursorJob(const int driveDbId, const std::string &cursor,
+                                                             NodeSet blacklist /*= {}*/) :
+    AbstractListingJob(driveDbId, blacklist), _cursor(cursor) {}
 
-    private:
-        static bool usePreProdUrl();
-};
+std::string ContinueFileListWithCursorJob::getSpecificUrl() {
+    std::string str = AbstractTokenNetworkJob::getSpecificUrl();
+    str += "/files/listing/continue";
+    return str;
+}
+
+void ContinueFileListWithCursorJob::setSpecificQueryParameters(Poco::URI &uri) {
+    uri.addQueryParameter("cursor", _cursor);
+    uri.addQueryParameter("with", "files.capabilities");
+    uri.addQueryParameter("limit", nbItemPerPage);
+}
 
 } // namespace KDC

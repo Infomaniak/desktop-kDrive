@@ -18,20 +18,20 @@
 
 #pragma once
 
-#include "abstracttokennetworkjob.h"
+#include "jobs/network/API_v2/abstracttokennetworkjob.h"
 
 namespace KDC {
 
-class LongPollJob : public AbstractTokenNetworkJob {
+class AbstractListingJob : public AbstractTokenNetworkJob {
     public:
-        LongPollJob(int driveDbId, const std::string &cursor);
+        explicit AbstractListingJob(int driveDbId, const NodeSet &blacklist = {});
+        explicit AbstractListingJob(ApiType apiType, int driveDbId, const NodeSet &blacklist = {});
+
+        void setQueryParameters(Poco::URI &uri, bool &) final;
+        virtual void setSpecificQueryParameters(Poco::URI &uri) = 0;
 
     private:
-        virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &uri, bool &canceled) override;
-        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
-
-        std::string _cursor;
+        NodeSet _blacklist;
 };
 
 } // namespace KDC
