@@ -39,6 +39,7 @@
 #include "utility/jsonparserutility.h"
 #include "libparms/db/parmsdb.h"
 #include "libparms/db/user.h"
+#include "libcommon/utility/types.h" // QStr2SyncName(const QString &)
 #include "libcommon/utility/utility.h" // fileSystemName(const QString&)
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
@@ -1190,15 +1191,51 @@ ExitCode ServerRequests::getExclusionTemplateList(bool def, QList<ExclusionTempl
     return ExitCode::Ok;
 }
 
+namespace {
+void tryToInsertNormalizedTemplates(const ExclusionTemplate &exclusionTemplate, std::vector<ExclusionTemplate> &exclusionList) {
+    const auto &syncNameTemplate = Str2SyncName(exclusionTemplate.templ());
+
+    SyncName nfcNormalizedTemplate;
+    const bool nfcSuccess =
+            Utility::normalizedSyncName(syncNameTemplate, nfcNormalizedTemplate, Utility::UnicodeNormalization::NFC);
+    if (!nfcSuccess) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Failed to NFC-normalize the template " << Utility::formatSyncName(syncNameTemplate));
+    }
+
+    SyncName nfdNormalizedTemplate;
+    const bool nfdSuccess =
+            Utility::normalizedSyncName(syncNameTemplate, nfdNormalizedTemplate, Utility::UnicodeNormalization::NFD);
+    if (!nfcSuccess) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Failed to NFD-normalize the template " << Utility::formatSyncName(syncNameTemplate));
+    }
+
+    if (nfcSuccess) {
+        ExclusionTemplate nfcTemplate = exclusionTemplate;
+        nfcTemplate.setTempl(SyncName2Str(nfcNormalizedTemplate));
+        exclusionList.emplace_back(nfcTemplate);
+        if (nfdSuccess && nfcNormalizedTemplate != nfdNormalizedTemplate) {
+            ExclusionTemplate nfdTemplate = exclusionTemplate;
+            nfdTemplate.setTempl(SyncName2Str(nfdNormalizedTemplate));
+            exclusionList.emplace_back(nfdTemplate);
+        }
+    } else {
+        LOGW_WARN(Log::instance()->getLogger(), L"Using template " << Utility::formatSyncName(syncNameTemplate) << L" as is.");
+        exclusionList.emplace_back(exclusionTemplate);
+    }
+}
+} // namespace
+
 ExitCode ServerRequests::setExclusionTemplateList(bool def, const QList<ExclusionTemplateInfo> &list) {
     std::vector<ExclusionTemplate> exclusionList;
     for (const ExclusionTemplateInfo &exclusionTemplateInfo: list) {
         ExclusionTemplate exclusionTemplate;
         ServerRequests::exclusionTemplateInfoToExclusionTemplate(exclusionTemplateInfo, exclusionTemplate);
-        exclusionList.push_back(exclusionTemplate);
+        tryToInsertNormalizedTemplates(exclusionTemplate, exclusionList);
     }
-    ExitCode exitCode = ExclusionTemplateCache::instance()->update(def, exclusionList);
-    if (exitCode != ExitCode::Ok) {
+
+    if (ExitCode exitCode = ExclusionTemplateCache::instance()->update(def, exclusionList); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ExclusionTemplateCache::save");
         return exitCode;
     }
