@@ -3607,6 +3607,15 @@ ExitInfo AppServer::stopVfs(int syncDbId, bool unregister) {
 }
 
 ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
+    if (!_syncPalMap.contains(syncDbId)) {
+        std::stringstream msg;
+        msg << "SyncPal not found in syncPalMap for syncDbId=" << syncDbId;
+        LOG_WARN(_logger, msg.str());
+        sentry::Handler::captureMessage(sentry::Level::Error, "Error in setSupportsVirtualFiles",
+                                        msg.str());
+        return ExitCode::LogicError;
+    }
+
     Sync sync;
     bool found = false;
     if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
