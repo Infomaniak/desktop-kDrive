@@ -20,18 +20,23 @@
 #include "utility/utility.h"
 
 namespace KDC {
-DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, int driveDbId, std::shared_ptr<SyncDb> syncDb,
-                                       const SyncPath &filepath, const NodeId &fileId, SyncTime modtime, bool liteSyncActivated,
-                                       uint64_t nbParalleleThread /*= 1*/) :
-    DriveUploadSession(vfs, driveDbId, syncDb, filepath, SyncName(), fileId, modtime, liteSyncActivated, nbParalleleThread) {
+DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const std::shared_ptr<SyncDb> syncDb,
+                                       const SyncPath &filepath, const NodeId &fileId, const SyncTime modtime,
+                                       const bool liteSyncActivated, const uint64_t nbParallelThread /*= 1*/) :
+    DriveUploadSession(vfs, driveDbId, syncDb, filepath, SyncName(), fileId, modtime, liteSyncActivated, nbParallelThread) {
     _fileId = fileId;
 }
 
-DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, int driveDbId, std::shared_ptr<SyncDb> syncDb,
+DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const std::shared_ptr<SyncDb> syncDb,
                                        const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId,
-                                       SyncTime modtime, bool liteSyncActivated, uint64_t nbParalleleThread /*= 1*/) :
-    AbstractUploadSession(filepath, filename, nbParalleleThread), _driveDbId(driveDbId), _syncDb(syncDb), _modtimeIn(modtime),
-    _remoteParentDirId(remoteParentDirId), _vfs(vfs) {
+                                       const SyncTime modtime, const bool liteSyncActivated,
+                                       const uint64_t nbParallelThread /*= 1*/) :
+    AbstractUploadSession(filepath, filename, nbParallelThread),
+    _driveDbId(driveDbId),
+    _syncDb(syncDb),
+    _modtimeIn(modtime),
+    _remoteParentDirId(remoteParentDirId),
+    _vfs(vfs) {
     (void) liteSyncActivated;
     _uploadSessionType = UploadSessionType::Drive;
 }
@@ -73,7 +78,8 @@ std::shared_ptr<UploadSessionCancelJob> DriveUploadSession::createCancelJob() {
     return std::make_shared<UploadSessionCancelJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken());
 }
 
-bool DriveUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob, std::string uploadToken) {
+bool DriveUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob,
+                                              const std::string &uploadToken) {
     (void) startJob;
     if (_syncDb && !_syncDb->insertUploadSessionToken(UploadSessionToken(uploadToken), _uploadSessionTokenDbId)) {
         LOG_WARN(getLogger(), "Error in SyncDb::insertUploadSessionToken");

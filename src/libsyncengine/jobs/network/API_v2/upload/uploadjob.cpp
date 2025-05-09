@@ -1,22 +1,22 @@
-/*
- * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// Infomaniak kDrive - Desktop
+// Copyright (C) 2023-2025 Infomaniak Network SA
+/// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 #include "uploadjob.h"
+
+#include "uploadjobreplyhandler.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/jsonparserutility.h"
@@ -94,27 +94,10 @@ bool UploadJob::handleResponse(std::istream &is) {
         return false;
     }
 
-    if (!jsonRes()) return false;
-    const Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
-    if (!dataObj) return false;
-    if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeIdOut)) return false;
-    if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtimeOut)) return false;
-
-    if (_modtimeIn != _modtimeOut) {
-        // The backend refused the modification time. To avoid further EDIT operations, we apply the backend's time on local file.
-        if (const auto ioError = IoHelper::setFileDates(_absoluteFilePath, 0, _modtimeOut, false); ioError == IoError::Success) {
-            LOG_INFO(_logger, "Modification time refused " << _modtimeIn
-                                                           << " by the backend. The modification time has been updated to "
-                                                           << _modtimeOut << " on local file.");
-        } else if (ioError == IoError::NoSuchFileOrDirectory) {
-            // The file has been removed from local replica. This is ok, the DELETE operation will be propagated on next sync.
-        } else {
-            LOGW_WARN(_logger, L"Failed to set modification date on local file " << Utility::formatSyncPath(_absoluteFilePath)
-                                                                                 << L" - error: "
-                                                                                 << Utility::formatIoError(ioError))
-            return false;
-        }
-    }
+    UploadJobReplyHandler replyHandler(_absoluteFilePath, _modtimeIn);
+    if (!replyHandler.extractData(jsonRes())) return false;
+    _nodeIdOut = replyHandler.nodeId();
+    _modtimeOut = replyHandler.modtime();
 
     return true;
 }

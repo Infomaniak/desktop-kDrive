@@ -660,6 +660,19 @@ bool CommonUtility::isSubDir(const SyncPath &path1, const SyncPath &path2) {
     return (it1 == it1End);
 }
 
+bool CommonUtility::isDiskRootFolder(const SyncPath &absolutePath) {
+    bool isRoot = absolutePath == absolutePath.root_path();
+#if defined(__APPLE__)
+    // on macOS, external drive appears under "/Volumes/<drivename>"
+    isRoot |= absolutePath.parent_path() == "/Volumes";
+#elif defined(__unix__)
+    // on Linux, external drive appears under "/media/<username>/<drivename>"
+    isRoot |= absolutePath == "/media" || absolutePath.parent_path() == "/media" ||
+              absolutePath.parent_path().parent_path() == "/media";
+#endif
+    return isRoot;
+}
+
 const std::string CommonUtility::dbVersionNumber(const std::string &dbVersion) {
 #if defined(NDEBUG)
     // Release mode

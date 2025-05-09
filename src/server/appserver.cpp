@@ -41,8 +41,6 @@
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
 #include "libsyncengine/jobs/jobmanager.h"
-#include "libsyncengine/jobs/network/API_v2/upload_session/uploadsessioncanceljob.h"
-#include "libsyncengine/jobs/network/API_v2/loguploadjob.h"
 
 #include <iostream>
 #include <fstream>
@@ -55,6 +53,8 @@
 #include <windows.h>
 #endif
 
+#include "jobs/network/API_v2/upload/loguploadjob.h"
+#include "jobs/network/API_v2/upload/upload_session/uploadsessioncanceljob.h"
 #include "updater/updatemanager.h"
 
 #include <QDesktopServices>
@@ -118,7 +118,8 @@ static void displayHelpText(const QString &t) {
 }
 #endif
 
-AppServer::AppServer(int &argc, char **argv) : SharedTools::QtSingleApplication(Theme::instance()->appName(), argc, argv) {
+AppServer::AppServer(int &argc, char **argv) :
+    SharedTools::QtSingleApplication(Theme::instance()->appName(), argc, argv) {
     _arguments = arguments();
     _theme = Theme::instance();
 }
@@ -3607,6 +3608,14 @@ ExitInfo AppServer::stopVfs(int syncDbId, bool unregister) {
 }
 
 ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
+    if (!_syncPalMap.contains(syncDbId)) {
+        std::stringstream msg;
+        msg << "SyncPal not found in syncPalMap for syncDbId=" << syncDbId;
+        LOG_WARN(_logger, msg.str());
+        sentry::Handler::captureMessage(sentry::Level::Error, "Error in setSupportsVirtualFiles", msg.str());
+        return ExitCode::LogicError;
+    }
+
     Sync sync;
     bool found = false;
     if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
