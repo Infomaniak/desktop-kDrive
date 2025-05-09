@@ -1046,7 +1046,7 @@ KDC--PreferencesWidget
 
 KDC--DriveSelectionWidget
 {
-    background-color: transparent;
+    background-color: #111111;
     min-height: 30px;
     max-height: 30px;
     border: 0px;
