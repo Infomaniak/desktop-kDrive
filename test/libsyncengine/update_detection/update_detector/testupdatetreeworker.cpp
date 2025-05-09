@@ -46,10 +46,10 @@ void TestUpdateTreeWorker::setUp() {
     _localUpdateTree = std::make_shared<UpdateTree>(ReplicaSide::Local, SyncDb::driveRootNode());
     _remoteUpdateTree = std::make_shared<UpdateTree>(ReplicaSide::Remote, SyncDb::driveRootNode());
 
-    _localUpdateTreeWorker = std::make_shared<UpdateTreeWorker>(_syncDb, _operationSet, _localUpdateTree, "Test Tree Updater",
-                                                                "LTRU", ReplicaSide::Local);
-    _remoteUpdateTreeWorker = std::make_shared<UpdateTreeWorker>(_syncDb, _operationSet, _remoteUpdateTree, "Test Tree Updater",
-                                                                 "RTRU", ReplicaSide::Remote);
+    _localUpdateTreeWorker = std::make_shared<UpdateTreeWorker>(_syncDb->cache(), _operationSet, _localUpdateTree,
+                                                                "Test Tree Updater", "LTRU", ReplicaSide::Local);
+    _remoteUpdateTreeWorker = std::make_shared<UpdateTreeWorker>(_syncDb->cache(), _operationSet, _remoteUpdateTree,
+                                                                 "Test Tree Updater", "RTRU", ReplicaSide::Remote);
 
     setUpDbTree();
 
@@ -181,6 +181,7 @@ void TestUpdateTreeWorker::setUpDbTree() {
                            "id7l", "id7r", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime,
                            NodeType::File, testhelpers::defaultFileSize, std::nullopt);
     _syncDb->insertNode(nodeFile7, dbnodeIdfile7, constraintError);
+    _syncDb->cache().reloadIfNeeded();
 }
 
 void TestUpdateTreeWorker::setUpUpdateTree(ReplicaSide side) {

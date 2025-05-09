@@ -164,7 +164,7 @@ void TestIo::testCreateSymlink() {
         const SyncPath path = temporaryDirectory.path() / makeFileNameWithEmojis();
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
 
-        IoError aliasError;
+        IoError aliasError = IoError::Success;
         CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createSymlink(targetPath, path, false, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
 

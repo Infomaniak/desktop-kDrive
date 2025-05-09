@@ -20,6 +20,7 @@
 
 #include "syncpal/isyncworker.h"
 #include "db/syncdb.h"
+#include "db/syncdbreadonlycache.h"
 #include "syncpal/syncpal.h"
 
 namespace KDC {
@@ -33,7 +34,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
          * @param name
          * @param shortName
          */
-        ComputeFSOperationWorker(const std::shared_ptr<SyncDb> testSyncDb, const std::string &name, const std::string &shortName);
+        ComputeFSOperationWorker(SyncDbReadOnlyCache &testSyncDbReadOnlyCache, const std::string &name, const std::string &shortName);
 
         const std::unordered_map<NodeId, SyncPath> getFileSizeMismatchMap() const { return _fileSizeMismatchMap; }
 
@@ -43,7 +44,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
     private:
         using NodeIdSet = NodeSet;
         using DbNodeIdSet = std::unordered_set<DbNodeId>;
-        using NodeIdsSet = std::unordered_set<SyncDb::NodeIds, SyncDb::NodeIds::hashNodeIdsFunction>;
+        using NodeIdsSet = std::unordered_set<NodeIds, NodeIds::HashFunction>;
         SnapshotRevision _lastLocalSnapshotSyncedRevision = 0;
         SnapshotRevision _lastRemoteSnapshotSyncedRevision = 0;
 
@@ -94,7 +95,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
         void notifyIgnoredItem(const NodeId &nodeId, const SyncPath &relativePath, NodeType nodeType);
         ExitInfo blacklistItem(const SyncPath &relativeLocalPath);
 
-        const std::shared_ptr<SyncDb> _syncDb;
+        SyncDbReadOnlyCache &_syncDbReadOnlyCache;
         Sync _sync;
 
         NodeIdSet _remoteUnsyncedList;
@@ -108,7 +109,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
 
         bool addFolderToDelete(const SyncPath &path);
         bool checkIfPathIsInDeletedFolder(const SyncPath &path, bool &isInDeletedFolder);
-        bool hasChangedSinceLastSeen(const SyncDb::NodeIds &nodeIds) const;
+        bool hasChangedSinceLastSeen(const NodeIds &nodeIds) const;
         friend class TestComputeFSOperationWorker;
 };
 

@@ -27,7 +27,8 @@
 
 namespace KDC {
 
-OldSyncDb::OldSyncDb(const SyncPath &dbPath) : Db(dbPath) {
+OldSyncDb::OldSyncDb(const SyncPath &dbPath) :
+    Db(dbPath) {
     if (!checkConnect(std::string())) {
         throw std::runtime_error("Cannot open old SyncDb.");
     }
@@ -49,7 +50,7 @@ bool OldSyncDb::upgrade(const std::string &, const std::string &) {
 }
 
 bool OldSyncDb::selectAllSelectiveSync(std::list<std::pair<std::string, SyncNodeType>> &selectiveSyncList) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SELECTIVESYNC_REQUEST_ID));
     bool found = false;

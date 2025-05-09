@@ -247,29 +247,4 @@ void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std
 bool PlatformInconsistencyCheckerWorker::pathChanged(std::shared_ptr<Node> node) const {
     return node->hasChangeEvent(OperationType::Create) || node->hasChangeEvent(OperationType::Move);
 }
-
-void PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb(std::shared_ptr<Node> localNode) {
-    if (localNode && localNode->side() == ReplicaSide::Local) {
-        bool found = false;
-        DbNodeId dbId = -1;
-        const SyncPath absoluteLocalPath = _syncPal->localPath() / localNode->getPath();
-        if (!_syncPal->syncDb()->dbId(ReplicaSide::Local, *localNode->id(), dbId, found)) {
-            LOGW_WARN(_logger, L"Failed to retrieve dbId for local node: " << Utility::formatSyncPath(absoluteLocalPath));
-        }
-        if (found && !_syncPal->syncDb()->deleteNode(dbId, found)) {
-            // Remove node (and childs by cascade) from DB if it exists (else ignore as it is already not in DB)
-            LOGW_WARN(_logger, L"Failed to delete node from DB: " << Utility::formatSyncPath(absoluteLocalPath));
-        }
-
-        if (!_syncPal->vfs()->fileStatusChanged(absoluteLocalPath, SyncFileStatus::Error)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::vfsFileStatusChanged: " << Utility::formatSyncPath(absoluteLocalPath));
-        }
-    } else {
-        const char *msg = localNode ? "Invalid side in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb"
-                                    : "localNode should not be null in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb";
-        LOG_WARN(_logger, msg);
-        assert(false);
-    }
-}
-
 } // namespace KDC

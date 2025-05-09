@@ -332,6 +332,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFD() {
                                                       testhelpers::defaultFileSize, false, true, true));
 
     _syncPal->copySnapshots();
+    _syncPal->syncDb()->cache().reloadIfNeeded();
     _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
     CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_test", OperationType::Move, tmpOp));
@@ -351,6 +352,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFC() {
                                                       testhelpers::defaultFileSize, false, true, true));
 
     _syncPal->copySnapshots();
+    _syncPal->syncDb()->cache().reloadIfNeeded();
     _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
     CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_test", OperationType::Move, tmpOp));
@@ -370,6 +372,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFD() {
                                                       testhelpers::defaultFileSize, false, true, true));
 
     _syncPal->copySnapshots();
+    _syncPal->syncDb()->cache().reloadIfNeeded();
     _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
     CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("l_test", OperationType::Move, tmpOp));
@@ -390,6 +393,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFC() {
                                                       testhelpers::defaultFileSize, false, true, true));
 
     _syncPal->copySnapshots();
+    _syncPal->syncDb()->cache().reloadIfNeeded();
     _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
     CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("l_test", OperationType::Move, tmpOp));
@@ -470,7 +474,7 @@ void TestComputeFSOperationWorker::testHasChangedSinceLastSeen() {
     _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision = 0;
 
 
-    SyncDb::NodeIds nodeIds;
+    NodeIds nodeIds;
     nodeIds.localNodeId = "l_test";
     nodeIds.remoteNodeId = "r_test";
 

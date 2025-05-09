@@ -268,52 +268,7 @@ void SyncPalWorker::unpause() {
 }
 
 std::string SyncPalWorker::stepName(SyncStep step) {
-    std::string name;
-
-    name = "<";
-
-    switch (step) {
-        case SyncStep::None:
-            name += "None";
-            break;
-        case SyncStep::Idle:
-            name += "Idle";
-            break;
-        case SyncStep::UpdateDetection1:
-            name += "Compute FS operations";
-            break;
-        case SyncStep::UpdateDetection2:
-            name += "Update Trees";
-            break;
-        case SyncStep::Reconciliation1:
-            name += "Platform Inconsistency Checker";
-            break;
-        case SyncStep::Reconciliation2:
-            name += "Conflict Finder";
-            break;
-        case SyncStep::Reconciliation3:
-            name += "Conflict Resolver";
-            break;
-        case SyncStep::Reconciliation4:
-            name += "Operation Generator";
-            break;
-        case SyncStep::Propagation1:
-            name += "Sorter";
-            break;
-        case SyncStep::Propagation2:
-            name += "Executor";
-            break;
-        case SyncStep::Done:
-            name += "Done";
-            break;
-        case SyncStep::EnumEnd: {
-            assert(false && "Invalid enum value in switch statement.");
-        }
-    }
-
-    name += ">";
-
-    return name;
+    return "<" + toString(step) + ">";
 }
 
 void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&workers)[2],
@@ -333,11 +288,14 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             inputSharedObject[1] = nullptr;
             _syncPal->resetEstimateUpdates();
             _syncPal->refreshTmpBlacklist();
+            _syncPal->freeSnapshotsCopies();
+            _syncPal->syncDb()->cache().clear();
             break;
         case SyncStep::UpdateDetection1:
             workers[0] = _syncPal->computeFSOperationsWorker();
             workers[1] = nullptr;
             _syncPal->copySnapshots();
+            LOG_IF_FAIL(_syncPal->syncDb()->cache().reloadIfNeeded());
             assert(_syncPal->snapshotCopy(ReplicaSide::Local)->checkIntegrityRecursively() &&
                    "Local snapshot is corrupted, see logs for details");
             assert(_syncPal->snapshotCopy(ReplicaSide::Remote)->checkIntegrityRecursively() &&
@@ -388,6 +346,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
+            _syncPal->syncDb()->cache().clear(); // Cache is not needed anymore, free resources
             break;
         case SyncStep::Done:
             workers[0] = nullptr;
@@ -640,8 +599,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
                 }
             }
         }
-    }
-    catch (std::filesystem::filesystem_error &e) {
+    } catch (std::filesystem::filesystem_error &e) {
         LOG_SYNCPAL_WARN(_logger,
                          "Error caught in SyncPalWorker::resetVfsFilesStatus: code=" << e.code() << " error=" << e.what());
         ok = false;
@@ -651,7 +609,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
     }
 
     if (ok) {
-        if (!_syncPal->_syncDb->updateNodesSyncing(false)) {
+        if (!_syncPal->syncDb()->updateNodesSyncing(false)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::updateNodesSyncing for syncDbId=" << _syncPal->syncDbId());
         }
         LOG_SYNCPAL_DEBUG(_logger, "VFS files status reset");

@@ -107,7 +107,7 @@ ExitCode SyncNodeCache::initCache(int syncDbId, std::shared_ptr<SyncDb> syncDb) 
     return ExitCode::Ok;
 }
 
-ExitCode SyncNodeCache::clearCache(int syncDbId) {
+ExitCode SyncNodeCache::clear(int syncDbId) {
     const std::scoped_lock lock(_mutex);
 
     if (_syncDbMap.find(syncDbId) == _syncDbMap.end()) {
