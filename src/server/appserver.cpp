@@ -118,7 +118,8 @@ static void displayHelpText(const QString &t) {
 }
 #endif
 
-AppServer::AppServer(int &argc, char **argv) : SharedTools::QtSingleApplication(Theme::instance()->appName(), argc, argv) {
+AppServer::AppServer(int &argc, char **argv) :
+    SharedTools::QtSingleApplication(Theme::instance()->appName(), argc, argv) {
     _arguments = arguments();
     _theme = Theme::instance();
 }
@@ -3611,8 +3612,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         std::stringstream msg;
         msg << "SyncPal not found in syncPalMap for syncDbId=" << syncDbId;
         LOG_WARN(_logger, msg.str());
-        sentry::Handler::captureMessage(sentry::Level::Error, "Error in setSupportsVirtualFiles",
-                                        msg.str());
+        sentry::Handler::captureMessage(sentry::Level::Error, "Error in setSupportsVirtualFiles", msg.str());
         return ExitCode::LogicError;
     }
 

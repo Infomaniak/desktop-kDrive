@@ -51,6 +51,9 @@ LocalTemporaryDirectory::LocalTemporaryDirectory(const std::string &testType) {
 }
 
 LocalTemporaryDirectory::~LocalTemporaryDirectory() {
+    auto ioError = IoError::Success;
+    (void) IoHelper::setRights(_path, true, true, true, ioError);
+
     std::error_code ec;
     std::filesystem::remove_all(_path, ec);
     if (ec) {

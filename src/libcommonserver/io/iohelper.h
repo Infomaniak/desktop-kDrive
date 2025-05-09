@@ -430,6 +430,17 @@ struct IoHelper {
         */
         static bool setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
 
+        /**
+         * @brief Set the dates using native API.
+         * @param filePath The absolute path to the file to be modified.
+         * @param creationDate The creation date to be set.
+         * @param modificationDate The modification date to be set.
+         * @param symlink A boolean value indicating whether the file is a symlink or not.
+         * @return IoErrorSuccess if the process succeeds. An appropriate IoError otherwise.
+         */
+        static IoError setFileDates(const KDC::SyncPath &filePath, SyncTime creationDate, SyncTime modificationDate,
+                                    bool symlink) noexcept;
+
         static inline bool isLink(LinkType linkType) {
             return linkType == LinkType::Symlink || linkType == LinkType::Hardlink ||
                    (linkType == LinkType::FinderAlias && OldUtility::isMac()) ||

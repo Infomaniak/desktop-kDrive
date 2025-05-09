@@ -147,7 +147,8 @@ void JobManager::defaultCallback(UniqueId jobId) {
     _runningJobs.erase(jobId);
 }
 
-JobManager::JobManager() : _logger(Log::instance()->getLogger()) {
+JobManager::JobManager() :
+    _logger(Log::instance()->getLogger()) {
     int jobPoolCapacityFactor = ParametersCache::instance()->parameters().jobPoolCapacityFactor();
 
     _maxNbThread = std::max(threadPoolMinCapacity, jobPoolCapacityFactor * (int) std::thread::hardware_concurrency());
