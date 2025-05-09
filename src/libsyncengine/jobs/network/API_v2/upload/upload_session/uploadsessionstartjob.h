@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "jobs/network/API_v2/upload_session/abstractuploadsessionjob.h"
+#include "abstractuploadsessionjob.h"
 #include "utility/types.h"
 
 namespace KDC {
@@ -36,9 +36,9 @@ class UploadSessionStartJob : public AbstractUploadSessionJob {
         UploadSessionStartJob(UploadSessionType uploadType, const SyncName &filename, uint64_t size, uint64_t totalChunks);
 
     private:
-        virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &, bool &) override {}
-        inline virtual ExitInfo setData() override;
+        std::string getSpecificUrl() override;
+        void setQueryParameters(Poco::URI &, bool &) override {}
+        inline ExitInfo setData() override;
 
         SyncName _filename;
         NodeId _fileId;
