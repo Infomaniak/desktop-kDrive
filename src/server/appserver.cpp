@@ -433,7 +433,6 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "ParmsDb closed");
 }
 
-
 void AppServer::reset() {
     _updateManager.reset();
 }
