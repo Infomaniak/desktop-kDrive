@@ -631,6 +631,10 @@ struct ItemType {
         // - the file or directory indicated by `path` is a symlink or an alias (in which case `linkType` is different from
         // `LinkType::Unknown`) and its target doesn't exist.
         IoError ioError{IoError::Success};
+        bool operator==(const ItemType &other) const {
+            return nodeType == other.nodeType && linkType == other.linkType && targetType == other.targetType &&
+                   targetPath == other.targetPath && ioError == other.ioError;
+        }
 };
 
 enum class AppStateKey {
