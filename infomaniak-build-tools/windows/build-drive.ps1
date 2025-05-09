@@ -169,8 +169,10 @@ function CMake-Build-And-Install {
         [string] $installPath,
         [string] $vfsDir
     )
+    Write-Host "1) Installing Conan dependencies…"
+    & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" -buildType $buildType -ci
 
-    Write-Host "Building the application with CMake ..."
+    Write-Host "2) Configuring and building with CMake ..."
 
     $compiler = "cl.exe"
 
@@ -186,6 +188,7 @@ function CMake-Build-And-Install {
     $buildVersion = Get-Date -Format "yyyyMMdd"
 
     $flags = @(
+        "'-DCMAKE_TOOLCHAIN_FILE=$buildPath\conan_toolchain.cmake'",
         "'-DCMAKE_EXPORT_COMPILE_COMMANDS=1'",
         "'-DCMAKE_MAKE_PROGRAM=C:\Qt\Tools\Ninja\ninja.exe'",
         "'-DQT_QMAKE_EXECUTABLE:STRING=C:\Qt\Tools\CMake_64\bin\cmake.exe'",
@@ -205,6 +208,8 @@ function CMake-Build-And-Install {
     if ($ci) {
         $flags += ("'-DBUILD_UNIT_TESTS:BOOL=TRUE'")
         $flags += ("'-DKD_COVERAGE:BOOL=TRUE'")
+
+        $flags += ("'-DCMAKE_POLICY_DEFAULT_CMP0091=NEW'")
     }
 
     $args += $flags
