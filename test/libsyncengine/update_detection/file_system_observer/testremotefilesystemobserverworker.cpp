@@ -26,7 +26,7 @@
 #include "libsyncengine/jobs/network/API_v2/deletejob.h"
 #include "libsyncengine/jobs/network/API_v2/movejob.h"
 #include "libsyncengine/jobs/network/API_v2/renamejob.h"
-#include "libsyncengine/jobs/network/API_v2/uploadjob.h"
+#include "../../../../src/libsyncengine/jobs/network/API_v2/upload/uploadjob.h"
 #include "libsyncengine/jobs/network/networkjobsparams.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 

@@ -1,20 +1,18 @@
-/*
- * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// Infomaniak kDrive - Desktop
+// Copyright (C) 2023-2025 Infomaniak Network SA
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "loguploadjob.h"
 #include "libcommon/utility/types.h"
@@ -29,8 +27,6 @@
 #include "libparms/db/parmsdb.h"
 #include "libparms/db/drive.h"
 
-#include "requests/parameterscache.h"
-
 #include "upload_session/loguploadsession.h"
 
 #include <fstream>
@@ -41,7 +37,7 @@ namespace KDC {
 std::mutex LogUploadJob::_runningJobMutex = std::mutex();
 std::shared_ptr<LogUploadJob> LogUploadJob::_runningJob = nullptr;
 
-LogUploadJob::LogUploadJob(bool includeArchivedLog, const std::function<void(LogUploadState, int)> &progressCallback,
+LogUploadJob::LogUploadJob(const bool includeArchivedLog, const std::function<void(LogUploadState, int)> &progressCallback,
                            const std::function<void(const Error &error)> &addErrorCallback) :
     _includeArchivedLog(includeArchivedLog), _progressCallback(progressCallback), _addErrorCallback(addErrorCallback) {
     if (!_progressCallback) {
@@ -75,7 +71,7 @@ void LogUploadJob::abort() {
 }
 
 void LogUploadJob::cancelUpload() {
-    std::scoped_lock lock(_runningJobMutex);
+    const std::scoped_lock lock(_runningJobMutex);
     if (_runningJob) {
         LOG_INFO(Log::instance()->getLogger(), "Cancelling log upload job.");
         _runningJob->abort();
@@ -187,20 +183,20 @@ void LogUploadJob::finalize() {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState " << AppStateKey::LastLogUploadArchivePath);
     }
 
-    IoError ioError = IoError::Success;
-    IoHelper::deleteItem(_tmpJobWorkingDir, ioError);
+    auto ioError = IoError::Success;
+    (void) IoHelper::deleteItem(_tmpJobWorkingDir, ioError);
     if (ioError != IoError::Success) {
         LOGW_INFO(Log::instance()->getLogger(),
                   L"Error in IoHelper::deleteItem: " << Utility::formatIoError(_tmpJobWorkingDir, ioError));
     }
 
-    IoHelper::deleteItem(_generatedArchivePath, ioError);
+    (void) IoHelper::deleteItem(_generatedArchivePath, ioError);
     if (ioError != IoError::Success) {
         LOGW_INFO(Log::instance()->getLogger(),
                   L"Error in IoHelper::deleteItem: " << Utility::formatIoError(_generatedArchivePath, ioError));
     }
 
-    notifyLogUploadProgress(LogUploadState::Success, 100);
+    (void) notifyLogUploadProgress(LogUploadState::Success, 100);
     _exitInfo = ExitCode::Ok;
     _runningJob.reset();
 }
@@ -359,10 +355,9 @@ ExitInfo LogUploadJob::copyLogsTo(const SyncPath &outputPath, const bool include
 }
 
 ExitInfo LogUploadJob::copyParmsDbTo(const SyncPath &outputPath) const {
-    const SyncPath parmsDbPath = KDC::ParmsDb::instance()->dbPath();
-    DirectoryEntry entryParmsDb;
-    IoError ioError = IoError::Unknown;
-    if (!IoHelper::getDirectoryEntry(parmsDbPath, ioError, entryParmsDb)) {
+    const SyncPath parmsDbPath = ParmsDb::instance()->dbPath();
+    auto ioError = IoError::Unknown;
+    if (DirectoryEntry entryParmsDb; !IoHelper::getDirectoryEntry(parmsDbPath, ioError, entryParmsDb)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::getDirectoryEntry: " << Utility::formatIoError(parmsDbPath, ioError));
         if (ioError == IoError::NoSuchFileOrDirectory) {
