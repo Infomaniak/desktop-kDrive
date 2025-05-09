@@ -60,16 +60,38 @@ MatomoClient::MatomoClient(QCoreApplication* app, const QString& clientId)
  */
 void MatomoClient::sendVisit(const MatomoNameField page)
 {
-    QString action;
     QString path;
+    QString action;
     switch (page) {
 #ifdef Q_OS_WIN
-        case Matomo_NameField::WV_ReleaseNotes :    action = "release-notes"; path = "WebView"; break;
+        case Matomo_NameField::WV_ReleaseNotes :                    path = "webview";        action = "release-notes";         break;
 #endif
-        case MatomoNameField::VW_LoginPage:        action = "login";      path = "WebView";    break;
-        case MatomoNameField::PG_SynthesisPopover: action = "popover";    path = "popover";       break;
+        case MatomoNameField::VW_LoginPage:                         path = "webview";        action = "login";                 break;
 
-        default: // Matomo_NameField::Unknown
+        case MatomoNameField::PG_SynthesisPopover:                  path = "popover";        action = "popover";               break;
+        case MatomoNameField::PG_SynthesisPopover_KebabMenu:        path = "popover";        action = "kebab_menu";            break;
+
+        case MatomoNameField::PG_Preferences:                       path = "preferences";    action = "preferences";           break;
+        case MatomoNameField::PG_Preferences_Debugging:             path = "preferences";    action = "debugging";             break;
+        case MatomoNameField::PG_Preferences_FileToExclude:         path = "preferences";    action = "file_to_exclude";       break;
+        case MatomoNameField::PG_Preferences_Proxy:                 path = "preferences";    action = "proxy";                 break;
+#ifdef Q_OS_MAC
+        case MatomoNameField::PG_Preferences_LiteSync:              path = "preferences";    action = "litesync";              break;
+#endif
+        case MatomoNameField::PG_Preferences_About:                 path = "preferences";    action = "about";                 break;
+        case MatomoNameField::PG_Preferences_Beta:                  path = "preferences";    action = "beta";                  break;
+
+        case MatomoNameField::PG_Parameters:                        path = "parameters";     action = "parameters";            break;
+
+        case MatomoNameField::PG_AddNewDrive_SelectDrive:           path = "add_new_drive";  action = "select_drive";          break;
+        case MatomoNameField::PG_AddNewDrive_ActivateLiteSync:      path = "add_new_drive";  action = "activate_litesync";     break;
+        case MatomoNameField::PG_AddNewDrive_SelectRemoteFolder:    path = "add_new_drive";  action = "select_remote_folder";  break;
+        case MatomoNameField::PG_AddNewDrive_SelectLocalFolder:     path = "add_new_drive";  action = "select_local_folder";   break;
+        case MatomoNameField::PG_AddNewDrive_ExtensionSetup:        path = "add_new_drive";  action = "extension_setup";       break;
+        case MatomoNameField::PG_AddNewDrive_Confirmation:          path = "add_new_drive";  action = "confirmation";          break;
+
+
+        default: // MatomoNameField::Unknown
             action = path = "unknown";
             qCWarning(lcMatomoClient) << "MatomoClient::sendVisit triggered with page value unknown (" << static_cast<uint8_t>(page) << ").";
             break;

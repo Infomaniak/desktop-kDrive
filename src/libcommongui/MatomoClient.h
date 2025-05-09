@@ -33,10 +33,28 @@ namespace KDC {
 #ifdef Q_OS_WIN
         WV_ReleaseNotes, // Release Notes Webview (only rendered on windows)
 #endif
-
         /* Pages */
         PG_SynthesisPopover,
+        PG_SynthesisPopover_KebabMenu,
 
+        PG_Preferences,
+        PG_Preferences_Debugging,
+        PG_Preferences_FileToExclude,
+        PG_Preferences_Proxy,
+#ifdef Q_OS_MAC
+        PG_Preferences_LiteSync,
+#endif
+        PG_Preferences_About,
+        PG_Preferences_Beta,
+
+        PG_Parameters,
+
+        PG_AddNewDrive_SelectDrive,
+        PG_AddNewDrive_ActivateLiteSync,
+        PG_AddNewDrive_SelectRemoteFolder,
+        PG_AddNewDrive_SelectLocalFolder,
+        PG_AddNewDrive_ExtensionSetup,
+        PG_AddNewDrive_Confirmation,
 
         Unknown // Default Case
     };
