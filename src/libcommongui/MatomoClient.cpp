@@ -64,7 +64,7 @@ void MatomoClient::sendVisit(const MatomoNameField page)
     QString action;
     switch (page) {
 #ifdef Q_OS_WIN
-        case Matomo_NameField::WV_ReleaseNotes :                    path = "webview";                       action = "release-notes";         break;
+        case MatomoNameField::WV_ReleaseNotes :                     path = "webview";                       action = "release-notes";         break;
 #endif
         case MatomoNameField::VW_LoginPage:                         path = "webview";                       action = "login";                 break;
 
