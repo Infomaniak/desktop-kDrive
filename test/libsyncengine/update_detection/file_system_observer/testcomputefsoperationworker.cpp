@@ -158,12 +158,14 @@ void TestComputeFSOperationWorker::testAccessDenied() {
             std::ofstream ofs(_syncPal->localPath() / bbNodePath);
             ofs << "Some content.\n";
         }
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::setRights(_syncPal->localPath() / bbNodePath, false, false, false, ioError) &&
-                       ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::setRights(_syncPal->localPath() / bbNodePath, false, false, false, ioError) &&
+                                       ioError == IoError::Success);
 #endif
 
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::setRights(_syncPal->localPath() / bNodePath, false, false, false, ioError) &&
-                       ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::setRights(_syncPal->localPath() / bNodePath, false, false, false, ioError) &&
+                                       ioError == IoError::Success);
 
         _syncPal->copySnapshots();
         _syncPal->computeFSOperationsWorker()->execute();
@@ -197,12 +199,14 @@ void TestComputeFSOperationWorker::testAccessDenied() {
             std::ofstream ofs(_syncPal->localPath() / aaNodePath);
             ofs << "Some content.\n";
         }
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::setRights(_syncPal->localPath() / aaNodePath, false, false, false, ioError) &&
-                       ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::setRights(_syncPal->localPath() / aaNodePath, false, false, false, ioError) &&
+                                       ioError == IoError::Success);
 #endif
 
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::setRights(_syncPal->localPath() / aNodePath, false, false, false, ioError) &&
-                       ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::setRights(_syncPal->localPath() / aNodePath, false, false, false, ioError) &&
+                                       ioError == IoError::Success);
 
         // Mock checkIfOkToDelete to simulate the Access Denied
         _syncPal->setComputeFSOperationsWorker(
@@ -328,6 +332,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFD() {
                                                       testhelpers::defaultFileSize, false, true, true));
 
     _syncPal->copySnapshots();
+    _syncPal->syncDb()->cache().reloadIfNeeded();
     _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
     CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_test", OperationType::Move, tmpOp));
@@ -347,6 +352,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFC() {
                                                       testhelpers::defaultFileSize, false, true, true));
 
     _syncPal->copySnapshots();
+    _syncPal->syncDb()->cache().reloadIfNeeded();
     _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
     CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_test", OperationType::Move, tmpOp));
@@ -366,6 +372,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFD() {
                                                       testhelpers::defaultFileSize, false, true, true));
 
     _syncPal->copySnapshots();
+    _syncPal->syncDb()->cache().reloadIfNeeded();
     _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
     CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("l_test", OperationType::Move, tmpOp));
@@ -386,6 +393,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFC() {
                                                       testhelpers::defaultFileSize, false, true, true));
 
     _syncPal->copySnapshots();
+    _syncPal->syncDb()->cache().reloadIfNeeded();
     _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
     CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("l_test", OperationType::Move, tmpOp));
@@ -466,7 +474,7 @@ void TestComputeFSOperationWorker::testHasChangedSinceLastSeen() {
     _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision = 0;
 
 
-    SyncDb::NodeIds nodeIds;
+    NodeIds nodeIds;
     nodeIds.localNodeId = "l_test";
     nodeIds.remoteNodeId = "r_test";
 

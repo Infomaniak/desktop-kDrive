@@ -41,22 +41,21 @@
 #include "propagation/operation_sorter/operationsorterworker.h"
 #include "propagation/executor/executorworker.h"
 #include "requests/syncnodecache.h"
-#include "requests/parameterscache.h"
 #include "jobs/network/API_v2/downloadjob.h"
-#include "jobs/network/API_v2/upload_session/uploadsessioncanceljob.h"
 #include "jobs/local/localdeletejob.h"
 #include "jobs/jobmanager.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "tmpblacklistmanager.h"
+#include "jobs/network/API_v2/upload/upload_session/uploadsessioncanceljob.h"
 
 #define SYNCPAL_NEW_ERROR_MSG "Failed to create SyncPal instance!"
 
 namespace KDC {
 
-SyncPal::SyncPal(const std::shared_ptr<Vfs> &vfs, const SyncPath &syncDbPath, const std::string &version,
-                 const bool hasFullyCompleted) : _vfs(vfs), _logger(Log::instance()->getLogger()) {
+SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted) :
+    _vfs(vfs), _logger(Log::instance()->getLogger()) {
     _syncInfo.syncHasFullyCompleted = hasFullyCompleted;
     LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init: " << Utility::formatSyncPath(syncDbPath));
     assert(_vfs);
@@ -66,7 +65,7 @@ SyncPal::SyncPal(const std::shared_ptr<Vfs> &vfs, const SyncPath &syncDbPath, co
     }
 }
 
-SyncPal::SyncPal(const std::shared_ptr<Vfs> &vfs, const int syncDbId_, const std::string &version) :
+SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId_, const std::string &version) :
     _vfs(vfs), _logger(Log::instance()->getLogger()) {
     LOG_SYNCPAL_DEBUG(_logger, "SyncPal init");
     assert(_vfs);
@@ -171,7 +170,7 @@ SyncPal::SyncPal(const std::shared_ptr<Vfs> &vfs, const int syncDbId_, const std
 }
 
 SyncPal::~SyncPal() {
-    SyncNodeCache::instance()->clearCache(syncDbId());
+    SyncNodeCache::instance()->clear(syncDbId());
     LOG_SYNCPAL_DEBUG(_logger, "~SyncPal");
 }
 
@@ -194,6 +193,11 @@ ExitCode SyncPal::setTargetNodeId(const std::string &targetNodeId) {
     _remoteUpdateTree->setRootFolderId(targetNodeId);
 
     return ExitCode::Ok;
+}
+
+void SyncPal::setVfs(std::shared_ptr<Vfs> vfs) {
+    assert(!isRunning());
+    _vfs = vfs;
 }
 
 bool SyncPal::isRunning() const {
@@ -391,13 +395,12 @@ bool SyncPal::wipeOldPlaceholders() {
     return true;
 }
 
-void SyncPal::loadProgress(int64_t &currentFile, int64_t &totalFiles, int64_t &completedSize, int64_t &totalSize,
-                           int64_t &estimatedRemainingTime) const {
-    currentFile = _progressInfo->completedFiles();
-    totalFiles = std::max(_progressInfo->completedFiles(), _progressInfo->totalFiles());
-    completedSize = _progressInfo->completedSize();
-    totalSize = std::max(_progressInfo->completedSize(), _progressInfo->totalSize());
-    estimatedRemainingTime = _progressInfo->totalProgress().estimatedEta();
+void SyncPal::loadProgress(SyncProgress &syncProgress) const {
+    syncProgress._currentFile = _progressInfo->completedFiles();
+    syncProgress._totalFiles = std::max(_progressInfo->completedFiles(), _progressInfo->totalFiles());
+    syncProgress._completedSize = _progressInfo->completedSize();
+    syncProgress._totalSize = std::max(_progressInfo->completedSize(), _progressInfo->totalSize());
+    syncProgress._estimatedRemainingTime = _progressInfo->totalProgress().estimatedEta();
 }
 
 void SyncPal::createSharedObjects() {
@@ -1299,9 +1302,9 @@ void SyncPal::fixNodeTableDeleteItemsWithNullParentNodeId() {
     }
 }
 
-void SyncPal::increaseErrorCount(const NodeId &nodeId, const NodeType type, const SyncPath &relativePath,
-                                 const ReplicaSide side) {
-    _tmpBlacklistManager->increaseErrorCount(nodeId, type, relativePath, side);
+void SyncPal::increaseErrorCount(const NodeId &nodeId, const NodeType type, const SyncPath &relativePath, const ReplicaSide side,
+                                 const ExitInfo exitInfo /*= ExitInfo()*/) {
+    _tmpBlacklistManager->increaseErrorCount(nodeId, type, relativePath, side, exitInfo);
 }
 
 void SyncPal::blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, const ReplicaSide side) {
@@ -1392,10 +1395,21 @@ void SyncPal::copySnapshots() {
     LOG_IF_FAIL(_localSnapshot)
     LOG_IF_FAIL(_remoteSnapshot)
 
+    if (!_localSnapshotCopy) _localSnapshotCopy = std::make_shared<Snapshot>(ReplicaSide::Local, _syncDb->rootNode());
+    if (!_remoteSnapshotCopy) _remoteSnapshotCopy = std::make_shared<Snapshot>(ReplicaSide::Remote, _syncDb->rootNode());
     *_localSnapshotCopy = *_localSnapshot;
     *_remoteSnapshotCopy = *_remoteSnapshot;
     _localSnapshot->startRead();
     _remoteSnapshot->startRead();
+}
+
+void SyncPal::freeSnapshotsCopies() {
+    if (_localSnapshotCopy) {
+        _localSnapshotCopy.reset();
+    }
+    if (_remoteSnapshotCopy) {
+        _remoteSnapshotCopy.reset();
+    }
 }
 
 void SyncPal::invalideSnapshots() {

@@ -18,6 +18,8 @@
 
 #include "getthumbnailjob.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 GetThumbnailJob::GetThumbnailJob(int driveDbId, NodeId nodeId, unsigned width) :

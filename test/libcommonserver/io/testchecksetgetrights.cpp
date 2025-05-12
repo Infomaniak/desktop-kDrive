@@ -25,8 +25,14 @@ using namespace CppUnit;
 namespace KDC {
 
 struct RightsSet {
-        RightsSet(int rights) : read(rights & 4), write(rights & 2), execute(rights & 1) {};
-        RightsSet(bool read, bool write, bool execute) : read(read), write(write), execute(execute) {};
+        RightsSet(int rights) :
+            read(rights & 4),
+            write(rights & 2),
+            execute(rights & 1) {};
+        RightsSet(bool read, bool write, bool execute) :
+            read(read),
+            write(write),
+            execute(execute) {};
         bool read;
         bool write;
         bool execute;
@@ -282,12 +288,13 @@ void TestIo::testCheckSetAndGetRights() {
         result = IoHelper::setRights(subFilePath, true, true, true, ioError);
         CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError));
         CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
-
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(subFolderPath, isReadable, isWritable, isExecutable, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(subFolderPath, isReadable, isWritable, isExecutable, ioError));
         CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
 
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(subFilePath, isReadable, isWritable, isExecutable, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(subFilePath, isReadable, isWritable, isExecutable, ioError));
+      CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
 
         result = IoHelper::setRights(path, true, false, true, ioError);
         result &= ioError == IoError::Success;
@@ -298,9 +305,11 @@ void TestIo::testCheckSetAndGetRights() {
 
         CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError));
         CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && !isWritable && isExecutable);
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(subFolderPath, isReadable, isWritable, isExecutable, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(subFolderPath, isReadable, isWritable, isExecutable, ioError));
         CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(subFilePath, isReadable, isWritable, isExecutable, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(subFilePath, isReadable, isWritable, isExecutable, ioError));
         CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
 
         // Restore the rights

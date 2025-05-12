@@ -25,7 +25,8 @@ using namespace CppUnit;
 
 namespace KDC {
 
-IoHelperTests::IoHelperTests() : IoHelper() {}
+IoHelperTests::IoHelperTests() :
+    IoHelper() {}
 
 void IoHelperTests::setIsDirectoryFunction(std::function<bool(const SyncPath &path, std::error_code &ec)> f) {
     _isDirectory = f;
@@ -81,7 +82,9 @@ SyncPath makeFileNameWithEmojis() {
     return u8"🫃😋🌲👣🍔🕉️⛎";
 }
 
-TestIo::TestIo() : CppUnit::TestFixture(), _localTestDirPath(std::wstring(L"" TEST_DIR) + L"/test_ci") {}
+TestIo::TestIo() :
+    CppUnit::TestFixture(),
+    _localTestDirPath(std::wstring(L"" TEST_DIR) + L"/test_ci") {}
 
 void TestIo::setUp() {
     TestBase::start();

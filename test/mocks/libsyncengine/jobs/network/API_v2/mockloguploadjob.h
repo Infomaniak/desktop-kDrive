@@ -19,8 +19,8 @@
 #pragma once
 
 #include "testincludes.h"
+#include "jobs/network/API_v2/upload/loguploadjob.h"
 #include "utility/types.h"
-#include "libsyncengine/jobs/network/API_v2/loguploadjob.h"
 
 namespace KDC {
 class MockLogUploadJob : public LogUploadJob {

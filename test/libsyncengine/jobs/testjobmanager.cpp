@@ -21,32 +21,33 @@
 #include "config.h"
 #include "db/parmsdb.h"
 #include "jobs/jobmanager.h"
-#include "jobs/network/API_v2/createdirjob.h"
 #include "jobs/network/API_v2/deletejob.h"
+#include "jobs/network/API_v2/downloadjob.h"
 #include "jobs/network/API_v2/getfilelistjob.h"
-#include "jobs/network/API_v2/uploadjob.h"
-#include "jobs/network/API_v2/upload_session/driveuploadsession.h"
+#include "jobs/network/API_v2/upload/uploadjob.h"
+#include "jobs/network/API_v2/upload/upload_session/driveuploadsession.h"
 #include "network/proxy.h"
 #include "requests/parameterscache.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 #include "mocks/libcommonserver/db/mockdb.h"
+#include "test_utility/dataextractor.h"
 
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
 
 #include <unordered_set>
+#include <Poco/Net/HTTPRequest.h>
 
 using namespace CppUnit;
 
 namespace KDC {
 
-static const SyncPath localTestDirPath(std::wstring(L"" TEST_DIR) + L"/test_ci");
 static const SyncPath localTestDirPath_manyFiles(std::wstring(L"" TEST_DIR) + L"/test_ci/many_files_dir");
 static const SyncPath localTestDirPath_pictures(std::wstring(L"" TEST_DIR) + L"/test_ci/test_pictures");
 static const int driveDbId = 1;
-void KDC::TestJobManager::setUp() {
+void TestJobManager::setUp() {
     TestBase::start();
     const testhelpers::TestVariables testVariables;
 
@@ -79,7 +80,7 @@ void KDC::TestJobManager::setUp() {
 
     // Setup proxy
     Parameters parameters;
-    bool found;
+    bool found = false;
     if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
         Proxy::instance(parameters.proxyConfig());
     }
@@ -445,32 +446,6 @@ void TestJobManager::testReuseSocket() {
     CPPUNIT_ASSERT(!session.socket().impl()->initialized());
 }
 
-void TestJobManager::generateBigFiles(const SyncPath &dirPath, int size, int count) {
-    // Generate 1st big file
-    SyncPath bigFilePath;
-    {
-        std::stringstream fileName;
-        fileName << "big_file_" << size << "_" << 0 << ".txt";
-        const std::string str{"0123456789"};
-        bigFilePath = SyncPath(dirPath) / fileName.str();
-        {
-            std::ofstream ofs(bigFilePath, std::ios_base::in | std::ios_base::trunc);
-            for (int i = 0; i < static_cast<int>(round(static_cast<double>(size * 1000000) / static_cast<double>(str.length())));
-                 i++) {
-                ofs << str;
-            }
-        }
-    }
-
-    // Generate others big files
-    for (int i = 1; i < count; i++) {
-        std::stringstream fileName;
-        fileName << "big_file_" << size << "_" << i << ".txt";
-        const SyncPath newBigFilePath = SyncPath(dirPath) / fileName.str();
-        std::filesystem::copy_file(bigFilePath, newBigFilePath, std::filesystem::copy_options::overwrite_existing);
-    }
-}
-
 void TestJobManager::callback(uint64_t jobId) {
     const std::scoped_lock lock(_mutex);
 
@@ -493,7 +468,7 @@ size_t TestJobManager::ongoingJobsCount() {
 }
 
 void TestJobManager::testWithCallbackBigFiles(const SyncPath &dirPath, int size, int count) {
-    generateBigFiles(dirPath, size, count);
+    testhelpers::generateBigFiles(dirPath, static_cast<uint16_t>(size), count);
 
     // Reset upload session max parallel jobs & JobManager pool capacity
     ParametersCache::instance()->setUploadSessionParallelThreads(10);
@@ -504,7 +479,7 @@ void TestJobManager::testWithCallbackBigFiles(const SyncPath &dirPath, int size,
     const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "TestJobManager testWithCallbackBigFiles");
 
     // Upload all files in testDir
-    ulong counter;
+    ulong counter = 0;
     while (true) {
         LOG_DEBUG(Log::instance()->getLogger(),
                   "$$$$$ testWithCallbackBigFiles - Start, upload session max parallel jobs="

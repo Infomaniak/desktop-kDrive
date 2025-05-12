@@ -48,7 +48,9 @@ namespace KDC {
 
 Q_LOGGING_CATEGORY(lcClientGui, "gui.clientgui", QtInfoMsg)
 
-ClientGui::ClientGui(AppClient *parent) : QObject(), _app(parent) {
+ClientGui::ClientGui(AppClient *parent) :
+    QObject(),
+    _app(parent) {
     connect(qGuiApp, &QGuiApplication::screenAdded, this, &ClientGui::onScreenUpdated);
     connect(qGuiApp, &QGuiApplication::screenRemoved, this, &ClientGui::onScreenUpdated);
 
@@ -722,31 +724,35 @@ void ClientGui::executeSyncAction(ActionType type, int syncDbId) {
                 currentStatus == SyncStatus::Stopped || currentStatus == SyncStatus::Error) {
                 return;
             }
+
+            syncInfoMapIt->second.setStatus(SyncStatus::PauseAsked);
+            emit updateProgress(syncDbId);
+
             exitCode = GuiRequests::syncStop(syncDbId);
             if (exitCode != ExitCode::Ok) {
                 qCWarning(lcClientGui()) << "Error in Requests::syncStop for syncDbId=" << syncDbId << " code=" << exitCode;
-                return;
             }
-            syncInfoMapIt->second.setStatus(SyncStatus::PauseAsked);
             break;
         case ActionType::Start:
             if (currentStatus == SyncStatus::Undefined || currentStatus == SyncStatus::Idle ||
                 currentStatus == SyncStatus::Running || currentStatus == SyncStatus::Starting) {
                 return;
             }
+
+            syncInfoMapIt->second.setStatus(SyncStatus::Starting);
+            emit updateProgress(syncDbId);
+
             exitCode = GuiRequests::syncStart(syncDbId);
             if (exitCode != ExitCode::Ok) {
                 qCWarning(lcClientGui()) << "Error in Requests::syncStart for syncDbId=" << syncDbId << " code=" << exitCode;
-                return;
+                syncInfoMapIt->second.setStatus(SyncStatus::Paused);
+                emit updateProgress(syncDbId);
             }
-            syncInfoMapIt->second.setStatus(SyncStatus::Starting);
             break;
         case ActionType::EnumEnd: {
             assert(false && "Invalid enum value in switch statement.");
         }
     }
-
-    emit updateProgress(syncDbId);
 }
 
 void ClientGui::refreshErrorList(int driveDbId) {
@@ -1340,6 +1346,10 @@ void ClientGui::onSyncUpdated(const SyncInfo &syncInfo) {
 }
 
 void ClientGui::onRemoveSync(int syncDbId) {
+    const auto &syncInfoMapIt = _syncInfoMap.find(syncDbId);
+    if (syncInfoMapIt != _syncInfoMap.end()) {
+        CommonGuiUtility::removeDirIcon(syncInfoMapIt->second.localPath());
+    }
     const ExitCode exitCode = GuiRequests::deleteSync(syncDbId);
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::deleteSync for syncDbId=" << syncDbId;

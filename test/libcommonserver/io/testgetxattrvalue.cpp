@@ -323,7 +323,7 @@ void TestIo::testGetXAttrValue() {
         CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
 
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "sane-alias", ioError));CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "sane-alias", ioError));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         std::string value;
@@ -342,8 +342,6 @@ void TestIo::testGetXAttrValue() {
         IoError ioError = IoError::Unknown;
         bool value = true;
         CPPUNIT_ASSERT(_testObj->getXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, value, ioError));
-        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
-
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(!value);
 
