@@ -44,7 +44,7 @@ void BenchUpdateTreeWorker::setUp() {
     _updateTree = std::make_shared<UpdateTree>(ReplicaSide::Local, SyncDb::driveRootNode());
     _fsOpSet = std::make_shared<FSOperationSet>(ReplicaSide::Unknown);
 
-    _testObj = std::make_shared<UpdateTreeWorker>(_syncDb, _fsOpSet, _updateTree, "BenchUpdateTreeWorker", "BUTW",
+    _testObj = std::make_shared<UpdateTreeWorker>(_syncDb->cache(), _fsOpSet, _updateTree, "BenchUpdateTreeWorker", "BUTW",
                                                   ReplicaSide::Local);
 
     _situationGenerator.setSyncDb(_syncDb);

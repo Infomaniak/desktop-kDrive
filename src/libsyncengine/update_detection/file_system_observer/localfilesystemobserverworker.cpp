@@ -199,7 +199,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         const auto parentPath = absolutePath.parent_path();
         NodeId parentNodeId;
         if (parentPath == _rootFolder) {
-            parentNodeId = *_syncPal->_syncDb->rootNode().nodeIdLocal();
+            parentNodeId = *_syncPal->syncDb()->rootNode().nodeIdLocal();
         } else {
             if (!IoHelper::getNodeId(parentPath, parentNodeId)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getNodeId for " << Utility::formatSyncPath(parentPath));
@@ -505,7 +505,7 @@ ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const 
         // Check if it is a metadata update
         DbNodeId dbNodeId = 0;
         bool found = false;
-        if (!_syncPal->_syncDb->dbId(ReplicaSide::Local, nodeId, dbNodeId, found)) {
+        if (!_syncPal->syncDb()->dbId(ReplicaSide::Local, nodeId, dbNodeId, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
             return ExitCode::DbError;
         }
@@ -515,7 +515,7 @@ ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const 
         }
 
         DbNode dbNode;
-        if (!_syncPal->_syncDb->node(dbNodeId, dbNode, found)) {
+        if (!_syncPal->syncDb()->node(dbNodeId, dbNode, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
             return ExitCode::DbError;
         }
@@ -695,7 +695,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             // Get parent folder id
             NodeId parentNodeId;
             if (absolutePath.parent_path() == _rootFolder) {
-                parentNodeId = *_syncPal->_syncDb->rootNode().nodeIdLocal();
+                parentNodeId = *_syncPal->syncDb()->rootNode().nodeIdLocal();
             } else {
                 parentNodeId = snapshot()->itemId(relativePath.parent_path());
                 if (parentNodeId.empty()) {

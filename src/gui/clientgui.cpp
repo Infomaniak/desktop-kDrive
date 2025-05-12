@@ -48,7 +48,9 @@ namespace KDC {
 
 Q_LOGGING_CATEGORY(lcClientGui, "gui.clientgui", QtInfoMsg)
 
-ClientGui::ClientGui(AppClient *parent) : QObject(), _app(parent) {
+ClientGui::ClientGui(AppClient *parent) :
+    QObject(),
+    _app(parent) {
     connect(qGuiApp, &QGuiApplication::screenAdded, this, &ClientGui::onScreenUpdated);
     connect(qGuiApp, &QGuiApplication::screenRemoved, this, &ClientGui::onScreenUpdated);
 
@@ -1344,6 +1346,10 @@ void ClientGui::onSyncUpdated(const SyncInfo &syncInfo) {
 }
 
 void ClientGui::onRemoveSync(int syncDbId) {
+    const auto &syncInfoMapIt = _syncInfoMap.find(syncDbId);
+    if (syncInfoMapIt != _syncInfoMap.end()) {
+        CommonGuiUtility::removeDirIcon(syncInfoMapIt->second.localPath());
+    }
     const ExitCode exitCode = GuiRequests::deleteSync(syncDbId);
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::deleteSync for syncDbId=" << syncDbId;

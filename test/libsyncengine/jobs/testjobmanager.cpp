@@ -468,7 +468,7 @@ size_t TestJobManager::ongoingJobsCount() {
 }
 
 void TestJobManager::testWithCallbackBigFiles(const SyncPath &dirPath, int size, int count) {
-    testhelpers::generateBigFiles(dirPath, size, count);
+    testhelpers::generateBigFiles(dirPath, static_cast<uint16_t>(size), count);
 
     // Reset upload session max parallel jobs & JobManager pool capacity
     ParametersCache::instance()->setUploadSessionParallelThreads(10);
