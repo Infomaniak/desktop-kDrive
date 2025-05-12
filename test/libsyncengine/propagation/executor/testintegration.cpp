@@ -179,9 +179,9 @@ void TestIntegration::tearDown() {
     _syncPal->stop(false, true, false);
     ParmsDb::instance()->close();
     ParmsDb::reset();
-    JobManager::stop();
-    JobManager::clear();
-    JobManager::reset();
+    JobManager::instance()->stop();
+    JobManager::instance()->clear();
+    JobManager::instance()->reset();
     TestBase::stop();
 }
 

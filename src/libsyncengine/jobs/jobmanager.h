@@ -56,9 +56,9 @@ class JobManager {
         JobManager(JobManager const &) = delete;
         void operator=(JobManager const &) = delete;
 
-        static void stop();
-        static void clear();
-        static void reset();
+        void stop();
+        void clear();
+        void reset();
 
         /**
          * @brief Queue a job to be executed as soon as a thread is available in the default thread pool.
@@ -68,6 +68,8 @@ class JobManager {
          */
         void queueAsyncJob(std::shared_ptr<AbstractJob> job,
                            Poco::Thread::Priority priority = Poco::Thread::PRIO_NORMAL) noexcept;
+
+        void eraseJob(UniqueId jobId);
 
         bool isJobFinished(const UniqueId &jobId) const;
 
@@ -79,37 +81,38 @@ class JobManager {
         void decreasePoolCapacity();
 
     private:
+        static void executeFunc(void *thisWorker);
+
         JobManager();
+        void start();
 
-        static void defaultCallback(UniqueId jobId);
+        void run() noexcept;
+        void startJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority);
+        void adjustMaxNbThread();
+        void managePendingJobs();
 
-        static void run() noexcept;
-        static void startJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority);
-        static void adjustMaxNbThread();
-        static void managePendingJobs();
-
-        static int availableThreadsInPool();
-        static bool canRunjob(const std::shared_ptr<AbstractJob> job);
-        static bool isBigFileDownloadJob(const std::shared_ptr<AbstractJob> job);
-        static bool isBigFileUploadJob(const std::shared_ptr<AbstractJob> job);
+        int availableThreadsInPool();
+        bool canRunjob(const std::shared_ptr<AbstractJob> job);
+        bool isBigFileDownloadJob(const std::shared_ptr<AbstractJob> job);
+        bool isBigFileUploadJob(const std::shared_ptr<AbstractJob> job);
 
         static std::shared_ptr<JobManager> _instance;
-        static bool _stop;
-        static int _maxNbThread;
+        bool _stop{false};
+        int _maxNbThread{0};
 
         log4cplus::Logger _logger;
-        std::unique_ptr<StdLoggingThread> _thread;
+        std::unique_ptr<std::thread> _thread;
 
-        static std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _managedJobs; // queued + running + pending jobs.
-        static std::priority_queue<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>,
-                                   std::vector<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>>, JobPriorityCmp>
+        std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _managedJobs; // queued + running + pending jobs.
+        std::priority_queue<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>,
+                            std::vector<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>>, JobPriorityCmp>
                 _queuedJobs; // jobs waiting for an available thread.
-        static std::unordered_set<UniqueId> _runningJobs; // jobs currently running in a dedicated thread.
-        static std::unordered_map<UniqueId, std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>>
+        std::unordered_set<UniqueId> _runningJobs; // jobs currently running in a dedicated thread.
+        std::unordered_map<UniqueId, std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>>
                 _pendingJobs; // jobs waiting to be able to start.
-        static std::recursive_mutex _mutex;
+        mutable std::mutex _mutex;
 
-        static UniqueId _uploadSessionJobId;
+        UniqueId _uploadSessionJobId{0};
 
         friend class TestJobManager;
 };

@@ -40,8 +40,8 @@ class AbstractJob : public Poco::Runnable {
          * Callback to get reply
          * Job ID is passed as argument
          */
-        void setMainCallback(const std::function<void(uint64_t)> &newCallback) { _mainCallback = newCallback; }
-        void setAdditionalCallback(const std::function<void(uint64_t)> &newCallback) {
+        void setMainCallback(const std::function<void(UniqueId)> &newCallback) { _mainCallback = newCallback; }
+        void setAdditionalCallback(const std::function<void(UniqueId)> &newCallback) {
             const std::scoped_lock lock(_additionalCallbackMutex);
             _additionalCallback = newCallback;
         }

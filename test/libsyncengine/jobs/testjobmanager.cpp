@@ -94,9 +94,9 @@ void KDC::TestJobManager::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
     ParametersCache::reset();
-    JobManager::stop();
-    JobManager::clear();
-    JobManager::reset();
+    JobManager::instance()->stop();
+    JobManager::instance()->clear();
+    JobManager::instance()->reset();
     TestBase::stop();
 }
 
@@ -104,7 +104,7 @@ void TestJobManager::testWithoutCallback() {
     // Create temp remote directory
     const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "TestJobManager testWithoutCallback");
     const LocalTemporaryDirectory localTmpDir("TestJobManager testWithoutCallback");
-    for (int i = 0; i < 100; i++) {
+    for (auto i = 0; i < 100; i++) {
         testhelpers::generateOrEditTestFile(localTmpDir.path() / ("file_" + std::to_string(i) + ".txt"));
     }
 
@@ -164,11 +164,12 @@ void TestJobManager::testWithCallback() {
         JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
         counter++;
         const std::scoped_lock lock(_mutex);
-        (void) _ongoingJobs.insert({job->jobId(), job});
+        (void) _ongoingJobs.try_emplace(job->jobId(), job);
     }
 
     int waitCountMax = 300; // Wait max 30sec
-    while (ongoingJobsCount() > 0 && waitCountMax-- > 0 && !_jobErrorSocketsDefuncted && !_jobErrorOther) {
+    while (ongoingJobsCount() > 0 && waitCountMax > 0 && !_jobErrorSocketsDefuncted && !_jobErrorOther) {
+        waitCountMax--;
         Utility::msleep(100); // Wait 100ms
     }
 
@@ -228,8 +229,8 @@ void TestJobManager::testCancelJobs() {
     cancelAllOngoingJobs();
 
     int retry = 1000; // Wait max 10sec
-    while ((!JobManager::_managedJobs.empty() || !JobManager::_queuedJobs.empty() || !JobManager::_runningJobs.empty() ||
-            !JobManager::_pendingJobs.empty()) &&
+    while ((!JobManager::instance()->_managedJobs.empty() || !JobManager::instance()->_queuedJobs.empty() ||
+            !JobManager::instance()->_runningJobs.empty() || !JobManager::instance()->_pendingJobs.empty()) &&
            (retry > 0)) {
         retry--;
         Utility::msleep(10);
@@ -413,6 +414,10 @@ void TestJobManager::testCanRunjob() {
             queue2.push(queue.front()->jobId());
             queue.pop();
         }
+    }
+
+    while (JobManager::instance()->countManagedJobs() > 0) {
+        Utility::msleep(1000); // Wait 5 sec
     }
 }
 

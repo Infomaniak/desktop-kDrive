@@ -37,19 +37,19 @@ namespace KDC {
 
 std::shared_ptr<JobManager> JobManager::_instance = nullptr;
 
-bool JobManager::_stop = false;
-
-int JobManager::_maxNbThread = 0;
-
-std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> JobManager::_managedJobs;
-std::priority_queue<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>,
-                    std::vector<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>>, JobPriorityCmp>
-        JobManager::_queuedJobs;
-std::unordered_set<UniqueId> JobManager::_runningJobs;
-std::unordered_map<UniqueId, std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>> JobManager::_pendingJobs;
-std::recursive_mutex JobManager::_mutex;
-
-UniqueId JobManager::_uploadSessionJobId = 0;
+// bool JobManager::_stop = false;
+//
+// int JobManager::_maxNbThread = 0;
+//
+// std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> JobManager::_managedJobs;
+// std::priority_queue<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>,
+//                     std::vector<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>>, JobPriorityCmp>
+//         JobManager::_queuedJobs;
+// std::unordered_set<UniqueId> JobManager::_runningJobs;
+// std::unordered_map<UniqueId, std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>> JobManager::_pendingJobs;
+// std::recursive_mutex JobManager::_mutex;
+//
+// UniqueId JobManager::_uploadSessionJobId = 0;
 
 std::shared_ptr<JobManager> JobManager::instance() noexcept {
     if (_instance == nullptr) {
@@ -61,6 +61,10 @@ std::shared_ptr<JobManager> JobManager::instance() noexcept {
     }
 
     return _instance;
+}
+
+void JobManager::start() {
+    _thread = std::make_unique<std::thread>(executeFunc, this);
 }
 
 void JobManager::stop() {
@@ -88,16 +92,33 @@ void JobManager::clear() {
 
 void JobManager::reset() {
     if (_instance) {
-        _instance = nullptr;
+        _instance.reset();
     }
+}
+
+void defaultCallback(const UniqueId jobId) {
+    JobManager::instance()->eraseJob(jobId);
 }
 
 void JobManager::queueAsyncJob(std::shared_ptr<AbstractJob> job,
                                Poco::Thread::Priority priority /*= Poco::Thread::PRIO_NORMAL*/) noexcept {
     const std::scoped_lock lock(_mutex);
+    if (!_thread) {
+        start();
+    }
     job->setMainCallback(defaultCallback);
     _queuedJobs.emplace(job, priority);
-    _managedJobs.try_emplace(job->jobId(), job);
+    (void) _managedJobs.try_emplace(job->jobId(), job);
+    LOG_DEBUG(_logger, "Job queues: " << job->jobId());
+}
+
+void JobManager::eraseJob(const UniqueId jobId) {
+    const std::scoped_lock lock(_mutex);
+    if (_uploadSessionJobId == jobId) {
+        _uploadSessionJobId = 0;
+    }
+    (void) _managedJobs.erase(jobId);
+    (void) _runningJobs.erase(jobId);
 }
 
 bool JobManager::isJobFinished(const UniqueId &jobId) const {
@@ -133,20 +154,15 @@ void JobManager::decreasePoolCapacity() {
     // }
 }
 
-void JobManager::defaultCallback(const UniqueId jobId) {
-    const std::scoped_lock lock(_mutex);
-    if (_uploadSessionJobId == jobId) {
-        _uploadSessionJobId = 0;
-    }
-    (void) _managedJobs.erase(jobId);
-    (void) _runningJobs.erase(jobId);
+void JobManager::executeFunc(void *thisWorker) {
+    ((JobManager *) thisWorker)->run();
+    log4cplus::threadCleanup();
 }
 
 JobManager::JobManager() :
     _logger(Log::instance()->getLogger()) {
     setPoolCapacity(std::min(static_cast<int>(std::thread::hardware_concurrency()), threadPoolMaxCapacity));
 
-    _thread = std::make_unique<StdLoggingThread>(run);
     LOG_DEBUG(_logger, "Network Job Manager started with max " << _maxNbThread << " threads");
 }
 
@@ -159,18 +175,27 @@ void JobManager::run() noexcept {
         auto availableThreads = availableThreadsInPool();
         // Always keep 1 thread available for jobs with highest priority
         while (availableThreads > 1 && !_stop && !_queuedJobs.empty()) {
-            auto &[job, priority] = _queuedJobs.top();
+            std::shared_ptr<AbstractJob> job;
+            auto priority = Poco::Thread::PRIO_NORMAL;
+            {
+                const std::scoped_lock lock(_mutex);
+                job = _queuedJobs.top().first;
+                priority = _queuedJobs.top().second;
+                _queuedJobs.pop();
+            }
 
             if (canRunjob(job)) {
                 startJob(job, priority);
             } else {
-                _pendingJobs.try_emplace(job->jobId(), job, priority);
-                LOG_DEBUG(Log::instance()->getLogger(),
-                          "Job " << job->jobId() << " is pending (thread pool maximum capacity reached)");
+                if (const auto [_, inserted] = _pendingJobs.try_emplace(job->jobId(), job, priority); !inserted) {
+                    LOG_ERROR(Log::instance()->getLogger(), "Failed to insert job " << job->jobId() << " in pending jobs list!");
+                } else {
+                    LOG_DEBUG(Log::instance()->getLogger(),
+                              "Job " << job->jobId() << " is pending (thread pool maximum capacity reached)");
+                }
             }
 
             availableThreads = availableThreadsInPool();
-            _queuedJobs.pop();
         }
 
         // Start job with highest priority
