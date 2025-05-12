@@ -18,6 +18,8 @@
 
 #include "clientgui.h"
 #include "litesyncdialog.h"
+
+#include "MatomoClient.h"
 #include "litesyncappdialog.h"
 #include "custompushbutton.h"
 #include "custommessagebox.h"
@@ -281,6 +283,7 @@ void LiteSyncDialog::loadAppTable(QString scrollToAppId) {
 
 void LiteSyncDialog::onExit() {
     EnableStateHolder _(this);
+    MatomoClient::sendEvent("preferencesLiteSync", MatomoEventAction::Click, "exitButton");
 
     if (_needToSave) {
         CustomMessageBox msgBox(QMessageBox::Question, tr("Do you want to save your modifications?"),
@@ -301,6 +304,7 @@ void LiteSyncDialog::onExit() {
 
 void LiteSyncDialog::onAddAppButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("preferencesLiteSync", MatomoEventAction::Click, "addAppButton");
 
     EnableStateHolder _(this);
 
@@ -344,6 +348,7 @@ void LiteSyncDialog::onTableViewClicked(const QModelIndex &index) {
 
                         setNeedToSave(true);
                     }
+                    MatomoClient::sendEvent("preferencesLiteSync", MatomoEventAction::Click, "deleteAppButton", ret == QMessageBox::Yes ? 1 : 0);
                 }
             }
         }
@@ -352,6 +357,7 @@ void LiteSyncDialog::onTableViewClicked(const QModelIndex &index) {
 
 void LiteSyncDialog::onSaveButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("preferencesLiteSync", MatomoEventAction::Click, "saveButton");
 
 #ifdef Q_OS_MAC
     ExitCode exitCode;
