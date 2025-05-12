@@ -19,6 +19,7 @@
 #include "clientgui.h"
 #include "gui/errortabwidget.h"
 #include "parametersdialog.h"
+#include "MatomoClient.h"
 #include "bottomwidget.h"
 #include "actionwidget.h"
 #include "custommessagebox.h"
@@ -955,10 +956,12 @@ void ParametersDialog::onItemCompleted(int syncDbId, const SyncFileItemInfo &ite
 }
 
 void ParametersDialog::onPreferencesButtonClicked() {
+    MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "preferencesButton");
     _pageStackedWidget->setCurrentIndex(Page::Preferences);
 }
 
 void ParametersDialog::onOpenHelp() {
+    MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "helpButton");
     QDesktopServices::openUrl(QUrl(Theme::instance()->helpUrl()));
 }
 
@@ -978,15 +981,18 @@ void ParametersDialog::onDriveSelected(int driveDbId) {
 }
 
 void ParametersDialog::onAddDrive() {
+    MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "addDriveButton");
     emit addDrive();
 }
 
 void ParametersDialog::onRemoveDrive(int driveDbId) {
+    MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "removeDriveButton", driveDbId);
     EnableStateHolder stateHolder(this);
     emit removeDrive(driveDbId);
 }
 
 void ParametersDialog::onDisplayDriveErrors(int driveDbId) {
+    MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "displayErrors", driveDbId);
     const auto driveInfoIt = _gui->driveInfoMap().find(driveDbId);
     if (driveInfoIt == _gui->driveInfoMap().end()) {
         qCDebug(lcParametersDialog()) << "Account id not found in account map!";
@@ -1014,23 +1020,28 @@ void ParametersDialog::onDisplayGeneralErrors() {
 
 void ParametersDialog::onDisplayDriveParameters() {
     _pageStackedWidget->setCurrentIndex(Page::Drive);
+    MatomoClient::sendVisit(MatomoNameField::PG_Parameters);
 }
 
 void ParametersDialog::onDisplayPreferences() {
     _pageStackedWidget->setCurrentIndex(Page::Preferences);
+    MatomoClient::sendVisit(MatomoNameField::PG_Preferences);
 }
 
 void ParametersDialog::onBackButtonClicked() {
     if (_pageStackedWidget->currentIndex() == Page::Preferences) {
         onDisplayDriveParameters();
+        MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "backButton", 0);
         return;
     }
 
     if (_pageStackedWidget->currentIndex() == Page::Errors) {
         if (_errorsStackedWidget->currentIndex() == toInt(DriveInfoClient::ParametersStackedWidget::General)) {
             onDisplayPreferences();
+            MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "backButton", 1);
         } else {
             onDisplayDriveParameters();
+            MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "backButton", 0);
         }
     }
 }
