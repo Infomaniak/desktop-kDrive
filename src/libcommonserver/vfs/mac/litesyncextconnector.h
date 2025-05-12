@@ -88,7 +88,7 @@ class LiteSyncExtConnector {
          * Value: List of syncing items path.
          */
         QHash<QString, QSet<QString>> _syncingFolders;
-        std::mutex _mutex;
+        std::recursive_mutex _mutex;
 
         bool sendStatusToFinder(const QString &path, const VfsStatus &vfsStatus);
 };

@@ -33,23 +33,29 @@ class AbstractPTrace {
         virtual void restart() { _restart(); }
 
     protected:
-        explicit AbstractPTrace(const PTraceDescriptor &info) : _pTraceInfo(info) {};
-        explicit AbstractPTrace(const PTraceDescriptor &info, const int dbId) : _pTraceInfo(info), _syncDbId(dbId) {};
+        explicit AbstractPTrace(const PTraceDescriptor &info) :
+            _pTraceInfo(info) {};
+        explicit AbstractPTrace(const PTraceDescriptor &info, const int dbId) :
+            _pTraceInfo(info),
+            _syncDbId(dbId) {};
 
         // Start a new performance trace.
         inline AbstractPTrace &_start() {
             _pTraceId = sentry::Handler::instance()->startPTrace(_pTraceInfo, _syncDbId);
+            _running = true;
             return *this;
         }
 
         // Stop the performance trace.
         void _stop(const PTraceStatus status = PTraceStatus::Ok) noexcept {
+            if (!_running) return;
             if (_pTraceId) { // If the performance trace id is set, use it to stop the performance trace (faster).
                 Handler::instance()->stopPTrace(_pTraceId, status);
                 _pTraceId = 0;
             } else {
                 Handler::instance()->stopPTrace(_pTraceInfo, _syncDbId, status);
             }
+            _running = false;
         }
 
         // Stop the current performance trace (aborted = false) and start a new one.
@@ -63,5 +69,6 @@ class AbstractPTrace {
         pTraceId _pTraceId{0};
         PTraceDescriptor _pTraceInfo;
         int _syncDbId = -1;
+        bool _running = false;
 };
 } // namespace KDC::sentry
