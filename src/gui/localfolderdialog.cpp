@@ -17,6 +17,8 @@
  */
 
 #include "localfolderdialog.h"
+
+#include "MatomoClient.h"
 #include "customtoolbutton.h"
 #include "guiutility.h"
 #include "common/utility.h"
@@ -258,18 +260,21 @@ void LocalFolderDialog::setWarningIcon() {
 }
 
 void LocalFolderDialog::onExit() {
+    MatomoClient::sendEvent("localFolderDialog", MatomoEventAction::Click, "cancelButton");
     reject();
 }
 
 void LocalFolderDialog::onContinueButtonTriggered(bool checked) {
     Q_UNUSED(checked)
 
+    MatomoClient::sendEvent("localFolderDialog", MatomoEventAction::Click, "continueButton");
     accept();
 }
 
 void LocalFolderDialog::onSelectFolderButtonTriggered(bool checked) {
     Q_UNUSED(checked)
 
+    MatomoClient::sendEvent("localFolderDialog", MatomoEventAction::Click, "selectFolderButton");
     selectFolder(QDir::homePath());
 }
 
