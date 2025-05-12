@@ -490,9 +490,7 @@ void AppServer::deleteDrive(int driveDbId) {
 
     // Delete the drive
     const ExitCode exitCode = ServerRequests::deleteDrive(driveDbId);
-    if (exitCode == ExitCode::Ok) {
-        sendDriveRemoved(driveDbId);
-    } else {
+    if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::deleteDrive: code=" << exitCode);
         addError(Error(errId(), exitCode, ExitCause::Unknown));
         sendDriveDeletionFailed(driveDbId);
@@ -506,6 +504,9 @@ void AppServer::deleteDrive(int driveDbId) {
         addError(Error(errId(), ExitCode::DbError, ExitCause::Unknown));
     } else if (driveList.empty()) {
         deleteAccount(drive.accountDbId());
+    } else {
+        sendDriveRemoved(driveDbId); // Useless if deleteAccount is called, sendAccountRemoved already updates the drive list.
+                                     // May even cause a crash if both are processed concurrently on the GUI side.
     }
 }
 
@@ -524,9 +525,7 @@ void AppServer::deleteSync(int syncDbId) {
 
     // Delete the sync
     const ExitCode exitCode = ServerRequests::deleteSync(syncDbId);
-    if (exitCode == ExitCode::Ok) {
-        sendSyncRemoved(syncDbId);
-    } else {
+    if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::deleteSync: code=" << exitCode);
         addError(Error(errId(), exitCode, ExitCause::Unknown));
         sendSyncDeletionFailed(syncDbId);
@@ -540,6 +539,10 @@ void AppServer::deleteSync(int syncDbId) {
         addError(Error(errId(), ExitCode::DbError, ExitCause::Unknown));
     } else if (syncList.empty()) {
         deleteDrive(sync.driveDbId());
+    } else {
+        sendSyncRemoved(syncDbId); // Useless if deleteDrive is called, sendDriveRemoved already updates the sync list.
+                                   // May even cause a crash if both sendDriveRemoved and sendSyncRemoved are processed
+                                   // concurrently on the GUI side.
     }
 }
 
