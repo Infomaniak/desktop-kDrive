@@ -91,7 +91,8 @@ bool CommonUtility::normalizedSyncName(const SyncName &name, SyncName &normalize
         }
 
         if (iSizeEstimated <= 0) {
-            if (dwError != ERROR_INSUFFICIENT_BUFFER) {
+            if (GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+                // Real error, not buffer error
                 return false;
             }
 
