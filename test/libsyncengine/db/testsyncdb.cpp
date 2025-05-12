@@ -100,6 +100,7 @@ void TestSyncDb::tearDown() {
     _testObj->close();
     delete _testObj;
     TestBase::stop();
+    LogIfFailSettings::assertEnabled = true;
 }
 
 
@@ -388,7 +389,7 @@ void TestSyncDb::testCorrespondingNodeIdWithCacheFaillure() {
     // This cache will not be reloaded, so it will remain empty. All methods in SyncDbReadOnlyCache should
     // therefore use their fallback and query the database directly.
     SyncDbReadOnlyCache externalCache(*_testObj);
-    LogIfFailSettings::enabled = false;
+    LogIfFailSettings::assertEnabled = false;
     testCorrespondingNodeIdTemplate<SyncDbReadOnlyCache>(*_testObj, externalCache);
 }
 
@@ -447,12 +448,12 @@ void TestSyncDb::testNodesWithCache() {
 void TestSyncDb::testNodeWithCacheFaillure() {
     _testObj->enablePrepare(true);
     _testObj->prepare();
-    CPPUNIT_ASSERT(_testObj->exists()); 
+    CPPUNIT_ASSERT(_testObj->exists());
     CPPUNIT_ASSERT(_testObj->clearNodes());
     // This cache will not be reloaded, so it will remain empty. All methods in SyncDbReadOnlyCache should
     // therefore use their fallback and query the database directly.
     SyncDbReadOnlyCache externalCache(*_testObj);
-    LogIfFailSettings::enabled = false;
+    LogIfFailSettings::assertEnabled = false;
     testNodesTemplate<SyncDbReadOnlyCache>(*_testObj, externalCache);
 }
 

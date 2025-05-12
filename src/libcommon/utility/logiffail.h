@@ -27,7 +27,7 @@
 
 namespace KDC {
 struct LogIfFailSettings {
-        static inline bool enabled = true;
+        static inline bool assertEnabled = true;
 };
 } // namespace KDC
 
@@ -35,17 +35,17 @@ struct LogIfFailSettings {
 #define LOG_IF_FAIL(...) KD_OVERLOAD_WITH_ARGS_SIZE(LOG_IF_FAIL, __VA_ARGS__)
 #define LOG_IF_FAIL_1(cond)                                                                                             \
     KD_COVERAGE_OFF                                                                                                     \
-    if (!(cond) && LogIfFailSettings::enabled) {                                                                        \
+    if (!(cond)) {                                                                                                      \
         LOG_FATAL(_logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__); \
-        assert(cond);                                                                                                   \
+        if (LogIfFailSettings::assertEnabled) assert(cond);                                                             \
     }                                                                                                                   \
     KD_COVERAGE_ON
 
 #define LOG_IF_FAIL_2(logger, cond)                                                                                    \
     KD_COVERAGE_OFF                                                                                                    \
-    if (!(cond) && LogIfFailSettings::enabled) {                                                                       \
+    if (!(cond)) {                                                                                                     \
         LOG_FATAL(logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__); \
-        assert(cond);                                                                                                  \
+        if (LogIfFailSettings::assertEnabled) assert(cond);                                                            \
     }                                                                                                                  \
     KD_COVERAGE_ON
 
@@ -53,18 +53,18 @@ struct LogIfFailSettings {
 #define LOG_MSG_IF_FAIL(...) KD_OVERLOAD_WITH_ARGS_SIZE(LOG_MSG_IF_FAIL, __VA_ARGS__)
 #define LOG_MSG_IF_FAIL_2(cond, message)                                                                              \
     KD_COVERAGE_OFF                                                                                                   \
-    if (!(cond) && LogIfFailSettings::enabled) {                                                                      \
+    if (!(cond)) {                                                                                                    \
         LOG_FATAL(_logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__ \
                                                    << "with message: " << message);                                   \
-        assert(cond);                                                                                                 \
+        if (LogIfFailSettings::assertEnabled) assert(cond);                                                           \
     }                                                                                                                 \
     KD_COVERAGE_ON
 
 #define LOG_MSG_IF_FAIL_3(logger, cond, message)                                                                     \
     KD_COVERAGE_OFF                                                                                                  \
-    if (!(cond) && LogIfFailSettings::enabled) {                                                                     \
+    if (!(cond)) {                                                                                                   \
         LOG_FATAL(logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__ \
                                                   << "with message: " << message);                                   \
-        assert(cond);                                                                                                \
+        if (LogIfFailSettings::assertEnabled) assert(cond);                                                          \
     }                                                                                                                \
     KD_COVERAGE_ON
