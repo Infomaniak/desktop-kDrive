@@ -109,7 +109,6 @@ void JobManager::queueAsyncJob(std::shared_ptr<AbstractJob> job,
     job->setMainCallback(defaultCallback);
     _queuedJobs.emplace(job, priority);
     (void) _managedJobs.try_emplace(job->jobId(), job);
-    LOG_DEBUG(_logger, "Job queues: " << job->jobId());
 }
 
 void JobManager::eraseJob(const UniqueId jobId) {
