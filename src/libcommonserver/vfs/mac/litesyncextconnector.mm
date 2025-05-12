@@ -296,7 +296,7 @@
 
     for (NSString *path in _pathSet) {
         if (![self registerFolder:path]) {
-            NSLog(@"[KD] Failed to register folder");
+            NSLog(@"[KD] Failed to register folder %@", path);
             return FALSE;
         }
     }
