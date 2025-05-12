@@ -157,6 +157,10 @@ struct COMMON_EXPORT CommonUtility {
 
         static void resetTranslations();
 
+        static bool normalizedSyncName(const SyncName &name, SyncName &normalizedName,
+                                       UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
+
+
     private:
         static std::mutex _generateRandomStringMutex;
 

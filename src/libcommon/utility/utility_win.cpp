@@ -63,4 +63,50 @@ static inline bool hasDarkSystray_private() {
 
     return !settings.value(QLatin1String(lightThemeKeyC), true).toBool();
 }
+
+// Be careful, some characters have 2 different encodings in Unicode
+// For example 'é' can be coded as 0x65 + 0xcc + 0x81  or 0xc3 + 0xa9
+bool CommonUtility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
+                                       const UnicodeNormalization normalization) noexcept {
+    if (name.empty()) {
+        normalizedName = name;
+        return true;
+    }
+
+    static const int maxIterations = 10;
+    LPWSTR strResult = nullptr;
+    HANDLE hHeap = GetProcessHeap();
+
+    int64_t iSizeEstimated = static_cast<int64_t>(name.length() + 1) * 2;
+    for (int i = 0; i < maxIterations; i++) {
+        if (strResult) {
+            HeapFree(hHeap, 0, strResult);
+        }
+        strResult = (LPWSTR) HeapAlloc(hHeap, 0, iSizeEstimated * sizeof(WCHAR));
+        iSizeEstimated = NormalizeString(normalization == UnicodeNormalization::NFD ? NormalizationD : NormalizationC,
+                                         name.c_str(), -1, strResult, iSizeEstimated);
+
+        if (iSizeEstimated > 0) {
+            break; // success
+        }
+
+        if (iSizeEstimated <= 0) {
+            if (dwError != ERROR_INSUFFICIENT_BUFFER) {
+                return false;
+            }
+
+            // New guess is negative of the return value.
+            iSizeEstimated = -iSizeEstimated;
+        }
+    }
+
+    if (iSizeEstimated <= 0) {
+        return false;
+    }
+
+    (void) normalizedName.assign(strResult, iSizeEstimated - 1);
+    HeapFree(hHeap, 0, strResult);
+    return true;
+}
+
 } // namespace KDC
