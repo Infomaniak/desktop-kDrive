@@ -264,17 +264,21 @@
     _connection.interruptionHandler = ^{
       // The LiteSync extension has exited or crashed
       NSLog(@"[KD] Connection with LiteSync extension interrupted");
-      __typeof__(self) strongSelf = weakSelf;
-      strongSelf->_connection = nil;
-      [strongSelf scheduleRetryToConnectToLiteSyncExt];
+      __strong __typeof__(weakSelf) strongSelf = weakSelf;
+      if (strongSelf) {
+          strongSelf->_connection = nil;
+          [strongSelf scheduleRetryToConnectToLiteSyncExt];
+      }
     };
 
     _connection.invalidationHandler = ^{
       // Connection can not be formed or has terminated and may not be re-established
       NSLog(@"[KD] Connection with LiteSync extension invalidated");
-      __typeof__(self) strongSelf = weakSelf;
-      strongSelf->_connection = nil;
-      [strongSelf scheduleRetryToConnectToLiteSyncExt];
+      __strong __typeof__(weakSelf) strongSelf = weakSelf;
+      if (strongSelf) {
+          strongSelf->_connection = nil;
+          [strongSelf scheduleRetryToConnectToLiteSyncExt];
+      }
     };
 
     // Resume connection
