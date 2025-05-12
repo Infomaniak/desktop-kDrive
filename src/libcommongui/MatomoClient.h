@@ -16,8 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MATOMOCLIENT_H
-#define MATOMOCLIENT_H
 
 #pragma once
 
@@ -94,6 +92,3 @@ class MatomoClient final : public PiwikTracker
 };
 
 } // namespace KDC
-
-
-#endif //MATOMOCLIENT_H
