@@ -17,6 +17,8 @@
  */
 
 #include "bigfoldersdialog.h"
+
+#include "MatomoClient.h"
 #include "guiutility.h"
 #include "customcheckbox.h"
 #include "guirequests.h"
@@ -189,6 +191,7 @@ const QHash<int, QHash<const QString, bool>> &BigFoldersDialog::mapWhiteListedSu
 void BigFoldersDialog::slotCheckboxClicked() {
     CustomCheckBox *checkbox = qobject_cast<CustomCheckBox *>(sender());
     if (!checkbox) return;
+    MatomoClient::sendEvent("bigFolderDialog", MatomoEventAction::Click, "slotCheckbox", checkbox->isChecked() ? 1 : 0);
 
     _mapWhiteListedSubFolders[_mapCheckboxToFolder[checkbox]].insert(checkbox->property(undecidedFolderProperty).toString(),
                                                                      checkbox->isChecked());

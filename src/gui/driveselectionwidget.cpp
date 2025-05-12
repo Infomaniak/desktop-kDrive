@@ -17,6 +17,7 @@
  */
 
 #include "driveselectionwidget.h"
+#include "MatomoClient.h"
 #include "menuitemwidget.h"
 #include "menuwidget.h"
 #include "guiutility.h"
@@ -102,6 +103,7 @@ void DriveSelectionWidget::selectDrive(int driveDbId) {
 void DriveSelectionWidget::onClick(bool checked) {
     Q_UNUSED(checked)
 
+    MatomoClient::sendEvent("driveSelection", MatomoEventAction::Click, "selectedDriveButton", _currentDriveDbId);
     // Remove hover
     QApplication::sendEvent(this, new QEvent(QEvent::Leave));
     QApplication::sendEvent(this, new QEvent(QEvent::HoverLeave));
@@ -159,6 +161,9 @@ void DriveSelectionWidget::onSelectDriveActionTriggered(bool checked) {
     int driveId = driveIdStr.toInt();
     if (driveId != _currentDriveDbId) {
         selectDrive(driveId);
+        MatomoClient::sendEvent("driveSelection", MatomoEventAction::Click, "selectAnotherDriveButton", driveId);
+    } else {
+        MatomoClient::sendEvent("driveSelection", MatomoEventAction::Click, "selectSameDriveButton", driveId);
     }
 }
 

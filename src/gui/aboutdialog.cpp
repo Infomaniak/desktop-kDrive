@@ -17,6 +17,8 @@
  */
 
 #include "aboutdialog.h"
+
+#include "MatomoClient.h"
 #include "custommessagebox.h"
 #include "guiutility.h"
 #include "common/utility.h"
@@ -135,11 +137,13 @@ QString AboutDialog::aboutText() const {
 }
 
 void AboutDialog::onExit() {
+    MatomoClient::sendEvent("aboutDialog", MatomoEventAction::Click, "exitButton");
     accept();
 }
 
 void AboutDialog::onLinkActivated(const QString &link) {
     if (link == domainLink) {
+        MatomoClient::sendEvent("aboutDialog", MatomoEventAction::Click, "domainLink");
         QUrl domainUrl = QUrl("https://" KDRIVE_STRINGIFY(APPLICATION_DOMAIN));
         if (domainUrl.isValid()) {
             if (!QDesktopServices::openUrl(domainUrl)) {
@@ -150,6 +154,7 @@ void AboutDialog::onLinkActivated(const QString &link) {
             }
         }
     } else if (link == gitLink) {
+        MatomoClient::sendEvent("aboutDialog", MatomoEventAction::Click, "gitLink");
         QUrl gitUrl = QUrl(githubPrefix);
         if (gitUrl.isValid()) {
             if (!QDesktopServices::openUrl(gitUrl)) {
@@ -160,6 +165,7 @@ void AboutDialog::onLinkActivated(const QString &link) {
             }
         }
     } else if (link == gnuLink) {
+        MatomoClient::sendEvent("aboutDialog", MatomoEventAction::Click, "gnuLink");
         if (!QDesktopServices::openUrl(gnuUrl)) {
             qCWarning(lcAboutDialog) << "QDesktopServices::openUrl failed for " << gnuUrl.toString();
             CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open folder %1.").arg(gnuUrl.toString()), QMessageBox::Ok,

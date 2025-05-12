@@ -17,6 +17,7 @@
  */
 
 #include "errortabwidget.h"
+#include "MatomoClient.h"
 #include "parametersdialog.h"
 #include "gui/customtabbar.h"
 #include "languagechangefilter.h"
@@ -197,6 +198,7 @@ void ErrorTabWidget::showResolveUnsupportedCharacters(bool) {
 }
 
 void ErrorTabWidget::onClearToResErrorsClicked() {
+    MatomoClient::sendEvent("errorTab", MatomoEventAction::Click, "clearToResolveErrorsButton");
     emit _paramsDialog->clearErrors(_driveDbId, false);
 }
 
@@ -205,6 +207,7 @@ void ErrorTabWidget::showEvent(QShowEvent *) {
 }
 
 void ErrorTabWidget::onClearAutoResErrorsClicked() {
+    MatomoClient::sendEvent("errorTab", MatomoEventAction::Click, "clearAutoResolvedErrorsButton");
     emit _paramsDialog->clearErrors(_driveDbId, true);
 }
 

@@ -17,6 +17,7 @@
  */
 
 #include "adddrivelistwidget.h"
+#include "MatomoClient.h"
 #include "customwordwraplabel.h"
 #include "driveitemwidget.h"
 #include "guiutility.h"
@@ -251,12 +252,14 @@ void AddDriveListWidget::changeNextButtonText() {
 
 void AddDriveListWidget::onBackButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveList", MatomoEventAction::Click, "backButton");
 
     emit terminated(false);
 }
 
 void AddDriveListWidget::onNextButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveList", MatomoEventAction::Click, "nextButton");
 
     if (_withoutDrives) {
         QDesktopServices::openUrl(QUrl(QString::fromStdString(redirectionLink)));
@@ -267,6 +270,7 @@ void AddDriveListWidget::onNextButtonTriggered(bool checked) {
 
 void AddDriveListWidget::onWidgetPressed(QListWidgetItem *item) {
     Q_UNUSED(item)
+    MatomoClient::sendEvent("addDriveList", MatomoEventAction::Click, "selectADrive");
 
     DriveItemWidget *driveItem = (DriveItemWidget *) item;
     _driveInfo = driveItem->driveInfo();

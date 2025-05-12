@@ -17,6 +17,7 @@
  */
 
 #include "confirmsynchronizationdialog.h"
+#include "MatomoClient.h"
 #include "guiutility.h"
 #include "clientgui.h"
 #include "guirequests.h"
@@ -201,17 +202,20 @@ void ConfirmSynchronizationDialog::setArrowIcon() {
 }
 
 void ConfirmSynchronizationDialog::onExit() {
+    MatomoClient::sendEvent("confirmSynchronizationDialog", MatomoEventAction::Click, "cancelButton");
     reject();
 }
 
 void ConfirmSynchronizationDialog::onBackButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("confirmSynchronizationDialog", MatomoEventAction::Click, "backButton");
 
     done(-1);
 }
 
 void ConfirmSynchronizationDialog::onContinueButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("confirmSynchronizationDialog", MatomoEventAction::Click, "continueButton");
 
     accept();
 }

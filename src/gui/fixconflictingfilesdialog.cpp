@@ -17,6 +17,8 @@
  */
 
 #include "fixconflictingfilesdialog.h"
+
+#include "MatomoClient.h"
 #include "custommessagebox.h"
 #include "gui/fileitemwidget.h"
 #include "parameterscache.h"
@@ -58,6 +60,7 @@ FixConflictingFilesDialog::FixConflictingFilesDialog(const int driveDbId, std::s
 
 void FixConflictingFilesDialog::onLinkActivated(const QString &link) {
     if (link == learnMoreLink) {
+        MatomoClient::sendEvent("fixConflictingFiles", MatomoEventAction::Click, "learnMoreLink");
         if (!QDesktopServices::openUrl(QUrl(Theme::instance()->conflictHelpUrl()))) {
             CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open link %1.").arg(Theme::instance()->conflictHelpUrl()),
                                     QMessageBox::Ok, this);
@@ -72,7 +75,10 @@ void FixConflictingFilesDialog::onLinkActivated(const QString &link) {
 }
 
 void FixConflictingFilesDialog::onExpandButtonClicked() {
-    if (_fileListWidget->isVisible()) {
+    const bool isFileListVisible = _fileListWidget->isVisible();
+    MatomoClient::sendEvent("fixConflictingFiles", MatomoEventAction::Click, "expandButton", isFileListVisible ? 0 : 1); // 0: collapsed, 1: expanded
+
+    if (isFileListVisible) {
         _expandButton->setIconPath(":/client/resources/icons/actions/chevron-down.svg");
         _stackedWidget->setCurrentIndex(0);
     } else {
@@ -93,10 +99,12 @@ void FixConflictingFilesDialog::onScrollBarValueChanged() {
 void FixConflictingFilesDialog::onValidate() {
     _keepLocalVersion = _keepLocalButton->isChecked();
     accept();
+    MatomoClient::sendEvent("fixConflictingFiles", MatomoEventAction::Click, "validateButton", _keepLocalVersion ? 1 : 0);
 }
 
 void FixConflictingFilesDialog::onKeepRemoteButtonToggled(bool checked) {
     _keepRemoteDisclaimerWidget->setVisible(checked);
+    MatomoClient::sendEvent("fixConflictingFiles", MatomoEventAction::Click, "keepRemoteButton", checked ? 1 : 0);
 }
 
 void FixConflictingFilesDialog::initUi() {

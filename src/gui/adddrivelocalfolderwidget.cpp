@@ -17,6 +17,7 @@
  */
 
 #include "adddrivelocalfolderwidget.h"
+#include "MatomoClient.h"
 #include "custommessagebox.h"
 #include "customtoolbutton.h"
 #include "guiutility.h"
@@ -348,18 +349,21 @@ void AddDriveLocalFolderWidget::onNeedToSave() {
 
 void AddDriveLocalFolderWidget::onBackButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveLocalFolder", MatomoEventAction::Click, "backButton");
 
     emit terminated(false);
 }
 
 void AddDriveLocalFolderWidget::onContinueButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveLocalFolder", MatomoEventAction::Click, "continueButton");
 
     emit terminated();
 }
 
 void AddDriveLocalFolderWidget::onUpdateFolderButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveLocalFolder", MatomoEventAction::Click, "editButton");
     EnableStateHolder _(this);
 
     selectFolder(_localFolderPath);

@@ -17,6 +17,7 @@
  */
 
 #include "customextensionsetupwidget.h"
+#include "MatomoClient.h"
 #include "guiutility.h"
 #include "parameterscache.h"
 #include "libcommon/utility/utility.h"
@@ -434,18 +435,21 @@ QString CustomExtensionSetupWidget::picturePath(const bool fullDiskAccess) const
 void CustomExtensionSetupWidget::onLinkActivated(const QString &link) const {
     if (link == clickHereLinkSecurity) {
         const auto cmd = QString("open \"x-apple.systempreferences:com.apple.preference.security?Securiy\"");
+        MatomoClient::sendEvent("customExtension", MatomoEventAction::Click, "clickHereSecurityLink");
         int status = system(cmd.toLocal8Bit());
         if (status != 0) {
             qCWarning(lcCustomExtensionSetupWidget()) << "Cannot open System Preferences window!";
         }
     } else if (link == clickHereLinkFullDiskAccess) {
         const auto cmd = QString("open \"x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles\"");
+        MatomoClient::sendEvent("customExtension", MatomoEventAction::Click, "clickHereFullDiskAccessLink");
         int status = system(cmd.toLocal8Bit());
         if (status != 0) {
             qCWarning(lcCustomExtensionSetupWidget()) << "Cannot open System Preferences window!";
         }
     } else if (link == clickHereLinkGeneral) {
         const auto cmd = QString("open \"x-apple.systempreferences:com.apple.LoginItems-Settings.extension\"");
+        MatomoClient::sendEvent("customExtension", MatomoEventAction::Click, "clickHereGeneralLink");
         int status = system(cmd.toLocal8Bit());
         if (status != 0) {
             qCWarning(lcCustomExtensionSetupWidget()) << "Cannot open System Preferences window!";
@@ -461,6 +465,7 @@ void CustomExtensionSetupWidget::setLogoColor(const QColor &color) {
 
 void CustomExtensionSetupWidget::onFinishedButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("customExtension", MatomoEventAction::Click, "finishedButton");
     emit finishedButtonTriggered();
 }
 

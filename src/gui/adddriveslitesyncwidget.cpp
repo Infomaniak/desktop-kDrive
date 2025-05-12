@@ -17,6 +17,7 @@
  */
 
 #include "adddriveslitesyncwidget.h"
+#include "MatomoClient.h"
 #include "custommessagebox.h"
 #include "guiutility.h"
 #include "config.h"
@@ -216,12 +217,14 @@ void AddDriveLiteSyncWidget::setLogoColor(const QColor &color) {
 
 void AddDriveLiteSyncWidget::onBackButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveLiteSync", MatomoEventAction::Click, "backButton");
 
     emit terminated(false);
 }
 
 void AddDriveLiteSyncWidget::onLaterButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveLiteSync", MatomoEventAction::Click, "laterButton");
 
     _liteSync = false;
 
@@ -230,6 +233,7 @@ void AddDriveLiteSyncWidget::onLaterButtonTriggered(bool checked) {
 
 void AddDriveLiteSyncWidget::onYesButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveLiteSync", MatomoEventAction::Click, "yesButton");
 
     _liteSync = true;
 

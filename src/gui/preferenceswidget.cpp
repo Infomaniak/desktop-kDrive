@@ -561,7 +561,7 @@ void PreferencesWidget::onFilesToExcludeWidgetClicked() {
     MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "filesToExcludePopup");
     FileExclusionDialog dialog(this);
     dialog.exec();
-    MatomoClient::sendVisit(MatomoNameField::PG_Preferences_FileToExclude);
+    MatomoClient::sendVisit(MatomoNameField::PG_Preferences_FilesToExclude);
 }
 
 void PreferencesWidget::onProxyServerWidgetClicked() {

@@ -17,6 +17,7 @@
  */
 
 #include "folderitemwidget.h"
+#include "MatomoClient.h"
 #include "menuwidget.h"
 #include "menuitemwidget.h"
 #include "guiutility.h"
@@ -386,14 +387,17 @@ void FolderItemWidget::onMenuButtonClicked() {
 void FolderItemWidget::onExpandButtonClicked() {
     _isExpanded = !_isExpanded;
     setExpandButton();
+    MatomoClient::sendEvent("folderItem", MatomoEventAction::Click, "expandButton", _isExpanded ? 1 : 0);
     emit displayFolderDetail(_syncDbId, _isExpanded);
 }
 
 void FolderItemWidget::onCancelButtonClicked() {
+    MatomoClient::sendEvent("folderItem", MatomoEventAction::Click, "cancelButton");
     emit cancelUpdate(_syncDbId);
 }
 
 void FolderItemWidget::onValidateButtonClicked() {
+    MatomoClient::sendEvent("folderItem", MatomoEventAction::Click, "validateButton");
     emit validateUpdate(_syncDbId);
 }
 
@@ -409,10 +413,12 @@ void FolderItemWidget::onOpenFolder(const QString &link) {
 }
 
 void FolderItemWidget::onPauseTriggered() {
+    MatomoClient::sendEvent("folderItem", MatomoEventAction::Click, "pauseSyncButton");
     emit pauseSync(_syncDbId);
 }
 
 void FolderItemWidget::onResumeTriggered() {
+    MatomoClient::sendEvent("folderItem", MatomoEventAction::Click, "resumeSyncButton");
     emit resumeSync(_syncDbId);
 }
 
@@ -420,6 +426,7 @@ void FolderItemWidget::onUnsyncTriggered() {
     if (auto syncInfoClient = getSyncInfoClient(); syncInfoClient) {
         syncInfoClient->setIsBeingDeleted(true);
     }
+    MatomoClient::sendEvent("folderItem", MatomoEventAction::Click, "removeSyncButton");
     emit unSync(_syncDbId);
 }
 
@@ -429,10 +436,12 @@ void FolderItemWidget::onDisplayFolderDetailCanceled() {
 }
 
 void FolderItemWidget::onActivateLitesyncTriggered() {
+    MatomoClient::sendEvent("folderItem", MatomoEventAction::Click, "turnOnLiteSyncButton");
     emit triggerLiteSyncChanged(_syncDbId, true);
 }
 
 void FolderItemWidget::onDeactivateLitesyncTriggered() {
+    MatomoClient::sendEvent("folderItem", MatomoEventAction::Click, "turnOffLiteSyncButton");
     emit triggerLiteSyncChanged(_syncDbId, false);
 }
 

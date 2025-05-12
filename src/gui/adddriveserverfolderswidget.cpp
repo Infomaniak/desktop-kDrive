@@ -17,6 +17,7 @@
  */
 
 #include "adddriveserverfolderswidget.h"
+#include "MatomoClient.h"
 #include "custommessagebox.h"
 #include "guiutility.h"
 #include "common/utility.h"
@@ -215,12 +216,14 @@ void AddDriveServerFoldersWidget::onNeedToSave() {
 
 void AddDriveServerFoldersWidget::onBackButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveServerFolders", MatomoEventAction::Click, "backButton");
 
     emit terminated(false);
 }
 
 void AddDriveServerFoldersWidget::onContinueButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveServerFolders", MatomoEventAction::Click, "continueButton");
 
     emit terminated();
 }
