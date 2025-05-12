@@ -20,6 +20,8 @@
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/jsonparserutility.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &filepath, const NodeId &parentId,

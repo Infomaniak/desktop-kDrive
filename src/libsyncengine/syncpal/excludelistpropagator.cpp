@@ -94,7 +94,7 @@ ExitCode ExcludeListPropagator::checkItems() {
                 // Find dbId from the entry path
                 DbNodeId dbNodeId = -1;
                 bool found = false;
-                if (!_syncPal->_syncDb->dbId(ReplicaSide::Local, relativePath, dbNodeId, found)) {
+                if (!_syncPal->syncDb()->dbId(ReplicaSide::Local, relativePath, dbNodeId, found)) {
                     LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
                                       L"Error in SyncDb::dbId for path=" << Utility::formatSyncPath(relativePath));
                     return ExitCode::DbError;
@@ -109,7 +109,7 @@ ExitCode ExcludeListPropagator::checkItems() {
                                                                              << L" from DB because it is excluded from sync");
                 }
 
-                if (!_syncPal->_syncDb->deleteNode(dbNodeId, found)) {
+                if (!_syncPal->syncDb()->deleteNode(dbNodeId, found)) {
                     LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
                                       L"Error in SyncDb::deleteNode for " << Utility::formatSyncPath(relativePath));
                     return ExitCode::DbError;

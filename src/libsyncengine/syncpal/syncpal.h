@@ -221,7 +221,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         void fixNodeTableDeleteItemsWithNullParentNodeId();
 
-        virtual void increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side);
+        virtual void increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side,
+                                        ExitInfo exitInfo = ExitInfo());
         virtual void blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side);
         virtual bool isTmpBlacklisted(const SyncPath &relativePath, ReplicaSide side) const;
         virtual void refreshTmpBlacklist();
@@ -240,6 +241,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
+        void freeSnapshotsCopies();
         void invalideSnapshots();
 
         // Workers
@@ -266,7 +268,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<ConflictingFilesCorrector> _conflictingFilesCorrector = nullptr;
 
         std::unordered_map<UniqueId, std::shared_ptr<DownloadJob>> _directDownloadJobsMap;
-        std::unordered_map<SyncPath, UniqueId, hashPathFunction> _syncPathToDownloadJobMap;
+        std::unordered_map<SyncPath, UniqueId, PathHashFunction> _syncPathToDownloadJobMap;
         std::mutex _directDownloadJobsMapMutex;
 
         // Callbacks

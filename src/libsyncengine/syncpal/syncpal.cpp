@@ -41,15 +41,14 @@
 #include "propagation/operation_sorter/operationsorterworker.h"
 #include "propagation/executor/executorworker.h"
 #include "requests/syncnodecache.h"
-#include "requests/parameterscache.h"
 #include "jobs/network/API_v2/downloadjob.h"
-#include "jobs/network/API_v2/upload_session/uploadsessioncanceljob.h"
 #include "jobs/local/localdeletejob.h"
 #include "jobs/jobmanager.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "tmpblacklistmanager.h"
+#include "jobs/network/API_v2/upload/upload_session/uploadsessioncanceljob.h"
 
 #define SYNCPAL_NEW_ERROR_MSG "Failed to create SyncPal instance!"
 
@@ -171,7 +170,7 @@ SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId_, const std::strin
 }
 
 SyncPal::~SyncPal() {
-    SyncNodeCache::instance()->clearCache(syncDbId());
+    SyncNodeCache::instance()->clear(syncDbId());
     LOG_SYNCPAL_DEBUG(_logger, "~SyncPal");
 }
 
@@ -1303,9 +1302,9 @@ void SyncPal::fixNodeTableDeleteItemsWithNullParentNodeId() {
     }
 }
 
-void SyncPal::increaseErrorCount(const NodeId &nodeId, const NodeType type, const SyncPath &relativePath,
-                                 const ReplicaSide side) {
-    _tmpBlacklistManager->increaseErrorCount(nodeId, type, relativePath, side);
+void SyncPal::increaseErrorCount(const NodeId &nodeId, const NodeType type, const SyncPath &relativePath, const ReplicaSide side,
+                                 const ExitInfo exitInfo /*= ExitInfo()*/) {
+    _tmpBlacklistManager->increaseErrorCount(nodeId, type, relativePath, side, exitInfo);
 }
 
 void SyncPal::blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, const ReplicaSide side) {
@@ -1396,10 +1395,21 @@ void SyncPal::copySnapshots() {
     LOG_IF_FAIL(_localSnapshot)
     LOG_IF_FAIL(_remoteSnapshot)
 
+    if (!_localSnapshotCopy) _localSnapshotCopy = std::make_shared<Snapshot>(ReplicaSide::Local, _syncDb->rootNode());
+    if (!_remoteSnapshotCopy) _remoteSnapshotCopy = std::make_shared<Snapshot>(ReplicaSide::Remote, _syncDb->rootNode());
     *_localSnapshotCopy = *_localSnapshot;
     *_remoteSnapshotCopy = *_remoteSnapshot;
     _localSnapshot->startRead();
     _remoteSnapshot->startRead();
+}
+
+void SyncPal::freeSnapshotsCopies() {
+    if (_localSnapshotCopy) {
+        _localSnapshotCopy.reset();
+    }
+    if (_remoteSnapshotCopy) {
+        _remoteSnapshotCopy.reset();
+    }
 }
 
 void SyncPal::invalideSnapshots() {

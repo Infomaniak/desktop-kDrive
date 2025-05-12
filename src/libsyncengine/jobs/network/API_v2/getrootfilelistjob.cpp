@@ -18,6 +18,8 @@
 
 #include "getrootfilelistjob.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 GetRootFileListJob::GetRootFileListJob(const int userDbId, const int driveId, const uint64_t page /*= 1*/,

@@ -25,6 +25,11 @@
 #include <cassert>
 #include <log4cplus/loggingmacros.h>
 
+namespace KDC {
+struct LogIfFailSettings {
+        static inline bool assertEnabled = true;
+};
+} // namespace KDC
 
 // Log failure message if 'cond' is false. Aborts execution in DEBUG only.
 #define LOG_IF_FAIL(...) KD_OVERLOAD_WITH_ARGS_SIZE(LOG_IF_FAIL, __VA_ARGS__)
@@ -32,7 +37,7 @@
     KD_COVERAGE_OFF                                                                                                     \
     if (!(cond)) {                                                                                                      \
         LOG_FATAL(_logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__); \
-        assert(cond);                                                                                                   \
+        if (LogIfFailSettings::assertEnabled) assert(cond);                                                             \
     }                                                                                                                   \
     KD_COVERAGE_ON
 
@@ -40,7 +45,7 @@
     KD_COVERAGE_OFF                                                                                                    \
     if (!(cond)) {                                                                                                     \
         LOG_FATAL(logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__); \
-        assert(cond);                                                                                                  \
+        if (LogIfFailSettings::assertEnabled) assert(cond);                                                            \
     }                                                                                                                  \
     KD_COVERAGE_ON
 
@@ -51,7 +56,7 @@
     if (!(cond)) {                                                                                                    \
         LOG_FATAL(_logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__ \
                                                    << "with message: " << message);                                   \
-        assert(cond);                                                                                                 \
+        if (LogIfFailSettings::assertEnabled) assert(cond);                                                           \
     }                                                                                                                 \
     KD_COVERAGE_ON
 
@@ -60,6 +65,6 @@
     if (!(cond)) {                                                                                                   \
         LOG_FATAL(logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__ \
                                                   << "with message: " << message);                                   \
-        assert(cond);                                                                                                \
+        if (LogIfFailSettings::assertEnabled) assert(cond);                                                          \
     }                                                                                                                \
     KD_COVERAGE_ON

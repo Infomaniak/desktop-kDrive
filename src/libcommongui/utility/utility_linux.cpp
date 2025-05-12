@@ -39,4 +39,8 @@ void CommonGuiUtility::setupFavLink(const QString &folder) {
     }
 }
 
+void CommonGuiUtility::removeDirIcon(const QString &folder) {
+    // Do nothing, icon is not set on Linux
+}
+
 } // namespace KDC

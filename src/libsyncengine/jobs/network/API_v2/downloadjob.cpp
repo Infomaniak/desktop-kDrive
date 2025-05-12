@@ -29,9 +29,13 @@
 #include <unistd.h>
 #endif
 
+#include "utility/timerutility.h"
+
+
 #include <fstream>
 
 #include <Poco/File.h>
+#include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
 
@@ -602,7 +606,7 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
         }
 
         if (!writeError && !readError) {
-            std::chrono::steady_clock::time_point fileProgressTimer = std::chrono::steady_clock::now();
+            TimerUtility timer;
             std::unique_ptr<char[]> buffer(new char[BUF_SIZE]);
             bool done = false;
             int retryCount = 0;
@@ -667,8 +671,7 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
                 }
 
                 if (_vfs && !_isHydrated) { // updateFetchStatus is used only for hydration.
-                    std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - fileProgressTimer;
-                    if (elapsed_seconds.count() > NOTIFICATION_DELAY || done) {
+                    if (timer.elapsed().count() > NOTIFICATION_DELAY || done) {
                         // Update fetch status
                         if (!_vfs->updateFetchStatus(_tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished)) {
                             LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_localpath));
@@ -678,7 +681,7 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
                             LOGW_WARN(_logger, L"Update fetch status canceled: " << Utility::formatSyncPath(_localpath));
                             break;
                         }
-                        fileProgressTimer = std::chrono::steady_clock::now();
+                        timer.restart();
                     }
                 }
             }

@@ -17,7 +17,8 @@
  */
 
 #include "initfilelistwithcursorjob.h"
-#include "../networkjobsparams.h"
+
+#include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
 

@@ -21,12 +21,11 @@
 #include "config.h"
 #include "db/parmsdb.h"
 #include "jobs/jobmanager.h"
-#include "jobs/network/API_v2/createdirjob.h"
 #include "jobs/network/API_v2/deletejob.h"
 #include "jobs/network/API_v2/downloadjob.h"
 #include "jobs/network/API_v2/getfilelistjob.h"
-#include "jobs/network/API_v2/uploadjob.h"
-#include "jobs/network/API_v2/upload_session/driveuploadsession.h"
+#include "jobs/network/API_v2/upload/uploadjob.h"
+#include "jobs/network/API_v2/upload/upload_session/driveuploadsession.h"
 #include "network/proxy.h"
 #include "requests/parameterscache.h"
 #include "libcommon/utility/utility.h"
@@ -39,16 +38,16 @@
 #include "test_utility/remotetemporarydirectory.h"
 
 #include <unordered_set>
+#include <Poco/Net/HTTPRequest.h>
 
 using namespace CppUnit;
 
 namespace KDC {
 
-static const SyncPath localTestDirPath(std::wstring(L"" TEST_DIR) + L"/test_ci");
 static const SyncPath localTestDirPath_manyFiles(std::wstring(L"" TEST_DIR) + L"/test_ci/many_files_dir");
 static const SyncPath localTestDirPath_pictures(std::wstring(L"" TEST_DIR) + L"/test_ci/test_pictures");
 static const int driveDbId = 1;
-void KDC::TestJobManager::setUp() {
+void TestJobManager::setUp() {
     TestBase::start();
     const testhelpers::TestVariables testVariables;
 
@@ -469,7 +468,7 @@ size_t TestJobManager::ongoingJobsCount() {
 }
 
 void TestJobManager::testWithCallbackBigFiles(const SyncPath &dirPath, int size, int count) {
-    testhelpers::generateBigFiles(dirPath, size, count);
+    testhelpers::generateBigFiles(dirPath, static_cast<uint16_t>(size), count);
 
     // Reset upload session max parallel jobs & JobManager pool capacity
     ParametersCache::instance()->setUploadSessionParallelThreads(10);
