@@ -137,7 +137,7 @@ void WebView::loadFinished(bool ok) {
             MatomoClient::sendVisit(MatomoNameField::VW_LoginPage);
 #ifdef Q_OS_WIN
         } else if (host.contains(QUrl(APPLICATION_STORAGE_URL).host(), Qt::CaseSensitive)) {     // Release Notes Webview (only on windows, see 'src/gui/updater/updatedialog.cpp')
-            MatomoClient::sendVisit(Matomo_NameField::WV_ReleaseNotes);
+            MatomoClient::sendVisit(MatomoNameField::WV_ReleaseNotes);
 #endif
         } else {                                                                                 // Other Webview, shouldn't happen, there is no other Qt webview in the codebase.
             MatomoClient::sendVisit(MatomoNameField::Unknown);
