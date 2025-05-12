@@ -27,6 +27,8 @@
 #include "guirequests.h"
 #include "libcommongui/matomoclient.h"
 
+#include "libcommon/utility/utility.h"
+
 #include <QFile>
 #include <QHeaderView>
 #include <QLabel>
@@ -323,6 +325,40 @@ void FileExclusionDialog::onExit() {
     }
 }
 
+namespace {
+// Insert the NFC and NFD normalizations of `exclusionTemplate` to `exclusionList`.
+// Two templates are inserted if the two normalizations are successful and yield different results.
+// Otherwise, a single template is inserted.
+void tryToInsertNormalizedTemplates(const QString &exclusionTemplate, QList<ExclusionTemplateInfo> &exclusionList) {
+    const auto &syncNameTemplate = QStr2SyncName(exclusionTemplate);
+
+    SyncName nfcNormalizedTemplate;
+    const bool nfcSuccess = CommonUtility::normalizedSyncName(syncNameTemplate, nfcNormalizedTemplate, UnicodeNormalization::NFC);
+    if (!nfcSuccess) {
+        qCWarning(lcFileExclusionDialog()) << "Failed to NFC-normalize the template " << exclusionTemplate;
+    }
+
+    SyncName nfdNormalizedTemplate;
+    const bool nfdSuccess = CommonUtility::normalizedSyncName(syncNameTemplate, nfdNormalizedTemplate, UnicodeNormalization::NFD);
+    if (!nfcSuccess) {
+        qCWarning(lcFileExclusionDialog()) << "Error in normalizedSyncName: Failed to NFD-normalize the template "
+                                           << exclusionTemplate;
+    }
+
+    if (nfcSuccess) {
+        ExclusionTemplateInfo nfcTemplateInfo(SyncName2QStr(nfcNormalizedTemplate));
+        exclusionList.append(std::move(nfcTemplateInfo));
+        if (nfdSuccess && nfcNormalizedTemplate != nfdNormalizedTemplate) {
+            ExclusionTemplateInfo nfdTemplateInfo(SyncName2QStr(nfdNormalizedTemplate));
+            exclusionList.append(std::move(nfdTemplateInfo));
+        }
+    } else {
+        qCWarning(lcFileExclusionDialog()) << "Using template " << exclusionTemplate << " as is.";
+        exclusionList.emplace_back(ExclusionTemplateInfo(exclusionTemplate));
+    }
+}
+} // namespace
+
 void FileExclusionDialog::onAddFileButtonTriggered(bool checked) {
     Q_UNUSED(checked)
     MatomoClient::sendEvent("preferencesFileExclusion", MatomoEventAction::Click, "addFileButton");
@@ -340,7 +376,8 @@ void FileExclusionDialog::onAddFileButtonTriggered(bool checked) {
             }
         }
 
-        _userTemplateList.append(ExclusionTemplateInfo(templ));
+        // If NCF and NFD normalizations of `templ` are both successful and yield different strings, we insert both.
+        tryToInsertNormalizedTemplates(templ, _userTemplateList);
 
         // Reload table
         loadPatternTable(templ);
