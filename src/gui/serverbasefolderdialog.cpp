@@ -18,6 +18,7 @@
 
 #include "clientgui.h"
 #include "serverbasefolderdialog.h"
+#include "MatomoClient.h"
 #include "custommessagebox.h"
 #include "guiutility.h"
 #include "libcommon/utility/utility.h"
@@ -159,6 +160,7 @@ void ServerBaseFolderDialog::onExit() {
 void ServerBaseFolderDialog::onContinueButtonTriggered(bool checked) {
     Q_UNUSED(checked)
 
+    MatomoClient::sendEvent("serverBaseFolderDialog", MatomoEventAction::Click, "continueButton");
     QStringList warnStrings;
 
     QString folderPath;
@@ -205,6 +207,7 @@ void ServerBaseFolderDialog::onContinueButtonTriggered(bool checked) {
 void ServerBaseFolderDialog::onBackButtonTriggered(bool checked) {
     Q_UNUSED(checked)
 
+    MatomoClient::sendEvent("serverBaseFolderDialog", MatomoEventAction::Click, "backButton");
     done(-1);
 }
 
@@ -218,6 +221,7 @@ void ServerBaseFolderDialog::onFolderSelected(const QString &folderBasePath, con
     _serverFolderBasePath = folderBasePath;
     _serverFolderList = folderList;
 
+    MatomoClient::sendEvent("serverBaseFolderDialog", MatomoEventAction::Click, "selectFolderButton");
     setOkToContinue(true);
 }
 
