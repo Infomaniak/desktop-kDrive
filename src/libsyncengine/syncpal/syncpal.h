@@ -241,6 +241,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
+        void freeSnapshotsCopies();
         void invalideSnapshots();
 
         // Workers
