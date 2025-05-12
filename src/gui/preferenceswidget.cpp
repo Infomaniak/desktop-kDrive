@@ -579,7 +579,9 @@ void PreferencesWidget::onLiteSyncWidgetClicked() {
     MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "liteSyncPopup");
     LiteSyncDialog dialog(_gui, this);
     dialog.exec();
+#ifdef Q_OS_MAC
     MatomoClient::sendVisit(MatomoNameField::PG_Preferences_LiteSync);
+#endif
 }
 
 void PreferencesWidget::onLinkActivated(const QString &link) {
