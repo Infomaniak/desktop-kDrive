@@ -71,19 +71,20 @@ enum class MatomoEventAction : uint8_t {
 class MatomoClient final : public PiwikTracker
 {
     public:
+        /**
+         * Meyer singleton pattern
+         *
+         * Delete copy constructor and assignment operator.
+         */
         static MatomoClient& instance(const QString& clientId = QString());
+        MatomoClient(const MatomoClient&) = delete;
+        MatomoClient& operator=(const MatomoClient&) = delete;
 
         static void sendVisit(MatomoNameField page);
         static void sendEvent(const QString& category,                  // the category of the event (or equals to the path)
                               MatomoEventAction action = MatomoEventAction::Click,   // the action of the event, CLICK or UNKNOWN @see Matomo_Event_Action
                               const QString& name = QString(),      // the name of the event (here, the name of the button)
                               int value = 0);
-
-        /**
-         * Disable copy constructor and assignment operator, because this class is a singleton
-         */
-        MatomoClient(const MatomoClient&) = delete;
-        MatomoClient& operator=(const MatomoClient&) = delete;
 
     private:
         MatomoClient(QCoreApplication* app, const QString& clientId);
