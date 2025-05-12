@@ -39,6 +39,8 @@
 #include <QWebEngineCookieStore>
 #include <QMessageBox>
 
+#include "config.h"
+
 namespace KDC {
 
 Q_LOGGING_CATEGORY(lcWizardWebiew, "gui.wizard.webview", QtInfoMsg)
