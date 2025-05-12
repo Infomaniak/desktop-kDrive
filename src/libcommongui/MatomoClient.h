@@ -48,6 +48,9 @@ namespace KDC {
         PG_Preferences_Beta,
 
         PG_Parameters,
+        PG_Parameters_NewSync_LocalFolder,
+        PG_Parameters_NewSync_RemoteFolder,
+        PG_Parameters_NewSync_Summary,
 
         PG_AddNewDrive_SelectDrive,
         PG_AddNewDrive_ActivateLiteSync,
