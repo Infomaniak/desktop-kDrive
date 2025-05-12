@@ -241,6 +241,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
+        void freeSnapshotsCopies();
         void invalideSnapshots();
 
         // Workers
@@ -267,7 +268,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<ConflictingFilesCorrector> _conflictingFilesCorrector = nullptr;
 
         std::unordered_map<UniqueId, std::shared_ptr<DownloadJob>> _directDownloadJobsMap;
-        std::unordered_map<SyncPath, UniqueId, hashPathFunction> _syncPathToDownloadJobMap;
+        std::unordered_map<SyncPath, UniqueId, PathHashFunction> _syncPathToDownloadJobMap;
         std::mutex _directDownloadJobsMapMutex;
 
         // Callbacks

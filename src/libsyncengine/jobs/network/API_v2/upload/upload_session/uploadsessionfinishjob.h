@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "jobs/network/API_v2/upload_session/abstractuploadsessionjob.h"
+#include "abstractuploadsessionjob.h"
 #include "libcommonserver/vfs/vfs.h"
 
 namespace KDC {
@@ -32,18 +32,18 @@ class UploadSessionFinishJob : public AbstractUploadSessionJob {
         UploadSessionFinishJob(UploadSessionType uploadType, const SyncPath &absoluteFilePath, const std::string &sessionToken,
                                const std::string &totalChunkHash, uint64_t totalChunks, SyncTime modtime);
 
-        ~UploadSessionFinishJob();
+        ~UploadSessionFinishJob() override;
 
-        inline const NodeId &nodeId() const { return _nodeId; }
-        inline SyncTime modtime() const { return _modtimeOut; }
+        const NodeId &nodeId() const { return _nodeId; }
+        SyncTime modtime() const { return _modtimeOut; }
 
     protected:
-        virtual bool handleResponse(std::istream &is) override;
+        bool handleResponse(std::istream &is) override;
 
     private:
-        virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &, bool &) override {}
-        inline virtual ExitInfo setData() override;
+        std::string getSpecificUrl() override;
+        void setQueryParameters(Poco::URI &, bool &) override { /*No query parameters*/ }
+        inline ExitInfo setData() override;
 
         std::string _totalChunkHash;
         uint64_t _totalChunks = 0;

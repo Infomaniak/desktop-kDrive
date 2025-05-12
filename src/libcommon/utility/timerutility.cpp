@@ -16,31 +16,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "libcommon/utility/types.h"
-#include "libcommongui/utility/utility.h"
+#include "timerutility.h"
 
-#include <QFile>
-#include <QByteArray>
-#include <QDir>
+#include <iostream>
 
 namespace KDC {
 
-void CommonGuiUtility::setupFavLink(const QString &folder) {
-    // Nautilus: add to ~/.gtk-bookmarks
-    QFile gtkBookmarks(QDir::homePath() + QLatin1String("/.gtk-bookmarks"));
-    QByteArray folderUrl = "file://" + folder.toUtf8();
-    if (gtkBookmarks.open(QFile::ReadWrite)) {
-        QByteArray places = gtkBookmarks.readAll();
-        if (!places.contains(folderUrl)) {
-            places += folderUrl;
-            gtkBookmarks.reset();
-            gtkBookmarks.write(places + '\n');
-        }
-    }
+TimerUtility::TimerUtility() : _startTime(std::chrono::steady_clock::now()) {}
+
+void TimerUtility::restart() {
+    _startTime = std::chrono::steady_clock::now();
 }
 
-void CommonGuiUtility::removeDirIcon(const QString &folder) {
-    // Do nothing, icon is not set on Linux
+SecondsDuration TimerUtility::elapsed(const std::string_view consoleMsg /*= {}*/) const {
+    const SecondsDuration elapsedSeconds = std::chrono::steady_clock::now() - _startTime;
+    if (!consoleMsg.empty()) {
+        std::cout << consoleMsg << " : " << elapsedSeconds.count() << std::endl;
+    }
+    return elapsedSeconds;
+}
+
+SecondsDuration TimerUtility::lap(const std::string_view consoleMsg /*= {}*/) {
+    const auto elapsedSeconds = elapsed(consoleMsg);
+    restart();
+    return elapsedSeconds;
 }
 
 } // namespace KDC

@@ -1056,6 +1056,8 @@ KDC--DriveSelectionWidget
     qproperty-drive_icon_size: 20px;
     qproperty-down_icon_size: 12px;
     qproperty-down_icon_color: #FFFFFF;
+    qproperty-add_icon_size: 20px;
+    qproperty-add_icon_color: #0098FF;
     qproperty-menu_right_icon_size: 18px;
 }
 

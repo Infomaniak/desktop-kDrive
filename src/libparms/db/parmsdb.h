@@ -72,7 +72,6 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool updateAccount(const Account &account, bool &found);
         bool deleteAccount(int dbId, bool &found);
         bool selectAccount(int dbId, Account &account, bool &found);
-        bool selectAccountFromUserDbId(int userDbId, Account &account, bool &found);
         bool selectAllAccounts(std::vector<Account> &accountList);
         bool selectAllAccounts(int userDbId, std::vector<Account> &accountList);
         bool accountDbId(int userDbId, int accountId, int &dbId);

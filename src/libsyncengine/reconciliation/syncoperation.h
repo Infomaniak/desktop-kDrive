@@ -117,7 +117,7 @@ class SyncOperation {
         static UniqueId _nextId;
 };
 
-typedef std::shared_ptr<SyncOperation> SyncOpPtr;
+using SyncOpPtr = std::shared_ptr<SyncOperation>;
 
 class SyncOperationList : public SharedObject {
     public:
@@ -131,6 +131,7 @@ class SyncOperationList : public SharedObject {
         [[nodiscard]] const std::list<UniqueId> &opSortedList() const { return _opSortedList; }
         const std::unordered_set<UniqueId> &opListIdByType(const OperationType type) { return _opListByType[type]; }
         const std::list<UniqueId> &getOpIdsFromNodeId(const NodeId &nodeId) { return _node2op[nodeId]; }
+        [[nodiscard]] const std::unordered_map<UniqueId, SyncOpPtr> &allOps() const { return _allOps; }
 
         bool pushOp(SyncOpPtr op);
         void popOp();

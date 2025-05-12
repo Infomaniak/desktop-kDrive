@@ -62,4 +62,9 @@ void CommonGuiUtility::setupFavLink(const QString &folder) {
     QFile::link(folder, linkName);
 }
 
+void CommonGuiUtility::removeDirIcon(const QString &folder) {
+    QFile desktopIni(folder + QLatin1String("/Desktop.ini"));
+    desktopIni.remove();
+}
+
 } // namespace KDC
