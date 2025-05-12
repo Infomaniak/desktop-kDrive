@@ -23,7 +23,8 @@
 namespace KDC {
 
 OperationProcessor::OperationProcessor(const std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                       const std::string &shortName) : ISyncWorker(syncPal, name, shortName) {}
+                                       const std::string &shortName) :
+    ISyncWorker(syncPal, name, shortName) {}
 
 bool OperationProcessor::isPseudoConflict(const std::shared_ptr<Node> node, const std::shared_ptr<Node> correspondingNode) {
     if (!node || !node->hasChangeEvent() || !correspondingNode || !correspondingNode->hasChangeEvent()) {
@@ -151,7 +152,7 @@ std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(const st
 
     // Construct path with ancestor path / relative path
     SyncPath correspondingPath = correspondingParentNode->getPath() / relativeTraversedPath;
-    std::shared_ptr<Node> correspondingNode = otherTree->getNodeByNormalizedPath(correspondingPath);
+    std::shared_ptr<Node> correspondingNode = otherTree->getNodeByPathNormalized(correspondingPath);
     if (correspondingNode == nullptr) {
         return nullptr;
     }
