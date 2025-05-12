@@ -18,6 +18,8 @@
 
 #include "clientgui.h"
 #include "litesyncappdialog.h"
+
+#include "MatomoClient.h"
 #include "customproxystyle.h"
 #include "guirequests.h"
 
@@ -144,21 +146,24 @@ void LiteSyncAppDialog::appInfo(QString &appId, QString &appName) {
 }
 
 void LiteSyncAppDialog::onExit() {
+    MatomoClient::sendEvent("preferencesLiteSyncApp", MatomoEventAction::Click, "exitButton");
     reject();
 }
 
 void LiteSyncAppDialog::onComboBoxActivated(int index) {
+    MatomoClient::sendEvent("preferencesLiteSyncApp", MatomoEventAction::Click, "comboBoxActivated", index);
     _appNameLineEdit->setText(_appTable[_appIdComboBox->itemText(index)]);
     _validateButton->setEnabled(!_appIdComboBox->currentText().isEmpty());
 }
 
 void LiteSyncAppDialog::onTextEdited(const QString &text) {
+    MatomoClient::sendEvent("preferencesLiteSyncApp", MatomoEventAction::Input, "appNameInput");
     _validateButton->setEnabled(!text.isEmpty());
 }
 
 void LiteSyncAppDialog::onValidateButtonTriggered(bool checked) {
     Q_UNUSED(checked)
-
+    MatomoClient::sendEvent("preferencesLiteSyncApp", MatomoEventAction::Click, "validateButton");
     accept();
 }
 
