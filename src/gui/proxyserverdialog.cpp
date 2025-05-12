@@ -18,6 +18,8 @@
 
 #include "clientgui.h"
 #include "proxyserverdialog.h"
+
+#include "MatomoClient.h"
 #include "custommessagebox.h"
 #include "enablestateholder.h"
 #include "guirequests.h"
@@ -304,6 +306,7 @@ void ProxyServerDialog::onExit() {
 
 void ProxyServerDialog::onSaveButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("preferencesProxyServer", MatomoEventAction::Click, "saveButton");
 
     // Check host name
     if (!_proxyConfigInfo.hostName().isEmpty()) {
@@ -331,6 +334,7 @@ void ProxyServerDialog::onSaveButtonTriggered(bool checked) {
 }
 
 void ProxyServerDialog::onNoProxyButtonClicked(bool checked) {
+    MatomoClient::sendEvent("preferencesProxyServer", MatomoEventAction::Click, "noProxyButton", checked ? 1 : 0);
     if (checked) {
         _proxyConfigInfo.setType(ProxyType::None);
         resetManualProxy();
@@ -340,6 +344,7 @@ void ProxyServerDialog::onNoProxyButtonClicked(bool checked) {
 }
 
 void ProxyServerDialog::onSystemProxyButtonClicked(bool checked) {
+    MatomoClient::sendEvent("preferencesProxyServer", MatomoEventAction::Click, "systemProxyButton", checked ? 1 : 0);
     if (checked) {
         _proxyConfigInfo.setType(ProxyType::System);
         resetManualProxy();
@@ -349,6 +354,7 @@ void ProxyServerDialog::onSystemProxyButtonClicked(bool checked) {
 }
 
 void ProxyServerDialog::onManualProxyButtonClicked(bool checked) {
+    MatomoClient::sendEvent("preferencesProxyServer", MatomoEventAction::Click, "manualProxyButton", checked ? 1 : 0);
     if (checked) {
         _proxyConfigInfo.setType(ProxyType::HTTP); // Default manual proxy type
         updateUI();
@@ -363,16 +369,19 @@ void ProxyServerDialog::onProxyTypeComboBoxActivated(int index) {
 }
 
 void ProxyServerDialog::onPortTextEdited(const QString &text) {
+    MatomoClient::sendEvent("preferencesProxyServer", MatomoEventAction::Input, "portInput");
     _proxyConfigInfo.setPort(text.toInt());
     setNeedToSave(true);
 }
 
 void ProxyServerDialog::onAddressTextEdited(const QString &text) {
+    MatomoClient::sendEvent("preferencesProxyServer", MatomoEventAction::Input, "addressInput");
     _proxyConfigInfo.setHostName(text);
     setNeedToSave(true);
 }
 
 void ProxyServerDialog::onAuthenticationCheckBoxClicked(bool checked) {
+    MatomoClient::sendEvent("preferencesProxyServer", MatomoEventAction::Click, "authenticationCheckbox", checked ? 1 : 0);
     _proxyConfigInfo.setNeedsAuth(checked);
     updateUI();
     setNeedToSave(true);
@@ -385,11 +394,13 @@ void ProxyServerDialog::onAuthenticationCheckBoxClicked(bool checked) {
 void ProxyServerDialog::onLoginTextEdited(const QString &text) {
     _proxyConfigInfo.setUser(text);
     setNeedToSave(true);
+    MatomoClient::sendEvent("preferencesProxyServer", MatomoEventAction::Input, "loginInput");
 }
 
 void ProxyServerDialog::onPwdTextEdited(const QString &text) {
     _proxyConfigInfo.setPwd(text);
     setNeedToSave(true);
+    MatomoClient::sendEvent("preferencesProxyServer", MatomoEventAction::Input, "passwordInput");
 }
 
 } // namespace KDC
