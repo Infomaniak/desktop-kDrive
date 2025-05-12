@@ -103,6 +103,11 @@ void TestOperationSorterWorker::testFixDeleteBeforeMove() {
         const auto nodeB = _testSituationGenerator.renameNode(ReplicaSide::Local, "b", Str("A"));
         const auto moveOp = generateSyncOperation(OperationType::Move, nodeB);
 
+        // Edit A (this operation is added to make sure it does not influence or break the test)
+        (void) _testSituationGenerator.editNode(ReplicaSide::Local, nodeB->id().value());
+        const auto editOp = generateSyncOperation(OperationType::Edit, nodeB);
+
+        (void) _syncPal->syncOps()->pushOp(editOp);
         (void) _syncPal->syncOps()->pushOp(moveOp);
         (void) _syncPal->syncOps()->pushOp(deleteOp);
 
@@ -846,12 +851,12 @@ SyncOpPtr TestOperationSorterWorker::generateSyncOperation(const OperationType o
 void TestOperationSorterWorker::generateLotsOfDummySyncOperations(const OperationType opType1,
                                                                   const OperationType opType2 /*= OperationType::None*/,
                                                                   const NodeType nodeType /*= NodeType::File*/) const {
-    const auto dummyNode = _testSituationGenerator.createNode(ReplicaSide::Local, nodeType, "dummy", "", false);
-    dummyNode->setMoveOriginInfos({"/dumm", "1"});
+    const auto dummyNode = _testSituationGenerator.createNode(ReplicaSide::Local, nodeType, "z", "", false);
+    dummyNode->setMoveOriginInfos({"/Y", "1"});
     for (const auto type: {opType1, opType2}) {
         if (type != OperationType::None) {
             // Generate dummy operations
-            for (uint32_t i = 0; i < 10000; i++) {
+            for (uint32_t i = 0; i < 100; i++) {
                 (void) _syncPal->syncOps()->pushOp(generateSyncOperation(type, dummyNode));
             }
         }

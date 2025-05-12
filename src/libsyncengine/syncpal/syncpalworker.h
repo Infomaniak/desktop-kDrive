@@ -47,7 +47,7 @@ class SyncPalWorker : public ISyncWorker {
         bool _pauseAsked{false};
         bool _unpauseAsked{false};
         bool _isPaused{false};
-
+        std::thread _resetVfsFilesStatusThread;
         void initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&workers)[2],
                       std::shared_ptr<SharedObject> (&inputSharedObject)[2]);
         void initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2], std::shared_ptr<SharedObject> (&inputSharedObject)[2],
@@ -59,7 +59,7 @@ class SyncPalWorker : public ISyncWorker {
         void stopAndWaitForExitOfWorkers(std::shared_ptr<ISyncWorker> workers[2]);
         void stopAndWaitForExitOfAllWorkers(std::shared_ptr<ISyncWorker> fsoWorkers[2],
                                             std::shared_ptr<ISyncWorker> stepWorkers[2]);
-        bool resetVfsFilesStatus();
+        void resetVfsFilesStatus();
 
         friend class TestSyncPalWorker;
 };

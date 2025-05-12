@@ -89,7 +89,6 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
         _syncPal->removeItemFromTmpBlacklist(relativePath);
 
-        auto ioError = IoError::Success;
 
         if (opTypeFromOS == OperationType::Delete) {
             // Check if exists with same nodeId
@@ -112,7 +111,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         }
 
         FileStat fileStat;
-        ioError = IoError::Success;
+        auto ioError = IoError::Success;
         if (!IoHelper::getFileStat(absolutePath, &fileStat, ioError)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, ioError));
             tryToInvalidateSnapshot();
@@ -630,7 +629,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
 
             // Check if the directory entry is managed
             bool isManaged = false;
-            if (!Utility::checkIfDirEntryIsManaged(entry, isManaged, itemType, ioError)) {
+            if (!Utility::checkIfDirEntryIsManaged(entry, isManaged, ioError, itemType)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged: "
                                                    << Utility::formatIoError(absoluteParentDirPath, ioError));
                 dirIt.disableRecursionPending();
