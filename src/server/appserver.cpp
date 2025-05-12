@@ -2594,7 +2594,7 @@ ExitCode AppServer::updateUserInfo(User &user) {
                             LOG_WARN(_logger, "Error in Requests::deleteAccount: code=" << exitCode);
                             return exitCode;
                         }
-
+                        sendAccountRemoved(account.accountId());
                         accountRemoved = true;
                     }
                 }
@@ -3355,6 +3355,7 @@ ExitCode AppServer::updateAllUsersInfo() {
             LOG_INFO(_logger,
                      "User: " << user.email() << " (id:" << user.userId() << ") is not used anymore. It will be removed.");
             ServerRequests::deleteUser(user.dbId());
+            sendUserRemoved(user.userId());
             continue;
         }
         if (user.keychainKey().empty()) {
