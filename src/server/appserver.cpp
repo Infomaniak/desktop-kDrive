@@ -401,7 +401,7 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "AppServer::cleanup");
 
     // Stop JobManager
-    JobManager::stop();
+    JobManager::instance()->stop();
     LOG_DEBUG(_logger, "JobManager stopped");
 
     // Stop SyncPals
@@ -421,7 +421,7 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "Vfs(s) stopped");
 
     // Clear JobManager
-    JobManager::clear();
+    JobManager::instance()->clear();
     LOG_DEBUG(_logger, "JobManager::clear() done");
 
     // Clear maps
