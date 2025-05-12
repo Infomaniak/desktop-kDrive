@@ -156,7 +156,7 @@ std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(const st
 
     // Construct path with ancestor path / relative path
     SyncPath correspondingPath = correspondingParentNode->getPath() / relativeTraversedPath;
-    std::shared_ptr<Node> correspondingNode = otherTree->getNodeByNormalizedPath(correspondingPath);
+    std::shared_ptr<Node> correspondingNode = otherTree->getNodeByPathNormalized(correspondingPath);
     if (correspondingNode == nullptr) {
         return nullptr;
     }

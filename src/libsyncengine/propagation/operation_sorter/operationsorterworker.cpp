@@ -102,9 +102,10 @@ void OperationSorterWorker::fixDeleteBeforeMove() {
 
         const auto deleteNode = deleteOp->affectedNode();
         LOG_IF_FAIL(deleteNode)
-        const auto deleteNodeParentPath = deleteNode->getPath().parent_path();
         NodeId deleteNodeParentId;
-        if (!getIdFromDb(deleteNode->side(), deleteNodeParentPath, deleteNodeParentId)) continue;
+        if (!getIdFromDb(deleteNode->side(), deleteNode->getPath().parent_path(), deleteNodeParentId)) {
+            continue;
+        }
 
         const auto moveNode = moveOp->affectedNode();
         LOG_IF_FAIL(moveNode)
@@ -152,14 +153,7 @@ void OperationSorterWorker::fixMoveBeforeCreate() {
             continue;
         }
 
-        SyncPath normalizedPath;
-        if (!Utility::normalizedSyncPath(moveNode->moveOriginInfos().path(), normalizedPath)) {
-            LOGW_WARN(_logger,
-                      L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(moveNode->moveOriginInfos().path()));
-            normalizedPath = moveNode->moveOriginInfos().path();
-        }
-
-        if (normalizedPath.filename() == createNode->normalizedName()) {
+        if (moveNode->moveOriginInfos().normalizedPath().filename() == createNode->normalizedName()) {
             // move only if createOp is before moveOp
             moveFirstAfterSecond(createOp, moveOp);
         }
@@ -194,9 +188,8 @@ void OperationSorterWorker::fixDeleteBeforeCreate() {
 
         const auto deleteNode = deleteOp->affectedNode();
         LOG_IF_FAIL(deleteNode)
-        const auto deleteNodeParentPath = deleteNode->getPath().parent_path();
         NodeId deleteNodeParentId;
-        if (!getIdFromDb(deleteNode->side(), deleteNodeParentPath, deleteNodeParentId)) {
+        if (!getIdFromDb(deleteNode->side(), deleteNode->getPath().parent_path(), deleteNodeParentId)) {
             continue;
         }
 
@@ -226,18 +219,18 @@ void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
         if (!node->parentNode()) {
             continue;
         }
-        const auto nodePath = node->getPath();
-        const auto nodeParentId = node->parentNode()->id();
 
         const auto otherNode = otherMoveOp->affectedNode();
         LOG_IF_FAIL(otherNode)
-        const auto otherNodeOriginPath = otherNode->moveOriginInfos().path();
+
         NodeId otherNodeOriginParentId;
-        if (!getIdFromDb(otherNode->side(), otherNodeOriginPath.parent_path(), otherNodeOriginParentId)) {
+        if (!getIdFromDb(otherNode->side(), otherNode->moveOriginInfos().path().parent_path(), otherNodeOriginParentId)) {
             continue;
         }
 
-        if (nodeParentId == otherNodeOriginParentId && nodePath.filename() == otherNodeOriginPath.filename()) {
+        const auto nodeParentId = node->parentNode()->id();
+        const auto otherNodeOriginPath = otherNode->moveOriginInfos().normalizedPath();
+        if (nodeParentId == otherNodeOriginParentId && node->normalizedName() == otherNodeOriginPath.filename()) {
             // move only if op is before otherOp
             moveFirstAfterSecond(moveOp, otherMoveOp);
         }
@@ -250,7 +243,7 @@ class SyncOpDepthCmp {
         bool operator()(const std::tuple<SyncOpPtr, SyncOpPtr, int32_t> &a,
                         const std::tuple<SyncOpPtr, SyncOpPtr, int32_t> &b) const {
             if (std::get<2>(a) == std::get<2>(b)) {
-                // If depth are equal, put op to move with lowest ID first
+                // If depths are equal, put op to move with lowest ID first
                 return std::get<0>(a)->id() > std::get<0>(b)->id();
             }
             return std::get<2>(a) < std::get<2>(b);
@@ -369,8 +362,14 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     }
 
     // firstOp is an impossible move if dest starts with source + "/".
+    const auto path = node->getPath();
+    SyncPath normalizedPath;
+    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncPath(path));
+        normalizedPath = path;
+    }
 
-    if (!Utility::isDescendantOrEqual(node->getPath(), node->moveOriginInfos().path())) {
+    if (!Utility::isDescendantOrEqual(normalizedPath, node->moveOriginInfos().normalizedPath())) {
         return std::nullopt; // firstOp is possible
     }
 
