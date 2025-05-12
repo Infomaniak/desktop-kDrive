@@ -53,8 +53,8 @@ class TestJobManager : public CppUnit::TestFixture, public TestBase {
         void setUp() override;
         void tearDown() override;
 
-        bool _jobErrorSocketsDefuncted;
-        bool _jobErrorOther;
+        bool _jobErrorSocketsDefuncted{false};
+        bool _jobErrorOther{false};
 
     protected:
         void testWithoutCallback();
@@ -75,10 +75,10 @@ class TestJobManager : public CppUnit::TestFixture, public TestBase {
         const testhelpers::TestVariables _testVariables;
         SyncPath _localDirPath;
 
-        std::unordered_map<uint64_t, std::shared_ptr<AbstractJob>> _ongoingJobs;
+        std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _ongoingJobs;
         std::recursive_mutex _mutex;
 
-        void callback(uint64_t jobId);
+        void callback(UniqueId jobId);
         size_t ongoingJobsCount();
         void testWithCallbackBigFiles(const SyncPath &dirPath, uint16_t size, uint16_t count);
         void cancelAllOngoingJobs();

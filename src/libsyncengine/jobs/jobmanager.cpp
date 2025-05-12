@@ -144,7 +144,7 @@ void JobManager::defaultCallback(const UniqueId jobId) {
 
 JobManager::JobManager() :
     _logger(Log::instance()->getLogger()) {
-    setPoolCapacity(std::max(static_cast<int>(std::thread::hardware_concurrency()), threadPoolMaxCapacity));
+    setPoolCapacity(std::min(static_cast<int>(std::thread::hardware_concurrency()), threadPoolMaxCapacity));
 
     _thread = std::make_unique<StdLoggingThread>(run);
     LOG_DEBUG(_logger, "Network Job Manager started with max " << _maxNbThread << " threads");
