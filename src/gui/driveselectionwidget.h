@@ -40,6 +40,8 @@ class DriveSelectionWidget : public QPushButton {
         Q_PROPERTY(QSize down_icon_size READ downIconSize WRITE setDownIconSize)
         Q_PROPERTY(QColor down_icon_color READ downIconColor WRITE setDownIconColor)
         Q_PROPERTY(QSize menu_right_icon_size READ menuRightIconSize WRITE setMenuRightIconSize)
+        Q_PROPERTY(QSize add_icon_size READ addIconSize WRITE setAddIconSize)
+        Q_PROPERTY(QColor add_icon_color READ addIconColor WRITE setAddIconColor)
 
     public:
         explicit DriveSelectionWidget(std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
@@ -60,6 +62,8 @@ class DriveSelectionWidget : public QPushButton {
         QSize _downIconSize;
         QColor _downIconColor;
         QSize _menuRightIconSize;
+        QSize _addIconSize;
+        QColor _addIconColor;
         QLabel *_driveIconLabel;
         QLabel *_driveTextLabel;
         QLabel *_downIconLabel;
@@ -85,8 +89,19 @@ class DriveSelectionWidget : public QPushButton {
         inline QSize menuRightIconSize() const { return _menuRightIconSize; }
         inline void setMenuRightIconSize(QSize size) { _menuRightIconSize = size; }
 
+        inline QSize addIconSize() const { return _addIconSize; }
+        inline void setAddIconSize(QSize size) {
+            _addIconSize = size;
+            setDriveIcon();
+        }
+
+        inline QColor addIconColor() const { return _addIconColor; }
+        inline void setAddIconColor(QColor color) {
+            _addIconColor = color;
+            setDriveIcon();
+        }
+
         void setDriveIcon();
-        void setDriveIcon(const QColor &color);
         void setDownIcon();
 
         void showEvent(QShowEvent *event) override;
