@@ -37,7 +37,7 @@ namespace KDC {
 
         PG_Preferences,
         PG_Preferences_Debugging,
-        PG_Preferences_FileToExclude,
+        PG_Preferences_FilesToExclude,
         PG_Preferences_Proxy,
 #ifdef Q_OS_MAC
         PG_Preferences_LiteSync,

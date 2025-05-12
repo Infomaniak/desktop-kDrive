@@ -20,7 +20,7 @@
 #include <QCoreApplication>
 #include "config.h"
 
-using namespace KDC;
+namespace KDC {
 
 /**
  * Singleton instance of MatomoClient.
@@ -64,34 +64,34 @@ void MatomoClient::sendVisit(const MatomoNameField page)
     QString action;
     switch (page) {
 #ifdef Q_OS_WIN
-        case Matomo_NameField::WV_ReleaseNotes :                    path = "webview";               action = "release-notes";         break;
+        case Matomo_NameField::WV_ReleaseNotes :                    path = "webview";                       action = "release-notes";         break;
 #endif
-        case MatomoNameField::VW_LoginPage:                         path = "webview";               action = "login";                 break;
+        case MatomoNameField::VW_LoginPage:                         path = "webview";                       action = "login";                 break;
 
-        case MatomoNameField::PG_SynthesisPopover:                  path = "popover";               action = "popover";               break;
-        case MatomoNameField::PG_SynthesisPopover_KebabMenu:        path = "popover";               action = "kebab_menu";            break;
+        case MatomoNameField::PG_SynthesisPopover:                  path = "popover";                       action = "popover";               break;
+        case MatomoNameField::PG_SynthesisPopover_KebabMenu:        path = "popover";                       action = "kebab_menu";            break;
 
-        case MatomoNameField::PG_Preferences:                       path = "preferences";           action = "preferences";           break;
-        case MatomoNameField::PG_Preferences_Debugging:             path = "preferences";           action = "debugging";             break;
-        case MatomoNameField::PG_Preferences_FileToExclude:         path = "preferences";           action = "file_to_exclude";       break;
-        case MatomoNameField::PG_Preferences_Proxy:                 path = "preferences";           action = "proxy";                 break;
+        case MatomoNameField::PG_Preferences:                       path = "preferences";                   action = "preferences";           break;
+        case MatomoNameField::PG_Preferences_Debugging:             path = "preferences/debugging";         action = "debugging";             break;
+        case MatomoNameField::PG_Preferences_FilesToExclude:        path = "preferences/files_to_exclude";  action = "files_to_exclude";      break;
+        case MatomoNameField::PG_Preferences_Proxy:                 path = "preferences/proxy";             action = "proxy";                 break;
 #ifdef Q_OS_MAC
-        case MatomoNameField::PG_Preferences_LiteSync:              path = "preferences";           action = "litesync";              break;
+        case MatomoNameField::PG_Preferences_LiteSync:              path = "preferences/litesync";          action = "litesync";              break;
 #endif
-        case MatomoNameField::PG_Preferences_About:                 path = "preferences";           action = "about";                 break;
-        case MatomoNameField::PG_Preferences_Beta:                  path = "preferences";           action = "beta";                  break;
+        case MatomoNameField::PG_Preferences_About:                 path = "preferences/about";             action = "about";                 break;
+        case MatomoNameField::PG_Preferences_Beta:                  path = "preferences/beta";              action = "beta";                  break;
 
-        case MatomoNameField::PG_Parameters:                        path = "parameters";            action = "parameters";            break;
-        case MatomoNameField::PG_Parameters_NewSync_LocalFolder:    path = "parameters/newsync";    action = "local_folder";          break;
-        case MatomoNameField::PG_Parameters_NewSync_RemoteFolder:   path = "parameters/newsync";    action = "remote_folder";         break;
-        case MatomoNameField::PG_Parameters_NewSync_Summary:        path = "parameters/newsync";    action = "summary";               break;
+        case MatomoNameField::PG_Parameters:                        path = "parameters";                    action = "parameters";            break;
+        case MatomoNameField::PG_Parameters_NewSync_LocalFolder:    path = "parameters/newsync";            action = "local_folder";          break;
+        case MatomoNameField::PG_Parameters_NewSync_RemoteFolder:   path = "parameters/newsync";            action = "remote_folder";         break;
+        case MatomoNameField::PG_Parameters_NewSync_Summary:        path = "parameters/newsync";            action = "summary";               break;
 
-        case MatomoNameField::PG_AddNewDrive_SelectDrive:           path = "add_new_drive";         action = "select_drive";          break;
-        case MatomoNameField::PG_AddNewDrive_ActivateLiteSync:      path = "add_new_drive";         action = "activate_litesync";     break;
-        case MatomoNameField::PG_AddNewDrive_SelectRemoteFolder:    path = "add_new_drive";         action = "select_remote_folder";  break;
-        case MatomoNameField::PG_AddNewDrive_SelectLocalFolder:     path = "add_new_drive";         action = "select_local_folder";   break;
-        case MatomoNameField::PG_AddNewDrive_ExtensionSetup:        path = "add_new_drive";         action = "extension_setup";       break;
-        case MatomoNameField::PG_AddNewDrive_Confirmation:          path = "add_new_drive";         action = "confirmation";          break;
+        case MatomoNameField::PG_AddNewDrive_SelectDrive:           path = "add_new_drive";                 action = "select_drive";          break;
+        case MatomoNameField::PG_AddNewDrive_ActivateLiteSync:      path = "add_new_drive";                 action = "activate_litesync";     break;
+        case MatomoNameField::PG_AddNewDrive_SelectRemoteFolder:    path = "add_new_drive";                 action = "select_remote_folder";  break;
+        case MatomoNameField::PG_AddNewDrive_SelectLocalFolder:     path = "add_new_drive";                 action = "select_local_folder";   break;
+        case MatomoNameField::PG_AddNewDrive_ExtensionSetup:        path = "add_new_drive";                 action = "extension_setup";       break;
+        case MatomoNameField::PG_AddNewDrive_Confirmation:          path = "add_new_drive";                 action = "confirmation";          break;
 
 
         default: // MatomoNameField::Unknown
@@ -134,3 +134,5 @@ void MatomoClient::sendEvent(const QString& category,
         value
     );
 }
+
+} // namespace KDC
