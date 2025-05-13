@@ -355,7 +355,8 @@ bool SyncDbReadOnlyCache::id(ReplicaSide side, const SyncPath& path, std::option
                      "SyncDbReadOnlyCache::id: node " << tmpNode.nodeId() << " not found in syncDbReadOnlyCache");
             return true;
         }
-        const auto childIt = std::ranges::find_if(children->second, [this, &nameIt, &side](const DbNodeId& childId) {
+        // Replace std::find_if by std::ranges::find_if once compiler version has been bumped for Linux release build.
+        const auto childIt = std::find_if(children->second.begin(), children->second.end(), [this, &nameIt, &side](const DbNodeId& childId) {
             const DbNode& childNode = _dbNodesCache.at(childId);
             return childNode.name(side) == *nameIt;
         });

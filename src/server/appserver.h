@@ -56,7 +56,12 @@ class AppServer : public SharedTools::QtSingleApplication {
                 SyncStep _step;
                 SyncProgress _progress;
 
-                bool operator==(const SyncCache &) const = default;
+                bool operator==(const SyncCache &other) const {
+                    return _status == other._status && _step == other._step && _progress == other._progress;
+                }
+                bool operator!=(const SyncCache &other) const {
+                    return !(*this == other);
+                }
         };
 
         struct Notification {
