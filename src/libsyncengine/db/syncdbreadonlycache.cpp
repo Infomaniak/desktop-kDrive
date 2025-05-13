@@ -44,7 +44,8 @@ const DbNode& SyncDbReadOnlyCache::getDbNodeFromDbNodeId(const DbNodeId& dbNodeI
     found = false;
     const auto dbNodeIt = _dbNodesCache.find(dbNodeId);
     if (dbNodeIt == _dbNodesCache.end()) {
-        return _dummyNode;
+        static DbNode dummyNode;
+        return dummyNode;
     }
     found = true;
     return dbNodeIt->second;
