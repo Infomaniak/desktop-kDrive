@@ -29,9 +29,9 @@ bool SyncDbReadOnlyCache::isCacheUpToDate() const {
     return true;
 }
 
-DbNodeId SyncDbReadOnlyCache::getDbNodeIdFromNodeId(const ReplicaSide side, const NodeId& nodeId, bool& found) {
+DbNodeId SyncDbReadOnlyCache::getDbNodeIdFromNodeId(const ReplicaSide side, const NodeId &nodeId, bool &found) {
     found = false;
-    const auto& nodeIdToDbNodeIdMap = side == ReplicaSide::Local ? _localNodeIdToDbNodeIdMap : _remoteNodeIdToDbNodeIdMap;
+    const auto &nodeIdToDbNodeIdMap = side == ReplicaSide::Local ? _localNodeIdToDbNodeIdMap : _remoteNodeIdToDbNodeIdMap;
     const auto dbNodeIdIt = nodeIdToDbNodeIdMap.find(nodeId);
     if (dbNodeIdIt == nodeIdToDbNodeIdMap.end()) {
         return -1;
@@ -40,15 +40,12 @@ DbNodeId SyncDbReadOnlyCache::getDbNodeIdFromNodeId(const ReplicaSide side, cons
     return dbNodeIdIt->second;
 }
 
-const DbNode& SyncDbReadOnlyCache::getDbNodeFromDbNodeId(const DbNodeId& dbNodeId, bool& found) {
-    found = false;
+std::optional<const std::reference_wrapper<DbNode>> SyncDbReadOnlyCache::getDbNodeFromDbNodeId(const DbNodeId &dbNodeId) {
     const auto dbNodeIt = _dbNodesCache.find(dbNodeId);
     if (dbNodeIt == _dbNodesCache.end()) {
-        static DbNode dummyNode;
-        return dummyNode;
+        return std::nullopt;
     }
-    found = true;
-    return dbNodeIt->second;
+    return std::ref(dbNodeIt->second);
 }
 
 void SyncDbReadOnlyCache::clear() {
@@ -76,7 +73,7 @@ bool SyncDbReadOnlyCache::reloadIfNeeded() {
         return false;
     }
 
-    for (const auto& dbNode: dbNodes) {
+    for (const auto &dbNode: dbNodes) {
         (void) _dbNodesCache.try_emplace(dbNode.nodeId(), dbNode);
         if (dbNode.parentNodeId()) {
             (void) _dbNodesParentToChildrenMap[dbNode.parentNodeId().value()].push_back(dbNode.nodeId());
@@ -92,7 +89,7 @@ bool SyncDbReadOnlyCache::reloadIfNeeded() {
     return true;
 }
 
-bool SyncDbReadOnlyCache::parent(ReplicaSide side, const NodeId& nodeId, NodeId& parentNodeId, bool& found) {
+bool SyncDbReadOnlyCache::parent(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeId, bool &found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return _syncDb.parent(side, nodeId, parentNodeId, found); // Fallback to a call in db.
@@ -104,24 +101,24 @@ bool SyncDbReadOnlyCache::parent(ReplicaSide side, const NodeId& nodeId, NodeId&
         return true;
     }
 
-    const DbNode& dbNode = getDbNodeFromDbNodeId(dbNodeId, found);
-    if (!found) {
+    auto dbNode = getDbNodeFromDbNodeId(dbNodeId);
+    if (!dbNode) {
         LOG_WARN(Log::instance()->getLogger(),
                  "SyncDbReadOnlyCache::parent: dbNodeId " << dbNodeId << " not found in syncDbReadOnlyCache");
         return true;
     }
 
-    if (!dbNode.parentNodeId()) {
+    if (!dbNode->get().parentNodeId()) {
         found = false;
         return true;
     }
 
-    const DbNode& parentDbNode = getDbNodeFromDbNodeId(dbNode.parentNodeId().value(), found);
-    if (!found) {
+    auto parentDbNode = getDbNodeFromDbNodeId(dbNode->get().parentNodeId().value());
+    if (!parentDbNode) {
         return true;
     }
 
-    parentNodeId = parentDbNode.nodeId(side);
+    parentNodeId = parentDbNode->get().nodeId(side);
     found = !parentNodeId.empty();
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(),
@@ -130,7 +127,7 @@ bool SyncDbReadOnlyCache::parent(ReplicaSide side, const NodeId& nodeId, NodeId&
     return true;
 }
 
-bool SyncDbReadOnlyCache::correspondingNodeId(ReplicaSide side, const NodeId& nodeIdIn, NodeId& nodeIdOut, bool& found) {
+bool SyncDbReadOnlyCache::correspondingNodeId(ReplicaSide side, const NodeId &nodeIdIn, NodeId &nodeIdOut, bool &found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return _syncDb.correspondingNodeId(side, nodeIdIn, nodeIdOut, found); // Fallback to a call in db.
@@ -141,14 +138,14 @@ bool SyncDbReadOnlyCache::correspondingNodeId(ReplicaSide side, const NodeId& no
         return true;
     }
 
-    const DbNode& dbNode = getDbNodeFromDbNodeId(dbNodeId, found);
-    if (!found) {
+    auto dbNode = getDbNodeFromDbNodeId(dbNodeId);
+    if (!dbNode) {
         LOG_WARN(Log::instance()->getLogger(),
                  "SyncDbReadOnlyCache::correspondingNodeId: dbNodeId " << dbNodeId << " not found in syncDbReadOnlyCache");
         return true;
     }
 
-    nodeIdOut = dbNode.nodeId(otherSide(side));
+    nodeIdOut = dbNode->get().nodeId(otherSide(side));
     found = !nodeIdOut.empty();
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(), "SyncDbReadOnlyCache::correspondingNodeId: nodeIdIn "
@@ -157,7 +154,7 @@ bool SyncDbReadOnlyCache::correspondingNodeId(ReplicaSide side, const NodeId& no
     return true;
 }
 
-bool SyncDbReadOnlyCache::dbId(ReplicaSide side, const NodeId& nodeId, DbNodeId& dbNodeId, bool& found) {
+bool SyncDbReadOnlyCache::dbId(ReplicaSide side, const NodeId &nodeId, DbNodeId &dbNodeId, bool &found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return _syncDb.dbId(side, nodeId, dbNodeId, found); // Fallback to a call in db.
@@ -168,17 +165,18 @@ bool SyncDbReadOnlyCache::dbId(ReplicaSide side, const NodeId& nodeId, DbNodeId&
     return true;
 }
 
-bool SyncDbReadOnlyCache::node(DbNodeId dbNodeId, DbNode& dbNode, bool& found) {
+bool SyncDbReadOnlyCache::node(DbNodeId dbNodeId, DbNode &dbNode, bool &found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return _syncDb.node(dbNodeId, dbNode, found); // Fallback to a call in db.
 
-    found = false;
-    dbNode = getDbNodeFromDbNodeId(dbNodeId, found);
+    auto dbNodeOptional = getDbNodeFromDbNodeId(dbNodeId);
+    found = dbNodeOptional.has_value();
+    dbNode = *dbNodeOptional;
     return true;
 }
 
-bool SyncDbReadOnlyCache::node(ReplicaSide side, const NodeId& nodeId, DbNode& dbNode, bool& found) {
+bool SyncDbReadOnlyCache::node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return _syncDb.node(side, nodeId, dbNode, found); // Fallback to a call in db.
@@ -189,53 +187,55 @@ bool SyncDbReadOnlyCache::node(ReplicaSide side, const NodeId& nodeId, DbNode& d
     if (!found) {
         return true;
     }
-
-    dbNode = getDbNodeFromDbNodeId(dbNodeId, found);
-    if (!found) {
+    auto dbNodeOptional = getDbNodeFromDbNodeId(dbNodeId);
+    if (dbNodeOptional) {
+        dbNode = *dbNodeOptional;
+        found = true;
+    } else {
         LOG_WARN(Log::instance()->getLogger(),
                  "SyncDbReadOnlyCache::node: dbNodeId " << dbNodeId << " not found in syncDbReadOnlyCache");
     }
     return true;
 }
 
-bool SyncDbReadOnlyCache::ids(ReplicaSide side, std::vector<NodeId>& ids, bool& found) {
+bool SyncDbReadOnlyCache::ids(ReplicaSide side, std::vector<NodeId> &ids, bool &found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0)
     if (_cachedRevision == 0) return _syncDb.ids(side, ids, found); // Fallback to a call in db.
     if (side == ReplicaSide::Unknown) return false;
 
-    const std::unordered_map<NodeId, DbNodeId>& nodeIdsCache =
+    const std::unordered_map<NodeId, DbNodeId> &nodeIdsCache =
             side == ReplicaSide::Local ? _localNodeIdToDbNodeIdMap : _remoteNodeIdToDbNodeIdMap;
 
-    for (const auto& [nodeId, _]: nodeIdsCache) {
+    for (const auto &[nodeId, _]: nodeIdsCache) {
         ids.push_back(nodeId);
     }
     found = !nodeIdsCache.empty();
     return true;
 }
 
-bool SyncDbReadOnlyCache::ids(ReplicaSide side, NodeSet& ids, bool& found) {
+bool SyncDbReadOnlyCache::ids(ReplicaSide side, NodeSet &ids, bool &found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return _syncDb.ids(side, ids, found); // Fallback to a call in db.
     if (side == ReplicaSide::Unknown) return false;
 
-    const std::unordered_map<NodeId, DbNodeId>& nodeIdsCache =
+    const std::unordered_map<NodeId, DbNodeId> &nodeIdsCache =
             side == ReplicaSide::Local ? _localNodeIdToDbNodeIdMap : _remoteNodeIdToDbNodeIdMap;
 
-    for (const auto& [nodeId, _]: nodeIdsCache) {
+    for (const auto &[nodeId, _]: nodeIdsCache) {
         (void) ids.insert(nodeId);
     }
     found = !nodeIdsCache.empty();
     return true;
 }
 
-bool SyncDbReadOnlyCache::ids(std::unordered_set<NodeIds, NodeIds::HashFunction>& ids, bool& found) {
+bool SyncDbReadOnlyCache::ids(std::unordered_set<NodeIds, NodeIds::HashFunction> &ids, bool &found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return _syncDb.ids(ids, found); // Fallback to a call in db.
 
-    for (const auto& [dbNodeId, dbNode]: _dbNodesCache) {
+    for (const auto &[dbNodeId, dbNode]: _dbNodesCache) {
         NodeIds nodeIds;
         nodeIds.dbNodeId = dbNodeId;
         nodeIds.localNodeId = dbNode.nodeIdLocal().value();
@@ -247,7 +247,7 @@ bool SyncDbReadOnlyCache::ids(std::unordered_set<NodeIds, NodeIds::HashFunction>
     return true;
 }
 
-bool SyncDbReadOnlyCache::path(DbNodeId dbNodeId, SyncPath& localPath, SyncPath& remotePath, bool& found, bool recursiveCall) {
+bool SyncDbReadOnlyCache::path(DbNodeId dbNodeId, SyncPath &localPath, SyncPath &remotePath, bool &found, bool recursiveCall) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0)
     if (_cachedRevision == 0) return _syncDb.path(dbNodeId, localPath, remotePath, found); // Fallback to a call in db.
@@ -262,18 +262,18 @@ bool SyncDbReadOnlyCache::path(DbNodeId dbNodeId, SyncPath& localPath, SyncPath&
         return true;
     }
 
-    auto& dbNode = getDbNodeFromDbNodeId(dbNodeId, found);
-    if (!found) {
+    auto dbNode = getDbNodeFromDbNodeId(dbNodeId);
+    if (!dbNode) {
         return true;
     }
-    if (!dbNode.parentNodeId()) {
-        localPath = dbNode.nameLocal();
-        remotePath = dbNode.nameRemote();
+    if (!dbNode->get().parentNodeId()) {
+        localPath = dbNode->get().nameLocal();
+        remotePath = dbNode->get().nameRemote();
     } else {
-        if (!path(dbNode.parentNodeId().value(), localPath, remotePath, found, true)) return false;
+        if (!path(dbNode->get().parentNodeId().value(), localPath, remotePath, found, true)) return false;
         if (!found) return true;
-        localPath /= dbNode.nameLocal();
-        remotePath /= dbNode.nameRemote();
+        localPath /= dbNode->get().nameLocal();
+        remotePath /= dbNode->get().nameRemote();
     }
 
     // Only cache the path of the parents to avoid too much memory usage
@@ -282,7 +282,7 @@ bool SyncDbReadOnlyCache::path(DbNodeId dbNodeId, SyncPath& localPath, SyncPath&
     return true;
 }
 
-bool SyncDbReadOnlyCache::path(ReplicaSide side, const NodeId& nodeId, SyncPath& resPath, bool& found) {
+bool SyncDbReadOnlyCache::path(ReplicaSide side, const NodeId &nodeId, SyncPath &resPath, bool &found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return _syncDb.path(side, nodeId, resPath, found); // Fallback to a call in db.
@@ -307,7 +307,7 @@ bool SyncDbReadOnlyCache::path(ReplicaSide side, const NodeId& nodeId, SyncPath&
     return true;
 }
 
-bool SyncDbReadOnlyCache::id(ReplicaSide side, const SyncPath& path, std::optional<NodeId>& nodeId, bool& found) {
+bool SyncDbReadOnlyCache::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &nodeId, bool &found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return _syncDb.id(side, path, nodeId, found); // Fallback to a call in db.
@@ -328,34 +328,35 @@ bool SyncDbReadOnlyCache::id(ReplicaSide side, const SyncPath& path, std::option
         if (children == dbNodesParentToChildrenMapEnd) {
             return true;
         }
-        const auto childIt = std::ranges::find_if(children->second, [this, &nameIt, &side](const DbNodeId& childId) {
-            const DbNode& childNode = _dbNodesCache.at(childId);
+        const auto childIt = std::ranges::find_if(children->second, [this, &nameIt, &side](const DbNodeId &childId) {
+            const auto &childNode = _dbNodesCache.at(childId);
             return childNode.name(side) == *nameIt;
         });
         if (childIt == children->second.end()) {
             return true;
         }
-        tmpNode = getDbNodeFromDbNodeId(*childIt, found);
-        if (!found) {
+        auto tmpNodeOptional = getDbNodeFromDbNodeId(*childIt);
+        if (!tmpNodeOptional) {
             return true;
         }
+        tmpNode = *tmpNodeOptional;
     }
     nodeId = tmpNode.nodeId(side);
     return true;
 }
 
-bool SyncDbReadOnlyCache::id(ReplicaSide side, DbNodeId dbNodeId, NodeId& nodeId, bool& found) {
+bool SyncDbReadOnlyCache::id(ReplicaSide side, DbNodeId dbNodeId, NodeId &nodeId, bool &found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
     if (_cachedRevision == 0) return _syncDb.id(side, dbNodeId, nodeId, found); // Fallback to a call in db.
     if (side == ReplicaSide::Unknown) return false;
 
     found = false;
-    const DbNode& dbNode = getDbNodeFromDbNodeId(dbNodeId, found);
-    if (!found) {
+    auto dbNodeOptional = getDbNodeFromDbNodeId(dbNodeId);
+    if (!dbNodeOptional) {
         return true;
     }
-    nodeId = dbNode.nodeId(side);
+    nodeId = dbNodeOptional->get().nodeId(side);
     return true;
 }
 
