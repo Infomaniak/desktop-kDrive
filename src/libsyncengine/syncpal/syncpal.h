@@ -79,7 +79,9 @@ class GetSizeJob;
 struct SyncPalInfo {
         SyncPalInfo() = default;
         SyncPalInfo(const int driveDbId_, const SyncPath &localPath_, const SyncPath targetPath_ = {}) :
-            driveDbId(driveDbId_), localPath(localPath_), targetPath(targetPath_) {}
+            driveDbId(driveDbId_),
+            localPath(localPath_),
+            targetPath(targetPath_) {}
 
         int syncDbId{0};
         int driveDbId{0};
