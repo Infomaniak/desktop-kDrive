@@ -17,17 +17,17 @@
  */
 
 #include "fixconflictingfilesdialog.h"
-
-#include "MatomoClient.h"
 #include "custommessagebox.h"
-#include "gui/fileitemwidget.h"
+#include "fileitemwidget.h"
 #include "parameterscache.h"
 #include "customtoolbutton.h"
 #include "guirequests.h"
-#include "libcommon/theme/theme.h"
-#include "libcommon/utility/utility.h"
 #include "guiutility.h"
 #include "config.h"
+#include "libcommongui/matomoclient.h"
+#include "libcommon/utility/utility.h"
+#include "libcommon/theme/theme.h"
+
 #include <algorithm>
 
 #include <QDesktopServices>

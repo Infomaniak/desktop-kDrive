@@ -17,15 +17,12 @@
  */
 
 #include "aboutdialog.h"
-
-#include "MatomoClient.h"
 #include "custommessagebox.h"
 #include "guiutility.h"
-#include "common/utility.h"
-#include "libcommon/utility/utility.h"
 #include "version.h"
 #include "config.h"
-#include "libcommon/theme/theme.h"
+#include "libcommongui/matomoclient.h"
+#include "libcommon/utility/utility.h"
 
 #include <QBoxLayout>
 #include <QDesktopServices>

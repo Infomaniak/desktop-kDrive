@@ -17,11 +17,11 @@
  */
 
 #include "adddriveslitesyncwidget.h"
-#include "MatomoClient.h"
 #include "custommessagebox.h"
 #include "guiutility.h"
 #include "config.h"
 #include "libcommon/utility/utility.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QBoxLayout>
 #include <QDesktopServices>

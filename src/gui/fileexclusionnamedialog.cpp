@@ -17,9 +17,8 @@
  */
 
 #include "fileexclusionnamedialog.h"
-
-#include "MatomoClient.h"
 #include "customproxystyle.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QBoxLayout>
 

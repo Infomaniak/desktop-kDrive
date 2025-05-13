@@ -17,15 +17,14 @@
  */
 
 #include "adddrivelocalfolderwidget.h"
-#include "MatomoClient.h"
 #include "custommessagebox.h"
 #include "customtoolbutton.h"
 #include "guiutility.h"
 #include "config.h"
-#include "common/utility.h"
 #include "enablestateholder.h"
 #include "guirequests.h"
 #include "clientgui.h"
+#include "libcommongui/matomoclient.h"
 #include "libcommon/utility/utility.h"
 
 #include <QBoxLayout>

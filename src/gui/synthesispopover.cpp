@@ -18,7 +18,6 @@
 
 #include "clientgui.h"
 #include "synthesispopover.h"
-#include "MatomoClient.h"
 #include "menuwidget.h"
 #include "bottomwidget.h"
 #include "customtogglepushbutton.h"
@@ -27,9 +26,10 @@
 #include "guiutility.h"
 #include "languagechangefilter.h"
 #include "parameterscache.h"
+#include "guirequests.h"
+#include "libcommongui/matomoclient.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/handler.h"
-#include "guirequests.h"
 
 #include <QActionGroup>
 #include <QApplication>

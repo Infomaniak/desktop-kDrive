@@ -17,15 +17,15 @@
  */
 
 #include "adddrivewizard.h"
-#include "MatomoClient.h"
 #include "custommessagebox.h"
 #include "enablestateholder.h"
-#include "common/filesystembase.h"
-#include "gui/clientgui.h"
+#include "clientgui.h"
 #include "guirequests.h"
+#include "common/filesystembase.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QBoxLayout>
 #include <QDir>

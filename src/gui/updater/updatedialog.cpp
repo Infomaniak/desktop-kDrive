@@ -18,13 +18,13 @@
 
 #include "updatedialog.h"
 
-#include "MatomoClient.h"
-#include "../wizard/webview.h"
-#include "libcommon/utility/utility.h"
 #include "../guiutility.h"
-#include "config.h"
+#include "../wizard/webview.h"
 #include "../parameterscache.h"
+#include "libcommongui/matomoclient.h"
+#include "libcommon/utility/utility.h"
 #include "libcommon/theme/theme.h"
+#include "config.h"
 
 #include <QLabel>
 #include <QNetworkReply>

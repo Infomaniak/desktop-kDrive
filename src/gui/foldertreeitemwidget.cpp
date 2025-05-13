@@ -17,11 +17,11 @@
  */
 
 #include "foldertreeitemwidget.h"
-#include "MatomoClient.h"
 #include "guiutility.h"
-#include "libcommongui/utility/utility.h"
 #include "guirequests.h"
 #include "clientgui.h"
+#include "libcommongui/matomoclient.h"
+#include "libcommongui/utility/utility.h"
 
 #include <QDir>
 #include <QHeaderView>

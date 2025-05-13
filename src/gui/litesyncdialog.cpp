@@ -18,14 +18,13 @@
 
 #include "clientgui.h"
 #include "litesyncdialog.h"
-
-#include "MatomoClient.h"
 #include "litesyncappdialog.h"
 #include "custompushbutton.h"
 #include "custommessagebox.h"
 #include "guiutility.h"
 #include "enablestateholder.h"
 #include "guirequests.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QFile>
 #include <QHeaderView>

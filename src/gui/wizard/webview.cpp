@@ -18,9 +18,9 @@
 
 #include "webview.h"
 
-#include "MatomoClient.h"
 #include "../parameterscache.h"
 #include "ui_webview.h"
+#include "libcommongui/matomoclient.h"
 #include "libcommon/utility/utility.h"
 
 #include <QWebEnginePage>

@@ -18,14 +18,11 @@
 
 #include "guirequests.h"
 #include "basefoldertreeitemwidget.h"
-#include "MatomoClient.h"
 #include "customtreewidgetitem.h"
 #include "guiutility.h"
-#include "common/utility.h"
-#include "libcommon/utility/utility.h"
-#include "libcommongui/utility/utility.h"
 #include "clientgui.h"
-#include "libcommon/theme/theme.h"
+#include "libcommongui/matomoclient.h"
+#include "libcommongui/utility/utility.h"
 
 #include <QDir>
 #include <QHeaderView>

@@ -17,12 +17,11 @@
  */
 
 #include "driveselectionwidget.h"
-#include "MatomoClient.h"
 #include "menuitemwidget.h"
 #include "menuwidget.h"
 #include "guiutility.h"
-#include "guirequests.h"
 #include "clientgui.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QHBoxLayout>
 #include <QLabel>

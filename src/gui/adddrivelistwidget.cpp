@@ -17,12 +17,12 @@
  */
 
 #include "adddrivelistwidget.h"
-#include "MatomoClient.h"
 #include "customwordwraplabel.h"
 #include "driveitemwidget.h"
 #include "guiutility.h"
 #include "guirequests.h"
 #include "clientgui.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QBoxLayout>
 #include <QDesktopServices>

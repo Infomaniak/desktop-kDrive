@@ -17,7 +17,6 @@
  */
 
 #include "debuggingdialog.h"
-#include "MatomoClient.h"
 #include "clientgui.h"
 #include "parameterscache.h"
 #include "custommessagebox.h"
@@ -26,15 +25,11 @@
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
+#include "libcommongui/matomoclient.h"
 #include "libcommongui/commclient.h"
 #include "libcommongui/logger.h"
+
 #include <QDesktopServices>
-
-#include <sstream>
-#include <fstream>
-
-#include <map>
-
 #include <QBoxLayout>
 #include <QLabel>
 

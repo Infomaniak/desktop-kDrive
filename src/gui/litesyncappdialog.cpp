@@ -18,10 +18,9 @@
 
 #include "clientgui.h"
 #include "litesyncappdialog.h"
-
-#include "MatomoClient.h"
 #include "customproxystyle.h"
 #include "guirequests.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QBoxLayout>
 #include <QLabel>

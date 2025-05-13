@@ -17,11 +17,11 @@
  */
 
 #include "userselectionwidget.h"
-#include "MatomoClient.h"
-#include "gui/menuitemuserwidget.h"
+#include "menuitemuserwidget.h"
 #include "menuitemwidget.h"
 #include "menuwidget.h"
 #include "guiutility.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QHBoxLayout>
 #include <QLabel>

@@ -17,13 +17,11 @@
  */
 
 #include "synchronizeditemwidget.h"
-#include "MatomoClient.h"
 #include "menuitemwidget.h"
 #include "menuwidget.h"
 #include "guiutility.h"
 #include "languagechangefilter.h"
-#include "utility/utility.h"
-#include "parameterscache.h"
+#include "libcommongui/matomoclient.h"
 #include "libcommon/utility/utility.h"
 
 #include <QApplication>

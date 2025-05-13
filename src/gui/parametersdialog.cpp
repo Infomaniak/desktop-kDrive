@@ -19,9 +19,7 @@
 #include "clientgui.h"
 #include "gui/errortabwidget.h"
 #include "parametersdialog.h"
-#include "MatomoClient.h"
 #include "bottomwidget.h"
-#include "actionwidget.h"
 #include "custommessagebox.h"
 #include "debugreporter.h"
 #include "guiutility.h"
@@ -31,10 +29,9 @@
 #include "genericerroritemwidget.h"
 #include "guirequests.h"
 #include "parameterscache.h"
-#include "libcommongui/logger.h"
+#include "libcommongui/matomoclient.h"
 #include "libcommon/utility/qlogiffail.h"
 #include "libcommon/utility/utility.h"
-#include "libcommongui/utility/utility.h"
 
 #include <QDesktopServices>
 #include <QDir>

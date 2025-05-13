@@ -17,10 +17,10 @@
  */
 
 #include "synthesisbar.h"
-#include "MatomoClient.h"
 #include "errorspopup.h"
 #include "languagechangefilter.h"
 #include "config.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QActionGroup>
 #include <QBoxLayout>

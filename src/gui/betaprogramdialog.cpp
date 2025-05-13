@@ -17,13 +17,10 @@
  */
 
 #include "betaprogramdialog.h"
-
-#include "MatomoClient.h"
-#include "adddriveconfirmationwidget.h"
 #include "customcombobox.h"
 #include "guirequests.h"
 #include "parameterscache.h"
-#include "utility/utility.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QCheckBox>
 #include <QPushButton>

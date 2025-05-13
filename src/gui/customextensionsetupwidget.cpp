@@ -17,9 +17,9 @@
  */
 
 #include "customextensionsetupwidget.h"
-#include "MatomoClient.h"
 #include "guiutility.h"
 #include "parameterscache.h"
+#include "libcommongui/matomoclient.h"
 #include "libcommon/utility/utility.h"
 
 #include <QBoxLayout>

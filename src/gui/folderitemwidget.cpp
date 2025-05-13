@@ -17,12 +17,12 @@
  */
 
 #include "folderitemwidget.h"
-#include "MatomoClient.h"
 #include "menuwidget.h"
 #include "menuitemwidget.h"
 #include "guiutility.h"
 #include "clientgui.h"
 #include "parameterscache.h"
+#include "libcommongui/matomoclient.h"
 #include "libcommon/utility/utility.h"
 
 #include <QBoxLayout>

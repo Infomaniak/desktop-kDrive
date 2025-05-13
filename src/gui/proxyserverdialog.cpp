@@ -18,12 +18,11 @@
 
 #include "clientgui.h"
 #include "proxyserverdialog.h"
-
-#include "MatomoClient.h"
 #include "custommessagebox.h"
 #include "enablestateholder.h"
 #include "guirequests.h"
 #include "parameterscache.h"
+#include "libcommongui/matomoclient.h"
 
 #include <map>
 

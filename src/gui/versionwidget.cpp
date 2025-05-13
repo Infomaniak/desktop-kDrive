@@ -17,8 +17,6 @@
  */
 
 #include "versionwidget.h"
-
-#include "MatomoClient.h"
 #include "aboutdialog.h"
 #include "enablestateholder.h"
 #include "guirequests.h"
@@ -27,12 +25,11 @@
 #include "parameterscache.h"
 #include "preferencesblocwidget.h"
 #include "taglabel.h"
+#include <config.h>
 #include "libcommon/utility/utility.h"
-#include "utility/utility.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QDesktopServices>
-#include <config.h>
-
 #include <QLabel>
 #include <QPushButton>
 #include <QRadioButton>

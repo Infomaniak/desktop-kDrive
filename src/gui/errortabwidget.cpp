@@ -17,12 +17,12 @@
  */
 
 #include "errortabwidget.h"
-#include "MatomoClient.h"
 #include "parametersdialog.h"
-#include "gui/customtabbar.h"
+#include "customtabbar.h"
 #include "languagechangefilter.h"
 #include "fixconflictingfilesdialog.h"
 #include "menuwidgetlite.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QVBoxLayout>
 #include <QScrollBar>

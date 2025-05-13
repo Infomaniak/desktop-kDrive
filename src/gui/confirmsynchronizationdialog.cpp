@@ -17,12 +17,10 @@
  */
 
 #include "confirmsynchronizationdialog.h"
-#include "MatomoClient.h"
 #include "guiutility.h"
 #include "clientgui.h"
 #include "guirequests.h"
-#include "common/utility.h"
-#include "libcommon/utility/utility.h"
+#include "libcommongui/matomoclient.h"
 #include "libcommongui/utility/utility.h"
 
 #include <QBoxLayout>

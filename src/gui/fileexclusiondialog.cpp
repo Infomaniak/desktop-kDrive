@@ -17,8 +17,6 @@
  */
 
 #include "fileexclusiondialog.h"
-
-#include "MatomoClient.h"
 #include "fileexclusionnamedialog.h"
 #include "custompushbutton.h"
 #include "custommessagebox.h"
@@ -27,6 +25,7 @@
 #include "appclient.h"
 #include "parameterscache.h"
 #include "guirequests.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QFile>
 #include <QHeaderView>

@@ -17,11 +17,10 @@
  */
 
 #include "bigfoldersdialog.h"
-
-#include "MatomoClient.h"
 #include "guiutility.h"
 #include "customcheckbox.h"
 #include "guirequests.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QBoxLayout>
 #include <QDir>

@@ -17,8 +17,8 @@
  */
 
 #include "adddriveconfirmationwidget.h"
-#include "MatomoClient.h"
 #include "guiutility.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QBoxLayout>
 #include <QDir>
