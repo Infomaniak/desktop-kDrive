@@ -192,7 +192,7 @@ std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int
 }
 
 bool Db::exists() {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     if (_dbPath.empty()) {
         return false;
@@ -221,7 +221,7 @@ void Db::close() {
         return;
     }
 
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     LOGW_DEBUG(_logger, L"Closing DB " << Path2WStr(_dbPath).c_str());
 
@@ -651,7 +651,7 @@ void Db::setAutoDelete(bool value) {
 }
 
 bool Db::insertVersion(const std::string &version) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     // Insert exclusion template record
     int errId;
@@ -668,7 +668,7 @@ bool Db::insertVersion(const std::string &version) {
 }
 
 bool Db::updateVersion(const std::string &version, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -690,7 +690,7 @@ bool Db::updateVersion(const std::string &version, bool &found) {
 }
 
 bool Db::selectVersion(std::string &version, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_VERSION_REQUEST_ID));
     if (!queryNext(SELECT_VERSION_REQUEST_ID, found)) {

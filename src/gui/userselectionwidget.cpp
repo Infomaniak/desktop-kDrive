@@ -17,10 +17,11 @@
  */
 
 #include "userselectionwidget.h"
-#include "gui/menuitemuserwidget.h"
+#include "menuitemuserwidget.h"
 #include "menuitemwidget.h"
 #include "menuwidget.h"
 #include "guiutility.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QHBoxLayout>
 #include <QLabel>
@@ -145,7 +146,7 @@ void UserSelectionWidget::addMenuItem(MenuWidget *menu, UserInfo &userInfo, bool
 
 void UserSelectionWidget::onAddUserActionTriggered(bool checked) {
     Q_UNUSED(checked)
-
+    MatomoClient::sendEvent("userSelectionWidget", MatomoEventAction::Click, "addUserButton");
     emit addUser();
 }
 

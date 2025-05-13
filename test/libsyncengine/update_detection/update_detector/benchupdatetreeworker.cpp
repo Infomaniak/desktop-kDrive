@@ -1,24 +1,27 @@
-// Infomaniak kDrive - Desktop
-// Copyright (C) 2023-2025 Infomaniak Network SA
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2025 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "benchupdatetreeworker.h"
 
 #include "gui/parameterscache.h"
 #include "test_utility/testhelpers.h"
 #include "update_detection/update_detector/updatetreeworker.h"
+#include "utility/timerutility.h"
 #include "utility/types.h"
 
 #include <version.h>
@@ -41,7 +44,7 @@ void BenchUpdateTreeWorker::setUp() {
     _updateTree = std::make_shared<UpdateTree>(ReplicaSide::Local, SyncDb::driveRootNode());
     _fsOpSet = std::make_shared<FSOperationSet>(ReplicaSide::Unknown);
 
-    _testObj = std::make_shared<UpdateTreeWorker>(_syncDb, _fsOpSet, _updateTree, "BenchUpdateTreeWorker", "BUTW",
+    _testObj = std::make_shared<UpdateTreeWorker>(_syncDb->cache(), _fsOpSet, _updateTree, "BenchUpdateTreeWorker", "BUTW",
                                                   ReplicaSide::Local);
 
     _situationGenerator.setSyncDb(_syncDb);
@@ -55,7 +58,7 @@ void BenchUpdateTreeWorker::setUp() {
     // └── B
     //     ├── BA
     //     └── BB
-    const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+    const TimerUtility timer;
     const std::vector<std::string> dirs = {"a", "b", "c", "d", "e", "f"}; //, "e", "f", "g", "h", "i", "j"};
     for (const auto &dirId: dirs) {
         _situationGenerator.addItem(NodeType::Directory, dirId, "");
@@ -71,9 +74,8 @@ void BenchUpdateTreeWorker::setUp() {
             }
         }
     }
-    const std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
     std::cout << std::endl;
-    std::cout << "Initial situation generated in " << elapsed_seconds.count() << "s for " << _situationGenerator.size()
+    std::cout << "Initial situation generated in " << timer.elapsed().count() << "s for " << _situationGenerator.size()
               << " items" << std::endl;
 }
 
@@ -89,19 +91,17 @@ void BenchUpdateTreeWorker::measureUpdateTreeGenerationFromScratch() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ clean update tree");
 
     _updateTree->clear();
-    const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+    const TimerUtility timer;
     _testObj->execute();
-    const std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
-    std::cout << "Update tree worker executed in " << elapsed_seconds.count() << "s" << std::endl;
+    std::cout << "Update tree worker executed in " << timer.elapsed().count() << "s" << std::endl;
 }
 
 void BenchUpdateTreeWorker::measureUpdateTreeGenerationFromExisting() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ keep update tree");
 
-    const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+    const TimerUtility timer;
     _testObj->execute();
-    const std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
-    std::cout << "Update tree worker executed in " << elapsed_seconds.count() << "s" << std::endl;
+    std::cout << "Update tree worker executed in " << timer.elapsed().count() << "s" << std::endl;
 }
 
 void BenchUpdateTreeWorker::measureUpdateTreeGenerationFromScratchWithFsOps() {
@@ -115,10 +115,9 @@ void BenchUpdateTreeWorker::measureUpdateTreeGenerationFromScratchWithFsOps() {
     }
 
     _updateTree->clear();
-    const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+    const TimerUtility timer;
     _testObj->execute();
-    const std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
-    std::cout << "Update tree worker executed in " << elapsed_seconds.count() << "s" << std::endl;
+    std::cout << "Update tree worker executed in " << timer.elapsed().count() << "s" << std::endl;
 }
 
 void BenchUpdateTreeWorker::measureUpdateTreeGenerationFromExistingWithFsOps() {
@@ -131,10 +130,9 @@ void BenchUpdateTreeWorker::measureUpdateTreeGenerationFromExistingWithFsOps() {
         _fsOpSet->insertOp(fsOp);
     }
 
-    const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+    const TimerUtility timer;
     _testObj->execute();
-    const std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
-    std::cout << "Update tree worker executed in " << elapsed_seconds.count() << "s" << std::endl;
+    std::cout << "Update tree worker executed in " << timer.elapsed().count() << "s" << std::endl;
 }
 
 } // namespace KDC

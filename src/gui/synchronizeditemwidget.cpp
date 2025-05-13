@@ -21,8 +21,7 @@
 #include "menuwidget.h"
 #include "guiutility.h"
 #include "languagechangefilter.h"
-#include "utility/utility.h"
-#include "parameterscache.h"
+#include "libcommongui/matomoclient.h"
 #include "libcommon/utility/utility.h"
 
 #include <QApplication>
@@ -297,11 +296,13 @@ void SynchronizedItemWidget::onDirectionIconColorChanged() {
 
 void SynchronizedItemWidget::onFolderButtonClicked() {
     emit openFolder(_item);
+    MatomoClient::sendEvent("synchronizedItem", MatomoEventAction::Click, "folderButton");
 }
 
 void SynchronizedItemWidget::onMenuButtonClicked() {
     if (_menuButton) {
         _isMenuOpened = true;
+        MatomoClient::sendEvent("synchronizedItem", MatomoEventAction::Click, "openKebabMenu");
         MenuWidget *menu = new MenuWidget(MenuWidget::Menu, this);
 
         QWidgetAction *openAction = new QWidgetAction(this);
@@ -353,6 +354,7 @@ void SynchronizedItemWidget::onMenuButtonClicked() {
 void SynchronizedItemWidget::onOpenActionTriggered(bool checked) {
     Q_UNUSED(checked)
 
+    MatomoClient::sendEvent("synchronizedItem", MatomoEventAction::Click, "openButton");
     emit open(_item);
 }
 
@@ -371,13 +373,13 @@ void SynchronizedItemWidget::onFavoritesActionTriggered(bool checked) {
 
 void SynchronizedItemWidget::onCopyLinkActionTriggered(bool checked) {
     Q_UNUSED(checked)
-
+    MatomoClient::sendEvent("synchronizedItem", MatomoEventAction::Click, "copyLinkButton");
     emit copyLink(_item);
 }
 
 void SynchronizedItemWidget::onDisplayOnDriveActionTriggered(bool checked) {
     Q_UNUSED(checked)
-
+    MatomoClient::sendEvent("synchronizedItem", MatomoEventAction::Click, "displayOnDriveButton");
     emit displayOnWebview(_item);
 }
 

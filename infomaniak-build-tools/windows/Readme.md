@@ -109,7 +109,7 @@ Clone `OpenSSL` sources:
 
 ```powershell
 cd F:\Projects
-git clone git://git.openssl.org/openssl.git
+git clone git@github.com:openssl/openssl.git
 cd openssl
 git checkout tags/openssl-3.2.1
 ```
@@ -138,7 +138,7 @@ Open the `poco.sln` solution in Visual Studio 2019 and add `C:\Program Files\Ope
 - JWT
 - NetSSL
 
-While still in the `cmake-build` directory, issue the following commands:
+While still in the `build` directory, issue the following commands:
 
 ```powershell
 cmake --build . --target install --config Debug
@@ -159,6 +159,13 @@ cd cmake-build
 cmake -G "Visual Studio 16 2019" .. -DLOG4CPLUS_ENABLE_THREAD_POOL=OFF
 cmake --build . --target install --config Debug
 cmake --build . --target install --config Release
+```
+
+If an error occurs with the the include of `catch.hpp`, you need to change branch inside the `catch` directory:
+
+```bash
+cd ../catch
+git checkout v2.x
 ```
 
 ## CPPUnit

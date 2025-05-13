@@ -28,7 +28,14 @@ namespace KDC {
 Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
            OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
            std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode) :
-    _idb(idb), _side(side), _name(name), _type(type), _id(id), _createdAt(createdAt), _lastModified(lastmodified), _size(size),
+    _idb(idb),
+    _side(side),
+    _name(name),
+    _type(type),
+    _id(id),
+    _createdAt(createdAt),
+    _lastModified(lastmodified),
+    _size(size),
     _conflictsAlreadyConsidered(std::vector<ConflictType>()) {
     setParentNode(parentNode);
     setChangeEvents(changeEvents);
@@ -50,13 +57,30 @@ Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, Operati
     Node(std::nullopt, side, name, type, changeEvents, id, createdAt, lastmodified, size, parentNode) {}
 
 Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::shared_ptr<Node> parentNode) :
-    _side(side), _name(name), _type(type), _isTmp(true) {
+    _side(side),
+    _name(name),
+    _type(type),
+    _isTmp(true) {
     _id = "tmp_" + CommonUtility::generateRandomStringAlphaNum();
     setParentNode(parentNode);
 }
 
 bool Node::operator==(const Node &n) const {
     return n._idb == _idb && n._name == _name;
+}
+
+const SyncName &Node::normalizedName() {
+    if (!_normalizedName.empty()) return _normalizedName;
+    if (!Utility::normalizedSyncName(_name, _normalizedName)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncName(_name));
+        return _name;
+    }
+    return _normalizedName;
+}
+
+void Node::setName(const SyncName &name) {
+    _name = name;
+    _normalizedName.clear();
 }
 
 bool Node::setParentNode(const std::shared_ptr<Node> &parentNode) {
@@ -229,14 +253,45 @@ bool Node::MoveOriginInfos::isValid() const {
     return _isValid;
 }
 
+Node::MoveOriginInfos::MoveOriginInfos(const SyncPath &path, const NodeId &parentNodeId) :
+    _isValid(true),
+    _path(path),
+    _parentNodeId(parentNodeId) {
+    if (!Utility::normalizedSyncPath(_path, _normalizedPath)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(_path));
+        _normalizedPath = _path;
+    }
+}
+
+Node::MoveOriginInfos &Node::MoveOriginInfos::operator=(const MoveOriginInfos &other) {
+    LOG_IF_FAIL(Log::instance()->getLogger(), other.isValid());
+    _isValid = other.isValid();
+    _path = other.path();
+    _normalizedPath = other.normalizedPath();
+    _parentNodeId = other.parentNodeId();
+    return *this;
+}
+
 const SyncPath &Node::MoveOriginInfos::path() const {
     LOG_IF_FAIL(Log::instance()->getLogger(), isValid());
     return _path;
 }
 
+const SyncPath &Node::MoveOriginInfos::normalizedPath() const {
+    LOG_IF_FAIL(Log::instance()->getLogger(), isValid());
+    return _normalizedPath;
+}
+
 const NodeId &Node::MoveOriginInfos::parentNodeId() const {
     LOG_IF_FAIL(Log::instance()->getLogger(), isValid());
     return _parentNodeId;
+}
+
+void Node::MoveOriginInfos::clear() {
+    _isValid = false;
+    _path = defaultInvalidPath;
+    _normalizedPath = defaultInvalidPath;
+    _parentNodeId = defaultInvalidNodeId;
 }
 
 } // namespace KDC

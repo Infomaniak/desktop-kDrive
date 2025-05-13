@@ -34,7 +34,7 @@ class UpdateTreeWorker : public ISyncWorker {
     public:
         UpdateTreeWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
                          ReplicaSide side);
-        UpdateTreeWorker(std::shared_ptr<SyncDb> syncDb, std::shared_ptr<FSOperationSet> operationSet,
+        UpdateTreeWorker(SyncDbReadOnlyCache &syncDbReadOnlyCache, std::shared_ptr<FSOperationSet> operationSet,
                          std::shared_ptr<UpdateTree> updateTree, const std::string &name, const std::string &shortName,
                          ReplicaSide side);
         ~UpdateTreeWorker();
@@ -42,10 +42,10 @@ class UpdateTreeWorker : public ISyncWorker {
         void execute() override;
 
     private:
-        std::shared_ptr<SyncDb> _syncDb;
+        SyncDbReadOnlyCache &_syncDbReadOnlyCache;
         std::shared_ptr<FSOperationSet> _operationSet;
         std::shared_ptr<UpdateTree> _updateTree;
-        using FSOpPtrMap = std::unordered_map<SyncPath, FSOpPtr, hashPathFunction>;
+        using FSOpPtrMap = std::unordered_map<SyncPath, FSOpPtr, PathHashFunction>;
         FSOpPtrMap _createFileOperationSet;
         ReplicaSide _side;
 

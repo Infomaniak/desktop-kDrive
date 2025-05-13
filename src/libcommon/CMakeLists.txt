@@ -31,6 +31,7 @@ set(libcommon_SRCS
     utility/logiffail.h utility/qlogiffail.h
     utility/jsonparserutility.h
     utility/urlhelper.h utility/urlhelper.cpp
+    utility/timerutility.h utility/timerutility.cpp
     keychainmanager/apitoken.h keychainmanager/apitoken.cpp
     keychainmanager/keychainmanager.h keychainmanager/keychainmanager.cpp
     info/userinfo.h info/userinfo.cpp
