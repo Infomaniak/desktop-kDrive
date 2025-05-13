@@ -18,24 +18,20 @@
 
 #pragma once
 
-#include "abstracttokennetworkjob.h"
+#include "abstractlistingjob.h"
 
 namespace KDC {
 
-class JsonFullFileListWithCursorJob : public AbstractTokenNetworkJob {
+class LongPollJob final : public AbstractListingJob {
     public:
-        JsonFullFileListWithCursorJob(int driveDbId, const NodeId &dirId, NodeSet blacklist = {}, bool zip = true);
+        LongPollJob(int driveDbId, const std::string &cursor, const NodeSet &blacklist = {});
 
     private:
-        virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &uri, bool &canceled) override;
-        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
+        std::string getSpecificUrl() override;
+        void setSpecificQueryParameters(Poco::URI &uri) override;
+        ExitInfo setData() override { return ExitCode::Ok; }
 
-        virtual bool handleResponse(std::istream &is) override;
-
-        NodeId _dirId;
-        NodeSet _blacklist;
-        bool _zip = true;
+        std::string _cursor;
 };
 
 } // namespace KDC
