@@ -146,7 +146,7 @@ void UserSelectionWidget::addMenuItem(MenuWidget *menu, UserInfo &userInfo, bool
 
 void UserSelectionWidget::onAddUserActionTriggered(bool checked) {
     Q_UNUSED(checked)
-    MatomoClient::sendEvent("userSelectionWidget", MatomoEventAction::Click, "addAccountButton");
+    MatomoClient::sendEvent("userSelectionWidget", MatomoEventAction::Click, "addUserButton");
     emit addUser();
 }
 
