@@ -20,11 +20,9 @@
 #include "basefoldertreeitemwidget.h"
 #include "customtreewidgetitem.h"
 #include "guiutility.h"
-#include "common/utility.h"
-#include "libcommon/utility/utility.h"
-#include "libcommongui/utility/utility.h"
 #include "clientgui.h"
-#include "libcommon/theme/theme.h"
+#include "libcommongui/matomoclient.h"
+#include "libcommongui/utility/utility.h"
 
 #include <QDir>
 #include <QHeaderView>
@@ -310,6 +308,7 @@ void BaseFolderTreeItemWidget::onItemClicked(QTreeWidgetItem *item, int column) 
         // Allow editing new item name
         newItem->setFlags(newItem->flags() | Qt::ItemIsEditable);
         editItem(newItem, TreeWidgetColumn::Folder);
+        MatomoClient::sendEvent("baseFolderTreeItemWidget", MatomoEventAction::Click, "createNewFolderButton");
     } else {
         QString currentFolderBasePath = item->data(TreeWidgetColumn::Folder, baseDirRole).toString();
 
@@ -322,6 +321,7 @@ void BaseFolderTreeItemWidget::onItemDoubleClicked(QTreeWidgetItem *item, int co
     if (column == TreeWidgetColumn::Folder && item->flags() & Qt::ItemIsEditable) {
         // Allow editing item name
         editItem(item, TreeWidgetColumn::Folder);
+        MatomoClient::sendEvent("baseFolderTreeItemWidget", MatomoEventAction::Click, "editFolder");
     }
 }
 

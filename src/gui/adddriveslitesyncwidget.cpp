@@ -21,6 +21,7 @@
 #include "guiutility.h"
 #include "config.h"
 #include "libcommon/utility/utility.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QBoxLayout>
 #include <QDesktopServices>
@@ -216,12 +217,14 @@ void AddDriveLiteSyncWidget::setLogoColor(const QColor &color) {
 
 void AddDriveLiteSyncWidget::onBackButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveLiteSync", MatomoEventAction::Click, "backButton");
 
     emit terminated(false);
 }
 
 void AddDriveLiteSyncWidget::onLaterButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveLiteSync", MatomoEventAction::Click, "laterButton");
 
     _liteSync = false;
 
@@ -230,6 +233,7 @@ void AddDriveLiteSyncWidget::onLaterButtonTriggered(bool checked) {
 
 void AddDriveLiteSyncWidget::onYesButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveLiteSync", MatomoEventAction::Click, "yesButton");
 
     _liteSync = true;
 

@@ -19,10 +19,10 @@
 #include "adddriveserverfolderswidget.h"
 #include "custommessagebox.h"
 #include "guiutility.h"
-#include "common/utility.h"
-#include "libcommon/utility/utility.h"
-#include "libcommongui/utility/utility.h"
 #include "clientgui.h"
+#include "libcommon/utility/utility.h"
+#include "libcommongui/matomoclient.h"
+#include "libcommongui/utility/utility.h"
 
 #include <QBoxLayout>
 #include <QDir>
@@ -215,12 +215,14 @@ void AddDriveServerFoldersWidget::onNeedToSave() {
 
 void AddDriveServerFoldersWidget::onBackButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveServerFolders", MatomoEventAction::Click, "backButton");
 
     emit terminated(false);
 }
 
 void AddDriveServerFoldersWidget::onContinueButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveServerFolders", MatomoEventAction::Click, "continueButton");
 
     emit terminated();
 }

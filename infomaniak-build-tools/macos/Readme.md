@@ -341,6 +341,12 @@ Build - Build Steps - Custom Process Step 1:
 
 Run `CMake` again and start building the project.
 
+### Conan Plugin
+
+Add the Conan plugin to Qt Creator.
+According to the **[Setting up Conan](https://doc.qt.io/qtcreator/creator-project-conan.html)** page, within Qt Creator go to **Qt Creator > About Plugins...**, then under **Utilities** locate **Conan**. Tick **Load** and close Qt Creator, which will force a restart and enable the plugin.
+
+
 # Build in Release
 
 ## Requirements

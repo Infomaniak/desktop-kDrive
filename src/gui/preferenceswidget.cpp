@@ -30,12 +30,12 @@
 #include "guiutility.h"
 #include "common/utility.h"
 #include "languagechangefilter.h"
-#include "version.h"
 #include "config.h"
 #include "litesyncdialog.h"
 #include "enablestateholder.h"
 #include "libcommongui/logger.h"
 #include "guirequests.h"
+#include "libcommongui/matomoclient.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 
@@ -457,6 +457,7 @@ void PreferencesWidget::onFolderConfirmationSwitchClicked(bool checked) {
     _largeFolderConfirmation->setAmountLineEditEnabled(checked);
 
     clearUndecidedLists();
+    MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "largeFolderConfirmationSwitch", checked ? 1 : 0);
 }
 
 void PreferencesWidget::onFolderConfirmationAmountTextEdited(const QString &text) {
@@ -465,12 +466,15 @@ void PreferencesWidget::onFolderConfirmationAmountTextEdited(const QString &text
     if (!ParametersCache::instance()->saveParametersInfo()) {
         return;
     }
+    // we can cast lvalue to an int because the max value is 999999
+    MatomoClient::sendEvent("preferences", MatomoEventAction::Input, "largeFolderConfirmationValue", static_cast<int>(lValue));
 
     clearUndecidedLists();
 }
 
 void PreferencesWidget::onDarkThemeSwitchClicked(bool checked) {
     emit setStyle(checked);
+    MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "darkThemeSwitch", checked ? 1 : 0);
 }
 
 void PreferencesWidget::onMonochromeSwitchClicked(bool checked) {
@@ -480,6 +484,7 @@ void PreferencesWidget::onMonochromeSwitchClicked(bool checked) {
     }
 
     Theme::instance()->setSystrayUseMonoIcons(checked);
+    MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "monochromeIconsSwitch", checked ? 1 : 0);
 }
 
 void PreferencesWidget::onLaunchAtStartupSwitchClicked(bool checked) {
@@ -492,6 +497,7 @@ void PreferencesWidget::onLaunchAtStartupSwitchClicked(bool checked) {
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcPreferencesWidget()) << "Error in GuiRequests::setLaunchOnStartup";
     }
+    MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "launchAtStartupSwitch", checked ? 1 : 0);
 }
 
 void PreferencesWidget::onLanguageChange() {
@@ -504,6 +510,7 @@ void PreferencesWidget::onLanguageChange() {
     if (!ParametersCache::instance()->saveParametersInfo()) {
         return;
     }
+    MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "languagesChange", combo->currentData().toInt());
 
     CommonUtility::setupTranslations(QApplication::instance(), language);
 
@@ -517,6 +524,7 @@ void PreferencesWidget::onMoveToTrashSwitchClicked(bool checked) {
         return;
     }
     _moveTotrashDisclaimerWidget->setVisible(checked);
+    MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "moveToTrashSwitch", checked ? 1 : 0);
 }
 
 #ifdef Q_OS_WIN
@@ -531,37 +539,48 @@ void PreferencesWidget::onShortcutsSwitchClicked(bool checked) {
                             tr("You must restart your opened File Explorers for this change to take effect."), QMessageBox::Ok,
                             this);
     msgBox.exec();
+    MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "windowsShortcutsSwitch", checked ? 1 : 0);
 }
 #endif
 
 void PreferencesWidget::onDebuggingWidgetClicked() {
     EnableStateHolder _(this);
 
+    MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "debuggingPopup");
     DebuggingDialog dialog(_gui, this);
     dialog.exec();
     _debuggingFolderLabel->setVisible(ParametersCache::instance()->parametersInfo().useLog());
+    MatomoClient::sendVisit(MatomoNameField::PG_Preferences_Debugging);
     repaint();
 }
 
 void PreferencesWidget::onFilesToExcludeWidgetClicked() {
     EnableStateHolder _(this);
 
+    MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "filesToExcludePopup");
     FileExclusionDialog dialog(this);
     dialog.exec();
+    MatomoClient::sendVisit(MatomoNameField::PG_Preferences_FilesToExclude);
 }
 
 void PreferencesWidget::onProxyServerWidgetClicked() {
     EnableStateHolder _(this);
 
+    MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "proxyServerPopup");
     ProxyServerDialog dialog(this);
     dialog.exec();
+    MatomoClient::sendVisit(MatomoNameField::PG_Preferences_Proxy);
 }
 
 void PreferencesWidget::onLiteSyncWidgetClicked() {
     EnableStateHolder _(this);
 
+    MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "liteSyncPopup");
     LiteSyncDialog dialog(_gui, this);
     dialog.exec();
+#ifdef Q_OS_MAC
+    MatomoClient::sendVisit(MatomoNameField::PG_Preferences_LiteSync);
+#endif
 }
 
 void PreferencesWidget::onLinkActivated(const QString &link) {
@@ -569,6 +588,7 @@ void PreferencesWidget::onLinkActivated(const QString &link) {
         const QString debuggingFolderPath = KDC::Logger::instance()->temporaryFolderLogDirPath();
         const QUrl debuggingFolderUrl = KDC::GuiUtility::getUrlFromLocalPath(debuggingFolderPath);
         if (debuggingFolderUrl.isValid()) {
+            MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "debuggingFolderLink");
             if (!QDesktopServices::openUrl(debuggingFolderUrl)) {
                 qCWarning(lcPreferencesWidget) << "QDesktopServices::openUrl failed for " << debuggingFolderUrl.toString();
                 CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open folder %1.").arg(debuggingFolderUrl.toString()),
@@ -580,6 +600,7 @@ void PreferencesWidget::onLinkActivated(const QString &link) {
         // URL link
         const auto url = QUrl(link);
         if (url.isValid()) {
+            MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "moveToTrashLearnMoreLink");
             if (!QDesktopServices::openUrl(url)) {
                 qCWarning(lcPreferencesWidget) << "QDesktopServices::openUrl failed for " << link;
                 CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open link %1.").arg(link), QMessageBox::Ok, this);
