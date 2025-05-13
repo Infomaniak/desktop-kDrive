@@ -667,7 +667,8 @@ bool CommonUtility::isDiskRootFolder(const SyncPath &absolutePath) {
     isRoot |= absolutePath.parent_path() == "/Volumes";
 #elif defined(__unix__)
     // on Linux, external drive appears under "/media/<username>/<drivename>"
-    isRoot |= absolutePath == "/media" || absolutePath.parent_path() == "/media" || absolutePath.parent_path().parent_path() == "/media";
+    isRoot |= absolutePath == "/media" || absolutePath.parent_path() == "/media" ||
+              absolutePath.parent_path().parent_path() == "/media";
 #endif
     return isRoot;
 }
