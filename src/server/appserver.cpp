@@ -4145,7 +4145,7 @@ void AppServer::onUpdateSyncsProgress() {
                 syncPal->loadProgress(progress);
             }
 
-            const SyncCache syncCache{syncPal->status(), syncPal->step(), progress};
+            SyncCache syncCache{syncPal->status(), syncPal->step(), progress};
             if (const auto syncCacheMapIt = _syncCacheMap.find(sync.dbId());
                 syncCacheMapIt == _syncCacheMap.end() || syncCacheMapIt->second != syncCache) {
                 // Set/update sync cache
