@@ -66,7 +66,9 @@ static const int defaultLogoIconSize = 50;
 
 Q_LOGGING_CATEGORY(lcParametersDialog, "gui.parametersdialog", QtInfoMsg)
 
-ParametersDialog::ParametersDialog(std::shared_ptr<ClientGui> gui, QWidget *parent) : CustomDialog(false, parent), _gui(gui) {
+ParametersDialog::ParametersDialog(std::shared_ptr<ClientGui> gui, QWidget *parent) :
+    CustomDialog(false, parent),
+    _gui(gui) {
     initUI();
 
     connect(this, &ParametersDialog::exit, this, &ParametersDialog::onExit);
@@ -757,6 +759,11 @@ QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const {
         }
         case ExitCause::NotFound: {
             return tr("Impossible to download the file.");
+        }
+        case ExitCause::FileLocked: {
+            return tr(
+                    "This item is currently locked by another user.<br>"
+                    "We will retry uploading your changes later.");
         }
         default:
             return tr("Synchronization error.");

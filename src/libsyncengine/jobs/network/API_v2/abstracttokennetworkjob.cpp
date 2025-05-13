@@ -42,7 +42,12 @@ std::unordered_map<int, std::pair<int, int>> AbstractTokenNetworkJob::_driveToAp
 
 AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, int userDbId, int userId, int driveDbId, int driveId,
                                                  bool returnJson /*= true*/) :
-    _apiType(apiType), _userDbId(userDbId), _userId(userId), _driveDbId(driveDbId), _driveId(driveId), _returnJson(returnJson) {
+    _apiType(apiType),
+    _userDbId(userDbId),
+    _userId(userId),
+    _driveDbId(driveDbId),
+    _driveId(driveId),
+    _returnJson(returnJson) {
     if (!ParmsDb::instance()) {
         assert(false);
         LOG_WARN(_logger, "ParmsDb must be initialized!");
@@ -161,7 +166,10 @@ bool AbstractTokenNetworkJob::defaultBackErrorHandling(NetworkErrorCode errorCod
             {NetworkErrorCode::FileTooBigError, ExitHandler{ExitCause::FileTooBig, "File too big"}},
             {NetworkErrorCode::QuotaExceededError, ExitHandler{ExitCause::QuotaExceeded, "Quota exceeded"}},
             {NetworkErrorCode::FileShareLinkAlreadyExists,
-             ExitHandler{ExitCause::ShareLinkAlreadyExists, "Share link already exists"}}};
+             ExitHandler{ExitCause::ShareLinkAlreadyExists, "Share link already exists"}},
+            {NetworkErrorCode::lockError, ExitHandler{ExitCause::FileLocked, "File is locked by an other user"}}
+
+    };
 
     const auto &errorHandling = errorCodeHandlingMap.find(errorCode);
     if (errorHandling == errorCodeHandlingMap.cend()) {

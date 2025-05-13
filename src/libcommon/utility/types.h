@@ -261,6 +261,7 @@ enum class ExitCause {
     InvalidSize,
     FileAlreadyExists,
     FileAccessError,
+    FileLocked,
     UnexpectedFileSystemEvent,
     NotEnoughDiskSpace,
     DriveAccessError,

@@ -933,6 +933,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                 case ExitCause::FileTooBig:
                 case ExitCause::NotFound:
                 case ExitCause::QuotaExceeded:
+                case ExitCause::FileLocked:
                     return true;
                 default:
                     return false;
