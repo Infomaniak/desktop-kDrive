@@ -81,7 +81,7 @@ export QT_BASE_DIR="$HOME/Qt/6.2.3"
 export QTDIR="$QT_BASE_DIR/gcc_64"
 export BASEPATH=$PWD
 export CONTENTDIR="$BASEPATH/build-linux"
-export BUILD_DIR="$CONTENTDIR/build"
+export build_dir="$CONTENTDIR/build"
 export APPDIR="$CONTENTDIR/app"
 
 extract_debug () {
@@ -91,7 +91,7 @@ extract_debug () {
 }
 
 mkdir -p "$APPDIR"
-mkdir -p "$BUILD_DIR"
+mkdir -p "$build_dir"
 
 export QMAKE=$QTDIR/bin/qmake
 export PATH=$QTDIR/bin:$QTDIR/libexec:/home/runner/.local/bin:$PATH
@@ -101,18 +101,18 @@ export PKG_CONFIG_PATH=$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH
 # Set defaults
 export SUFFIX=""
 
-mkdir -p "$BUILD_DIR/client"
+mkdir -p "$build_dir/client"
 
-bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" "--output-dir=$BUILD_DIR"
+bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" "--output-dir=$build_dir"
 
 # Build client
-cd $BUILD_DIR
+cd $build_dir
 
 cmake_param=()
 
 export KDRIVE_DEBUG=0
 
-cmake -B$BUILD_DIR -H$BASEPATH \
+cmake -B$build_dir -H$BASEPATH \
     -DOPENSSL_ROOT_DIR=/usr/local \
     -DOPENSSL_INCLUDE_DIR=/usr/local/include \
     -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib64/libcrypto.so \
@@ -121,7 +121,7 @@ cmake -B$BUILD_DIR -H$BASEPATH \
     -DCMAKE_BUILD_TYPE=$build_type \
     -DCMAKE_PREFIX_PATH=$BASEPATH \
     -DCMAKE_INSTALL_PREFIX=/usr \
-    -DBIN_INSTALL_DIR=$BUILD_DIR/client \
+    -DBIN_INSTALL_DIR=$build_dir/client \
     -DKDRIVE_VERSION_SUFFIX=$SUFFIX \
     -DKDRIVE_THEME_DIR="$BASEPATH/infomaniak" \
     -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
@@ -136,4 +136,4 @@ extract_debug ./bin kDrive_client
 
 make "DESTDIR=$APPDIR" install
 
-cp "$BASEPATH/sync-exclude-linux.lst" "$BUILD_DIR/bin/sync-exclude.lst"
+cp "$BASEPATH/sync-exclude-linux.lst" "$build_dir/bin/sync-exclude.lst"
