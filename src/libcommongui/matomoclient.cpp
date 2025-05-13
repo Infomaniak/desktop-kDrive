@@ -53,7 +53,9 @@ MatomoClient::MatomoClient(QCoreApplication* app, const QString& clientId)
     : PiwikTracker(app,
                    QUrl(MATOMO_URL),
                    MATOMO_SITE_ID,
-                   clientId) {}
+                   clientId) {
+    initNameFieldMap();
+}
 
 /**
  * Sends a visitPage request to Matomo.
@@ -64,46 +66,10 @@ void MatomoClient::sendVisit(const MatomoNameField page)
 {
     QString path;
     QString action;
-    switch (page) {
-#ifdef Q_OS_WIN
-        case MatomoNameField::WV_ReleaseNotes:                      path = "webview";                       action = "release-notes";         break;
-#endif
-        case MatomoNameField::VW_LoginPage:                         path = "webview";                       action = "login";                 break;
-
-        case MatomoNameField::PG_SynthesisPopover:                  path = "popover";                       action = "popover";               break;
-        case MatomoNameField::PG_SynthesisPopover_KebabMenu:        path = "popover";                       action = "kebab_menu";            break;
-
-        case MatomoNameField::PG_Preferences:                       path = "preferences";                   action = "preferences";           break;
-        case MatomoNameField::PG_Preferences_Debugging:             path = "preferences/debugging";         action = "debugging";             break;
-        case MatomoNameField::PG_Preferences_FilesToExclude:        path = "preferences/files_to_exclude";  action = "files_to_exclude";      break;
-        case MatomoNameField::PG_Preferences_Proxy:                 path = "preferences/proxy";             action = "proxy";                 break;
-#ifdef Q_OS_MAC
-        case MatomoNameField::PG_Preferences_LiteSync:              path = "preferences/litesync";          action = "litesync";              break;
-#endif
-        case MatomoNameField::PG_Preferences_About:                 path = "preferences/about";             action = "about";                 break;
-        case MatomoNameField::PG_Preferences_Beta:                  path = "preferences/beta";              action = "beta";                  break;
-
-        case MatomoNameField::PG_Parameters:                        path = "parameters";                    action = "parameters";            break;
-        case MatomoNameField::PG_Parameters_NewSync_LocalFolder:    path = "parameters/newsync";            action = "local_folder";          break;
-        case MatomoNameField::PG_Parameters_NewSync_RemoteFolder:   path = "parameters/newsync";            action = "remote_folder";         break;
-        case MatomoNameField::PG_Parameters_NewSync_Summary:        path = "parameters/newsync";            action = "summary";               break;
-
-        case MatomoNameField::PG_AddNewDrive_SelectDrive:           path = "add_new_drive";                 action = "select_drive";          break;
-        case MatomoNameField::PG_AddNewDrive_ActivateLiteSync:      path = "add_new_drive";                 action = "activate_litesync";     break;
-        case MatomoNameField::PG_AddNewDrive_SelectRemoteFolder:    path = "add_new_drive";                 action = "select_remote_folder";  break;
-        case MatomoNameField::PG_AddNewDrive_SelectLocalFolder:     path = "add_new_drive";                 action = "select_local_folder";   break;
-        case MatomoNameField::PG_AddNewDrive_ExtensionSetup:        path = "add_new_drive";                 action = "extension_setup";       break;
-        case MatomoNameField::PG_AddNewDrive_Confirmation:          path = "add_new_drive";                 action = "confirmation";          break;
-
-
-        default: // MatomoNameField::Unknown
-            action = path = "unknown";
-            qCWarning(lcMatomoClient) << "MatomoClient::sendVisit triggered with page value unknown (" << static_cast<uint8_t>(page) << ").";
-            break;
-    }
+    instance().getPathAndAction(page, path, action);
 
     if (ParametersCache::instance()->parametersInfo().extendedLog()) {
-        qCDebug(lcMatomoClient()) << "MatomoClient::sendVisit(page=" << static_cast<uint8_t>(page) << ")";
+        qCDebug(lcMatomoClient()) << "MatomoClient::sendVisit(page=" << static_cast<matomo_enum_t>(page) << ")";
     }
     instance().PiwikTracker::sendVisit(path, action);
 }
@@ -116,28 +82,78 @@ void MatomoClient::sendVisit(const MatomoNameField page)
  * @param name the name of the event
  * @param value the value of the event
  */
-void MatomoClient::sendEvent(const QString& category,
-                             const MatomoEventAction action,
-                             const QString& name,
-                             const int value)
-{
-
+void MatomoClient::sendEvent(const QString& category, const MatomoEventAction action, const QString& name, const int value) {
     QString actionStr;
     switch (action) {
-        case MatomoEventAction::Click:  actionStr = "click"; break;
-        case MatomoEventAction::Input:  actionStr = "input"; break;
-        default:                        actionStr = "unknown"; break;
+        case MatomoEventAction::Click:
+            actionStr = "click";
+            break;
+        case MatomoEventAction::Input:
+            actionStr = "input";
+            break;
+        default:
+            actionStr = "unknown";
+            break;
     }
     if (ParametersCache::instance()->parametersInfo().extendedLog()) {
-        qCDebug(lcMatomoClient()) << "MatomoClient::sendEvent(category=" << category << ", action=" << actionStr << ", name=" << name << ", value=" << value << ")";
+        qCDebug(lcMatomoClient()) << "MatomoClient::sendEvent(category=" << category << ", action=" << actionStr
+                                  << ", name=" << name << ", value=" << value << ")";
     }
-    instance().PiwikTracker::sendEvent(
-        category,
-        category,
-        actionStr,
-        name,
-        value
-    );
+    instance().PiwikTracker::sendEvent(category, category, actionStr, name, value);
+}
+
+/**
+ * Initializes the name field map for Matomo tracking.
+ *
+ * Populates the _nameFieldMap with the appropriate mappings between MatomoNameField enums and their corresponding
+ * string representations. Conditional compilation is used to include platform-specific entries.
+ */
+void MatomoClient::initNameFieldMap() {
+    _nameFieldMap = {
+#ifdef Q_OS_WIN
+        { MatomoNameField::WV_ReleaseNotes, { "webview", "release-notes" }},
+#endif
+#ifdef Q_OS_MAC
+        { MatomoNameField::PG_Preferences_LiteSync, { "preferences/litesync", "litesync" }},
+#endif
+        { MatomoNameField::VW_LoginPage, { "webview", "login" }},
+        { MatomoNameField::PG_SynthesisPopover, { "popover", "popover" }},
+        { MatomoNameField::PG_SynthesisPopover, { "popover", "kebab_menu" }},
+        { MatomoNameField::PG_Preferences, { "preferences", "preferences" }},
+        { MatomoNameField::PG_Preferences_Debugging, { "preferences/debugging", "debugging" }},
+        { MatomoNameField::PG_Preferences_FilesToExclude, { "preferences/files_to_exclude", "files_to_exclude" }},
+        { MatomoNameField::PG_Preferences_Proxy, { "preferences/proxy", "proxy" }},
+        { MatomoNameField::PG_Preferences_LiteSync, { "preferences/about", "about" }},
+        { MatomoNameField::PG_Preferences_LiteSync, { "preferences/beta", "beta" }},
+        { MatomoNameField::PG_Parameters, { "parameters", "parameters" }},
+        { MatomoNameField::PG_Parameters_NewSync_LocalFolder, { "parameters/newsync", "local_folder" }},
+        { MatomoNameField::PG_Parameters_NewSync_RemoteFolder, { "parameters/newsync", "remote_folder" }},
+        { MatomoNameField::PG_Parameters_NewSync_Summary, { "parameters/newsync", "summary" }},
+        { MatomoNameField::PG_AddNewDrive_SelectDrive, { "add_new_drive", "select_drive" }},
+        { MatomoNameField::PG_AddNewDrive_ActivateLiteSync, { "add_new_drive", "activate_litesync" }},
+        { MatomoNameField::PG_AddNewDrive_SelectRemoteFolder, { "add_new_drive", "select_remote_folder" }},
+        { MatomoNameField::PG_AddNewDrive_SelectLocalFolder, { "add_new_drive", "select_local_folder" }},
+        { MatomoNameField::PG_AddNewDrive_ExtensionSetup, { "add_new_drive", "extension_setup" }},
+        { MatomoNameField::PG_AddNewDrive_Confirmation, { "add_new_drive", "confirmation" }},
+    };
+}
+
+/**
+ * Retrieves the path and action strings for a given MatomoNameField.
+ *
+ * @param name the MatomoNameField for which to retrieve the path and action
+ * @param path[out] the path associated with the MatomoNameField
+ * @param action[out] the action associated with the MatomoNameField
+ */
+void MatomoClient::getPathAndAction(const MatomoNameField name, QString& path, QString& action) const {
+    const auto it = _nameFieldMap.find(name);
+    if (it != _nameFieldMap.end()) {
+        path = it->second.first;
+        action = it->second.second;
+    } else {
+        qCWarning(lcMatomoClient) << "MatomoClient::getPathAndAction triggered with page value unknown (" << static_cast<matomo_enum_t>(name) << ").";
+        path = action = "unknown";
+    }
 }
 
 } // namespace KDC
