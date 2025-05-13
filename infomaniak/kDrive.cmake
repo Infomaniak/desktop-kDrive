@@ -74,3 +74,7 @@ elseif( WIN32 )
 else()
     set( SENTRY_CRASHPAD_HANDLER_NAME "crashpad_handler" )
 endif()
+
+# Analytics: Matomo
+set( MATOMO_URL "https://analytics.infomaniak.com" )
+set( MATOMO_SITE_ID 29 )

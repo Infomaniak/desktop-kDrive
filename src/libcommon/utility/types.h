@@ -545,7 +545,7 @@ enum class NotificationsDisabled {
     Never,
     OneHour,
     UntilTomorrow,
-    TreeDays,
+    ThreeDays,
     OneWeek,
     Always,
     EnumEnd

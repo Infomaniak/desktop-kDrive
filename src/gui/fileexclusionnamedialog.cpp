@@ -18,6 +18,7 @@
 
 #include "fileexclusionnamedialog.h"
 #include "customproxystyle.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QBoxLayout>
 
@@ -74,16 +75,18 @@ QString FileExclusionNameDialog::templ() {
 }
 
 void FileExclusionNameDialog::onExit() {
+    MatomoClient::sendEvent("preferencesFileExclusionName", MatomoEventAction::Click, "exitButton");
     reject();
 }
 
 void FileExclusionNameDialog::onTextEdited(const QString &text) {
     _validateButton->setEnabled(!text.isEmpty());
+    MatomoClient::sendEvent("preferencesFileExclusionName", MatomoEventAction::Input, "filenamePatternInput");
 }
 
 void FileExclusionNameDialog::onValidateButtonTriggered(bool checked) {
     Q_UNUSED(checked)
-
+    MatomoClient::sendEvent("preferencesFileExclusionName", MatomoEventAction::Click, "validateButton");
     accept();
 }
 
