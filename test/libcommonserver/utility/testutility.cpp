@@ -547,6 +547,8 @@ void TestUtility::testSetFileDates() {
         const LocalTemporaryDirectory tempDir("testSetFileDates");
         filepath = tempDir.path() / "test.txt";
         testhelpers::generateOrEditTestFile(filepath);
+
+        // Test on a normal file.
         auto ioError = IoHelper::setFileDates(filepath, timestamp, timestamp, false);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
@@ -557,13 +559,26 @@ void TestUtility::testSetFileDates() {
 #endif
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modtime);
 
+        // Test with creation date > modification date.
+        ioError = IoHelper::setFileDates(filepath, timestamp + 1, timestamp, false);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError);
+#if defined(__APPLE__) || defined(_WIN32) //  Creation date not set on Linux
+        // If creation date > modification date, creation date is set to modification date.
+        CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
+#endif
+        CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modtime);
+
+
+        // Test on a file without access right.
 #ifdef _WIN32
         // On Windows, we can edit a file even if we do not have access to its parent.
         const auto rightPath = filepath;
 #else
         const auto &rightPath = tempDir.path();
 #endif
-        const auto timestamp2 = timestamp + 1;
+        const auto timestamp2 = timestamp + 10;
         bool result = IoHelper::setRights(rightPath, false, false, false, ioError);
         result &= ioError == IoError::Success;
         if (!result) {
@@ -582,7 +597,8 @@ void TestUtility::testSetFileDates() {
         (void) IoHelper::setRights(rightPath, true, true, true, ioError);
     }
 
-    const auto timestamp3 = timestamp + 3;
+    // Test on a non-existing file.
+    const auto timestamp3 = timestamp + 20;
     const auto ioError = IoHelper::setFileDates(filepath, timestamp, timestamp3, false);
     CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
 }
