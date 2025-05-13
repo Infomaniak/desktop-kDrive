@@ -21,10 +21,10 @@
 #include "customtoolbutton.h"
 #include "guiutility.h"
 #include "config.h"
-#include "common/utility.h"
 #include "enablestateholder.h"
 #include "guirequests.h"
 #include "clientgui.h"
+#include "libcommongui/matomoclient.h"
 #include "libcommon/utility/utility.h"
 
 #include <QBoxLayout>
@@ -348,18 +348,21 @@ void AddDriveLocalFolderWidget::onNeedToSave() {
 
 void AddDriveLocalFolderWidget::onBackButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveLocalFolder", MatomoEventAction::Click, "backButton");
 
     emit terminated(false);
 }
 
 void AddDriveLocalFolderWidget::onContinueButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveLocalFolder", MatomoEventAction::Click, "continueButton");
 
     emit terminated();
 }
 
 void AddDriveLocalFolderWidget::onUpdateFolderButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveLocalFolder", MatomoEventAction::Click, "editButton");
     EnableStateHolder _(this);
 
     selectFolder(_localFolderPath);

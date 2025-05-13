@@ -18,6 +18,7 @@
 
 #include "adddriveconfirmationwidget.h"
 #include "guiutility.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QBoxLayout>
 #include <QDir>
@@ -150,6 +151,7 @@ void AddDriveConfirmationWidget::setLogoColor(const QColor &color) {
 
 void AddDriveConfirmationWidget::onOpenFoldersButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveConfirmation", MatomoEventAction::Click, "openFolderButton");
 
     _action = KDC::GuiUtility::WizardAction::OpenFolder;
     emit terminated();
@@ -157,6 +159,7 @@ void AddDriveConfirmationWidget::onOpenFoldersButtonTriggered(bool checked) {
 
 void AddDriveConfirmationWidget::onOpenParametersButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveConfirmation", MatomoEventAction::Click, "parametersButton");
 
     _action = KDC::GuiUtility::WizardAction::OpenParameters;
     emit terminated();
@@ -164,6 +167,7 @@ void AddDriveConfirmationWidget::onOpenParametersButtonTriggered(bool checked) {
 
 void AddDriveConfirmationWidget::onAddDriveButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveConfirmation", MatomoEventAction::Click, "addAnotherDriveButton");
 
     _action = KDC::GuiUtility::WizardAction::AddDrive;
     emit terminated();

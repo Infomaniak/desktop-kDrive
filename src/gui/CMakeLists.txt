@@ -201,6 +201,15 @@ if(APPLE)
 endif()
 ecm_add_app_icon(final_src ICONS "${KDRIVE_ICONS}" SIDEBAR_ICONS "${KDRIVE_SIDEBAR_ICONS}" OUTFILE_BASENAME "${APPLICATION_ICON_NAME}")
 
+# Skip automoc for the files in libcommongui to avoid duplicate moc files since AUTOMOC is already enabled in ../libcommongui/CMakeLists.txt
+set_source_files_properties(
+        "${CMAKE_CURRENT_SOURCE_DIR}/../libcommongui/logger.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../libcommongui/utility/widgetsignalblocker.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../libcommongui/matomoclient.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/qt-piwik-tracker/piwiktracker.h"
+        PROPERTIES SKIP_AUTOMOC ON
+)
+
 if(NOT BUILD_KDRIVE_OSX_BUNDLE)
     if(NOT WIN32)
         file(GLOB _icons "${theme_dir}/colored/*-${APPLICATION_ICON_NAME}-icon.png")
