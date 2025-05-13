@@ -63,10 +63,6 @@ $ErrorActionPreference = "Stop"
 function Log { Write-Host "[INFO] $($args -join ' ')" }
 function Err { Write-Error "[ERROR] $($args -join ' ')" ; exit 1 }
 
-#if(-not $CI) {
-#    Err "This script is only ready for the CI. Please perform the installation manually."
-#}
-
 # Determine repository root and default output directory
 $CurrentDir = (Get-Location).Path
 $DefaultOutputDir = Join-Path $CurrentDir "build-windows\build"
