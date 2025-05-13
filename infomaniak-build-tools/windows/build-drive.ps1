@@ -208,8 +208,6 @@ function CMake-Build-And-Install {
     if ($ci) {
         $flags += ("'-DBUILD_UNIT_TESTS:BOOL=TRUE'")
         $flags += ("'-DKD_COVERAGE:BOOL=TRUE'")
-
-        $flags += ("'-DCMAKE_POLICY_DEFAULT_CMP0091=NEW'")
     }
 
     $args += $flags
