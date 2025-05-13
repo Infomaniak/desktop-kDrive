@@ -310,12 +310,12 @@ Conan version 2.x.x
    ```
    This creates `%USERPROFILE%/.conan2/profiles/default`.
 
-2. Open `%USERPROFILE%/.conan2/profiles/default` and customize the settings under the `[settings]` section. For example, to target Windows with C++20:
+2. Open `%USERPROFILE%/.conan2/profiles/default` and customize the settings under the `[settings]` section. For example, to target Windows with C++20 with a debug build type:
    
    ```ini
     [settings]
     arch=x86_64
-    build_type=Release
+    build_type=Debug
     compiler=msvc
     compiler.cppstd=20
     compiler.runtime=dynamic
@@ -381,24 +381,10 @@ C:\Program Files\OpenSSL\bin
 
 ### CMake Parameters
 
-Copy the following list of `CMake` variables in the CMake options field:
-```
--DCMAKE_BUILD_TYPE:STRING=Debug
--DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client
--DKDRIVE_THEME_DIR=F:/Projects/desktop-kDrive/infomaniak
--DCMAKE_INSTALL_PREFIX=F:/Projects/cmake-build-release_CLion
--DBUILD_UNIT_TESTS:BOOL=ON
--DCMAKE_PREFIX_PATH:STRING=C:/Qt/6.2.3/msvc2019_64
--DSOCKETAPI_TEAM_IDENTIFIER_PREFIX:STRING=864VDCS2QY
--DZLIB_INCLUDE_DIR:PATH=F:/Projects/zlib-1.2.11/include
--DZLIB_LIBRARY_RELEASE:FILEPATH=F:/Projects/zlib-1.2.11/lib/zlib.lib
--DVFS_STATIC_LIBRARY:FILEPATH=F:\Projects\desktop-kDrive\extensions\windows\cfapi\x64\Debug/Vfs.lib
--DVFS_DIRECTORY:PATH=F:\Projects\desktop-kDrive\extensions\windows\cfapi\x64\Debug
--DCMAKE_TOOLCHAIN_FILE=F:\Projects\desktop-kDrive\build-windows\build\conan_toolchain.cmake
-```
-*For the `CMAKE_TOOLCHAIN_FILE` variable, ensure that you have executed the `build_dependencies.ps1` script in advance.*
-
-![alt text](doc-images/CLion_cmake_options-1.png)
+After executing the `build_dependencies.ps1` script, Conan generates a `CMakeUserPresets.json` file in the root of the project and in the build directory. See [Conan documentation](https://docs.conan.io/2/examples/tools/cmake/cmake_toolchain/build_project_cmake_presets.html) for more information.
+This file contains the path to the `conan_toolchain.cmake` file generated, which contains the variables required to build the project if you followed the [step 4](#4-configure-cmake-toolchain-injection) of the Conan part.
+In CLion, in the CMake profile menu, you should see something like `conan-default` or `conan-$BuildType` with `$BuildType` equal to a C++ build type like debug or release.
+Enable this profile to let CLion load the CMake project.
 
 ## Using Qt Creator
 
