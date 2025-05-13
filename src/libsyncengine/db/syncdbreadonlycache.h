@@ -67,6 +67,8 @@ class SyncDbReadOnlyCache {
         std::unordered_map<DbNodeId /*parent*/, std::list<DbNodeId /*children*/>> _dbNodesParentToChildrenMap;
         std::unordered_map<NodeId, DbNodeId> _localNodeIdToDbNodeIdMap;
         std::unordered_map<NodeId, DbNodeId> _remoteNodeIdToDbNodeIdMap;
+
+        DbNode _dummyNode; // Returned by a function that returns a reference when 'found' is false
 };
 
 } // namespace KDC
