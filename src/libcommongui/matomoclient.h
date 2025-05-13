@@ -79,23 +79,23 @@ class MatomoClient final : public PiwikTracker
          *
          * Delete copy constructor and assignment operator.
          */
-        static MatomoClient& instance(const QString& clientId = QString());
+        static MatomoClient &instance(const QString &clientId = QString());
         MatomoClient(const MatomoClient&) = delete;
-        MatomoClient& operator=(const MatomoClient&) = delete;
+        MatomoClient &operator=(const MatomoClient&) = delete;
 
         static void sendVisit(MatomoNameField page);
-        static void sendEvent(const QString& category,                  // the category of the event (or equals to the path)
+        static void sendEvent(const QString &category,                  // the category of the event (or equals to the path)
                               MatomoEventAction action = MatomoEventAction::Click,   // the action of the event, CLICK or UNKNOWN @see Matomo_Event_Action
-                              const QString& name = QString(),      // the name of the event (here, the name of the button)
+                              const QString &name = QString(),      // the name of the event (here, the name of the button)
                               int value = 0);
 
     private:
 
-        MatomoClient(QCoreApplication* app, const QString& clientId);
+        MatomoClient(QCoreApplication *app, const QString &clientId);
 
         std::unordered_map<MatomoNameField, std::pair<QString, QString>> _nameFieldMap;
         void initNameFieldMap();
-        void getPathAndAction(MatomoNameField name, QString& path, QString& action) const;
+        void getPathAndAction(MatomoNameField name, QString &path, QString &action) const;
 };
 
 } // namespace KDC
