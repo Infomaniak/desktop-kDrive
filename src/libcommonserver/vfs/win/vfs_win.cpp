@@ -36,7 +36,8 @@
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
-VfsWin::VfsWin(const VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {
+VfsWin::VfsWin(const VfsSetupParams &vfsSetupParams, QObject *parent) :
+    Vfs(vfsSetupParams, parent) {
     // Initialize LiteSync ext connector
     LOG_INFO(logger(), "Initialize LiteSyncExtConnector");
     TraceCbk debugCallback = std::bind(&VfsWin::debugCbk, this, std::placeholders::_1, std::placeholders::_2);
@@ -584,14 +585,14 @@ ExitInfo VfsWin::status(const SyncPath &filePath, VfsStatus &vfsStatus) {
 bool VfsWin::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
     LOGW_DEBUG(logger(), L"fileStatusChanged: " << Utility::formatSyncPath(pathStd) << L" status = " << status);
     const QString path = SyncName2QStr(pathStd.native());
-    SyncPath fullPath(pathStd.native());
+    const SyncPath fullPath(pathStd.native());
     if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
         if (exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::NotFound)) {
             return true;
         }
         return false;
     }
-    SyncPath fileRelativePath = CommonUtility::relativePath(_vfsSetupParams.localPath, fullPath);
+    const SyncPath fileRelativePath = CommonUtility::relativePath(_vfsSetupParams.localPath, fullPath);
 
     switch (status) {
         case SyncFileStatus::Conflict:

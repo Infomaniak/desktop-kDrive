@@ -30,7 +30,8 @@
 
 namespace KDC {
 VfsMac::VfsMac(const VfsSetupParams &vfsSetupParams, QObject *parent) :
-    Vfs(vfsSetupParams, parent), _localSyncPath{Path2QStr(_vfsSetupParams.localPath)} {
+    Vfs(vfsSetupParams, parent),
+    _localSyncPath{Path2QStr(_vfsSetupParams.localPath)} {
     // Initialize LiteSync ext connector
     LOG_INFO(logger(), "Initialize LiteSyncExtConnector");
 
@@ -398,9 +399,8 @@ void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydra
 
             // Check if the directory entry is managed
             bool isManaged = true;
-            bool isLink = false;
             IoError ioError = IoError::Success;
-            if (!Utility::checkIfDirEntryIsManaged(dirIt, isManaged, isLink, ioError)) {
+            if (!Utility::checkIfDirEntryIsManaged(*dirIt, isManaged, ioError)) {
                 LOGW_WARN(logger(), L"Error in Utility::checkIfDirEntryIsManaged : " << Utility::formatSyncPath(absolutePath));
                 dirIt.disable_recursion_pending();
                 continue;

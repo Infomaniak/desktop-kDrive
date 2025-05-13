@@ -29,7 +29,8 @@ static const std::string remoteIdSuffix = "r_";
 
 class TestSituationGeneratorException final : public std::runtime_error {
     public:
-        explicit TestSituationGeneratorException(const std::string &what) : std::runtime_error(what) {}
+        explicit TestSituationGeneratorException(const std::string &what) :
+            std::runtime_error(what) {}
 };
 
 TestSituationGenerator::TestSituationGenerator() :
@@ -44,8 +45,10 @@ TestSituationGenerator::TestSituationGenerator() :
 }
 
 TestSituationGenerator::TestSituationGenerator(const std::shared_ptr<SyncPal> syncpal) :
-    _syncDb(syncpal->syncDb()), _localSnapshot(syncpal->snapshot(ReplicaSide::Local)),
-    _remoteSnapshot(syncpal->snapshot(ReplicaSide::Remote)), _localUpdateTree(syncpal->updateTree(ReplicaSide::Local)),
+    _syncDb(syncpal->syncDb()),
+    _localSnapshot(syncpal->snapshot(ReplicaSide::Local)),
+    _remoteSnapshot(syncpal->snapshot(ReplicaSide::Remote)),
+    _localUpdateTree(syncpal->updateTree(ReplicaSide::Local)),
     _remoteUpdateTree(syncpal->updateTree(ReplicaSide::Remote)) {}
 
 TestSituationGenerator::TestSituationGenerator(const std::shared_ptr<SyncDb> syncDb,
@@ -53,7 +56,10 @@ TestSituationGenerator::TestSituationGenerator(const std::shared_ptr<SyncDb> syn
                                                const std::shared_ptr<Snapshot> remoteSnapshot,
                                                const std::shared_ptr<UpdateTree> localUpdateTree,
                                                const std::shared_ptr<UpdateTree> remoteUpdateTree) :
-    _syncDb(syncDb), _localSnapshot(localSnapshot), _remoteSnapshot(remoteSnapshot), _localUpdateTree(localUpdateTree),
+    _syncDb(syncDb),
+    _localSnapshot(localSnapshot),
+    _remoteSnapshot(remoteSnapshot),
+    _localUpdateTree(localUpdateTree),
     _remoteUpdateTree(remoteUpdateTree) {}
 
 void TestSituationGenerator::setSyncpal(const std::shared_ptr<SyncPal> syncpal) {
@@ -79,6 +85,7 @@ void TestSituationGenerator::generateInitialSituation(const std::string &jsonInp
     addItem(obj);
 
     _localUpdateTree->drawUpdateTree();
+    _syncDb->cache().reloadIfNeeded();
 }
 
 std::shared_ptr<Node> TestSituationGenerator::getNode(const ReplicaSide side, const NodeId &id) const {

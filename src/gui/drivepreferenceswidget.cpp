@@ -62,7 +62,8 @@ static const QString folderBlocName("folderBloc");
 Q_LOGGING_CATEGORY(lcDrivePreferencesWidget, "gui.drivepreferenceswidget", QtInfoMsg)
 
 DrivePreferencesWidget::DrivePreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
-    LargeWidgetWithCustomToolTip(parent), _gui(gui) {
+    LargeWidgetWithCustomToolTip(parent),
+    _gui(gui) {
     setContentsMargins(0, 0, 0, 0);
 
     /*
@@ -1082,6 +1083,11 @@ void DrivePreferencesWidget::onUnsyncTriggered(int syncDbId) {
 
         // Disable GUI sync-related actions.
         folderBloc->setEnabledRecursively(false);
+
+        const auto &syncInfoMapIt = _gui->syncInfoMap().find(syncDbId);
+        if (syncInfoMapIt != _gui->syncInfoMap().end()) {
+            CommonGuiUtility::removeDirIcon(syncInfoMapIt->second.localPath());
+        }
 
         // Remove sync
         const ExitCode exitCode = GuiRequests::deleteSync(syncDbId);

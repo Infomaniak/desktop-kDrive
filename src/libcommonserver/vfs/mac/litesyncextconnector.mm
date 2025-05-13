@@ -112,6 +112,7 @@
     NSString *_pId;
     BOOL _activationDone;
     BOOL _timeout;
+    NSMutableSet *_pathSet;
 }
 
 @property(retain) NSXPCConnection *connection;
@@ -121,6 +122,7 @@
 - (BOOL)installExt:(BOOL *)activationDone;
 - (void)onTimeout:(NSTimer *)timer;
 - (BOOL)connectToExt;
+- (BOOL)reconnectToExt;
 - (BOOL)registerFolder:(NSString *)folderPath;
 - (BOOL)unregisterFolder:(NSString *)folderPath;
 - (BOOL)setAppExcludeList:(NSString *)list;
@@ -141,6 +143,7 @@
 
         NSProcessInfo *processInfo = [NSProcessInfo processInfo];
         _pId = [@([processInfo processIdentifier]) stringValue];
+        _pathSet = [NSMutableSet set];
     }
 
     return self;
@@ -209,6 +212,13 @@
     _timeout = TRUE;
 }
 
+- (void)scheduleRetryToConnectToLiteSyncExt {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      NSLog(@"[KD] Set timer to retry to connect to LiteSync extension");
+      [NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(reconnectToExt) userInfo:nil repeats:NO];
+    });
+}
+
 - (BOOL)connectToExt {
     if (_connection != nil) {
         // Already connected
@@ -249,16 +259,25 @@
 
     // Set connection handlers
     NSLog(@"[KD] Setup connection handlers with LiteSync extension");
+    __weak __typeof__(self) weakSelf = self;
     _connection.interruptionHandler = ^{
       // The LiteSync extension has exited or crashed
       NSLog(@"[KD] Connection with LiteSync extension interrupted");
-      _connection = nil;
+      __strong __typeof__(weakSelf) strongSelf = weakSelf;
+      if (strongSelf) {
+          strongSelf->_connection = nil;
+          [strongSelf scheduleRetryToConnectToLiteSyncExt];
+      }
     };
 
     _connection.invalidationHandler = ^{
       // Connection can not be formed or has terminated and may not be re-established
       NSLog(@"[KD] Connection with LiteSync extension invalidated");
-      _connection = nil;
+      __strong __typeof__(weakSelf) strongSelf = weakSelf;
+      if (strongSelf) {
+          strongSelf->_connection = nil;
+          [strongSelf scheduleRetryToConnectToLiteSyncExt];
+      }
     };
 
     // Resume connection
@@ -268,9 +287,26 @@
     return TRUE;
 }
 
+- (BOOL)reconnectToExt {
+    if (![self connectToExt]) {
+        NSLog(@"[KD] Failed to reconnect to LiteSync extension");
+        return FALSE;
+    }
+
+    for (NSString *path in _pathSet) {
+        if (![self registerFolder:path]) {
+            NSLog(@"[KD] Failed to register folder %@", path);
+            return FALSE;
+        }
+    }
+
+    return TRUE;
+}
+
 - (BOOL)registerFolder:(NSString *)path {
     if (_connection) {
         [[_connection remoteObjectProxy] registerFolder:_pId folderPath:path];
+        [_pathSet addObject:path];
         return TRUE;
     }
 
@@ -280,6 +316,7 @@
 - (BOOL)unregisterFolder:(NSString *)path {
     if (_connection) {
         [[_connection remoteObjectProxy] unregisterFolder:_pId folderPath:path];
+        [_pathSet removeObject:path];
         return TRUE;
     }
 
@@ -1375,24 +1412,23 @@ bool LiteSyncExtConnector::vfsSetStatus(const QString &path, const QString &loca
 
             if (vfsStatus.isSyncing) {
                 {
-                    const std::lock_guard<std::mutex> lock(_mutex);
+                    const std::scoped_lock lock(_mutex);
                     _syncingFolders[parentPath].insert(path);
                 }
 
                 vfsSetStatus(parentPath, localSyncPath,
                              VfsStatus({.isSyncing = vfsStatus.isSyncing, .isHydrated = vfsStatus.isHydrated, .progress = 100}));
             } else {
-                _mutex.lock();
-                _syncingFolders[parentPath].remove(path);
-                if (_syncingFolders[parentPath].empty()) {
-                    _syncingFolders.remove(parentPath);
-                    _mutex.unlock();
-
-                    if (!vfsProcessDirStatus(parentPath, localSyncPath)) {
-                        return false;
+                {
+                    const std::scoped_lock lock(_mutex);
+                    _syncingFolders[parentPath].remove(path);
+                    if (_syncingFolders[parentPath].empty()) {
+                        _syncingFolders.remove(parentPath);
+                        if (!vfsProcessDirStatus(parentPath, localSyncPath)) {
+                            return false;
+                        }
                     }
                 }
-                _mutex.unlock();
             }
         }
     }
@@ -1400,11 +1436,11 @@ bool LiteSyncExtConnector::vfsSetStatus(const QString &path, const QString &loca
 }
 
 bool LiteSyncExtConnector::vfsCleanUpStatuses(const QString &localSyncPath) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     QHashIterator<QString, QSet<QString>> it(_syncingFolders);
     while (it.hasNext()) {
-        if (!vfsProcessDirStatus(it.key(), localSyncPath)) return false;
         it.next();
+        if (!vfsProcessDirStatus(it.key(), localSyncPath)) return false;
     }
     _syncingFolders.clear();
     return true;

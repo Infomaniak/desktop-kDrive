@@ -194,12 +194,8 @@ struct COMMONSERVER_EXPORT Utility {
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);
         static bool runDetachedProcess(std::wstring cmd);
 #endif
-        static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, const ItemType &itemType,
-                                             IoError &ioError);
-        static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, bool &isLink, IoError &ioError);
-        static bool checkIfDirEntryIsManaged(const std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged,
-                                             bool &isLink, IoError &ioError);
-
+        static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, IoError &ioError,
+                                             const ItemType &itemType = ItemType());
         /* Resources analyser */
         static bool totalRamAvailable(uint64_t &ram, int &errorCode);
         static bool ramCurrentlyUsed(uint64_t &ram, int &errorCode);

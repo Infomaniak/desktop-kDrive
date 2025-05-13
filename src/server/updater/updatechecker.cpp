@@ -127,6 +127,7 @@ ExitCode UpdateChecker::generateGetAppVersionJob(std::shared_ptr<AbstractNetwork
     }
     std::vector<int> userIdList;
     for (const auto &user: userList) {
+        if (user.userId() == 0) continue;
         userIdList.push_back(user.userId());
     }
 
