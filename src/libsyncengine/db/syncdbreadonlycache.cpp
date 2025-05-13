@@ -105,6 +105,7 @@ bool SyncDbReadOnlyCache::parent(ReplicaSide side, const NodeId &nodeId, NodeId 
     if (!dbNode) {
         LOG_WARN(Log::instance()->getLogger(),
                  "SyncDbReadOnlyCache::parent: dbNodeId " << dbNodeId << " not found in syncDbReadOnlyCache");
+        found = false;
         return true;
     }
 
@@ -115,6 +116,7 @@ bool SyncDbReadOnlyCache::parent(ReplicaSide side, const NodeId &nodeId, NodeId 
 
     auto parentDbNode = getDbNodeFromDbNodeId(dbNode->get().parentNodeId().value());
     if (!parentDbNode) {
+        found = false;
         return true;
     }
 
@@ -140,6 +142,7 @@ bool SyncDbReadOnlyCache::correspondingNodeId(ReplicaSide side, const NodeId &no
 
     auto dbNode = getDbNodeFromDbNodeId(dbNodeId);
     if (!dbNode) {
+        found = false;
         LOG_WARN(Log::instance()->getLogger(),
                  "SyncDbReadOnlyCache::correspondingNodeId: dbNodeId " << dbNodeId << " not found in syncDbReadOnlyCache");
         return true;
@@ -192,6 +195,7 @@ bool SyncDbReadOnlyCache::node(ReplicaSide side, const NodeId &nodeId, DbNode &d
         dbNode = *dbNodeOptional;
         found = true;
     } else {
+        found = false;
         LOG_WARN(Log::instance()->getLogger(),
                  "SyncDbReadOnlyCache::node: dbNodeId " << dbNodeId << " not found in syncDbReadOnlyCache");
     }
@@ -342,6 +346,7 @@ bool SyncDbReadOnlyCache::id(ReplicaSide side, const SyncPath &path, std::option
         tmpNode = *tmpNodeOptional;
     }
     nodeId = tmpNode.nodeId(side);
+    found = true;
     return true;
 }
 
@@ -356,6 +361,7 @@ bool SyncDbReadOnlyCache::id(ReplicaSide side, DbNodeId dbNodeId, NodeId &nodeId
     if (!dbNodeOptional) {
         return true;
     }
+    found = true;
     nodeId = dbNodeOptional->get().nodeId(side);
     return true;
 }
