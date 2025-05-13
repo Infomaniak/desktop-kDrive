@@ -11,8 +11,8 @@ set(libcommongui_SRCS
     utility/widgetsignalblocker.h
         ../3rdparty/qt-piwik-tracker/piwiktracker.h
         ../3rdparty/qt-piwik-tracker/piwiktracker.cpp
-        MatomoClient.cpp
-        MatomoClient.h
+        matomoclient.cpp
+        matomoclient.h
 )
 
 if(APPLE)
