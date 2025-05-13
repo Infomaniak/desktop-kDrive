@@ -34,18 +34,18 @@ function display_help {
 }
 
 
-UNIT_TESTS=0
-BUILD_TYPE="debug"
+unit_tests=0
+build_type="debug"
 
 while :
 do
     case "$1" in
       -t | --build-type)
-          BUILD_TYPE="$2"
+          build_type="$2"
           shift 2
           ;;
       -u | --unit-tests)
-          UNIT_TESTS=1
+          unit_tests=1
           shift 1
           ;;
       -h | --help)
@@ -67,14 +67,14 @@ do
 done
 
 
-if [[ $BUILD_TYPE == "release" ]]; then
-    BUILD_TYPE="RelWithDebInfo"
-elif [[ $BUILD_TYPE == "debug" ]]; then
-    BUILD_TYPE="Debug"
+if [[ $build_type == "release" ]]; then
+    build_type="RelWithDebInfo"
+elif [[ $build_type == "debug" ]]; then
+    build_type="Debug"
 fi
 
-echo "Build type: $BUILD_TYPE"
-echo "Unit tests build flag: $UNIT_TESTS"
+echo "Build type: $build_type"
+echo "Unit tests build flag: $unit_tests"
 
 
 export QT_BASE_DIR="$HOME/Qt/6.2.3"
@@ -103,12 +103,12 @@ export SUFFIX=""
 
 mkdir -p "$BUILD_DIR/client"
 
-bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$BUILD_TYPE" "--output-dir=$BUILD_DIR"
+bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" "--output-dir=$BUILD_DIR"
 
 # Build client
 cd $BUILD_DIR
 
-CMAKE_PARAMS=()
+cmake_param=()
 
 export KDRIVE_DEBUG=0
 
@@ -118,16 +118,16 @@ cmake -B$BUILD_DIR -H$BASEPATH \
     -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib64/libcrypto.so \
     -DOPENSSL_SSL_LIBRARY=/usr/local/lib64/libssl.so \
     -DQT_FEATURE_neon=OFF \
-    -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+    -DCMAKE_BUILD_TYPE=$build_type \
     -DCMAKE_PREFIX_PATH=$BASEPATH \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DBIN_INSTALL_DIR=$BUILD_DIR/client \
     -DKDRIVE_VERSION_SUFFIX=$SUFFIX \
     -DKDRIVE_THEME_DIR="$BASEPATH/infomaniak" \
     -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
-    -DBUILD_UNIT_TESTS=$UNIT_TESTS \
+    -DBUILD_UNIT_TESTS=$unit_tests \
     -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
-    "${CMAKE_PARAMS[@]}" \
+    "${cmake_param[@]}" \
 
 make "-j$(nproc)"
 
