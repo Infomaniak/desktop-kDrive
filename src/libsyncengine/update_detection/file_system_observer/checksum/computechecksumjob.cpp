@@ -29,7 +29,10 @@
 namespace KDC {
 
 ComputeChecksumJob::ComputeChecksumJob(const NodeId &nodeId, const SyncPath &filepath, std::shared_ptr<Snapshot> localSnapshot) :
-    _logger(Log::instance()->getLogger()), _nodeId(nodeId), _filePath(filepath), _localSnapshot(localSnapshot) {}
+    _logger(Log::instance()->getLogger()),
+    _nodeId(nodeId),
+    _filePath(filepath),
+    _localSnapshot(localSnapshot) {}
 
 void ComputeChecksumJob::runJob() {
     if (isExtendedLog()) {

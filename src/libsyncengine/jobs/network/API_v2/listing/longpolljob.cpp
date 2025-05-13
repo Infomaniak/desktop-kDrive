@@ -18,16 +18,14 @@
 
 #include "longpolljob.h"
 
-#include <Poco/Net/HTTPRequest.h>
-
-#define API_TIMEOUT 50
-
 namespace KDC {
 
-LongPollJob::LongPollJob(int driveDbId, const std::string &cursor) :
-    AbstractTokenNetworkJob(ApiType::NotifyDrive, 0, 0, driveDbId, 0), _cursor(cursor) {
-    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    _customTimeout = API_TIMEOUT + 5; // Must be < 1 min (VPNs' default timeout)
+static const uint32_t apiTimout = 50;
+
+LongPollJob::LongPollJob(const int driveDbId, const std::string &cursor, const NodeSet &blacklist /*= {}*/) :
+    AbstractListingJob(ApiType::NotifyDrive, driveDbId, blacklist),
+    _cursor(cursor) {
+    _customTimeout = apiTimout + 5; // Must be < 1 min (VPNs' default timeout)
 }
 
 std::string LongPollJob::getSpecificUrl() {
@@ -36,10 +34,9 @@ std::string LongPollJob::getSpecificUrl() {
     return str;
 }
 
-void LongPollJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
+void LongPollJob::setSpecificQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("cursor", _cursor);
-    uri.addQueryParameter("timeout", std::to_string(API_TIMEOUT) + "s");
-    canceled = false;
+    uri.addQueryParameter("timeout", std::to_string(apiTimout) + "s");
 }
 
 } // namespace KDC

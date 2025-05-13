@@ -16,27 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "continuefilelistwithcursorjob.h"
+#include "abstractlistingjob.h"
 
 #include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
 
-ContinueFileListWithCursorJob::ContinueFileListWithCursorJob(int driveDbId, const std::string &cursor) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _cursor(cursor) {
+AbstractListingJob::AbstractListingJob(const int driveDbId, const NodeSet& blacklist /*= {}*/) :
+    AbstractListingJob(ApiType::Drive, driveDbId, blacklist) {}
+
+AbstractListingJob::AbstractListingJob(const ApiType apiType, const int driveDbId, const NodeSet& blacklist /*= {}*/) :
+    AbstractTokenNetworkJob(apiType, 0, 0, driveDbId, 0),
+    _blacklist(blacklist) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-std::string ContinueFileListWithCursorJob::getSpecificUrl() {
-    std::string str = AbstractTokenNetworkJob::getSpecificUrl();
-    str += "/files/listing/continue";
-    return str;
-}
-
-void ContinueFileListWithCursorJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
-    uri.addQueryParameter("cursor", _cursor);
-    uri.addQueryParameter("with", "files.capabilities");
-    uri.addQueryParameter("limit", nbItemPerPage);
+void AbstractListingJob::setQueryParameters(Poco::URI& uri, bool& canceled) {
+    setSpecificQueryParameters(uri);
+    if (!_blacklist.empty()) {
+        if (const std::string str = Utility::nodeSet2str(_blacklist); !str.empty()) {
+            uri.addQueryParameter("without_ids", str);
+        }
+    }
     canceled = false;
 }
 

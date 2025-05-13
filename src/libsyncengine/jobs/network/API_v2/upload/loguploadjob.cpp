@@ -39,7 +39,9 @@ std::shared_ptr<LogUploadJob> LogUploadJob::_runningJob = nullptr;
 
 LogUploadJob::LogUploadJob(const bool includeArchivedLog, const std::function<void(LogUploadState, int)> &progressCallback,
                            const std::function<void(const Error &error)> &addErrorCallback) :
-    _includeArchivedLog(includeArchivedLog), _progressCallback(progressCallback), _addErrorCallback(addErrorCallback) {
+    _includeArchivedLog(includeArchivedLog),
+    _progressCallback(progressCallback),
+    _addErrorCallback(addErrorCallback) {
     if (!_progressCallback) {
         assert(_progressCallback && "progressCallback must be set");
         _progressCallback = [](LogUploadState, int) { return true; };

@@ -31,8 +31,12 @@ DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, const in
                                        const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId,
                                        const SyncTime modtime, const bool liteSyncActivated,
                                        const uint64_t nbParallelThread /*= 1*/) :
-    AbstractUploadSession(filepath, filename, nbParallelThread), _driveDbId(driveDbId), _syncDb(syncDb), _modtimeIn(modtime),
-    _remoteParentDirId(remoteParentDirId), _vfs(vfs) {
+    AbstractUploadSession(filepath, filename, nbParallelThread),
+    _driveDbId(driveDbId),
+    _syncDb(syncDb),
+    _modtimeIn(modtime),
+    _remoteParentDirId(remoteParentDirId),
+    _vfs(vfs) {
     (void) liteSyncActivated;
     _uploadSessionType = UploadSessionType::Drive;
 }
