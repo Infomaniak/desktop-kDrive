@@ -259,7 +259,7 @@ void AddDriveListWidget::onBackButtonTriggered(bool checked) {
 
 void AddDriveListWidget::onNextButtonTriggered(bool checked) {
     Q_UNUSED(checked)
-    MatomoClient::sendEvent("addDriveList", MatomoEventAction::Click, "nextButton");
+    MatomoClient::sendEvent("addDriveList", MatomoEventAction::Click, "nextButton", _withoutDrives ? 0 : 1); // 0: with drives, 1: without drives
 
     if (_withoutDrives) {
         QDesktopServices::openUrl(QUrl(QString::fromStdString(redirectionLink)));
