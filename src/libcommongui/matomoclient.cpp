@@ -1,5 +1,5 @@
 /*
-* Infomaniak kDrive - Desktop
+ * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,9 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "MatomoClient.h"
-#include <QCoreApplication>
+#include "matomoclient.h"
 #include "config.h"
+#include "gui/parameterscache.h"
+
+#include <QCoreApplication>
 
 namespace KDC {
 
@@ -100,7 +102,9 @@ void MatomoClient::sendVisit(const MatomoNameField page)
             break;
     }
 
-    qCDebug(lcMatomoClient()) << "MatomoClient::sendVisit(page=" << static_cast<int>(page) << ")";
+    if (ParametersCache::instance()->parametersInfo().extendedLog()) {
+        qCDebug(lcMatomoClient()) << "MatomoClient::sendVisit(page=" << static_cast<uint8_t>(page) << ")";
+    }
     instance().PiwikTracker::sendVisit(path, action);
 }
 
@@ -124,8 +128,9 @@ void MatomoClient::sendEvent(const QString& category,
         case MatomoEventAction::Input:  actionStr = "input"; break;
         default:                        actionStr = "unknown"; break;
     }
-
-    qCDebug(lcMatomoClient()) << "MatomoClient::sendEvent(category=" << category << ", action=" << actionStr << ", name=" << name << ", value=" << value << ")";
+    if (ParametersCache::instance()->parametersInfo().extendedLog()) {
+        qCDebug(lcMatomoClient()) << "MatomoClient::sendEvent(category=" << category << ", action=" << actionStr << ", name=" << name << ", value=" << value << ")";
+    }
     instance().PiwikTracker::sendEvent(
         category,
         category,
