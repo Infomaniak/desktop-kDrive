@@ -589,7 +589,8 @@ bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<
 
     if (CommonUtility::isDiskRootFolder(directoryPath)) {
         warn = true;
-        warningMsg = QCoreApplication::translate("utility", "Folder <b>%1</b> cannot be selected as sync folder. Please, select another folder.")
+        warningMsg = QCoreApplication::translate(
+                             "utility", "Folder <b>%1</b> cannot be selected as sync folder. Please, select another folder.")
                              .arg(selectedFolderName);
     }
 
