@@ -22,6 +22,7 @@
 #include "guiutility.h"
 #include "guirequests.h"
 #include "clientgui.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QBoxLayout>
 #include <QDesktopServices>
@@ -251,12 +252,14 @@ void AddDriveListWidget::changeNextButtonText() {
 
 void AddDriveListWidget::onBackButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveList", MatomoEventAction::Click, "backButton");
 
     emit terminated(false);
 }
 
 void AddDriveListWidget::onNextButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveList", MatomoEventAction::Click, "nextButton", _withoutDrives ? 0 : 1); // 0: with drives, 1: without drives
 
     if (_withoutDrives) {
         QDesktopServices::openUrl(QUrl(QString::fromStdString(redirectionLink)));
@@ -267,6 +270,7 @@ void AddDriveListWidget::onNextButtonTriggered(bool checked) {
 
 void AddDriveListWidget::onWidgetPressed(QListWidgetItem *item) {
     Q_UNUSED(item)
+    MatomoClient::sendEvent("addDriveList", MatomoEventAction::Click, "selectADrive");
 
     DriveItemWidget *driveItem = (DriveItemWidget *) item;
     _driveInfo = driveItem->driveInfo();

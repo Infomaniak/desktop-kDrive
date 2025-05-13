@@ -17,12 +17,10 @@
  */
 
 #include "betaprogramdialog.h"
-
-#include "adddriveconfirmationwidget.h"
 #include "customcombobox.h"
 #include "guirequests.h"
 #include "parameterscache.h"
-#include "utility/utility.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QCheckBox>
 #include <QPushButton>
@@ -175,6 +173,7 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit, const bool isStaff, QWid
 }
 
 void BetaProgramDialog::onAcknowledgment() {
+    MatomoClient::sendEvent("betaProgramDialog", MatomoEventAction::Click, "acknowledgmentCheckbox", _acknowledgmentCheckbox->isChecked() ? 1 : 0);
     _saveButton->setEnabled(_acknowledgmentCheckbox->isChecked());
 }
 
@@ -193,6 +192,7 @@ VersionChannel toDistributionChannel(const int index) {
 }
 
 void BetaProgramDialog::onSave() {
+    MatomoClient::sendEvent("betaProgramDialog", MatomoEventAction::Click, "saveButton");
     if (_isStaff) {
         _newChannel = toDistributionChannel(_staffSelectionBox->currentIndex());
     } else {

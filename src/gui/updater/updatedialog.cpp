@@ -18,12 +18,13 @@
 
 #include "updatedialog.h"
 
-#include "../wizard/webview.h"
-#include "libcommon/utility/utility.h"
 #include "../guiutility.h"
-#include "config.h"
+#include "../wizard/webview.h"
 #include "../parameterscache.h"
+#include "libcommongui/matomoclient.h"
+#include "libcommon/utility/utility.h"
 #include "libcommon/theme/theme.h"
+#include "config.h"
 
 #include <QLabel>
 #include <QNetworkReply>
@@ -114,7 +115,13 @@ void UpdateDialog::initUi(const VersionInfo &versionInfo) {
 
 void UpdateDialog::reject() {
     if (sender() == _skipButton) _skip = true;
+    MatomoClient::sendEvent("updateDialog", MatomoEventAction::Click, "rejectButton", _skip ? 1 : 0);
     QDialog::reject();
+}
+
+void UpdateDialog::accept() {
+    MatomoClient::sendEvent("updateDialog", MatomoEventAction::Click, "acceptButton");
+    QDialog::accept();
 }
 
 } // namespace KDC
