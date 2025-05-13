@@ -244,7 +244,7 @@ The recommended way to install Conan is via **pip** within a Python virtual envi
 
 ### 2. Install Conan
 
-With the virtual environment active, install Conan:
+With the virtual environment activated, install Conan:
 ```bash
 pip install conan
 ```
