@@ -29,7 +29,7 @@ bool SyncDbReadOnlyCache::isCacheUpToDate() const {
     return true;
 }
 
-DbNodeId SyncDbReadOnlyCache::getDbNodeIdFromNodeId(ReplicaSide side, const NodeId& nodeId, bool& found) {
+DbNodeId SyncDbReadOnlyCache::getDbNodeIdFromNodeId(const ReplicaSide side, const NodeId& nodeId, bool& found) {
     found = false;
     const auto& nodeIdToDbNodeIdMap = side == ReplicaSide::Local ? _localNodeIdToDbNodeIdMap : _remoteNodeIdToDbNodeIdMap;
     const auto dbNodeIdIt = nodeIdToDbNodeIdMap.find(nodeId);
