@@ -14,7 +14,7 @@ class KDriveDesktop(ConanFile):
         """
         Generate the CMake toolchain file.
         Removes the "generic_system" block from the toolchain file to avoid conflicts with msvc on windows.
-            - Conan set in the generic_system block the vars "CMAKE_GENERATOR_PLATFORM" and "CMAKE_GENERATOR_TOOLSET" needed by msvc but Ninja,
+            - Conan set in the generic_system block the vars "CMAKE_GENERATOR_PLATFORM" and "CMAKE_GENERATOR_TOOLSET" needed by MSBuild but Ninja,
                don't understand it and fails to build.
         """
         tc = CMakeToolchain(self)
