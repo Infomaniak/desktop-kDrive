@@ -23,7 +23,7 @@ namespace KDC {
 
 UploadJobReplyHandler::UploadJobReplyHandler(const SyncPath& absoluteFilePath, const SyncTime modtime) :
     _absoluteFilePath(absoluteFilePath),
-    _modtimeOut(modtime) {}
+    _modtimeIn(modtime) {}
 
 bool UploadJobReplyHandler::extractData(const Poco::JSON::Object::Ptr jsonRes) {
     if (!jsonRes) return false;
