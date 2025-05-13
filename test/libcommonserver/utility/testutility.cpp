@@ -541,7 +541,7 @@ void TestUtility::testSplitPath() {
 
 void TestUtility::testSetFileDates() {
     SyncPath filepath;
-    auto modifTimestamp = testhelpers::defaultTime;
+    const auto modifTimestamp = testhelpers::defaultTime;
     auto creationTimestamp = testhelpers::defaultTime;
 
     {
@@ -575,7 +575,7 @@ void TestUtility::testSetFileDates() {
         // Test on a file without access right.
 #ifdef _WIN32
         // On Windows, we can edit a file even if we do not have access to its parent.
-        const auto rightPath = filepath;
+        const auto &rightPath = filepath;
 #else
         const auto &rightPath = tempDir.path();
 #endif
