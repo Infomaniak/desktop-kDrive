@@ -73,14 +73,14 @@ bool CommonUtility::normalizedSyncName(const SyncName &name, SyncName &normalize
         return true;
     }
 
-    static const int maxIterations = 10;
+    static const uint32_t maxIterations = 10;
     LPWSTR strResult = nullptr;
-    HANDLE hHeap = GetProcessHeap();
+    const HANDLE hHeap = GetProcessHeap();
 
     int64_t iSizeEstimated = static_cast<int64_t>(name.length() + 1) * 2;
-    for (int i = 0; i < maxIterations; i++) {
+    for (uint32_t i = 0; i < maxIterations; ++i) {
         if (strResult) {
-            HeapFree(hHeap, 0, strResult);
+            (void) HeapFree(hHeap, 0, strResult);
         }
         strResult = (LPWSTR) HeapAlloc(hHeap, 0, iSizeEstimated * sizeof(WCHAR));
         iSizeEstimated = NormalizeString(normalization == UnicodeNormalization::NFD ? NormalizationD : NormalizationC,
@@ -91,7 +91,8 @@ bool CommonUtility::normalizedSyncName(const SyncName &name, SyncName &normalize
         }
 
         if (iSizeEstimated <= 0) {
-            if (dwError != ERROR_INSUFFICIENT_BUFFER) {
+            if (GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+                // Real error, not buffer error
                 return false;
             }
 
@@ -105,7 +106,7 @@ bool CommonUtility::normalizedSyncName(const SyncName &name, SyncName &normalize
     }
 
     (void) normalizedName.assign(strResult, iSizeEstimated - 1);
-    HeapFree(hHeap, 0, strResult);
+    (void) HeapFree(hHeap, 0, strResult);
     return true;
 }
 
