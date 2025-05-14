@@ -180,11 +180,6 @@ struct COMMONSERVER_EXPORT Utility {
          */
         static std::string _errId(const char *file, int line);
 
-
-        enum class UnicodeNormalization {
-            NFC,
-            NFD
-        };
         static bool normalizedSyncName(const SyncName &name, SyncName &normalizedName,
                                        UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
         static bool normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
