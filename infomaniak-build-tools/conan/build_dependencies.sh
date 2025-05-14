@@ -36,9 +36,9 @@ set -euo pipefail
 log(){ echo "[INFO] $*"; }
 error(){ echo "[ERROR] $*" >&2; exit 1; }
 
-PLATFORM=$(uname | tr '[:upper:]' '[:lower:]')
-if [ "$PLATFORM" != "darwin" ] && [ "$PLATFORM" != "linux" ]; then
-  error "Unsupported platform: $PLATFORM. Supported platforms: Linux, macOS"
+platform=$(uname | tr '[:upper:]' '[:lower:]')
+if [ "$platform" != "darwin" ] && [ "$platform" != "linux" ]; then
+  error "Unsupported platform: $platform. Supported platforms: Linux, macOS"
 fi
 
 # check if we launched this in the right folder.
@@ -50,53 +50,53 @@ if ! command -v conan >/dev/null 2>&1; then
   error "Conan is not installed. Please install it first."
 fi
 
-CONAN_REMOTE_BASE_FOLDER="$PWD/infomaniak-build-tools/conan"
-CONAN_RECIPES_FOLDER="$CONAN_REMOTE_BASE_FOLDER/recipes"
+conan_remote_base_folder="$PWD/infomaniak-build-tools/conan"
+conan_recipes_folder="$conan_remote_base_folder/recipes"
 
-LOCAL_RECIPE_REMOTE_NAME="localrecipes"
-if ! conan remote list | grep -qE "^$LOCAL_RECIPE_REMOTE_NAME.*\[.*Enabled: True.*\]"; then
-  log "Adding Conan remote '$LOCAL_RECIPE_REMOTE_NAME' at '$CONAN_REMOTE_BASE_FOLDER'. "
-  conan remote add "$LOCAL_RECIPE_REMOTE_NAME" "$CONAN_REMOTE_BASE_FOLDER"
+local_recipe_remote_name="localrecipes"
+if ! conan remote list | grep -qE "^$local_recipe_remote_name.*\[.*Enabled: True.*\]"; then
+  log "Adding Conan remote '$local_recipe_remote_name' at '$conan_remote_base_folder'. "
+  conan remote add "$local_recipe_remote_name" "$conan_remote_base_folder"
 else
-  log "Conan remote '$LOCAL_RECIPE_REMOTE_NAME' already exists and is enabled."
+  log "Conan remote '$local_recipe_remote_name' already exists and is enabled."
 fi
 
 # Build conan recipe for the platforms x86_64 & arm64
-MACOS_ARCH=""
-if [ "$PLATFORM" = "darwin" ]; then
+macos_arch=""
+if [ "$platform" = "darwin" ]; then
   log "Building universal binary for macOS."
-  MACOS_ARCH="-s:a=arch=armv8|x86_64" # Making universal binary. See https://docs.conan.io/2/reference/tools/cmake/cmaketoolchain.html#conan-tools-cmaketoolchain-universal-binaries
+  macos_arch="-s:a=arch=armv8|x86_64" # Making universal binary. See https://docs.conan.io/2/reference/tools/cmake/cmaketoolchain.html#conan-tools-cmaketoolchain-universal-binaries
 fi
 
-BUILD_TYPE="${1:-Debug}"
-OUTPUT_DIR="${KDRIVE_OUTPUT_DIR:-}"
+build_type="${1:-Debug}"
+output_dir="${KDRIVE_OUTPUT_DIR:-}"
 if [ -n "${KDRIVE_OUTPUT_DIR:-}" ]; then
   log "Using environment variable 'KDRIVE_OUTPUT_DIR' as conan output_dir : '$KDRIVE_OUTPUT_DIR'"
 fi
 for arg in "$@"; do
   if [[ "$arg" =~ ^--output-dir= ]]; then
-    OUTPUT_DIR="${arg#--output-dir=}"
+    output_dir="${arg#--output-dir=}"
     break
   fi
 done
 
-if [ -z "$OUTPUT_DIR" ]; then
-  if [ "$PLATFORM" = "darwin" ]; then
-    OUTPUT_DIR="./build-macos/client"
+if [ -z "$output_dir" ]; then
+  if [ "$platform" = "darwin" ]; then
+    output_dir="./build-macos/client"
   else
-    OUTPUT_DIR="./build-linux/build"
+    output_dir="./build-linux/build"
   fi
 fi
-mkdir -p "$OUTPUT_DIR"
+mkdir -p "$output_dir"
 
 
 # Create the conan package for xxHash
 log "Creating package xxHash..."
-conan create "$CONAN_RECIPES_FOLDER/xxhash/all/" --build=missing $MACOS_ARCH -s:a=build_type="$BUILD_TYPE" -r=$LOCAL_RECIPE_REMOTE_NAME
+conan create "$conan_recipes_folder/xxhash/all/" --build=missing $macos_arch -s:a=build_type="$build_type" -r=$local_recipe_remote_name
 
 
 log "Installing dependencies..."
 # Install this packet in the build folder.
-conan install . --output-folder="$OUTPUT_DIR" --build=missing $MACOS_ARCH -s:a=build_type="$BUILD_TYPE" -r=$LOCAL_RECIPE_REMOTE_NAME
+conan install . --output-folder="$output_dir" --build=missing $macos_arch -s:a=build_type="$build_type" -r=$local_recipe_remote_name
 
 log "Conan dependencies installed successfully."
