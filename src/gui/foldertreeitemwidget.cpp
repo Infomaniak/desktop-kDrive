@@ -18,9 +18,10 @@
 
 #include "foldertreeitemwidget.h"
 #include "guiutility.h"
-#include "libcommongui/utility/utility.h"
 #include "guirequests.h"
 #include "clientgui.h"
+#include "libcommongui/matomoclient.h"
+#include "libcommongui/utility/utility.h"
 
 #include <QDir>
 #include <QHeaderView>
@@ -506,6 +507,7 @@ void FolderTreeItemWidget::updateDirectories(QTreeWidgetItem *item, const QStrin
 }
 
 void FolderTreeItemWidget::onItemExpanded(QTreeWidgetItem *item) {
+    MatomoClient::sendEvent("folderTreeItem", MatomoEventAction::Click, "expandButton");
     item->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicatorWhenChildless);
 
     QString nodeId = item->data(TreeWidgetColumn::Folder, nodeIdRole).toString();
@@ -579,7 +581,10 @@ void FolderTreeItemWidget::onItemChanged(QTreeWidgetItem *item, int col) {
 
     const Qt::CheckState checkState = item->checkState(TreeWidgetColumn::Folder);
     QTreeWidgetItem *parent = item->parent();
-
+    if (checkState != Qt::PartiallyChecked) {
+        MatomoClient::sendEvent("folderTreeItem", MatomoEventAction::Click, "syncFolder",
+                                (checkState == Qt::Checked ? 1 : 0));
+    }
     switch (checkState) {
         case Qt::Checked: {
             // Need to check the parent as well if all siblings are also checked

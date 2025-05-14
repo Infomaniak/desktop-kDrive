@@ -23,7 +23,9 @@
 namespace KDC {
 
 OperationProcessor::OperationProcessor(const std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                       const std::string &shortName) : ISyncWorker(syncPal, name, shortName) {}
+                                       const std::string &shortName, bool useSyncDbCache) :
+    ISyncWorker(syncPal, name, shortName),
+    _useSyncDbCache(useSyncDbCache) {}
 
 bool OperationProcessor::isPseudoConflict(const std::shared_ptr<Node> node, const std::shared_ptr<Node> correspondingNode) {
     if (!node || !node->hasChangeEvent() || !correspondingNode || !correspondingNode->hasChangeEvent()) {
@@ -91,7 +93,8 @@ std::shared_ptr<Node> OperationProcessor::correspondingNodeInOtherTree(const std
         // Find node in DB
         DbNodeId tmpDbNodeId = -1;
         bool found = false;
-        if (!_syncPal->_syncDb->dbId(node->side(), *node->id(), tmpDbNodeId, found)) {
+        if (!(_useSyncDbCache ? _syncPal->syncDb()->cache().dbId(node->side(), *node->id(), tmpDbNodeId, found)
+                              : _syncPal->syncDb()->dbId(node->side(), *node->id(), tmpDbNodeId, found))) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for nodeId=" << (*node->id()).c_str());
             return nullptr;
         }
@@ -109,7 +112,7 @@ std::shared_ptr<Node> OperationProcessor::correspondingNodeInOtherTree(const std
 std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(const std::shared_ptr<Node> node) {
     std::shared_ptr<Node> parentNode = node;
     std::vector<SyncName> names;
-    DbNodeId parentDbNodeId;
+    DbNodeId parentDbNodeId = 0;
     bool found = false;
 
     while (parentNode != nullptr && !found) {
@@ -118,7 +121,8 @@ std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(const st
             return nullptr;
         }
 
-        if (!_syncPal->_syncDb->dbId(node->side(), *parentNode->id(), parentDbNodeId, found)) {
+        if (!(_useSyncDbCache ? _syncPal->syncDb()->cache().dbId(node->side(), *parentNode->id(), parentDbNodeId, found)
+                              : _syncPal->syncDb()->dbId(node->side(), *parentNode->id(), parentDbNodeId, found))) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for nodeId=" << (*parentNode->id()));
             return nullptr;
         }
@@ -136,7 +140,8 @@ std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(const st
 
     // Find corresponding ancestor node id
     NodeId parentNodeId;
-    if (!_syncPal->_syncDb->id(otherSide(node->side()), parentDbNodeId, parentNodeId, found)) {
+    if (!(_useSyncDbCache ? _syncPal->syncDb()->cache().id(otherSide(node->side()), parentDbNodeId, parentNodeId, found)
+                          : _syncPal->syncDb()->id(otherSide(node->side()), parentDbNodeId, parentNodeId, found))) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id for dbNodeId=" << parentDbNodeId);
         return nullptr;
     }
@@ -151,7 +156,7 @@ std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(const st
 
     // Construct path with ancestor path / relative path
     SyncPath correspondingPath = correspondingParentNode->getPath() / relativeTraversedPath;
-    std::shared_ptr<Node> correspondingNode = otherTree->getNodeByNormalizedPath(correspondingPath);
+    std::shared_ptr<Node> correspondingNode = otherTree->getNodeByPathNormalized(correspondingPath);
     if (correspondingNode == nullptr) {
         return nullptr;
     }
@@ -166,7 +171,8 @@ std::shared_ptr<Node> OperationProcessor::correspondingNodeDirect(const std::sha
 
     bool found = false;
     NodeId correspondingId;
-    if (!_syncPal->_syncDb->id(otherSide(node->side()), *node->idb(), correspondingId, found)) {
+    if (!(_useSyncDbCache ? _syncPal->syncDb()->cache().id(otherSide(node->side()), *node->idb(), correspondingId, found)
+                          : _syncPal->syncDb()->id(otherSide(node->side()), *node->idb(), correspondingId, found))) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
         return nullptr;
     }

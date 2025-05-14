@@ -20,8 +20,8 @@
 #include "jobs/network/networkjobsparams.h"
 #include "jobs/network/abstractnetworkjob.h"
 #include "log/log.h"
-#include "jobs/network/API_v2/upload_session/abstractuploadsession.h"
 #include "libcommonserver/utility/utility.h"
+#include "network/API_v2/upload/upload_session/abstractuploadsession.h"
 #include "performance_watcher/performancewatcher.h"
 #include "requests/parameterscache.h"
 
@@ -147,7 +147,8 @@ void JobManager::defaultCallback(UniqueId jobId) {
     _runningJobs.erase(jobId);
 }
 
-JobManager::JobManager() : _logger(Log::instance()->getLogger()) {
+JobManager::JobManager() :
+    _logger(Log::instance()->getLogger()) {
     int jobPoolCapacityFactor = ParametersCache::instance()->parameters().jobPoolCapacityFactor();
 
     _maxNbThread = std::max(threadPoolMinCapacity, jobPoolCapacityFactor * (int) std::thread::hardware_concurrency());

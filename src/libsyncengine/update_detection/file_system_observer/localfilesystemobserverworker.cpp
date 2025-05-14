@@ -38,7 +38,8 @@ static const int waitForUpdateDelay = 1000; // 1sec
 
 LocalFileSystemObserverWorker::LocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                              const std::string &shortName) :
-    FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Local), _rootFolder(syncPal->localPath()) {}
+    FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Local),
+    _rootFolder(syncPal->localPath()) {}
 
 LocalFileSystemObserverWorker::~LocalFileSystemObserverWorker() {
     LOG_SYNCPAL_DEBUG(_logger, "~LocalFileSystemObserverWorker");
@@ -88,7 +89,6 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
         _syncPal->removeItemFromTmpBlacklist(relativePath);
 
-        auto ioError = IoError::Success;
 
         if (opTypeFromOS == OperationType::Delete) {
             // Check if exists with same nodeId
@@ -111,7 +111,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         }
 
         FileStat fileStat;
-        ioError = IoError::Success;
+        auto ioError = IoError::Success;
         if (!IoHelper::getFileStat(absolutePath, &fileStat, ioError)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, ioError));
             tryToInvalidateSnapshot();
@@ -199,7 +199,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         const auto parentPath = absolutePath.parent_path();
         NodeId parentNodeId;
         if (parentPath == _rootFolder) {
-            parentNodeId = *_syncPal->_syncDb->rootNode().nodeIdLocal();
+            parentNodeId = *_syncPal->syncDb()->rootNode().nodeIdLocal();
         } else {
             if (!IoHelper::getNodeId(parentPath, parentNodeId)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getNodeId for " << Utility::formatSyncPath(parentPath));
@@ -505,7 +505,7 @@ ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const 
         // Check if it is a metadata update
         DbNodeId dbNodeId = 0;
         bool found = false;
-        if (!_syncPal->_syncDb->dbId(ReplicaSide::Local, nodeId, dbNodeId, found)) {
+        if (!_syncPal->syncDb()->dbId(ReplicaSide::Local, nodeId, dbNodeId, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
             return ExitCode::DbError;
         }
@@ -515,7 +515,7 @@ ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const 
         }
 
         DbNode dbNode;
-        if (!_syncPal->_syncDb->node(dbNodeId, dbNode, found)) {
+        if (!_syncPal->syncDb()->node(dbNodeId, dbNode, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
             return ExitCode::DbError;
         }
@@ -629,7 +629,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
 
             // Check if the directory entry is managed
             bool isManaged = false;
-            if (!Utility::checkIfDirEntryIsManaged(entry, isManaged, itemType, ioError)) {
+            if (!Utility::checkIfDirEntryIsManaged(entry, isManaged, ioError, itemType)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged: "
                                                    << Utility::formatIoError(absoluteParentDirPath, ioError));
                 dirIt.disableRecursionPending();
@@ -695,7 +695,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             // Get parent folder id
             NodeId parentNodeId;
             if (absolutePath.parent_path() == _rootFolder) {
-                parentNodeId = *_syncPal->_syncDb->rootNode().nodeIdLocal();
+                parentNodeId = *_syncPal->syncDb()->rootNode().nodeIdLocal();
             } else {
                 parentNodeId = snapshot()->itemId(relativePath.parent_path());
                 if (parentNodeId.empty()) {

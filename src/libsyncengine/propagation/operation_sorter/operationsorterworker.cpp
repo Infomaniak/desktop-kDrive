@@ -29,7 +29,8 @@ namespace KDC {
 
 OperationSorterWorker::OperationSorterWorker(const std::shared_ptr<SyncPal> &syncPal, const std::string &name,
                                              const std::string &shortName) :
-    OperationProcessor(syncPal, name, shortName), _filter(syncPal->_syncOps->allOps()) {}
+    OperationProcessor(syncPal, name, shortName),
+    _filter(syncPal->_syncOps->allOps()) {}
 
 void OperationSorterWorker::execute() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
@@ -101,9 +102,10 @@ void OperationSorterWorker::fixDeleteBeforeMove() {
 
         const auto deleteNode = deleteOp->affectedNode();
         LOG_IF_FAIL(deleteNode)
-        const auto deleteNodeParentPath = deleteNode->getPath().parent_path();
         NodeId deleteNodeParentId;
-        if (!getIdFromDb(deleteNode->side(), deleteNodeParentPath, deleteNodeParentId)) continue;
+        if (!getIdFromDb(deleteNode->side(), deleteNode->getPath().parent_path(), deleteNodeParentId)) {
+            continue;
+        }
 
         const auto moveNode = moveOp->affectedNode();
         LOG_IF_FAIL(moveNode)
@@ -118,7 +120,7 @@ void OperationSorterWorker::fixDeleteBeforeMove() {
             continue;
         }
 
-        if (deleteNode->name() == moveNode->name()) {
+        if (deleteNode->normalizedName() == moveNode->normalizedName()) {
             // move only if moveOp is before deleteOp
             moveFirstAfterSecond(moveOp, deleteOp);
         }
@@ -143,7 +145,7 @@ void OperationSorterWorker::fixMoveBeforeCreate() {
         const auto createParentNode = createNode->parentNode();
         LOG_IF_FAIL(createParentNode)
         if (!createParentNode->id().has_value()) {
-            LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createParentNode->name()));
+            LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createParentNode->normalizedName()));
             continue;
         }
 
@@ -151,7 +153,7 @@ void OperationSorterWorker::fixMoveBeforeCreate() {
             continue;
         }
 
-        if (moveNode->moveOriginInfos().path().filename() == createNode->name()) {
+        if (moveNode->moveOriginInfos().normalizedPath().filename() == createNode->normalizedName()) {
             // move only if createOp is before moveOp
             moveFirstAfterSecond(createOp, moveOp);
         }
@@ -186,9 +188,8 @@ void OperationSorterWorker::fixDeleteBeforeCreate() {
 
         const auto deleteNode = deleteOp->affectedNode();
         LOG_IF_FAIL(deleteNode)
-        const auto deleteNodeParentPath = deleteNode->getPath().parent_path();
         NodeId deleteNodeParentId;
-        if (!getIdFromDb(deleteNode->side(), deleteNodeParentPath, deleteNodeParentId)) {
+        if (!getIdFromDb(deleteNode->side(), deleteNode->getPath().parent_path(), deleteNodeParentId)) {
             continue;
         }
 
@@ -202,7 +203,7 @@ void OperationSorterWorker::fixDeleteBeforeCreate() {
             continue;
         }
 
-        if (createNode->name() == deleteNode->name()) {
+        if (createNode->normalizedName() == deleteNode->normalizedName()) {
             // move only if createOp is before deleteOp
             moveFirstAfterSecond(createOp, deleteOp);
         }
@@ -218,18 +219,18 @@ void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
         if (!node->parentNode()) {
             continue;
         }
-        const auto nodePath = node->getPath();
-        const auto nodeParentId = node->parentNode()->id();
 
         const auto otherNode = otherMoveOp->affectedNode();
         LOG_IF_FAIL(otherNode)
-        const auto otherNodeOriginPath = otherNode->moveOriginInfos().path();
+
         NodeId otherNodeOriginParentId;
-        if (!getIdFromDb(otherNode->side(), otherNodeOriginPath.parent_path(), otherNodeOriginParentId)) {
+        if (!getIdFromDb(otherNode->side(), otherNode->moveOriginInfos().path().parent_path(), otherNodeOriginParentId)) {
             continue;
         }
 
-        if (nodeParentId == otherNodeOriginParentId && nodePath.filename() == otherNodeOriginPath.filename()) {
+        const auto nodeParentId = node->parentNode()->id();
+        const auto otherNodeOriginPath = otherNode->moveOriginInfos().normalizedPath();
+        if (nodeParentId == otherNodeOriginParentId && node->normalizedName() == otherNodeOriginPath.filename()) {
             // move only if op is before otherOp
             moveFirstAfterSecond(moveOp, otherMoveOp);
         }
@@ -242,7 +243,7 @@ class SyncOpDepthCmp {
         bool operator()(const std::tuple<SyncOpPtr, SyncOpPtr, int32_t> &a,
                         const std::tuple<SyncOpPtr, SyncOpPtr, int32_t> &b) const {
             if (std::get<2>(a) == std::get<2>(b)) {
-                // If depth are equal, put op to move with lowest ID first
+                // If depths are equal, put op to move with lowest ID first
                 return std::get<0>(a)->id() > std::get<0>(b)->id();
             }
             return std::get<2>(a) < std::get<2>(b);
@@ -361,8 +362,14 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     }
 
     // firstOp is an impossible move if dest starts with source + "/".
+    const auto path = node->getPath();
+    SyncPath normalizedPath;
+    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncPath(path));
+        normalizedPath = path;
+    }
 
-    if (!Utility::isDescendantOrEqual(node->getPath(), node->moveOriginInfos().path())) {
+    if (!Utility::isDescendantOrEqual(normalizedPath, node->moveOriginInfos().normalizedPath())) {
         return std::nullopt; // firstOp is possible
     }
 
@@ -525,7 +532,7 @@ bool OperationSorterWorker::getIdFromDb(const ReplicaSide side, const SyncPath &
     bool found = false;
     std::optional<NodeId> tmpId;
 
-    if (!_syncPal->syncDb()->id(side, path, tmpId, found)) {
+    if (!_syncPal->syncDb()->cache().id(side, path, tmpId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
         return false;
     }
