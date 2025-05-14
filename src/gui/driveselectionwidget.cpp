@@ -38,7 +38,6 @@ static const int boxVMargin = 5;
 static const int boxSpacing = 10;
 static const char driveIdProperty[] = "driveId";
 static const int driveNameMaxSize = 30;
-static const QColor defaultDriveColor = QColor::fromRgb(254, 254, 254);
 
 Q_LOGGING_CATEGORY(lcDriveSelectionWidget, "gui.driveselectionwidget", QtInfoMsg)
 
@@ -77,7 +76,7 @@ QSize DriveSelectionWidget::sizeHint() const {
 void DriveSelectionWidget::clear() {
     _currentDriveDbId = 0;
     _downIconLabel->setVisible(false);
-    setDriveIcon(defaultDriveColor);
+    setDriveIcon();
     retranslateUi();
 }
 
@@ -92,10 +91,10 @@ void DriveSelectionWidget::selectDrive(int driveDbId) {
     QString driveName = driveInfoIt->second.name();
     GuiUtility::makePrintablePath(driveName, driveNameMaxSize);
 
+    _currentDriveDbId = driveDbId;
     _driveTextLabel->setText(driveName);
     _downIconLabel->setVisible(true);
-    setDriveIcon(driveInfoIt->second.color());
-    _currentDriveDbId = driveDbId;
+    setDriveIcon();
     emit driveSelected(driveDbId);
 }
 
@@ -169,31 +168,21 @@ void DriveSelectionWidget::onAddDriveActionTriggered(bool checked) {
 }
 
 void DriveSelectionWidget::setDriveIcon() {
-    if (_currentDriveDbId) {
-        const auto driveInfoIt = _gui->driveInfoMap().find(_currentDriveDbId);
-        if (driveInfoIt == _gui->driveInfoMap().end()) {
-            qCDebug(lcDriveSelectionWidget()) << "Drive not found in drive map for driveDbId=" << _currentDriveDbId;
-        } else {
-            setDriveIcon(driveInfoIt->second.color());
-            return;
-        }
-    }
-
-    ExitCode exitCode;
-    QColor driveColor;
-    exitCode = GuiRequests::getDriveDefaultColor(driveColor);
-    if (exitCode != ExitCode::Ok) {
-        qCWarning(lcDriveSelectionWidget()) << "Error in Requests::getDriveDefaultColor";
-        return;
-    }
-
-    setDriveIcon(driveColor);
-}
-
-void DriveSelectionWidget::setDriveIcon(const QColor &color) {
     if (_driveIconLabel) {
-        _driveIconLabel->setPixmap(
-                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg", color).pixmap(_driveIconSize));
+        if (_currentDriveDbId) {
+            const auto driveInfoIt = _gui->driveInfoMap().find(_currentDriveDbId);
+            if (driveInfoIt == _gui->driveInfoMap().end()) {
+                qCWarning(lcDriveSelectionWidget()) << "Drive not found in drive map for driveDbId=" << _currentDriveDbId;
+                return;
+            }
+            _driveIconLabel->setPixmap(
+                    KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg", driveInfoIt->second.color())
+                            .pixmap(_driveIconSize));
+        } else {
+            _driveIconLabel->setPixmap(
+                    KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/add.svg", _addIconColor)
+                            .pixmap(_addIconSize));
+        }
     }
 }
 

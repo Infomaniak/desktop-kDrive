@@ -19,6 +19,8 @@
 #include "getsizejob.h"
 #include "libcommon/utility/jsonparserutility.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 GetSizeJob::GetSizeJob(int userDbId, int driveId, const NodeId &nodeId) :

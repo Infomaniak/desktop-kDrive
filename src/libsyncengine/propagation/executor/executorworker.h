@@ -22,6 +22,7 @@
 #include "syncpal/syncpal.h"
 #include "reconciliation/syncoperation.h"
 #include "jobs/abstractjob.h"
+#include "utility/timerutility.h"
 
 #include <queue>
 #include <unordered_map>
@@ -105,7 +106,7 @@ class ExecutorWorker : public OperationProcessor {
 
         ExitInfo waitForAllJobsToFinish();
         ExitInfo deleteFinishedAsyncJobs();
-        ExitInfo handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool invalidName, bool downloadImpossible);
+        ExitInfo handleManagedBackError(const ExitInfo &jobExitInfo, SyncOpPtr syncOp, bool invalidName);
         ExitInfo handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath,
                                    bool &ignored, bool &bypassProgressComplete);
         ExitInfo handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath, bool &ignored);
@@ -136,7 +137,7 @@ class ExecutorWorker : public OperationProcessor {
             return _syncPal->updateTree(syncOp->targetSide());
         }
 
-        void increaseErrorCount(SyncOpPtr syncOp);
+        void increaseErrorCount(SyncOpPtr syncOp, ExitInfo exitInfo = ExitInfo());
 
         ExitInfo getFileSize(const SyncPath &path, uint64_t &size);
 
@@ -164,7 +165,7 @@ class ExecutorWorker : public OperationProcessor {
         std::list<UniqueId> _opList;
         std::recursive_mutex _opListMutex;
 
-        std::chrono::steady_clock::time_point _fileProgressTimer = std::chrono::steady_clock::now();
+        TimerUtility _timer;
 
         bool _snapshotToInvalidate = false;
 

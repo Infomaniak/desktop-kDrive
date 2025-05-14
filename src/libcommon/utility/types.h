@@ -41,18 +41,10 @@
 
 namespace KDC {
 
-struct StringHash {
-        using is_transparent = void; // Enables heterogeneous operations.
-
-        std::size_t operator()(std::string_view sv) const {
-            std::hash<std::string_view> hasher;
-            return hasher(sv);
-        }
-};
-
 using SyncTime = int64_t;
 using DbNodeId = int64_t;
 using UniqueId = int64_t;
+using SyncDbRevision = uint64_t;
 using SnapshotRevision = uint64_t;
 using NodeId = std::string;
 using SyncPath = std::filesystem::path;
@@ -60,13 +52,25 @@ using SyncName = std::filesystem::path::string_type;
 using SyncChar = std::filesystem::path::value_type;
 using DirectoryEntry = std::filesystem::directory_entry;
 using DirectoryOptions = std::filesystem::directory_options;
-using NodeSet = std::unordered_set<NodeId, StringHash, std::equal_to<>>;
+using SecondsDuration = std::chrono::duration<double>; // Use double instead of std::chrono::seconds to keep the precision
 
-using SigValueType = std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring>;
+// Hash functions
+struct StringHashFunction {
+        using is_transparent = void; // Enables heterogeneous operations.
 
-struct hashPathFunction {
+        std::size_t operator()(const std::string_view sv) const {
+            constexpr std::hash<std::string_view> hasher;
+            return hasher(sv);
+        }
+};
+
+struct PathHashFunction {
         std::size_t operator()(const std::optional<SyncPath> &path) const { return path ? hash_value(path.value()) : 0; }
 };
+
+using NodeSet = std::unordered_set<NodeId, StringHashFunction, std::equal_to<>>;
+
+using SigValueType = std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring>;
 
 #ifdef _WIN32
 using StringStream = std::wstringstream;
@@ -628,6 +632,10 @@ struct ItemType {
         // - the file or directory indicated by `path` is a symlink or an alias (in which case `linkType` is different from
         // `LinkType::Unknown`) and its target doesn't exist.
         IoError ioError{IoError::Success};
+        bool operator==(const ItemType &other) const {
+            return nodeType == other.nodeType && linkType == other.linkType && targetType == other.targetType &&
+                   targetPath == other.targetPath && ioError == other.ioError;
+        }
 };
 
 enum class AppStateKey {
@@ -769,6 +777,19 @@ std::string toString(sentry::ConfidentialityLevel e);
 
 // Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
 using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
+
+struct NodeIds {
+        DbNodeId dbNodeId;
+        NodeId localNodeId;
+        NodeId remoteNodeId;
+        NodeId nodeId(const ReplicaSide side) const { return side == ReplicaSide::Local ? localNodeId : remoteNodeId; }
+        struct HashFunction {
+                std::size_t operator()(const NodeIds &nodeIds) const { return std::hash<DbNodeId>()(nodeIds.dbNodeId); }
+        };
+        bool operator==(const NodeIds &other) const {
+            return dbNodeId == other.dbNodeId && localNodeId == other.localNodeId && remoteNodeId == other.remoteNodeId;
+        }
+};
 
 /*
  * Define operator and converter for enum class

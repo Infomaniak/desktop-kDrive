@@ -69,10 +69,6 @@ class DownloadJob : public AbstractTokenNetworkJob {
         //! Create a tmp file from a std::string
         bool createTmpFile(const std::string &data, bool &writeError);
         bool hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace);
-#ifdef _WIN32
-        //! Determines whether indexing a given file is problematic
-        bool indexingIsProblematic(const SyncPath &filePath) const { return filePath.extension() == "eml"; }
-#endif
         NodeId _remoteFileId;
         SyncPath _localpath;
         SyncPath _tmpPath;

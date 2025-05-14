@@ -19,6 +19,7 @@
 #include "gui/parameterscache.h"
 #include "test_utility/testhelpers.h"
 #include "update_detection/update_detector/updatetreeworker.h"
+#include "utility/timerutility.h"
 #include "utility/types.h"
 
 #include <version.h>
@@ -41,7 +42,7 @@ void BenchUpdateTreeWorker::setUp() {
     _updateTree = std::make_shared<UpdateTree>(ReplicaSide::Local, SyncDb::driveRootNode());
     _fsOpSet = std::make_shared<FSOperationSet>(ReplicaSide::Unknown);
 
-    _testObj = std::make_shared<UpdateTreeWorker>(_syncDb, _fsOpSet, _updateTree, "BenchUpdateTreeWorker", "BUTW",
+    _testObj = std::make_shared<UpdateTreeWorker>(_syncDb->cache(), _fsOpSet, _updateTree, "BenchUpdateTreeWorker", "BUTW",
                                                   ReplicaSide::Local);
 
     _situationGenerator.setSyncDb(_syncDb);
@@ -55,7 +56,7 @@ void BenchUpdateTreeWorker::setUp() {
     // └── B
     //     ├── BA
     //     └── BB
-    const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+    const TimerUtility timer;
     const std::vector<std::string> dirs = {"a", "b", "c", "d", "e", "f"}; //, "e", "f", "g", "h", "i", "j"};
     for (const auto &dirId: dirs) {
         _situationGenerator.addItem(NodeType::Directory, dirId, "");
@@ -71,9 +72,8 @@ void BenchUpdateTreeWorker::setUp() {
             }
         }
     }
-    const std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
     std::cout << std::endl;
-    std::cout << "Initial situation generated in " << elapsed_seconds.count() << "s for " << _situationGenerator.size()
+    std::cout << "Initial situation generated in " << timer.elapsed().count() << "s for " << _situationGenerator.size()
               << " items" << std::endl;
 }
 
@@ -89,19 +89,17 @@ void BenchUpdateTreeWorker::measureUpdateTreeGenerationFromScratch() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ clean update tree");
 
     _updateTree->clear();
-    const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+    const TimerUtility timer;
     _testObj->execute();
-    const std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
-    std::cout << "Update tree worker executed in " << elapsed_seconds.count() << "s" << std::endl;
+    std::cout << "Update tree worker executed in " << timer.elapsed().count() << "s" << std::endl;
 }
 
 void BenchUpdateTreeWorker::measureUpdateTreeGenerationFromExisting() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ keep update tree");
 
-    const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+    const TimerUtility timer;
     _testObj->execute();
-    const std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
-    std::cout << "Update tree worker executed in " << elapsed_seconds.count() << "s" << std::endl;
+    std::cout << "Update tree worker executed in " << timer.elapsed().count() << "s" << std::endl;
 }
 
 void BenchUpdateTreeWorker::measureUpdateTreeGenerationFromScratchWithFsOps() {
@@ -115,10 +113,9 @@ void BenchUpdateTreeWorker::measureUpdateTreeGenerationFromScratchWithFsOps() {
     }
 
     _updateTree->clear();
-    const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+    const TimerUtility timer;
     _testObj->execute();
-    const std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
-    std::cout << "Update tree worker executed in " << elapsed_seconds.count() << "s" << std::endl;
+    std::cout << "Update tree worker executed in " << timer.elapsed().count() << "s" << std::endl;
 }
 
 void BenchUpdateTreeWorker::measureUpdateTreeGenerationFromExistingWithFsOps() {
@@ -131,10 +128,9 @@ void BenchUpdateTreeWorker::measureUpdateTreeGenerationFromExistingWithFsOps() {
         _fsOpSet->insertOp(fsOp);
     }
 
-    const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+    const TimerUtility timer;
     _testObj->execute();
-    const std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
-    std::cout << "Update tree worker executed in " << elapsed_seconds.count() << "s" << std::endl;
+    std::cout << "Update tree worker executed in " << timer.elapsed().count() << "s" << std::endl;
 }
 
 } // namespace KDC

@@ -69,7 +69,9 @@ void GenericErrorItemWidget::init() {
     // Right layout
     auto fileDateLabel = new QLabel(this);
     fileDateLabel->setObjectName("fileDateLabel");
-    const QDateTime dateTime = QDateTime::fromSecsSinceEpoch(_errorInfo.getTime());
+    const auto errorTime = _errorInfo.getTime();
+    const QDateTime dateTime = errorTime ? QDateTime::fromSecsSinceEpoch(errorTime)
+                                         : QDateTime::currentDateTime(); // If error time is not set, use current time.
     fileDateLabel->setText(GuiUtility::getDateForCurrentLanguage(dateTime, dateFormat));
 
     addCustomWidget(fileDateLabel);
