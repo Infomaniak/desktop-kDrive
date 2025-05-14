@@ -171,7 +171,7 @@ void TestTypes::testExitInfo() {
 
     // Ensure the int conversion is consistent in both directions.
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent),
-                         ExitInfo::fromInt(ExitInfo(ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent).operator int()));
+                         ExitInfo::fromInt(ExitInfo(ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent)));
 
     // Because of the implementation of method ExitInfo::int(), we need to make sure that ExitCause enum never has more than 100
     // values.
