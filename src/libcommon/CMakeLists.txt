@@ -141,6 +141,10 @@ if(APPLE)
         ${APPKIT_LIBRARY})
 endif()
 
+if(UNIX)
+    target_link_libraries(${libcommon_NAME} utf8proc)
+endif()
+
 if(ZLIB_FOUND)
     target_link_libraries("${libcommon_NAME}"
         ZLIB::ZLIB)

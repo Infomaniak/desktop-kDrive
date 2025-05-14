@@ -39,6 +39,10 @@
 #include <Poco/Util/WinRegistryKey.h>
 #endif
 
+#ifndef _WIN32
+#include <utf8proc.h>
+#endif
+
 #ifdef ZLIB_FOUND
 #include <zlib.h>
 #endif
@@ -994,5 +998,33 @@ SyncPath CommonUtility::applicationFilePath() {
     return SyncPath(pathStr.data());
 }
 
+#if defined(__APPLE__) || defined(__unix__)
+// Be careful, some characters have 2 different encodings in Unicode
+// For example 'é' can be coded as 0x65 + 0xcc + 0x81  or 0xc3 + 0xa9
+bool CommonUtility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
+                                       const UnicodeNormalization normalization) noexcept {
+    if (name.empty()) {
+        normalizedName = name;
+        return true;
+    }
 
+
+    char *strResult = nullptr;
+    if (normalization == UnicodeNormalization::NFD) {
+        strResult = reinterpret_cast<char *>(utf8proc_NFD(reinterpret_cast<const uint8_t *>(name.c_str())));
+    } else {
+        strResult = reinterpret_cast<char *>(utf8proc_NFC(reinterpret_cast<const uint8_t *>(name.c_str())));
+    }
+
+    if (!strResult) { // Some special characters seem to be not supported, therefore a null pointer is returned if the
+        // conversion has failed. e.g.: Linux can sometimes send filesystem events with strange characters in
+        // the path
+        return false;
+    }
+
+    normalizedName = SyncName(strResult);
+    std::free((void *) strResult);
+    return true;
+}
+#endif
 } // namespace KDC
