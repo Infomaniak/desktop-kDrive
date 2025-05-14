@@ -618,47 +618,42 @@ bool ParmsDb::insertDefaultParameters() {
 }
 
 bool ParmsDb::updateExclusionTemplates() {
-    // Load default exclusion templates in DB
-    std::vector<ExclusionTemplate> exclusionTemplateDbList;
-    if (!selectAllExclusionTemplates(true, exclusionTemplateDbList)) {
+    // Load default exclusion templates from DB
+    std::vector<ExclusionTemplate> defaultExclusionTemplateDbList;
+    if (!selectDefaultExclusionTemplates(defaultExclusionTemplateDbList)) {
         LOG_WARN(_logger, "Error in selectAllExclusionTemplates");
         return false;
     }
 
-    // Load default exclusion templates in configuration file
-    std::vector<std::string> exclusionTemplateFileList;
+    // Load default exclusion templates from configuration file
+    std::vector<std::string> defaultExclusionTemplateFileList;
     SyncName t = Utility::getExcludedTemplateFilePath(_test);
     std::ifstream exclusionFile(Utility::getExcludedTemplateFilePath(_test));
     if (exclusionFile.is_open()) {
         std::string line;
         while (std::getline(exclusionFile, line)) {
             // Remove end of line
-            if (line.size() > 0 && line[line.size() - 1] == '\n') {
+            if (!line.empty() && line.back() == '\n') {
                 line.pop_back();
             }
-            if (line.size() > 0 && line[line.size() - 1] == '\r') {
+            if (!line.empty() && line.back() == '\r') {
                 line.pop_back();
             }
 
-            exclusionTemplateFileList.push_back(line);
+            defaultExclusionTemplateFileList.emplace_back(std::move(line));
         }
     } else {
-        LOGW_WARN(_logger,
-                  L"Cannot open exclusion templates file " << SyncName2WStr(Utility::getExcludedTemplateFilePath(_test)));
+        LOGW_WARN(_logger, L"Cannot open exclusion templates file "
+                                   << Utility::formatSyncName(Utility::getExcludedTemplateFilePath(_test)));
         return false;
     }
 
-    for (const auto &templDb: exclusionTemplateDbList) {
-        bool exists = false;
-        for (const auto &templFile: exclusionTemplateFileList) {
-            if (templFile == templDb.templ()) {
-                exists = true;
-                break;
-            }
-        }
-        if (!exists) {
+    for (const auto &templDb: defaultExclusionTemplateDbList) {
+        if (const bool exists = std::find(defaultExclusionTemplateFileList.cbegin(), defaultExclusionTemplateFileList.cend(),
+                                          templDb.templ()) != defaultExclusionTemplateFileList.cend();
+            !exists) {
             // Remove DB template
-            bool found;
+            bool found = false;
             if (!deleteExclusionTemplate(templDb.templ(), found)) {
                 LOG_WARN(_logger, "Error in deleteExclusionTemplate");
                 return false;
@@ -666,22 +661,22 @@ bool ParmsDb::updateExclusionTemplates() {
         }
     }
 
-    std::vector<ExclusionTemplate> exclusionTemplateUserDbList;
-    if (!selectAllExclusionTemplates(false, exclusionTemplateUserDbList)) {
+    std::vector<ExclusionTemplate> userExclusionTemplateDbList;
+    if (!selectUserExclusionTemplates(userExclusionTemplateDbList)) {
         LOG_WARN(_logger, "Error in selectAllExclusionTemplates");
         return false;
     }
 
-    for (const auto &templFile: exclusionTemplateFileList) {
+    for (const auto &templFile: defaultExclusionTemplateFileList) {
         bool exists = false;
-        for (const auto &templDb: exclusionTemplateDbList) {
+        for (const auto &templDb: defaultExclusionTemplateDbList) {
             if (templDb.templ() == templFile) {
                 exists = true;
                 break;
             }
         }
         if (!exists) {
-            for (const auto &userTempDb: exclusionTemplateUserDbList) {
+            for (const auto &userTempDb: userExclusionTemplateDbList) {
                 if (templFile == userTempDb.templ()) {
                     bool found = false;
                     if (!deleteExclusionTemplate(userTempDb.templ(), found)) {
@@ -692,7 +687,7 @@ bool ParmsDb::updateExclusionTemplates() {
                 }
             }
             // Add template in DB
-            bool constraintError;
+            bool constraintError = false;
             if (!insertExclusionTemplate(ExclusionTemplate(templFile, false, true, false), constraintError)) {
                 LOG_WARN(_logger, "Error in insertExclusionTemplate");
                 return false;
@@ -1957,8 +1952,8 @@ bool ParmsDb::selectAllDrives(int accountDbId, std::vector<Drive> &driveList) {
         int admin;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 6, admin));
 
-        driveList.push_back(Drive(id, driveId, accountDbId, driveName, size, color, static_cast<bool>(notifications),
-                                  static_cast<bool>(admin)));
+        driveList.emplace_back(Drive(id, driveId, accountDbId, driveName, size, color, static_cast<bool>(notifications),
+                                     static_cast<bool>(admin)));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID));
 
@@ -2460,7 +2455,7 @@ bool ParmsDb::selectAllExclusionTemplates(std::vector<ExclusionTemplate> &exclus
         int deleted;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 3, deleted));
 
-        exclusionTemplateList.push_back(
+        exclusionTemplateList.emplace_back(
                 ExclusionTemplate(templ, static_cast<bool>(warning), static_cast<bool>(def), static_cast<bool>(deleted)));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID));
@@ -2468,13 +2463,13 @@ bool ParmsDb::selectAllExclusionTemplates(std::vector<ExclusionTemplate> &exclus
     return true;
 }
 
-bool ParmsDb::selectAllExclusionTemplates(bool def, std::vector<ExclusionTemplate> &exclusionTemplateList) {
+bool ParmsDb::selectAllExclusionTemplates(bool defaultTemplates, std::vector<ExclusionTemplate> &exclusionTemplateList) {
     const std::scoped_lock lock(_mutex);
 
     exclusionTemplateList.clear();
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID));
-    LOG_IF_FAIL(queryBindValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 1, def));
+    LOG_IF_FAIL(queryBindValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 1, defaultTemplates));
     bool found;
     for (;;) {
         if (!queryNext(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, found)) {
@@ -2492,14 +2487,15 @@ bool ParmsDb::selectAllExclusionTemplates(bool def, std::vector<ExclusionTemplat
         int deleted;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 2, deleted));
 
-        exclusionTemplateList.push_back(ExclusionTemplate(templ, static_cast<bool>(warning), def, static_cast<bool>(deleted)));
+        exclusionTemplateList.emplace_back(
+                ExclusionTemplate(templ, static_cast<bool>(warning), defaultTemplates, static_cast<bool>(deleted)));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID));
 
     return true;
 }
 
-bool ParmsDb::updateAllExclusionTemplates(bool def, const std::vector<ExclusionTemplate> &exclusionTemplateList) {
+bool ParmsDb::updateAllExclusionTemplates(bool defaultTemplates, const std::vector<ExclusionTemplate> &exclusionTemplateList) {
     const std::scoped_lock lock(_mutex);
 
     int errId;
@@ -2509,7 +2505,7 @@ bool ParmsDb::updateAllExclusionTemplates(bool def, const std::vector<ExclusionT
 
     // Delete existing ExclusionTemplates
     LOG_IF_FAIL(queryResetAndClearBindings(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID));
-    LOG_IF_FAIL(queryBindValue(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 1, def));
+    LOG_IF_FAIL(queryBindValue(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 1, defaultTemplates));
     if (!queryExec(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID);
         rollbackTransaction();
