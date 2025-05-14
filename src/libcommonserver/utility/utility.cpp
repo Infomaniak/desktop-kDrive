@@ -48,10 +48,6 @@
 #include <sstream>
 #include <ctime>
 
-#ifndef _WIN32
-#include <utf8proc.h>
-#endif
-
 #include <Poco/MD5Engine.h>
 #include <Poco/UnicodeConverter.h>
 #include <Poco/DOM/Node.h>
@@ -681,72 +677,17 @@ std::string Utility::_errId(const char *file, int line) {
 // For example 'é' can be coded as 0x65 + 0xcc + 0x81  or 0xc3 + 0xa9
 bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
                                  const UnicodeNormalization normalization) noexcept {
-    if (name.empty()) {
-        normalizedName = name;
-        return true;
-    }
-
+    bool success = CommonUtility::normalizedSyncName(name, normalizedName, normalization);
+    std::wstring errorMessage = L"Failed to normalize " + formatSyncName(name);
+    if (!success) {
 #ifdef _WIN32
-    static const int maxIterations = 10;
-    LPWSTR strResult = nullptr;
-    HANDLE hHeap = GetProcessHeap();
-
-    int64_t iSizeEstimated = static_cast<int64_t>(name.length() + 1) * 2;
-    for (int i = 0; i < maxIterations; i++) {
-        if (strResult) {
-            HeapFree(hHeap, 0, strResult);
-        }
-        strResult = (LPWSTR) HeapAlloc(hHeap, 0, iSizeEstimated * sizeof(WCHAR));
-        iSizeEstimated = NormalizeString(normalization == UnicodeNormalization::NFD ? NormalizationD : NormalizationC,
-                                         name.c_str(), -1, strResult, iSizeEstimated);
-
-        if (iSizeEstimated > 0) {
-            break; // success
-        }
-
-        if (iSizeEstimated <= 0) {
-            const DWORD dwError = GetLastError();
-            if (dwError != ERROR_INSUFFICIENT_BUFFER) {
-                // Real error, not buffer error
-                LOGW_DEBUG(logger(), L"Failed to normalize " << formatSyncName(name) << L" ("
-                                                             << CommonUtility::getErrorMessage(dwError) << L")");
-                return false;
-            }
-
-            // New guess is negative of the return value.
-            iSizeEstimated = -iSizeEstimated;
-        }
-    }
-
-    if (iSizeEstimated <= 0) {
-        DWORD dwError = GetLastError();
-        LOGW_DEBUG(logger(),
-                   L"Failed to normalize " << formatSyncName(name) << L" (" << CommonUtility::getErrorMessage(dwError) << L")");
-        return false;
-    }
-
-    (void) normalizedName.assign(strResult, iSizeEstimated - 1);
-    HeapFree(hHeap, 0, strResult);
-    return true;
-#else
-    char *strResult = nullptr;
-    if (normalization == UnicodeNormalization::NFD) {
-        strResult = reinterpret_cast<char *>(utf8proc_NFD(reinterpret_cast<const uint8_t *>(name.c_str())));
-    } else {
-        strResult = reinterpret_cast<char *>(utf8proc_NFC(reinterpret_cast<const uint8_t *>(name.c_str())));
-    }
-
-    if (!strResult) { // Some special characters seem to be not supported, therefore a null pointer is returned if the
-                      // conversion has failed. e.g.: Linux can sometimes send filesystem events with strange characters in
-                      // the path
-        LOGW_DEBUG(logger(), L"Failed to normalize " << formatSyncName(name));
-        return false;
-    }
-
-    normalizedName = SyncName(strResult);
-    std::free((void *) strResult);
-    return true;
+        const DWORD dwError = GetLastError();
+        errorMessage += L" (" + CommonUtility::getErrorMessage(dwError) + L")";
 #endif
+        LOGW_DEBUG(logger(), L"Failed to normalize " << errorMessage);
+    }
+
+    return success;
 }
 
 bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
