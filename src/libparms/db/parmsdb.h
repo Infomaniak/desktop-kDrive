@@ -32,6 +32,7 @@
 #include "migrationselectivesync.h"
 #include "libcommonserver/db/db.h"
 
+#include <set>
 
 namespace KDC {
 
@@ -108,12 +109,10 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool selectUserExclusionTemplates(std::vector<ExclusionTemplate> &exclusionTemplateList) {
             return selectAllExclusionTemplates(false, exclusionTemplateList);
         };
-        bool updateDefaultExclusionTemplates(const std::vector<ExclusionTemplate> &exclusionTemplateList) {
-            return updateAllExclusionTemplates(true, exclusionTemplateList);
-        }
-        bool updateUserExclusionTemplates(const std::vector<ExclusionTemplate> &exclusionTemplateList) {
+        bool updateAllExclusionTemplates(bool defaultTemplate, const std::vector<ExclusionTemplate> &exclusionTemplateList);
+        bool updateUserExclusionTemplates(std::vector<ExclusionTemplate> &exclusionTemplateList) {
             return updateAllExclusionTemplates(false, exclusionTemplateList);
-        }
+        };
 
 #ifdef __APPLE__
         bool insertExclusionApp(const ExclusionApp &exclusionApp, bool &constraintError);
@@ -158,7 +157,11 @@ class PARMS_EXPORT ParmsDb : public Db {
         void fillSyncWithQueryResult(Sync &sync, const char *requestId);
 
         bool selectAllExclusionTemplates(bool defaultTemplate, std::vector<ExclusionTemplate> &exclusionTemplateList);
-        bool updateAllExclusionTemplates(bool defaultTemplate, const std::vector<ExclusionTemplate> &exclusionTemplateList);
+
+        bool getDefaultExclusionTemplatesFromFile(const SyncPath &syncExcludeListPath,
+                                                  std::vector<std::string> &fileDefaultExclusionTemplates);
+        std::set<std::string> computeNormalizations(const std::string &exclusionTemplateString);
+        bool insertUserTemplateNormalizations();
 
 #ifdef __APPLE__
         bool updateExclusionApps();
