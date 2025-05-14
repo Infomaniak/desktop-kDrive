@@ -93,7 +93,7 @@ void TestSnapshot::testItemId() {
     Utility::normalizedSyncName(Str("abà"), nfcNormalized);
 
     SyncName nfdNormalized;
-    Utility::normalizedSyncName(Str("abà"), nfdNormalized, Utility::UnicodeNormalization::NFD);
+    Utility::normalizedSyncName(Str("abà"), nfdNormalized, UnicodeNormalization::NFD);
 
     snapshot.updateItem(SnapshotItem("6", "4", nfcNormalized, 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
     CPPUNIT_ASSERT_EQUAL(NodeId("7"), snapshot.itemId(SyncPath("a/ab") / nfcNormalized / Str("abaa")));
