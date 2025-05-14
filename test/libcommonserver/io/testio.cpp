@@ -286,6 +286,34 @@ void TestIo::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modtime);
 #endif
 
+#ifdef _WIN32
+        // Test on an alias on a file.
+        linkPath = tempDir.path() / "test_junction_file";
+
+        (void) IoHelper::createJunctionFromPath(filepath, linkPath, ioError);
+
+        ioError = IoHelper::setFileDates(linkPath, linkTimestamp, linkTimestamp, true);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+        (void) IoHelper::getFileStat(linkPath, &filestat, ioError);
+        CPPUNIT_ASSERT_EQUAL(linkTimestamp, filestat.modtime);
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError);
+        CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modtime);
+
+        // Test on an alias on a folder.
+        linkPath = tempDir.path() / "test_junction_folder";
+
+        (void) IoHelper::createJunctionFromPath(filepath, linkPath, ioError);
+
+        ioError = IoHelper::setFileDates(linkPath, linkTimestamp, linkTimestamp, true);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+        (void) IoHelper::getFileStat(linkPath, &filestat, ioError);
+        CPPUNIT_ASSERT_EQUAL(linkTimestamp, filestat.modtime);
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError);
+        CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modtime);
+#endif
+
         // Test with creation date > modification date.
         ioError = IoHelper::setFileDates(filepath, timestamp + 10, timestamp, false);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
