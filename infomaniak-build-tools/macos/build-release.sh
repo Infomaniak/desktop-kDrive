@@ -81,7 +81,6 @@ fi
 bash infomaniak-build-tools/conan/build_dependencies.sh Release --output-dir="$conan_folder"
 
 conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
-conan_generator_folder="$(dirname "$conan_toolchain_file")"
 
 if [ ! -f "$conan_toolchain_file" ]; then
   echo "Conan toolchain file not found: $conan_toolchain_file"

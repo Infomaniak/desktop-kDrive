@@ -44,8 +44,8 @@ KDRIVE_DIR="$SRCDIR/infomaniak"
 BUILDDIR="$PWD/build-macos/client"
 
 # Set conan dir
-CONANDIR="$BUILDDIR/conan"
-mkdir -p "$CONANDIR"
+conan_folder="$BUILDDIR/conan"
+mkdir -p "$conan_folder"
 
 # Set install dir
 INSTALLDIR="$PWD/build-macos/client/install"
@@ -71,7 +71,14 @@ if [ -n "$TEAM_IDENTIFIER" -a -n "$SIGN_IDENTITY" ]; then
 	CMAKE_PARAMS+=(-DSOCKETAPI_TEAM_IDENTIFIER_PREFIX="$TEAM_IDENTIFIER.")
 fi
 
-bash infomaniak-build-tools/conan/build_dependencies.sh Release "--output-dir=$CONANDIR"
+bash infomaniak-build-tools/conan/build_dependencies.sh Release "--output-dir=$conan_folder"
+
+conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
+
+if [ ! -f "$conan_toolchain_file" ]; then
+  echo "Conan toolchain file not found: $conan_toolchain_file"
+  exit 1
+fi
 
 # Configure
 pushd "$BUILDDIR"
@@ -83,7 +90,7 @@ cmake \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DKDRIVE_THEME_DIR="$KDRIVE_DIR" \
 	-DBUILD_UNIT_TESTS=1 \
-	"-DCMAKE_TOOLCHAIN_FILE=$CONANDIR/conan_toolchain.cmake" \
+	"-DCMAKE_TOOLCHAIN_FILE=$conan_toolchain_file" \
 	"${CMAKE_PARAMS[@]}" \
 	"$SRCDIR"
 
