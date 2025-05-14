@@ -2242,7 +2242,7 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
             return handleOpsRemoteFileLocked(syncOp, opsExitInfo);
         }
         case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)): {
-            return handleOpsFileAccessError(syncOp, opsExitInfo);
+            return handleOpsLocalFileAccessError(syncOp, opsExitInfo);
         }
         case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::NotFound)): {
             return handleOpsFileNotFound(syncOp, opsExitInfo);
@@ -2260,7 +2260,7 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
     return opsExitInfo;
 }
 
-ExitInfo ExecutorWorker::handleOpsFileAccessError(const SyncOpPtr syncOp, const ExitInfo &opsExitInfo) {
+ExitInfo ExecutorWorker::handleOpsLocalFileAccessError(const SyncOpPtr syncOp, const ExitInfo &opsExitInfo) {
     std::shared_ptr<Node> localBlacklistedNode = nullptr;
     std::shared_ptr<Node> remoteBlacklistedNode = nullptr;
     if (syncOp->targetSide() == ReplicaSide::Local && syncOp->type() == OperationType::Create) {
@@ -2316,7 +2316,6 @@ ExitInfo ExecutorWorker::handleOpsRemoteFileLocked(SyncOpPtr syncOp, const ExitI
         LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::deleteOpNodes");
         return ExitCode::DataError;
     }
-
 
     _syncPal->setRestart(true);
     return removeDependentOps(syncOp);

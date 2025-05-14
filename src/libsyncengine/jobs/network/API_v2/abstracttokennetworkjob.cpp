@@ -167,7 +167,7 @@ bool AbstractTokenNetworkJob::defaultBackErrorHandling(NetworkErrorCode errorCod
             {NetworkErrorCode::QuotaExceededError, ExitHandler{ExitCause::QuotaExceeded, "Quota exceeded"}},
             {NetworkErrorCode::FileShareLinkAlreadyExists,
              ExitHandler{ExitCause::ShareLinkAlreadyExists, "Share link already exists"}},
-            {NetworkErrorCode::lockError, ExitHandler{ExitCause::FileLocked, "File is locked by an other user"}}
+            {NetworkErrorCode::LockError, ExitHandler{ExitCause::FileLocked, "File is locked by an other user"}}
 
     };
 
