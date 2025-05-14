@@ -118,7 +118,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId, const std::string &version);
         virtual ~SyncPal();
 
-        ExitCode setTargetNodeId(const std::string &targetNodeId);
         inline void setAddErrorCallback(const std::function<void(const Error &)> &addError) { _addError = addError; }
         inline void setAddCompletedItemCallback(const std::function<void(int, const SyncFileItem &, bool)> &addCompletedItem) {
             _addCompletedItem = addCompletedItem;
