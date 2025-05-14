@@ -163,12 +163,18 @@ void TestTypes::testExitInfo() {
         exitInfo.merge(exitInfoToMerge, {ExitCode::SystemError, ExitCode::DbError, ExitCode::BackError});
         CPPUNIT_ASSERT_EQUAL(ExitCode::DbError, exitInfo.code());
     }
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown), ExitInfo::fromInt(0));
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::WorkerExited), ExitInfo::fromInt(1));
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Unknown, ExitCause::Unknown), ExitInfo::fromInt(100));
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent), ExitInfo::fromInt(414));
+
+    // Success code should remain 0 for readability, although comparing an enum to a hardcoded int is generally discouraged (forbidden)
+    // It should only be compared with the result of ExitInfo::operator int().
+    // The conversion to int is necessary for use in switch statements.
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown), ExitInfo::fromInt(0)); 
+
+    // Ensure the int conversion is consistent in both directions.
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent),
+                         ExitInfo::fromInt(ExitInfo(ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent).operator int()));
+
     // Because of the implementation of method ExitInfo::int(), we need to make sure that ExitCause enum never has more than 100
-    // values
+    // values.
     CPPUNIT_ASSERT(static_cast<int>(ExitCause::EnumEnd) < 100);
 }
 
