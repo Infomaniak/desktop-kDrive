@@ -170,8 +170,10 @@ void TestTypes::testExitInfo() {
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown), ExitInfo::fromInt(0)); 
 
     // Ensure the int conversion is consistent in both directions.
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent),
-                         ExitInfo::fromInt(ExitInfo(ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent)));
+    (CppUnit::assertEquals((ExitInfo(ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent)),
+                           (ExitInfo::fromInt(static_cast<int>(ExitInfo(ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent)))),
+                           CppUnit::SourceLine("C:\\Projects\\desktop-kDrive\\test\\libcommon\\utility\\testtypes.cpp", 174),
+                           ""));
 
     // Because of the implementation of method ExitInfo::int(), we need to make sure that ExitCause enum never has more than 100
     // values.
