@@ -102,8 +102,18 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool updateExclusionTemplate(const ExclusionTemplate &exclusionTemplate, bool &found);
         bool deleteExclusionTemplate(const std::string &templ, bool &found);
         bool selectAllExclusionTemplates(std::vector<ExclusionTemplate> &exclusionTemplateList);
-        bool selectAllExclusionTemplates(bool def, std::vector<ExclusionTemplate> &exclusionTemplateList);
-        bool updateAllExclusionTemplates(bool def, const std::vector<ExclusionTemplate> &exclusionTemplateList);
+        bool selectDefaultExclusionTemplates(std::vector<ExclusionTemplate> &exclusionTemplateList) {
+            return selectAllExclusionTemplates(true, exclusionTemplateList);
+        };
+        bool selectUserExclusionTemplates(std::vector<ExclusionTemplate> &exclusionTemplateList) {
+            return selectAllExclusionTemplates(false, exclusionTemplateList);
+        };
+        bool updateDefaultExclusionTemplates(const std::vector<ExclusionTemplate> &exclusionTemplateList) {
+            return updateAllExclusionTemplates(true, exclusionTemplateList);
+        }
+        bool updateUserExclusionTemplates(const std::vector<ExclusionTemplate> &exclusionTemplateList) {
+            return updateAllExclusionTemplates(false, exclusionTemplateList);
+        }
 
 #ifdef __APPLE__
         bool insertExclusionApp(const ExclusionApp &exclusionApp, bool &constraintError);
@@ -146,6 +156,9 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool prepareAppState();
 
         void fillSyncWithQueryResult(Sync &sync, const char *requestId);
+
+        bool selectAllExclusionTemplates(bool defaultTemplate, std::vector<ExclusionTemplate> &exclusionTemplateList);
+        bool updateAllExclusionTemplates(bool defaultTemplate, const std::vector<ExclusionTemplate> &exclusionTemplateList);
 
 #ifdef __APPLE__
         bool updateExclusionApps();
