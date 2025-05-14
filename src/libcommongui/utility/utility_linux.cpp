@@ -39,7 +39,7 @@ void CommonGuiUtility::setupFavLink(const QString &folder) {
     }
 }
 
-void CommonGuiUtility::removeDirIcon(const QString &folder) {
+void CommonGuiUtility::removeDirIcon(const QString &) {
     // Do nothing, icon is not set on Linux
 }
 
