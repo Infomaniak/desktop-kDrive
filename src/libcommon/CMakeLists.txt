@@ -138,10 +138,10 @@ if(APPLE)
     target_link_libraries(${libcommon_NAME}
         ${FOUNDATION_LIBRARY}
         ${CORESERVICES_LIBRARY}
-        ${APPKIT_LIBRARY} utf8proc)
+        ${APPKIT_LIBRARY})
 endif()
 
-if(UNIX AND NOT APPLE)
+if(UNIX)
     target_link_libraries(${libcommon_NAME} utf8proc)
 endif()
 
