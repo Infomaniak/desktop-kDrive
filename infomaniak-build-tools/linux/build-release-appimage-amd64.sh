@@ -112,5 +112,5 @@ export LD_LIBRARY_PATH=/app/usr/lib/:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY
 
 /deploy/linuxdeploy/build/bin/linuxdeploy --appdir /app -e /app/usr/bin/kDrive -i /app/kdrive-win.png -d /app/usr/share/applications/kDrive_client.desktop --plugin qt --output appimage -v0
 
-mv kDrive*.AppImage /install/kDrive-${SUFFIX}-x86_64.AppImage
+mv kDrive*.AppImage /install/kDrive-x86_64.AppImage
 
