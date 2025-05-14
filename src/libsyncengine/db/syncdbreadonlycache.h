@@ -58,7 +58,7 @@ class SyncDbReadOnlyCache {
     private:
         bool isCacheUpToDate() const;
         DbNodeId getDbNodeIdFromNodeId(ReplicaSide side, const NodeId &nodeId, bool &found);
-        const DbNode &getDbNodeFromDbNodeId(const DbNodeId &dbNodeId, bool &found);
+        std::optional<const std::reference_wrapper<DbNode>> getDbNodeFromDbNodeId(const DbNodeId &dbNodeId);
         SyncDbRevision _cachedRevision = 0;
         SyncDb &_syncDb;
         mutable std::recursive_mutex _mutex;
