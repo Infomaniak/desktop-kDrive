@@ -763,6 +763,11 @@ struct VersionInfo {
 };
 using AllVersionsInfo = std::unordered_map<VersionChannel, VersionInfo>;
 
+enum class UnicodeNormalization {
+    NFC,
+    NFD
+};
+
 namespace sentry {
 enum class ConfidentialityLevel {
     Anonymous, // The sentry will not be able to identify the user (no ip, no email, no username, ...)
