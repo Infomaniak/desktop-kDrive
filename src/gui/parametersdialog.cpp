@@ -760,7 +760,7 @@ QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const {
         }
         case ExitCause::FileLocked: {
             return tr(
-                    "This item is currently locked by another user.<br>"
+                    "This item is currently locked by another user online.<br>"
                     "We will retry uploading your changes later.");
         }
         default:
