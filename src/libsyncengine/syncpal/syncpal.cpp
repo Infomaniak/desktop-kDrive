@@ -1378,8 +1378,8 @@ void SyncPal::copySnapshots() {
 
     if (!_localSnapshotCopy) _localSnapshotCopy = std::make_shared<Snapshot>(ReplicaSide::Local, _syncDb->rootNode());
     if (!_remoteSnapshotCopy) _remoteSnapshotCopy = std::make_shared<Snapshot>(ReplicaSide::Remote, _syncDb->rootNode());
-    //*_localSnapshotCopy = *_localSnapshot;
-    //*_remoteSnapshotCopy = *_remoteSnapshot;
+    *_localSnapshotCopy = *_localSnapshot;
+    *_remoteSnapshotCopy = *_remoteSnapshot;
     _localSnapshot->startRead();
     _remoteSnapshot->startRead();
 }
