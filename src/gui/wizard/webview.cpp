@@ -17,8 +17,10 @@
  */
 
 #include "webview.h"
+
 #include "../parameterscache.h"
 #include "ui_webview.h"
+#include "libcommongui/matomoclient.h"
 #include "libcommon/utility/utility.h"
 
 #include <QWebEnginePage>
@@ -37,12 +39,15 @@
 #include <QWebEngineCookieStore>
 #include <QMessageBox>
 
+#include "config.h"
+
 namespace KDC {
 
 Q_LOGGING_CATEGORY(lcWizardWebiew, "gui.wizard.webview", QtInfoMsg)
 
 class WebViewPageUrlSchemeHandler : public QWebEngineUrlSchemeHandler {
         Q_OBJECT
+
     public:
         WebViewPageUrlSchemeHandler(QObject *parent = nullptr);
         void requestStarted(QWebEngineUrlRequestJob *request) override;
@@ -55,6 +60,7 @@ class WebViewPageUrlSchemeHandler : public QWebEngineUrlSchemeHandler {
 
 class WebEnginePage : public QWebEnginePage {
         Q_OBJECT
+
     public:
         WebEnginePage(QWebEngineProfile *profile, QObject *parent = nullptr);
         void setUrl(const QUrl &url);
@@ -63,7 +69,9 @@ class WebEnginePage : public QWebEnginePage {
         QUrl _rootUrl;
 };
 
-WebView::WebView(QWidget *parent) : QWidget(parent), _ui(new Ui::WebView) {
+WebView::WebView(QWidget *parent) :
+    QWidget(parent),
+    _ui(new Ui::WebView) {
     _ui->setupUi(this);
 
     QWebEngineUrlScheme _ncsheme("kdrive");
@@ -127,6 +135,22 @@ void WebView::loadStarted() {
 void WebView::loadFinished(bool ok) {
     qCInfo(lcWizardWebiew()) << ok;
     _ui->progressBar->setVisible(false);
+
+    if (ok) { // Send Matomo visitPage
+        const QString host = _webview->url().host();
+
+        if (host.contains("login.infomaniak.com", Qt::CaseSensitive)) { // Login Webview
+            MatomoClient::sendVisit(MatomoNameField::VW_LoginPage);
+#ifdef Q_OS_WIN
+        } else if (host.contains(QUrl(APPLICATION_STORAGE_URL).host(),
+                                 Qt::CaseSensitive)) { // Release Notes Webview (only on windows, see
+                                                       // 'src/gui/updater/updatedialog.cpp')
+            MatomoClient::sendVisit(MatomoNameField::WV_ReleaseNotes);
+#endif
+        } else { // Other Webview, shouldn't happen, there is no other Qt webview in the codebase.
+            MatomoClient::sendVisit(MatomoNameField::Unknown);
+        }
+    }
 }
 
 void WebView::renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus terminationStatus, int exitCode) {
@@ -143,7 +167,8 @@ WebView::~WebView() {
     delete _schemeHandler;
 }
 
-WebViewPageUrlSchemeHandler::WebViewPageUrlSchemeHandler(QObject *parent) : QWebEngineUrlSchemeHandler(parent) {}
+WebViewPageUrlSchemeHandler::WebViewPageUrlSchemeHandler(QObject *parent) :
+    QWebEngineUrlSchemeHandler(parent) {}
 
 void WebViewPageUrlSchemeHandler::requestStarted(QWebEngineUrlRequestJob *request) {
     QUrl url = request->requestUrl();
@@ -175,7 +200,8 @@ void WebViewPageUrlSchemeHandler::requestStarted(QWebEngineUrlRequestJob *reques
 }
 
 
-WebEnginePage::WebEnginePage(QWebEngineProfile *profile, QObject *parent) : QWebEnginePage(profile, parent) {}
+WebEnginePage::WebEnginePage(QWebEngineProfile *profile, QObject *parent) :
+    QWebEnginePage(profile, parent) {}
 
 void WebEnginePage::setUrl(const QUrl &url) {
     qCInfo(lcWizardWebiew()) << url;

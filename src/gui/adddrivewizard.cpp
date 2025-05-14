@@ -19,12 +19,13 @@
 #include "adddrivewizard.h"
 #include "custommessagebox.h"
 #include "enablestateholder.h"
-#include "common/filesystembase.h"
-#include "gui/clientgui.h"
+#include "clientgui.h"
 #include "guirequests.h"
+#include "common/filesystembase.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QBoxLayout>
 #include <QDir>
@@ -40,7 +41,10 @@ static const int boxVBMargin = 40;
 Q_LOGGING_CATEGORY(lcAddDriveWizard, "gui.adddrivewizard", QtInfoMsg)
 
 AddDriveWizard::AddDriveWizard(std::shared_ptr<ClientGui> gui, int userDbId, QWidget *parent) :
-    CustomDialog(false, parent), _gui(gui), _currentStep(userDbId ? Login : None), _userDbId(userDbId),
+    CustomDialog(false, parent),
+    _gui(gui),
+    _currentStep(userDbId ? Login : None),
+    _userDbId(userDbId),
     _action(KDC::GuiUtility::WizardAction::OpenFolder) {
     initUI();
     start();
@@ -252,6 +256,7 @@ void AddDriveWizard::onStepTerminated(bool next) {
         }
         startNextStep(!next);
     } else if (_currentStep == ListDrives) {
+        MatomoClient::sendVisit(MatomoNameField::PG_AddNewDrive_SelectDrive);
         _driveInfo = _addDriveListWidget->driveInfo();
         _userDbId = _driveInfo.userDbId();
         bool found = false;
@@ -280,11 +285,13 @@ void AddDriveWizard::onStepTerminated(bool next) {
             startNextStep(!next);
         }
     } else if (_currentStep == LiteSync) {
+        MatomoClient::sendVisit(MatomoNameField::PG_AddNewDrive_ActivateLiteSync);
         if (next) {
             _liteSync = _addDriveLiteSyncWidget->liteSync();
         }
         startNextStep(!next);
     } else if (_currentStep == RemoteFolders) {
+        MatomoClient::sendVisit(MatomoNameField::PG_AddNewDrive_SelectRemoteFolder);
         if (next) {
             _selectionSize = _addDriveServerFoldersWidget->selectionSize();
             _blackList = _addDriveServerFoldersWidget->createBlackList();
@@ -292,6 +299,7 @@ void AddDriveWizard::onStepTerminated(bool next) {
         }
         startNextStep(!next);
     } else if (_currentStep == LocalFolder) {
+        MatomoClient::sendVisit(MatomoNameField::PG_AddNewDrive_SelectLocalFolder);
         if (next) {
             _localFolderPath = _addDriveLocalFolderWidget->localFolderPath();
             if (_liteSync) {
@@ -300,8 +308,10 @@ void AddDriveWizard::onStepTerminated(bool next) {
         }
         startNextStep(!next);
     } else if (_currentStep == ExtensionSetup) {
+        MatomoClient::sendVisit(MatomoNameField::PG_AddNewDrive_ExtensionSetup);
         startNextStep(!next);
     } else if (_currentStep == Confirmation) {
+        MatomoClient::sendVisit(MatomoNameField::PG_AddNewDrive_Confirmation);
         _action = _addDriveConfirmationWidget->action();
         accept();
     }

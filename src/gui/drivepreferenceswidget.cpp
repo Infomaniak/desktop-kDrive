@@ -30,15 +30,15 @@
 #endif
 
 #include "guiutility.h"
-#include "libcommon/utility/utility.h"
-#include "libcommongui/utility/utility.h"
-#include "libcommon/utility/qlogiffail.h"
 #include "languagechangefilter.h"
 #include "enablestateholder.h"
 #include "guirequests.h"
 #include "clientgui.h"
 #include "common/filesystembase.h"
-#include "guiutility.h"
+#include "libcommongui/matomoclient.h"
+#include "libcommon/utility/utility.h"
+#include "libcommongui/utility/utility.h"
+#include "libcommon/utility/qlogiffail.h"
 
 #include <QDesktopServices>
 #include <QDir>
@@ -799,6 +799,7 @@ void DrivePreferencesWidget::onBigFoldersWarningWidgetClicked() {
 void DrivePreferencesWidget::onAddLocalFolder(bool checked) {
     Q_UNUSED(checked)
 
+    MatomoClient::sendEvent("drivePreferences", MatomoEventAction::Click, "synchronizeALocalFolder");
     EnableStateHolder _(this);
 
     const QString addFolderError = tr("New local folder synchronization failed!");
@@ -833,6 +834,7 @@ void DrivePreferencesWidget::onAddLocalFolder(bool checked) {
             localFolderSize = KDC::GuiUtility::folderSize(localFolderPath);
             liteSync = localFolderDialog.folderCompatibleWithLiteSync();
             qCDebug(lcDrivePreferencesWidget) << "Local folder selected: " << localFolderPath;
+            MatomoClient::sendVisit(MatomoNameField::PG_Parameters_NewSync_LocalFolder);
             nextStep = SelectServerBaseFolder;
         }
 
@@ -868,6 +870,7 @@ void DrivePreferencesWidget::onAddLocalFolder(bool checked) {
                 serverFolderName = driveInfoIt->second.name();
             }
             qCDebug(lcDrivePreferencesWidget) << "Server folder selected: " << serverFolderName;
+            MatomoClient::sendVisit(MatomoNameField::PG_Parameters_NewSync_RemoteFolder);
             nextStep = SelectServerFolders;
         }
 
@@ -906,6 +909,7 @@ void DrivePreferencesWidget::onAddLocalFolder(bool checked) {
         }
 
         if (nextStep == Confirm) {
+            MatomoClient::sendVisit(MatomoNameField::PG_Parameters_NewSync_Summary);
             int driveId;
             ExitCode exitCode = GuiRequests::getDriveIdFromDriveDbId(_driveDbId, driveId);
             if (exitCode != ExitCode::Ok) {
@@ -1008,6 +1012,7 @@ void DrivePreferencesWidget::onLiteSyncSwitchSyncChanged(int syncDbId, bool acti
 }
 
 void DrivePreferencesWidget::onNotificationsSwitchClicked(bool checked) {
+    MatomoClient::sendEvent("drivePreferences", MatomoEventAction::Click, "notificationSwitch", checked ? 1 : 0);
     const auto driveInfoMapIt = _gui->driveInfoMap().find(_driveDbId);
     if (driveInfoMapIt == _gui->driveInfoMap().end()) {
         qCWarning(lcDrivePreferencesWidget()) << "Drive not found in drive map for driveDbId=" << _driveDbId;
@@ -1029,6 +1034,7 @@ void DrivePreferencesWidget::onErrorAdded() {
 void DrivePreferencesWidget::onRemoveDrive(bool checked) {
     Q_UNUSED(checked)
 
+    MatomoClient::sendEvent("drivePreferences", MatomoEventAction::Click, "removeDrive");
     const auto driveInfoIt = _gui->driveInfoMap().find(_driveDbId);
     if (driveInfoIt == _gui->driveInfoMap().end()) {
         qCWarning(lcDrivePreferencesWidget()) << "Drive not found in drive map for driveDbId=" << _driveDbId;

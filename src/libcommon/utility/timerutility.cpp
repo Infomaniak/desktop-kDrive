@@ -22,7 +22,8 @@
 
 namespace KDC {
 
-TimerUtility::TimerUtility() : _startTime(std::chrono::steady_clock::now()) {}
+TimerUtility::TimerUtility() :
+    _startTime(std::chrono::steady_clock::now()) {}
 
 void TimerUtility::restart() {
     _startTime = std::chrono::steady_clock::now();
