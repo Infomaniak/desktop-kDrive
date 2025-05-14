@@ -176,27 +176,6 @@ SyncPal::~SyncPal() {
     LOG_SYNCPAL_DEBUG(_logger, "~SyncPal");
 }
 
-ExitCode SyncPal::setTargetNodeId(const std::string &targetNodeId) {
-    bool found = false;
-
-    LOG_IF_FAIL(_remoteSnapshot)
-    LOG_IF_FAIL(_remoteUpdateTree)
-
-    if (!_syncDb->setTargetNodeId(targetNodeId, found)) {
-        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::setTargetNodeId");
-        return ExitCode::DbError;
-    }
-    if (!found) {
-        LOG_SYNCPAL_WARN(_logger, "Root node not found in node table");
-        return ExitCode::DataError;
-    }
-
-    _remoteSnapshot->setRootFolderId(targetNodeId);
-    _remoteUpdateTree->setRootFolderId(targetNodeId);
-
-    return ExitCode::Ok;
-}
-
 void SyncPal::setVfs(std::shared_ptr<Vfs> vfs) {
     assert(!isRunning());
     _vfs = vfs;
@@ -1399,8 +1378,8 @@ void SyncPal::copySnapshots() {
 
     if (!_localSnapshotCopy) _localSnapshotCopy = std::make_shared<Snapshot>(ReplicaSide::Local, _syncDb->rootNode());
     if (!_remoteSnapshotCopy) _remoteSnapshotCopy = std::make_shared<Snapshot>(ReplicaSide::Remote, _syncDb->rootNode());
-    *_localSnapshotCopy = *_localSnapshot;
-    *_remoteSnapshotCopy = *_remoteSnapshot;
+    //*_localSnapshotCopy = *_localSnapshot;
+    //*_remoteSnapshotCopy = *_remoteSnapshot;
     _localSnapshot->startRead();
     _remoteSnapshot->startRead();
 }
