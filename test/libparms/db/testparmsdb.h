@@ -33,6 +33,8 @@ class TestParmsDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDrive);
         CPPUNIT_TEST(testSync);
         CPPUNIT_TEST(testExclusionTemplate);
+        CPPUNIT_TEST(testUpdateExclusionTemplates);
+        CPPUNIT_TEST(testUpgrade);
 #ifdef __APPLE__
         CPPUNIT_TEST(testExclusionApp);
 #endif
@@ -55,6 +57,8 @@ class TestParmsDb : public CppUnit::TestFixture, public TestBase {
         void testSync();
         void testExclusionTemplate();
         void testAppState();
+        void testUpdateExclusionTemplates();
+        void testUpgrade();
 #ifdef __APPLE__
         void testExclusionApp();
 #endif
