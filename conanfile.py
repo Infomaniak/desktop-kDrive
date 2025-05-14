@@ -1,5 +1,5 @@
 from conan import ConanFile
-from conan.tools.cmake import CMake, CMakeToolchain
+from conan.tools.cmake import CMakeToolchain, cmake_layout
 
 
 class KDriveDesktop(ConanFile):
@@ -20,7 +20,13 @@ class KDriveDesktop(ConanFile):
         tc = CMakeToolchain(self)
         if self.settings.os == "Windows":
             tc.blocks.remove("generic_system")
+        if self.settings.os == "Macos":
+            tc.variables["CMAKE_OSX_ARCHITECTURES"] = "x86_64;arm64"
+            tc.variables["CMAKE_MACOSX_DEPLOYMENT_TARGET"] = "10.15"
         tc.generate()
+
+    def layout(self):
+        cmake_layout(self)
 
     def requirements(self):
         """
@@ -29,4 +35,4 @@ class KDriveDesktop(ConanFile):
         - `xxhash/0.8.2`: A fast non-cryptographic hash algorithm.
         :return: None
         """
-        self.requires("xxhash/0.8.2")
+        self.requires("xxhash/0.8.2") # From local recipe

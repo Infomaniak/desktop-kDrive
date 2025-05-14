@@ -103,10 +103,22 @@ export SUFFIX=""
 
 mkdir -p "$build_dir/client"
 
-bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" "--output-dir=$build_dir"
+conan_folder="$build_dir/conan"
+
+bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" "--output-dir=$conan_folder"
+
+conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
+conan_generator_folder="$(dirname "$conan_toolchain_file")"
+
+if [ ! -f "$conan_toolchain_file" ]; then
+  echo "Conan toolchain file not found: $conan_toolchain_file"
+  exit 1
+fi
 
 # Build client
 cd $build_dir
+
+source "$conan_generator_folder/conanrun.sh"
 
 cmake_param=()
 
@@ -126,7 +138,7 @@ cmake -B$build_dir -H$BASEPATH \
     -DKDRIVE_THEME_DIR="$BASEPATH/infomaniak" \
     -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
     -DBUILD_UNIT_TESTS=$unit_tests \
-    -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
+    -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
     "${cmake_param[@]}" \
 
 make "-j$(nproc)"

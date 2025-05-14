@@ -94,7 +94,7 @@ extract_debug () {
 }
 
 build_release() {
-	export QT_BASE_DIR="~/Qt/6.2.3"
+	export QT_BASE_DIR="$HOME/Qt/6.2.3"
 	export QTDIR="$QT_BASE_DIR/gcc_64"
 	export QMAKE=$QTDIR/bin/qmake
 	export PATH=$QTDIR/bin:$QTDIR/libexec:$PATH
@@ -103,7 +103,20 @@ build_release() {
 
 	mkdir -p $app_dir
 	mkdir -p $build_dir
-	
+
+	conan_folder="$build_dir/conan"
+	bash "$src_dir/infomaniak-build-tools/conan/build_dependencies.sh" Release "--output-dir=$conan_folder"
+
+	conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
+  conan_generator_folder="$(dirname "$conan_toolchain_file")"
+
+  if [ ! -f "$conan_toolchain_file" ]; then
+    echo "Conan toolchain file not found: $conan_toolchain_file"
+    exit 1
+  fi
+
+  source "$conan_generator_folder/conanrun.sh"
+
 	# Set defaults
 	export SUFFIX=""
 	
@@ -127,6 +140,7 @@ build_release() {
 	    -DKDRIVE_VERSION_SUFFIX=$SUFFIX \
 	    -DKDRIVE_THEME_DIR="$src_dir/infomaniak" \
 	    -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
+	    -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
 	    "${CMAKE_PARAMS[@]}" \
 	
 	make -j$(nproc)

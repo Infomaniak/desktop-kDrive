@@ -43,12 +43,13 @@ KDRIVE_DIR="$SRCDIR/infomaniak"
 # Set build dir
 BUILDDIR="$PWD/build-macos/client"
 
+# Set conan dir
+CONANDIR="$BUILDDIR/conan"
+mkdir -p "$CONANDIR"
+
 # Set install dir
 INSTALLDIR="$PWD/build-macos/client/install"
-
-# Create install dir if needed
-mkdir -p build-macos/client
-mkdir -p build-macos/client/install
+mkdir -p "$INSTALLDIR"
 
 # Backup the existing .app if there is one
 if [ -d "$INSTALLDIR/$APPNAME-old.app" ]; then
@@ -70,7 +71,7 @@ if [ -n "$TEAM_IDENTIFIER" -a -n "$SIGN_IDENTITY" ]; then
 	CMAKE_PARAMS+=(-DSOCKETAPI_TEAM_IDENTIFIER_PREFIX="$TEAM_IDENTIFIER.")
 fi
 
-bash infomaniak-build-tools/conan/build_dependencies.sh Release "--output-dir=$BUILDDIR"
+bash infomaniak-build-tools/conan/build_dependencies.sh Release "--output-dir=$CONANDIR"
 
 # Configure
 pushd "$BUILDDIR"
@@ -82,7 +83,7 @@ cmake \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DKDRIVE_THEME_DIR="$KDRIVE_DIR" \
 	-DBUILD_UNIT_TESTS=1 \
-	-DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
+	"-DCMAKE_TOOLCHAIN_FILE=$CONANDIR/conan_toolchain.cmake" \
 	"${CMAKE_PARAMS[@]}" \
 	"$SRCDIR"
 
