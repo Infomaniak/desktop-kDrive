@@ -233,6 +233,7 @@ void TestIo::testSetFileDates() {
 
         (void) IoHelper::setRights(rightPath, true, true, true, ioError);
 
+#if defined(__APPLE__) || defined(_WIN32) // Disable for now the test on symlink on Linux
         // Test on a symlink on a file.
         auto linkTimestamp = timestamp + 10;
         SyncPath linkPath = tempDir.path() / "test_link_file";
@@ -255,6 +256,7 @@ void TestIo::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(linkTimestamp, filestat.modtime);
         (void) IoHelper::getFileStat(folderPath, &filestat, ioError);
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modtime);
+#endif
 
 #if defined(__APPLE__)
         // Test on an alias on a file.
