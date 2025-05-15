@@ -127,7 +127,7 @@ void TestOperationProcessor::testIsPseudoConflict() {
             ReplicaSide::Local, Str("testLocalDir"), NodeType::Directory, OperationType::None, "ldid", testhelpers::defaultTime,
             testhelpers::defaultTime, testhelpers::defaultDirSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
 
-    (void) remotelLiveSnapshot.updateItem(SnapshotItem("rdid", _syncPal->snapshot(ReplicaSide::Remote)->rootFolderId(),
+    (void) remotelLiveSnapshot.updateItem(SnapshotItem("rdid", remotelLiveSnapshot.rootFolderId(),
                                                       Str("testRemoteDir"),
                                       testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                                       testhelpers::defaultDirSize, false, true, true));

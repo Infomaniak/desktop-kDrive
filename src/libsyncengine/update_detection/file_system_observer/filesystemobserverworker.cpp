@@ -28,7 +28,7 @@ FileSystemObserverWorker::FileSystemObserverWorker(std::shared_ptr<SyncPal> sync
                                                    const std::string &shortName, const ReplicaSide side) :
     ISyncWorker(syncPal, name, shortName),
     _syncDb(syncPal->syncDb()),
-    _liveSnapshot(ReplicaSide::Local, syncPal->syncDb()->rootNode()) {}
+    _liveSnapshot(side, syncPal->syncDb()->rootNode()) {}
 
 
 void FileSystemObserverWorker::invalidateSnapshot() {

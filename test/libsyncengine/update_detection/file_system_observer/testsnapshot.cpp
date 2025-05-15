@@ -403,10 +403,10 @@ void TestSnapshot::testCopySnapshot() {
     CPPUNIT_ASSERT_EQUAL(liveSnapshot.nbItems(), snapshot.nbItems());
 
     NodeSet liveSnapshotIds;
-    NodeSet snapshotCopyIds;
+    NodeSet snapshotIds;
     liveSnapshot.ids(liveSnapshotIds);
-    snapshot.ids(liveSnapshotIds);
-    CPPUNIT_ASSERT(liveSnapshotIds == snapshotCopyIds);
+    snapshot.ids(snapshotIds);
+    CPPUNIT_ASSERT(liveSnapshotIds == snapshotIds);
 
     // Ensure _items elements are copied, not just the pointer
     liveSnapshot.setName("file1.1", Str("newFile1.1"));
