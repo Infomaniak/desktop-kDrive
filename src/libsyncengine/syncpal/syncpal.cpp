@@ -386,10 +386,6 @@ void SyncPal::loadProgress(SyncProgress &syncProgress) const {
 
 void SyncPal::createSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Create shared objects");
-    // _localLiveSnapshot = std::make_shared<Snapshot>(ReplicaSide::Local, _syncDb->rootNode());
-    //_remoteLiveSnapshot = std::make_shared<Snapshot>(ReplicaSide::Remote, _syncDb->rootNode());
-    // _localLiveSnapshot = std::make_shared<Snapshot>(ReplicaSide::Local, _syncDb->rootNode());
-    //_remoteLiveSnapshot = std::make_shared<Snapshot>(ReplicaSide::Remote, _syncDb->rootNode());
     _localOperationSet = std::make_shared<FSOperationSet>(ReplicaSide::Local);
     _remoteOperationSet = std::make_shared<FSOperationSet>(ReplicaSide::Remote);
     _localUpdateTree = std::make_shared<UpdateTree>(ReplicaSide::Local, _syncDb->rootNode());
@@ -414,6 +410,8 @@ void SyncPal::freeSharedObjects() {
     _progressInfo.reset();
 
     // Check that there is no memory leak
+    LOG_IF_FAIL(_localSnapshot.use_count() == 0);
+    LOG_IF_FAIL(_localSnapshot.use_count() == 0);
     LOG_IF_FAIL(_localOperationSet.use_count() == 0);
     LOG_IF_FAIL(_remoteOperationSet.use_count() == 0);
     LOG_IF_FAIL(_localUpdateTree.use_count() == 0);

@@ -47,7 +47,7 @@ class SnapshotRevisionHandler {
             if (++_revision == std::numeric_limits<SnapshotRevision>::max()) {
                 /* Throw an exception if the revision number is too high.This is
                  * acceptable because the revision number is a 64  bit integer.
-                 * Even at the insane rate of 500,000 liveSnapshot changes per second,
+                 * Even at the insane rate of 500,000 snapshot changes per second,
                  * it would take 1,169,884 years to reach this limit. */
                 throw std::overflow_error("Snapshot revision number overflow");
             }
