@@ -20,6 +20,7 @@ class KDriveDesktop(ConanFile):
         tc = CMakeToolchain(self)
         if self.settings.os == "Windows":
             tc.blocks.remove("generic_system")
+            tc.generator = "Ninja"
         if self.settings.os == "Macos":
             tc.variables["CMAKE_OSX_ARCHITECTURES"] = "x86_64;arm64"
             tc.variables["CMAKE_MACOSX_DEPLOYMENT_TARGET"] = "10.15"
@@ -27,6 +28,10 @@ class KDriveDesktop(ConanFile):
 
     def layout(self):
         cmake_layout(self)
+
+    def build_requirements(self):
+        if self.settings.os == "Windows":
+            self.tool_requires("ninja/1.11.1")
 
     def requirements(self):
         """
