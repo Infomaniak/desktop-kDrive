@@ -24,8 +24,7 @@ namespace KDC::sentry {
 enum class PTraceName {
     None,
     AppStart,
-    SyncInit,
-    /*SyncInit*/ ResetStatus,
+    ResetStatus,
     Sync,
     /*Sync*/ UpdateDetection1,
     /*Sync*/ /*UpdateDetection1*/ UpdateUnsyncedList,
@@ -69,8 +68,11 @@ struct PTraceDescriptor {
         PTraceDescriptor() = default;
         PTraceDescriptor(std::string pTraceTitle, std::string pTraceDescription, const PTraceName pTraceName,
                          const PTraceName parentPTraceName = PTraceName::None, const double customSampleRate = 1.0) :
-            _pTraceName{pTraceName}, _parentPTraceName{parentPTraceName}, _pTraceTitle{std::move(pTraceTitle)},
-            _pTraceDescription{std::move(pTraceDescription)}, _customSampleRate{customSampleRate} {}
+            _pTraceName{pTraceName},
+            _parentPTraceName{parentPTraceName},
+            _pTraceTitle{std::move(pTraceTitle)},
+            _pTraceDescription{std::move(pTraceDescription)},
+            _customSampleRate{customSampleRate} {}
 
         [[nodiscard]] const PTraceName& pTraceName() const { return _pTraceName; }
         [[nodiscard]] const PTraceName& parentPTraceName() const { return _parentPTraceName; }

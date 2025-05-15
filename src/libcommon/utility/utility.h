@@ -40,7 +40,12 @@
 
 namespace KDC {
 struct COMMON_EXPORT CommonUtility {
-        enum IconType { MAIN_FOLDER_ICON, COMMON_DOCUMENT_ICON, DROP_BOX_ICON, NORMAL_FOLDER_ICON };
+        enum IconType {
+            MAIN_FOLDER_ICON,
+            COMMON_DOCUMENT_ICON,
+            DROP_BOX_ICON,
+            NORMAL_FOLDER_ICON
+        };
 
         static inline const QString linkStyle = QString("color:#0098FF; font-weight:450; text-decoration:none;");
 
@@ -110,6 +115,7 @@ struct COMMON_EXPORT CommonUtility {
         static size_t maxPathLength();
 
         static bool isSubDir(const SyncPath &path1, const SyncPath &path2);
+        static bool isDiskRootFolder(const SyncPath &absolutePath);
 
         static const std::string dbVersionNumber(const std::string &dbVersion);
         static bool isVersionLower(const std::string &currentVersion, const std::string &targetVersion);
@@ -151,6 +157,10 @@ struct COMMON_EXPORT CommonUtility {
 
         static void resetTranslations();
 
+        static bool normalizedSyncName(const SyncName &name, SyncName &normalizedName,
+                                       UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
+
+
     private:
         static std::mutex _generateRandomStringMutex;
 
@@ -169,6 +179,15 @@ struct COMMON_EXPORT StdLoggingThread : public std::thread {
                         log4cplus::threadCleanup();
                     },
                     args...) {}
+
+        template<class... Args>
+        explicit StdLoggingThread(std::function<void(Args...)> runFct, Args &&...args) :
+            std::thread(
+                    [=]() {
+                        runFct(args...);
+                        log4cplus::threadCleanup();
+                    },
+                    args...) {}
 };
 
 struct COMMON_EXPORT QtLoggingThread : public QThread {
@@ -180,7 +199,8 @@ struct COMMON_EXPORT QtLoggingThread : public QThread {
 
 struct ArgsReader {
         template<class... Args>
-        explicit ArgsReader(Args... args) : stream(&params, QIODevice::WriteOnly) {
+        explicit ArgsReader(Args... args) :
+            stream(&params, QIODevice::WriteOnly) {
             read(args...);
         }
 
@@ -201,7 +221,8 @@ struct ArgsReader {
 };
 
 struct ArgsWriter {
-        explicit ArgsWriter(const QByteArray &results) : stream{QDataStream(results)} {};
+        explicit ArgsWriter(const QByteArray &results) :
+            stream{QDataStream(results)} {};
 
         template<class T>
         void write(T &r) {

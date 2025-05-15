@@ -41,7 +41,7 @@
 #include "libsyncengine/jobs/network/API_v2/getfilelistjob.h"
 #include "libsyncengine/jobs/network/API_v2/movejob.h"
 #include "libsyncengine/jobs/network/API_v2/renamejob.h"
-#include "libsyncengine/jobs/network/API_v2/uploadjob.h"
+#include "../../../../src/libsyncengine/jobs/network/API_v2/upload/uploadjob.h"
 #include "libsyncengine/update_detection/file_system_observer/filesystemobserverworker.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"

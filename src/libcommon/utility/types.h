@@ -44,6 +44,7 @@ namespace KDC {
 using SyncTime = int64_t;
 using DbNodeId = int64_t;
 using UniqueId = int64_t;
+using SyncDbRevision = uint64_t;
 using SnapshotRevision = uint64_t;
 using NodeId = std::string;
 using SyncPath = std::filesystem::path;
@@ -544,7 +545,7 @@ enum class NotificationsDisabled {
     Never,
     OneHour,
     UntilTomorrow,
-    TreeDays,
+    ThreeDays,
     OneWeek,
     Always,
     EnumEnd
@@ -631,6 +632,10 @@ struct ItemType {
         // - the file or directory indicated by `path` is a symlink or an alias (in which case `linkType` is different from
         // `LinkType::Unknown`) and its target doesn't exist.
         IoError ioError{IoError::Success};
+        bool operator==(const ItemType &other) const {
+            return nodeType == other.nodeType && linkType == other.linkType && targetType == other.targetType &&
+                   targetPath == other.targetPath && ioError == other.ioError;
+        }
 };
 
 enum class AppStateKey {
@@ -758,6 +763,11 @@ struct VersionInfo {
 };
 using AllVersionsInfo = std::unordered_map<VersionChannel, VersionInfo>;
 
+enum class UnicodeNormalization {
+    NFC,
+    NFD
+};
+
 namespace sentry {
 enum class ConfidentialityLevel {
     Anonymous, // The sentry will not be able to identify the user (no ip, no email, no username, ...)
@@ -772,6 +782,19 @@ std::string toString(sentry::ConfidentialityLevel e);
 
 // Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
 using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
+
+struct NodeIds {
+        DbNodeId dbNodeId;
+        NodeId localNodeId;
+        NodeId remoteNodeId;
+        NodeId nodeId(const ReplicaSide side) const { return side == ReplicaSide::Local ? localNodeId : remoteNodeId; }
+        struct HashFunction {
+                std::size_t operator()(const NodeIds &nodeIds) const { return std::hash<DbNodeId>()(nodeIds.dbNodeId); }
+        };
+        bool operator==(const NodeIds &other) const {
+            return dbNodeId == other.dbNodeId && localNodeId == other.localNodeId && remoteNodeId == other.remoteNodeId;
+        }
+};
 
 /*
  * Define operator and converter for enum class

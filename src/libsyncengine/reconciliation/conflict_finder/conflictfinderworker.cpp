@@ -22,7 +22,8 @@
 namespace KDC {
 
 ConflictFinderWorker::ConflictFinderWorker(const std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                           const std::string &shortName) : OperationProcessor(syncPal, name, shortName) {}
+                                           const std::string &shortName) :
+    OperationProcessor(syncPal, name, shortName) {}
 
 void ConflictFinderWorker::execute() {
     auto exitCode(ExitCode::Unknown);
@@ -382,7 +383,7 @@ std::optional<std::vector<Conflict>> ConflictFinderWorker::determineMoveMoveCycl
             // get databases relative paths
             bool found = false;
             SyncPath localDbPath;
-            if (!_syncPal->_syncDb->path(localNode->side(), *localNode->id(), localDbPath, found)) {
+            if (!_syncPal->syncDb()->cache().path(localNode->side(), *localNode->id(), localDbPath, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
                 return std::nullopt;
             }
@@ -393,7 +394,7 @@ std::optional<std::vector<Conflict>> ConflictFinderWorker::determineMoveMoveCycl
                 break;
             }
             SyncPath remoteDbPath;
-            if (!_syncPal->_syncDb->path(remoteNode->side(), *remoteNode->id(), remoteDbPath, found)) {
+            if (!_syncPal->syncDb()->cache().path(remoteNode->side(), *remoteNode->id(), remoteDbPath, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
                 return std::nullopt;
             }

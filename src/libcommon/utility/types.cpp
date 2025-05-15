@@ -551,8 +551,8 @@ std::string toString(const NotificationsDisabled e) {
             return "OneHour";
         case NotificationsDisabled::UntilTomorrow:
             return "UntilTomorrow";
-        case NotificationsDisabled::TreeDays:
-            return "TreeDays";
+        case NotificationsDisabled::ThreeDays:
+            return "ThreeDays";
         case NotificationsDisabled::OneWeek:
             return "OneWeek";
         case NotificationsDisabled::Always:

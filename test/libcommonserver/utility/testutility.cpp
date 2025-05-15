@@ -179,7 +179,7 @@ void TestUtility::testIsEqualUpToCaseAndEnc(void) {
     SyncName nfcNormalizedName;
     CPPUNIT_ASSERT(Utility::normalizedSyncName(Str("éééé"), nfcNormalizedName));
     SyncName nfdNormalizedName;
-    CPPUNIT_ASSERT(Utility::normalizedSyncName(Str("éééé"), nfdNormalizedName, Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(Str("éééé"), nfdNormalizedName, UnicodeNormalization::NFD));
     CPPUNIT_ASSERT(Utility::checkIfEqualUpToCaseAndEncoding(nfcNormalizedName, nfdNormalizedName, isEqual) && isEqual);
 }
 
@@ -307,7 +307,7 @@ void TestUtility::testErrId() {
     CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), errId());
 }
 
-void TestUtility::isSubDir() {
+void TestUtility::testIsSubDir() {
     SyncPath path1 = "A/AA/AAA";
     SyncPath path2 = "A/AA";
     CPPUNIT_ASSERT(CommonUtility::isSubDir(path2, path1));
@@ -320,7 +320,26 @@ void TestUtility::isSubDir() {
     CPPUNIT_ASSERT(!CommonUtility::isSubDir(path2, path1));
 }
 
-void TestUtility::testcheckIfDirEntryIsManaged() {
+void TestUtility::testIsDiskRootFolder() {
+    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("A/AA/AAA"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("/"));
+    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("/Users"));
+    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("/home"));
+#if defined(_WIN32)
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("C:\\"));
+    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("C:\\Users"));
+#elif defined(__APPLE__)
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("/Volumes/drivename"));
+    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("/Volumes/drivename/kDrive"));
+#else
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("/media"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("/media/username"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("/media/username/drivename"));
+    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("/media/username/drivename/kDrive"));
+#endif
+}
+
+void TestUtility::testCheckIfDirEntryIsManaged() {
     LocalTemporaryDirectory tempDir;
     SyncPath path = tempDir.path() / "test.txt";
     std::ofstream file(path);
@@ -328,14 +347,12 @@ void TestUtility::testcheckIfDirEntryIsManaged() {
     file.close();
 
     bool isManaged = false;
-    bool isLink = false;
     IoError ioError = IoError::Success;
     std::filesystem::recursive_directory_iterator entry(tempDir.path());
 
     // Check with an existing file (managed)
-    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
+    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
     CPPUNIT_ASSERT(isManaged);
-    CPPUNIT_ASSERT(!isLink);
     CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
     // Check with a simlink (managed)
@@ -343,16 +360,14 @@ void TestUtility::testcheckIfDirEntryIsManaged() {
     std::filesystem::create_directory(simLinkDir);
     std::filesystem::create_symlink(path, simLinkDir / "testLink.txt");
     entry = std::filesystem::recursive_directory_iterator(simLinkDir);
-    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
+    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
     CPPUNIT_ASSERT(isManaged);
-    CPPUNIT_ASSERT(isLink);
     CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
     // Check with a directory
     entry = std::filesystem::recursive_directory_iterator(tempDir.path());
-    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
+    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
     CPPUNIT_ASSERT(isManaged);
-    CPPUNIT_ASSERT(!isLink);
     CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 }
 
@@ -467,7 +482,7 @@ bool TestUtility::checkNfcAndNfdNamesEqual(const SyncName &name, bool &equal) {
         return false;
     }
     SyncName nfdNormalized;
-    if (!Utility::normalizedSyncName(name, nfdNormalized, Utility::UnicodeNormalization::NFD)) {
+    if (!Utility::normalizedSyncName(name, nfdNormalized, UnicodeNormalization::NFD)) {
         return false;
     }
     equal = (nfcNormalized == nfdNormalized);

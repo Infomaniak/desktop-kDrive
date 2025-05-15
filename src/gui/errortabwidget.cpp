@@ -18,10 +18,11 @@
 
 #include "errortabwidget.h"
 #include "parametersdialog.h"
-#include "gui/customtabbar.h"
+#include "customtabbar.h"
 #include "languagechangefilter.h"
 #include "fixconflictingfilesdialog.h"
 #include "menuwidgetlite.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QVBoxLayout>
 #include <QScrollBar>
@@ -30,8 +31,14 @@
 namespace KDC {
 
 ErrorTabWidget::ErrorTabWidget(std::shared_ptr<ClientGui> gui, const int driveDbId, const bool generic, QWidget *parent) :
-    QTabWidget(parent), _gui(gui), _tabBar(nullptr), _paramsDialog(static_cast<ParametersDialog *>(parent)),
-    _autoResolvedErrorsListWidget(nullptr), _unresolvedErrorsListWidget(nullptr), _driveDbId(driveDbId), _generic(generic) {
+    QTabWidget(parent),
+    _gui(gui),
+    _tabBar(nullptr),
+    _paramsDialog(static_cast<ParametersDialog *>(parent)),
+    _autoResolvedErrorsListWidget(nullptr),
+    _unresolvedErrorsListWidget(nullptr),
+    _driveDbId(driveDbId),
+    _generic(generic) {
     setObjectName("tabWidgetErrorWidget");
     _tabBar = new CustomTabBar(this);
     _tabBar->setObjectName("tabBarErrorWidget");
@@ -197,6 +204,7 @@ void ErrorTabWidget::showResolveUnsupportedCharacters(bool) {
 }
 
 void ErrorTabWidget::onClearToResErrorsClicked() {
+    MatomoClient::sendEvent("errorTab", MatomoEventAction::Click, "clearToResolveErrorsButton");
     emit _paramsDialog->clearErrors(_driveDbId, false);
 }
 
@@ -205,6 +213,7 @@ void ErrorTabWidget::showEvent(QShowEvent *) {
 }
 
 void ErrorTabWidget::onClearAutoResErrorsClicked() {
+    MatomoClient::sendEvent("errorTab", MatomoEventAction::Click, "clearAutoResolvedErrorsButton");
     emit _paramsDialog->clearErrors(_driveDbId, true);
 }
 

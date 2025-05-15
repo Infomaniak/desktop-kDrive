@@ -22,7 +22,7 @@
 #include "log/log.h"
 #include "libcommonserver/utility/utility.h"
 #include "network/API_v2/downloadjob.h"
-#include "network/API_v2/upload_session/driveuploadsession.h"
+#include "network/API_v2/upload/upload_session/driveuploadsession.h"
 #include "performance_watcher/performancewatcher.h"
 #include "requests/parameterscache.h"
 

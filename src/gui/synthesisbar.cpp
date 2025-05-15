@@ -20,6 +20,7 @@
 #include "errorspopup.h"
 #include "languagechangefilter.h"
 #include "config.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QActionGroup>
 #include <QBoxLayout>
@@ -42,7 +43,7 @@ const std::map<NotificationsDisabled, QString> &SynthesisBar::notificationsDisab
             {NotificationsDisabled::Never, tr("Never")},
             {NotificationsDisabled::OneHour, tr("During 1 hour")},
             {NotificationsDisabled::UntilTomorrow, tr("Until tomorrow 8:00AM")},
-            {NotificationsDisabled::TreeDays, tr("During 3 days")},
+            {NotificationsDisabled::ThreeDays, tr("During 3 days")},
             {NotificationsDisabled::OneWeek, tr("During 1 week")},
             {NotificationsDisabled::Always, tr("Always")}};
     return map;
@@ -53,14 +54,16 @@ const std::map<NotificationsDisabled, QString> &SynthesisBar::notificationsDisab
             {NotificationsDisabled::Never, tr("Never")},
             {NotificationsDisabled::OneHour, tr("For 1 more hour")},
             {NotificationsDisabled::UntilTomorrow, tr("Until tomorrow 8:00AM")},
-            {NotificationsDisabled::TreeDays, tr("For 3 more days")},
+            {NotificationsDisabled::ThreeDays, tr("For 3 more days")},
             {NotificationsDisabled::OneWeek, tr("For 1 more week")},
             {NotificationsDisabled::Always, tr("Always")}};
     return map;
 }
 
 SynthesisBar::SynthesisBar(std::shared_ptr<ClientGui> gui, bool debugCrash, QWidget *parent) :
-    QWidget(parent), _gui(gui), _debugCrash(debugCrash) {
+    QWidget(parent),
+    _gui(gui),
+    _debugCrash(debugCrash) {
     _notificationsDisabled = ParametersCache::instance()->parametersInfo().notificationsDisabled();
 
     QCoreApplication::instance()->installEventFilter(this);
@@ -207,10 +210,12 @@ bool SynthesisBar::eventFilter(QObject *obj, QEvent *event) {
 }
 
 void SynthesisBar::onDisplayErrors(int driveDbId) {
+    MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "displayErrors", driveDbId);
     displayErrors(driveDbId);
 }
 
 void SynthesisBar::onOpenErrorsMenu() {
+    MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "openErrorsMenu");
     QList<ErrorsPopup::DriveError> driveErrorList;
     getDriveErrorList(driveErrorList);
 
@@ -227,6 +232,7 @@ void SynthesisBar::onOpenErrorsMenu() {
 void SynthesisBar::onOpenMiscellaneousMenu() {
     auto *menu = new MenuWidget(MenuWidget::Menu, this);
 
+    MatomoClient::sendVisit(MatomoNameField::PG_SynthesisPopover_KebabMenu);
     // Open Folder
     std::map<int, SyncInfoClient> syncInfoMap;
     _gui->loadSyncInfoMap(_gui->currentDriveDbId(), syncInfoMap);
@@ -391,11 +397,13 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
 }
 
 void SynthesisBar::onOpenFolder() {
+    MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "openDriveFolder");
     const auto syncDbId = qvariant_cast<int>(sender()->property(MenuWidget::actionTypeProperty.c_str()));
     openUrl(syncDbId);
 }
 
 void SynthesisBar::onOpenWebview() {
+    MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "openWebVersionButton");
     if (_gui->currentDriveDbId() != 0) {
         const auto driveInfoIt = _gui->driveInfoMap().find(_gui->currentDriveDbId());
         if (driveInfoIt == _gui->driveInfoMap().end()) {
@@ -420,6 +428,7 @@ void SynthesisBar::onOpenWebview() {
 }
 
 void SynthesisBar::onOpenDriveParameters() {
+    MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "driveParametersButton");
     emit showParametersDialog(_gui->currentDriveDbId());
 }
 
@@ -440,7 +449,7 @@ void SynthesisBar::onNotificationActionTriggered() {
         case NotificationsDisabled::UntilTomorrow:
             _notificationsDisabledUntilDateTime = QDateTime(QDateTime::currentDateTime().addDays(1).date(), QTime(8, 0));
             break;
-        case NotificationsDisabled::TreeDays:
+        case NotificationsDisabled::ThreeDays:
             _notificationsDisabledUntilDateTime = notificationAlreadyDisabledForPeriod
                                                           ? _notificationsDisabledUntilDateTime.addDays(3)
                                                           : QDateTime::currentDateTime().addDays(3);
@@ -458,24 +467,29 @@ void SynthesisBar::onNotificationActionTriggered() {
             assert(false && "Invalid enum value in switch statement.");
         }
     }
-
+    MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "disableNotificationsFor",
+                            static_cast<int>(_notificationsDisabled));
     emit disableNotifications(_notificationsDisabled, _notificationsDisabledUntilDateTime);
 }
 
 void SynthesisBar::onOpenPreferences() {
+    MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "preferencesButton");
     emit showParametersDialog();
 }
 
 void SynthesisBar::onDisplayHelp() {
+    MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "helpButton");
     QDesktopServices::openUrl(QUrl(Theme::instance()->helpUrl()));
 }
 
 void SynthesisBar::onSendFeedback() {
+    MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "sendFeedbackButton");
     const auto url = QUrl(Theme::instance()->feedbackUrl(ParametersCache::instance()->parametersInfo().language()));
     QDesktopServices::openUrl(url);
 }
 
 void SynthesisBar::onExit() {
+    MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "exitButton");
     hide();
     emit exit();
 }

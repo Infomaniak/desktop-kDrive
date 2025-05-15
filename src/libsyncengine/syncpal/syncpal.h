@@ -79,7 +79,9 @@ class GetSizeJob;
 struct SyncPalInfo {
         SyncPalInfo() = default;
         SyncPalInfo(const int driveDbId_, const SyncPath &localPath_, const SyncPath targetPath_ = {}) :
-            driveDbId(driveDbId_), localPath(localPath_), targetPath(targetPath_) {}
+            driveDbId(driveDbId_),
+            localPath(localPath_),
+            targetPath(targetPath_) {}
 
         int syncDbId{0};
         int driveDbId{0};
@@ -116,7 +118,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId, const std::string &version);
         virtual ~SyncPal();
 
-        ExitCode setTargetNodeId(const std::string &targetNodeId);
         inline void setAddErrorCallback(const std::function<void(const Error &)> &addError) { _addError = addError; }
         inline void setAddCompletedItemCallback(const std::function<void(int, const SyncFileItem &, bool)> &addCompletedItem) {
             _addCompletedItem = addCompletedItem;
@@ -241,6 +242,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
+        void freeSnapshotsCopies();
         void invalideSnapshots();
 
         // Workers

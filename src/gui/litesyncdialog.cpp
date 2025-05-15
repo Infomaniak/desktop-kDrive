@@ -24,6 +24,7 @@
 #include "guiutility.h"
 #include "enablestateholder.h"
 #include "guirequests.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QFile>
 #include <QHeaderView>
@@ -55,8 +56,15 @@ static const int readOnlyRole = Qt::UserRole + 1;
 Q_LOGGING_CATEGORY(lcLiteSyncDialog, "gui.litesyncdialog", QtInfoMsg)
 
 LiteSyncDialog::LiteSyncDialog(std::shared_ptr<ClientGui> gui, QWidget *parent) :
-    CustomDialog(true, parent), _gui(gui), _appsTableModel(nullptr), _appsTableView(nullptr), _saveButton(nullptr),
-    _actionIconColor(QColor()), _actionIconSize(QSize()), _needToSave(false), _defaultAppList(QList<ExclusionAppInfo>()),
+    CustomDialog(true, parent),
+    _gui(gui),
+    _appsTableModel(nullptr),
+    _appsTableView(nullptr),
+    _saveButton(nullptr),
+    _actionIconColor(QColor()),
+    _actionIconSize(QSize()),
+    _needToSave(false),
+    _defaultAppList(QList<ExclusionAppInfo>()),
     _userAppList(QList<ExclusionAppInfo>()) {
     initUI();
     updateUI();
@@ -281,6 +289,7 @@ void LiteSyncDialog::loadAppTable(QString scrollToAppId) {
 
 void LiteSyncDialog::onExit() {
     EnableStateHolder _(this);
+    MatomoClient::sendEvent("preferencesLiteSync", MatomoEventAction::Click, "exitButton");
 
     if (_needToSave) {
         CustomMessageBox msgBox(QMessageBox::Question, tr("Do you want to save your modifications?"),
@@ -301,6 +310,7 @@ void LiteSyncDialog::onExit() {
 
 void LiteSyncDialog::onAddAppButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("preferencesLiteSync", MatomoEventAction::Click, "addAppButton");
 
     EnableStateHolder _(this);
 
@@ -344,6 +354,8 @@ void LiteSyncDialog::onTableViewClicked(const QModelIndex &index) {
 
                         setNeedToSave(true);
                     }
+                    MatomoClient::sendEvent("preferencesLiteSync", MatomoEventAction::Click, "deleteAppButton",
+                                            ret == QMessageBox::Yes ? 1 : 0);
                 }
             }
         }
@@ -352,6 +364,7 @@ void LiteSyncDialog::onTableViewClicked(const QModelIndex &index) {
 
 void LiteSyncDialog::onSaveButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("preferencesLiteSync", MatomoEventAction::Click, "saveButton");
 
 #ifdef Q_OS_MAC
     ExitCode exitCode;

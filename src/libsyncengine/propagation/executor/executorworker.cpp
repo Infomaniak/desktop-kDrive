@@ -27,13 +27,13 @@
 #include "jobs/network/API_v2/downloadjob.h"
 #include "jobs/network/API_v2/movejob.h"
 #include "jobs/network/API_v2/renamejob.h"
-#include "jobs/network/API_v2/uploadjob.h"
 #include "jobs/network/API_v2/getfilelistjob.h"
-#include "jobs/network/API_v2/upload_session/driveuploadsession.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "update_detection/update_detector/updatetree.h"
 #include "jobs/jobmanager.h"
+#include "jobs/network/API_v2/upload/uploadjob.h"
+#include "jobs/network/API_v2/upload/upload_session/driveuploadsession.h"
 #include "libcommon/log/sentry/ptraces.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
@@ -41,7 +41,6 @@
 #include "requests/parameterscache.h"
 #include "requests/syncnodecache.h"
 #include "utility/jsonparserutility.h"
-#include "utility/logiffail.h"
 
 #include <iostream>
 #include <log4cplus/loggingmacros.h>
@@ -52,7 +51,7 @@ namespace KDC {
 #define SNAPSHOT_INVALIDATION_THRESHOLD 100 // Changes
 
 ExecutorWorker::ExecutorWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
-    OperationProcessor(syncPal, name, shortName) {}
+    OperationProcessor(syncPal, name, shortName, false) {}
 
 void ExecutorWorker::executorCallback(UniqueId jobId) {
     _terminatedJobs.push(jobId);
@@ -651,7 +650,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                 try {
                     int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
                     job = std::make_shared<DriveUploadSession>(
-                            _syncPal->vfs(), _syncPal->driveDbId(), _syncPal->_syncDb, absoluteLocalFilePath,
+                            _syncPal->vfs(), _syncPal->driveDbId(), _syncPal->syncDb(), absoluteLocalFilePath,
                             syncOp->affectedNode()->name(),
                             newCorrespondingParentNode->id().has_value() ? *newCorrespondingParentNode->id() : std::string(),
                             syncOp->affectedNode()->lastmodified() ? *syncOp->affectedNode()->lastmodified() : 0,
@@ -771,15 +770,14 @@ ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<Abstract
     // iteration.
     // 3. If the omit flag is False, update the updatetreeY structure to ensure that follow-up operations can execute correctly,
     // as they are based on the information in this structure.
+
     ignored = false;
-
     SyncPath relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
-
     if (relativeLocalFilePath.empty()) {
         return ExitCode::DataError;
     }
 
-    if (isLiteSyncActivated()) {
+    if (isLiteSyncActivated() && !syncOp->omit()) {
         SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
         bool ignoreItem = false;
         bool isSyncing = false;
@@ -809,17 +807,18 @@ ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<Abstract
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()));
             return exitInfo;
         }
-    } else {
-        if (!enoughLocalSpace(syncOp)) {
-            _syncPal->addError(Error(_syncPal->syncDbId(), name(), ExitCode::SystemError, ExitCause::NotEnoughDiskSpace));
-            return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
-        }
+        return ExitCode::Ok;
+    }
 
-        if (ExitInfo exitInfo = generateEditJob(syncOp, job); !exitInfo) {
-            LOGW_SYNCPAL_WARN(_logger, L"Failed to generate edit job for: " << SyncName2WStr(syncOp->affectedNode()->name())
-                                                                            << L" " << exitInfo);
-            return exitInfo;
-        }
+    if (!enoughLocalSpace(syncOp)) {
+        _syncPal->addError(Error(_syncPal->syncDbId(), name(), ExitCode::SystemError, ExitCause::NotEnoughDiskSpace));
+        return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
+    }
+
+    if (ExitInfo exitInfo = generateEditJob(syncOp, job); !exitInfo) {
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to generate edit job for: " << SyncName2WStr(syncOp->affectedNode()->name()) << L" "
+                                                                        << exitInfo);
+        return exitInfo;
     }
     return ExitCode::Ok;
 }
@@ -868,7 +867,7 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
             try {
                 int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
                 job = std::make_shared<DriveUploadSession>(
-                        _syncPal->vfs(), _syncPal->driveDbId(), _syncPal->_syncDb, absoluteLocalFilePath,
+                        _syncPal->vfs(), _syncPal->driveDbId(), _syncPal->syncDb(), absoluteLocalFilePath,
                         syncOp->correspondingNode()->id() ? *syncOp->correspondingNode()->id() : std::string(),
                         syncOp->affectedNode()->lastmodified() ? *syncOp->affectedNode()->lastmodified() : 0,
                         isLiteSyncActivated(), uploadSessionParallelJobs);
@@ -902,7 +901,7 @@ ExitInfo ExecutorWorker::fixModificationDate(SyncOpPtr syncOp, const SyncPath &a
     // Update last modification date in order to avoid generating more EDIT operations.
     bool found = false;
     DbNode dbNode;
-    if (!_syncPal->_syncDb->node(*syncOp->correspondingNode()->idb(), dbNode, found)) {
+    if (!_syncPal->syncDb()->node(*syncOp->correspondingNode()->idb(), dbNode, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
         return {ExitCode::DbError, ExitCause::DbAccessError};
     }
@@ -1749,7 +1748,7 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
 
     DbNodeId newDbNodeId;
     bool constraintError = false;
-    if (!_syncPal->_syncDb->insertNode(dbNode, newDbNodeId, constraintError)) {
+    if (!_syncPal->syncDb()->insertNode(dbNode, newDbNodeId, constraintError)) {
         LOGW_SYNCPAL_WARN(
                 _logger,
                 L"Failed to insert node into DB:"
@@ -1770,20 +1769,20 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
         // inserting the new node in DB
         DbNodeId dbNodeId;
         bool found = false;
-        if (!_syncPal->_syncDb->dbId(ReplicaSide::Remote, remoteId, dbNodeId, found)) {
+        if (!_syncPal->syncDb()->dbId(ReplicaSide::Remote, remoteId, dbNodeId, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
             return {ExitCode::DbError, ExitCause::DbAccessError};
         }
         if (found) {
             // Delete old node
-            if (!_syncPal->_syncDb->deleteNode(dbNodeId, found)) {
+            if (!_syncPal->syncDb()->deleteNode(dbNodeId, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::deleteNode");
                 return {ExitCode::DbError, ExitCause::DbAccessError};
             }
         }
 
         // Create new node
-        if (!_syncPal->_syncDb->insertNode(dbNode, newDbNodeId, constraintError)) {
+        if (!_syncPal->syncDb()->insertNode(dbNode, newDbNodeId, constraintError)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::insertNode");
             return {constraintError ? ExitCode::DataError : ExitCode::DbError, ExitCause::DbAccessError};
         }
@@ -1833,7 +1832,7 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
                                                   std::optional<SyncTime> newLastModTime, std::shared_ptr<Node> &node) {
     DbNode dbNode;
     bool found = false;
-    if (!_syncPal->_syncDb->node(*syncOp->correspondingNode()->idb(), dbNode, found)) {
+    if (!_syncPal->syncDb()->node(*syncOp->correspondingNode()->idb(), dbNode, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
         return {ExitCode::DbError, ExitCause::DbAccessError};
     }
@@ -1885,7 +1884,7 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
                                  << syncOp->affectedNode()->type());
     }
 
-    if (!_syncPal->_syncDb->updateNode(dbNode, found)) {
+    if (!_syncPal->syncDb()->updateNode(dbNode, found)) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to update node into DB: "
                                            << L"local ID: " << Utility::s2ws(localId) << L", remote ID: "
                                            << Utility::s2ws(remoteId) << L", local name: " << Utility::formatSyncName(localName)
@@ -1926,7 +1925,7 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
 
     DbNode dbNode;
     bool found = false;
-    if (!_syncPal->_syncDb->node(*correspondingNode->idb(), dbNode, found)) {
+    if (!_syncPal->syncDb()->node(*correspondingNode->idb(), dbNode, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
         return {ExitCode::DbError, ExitCause::DbAccessError};
     }
@@ -1982,7 +1981,7 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
                                  << L" / type=" << syncOp->affectedNode()->type());
     }
 
-    if (!_syncPal->_syncDb->updateNode(dbNode, found)) {
+    if (!_syncPal->syncDb()->updateNode(dbNode, found)) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to update node into DB: "
                                            << L"local ID: " << Utility::s2ws(localId) << L", remote ID: "
                                            << Utility::s2ws(remoteId) << L", local name: "
@@ -2046,7 +2045,7 @@ ExitInfo ExecutorWorker::deleteFromDb(std::shared_ptr<Node> node) {
 
     // Remove item (and children by cascade) from DB
     bool found = false;
-    if (!_syncPal->_syncDb->deleteNode(*node->idb(), found)) {
+    if (!_syncPal->syncDb()->deleteNode(*node->idb(), found)) {
         LOG_SYNCPAL_WARN(_logger, "Failed to remove node " << *node->idb() << " from DB");
         return {ExitCode::DbError, ExitCause::DbAccessError};
     }
