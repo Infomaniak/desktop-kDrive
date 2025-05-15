@@ -44,7 +44,7 @@ class KDriveDesktop(ConanFile):
         self.requires("xxhash/0.8.2") # From local recipe
 
         # log4cplus
-        log4cplus_options = { "shared": True, "unicode": True }
+        log4cplus_options = { "shared": False, "unicode": True }
         if self.settings.os == "Windows":
             log4cplus_options["thread_pool"] = False
         self.requires("log4cplus/2.1.2", options=log4cplus_options) # From https://conan.io/center/recipes/log4cplus
