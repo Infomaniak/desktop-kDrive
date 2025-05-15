@@ -93,7 +93,6 @@ if(APPLE)
 endif()
 
 if (WIN32)
-    include_directories("F:/Projects/log4cplus/include")
     include_directories("C:/Program Files (x86)/cppunit/include")
     include_directories("C:/Program Files (x86)/Sentry-Native/include")
     include_directories("C:/Program Files (x86)/libzip/include")
@@ -110,20 +109,11 @@ set_target_properties(${testserver_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY})
 
 # Includes
-if (WIN32)
-    target_include_directories(${testserver_NAME} PRIVATE
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/QProgressIndicator
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtlockedfile
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtsingleapplication
-        ${CMAKE_CURRENT_BINARY_DIR}
-        "C:/Program Files (x86)/log4cplus/include")
-else()
-    target_include_directories(${testserver_NAME} PRIVATE
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/QProgressIndicator
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtlockedfile
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtsingleapplication
-        ${CMAKE_CURRENT_BINARY_DIR})
-endif()
+target_include_directories(${testserver_NAME} PRIVATE
+    ${CMAKE_SOURCE_DIR}/src/3rdparty/QProgressIndicator
+    ${CMAKE_SOURCE_DIR}/src/3rdparty/qtlockedfile
+    ${CMAKE_SOURCE_DIR}/src/3rdparty/qtsingleapplication
+    ${CMAKE_CURRENT_BINARY_DIR})
 
 # Link
 target_link_libraries(${testserver_NAME}

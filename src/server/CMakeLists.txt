@@ -192,20 +192,11 @@ else()
 endif()
 
 # Includes
-if (WIN32)
-    target_include_directories(${APPLICATION_EXECUTABLE} PRIVATE
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/QProgressIndicator
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtlockedfile
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtsingleapplication
-        ${CMAKE_CURRENT_BINARY_DIR}
-        "C:/Program Files (x86)/log4cplus/include")
-else()
-    target_include_directories(${APPLICATION_EXECUTABLE} PRIVATE
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/QProgressIndicator
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtlockedfile
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtsingleapplication
-        ${CMAKE_CURRENT_BINARY_DIR})
-endif()
+target_include_directories(${APPLICATION_EXECUTABLE} PRIVATE
+    ${CMAKE_SOURCE_DIR}/src/3rdparty/QProgressIndicator
+    ${CMAKE_SOURCE_DIR}/src/3rdparty/qtlockedfile
+    ${CMAKE_SOURCE_DIR}/src/3rdparty/qtsingleapplication
+    ${CMAKE_CURRENT_BINARY_DIR})
 
 # Link
 add_library(updater STATIC ${updater_SRCS})

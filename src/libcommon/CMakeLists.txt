@@ -108,7 +108,6 @@ if (WIN32)
     target_include_directories(${libcommon_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
-        "C:/Program Files (x86)/log4cplus/include"
         "C:/Program Files (x86)/libzip/include"
         ${CMAKE_SOURCE_DIR}/src/3rdparty/keychain/include)
 else()

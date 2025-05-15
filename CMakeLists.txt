@@ -53,7 +53,6 @@ ELSEIF (WIN32)
     SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
         "C:/Program Files/OpenSSL"
         "C:/Program Files (x86)/Poco"
-        "C:/Program Files (x86)/log4cplus"
         "C:/Program Files (x86)/Sentry-Native"
         "C:/Program Files (x86)/libzip"
     )
