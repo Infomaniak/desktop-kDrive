@@ -392,7 +392,7 @@ void TestJobManager::testCanRunjob() {
 
         std::queue<std::shared_ptr<AbstractJob>> queue;
         bool noMoreRun = false;
-        constexpr NodeId testBigFileRemoteId = "97601"; // test_ci/big_file_dir/big_text_file.txt
+        const NodeId testBigFileRemoteId = "97601"; // test_ci/big_file_dir/big_text_file.txt
         for (auto i = 0; i < 20; i++) {
             const auto job =
                     std::make_shared<DownloadJob>(nullptr, driveDbId, testBigFileRemoteId, localTmpDir.path(), 110 * 1024 * 1024,
