@@ -7,7 +7,6 @@
     - [xxHash](#xxhash)
     - [OpenSSL](#openssl)
     - [Poco](#poco)
-    - [log4cplus](#log4cplus)
     - [CPPUnit](#cppunit)
     - [Zlib](#zlib)
     - [libzip](#libzip)
@@ -99,7 +98,7 @@ cmake --build build --config RelWithDebInfo
 cmake --install build --config RelWithDebInfo
 ```
 
-## xxHash
+## xxHash & log4cplus
 
 See [Conan](#conan) for installation instructions.
 
@@ -143,29 +142,6 @@ While still in the `build` directory, issue the following commands:
 ```powershell
 cmake --build . --target install --config Debug
 cmake --build . --target install --config Release
-```
-
-## log4cplus
-
-Clone and build `log4cplus`:
-
-```powershell
-cd F:\Projects
-git clone --recurse-submodules https://github.com/log4cplus/log4cplus.git
-cd log4cplus
-git checkout 2.1.x
-mkdir cmake-build
-cd cmake-build
-cmake -G "Visual Studio 16 2019" .. -DLOG4CPLUS_ENABLE_THREAD_POOL=OFF
-cmake --build . --target install --config Debug
-cmake --build . --target install --config Release
-```
-
-If an error occurs with the the include of `catch.hpp`, you need to change branch inside the `catch` directory:
-
-```bash
-cd ../catch
-git checkout v2.x
 ```
 
 ## CPPUnit
@@ -357,7 +333,7 @@ The project requires additional CMake variables for a correct build. To inject t
 powershell ./infomaniak-build-tools/conan/build_dependencies.ps1 [Debug|Release] [-OutputDir <output_dir>]
 ```
 
-> **Note:** Currently only **xxHash** is managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** Currently only **xxHash** and **log4cplus** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
 
 ---
 # Build in Debug

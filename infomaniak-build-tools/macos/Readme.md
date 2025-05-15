@@ -6,7 +6,6 @@
 	- [Xcode](#xcode)
 	- [Qt 6.2.3](#qt-623)
 	- [Sentry](#sentry)
-	- [log4cplus](#log4cplus)
 	- [cppunit](#cppunit)
 	- [OpenSSL](#openssl)
 	- [Poco](#poco)
@@ -91,28 +90,6 @@ cd ~/Projects/sentry-native
 cmake -B build -DSENTRY_BACKEND=crashpad -DSENTRY_INTEGRATION_QT=YES -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -DCMAKE_PREFIX_PATH=$QTDIR/lib/cmake
 cmake --build build --parallel
 sudo cmake --install build
-```
-
-## log4cplus
-
-Download and build `log4cplus`:
-
-```bash
-cd ~/Projects
-git clone --recurse-submodules https://github.com/log4cplus/log4cplus.git
-cd log4cplus
-git checkout 2.1.x
-mkdir build
-cd build
-cmake .. -DUNICODE=1 -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15"
-sudo cmake --build . --target install
-```
-
-If an error occurs with the the include of `catch.hpp`, you need to change branch inside the `catch` directory:
-
-```bash
-cd ../catch
-git checkout v2.x
 ```
 
 ## CPPUnit
@@ -331,7 +308,7 @@ The project requires additional CMake variables for a correct build. To inject t
 ./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release] [--output-dir=<output_dir>]
 ```
 
-> **Note:** Currently only **xxHash** is managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** Currently only **xxHash** and **log4cplus** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
 
 ---
 # Build in Debug
