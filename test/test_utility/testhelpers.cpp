@@ -37,7 +37,7 @@ namespace KDC::testhelpers {
 
 SyncName makeNfdSyncName() {
     SyncName nfdNormalized;
-    if (!Utility::normalizedSyncName(Str("ééé"), nfdNormalized, Utility::UnicodeNormalization::NFD)) {
+    if (!Utility::normalizedSyncName(Str("ééé"), nfdNormalized, UnicodeNormalization::NFD)) {
         assert(false);
     }
     return nfdNormalized;
