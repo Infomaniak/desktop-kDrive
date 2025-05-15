@@ -160,8 +160,7 @@ elseif(APPLE)
         xxHash::xxhash
         ${FOUNDATION_LIBRARY}
         ${CORESERVICES_LIBRARY}
-        ${APPKIT_LIBRARY}
-        utf8proc)
+        ${APPKIT_LIBRARY})
 else()
     target_link_libraries(${libcommonserver_NAME}
         "/usr/local/lib/libxxhash.so"

@@ -2370,13 +2370,13 @@ bool SyncDb::selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap) {
         LOG_IF_FAIL(querySyncNameValue(requestId, 1, nameLocal));
 
         SyncName nfcNormalizedName;
-        if (!Utility::normalizedSyncName(nameLocal, nfcNormalizedName, Utility::UnicodeNormalization::NFC)) {
+        if (!Utility::normalizedSyncName(nameLocal, nfcNormalizedName, UnicodeNormalization::NFC)) {
             LOGW_DEBUG(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(nameLocal));
             return false;
         }
 
         SyncName nfdNormalizedName;
-        if (!Utility::normalizedSyncName(nameLocal, nfdNormalizedName, Utility::UnicodeNormalization::NFD)) {
+        if (!Utility::normalizedSyncName(nameLocal, nfdNormalizedName, UnicodeNormalization::NFD)) {
             LOGW_DEBUG(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(nameLocal));
             return false;
         }
