@@ -145,7 +145,7 @@ bool LocalDeleteJob::canRun() {
         // Item is found at the same path on remote
         LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_absolutePath).c_str()
                                           << L" still exists on remote replica. Aborting current sync and restarting.");
-        _exitInfo = {ExitCode::DataError, ExitCause::InvalidSnapshot}; // We need to rebuild the remote snapshot from scratch
+        _exitInfo = {ExitCode::DataError, ExitCause::InvalidSnapshot}; // We need to rebuild the remote liveSnapshot from scratch
         return false;
     }
 

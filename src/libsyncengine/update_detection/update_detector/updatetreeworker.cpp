@@ -297,8 +297,8 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
         }
 
         if (!insertionResult.second) {
-            // Failed to insert Create operation. A full rebuild of the snapshot is required.
-            // The following issue has been identified: the operating system missed a delete operation, in which case a snapshot
+            // Failed to insert Create operation. A full rebuild of the liveSnapshot is required.
+            // The following issue has been identified: the operating system missed a delete operation, in which case a liveSnapshot
             // rebuild is both required and sufficient.
 
 
@@ -366,7 +366,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
     auto perfMonitor = sentry::pTraces::scoped::Step4DeleteFile(syncDbId());
 
     const ExitCode exitCode = handleCreateOperationsWithSamePath();
-    if (exitCode != ExitCode::Ok) return exitCode; // Rebuild the snapshot.
+    if (exitCode != ExitCode::Ok) return exitCode; // Rebuild the liveSnapshot.
 
     std::unordered_set<UniqueId> deleteOpsIds = _operationSet->getOpsByType(OperationType::Delete);
     for (const auto &deleteOpId: deleteOpsIds) {

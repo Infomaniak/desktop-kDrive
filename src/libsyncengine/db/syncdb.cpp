@@ -1560,7 +1560,7 @@ bool SyncDb::checksum(ReplicaSide side, const NodeId &nodeId, std::optional<std:
     return true;
 }
 
-// Returns the list of IDs contained in snapshot
+// Returns the list of IDs contained in liveSnapshot
 bool SyncDb::ids(ReplicaSide side, std::vector<NodeId> &ids, bool &found) {
     const std::scoped_lock lock(_mutex);
 
@@ -1619,7 +1619,7 @@ bool SyncDb::ids(ReplicaSide side, NodeSet &ids, bool &found) {
     return true;
 }
 
-// Returns whether node with ID nodeId1 is an ancestor of the node with ID nodeId2 in snapshot
+// Returns whether node with ID nodeId1 is an ancestor of the node with ID nodeId2 in liveSnapshot
 bool SyncDb::ancestor(ReplicaSide side, const NodeId &nodeId1, const NodeId &nodeId2, bool &ret, bool &found) {
     const std::scoped_lock lock(_mutex);
 
@@ -1691,7 +1691,7 @@ bool SyncDb::ancestor(ReplicaSide side, const NodeId &nodeId1, const NodeId &nod
     return true;
 }
 
-// Returns database ID for the ID nodeId of the snapshot from replica `side`
+// Returns database ID for the ID nodeId of the liveSnapshot from replica `side`
 bool SyncDb::dbId(ReplicaSide side, const NodeId &nodeId, DbNodeId &dbNodeId, bool &found) {
     const std::scoped_lock lock(_mutex);
     found = false;
@@ -1718,7 +1718,7 @@ bool SyncDb::dbId(ReplicaSide side, const NodeId &nodeId, DbNodeId &dbNodeId, bo
     return true;
 }
 
-// Returns the ID of the `side` snapshot for the database ID dbNodeId
+// Returns the ID of the `side` liveSnapshot for the database ID dbNodeId
 bool SyncDb::id(ReplicaSide side, DbNodeId dbNodeId, NodeId &nodeId, bool &found) {
     const std::scoped_lock lock(_mutex);
 
@@ -1928,7 +1928,7 @@ bool SyncDb::pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, std::vector
             LOG_IF_FAIL(
                     queryIsNullValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, (side == ReplicaSide::Local ? 3 : 4), nodeIdIsNull));
             if (!nodeIdIsNull) {
-                // The node exists in the snapshot
+                // The node exists in the liveSnapshot
                 DbNodeId dbChildNodeId;
                 LOG_IF_FAIL(queryInt64Value(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 0, dbChildNodeId));
 
@@ -1975,7 +1975,7 @@ bool SyncDb::pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, NodeSet &id
             LOG_IF_FAIL(
                     queryIsNullValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, (side == ReplicaSide::Local ? 3 : 4), nodeIdIsNull));
             if (!nodeIdIsNull) {
-                // The node exists in the snapshot
+                // The node exists in the liveSnapshot
                 DbNodeId dbChildNodeId;
                 LOG_IF_FAIL(queryInt64Value(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 0, dbChildNodeId));
 
@@ -2171,7 +2171,7 @@ bool SyncDb::pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<DbNodeId
             bool nodeIdIsNull;
             LOG_IF_FAIL(queryIsNullValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 0, nodeIdIsNull));
             if (!nodeIdIsNull) {
-                // The node exists in the snapshot
+                // The node exists in the liveSnapshot
                 DbNodeId dbChildNodeId;
                 LOG_IF_FAIL(queryInt64Value(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 0, dbChildNodeId));
                 ids.insert(dbChildNodeId);
@@ -2213,7 +2213,7 @@ bool SyncDb::pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<NodeIds,
             bool nodeIdIsNull = false;
             LOG_IF_FAIL(queryIsNullValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 0, nodeIdIsNull));
             if (!nodeIdIsNull) {
-                // The node exists in the snapshot
+                // The node exists in the liveSnapshot
                 NodeIds childNodeIds;
                 LOG_IF_FAIL(queryInt64Value(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 0, childNodeIds.dbNodeId));
                 LOG_IF_FAIL(queryStringValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 3, childNodeIds.localNodeId));

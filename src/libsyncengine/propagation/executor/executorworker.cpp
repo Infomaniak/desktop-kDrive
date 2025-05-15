@@ -511,7 +511,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
 
         bool placeholderCreation = isLiteSyncActivated() && syncOp->affectedNode()->type() == NodeType::File;
         if (placeholderCreation && syncOp->affectedNode()->id().has_value()) {
-            const bool isLink = _syncPal->snapshotCopy(ReplicaSide::Remote)->isLink(*syncOp->affectedNode()->id());
+            const bool isLink = _syncPal->snapshot(ReplicaSide::Remote)->isLink(*syncOp->affectedNode()->id());
             placeholderCreation = !isLink;
         }
 
@@ -1764,7 +1764,7 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
         // Manage DELETE events not reported by the folder watcher
         // Some apps save files with DELETE + CREATE operations, but sometimes,
         // the DELETE operation is not reported
-        // => The local snapshot will contain 2 nodes with the same remote id
+        // => The local liveSnapshot will contain 2 nodes with the same remote id
         // => A unique constraint error on the remote node id will occur when
         // inserting the new node in DB
         DbNodeId dbNodeId;
@@ -1787,7 +1787,7 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
             return {constraintError ? ExitCode::DataError : ExitCode::DbError, ExitCause::DbAccessError};
         }
 
-        // The snapshot must be invalidated before the next sync
+        // The liveSnapshot must be invalidated before the next sync
         _snapshotToInvalidate = true;
     }
 
@@ -2283,7 +2283,7 @@ ExitInfo ExecutorWorker::handleOpsLocalFileAccessError(const SyncOpPtr syncOp, c
 
 ExitInfo ExecutorWorker::handleOpsFileNotFound(const SyncOpPtr syncOp, [[maybe_unused]] const ExitInfo &opsExitInfo) {
     _syncPal->setRestart(true);
-    _syncPal->invalideSnapshots(); // There is a file/dir missing; we need to recompute the snapshot.
+    _syncPal->invalideSnapshots(); // There is a file/dir missing; we need to recompute the liveSnapshot.
     return removeDependentOps(syncOp);
 }
 

@@ -148,7 +148,7 @@ void SnapshotItem::addChild(const std::shared_ptr<SnapshotItem> &child) {
     _children.insert(child);
 }
 
-void SnapshotItem::removeChild(const std::shared_ptr<SnapshotItem> &child) {
+void SnapshotItem::removeChild(const std::shared_ptr< SnapshotItem> &child) {
     _children.erase(child);
 }
 

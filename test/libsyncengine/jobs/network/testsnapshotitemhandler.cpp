@@ -224,7 +224,7 @@ void TestSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT(!error);
     }
 
-    // No quotes within the snapshot item name: success, the item won't be ignored
+    // No quotes within the liveSnapshot item name: success, the item won't be ignored
     {
         SnapshotItem item;
         bool ignore = false;
@@ -245,7 +245,7 @@ void TestSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
-    // A pair of double quotes within the snapshot item name: success, the item won't be ignored
+    // A pair of double quotes within the liveSnapshot item name: success, the item won't be ignored
     {
         SnapshotItem item;
         bool ignore = false;
@@ -266,7 +266,7 @@ void TestSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
-    // Two pairs of double quotes within the snapshot item name: success
+    // Two pairs of double quotes within the liveSnapshot item name: success
     {
         SnapshotItem item;
         bool ignore = false;
@@ -334,7 +334,7 @@ void TestSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT(!error);
     }
 
-    // Double quotes within the snapshot item name: success
+    // Double quotes within the liveSnapshot item name: success
     {
         SnapshotItem item;
         bool ignore = false;
@@ -349,7 +349,7 @@ void TestSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT(!error);
     }
 
-    // A pair of double quotes within the snapshot item name: success
+    // A pair of double quotes within the liveSnapshot item name: success
     {
         SnapshotItem item;
         bool ignore = false;
@@ -364,7 +364,7 @@ void TestSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT(!error);
     }
 
-    // Escaped double quotes within the snapshot item name: no error, but the item will be ignored
+    // Escaped double quotes within the liveSnapshot item name: no error, but the item will be ignored
     {
         SnapshotItem item;
         bool ignore = false;
@@ -379,7 +379,7 @@ void TestSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT(!error);
     }
 
-    // Escaped double quotes within the snapshot item name: no error, but the item will be ignored
+    // Escaped double quotes within the liveSnapshot item name: no error, but the item will be ignored
     {
         SnapshotItem item;
         bool ignore = false;

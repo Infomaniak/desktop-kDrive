@@ -68,7 +68,7 @@ void ComputeFSOperationWorker::execute() {
     _syncPal->operationSet(ReplicaSide::Remote)->clear();
 
     // Update SyncNode cache
-    _syncPal->updateSyncNode();
+    updateSyncNode();
 
     // Update unsynced list cache
     updateUnsyncedList();
@@ -105,18 +105,17 @@ void ComputeFSOperationWorker::execute() {
         LOG_SYNCPAL_INFO(_logger, "FS operation aborted after: " << elapsedSeconds.count() << "s");
 
     } else {
-        /* If the current snapshot state does not reveal any operation, we store the current revision number.
-         * On the next call to compute filesystem operations, only items from the snapshot that were modified in a higher revision
-         * will be processed.
-         * It is important not to update the CFSO's lastSyncedRevision if an operation is detected, otherwise, we may fail to
-         * detect it again if, for any reason, the propagation of the change fails.
+        /* If the current liveSnapshot state does not reveal any operation, we store the current revision number.
+         * On the next call to compute filesystem operations, only items from the liveSnapshot that were modified in a higher
+         * revision will be processed. It is important not to update the CFSO's lastSyncedRevision if an operation is detected,
+         * otherwise, we may fail to detect it again if, for any reason, the propagation of the change fails.
          */
 
         if (_syncPal->operationSet(ReplicaSide::Local)->nbOps() == 0) {
-            _lastLocalSnapshotSyncedRevision = _syncPal->snapshotCopy(ReplicaSide::Local)->revision();
+            _lastLocalSnapshotSyncedRevision = _syncPal->snapshot(ReplicaSide::Local)->revision();
         }
         if (_syncPal->operationSet(ReplicaSide::Remote)->nbOps() == 0) {
-            _lastRemoteSnapshotSyncedRevision = _syncPal->snapshotCopy(ReplicaSide::Remote)->revision();
+            _lastRemoteSnapshotSyncedRevision = _syncPal->snapshot(ReplicaSide::Remote)->revision();
         }
         exitCode = ExitCode::Ok;
         LOG_SYNCPAL_INFO(_logger, "FS operation sets generated in: " << elapsedSeconds.count() << "s");
@@ -124,6 +123,51 @@ void ComputeFSOperationWorker::execute() {
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
     setDone(exitCode);
+}
+
+ExitCode ComputeFSOperationWorker::updateSyncNode(SyncNodeType syncNodeType) {
+    // Remove deleted nodes from sync_node table & cache
+    NodeSet nodeIdSet;
+    ExitCode exitCode = SyncNodeCache::instance()->syncNodes(syncDbId(), syncNodeType, nodeIdSet);
+    if (exitCode != ExitCode::Ok) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in SyncNodeCache::syncNodes");
+        return exitCode;
+    }
+
+    auto nodeIdIt = nodeIdSet.begin();
+    while (nodeIdIt != nodeIdSet.end()) {
+        const bool ok = syncNodeType == SyncNodeType::TmpLocalBlacklist
+                                ? _syncPal->snapshot(ReplicaSide::Local)->exists(*nodeIdIt)
+                                : _syncPal->snapshot(ReplicaSide::Remote)->exists(*nodeIdIt);
+        if (!ok) {
+            nodeIdIt = nodeIdSet.erase(nodeIdIt);
+        } else {
+            nodeIdIt++;
+        }
+    }
+
+    exitCode = SyncNodeCache::instance()->update(syncDbId(), syncNodeType, nodeIdSet);
+    if (exitCode != ExitCode::Ok) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in SyncNodeCache::update");
+        return exitCode;
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitCode ComputeFSOperationWorker::updateSyncNode() {
+    for (int syncNodeTypeIdx = toInt(SyncNodeType::WhiteList); syncNodeTypeIdx <= toInt(SyncNodeType::UndecidedList);
+         syncNodeTypeIdx++) {
+        SyncNodeType syncNodeType = static_cast<SyncNodeType>(syncNodeTypeIdx);
+
+        ExitCode exitCode = updateSyncNode(syncNodeType);
+        if (exitCode != ExitCode::Ok) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in SyncPal::updateSyncNode for syncNodeType=" << toInt(syncNodeType));
+            return exitCode;
+        }
+    }
+
+    return ExitCode::Ok;
 }
 
 ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side, const DbNode &dbNode,
@@ -140,7 +184,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     const auto dbLastModified = dbNode.lastModified(side);
     const auto dbName = dbNode.name(side);
     const auto &dbPath = side == ReplicaSide::Local ? localDbPath : remoteDbPath;
-    const auto snapshot = _syncPal->snapshotCopy(side);
+    const auto snapshot = _syncPal->snapshot(side);
     const auto opSet = _syncPal->operationSet(side);
 
     NodeId parentNodeid;
@@ -253,7 +297,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         return ExitCode::Ok;
     }
 
-    // Load snapshot path
+    // Load liveSnapshot path
     SyncPath snapshotPath;
     if (bool ignore = false; !snapshot->path(nodeId, snapshotPath, ignore)) {
         if (ignore) {
@@ -414,7 +458,7 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(NodeIdSet &localIdsSet, No
 }
 
 ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const NodeIdSet &idsSet) {
-    const std::shared_ptr<const Snapshot> snapshot = _syncPal->snapshotCopy(side);
+    const std::shared_ptr<const Snapshot> snapshot = _syncPal->snapshot(side);
     std::shared_ptr<FSOperationSet> opSet = _syncPal->operationSet(side);
 
     NodeIdSet remainingDbIds;
@@ -538,30 +582,29 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
         return ExitCode::Ok;
     }
 
-    if (!_syncPal->snapshotCopy(ReplicaSide::Local)->exists(dbNode.nodeIdLocal().value()) ||
-        !_syncPal->snapshotCopy(ReplicaSide::Remote)->exists(dbNode.nodeIdRemote().value())) {
+    if (!_syncPal->snapshot(ReplicaSide::Local)->exists(dbNode.nodeIdLocal().value()) ||
+        !_syncPal->snapshot(ReplicaSide::Remote)->exists(dbNode.nodeIdRemote().value())) {
         // Ignore if item does not exist
         return ExitCode::Ok;
     }
 
-    if (const bool localSnapshotIsLink = _syncPal->snapshotCopy(ReplicaSide::Local)->isLink(dbNode.nodeIdLocal().value());
+    if (const bool localSnapshotIsLink = _syncPal->snapshot(ReplicaSide::Local)->isLink(dbNode.nodeIdLocal().value());
         localSnapshotIsLink) {
         // Local and remote links sizes are not always the same (macOS aliases, Windows junctions)
         return ExitCode::Ok;
     }
 
-    int64_t localSnapshotSize = _syncPal->snapshotCopy(ReplicaSide::Local)->size(dbNode.nodeIdLocal().value());
-    int64_t remoteSnapshotSize = _syncPal->snapshotCopy(ReplicaSide::Remote)->size(dbNode.nodeIdRemote().value());
-    SyncTime localSnapshotLastModified = _syncPal->snapshotCopy(ReplicaSide::Local)->lastModified(dbNode.nodeIdLocal().value());
-    SyncTime remoteSnapshotLastModified =
-            _syncPal->snapshotCopy(ReplicaSide::Remote)->lastModified(dbNode.nodeIdRemote().value());
+    int64_t localSnapshotSize = _syncPal->snapshot(ReplicaSide::Local)->size(dbNode.nodeIdLocal().value());
+    int64_t remoteSnapshotSize = _syncPal->snapshot(ReplicaSide::Remote)->size(dbNode.nodeIdRemote().value());
+    SyncTime localSnapshotLastModified = _syncPal->snapshot(ReplicaSide::Local)->lastModified(dbNode.nodeIdLocal().value());
+    SyncTime remoteSnapshotLastModified = _syncPal->snapshot(ReplicaSide::Remote)->lastModified(dbNode.nodeIdRemote().value());
 
     // A mismatch is detected if all timestamps are equal but the sizes in snapshots differ.
     if (localSnapshotSize != remoteSnapshotSize && localSnapshotLastModified == dbNode.lastModifiedLocal().value() &&
         localSnapshotLastModified == remoteSnapshotLastModified) {
         SyncPath localSnapshotPath;
         if (bool ignore = false;
-            !_syncPal->snapshotCopy(ReplicaSide::Local)->path(dbNode.nodeIdLocal().value(), localSnapshotPath, ignore)) {
+            !_syncPal->snapshot(ReplicaSide::Local)->path(dbNode.nodeIdLocal().value(), localSnapshotPath, ignore)) {
             if (ignore) {
                 notifyIgnoredItem(dbNode.nodeIdLocal().value(), localSnapshotPath, dbNode.type());
                 return ExitCode::Ok;
@@ -714,7 +757,7 @@ bool ComputeFSOperationWorker::isTooBig(const std::shared_ptr<const Snapshot> re
             return false;
         }
 
-        localNodeId = _syncPal->snapshotCopy(ReplicaSide::Local)->itemId(relativePath);
+        localNodeId = _syncPal->snapshot(ReplicaSide::Local)->itemId(relativePath);
         if (!localNodeId.empty()) {
             // We already synchronize the item locally, keep it
             return false;
@@ -761,7 +804,7 @@ bool ComputeFSOperationWorker::isPathTooLong(const SyncPath &path, const NodeId 
 ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const DbNode &dbNode,
                                                   const std::shared_ptr<const Snapshot> &snapshot, bool &isReused) const {
     isReused = false;
-    // Check if the node is in the snapshot
+    // Check if the node is in the liveSnapshot
     if (snapshot->side() != ReplicaSide::Local || !snapshot->exists(localNodeId)) {
         return ExitCode::Ok;
     }
@@ -832,7 +875,7 @@ ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(const ReplicaSide side, con
                                                      bool &isExcluded) {
     if (side != ReplicaSide::Local) return ExitCode::Ok;
 
-    if (!_syncPal->snapshotCopy(ReplicaSide::Local)->itemId(relativePath).empty()) {
+    if (!_syncPal->snapshot(ReplicaSide::Local)->itemId(relativePath).empty()) {
         // Item with the same path but different ID exist
         // This is an Edit operation (Delete-Create)
         return ExitCode::Ok;
@@ -866,7 +909,7 @@ ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(const ReplicaSide side, con
         isExcluded = true;
         return ExitCode::Ok;
     }
-    if (_syncPal->snapshotCopy(ReplicaSide::Local)->isOrphan(nodeId)) {
+    if (_syncPal->snapshot(ReplicaSide::Local)->isOrphan(nodeId)) {
         // This can happen if the propagation of template exclusions has been unexpectedly interrupted.
         // This special handling should be removed once the app keeps track on such interruptions.
         return ExitCode::Ok;
@@ -879,7 +922,7 @@ ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(const ReplicaSide side, con
                                     "Unwanted local delete operation averted");
 
     setExitCause(ExitCause::InvalidSnapshot);
-    return {ExitCode::DataError, ExitCause::InvalidSnapshot}; // We need to rebuild the local snapshot from scratch.
+    return {ExitCode::DataError, ExitCause::InvalidSnapshot}; // We need to rebuild the local liveSnapshot from scratch.
 }
 
 void ComputeFSOperationWorker::deleteChildOpRecursively(const std::shared_ptr<const Snapshot> remoteSnapshot,
@@ -955,7 +998,7 @@ bool ComputeFSOperationWorker::checkIfPathIsInDeletedFolder(const SyncPath &path
 bool ComputeFSOperationWorker::hasChangedSinceLastSeen(const NodeIds &nodeIds) const {
     // Check if the item has change since the last sync
     for (const auto side: std::array<ReplicaSide, 2>{ReplicaSide::Local, ReplicaSide::Remote}) {
-        const auto lastItemChangeSnapshotRevision = _syncPal->snapshotCopy(side)->lastChangeRevision(nodeIds.nodeId(side));
+        const auto lastItemChangeSnapshotRevision = _syncPal->snapshot(side)->lastChangeRevision(nodeIds.nodeId(side));
         const auto lastSyncedSnapshotRevision =
                 side == ReplicaSide::Local ? _lastLocalSnapshotSyncedRevision : _lastRemoteSnapshotSyncedRevision;
         if (lastItemChangeSnapshotRevision == 0 || lastItemChangeSnapshotRevision > lastSyncedSnapshotRevision) {

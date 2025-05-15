@@ -26,30 +26,32 @@ constexpr int maxRetryBeforeInvalidation = 3;
 
 FileSystemObserverWorker::FileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                    const std::string &shortName, const ReplicaSide side) :
-    ISyncWorker(syncPal, name, shortName), _syncDb(syncPal->syncDb()), _snapshot(syncPal->snapshot(side)) {}
+    ISyncWorker(syncPal, name, shortName),
+    _syncDb(syncPal->syncDb()),
+    _liveSnapshot(ReplicaSide::Local, syncPal->syncDb()->rootNode()) {}
 
 
 void FileSystemObserverWorker::invalidateSnapshot() {
-    if (!_snapshot->isValid()) return;
+    if (!_liveSnapshot.isValid()) return;
     // The synchronisation will restart.
     _syncPal->setRestart(true);
 
-    _snapshot->init();
+    _liveSnapshot.init();
     _invalidateCounter = 0;
-    LOG_SYNCPAL_DEBUG(_logger, _snapshot->side() << " snapshot invalidated.");
+    LOG_SYNCPAL_DEBUG(_logger, _liveSnapshot.side() << " snapshot invalidated.");
 }
 
 void FileSystemObserverWorker::tryToInvalidateSnapshot() {
-    if (!_snapshot->isValid()) return;
+    if (!_liveSnapshot.isValid()) return;
 
     _invalidateCounter++;
     if (_invalidateCounter < maxRetryBeforeInvalidation) {
         // The synchronisation will restart, even if
         // - there is no change in the file system and
-        // - if the snapshot is not actually invalidated.
+        // - if the liveSnapshot is not actually invalidated.
         _syncPal->setRestart(true);
 
-        LOG_SYNCPAL_DEBUG(_logger, _snapshot->side()
+        LOG_SYNCPAL_DEBUG(_logger, _liveSnapshot.side()
                                            << " snapshot is not invalidated yet. Invalidation count: " << _invalidateCounter);
         return;
     }

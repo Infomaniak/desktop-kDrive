@@ -34,11 +34,11 @@ class SyncDbReadOnlyCache {
         // Getters with replica IDs
         bool parent(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeid, bool &found);
         bool correspondingNodeId(ReplicaSide side, const NodeId &nodeIdIn, NodeId &nodeIdOut, bool &found);
-        // Returns database ID for the ID nodeId of the snapshot from replica `side`
+        // Returns database ID for the ID nodeId of the liveSnapshot from replica `side`
         bool dbId(ReplicaSide side, const NodeId &nodeId, DbNodeId &dbNodeId, bool &found);
         bool node(DbNodeId dbNodeId, DbNode &dbNode, bool &found);
         bool node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &found);
-        // Returns the list of IDs contained in snapshot
+        // Returns the list of IDs contained in liveSnapshot
         bool ids(ReplicaSide side, std::vector<NodeId> &ids, bool &found);
         bool ids(ReplicaSide side, NodeSet &ids, bool &found);
         bool ids(std::unordered_set<NodeIds, NodeIds::HashFunction> &ids, bool &found);

@@ -52,7 +52,7 @@ class SnapshotItemHandler {
 
         bool updateSnapshotItem(const std::string &str, CsvIndex index, SnapshotItem &item);
         /**
-         * @brief Extract one snapshot item from the full listing CSV file. An item can spread on several lines.
+         * @brief Extract one liveSnapshot item from the full listing CSV file. An item can spread on several lines.
          * @param item output value
          * @param ss stringstream containing the CSV file
          * @param error `true` if parsing fails

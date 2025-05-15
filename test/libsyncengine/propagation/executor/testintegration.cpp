@@ -457,11 +457,11 @@ void TestIntegration::testSimultaneousChanges() {
 
     waitForSyncToFinish(SourceLocation::currentLoc());
 
-    // Check effect of local change on remote snapshot
+    // Check effect of local change on remote liveSnapshot
     SyncTime newModTime = _syncPal->_remoteSnapshot->lastModified(testExecutorFileCopyRemoteId);
     CPPUNIT_ASSERT(newModTime > prevModTime);
 
-    // Check effect of remote change on local snapshot
+    // Check effect of remote change on local liveSnapshot
     bool found = false;
     NodeId localId;
     CPPUNIT_ASSERT(_syncPal->syncDb()->correspondingNodeId(ReplicaSide::Remote, remoteId, localId, found));
@@ -716,7 +716,7 @@ void TestIntegration::testEditEditPseudoConflict() {
                   fileStat.modtime);
     job.runSynchronously();
 
-    Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
+    Utility::msleep(10000); // Wait more to make sure the remote liveSnapshot has been updated (TODO : not needed once longpoll
                             // request is implemented)
 
     _syncPal->unpause();
@@ -754,7 +754,7 @@ void TestIntegration::testEditEditConflict() {
                   fileStat.modtime);
     job.runSynchronously();
 
-    Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
+    Utility::msleep(10000); // Wait more to make sure the remote liveSnapshot has been updated (TODO : not needed once longpoll
                             // request is implemented)
 
     // Edit again the local file
@@ -827,7 +827,7 @@ void TestIntegration::testMoveCreateConflict() {
     IoHelper::getFileStat(destFile.make_preferred(), &fileStat, exists);
     NodeId prevLocalId = std::to_string(fileStat.inode);
 
-    Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
+    Utility::msleep(10000); // Wait more to make sure the remote liveSnapshot has been updated (TODO : not needed once longpoll
                             // request is implemented)
 
     LOGW_DEBUG(_logger, L"----- test Move-Create conflict : Resolution phase");
@@ -919,7 +919,7 @@ void TestIntegration::testEditDeleteConflict1() {
     IoHelper::getFileStat(sourceFile.make_preferred(), &fileStat, exists);
     NodeId localId = std::to_string(fileStat.inode);
 
-    Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
+    Utility::msleep(10000); // Wait more to make sure the remote liveSnapshot has been updated (TODO : not needed once longpoll
                             // request is implemented)
 
     _syncPal->unpause();
@@ -1007,7 +1007,7 @@ void TestIntegration::testEditDeleteConflict2() {
     IoHelper::getFileStat(sourceFile.make_preferred(), &fileStat, exists);
     NodeId localFileId = std::to_string(fileStat.inode);
 
-    Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
+    Utility::msleep(10000); // Wait more to make sure the remote liveSnapshot has been updated (TODO : not needed once longpoll
                             // request is implemented)
 
     _syncPal->unpause();
@@ -1124,7 +1124,7 @@ void TestIntegration::testMoveDeleteConflict1() {
         deleteJob.runSynchronously();
     }
 
-    Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
+    Utility::msleep(10000); // Wait more to make sure the remote liveSnapshot has been updated (TODO : not needed once longpoll
                             // request is implemented)
 
     LOGW_DEBUG(_logger, L"----- test Move-Delete conflict 1 : Resolution phase");
@@ -1263,7 +1263,7 @@ void TestIntegration::testMoveDeleteConflict2() {
     setupCreateDirJob.runSynchronously();
     xRemoteId = setupCreateDirJob.nodeId();
 
-    Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
+    Utility::msleep(10000); // Wait more to make sure the remote liveSnapshot has been updated (TODO : not needed once longpoll
                             // request is implemented)
 
     LOGW_DEBUG(_logger, L"----- test Move-Delete conflict 2 : Resolution phase");
@@ -1406,7 +1406,7 @@ void TestIntegration::testMoveDeleteConflict3() {
                              NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     setupDeleteJob.runSynchronously();
 
-    Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
+    Utility::msleep(10000); // Wait more to make sure the remote liveSnapshot has been updated (TODO : not needed once longpoll
                             // request is implemented)
 
     LOGW_DEBUG(_logger, L"----- test Move-Delete conflict 3 : Resolution phase");
@@ -1533,7 +1533,7 @@ void TestIntegration::testMoveDeleteConflict4() {
     RenameJob setupRenameJob(_syncPal->vfs(), _driveDbId, aRemoteId, Str("B"));
     setupRenameJob.runSynchronously();
 
-    Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
+    Utility::msleep(10000); // Wait more to make sure the remote liveSnapshot has been updated (TODO : not needed once longpoll
                             // request is implemented)
 
     LOGW_DEBUG(_logger, L"----- test Move-Delete conflict 4 : Resolution phase");
@@ -1659,7 +1659,7 @@ void TestIntegration::testMoveDeleteConflict5() {
                              NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     setupDeleteJob.runSynchronously();
 
-    Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
+    Utility::msleep(10000); // Wait more to make sure the remote liveSnapshot has been updated (TODO : not needed once longpoll
                             // request is implemented)
 
     LOGW_DEBUG(_logger, L"----- test Move-Delete conflict 5 : Resolution phase");
@@ -1726,7 +1726,7 @@ void TestIntegration::testMoveParentDeleteConflict() {
     MoveJob setupMoveJob(_syncPal->vfs(), _driveDbId, "", sRemoteId, rRemoteId);
     setupMoveJob.runSynchronously();
 
-    Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
+    Utility::msleep(10000); // Wait more to make sure the remote liveSnapshot has been updated (TODO : not needed once longpoll
                             // request is implemented)
 
     LOGW_DEBUG(_logger, L"----- test MoveParent-Delete conflict : Resolution phase");
@@ -1812,7 +1812,7 @@ void TestIntegration::testCreateParentDeleteConflict() {
                              NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
     setupDeleteJob.runSynchronously();
 
-    Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
+    Utility::msleep(10000); // Wait more to make sure the remote liveSnapshot has been updated (TODO : not needed once longpoll
                             // request is implemented)
 
     LOGW_DEBUG(_logger, L"----- test Create-ParentDelete : Resolution phase");
@@ -1924,7 +1924,7 @@ void TestIntegration::testMoveMoveSourcePseudoConflict() {
     MoveJob setupRemoteMoveJob(_syncPal->vfs(), _driveDbId, "", testFileRemoteId, testExecutorSubFolderRemoteId);
     setupRemoteMoveJob.runSynchronously();
 
-    Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
+    Utility::msleep(10000); // Wait more to make sure the remote liveSnapshot has been updated (TODO : not needed once longpoll
                             // request is implemented)
 
     LOGW_DEBUG(_logger, L"----- test Move-MoveSource pseudo conflict : Resolution phase");
@@ -1989,7 +1989,7 @@ void TestIntegration::testMoveMoveSourceConflict() {
     MoveJob setupRemoteMoveJob(_syncPal->vfs(), _driveDbId, "", testFileRemoteId, testExecutorSubFolderRemoteId);
     setupRemoteMoveJob.runSynchronously();
 
-    Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
+    Utility::msleep(10000); // Wait more to make sure the remote liveSnapshot has been updated (TODO : not needed once longpoll
                             // request is implemented)
 
     LOGW_DEBUG(_logger, L"----- test Move-MoveSource conflict : Resolution phase");
@@ -2059,7 +2059,7 @@ void TestIntegration::testMoveMoveDestConflict() {
 
     waitForSyncToFinish(SourceLocation::currentLoc());
 
-    Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
+    Utility::msleep(10000); // Wait more to make sure the remote liveSnapshot has been updated (TODO : not needed once longpoll
                             // request is implemented)
 
     LOGW_DEBUG(_logger, L"----- test Move-MoveDest conflict : Resolution phase");
@@ -2141,7 +2141,7 @@ void TestIntegration::testMoveMoveCycleConflict() {
 
     waitForSyncToFinish(SourceLocation::currentLoc());
 
-    Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
+    Utility::msleep(10000); // Wait more to make sure the remote liveSnapshot has been updated (TODO : not needed once longpoll
                             // request is implemented)
 
     LOGW_DEBUG(_logger, L"----- test Move-MoveCycle conflict : Resolution phase");

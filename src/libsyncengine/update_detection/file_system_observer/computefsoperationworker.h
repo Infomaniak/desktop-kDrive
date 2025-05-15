@@ -55,7 +55,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
         ExitCode inferChangeFromDbNode(const ReplicaSide side, const DbNode &dbNode, const SyncPath &localDbPath,
                                        const SyncPath &remoteDbPath); // Detect change for a single node on a specific side.
 
-        // Detect changes based on the snapshot records: create operations
+        // Detect changes based on the liveSnapshot records: create operations
         ExitCode exploreSnapshotTree(ReplicaSide side, const NodeSet &idsSet);
 
         ExitCode checkFileIntegrity(const DbNode &dbNode);
@@ -63,7 +63,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
         bool isExcludedFromSync(const std::shared_ptr<const Snapshot> snapshot, const ReplicaSide side, const NodeId &nodeId,
                                 const SyncPath &path, NodeType type, int64_t size);
         /**
-         * Check if the item, or any ancestor, appears in any blacklist. Also checks for each corresponding node in other snapshot
+         * Check if the item, or any ancestor, appears in any blacklist. Also checks for each corresponding node in other liveSnapshot
          * if it appears in any blacklist. Parents are retrieved from DB.
          * @param nodeId The ID of the item to evaluate.
          * @param side The replica side corresponding to the provided ID.
@@ -71,15 +71,15 @@ class ComputeFSOperationWorker : public ISyncWorker {
          */
         bool isInUnsyncedListParentSearchInDb(const NodeId &nodeId, ReplicaSide side) const;
         /**
-         * Check if the item, or any ancestor, appears in any blacklist. Also checks for each corresponding node in other snapshot
-         * if it appears in any blacklist. Parents are retrieved from snapshot.
-         * @param snapshot The snapshot that contains `nodeId`
+         * Check if the item, or any ancestor, appears in any blacklist. Also checks for each corresponding node in other liveSnapshot
+         * if it appears in any blacklist. Parents are retrieved from liveSnapshot.
+         * @param liveSnapshot The liveSnapshot that contains `nodeId`
          * @param nodeId The ID of the item to evaluate.
          * @param side The replica side corresponding to the provided ID.
          * @return `true` if the item is blacklisted in any blacklist.
          */
         bool isInUnsyncedListParentSearchInSnapshot(std::shared_ptr<const Snapshot> snapshot, const NodeId &nodeId,
-                                                    ReplicaSide side) const; // Search parent in snapshot
+                                                    ReplicaSide side) const; // Search parent in liveSnapshot
         bool isWhitelisted(const std::shared_ptr<const Snapshot> snapshot, const NodeId &nodeId) const;
         bool isTooBig(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId, int64_t size);
         bool isPathTooLong(const SyncPath &path, const NodeId &nodeId, NodeType type) const;
@@ -91,6 +91,8 @@ class ComputeFSOperationWorker : public ISyncWorker {
                                       NodeSet &tmpTooBigList);
 
         void updateUnsyncedList();
+        ExitCode updateSyncNode(SyncNodeType syncNodeType);
+        ExitCode updateSyncNode();
         void logOperationGeneration(const ReplicaSide side, const FSOpPtr fsOp);
         void notifyIgnoredItem(const NodeId &nodeId, const SyncPath &relativePath, NodeType nodeType);
         ExitInfo blacklistItem(const SyncPath &relativeLocalPath);

@@ -90,9 +90,9 @@ class SnapshotItem {
         bool _canWrite = true;
         bool _canShare = true;
         std::unordered_set<std::shared_ptr<SnapshotItem>> _children;
-        SnapshotRevision _lastChangeRevision = 0; // The revision of the snapshot corresponding to the last change of this item.
+        SnapshotRevision _lastChangeRevision = 0; // The revision of the liveSnapshot corresponding to the last change of this item.
         std::shared_ptr<SnapshotRevisionHandler> _snapshotRevisionHandler;
-        mutable SyncPath _path; // The item relative path. Cached value. To use only on a snapshot copy, not a real time one.
+        mutable SyncPath _path; // The item relative path. Cached value. To use only on a liveSnapshot copy, not a real time one.
 
         [[nodiscard]] SyncPath path() const { return _path; }
         void setPath(const SyncPath &path) const { _path = path; }

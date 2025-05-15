@@ -9231,7 +9231,7 @@ SQLITE_API int sqlite3_wal_checkpoint(sqlite3 *db, const char *zDb);
 **   ^This mode blocks (it invokes the
 **   [sqlite3_busy_handler|busy-handler callback]) until there is no
 **   database writer and all readers are reading from the most recent database
-**   snapshot. ^It then checkpoints all frames in the log file and syncs the
+**   liveSnapshot. ^It then checkpoints all frames in the log file and syncs the
 **   database file. ^This mode blocks new database writers while it is pending,
 **   but new database readers are allowed to continue unimpeded.
 **
@@ -9744,9 +9744,9 @@ SQLITE_API int sqlite3_system_errno(sqlite3*);
 
 /*
 ** CAPI3REF: Database Snapshot
-** KEYWORDS: {snapshot} {sqlite3_snapshot}
+** KEYWORDS: {liveSnapshot} {sqlite3_snapshot}
 **
-** An instance of the snapshot object records the state of a [WAL mode]
+** An instance of the liveSnapshot object records the state of a [WAL mode]
 ** database for some specific point in history.
 **
 ** In [WAL mode], multiple [database connections] that are open on the
@@ -9793,7 +9793,7 @@ typedef struct sqlite3_snapshot {
 **
 **   <li> One or more transactions must have been written to the current wal
 **        file since it was created on disk (by any connection). This means
-**        that a snapshot cannot be taken on a wal mode database with no wal
+**        that a liveSnapshot cannot be taken on a wal mode database with no wal
 **        file immediately after it is first opened. At least one transaction
 **        must be written to it first.
 ** </ul>
@@ -9816,13 +9816,13 @@ SQLITE_API SQLITE_EXPERIMENTAL int sqlite3_snapshot_get(
 );
 
 /*
-** CAPI3REF: Start a read transaction on an historical snapshot
+** CAPI3REF: Start a read transaction on an historical liveSnapshot
 ** METHOD: sqlite3_snapshot
 **
 ** ^The [sqlite3_snapshot_open(D,S,P)] interface either starts a new read
 ** transaction or upgrades an existing one for schema S of
 ** [database connection] D such that the read transaction refers to
-** historical [snapshot] P, rather than the most recent change to the
+** historical [liveSnapshot] P, rather than the most recent change to the
 ** database. ^The [sqlite3_snapshot_open()] interface returns SQLITE_OK
 ** on success or an appropriate [error code] if it fails.
 **
@@ -9832,19 +9832,19 @@ SQLITE_API SQLITE_EXPERIMENTAL int sqlite3_snapshot_get(
 ** must have no active statements (SELECT statements that have been passed
 ** to sqlite3_step() but not sqlite3_reset() or sqlite3_finalize()).
 ** SQLITE_ERROR is returned if either of these conditions is violated, or
-** if schema S does not exist, or if the snapshot object is invalid.
+** if schema S does not exist, or if the liveSnapshot object is invalid.
 **
 ** ^A call to sqlite3_snapshot_open() will fail to open if the specified
-** snapshot has been overwritten by a [checkpoint]. In this case
+** liveSnapshot has been overwritten by a [checkpoint]. In this case
 ** SQLITE_ERROR_SNAPSHOT is returned.
 **
 ** If there is already a read transaction open when this function is
 ** invoked, then the same read transaction remains open (on the same
-** database snapshot) if SQLITE_ERROR, SQLITE_BUSY or SQLITE_ERROR_SNAPSHOT
+** database liveSnapshot) if SQLITE_ERROR, SQLITE_BUSY or SQLITE_ERROR_SNAPSHOT
 ** is returned. If another error code - for example SQLITE_PROTOCOL or an
 ** SQLITE_IOERR error code - is returned, then the final state of the
 ** read transaction is undefined. If SQLITE_OK is returned, then the
-** read transaction is now open on database snapshot P.
+** read transaction is now open on database liveSnapshot P.
 **
 ** ^(A call to [sqlite3_snapshot_open(D,S,P)] will fail if the
 ** database connection D does not know that the database file for
@@ -9865,7 +9865,7 @@ SQLITE_API SQLITE_EXPERIMENTAL int sqlite3_snapshot_open(
 );
 
 /*
-** CAPI3REF: Destroy a snapshot
+** CAPI3REF: Destroy a liveSnapshot
 ** DESTRUCTOR: sqlite3_snapshot
 **
 ** ^The [sqlite3_snapshot_free(P)] interface destroys [sqlite3_snapshot] P.
@@ -9878,26 +9878,26 @@ SQLITE_API SQLITE_EXPERIMENTAL int sqlite3_snapshot_open(
 SQLITE_API SQLITE_EXPERIMENTAL void sqlite3_snapshot_free(sqlite3_snapshot*);
 
 /*
-** CAPI3REF: Compare the ages of two snapshot handles.
+** CAPI3REF: Compare the ages of two liveSnapshot handles.
 ** METHOD: sqlite3_snapshot
 **
 ** The sqlite3_snapshot_cmp(P1, P2) interface is used to compare the ages
-** of two valid snapshot handles.
+** of two valid liveSnapshot handles.
 **
-** If the two snapshot handles are not associated with the same database
+** If the two liveSnapshot handles are not associated with the same database
 ** file, the result of the comparison is undefined.
 **
 ** Additionally, the result of the comparison is only valid if both of the
-** snapshot handles were obtained by calling sqlite3_snapshot_get() since the
+** liveSnapshot handles were obtained by calling sqlite3_snapshot_get() since the
 ** last time the wal file was deleted. The wal file is deleted when the
 ** database is changed back to rollback mode or when the number of database
-** clients drops to zero. If either snapshot handle was obtained before the
+** clients drops to zero. If either liveSnapshot handle was obtained before the
 ** wal file was last deleted, the value returned by this function
 ** is undefined.
 **
 ** Otherwise, this API returns a negative value if P1 refers to an older
-** snapshot than P2, zero if the two handles refer to the same database
-** snapshot, and a positive value if P1 is a newer snapshot than P2.
+** liveSnapshot than P2, zero if the two handles refer to the same database
+** liveSnapshot, and a positive value if P1 is a newer liveSnapshot than P2.
 **
 ** This interface is only available if SQLite is compiled with the
 ** [SQLITE_ENABLE_SNAPSHOT] option.
