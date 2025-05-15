@@ -119,9 +119,9 @@ std::shared_ptr<AbstractJob> JobManager::getJob(const UniqueId &jobId) {
     return nullptr;
 }
 
-void JobManager::setPoolCapacity(const int count) {
-    _maxNbThread = std::max(count, 2); // Poco::ThreadPool throw an exception if the capacity is set to a value less than then
-                                       // minimum capacity (2 by default)
+void JobManager::setPoolCapacity(const int nbThread) {
+    _maxNbThread = std::max(nbThread, 2); // Poco::ThreadPool throw an exception if the capacity is set to a value less than then
+                                          // minimum capacity (2 by default)
     Poco::ThreadPool::defaultPool().addCapacity(_maxNbThread - Poco::ThreadPool::defaultPool().capacity());
     LOG_DEBUG(_logger, "Max number of thread changed to " << _maxNbThread << " threads");
 }
@@ -169,12 +169,7 @@ void JobManager::run() noexcept {
             if (canRunjob(job)) {
                 startJob(job, priority);
             } else {
-                if (const auto [_, inserted] = _pendingJobs.try_emplace(job->jobId(), job, priority); !inserted) {
-                    LOG_ERROR(Log::instance()->getLogger(), "Failed to insert job " << job->jobId() << " in pending jobs list!");
-                } else {
-                    LOG_DEBUG(Log::instance()->getLogger(),
-                              "Job " << job->jobId() << " is pending (thread pool maximum capacity reached)");
-                }
+                addToPendingJobs(job, priority);
             }
 
             availableThreads = availableThreadsInPool();
@@ -199,11 +194,13 @@ void JobManager::startJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priori
     try {
         if (job->isAborted()) {
             LOG_DEBUG(Log::instance()->getLogger(), "Job " << job->jobId() << " has been canceled");
-            _managedJobs.erase(job->jobId());
+            (void) _managedJobs.erase(job->jobId());
         } else {
             LOG_DEBUG(Log::instance()->getLogger(), "Starting job " << job->jobId() << " with priority " << priority);
             Poco::ThreadPool::defaultPool().startWithPriority(priority, *job);
-            _runningJobs.insert(job->jobId());
+            if (const auto [_, inserted] = _runningJobs.insert(job->jobId()); !inserted) {
+                LOG_WARN(Log::instance()->getLogger(), "Failed to insert job " << job->jobId() << " in _runningJobs map");
+            }
             if (isBigFileUploadJob(job)) {
                 _uploadSessionJobId = job->jobId();
             }
@@ -216,7 +213,23 @@ void JobManager::startJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priori
     }
 }
 
-bool JobManager::canRunjob(const std::shared_ptr<AbstractJob> job) {
+void JobManager::addToPendingJobs(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority) {
+    if (const auto [_, inserted] = _pendingJobs.try_emplace(job->jobId(), job, priority); !inserted) {
+        LOG_ERROR(Log::instance()->getLogger(), "Failed to insert job " << job->jobId() << " in pending jobs list!");
+    } else {
+        LOG_DEBUG(Log::instance()->getLogger(), "Job " << job->jobId() << " is pending (thread pool maximum capacity reached)");
+    }
+}
+
+int JobManager::availableThreadsInPool() const {
+    try {
+        return static_cast<uint32_t>(Poco::ThreadPool::defaultPool().available());
+    } catch (Poco::Exception &) {
+        return 0;
+    }
+}
+
+bool JobManager::canRunjob(const std::shared_ptr<AbstractJob> job) const {
     if (isBigFileUploadJob(job)) {
         if (_uploadSessionJobId == 0) {
             // Allow only 1 upload session at a time.
@@ -231,7 +244,7 @@ bool JobManager::canRunjob(const std::shared_ptr<AbstractJob> job) {
     return true;
 }
 
-bool JobManager::isBigFileDownloadJob(const std::shared_ptr<AbstractJob> job) {
+bool JobManager::isBigFileDownloadJob(const std::shared_ptr<AbstractJob> job) const {
     if (const auto &downloadJob = std::dynamic_pointer_cast<DownloadJob>(job);
         downloadJob && downloadJob->expectedSize() > bigFileThreshold) {
         return true;
@@ -239,7 +252,7 @@ bool JobManager::isBigFileDownloadJob(const std::shared_ptr<AbstractJob> job) {
     return false;
 }
 
-bool JobManager::isBigFileUploadJob(const std::shared_ptr<AbstractJob> job) {
+bool JobManager::isBigFileUploadJob(const std::shared_ptr<AbstractJob> job) const {
     if (std::dynamic_pointer_cast<DriveUploadSession>(job)) {
         // Upload sessions are only for big files
         return true;
@@ -270,14 +283,6 @@ void JobManager::managePendingJobs() {
             continue;
         }
         it++;
-    }
-}
-
-int JobManager::availableThreadsInPool() {
-    try {
-        return Poco::ThreadPool::defaultPool().available();
-    } catch (Poco::Exception &) {
-        return 0;
     }
 }
 

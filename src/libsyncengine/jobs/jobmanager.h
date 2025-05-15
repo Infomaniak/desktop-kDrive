@@ -77,7 +77,7 @@ class JobManager {
         inline size_t countManagedJobs() const { return _managedJobs.size(); }
         inline int maxNbThreads() const { return _maxNbThread; }
 
-        void setPoolCapacity(int count); // For testing purpose
+        void setPoolCapacity(int nbThread);
         void decreasePoolCapacity();
 
     private:
@@ -88,13 +88,14 @@ class JobManager {
 
         void run() noexcept;
         void startJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority);
+        void addToPendingJobs(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority);
         void adjustMaxNbThread();
         void managePendingJobs();
 
-        int availableThreadsInPool();
-        bool canRunjob(const std::shared_ptr<AbstractJob> job);
-        bool isBigFileDownloadJob(const std::shared_ptr<AbstractJob> job);
-        bool isBigFileUploadJob(const std::shared_ptr<AbstractJob> job);
+        int availableThreadsInPool() const;
+        bool canRunjob(const std::shared_ptr<AbstractJob> job) const;
+        bool isBigFileDownloadJob(const std::shared_ptr<AbstractJob> job) const;
+        bool isBigFileUploadJob(const std::shared_ptr<AbstractJob> job) const;
 
         static std::shared_ptr<JobManager> _instance;
         bool _stop{false};
