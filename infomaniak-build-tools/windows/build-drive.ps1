@@ -22,28 +22,28 @@ Param(
     [ValidateSet('Release', 'RelWithDebInfo', 'Debug')]
     [string] $buildType = "RelWithDebInfo",
 
-    # Path	: The path to the root CMakeLists.txt
+    # Path: The path to the root CMakeLists.txt
     [string] $path = $PWD.Path,
 
-    # Clean	: The files to clean on execution
+    # Clean: The files to clean on execution
     [string] $clean,
 
     # Thumbprint: Specifies which certificate will be used to sign the app
     [string] $thumbprint,
 
-    # Ext	: Rebuild the extension (automatically done if vfs.h is missing)
+    # Ext: Rebuild the extension (automatically done if vfs.h is missing)
     [switch] $ext,
 
-    # ci	: Build with CI testing (currently only checks the building stage)
+    # Ci: Build with CI testing (currently only checks the building stage)
     [switch] $ci,
 
-    # Upload :	flag to trigger the use of the USB-key signing certificate
+    # Upload: Flag to trigger the use of the USB-key signing certificate
     [switch] $upload,
 
-    # Coverage :	flag to enable or disable the code coverage computation
+    # Coverage: Flag to enable or disable the code coverage computation
     [switch] $coverage,
 
-    # Help	: Displays the help message then exit if called
+    # Help: Displays the help message and exits
     [switch] $help
 )
 
@@ -234,6 +234,9 @@ function CMake-Build-And-Install {
 
     if ($ci) {
         $flags += ("'-DBUILD_UNIT_TESTS:BOOL=TRUE'")
+    }
+
+    if ($coverage) {
         $flags += ("'-DKD_COVERAGE:BOOL=TRUE'")
     }
 
