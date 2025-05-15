@@ -43,12 +43,12 @@ class FileExclusionDialog : public CustomDialog {
             Action
         };
 
-        QStandardItemModel *_filesTableModel;
-        QTableView *_filesTableView;
-        QPushButton *_saveButton;
+        QStandardItemModel *_filesTableModel{nullptr};
+        QTableView *_filesTableView{nullptr};
+        QPushButton *_saveButton{nullptr};
         QColor _actionIconColor;
         QSize _actionIconSize;
-        bool _needToSave;
+        bool _needToSave{false};
         QList<ExclusionTemplateInfo> _defaultTemplateList;
         QList<ExclusionTemplateInfo> _userTemplateList;
 
@@ -57,8 +57,8 @@ class FileExclusionDialog : public CustomDialog {
 
         void initUI();
         void updateUI();
-        void addTemplate(const ExclusionTemplateInfo &templateInfo, bool readOnly, int &row, const QString &scrollToTempl,
-                         int &scrollToRow);
+        void addTemplate(const ExclusionTemplateInfo &templateInfo, const bool readOnly, int &row,
+                         const QString &scrollToTemplate, int &scrollToRow);
         void setActionIconColor(const QColor &color);
         void setActionIconSize(const QSize &size);
         void setActionIcon();
