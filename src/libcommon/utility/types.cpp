@@ -152,6 +152,8 @@ std::string toString(const ExitCause e) {
             return "FileAlreadyExist";
         case ExitCause::FileAccessError:
             return "FileAccessError";
+        case ExitCause::FileLocked:
+            return "FileLocked";
         case ExitCause::UnexpectedFileSystemEvent:
             return "UnexpectedFileSystemEvent";
         case ExitCause::NotEnoughDiskSpace:
