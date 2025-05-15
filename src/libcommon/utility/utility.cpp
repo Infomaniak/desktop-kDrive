@@ -1008,6 +1008,7 @@ bool CommonUtility::normalizedSyncName(const SyncName &name, SyncName &normalize
         return true;
     }
 
+
     char *strResult = nullptr;
     if (normalization == UnicodeNormalization::NFD) {
         strResult = reinterpret_cast<char *>(utf8proc_NFD(reinterpret_cast<const uint8_t *>(name.c_str())));
