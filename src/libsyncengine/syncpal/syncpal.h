@@ -258,7 +258,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const;
 
-        // Returns a liveSnapshot of the filesystem state at the start of the ongoing sync.
+        // Returns a snapshot of the filesystem state at the start of the ongoing sync.
         // Returns nullptr if no sync is currently in progress.
         std::shared_ptr<ConstSnapshot> snapshot(ReplicaSide side) const;
 
@@ -285,9 +285,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<SyncDb> _syncDb{nullptr};
 
         // Shared objects
-        std::shared_ptr<ConstSnapshot> _localSnapshot{nullptr}; // A copy of the real-time local liveSnapshot taken at the start
+        std::shared_ptr<ConstSnapshot> _localSnapshot{nullptr}; // A copy of the real-time local snapshot taken at the start
                                                                 // of each sync, used by synchronization workers
-        std::shared_ptr<ConstSnapshot> _remoteSnapshot{nullptr}; // A copy of the real-time remote liveSnapshot taken at the start
+        std::shared_ptr<ConstSnapshot> _remoteSnapshot{nullptr}; // A copy of the real-time remote snapshot taken at the start
                                                                  // of each sync, used by synchronization workers
         std::shared_ptr<FSOperationSet> _localOperationSet{nullptr};
         std::shared_ptr<FSOperationSet> _remoteOperationSet{nullptr};

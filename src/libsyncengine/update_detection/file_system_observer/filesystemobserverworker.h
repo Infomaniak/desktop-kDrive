@@ -62,7 +62,7 @@ class FileSystemObserverWorker : public ISyncWorker {
     private:
         [[nodiscard]] virtual ReplicaSide getSnapshotType() const = 0;
 
-        int _invalidateCounter{false}; // A counter used to invalidate the liveSnapshot only after a few attempt.
+        int _invalidateCounter{false}; // A counter used to invalidate the snapshot only after a few attempt.
 
         friend class TestLocalFileSystemObserverWorker;
         friend class TestRemoteFileSystemObserverWorker;

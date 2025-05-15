@@ -283,7 +283,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
             if (_liveSnapshot.pathExists(relativePath)) {
                 NodeId previousItemId = _liveSnapshot.itemId(relativePath);
-                // If an item with the same path already exists, remove it from liveSnapshot because its ID might have changed (i.e.
+                // If an item with the same path already exists, remove it from snapshot because its ID might have changed (i.e.
                 // the file has been downloaded in the tmp folder then moved to override the existing one). The item will be
                 // inserted below anyway.
                 if (_liveSnapshot.removeItem(previousItemId)) {

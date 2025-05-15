@@ -48,7 +48,7 @@ void FileSystemObserverWorker::tryToInvalidateSnapshot() {
     if (_invalidateCounter < maxRetryBeforeInvalidation) {
         // The synchronisation will restart, even if
         // - there is no change in the file system and
-        // - if the liveSnapshot is not actually invalidated.
+        // - if the snapshot is not actually invalidated.
         _syncPal->setRestart(true);
 
         LOG_SYNCPAL_DEBUG(_logger, _liveSnapshot.side()

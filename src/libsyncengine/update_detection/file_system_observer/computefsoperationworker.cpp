@@ -105,8 +105,8 @@ void ComputeFSOperationWorker::execute() {
         LOG_SYNCPAL_INFO(_logger, "FS operation aborted after: " << elapsedSeconds.count() << "s");
 
     } else {
-        /* If the current liveSnapshot state does not reveal any operation, we store the current revision number.
-         * On the next call to compute filesystem operations, only items from the liveSnapshot that were modified in a higher
+        /* If the current snapshot state does not reveal any operation, we store the current revision number.
+         * On the next call to compute filesystem operations, only items from the snapshot that were modified in a higher
          * revision will be processed. It is important not to update the CFSO's lastSyncedRevision if an operation is detected,
          * otherwise, we may fail to detect it again if, for any reason, the propagation of the change fails.
          */
@@ -297,7 +297,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         return ExitCode::Ok;
     }
 
-    // Load liveSnapshot path
+    // Load snapshot path
     SyncPath snapshotPath;
     if (bool ignore = false; !snapshot->path(nodeId, snapshotPath, ignore)) {
         if (ignore) {
@@ -922,7 +922,7 @@ ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(const ReplicaSide side, con
                                     "Unwanted local delete operation averted");
 
     setExitCause(ExitCause::InvalidSnapshot);
-    return {ExitCode::DataError, ExitCause::InvalidSnapshot}; // We need to rebuild the local liveSnapshot from scratch.
+    return {ExitCode::DataError, ExitCause::InvalidSnapshot}; // We need to rebuild the local snapshot from scratch.
 }
 
 void ComputeFSOperationWorker::deleteChildOpRecursively(const std::shared_ptr<const Snapshot> remoteSnapshot,

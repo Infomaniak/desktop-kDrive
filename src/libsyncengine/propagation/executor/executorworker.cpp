@@ -1764,7 +1764,7 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
         // Manage DELETE events not reported by the folder watcher
         // Some apps save files with DELETE + CREATE operations, but sometimes,
         // the DELETE operation is not reported
-        // => The local liveSnapshot will contain 2 nodes with the same remote id
+        // => The local snapshot will contain 2 nodes with the same remote id
         // => A unique constraint error on the remote node id will occur when
         // inserting the new node in DB
         DbNodeId dbNodeId;
@@ -1787,7 +1787,7 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
             return {constraintError ? ExitCode::DataError : ExitCode::DbError, ExitCause::DbAccessError};
         }
 
-        // The liveSnapshot must be invalidated before the next sync
+        // The snapshot must be invalidated before the next sync
         _snapshotToInvalidate = true;
     }
 

@@ -297,7 +297,7 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
         }
 
         if (!insertionResult.second) {
-            // Failed to insert Create operation. A full rebuild of the liveSnapshot is required.
+            // Failed to insert Create operation. A full rebuild of the snapshot is required.
             // The following issue has been identified: the operating system missed a delete operation, in which case a liveSnapshot
             // rebuild is both required and sufficient.
 

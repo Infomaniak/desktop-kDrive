@@ -221,7 +221,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
 
 void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
     // Create two files with the same name, up to encoding (NFC vs NFD).
-    // On Windows and Linux systems, we expect to find two distinct items. But we will only consider one in the local liveSnapshot and
+    // On Windows and Linux systems, we expect to find two distinct items. But we will only consider one in the local snapshot and
     // we do not guarantee that it will always be the same one. However, durring a synchronisation, we should always synchronize
     // the item for wich we detected a change last time. On MacOSX, a single item is expected as the system creates a single file
     // (overwrite).
@@ -241,7 +241,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
 
     int count = 0;
     while (!_syncPal->_localFSObserverWorker->liveSnapshot().isValid() ||
-           !localFSO->_folderWatcher->isReady()) { // Wait for the liveSnapshot generation
+           !localFSO->_folderWatcher->isReady()) { // Wait for the snapshot generation
         Utility::msleep(100);
         CPPUNIT_ASSERT(count++ < 20); // Do not wait more than 2s
     }
@@ -450,7 +450,7 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
 
     int count = 0;
     while (!_syncPal->_localFSObserverWorker->liveSnapshot().isValid() ||
-           !localFSO->_folderWatcher->isReady()) { // Wait for the liveSnapshot generation and folder watcher start
+           !localFSO->_folderWatcher->isReady()) { // Wait for the snapshot generation and folder watcher start
         Utility::msleep(100);
         CPPUNIT_ASSERT(count++ < 20); // Do not wait more than 2s
     }
@@ -506,7 +506,7 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingCh
     CPPUNIT_ASSERT(localFSO);
 
     while (!_syncPal->_localFSObserverWorker->liveSnapshot().isValid() ||
-           !localFSO->_folderWatcher->isReady()) { // Wait for the liveSnapshot generation
+           !localFSO->_folderWatcher->isReady()) { // Wait for the snapshot generation
         Utility::msleep(100);
         CPPUNIT_ASSERT(count++ < 20); // Do not wait more than 2s
     }
@@ -567,7 +567,7 @@ void TestLocalFileSystemObserverWorker::testInvalidateCounter() {
     _syncPal->_localFSObserverWorker->tryToInvalidateSnapshot();
     CPPUNIT_ASSERT_EQUAL(false, _syncPal->_localFSObserverWorker->liveSnapshot().isValid()); // Snapshot has been invalidated.
 
-    Utility::msleep(1000); // Wait for the liveSnapshot to be rebuilt
+    Utility::msleep(1000); // Wait for the snapshot to be rebuilt
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_localFSObserverWorker->liveSnapshot().isValid()); // Snapshot is now valid again.
     _syncPal->_localFSObserverWorker->tryToInvalidateSnapshot();

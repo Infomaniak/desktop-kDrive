@@ -31,7 +31,7 @@ namespace KDC {
 FolderWatcher_win::FolderWatcher_win(LocalFileSystemObserverWorker *parent, const SyncPath &path) : FolderWatcher(parent, path) {}
 
 void FolderWatcher_win::changesLost() {
-    // Current liveSnapshot needs to be invalidated
+    // Current snapshot needs to be invalidated
     _parent->invalidateSnapshot();
 }
 

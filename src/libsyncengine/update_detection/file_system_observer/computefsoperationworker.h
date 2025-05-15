@@ -55,7 +55,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
         ExitCode inferChangeFromDbNode(const ReplicaSide side, const DbNode &dbNode, const SyncPath &localDbPath,
                                        const SyncPath &remoteDbPath); // Detect change for a single node on a specific side.
 
-        // Detect changes based on the liveSnapshot records: create operations
+        // Detect changes based on the snapshot records: create operations
         ExitCode exploreSnapshotTree(ReplicaSide side, const NodeSet &idsSet);
 
         ExitCode checkFileIntegrity(const DbNode &dbNode);
@@ -73,7 +73,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
         /**
          * Check if the item, or any ancestor, appears in any blacklist. Also checks for each corresponding node in other liveSnapshot
          * if it appears in any blacklist. Parents are retrieved from liveSnapshot.
-         * @param liveSnapshot The liveSnapshot that contains `nodeId`
+         * @param snapshot The snapshot that contains `nodeId`
          * @param nodeId The ID of the item to evaluate.
          * @param side The replica side corresponding to the provided ID.
          * @return `true` if the item is blacklisted in any blacklist.

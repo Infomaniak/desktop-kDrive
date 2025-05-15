@@ -291,7 +291,7 @@ void TestSnapshot::testPath() {
         CPPUNIT_ASSERT(!ignore);
 #endif
     }
-    // Same test but on the liveSnapshot copy (meaning using paths stored in cache)
+    // Same test but on the snapshot copy (meaning using paths stored in cache)
     std::vector<SyncName> names = {Str("E:S"), Str("E:/S")};
     for (const auto &name: names) {
         const auto id = CommonUtility::generateRandomStringAlphaNum();
@@ -413,8 +413,8 @@ void TestSnapshot::testCopySnapshot() {
     CPPUNIT_ASSERT(Str2SyncName("newFile1.1") == liveSnapshot.name("file1.1"));
     CPPUNIT_ASSERT(Str2SyncName("file1.1") == snapshot.name("file1.1"));
 
-    // Ensure the liveSnapshot revision is correctly handled
-    liveSnapshot.setName("file1.1", Str("File1.1")); // Ensure the live liveSnapshot revision increase
+    // Ensure the snapshot revision is correctly handled
+    liveSnapshot.setName("file1.1", Str("File1.1")); // Ensure the live snapshot revision increase
     CPPUNIT_ASSERT_GREATER(snapshot.revision(), liveSnapshot.revision());
     CPPUNIT_ASSERT_GREATER(snapshot.lastChangeRevision("file1.1"), liveSnapshot.lastChangeRevision("file1.1"));
 
