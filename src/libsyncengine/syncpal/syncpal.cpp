@@ -176,27 +176,6 @@ SyncPal::~SyncPal() {
     LOG_SYNCPAL_DEBUG(_logger, "~SyncPal");
 }
 
-ExitCode SyncPal::setTargetNodeId(const std::string &targetNodeId) {
-    bool found = false;
-
-    LOG_IF_FAIL(_remoteSnapshot)
-    LOG_IF_FAIL(_remoteUpdateTree)
-
-    if (!_syncDb->setTargetNodeId(targetNodeId, found)) {
-        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::setTargetNodeId");
-        return ExitCode::DbError;
-    }
-    if (!found) {
-        LOG_SYNCPAL_WARN(_logger, "Root node not found in node table");
-        return ExitCode::DataError;
-    }
-
-    _remoteSnapshot->setRootFolderId(targetNodeId);
-    _remoteUpdateTree->setRootFolderId(targetNodeId);
-
-    return ExitCode::Ok;
-}
-
 void SyncPal::setVfs(std::shared_ptr<Vfs> vfs) {
     assert(!isRunning());
     _vfs = vfs;
