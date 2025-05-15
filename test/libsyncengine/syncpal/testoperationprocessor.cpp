@@ -80,6 +80,7 @@ void TestOperationProcessor::setUp() {
                                          KDRIVE_VERSION_STRING);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
+    _syncPal->createWorkers();
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 }
 
