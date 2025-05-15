@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "syncpal/sharedobject.h"
 #include "snapshotitem.h"
 #include "snapshotrevisionhandler.h"
 #include "db/dbnode.h"
@@ -30,35 +29,21 @@
 
 namespace KDC {
 
-class Snapshot : public SharedObject {
+class Snapshot {
     public:
-        Snapshot(ReplicaSide side, const DbNode &dbNode);
-        ~Snapshot();
-
-        Snapshot(Snapshot const &) = delete;
-        Snapshot &operator=(const Snapshot &other);
-
-        void init();
-
-        bool updateItem(const SnapshotItem &newItem);
-        bool removeItem(const NodeId itemId); // Do not pass by reference to avoid dangling references
-
+        Snapshot(const Snapshot &);
+        ~Snapshot() = default;
         NodeId itemId(const SyncPath &path) const;
         NodeId parentId(const NodeId &itemId) const;
-        bool path(const NodeId &itemId, SyncPath &path, bool &ignore) const noexcept;
+        virtual bool path(const NodeId &itemId, SyncPath &path, bool &ignore) const noexcept;
         SyncName name(const NodeId &itemId) const;
-        bool setName(const NodeId &itemId, const SyncName &newName);
         SyncTime createdAt(const NodeId &itemId) const;
-        bool setCreatedAt(const NodeId &itemId, SyncTime newTime);
         SyncTime lastModified(const NodeId &itemId) const;
-        bool setLastModified(const NodeId &itemId, SyncTime newTime);
         NodeType type(const NodeId &itemId) const;
         int64_t size(const NodeId &itemId) const;
         std::string contentChecksum(const NodeId &itemId) const;
-        bool setContentChecksum(const NodeId &itemId, const std::string &newChecksum);
         bool canWrite(const NodeId &itemId) const;
         bool canShare(const NodeId &itemId) const;
-        bool clearContentChecksum(const NodeId &itemId);
         bool exists(const NodeId &itemId) const;
         bool pathExists(const SyncPath &path) const;
         bool isLink(const NodeId &itemId) const;
@@ -75,33 +60,19 @@ class Snapshot : public SharedObject {
         [[nodiscard]] inline ReplicaSide side() const { return _side; }
 
         [[nodiscard]] inline NodeId rootFolderId() const { return _rootFolderId; }
-        inline void setRootFolderId(const NodeId &nodeId) { _rootFolderId = nodeId; }
 
         bool isEmpty() const;
         uint64_t nbItems() const;
 
-        bool isValid() const;
-        void setValid(bool newIsValid);
-        SnapshotRevision revision() const;
+        virtual SnapshotRevision revision() const;
 
-        bool checkIntegrityRecursively() const;
-
-    private:
-        std::shared_ptr<SnapshotRevisionHandler> _revisionHandlder;
-        bool getChildren(const NodeId &itemId, std::unordered_set<std::shared_ptr<SnapshotItem>> &children) const;
-        bool removeItem(std::shared_ptr<SnapshotItem> &item);
-
-        std::shared_ptr<SnapshotItem> findItem(const NodeId &itemId) const;
-        void removeChildrenRecursively(const std::shared_ptr<SnapshotItem> &parent);
-        bool checkIntegrityRecursively(const std::shared_ptr<SnapshotItem> &parent) const;
-
-        ReplicaSide _side = ReplicaSide::Unknown;
-        NodeId _rootFolderId;
+    protected:
+        Snapshot(ReplicaSide side, const NodeId &rootFolderId);
 
         class SnapshotItemUnorderedMap : public std::unordered_map<NodeId, std::shared_ptr<SnapshotItem>> {
             public:
-                // To ensure the integrity of the snapshot, we need to make sure that it is not used anywhere (i.e., as a child of
-                // another item) when removing it from the main map.
+                // To ensure the integrity of the liveSnapshot, we need to make sure that it is not used anywhere (i.e., as a
+                // child of another item) when removing it from the main map.
                 void erase(const NodeId &id) {
                     const auto it = std::unordered_map<NodeId, std::shared_ptr<SnapshotItem>>::find(id);
                     assert(it->second.use_count() == 1);
@@ -110,12 +81,30 @@ class Snapshot : public SharedObject {
         };
 
         SnapshotItemUnorderedMap _items; // key: id
-        bool _isValid = false;
-        bool _copy = false; // false for a real time snapshot, true for a copy
 
+        std::shared_ptr<SnapshotItem> findItem(const NodeId &itemId) const;
         mutable std::recursive_mutex _mutex;
+
+    private:
+        SnapshotRevision _revision = 0;
+        bool getChildren(const NodeId &itemId, std::unordered_set<std::shared_ptr<SnapshotItem>> &children) const;
+
+        ReplicaSide _side = ReplicaSide::Unknown;
+        NodeId _rootFolderId;
+
 
         friend class TestSnapshot;
 };
 
+class ConstSnapshot : public Snapshot {
+    public:
+        ConstSnapshot(const Snapshot &other) :
+            Snapshot(other) {}
+
+    private:
+        // Prevent any derived class to modify the snapshot content.
+        using Snapshot::_items;
+        using Snapshot::_mutex;
+        using Snapshot::findItem;
+};
 } // namespace KDC
