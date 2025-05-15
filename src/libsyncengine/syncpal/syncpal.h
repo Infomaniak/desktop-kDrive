@@ -382,6 +382,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class TestAppServer;
         friend class MockSyncPal;
         friend class TestSituationGenerator;
+        friend class TestFileRescuer;
 };
 
 } // namespace KDC
