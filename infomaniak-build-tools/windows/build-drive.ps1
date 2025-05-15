@@ -40,6 +40,9 @@ Param(
     # Upload :	flag to trigger the use of the USB-key signing certificate
     [switch] $upload,
 
+    # Coverage :	flag to enable or disable the code coverage computation
+    [switch] $coverage,
+
     # Help	: Displays the help message then exit if called
     [switch] $help
 )
@@ -72,6 +75,33 @@ $archiveDataPath = ('{0}\build-windows\{1}' -f $path.Replace('/', '\'), $archive
 #                                                                                               #
 #################################################################################################
 
+function Set-Bullseye-Coverage {
+    param (
+        [bool] $enabled
+    )
+
+    $cov01Parameter ="-0"
+    if ($enabled) {
+        $cov01Parameter = "-1"
+    }
+
+    try {
+        $cmd = Get-Command cov01.exe -ErrorAction Stop
+        & $cmd $cov01Parameter
+     } catch {
+         Write-Host "BullseyeCoverage cov01.exe command not found."
+         if ($enable) {
+            exit 1
+         }
+     }
+     
+     $outputString = "disabled"
+     if ($enabled) {
+        $outputString = "enabled"
+    }
+
+     Write-Host "BullseyeCoverage is $outputString."
+} 
 function Clean {
     param (
         [string] $cleanPath
@@ -471,6 +501,7 @@ Parameters :
     `t`tremake`t`t: Remove all the files, then rebuild the project
     `t-ext`t`t`t: Rebuild and redeploy the windows extension
     `t-upload`t`t: Upload flag to switch between the virtual and physical certificates. Also rebuilds the project
+    `t-coverage`t`t: Coverage flag to enable or disable code coverage computation
     ") -f Cyan
 
     Write-Host ("It is mandatory that all dependencies are already built and installed before building.
@@ -521,6 +552,10 @@ if (!$thumbprint) {
     $thumbprint = Get-Thumbprint $upload
 }
 
+Write-Host
+Write-Host "Build of type $buildType."
+Write-Host
+
 if ($upload) {
     Write-Host "You are about to build kDrive for an upload"
     Write-Host "Once the build is complete, you will need to call the upload script"
@@ -532,6 +567,20 @@ if ($upload) {
     Write-Host "Preparing for full upload build." -f Green
     Clean $contentPath
     Clean $vfsDir
+}
+
+#################################################################################################
+#                                                                                               #
+#                                           COVERAGE                                            #
+#                                                                                               #
+#################################################################################################
+
+Set-Bullseye-Coverage $coverage
+Write-Host
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Failed to enable code coverage computation. Aborting." -f Red
+    exit $LASTEXITCODE
 }
 
 #################################################################################################
