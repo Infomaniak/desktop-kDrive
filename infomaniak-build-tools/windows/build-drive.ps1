@@ -177,9 +177,9 @@ function CMake-Build-And-Install {
     }
     Write-Host "Conan folder: $conanFolder"
     if ($ci) {
-        & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder
-    } else {
         & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder -Ci
+    } else {
+        & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder
     }
 
 
