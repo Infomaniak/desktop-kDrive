@@ -106,10 +106,10 @@ void TestSyncPal::testUpdateTree() {
 }
 
 void TestSyncPal::testSnapshot() {
-    auto &localLiveSnapshot = _syncPal->_localFSObserverWorker->liveSnapshot();
+    auto &localLiveSnapshot = _syncPal->liveSnapshot(ReplicaSide::Local);
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, localLiveSnapshot.side());
 
-    auto &remoteLiveSnapshot = _syncPal->_remoteFSObserverWorker->liveSnapshot();
+    auto &remoteLiveSnapshot = _syncPal->liveSnapshot(ReplicaSide::Remote);
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, remoteLiveSnapshot.side());
 
     _syncPal->copySnapshots();
@@ -141,10 +141,10 @@ void TestSyncPal::testCopySnapshots() {
 
     // Check that the copy is the same as the original
     CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSide::Local)->nbItems(),
-                         _syncPal->_localFSObserverWorker->liveSnapshot().nbItems());
+                         _syncPal->liveSnapshot(ReplicaSide::Local).nbItems());
     CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSide::Local)->rootFolderId(),
-                         _syncPal->_localFSObserverWorker->liveSnapshot().rootFolderId());
-    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSide::Local)->side(), _syncPal->_localFSObserverWorker->liveSnapshot().side());
+                         _syncPal->liveSnapshot(ReplicaSide::Local).rootFolderId());
+    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSide::Local)->side(), _syncPal->liveSnapshot(ReplicaSide::Local).side());
 
 }
 void TestSyncPal::testSyncFileItem() {

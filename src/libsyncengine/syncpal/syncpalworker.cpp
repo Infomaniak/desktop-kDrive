@@ -380,16 +380,16 @@ void SyncPalWorker::initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2],
 SyncStep SyncPalWorker::nextStep() const {
     switch (_step) {
         case SyncStep::Idle: {
-            const bool areLiveSnapshotsValid = _syncPal->_localFSObserverWorker->liveSnapshot().isValid() &&
-                                           _syncPal->_remoteFSObserverWorker->liveSnapshot().isValid();
+            const bool areLiveSnapshotsValid = _syncPal->liveSnapshot(ReplicaSide::Local).isValid() &&
+                                           _syncPal->liveSnapshot(ReplicaSide::Remote).isValid();
             const bool areFSOWorkersRunning =
                     _syncPal->_localFSObserverWorker->isRunning() && _syncPal->_remoteFSObserverWorker->isRunning();
             const bool areFSOWorkersInitializing =
                     _syncPal->_localFSObserverWorker->initializing() || _syncPal->_remoteFSObserverWorker->initializing();
             const bool areFSOWorkersUpdating =
                     _syncPal->_localFSObserverWorker->updating() || _syncPal->_remoteFSObserverWorker->updating();
-            const bool areLiveSnapshotsUpdated = _syncPal->_localFSObserverWorker->liveSnapshot().updated() ||
-                                             _syncPal->_remoteFSObserverWorker->liveSnapshot().updated();
+            const bool areLiveSnapshotsUpdated = _syncPal->liveSnapshot(ReplicaSide::Local).updated() ||
+                                             _syncPal->liveSnapshot(ReplicaSide::Remote).updated();
 
 
             return areLiveSnapshotsValid && areFSOWorkersRunning && !areFSOWorkersInitializing && !areFSOWorkersUpdating &&

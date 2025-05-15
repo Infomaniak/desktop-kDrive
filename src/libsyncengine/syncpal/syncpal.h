@@ -261,6 +261,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         // Returns a snapshot of the filesystem state at the start of the ongoing sync.
         // Returns nullptr if no sync is currently in progress.
         std::shared_ptr<ConstSnapshot> snapshot(ReplicaSide side) const;
+        const LiveSnapshot &liveSnapshot(ReplicaSide side) const;
 
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));

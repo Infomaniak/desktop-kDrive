@@ -86,8 +86,8 @@ ExitCode ExcludeListPropagator::checkItems() {
             const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), dirIt->path());
             if (bool isWarning = false; ExclusionTemplateCache::instance()->isExcluded(relativePath, isWarning)) {
                 if (isWarning) {
-                    NodeId localNodeId = _syncPal->_localFSObserverWorker->liveSnapshot().itemId(relativePath);
-                    NodeType localNodeType = _syncPal->_localFSObserverWorker->liveSnapshot().type(localNodeId);
+                    NodeId localNodeId = _syncPal->liveSnapshot(ReplicaSide::Local).itemId(relativePath);
+                    NodeType localNodeType = _syncPal->liveSnapshot(ReplicaSide::Local).type(localNodeId);
                     Error error(_syncPal->syncDbId(), "", localNodeId, localNodeType, relativePath, ConflictType::None,
                                 InconsistencyType::None, CancelType::ExcludedByTemplate);
                     _syncPal->addError(error);

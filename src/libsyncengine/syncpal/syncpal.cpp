@@ -203,7 +203,7 @@ SyncStatus SyncPal::status() const {
                 // Stopping at the request of the user
                 return SyncStatus::StopAsked;
             } else if (_syncPalWorker->step() == SyncStep::Idle && !restart() &&
-                       !_localFSObserverWorker->liveSnapshot().updated() && !_remoteFSObserverWorker->liveSnapshot().updated()) {
+                       !liveSnapshot(ReplicaSide::Local).updated() && !liveSnapshot(ReplicaSide::Remote).updated()) {
                 // Sync pending
                 return SyncStatus::Idle;
             } else {
@@ -791,6 +791,13 @@ std::shared_ptr<ConstSnapshot> SyncPal::snapshot(const ReplicaSide side) const {
     return (side == ReplicaSide::Local ? _localSnapshot : _remoteSnapshot);
 }
 
+const LiveSnapshot &SyncPal::liveSnapshot(ReplicaSide side) const {
+    LOG_IF_FAIL(side != ReplicaSide::Unknown);
+    LOG_IF_FAIL(_localFSObserverWorker);
+    LOG_IF_FAIL(_remoteFSObserverWorker);
+    return (side == ReplicaSide::Local ? _localFSObserverWorker->liveSnapshot() : _remoteFSObserverWorker->liveSnapshot());
+}
+
 std::shared_ptr<FSOperationSet> SyncPal::operationSet(ReplicaSide side) const {
     if (side == ReplicaSide::Unknown) {
         LOG_ERROR(_logger, "Call to SyncPal::operationSet with 'ReplicaSide::Unknown').");
@@ -846,7 +853,7 @@ bool SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) const {
         LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
         return false;
     }
-    const NodeId nodeId = _remoteFSObserverWorker->liveSnapshot().itemId(normalizedPath);
+    const NodeId nodeId = liveSnapshot(ReplicaSide::Remote).itemId(normalizedPath);
     exists = !nodeId.empty();
     return true;
 }
@@ -863,8 +870,8 @@ bool SyncPal::checkIfCanShareItem(const SyncPath &path, bool &canShare) const {
         return false;
     }
 
-    if (const NodeId nodeId = _remoteFSObserverWorker->liveSnapshot().itemId(normalizedPath); !nodeId.empty()) {
-        canShare = _remoteFSObserverWorker->liveSnapshot().canShare(nodeId);
+    if (const NodeId nodeId = liveSnapshot(ReplicaSide::Remote).itemId(normalizedPath); !nodeId.empty()) {
+        canShare = liveSnapshot(ReplicaSide::Remote).canShare(nodeId);
     }
 
     return true;
@@ -1264,7 +1271,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
                 cause);
     addError(error);
 
-    NodeId localNodeId = _localFSObserverWorker->liveSnapshot().itemId(relativeLocalPath);
+    NodeId localNodeId = liveSnapshot(ReplicaSide::Local).itemId(relativeLocalPath);
     if (localNodeId.empty()) {
         SyncPath absolutePath = localPath() / relativeLocalPath;
         if (!IoHelper::getNodeId(absolutePath, localNodeId)) {
@@ -1287,7 +1294,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
                                          << Utility::s2ws(localNodeId)
                                          << L" is blacklisted temporarily because of a denied access.");
 
-    NodeId remoteNodeId = _remoteFSObserverWorker->liveSnapshot().itemId(relativeLocalPath);
+    NodeId remoteNodeId = liveSnapshot(ReplicaSide::Remote).itemId(relativeLocalPath);
     if (bool found; remoteNodeId.empty() && !localNodeId.empty() &&
                     !_syncDb->correspondingNodeId(ReplicaSide::Local, localNodeId, remoteNodeId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::correspondingNodeId");
@@ -1316,10 +1323,10 @@ void SyncPal::copySnapshots() {
     LOG_IF_FAIL(_localFSObserverWorker)
     LOG_IF_FAIL(_remoteFSObserverWorker)
 
-    _localSnapshot = std::make_shared<ConstSnapshot>(_localFSObserverWorker->liveSnapshot());
-    _remoteSnapshot = std::make_shared<ConstSnapshot>(_remoteFSObserverWorker->liveSnapshot());
-    _localFSObserverWorker->liveSnapshot().startRead();
-    _remoteFSObserverWorker->liveSnapshot().startRead();
+    _localSnapshot = std::make_shared<ConstSnapshot>(liveSnapshot(ReplicaSide::Local));
+    _remoteSnapshot = std::make_shared<ConstSnapshot>(liveSnapshot(ReplicaSide::Remote));
+    liveSnapshot(ReplicaSide::Local).startRead();
+    liveSnapshot(ReplicaSide::Remote).startRead();
 }
 
 void SyncPal::freeSnapshotsCopies() {
