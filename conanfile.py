@@ -33,6 +33,15 @@ class KDriveDesktop(ConanFile):
         Specify the dependencies required for this package.
         Here are the dependencies used:
         - `xxhash/0.8.2`: A fast non-cryptographic hash algorithm.
+        - ``log4cplus/2.1.2``: A C++ logging library.
         :return: None
         """
         self.requires("xxhash/0.8.2") # From local recipe
+
+        # log4cplus
+        log4cplus_options = { "shared": True, "unicode": True }
+        if self.settings.os == "Windows":
+            log4cplus_options["thread_pool"] = False
+        # Here, by default, log4cplus has an option "LOG4CPLUS_ENABLE_DECORATED_LIBRARY_NAME" that add a U if the unicode option is enabled, ...
+        # The conan recipe does not support this and export only this cmake target: `log4cplus::log4cplus`. See https://github.com/conan-io/conan-center-index/blob/99d12797ad75007d4d45734bc67cf541bd250e4f/recipes/log4cplus/all/conanfile.py#L113
+        self.requires("log4cplus/2.1.2", options=log4cplus_options) # From https://conan.io/center/recipes/log4cplus
