@@ -26,6 +26,16 @@
 
 namespace KDC {
 
+std::shared_ptr<WindowsUpdater> WindowsUpdater::_instance;
+
+std::shared_ptr<WindowsUpdater> WindowsUpdater::instance() {
+    if (_instance == nullptr) {
+        _instance = std::make_shared<WindowsUpdater>();
+    }
+
+    return _instance;
+}
+
 void WindowsUpdater::onUpdateFound() {
     // Check if version is already downloaded
     SyncPath filepath;
@@ -63,7 +73,8 @@ void WindowsUpdater::downloadUpdate() noexcept {
 
     auto job = std::make_shared<DirectDownloadJob>(filepath, versionInfo(_currentChannel).downloadUrl);
     const std::function<void(UniqueId)> callback = std::bind_front(&WindowsUpdater::downloadFinished, this);
-    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL, callback);
+    job->setAdditionalCallback(callback);
+    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
     setState(UpdateState::Downloading);
 }
 
