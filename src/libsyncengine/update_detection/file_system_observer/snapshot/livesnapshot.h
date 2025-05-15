@@ -37,7 +37,6 @@ class LiveSnapshot : public Snapshot, public SharedObject {
         LiveSnapshot(LiveSnapshot const &) = delete;
         LiveSnapshot &operator=(const LiveSnapshot &other) = delete;
 
-        std::unique_ptr<ConstSnapshot> getConstCopy();
         void init();
 
         bool updateItem(const SnapshotItem &newItem);
