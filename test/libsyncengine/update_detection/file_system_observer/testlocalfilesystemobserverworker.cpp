@@ -260,13 +260,13 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
 
     LOGW_DEBUG(_logger, L"***** test create file with NFD-encoded name *****");
     previousRevision = _syncPal->liveSnapshot(ReplicaSide::Local).revision();
-    generateOrEditTestFile(_rootFolderPath / makeNfdSyncName()); // Should replace the NFC item in the liveSnapshot.
+    generateOrEditTestFile(_rootFolderPath / makeNfdSyncName()); // Should replace the NFC item in the snapshot.
     slowObserver->waitForUpdate(previousRevision);
 
     IoHelper::getFileStat(_rootFolderPath / makeNfdSyncName(), &fileStat, exists);
     const NodeId nfdNamedItemId = std::to_string(fileStat.inode);
 
-    // Check that only the last modified item is in the liveSnapshot.
+    // Check that only the last modified item is in the snapshot.
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(nfcNamedItemId));
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(nfdNamedItemId));
 

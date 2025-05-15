@@ -366,7 +366,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
     auto perfMonitor = sentry::pTraces::scoped::Step4DeleteFile(syncDbId());
 
     const ExitCode exitCode = handleCreateOperationsWithSamePath();
-    if (exitCode != ExitCode::Ok) return exitCode; // Rebuild the liveSnapshot.
+    if (exitCode != ExitCode::Ok) return exitCode; // Rebuild the snapshot.
 
     std::unordered_set<UniqueId> deleteOpsIds = _operationSet->getOpsByType(OperationType::Delete);
     for (const auto &deleteOpId: deleteOpsIds) {

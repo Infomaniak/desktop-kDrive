@@ -61,9 +61,6 @@ class TestSituationGenerator {
     public:
         TestSituationGenerator();
         explicit TestSituationGenerator(std::shared_ptr<SyncPal> syncpal);
-        explicit TestSituationGenerator(std::shared_ptr<SyncDb> syncDb, std::shared_ptr<Snapshot> localSnapshot,
-                                        std::shared_ptr<Snapshot> remoteSnapshot, std::shared_ptr<UpdateTree> localUpdateTree,
-                                        std::shared_ptr<UpdateTree> remoteUpdateTree);
 
         void setSyncpal(std::shared_ptr<SyncPal> syncpal);
         void setSyncDb(const std::shared_ptr<SyncDb> syncDb) { _syncDb = syncDb; }
@@ -127,7 +124,7 @@ class TestSituationGenerator {
 
         std::shared_ptr<SyncDb> _syncDb;
         std::optional<std::reference_wrapper<LiveSnapshot>> _localLiveSnapshot;
-        std::optional < std::reference_wrapper<LiveSnapshot>> _remoteLiveSnapshot;
+        std::optional<std::reference_wrapper<LiveSnapshot>> _remoteLiveSnapshot;
 
         std::shared_ptr<UpdateTree> _localUpdateTree;
         std::shared_ptr<UpdateTree> _remoteUpdateTree;

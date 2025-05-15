@@ -163,7 +163,7 @@ size_t TestSituationGenerator::size() const {
 void TestSituationGenerator::insertInAllSnapshot(const NodeType itemType, const NodeId &id, const NodeId &parentId) const {
     if (id.empty()) return;
     for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote}) {
-        if (!(side == ReplicaSide::Local ? _localLiveSnapshot : _remoteLiveSnapshot)) continue;
+        if (!(side == ReplicaSide::Local ? _localLiveSnapshot : _remoteLiveSnapshot).has_value()) continue;
         const auto size = itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
         const auto parentFinalId = parentId.empty() ? "1" : generateId(side, parentId);
         const SnapshotItem item(generateId(side, id), parentFinalId, Str2SyncName(Utility::toUpper(id)), testhelpers::defaultTime,
