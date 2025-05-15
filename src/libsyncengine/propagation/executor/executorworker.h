@@ -151,6 +151,7 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo handleExecutorError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
         ExitInfo handleOpsLocalFileAccessError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
         ExitInfo handleOpsFileNotFound(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
+        ExitInfo handleOpsRemoteFileLocked(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
         ExitInfo handleOpsAlreadyExistError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
 
         ExitInfo removeDependentOps(SyncOpPtr syncOp);
