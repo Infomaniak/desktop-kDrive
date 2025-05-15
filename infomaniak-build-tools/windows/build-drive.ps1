@@ -176,17 +176,12 @@ function CMake-Build-And-Install {
         New-Item -Path $conanFolder -ItemType Directory
     }
     Write-Host "Conan folder: $conanFolder"
-    $args = @(
-        '-buildType', $buildType
-        '-OutputDir',  $conanFolder
-    )
-
     if ($ci) {
-        $args += '-ci'
-        Write-Host "CI mode enabled."
+        & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder
+    } else {
+        & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder -Ci
     }
 
-    & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" @args
 
     $conanToolchainFile = Get-ChildItem -Path $conanFolder -Filter "conan_toolchain.cmake" -Recurse -File |
             Select-Object -ExpandProperty FullName -First 1
