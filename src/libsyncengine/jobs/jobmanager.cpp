@@ -37,20 +37,6 @@ namespace KDC {
 
 std::shared_ptr<JobManager> JobManager::_instance = nullptr;
 
-// bool JobManager::_stop = false;
-//
-// int JobManager::_maxNbThread = 0;
-//
-// std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> JobManager::_managedJobs;
-// std::priority_queue<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>,
-//                     std::vector<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>>, JobPriorityCmp>
-//         JobManager::_queuedJobs;
-// std::unordered_set<UniqueId> JobManager::_runningJobs;
-// std::unordered_map<UniqueId, std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>> JobManager::_pendingJobs;
-// std::recursive_mutex JobManager::_mutex;
-//
-// UniqueId JobManager::_uploadSessionJobId = 0;
-
 std::shared_ptr<JobManager> JobManager::instance() noexcept {
     if (_instance == nullptr) {
         try {
@@ -141,16 +127,13 @@ void JobManager::setPoolCapacity(const int count) {
 }
 
 void JobManager::decreasePoolCapacity() {
-    // if (JobManager::instance()->maxNbThreads() > threadPoolMinCapacity) {
-    //     // Decrease pool capacity
-    //     // TODO: Store the pool capacity in DB?
-    //     _maxNbThread -= static_cast<int>(std::ceil((JobManager::instance()->maxNbThreads() - threadPoolMinCapacity) / 2.0));
-    //     Poco::ThreadPool::defaultPool().addCapacity(_maxNbThread - Poco::ThreadPool::defaultPool().capacity());
-    //     LOG_DEBUG(Log::instance()->getLogger(), "Job Manager capacity set to " << _maxNbThread);
-    // } else {
-    //     sentry::Handler::captureMessage(sentry::Level::Warning, "JobManager::defaultCallback",
-    //                                     "JobManager capacity cannot be decreased");
-    // }
+    if (JobManager::instance()->maxNbThreads() > threadPoolMinCapacity) {
+        // Decrease pool capacity
+        setPoolCapacity(std::max(static_cast<int>(std::ceil(_maxNbThread / 2)), threadPoolMinCapacity));
+    } else {
+        sentry::Handler::captureMessage(sentry::Level::Warning, "JobManager::defaultCallback",
+                                        "JobManager capacity cannot be decreased");
+    }
 }
 
 void JobManager::executeFunc(void *thisWorker) {
