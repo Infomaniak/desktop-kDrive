@@ -138,7 +138,7 @@ void FileExclusionDialog::initUI() {
     mainLayout->setStretchFactor(_filesTableView, 1);
 
     // Add dialog buttons
-    const auto *buttonsHBox = new QHBoxLayout();
+    auto *const buttonsHBox = new QHBoxLayout();
     buttonsHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
     buttonsHBox->setSpacing(boxHSpacing);
     mainLayout->addLayout(buttonsHBox);
@@ -150,7 +150,7 @@ void FileExclusionDialog::initUI() {
     _saveButton->setEnabled(false);
     buttonsHBox->addWidget(_saveButton);
 
-    const auto *cancelButton = new QPushButton(this);
+    auto *const cancelButton = new QPushButton(this);
     cancelButton->setObjectName("nondefaultbutton");
     cancelButton->setFlat(true);
     cancelButton->setText(tr("CANCEL"));
@@ -186,9 +186,9 @@ void FileExclusionDialog::updateUI() {
 
 void FileExclusionDialog::addTemplate(const ExclusionTemplateInfo &templateInfo, const bool readOnly, int &row,
                                       const QString &scrollToTemplate, int &scrollToRow) {
-    const auto *patternItem = new QStandardItem(templateInfo.templ());
-    const auto *warningItem = new QStandardItem();
-    const auto *actionItem = new QStandardItem();
+    auto *const patternItem = new QStandardItem(templateInfo.templ());
+    auto *const warningItem = new QStandardItem();
+    auto *const actionItem = new QStandardItem();
 
     QList<QStandardItem *> itemList;
     itemList.insert(tableColumn::Pattern, patternItem);
@@ -204,12 +204,12 @@ void FileExclusionDialog::addTemplate(const ExclusionTemplateInfo &templateInfo,
         setActionIcon(actionItem, QString());
     } else {
         // Set custom checkbox for Warning column
-        const auto *warningWidget = new QWidget(this);
-        const auto *noWarningHBox = new QHBoxLayout();
+        auto *const warningWidget = new QWidget(this);
+        auto *const noWarningHBox = new QHBoxLayout();
         warningWidget->setLayout(noWarningHBox);
         noWarningHBox->setContentsMargins(0, 0, 0, 0);
         noWarningHBox->setAlignment(Qt::AlignCenter);
-        const auto *warningCheckBox = new CustomCheckBox(this);
+        auto *const warningCheckBox = new CustomCheckBox(this);
         warningCheckBox->setChecked(templateInfo.warning());
         warningCheckBox->setAutoFillBackground(true);
         warningCheckBox->setProperty(patternProperty, templateInfo.templ());
