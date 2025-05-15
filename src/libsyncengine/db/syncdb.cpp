@@ -1752,8 +1752,6 @@ bool SyncDb::correspondingNodeId(ReplicaSide side, const NodeId &nodeIdIn, NodeI
 
 bool SyncDb::updateAllSyncNodes(SyncNodeType type, const NodeSet &nodeIdSet) {
     const std::scoped_lock lock(_mutex);
-    invalidateCache();
-
     int errId;
     std::string error;
 

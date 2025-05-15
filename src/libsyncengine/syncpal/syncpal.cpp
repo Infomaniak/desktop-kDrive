@@ -1320,6 +1320,8 @@ void SyncPal::copySnapshots() {
 
     _localSnapshot = std::make_shared<ConstSnapshot>(_localFSObserverWorker->liveSnapshot());
     _remoteSnapshot = std::make_shared<ConstSnapshot>(_remoteFSObserverWorker->liveSnapshot());
+    _localFSObserverWorker->liveSnapshot().startRead();
+    _remoteFSObserverWorker->liveSnapshot().startRead();
 }
 
 void SyncPal::freeSnapshotsCopies() {
