@@ -19,7 +19,7 @@
 #pragma once
 
 #include "syncpal/sharedobject.h"
-#include "Snapshot.h"
+#include "snapshot.h"
 #include "snapshotrevisionhandler.h"
 #include "db/dbnode.h"
 
