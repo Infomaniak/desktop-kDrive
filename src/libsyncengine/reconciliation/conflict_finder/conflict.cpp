@@ -22,7 +22,9 @@
 namespace KDC {
 
 Conflict::Conflict(std::shared_ptr<Node> localNode, std::shared_ptr<Node> remoteNode, ConflictType type) :
-    _node(localNode), _otherNode(remoteNode), _type(type) {}
+    _node(localNode),
+    _otherNode(remoteNode),
+    _type(type) {}
 
 Conflict::~Conflict() {
     _node.reset();
@@ -54,7 +56,8 @@ std::shared_ptr<Node> Conflict::remoteNode() const {
 }
 
 ConflictCmp::ConflictCmp(std::shared_ptr<UpdateTree> localUpdateTree, std::shared_ptr<UpdateTree> remoteUpdateTree) :
-    _localUpdateTree(localUpdateTree), _remoteUpdateTree(remoteUpdateTree) {}
+    _localUpdateTree(localUpdateTree),
+    _remoteUpdateTree(remoteUpdateTree) {}
 
 ConflictCmp::~ConflictCmp() {
     _localUpdateTree.reset();

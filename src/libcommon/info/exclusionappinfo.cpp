@@ -21,9 +21,14 @@
 namespace KDC {
 
 ExclusionAppInfo::ExclusionAppInfo(const QString &appId, const QString &description, bool def) :
-    _appId(appId), _description(description), _def(def) {}
+    _appId(appId),
+    _description(description),
+    _def(def) {}
 
-ExclusionAppInfo::ExclusionAppInfo() : _appId(QString()), _description(QString()), _def(false) {}
+ExclusionAppInfo::ExclusionAppInfo() :
+    _appId(QString()),
+    _description(QString()),
+    _def(false) {}
 
 QDataStream &operator>>(QDataStream &in, ExclusionAppInfo &exclusionAppInfo) {
     in >> exclusionAppInfo._appId >> exclusionAppInfo._description >> exclusionAppInfo._def;

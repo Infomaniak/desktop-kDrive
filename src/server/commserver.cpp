@@ -51,8 +51,12 @@ std::shared_ptr<CommServer> CommServer::instance(QObject *parent) {
 }
 
 CommServer::CommServer(QObject *parent) :
-    QObject(parent), _requestWorkerThread(new QtLoggingThread()), _requestWorker(new Worker()), _tcpSocket(nullptr),
-    _buffer(QByteArray()), _hasQuittedProperly(false) {
+    QObject(parent),
+    _requestWorkerThread(new QtLoggingThread()),
+    _requestWorker(new Worker()),
+    _tcpSocket(nullptr),
+    _buffer(QByteArray()),
+    _hasQuittedProperly(false) {
     // Start worker thread
     _requestWorker->moveToThread(_requestWorkerThread);
     connect(_requestWorkerThread, &QThread::started, _requestWorker, &Worker::onStart);
@@ -295,7 +299,10 @@ void CommServer::onSendSignal(int id, SignalNum num, const QByteArray &params) {
     }
 }
 
-Worker::Worker(QObject *parent) : QObject(parent), _signalId(0), _stop(false) {}
+Worker::Worker(QObject *parent) :
+    QObject(parent),
+    _signalId(0),
+    _stop(false) {}
 
 Worker::~Worker() {}
 

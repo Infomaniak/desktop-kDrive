@@ -20,10 +20,16 @@
 
 namespace KDC {
 
-UploadSessionToken::UploadSessionToken() : _dbId(0), _token(std::string()) {}
+UploadSessionToken::UploadSessionToken() :
+    _dbId(0),
+    _token(std::string()) {}
 
-UploadSessionToken::UploadSessionToken(const std::string &token) : _dbId(0), _token(token) {}
+UploadSessionToken::UploadSessionToken(const std::string &token) :
+    _dbId(0),
+    _token(token) {}
 
-UploadSessionToken::UploadSessionToken(int64_t dbId, const std::string &token) : _dbId(dbId), _token(token) {}
+UploadSessionToken::UploadSessionToken(int64_t dbId, const std::string &token) :
+    _dbId(dbId),
+    _token(token) {}
 
 } // namespace KDC

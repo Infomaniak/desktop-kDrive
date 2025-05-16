@@ -24,7 +24,9 @@
 namespace KDC {
 
 FolderWatcher::FolderWatcher(LocalFileSystemObserverWorker *parent, const SyncPath &path) :
-    _logger(Log::instance()->getLogger()), _parent(parent), _folder(path) {}
+    _logger(Log::instance()->getLogger()),
+    _parent(parent),
+    _folder(path) {}
 
 void FolderWatcher::start() {
     LOG_DEBUG(_logger, "Start Folder Watcher");

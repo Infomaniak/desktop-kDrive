@@ -32,11 +32,15 @@ using FSOpPtr = std::shared_ptr<FSOperation>;
 
 class FSOperationSet : public SharedObject {
     public:
-        explicit FSOperationSet(ReplicaSide side) : _side(side) {}
+        explicit FSOperationSet(ReplicaSide side) :
+            _side(side) {}
         ~FSOperationSet();
 
         FSOperationSet(const FSOperationSet &other) :
-            _ops(other._ops), _opsByType(other._opsByType), _opsByNodeId(other._opsByNodeId), _side(other._side) {}
+            _ops(other._ops),
+            _opsByType(other._opsByType),
+            _opsByNodeId(other._opsByNodeId),
+            _side(other._side) {}
         FSOperationSet &operator=(FSOperationSet &other);
 
         bool getOp(UniqueId id, FSOpPtr &opPtr) const;
