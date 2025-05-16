@@ -168,8 +168,6 @@ list(APPEND PC_HEADER_FILES
     "$<$<COMPILE_LANGUAGE:CXX>:<qfileinfo.h$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<qstandardpaths.h$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<qtimer.h$<ANGLE-R>>"
-    # log4cplus
-    "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/loggingmacros.h$<ANGLE-R>>"
     # kDrive
     "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/types.h>"
     "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/utility.h>"
