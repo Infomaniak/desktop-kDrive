@@ -41,6 +41,7 @@
 #define SECURITY_WIN32
 #include <security.h>
 #include <winioctl.h>
+#include <winsock2.h>
 
 constexpr int MAX_GET_RIGHTS_DURATION_MS = 200;
 namespace KDC {
@@ -874,6 +875,86 @@ bool IoHelper::createJunctionFromPath(const SyncPath &targetPath, const SyncPath
     }
 
     return success;
+}
+
+#define CSYNC_SECONDS_SINCE_1601 11644473600LL
+#define CSYNC_USEC_IN_SEC 1000000LL
+
+static void UnixTimevalToFileTime(timeval t, LPFILETIME pft) {
+    LONGLONG ll;
+    ll = Int32x32To64(t.tv_sec, CSYNC_USEC_IN_SEC * 10) + t.tv_usec * 10 + CSYNC_SECONDS_SINCE_1601 * CSYNC_USEC_IN_SEC * 10;
+    pft->dwLowDateTime = (DWORD) ll;
+    pft->dwHighDateTime = ll >> 32;
+}
+
+IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime creationDate,
+                                    const SyncTime modificationDate, const bool) noexcept {
+    FILETIME creationTime;
+    if (creationDate) {
+        // Set creation time
+        timeval times[1];
+        times[0].tv_sec = creationDate;
+        times[0].tv_usec = 0;
+        UnixTimevalToFileTime(times[0], &creationTime);
+    } else {
+        GetSystemTimeAsFileTime(&creationTime);
+    }
+
+    FILETIME modificationTime;
+    if (modificationDate) {
+        // Set creation time
+        timeval times[1];
+        times[0].tv_sec = modificationDate;
+        times[0].tv_usec = 0;
+        UnixTimevalToFileTime(times[0], &modificationTime);
+    } else {
+        GetSystemTimeAsFileTime(&modificationTime);
+    }
+
+    HANDLE hFile = INVALID_HANDLE_VALUE;
+    for (bool isDirectory: {false, true}) {
+        hFile = CreateFileW(filePath.native().c_str(), FILE_WRITE_ATTRIBUTES,
+                            FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
+                            (isDirectory ? FILE_FLAG_BACKUP_SEMANTICS : 0) | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+        if (hFile == INVALID_HANDLE_VALUE) {
+            DWORD dwError = GetLastError();
+            if (dwError == ERROR_ACCESS_DENIED) {
+                continue;
+            }
+
+            if (CommonUtility::isLikeFileNotFoundError(dwError)) {
+                return IoError::NoSuchFileOrDirectory;
+            }
+
+            return IoError::Unknown;
+        } else {
+            break;
+        }
+    }
+
+    if (hFile == INVALID_HANDLE_VALUE) {
+        if (GetLastError() == ERROR_ACCESS_DENIED) {
+            return IoError::AccessDenied;
+        }
+        return IoError::Unknown;
+    }
+
+    if (!SetFileTime(hFile, &creationTime, NULL, &modificationTime)) {
+        auto ioError = IoError::Unknown;
+        DWORD dwError = GetLastError();
+        if (CommonUtility::isLikeFileNotFoundError(dwError)) {
+            ioError = IoError::NoSuchFileOrDirectory;
+        }
+        if (dwError == ERROR_ACCESS_DENIED) {
+            ioError = IoError::AccessDenied;
+        }
+
+        CloseHandle(hFile);
+        return ioError;
+    }
+
+    CloseHandle(hFile);
+    return IoError::Success;
 }
 
 } // namespace KDC

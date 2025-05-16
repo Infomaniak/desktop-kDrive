@@ -239,23 +239,6 @@ static bool cpuUsageByProcess_private(double &percent) {
     return true;
 }
 
-static bool setFileDates_private(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
-                                 std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists) {
-    (void) creationDate;
-    (void) symlink;
-
-    exists = true;
-
-    try {
-        Poco::Timestamp lastModifiedTimestamp(Poco::Timestamp::fromEpochTime(modificationDate.value()));
-        Poco::File(Path2Str(filePath)).setLastModified(lastModifiedTimestamp);
-    } catch (Poco::Exception &) {
-        return false;
-    }
-
-    return true;
-}
-
 static std::string userName_private() {
     bool isSet = false;
     return CommonUtility::envVarValue("USER", isSet);

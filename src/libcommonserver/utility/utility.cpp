@@ -147,16 +147,6 @@ bool Utility::findNodeValue(const Poco::XML::Document &doc, const std::string &n
     }
 }
 
-bool Utility::setFileDates(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
-                           std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists) {
-    if (!setFileDates_private(filePath,
-                              creationDate.has_value() && isCreationDateValid(creationDate.value()) ? creationDate : std::nullopt,
-                              modificationDate, symlink, exists)) {
-        return false;
-    }
-    return true;
-}
-
 bool Utility::isCreationDateValid(int64_t creationDate) {
     if (creationDate == 0 || creationDate == 443779200) {
         // Do not upload or save on DB invalid dates

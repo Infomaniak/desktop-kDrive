@@ -79,6 +79,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testOpenFileAccessDenied);
         CPPUNIT_TEST(testOpenFileNonExisting);
         CPPUNIT_TEST(testOpenLockedFileRemovedBeforeTimedOut);
+        CPPUNIT_TEST(testSetFileDates);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -141,6 +142,8 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testOpenFileNonExisting();
         void testOpenLockedFileRemovedBeforeTimedOut();
         void testCheckIfPathExistsMixedSeparators();
+
+        void testSetFileDates();
 
     private:
         IoHelperTests *_testObj;
