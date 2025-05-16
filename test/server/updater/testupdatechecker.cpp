@@ -34,9 +34,9 @@ void TestUpdateChecker::setUp() {
 
 void TestUpdateChecker::tearDown() {
     ParametersCache::reset();
-    JobManager::stop();
-    JobManager::clear();
-    JobManager::reset();
+    JobManager::instance()->stop();
+    JobManager::instance()->clear();
+    JobManager::instance()->reset();
     TestBase::stop();
 }
 

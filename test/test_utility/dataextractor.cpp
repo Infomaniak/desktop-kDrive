@@ -22,9 +22,11 @@
 
 namespace KDC {
 
-DataExtractor::DataExtractor() : DataExtractor("") {}
+DataExtractor::DataExtractor() :
+    DataExtractor("") {}
 
-DataExtractor::DataExtractor(const SyncPath& absolutePath) : _absolutePath(absolutePath) {
+DataExtractor::DataExtractor(const SyncPath& absolutePath) :
+    _absolutePath(absolutePath) {
     _data.reserve(20);
 }
 
