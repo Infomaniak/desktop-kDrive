@@ -416,7 +416,7 @@ void TestJobManager::testCanRunjob() {
     }
 
     while (JobManager::instance()->countManagedJobs() > 0) {
-        Utility::msleep(1000); // Wait 5 sec
+        Utility::msleep(5000); // Wait 5 sec
     }
 }
 
