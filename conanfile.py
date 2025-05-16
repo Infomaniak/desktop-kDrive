@@ -18,8 +18,8 @@ class KDriveDesktop(ConanFile):
                don't understand it and fails to build.
         """
         tc = CMakeToolchain(self)
-        if self.settings.os == "Windows":
-            tc.blocks.remove("generic_system")
+        # if self.settings.os == "Windows":
+        #     tc.blocks.remove("generic_system")
             tc.generator = "Ninja"
         if self.settings.os == "Macos":
             tc.variables["CMAKE_OSX_ARCHITECTURES"] = "x86_64;arm64"
@@ -44,7 +44,7 @@ class KDriveDesktop(ConanFile):
         self.requires("xxhash/0.8.2") # From local recipe
 
         # log4cplus
-        log4cplus_options = { "shared": False, "unicode": True }
+        log4cplus_options = { "shared": True, "unicode": True }
         if self.settings.os == "Windows":
             log4cplus_options["thread_pool"] = False
         self.requires("log4cplus/2.1.2", options=log4cplus_options) # From https://conan.io/center/recipes/log4cplus
