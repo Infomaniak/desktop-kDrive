@@ -62,7 +62,8 @@ static const QString folderBlocName("folderBloc");
 Q_LOGGING_CATEGORY(lcDrivePreferencesWidget, "gui.drivepreferenceswidget", QtInfoMsg)
 
 DrivePreferencesWidget::DrivePreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
-    LargeWidgetWithCustomToolTip(parent), _gui(gui) {
+    LargeWidgetWithCustomToolTip(parent),
+    _gui(gui) {
     setContentsMargins(0, 0, 0, 0);
 
     /*

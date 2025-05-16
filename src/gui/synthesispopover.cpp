@@ -69,7 +69,9 @@ static const int maxSynchronizedItems = 50;
 Q_LOGGING_CATEGORY(lcSynthesisPopover, "gui.synthesispopover", QtInfoMsg)
 
 SynthesisPopover::SynthesisPopover(std::shared_ptr<ClientGui> gui, bool debugCrash, QWidget *parent) :
-    QDialog(parent), _gui(gui), _debugCrash(debugCrash) {
+    QDialog(parent),
+    _gui(gui),
+    _debugCrash(debugCrash) {
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::WindowStaysOnTopHint);
     setAttribute(Qt::WA_TranslucentBackground);
 
@@ -1036,10 +1038,8 @@ void SynthesisPopover::onAddDrive() {
 }
 
 void SynthesisPopover::onPauseSync(ActionTarget target, int syncDbId) {
-    const int driveToMatomo = (target == ActionTarget::AllDrives ?  -1 :
-                          (target == ActionTarget::Drive ?      _gui->currentDriveDbId() :
-                                                                syncDbId
-                          ));
+    const int driveToMatomo =
+            (target == ActionTarget::AllDrives ? -1 : (target == ActionTarget::Drive ? _gui->currentDriveDbId() : syncDbId));
     MatomoClient::sendEvent("synthesisPopover", MatomoEventAction::Click, "pauseSyncButton", driveToMatomo);
 
     emit executeSyncAction(ActionType::Stop, target,
@@ -1049,10 +1049,8 @@ void SynthesisPopover::onPauseSync(ActionTarget target, int syncDbId) {
 }
 
 void SynthesisPopover::onResumeSync(ActionTarget target, int syncDbId) {
-    const int driveToMatomo = (target == ActionTarget::AllDrives ?  -1 :
-                              (target == ActionTarget::Drive ?      _gui->currentDriveDbId() :
-                                                                    syncDbId
-                              ));
+    const int driveToMatomo =
+            (target == ActionTarget::AllDrives ? -1 : (target == ActionTarget::Drive ? _gui->currentDriveDbId() : syncDbId));
     MatomoClient::sendEvent("synthesisPopover", MatomoEventAction::Click, "resumeSyncButton", driveToMatomo);
 
     emit executeSyncAction(ActionType::Start, target,

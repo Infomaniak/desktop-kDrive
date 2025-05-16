@@ -43,9 +43,18 @@ namespace GuiUtility {
 static const QString learnMoreLink = QString("learnMoreLink");
 static const QString loginLink = QString("loginLink");
 
-enum systrayPosition { Top = 0, Bottom, Left, Right };
+enum systrayPosition {
+    Top = 0,
+    Bottom,
+    Left,
+    Right
+};
 
-enum WizardAction { OpenFolder = 0, OpenParameters, AddDrive };
+enum WizardAction {
+    OpenFolder = 0,
+    OpenParameters,
+    AddDrive
+};
 
 struct StatusInfo {
         bool _unresolvedConflicts = false;

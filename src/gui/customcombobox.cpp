@@ -20,6 +20,7 @@
 
 namespace KDC {
 
-CustomComboBox::CustomComboBox(QWidget *parent) : QComboBox(parent) {}
+CustomComboBox::CustomComboBox(QWidget *parent) :
+    QComboBox(parent) {}
 
 } // namespace KDC

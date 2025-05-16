@@ -83,6 +83,8 @@ function Set-Bullseye-Coverage {
     $cov01Parameter ="-0"
     if ($enabled) {
         $cov01Parameter = "-1"
+        # Without the next line, CMake may not wrap the compiler.
+        $env:Path="$env:Programfiles\BullseyeCoverage\bin;$env:Path"
     }
 
     try {

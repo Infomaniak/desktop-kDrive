@@ -47,9 +47,18 @@ static const int progressBarMax = 5;
 Q_LOGGING_CATEGORY(lcAddDriveServerFoldersWidget, "gui.adddriveserverfolderswidget", QtInfoMsg)
 
 AddDriveServerFoldersWidget::AddDriveServerFoldersWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
-    QWidget(parent), _gui(gui), _logoTextIconLabel(nullptr), _infoIconLabel(nullptr), _availableSpaceTextLabel(nullptr),
-    _folderTreeItemWidget(nullptr), _backButton(nullptr), _continueButton(nullptr), _infoIconColor(QColor()),
-    _infoIconSize(QSize()), _logoColor(QColor()), _needToSave(false) {
+    QWidget(parent),
+    _gui(gui),
+    _logoTextIconLabel(nullptr),
+    _infoIconLabel(nullptr),
+    _availableSpaceTextLabel(nullptr),
+    _folderTreeItemWidget(nullptr),
+    _backButton(nullptr),
+    _continueButton(nullptr),
+    _infoIconColor(QColor()),
+    _infoIconSize(QSize()),
+    _logoColor(QColor()),
+    _needToSave(false) {
     initUI();
     updateUI();
 }
