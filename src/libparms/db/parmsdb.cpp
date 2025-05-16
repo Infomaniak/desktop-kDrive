@@ -17,8 +17,12 @@
  */
 
 #include "parmsdb.h"
+
+
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/logiffail.h"
+
+#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <3rdparty/sqlite3/sqlite3.h>
@@ -974,6 +978,9 @@ bool ParmsDb::prepare() {
 bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersion) {
     if (CommonUtility::isVersionLower(fromVersion, toVersion)) {
         LOG_INFO(_logger, "Upgrade " << dbType() << " DB from " << fromVersion << " to " << toVersion);
+#ifdef _WIN32
+        replaceShortDbPathsWithLongPaths();
+#endif
     } else {
         LOG_INFO(_logger, "Apply generic upgrade fixes to " << dbType() << " DB version " << fromVersion);
     }
@@ -2982,5 +2989,28 @@ bool ParmsDb::selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync
 
     return true;
 }
+
+#ifdef _WIN32
+bool ParmsDb::replaceShortDbPathsWithLongPaths() {
+    LOG_INFO(_logger, "Replacing short DB path names wiht long ones in sync table.")
+
+    std::vector<Sync> syncList;
+    selectAllSyncs(syncList);
+
+    for (auto &sync: syncList) {
+        SyncPath longPathName;
+        auto ioError = IoError::Success;
+        if (!IoHelper::getLongPathName(sync.dbPath(), longPathName, ioError) || ioError != IoError::Success) {
+            LOGW_WARN(_logger, L"Error in IoHelper::getLongPathName: " << Utility::formatIoError(sync.dbPath(), ioError));
+            continue;
+        }
+        sync.setDbPath(longPathName);
+        bool found = false;
+        if (!updateSync(sync, found)) return false;
+    }
+
+    return true;
+}
+#endif
 
 } // namespace KDC

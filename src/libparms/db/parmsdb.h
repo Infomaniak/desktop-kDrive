@@ -150,5 +150,11 @@ class PARMS_EXPORT ParmsDb : public Db {
 #ifdef __APPLE__
         bool updateExclusionApps();
 #endif
+
+#ifdef _WIN32
+        bool replaceShortDbPathsWithLongPaths();
+#endif
+#
+#
 };
 } // namespace KDC
