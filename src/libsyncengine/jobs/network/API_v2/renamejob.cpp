@@ -25,8 +25,10 @@ namespace KDC {
 
 RenameJob::RenameJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId,
                      const SyncPath &absoluteFinalPath) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _remoteFileId(remoteFileId),
-    _absoluteFinalPath(absoluteFinalPath), _vfs(vfs) {
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+    _remoteFileId(remoteFileId),
+    _absoluteFinalPath(absoluteFinalPath),
+    _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 

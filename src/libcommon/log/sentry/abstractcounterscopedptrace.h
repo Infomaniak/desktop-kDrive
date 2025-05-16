@@ -34,10 +34,12 @@ class AbstractCounterScopedPTrace : public AbstractScopedPTrace {
 
     protected:
         explicit AbstractCounterScopedPTrace(const PTraceDescriptor &info, unsigned int nbOfCyclePerTrace) :
-            AbstractScopedPTrace(info, PTraceStatus::Cancelled), _nbOfCyclesPerTrace(nbOfCyclePerTrace) {}
+            AbstractScopedPTrace(info, PTraceStatus::Cancelled),
+            _nbOfCyclesPerTrace(nbOfCyclePerTrace) {}
 
         explicit AbstractCounterScopedPTrace(const PTraceDescriptor &info, unsigned int nbOfCyclePerTrace, int syncDbId) :
-            AbstractScopedPTrace(info, PTraceStatus::Cancelled, syncDbId), _nbOfCyclesPerTrace(nbOfCyclePerTrace) {}
+            AbstractScopedPTrace(info, PTraceStatus::Cancelled, syncDbId),
+            _nbOfCyclesPerTrace(nbOfCyclePerTrace) {}
 
     private:
         void stop([[maybe_unused]] PTraceStatus status = PTraceStatus::Ok) final {

@@ -96,7 +96,9 @@ static const QString excludedTemplatesFileName("sync-exclude.lst");
 static const QString excludedAppsFileName("litesync-exclude.lst");
 
 
-MigrationParams::MigrationParams() : _logger(Log::instance()->getLogger()), _proxyNotSupported(false) {}
+MigrationParams::MigrationParams() :
+    _logger(Log::instance()->getLogger()),
+    _proxyNotSupported(false) {}
 
 Language MigrationParams::strToLanguage(QString lang) {
     if (lang == "en") {

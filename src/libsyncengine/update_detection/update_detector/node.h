@@ -29,8 +29,8 @@
 
 namespace KDC {
 
-static const SyncPath defaultInvalidPath = ":\0/:\0";   // Invalid path for increased safety
-static const NodeId defaultInvalidNodeId = "-1";   // Invalid node id for increased safety
+static const SyncPath defaultInvalidPath = ":\0/:\0"; // Invalid path for increased safety
+static const NodeId defaultInvalidNodeId = "-1"; // Invalid node id for increased safety
 
 class Node {
     public:

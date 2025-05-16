@@ -50,6 +50,7 @@ class Theme;
 
 class AppServer : public SharedTools::QtSingleApplication {
         Q_OBJECT
+
     public:
         struct SyncCache {
                 SyncStatus _status;
