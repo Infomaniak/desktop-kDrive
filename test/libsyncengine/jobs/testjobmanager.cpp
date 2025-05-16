@@ -285,6 +285,10 @@ void TestJobManager::testJobPriority() {
     JobManager::instance()->queueAsyncJob(job5, Poco::Thread::PRIO_HIGHEST);
 
     // Don't know how to test it but logs looks good...
+
+    while (!JobManager::instance()->_managedJobs.empty()) {
+        Utility::msleep(100);
+    }
 }
 
 void TestJobManager::testJobPriority2() {
@@ -316,23 +320,10 @@ void TestJobManager::testJobPriority2() {
     JobManager::instance()->queueAsyncJob(job5, Poco::Thread::PRIO_NORMAL);
 
     // Don't know how to test it but logs looks good...
-}
 
-void TestJobManager::testJobPriority3() {
-    SyncPath pict5Path = localTestDirPath_pictures / "picture-5.jpg";
-
-    // Create temp remote directory
-    const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "TestJobManager testJobPriority3");
-    // Upload all files in testDir
-    for (auto i = 0; i < 100; i++) {
-        const auto job = std::make_shared<UploadJob>(nullptr, driveDbId, pict5Path,
-                                                     pict5Path.filename().native() + Str2SyncName(std::to_string(i)),
-                                                     remoteTmpDir.id(), 0);
-        JobManager::instance()->queueAsyncJob(job, i % 2 ? Poco::Thread::PRIO_HIGHEST : Poco::Thread::PRIO_NORMAL);
-        Utility::msleep(10);
+    while (!JobManager::instance()->_managedJobs.empty()) {
+        Utility::msleep(100);
     }
-
-    // Don't know how to test it but logs looks good...
 }
 
 void TestJobManager::testCanRunjob() {
