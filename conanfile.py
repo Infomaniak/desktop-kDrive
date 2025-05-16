@@ -18,8 +18,8 @@ class KDriveDesktop(ConanFile):
                don't understand it and fails to build.
         """
         tc = CMakeToolchain(self)
-        # if self.settings.os == "Windows":
-        #     tc.blocks.remove("generic_system")
+        if self.settings.os == "Windows":
+            tc.blocks.remove("generic_system")
             tc.generator = "Ninja"
         if self.settings.os == "Macos":
             tc.variables["CMAKE_OSX_ARCHITECTURES"] = "x86_64;arm64"
