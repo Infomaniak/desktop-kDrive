@@ -541,7 +541,8 @@ void ParmsDb::reset() {
 }
 
 ParmsDb::ParmsDb(const std::filesystem::path &dbPath, const std::string &version, bool autoDelete, bool test) :
-    Db(dbPath), _test(test) {
+    Db(dbPath),
+    _test(test) {
     setAutoDelete(autoDelete);
 
     if (!checkConnect(version)) {

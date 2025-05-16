@@ -867,7 +867,8 @@ bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, b
 // DirectoryIterator
 
 IoHelper::DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, bool recursive, IoError &ioError) :
-    _recursive(recursive), _directoryPath(directoryPath) {
+    _recursive(recursive),
+    _directoryPath(directoryPath) {
     std::error_code ec;
 
     _dirIterator = std::filesystem::begin(

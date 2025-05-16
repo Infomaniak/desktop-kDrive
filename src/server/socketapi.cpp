@@ -84,14 +84,17 @@ namespace KDC {
 struct ListenerHasSocketPred {
         QIODevice *socket;
 
-        ListenerHasSocketPred(QIODevice *socket) : socket(socket) {}
+        ListenerHasSocketPred(QIODevice *socket) :
+            socket(socket) {}
 
         bool operator()(const SocketListener &listener) const { return listener.socket == socket; }
 };
 
 SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> &syncPalMap,
                      const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap, QObject *parent) :
-    QObject(parent), _syncPalMap(syncPalMap), _vfsMap(vfsMap) {
+    QObject(parent),
+    _syncPalMap(syncPalMap),
+    _vfsMap(vfsMap) {
     QString socketPath;
 
     if (OldUtility::isWindows()) {
