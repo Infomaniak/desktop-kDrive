@@ -30,8 +30,14 @@ static const int boxVMargin = 5;
 static const int boxSpacing = 10;
 
 SendErrorsWidget::SendErrorsWidget(QWidget *parent) :
-    ClickableWidget(parent), _backgroundColor(QColor()), _helpIconColor(QColor()), _helpIconSize(QSize()),
-    _actionIconColor(QColor()), _actionIconSize(QSize()), _helpIconLabel(nullptr), _actionIconLabel(nullptr) {
+    ClickableWidget(parent),
+    _backgroundColor(QColor()),
+    _helpIconColor(QColor()),
+    _helpIconSize(QSize()),
+    _actionIconColor(QColor()),
+    _actionIconSize(QSize()),
+    _helpIconLabel(nullptr),
+    _actionIconLabel(nullptr) {
     setContentsMargins(0, 0, 0, 0);
 
     QHBoxLayout *hbox = new QHBoxLayout();

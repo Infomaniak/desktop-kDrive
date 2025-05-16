@@ -20,7 +20,8 @@
 
 namespace KDC {
 
-LanguageChangeFilter::LanguageChangeFilter(QObject *parent) : QObject(parent) {}
+LanguageChangeFilter::LanguageChangeFilter(QObject *parent) :
+    QObject(parent) {}
 
 bool LanguageChangeFilter::eventFilter(QObject *o, QEvent *e) {
     Q_UNUSED(o);

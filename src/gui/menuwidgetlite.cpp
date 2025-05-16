@@ -24,7 +24,9 @@
 
 namespace KDC {
 
-MenuWidgetLite::MenuWidgetLite(QPushButton *button, QWidget *parent) : QMenu(parent), b(button) {}
+MenuWidgetLite::MenuWidgetLite(QPushButton *button, QWidget *parent) :
+    QMenu(parent),
+    b(button) {}
 
 void MenuWidgetLite::showEvent(QShowEvent *) {
 #ifndef _WIN32
