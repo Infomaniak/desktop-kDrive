@@ -71,7 +71,10 @@ static const QString italianCode = "it";
 Q_LOGGING_CATEGORY(lcPreferencesWidget, "gui.preferenceswidget", QtInfoMsg)
 
 LargeFolderConfirmation::LargeFolderConfirmation(QBoxLayout *folderConfirmationBox) :
-    _label{new QLabel()}, _amountLabel{new QLabel()}, _amountLineEdit{new QLineEdit()}, _switch{new CustomSwitch()} {
+    _label{new QLabel()},
+    _amountLabel{new QLabel()},
+    _amountLineEdit{new QLineEdit()},
+    _switch{new CustomSwitch()} {
     const auto folderConfirmation1HBox = new QHBoxLayout();
     folderConfirmation1HBox->setContentsMargins(0, 0, 0, 0);
     folderConfirmation1HBox->setSpacing(0);
@@ -114,11 +117,22 @@ void LargeFolderConfirmation::setAmountLineEditEnabled(bool enabled) {
 }
 
 PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
-    LargeWidgetWithCustomToolTip(parent), _gui(gui), _languageSelectorComboBox{new CustomComboBox()}, _generalLabel{new QLabel()},
-    _monochromeLabel{new QLabel()}, _launchAtStartupLabel{new QLabel()}, _moveToTrashLabel{new QLabel()},
-    _moveToTrashTipsLabel{new QLabel()}, _moveToTrashDisclaimerLabel{new QLabel()}, _moveToTrashKnowMoreLabel{new QLabel()},
-    _languageSelectorLabel{new QLabel()}, _advancedLabel{new QLabel()}, _debuggingLabel{new QLabel()},
-    _debuggingFolderLabel{new QLabel()}, _filesToExcludeLabel{new QLabel()}, _proxyServerLabel{new QLabel()},
+    LargeWidgetWithCustomToolTip(parent),
+    _gui(gui),
+    _languageSelectorComboBox{new CustomComboBox()},
+    _generalLabel{new QLabel()},
+    _monochromeLabel{new QLabel()},
+    _launchAtStartupLabel{new QLabel()},
+    _moveToTrashLabel{new QLabel()},
+    _moveToTrashTipsLabel{new QLabel()},
+    _moveToTrashDisclaimerLabel{new QLabel()},
+    _moveToTrashKnowMoreLabel{new QLabel()},
+    _languageSelectorLabel{new QLabel()},
+    _advancedLabel{new QLabel()},
+    _debuggingLabel{new QLabel()},
+    _debuggingFolderLabel{new QLabel()},
+    _filesToExcludeLabel{new QLabel()},
+    _proxyServerLabel{new QLabel()},
     _displayErrorsWidget{new ActionWidget(":/client/resources/icons/actions/warning.svg", "")} {
     setContentsMargins(0, 0, 0, 0);
 

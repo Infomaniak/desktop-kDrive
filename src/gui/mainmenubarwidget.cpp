@@ -34,7 +34,11 @@ static const int driveBoxVMargin = 10;
 static const int hButtonsSpacing = 50;
 
 MainMenuBarWidget::MainMenuBarWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
-    HalfRoundRectWidget(parent), _gui(gui), _driveSelectionWidget(nullptr), _progressBarWidget(nullptr), _helpButton(nullptr) {
+    HalfRoundRectWidget(parent),
+    _gui(gui),
+    _driveSelectionWidget(nullptr),
+    _progressBarWidget(nullptr),
+    _helpButton(nullptr) {
     setContentsMargins(hMargin, vMargin, hMargin, vMargin);
     setSpacing(0);
 

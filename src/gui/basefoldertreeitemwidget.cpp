@@ -49,8 +49,13 @@ Q_LOGGING_CATEGORY(lcBaseFolderTreeItemWidget, "gui.foldertreeitemwidget", QtInf
 
 BaseFolderTreeItemWidget::BaseFolderTreeItemWidget(std::shared_ptr<ClientGui> gui, int driveDbId, bool displayRoot,
                                                    QWidget *parent) :
-    QTreeWidget(parent), _gui(gui), _driveDbId(driveDbId), _displayRoot(displayRoot), _folderIconColor(QColor()),
-    _folderIconSize(QSize()), _inserting(false) {
+    QTreeWidget(parent),
+    _gui(gui),
+    _driveDbId(driveDbId),
+    _displayRoot(displayRoot),
+    _folderIconColor(QColor()),
+    _folderIconSize(QSize()),
+    _inserting(false) {
     initUI();
 }
 
@@ -346,7 +351,8 @@ void BaseFolderTreeItemWidget::onItemChanged(QTreeWidgetItem *item, int column) 
 }
 
 BaseFolderTreeItemWidget::CustomDelegate::CustomDelegate(BaseFolderTreeItemWidget *treeWidget, QObject *parent) :
-    QStyledItemDelegate(parent), _treeWidget(treeWidget) {}
+    QStyledItemDelegate(parent),
+    _treeWidget(treeWidget) {}
 
 void BaseFolderTreeItemWidget::CustomDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option,
                                                                     const QModelIndex &index) const {

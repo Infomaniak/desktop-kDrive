@@ -37,8 +37,13 @@ static const int pictureUserSize = 24;
 static const int pictureCurrUserSize = 40;
 
 MenuItemUserWidget::MenuItemUserWidget(const QString &name, const QString &email, bool currentUser, QWidget *parent) :
-    QWidget(parent), _name(name), _email(email), _leftPictureLabel(nullptr),
-    _leftPictureSize(currentUser ? pictureCurrUserSize : pictureUserSize), _checked(false), _hasSubmenu(false) {
+    QWidget(parent),
+    _name(name),
+    _email(email),
+    _leftPictureLabel(nullptr),
+    _leftPictureSize(currentUser ? pictureCurrUserSize : pictureUserSize),
+    _checked(false),
+    _hasSubmenu(false) {
     if (currentUser) {
         // different view if it's current User
         initCurrentUserUI();

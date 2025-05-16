@@ -56,8 +56,15 @@ static const int readOnlyRole = Qt::UserRole + 1;
 Q_LOGGING_CATEGORY(lcLiteSyncDialog, "gui.litesyncdialog", QtInfoMsg)
 
 LiteSyncDialog::LiteSyncDialog(std::shared_ptr<ClientGui> gui, QWidget *parent) :
-    CustomDialog(true, parent), _gui(gui), _appsTableModel(nullptr), _appsTableView(nullptr), _saveButton(nullptr),
-    _actionIconColor(QColor()), _actionIconSize(QSize()), _needToSave(false), _defaultAppList(QList<ExclusionAppInfo>()),
+    CustomDialog(true, parent),
+    _gui(gui),
+    _appsTableModel(nullptr),
+    _appsTableView(nullptr),
+    _saveButton(nullptr),
+    _actionIconColor(QColor()),
+    _actionIconSize(QSize()),
+    _needToSave(false),
+    _defaultAppList(QList<ExclusionAppInfo>()),
     _userAppList(QList<ExclusionAppInfo>()) {
     initUI();
     updateUI();
@@ -347,7 +354,8 @@ void LiteSyncDialog::onTableViewClicked(const QModelIndex &index) {
 
                         setNeedToSave(true);
                     }
-                    MatomoClient::sendEvent("preferencesLiteSync", MatomoEventAction::Click, "deleteAppButton", ret == QMessageBox::Yes ? 1 : 0);
+                    MatomoClient::sendEvent("preferencesLiteSync", MatomoEventAction::Click, "deleteAppButton",
+                                            ret == QMessageBox::Yes ? 1 : 0);
                 }
             }
         }
