@@ -147,7 +147,6 @@ void TestNetworkJobs::tearDown() {
     ParametersCache::reset();
     JobManager::instance()->stop();
     JobManager::instance()->clear();
-    JobManager::instance()->reset();
     MockIoHelperTestNetworkJobs::resetStdFunctions();
     TestBase::stop();
 }

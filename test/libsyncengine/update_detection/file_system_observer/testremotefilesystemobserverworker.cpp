@@ -112,7 +112,6 @@ void TestRemoteFileSystemObserverWorker::tearDown() {
     ParmsDb::reset();
     JobManager::instance()->stop();
     JobManager::instance()->clear();
-    JobManager::instance()->reset();
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }

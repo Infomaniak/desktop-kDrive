@@ -95,7 +95,6 @@ void KDC::TestJobManager::tearDown() {
     ParametersCache::reset();
     JobManager::instance()->stop();
     JobManager::instance()->clear();
-    JobManager::instance()->reset();
     TestBase::stop();
 }
 
@@ -219,7 +218,7 @@ void TestJobManager::testCancelJobs() {
         job->setAdditionalCallback(callback);
         JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
         const std::scoped_lock lock(_mutex);
-        (void) _ongoingJobs.try_emplace(static_cast<uint64_t>(job->jobId()), job);
+        (void) _ongoingJobs.try_emplace(static_cast<UniqueId>(job->jobId()), job);
     }
     while (_ongoingJobs.size() == localFileCounter) {
         Utility::msleep(1); // Wait 1ms
@@ -285,10 +284,6 @@ void TestJobManager::testJobPriority() {
     JobManager::instance()->queueAsyncJob(job4, Poco::Thread::PRIO_HIGH);
     JobManager::instance()->queueAsyncJob(job5, Poco::Thread::PRIO_HIGHEST);
 
-    while (JobManager::instance()->countManagedJobs() > 0) {
-        Utility::msleep(5000); // Wait 5 sec
-    }
-
     // Don't know how to test it but logs looks good...
 }
 
@@ -320,10 +315,6 @@ void TestJobManager::testJobPriority2() {
     JobManager::instance()->queueAsyncJob(job4, Poco::Thread::PRIO_NORMAL);
     JobManager::instance()->queueAsyncJob(job5, Poco::Thread::PRIO_NORMAL);
 
-    while (JobManager::instance()->countManagedJobs() > 0) {
-        Utility::msleep(5000); // Wait 5 sec
-    }
-
     // Don't know how to test it but logs looks good...
 }
 
@@ -339,10 +330,6 @@ void TestJobManager::testJobPriority3() {
                                                      remoteTmpDir.id(), 0);
         JobManager::instance()->queueAsyncJob(job, i % 2 ? Poco::Thread::PRIO_HIGHEST : Poco::Thread::PRIO_NORMAL);
         Utility::msleep(10);
-    }
-
-    while (JobManager::instance()->countManagedJobs() > 0) {
-        Utility::msleep(5000); // Wait 5 sec
     }
 
     // Don't know how to test it but logs looks good...
@@ -525,11 +512,6 @@ void TestJobManager::testWithCallbackBigFiles(const SyncPath &dirPath, const uin
     // Upload all files in testDir
     ulong counter = 0;
     while (true) {
-        LOG_DEBUG(Log::instance()->getLogger(),
-                  "$$$$$ testWithCallbackBigFiles - Start, upload session max parallel jobs="
-                          << ParametersCache::instance()->parameters().uploadSessionParallelJobs()
-                          << ", JobManager pool capacity=" << JobManager::instance()->maxNbThreads());
-
         _jobErrorSocketsDefuncted = false;
         _jobErrorOther = false;
 

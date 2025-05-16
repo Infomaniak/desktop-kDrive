@@ -49,8 +49,10 @@ std::shared_ptr<JobManager> JobManager::instance() noexcept {
     return _instance;
 }
 
-void JobManager::start() {
-    _thread = std::make_unique<std::thread>(executeFunc, this);
+void JobManager::startThreadIfNeeded() {
+    if (!_thread) {
+        _thread = std::make_unique<std::thread>(executeFunc, this);
+    }
 }
 
 void JobManager::stop() {
@@ -74,24 +76,22 @@ void JobManager::clear() {
     _managedJobs.clear();
     _runningJobs.clear();
     _stop = false;
-}
 
-void JobManager::reset() {
     if (_instance) {
         _instance.reset();
     }
 }
 
+namespace {
 void defaultCallback(const UniqueId jobId) {
     JobManager::instance()->eraseJob(jobId);
 }
+} // namespace
 
 void JobManager::queueAsyncJob(std::shared_ptr<AbstractJob> job,
                                Poco::Thread::Priority priority /*= Poco::Thread::PRIO_NORMAL*/) noexcept {
     const std::scoped_lock lock(_mutex);
-    if (!_thread) {
-        start();
-    }
+    startThreadIfNeeded();
     job->setMainCallback(defaultCallback);
     _queuedJobs.emplace(job, priority);
     (void) _managedJobs.try_emplace(job->jobId(), job);
@@ -127,7 +127,7 @@ void JobManager::setPoolCapacity(const int nbThread) {
 }
 
 void JobManager::decreasePoolCapacity() {
-    if (JobManager::instance()->maxNbThreads() > threadPoolMinCapacity) {
+    if (_maxNbThread > threadPoolMinCapacity) {
         // Decrease pool capacity
         setPoolCapacity(std::max(static_cast<int>(std::ceil(_maxNbThread / 2)), threadPoolMinCapacity));
     } else {
@@ -223,7 +223,7 @@ void JobManager::addToPendingJobs(std::shared_ptr<AbstractJob> job, Poco::Thread
 
 int JobManager::availableThreadsInPool() const {
     try {
-        return static_cast<uint32_t>(Poco::ThreadPool::defaultPool().available());
+        return static_cast<int>(Poco::ThreadPool::defaultPool().available());
     } catch (Poco::Exception &) {
         return 0;
     }
@@ -263,7 +263,6 @@ bool JobManager::isBigFileUploadJob(const std::shared_ptr<AbstractJob> job) cons
 void JobManager::managePendingJobs() {
     const std::scoped_lock lock(_mutex);
 
-    // Check if parent jobs of the pending jobs has finished
     auto it = _pendingJobs.begin();
     while (it != _pendingJobs.end()) {
         const auto &jobId = it->first;

@@ -58,7 +58,6 @@ class JobManager {
 
         void stop();
         void clear();
-        void reset();
 
         /**
          * @brief Queue a job to be executed as soon as a thread is available in the default thread pool.
@@ -74,8 +73,6 @@ class JobManager {
         bool isJobFinished(const UniqueId &jobId) const;
 
         std::shared_ptr<AbstractJob> getJob(const UniqueId &jobId);
-        inline size_t countManagedJobs() const { return _managedJobs.size(); }
-        inline int maxNbThreads() const { return _maxNbThread; }
 
         void setPoolCapacity(int nbThread);
         void decreasePoolCapacity();
@@ -84,7 +81,7 @@ class JobManager {
         static void executeFunc(void *thisWorker);
 
         JobManager();
-        void start();
+        void startThreadIfNeeded();
 
         void run() noexcept;
         void startJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority);

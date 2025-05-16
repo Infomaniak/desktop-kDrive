@@ -65,9 +65,6 @@ void ExecutorWorker::execute() {
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
 
-    LOG_SYNCPAL_DEBUG(_logger, "JobManager::instance()->countManagedJobs(): " << JobManager::instance()->countManagedJobs());
-    LOG_SYNCPAL_DEBUG(_logger, "JobManager::instance()->maxNbThreads() * 2: " << JobManager::instance()->maxNbThreads() * 2);
-
     // Keep a copy of the sorted list
     _opList = _syncPal->_syncOps->opSortedList();
     initProgressManager();
@@ -87,15 +84,6 @@ void ExecutorWorker::execute() {
             if (stopAsked()) {
                 cancelAllOngoingJobs();
                 break;
-            }
-
-            // TODO : useful???
-            if (JobManager::instance()->countManagedJobs() > static_cast<size_t>(JobManager::instance()->maxNbThreads()) * 2) {
-                if (ParametersCache::isExtendedLogEnabled()) {
-                    LOG_SYNCPAL_DEBUG(_logger, "Maximum number of jobs reached");
-                }
-                Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-                continue;
             }
 
             UniqueId opId = 0;
