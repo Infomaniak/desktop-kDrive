@@ -24,7 +24,8 @@
 namespace KDC {
 
 FolderWatcher_mac::FolderWatcher_mac(LocalFileSystemObserverWorker *parent, const SyncPath &path) :
-    FolderWatcher(parent, path), _stream(nullptr) {}
+    FolderWatcher(parent, path),
+    _stream(nullptr) {}
 
 static void callback([[maybe_unused]] ConstFSEventStreamRef streamRef, void *clientCallBackInfo, size_t numEvents,
                      void *eventPathsVoid, const FSEventStreamEventFlags eventFlags[],

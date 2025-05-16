@@ -30,12 +30,14 @@
 
 namespace KDC {
 
-AbstractUpdater::AbstractUpdater() : _updateChecker(std::make_shared<UpdateChecker>()) {
+AbstractUpdater::AbstractUpdater() :
+    _updateChecker(std::make_shared<UpdateChecker>()) {
     const std::function callback = [this] { onAppVersionReceived(); };
     _updateChecker->setCallback(callback);
 }
 
-AbstractUpdater::AbstractUpdater(const std::shared_ptr<UpdateChecker>& updateChecker) : _updateChecker(updateChecker) {
+AbstractUpdater::AbstractUpdater(const std::shared_ptr<UpdateChecker>& updateChecker) :
+    _updateChecker(updateChecker) {
     const std::function callback = [this] { onAppVersionReceived(); };
     _updateChecker->setCallback(callback);
 }

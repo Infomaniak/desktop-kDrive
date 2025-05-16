@@ -36,6 +36,7 @@ namespace KDC {
 
 class UpdateManager final : public QObject {
         Q_OBJECT
+
     public:
         explicit UpdateManager(QObject *parent = nullptr);
 
