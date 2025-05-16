@@ -81,8 +81,6 @@ set(PC_HEADER_FILES
     "$<$<COMPILE_LANGUAGE:CXX>:<qimage.h$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<qlist.h$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<qstring.h$<ANGLE-R>>"
-    # log4cplus
-    "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/loggingmacros.h$<ANGLE-R>>"
     # sentry
     "$<$<COMPILE_LANGUAGE:CXX>:<sentry.h$<ANGLE-R>>"
     # kDrive
@@ -108,7 +106,6 @@ if (WIN32)
     target_include_directories(${libcommon_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
-        "C:/Program Files (x86)/log4cplus/include"
         "C:/Program Files (x86)/libzip/include"
         ${CMAKE_SOURCE_DIR}/src/3rdparty/keychain/include)
 else()
@@ -123,7 +120,7 @@ endif()
 target_link_libraries(${libcommon_NAME}
     Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Sql
     Poco::Foundation Poco::JSON Poco::Util
-    log4cplus::log4cplusU
+    log4cplus::log4cplus
     sentry::sentry
     keychain
     libzip::zip
