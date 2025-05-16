@@ -64,12 +64,7 @@ jobs:
       - name: Build kDrive desktop
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
-          
-          call "cov01.exe" -1
-          call "cov01.exe" -s
-          
-          set PATH=%ProgramFiles%\BullseyeCoverage\bin;%ProgramFiles%\Microsoft Visual Studio\VC\bin;%PATH%
-          powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
+          powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci -coverage
         shell: cmd
 
       - name: Execute tests
@@ -90,14 +85,6 @@ jobs:
           & "cov01.exe" "-s" # show status
 
           & "covhtml.exe" "coverage_html"
-
-          & "cov01.exe" "-1" # coverage on
-          & "cov01.exe" "-s" # show status
-
-
-      - name: Deactivate BullseyeCoverage
-        run: |
-          & "cov01.exe" "-0" # coverage off
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
