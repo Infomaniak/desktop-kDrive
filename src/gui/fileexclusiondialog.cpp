@@ -59,7 +59,11 @@ static const char patternProperty[] = "pattern";
 Q_LOGGING_CATEGORY(lcFileExclusionDialog, "gui.fileexclusiondialog", QtInfoMsg)
 
 FileExclusionDialog::FileExclusionDialog(QWidget *parent) :
-    CustomDialog(true, parent), _filesTableModel(nullptr), _filesTableView(nullptr), _saveButton(nullptr), _needToSave(false) {
+    CustomDialog(true, parent),
+    _filesTableModel(nullptr),
+    _filesTableView(nullptr),
+    _saveButton(nullptr),
+    _needToSave(false) {
     initUI();
     updateUI();
 }
@@ -311,7 +315,8 @@ void FileExclusionDialog::onExit() {
             } else {
                 reject();
             }
-            MatomoClient::sendEvent("preferencesFileExclusion", MatomoEventAction::Click, "exitButton", ret == QMessageBox::Yes ? 1 : 0);
+            MatomoClient::sendEvent("preferencesFileExclusion", MatomoEventAction::Click, "exitButton",
+                                    ret == QMessageBox::Yes ? 1 : 0);
         }
     } else {
         reject();
@@ -358,7 +363,8 @@ void FileExclusionDialog::onTableViewClicked(const QModelIndex &index) {
                                         QMessageBox::Yes | QMessageBox::No, this);
                 msgBox.setDefaultButton(QMessageBox::No);
                 int ret = msgBox.exec();
-                MatomoClient::sendEvent("preferencesFileExclusion", MatomoEventAction::Click, "deleteItemButton", ret == QMessageBox::Yes ? 1 : 0);
+                MatomoClient::sendEvent("preferencesFileExclusion", MatomoEventAction::Click, "deleteItemButton",
+                                        ret == QMessageBox::Yes ? 1 : 0);
                 if (ret != QDialog::Rejected) {
                     if (ret == QMessageBox::Yes) {
                         QString templ = templateItem->data(Qt::DisplayRole).toString();

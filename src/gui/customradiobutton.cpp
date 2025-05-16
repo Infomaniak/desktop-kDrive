@@ -25,7 +25,10 @@ namespace KDC {
 static int defaultToolTipDuration = 3000; // ms
 
 CustomRadioButton::CustomRadioButton(QWidget *parent) :
-    QRadioButton(parent), _toolTipText(QString()), _toolTipDuration(defaultToolTipDuration), _customToolTip(nullptr) {
+    QRadioButton(parent),
+    _toolTipText(QString()),
+    _toolTipDuration(defaultToolTipDuration),
+    _customToolTip(nullptr) {
     connect(this, &QRadioButton::clicked, this, &CustomRadioButton::onClicked);
 }
 

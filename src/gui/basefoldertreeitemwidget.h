@@ -64,7 +64,10 @@ class BaseFolderTreeItemWidget : public QTreeWidget {
                 BaseFolderTreeItemWidget *_treeWidget;
         };
 
-        enum TreeWidgetColumn { Folder = 0, Action };
+        enum TreeWidgetColumn {
+            Folder = 0,
+            Action
+        };
 
         std::shared_ptr<ClientGui> _gui;
         int _driveDbId;

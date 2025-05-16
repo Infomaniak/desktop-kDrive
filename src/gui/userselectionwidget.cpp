@@ -39,8 +39,13 @@ static const char userDbIdProperty[] = "userDbId";
 static const int userIconSize = 32;
 
 UserSelectionWidget::UserSelectionWidget(QWidget *parent) :
-    QPushButton(parent), _downIconSize(QSize()), _downIconColor(QColor()), _menuRightIconSize(QSize()), _currentUserDbId(0),
-    _userIconLabel(nullptr), _downIconLabel(nullptr) {
+    QPushButton(parent),
+    _downIconSize(QSize()),
+    _downIconColor(QColor()),
+    _menuRightIconSize(QSize()),
+    _currentUserDbId(0),
+    _userIconLabel(nullptr),
+    _downIconLabel(nullptr) {
     setContentsMargins(hMargin, vMargin, hMargin, vMargin);
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 

@@ -38,8 +38,14 @@ Q_LOGGING_CATEGORY(lcCustomMessageBox, "gui.custommessagebox", QtInfoMsg)
 
 CustomMessageBox::CustomMessageBox(QMessageBox::Icon icon, const QString &text, const QString &warningText, bool warning,
                                    QMessageBox::StandardButtons buttons, QWidget *parent) :
-    CustomDialog(true, parent), _icon(icon), _warningLabel(nullptr), _textLabel(nullptr), _iconLabel(nullptr),
-    _buttonsHBox(nullptr), _iconSize(QSize()), _buttonCount(0) {
+    CustomDialog(true, parent),
+    _icon(icon),
+    _warningLabel(nullptr),
+    _textLabel(nullptr),
+    _iconLabel(nullptr),
+    _buttonsHBox(nullptr),
+    _iconSize(QSize()),
+    _buttonCount(0) {
     QVBoxLayout *mainLayout = this->mainLayout();
 
     // Warning text
@@ -134,7 +140,8 @@ CustomMessageBox::CustomMessageBox(QMessageBox::Icon icon, const QString &text, 
 }
 
 CustomMessageBox::CustomMessageBox(QMessageBox::Icon icon, const QString &text, QMessageBox::StandardButtons buttons,
-                                   QWidget *parent) : CustomMessageBox(icon, text, QString(), false, buttons, parent) {}
+                                   QWidget *parent) :
+    CustomMessageBox(icon, text, QString(), false, buttons, parent) {}
 
 void CustomMessageBox::addButton(const QString &text, QMessageBox::StandardButton buttonType) {
     QPushButton *button = new QPushButton(this);
