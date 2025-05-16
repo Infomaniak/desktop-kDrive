@@ -40,6 +40,7 @@ class CustomSwitch;
 // is above a user-defined threshold (amount).
 struct LargeFolderConfirmation : public QObject { // Derived from QObject because retranslateUi calls tr()
         Q_OBJECT
+
     public:
         explicit LargeFolderConfirmation(QBoxLayout *folderConfirmationBox);
         void retranslateUi();

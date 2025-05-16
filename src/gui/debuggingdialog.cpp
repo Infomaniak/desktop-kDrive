@@ -48,7 +48,9 @@ std::map<LogLevel, std::pair<int, QString>> DebuggingDialog::_logLevelMap = {{Lo
                                                                              {LogLevel::Error, {3, QString(tr("Error"))}},
                                                                              {LogLevel::Fatal, {4, QString(tr("Fatal"))}}};
 
-DebuggingDialog::DebuggingDialog(std::shared_ptr<ClientGui> gui, QWidget *parent) : CustomDialog(true, parent), _gui(gui) {
+DebuggingDialog::DebuggingDialog(std::shared_ptr<ClientGui> gui, QWidget *parent) :
+    CustomDialog(true, parent),
+    _gui(gui) {
     initUI();
     _recordDebugging = ParametersCache::instance()->parametersInfo().useLog();
     _extendedLog = ParametersCache::instance()->parametersInfo().extendedLog();
@@ -622,7 +624,8 @@ void DebuggingDialog::onDebugLevelComboBoxActivated(int index) {
 }
 
 void DebuggingDialog::onDeleteLogsCheckBoxClicked(bool checked) {
-    MatomoClient::sendEvent("preferencesDebugging", MatomoEventAction::Click, "deleteLogsOlderThan7DaysCheckbox", checked ? 1 : 0);
+    MatomoClient::sendEvent("preferencesDebugging", MatomoEventAction::Click, "deleteLogsOlderThan7DaysCheckbox",
+                            checked ? 1 : 0);
     _deleteLogs = checked;
     setNeedToSave(true);
 }
@@ -643,7 +646,7 @@ void DebuggingDialog::onExit() {
         int ret = msgBox.exec();
         if (ret != QDialog::Rejected) {
             MatomoClient::sendEvent("preferencesDebugging", MatomoEventAction::Click, "saveOnExit",
-                                                                ret == QMessageBox::Yes ? 1 : 0);
+                                    ret == QMessageBox::Yes ? 1 : 0);
             if (ret == QMessageBox::Yes) {
                 onSaveButtonTriggered();
             } else {

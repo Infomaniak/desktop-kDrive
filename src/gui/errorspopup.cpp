@@ -49,7 +49,11 @@ static const std::string actionTypeProperty = "actionType";
 Q_LOGGING_CATEGORY(lcErrorsPopup, "gui.errorspopup", QtInfoMsg)
 
 ErrorsPopup::ErrorsPopup(const QList<DriveError> &driveErrorList, int genericErrorsCount, QPoint position, QWidget *parent) :
-    QDialog(parent), _moved(false), _position(position), _backgroundColor(QColor()), _warningIconSize(QSize()),
+    QDialog(parent),
+    _moved(false),
+    _position(position),
+    _backgroundColor(QColor()),
+    _warningIconSize(QSize()),
     _warningIconColor(QColor()) {
     setWindowFlags(Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::X11BypassWindowManagerHint);
     setAttribute(Qt::WA_TranslucentBackground);

@@ -44,7 +44,9 @@ static const int winDialogBoxHMargin = 12;
 static const int winDialogBoxVTMargin = 10;
 static const int winDialogBoxVBMargin = 0;
 
-CustomSystemBar::CustomSystemBar(bool popup, QWidget *parent) : QWidget(parent), _popup(popup) {
+CustomSystemBar::CustomSystemBar(bool popup, QWidget *parent) :
+    QWidget(parent),
+    _popup(popup) {
     QHBoxLayout *hBox = new QHBoxLayout();
     setLayout(hBox);
 

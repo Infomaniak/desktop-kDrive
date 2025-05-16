@@ -58,8 +58,16 @@ static const int hoverStartTimer = 250;
 Q_LOGGING_CATEGORY(lcSynchronizedItemWidget, "gui.synchronizeditemidget", QtInfoMsg)
 
 SynchronizedItemWidget::SynchronizedItemWidget(const SynchronizedItem &item, QWidget *parent) :
-    QWidget(parent), _item(item), _isWaitingTimer(false), _isSelected(false), _isMenuOpened(false), _cannotSelect(false),
-    _fileIconSize(QSize()), _directionIconSize(QSize()), _backgroundColorSelection(QColor()), _fileIconLabel(nullptr),
+    QWidget(parent),
+    _item(item),
+    _isWaitingTimer(false),
+    _isSelected(false),
+    _isMenuOpened(false),
+    _cannotSelect(false),
+    _fileIconSize(QSize()),
+    _directionIconSize(QSize()),
+    _backgroundColorSelection(QColor()),
+    _fileIconLabel(nullptr),
     _fileDateLabel(nullptr) {
     setContentsMargins(hMargin, vMargin, hMargin, vMargin);
 

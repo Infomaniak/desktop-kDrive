@@ -48,7 +48,8 @@ static constexpr auto internalTagColor = QColor(120, 116, 176);
 
 Q_LOGGING_CATEGORY(lcVersionWidget, "gui.versionwidget", QtInfoMsg)
 
-VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) : QWidget(parent) {
+VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) :
+    QWidget(parent) {
     const auto mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(mainLayout);

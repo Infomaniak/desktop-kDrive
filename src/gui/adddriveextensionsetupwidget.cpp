@@ -27,7 +27,9 @@ namespace KDC {
 
 Q_LOGGING_CATEGORY(lcAddDriveExtensionSetupWidget, "gui.adddriveextensionsetupwidget", QtInfoMsg)
 
-AddDriveExtensionSetupWidget::AddDriveExtensionSetupWidget(QWidget *parent) : QWidget(parent), _extensionSetupWidget(nullptr) {
+AddDriveExtensionSetupWidget::AddDriveExtensionSetupWidget(QWidget *parent) :
+    QWidget(parent),
+    _extensionSetupWidget(nullptr) {
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
