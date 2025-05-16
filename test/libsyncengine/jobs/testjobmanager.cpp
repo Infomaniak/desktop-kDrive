@@ -353,12 +353,22 @@ void TestJobManager::testCanRunjob() {
     {
         const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "testCanRunjob");
         const LocalTemporaryDirectory localTmpDir("testCanRunjob");
-        const auto filepath = testhelpers::generateBigFile(localTmpDir.path(), 1); // Generate 1 file of 50 MB
+        const auto filepath = testhelpers::generateBigFile(localTmpDir.path(), 1); // Generate 1 file of 1 MB
+        std::queue<UniqueId> queue;
         for (auto i = 0; i < 20; i++) {
             const auto job = std::make_shared<UploadJob>(nullptr, driveDbId, filepath, filepath.filename().native(),
                                                          remoteTmpDir.id(), testhelpers::defaultTime);
             CPPUNIT_ASSERT_EQUAL(true, JobManager::instance()->canRunjob(job));
             JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
+            queue.push(job->jobId());
+        }
+
+        while (!queue.empty()) {
+            if (!JobManager::instance()->isJobFinished(queue.front())) {
+                Utility::msleep(100);
+                continue;
+            }
+            queue.pop();
         }
     }
     // Upload sessions
@@ -382,13 +392,18 @@ void TestJobManager::testCanRunjob() {
             Utility::msleep(100);
         }
         CPPUNIT_ASSERT_EQUAL(true, JobManager::instance()->canRunjob(job2));
+
+        job1->abort();
+        while (!JobManager::instance()->isJobFinished(job1->jobId())) {
+            Utility::msleep(100);
+        }
     }
     // Big files download
     {
         const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "testCanRunjob");
 
         const LocalTemporaryDirectory localTmpDir("testCanRunjob");
-        const auto filepath = testhelpers::generateBigFile(localTmpDir.path(), 1); // Generate 1 file of 50 MB
+        const auto filepath = testhelpers::generateBigFile(localTmpDir.path(), 1); // Generate 1 file of 1 MB
 
         std::queue<std::shared_ptr<AbstractJob>> queue;
         bool noMoreRun = false;
@@ -407,16 +422,13 @@ void TestJobManager::testCanRunjob() {
         }
         CPPUNIT_ASSERT_EQUAL(true, noMoreRun);
 
-        std::queue<UniqueId> queue2;
         while (!queue.empty()) {
-            queue.front()->abort();
-            queue2.push(queue.front()->jobId());
+            if (!JobManager::instance()->isJobFinished(queue.front()->jobId())) {
+                Utility::msleep(100);
+                continue;
+            }
             queue.pop();
         }
-    }
-
-    while (JobManager::instance()->countManagedJobs() > 0) {
-        Utility::msleep(5000); // Wait 5 sec
     }
 }
 
