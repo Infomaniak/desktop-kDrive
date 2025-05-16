@@ -52,6 +52,12 @@ void SyncPalWorker::execute() {
 #endif
     }
 
+#ifdef _WIN32
+    if (!unindexProblematicFiles()) {
+        LOG_SYNCPAL_WARN(_logger, "Failed to unindex problematic files");
+    }
+#endif
+
     // Wait before really starting
     bool awakenByStop = false;
     sleepUntilStartDelay(awakenByStop);
@@ -619,5 +625,35 @@ void SyncPalWorker::resetVfsFilesStatus() {
     }
     return;
 }
+
+#ifdef _WIN32
+bool SyncPalWorker::unindexProblematicFiles() {
+    IoHelper::DirectoryIterator dir;
+    IoError ioError = IoError::Success;
+    IoHelper::getDirectoryIterator(_syncPal->localPath(), true, ioError, dir);
+    if (ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in DirectoryIterator: " << Utility::formatIoError(_syncPal->localPath(), ioError));
+        return false;
+    }
+
+    DirectoryEntry entry;
+    bool endOfDirectory = false;
+    bool err = false;
+    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoError::Success) {
+        if (stopAsked()) {
+            return true;
+        }
+
+        if (entry.is_regular_file() && indexingIsProblematic(entry.path())) {
+            if (!SetFileAttributesA(entry.path().string().c_str(), FILE_ATTRIBUTE_NOT_CONTENT_INDEXED)) {
+                LOGW_WARN(_logger, L"Error in SetFileAttributesA for " << Utility::formatSyncPath(entry.path()));
+                err = true;
+            }
+        }
+    }
+
+    return !err;
+}
+#endif
 
 } // namespace KDC
