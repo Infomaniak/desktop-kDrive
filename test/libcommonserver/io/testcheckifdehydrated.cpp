@@ -82,7 +82,9 @@ void TestIo::testCheckIfFileIsDehydrated() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path() / "dehydrated_file";
-        { std::ofstream ofs(path); }
+        {
+            std::ofstream ofs(path);
+        }
 
         IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(_testObj->setXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, ioError));
@@ -95,7 +97,9 @@ void TestIo::testCheckIfFileIsDehydrated() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path() / "hydrated_file";
-        { std::ofstream ofs(path); }
+        {
+            std::ofstream ofs(path);
+        }
 
         IoError ioError = IoError::Success;
         bool isDehydrated = true;

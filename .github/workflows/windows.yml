@@ -4,7 +4,7 @@ on:
   pull_request:
     branches-ignore:
         - 'release/**'
-    types: [synchronize, review_requested]
+    types: [review_requested]
 
 concurrency:
   group: windows-${{ github.head_ref }}

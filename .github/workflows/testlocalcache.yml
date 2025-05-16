@@ -1,0 +1,30 @@
+name: Test local cache
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check-dist:
+    runs-on: [ self-hosted, Windows, desktop-kdrive ]
+
+    steps:
+      - name: Load cached dependencies
+        id: cache
+        uses: herve-er/local-cache@v2
+        with:
+          path: ${{ github.workspace }}
+          base: ${{ github.workspace }}/../local-cache
+          key: "a"
+          clean-key: true        
+
+
+      - name: Generate a file
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+            echo "Hello from the cache miss!" > ${{ github.workspace }}/generated.txt
+
+      - name: Display file content
+        run: |
+               echo "=== File content ==="
+               cat generated.txt
+        shell: bash
