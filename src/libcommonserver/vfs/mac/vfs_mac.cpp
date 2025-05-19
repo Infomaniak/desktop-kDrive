@@ -30,7 +30,8 @@
 
 namespace KDC {
 VfsMac::VfsMac(const VfsSetupParams &vfsSetupParams, QObject *parent) :
-    Vfs(vfsSetupParams, parent), _localSyncPath{Path2QStr(_vfsSetupParams.localPath)} {
+    Vfs(vfsSetupParams, parent),
+    _localSyncPath{Path2QStr(_vfsSetupParams.localPath)} {
     // Initialize LiteSync ext connector
     LOG_INFO(logger(), "Initialize LiteSyncExtConnector");
 

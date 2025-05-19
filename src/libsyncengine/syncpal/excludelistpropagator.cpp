@@ -23,7 +23,8 @@
 
 namespace KDC {
 
-ExcludeListPropagator::ExcludeListPropagator(std::shared_ptr<SyncPal> syncPal) : _syncPal(syncPal) {
+ExcludeListPropagator::ExcludeListPropagator(std::shared_ptr<SyncPal> syncPal) :
+    _syncPal(syncPal) {
     LOG_DEBUG(Log::instance()->getLogger(), "ExcludeListPropagator created " << jobId());
 }
 

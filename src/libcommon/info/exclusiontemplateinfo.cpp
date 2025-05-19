@@ -21,9 +21,16 @@
 namespace KDC {
 
 ExclusionTemplateInfo::ExclusionTemplateInfo(const QString &templ, bool warning, bool def, bool deleted) :
-    _templ(templ), _warning(warning), _def(def), _deleted(deleted) {}
+    _templ(templ),
+    _warning(warning),
+    _def(def),
+    _deleted(deleted) {}
 
-ExclusionTemplateInfo::ExclusionTemplateInfo() : _templ(QString()), _warning(false), _def(false), _deleted(false) {}
+ExclusionTemplateInfo::ExclusionTemplateInfo() :
+    _templ(QString()),
+    _warning(false),
+    _def(false),
+    _deleted(false) {}
 
 QDataStream &operator>>(QDataStream &in, ExclusionTemplateInfo &exclusionTemplateInfo) {
     in >> exclusionTemplateInfo._templ >> exclusionTemplateInfo._warning >> exclusionTemplateInfo._def >>

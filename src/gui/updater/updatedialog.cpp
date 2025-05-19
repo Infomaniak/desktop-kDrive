@@ -38,7 +38,8 @@ static const int mainBoxVBMargin = 40;
 static const int boxHSpacing = 10;
 static const int webviewHeight = 300;
 
-UpdateDialog::UpdateDialog(const VersionInfo &versionInfo, QWidget *parent /*= nullptr*/) : CustomDialog(false, parent) {
+UpdateDialog::UpdateDialog(const VersionInfo &versionInfo, QWidget *parent /*= nullptr*/) :
+    CustomDialog(false, parent) {
     KDC::GuiUtility::setStyle(qApp, false);
     initUi(versionInfo);
 }

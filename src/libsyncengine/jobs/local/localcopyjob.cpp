@@ -24,7 +24,9 @@
 
 namespace KDC {
 
-LocalCopyJob::LocalCopyJob(const SyncPath &source, const SyncPath &dest) : _source(source), _dest(dest) {}
+LocalCopyJob::LocalCopyJob(const SyncPath &source, const SyncPath &dest) :
+    _source(source),
+    _dest(dest) {}
 
 bool LocalCopyJob::canRun() {
     if (bypassCheck()) {

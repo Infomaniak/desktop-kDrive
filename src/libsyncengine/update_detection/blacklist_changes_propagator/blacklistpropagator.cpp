@@ -29,7 +29,8 @@
 
 namespace KDC {
 
-BlacklistPropagator::BlacklistPropagator(std::shared_ptr<SyncPal> syncPal) : _syncPal(syncPal) {
+BlacklistPropagator::BlacklistPropagator(std::shared_ptr<SyncPal> syncPal) :
+    _syncPal(syncPal) {
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "BlacklistPropagator created");
 }
 

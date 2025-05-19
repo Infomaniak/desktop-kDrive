@@ -24,7 +24,8 @@ namespace KDC {
 
 static const std::string endOfFileDelimiter("#EOF");
 
-SnapshotItemHandler::SnapshotItemHandler(const log4cplus::Logger &logger) : _logger(logger) {}
+SnapshotItemHandler::SnapshotItemHandler(const log4cplus::Logger &logger) :
+    _logger(logger) {}
 
 void SnapshotItemHandler::logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
                                    const std::exception &exc) {
