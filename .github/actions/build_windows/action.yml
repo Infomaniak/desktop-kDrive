@@ -31,8 +31,8 @@ runs:
 
       - name: Import Windows virtual certificate
         env:
-          WINDOWS_VIRTUAL_CERT: $VIRTUAL_CERT_ID
-          WINDOWS_VIRTUAL_CERT_PASSWORD: $VIRTUAL_CERT_PASS
+          WINDOWS_VIRTUAL_CERT:  ${{ inputs.virtual_cert_id }}
+          WINDOWS_VIRTUAL_CERT_PASSWORD: ${{ inputs.virtual_cert_pass }}
         run: |
           New-Item -ItemType directory -Path certificate
           Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_VIRTUAL_CERT
