@@ -29,7 +29,8 @@ jobs:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
     steps:
         - uses: actions/checkout@v4
-        - uses: ./.github/actions/build_windows
+        - name: Build Windows
+          uses: ./.github/actions/build_windows
           with:  
             virtual_cert_id: ${{ secrets.WINDOWS_VIRTUAL_CERT }}
             virtual_cert_pass: ${{ secrets.WINDOWS_VIRTUAL_CERT_PASSWORD }}
