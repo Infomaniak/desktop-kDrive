@@ -26,7 +26,8 @@ static constexpr int oneHour = 3600;
 
 namespace KDC {
 
-TmpBlacklistManager::TmpBlacklistManager(std::shared_ptr<SyncPal> syncPal) : _syncPal(syncPal) {
+TmpBlacklistManager::TmpBlacklistManager(std::shared_ptr<SyncPal> syncPal) :
+    _syncPal(syncPal) {
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "TmpBlacklistManager created");
 }
 

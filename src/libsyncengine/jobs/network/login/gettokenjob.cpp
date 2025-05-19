@@ -24,7 +24,9 @@
 namespace KDC {
 
 GetTokenJob::GetTokenJob(const std::string &authorizationCode, const std::string &codeVerifier) :
-    AbstractLoginJob(), _authorizationCode(authorizationCode), _codeVerifier(codeVerifier) {
+    AbstractLoginJob(),
+    _authorizationCode(authorizationCode),
+    _codeVerifier(codeVerifier) {
 #ifdef __APPLE__
     if (!Utility::preventSleeping(true)) {
         LOG_WARN(_logger, "Error in Utility::preventSleeping");

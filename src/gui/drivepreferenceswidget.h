@@ -62,7 +62,12 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
         void resumeSync(int syncDbId);
 
     private:
-        enum AddFolderStep { SelectLocalFolder = 0, SelectServerBaseFolder, SelectServerFolders, Confirm };
+        enum AddFolderStep {
+            SelectLocalFolder = 0,
+            SelectServerBaseFolder,
+            SelectServerFolders,
+            Confirm
+        };
 
         std::shared_ptr<ClientGui> _gui;
         int _driveDbId{0};

@@ -51,7 +51,13 @@ static const QString liteSyncDeactivatedQstr =
 #endif
 Q_LOGGING_CATEGORY(lcFolderItemWidget, "gui.folderitemwidget", QtInfoMsg)
 
-enum class MenuAction : char { LiteSyncOn, LiteSyncOff, Pause, Remove, Resume };
+enum class MenuAction : char {
+    LiteSyncOn,
+    LiteSyncOff,
+    Pause,
+    Remove,
+    Resume
+};
 
 QString menuIconPath(MenuAction action) {
     static const QString actionIconsPath = ":/client/resources/icons/actions/";
@@ -68,7 +74,9 @@ QString menuIconPath(MenuAction action) {
 
 
 FolderItemWidget::FolderItemWidget(int syncDbId, std::shared_ptr<ClientGui> gui, QWidget *parent) :
-    QWidget(parent), _gui(gui), _syncDbId(syncDbId) {
+    QWidget(parent),
+    _gui(gui),
+    _syncDbId(syncDbId) {
     QHBoxLayout *mainLayout = new QHBoxLayout();
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(hSpacing);

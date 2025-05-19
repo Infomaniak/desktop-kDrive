@@ -99,8 +99,12 @@ static std::string defaultJournalMode(const std::string &dbPath) {
 }
 
 Db::Db(const std::filesystem::path &dbPath) :
-    _logger(Log::instance()->getLogger()), _sqliteDb(new SqliteDb()), _dbPath(dbPath), _transaction(false),
-    _journalMode(defaultJournalMode(dbPath.string())), _fromVersion(std::string()) {}
+    _logger(Log::instance()->getLogger()),
+    _sqliteDb(new SqliteDb()),
+    _dbPath(dbPath),
+    _transaction(false),
+    _journalMode(defaultJournalMode(dbPath.string())),
+    _fromVersion(std::string()) {}
 
 Db::~Db() {
     close();

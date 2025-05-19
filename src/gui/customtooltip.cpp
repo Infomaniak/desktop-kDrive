@@ -44,7 +44,8 @@ static const int offsetY = 10;
 Q_LOGGING_CATEGORY(lcCustomToolTip, "gui.customtooltip", QtInfoMsg)
 
 CustomToolTip::CustomToolTip(const QString &text, const QPoint &position, int toolTipDuration, QWidget *parent) :
-    QDialog(parent), _cursorPosition(position) {
+    QDialog(parent),
+    _cursorPosition(position) {
     setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::X11BypassWindowManagerHint);
     setAttribute(Qt::WA_TranslucentBackground);
 

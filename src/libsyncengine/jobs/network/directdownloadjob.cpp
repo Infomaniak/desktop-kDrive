@@ -29,7 +29,8 @@ namespace KDC {
 #define BUF_SIZE 4096 * 1000 // 4MB     // TODO : this should be defined in a common parent class
 
 DirectDownloadJob::DirectDownloadJob(const SyncPath& destinationFile, const std::string& url) :
-    _destinationFile(destinationFile), _url(url) {
+    _destinationFile(destinationFile),
+    _url(url) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 

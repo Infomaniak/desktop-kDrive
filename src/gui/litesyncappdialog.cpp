@@ -35,7 +35,11 @@ static const int subtitleLabelVMargin = 10;
 Q_LOGGING_CATEGORY(lcLiteSyncAppDialog, "gui.litesyncappdialog", QtInfoMsg)
 
 LiteSyncAppDialog::LiteSyncAppDialog(std::shared_ptr<ClientGui> gui, QWidget *parent) :
-    CustomDialog(true, parent), _gui(gui), _appIdLineEdit(nullptr), _appNameLineEdit(nullptr), _validateButton(nullptr) {
+    CustomDialog(true, parent),
+    _gui(gui),
+    _appIdLineEdit(nullptr),
+    _appNameLineEdit(nullptr),
+    _validateButton(nullptr) {
     QVBoxLayout *mainLayout = this->mainLayout();
 
     QLabel *appIdLabel = new QLabel(this);

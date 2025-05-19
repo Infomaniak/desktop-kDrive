@@ -23,7 +23,8 @@ namespace KDC {
 template<typename T>
 class StateHolder {
     public:
-        explicit StateHolder(T *item, T newValue) : _item(item) {
+        explicit StateHolder(T *item, T newValue) :
+            _item(item) {
             if (_item) {
                 _initValue = *item;
                 *_item = newValue;

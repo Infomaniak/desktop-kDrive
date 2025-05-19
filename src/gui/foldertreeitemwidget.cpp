@@ -50,9 +50,19 @@ const QColor FolderTreeItemWidget::_sizeTextColor = QColor(0x939393);
 Q_LOGGING_CATEGORY(lcFolderTreeItemWidget, "gui.foldertreeitemwidget", QtInfoMsg)
 
 FolderTreeItemWidget::FolderTreeItemWidget(std::shared_ptr<ClientGui> gui, bool displayRoot, QWidget *parent) :
-    QTreeWidget(parent), _gui(gui), _syncDbId(0), _userDbId(0), _driveId(0), _driveName(QString()), _driveColor(QColor()),
-    _nodeId(QString()), _displayRoot(displayRoot), _mode(Update), _oldBlackList(QSet<QString>()),
-    _oldUndecidedList(QSet<QString>()), _inserting(false) {
+    QTreeWidget(parent),
+    _gui(gui),
+    _syncDbId(0),
+    _userDbId(0),
+    _driveId(0),
+    _driveName(QString()),
+    _driveColor(QColor()),
+    _nodeId(QString()),
+    _displayRoot(displayRoot),
+    _mode(Update),
+    _oldBlackList(QSet<QString>()),
+    _oldUndecidedList(QSet<QString>()),
+    _inserting(false) {
     initUI();
 
     // Make sure we don't get crashes if the sync is destroyed while the dialog is still opened
@@ -582,8 +592,7 @@ void FolderTreeItemWidget::onItemChanged(QTreeWidgetItem *item, int col) {
     const Qt::CheckState checkState = item->checkState(TreeWidgetColumn::Folder);
     QTreeWidgetItem *parent = item->parent();
     if (checkState != Qt::PartiallyChecked) {
-        MatomoClient::sendEvent("folderTreeItem", MatomoEventAction::Click, "syncFolder",
-                                (checkState == Qt::Checked ? 1 : 0));
+        MatomoClient::sendEvent("folderTreeItem", MatomoEventAction::Click, "syncFolder", (checkState == Qt::Checked ? 1 : 0));
     }
     switch (checkState) {
         case Qt::Checked: {

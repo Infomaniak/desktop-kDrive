@@ -35,9 +35,17 @@ static const int shadowBlurRadius = 20;
 Q_LOGGING_CATEGORY(lcActionWidget, "gui.actionwidget", QtInfoMsg)
 
 ActionWidget::ActionWidget(const QString &path, const QString &text, QWidget *parent) :
-    ClickableWidget(parent), _leftIconPath(path), _text(text), _backgroundColor(QColor()), _leftIconColor(QColor()),
-    _leftIconSize(QSize()), _actionIconColor(QColor()), _actionIconSize(QSize()), _leftIconLabel(nullptr),
-    _actionIconLabel(nullptr), _leftTextLabel(nullptr) {
+    ClickableWidget(parent),
+    _leftIconPath(path),
+    _text(text),
+    _backgroundColor(QColor()),
+    _leftIconColor(QColor()),
+    _leftIconSize(QSize()),
+    _actionIconColor(QColor()),
+    _actionIconSize(QSize()),
+    _leftIconLabel(nullptr),
+    _actionIconLabel(nullptr),
+    _leftTextLabel(nullptr) {
     setContentsMargins(0, 0, 0, 0);
 
     QHBoxLayout *hbox = new QHBoxLayout();
@@ -69,7 +77,8 @@ ActionWidget::ActionWidget(const QString &path, const QString &text, QWidget *pa
     connect(this, &ActionWidget::actionIconSizeChanged, this, &ActionWidget::onActionIconSizeChanged);
 }
 
-ActionWidget::ActionWidget(const QString &path, QWidget *parent) : ActionWidget(path, "", parent) {}
+ActionWidget::ActionWidget(const QString &path, QWidget *parent) :
+    ActionWidget(path, "", parent) {}
 
 void ActionWidget::setText(const QString &text) {
     _text = text;

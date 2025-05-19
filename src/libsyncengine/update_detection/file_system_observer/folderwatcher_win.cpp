@@ -28,7 +28,8 @@ namespace KDC {
 
 #define NOTIFY_BUFFER_SIZE 64 * 1024
 
-FolderWatcher_win::FolderWatcher_win(LocalFileSystemObserverWorker *parent, const SyncPath &path) : FolderWatcher(parent, path) {}
+FolderWatcher_win::FolderWatcher_win(LocalFileSystemObserverWorker *parent, const SyncPath &path) :
+    FolderWatcher(parent, path) {}
 
 void FolderWatcher_win::changesLost() {
     // Current snapshot needs to be invalidated

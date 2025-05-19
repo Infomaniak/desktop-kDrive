@@ -24,7 +24,9 @@
 
 namespace KDC {
 
-LocalMoveJob::LocalMoveJob(const SyncPath &source, const SyncPath &dest) : _source(source), _dest(dest) {}
+LocalMoveJob::LocalMoveJob(const SyncPath &source, const SyncPath &dest) :
+    _source(source),
+    _dest(dest) {}
 
 bool LocalMoveJob::canRun() {
     if (bypassCheck()) {

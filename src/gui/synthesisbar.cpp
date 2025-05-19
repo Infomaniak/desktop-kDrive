@@ -61,7 +61,9 @@ const std::map<NotificationsDisabled, QString> &SynthesisBar::notificationsDisab
 }
 
 SynthesisBar::SynthesisBar(std::shared_ptr<ClientGui> gui, bool debugCrash, QWidget *parent) :
-    QWidget(parent), _gui(gui), _debugCrash(debugCrash) {
+    QWidget(parent),
+    _gui(gui),
+    _debugCrash(debugCrash) {
     _notificationsDisabled = ParametersCache::instance()->parametersInfo().notificationsDisabled();
 
     QCoreApplication::instance()->installEventFilter(this);
@@ -465,7 +467,8 @@ void SynthesisBar::onNotificationActionTriggered() {
             assert(false && "Invalid enum value in switch statement.");
         }
     }
-    MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "disableNotificationsFor", static_cast<int>(_notificationsDisabled));
+    MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "disableNotificationsFor",
+                            static_cast<int>(_notificationsDisabled));
     emit disableNotifications(_notificationsDisabled, _notificationsDisabledUntilDateTime);
 }
 

@@ -39,7 +39,11 @@ static const int menuOffsetY = 10;
 
 Q_LOGGING_CATEGORY(lcMenuWidget, "gui.menuwidget", QtInfoMsg)
 
-MenuWidget::MenuWidget(Type type, QWidget *parent) : QMenu(parent), _type(type), _backgroundColor(QColor()), _moved(false) {
+MenuWidget::MenuWidget(Type type, QWidget *parent) :
+    QMenu(parent),
+    _type(type),
+    _backgroundColor(QColor()),
+    _moved(false) {
     setWindowFlags(windowFlags() | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::X11BypassWindowManagerHint);
     setAttribute(Qt::WA_TranslucentBackground);
 
@@ -54,7 +58,8 @@ MenuWidget::MenuWidget(Type type, QWidget *parent) : QMenu(parent), _type(type),
     connect(this, &MenuWidget::aboutToShow, this, &MenuWidget::onAboutToShow);
 }
 
-MenuWidget::MenuWidget(Type type, const QString &title, QWidget *parent) : MenuWidget(type, parent) {
+MenuWidget::MenuWidget(Type type, const QString &title, QWidget *parent) :
+    MenuWidget(type, parent) {
     setTitle(title);
 }
 
