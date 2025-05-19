@@ -138,7 +138,6 @@ if (APPLE)
 endif()
 
 if (WIN32)
-    message(STATUS "Linking cppunit dll for ${testserver_NAME}")
     target_link_libraries(${testserver_NAME}
             debug
             "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"

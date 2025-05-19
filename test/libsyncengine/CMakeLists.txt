@@ -108,7 +108,6 @@ target_link_libraries(${testsyncengine_NAME}
 )
 
 if (WIN32)
-    message(STATUS "Linking cppunit dll for ${testsyncengine_NAME}")
     target_link_libraries(${testsyncengine_NAME}
             debug
             "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"
