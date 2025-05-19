@@ -62,6 +62,7 @@ target_link_libraries(${testcommonserver_NAME}
 )
 
 if (WIN32)
+    message(STATUS "Linking cppunit dll for ${testcommonserver_NAME}")
     target_link_libraries(${testcommonserver_NAME}
             debug
             "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"
