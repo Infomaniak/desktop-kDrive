@@ -25,7 +25,7 @@ env:
 jobs:
 
 # Build apps
-  Windows:
+  build-Windows:
     uses: ./.github/workflows/build-windows.yml        
     secrets: inherit    
     
