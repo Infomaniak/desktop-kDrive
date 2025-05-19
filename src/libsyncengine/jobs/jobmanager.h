@@ -30,12 +30,6 @@
 #include <Poco/Net/HTTPSClientSession.h>
 #include <Poco/ThreadPool.h>
 
-#include <list>
-#include <queue>
-#include <thread>
-#include <unordered_map>
-#include <unordered_set>
-
 namespace KDC {
 
 class JobManager {
@@ -65,8 +59,6 @@ class JobManager {
         void decreasePoolCapacity();
 
     private:
-        // TODO : create a thread safe private class that manage access to _managedJobs, _queuedJobs and _runningJobs
-
         static void executeFunc(void *thisWorker);
 
         JobManager();

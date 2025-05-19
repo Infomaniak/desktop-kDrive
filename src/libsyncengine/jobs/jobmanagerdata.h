@@ -22,7 +22,7 @@
 
 #include <Poco/Thread.h>
 
-#include <memory>
+#include <queue>
 
 namespace KDC {
 
