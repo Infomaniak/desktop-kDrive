@@ -1,0 +1,116 @@
+  name: build-windows
+  description: Build kDrive app 
+  runs:
+    using: composite
+    steps:
+      - name: Load system Path into Github environment
+        run : echo Path=%Path%>> %GITHUB_ENV%
+        shell: cmd
+
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Restore extension packages
+        run : nuget restore extensions/windows/cfapi/kDriveExt.sln
+
+      - name: Import Windows virtual certificate
+        env:
+          WINDOWS_VIRTUAL_CERT: ${{ secrets.WINDOWS_VIRTUAL_CERT }}
+          WINDOWS_VIRTUAL_CERT_PASSWORD: ${{ secrets.WINDOWS_VIRTUAL_CERT_PASSWORD }}
+        run: |
+          New-Item -ItemType directory -Path certificate
+          Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_VIRTUAL_CERT
+          certutil -decode certificate/tempCert.txt certificate/certificate.pfx
+          Remove-Item -path certificate -include tempCert.txt
+          Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $env:WINDOWS_VIRTUAL_CERT_PASSWORD -Force -AsPlainText)
+
+      - name: Build kDrive desktop
+        id: build
+        run: |
+          call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
+          set COVFILE=%cd%\src\test.cov  
+          call "cov01.exe" -1
+
+          powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
+        shell: cmd
+
+      - name: Upload build common files
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-common-files
+          path: |
+              ${{ github.workspace }}/build-windows/install/bin/*.dll
+              ${{ github.workspace }}/build-windows/install/bin/sync-exclude.lst
+          retention-days: 1
+        if: steps.build.outcome == 'success'
+
+      - name: Upload build qt libs
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-qt-libs
+          path: |
+              C:\Qt\6.2.3\msvc2019_64\bin\Qt6Widgets.dll
+              C:\Qt\6.2.3\msvc2019_64\bin\Qt6Gui.dll
+              C:\Qt\6.2.3\msvc2019_64\bin\Qt6Network.dll
+              C:\Qt\6.2.3\msvc2019_64\bin\Qt6Sql.dll
+              C:\Qt\6.2.3\msvc2019_64\bin\Qt6Core.dll
+              C:\Qt\6.2.3\msvc2019_64\bin\Qt6DBus.dll
+              C:\Qt\6.2.3\msvc2019_64\bin\icui18n.dll
+              C:\Qt\6.2.3\msvc2019_64\bin\icuuc.dll
+              C:\Qt\6.2.3\msvc2019_64\bin\icudata.dll
+              C:\Qt\6.2.3\msvc2019_64\bin\Qt6Svg.dll
+          retention-days: 1
+        if: steps.build.outcome == 'success'
+
+      - name: Upload qt plugins
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-qt-plugin
+          path: C:\Qt\6.2.3\msvc2019_64\plugins\platforms\*
+          retention-days: 1
+        if: steps.build.outcome == 'success'
+
+      - name: Upload build test common executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-test-common
+          path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_common.exe
+          retention-days: 1
+        if: steps.build.outcome == 'success'
+
+      - name: Upload build test common server executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-test-common-server
+          path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_common_server.exe
+          retention-days: 1
+        if: steps.build.outcome == 'success'
+
+      - name: Upload build test server executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-test-server
+          path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_server.exe
+          retention-days: 1
+        if: steps.build.outcome == 'success'
+
+      - name: Upload build test syncengine executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-test-syncengine
+          path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_syncengine.exe
+          retention-days: 1
+        if: steps.build.outcome == 'success'
+
+      - name: Upload build test parms executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-test-parms
+          path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_parms.exe
+          retention-days: 1
+        if: steps.build.outcome == 'success'
+
+      - name: Clean-up generated code
+        run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all
