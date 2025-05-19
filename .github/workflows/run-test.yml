@@ -6,9 +6,6 @@ on:
       test-executable-name:
         required: true
         type: string
-    secrets:
-      personal_access_token:
-        required: true
 
 jobs:
   test-common-Windows:
