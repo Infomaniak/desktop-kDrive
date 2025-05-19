@@ -43,18 +43,60 @@ class JobPriorityCmp {
  */
 class JobManagerData {
     public:
+        /**
+         * @brief Add a job to queue. The job will be automatically started, according to its given priority as soon as there are
+         * available threads in the pool.
+         * @param job The job to be run asynchronously.
+         * @param priority The job's priority.
+         */
         void queue(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority = Poco::Thread::PRIO_NORMAL);
+        /**
+         * @brief Remove the top job from the queue.
+         * @return The removed job and its associated priority.
+         */
         std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority> pop();
+        /**
+         * @brief Check is there are jobs in the queue waiting to be executed.
+         * @return 'true' if the queue is not empty.
+         */
         bool hasQueuedJob() const;
+        /**
+         * @brief Check is the top job of the queue has the highest possible priority.
+         * @return 'true' if the top job has value 'PRIO_HIGHEST'.
+         */
         bool hasHighestPriorityJob() const;
+        /**
+         * @brief Check if the job is currently handled by the JobManager, meaning the job is either queued, pending or running.
+         * @param jobId The ID of the job to be checked.
+         * @return 'true' if the job is currently handled.
+         */
         bool isManaged(const UniqueId jobId) const;
 
+        /**
+         * @brief Add a job to the list of running jobs.
+         * @param jobId The ID of the job.
+         * @return 'true' if the job ID has been successfully inserted in the map.
+         */
         bool addToRunningJobs(const UniqueId jobId);
-
+        /**
+         * @brief Add a job to the list of pending jobs.
+         * @param jobId The ID of the job.
+         * @param job A shared pointer to the job.
+         * @param priority The job's priority
+         * @return 'true' if the job ID has been successfully inserted in the map.
+         */
         bool addToPendingJobs(const UniqueId jobId, std::shared_ptr<AbstractJob> job,
                               Poco::Thread::Priority priority = Poco::Thread::PRIO_NORMAL);
+        /**
+         * @brief Remove a job from the list of pending jobs.
+         * @param jobId The ID of the job.
+         */
         void removeFromPendingJobs(const UniqueId jobId);
 
+        /**
+         * @brief Remove the job from JobManager. The job will not be handled by JobManager afterwards.
+         * @param jobId The ID of the job.
+         */
         void erase(const UniqueId jobId);
 
         /**
@@ -64,13 +106,17 @@ class JobManagerData {
          */
         std::unordered_set<UniqueId> runningJobs() const;
         /**
-         * @brief
-         * @return A copy of the list of pending jobs..
+         * @brief Get a copy of the list of jobs currently pending.
+         * @return A copy of the list of pending jobs.
          */
         const std::unordered_map<UniqueId, std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>> pendingJobs() const;
 
+        /**
+         * @brief Retrieve a job based on its ID.
+         * @param jobId The ID of the job.
+         * @return A shared pointer to the job if found. 'nullptr' otherwise.
+         */
         std::shared_ptr<AbstractJob> getJob(const UniqueId &jobId) const;
-
 
         void clear();
 
