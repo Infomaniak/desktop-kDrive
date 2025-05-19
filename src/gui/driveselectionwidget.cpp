@@ -20,8 +20,8 @@
 #include "menuitemwidget.h"
 #include "menuwidget.h"
 #include "guiutility.h"
-#include "guirequests.h"
 #include "clientgui.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QHBoxLayout>
 #include <QLabel>
@@ -42,8 +42,15 @@ static const int driveNameMaxSize = 30;
 Q_LOGGING_CATEGORY(lcDriveSelectionWidget, "gui.driveselectionwidget", QtInfoMsg)
 
 DriveSelectionWidget::DriveSelectionWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
-    QPushButton(parent), _currentDriveDbId(0), _gui(gui), _driveIconSize(QSize()), _downIconSize(QSize()),
-    _downIconColor(QColor()), _menuRightIconSize(QSize()), _driveIconLabel(nullptr), _driveTextLabel(nullptr),
+    QPushButton(parent),
+    _currentDriveDbId(0),
+    _gui(gui),
+    _driveIconSize(QSize()),
+    _downIconSize(QSize()),
+    _downIconColor(QColor()),
+    _menuRightIconSize(QSize()),
+    _driveIconLabel(nullptr),
+    _driveTextLabel(nullptr),
     _downIconLabel(nullptr) {
     setContentsMargins(hMargin, vMargin, hMargin, vMargin);
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -101,6 +108,7 @@ void DriveSelectionWidget::selectDrive(int driveDbId) {
 void DriveSelectionWidget::onClick(bool checked) {
     Q_UNUSED(checked)
 
+    MatomoClient::sendEvent("driveSelection", MatomoEventAction::Click, "selectedDriveButton", _currentDriveDbId);
     // Remove hover
     QApplication::sendEvent(this, new QEvent(QEvent::Leave));
     QApplication::sendEvent(this, new QEvent(QEvent::HoverLeave));
@@ -158,6 +166,9 @@ void DriveSelectionWidget::onSelectDriveActionTriggered(bool checked) {
     int driveId = driveIdStr.toInt();
     if (driveId != _currentDriveDbId) {
         selectDrive(driveId);
+        MatomoClient::sendEvent("driveSelection", MatomoEventAction::Click, "selectAnotherDriveButton", driveId);
+    } else {
+        MatomoClient::sendEvent("driveSelection", MatomoEventAction::Click, "selectSameDriveButton", driveId);
     }
 }
 

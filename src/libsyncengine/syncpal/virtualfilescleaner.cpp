@@ -31,9 +31,14 @@
 namespace KDC {
 
 VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path, std::shared_ptr<SyncDb> syncDb, const std::shared_ptr<Vfs> &vfs) :
-    _logger(Log::instance()->getLogger()), _rootPath(path), _syncDb(syncDb), _vfs(vfs) {}
+    _logger(Log::instance()->getLogger()),
+    _rootPath(path),
+    _syncDb(syncDb),
+    _vfs(vfs) {}
 
-VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path) : _logger(Log::instance()->getLogger()), _rootPath(path) {}
+VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path) :
+    _logger(Log::instance()->getLogger()),
+    _rootPath(path) {}
 
 bool VirtualFilesCleaner::run() {
     // Clear xattr on root path

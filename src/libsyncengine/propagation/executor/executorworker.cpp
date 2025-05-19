@@ -910,16 +910,19 @@ ExitInfo ExecutorWorker::fixModificationDate(SyncOpPtr syncOp, const SyncPath &a
         return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
-    bool exists = false;
-    if (!Utility::setFileDates(absolutePath, dbNode.created(), dbNode.lastModifiedRemote(), false, exists)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::setFileDates: " << Utility::formatSyncPath(absolutePath));
-    }
-    if (exists) {
+    if (const IoError ioError =
+                IoHelper::setFileDates(absolutePath, dbNode.created().has_value() ? dbNode.created().value() : 0,
+                                       dbNode.lastModifiedRemote().has_value() ? dbNode.lastModifiedRemote().value() : 0, false);
+        ioError == IoError::Success) {
         LOGW_SYNCPAL_INFO(_logger,
                           L"Last modification date updated locally to avoid further wrongly generated EDIT operations for file: "
                                   << Utility::formatSyncPath(absolutePath));
+    } else if (ioError == IoError::NoSuchFileOrDirectory) {
+        // If file does not exist anymore, do nothing special. This is fine, it will not generate EDIT operations anymore.
+    } else {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(absolutePath));
     }
-    // If file does not exist anymore, do nothing special. This is fine, it will not generate EDIT operations anymore.
+
     return ExitCode::Ok;
 }
 
@@ -1433,8 +1436,10 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, Syn
     }
 
     if (job->exitInfo().code() != ExitCode::Ok) {
-        if (networkJob && (networkJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
-                           networkJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_CONFLICT)) {
+        if (networkJob &&
+            (networkJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
+             networkJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_CONFLICT) &&
+            job->exitInfo() != ExitInfo(ExitCode::BackError, ExitCause::FileLocked)) {
             if (ExitInfo exitInfo = handleForbiddenAction(syncOp, relativeLocalPath, ignored); !exitInfo) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in handleForbiddenAction for item: "
                                                    << Utility::formatSyncPath(relativeLocalPath) << L" " << exitInfo);
@@ -2236,6 +2241,9 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
 
     // Handle specific errors
     switch (static_cast<int>(opsExitInfo)) {
+        case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileLocked)): {
+            return handleOpsRemoteFileLocked(syncOp, opsExitInfo);
+        }
         case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)): {
             return handleOpsLocalFileAccessError(syncOp, opsExitInfo);
         }
@@ -2284,6 +2292,35 @@ ExitInfo ExecutorWorker::handleOpsLocalFileAccessError(const SyncOpPtr syncOp, c
 ExitInfo ExecutorWorker::handleOpsFileNotFound(const SyncOpPtr syncOp, [[maybe_unused]] const ExitInfo &opsExitInfo) {
     _syncPal->setRestart(true);
     _syncPal->invalideSnapshots(); // There is a file/dir missing; we need to recompute the snapshot.
+    return removeDependentOps(syncOp);
+}
+
+ExitInfo ExecutorWorker::handleOpsRemoteFileLocked(SyncOpPtr syncOp, const ExitInfo &opsExitInfo) {
+    // Add error
+    NodeId localNodeId;
+    NodeId remoteNodeId;
+    getNodeIdsFromOp(syncOp, localNodeId, remoteNodeId);
+    const auto affectedPath = syncOp->affectedNode()->getPath();
+    const auto error =
+            Error(_syncPal->syncDbId(), localNodeId, remoteNodeId, syncOp->affectedNode()->type(), affectedPath,
+                  ConflictType::None, InconsistencyType::None, CancelType::None, "", opsExitInfo.code(), opsExitInfo.cause());
+    _syncPal->addError(error);
+
+    // Blacklist the item
+    if (!localNodeId.empty() && syncOp->localNode()) {
+        _syncPal->blacklistTemporarily(localNodeId, syncOp->localNode()->getPath(), ReplicaSide::Local);
+    }
+
+    if (!remoteNodeId.empty() && syncOp->remoteNode()) {
+        _syncPal->blacklistTemporarily(remoteNodeId, syncOp->remoteNode()->getPath(), ReplicaSide::Remote);
+    }
+    // Clear update tree
+    if (!deleteOpNodes(syncOp)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::deleteOpNodes");
+        return ExitCode::DataError;
+    }
+
+    _syncPal->setRestart(true);
     return removeDependentOps(syncOp);
 }
 

@@ -25,7 +25,8 @@
 
 namespace KDC {
 
-BloomFilter::BloomFilter() : hashBits(NumBits) {}
+BloomFilter::BloomFilter() :
+    hashBits(NumBits) {}
 
 void BloomFilter::storeHash(uint hash) {
     hashBits.setBit((hash & 0xFFFF) % NumBits);
@@ -36,7 +37,8 @@ bool BloomFilter::isHashMaybeStored(uint hash) const {
     return hashBits.testBit((hash & 0xFFFF) % NumBits) && hashBits.testBit((hash >> 16) % NumBits);
 }
 
-SocketListener::SocketListener(QIODevice *socket) : socket(socket) {
+SocketListener::SocketListener(QIODevice *socket) :
+    socket(socket) {
     _threadId = std::this_thread::get_id();
 }
 

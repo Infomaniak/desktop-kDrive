@@ -261,6 +261,7 @@ enum class ExitCause {
     InvalidSize,
     FileAlreadyExists,
     FileAccessError,
+    FileLocked,
     UnexpectedFileSystemEvent,
     NotEnoughDiskSpace,
     DriveAccessError,
@@ -545,7 +546,7 @@ enum class NotificationsDisabled {
     Never,
     OneHour,
     UntilTomorrow,
-    TreeDays,
+    ThreeDays,
     OneWeek,
     Always,
     EnumEnd
@@ -762,6 +763,11 @@ struct VersionInfo {
         }
 };
 using AllVersionsInfo = std::unordered_map<VersionChannel, VersionInfo>;
+
+enum class UnicodeNormalization {
+    NFC,
+    NFD
+};
 
 namespace sentry {
 enum class ConfidentialityLevel {

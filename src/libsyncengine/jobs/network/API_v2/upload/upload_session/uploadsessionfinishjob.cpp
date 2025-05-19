@@ -30,8 +30,11 @@ UploadSessionFinishJob::UploadSessionFinishJob(const std::shared_ptr<Vfs> &vfs, 
                                                const int driveDbId, const SyncPath &absoluteFilePath,
                                                const std::string &sessionToken, const std::string &totalChunkHash,
                                                const uint64_t totalChunks, const SyncTime modtime) :
-    AbstractUploadSessionJob(uploadType, driveDbId, absoluteFilePath, sessionToken), _totalChunkHash(totalChunkHash),
-    _totalChunks(totalChunks), _modtimeIn(modtime), _vfs(vfs) {
+    AbstractUploadSessionJob(uploadType, driveDbId, absoluteFilePath, sessionToken),
+    _totalChunkHash(totalChunkHash),
+    _totalChunks(totalChunks),
+    _modtimeIn(modtime),
+    _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 

@@ -20,6 +20,8 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/testhelpers.h"
 #include "config.h"
+#include "io/filestat.h"
+#include "io/iohelper.h"
 #include "libcommon/utility/utility.h" // CommonUtility::isSubDir
 #include "libcommonserver/log/log.h"
 
@@ -179,7 +181,7 @@ void TestUtility::testIsEqualUpToCaseAndEnc(void) {
     SyncName nfcNormalizedName;
     CPPUNIT_ASSERT(Utility::normalizedSyncName(Str("éééé"), nfcNormalizedName));
     SyncName nfdNormalizedName;
-    CPPUNIT_ASSERT(Utility::normalizedSyncName(Str("éééé"), nfdNormalizedName, Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(Str("éééé"), nfdNormalizedName, UnicodeNormalization::NFD));
     CPPUNIT_ASSERT(Utility::checkIfEqualUpToCaseAndEncoding(nfcNormalizedName, nfdNormalizedName, isEqual) && isEqual);
 }
 
@@ -482,7 +484,7 @@ bool TestUtility::checkNfcAndNfdNamesEqual(const SyncName &name, bool &equal) {
         return false;
     }
     SyncName nfdNormalized;
-    if (!Utility::normalizedSyncName(name, nfdNormalized, Utility::UnicodeNormalization::NFD)) {
+    if (!Utility::normalizedSyncName(name, nfdNormalized, UnicodeNormalization::NFD)) {
         return false;
     }
     equal = (nfcNormalized == nfdNormalized);
@@ -536,4 +538,5 @@ void TestUtility::testSplitPath() {
     CPPUNIT_ASSERT(Str("B") == fileNames[1]);
     CPPUNIT_ASSERT(Str("file.txt") == fileNames[0]);
 }
+
 } // namespace KDC

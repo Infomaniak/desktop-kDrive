@@ -25,6 +25,7 @@
 #include "appclient.h"
 #include "parameterscache.h"
 #include "guirequests.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QFile>
 #include <QHeaderView>
@@ -58,7 +59,11 @@ static const char patternProperty[] = "pattern";
 Q_LOGGING_CATEGORY(lcFileExclusionDialog, "gui.fileexclusiondialog", QtInfoMsg)
 
 FileExclusionDialog::FileExclusionDialog(QWidget *parent) :
-    CustomDialog(true, parent), _filesTableModel(nullptr), _filesTableView(nullptr), _saveButton(nullptr), _needToSave(false) {
+    CustomDialog(true, parent),
+    _filesTableModel(nullptr),
+    _filesTableView(nullptr),
+    _saveButton(nullptr),
+    _needToSave(false) {
     initUI();
     updateUI();
 }
@@ -310,6 +315,8 @@ void FileExclusionDialog::onExit() {
             } else {
                 reject();
             }
+            MatomoClient::sendEvent("preferencesFileExclusion", MatomoEventAction::Click, "exitButton",
+                                    ret == QMessageBox::Yes ? 1 : 0);
         }
     } else {
         reject();
@@ -318,7 +325,7 @@ void FileExclusionDialog::onExit() {
 
 void FileExclusionDialog::onAddFileButtonTriggered(bool checked) {
     Q_UNUSED(checked)
-
+    MatomoClient::sendEvent("preferencesFileExclusion", MatomoEventAction::Click, "addFileButton");
     EnableStateHolder _(this);
 
     FileExclusionNameDialog dialog(this);
@@ -356,6 +363,8 @@ void FileExclusionDialog::onTableViewClicked(const QModelIndex &index) {
                                         QMessageBox::Yes | QMessageBox::No, this);
                 msgBox.setDefaultButton(QMessageBox::No);
                 int ret = msgBox.exec();
+                MatomoClient::sendEvent("preferencesFileExclusion", MatomoEventAction::Click, "deleteItemButton",
+                                        ret == QMessageBox::Yes ? 1 : 0);
                 if (ret != QDialog::Rejected) {
                     if (ret == QMessageBox::Yes) {
                         QString templ = templateItem->data(Qt::DisplayRole).toString();
@@ -395,6 +404,7 @@ void FileExclusionDialog::onTableViewClicked(const QModelIndex &index) {
 
 void FileExclusionDialog::onWarningCheckBoxClicked(bool checked) {
     CustomCheckBox *warningCheckBox = qobject_cast<CustomCheckBox *>(sender());
+    MatomoClient::sendEvent("preferencesFileExclusion", MatomoEventAction::Click, "warningCheckbox", checked ? 1 : 0);
     if (warningCheckBox) {
         QString templ = warningCheckBox->property(patternProperty).toString();
 
@@ -428,6 +438,7 @@ void FileExclusionDialog::onWarningCheckBoxClicked(bool checked) {
 
 void FileExclusionDialog::onSaveButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("preferencesFileExclusion", MatomoEventAction::Click, "saveButton");
 
     ExitCode exitCode = GuiRequests::setExclusionTemplateList(true, _defaultTemplateList);
     if (exitCode != ExitCode::Ok) {

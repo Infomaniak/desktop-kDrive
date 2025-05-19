@@ -51,9 +51,15 @@ class FolderTreeItemWidget : public QTreeWidget {
         void needToSave(bool isBlackListed);
 
     private:
-        enum TreeWidgetColumn { Folder = 0, Size };
+        enum TreeWidgetColumn {
+            Folder = 0,
+            Size
+        };
 
-        enum Mode { Creation = 0, Update };
+        enum Mode {
+            Creation = 0,
+            Update
+        };
 
         std::shared_ptr<ClientGui> _gui;
         int _syncDbId;

@@ -55,7 +55,8 @@
 namespace KDC {
 
 SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted) :
-    _vfs(vfs), _logger(Log::instance()->getLogger()) {
+    _vfs(vfs),
+    _logger(Log::instance()->getLogger()) {
     _syncInfo.syncHasFullyCompleted = hasFullyCompleted;
     LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init: " << Utility::formatSyncPath(syncDbPath));
     assert(_vfs);
@@ -66,7 +67,8 @@ SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std
 }
 
 SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId_, const std::string &version) :
-    _vfs(vfs), _logger(Log::instance()->getLogger()) {
+    _vfs(vfs),
+    _logger(Log::instance()->getLogger()) {
     LOG_SYNCPAL_DEBUG(_logger, "SyncPal init");
     assert(_vfs);
 
@@ -172,27 +174,6 @@ SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId_, const std::strin
 SyncPal::~SyncPal() {
     SyncNodeCache::instance()->clear(syncDbId());
     LOG_SYNCPAL_DEBUG(_logger, "~SyncPal");
-}
-
-ExitCode SyncPal::setTargetNodeId(const std::string &targetNodeId) {
-    bool found = false;
-
-    LOG_IF_FAIL(_remoteSnapshot)
-    LOG_IF_FAIL(_remoteUpdateTree)
-
-    if (!_syncDb->setTargetNodeId(targetNodeId, found)) {
-        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::setTargetNodeId");
-        return ExitCode::DbError;
-    }
-    if (!found) {
-        LOG_SYNCPAL_WARN(_logger, "Root node not found in node table");
-        return ExitCode::DataError;
-    }
-
-    _remoteSnapshot->setRootFolderId(targetNodeId);
-    _remoteUpdateTree->setRootFolderId(targetNodeId);
-
-    return ExitCode::Ok;
 }
 
 void SyncPal::setVfs(std::shared_ptr<Vfs> vfs) {

@@ -27,7 +27,9 @@ namespace KDC {
 
 Q_LOGGING_CATEGORY(lcBottomWidget, "gui.bottomwidget", QtInfoMsg)
 
-BottomWidget::BottomWidget(QWidget *parent) : QWidget(parent), _backgroundColor(QColor()) {}
+BottomWidget::BottomWidget(QWidget *parent) :
+    QWidget(parent),
+    _backgroundColor(QColor()) {}
 
 void BottomWidget::paintEvent(QPaintEvent *event) {
     Q_UNUSED(event);

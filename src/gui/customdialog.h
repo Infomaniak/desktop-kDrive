@@ -55,7 +55,17 @@ class CustomDialog : public QDialog {
         void viewIconSet();
 
     private:
-        enum Edge { None = 0, Left, TopLeft, Top, TopRight, Right, BottomRight, Bottom, BottomLeft };
+        enum Edge {
+            None = 0,
+            Left,
+            TopLeft,
+            Top,
+            TopRight,
+            Right,
+            BottomRight,
+            Bottom,
+            BottomLeft
+        };
 
         QColor _backgroundColor;
         QColor _buttonIconColor;

@@ -20,13 +20,17 @@
 
 namespace KDC {
 
-CustomTreeWidgetItem::CustomTreeWidgetItem(int type) : QTreeWidgetItem(type) {}
+CustomTreeWidgetItem::CustomTreeWidgetItem(int type) :
+    QTreeWidgetItem(type) {}
 
-CustomTreeWidgetItem::CustomTreeWidgetItem(const QStringList &strings, int type) : QTreeWidgetItem(strings, type) {}
+CustomTreeWidgetItem::CustomTreeWidgetItem(const QStringList &strings, int type) :
+    QTreeWidgetItem(strings, type) {}
 
-CustomTreeWidgetItem::CustomTreeWidgetItem(QTreeWidget *view, int type) : QTreeWidgetItem(view, type) {}
+CustomTreeWidgetItem::CustomTreeWidgetItem(QTreeWidget *view, int type) :
+    QTreeWidgetItem(view, type) {}
 
-CustomTreeWidgetItem::CustomTreeWidgetItem(QTreeWidgetItem *parent, int type) : QTreeWidgetItem(parent, type) {}
+CustomTreeWidgetItem::CustomTreeWidgetItem(QTreeWidgetItem *parent, int type) :
+    QTreeWidgetItem(parent, type) {}
 
 bool CustomTreeWidgetItem::operator<(const QTreeWidgetItem &other) const {
     int column = treeWidget()->sortColumn();

@@ -20,7 +20,8 @@
 
 namespace KDC {
 
-ClickableWidget::ClickableWidget(QWidget *parent) : QWidget(parent) {}
+ClickableWidget::ClickableWidget(QWidget *parent) :
+    QWidget(parent) {}
 
 bool ClickableWidget::event(QEvent *event) {
     if (event->type() == QEvent::MouseButtonPress) {

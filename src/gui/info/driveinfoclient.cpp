@@ -20,9 +20,11 @@
 
 namespace KDC {
 
-DriveInfoClient::DriveInfoClient() : DriveInfo() {}
+DriveInfoClient::DriveInfoClient() :
+    DriveInfo() {}
 
-DriveInfoClient::DriveInfoClient(const DriveInfo &driveInfo) : DriveInfo(driveInfo) {}
+DriveInfoClient::DriveInfoClient(const DriveInfo &driveInfo) :
+    DriveInfo(driveInfo) {}
 
 void DriveInfoClient::updateStatus(std::map<int, SyncInfoClient> &syncInfoMap) {
     _status = SyncStatus::Undefined;

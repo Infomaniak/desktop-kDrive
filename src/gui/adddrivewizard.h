@@ -48,7 +48,16 @@ class AddDriveWizard : public CustomDialog {
         inline int syncDbId() { return _syncDbId; }
 
     private:
-        enum Step { None = -1, Login, ListDrives, LiteSync, RemoteFolders, LocalFolder, ExtensionSetup, Confirmation };
+        enum Step {
+            None = -1,
+            Login,
+            ListDrives,
+            LiteSync,
+            RemoteFolders,
+            LocalFolder,
+            ExtensionSetup,
+            Confirmation
+        };
 
         std::shared_ptr<ClientGui> _gui;
 

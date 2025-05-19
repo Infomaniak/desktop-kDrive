@@ -32,7 +32,11 @@
 
 namespace KDC {
 
-SqliteDb::SqliteDb() : _logger(Log::instance()->getLogger()), _sqlite3Db(nullptr), _errId(0), _autoDelete(false) {}
+SqliteDb::SqliteDb() :
+    _logger(Log::instance()->getLogger()),
+    _sqlite3Db(nullptr),
+    _errId(0),
+    _autoDelete(false) {}
 
 SqliteDb::~SqliteDb() {}
 

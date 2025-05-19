@@ -32,7 +32,8 @@
 
 namespace KDC {
 
-NavigationPaneHelper::NavigationPaneHelper(const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap) : _vfsMap(vfsMap) {
+NavigationPaneHelper::NavigationPaneHelper(const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap) :
+    _vfsMap(vfsMap) {
     _showInExplorerNavigationPane = KDC::ParametersCache::instance()->parameters().showShortcuts();
 
 #ifdef Q_OS_WIN

@@ -25,12 +25,15 @@
 
 namespace KDC {
 
-CustomWordWrapLabel::CustomWordWrapLabel(QWidget *parent, Qt::WindowFlags f) : QLabel(parent, f), _maxWidth(0) {
+CustomWordWrapLabel::CustomWordWrapLabel(QWidget *parent, Qt::WindowFlags f) :
+    QLabel(parent, f),
+    _maxWidth(0) {
     setWordWrap(true);
 }
 
 CustomWordWrapLabel::CustomWordWrapLabel(const QString &text, QWidget *parent, Qt::WindowFlags f) :
-    QLabel(text, parent, f), _maxWidth(0) {
+    QLabel(text, parent, f),
+    _maxWidth(0) {
     setWordWrap(true);
 }
 
