@@ -150,8 +150,6 @@ void TestOperationProcessor::testIsPseudoConflict() {
             ReplicaSide::Remote, Str("testRemoteFile"), NodeType::File, OperationType::None, "rfid", testhelpers::defaultTime,
             testhelpers::defaultTime, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
-    _syncPal->copySnapshots();
-
     // Two nodes without change events
     CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(lNodeAA, rNodeAA));
 

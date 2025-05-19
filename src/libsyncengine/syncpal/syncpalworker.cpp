@@ -294,7 +294,6 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
         case SyncStep::UpdateDetection1:
             workers[0] = _syncPal->computeFSOperationsWorker();
             workers[1] = nullptr;
-            _syncPal->copySnapshots();
             LOG_IF_FAIL(_syncPal->syncDb()->cache().reloadIfNeeded());
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;

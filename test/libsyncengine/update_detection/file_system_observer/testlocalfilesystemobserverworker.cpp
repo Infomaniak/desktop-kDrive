@@ -121,7 +121,6 @@ void TestLocalFileSystemObserverWorker::tearDown() {
 
 void TestLocalFileSystemObserverWorker::testLFSOWithInitialSnapshot() {
     NodeSet ids;
-    _syncPal->copySnapshots();
     _syncPal->liveSnapshot(ReplicaSide::Local).ids(ids);
 
     uint64_t fileCounter = 0;
@@ -157,7 +156,6 @@ void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
         bool exists = false;
         IoHelper::getFileStat(testAbsolutePath, &fileStat, exists);
         itemId = std::to_string(fileStat.inode);
-        _syncPal->copySnapshots();
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(itemId));
         SyncPath testSyncPath;
         bool ignore = false;
@@ -171,7 +169,6 @@ void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
         testhelpers::generateOrEditTestFile(testAbsolutePath);
 
         Utility::msleep(1000); // Wait 1sec
-        _syncPal->copySnapshots();
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).lastModified(itemId) > prevModTime);
     }
 
@@ -185,7 +182,6 @@ void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
         IoHelper::moveItem(sourcePath, destinationPath, ioError);
 
         Utility::msleep(1000); // Wait 1sec
-        _syncPal->copySnapshots();
         const NodeId parentId = _syncPal->liveSnapshot(ReplicaSide::Local).parentId(itemId);
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).name(parentId) == _subDirPath.filename());
         testAbsolutePath = destinationPath;
@@ -201,7 +197,6 @@ void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
         IoHelper::renameItem(source, destinationPath, ioError);
 
         Utility::msleep(1000); // Wait 1sec
-        _syncPal->copySnapshots();
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).name(itemId) == Str("test_file_renamed.txt"));
         testAbsolutePath = destinationPath;
     }
@@ -213,7 +208,6 @@ void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
         IoHelper::deleteItem(testAbsolutePath, ioError);
 
         Utility::msleep(1000); // Wait 1sec
-        _syncPal->copySnapshots();
         CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(itemId));
     }
 

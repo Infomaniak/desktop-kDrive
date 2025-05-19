@@ -61,35 +61,33 @@ class ComputeFSOperationWorker : public ISyncWorker {
 
         ExitCode checkFileIntegrity(const DbNode &dbNode);
 
-        bool isExcludedFromSync(const std::shared_ptr<const Snapshot> snapshot, const ReplicaSide side, const NodeId &nodeId,
-                                const SyncPath &path, NodeType type, int64_t size);
+        bool isExcludedFromSync(const ConstSnapshot &snapshot, const ReplicaSide side, const NodeId &nodeId, const SyncPath &path,
+                                NodeType type, int64_t size);
         /**
-         * Check if the item, or any ancestor, appears in any blacklist. Also checks for each corresponding node in other liveSnapshot
-         * if it appears in any blacklist. Parents are retrieved from DB.
+         * Check if the item, or any ancestor, appears in any blacklist. Also checks for each corresponding node in other
+         * liveSnapshot if it appears in any blacklist. Parents are retrieved from DB.
          * @param nodeId The ID of the item to evaluate.
          * @param side The replica side corresponding to the provided ID.
          * @return `true` if the item is blacklisted in any blacklist.
          */
         bool isInUnsyncedListParentSearchInDb(const NodeId &nodeId, ReplicaSide side) const;
         /**
-         * Check if the item, or any ancestor, appears in any blacklist. Also checks for each corresponding node in other liveSnapshot
-         * if it appears in any blacklist. Parents are retrieved from liveSnapshot.
-         * @param snapshot The snapshot that contains `nodeId`
+         * Check if the item, or any ancestor, appears in any blacklist. Also checks for each corresponding node in other
+         * liveSnapshot if it appears in any blacklist. Parents are retrieved from liveSnapshot.
          * @param nodeId The ID of the item to evaluate.
          * @param side The replica side corresponding to the provided ID.
          * @return `true` if the item is blacklisted in any blacklist.
          */
-        bool isInUnsyncedListParentSearchInSnapshot(std::shared_ptr<const Snapshot> snapshot, const NodeId &nodeId,
+        bool isInUnsyncedListParentSearchInSnapshot(const NodeId &nodeId,
                                                     ReplicaSide side) const; // Search parent in liveSnapshot
-        bool isWhitelisted(const std::shared_ptr<const Snapshot> snapshot, const NodeId &nodeId) const;
-        bool isTooBig(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId, int64_t size);
+        bool isWhitelisted(const ConstSnapshot &snapshot, const NodeId &nodeId) const;
+        bool isRemoteNodeTooBig(const NodeId &remoteNodeId, int64_t size);
         bool isPathTooLong(const SyncPath &path, const NodeId &nodeId, NodeType type) const;
-        ExitInfo isReusedNodeId(const NodeId &localNodeId, const DbNode &dbNode, const std::shared_ptr<const Snapshot> &snapshot,
+        ExitInfo isReusedNodeId(const NodeId &localNodeId, const DbNode &dbNode, const ConstSnapshot &snapshot,
                                 bool &isReused) const;
         ExitInfo checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId, bool &isExcluded);
 
-        void deleteChildOpRecursively(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId,
-                                      NodeSet &tmpTooBigList);
+        void deleteRemoteChildOpRecursively(const NodeId &remoteNodeId, NodeSet &tmpTooBigList);
 
         void updateUnsyncedList();
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
@@ -98,9 +96,11 @@ class ComputeFSOperationWorker : public ISyncWorker {
         void notifyIgnoredItem(const NodeId &nodeId, const SyncPath &relativePath, NodeType nodeType);
         ExitInfo blacklistItem(const SyncPath &relativeLocalPath);
 
+        void copySnapshots();
         SyncDbReadOnlyCache &_syncDbReadOnlyCache;
         Sync _sync;
-
+        std::unique_ptr<ConstSnapshot> _localSnapshot;
+        std::unique_ptr<ConstSnapshot> _remoteSnapshot;
         NodeIdSet _remoteUnsyncedList;
         NodeIdSet _remoteTmpUnsyncedList;
         NodeIdSet _localTmpUnsyncedList;

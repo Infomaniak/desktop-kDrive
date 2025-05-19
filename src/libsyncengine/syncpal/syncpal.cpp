@@ -202,8 +202,8 @@ SyncStatus SyncPal::status() const {
             } else if (_syncPalWorker->stopAsked()) {
                 // Stopping at the request of the user
                 return SyncStatus::StopAsked;
-            } else if (_syncPalWorker->step() == SyncStep::Idle && !restart() &&
-                       !liveSnapshot(ReplicaSide::Local).updated() && !liveSnapshot(ReplicaSide::Remote).updated()) {
+            } else if (_syncPalWorker->step() == SyncStep::Idle && !restart() && !liveSnapshot(ReplicaSide::Local).updated() &&
+                       !liveSnapshot(ReplicaSide::Remote).updated()) {
                 // Sync pending
                 return SyncStatus::Idle;
             } else {
@@ -780,15 +780,12 @@ ExitCode SyncPal::listingCursor(std::string &value, int64_t &timestamp) {
     return ExitCode::Ok;
 }
 
-std::shared_ptr<ConstSnapshot> SyncPal::snapshot(const ReplicaSide side) const {
-    LOG_IF_FAIL(side != ReplicaSide::Unknown);
-    if (side == ReplicaSide::Unknown) {
-        LOG_ERROR(_logger, "Call to SyncPal::snapshot with 'ReplicaSide::Unknown').");
-        return nullptr;
-    }
-    LOG_IF_FAIL(_localSnapshot);
-    LOG_IF_FAIL(_remoteSnapshot);
-    return (side == ReplicaSide::Local ? _localSnapshot : _remoteSnapshot);
+void SyncPal::getConstSnapshots(std::unique_ptr<ConstSnapshot> &localSnapshot,
+                                std::unique_ptr<ConstSnapshot> &remoteSnapshot) const {
+    LOG_IF_FAIL(_localFSObserverWorker);
+    LOG_IF_FAIL(_remoteFSObserverWorker);
+    localSnapshot = std::make_unique<ConstSnapshot>(_localFSObserverWorker->liveSnapshot());
+    remoteSnapshot = std::make_unique<ConstSnapshot>(_remoteFSObserverWorker->liveSnapshot());
 }
 
 const LiveSnapshot &SyncPal::liveSnapshot(ReplicaSide side) const {
@@ -1317,27 +1314,6 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
     }
 
     return ExitCode::Ok;
-}
-
-void SyncPal::copySnapshots() {
-    LOG_IF_FAIL(_localFSObserverWorker)
-    LOG_IF_FAIL(_remoteFSObserverWorker)
-
-    _localSnapshot = std::make_shared<ConstSnapshot>(liveSnapshot(ReplicaSide::Local));
-    _remoteSnapshot = std::make_shared<ConstSnapshot>(liveSnapshot(ReplicaSide::Remote));
-    liveSnapshot(ReplicaSide::Local).startRead();
-    liveSnapshot(ReplicaSide::Remote).startRead();
-}
-
-void SyncPal::freeSnapshotsCopies() {
-    if (_localSnapshot) {
-        assert(_localSnapshot.use_count() == 1);
-        _localSnapshot.reset();
-    }
-    if (_remoteSnapshot) {
-        assert(_remoteSnapshot.use_count() == 1);
-        _remoteSnapshot.reset();
-    }
 }
 
 void SyncPal::invalideSnapshots() {

@@ -27,8 +27,7 @@ namespace KDC {
 class TestSyncPal : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestSyncPal);
         CPPUNIT_TEST(testUpdateTree);
-        CPPUNIT_TEST(testSnapshot);
-        CPPUNIT_TEST(testCopySnapshots);
+        CPPUNIT_TEST(testGetConstSnapshot);
         CPPUNIT_TEST(testOperationSet);
         CPPUNIT_TEST(testSyncFileItem);
         CPPUNIT_TEST(testCheckIfExistsOnServer);
@@ -49,9 +48,8 @@ class TestSyncPal : public CppUnit::TestFixture, public TestBase {
         SyncPath _remotePath;
 
         void testUpdateTree();
-        void testSnapshot();
         void testOperationSet();
-        void testCopySnapshots();
+        void testGetConstSnapshot();
         void testSyncFileItem();
         void testCheckIfExistsOnServer();
         void testBlacklist();

@@ -214,7 +214,6 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
                 std::shared_ptr<MockExecutorWorker> getMockExecutorWorker();
                 std::shared_ptr<SyncPalWorker> getSyncPalWorker() { return _syncPalWorker; }
                 std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const { return SyncPal::updateTree(side); }
-                std::shared_ptr<Snapshot> snapshot(ReplicaSide side) const { return SyncPal::snapshot(side); }
                 std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side) const { return SyncPal::operationSet(side); }
 
 

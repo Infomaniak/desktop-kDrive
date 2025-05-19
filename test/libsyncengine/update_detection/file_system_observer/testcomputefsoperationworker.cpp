@@ -115,7 +115,6 @@ void TestComputeFSOperationWorker::tearDown() {
 }
 
 void TestComputeFSOperationWorker::testNoOps() {
-    _syncPal->copySnapshots();
     _syncPal->computeFSOperationsWorker()->execute();
     CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(0), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
 }
@@ -128,7 +127,6 @@ void TestComputeFSOperationWorker::testDeletionOfNestedFolders() {
             "l_ac"); // Folder "AC" is contained in folder "A" but is blacklisted.
     _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_a");
 
-    _syncPal->copySnapshots();
     _syncPal->computeFSOperationsWorker()->execute();
 
     FSOpPtr tmpOp = nullptr;
@@ -169,7 +167,6 @@ void TestComputeFSOperationWorker::testAccessDenied() {
                                IoHelper::setRights(_syncPal->localPath() / bNodePath, false, false, false, ioError) &&
                                        ioError == IoError::Success);
 
-        _syncPal->copySnapshots();
         _syncPal->computeFSOperationsWorker()->execute();
 
         ExitCode exitCode = _syncPal->computeFSOperationsWorker()->exitCode();
@@ -215,7 +212,6 @@ void TestComputeFSOperationWorker::testAccessDenied() {
                 std::make_shared<MockComputeFSOperationWorker>(_syncPal, "Test Compute FS Operations", "TCOP"));
         _syncPal->computeFSOperationsWorker()->setTesting(true);
 
-        _syncPal->copySnapshots();
         _syncPal->computeFSOperationsWorker()->execute();
 
         ExitCode exitCode = _syncPal->computeFSOperationsWorker()->exitCode();
@@ -246,7 +242,6 @@ void TestComputeFSOperationWorker::testCreateDuplicateNamesWithDistinctEncodings
                                                                             testhelpers::defaultTime, testhelpers::defaultTime,
                                                                             NodeType::File, 123, false, true, true));
 
-    _syncPal->copySnapshots();
     _syncPal->computeFSOperationsWorker()->execute();
 
     FSOpPtr tmpOp = nullptr;
@@ -293,7 +288,6 @@ void TestComputeFSOperationWorker::testMultipleOps() {
     // Rename operation on a blacklisted directory
     _syncPal->_localFSObserverWorker->_liveSnapshot.setName("r_ac", Str("AC-renamed"));
 
-    _syncPal->copySnapshots();
     _syncPal->computeFSOperationsWorker()->execute();
 
     FSOpPtr tmpOp = nullptr;
@@ -324,7 +318,6 @@ void TestComputeFSOperationWorker::testLnkFileAlreadySynchronized() {
     _syncPal->syncDb()->insertNode(nodeTest, dbNodeIdTest, constraintError);
 
     // File is excluded by template, it does not appear in liveSnapshot
-    _syncPal->copySnapshots();
     _syncPal->computeFSOperationsWorker()->execute();
     CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(0), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
 }
@@ -342,7 +335,6 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFD() {
             SnapshotItem("l_test", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"), testhelpers::defaultTime,
                          testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize, false, true, true));
 
-    _syncPal->copySnapshots();
     _syncPal->syncDb()->cache().reloadIfNeeded();
     _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
@@ -362,7 +354,6 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFC() {
             SnapshotItem("l_test", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"), testhelpers::defaultTime,
                          testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize, false, true, true));
 
-    _syncPal->copySnapshots();
     _syncPal->syncDb()->cache().reloadIfNeeded();
     _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
@@ -382,7 +373,6 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFD() {
             SnapshotItem("l_test", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"), testhelpers::defaultTime,
                          testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize, false, true, true));
 
-    _syncPal->copySnapshots();
     _syncPal->syncDb()->cache().reloadIfNeeded();
     _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
@@ -403,7 +393,6 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFC() {
             SnapshotItem("l_test", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"), testhelpers::defaultTime,
                          testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize, false, true, true));
 
-    _syncPal->copySnapshots();
     _syncPal->syncDb()->cache().reloadIfNeeded();
     _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
@@ -426,7 +415,6 @@ void TestComputeFSOperationWorker::testExclusion() {
     (void) _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(
             SnapshotItem("l_bc", "l_b", Str("BC"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                          testhelpers::defaultDirSize, false, true, true));
-    _syncPal->copySnapshots();
 
     /// Blacklist local node B temporarily
     (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::TmpLocalBlacklist, {"l_b"});
@@ -497,7 +485,6 @@ void TestComputeFSOperationWorker::testHasChangedSinceLastSeen() {
                             false, true, true);
     CPPUNIT_ASSERT(_syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(localItem));
     CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->_liveSnapshot.updateItem(remoteItem));
-    _syncPal->copySnapshots();
     CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
 
     _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision =
@@ -509,17 +496,14 @@ void TestComputeFSOperationWorker::testHasChangedSinceLastSeen() {
 
     CPPUNIT_ASSERT(_syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(localItem));
     CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->_liveSnapshot.updateItem(remoteItem));
-    _syncPal->copySnapshots();
 
     CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
 }
 
 void TestComputeFSOperationWorker::testIsInUnsyncedList(const bool expectedResult, const NodeId &nodeId,
                                                         const ReplicaSide side) const {
-    _syncPal->copySnapshots();
     CPPUNIT_ASSERT_EQUAL(expectedResult, _syncPal->computeFSOperationsWorker()->isInUnsyncedListParentSearchInDb(nodeId, side));
-    CPPUNIT_ASSERT_EQUAL(expectedResult, _syncPal->computeFSOperationsWorker()->isInUnsyncedListParentSearchInSnapshot(
-                                                 _syncPal->snapshot(side), nodeId, side));
+    CPPUNIT_ASSERT_EQUAL(expectedResult, _syncPal->computeFSOperationsWorker()->isInUnsyncedListParentSearchInSnapshot(nodeId, side));
 }
 
 } // namespace KDC

@@ -22,8 +22,6 @@
 #include "db/syncdb.h"
 #include "progress/progressinfo.h"
 #include "syncpal/conflictingfilescorrector.h"
-#include "update_detection/file_system_observer/snapshot/livesnapshot.h"
-#include "update_detection/file_system_observer/snapshot/snapshot.h"
 #include "update_detection/file_system_observer/fsoperationset.h"
 #include "update_detection/update_detector/updatetree.h"
 #include "reconciliation/conflict_finder/conflict.h"
@@ -240,9 +238,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitInfo handleAccessDeniedItem(const SyncPath &relativeLocalPath, std::shared_ptr<Node> &localBlacklistedNode,
                                         std::shared_ptr<Node> &remoteBlacklistedNode, ExitCause cause);
 
-        //! Makes copies of real-time snapshots to be used by synchronization workers.
-        void copySnapshots();
-        void freeSnapshotsCopies();
         void invalideSnapshots();
 
         // Workers
@@ -258,9 +253,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const;
 
-        // Returns a snapshot of the filesystem state at the start of the ongoing sync.
-        // Returns nullptr if no sync is currently in progress.
-        std::shared_ptr<ConstSnapshot> snapshot(ReplicaSide side) const;
+        void getConstSnapshots(std::unique_ptr<ConstSnapshot> &localSnapshot, std::unique_ptr<ConstSnapshot> &remoteSnapshot) const;
         const LiveSnapshot &liveSnapshot(ReplicaSide side) const;
 
     protected:
@@ -286,10 +279,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<SyncDb> _syncDb{nullptr};
 
         // Shared objects
-        std::shared_ptr<ConstSnapshot> _localSnapshot{nullptr}; // A copy of the real-time local snapshot taken at the start
-                                                                // of each sync, used by synchronization workers
-        std::shared_ptr<ConstSnapshot> _remoteSnapshot{nullptr}; // A copy of the real-time remote snapshot taken at the start
-                                                                 // of each sync, used by synchronization workers
         std::shared_ptr<FSOperationSet> _localOperationSet{nullptr};
         std::shared_ptr<FSOperationSet> _remoteOperationSet{nullptr};
         std::shared_ptr<UpdateTree> _localUpdateTree{nullptr};
