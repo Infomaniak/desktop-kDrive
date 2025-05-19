@@ -26,12 +26,9 @@ jobs:
 
 # Build apps
   build-Windows:
-    runs-on: [ self-hosted, Windows, desktop-kdrive ]
-
-    steps:
-      - name: build-windows
-        uses: ./.github/workflows/actions/build-win
+    uses: ./.github/workflows/build/build-windows.yml        
         
+    
   build-Linux:
     if: false
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
