@@ -970,7 +970,7 @@ bool IoHelper::getLongPathName(const SyncPath &path, SyncPath &longPathName, IoE
     };
 
     WCHAR longPathName_[MAX_PATH_LENGTH_WIN_LONG];
-    DWORD length = GetLongPathNameW(pathWStr.c_str(), longPathName_, MAX_PATH_LENGTH_WIN_LONG);
+    const DWORD length = GetLongPathNameW(pathWStr.c_str(), longPathName_, MAX_PATH_LENGTH_WIN_LONG);
     ioError = dWordError2ioError(GetLastError(), logger());
 
     if (ioError != IoError::Success) {
@@ -979,7 +979,6 @@ bool IoHelper::getLongPathName(const SyncPath &path, SyncPath &longPathName, IoE
     }
 
     std::wstring output(longPathName_, longPathName_ + length);
-
     longPathName = SyncPath(output);
 
     return true;
@@ -998,7 +997,7 @@ bool IoHelper::getShortPathName(const SyncPath &path, SyncPath &shortPathName, I
     };
 
     WCHAR shortPathName_[MAX_PATH_LENGTH_WIN_LONG];
-    DWORD length = GetShortPathNameW(pathWstr.c_str(), shortPathName_, MAX_PATH_LENGTH_WIN_LONG);
+    const DWORD length = GetShortPathNameW(pathWstr.c_str(), shortPathName_, MAX_PATH_LENGTH_WIN_LONG);
     ioError = dWordError2ioError(GetLastError(), logger());
 
     if (ioError != IoError::Success) {
@@ -1007,7 +1006,6 @@ bool IoHelper::getShortPathName(const SyncPath &path, SyncPath &shortPathName, I
     }
 
     std::wstring output(shortPathName_, shortPathName_ + length);
-
     shortPathName = SyncPath(output);
 
     return true;

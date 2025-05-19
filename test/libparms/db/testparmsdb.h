@@ -38,24 +38,28 @@ class TestParmsDb : public CppUnit::TestFixture, public TestBase {
 #endif
         CPPUNIT_TEST(testError);
         CPPUNIT_TEST(testAppState);
+        CPPUNIT_TEST(testUpgradeOfShortPathNames);
         CPPUNIT_TEST_SUITE_END();
 
     public:
-        void setUp(void);
-        void tearDown(void);
+        void setUp();
+        void tearDown();
 
     protected:
-        void testParameters(void);
-        void testUser(void);
-        void testAccount(void);
-        void testDrive(void);
-        void testSync(void);
-        void testExclusionTemplate(void);
-        void testAppState(void);
+        void testParameters();
+        void testUser();
+        void testAccount();
+        void testDrive();
+        void testSync();
+        void testExclusionTemplate();
+        void testAppState();
 #ifdef __APPLE__
-        void testExclusionApp(void);
+        void testExclusionApp();
 #endif
-        void testError(void);
+        void testError();
+#ifdef _WIN32
+        void testUpgradeOfShortPathNames();
+#endif
 };
 
 } // namespace KDC
