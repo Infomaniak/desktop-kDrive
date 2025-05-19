@@ -98,7 +98,7 @@ class Snapshot {
 
 class ConstSnapshot : public Snapshot {
     public:
-        ConstSnapshot(const Snapshot &other) :
+        explicit ConstSnapshot(const Snapshot &other) :
             Snapshot(other) {}
 
     private:
