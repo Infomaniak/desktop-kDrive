@@ -56,8 +56,6 @@ class ISyncWorker {
 
         bool _testing{false};
         virtual void init();
-
-    protected:
         //! Wait for a delay. Allows to postpone the start of the worker to smooth the load.
         /*!
           \param awakenByStop will be true if a stop of the worker has been requested, false otherwise.

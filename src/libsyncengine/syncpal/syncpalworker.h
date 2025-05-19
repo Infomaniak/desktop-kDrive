@@ -37,6 +37,8 @@ class SyncPalWorker : public ISyncWorker {
         inline bool isPaused() const { return _isPaused; }
         inline bool pauseAsked() const { return _pauseAsked; }
         void unpause();
+        void restartLater();
+        inline bool shouldBeRestarted() const { return _restartLater; }
         inline SyncStep step() const { return _step; }
         inline std::chrono::time_point<std::chrono::steady_clock> pauseTime() const { return _pauseTime; }
         static std::string stepName(SyncStep step);
@@ -47,6 +49,7 @@ class SyncPalWorker : public ISyncWorker {
         bool _pauseAsked{false};
         bool _unpauseAsked{false};
         bool _isPaused{false};
+        bool _restartLater{false};
         std::thread _resetVfsFilesStatusThread;
         void initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&workers)[2],
                       std::shared_ptr<SharedObject> (&inputSharedObject)[2]);

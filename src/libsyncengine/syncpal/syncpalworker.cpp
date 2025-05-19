@@ -52,6 +52,8 @@ void SyncPalWorker::execute() {
 #endif
     }
 
+    _restartLater = false;
+
     // Wait before really starting
     bool awakenByStop = false;
     sleepUntilStartDelay(awakenByStop);
@@ -80,7 +82,9 @@ void SyncPalWorker::execute() {
                     stopAndWaitForExitOfWorker(fsoWorkers[index]);
                     bool shouldPause = fsoWorkers[index]->exitCode() == ExitCode::NetworkError ||
                                        (fsoWorkers[index]->exitCode() == ExitCode::BackError &&
-                                        fsoWorkers[index]->exitCause() == ExitCause::ServiceUnavailable);
+                                        fsoWorkers[index]->exitCause() == ExitCause::ServiceUnavailable) ||
+                                       (fsoWorkers[index]->exitCode() == ExitCode::SystemError &&
+                                        fsoWorkers[index]->exitCause() == ExitCause::SyncDirDoesntExist);
                     if (shouldPause && !pauseAsked()) {
                         pause();
                     }
@@ -183,10 +187,21 @@ void SyncPalWorker::execute() {
                 if ((stepWorkers[0] && workersExitCode[0] == ExitCode::SystemError) ||
                     (stepWorkers[1] && workersExitCode[1] == ExitCode::SystemError)) {
                     const auto exitCause = stepWorkers[0] ? stepWorkers[0]->exitCause() : stepWorkers[1]->exitCause();
-                    if (exitCause == ExitCause::NotEnoughDiskSpace || exitCause == ExitCause::FileAccessError ||
-                        exitCause == ExitCause::SyncDirAccesError || exitCause == ExitCause::SyncDirDoesntExist) {
-                        // Exit without error
-                        exitCode = ExitCode::Ok;
+                    switch (exitCause) {
+                        case ExitCause::SyncDirDoesntExist:
+                            restartLater();
+                            [[fallthrough]];
+                        case ExitCause::NotEnoughDiskSpace:
+                        case ExitCause::FileAccessError:
+                        case ExitCause::SyncDirAccesError:
+                            // Exit without error
+                            exitCode = ExitCode::Ok;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if (exitCode == ExitCode::Ok) {
                         break;
                     }
                 }
@@ -224,6 +239,7 @@ void SyncPalWorker::execute() {
     LOG_SYNCPAL_INFO(_logger, "Worker " << name().c_str() << " stoped");
     setDone(exitCode);
 }
+
 void SyncPalWorker::stop() {
     _pauseAsked = false;
     _unpauseAsked = true;
@@ -266,6 +282,11 @@ void SyncPalWorker::unpause() {
     _unpauseAsked = true;
     _pauseAsked = false;
     _syncPal->setRestart(true);
+}
+
+void SyncPalWorker::restartLater() {
+    _restartLater = true;
+    _pauseTime = std::chrono::steady_clock::now();
 }
 
 std::string SyncPalWorker::stepName(SyncStep step) {

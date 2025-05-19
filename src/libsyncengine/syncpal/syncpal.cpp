@@ -1046,7 +1046,7 @@ void SyncPal::start(const std::chrono::seconds &startDelay) {
 
     // Load VFS mode
     Sync sync;
-    bool found;
+    bool found = false;
     if (!ParmsDb::instance()->selectSync(syncDbId(), sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
         addError(Error(syncDbId(), errId(), ExitCode::DbError, ExitCause::Unknown));
@@ -1060,8 +1060,8 @@ void SyncPal::start(const std::chrono::seconds &startDelay) {
     setVfsMode(sync.virtualFileMode());
 
     // Clear tmp blacklist
-    SyncNodeCache::instance()->update(syncDbId(), SyncNodeType::TmpRemoteBlacklist, NodeSet());
-    SyncNodeCache::instance()->update(syncDbId(), SyncNodeType::TmpLocalBlacklist, NodeSet());
+    (void) SyncNodeCache::instance()->update(syncDbId(), SyncNodeType::TmpRemoteBlacklist, NodeSet());
+    (void) SyncNodeCache::instance()->update(syncDbId(), SyncNodeType::TmpLocalBlacklist, NodeSet());
 
     // Create and init shared objects
     createSharedObjects();
@@ -1166,6 +1166,10 @@ bool SyncPal::isPaused() const {
 
 bool SyncPal::pauseAsked() const {
     return _syncPalWorker && _syncPalWorker->pauseAsked();
+}
+
+bool SyncPal::shouldBeRestarted() const {
+    return _syncPalWorker && _syncPalWorker->shouldBeRestarted();
 }
 
 bool SyncPal::isIdle() const {

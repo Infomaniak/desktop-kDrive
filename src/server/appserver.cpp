@@ -4269,10 +4269,12 @@ void AppServer::onRestartSyncs() {
 
     for (const auto &[syncId, syncPtr]: _syncPalMap) {
         if (!syncPtr) continue;
-        if ((syncPtr->isPaused() || syncPtr->pauseAsked()) &&
-            syncPtr->pauseTime() + std::chrono::minutes(1) < std::chrono::steady_clock::now()) {
+        if (syncPtr->pauseTime() + std::chrono::minutes(1) > std::chrono::steady_clock::now()) return;
+        if (syncPtr->isPaused() || syncPtr->pauseAsked()) {
             syncPtr->unpause();
         }
+        if (syncPtr->shouldBeRestarted()) syncPtr->start();
     }
 }
+
 } // namespace KDC
