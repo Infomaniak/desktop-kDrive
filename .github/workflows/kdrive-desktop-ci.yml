@@ -30,7 +30,7 @@ jobs:
 
     steps:
       - name: build-windows
-        uses: ./.github/workflows/actions/build-windows
+        uses: ./.github/workflows/actions/build-win
         
   build-Linux:
     if: false
