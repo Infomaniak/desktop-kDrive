@@ -168,10 +168,12 @@ static void rolloverFiles(const log4cplus::tstring &filename, int maxBackupIndex
 CustomRollingFileAppender::CustomRollingFileAppender(const log4cplus::tstring &filename, long maxFileSize, int maxBackupIndex,
                                                      bool immediateFlush, bool createDirs) :
     RollingFileAppender(filename, LONG_MAX /*Let us handle a custom rollover*/, maxBackupIndex, immediateFlush, createDirs),
-    _maxFileSize(maxFileSize), _lastExpireCheck() {}
+    _maxFileSize(maxFileSize),
+    _lastExpireCheck() {}
 
 CustomRollingFileAppender::CustomRollingFileAppender(const log4cplus::helpers::Properties &properties) :
-    RollingFileAppender(properties), _lastExpireCheck() {}
+    RollingFileAppender(properties),
+    _lastExpireCheck() {}
 
 void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEvent &event) {
     // Seek to the end of log file so that tellp() below returns the

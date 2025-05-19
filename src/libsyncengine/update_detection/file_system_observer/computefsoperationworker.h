@@ -34,7 +34,8 @@ class ComputeFSOperationWorker : public ISyncWorker {
          * @param name
          * @param shortName
          */
-        ComputeFSOperationWorker(SyncDbReadOnlyCache &testSyncDbReadOnlyCache, const std::string &name, const std::string &shortName);
+        ComputeFSOperationWorker(SyncDbReadOnlyCache &testSyncDbReadOnlyCache, const std::string &name,
+                                 const std::string &shortName);
 
         const std::unordered_map<NodeId, SyncPath> getFileSizeMismatchMap() const { return _fileSizeMismatchMap; }
 

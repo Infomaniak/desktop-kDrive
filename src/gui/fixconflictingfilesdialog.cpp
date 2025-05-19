@@ -48,7 +48,9 @@ static const QString learnMoreLink = "learnMoreLink";
 
 FixConflictingFilesDialog::FixConflictingFilesDialog(const int driveDbId, std::shared_ptr<ClientGui> gui,
                                                      QWidget *parent /*= nullptr*/) :
-    CustomDialog(true, parent), _gui(gui), _driveDbId(driveDbId) {
+    CustomDialog(true, parent),
+    _gui(gui),
+    _driveDbId(driveDbId) {
     setModal(true);
     setResizable(true);
     GuiRequests::getConflictList(
@@ -76,7 +78,8 @@ void FixConflictingFilesDialog::onLinkActivated(const QString &link) {
 
 void FixConflictingFilesDialog::onExpandButtonClicked() {
     const bool isFileListVisible = _fileListWidget->isVisible();
-    MatomoClient::sendEvent("fixConflictingFiles", MatomoEventAction::Click, "expandButton", isFileListVisible ? 0 : 1); // 0: collapsed, 1: expanded
+    MatomoClient::sendEvent("fixConflictingFiles", MatomoEventAction::Click, "expandButton",
+                            isFileListVisible ? 0 : 1); // 0: collapsed, 1: expanded
 
     if (isFileListVisible) {
         _expandButton->setIconPath(":/client/resources/icons/actions/chevron-down.svg");

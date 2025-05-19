@@ -44,7 +44,9 @@ std::shared_ptr<KeyChainManager> KeyChainManager::instance(bool testing) {
     return _instance;
 }
 
-KeyChainManager::KeyChainManager(bool testing) : _testing(testing), _testingMap(std::unordered_map<std::string, std::string>()) {}
+KeyChainManager::KeyChainManager(bool testing) :
+    _testing(testing),
+    _testingMap(std::unordered_map<std::string, std::string>()) {}
 
 bool KeyChainManager::writeDummyTest() {
     // First, we check that we can write into the keychain

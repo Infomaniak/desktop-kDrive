@@ -50,7 +50,10 @@ static const QUrl gnuUrl("https://www.gnu.org/licenses/lgpl-3.0.fr.html#license-
 
 Q_LOGGING_CATEGORY(lcAboutDialog, "gui.aboutdialog", QtInfoMsg)
 
-AboutDialog::AboutDialog(QWidget *parent) : CustomDialog(true, parent), _logoColor(QColor()), _logoTextIconLabel(nullptr) {
+AboutDialog::AboutDialog(QWidget *parent) :
+    CustomDialog(true, parent),
+    _logoColor(QColor()),
+    _logoTextIconLabel(nullptr) {
     initUI();
 }
 

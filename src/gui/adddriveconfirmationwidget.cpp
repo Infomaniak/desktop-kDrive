@@ -44,7 +44,8 @@ static const int progressBarMax = 5;
 
 Q_LOGGING_CATEGORY(lcAddDriveConfirmationWidget, "gui.adddriveconfirmationwidget", QtInfoMsg)
 
-AddDriveConfirmationWidget::AddDriveConfirmationWidget(QWidget *parent) : QWidget(parent) {
+AddDriveConfirmationWidget::AddDriveConfirmationWidget(QWidget *parent) :
+    QWidget(parent) {
     initUI();
 }
 

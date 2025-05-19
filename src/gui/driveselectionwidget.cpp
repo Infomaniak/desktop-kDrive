@@ -42,8 +42,15 @@ static const int driveNameMaxSize = 30;
 Q_LOGGING_CATEGORY(lcDriveSelectionWidget, "gui.driveselectionwidget", QtInfoMsg)
 
 DriveSelectionWidget::DriveSelectionWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
-    QPushButton(parent), _currentDriveDbId(0), _gui(gui), _driveIconSize(QSize()), _downIconSize(QSize()),
-    _downIconColor(QColor()), _menuRightIconSize(QSize()), _driveIconLabel(nullptr), _driveTextLabel(nullptr),
+    QPushButton(parent),
+    _currentDriveDbId(0),
+    _gui(gui),
+    _driveIconSize(QSize()),
+    _downIconSize(QSize()),
+    _downIconColor(QColor()),
+    _menuRightIconSize(QSize()),
+    _driveIconLabel(nullptr),
+    _driveTextLabel(nullptr),
     _downIconLabel(nullptr) {
     setContentsMargins(hMargin, vMargin, hMargin, vMargin);
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);

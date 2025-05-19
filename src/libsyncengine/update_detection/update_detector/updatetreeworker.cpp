@@ -760,8 +760,8 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
         return exitCode;
     }
 
-    std::optional<NodeId> rootNodeId =
-            (_side == ReplicaSide::Local ? _syncDbReadOnlyCache.rootNode().nodeIdLocal() : _syncDbReadOnlyCache.rootNode().nodeIdRemote());
+    std::optional<NodeId> rootNodeId = (_side == ReplicaSide::Local ? _syncDbReadOnlyCache.rootNode().nodeIdLocal()
+                                                                    : _syncDbReadOnlyCache.rootNode().nodeIdRemote());
 
     // creating missing nodes
     auto dbNodeIdIt = dbNodeIds.begin();

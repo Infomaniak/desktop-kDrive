@@ -37,7 +37,10 @@ static float notifBoxRadius = 9.5;
 static int maxNbNotif = 99;
 static int notifTextPadding = 15;
 
-CustomTabBar::CustomTabBar(QWidget *parent) : QTabBar(parent), _unResolvedNotifCount(0), _autoResolvedNotifCount(0) {}
+CustomTabBar::CustomTabBar(QWidget *parent) :
+    QTabBar(parent),
+    _unResolvedNotifCount(0),
+    _autoResolvedNotifCount(0) {}
 
 void CustomTabBar::paintEvent(QPaintEvent *) {
     QStylePainter p(this);

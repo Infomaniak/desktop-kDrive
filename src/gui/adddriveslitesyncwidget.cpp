@@ -48,7 +48,8 @@ static const QSize checkIconSize = QSize(20, 20);
 
 Q_LOGGING_CATEGORY(lcAddDriveLiteSyncWidget, "gui.adddrivesmartsyncwidget", QtInfoMsg)
 
-AddDriveLiteSyncWidget::AddDriveLiteSyncWidget(QWidget *parent) : QWidget(parent) {
+AddDriveLiteSyncWidget::AddDriveLiteSyncWidget(QWidget *parent) :
+    QWidget(parent) {
     initUI();
 }
 

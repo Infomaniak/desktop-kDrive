@@ -37,7 +37,11 @@ class FileExclusionDialog : public CustomDialog {
         explicit FileExclusionDialog(QWidget *parent = nullptr);
 
     private:
-        enum tableColumn { Pattern = 0, Warning, Action };
+        enum tableColumn {
+            Pattern = 0,
+            Warning,
+            Action
+        };
 
         QStandardItemModel *_filesTableModel;
         QTableView *_filesTableView;

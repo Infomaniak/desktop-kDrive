@@ -43,7 +43,9 @@ static const QString dateFormat = "d MMM yyyy - HH:mm";
 Q_LOGGING_CATEGORY(lcFileErrorItemWidget, "gui.fileerroritemwidget", QtInfoMsg)
 
 FileErrorItemWidget::FileErrorItemWidget(const SynchronizedItem &item, const DriveInfo &driveInfo, QWidget *parent) :
-    GenericErrorItemWidget(parent), _item(item), _fileNameLabel(nullptr) {
+    GenericErrorItemWidget(parent),
+    _item(item),
+    _fileNameLabel(nullptr) {
     QHBoxLayout *mainLayout = qobject_cast<QHBoxLayout *>(layout());
 
     // Left box

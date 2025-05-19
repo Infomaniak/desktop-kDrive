@@ -28,10 +28,14 @@
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
-
+  
 Snapshot::Snapshot(ReplicaSide side, const NodeId &rootFolderId) :
     _side(side),
-    _rootFolderId(rootFolderId) {}
+    _rootFolderId(rootFolderId) {
+    _revisionHandlder = std::make_shared<SnapshotRevisionHandler>();
+    _items.try_emplace(_rootFolderId, std::make_shared<SnapshotItem>(_rootFolderId))
+            .first->second->setSnapshotRevisionHandler(_revisionHandlder);
+}
 
 Snapshot::Snapshot(Snapshot const &other) {
     if (this != &other) {

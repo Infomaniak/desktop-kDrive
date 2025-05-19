@@ -31,8 +31,14 @@
 namespace KDC {
 
 ErrorTabWidget::ErrorTabWidget(std::shared_ptr<ClientGui> gui, const int driveDbId, const bool generic, QWidget *parent) :
-    QTabWidget(parent), _gui(gui), _tabBar(nullptr), _paramsDialog(static_cast<ParametersDialog *>(parent)),
-    _autoResolvedErrorsListWidget(nullptr), _unresolvedErrorsListWidget(nullptr), _driveDbId(driveDbId), _generic(generic) {
+    QTabWidget(parent),
+    _gui(gui),
+    _tabBar(nullptr),
+    _paramsDialog(static_cast<ParametersDialog *>(parent)),
+    _autoResolvedErrorsListWidget(nullptr),
+    _unresolvedErrorsListWidget(nullptr),
+    _driveDbId(driveDbId),
+    _generic(generic) {
     setObjectName("tabWidgetErrorWidget");
     _tabBar = new CustomTabBar(this);
     _tabBar->setObjectName("tabBarErrorWidget");

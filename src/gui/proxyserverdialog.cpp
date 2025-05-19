@@ -51,7 +51,9 @@ std::map<ProxyType, std::pair<int, QString>> ProxyServerDialog::_manualProxyMap 
 
 Q_LOGGING_CATEGORY(lcProxyServerDialog, "gui.proxyserverdialog", QtInfoMsg)
 
-ProxyServerDialog::ProxyServerDialog(QWidget *parent) : CustomDialog(true, parent), _portValidator(new PortValidator(this)) {
+ProxyServerDialog::ProxyServerDialog(QWidget *parent) :
+    CustomDialog(true, parent),
+    _portValidator(new PortValidator(this)) {
     initUI();
 
     _proxyConfigInfo = ParametersCache::instance()->parametersInfo().proxyConfigInfo();

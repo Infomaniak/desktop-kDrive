@@ -20,7 +20,8 @@
 
 namespace KDC {
 
-WidgetWithCustomToolTip::WidgetWithCustomToolTip(QWidget *parent) : QWidget(parent) {}
+WidgetWithCustomToolTip::WidgetWithCustomToolTip(QWidget *parent) :
+    QWidget(parent) {}
 
 // Place the tooltip at the bottom middle of the widget.
 QPoint WidgetWithCustomToolTip::customToolTipPosition(QHelpEvent *event) {
@@ -50,7 +51,8 @@ void WidgetWithCustomToolTip::leaveEvent(QEvent *event) {
     QWidget::leaveEvent(event);
 }
 
-LargeWidgetWithCustomToolTip::LargeWidgetWithCustomToolTip(QWidget *parent) : WidgetWithCustomToolTip(parent) {}
+LargeWidgetWithCustomToolTip::LargeWidgetWithCustomToolTip(QWidget *parent) :
+    WidgetWithCustomToolTip(parent) {}
 
 // Place the tooltip at mouse pointer position.
 QPoint LargeWidgetWithCustomToolTip::customToolTipPosition(QHelpEvent *event) {

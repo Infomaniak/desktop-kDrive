@@ -50,7 +50,8 @@ static const QString clickHereLinkGeneral = "clickHereLinkGeneral";
 Q_LOGGING_CATEGORY(lcCustomExtensionSetupWidget, "gui.customextensionsetupwidget", QtInfoMsg)
 
 CustomExtensionSetupWidget::CustomExtensionSetupWidget(QWidget *parent, bool addDriveSetup) :
-    QWidget(parent), _isAddDriveSetup(addDriveSetup) {
+    QWidget(parent),
+    _isAddDriveSetup(addDriveSetup) {
     _mainLayout = new QVBoxLayout();
     _mainLayout->setContentsMargins(0, 0, 0, 0);
     _mainLayout->setSpacing(0);
