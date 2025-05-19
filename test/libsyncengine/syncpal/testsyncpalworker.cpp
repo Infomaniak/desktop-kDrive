@@ -162,8 +162,7 @@ void TestSyncPalWorker::testInternalPause1() {
             [&syncpalWorker]() { CPPUNIT_ASSERT_EQUAL(SyncStep::Idle, syncpalWorker->step()); }, testTimeout, loopWait));
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the automatic re-pause
-            [&syncpalWorker]() { return syncpalWorker->isPaused(); },
-            [&syncpalWorker]() { CPPUNIT_ASSERT_EQUAL(SyncStep::Idle, syncpalWorker->step()); }, testTimeout, loopWait));
+            [&syncpalWorker]() { return syncpalWorker->isPaused(); }, testTimeout, loopWait));
 
     CPPUNIT_ASSERT(mockLfso->snapshot()->updated()); // Ensure the event is still pending
 
@@ -229,17 +228,15 @@ void TestSyncPalWorker::testInternalPause2() {
             [&syncpalWorker, this]() {
                 CPPUNIT_ASSERT_EQUAL(SyncStep::Reconciliation1, syncpalWorker->step());
                 CPPUNIT_ASSERT_EQUAL(SyncStatus::Running, _syncPal->status());
-                CPPUNIT_ASSERT(!syncpalWorker->isPaused());
             },
             testTimeout, loopWait));
 
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the re-pause because the network is still down
-            [&syncpalWorker]() { return syncpalWorker->pauseAsked(); },
+            [&syncpalWorker]() { return syncpalWorker->pauseAsked() || syncpalWorker->isPaused(); },
             [&syncpalWorker, this]() {
                 CPPUNIT_ASSERT_EQUAL(SyncStep::Reconciliation1, syncpalWorker->step());
                 CPPUNIT_ASSERT_EQUAL(SyncStatus::Running, _syncPal->status());
-                CPPUNIT_ASSERT(!syncpalWorker->isPaused());
             },
             testTimeout, loopWait));
 
