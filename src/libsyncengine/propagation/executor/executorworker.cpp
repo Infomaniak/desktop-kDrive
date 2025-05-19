@@ -898,16 +898,19 @@ ExitInfo ExecutorWorker::fixModificationDate(SyncOpPtr syncOp, const SyncPath &a
         return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
-    bool exists = false;
-    if (!Utility::setFileDates(absolutePath, dbNode.created(), dbNode.lastModifiedRemote(), false, exists)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::setFileDates: " << Utility::formatSyncPath(absolutePath));
-    }
-    if (exists) {
+    if (const IoError ioError =
+                IoHelper::setFileDates(absolutePath, dbNode.created().has_value() ? dbNode.created().value() : 0,
+                                       dbNode.lastModifiedRemote().has_value() ? dbNode.lastModifiedRemote().value() : 0, false);
+        ioError == IoError::Success) {
         LOGW_SYNCPAL_INFO(_logger,
                           L"Last modification date updated locally to avoid further wrongly generated EDIT operations for file: "
                                   << Utility::formatSyncPath(absolutePath));
+    } else if (ioError == IoError::NoSuchFileOrDirectory) {
+        // If file does not exist anymore, do nothing special. This is fine, it will not generate EDIT operations anymore.
+    } else {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(absolutePath));
     }
-    // If file does not exist anymore, do nothing special. This is fine, it will not generate EDIT operations anymore.
+
     return ExitCode::Ok;
 }
 

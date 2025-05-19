@@ -24,6 +24,7 @@
 #include <log4cplus/loggingmacros.h>
 
 #include <fcntl.h>
+#include <Poco/File.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/xattr.h>
@@ -98,6 +99,38 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
     }
 
     return true;
+}
+
+IoError returnNoSuchFileOrDirectory(const SyncPath &filePath) {
+    LOGW_WARN(Log::instance()->getLogger(), L"File not found : " << Utility::formatSyncPath(filePath));
+    return IoError::NoSuchFileOrDirectory;
+}
+
+IoError returnAccessDenied(const SyncPath &filePath) {
+    LOGW_WARN(Log::instance()->getLogger(), L"Access denied on file : " << Utility::formatSyncPath(filePath));
+    return IoError::AccessDenied;
+}
+
+IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime, const SyncTime modificationDate, const bool) noexcept {
+    try {
+        const Poco::Timestamp lastModifiedTimestamp(Poco::Timestamp::fromEpochTime(modificationDate));
+        Poco::File(Path2Str(filePath)).setLastModified(lastModifiedTimestamp);
+    } catch (Poco::NotFoundException &) {
+        return returnNoSuchFileOrDirectory(filePath);
+    } catch (Poco::FileNotFoundException &) {
+        return returnNoSuchFileOrDirectory(filePath);
+    } catch (Poco::FileExistsException &) {
+        return returnNoSuchFileOrDirectory(filePath);
+    } catch (Poco::NoPermissionException &) {
+        return returnAccessDenied(filePath);
+    } catch (Poco::FileAccessDeniedException &) {
+        return returnAccessDenied(filePath);
+    } catch (Poco::Exception &ex) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in setLastModified : " << ex.message() << " (" << ex.code() << ")");
+        return IoError::Unknown;
+    }
+
+    return IoError::Success;
 }
 
 } // namespace KDC

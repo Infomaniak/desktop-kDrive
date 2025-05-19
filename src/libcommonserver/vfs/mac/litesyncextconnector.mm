@@ -1105,15 +1105,16 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
     }
 
     // Set file dates
-    bool exists = false;
-    if (!Utility::setFileDates(QStr2Path(path), std::make_optional<KDC::SyncTime>(fileStat->st_birthtimespec.tv_sec),
-                               std::make_optional<KDC::SyncTime>(fileStat->st_mtimespec.tv_sec), false, exists)) {
-        LOGW_WARN(_logger, L"Call to Utility::setFileDates failed: " << Utility::formatPath(path));
-        return false;
-    }
-
-    if (!exists) {
+    if (const IoError tmpIoError =
+                IoHelper::setFileDates(QStr2Path(path), fileStat->st_birthtimespec.tv_sec, fileStat->st_mtimespec.tv_sec, false);
+        tmpIoError == IoError::NoSuchFileOrDirectory) {
         LOGW_DEBUG(_logger, L"Item doesn't exist: " << Utility::formatPath(path));
+        return false;
+    } else if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Access denied to " << Utility::formatPath(path));
+        return false;
+    } else if (tmpIoError != IoError::Success) {
+        LOGW_WARN(_logger, L"Call to IoHelper::setFileDates failed: " << Utility::formatPath(path));
         return false;
     }
 
@@ -1216,15 +1217,15 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
             }
 
             // Set file dates
-            bool exists = false;
-            if (!Utility::setFileDates(QStr2Path(filePath), std::make_optional<KDC::SyncTime>(creationDate), std::nullopt, false,
-                                       exists)) {
-                LOGW_WARN(_logger, L"Call to Utility::setFileDates failed: " << Utility::formatPath(filePath));
-                return false;
-            }
-
-            if (!exists) {
+            if (const IoError ioError = IoHelper::setFileDates(QStr2Path(filePath), creationDate, 0, false);
+                ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_DEBUG(_logger, L"Item doesn't exist: " << Utility::formatPath(filePath));
+                return false;
+            } else if (ioError == IoError::AccessDenied) {
+                LOGW_WARN(_logger, L"Access denied to " << Utility::formatPath(filePath));
+                return false;
+            } else if (ioError != IoError::Success) {
+                LOGW_WARN(_logger, L"Call to IoHelper::setFileDates failed: " << Utility::formatPath(filePath));
                 return false;
             }
         } else {
@@ -1341,15 +1342,16 @@ bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, co
     }
 
     // Set file dates
-    bool exists = false;
-    if (!Utility::setFileDates(QStr2Path(absoluteFilePath), fileStat->st_birthtimespec.tv_sec, fileStat->st_mtimespec.tv_sec,
-                               false, exists)) {
-        LOGW_WARN(_logger, L"Call to Utility::setFileDates failed: " << Utility::formatPath(absoluteFilePath));
-        return false;
-    }
-
-    if (!exists) {
+    if (const IoError ioError = IoHelper::setFileDates(QStr2Path(absoluteFilePath), fileStat->st_birthtimespec.tv_sec,
+                                                       fileStat->st_mtimespec.tv_sec, false);
+        ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_DEBUG(_logger, L"Item doesn't exist: " << Utility::formatPath(absoluteFilePath));
+        return false;
+    } else if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Access denied to " << Utility::formatPath(absoluteFilePath));
+        return false;
+    } else if (ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Call to IoHelper::setFileDates failed: " << Utility::formatPath(absoluteFilePath));
         return false;
     }
 
