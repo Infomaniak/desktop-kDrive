@@ -50,8 +50,8 @@ std::shared_ptr<JobManager> JobManager::instance() noexcept {
 }
 
 void JobManager::startThreadIfNeeded() {
-    if (!_thread) {
-        _thread = std::make_unique<std::thread>(executeFunc, this);
+    if (!_mainThread) {
+        _mainThread = std::make_unique<std::thread>(executeFunc, this);
     }
 }
 
@@ -60,21 +60,13 @@ void JobManager::stop() {
 }
 
 void JobManager::clear() {
-    if (_instance) {
-        Poco::ThreadPool::defaultPool().stopAll();
-        if (_instance->_thread) {
-            if (_instance->_thread->joinable()) _instance->_thread->join();
-            _instance->_thread = nullptr;
-        }
+    Poco::ThreadPool::defaultPool().stopAll();
+    if (_mainThread) {
+        if (_mainThread->joinable()) _mainThread->join();
+        _mainThread = nullptr;
     }
 
-    const std::scoped_lock lock(_mutex);
-    _pendingJobs.clear();
-    while (!_queuedJobs.empty()) {
-        _queuedJobs.pop();
-    }
-    _managedJobs.clear();
-    _runningJobs.clear();
+    _data.clear();
     _stop = false;
 
     if (_instance) {
@@ -88,35 +80,23 @@ void defaultCallback(const UniqueId jobId) {
 }
 } // namespace
 
-void JobManager::queueAsyncJob(std::shared_ptr<AbstractJob> job,
-                               Poco::Thread::Priority priority /*= Poco::Thread::PRIO_NORMAL*/) noexcept {
-    const std::scoped_lock lock(_mutex);
+void JobManager::queueAsyncJob(const std::shared_ptr<AbstractJob> job,
+                               const Poco::Thread::Priority priority /*= Poco::Thread::PRIO_NORMAL*/) noexcept {
     startThreadIfNeeded();
     job->setMainCallback(defaultCallback);
-    _queuedJobs.emplace(job, priority);
-    (void) _managedJobs.try_emplace(job->jobId(), job);
+    _data.queue(job, priority);
 }
 
 void JobManager::eraseJob(const UniqueId jobId) {
-    const std::scoped_lock lock(_mutex);
-    if (_uploadSessionJobId == jobId) {
-        _uploadSessionJobId = 0;
-    }
-    (void) _managedJobs.erase(jobId);
-    (void) _runningJobs.erase(jobId);
+    _data.erase(jobId);
 }
 
-bool JobManager::isJobFinished(const UniqueId &jobId) const {
-    const std::scoped_lock lock(_mutex);
-    return !_managedJobs.contains(jobId);
+bool JobManager::isJobFinished(const UniqueId jobId) const {
+    return _data.isManaged(jobId);
 }
 
-std::shared_ptr<AbstractJob> JobManager::getJob(const UniqueId &jobId) {
-    const std::scoped_lock lock(_mutex);
-    if (const auto jobPtr = _managedJobs.find(jobId); jobPtr != _managedJobs.end()) {
-        return jobPtr->second;
-    }
-    return nullptr;
+std::shared_ptr<AbstractJob> JobManager::getJob(const UniqueId jobId) const {
+    return _data.getJob(jobId);
 }
 
 void JobManager::setPoolCapacity(const int nbThread) {
@@ -156,16 +136,8 @@ void JobManager::run() noexcept {
 
         auto availableThreads = availableThreadsInPool();
         // Always keep 1 thread available for jobs with highest priority
-        while (availableThreads > 1 && !_stop && !_queuedJobs.empty()) {
-            std::shared_ptr<AbstractJob> job;
-            auto priority = Poco::Thread::PRIO_NORMAL;
-            {
-                const std::scoped_lock lock(_mutex);
-                job = _queuedJobs.top().first;
-                priority = _queuedJobs.top().second;
-                _queuedJobs.pop();
-            }
-
+        while (availableThreads > 1 && !_stop && _data.hasQueuedJob()) {
+            const auto [job, priority] = _data.pop();
             if (canRunjob(job)) {
                 startJob(job, priority);
             } else {
@@ -176,11 +148,9 @@ void JobManager::run() noexcept {
         }
 
         // Start job with highest priority
-        if (!_queuedJobs.empty()) {
-            if (auto &[job, priority] = _queuedJobs.top(); priority == Poco::Thread::Priority::PRIO_HIGHEST) {
-                startJob(job, priority);
-                _queuedJobs.pop();
-            }
+        if (_data.hasHighestPriorityJob()) {
+            const auto [job, priority] = _data.pop();
+            startJob(job, priority);
         }
 
         managePendingJobs();
@@ -190,31 +160,27 @@ void JobManager::run() noexcept {
 }
 
 void JobManager::startJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority) {
-    const std::scoped_lock lock(_mutex);
     try {
         if (job->isAborted()) {
             LOG_DEBUG(Log::instance()->getLogger(), "Job " << job->jobId() << " has been canceled");
-            (void) _managedJobs.erase(job->jobId());
+            _data.erase(job->jobId());
         } else {
             LOG_DEBUG(Log::instance()->getLogger(), "Starting job " << job->jobId() << " with priority " << priority);
             Poco::ThreadPool::defaultPool().startWithPriority(priority, *job);
-            if (const auto [_, inserted] = _runningJobs.insert(job->jobId()); !inserted) {
+            if (!_data.addToRunningJobs(job->jobId())) {
                 LOG_WARN(Log::instance()->getLogger(), "Failed to insert job " << job->jobId() << " in _runningJobs map");
-            }
-            if (isBigFileUploadJob(job)) {
-                _uploadSessionJobId = job->jobId();
             }
         }
     } catch (Poco::NoThreadAvailableException &) {
         LOG_DEBUG(Log::instance()->getLogger(), "No more thread available, job " << job->jobId() << " queued");
-        _queuedJobs.emplace(job, priority);
+        _data.queue(job, priority);
     } catch (Poco::Exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Failed to start job: " << e.what());
     }
 }
 
 void JobManager::addToPendingJobs(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority) {
-    if (const auto [_, inserted] = _pendingJobs.try_emplace(job->jobId(), job, priority); !inserted) {
+    if (!_data.addToPendingJobs(job->jobId(), job, priority)) {
         LOG_ERROR(Log::instance()->getLogger(), "Failed to insert job " << job->jobId() << " in pending jobs list!");
         return;
     }
@@ -231,11 +197,13 @@ int JobManager::availableThreadsInPool() const {
 
 bool JobManager::canRunjob(const std::shared_ptr<AbstractJob> job) const {
     if (isBigFileUploadJob(job)) {
-        if (_uploadSessionJobId == 0) {
-            // Allow only 1 upload session at a time.
-            return true;
+        for (const auto &runningJobId: _data.runningJobs()) {
+            if (const auto &uploadSession = std::dynamic_pointer_cast<DriveUploadSession>(getJob(runningJobId)); uploadSession) {
+                // An upload session is already running.
+                return false;
+            }
         }
-        return false;
+        return true;
     }
     if (isBigFileDownloadJob(job) && availableThreadsInPool() < 0.5 * Poco::ThreadPool::defaultPool().capacity()) {
         // Allow big file download only if there is more than 50% of thread available in the pool.
@@ -261,27 +229,21 @@ bool JobManager::isBigFileUploadJob(const std::shared_ptr<AbstractJob> job) cons
 }
 
 void JobManager::managePendingJobs() {
-    const std::scoped_lock lock(_mutex);
-
-    auto it = _pendingJobs.begin();
-    while (it != _pendingJobs.end()) {
-        const auto &jobId = it->first;
-        const auto &job = it->second.first;
-        const auto priority = it->second.second;
+    const auto pendingJobs = _data.pendingJobs();
+    for (const auto &[jobId, jobInfo]: pendingJobs) {
+        const auto &job = jobInfo.first;
+        const auto priority = jobInfo.second;
 
         if (canRunjob(job)) {
             if (job->isAborted()) {
                 // The job is aborted, remove it completely from job manager
-                (void) _managedJobs.erase(jobId);
+                _data.erase(job->jobId());
             } else {
-                LOGW_DEBUG(Log::instance()->getLogger(),
-                           L"The thread pool has recovered capacity, queuing job " << job->jobId() << L" for execution");
-                _queuedJobs.emplace(job, priority);
+                LOGW_DEBUG(Log::instance()->getLogger(), L"Queuing job " << job->jobId() << L" for execution");
+                _data.queue(job, priority);
             }
-            it = _pendingJobs.erase(it);
-            continue;
+            _data.removeFromPendingJobs(job->jobId());
         }
-        it++;
     }
 }
 

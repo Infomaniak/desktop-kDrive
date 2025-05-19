@@ -20,6 +20,7 @@
 #pragma once
 
 #include "abstractjob.h"
+#include "jobmanagerdata.h"
 #include "libcommon/utility/utility.h"
 
 #include <log4cplus/logger.h>
@@ -36,18 +37,6 @@
 #include <unordered_set>
 
 namespace KDC {
-
-class JobPriorityCmp {
-    public:
-        bool operator()(const std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority> &j1,
-                        const std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority> &j2) const {
-            if (j1.second == j2.second) {
-                // Same thread priority, use the job ID to define priority
-                return j1.first->jobId() > j2.first->jobId();
-            }
-            return j1.second < j2.second;
-        }
-};
 
 class JobManager {
     public:
@@ -69,15 +58,15 @@ class JobManager {
                            Poco::Thread::Priority priority = Poco::Thread::PRIO_NORMAL) noexcept;
 
         void eraseJob(UniqueId jobId);
-
-        bool isJobFinished(const UniqueId &jobId) const;
-
-        std::shared_ptr<AbstractJob> getJob(const UniqueId &jobId);
+        bool isJobFinished(const UniqueId jobId) const;
+        std::shared_ptr<AbstractJob> getJob(const UniqueId jobId) const;
 
         void setPoolCapacity(int nbThread);
         void decreasePoolCapacity();
 
     private:
+        // TODO : create a thread safe private class that manage access to _managedJobs, _queuedJobs and _runningJobs
+
         static void executeFunc(void *thisWorker);
 
         JobManager();
@@ -99,18 +88,9 @@ class JobManager {
         int _maxNbThread{0};
 
         log4cplus::Logger _logger;
-        std::unique_ptr<std::thread> _thread;
+        std::unique_ptr<std::thread> _mainThread;
 
-        std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _managedJobs; // queued + running + pending jobs.
-        std::priority_queue<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>,
-                            std::vector<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>>, JobPriorityCmp>
-                _queuedJobs; // jobs waiting for an available thread.
-        std::unordered_set<UniqueId> _runningJobs; // jobs currently running in a dedicated thread.
-        std::unordered_map<UniqueId, std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>>
-                _pendingJobs; // jobs waiting to be able to start.
-        mutable std::mutex _mutex;
-
-        UniqueId _uploadSessionJobId{0};
+        JobManagerData _data;
 
         friend class TestJobManager;
 };

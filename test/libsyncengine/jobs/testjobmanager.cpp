@@ -227,17 +227,17 @@ void TestJobManager::testCancelJobs() {
     cancelAllOngoingJobs();
 
     int retry = 1000; // Wait max 10sec
-    while ((!JobManager::instance()->_managedJobs.empty() || !JobManager::instance()->_queuedJobs.empty() ||
-            !JobManager::instance()->_runningJobs.empty() || !JobManager::instance()->_pendingJobs.empty()) &&
+    while ((!JobManager::instance()->_data._managedJobs.empty() || !JobManager::instance()->_data._queuedJobs.empty() ||
+            !JobManager::instance()->_data._runningJobs.empty() || !JobManager::instance()->_data._pendingJobs.empty()) &&
            (retry > 0)) {
         retry--;
         Utility::msleep(10);
     }
 
-    CPPUNIT_ASSERT(JobManager::instance()->_managedJobs.empty());
-    CPPUNIT_ASSERT(JobManager::instance()->_queuedJobs.empty());
-    CPPUNIT_ASSERT(JobManager::instance()->_runningJobs.empty());
-    CPPUNIT_ASSERT(JobManager::instance()->_pendingJobs.empty());
+    CPPUNIT_ASSERT(JobManager::instance()->_data._managedJobs.empty());
+    CPPUNIT_ASSERT(JobManager::instance()->_data._queuedJobs.empty());
+    CPPUNIT_ASSERT(JobManager::instance()->_data._runningJobs.empty());
+    CPPUNIT_ASSERT(JobManager::instance()->_data._pendingJobs.empty());
 
     GetFileListJob fileListJob(driveDbId, remoteTmpDir.id());
     (void) fileListJob.runSynchronously();
@@ -286,7 +286,7 @@ void TestJobManager::testJobPriority() {
 
     // Don't know how to test it but logs looks good...
 
-    while (!JobManager::instance()->_managedJobs.empty()) {
+    while (!JobManager::instance()->_data._managedJobs.empty()) {
         Utility::msleep(100);
     }
 }
@@ -321,7 +321,7 @@ void TestJobManager::testJobPriority2() {
 
     // Don't know how to test it but logs looks good...
 
-    while (!JobManager::instance()->_managedJobs.empty()) {
+    while (!JobManager::instance()->_data._managedJobs.empty()) {
         Utility::msleep(100);
     }
 }
@@ -339,7 +339,7 @@ void TestJobManager::testCanRunjob() {
             JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
         }
 
-        while (!JobManager::instance()->_managedJobs.empty()) {
+        while (!JobManager::instance()->_data._managedJobs.empty()) {
             Utility::msleep(100);
         }
     }
@@ -365,7 +365,7 @@ void TestJobManager::testCanRunjob() {
         }
         CPPUNIT_ASSERT_EQUAL(true, JobManager::instance()->canRunjob(job2));
 
-        while (!JobManager::instance()->_managedJobs.empty()) {
+        while (!JobManager::instance()->_data._managedJobs.empty()) {
             Utility::msleep(100);
         }
     }
@@ -391,7 +391,7 @@ void TestJobManager::testCanRunjob() {
         }
         CPPUNIT_ASSERT_EQUAL(true, noMoreRun);
 
-        while (!JobManager::instance()->_managedJobs.empty()) {
+        while (!JobManager::instance()->_data._managedJobs.empty()) {
             Utility::msleep(100);
         }
     }
