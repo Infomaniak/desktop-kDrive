@@ -184,13 +184,9 @@ void SyncPalWorker::execute() {
                     (stepWorkers[1] && workersExitCode[1] == ExitCode::SystemError)) {
                     const auto exitCause = stepWorkers[0] ? stepWorkers[0]->exitCause() : stepWorkers[1]->exitCause();
                     if (exitCause == ExitCause::NotEnoughDiskSpace || exitCause == ExitCause::FileAccessError ||
-                        exitCause == ExitCause::SyncDirAccesError) {
+                        exitCause == ExitCause::SyncDirAccesError || exitCause == ExitCause::SyncDirDoesntExist) {
                         // Exit without error
                         exitCode = ExitCode::Ok;
-                        break;
-                    }
-                    if (exitCause == ExitCause::SyncDirDoesntExist) {
-                        exitCode = ExitCode::SystemError;
                         break;
                     }
                 }

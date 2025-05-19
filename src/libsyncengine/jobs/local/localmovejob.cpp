@@ -75,7 +75,7 @@ bool LocalMoveJob::canRun() {
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_source));
-        _exitInfo = {ExitCode::DataError, ExitCause::InvalidDestination};
+        _exitInfo = {ExitCode::DataError, ExitCause::NotFound};
         return false;
     }
 
