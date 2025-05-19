@@ -25,12 +25,11 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
-testers=$(find . -type f -name "kDrive_test_*")
+testers=$(find . -type f -name "kDrive_test_syncengine*")
 errors=0
 failures=()
 
-#for tester in ${testers[@]}; do
-tester = "kDrive_test_syncengine"
+for tester in ${testers[@]}; do
     echo -e "${YELLOW}---------- Running $(basename $tester) ----------${NC}"
     chmod +x $tester
     pushd $(dirname "$tester") 1>/dev/null
@@ -44,7 +43,7 @@ tester = "kDrive_test_syncengine"
         echo -e "${GREEN}---------- Success: $(basename $tester) ----------${NC}";
     fi
     popd 1>/dev/null
-#done
+done
 
 if [ $errors -eq 0 ]; then
     echo -e "${GREEN}Success: All Tests passed !${NC}"
