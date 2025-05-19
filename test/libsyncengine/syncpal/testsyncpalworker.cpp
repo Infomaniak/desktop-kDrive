@@ -22,6 +22,7 @@
 #include "libcommonserver/network/proxy.h"
 #include "libsyncengine/jobs/network/API_v2/movejob.h"
 #include "mocks/libcommonserver/db/mockdb.h"
+#include "jobs/jobmanager.h"
 
 #include "test_utility/testhelpers.h"
 #include "test_utility/timeouthelper.h"
@@ -93,6 +94,9 @@ void TestSyncPalWorker::tearDown() {
             thread->join();
         }
     }
+    JobManager::stop();
+    JobManager::clear();
+    JobManager::reset();
 }
 
 void TestSyncPalWorker::setUpTestInternalPause(const std::chrono::steady_clock::duration& longPollDuration) {
@@ -235,7 +239,7 @@ void TestSyncPalWorker::testInternalPause2() {
 
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the re-pause because the network is still down
-            [&syncpalWorker]() { return syncpalWorker->pauseAsked(); },
+            [&syncpalWorker]() { return syncpalWorker->pauseAsked() || syncpalWorker->isPaused(); },
             [&syncpalWorker, this]() {
                 CPPUNIT_ASSERT_EQUAL(SyncStep::Reconciliation1, syncpalWorker->step());
                 CPPUNIT_ASSERT_EQUAL(SyncStatus::Running, _syncPal->status());
@@ -392,19 +396,13 @@ ExitCode TestSyncPalWorker::MockRemoteFileSystemObserverWorker::sendLongPoll(boo
 }
 
 ExitCode TestSyncPalWorker::MockRemoteFileSystemObserverWorker::generateInitialSnapshot() {
-    _liveSnapshot.init();
-    _updating = true;
-
     if (_networkAvailable) {
-        _liveSnapshot.setValid(true);
-        _updating = false;
-        return ExitCode::Ok;
+        return RemoteFileSystemObserverWorker::generateInitialSnapshot();
     } else {
+        _liveSnapshot.init();
         invalidateSnapshot();
         _updating = false;
         return ExitCode::NetworkError;
     }
 }
-
-
 } // namespace KDC
