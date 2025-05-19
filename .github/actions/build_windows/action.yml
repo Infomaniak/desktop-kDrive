@@ -11,7 +11,6 @@ outputs:
     description: "Random number"
     value: ${{ steps.random-number-generator.outputs.random-number }}
 
-jobs:
 runs:
     using: "composite"
     steps:
@@ -26,6 +25,7 @@ runs:
 
       - name: Restore extension packages
         run : nuget restore extensions/windows/cfapi/kDriveExt.sln
+        shell: pwsh
 
       - name: Import Windows virtual certificate
         env:
@@ -37,6 +37,7 @@ runs:
           certutil -decode certificate/tempCert.txt certificate/certificate.pfx
           Remove-Item -path certificate -include tempCert.txt
           Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $env:WINDOWS_VIRTUAL_CERT_PASSWORD -Force -AsPlainText)
+        shell: pwsh
 
       - name: Build kDrive desktop
         id: build
@@ -126,4 +127,5 @@ runs:
 
       - name: Clean-up generated code
         run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all
+        shell: pwsh
         
