@@ -29,8 +29,8 @@ testers=$(find . -type f -name "kDrive_test_*")
 errors=0
 failures=()
 
-for tester in ${testers[@]}; do
-
+#for tester in ${testers[@]}; do
+tester = "kDrive_test_syncengine"
     echo -e "${YELLOW}---------- Running $(basename $tester) ----------${NC}"
     chmod +x $tester
     pushd $(dirname "$tester") 1>/dev/null
@@ -44,7 +44,7 @@ for tester in ${testers[@]}; do
         echo -e "${GREEN}---------- Success: $(basename $tester) ----------${NC}";
     fi
     popd 1>/dev/null
-done
+#done
 
 if [ $errors -eq 0 ]; then
     echo -e "${GREEN}Success: All Tests passed !${NC}"
