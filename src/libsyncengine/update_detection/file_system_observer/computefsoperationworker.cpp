@@ -134,17 +134,11 @@ ExitCode ComputeFSOperationWorker::updateSyncNode(SyncNodeType syncNodeType) {
         return exitCode;
     }
 
-    auto nodeIdIt = nodeIdSet.begin();
-    while (nodeIdIt != nodeIdSet.end()) {
-        const bool ok = syncNodeType == SyncNodeType::TmpLocalBlacklist
-                                ? _syncPal->snapshot(ReplicaSide::Local)->exists(*nodeIdIt)
-                                : _syncPal->snapshot(ReplicaSide::Remote)->exists(*nodeIdIt);
-        if (!ok) {
-            nodeIdIt = nodeIdSet.erase(nodeIdIt);
-        } else {
-            nodeIdIt++;
-        }
-    }
+    std::erase_if(nodeIdSet, [this, &syncNodeType](auto &item) {
+        const bool ok = syncNodeType == SyncNodeType::TmpLocalBlacklist ? _syncPal->snapshot(ReplicaSide::Local)->exists(item)
+                                                                        : _syncPal->snapshot(ReplicaSide::Remote)->exists(item);
+        return !ok;
+    });
 
     exitCode = SyncNodeCache::instance()->update(syncDbId(), syncNodeType, nodeIdSet);
     if (exitCode != ExitCode::Ok) {
@@ -158,7 +152,7 @@ ExitCode ComputeFSOperationWorker::updateSyncNode(SyncNodeType syncNodeType) {
 ExitCode ComputeFSOperationWorker::updateSyncNode() {
     for (int syncNodeTypeIdx = toInt(SyncNodeType::WhiteList); syncNodeTypeIdx <= toInt(SyncNodeType::UndecidedList);
          syncNodeTypeIdx++) {
-        SyncNodeType syncNodeType = static_cast<SyncNodeType>(syncNodeTypeIdx);
+        auto syncNodeType = static_cast<SyncNodeType>(syncNodeTypeIdx);
 
         ExitCode exitCode = updateSyncNode(syncNodeType);
         if (exitCode != ExitCode::Ok) {

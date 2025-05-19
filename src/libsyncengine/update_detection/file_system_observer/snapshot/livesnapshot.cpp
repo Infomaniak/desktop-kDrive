@@ -29,7 +29,7 @@
 
 namespace KDC {
 
-LiveSnapshot::LiveSnapshot(ReplicaSide side, const DbNode &dbNode) :
+LiveSnapshot::LiveSnapshot(const ReplicaSide side, const DbNode &dbNode) :
     Snapshot(side, side == ReplicaSide::Local ? dbNode.nodeIdLocal().value() : dbNode.nodeIdRemote().value()) {
     _revisionHandlder = std::make_shared<SnapshotRevisionHandler>();
     _items.try_emplace(rootFolderId(), std::make_shared<SnapshotItem>(rootFolderId()))
@@ -71,7 +71,7 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem) {
                                      << L") already exists in parent: " << Utility::s2ws(newItem.parentId())
                                      << L" with a different id. Removing it and adding the new one.");
                 auto child2 = child; // removeItem cannot be called on a const ref, we need to make a copy.
-                removeItem(child2);
+                if (!removeItem(child2)) return false;
                 break; // There should be (at most) only one item with the same name in a folder
             }
         }
@@ -179,7 +179,7 @@ bool LiveSnapshot::path(const NodeId &itemId, SyncPath &path, bool &ignore) cons
         const std::scoped_lock lock(_mutex);
         while (!parentIsRoot) {
             if (const auto item = findItem(id); item) {
-                ancestors.push_back({item->id(), item->name()});
+                ancestors.emplace_back(item->id(), item->name());
                 id = item->parentId();
                 parentIsRoot = id == rootFolderId();
                 continue;
@@ -220,7 +220,7 @@ bool LiveSnapshot::setName(const NodeId &itemId, const SyncName &newName) {
     return false;
 }
 
-bool LiveSnapshot::setCreatedAt(const NodeId &itemId, SyncTime newTime) {
+bool LiveSnapshot::setCreatedAt(const NodeId &itemId, const SyncTime newTime) {
     const std::scoped_lock lock(_mutex);
     if (const auto item = findItem(itemId); item) {
         item->setCreatedAt(newTime);
@@ -232,7 +232,7 @@ bool LiveSnapshot::setCreatedAt(const NodeId &itemId, SyncTime newTime) {
     return false;
 }
 
-bool LiveSnapshot::setLastModified(const NodeId &itemId, SyncTime newTime) {
+bool LiveSnapshot::setLastModified(const NodeId &itemId, const SyncTime newTime) {
     const std::scoped_lock lock(_mutex);
     if (const auto it = _items.find(itemId); it != _items.end()) {
         it->second->setLastModified(newTime);
@@ -266,7 +266,7 @@ bool LiveSnapshot::isValid() const {
     return _isValid;
 }
 
-void LiveSnapshot::setValid(bool newIsValid) {
+void LiveSnapshot::setValid(const bool newIsValid) {
     const std::scoped_lock lock(_mutex);
     _isValid = newIsValid;
 }
