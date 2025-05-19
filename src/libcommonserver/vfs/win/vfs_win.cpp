@@ -36,7 +36,8 @@
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
-VfsWin::VfsWin(const VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {
+VfsWin::VfsWin(const VfsSetupParams &vfsSetupParams, QObject *parent) :
+    Vfs(vfsSetupParams, parent) {
     // Initialize LiteSync ext connector
     LOG_INFO(logger(), "Initialize LiteSyncExtConnector");
     TraceCbk debugCallback = std::bind(&VfsWin::debugCbk, this, std::placeholders::_1, std::placeholders::_2);

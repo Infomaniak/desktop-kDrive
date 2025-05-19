@@ -130,7 +130,9 @@ void Theme::updateIconWithText(QIcon &icon, QString text) const {
     }
 }
 
-Theme::Theme() : QObject(0), _mono(false) {}
+Theme::Theme() :
+    QObject(0),
+    _mono(false) {}
 
 QString Theme::helpUrl() const {
 #ifdef APPLICATION_HELP_URL

@@ -24,7 +24,10 @@ namespace KDC {
 class WidgetSignalBlocker {
     public:
         WidgetSignalBlocker(WidgetSignalBlocker &) = delete;
-        explicit WidgetSignalBlocker(QWidget *w) : _widget(w) { _widget->blockSignals(true); }
+        explicit WidgetSignalBlocker(QWidget *w) :
+            _widget(w) {
+            _widget->blockSignals(true);
+        }
         ~WidgetSignalBlocker() { _widget->blockSignals(false); }
 
         WidgetSignalBlocker &operator=(WidgetSignalBlocker &) = delete;

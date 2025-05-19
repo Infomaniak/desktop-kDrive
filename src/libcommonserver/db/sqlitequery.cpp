@@ -33,9 +33,12 @@
 
 namespace KDC {
 
-SqliteQuery::SqliteQuery() : _logger(Log::instance()->getLogger()) {}
+SqliteQuery::SqliteQuery() :
+    _logger(Log::instance()->getLogger()) {}
 
-SqliteQuery::SqliteQuery(std::shared_ptr<sqlite3> sqlite3Db) : _logger(Log::instance()->getLogger()), _sqlite3Db(sqlite3Db) {}
+SqliteQuery::SqliteQuery(std::shared_ptr<sqlite3> sqlite3Db) :
+    _logger(Log::instance()->getLogger()),
+    _sqlite3Db(sqlite3Db) {}
 
 int SqliteQuery::prepare(const std::string &sql, bool allow_failure) {
     _sql = Utility::trim(sql);

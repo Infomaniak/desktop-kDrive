@@ -32,7 +32,8 @@ const std::string scopeKey = "scope";
 
 ApiToken::ApiToken() {}
 
-ApiToken::ApiToken(const std::string &data) : _rawData(data) {
+ApiToken::ApiToken(const std::string &data) :
+    _rawData(data) {
     Poco::JSON::Parser parser;
     Poco::Dynamic::Var res;
     try {

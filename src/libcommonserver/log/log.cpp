@@ -91,7 +91,9 @@ bool Log::configure(bool useLog, LogLevel logLevel, bool purgeOldLogs) {
     return true;
 }
 
-Log::Log(const log4cplus::tstring &filePath) : _logger(log4cplus::Logger::getInstance(Log::instanceName)), _filePath(filePath) {
+Log::Log(const log4cplus::tstring &filePath) :
+    _logger(log4cplus::Logger::getInstance(Log::instanceName)),
+    _filePath(filePath) {
     // Instantiate an appender object
     CustomRollingFileAppender *rfAppender =
             new CustomRollingFileAppender(filePath, CommonUtility::logMaxSize, Log::rfMaxBackupIdx, true, true);
