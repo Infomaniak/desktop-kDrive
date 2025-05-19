@@ -40,7 +40,7 @@ class SYNCENGINE_EXPORT SyncNodeCache {
         ExitCode syncNodes(int syncDbId, SyncNodeType type, NodeSet &syncNodes);
         ExitCode update(int syncDbId, SyncNodeType type, const NodeSet &syncNodes);
         ExitCode initCache(int syncDbId, std::shared_ptr<SyncDb> syncDb);
-        ExitCode clearCache(int syncDbId);
+        ExitCode clear(int syncDbId);
 
     private:
         static std::shared_ptr<SyncNodeCache> _instance;

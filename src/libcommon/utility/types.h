@@ -41,18 +41,10 @@
 
 namespace KDC {
 
-struct StringHash {
-        using is_transparent = void; // Enables heterogeneous operations.
-
-        std::size_t operator()(std::string_view sv) const {
-            std::hash<std::string_view> hasher;
-            return hasher(sv);
-        }
-};
-
 using SyncTime = int64_t;
 using DbNodeId = int64_t;
 using UniqueId = int64_t;
+using SyncDbRevision = uint64_t;
 using SnapshotRevision = uint64_t;
 using NodeId = std::string;
 using SyncPath = std::filesystem::path;
@@ -60,13 +52,25 @@ using SyncName = std::filesystem::path::string_type;
 using SyncChar = std::filesystem::path::value_type;
 using DirectoryEntry = std::filesystem::directory_entry;
 using DirectoryOptions = std::filesystem::directory_options;
-using NodeSet = std::unordered_set<NodeId, StringHash, std::equal_to<>>;
+using SecondsDuration = std::chrono::duration<double>; // Use double instead of std::chrono::seconds to keep the precision
 
-using SigValueType = std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring>;
+// Hash functions
+struct StringHashFunction {
+        using is_transparent = void; // Enables heterogeneous operations.
 
-struct hashPathFunction {
+        std::size_t operator()(const std::string_view sv) const {
+            constexpr std::hash<std::string_view> hasher;
+            return hasher(sv);
+        }
+};
+
+struct PathHashFunction {
         std::size_t operator()(const std::optional<SyncPath> &path) const { return path ? hash_value(path.value()) : 0; }
 };
+
+using NodeSet = std::unordered_set<NodeId, StringHashFunction, std::equal_to<>>;
+
+using SigValueType = std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring>;
 
 #ifdef _WIN32
 using StringStream = std::wstringstream;
@@ -155,10 +159,19 @@ inline constexpr C fromInt(int e) {
     return static_cast<C>(e);
 }
 
-enum class AppType { None, Server, Client, EnumEnd };
+enum class AppType {
+    None,
+    Server,
+    Client,
+    EnumEnd
+};
 std::string toString(AppType e);
 
-enum class SignalCategory { Kill, Crash, EnumEnd };
+enum class SignalCategory {
+    Kill,
+    Crash,
+    EnumEnd
+};
 std::string toString(SignalCategory e);
 
 enum class SignalType {
@@ -176,7 +189,12 @@ enum class SignalType {
 std::string toString(SignalType e);
 
 using ExecuteCommand = std::function<void(const char *)>;
-enum class ReplicaSide { Unknown, Local, Remote, EnumEnd };
+enum class ReplicaSide {
+    Unknown,
+    Local,
+    Remote,
+    EnumEnd
+};
 std::string toString(ReplicaSide e);
 
 inline ReplicaSide otherSide(const ReplicaSide side) {
@@ -281,10 +299,13 @@ struct ExitInfo {
         ExitInfo() = default;
         constexpr ExitInfo(const ExitCode &code, const ExitCause &cause,
                            const SourceLocation srcLoc = SourceLocation::currentLoc()) :
-            _code(code), _cause(cause), _srcLoc(srcLoc) {}
+            _code(code),
+            _cause(cause),
+            _srcLoc(srcLoc) {}
 
         ExitInfo(const ExitCode &code, const SourceLocation srcLoc = SourceLocation::currentLoc()) :
-            _code(code), _srcLoc(srcLoc) {}
+            _code(code),
+            _srcLoc(srcLoc) {}
 
         const ExitCode &code() const { return _code; }
         const ExitCause &cause() const { return _cause; }
@@ -382,13 +403,36 @@ enum class CancelType {
 };
 std::string toString(CancelType e);
 
-enum class NodeStatus { Unknown = 0, Unprocessed, PartiallyProcessed, Processed, ConflictOpGenerated, EnumEnd };
+enum class NodeStatus {
+    Unknown = 0,
+    Unprocessed,
+    PartiallyProcessed,
+    Processed,
+    ConflictOpGenerated,
+    EnumEnd
+};
 std::string toString(NodeStatus e);
 
-enum class SyncStatus { Undefined, Starting, Running, Idle, PauseAsked, Paused, StopAsked, Stopped, Error, EnumEnd };
+enum class SyncStatus {
+    Undefined,
+    Starting,
+    Running,
+    Idle,
+    PauseAsked,
+    Paused,
+    StopAsked,
+    Stopped,
+    Error,
+    EnumEnd
+};
 std::string toString(SyncStatus e);
 
-enum class UploadSessionType { Unknown, Drive, Log, EnumEnd };
+enum class UploadSessionType {
+    Unknown,
+    Drive,
+    Log,
+    EnumEnd
+};
 std::string toString(UploadSessionType e);
 
 enum class SyncNodeType {
@@ -403,13 +447,37 @@ enum class SyncNodeType {
 };
 std::string toString(SyncNodeType e);
 
-enum class SyncDirection { Unknown = 0, Up, Down, EnumEnd };
+enum class SyncDirection {
+    Unknown = 0,
+    Up,
+    Down,
+    EnumEnd
+};
 std::string toString(SyncDirection e);
 
-enum class SyncFileStatus { Unknown = 0, Error, Success, Conflict, Inconsistency, Ignored, Syncing, EnumEnd };
+enum class SyncFileStatus {
+    Unknown = 0,
+    Error,
+    Success,
+    Conflict,
+    Inconsistency,
+    Ignored,
+    Syncing,
+    EnumEnd
+};
 std::string toString(SyncFileStatus e);
 
-enum class SyncFileInstruction { None = 0, Update, UpdateMetadata, Remove, Move, Get, Put, Ignore, EnumEnd };
+enum class SyncFileInstruction {
+    None = 0,
+    Update,
+    UpdateMetadata,
+    Remove,
+    Move,
+    Get,
+    Put,
+    Ignore,
+    EnumEnd
+};
 std::string toString(SyncFileInstruction e);
 
 enum class SyncStep {
@@ -428,25 +496,69 @@ enum class SyncStep {
 };
 std::string toString(SyncStep e);
 
-enum class ActionType { Stop = 0, Start, EnumEnd };
+enum class ActionType {
+    Stop = 0,
+    Start,
+    EnumEnd
+};
 std::string toString(ActionType e);
 
-enum class ActionTarget { Drive = 0, Sync, AllDrives, EnumEnd };
+enum class ActionTarget {
+    Drive = 0,
+    Sync,
+    AllDrives,
+    EnumEnd
+};
 std::string toString(ActionTarget e);
 
-enum class ErrorLevel { Unknown = 0, Server, SyncPal, Node, EnumEnd };
+enum class ErrorLevel {
+    Unknown = 0,
+    Server,
+    SyncPal,
+    Node,
+    EnumEnd
+};
 std::string toString(ErrorLevel e);
 
-enum class Language { Default = 0, English, French, German, Spanish, Italian, EnumEnd };
+enum class Language {
+    Default = 0,
+    English,
+    French,
+    German,
+    Spanish,
+    Italian,
+    EnumEnd
+};
 std::string toString(Language e);
 
-enum class LogLevel { Debug = 0, Info, Warning, Error, Fatal, EnumEnd };
+enum class LogLevel {
+    Debug = 0,
+    Info,
+    Warning,
+    Error,
+    Fatal,
+    EnumEnd
+};
 std::string toString(LogLevel e);
 
-enum class NotificationsDisabled { Never, OneHour, UntilTomorrow, TreeDays, OneWeek, Always, EnumEnd };
+enum class NotificationsDisabled {
+    Never,
+    OneHour,
+    UntilTomorrow,
+    TreeDays,
+    OneWeek,
+    Always,
+    EnumEnd
+};
 std::string toString(NotificationsDisabled e);
 
-enum class VirtualFileMode { Off, Win, Mac, Suffix, EnumEnd };
+enum class VirtualFileMode {
+    Off,
+    Win,
+    Mac,
+    Suffix,
+    EnumEnd
+};
 std::string toString(VirtualFileMode e);
 
 enum class PinState {
@@ -470,10 +582,22 @@ enum class ProxyType {
 };
 std::string toString(ProxyType e);
 
-enum class ExclusionTemplateComplexity { Simplest = 0, Simple, Complex, EnumEnd };
+enum class ExclusionTemplateComplexity {
+    Simplest = 0,
+    Simple,
+    Complex,
+    EnumEnd
+};
 std::string toString(ExclusionTemplateComplexity e);
 
-enum class LinkType { None = 0, Symlink, Hardlink, FinderAlias, Junction, EnumEnd };
+enum class LinkType {
+    None = 0,
+    Symlink,
+    Hardlink,
+    FinderAlias,
+    Junction,
+    EnumEnd
+};
 std::string toString(LinkType e);
 
 enum class IoError {
@@ -508,6 +632,10 @@ struct ItemType {
         // - the file or directory indicated by `path` is a symlink or an alias (in which case `linkType` is different from
         // `LinkType::Unknown`) and its target doesn't exist.
         IoError ioError{IoError::Success};
+        bool operator==(const ItemType &other) const {
+            return nodeType == other.nodeType && linkType == other.linkType && targetType == other.targetType &&
+                   targetPath == other.targetPath && ioError == other.ioError;
+        }
 };
 
 enum class AppStateKey {
@@ -528,7 +656,16 @@ std::string toString(AppStateKey e);
 static constexpr int64_t selfRestarterDisableValue = -1;
 static constexpr int64_t selfRestarterNoCrashDetected = 0;
 
-enum class LogUploadState { None, Archiving, Uploading, Success, Failed, CancelRequested, Canceled, EnumEnd };
+enum class LogUploadState {
+    None,
+    Archiving,
+    Uploading,
+    Success,
+    Failed,
+    CancelRequested,
+    Canceled,
+    EnumEnd
+};
 std::string toString(LogUploadState e);
 enum class UpdateState {
     UpToDate,
@@ -545,10 +682,26 @@ enum class UpdateState {
 };
 std::string toString(UpdateState e);
 
-enum class VersionChannel { Prod, Next, Beta, Internal, Legacy, Unknown, EnumEnd };
+enum class VersionChannel {
+    Prod,
+    Next,
+    Beta,
+    Internal,
+    Legacy,
+    Unknown,
+    EnumEnd
+};
 std::string toString(VersionChannel e);
 
-enum class Platform { MacOS, Windows, WindowsServer, LinuxAMD, LinuxARM, Unknown, EnumEnd };
+enum class Platform {
+    MacOS,
+    Windows,
+    WindowsServer,
+    LinuxAMD,
+    LinuxARM,
+    Unknown,
+    EnumEnd
+};
 std::string toString(Platform e);
 
 struct VersionInfo {
@@ -624,6 +777,19 @@ std::string toString(sentry::ConfidentialityLevel e);
 
 // Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
 using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
+
+struct NodeIds {
+        DbNodeId dbNodeId;
+        NodeId localNodeId;
+        NodeId remoteNodeId;
+        NodeId nodeId(const ReplicaSide side) const { return side == ReplicaSide::Local ? localNodeId : remoteNodeId; }
+        struct HashFunction {
+                std::size_t operator()(const NodeIds &nodeIds) const { return std::hash<DbNodeId>()(nodeIds.dbNodeId); }
+        };
+        bool operator==(const NodeIds &other) const {
+            return dbNodeId == other.dbNodeId && localNodeId == other.localNodeId && remoteNodeId == other.remoteNodeId;
+        }
+};
 
 /*
  * Define operator and converter for enum class

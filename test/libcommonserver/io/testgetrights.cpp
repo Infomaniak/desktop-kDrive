@@ -42,7 +42,8 @@ void TestIo::testGetRights() {
         bool writePermission = false;
         bool execPermission = false;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
         CPPUNIT_ASSERT(execPermission == true);
@@ -65,7 +66,8 @@ void TestIo::testGetRights() {
         bool writePermission = false;
         bool execPermission = false;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
         CPPUNIT_ASSERT(execPermission == true);
@@ -89,7 +91,8 @@ void TestIo::testGetRights() {
         bool writePermission = false;
         bool execPermission = false;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
         CPPUNIT_ASSERT(execPermission == true);
@@ -112,7 +115,8 @@ void TestIo::testGetRights() {
         bool writePermission = false;
         bool execPermission = false;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
         CPPUNIT_ASSERT(execPermission == true);
@@ -139,7 +143,8 @@ void TestIo::testGetRights() {
         bool writePermission = false;
         bool execPermission = false;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
         CPPUNIT_ASSERT(execPermission == false);
@@ -166,7 +171,8 @@ void TestIo::testGetRights() {
         bool writePermission = false;
         bool execPermission = false;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
         CPPUNIT_ASSERT(execPermission == false);
@@ -191,7 +197,8 @@ void TestIo::testGetRights() {
         bool writePermission = false;
         bool execPermission = false;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
         CPPUNIT_ASSERT(execPermission == false);
@@ -218,7 +225,8 @@ void TestIo::testGetRights() {
         bool writePermission = false;
         bool execPermission = false;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
         CPPUNIT_ASSERT(execPermission == false);
@@ -243,7 +251,8 @@ void TestIo::testGetRights() {
         bool writePermission = false;
         bool execPermission = false;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
         CPPUNIT_ASSERT(execPermission == true);
@@ -267,7 +276,8 @@ void TestIo::testGetRights() {
         bool writePermission = false;
         bool execPermission = false;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
         CPPUNIT_ASSERT(execPermission == true);

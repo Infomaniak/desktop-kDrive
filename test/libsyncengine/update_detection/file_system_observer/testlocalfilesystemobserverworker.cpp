@@ -73,7 +73,6 @@ void TestLocalFileSystemObserverWorker::setUp() {
 
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
-    ParametersCache::instance()->parameters().setSyncHiddenFiles(true);
 
     bool constraintError = false;
     ParmsDb::instance()->insertExclusionTemplate(
@@ -247,8 +246,9 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
     }
 
     LOGW_DEBUG(_logger, L"***** test create file with NFC-encoded name *****");
+    SnapshotRevision previousRevision = _syncPal->snapshot(ReplicaSide::Local)->revision();
     generateOrEditTestFile(_rootFolderPath / makeNfcSyncName());
-    slowObserver->waitForUpdate();
+    slowObserver->waitForUpdate(previousRevision);
 
     FileStat fileStat;
     bool exists = false;
@@ -258,8 +258,9 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(nfcNamedItemId));
 
     LOGW_DEBUG(_logger, L"***** test create file with NFD-encoded name *****");
+    previousRevision = _syncPal->snapshot(ReplicaSide::Local)->revision();
     generateOrEditTestFile(_rootFolderPath / makeNfdSyncName()); // Should replace the NFC item in the snapshot.
-    slowObserver->waitForUpdate();
+    slowObserver->waitForUpdate(previousRevision);
 
     IoHelper::getFileStat(_rootFolderPath / makeNfdSyncName(), &fileStat, exists);
     const NodeId nfdNamedItemId = std::to_string(fileStat.inode);
@@ -454,19 +455,25 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
     }
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(_testFiles[0].first));
 
+    SnapshotRevision previousRevision = _syncPal->snapshot(ReplicaSide::Local)->revision();
     auto ioError = IoError::Unknown;
     const SyncPath destinationPath = _testFiles[0].second.parent_path() / (_testFiles[0].second.filename().string() + "2");
-    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::renameItem(_testFiles[0].second, destinationPath, ioError)); // test0.txt -> test0.txt2
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                           IoHelper::renameItem(_testFiles[0].second, destinationPath, ioError)); // test0.txt -> test0.txt2
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::deleteItem(destinationPath, ioError)); // Delete test0.txt2 (before the previous rename is processed)
+    CPPUNIT_ASSERT_MESSAGE(
+            toString(ioError),
+            IoHelper::deleteItem(destinationPath, ioError)); // Delete test0.txt2 (before the previous rename is processed)
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::renameItem(_testFiles[1].second, _testFiles[0].second,
-                                        ioError)); // test1.txt -> test0.txt (before the previous rename and delete is processed)
+    CPPUNIT_ASSERT_MESSAGE(
+            toString(ioError),
+            IoHelper::renameItem(_testFiles[1].second, _testFiles[0].second,
+                                 ioError)); // test1.txt -> test0.txt (before the previous rename and delete is processed)
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     LOG_DEBUG(_logger, "Operations finished")
 
-    slowObserver->waitForUpdate();
+    slowObserver->waitForUpdate(previousRevision);
 
     FileStat fileStat;
     CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getFileStat(_testFiles[0].second, &fileStat, ioError));
@@ -506,6 +513,8 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingCh
     // Create an NFC encoded file.
     SyncPath tmpDirPath = _testFiles[0].second.parent_path();
     SyncPath nfcFilePath = tmpDirPath / makeNfcSyncName();
+
+    SnapshotRevision previousRevision = _syncPal->snapshot(ReplicaSide::Local)->revision();
     generateOrEditTestFile(nfcFilePath);
     IoHelper::getFileStat(nfcFilePath, &fileStat, exists);
     NodeId nfcFileId = std::to_string(fileStat.inode);
@@ -513,21 +522,27 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingCh
     // Prepare the path of the NFD encoded file.
     SyncPath nfdFilePath = tmpDirPath / makeNfdSyncName();
 
-    slowObserver->waitForUpdate();
+    slowObserver->waitForUpdate(previousRevision);
 
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(nfcFileId));
+
+    previousRevision = _syncPal->snapshot(ReplicaSide::Local)->revision();
 
     auto ioError = IoError::Unknown;
     SyncPath destinationPath = tmpDirPath / (nfcFilePath.filename().string() + "2");
     CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::renameItem(nfcFilePath, destinationPath, ioError)); // nfcFile -> nfcFile2
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::deleteItem(destinationPath, ioError)); // Delete nfcFile2 (before the previous rename is processed)
+    CPPUNIT_ASSERT_MESSAGE(
+            toString(ioError),
+            IoHelper::deleteItem(destinationPath, ioError)); // Delete nfcFile2 (before the previous rename is processed)
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::renameItem(_testFiles[1].second, nfdFilePath,
-                                        ioError)); // test1.txt -> nfdFile (before the previous rename and delete is processed)
+    CPPUNIT_ASSERT_MESSAGE(
+            toString(ioError),
+            IoHelper::renameItem(_testFiles[1].second, nfdFilePath,
+                                 ioError)); // test1.txt -> nfdFile (before the previous rename and delete is processed)
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-    slowObserver->waitForUpdate();
+    slowObserver->waitForUpdate(previousRevision);
 
     CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getFileStat(nfdFilePath, &fileStat, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
@@ -562,17 +577,18 @@ void TestLocalFileSystemObserverWorker::testInvalidateCounter() {
     CPPUNIT_ASSERT_EQUAL(false, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot has been invalidated.
 }
 
-void MockLocalFileSystemObserverWorker::waitForUpdate(const long long timeoutMs) const {
+void MockLocalFileSystemObserverWorker::waitForUpdate(SnapshotRevision previousRevision,
+                                                      const std::chrono::milliseconds timeoutMs) const {
     using namespace std::chrono;
     const auto start = system_clock::now();
-    while (!_updating && duration_cast<milliseconds>(system_clock::now() - start).count() < timeoutMs) {
+    while (previousRevision == snapshot()->revision() && duration_cast<milliseconds>(system_clock::now() - start) < timeoutMs) {
         Utility::msleep(10);
     }
-    CPPUNIT_ASSERT_LESS(timeoutMs, static_cast<long long>(duration_cast<milliseconds>(system_clock::now() - start).count()));
-    while (_updating && duration_cast<milliseconds>(system_clock::now() - start).count() < timeoutMs) {
+    CPPUNIT_ASSERT_LESS(timeoutMs.count(), duration_cast<milliseconds>(system_clock::now() - start).count());
+    while (_updating && duration_cast<milliseconds>(system_clock::now() - start) < timeoutMs) {
         Utility::msleep(10);
     }
-    CPPUNIT_ASSERT_LESS(timeoutMs, static_cast<long long>(duration_cast<milliseconds>(system_clock::now() - start).count()));
+    CPPUNIT_ASSERT_LESS(timeoutMs.count(), duration_cast<milliseconds>(system_clock::now() - start).count());
 }
 
 } // namespace KDC

@@ -29,30 +29,30 @@
 
 namespace KDC {
 
+static const SyncPath defaultInvalidPath = ":\0/:\0";   // Invalid path for increased safety
+static const NodeId defaultInvalidNodeId = "-1";   // Invalid node id for increased safety
+
 class Node {
     public:
         class MoveOriginInfos {
             public:
                 MoveOriginInfos() = default;
                 MoveOriginInfos(const MoveOriginInfos &) = default;
-                MoveOriginInfos(const SyncPath &path, const NodeId &parentNodeId) :
-                    _isValid(true), _path(path), _parentNodeId(parentNodeId) {}
+                MoveOriginInfos(const SyncPath &path, const NodeId &parentNodeId);
 
-                MoveOriginInfos &operator=(const MoveOriginInfos &newMoveOriginInfos) {
-                    LOG_IF_FAIL(Log::instance()->getLogger(), newMoveOriginInfos.isValid());
-                    _isValid = newMoveOriginInfos.isValid();
-                    _path = newMoveOriginInfos.path();
-                    _parentNodeId = newMoveOriginInfos.parentNodeId();
-                    return *this;
-                }
+                MoveOriginInfos &operator=(const MoveOriginInfos &newMoveOriginInfos);
                 const SyncPath &path() const;
+                const SyncPath &normalizedPath() const;
                 const NodeId &parentNodeId() const;
+
+                void clear();
 
             private:
                 bool isValid() const;
                 bool _isValid = false;
-                SyncPath _path = ":\0/:\0"; // Invalid path for increased safety
-                NodeId _parentNodeId = "-1"; // Invalid node id for increased safety
+                SyncPath _path = defaultInvalidPath;
+                SyncPath _normalizedPath = defaultInvalidPath;
+                NodeId _parentNodeId = defaultInvalidNodeId;
                 friend class Node;
                 friend class TestUpdateTreeWorker;
         };
@@ -91,6 +91,7 @@ class Node {
         inline std::optional<DbNodeId> idb() const { return _idb; }
         inline ReplicaSide side() const { return _side; }
         inline const SyncName &name() const { return _name; }
+        const SyncName &normalizedName();
         inline NodeType type() const { return _type; }
         inline InconsistencyType inconsistencyType() const { return _inconsistencyType; }
         inline OperationType changeEvents() const { return _changeEvents; }
@@ -108,7 +109,7 @@ class Node {
         }
 
         inline void setIdb(const std::optional<DbNodeId> &idb) { _idb = idb; }
-        void setName(const SyncName &name) { _name = name; }
+        void setName(const SyncName &name);
         inline void setInconsistencyType(InconsistencyType newInconsistencyType) { _inconsistencyType = newInconsistencyType; }
         inline void addInconsistencyType(InconsistencyType newInconsistencyType) { _inconsistencyType |= newInconsistencyType; }
         inline void setCreatedAt(const std::optional<SyncTime> &createdAt) { _createdAt = createdAt; }
@@ -117,6 +118,7 @@ class Node {
         inline void setPreviousId(const std::optional<NodeId> &previousNodeId) { _previousId = previousNodeId; }
         bool setParentNode(const std::shared_ptr<Node> &parentNode);
         inline void setMoveOriginInfos(const MoveOriginInfos &moveOriginInfos) { _moveOriginInfos = moveOriginInfos; }
+        inline void clearMoveOriginInfos() { _moveOriginInfos.clear(); }
         inline void setStatus(const NodeStatus &status) { _status = status; }
 
         inline std::unordered_map<NodeId, std::shared_ptr<Node>> &children() { return _childrenById; }
@@ -164,7 +166,8 @@ class Node {
 
         std::optional<DbNodeId> _idb = std::nullopt;
         ReplicaSide _side = ReplicaSide::Unknown;
-        SyncName _name; // This name is NFC-normalized by constructors and setters.
+        SyncName _name;
+        SyncName _normalizedName;
         InconsistencyType _inconsistencyType = InconsistencyType::None;
         NodeType _type = NodeType::Unknown;
         OperationType _changeEvents = OperationType::None;

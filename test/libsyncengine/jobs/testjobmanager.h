@@ -63,7 +63,7 @@ class TestJobManager : public CppUnit::TestFixture, public TestBase {
         void testWithCallbackBigFiles();
         void testCancelJobs();
         void testJobDependencies();
-        void testJobPriority(); // Test execution order of jobs with different priority. Jobs with higher piority must be
+        void testJobPriority(); // Test execution order of jobs with different priority. Jobs with higher priority must be
                                 // executed first.
         void testJobPriority2(); // Test execution order of jobs with same priority. Jobs created first must be executed first.
         void testJobPriority3(); // Test execution order of jobs. Jobs are created with priority alternating between Normal and
@@ -71,8 +71,6 @@ class TestJobManager : public CppUnit::TestFixture, public TestBase {
                                  // https://gitlab.infomaniak.ch/infomaniak/desktop-app/multi/kdrive/-/issues/320)
 
         void testReuseSocket();
-
-        void generateBigFiles(const SyncPath &dirPath, int size, int count);
 
     private:
         const testhelpers::TestVariables _testVariables;

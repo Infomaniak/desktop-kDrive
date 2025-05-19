@@ -95,7 +95,7 @@ class COMMONSERVER_EXPORT Db {
         log4cplus::Logger _logger;
         std::shared_ptr<SqliteDb> _sqliteDb;
         std::filesystem::path _dbPath;
-        std::mutex _mutex;
+        mutable std::recursive_mutex _mutex;
         int _transaction;
         std::string _journalMode;
         std::string _fromVersion;

@@ -20,6 +20,7 @@ set(testsyncengine_SRCS
         ../test_utility/testbase.h
         ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
         ../test_utility/remotetemporarydirectory.h ../test_utility/remotetemporarydirectory.cpp
+        ../test_utility/dataextractor.h ../test_utility/dataextractor.cpp
         # Mocks
         ../mocks/libsyncengine/vfs/mockvfs.h
         ../mocks/libsyncengine/jobs/network/API_v2/mockloguploadjob.h
@@ -67,6 +68,8 @@ set(testsyncengine_SRCS
         syncpal/testoperationprocessor.h syncpal/testoperationprocessor.cpp
         # Requests
         requests/testexclusiontemplatecache.h requests/testexclusiontemplatecache.cpp
+
+        benchmark/benchmarkparalleljobs.h benchmark/benchmarkparalleljobs.cpp
 )
 
 if (APPLE)

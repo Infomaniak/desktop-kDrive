@@ -447,6 +447,7 @@ bool DrivePreferencesWidget::switchVfsOn(int syncDbId) {
         return false;
     }
 
+#ifdef Q_OS_MAC
     // Setup Vfs extension (Mac)
     VirtualFileMode virtualFileMode;
     exitCode = GuiRequests::bestAvailableVfsMode(virtualFileMode);
@@ -455,7 +456,6 @@ bool DrivePreferencesWidget::switchVfsOn(int syncDbId) {
         return false;
     }
 
-#ifdef Q_OS_MAC
     if (virtualFileMode == VirtualFileMode::Mac) {
         // Check LiteSync ext authorizations
         std::string liteSyncExtErrorDescr;
@@ -1082,6 +1082,11 @@ void DrivePreferencesWidget::onUnsyncTriggered(int syncDbId) {
 
         // Disable GUI sync-related actions.
         folderBloc->setEnabledRecursively(false);
+
+        const auto &syncInfoMapIt = _gui->syncInfoMap().find(syncDbId);
+        if (syncInfoMapIt != _gui->syncInfoMap().end()) {
+            CommonGuiUtility::removeDirIcon(syncInfoMapIt->second.localPath());
+        }
 
         // Remove sync
         const ExitCode exitCode = GuiRequests::deleteSync(syncDbId);

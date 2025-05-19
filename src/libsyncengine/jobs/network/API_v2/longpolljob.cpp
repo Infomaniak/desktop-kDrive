@@ -18,6 +18,8 @@
 
 #include "longpolljob.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 #define API_TIMEOUT 50
 
 namespace KDC {

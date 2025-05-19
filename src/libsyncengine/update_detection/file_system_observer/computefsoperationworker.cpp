@@ -30,11 +30,13 @@ namespace KDC {
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                    const std::string &shortName) :
-    ISyncWorker(syncPal, name, shortName), _syncDb(syncPal->syncDb()) {}
+    ISyncWorker(syncPal, name, shortName),
+    _syncDbReadOnlyCache(syncPal->syncDb()->cache()) {}
 
-ComputeFSOperationWorker::ComputeFSOperationWorker(const std::shared_ptr<SyncDb> testSyncDb, const std::string &name,
+ComputeFSOperationWorker::ComputeFSOperationWorker(SyncDbReadOnlyCache &testSyncDbReadOnlyCache, const std::string &name,
                                                    const std::string &shortName) :
-    ISyncWorker(nullptr, name, shortName, std::chrono::seconds(0), true), _syncDb(testSyncDb) {}
+    ISyncWorker(nullptr, name, shortName, std::chrono::seconds(0), true),
+    _syncDbReadOnlyCache(testSyncDbReadOnlyCache) {}
 
 void ComputeFSOperationWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
@@ -106,7 +108,7 @@ void ComputeFSOperationWorker::execute() {
         /* If the current snapshot state does not reveal any operation, we store the current revision number.
          * On the next call to compute filesystem operations, only items from the snapshot that were modified in a higher revision
          * will be processed.
-         * It is important not to update the CFSO's lastSyncedRevision if an operation is detected, otherwise, we may fail to 
+         * It is important not to update the CFSO's lastSyncedRevision if an operation is detected, otherwise, we may fail to
          * detect it again if, for any reason, the propagation of the change fails.
          */
 
@@ -143,7 +145,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
 
     NodeId parentNodeid;
     bool parentNodeIsFoundInDb = false;
-    if (!_syncDb->parent(side, nodeId, parentNodeid, parentNodeIsFoundInDb)) {
+    if (!_syncDbReadOnlyCache.parent(side, nodeId, parentNodeid, parentNodeIsFoundInDb)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::parent");
         setExitCause(ExitCause::DbAccessError);
         return ExitCode::DbError;
@@ -225,18 +227,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         }
 
         if (checkTemplate) {
-            IoError ioError = IoError::Success;
-            bool warn = false;
-            bool isExcluded = false;
-            if (!ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), dbPath, warn, isExcluded,
-                                                                       ioError) ||
-                ioError == IoError::AccessDenied) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
-                                                   << Utility::formatIoError(dbPath, ioError));
-                return ExitCode::SystemError;
-            }
-
-            if (isExcluded) {
+            if (ExclusionTemplateCache::instance()->isExcluded(dbPath)) {
                 // The item is excluded
                 return ExitCode::Ok;
             }
@@ -338,7 +329,7 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
         DbNode dbNode;
         bool dbNodeIsFound = false;
         const auto dbNodeIds = *nodesIdsIt;
-        if (!_syncDb->node(nodesIdsIt->dbNodeId, dbNode, dbNodeIsFound)) {
+        if (!_syncDbReadOnlyCache.node(nodesIdsIt->dbNodeId, dbNode, dbNodeIsFound)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
             setExitCause(ExitCause::DbAccessError);
             return ExitCode::DbError;
@@ -362,7 +353,7 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
         SyncPath localDbPath;
         SyncPath remoteDbPath;
         bool dbPathsAreFound = false;
-        if (!_syncDb->path(dbNodeIds.dbNodeId, localDbPath, remoteDbPath, dbPathsAreFound)) {
+        if (!_syncDbReadOnlyCache.path(dbNodeIds.dbNodeId, localDbPath, remoteDbPath, dbPathsAreFound)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
             setExitCause(ExitCause::DbAccessError);
             return ExitCode::DbError;
@@ -400,7 +391,7 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
 ExitCode ComputeFSOperationWorker::inferChangesFromDb(NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet) {
     bool dbIdsArefound = false;
     NodeIdsSet remainingNodesIds;
-    if (!_syncDb->ids(remainingNodesIds, dbIdsArefound)) {
+    if (!_syncDbReadOnlyCache.ids(remainingNodesIds, dbIdsArefound)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::ids");
         setExitCause(ExitCause::DbAccessError);
         return ExitCode::DbError;
@@ -493,39 +484,6 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const N
             const int64_t snapshotSize = snapshot->size(nodeId);
             if (isExcludedFromSync(snapshot, side, nodeId, snapshotPath, type, snapshotSize)) {
                 continue;
-            }
-
-            if (side == ReplicaSide::Local) {
-                // Check if a local file is hidden, hence excluded.
-                bool isExcluded = false;
-                IoError ioError = IoError::Success;
-                const bool success = ExclusionTemplateCache::instance()->checkIfIsExcludedBecauseHidden(
-                        _syncPal->localPath(), snapshotPath, isExcluded, ioError);
-                if (!success || ioError != IoError::Success || isExcluded) {
-                    if (_testing && ioError == IoError::NoSuchFileOrDirectory) {
-                        // Files does exist in test, this fine, ignore ioError.
-                    } else {
-                        continue;
-                    }
-                }
-
-                // TODO : this portion of code aimed to wait for a file to be available locally before starting to synchronize it
-                // For example, on Windows, when copying a big file inside the sync folder, the creation event is received
-                // immediately but the copy will take some time. Therefor, the file will appear locked during the copy.
-                // However, this will also block the update of file locked by an application during its edition (Microsoft Office,
-                // Open Office, ...)
-                //                const bool isLink = _syncPal->snapshotCopy(ReplicaSide::Local)->isLink(nodeId);
-                //
-                //                if (type == NodeType::File && !isLink) {
-                //                    // On Windows, we receive CREATE event while the file is still being copied
-                //                    // Do not start synchronizing the file while copying is in progress
-                //                    const SyncPath absolutePath = _syncPal->localPath() / snapshotPath;
-                //                    if (!IoHelper::isFileAccessible(absolutePath, ioError)) {
-                //                        LOG_SYNCPAL_INFO(_logger, L"Item \"" << Path2WStr(absolutePath).c_str()
-                //                                                             << L"\" is not ready. Synchronization postponed.");
-                //                        continue;
-                //                    }
-                //                }
             }
 
             // Create operation
@@ -654,27 +612,7 @@ bool ComputeFSOperationWorker::isExcludedFromSync(const std::shared_ptr<const Sn
             }
             return true;
         }
-    } else {
-        if (!_testing) {
-            const SyncPath absoluteFilePath = _syncPal->localPath() / path;
-
-            // Check that file exists
-            bool exists = false;
-            IoError ioError = IoError::Success;
-            if (!IoHelper::checkIfPathExists(absoluteFilePath, exists, ioError)) {
-                LOGW_SYNCPAL_WARN(_logger,
-                                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absoluteFilePath, ioError));
-                return true;
-            }
-
-            if (!exists) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Ignore item " << Path2WStr(path) << L" (" << Utility::s2ws(nodeId)
-                                                            << L") because it doesn't exist");
-                return true;
-            }
-        }
     }
-
     return false;
 }
 
@@ -688,7 +626,7 @@ bool ComputeFSOperationWorker::isInUnsyncedListParentSearchInDb(const NodeId &no
     do {
         // Check if node already exists on other side
         NodeId otherTmpNodeId;
-        _syncPal->syncDb()->correspondingNodeId(side, tmpNodeId, otherTmpNodeId, found);
+        _syncDbReadOnlyCache.correspondingNodeId(side, tmpNodeId, otherTmpNodeId, found);
 
         if (const NodeId localId = side == ReplicaSide::Local ? tmpNodeId : otherTmpNodeId;
             !localId.empty() && _localTmpUnsyncedList.contains(localId)) {
@@ -699,7 +637,7 @@ bool ComputeFSOperationWorker::isInUnsyncedListParentSearchInDb(const NodeId &no
             return true;
         }
 
-        if (!_syncDb->parent(side, tmpNodeId, tmpNodeId, found)) {
+        if (!_syncDbReadOnlyCache.parent(side, tmpNodeId, tmpNodeId, found)) {
             LOG_WARN(_logger, "Error in SyncDb::parent");
             break;
         }
@@ -719,7 +657,7 @@ bool ComputeFSOperationWorker::isInUnsyncedListParentSearchInSnapshot(const std:
         // Check if node already exists on other side
         NodeId otherTmpNodeId;
         bool found = false;
-        _syncPal->syncDb()->correspondingNodeId(side, tmpNodeId, otherTmpNodeId, found);
+        _syncDbReadOnlyCache.correspondingNodeId(side, tmpNodeId, otherTmpNodeId, found);
 
         if (const NodeId localId = side == ReplicaSide::Local ? tmpNodeId : otherTmpNodeId;
             !localId.empty() && _localTmpUnsyncedList.contains(localId)) {
@@ -761,7 +699,7 @@ bool ComputeFSOperationWorker::isTooBig(const std::shared_ptr<const Snapshot> re
     // Check if file already exist on local side
     NodeId localNodeId;
     bool found = false;
-    _syncPal->_syncDb->correspondingNodeId(ReplicaSide::Remote, remoteNodeId, localNodeId, found);
+    _syncDbReadOnlyCache.correspondingNodeId(ReplicaSide::Remote, remoteNodeId, localNodeId, found);
     if (found) {
         // We already synchronize the item locally, keep it
         return false;
@@ -863,7 +801,7 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
 
     // Check if the node path has changed
     SyncPath localDbPath;
-    if (bool found = false; !_syncDb->path(ReplicaSide::Local, localNodeId, localDbPath, found)) {
+    if (bool found = false; !_syncDbReadOnlyCache.path(ReplicaSide::Local, localNodeId, localDbPath, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
         return {ExitCode::DbError, ExitCause::DbAccessError};
     } else if (!found) {
@@ -890,7 +828,7 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
     return ExitCode::Ok;
 }
 
-ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId,
+ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(const ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId,
                                                      bool &isExcluded) {
     if (side != ReplicaSide::Local) return ExitCode::Ok;
 
@@ -924,25 +862,10 @@ ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
     if (!existsWithSameId) return ExitCode::Ok;
 
     // Check if file is synced
-    bool isWarning = false;
-    ioError = IoError::Success;
-    const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), relativePath, isWarning,
-                                                                               isExcluded, ioError);
-    if (!success) {
-        LOGW_SYNCPAL_WARN(_logger,
-                          L"Error in ExclusionTemplateCache::isExcluded: " << Utility::formatIoError(absolutePath, ioError));
-        setExitCause(ExitCause::Unknown);
-        return ExitCode::SystemError;
+    if (ExclusionTemplateCache::instance()->isExcluded(relativePath)) {
+        isExcluded = true;
+        return ExitCode::Ok;
     }
-
-    if (ioError == IoError::AccessDenied) {
-        LOGW_SYNCPAL_WARN(_logger, L"Item with " << Utility::formatSyncPath(absolutePath) << L" misses search permissions!");
-        setExitCause(ExitCause::FileAccessError);
-        return ExitCode::SystemError;
-    }
-
-    if (isExcluded) return ExitCode::Ok;
-
     if (_syncPal->snapshotCopy(ReplicaSide::Local)->isOrphan(nodeId)) {
         // This can happen if the propagation of template exclusions has been unexpectedly interrupted.
         // This special handling should be removed once the app keeps track on such interruptions.
@@ -1029,7 +952,7 @@ bool ComputeFSOperationWorker::checkIfPathIsInDeletedFolder(const SyncPath &path
     return true;
 }
 
-bool ComputeFSOperationWorker::hasChangedSinceLastSeen(const SyncDb::NodeIds &nodeIds) const {
+bool ComputeFSOperationWorker::hasChangedSinceLastSeen(const NodeIds &nodeIds) const {
     // Check if the item has change since the last sync
     for (const auto side: std::array<ReplicaSide, 2>{ReplicaSide::Local, ReplicaSide::Remote}) {
         const auto lastItemChangeSnapshotRevision = _syncPal->snapshotCopy(side)->lastChangeRevision(nodeIds.nodeId(side));
