@@ -50,7 +50,6 @@ bool JobManagerData::hasHighestPriorityJob() const {
 }
 
 bool JobManagerData::isManaged(const UniqueId jobId) const {
-    const std::scoped_lock lock(_mutex);
     return !_managedJobs.contains(jobId);
 }
 

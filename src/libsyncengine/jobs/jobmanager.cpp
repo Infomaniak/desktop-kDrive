@@ -74,21 +74,12 @@ void JobManager::clear() {
     }
 }
 
-namespace {
-void defaultCallback(const UniqueId jobId) {
-    JobManager::instance()->eraseJob(jobId);
-}
-} // namespace
-
 void JobManager::queueAsyncJob(const std::shared_ptr<AbstractJob> job,
                                const Poco::Thread::Priority priority /*= Poco::Thread::PRIO_NORMAL*/) noexcept {
     startThreadIfNeeded();
-    job->setMainCallback(defaultCallback);
+    const std::function<void(const UniqueId)> callback = std::bind_front(&JobManager::eraseJob, this);
+    job->setMainCallback(callback);
     _data.queue(job, priority);
-}
-
-void JobManager::eraseJob(const UniqueId jobId) {
-    _data.erase(jobId);
 }
 
 bool JobManager::isJobFinished(const UniqueId jobId) const {
@@ -179,7 +170,11 @@ void JobManager::startJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priori
     }
 }
 
-void JobManager::addToPendingJobs(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority) {
+void JobManager::eraseJob(const UniqueId jobId) {
+    _data.erase(jobId);
+}
+
+void JobManager::addToPendingJobs(const std::shared_ptr<AbstractJob> job, const Poco::Thread::Priority priority) {
     if (!_data.addToPendingJobs(job->jobId(), job, priority)) {
         LOG_ERROR(Log::instance()->getLogger(), "Failed to insert job " << job->jobId() << " in pending jobs list!");
         return;

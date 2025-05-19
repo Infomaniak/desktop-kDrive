@@ -51,7 +51,6 @@ class JobManager {
         void queueAsyncJob(std::shared_ptr<AbstractJob> job,
                            Poco::Thread::Priority priority = Poco::Thread::PRIO_NORMAL) noexcept;
 
-        void eraseJob(UniqueId jobId);
         bool isJobFinished(const UniqueId jobId) const;
         std::shared_ptr<AbstractJob> getJob(const UniqueId jobId) const;
 
@@ -66,6 +65,7 @@ class JobManager {
 
         void run() noexcept;
         void startJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority);
+        void eraseJob(UniqueId jobId);
         void addToPendingJobs(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority);
         void adjustMaxNbThread();
         void managePendingJobs();
