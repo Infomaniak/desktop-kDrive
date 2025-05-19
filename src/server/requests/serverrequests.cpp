@@ -933,6 +933,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                 case ExitCause::FileTooBig:
                 case ExitCause::NotFound:
                 case ExitCause::QuotaExceeded:
+                case ExitCause::FileLocked:
                     return true;
                 default:
                     return false;
@@ -1504,7 +1505,7 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
 #ifdef __APPLE__
     // On macOS, the special characters in file names are NFD encoded. However, we use QFileDialog::getExistingDirectory to
     // retrieve the selected sync path which return a NFC encoded path.
-    (void) Utility::normalizedSyncPath(localFolderPath.toStdString(), localPath, Utility::UnicodeNormalization::NFD);
+    (void) Utility::normalizedSyncPath(localFolderPath.toStdString(), localPath, UnicodeNormalization::NFD);
 #endif
     sync.setLocalPath(localPath);
     sync.setTargetPath(QStr2Path(serverFolderPath));

@@ -29,9 +29,12 @@ namespace KDC {
 
 std::unordered_map<int, Login::LoginInfo> Login::_info;
 
-Login::Login() : _logger(Log::instance()->getLogger()) {}
+Login::Login() :
+    _logger(Log::instance()->getLogger()) {}
 
-Login::Login(const std::string &keychainKey) : _logger(Log::instance()->getLogger()), _keychainKey(keychainKey) {
+Login::Login(const std::string &keychainKey) :
+    _logger(Log::instance()->getLogger()),
+    _keychainKey(keychainKey) {
     bool found = false;
     if (!KeyChainManager::instance()->readApiToken(_keychainKey, _apiToken, found)) {
         LOG_WARN(_logger, "Failed to read authentification token from keychain");

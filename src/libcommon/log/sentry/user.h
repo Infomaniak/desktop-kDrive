@@ -24,7 +24,10 @@ struct SentryUser {
     public:
         SentryUser() = default;
         SentryUser(const std::string_view &email, const std::string_view &username, const std::string_view &userId) :
-            _email(email), _username(username), _userId(userId), defaultUser(false) {}
+            _email(email),
+            _username(username),
+            _userId(userId),
+            defaultUser(false) {}
         explicit operator bool() const { return !defaultUser; }
         inline std::string_view email() const { return _email; };
         inline std::string_view username() const { return _username; };

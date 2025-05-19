@@ -38,7 +38,8 @@ static const int waitForUpdateDelay = 1000; // 1sec
 
 LocalFileSystemObserverWorker::LocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                              const std::string &shortName) :
-    FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Local), _rootFolder(syncPal->localPath()) {}
+    FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Local),
+    _rootFolder(syncPal->localPath()) {}
 
 LocalFileSystemObserverWorker::~LocalFileSystemObserverWorker() {
     LOG_SYNCPAL_DEBUG(_logger, "~LocalFileSystemObserverWorker");
@@ -617,9 +618,8 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 continue;
             }
             if (itemType.ioError == IoError::AccessDenied) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"getItemType failed for item: "
-                                                    << Utility::formatIoError(absoluteParentDirPath, ioError)
-                                                    << L". Blacklisting it temporarily");
+                LOGW_SYNCPAL_DEBUG(_logger, L"getItemType failed for item: " << Utility::formatIoError(absolutePath, ioError)
+                                                                             << L". Blacklisting it temporarily");
                 sendAccessDeniedError(absolutePath);
             }
 

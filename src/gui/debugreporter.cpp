@@ -34,7 +34,9 @@ static const QVector<QString> mapKeyName = QVector<QString>() << QString("Drive 
 Q_LOGGING_CATEGORY(lcDebugReporter, "gui.debugreporter", QtInfoMsg)
 
 DebugReporter::DebugReporter(const QUrl &url, QWidget *parent) :
-    QProgressDialog(tr("Sending of debugging information"), tr("Cancel"), 0, 100, parent), m_reply(0), m_url(url) {
+    QProgressDialog(tr("Sending of debugging information"), tr("Cancel"), 0, 100, parent),
+    m_reply(0),
+    m_url(url) {
     // Add a layout in order to auto-resize to the content
     QVBoxLayout *layout = new QVBoxLayout;
     foreach (QObject *obj, children()) {

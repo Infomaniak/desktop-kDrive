@@ -20,7 +20,8 @@
 
 namespace KDC {
 
-FilePermissionHolder::FilePermissionHolder(QString filePath) : _file(filePath) {
+FilePermissionHolder::FilePermissionHolder(QString filePath) :
+    _file(filePath) {
     _initPermissions = _file.permissions();
 }
 

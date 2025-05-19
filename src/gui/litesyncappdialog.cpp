@@ -20,6 +20,7 @@
 #include "litesyncappdialog.h"
 #include "customproxystyle.h"
 #include "guirequests.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QBoxLayout>
 #include <QLabel>
@@ -34,7 +35,11 @@ static const int subtitleLabelVMargin = 10;
 Q_LOGGING_CATEGORY(lcLiteSyncAppDialog, "gui.litesyncappdialog", QtInfoMsg)
 
 LiteSyncAppDialog::LiteSyncAppDialog(std::shared_ptr<ClientGui> gui, QWidget *parent) :
-    CustomDialog(true, parent), _gui(gui), _appIdLineEdit(nullptr), _appNameLineEdit(nullptr), _validateButton(nullptr) {
+    CustomDialog(true, parent),
+    _gui(gui),
+    _appIdLineEdit(nullptr),
+    _appNameLineEdit(nullptr),
+    _validateButton(nullptr) {
     QVBoxLayout *mainLayout = this->mainLayout();
 
     QLabel *appIdLabel = new QLabel(this);
@@ -144,21 +149,24 @@ void LiteSyncAppDialog::appInfo(QString &appId, QString &appName) {
 }
 
 void LiteSyncAppDialog::onExit() {
+    MatomoClient::sendEvent("preferencesLiteSyncApp", MatomoEventAction::Click, "exitButton");
     reject();
 }
 
 void LiteSyncAppDialog::onComboBoxActivated(int index) {
+    MatomoClient::sendEvent("preferencesLiteSyncApp", MatomoEventAction::Click, "comboBoxActivated", index);
     _appNameLineEdit->setText(_appTable[_appIdComboBox->itemText(index)]);
     _validateButton->setEnabled(!_appIdComboBox->currentText().isEmpty());
 }
 
 void LiteSyncAppDialog::onTextEdited(const QString &text) {
+    MatomoClient::sendEvent("preferencesLiteSyncApp", MatomoEventAction::Input, "appNameInput");
     _validateButton->setEnabled(!text.isEmpty());
 }
 
 void LiteSyncAppDialog::onValidateButtonTriggered(bool checked) {
     Q_UNUSED(checked)
-
+    MatomoClient::sendEvent("preferencesLiteSyncApp", MatomoEventAction::Click, "validateButton");
     accept();
 }
 

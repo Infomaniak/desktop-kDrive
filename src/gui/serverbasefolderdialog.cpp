@@ -20,6 +20,7 @@
 #include "serverbasefolderdialog.h"
 #include "custommessagebox.h"
 #include "guiutility.h"
+#include "libcommongui/matomoclient.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
 
@@ -39,10 +40,21 @@ Q_LOGGING_CATEGORY(lcServerBaseFolderDialog, "gui.serverbasefolderdialog", QtInf
 
 ServerBaseFolderDialog::ServerBaseFolderDialog(std::shared_ptr<ClientGui> gui, int driveDbId, const QString &localFolderName,
                                                const QString &localFolderPath, QWidget *parent) :
-    CustomDialog(true, parent), _gui(gui), _driveDbId(driveDbId), _localFolderName(localFolderName),
-    _localFolderPath(localFolderPath), _infoIconLabel(nullptr), _availableSpaceTextLabel(nullptr), _folderTreeItemWidget(nullptr),
-    _backButton(nullptr), _continueButton(nullptr), _infoIconColor(QColor()), _infoIconSize(QSize()), _okToContinue(false),
-    _serverFolderBasePath(QString()), _serverFolderList(QList<QPair<QString, QString>>()) {
+    CustomDialog(true, parent),
+    _gui(gui),
+    _driveDbId(driveDbId),
+    _localFolderName(localFolderName),
+    _localFolderPath(localFolderPath),
+    _infoIconLabel(nullptr),
+    _availableSpaceTextLabel(nullptr),
+    _folderTreeItemWidget(nullptr),
+    _backButton(nullptr),
+    _continueButton(nullptr),
+    _infoIconColor(QColor()),
+    _infoIconSize(QSize()),
+    _okToContinue(false),
+    _serverFolderBasePath(QString()),
+    _serverFolderList(QList<QPair<QString, QString>>()) {
     initUI();
     updateUI();
 }
@@ -159,6 +171,7 @@ void ServerBaseFolderDialog::onExit() {
 void ServerBaseFolderDialog::onContinueButtonTriggered(bool checked) {
     Q_UNUSED(checked)
 
+    MatomoClient::sendEvent("serverBaseFolderDialog", MatomoEventAction::Click, "continueButton");
     QStringList warnStrings;
 
     QString folderPath;
@@ -205,6 +218,7 @@ void ServerBaseFolderDialog::onContinueButtonTriggered(bool checked) {
 void ServerBaseFolderDialog::onBackButtonTriggered(bool checked) {
     Q_UNUSED(checked)
 
+    MatomoClient::sendEvent("serverBaseFolderDialog", MatomoEventAction::Click, "backButton");
     done(-1);
 }
 
@@ -218,6 +232,7 @@ void ServerBaseFolderDialog::onFolderSelected(const QString &folderBasePath, con
     _serverFolderBasePath = folderBasePath;
     _serverFolderList = folderList;
 
+    MatomoClient::sendEvent("serverBaseFolderDialog", MatomoEventAction::Click, "selectFolderButton");
     setOkToContinue(true);
 }
 

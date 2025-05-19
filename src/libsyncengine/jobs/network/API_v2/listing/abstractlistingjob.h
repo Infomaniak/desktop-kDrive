@@ -16,28 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "continuefilelistwithcursorjob.h"
+#pragma once
 
-#include <Poco/Net/HTTPRequest.h>
+#include "jobs/network/API_v2/abstracttokennetworkjob.h"
 
 namespace KDC {
 
-ContinueFileListWithCursorJob::ContinueFileListWithCursorJob(int driveDbId, const std::string &cursor) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _cursor(cursor) {
-    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-}
+class AbstractListingJob : public AbstractTokenNetworkJob {
+    public:
+        explicit AbstractListingJob(int driveDbId, const NodeSet &blacklist = {});
+        explicit AbstractListingJob(ApiType apiType, int driveDbId, const NodeSet &blacklist = {});
 
-std::string ContinueFileListWithCursorJob::getSpecificUrl() {
-    std::string str = AbstractTokenNetworkJob::getSpecificUrl();
-    str += "/files/listing/continue";
-    return str;
-}
+        void setQueryParameters(Poco::URI &uri, bool &) final;
+        virtual void setSpecificQueryParameters(Poco::URI &uri) = 0;
 
-void ContinueFileListWithCursorJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
-    uri.addQueryParameter("cursor", _cursor);
-    uri.addQueryParameter("with", "files.capabilities");
-    uri.addQueryParameter("limit", nbItemPerPage);
-    canceled = false;
-}
+    private:
+        NodeSet _blacklist;
+};
 
 } // namespace KDC

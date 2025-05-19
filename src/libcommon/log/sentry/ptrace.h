@@ -29,7 +29,8 @@ struct PerformanceTrace {
         // PerformanceTrace is a structure that represents a sentry_transaction_t or a sentry_span_t that can be sent to
         // Sentry.
 
-        explicit PerformanceTrace(pTraceId pTraceId) : _pTraceId{pTraceId} {
+        explicit PerformanceTrace(pTraceId pTraceId) :
+            _pTraceId{pTraceId} {
             assert(pTraceId != 0 && "operationId must be different from 0");
         }
 

@@ -31,6 +31,7 @@ class UpdateDialog : public CustomDialog {
         ~UpdateDialog() override;
 
         void reject() override;
+        void accept() override;
 
         [[nodiscard]] bool skip() const { return _skip; }
 

@@ -66,7 +66,8 @@ static const QList<QString> fontFiles = QList<QString>() << QString(":/client/re
                                                          << QString(":/client/resources/fonts/SuisseIntl-Black.otf");
 // static const QString defaultFontFamily("Suisse Int'l");
 
-AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(Theme::instance()->appClientName(), argc, argv) {
+AppClient::AppClient(int &argc, char **argv) :
+    SharedTools::QtSingleApplication(Theme::instance()->appClientName(), argc, argv) {
     _startedAt.start();
 
     setOrganizationDomain(QLatin1String(APPLICATION_REV_DOMAIN));

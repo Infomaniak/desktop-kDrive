@@ -38,8 +38,13 @@ static const int statusIconSize = 24;
 Q_LOGGING_CATEGORY(lcStatusBarWidget, "gui.statusbarwidget", QtInfoMsg)
 
 StatusBarWidget::StatusBarWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
-    HalfRoundRectWidget(parent), _gui(gui), _driveDbId(0), _statusIconLabel(nullptr), _statusLabel(nullptr),
-    _pauseButton(nullptr), _resumeButton(nullptr) {
+    HalfRoundRectWidget(parent),
+    _gui(gui),
+    _driveDbId(0),
+    _statusIconLabel(nullptr),
+    _statusLabel(nullptr),
+    _pauseButton(nullptr),
+    _resumeButton(nullptr) {
     setContentsMargins(hMargin, vMargin, hMargin, vMargin);
 
     _statusIconLabel = new QLabel(this);

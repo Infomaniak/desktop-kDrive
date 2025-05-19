@@ -61,8 +61,6 @@ struct COMMONSERVER_EXPORT Utility {
         static int64_t freeDiskSpaceLimit();
         static bool enoughSpace(const SyncPath &path);
         static bool findNodeValue(const Poco::XML::Document &doc, const std::string &nodeName, std::string *outValue);
-        static bool setFileDates(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
-                                 std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists);
         static bool isCreationDateValid(int64_t creationDate);
 
         static std::wstring s2ws(const std::string &str);
@@ -182,11 +180,6 @@ struct COMMONSERVER_EXPORT Utility {
          */
         static std::string _errId(const char *file, int line);
 
-
-        enum class UnicodeNormalization {
-            NFC,
-            NFD
-        };
         static bool normalizedSyncName(const SyncName &name, SyncName &normalizedName,
                                        UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
         static bool normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,

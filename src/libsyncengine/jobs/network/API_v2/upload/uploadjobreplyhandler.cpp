@@ -23,7 +23,7 @@ namespace KDC {
 
 UploadJobReplyHandler::UploadJobReplyHandler(const SyncPath& absoluteFilePath, const SyncTime modtime) :
     _absoluteFilePath(absoluteFilePath),
-    _modtimeOut(modtime) {}
+    _modtimeIn(modtime) {}
 
 bool UploadJobReplyHandler::extractData(const Poco::JSON::Object::Ptr jsonRes) {
     if (!jsonRes) return false;
@@ -42,7 +42,8 @@ bool UploadJobReplyHandler::extractData(const Poco::JSON::Object::Ptr jsonRes) {
     if (_modtimeIn != _modtimeOut) {
         // The backend refused the modification time. To avoid further EDIT operations, we apply the backend's time on local file.
         bool exists = false;
-        if (Utility::setFileDates(_absoluteFilePath, 0, _modtimeOut, false, exists)) {
+        if (const IoError ioError = IoHelper::setFileDates(_absoluteFilePath, 0, _modtimeOut, false);
+            ioError == IoError::Success) {
             LOG_INFO(Log::instance()->getLogger(),
                      "Modification time " << _modtimeIn << " refused by the backend. The modification time has been updated to "
                                           << _modtimeOut << " on local file.");

@@ -27,6 +27,7 @@ namespace KDC {
 
 class Theme : public QObject {
         Q_OBJECT
+
     public:
         /* returns a singleton instance. */
         static Theme *instance();

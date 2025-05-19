@@ -152,6 +152,8 @@ std::string toString(const ExitCause e) {
             return "FileAlreadyExist";
         case ExitCause::FileAccessError:
             return "FileAccessError";
+        case ExitCause::FileLocked:
+            return "FileLocked";
         case ExitCause::UnexpectedFileSystemEvent:
             return "UnexpectedFileSystemEvent";
         case ExitCause::NotEnoughDiskSpace:
@@ -551,8 +553,8 @@ std::string toString(const NotificationsDisabled e) {
             return "OneHour";
         case NotificationsDisabled::UntilTomorrow:
             return "UntilTomorrow";
-        case NotificationsDisabled::TreeDays:
-            return "TreeDays";
+        case NotificationsDisabled::ThreeDays:
+            return "ThreeDays";
         case NotificationsDisabled::OneWeek:
             return "OneWeek";
         case NotificationsDisabled::Always:
