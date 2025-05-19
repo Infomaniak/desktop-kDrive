@@ -49,7 +49,7 @@ bool LocalCopyJob::canRun() {
 
     if (exists) {
         LOGW_DEBUG(_logger, L"Item " << Path2WStr(_dest).c_str() << L" already exist. Aborting current sync and restart.");
-        _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent};
+        _exitInfo = {ExitCode::DataError, ExitCause::FileAlreadyExists};
         return false;
     }
 
@@ -68,7 +68,7 @@ bool LocalCopyJob::canRun() {
     if (!exists) {
         LOGW_DEBUG(_logger,
                    L"Item does not exist anymore. Aborting current sync and restart. - path=" << Path2WStr(_source).c_str());
-        _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent};
+        _exitInfo = {ExitCode::DataError, ExitCause::NotFound};
         return false;
     }
 

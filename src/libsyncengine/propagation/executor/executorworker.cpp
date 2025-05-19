@@ -1445,12 +1445,11 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, Syn
                                                    << Utility::formatSyncPath(relativeLocalPath) << L" " << exitInfo);
                 return exitInfo;
             }
-        } else if (!handleExecutorError(syncOp, job->exitInfo())) {
+        } else if (const auto exitInfo = handleExecutorError(syncOp, job->exitInfo()); !exitInfo) {
             // Cancel all queued jobs
             LOGW_SYNCPAL_WARN(_logger, L"Cancelling jobs. " << job->exitInfo());
             cancelAllOngoingJobs();
-            return job->exitInfo();
-
+            return exitInfo;
         } else { // The error is managed and the execution can continue.
             LOGW_DEBUG(_logger, L"Error successfully managed: " << job->exitInfo() << L" on " << syncOp->type()
                                                                 << L" operation for "
@@ -2238,6 +2237,21 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
     }
 
     LOG_WARN(_logger, "Handling " << opsExitInfo << " in ExecutorWorker::handleExecutorError");
+
+    if (opsExitInfo.cause() == ExitCause::NotFound) {
+        // Check that the root of the sync folder is still accessible
+        bool exists = false;
+        IoError ioError = IoError::Success;
+        if (!IoHelper::checkIfPathExists(_syncPal->localPath(), exists, ioError)) {
+            LOGW_WARN(_logger,
+                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_syncPal->localPath(), ioError));
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        }
+        if (!exists) {
+            LOGW_DEBUG(_logger, L"Sync dir " << Utility::formatSyncPath(_syncPal->localPath()) << L" not accessible anymore");
+            return {ExitCode::SystemError, ExitCause::SyncDirDoesntExist};
+        }
+    }
 
     // Handle specific errors
     switch (static_cast<int>(opsExitInfo)) {

@@ -507,6 +507,12 @@ QString ParametersDialog::getSyncPalErrorText(const QString &fctCode, const Exit
                         "this "
                         "time.<br>"
                         "The application will use system proxy settings instead.");
+            } else if (exitCause == ExitCause::SyncDirDoesntExist) {
+                return tr(
+                        "Unfortunately your old proxy configuration could not be migrated, SOCKS5 proxies are not supported at "
+                        "this "
+                        "time.<br>"
+                        "The application will use system proxy settings instead.");
             } else {
                 return tr("A technical error has occurred (error %1).<br>"
                           "Synchronization has been restarted. Please empty the history and if the error persists, please "

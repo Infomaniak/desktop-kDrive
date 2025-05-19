@@ -136,6 +136,20 @@ bool DownloadJob::canRun() {
         return false;
     }
 
+    // Check that parent folder exist
+    if (!IoHelper::checkIfPathExists(_localpath.parent_path(), exists, ioError)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_localpath, ioError));
+        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
+        return false;
+    }
+
+    if (!exists) {
+        LOGW_DEBUG(_logger, L"Impossible to download item " << Utility::formatSyncPath(_localpath)
+                                                            << L" because the parent does not exist.");
+        _exitInfo = {ExitCode::DataError, ExitCause::NotFound};
+        return false;
+    }
+
     return true;
 }
 
