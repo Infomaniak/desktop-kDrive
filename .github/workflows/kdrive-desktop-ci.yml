@@ -26,8 +26,10 @@ jobs:
 
 # Build apps
   build-Windows:
-    uses: ./.github/workflows/build-windows.yml        
-    secrets: inherit    
+    runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    steps:
+        - uses: actions/checkout@v4
+        - uses: ./.github/actions/build_windows
     
   build-Linux:
     if: false
