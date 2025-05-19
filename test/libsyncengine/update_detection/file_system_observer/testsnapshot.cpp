@@ -314,7 +314,7 @@ void TestSnapshot::testPath() {
         CPPUNIT_ASSERT(!snapshot.path(id, path, ignore));
         CPPUNIT_ASSERT(ignore);
 #else
-        CPPUNIT_ASSERT(liveSnapshot.path(id, path, ignore));
+        CPPUNIT_ASSERT(_liveSnapshot->path(id, path, ignore));
         CPPUNIT_ASSERT_EQUAL(SyncPath("A") / name, path);
         CPPUNIT_ASSERT(!ignore);
 #endif
@@ -323,7 +323,7 @@ void TestSnapshot::testPath() {
         CPPUNIT_ASSERT(!snapshot.path(childId, path, ignore));
         CPPUNIT_ASSERT(ignore);
 #else
-        CPPUNIT_ASSERT(liveSnapshot.path(childId, path, ignore));
+        CPPUNIT_ASSERT(_liveSnapshot->path(childId, path, ignore));
         CPPUNIT_ASSERT_EQUAL(SyncPath("A") / name / childName, path);
         CPPUNIT_ASSERT(!ignore);
 #endif
