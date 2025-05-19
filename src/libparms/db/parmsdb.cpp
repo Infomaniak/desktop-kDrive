@@ -3004,6 +3004,15 @@ bool ParmsDb::replaceShortDbPathsWithLongPaths() {
             LOGW_WARN(_logger, L"Error in IoHelper::getLongPathName: " << Utility::formatIoError(sync.dbPath(), ioError));
             continue;
         }
+        bool exists = false;
+        if (!IoHelper::checkIfPathExists(longPathName, exists, ioError) || ioError != IoError::Success) {
+            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(sync.dbPath(), ioError));
+            continue;
+        } else if (!exists) {
+            LOGW_DEBUG(_logger, L"The sync DB item indicated by the computed long path does not exist: "
+                                        << Utility::formatSyncPath(longPathName));
+            continue;
+        }
         sync.setDbPath(longPathName);
         bool found = false;
         if (!updateSync(sync, found)) return false;
