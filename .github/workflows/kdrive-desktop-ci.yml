@@ -268,7 +268,7 @@ jobs:
     needs: build-Windows
     strategy:
       matrix:
-        tests-exe: ["kDrive_test_common", "kDrive_test_common_server.exe", "kDrive_test_server","kDrive_test_syncengine","kDrive_test_parms"]
+        tests-exe: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server","kDrive_test_syncengine","kDrive_test_parms"]
     uses: ./.github/workflows/run-test.yml
     with: 
       test-executable-name:  ${{ matrix.target }}
