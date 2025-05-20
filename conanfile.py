@@ -1,5 +1,8 @@
+import textwrap
+
 from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, cmake_layout
+from conan.tools.cmake.toolchain.blocks import VSRuntimeBlock
 
 
 class KDriveDesktop(ConanFile):
@@ -20,6 +23,13 @@ class KDriveDesktop(ConanFile):
         tc = CMakeToolchain(self)
         if self.settings.os == "Windows":
             tc.blocks.remove("generic_system")
+
+            # The default VSRuntimeBlock only configures CMAKE_MSVC_RUNTIME_LIBRARY for the profile's build_type
+            # (in the CI's profile, its Release), yielding $<$<CONFIG:Release>:MultiThreadedDLL>. Other configs
+            # (RelWithDebInfo, Debug) fall back to MSVC’s default CRT selection (/MT), here, we want /MD
+            tc.blocks.remove(VSRuntimeBlock)
+            tc.blocks.append(OverrideVSRuntimeBlock(self, tc, "OverrideVSRuntimeBlock"))
+
         if self.settings.os == "Macos":
             tc.variables["CMAKE_OSX_ARCHITECTURES"] = "x86_64;arm64"
             tc.variables["CMAKE_MACOSX_DEPLOYMENT_TARGET"] = "10.15"
@@ -36,3 +46,11 @@ class KDriveDesktop(ConanFile):
         :return: None
         """
         self.requires("xxhash/0.8.2") # From local recipe
+
+
+class OverrideVSRuntimeBlock(VSRuntimeBlock):
+    template = textwrap.dedent("""\
+    cmake_policy(SET CMP0091 NEW)
+    message(STATUS "Conan toolchain: Setting CMAKE_MSVC_RUNTIME_LIBRARY=$<$<CONFIG:Debug>:MultiThreadedDebugDLL>$<$<NOT:$<CONFIG:Debug>>:MultiThreadedDLL>")
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "$<$<CONFIG:Debug>:MultiThreadedDebugDLL>$<$<NOT:$<CONFIG:Debug>>:MultiThreadedDLL>" CACHE STRING "" FORCE)
+    """)
