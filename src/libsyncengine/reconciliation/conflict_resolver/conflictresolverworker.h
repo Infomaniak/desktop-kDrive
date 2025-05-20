@@ -70,7 +70,7 @@ class ConflictResolverWorker : public OperationProcessor {
         ExitCode generateEditDeleteConflictOperation(const Conflict &conflict, bool &continueSolving);
         /**
          * @brief If the moved item is local, revert the move operation. If the created item is local, rename it as a conflicted
-         * file. Remote always win.
+         * file. Remote always wins.
          * @param conflict The conflict to be resolved.
          * @param continueSolving A boolean value indicating if we can generate more conflict resolution operations.
          * @return ExitCode indicating if the operation was successful.
