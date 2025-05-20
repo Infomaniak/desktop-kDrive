@@ -35,7 +35,10 @@ static const int shadowWidth = 5;
 
 Q_LOGGING_CATEGORY(lcHalfRoundRectWidget, "gui.halfroundwidget", QtInfoMsg)
 
-HalfRoundRectWidget::HalfRoundRectWidget(QWidget *parent) : QWidget(parent), _bottomCornersColor(QColor()), _hboxLayout(nullptr) {
+HalfRoundRectWidget::HalfRoundRectWidget(QWidget *parent) :
+    QWidget(parent),
+    _bottomCornersColor(QColor()),
+    _hboxLayout(nullptr) {
     _hboxLayout = new QHBoxLayout();
     setLayout(_hboxLayout);
 }

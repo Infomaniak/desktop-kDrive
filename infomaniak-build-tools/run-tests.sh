@@ -32,7 +32,6 @@ errors=0
 failures=()
 
 for tester in ${testers[@]}; do
-
     echo -e "${YELLOW}---------- Running $(basename $tester) ----------${NC}"
     chmod +x $tester
     pushd $(dirname "$tester") 1>/dev/null

@@ -45,7 +45,13 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
                 using std::runtime_error::runtime_error;
         };
 
-        enum class ApiType { Drive, DriveByUser, Profile, NotifyDrive, Desktop };
+        enum class ApiType {
+            Drive,
+            DriveByUser,
+            Profile,
+            NotifyDrive,
+            Desktop
+        };
 
         /// @throw std::runtime_error
         /// @throw DbError

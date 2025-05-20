@@ -25,7 +25,8 @@
 
 namespace KDC {
 
-LocalCreateDirJob::LocalCreateDirJob(const SyncPath &destFilepath) : _destFilePath(destFilepath) {}
+LocalCreateDirJob::LocalCreateDirJob(const SyncPath &destFilepath) :
+    _destFilePath(destFilepath) {}
 
 bool LocalCreateDirJob::canRun() {
     if (bypassCheck()) {

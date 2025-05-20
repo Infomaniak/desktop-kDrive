@@ -27,7 +27,8 @@ namespace KDC {
 UniqueId AbstractJob::_nextJobId = 0;
 std::mutex AbstractJob::_nextJobIdMutex;
 
-AbstractJob::AbstractJob() : _logger(Log::instance()->getLogger()) {
+AbstractJob::AbstractJob() :
+    _logger(Log::instance()->getLogger()) {
     const std::lock_guard lock(_nextJobIdMutex);
     _jobId = _nextJobId++;
 

@@ -30,6 +30,7 @@ namespace KDC {
 
 class NavigationPaneHelper : public QObject {
         Q_OBJECT
+
     public:
         NavigationPaneHelper(const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap);
 

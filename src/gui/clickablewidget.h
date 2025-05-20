@@ -25,6 +25,7 @@ namespace KDC {
 
 class ClickableWidget : public QWidget {
         Q_OBJECT
+
     public:
         explicit ClickableWidget(QWidget *parent = nullptr);
 

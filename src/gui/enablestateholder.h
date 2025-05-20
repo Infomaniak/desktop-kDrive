@@ -23,7 +23,10 @@
 template<typename T>
 class EnableStateHolder {
     public:
-        explicit EnableStateHolder(T *w) : _widget(w) { _widget->setEnabled(false); }
+        explicit EnableStateHolder(T *w) :
+            _widget(w) {
+            _widget->setEnabled(false);
+        }
 
         virtual ~EnableStateHolder() { _widget->setEnabled(true); }
 

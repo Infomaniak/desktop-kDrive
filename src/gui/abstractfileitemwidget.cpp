@@ -39,8 +39,14 @@ static const int shadowBlurRadius = 20;
 static const QSize iconSize = QSize(15, 15);
 
 AbstractFileItemWidget::AbstractFileItemWidget(QWidget *parent /*= nullptr*/) :
-    QWidget(parent), _topLayout(new QHBoxLayout), _fileTypeIconLabel(new QLabel), _filenameLabel(new QLabel),
-    _middleLayout(new QHBoxLayout), _messageLabel(new QLabel), _bottomLayout(new QHBoxLayout), _driveIconLabel(new QLabel),
+    QWidget(parent),
+    _topLayout(new QHBoxLayout),
+    _fileTypeIconLabel(new QLabel),
+    _filenameLabel(new QLabel),
+    _middleLayout(new QHBoxLayout),
+    _messageLabel(new QLabel),
+    _bottomLayout(new QHBoxLayout),
+    _driveIconLabel(new QLabel),
     _pathLabel(new QLabel) {
     setContentsMargins(hMargin, vMargin, hMargin, vMargin);
 

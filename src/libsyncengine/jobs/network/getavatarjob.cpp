@@ -27,7 +27,9 @@
 
 namespace KDC {
 
-GetAvatarJob::GetAvatarJob(std::string url) : _avatarUrl(url), _avatar(nullptr) {
+GetAvatarJob::GetAvatarJob(std::string url) :
+    _avatarUrl(url),
+    _avatar(nullptr) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 

@@ -30,7 +30,8 @@
 namespace KDC {
 
 Snapshot::Snapshot(ReplicaSide side, const DbNode &dbNode) :
-    _side(side), _rootFolderId(side == ReplicaSide::Local ? dbNode.nodeIdLocal().value() : dbNode.nodeIdRemote().value()) {
+    _side(side),
+    _rootFolderId(side == ReplicaSide::Local ? dbNode.nodeIdLocal().value() : dbNode.nodeIdRemote().value()) {
     _revisionHandlder = std::make_shared<SnapshotRevisionHandler>();
     _items.try_emplace(_rootFolderId, std::make_shared<SnapshotItem>(_rootFolderId))
             .first->second->setSnapshotRevisionHandler(_revisionHandlder);

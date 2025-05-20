@@ -176,6 +176,7 @@ enum class NetworkErrorCode {
     DestinationAlreadyExists,
     ConflictError,
     AccessDenied,
+    LockError,
     FileTooBigError,
     QuotaExceededError,
     UnknownError, // None of the handled errors

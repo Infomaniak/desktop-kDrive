@@ -108,7 +108,11 @@ struct SyncProgress {
         int64_t _totalSize{0};
         int64_t _estimatedRemainingTime{0};
 
-        bool operator==(const SyncProgress &) const = default;
+        bool operator==(const SyncProgress &other) const {
+           return _currentFile == other._currentFile && _totalFiles == other._totalFiles &&
+                _completedSize == other._completedSize && _totalSize == other._totalSize &&
+                _estimatedRemainingTime == other._estimatedRemainingTime;
+        }
 };
 
 
@@ -118,7 +122,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId, const std::string &version);
         virtual ~SyncPal();
 
-        ExitCode setTargetNodeId(const std::string &targetNodeId);
         inline void setAddErrorCallback(const std::function<void(const Error &)> &addError) { _addError = addError; }
         inline void setAddCompletedItemCallback(const std::function<void(int, const SyncFileItem &, bool)> &addCompletedItem) {
             _addCompletedItem = addCompletedItem;

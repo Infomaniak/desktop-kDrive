@@ -26,7 +26,8 @@ namespace KDC {
 
 class CycleFinder {
     public:
-        explicit CycleFinder(const std::list<std::pair<SyncOpPtr, SyncOpPtr>> &reorderings) : _reorderings(reorderings) {};
+        explicit CycleFinder(const std::list<std::pair<SyncOpPtr, SyncOpPtr>> &reorderings) :
+            _reorderings(reorderings) {};
 
         void findCompleteCycle();
         [[nodiscard]] const SyncOperationList &completeCycle() const { return _completeCycle; }

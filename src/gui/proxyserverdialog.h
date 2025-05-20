@@ -43,7 +43,8 @@ class ProxyServerDialog : public CustomDialog {
 
         class PortValidator : public QIntValidator {
             public:
-                PortValidator(QObject *parent = nullptr) : QIntValidator(0, 65535, parent) {}
+                PortValidator(QObject *parent = nullptr) :
+                    QIntValidator(0, 65535, parent) {}
 
             private:
                 QValidator::State validate(QString &input, int &pos) const override {
