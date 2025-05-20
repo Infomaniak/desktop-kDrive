@@ -12,6 +12,30 @@ on:
       test_common_exe_name:
         required: true
         type: string
+      test_common_server_artifact_name:
+        required: true
+        type: string
+      test_common_server_exe_name:
+        required: true
+        type: string
+      test_server_artifact_name:
+        required: true
+        type: string
+      test_server_exe_name:
+        required: true
+        type: string
+      test_syncengine_artifact_name:
+        required: true
+        type: string
+      test_syncengine_exe_name:
+        required: true
+        type: string
+      test_parms_artifact_name:
+        required: true
+        type: string
+      test_parms_exe_name:
+        required: true
+        type: string
 
 env:
   KDRIVE_TEST_CI_API_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
@@ -36,3 +60,51 @@ jobs:
             artifact_name: ${{ inputs.test_common_artifact_name }}
             exe_name: ${{ inputs.test_common_exe_name }}
             test_dependencies_version: ${{ inputs.test_dependencies_version }}
+  CommonServer:
+    runs-on: [ self-hosted, Windows ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
+    steps:
+        - uses: actions/checkout@v4
+        - name: Run test
+          uses: ./.github/actions/run_test_windows
+          with:  
+            artifact_name: ${{ inputs.test_common_server_artifact_name }}
+            exe_name: ${{ inputs.test_common_exe_name }}
+            test_dependencies_version: ${{ inputs.test_common_server_exe_name }}
+  Server:
+    runs-on: [ self-hosted, Windows ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
+    steps:
+        - uses: actions/checkout@v4
+        - name: Run test
+          uses: ./.github/actions/run_test_windows
+          with:  
+            artifact_name: ${{ inputs.test_server_artifact_name }}
+            exe_name: ${{ inputs.test_common_exe_name }}
+            test_dependencies_version: ${{ inputs.test_server_exe_name }}
+  Syncengine:
+    runs-on: [ self-hosted, Windows ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
+    steps:
+        - uses: actions/checkout@v4
+        - name: Run test
+          uses: ./.github/actions/run_test_windows
+          with:  
+            artifact_name: ${{ inputs.test_syncengine_artifact_name }}
+            exe_name: ${{ inputs.test_common_exe_name }}
+            test_dependencies_version: ${{ inputs.test_syncengine_exe_name }}
+  Parms:
+    runs-on: [ self-hosted, Windows ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
+    steps:
+        - uses: actions/checkout@v4
+        - name: Run test
+          uses: ./.github/actions/run_test_windows
+          with:  
+            artifact_name: ${{ inputs.test_parms_exe_name }}
+            exe_name: ${{ inputs.test_common_exe_name }}
+            test_dependencies_version: ${{ inputs.test_parms_exe_name }}

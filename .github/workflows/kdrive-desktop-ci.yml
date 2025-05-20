@@ -266,16 +266,19 @@ jobs:
 # Tests Windows
   Test-Windows:
     needs: build-Windows
-    strategy:
-      fail-fast: false
-      max-parallel: 5
-      matrix:
-        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms" ]
     uses: ./.github/workflows/run-test.yml
     with: 
       test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
-      test_common_artifact_name: win-${{ matrix.test_name }}
-      test_common_exe_name: ${{ matrix.test_name }}.exe
+      test_common_artifact_name: win-kDrive_test_common
+      test_common_exe_name: kDrive_test_common.exe
+      test_common_server_artifact_name: win-kDrive_test_common_server
+      test_common_server_exe_name: kDrive_test_common_server.exe
+      test_server_artifact_name: win-kDrive_test_server
+      test_server_exe_name: kDrive_test_server.exe
+      test_syncengine_artifact_name: win-kDrive_test_syncengine
+      test_syncengine_exe_name: kDrive_test_syncengine.exe
+      test_parms_artifact_name: win-kDrive_test_parms
+      test_parms_exe_name: kDrive_test_parms.exe
     secrets: inherit
 
 
