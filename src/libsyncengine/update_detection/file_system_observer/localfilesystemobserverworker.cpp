@@ -618,9 +618,8 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 continue;
             }
             if (itemType.ioError == IoError::AccessDenied) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"getItemType failed for item: "
-                                                    << Utility::formatIoError(absoluteParentDirPath, ioError)
-                                                    << L". Blacklisting it temporarily");
+                LOGW_SYNCPAL_DEBUG(_logger, L"getItemType failed for item: " << Utility::formatIoError(absolutePath, ioError)
+                                                                             << L". Blacklisting it temporarily");
                 sendAccessDeniedError(absolutePath);
             }
 
