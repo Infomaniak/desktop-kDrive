@@ -58,8 +58,6 @@ class JobManager {
         void decreasePoolCapacity();
 
     private:
-        static void executeFunc(void *thisWorker);
-
         JobManager();
         void startThreadIfNeeded();
 

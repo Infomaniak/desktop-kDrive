@@ -51,7 +51,8 @@ std::shared_ptr<JobManager> JobManager::instance() noexcept {
 
 void JobManager::startThreadIfNeeded() {
     if (!_mainThread) {
-        _mainThread = std::make_unique<std::thread>(executeFunc, this);
+        const std::function<void()> runFunction = std::bind_front(&JobManager::run, this);
+        _mainThread = std::make_unique<std::thread>(runFunction);
     }
 }
 
@@ -105,11 +106,6 @@ void JobManager::decreasePoolCapacity() {
         sentry::Handler::captureMessage(sentry::Level::Warning, "JobManager::defaultCallback",
                                         "JobManager capacity cannot be decreased");
     }
-}
-
-void JobManager::executeFunc(void *thisWorker) {
-    ((JobManager *) thisWorker)->run();
-    log4cplus::threadCleanup();
 }
 
 JobManager::JobManager() :
