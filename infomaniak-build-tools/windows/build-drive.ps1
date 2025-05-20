@@ -228,9 +228,6 @@ function CMake-Build-And-Install {
     $compiler = "cl.exe"
 
     $args = @("'-GNinja'")
-
-    $args += ("'--debug-find'") # Debugging CMake find_package, todo delete this line.
-
     $args += ("'-DCMAKE_BUILD_TYPE=$buildType'")
     $args += ("'-DCMAKE_INSTALL_PREFIX=$installPath'")
     $args += ("'-DCMAKE_PREFIX_PATH=$installPath'")
