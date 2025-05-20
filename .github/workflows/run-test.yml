@@ -105,6 +105,6 @@ jobs:
         - name: Run test
           uses: ./.github/actions/run_test_windows
           with:  
-            artifact_name: ${{ inputs.test_parms_exe_name }}
+            artifact_name: ${{ inputs.test_parms_artifact_name }}
             exe_name: ${{ inputs.test_parms_exe_name }}
             test_dependencies_version: ${{ inputs.test_dependencies_version }}

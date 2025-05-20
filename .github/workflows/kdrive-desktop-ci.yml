@@ -147,6 +147,7 @@ jobs:
         run : rm -rf build-linux
 
   build-MacOS:
+    if: false
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
 
     steps:
