@@ -3,6 +3,9 @@ name: Run windows tests
 on:
   workflow_call:
     inputs:
+      test_dependencies_version:
+        required: true
+        type: string
       test_common_artifact_name:
         required: true
         type: string
