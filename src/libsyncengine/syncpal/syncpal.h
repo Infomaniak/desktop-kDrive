@@ -192,7 +192,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::chrono::time_point<std::chrono::steady_clock> pauseTime() const;
         bool isPaused() const;
         bool pauseAsked() const;
-        bool shouldBeRestarted() const;
+        bool shouldRetry() const;
         bool isIdle() const;
         bool isRunning() const;
 

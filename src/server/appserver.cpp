@@ -1045,54 +1045,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QDataStream paramsStream(params);
             paramsStream >> syncDbId;
 
-            Sync sync;
-            bool found = false;
-            if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
-                LOG_WARN(_logger, "Error in ParmsDb::selectSync");
-                resultStream << ExitCode::DbError;
-                break;
-            }
-            if (!found) {
-                LOG_WARN(_logger, "Sync not found in sync table for syncDbId=" << syncDbId);
-                resultStream << ExitCode::DataError;
-                break;
-            }
-
-            // Clear old errors for this sync
-            clearErrors(sync.dbId(), false);
-            clearErrors(sync.dbId(), true);
-
-            if (const auto exitInfo = checkIfSyncIsValid(sync); !exitInfo) {
-                LOG_WARN(_logger, "Error in checkIfSyncIsValid for syncDbId=" << sync.dbId() << " : " << exitInfo);
-                addError(Error(sync.dbId(), errId(), exitInfo));
-                resultStream << toInt(exitInfo.code());
-                break;
-            }
-
-            ExitInfo mainExitInfo = ExitCode::Ok;
-            bool start = true;
-            if (const auto exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
-                LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo);
-                if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
-                    resultStream << toInt(exitInfo.code());
-                    break;
-                }
-                // Continue (ie. Init SyncPal but don't start it)
-                mainExitInfo = exitInfo;
-                start = false;
-            }
-
-            if (const auto exitInfo =
-                        initSyncPal(sync, NodeSet(), NodeSet(), NodeSet(), start, std::chrono::seconds(0), true, false);
-                !exitInfo) {
-                LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " : " << exitInfo);
-                addError(Error(errId(), exitInfo));
-                mainExitInfo.merge(exitInfo, {ExitCode::SystemError});
-            }
-
-            Utility::restartFinderExtension();
-
-            resultStream << mainExitInfo.code();
+            resultStream << startSync(syncDbId);
             break;
         }
         case RequestNum::SYNC_STOP: {
@@ -2674,7 +2627,7 @@ ExitInfo AppServer::startSyncs(User &user) {
     }
 
     std::chrono::seconds startDelay{0};
-    for (Account &account: accountList) {
+    for (const Account &account: accountList) {
         // Load drive list
         std::vector<Drive> driveList;
         if (!ParmsDb::instance()->selectAllDrives(account.dbId(), driveList)) {
@@ -2682,7 +2635,7 @@ ExitInfo AppServer::startSyncs(User &user) {
             return {ExitCode::DbError, ExitCause::DbAccessError};
         }
 
-        for (Drive &drive: driveList) {
+        for (const Drive &drive: driveList) {
             // Load sync list
             std::vector<Sync> syncList;
             if (!ParmsDb::instance()->selectAllSyncs(drive.dbId(), syncList)) {
@@ -2727,36 +2680,12 @@ ExitInfo AppServer::startSyncs(User &user) {
                     }
                 }
 
-                // Clear old errors for this sync
-                clearErrors(sync.dbId(), false);
-                clearErrors(sync.dbId(), true);
-
-                if (const auto exitInfo = checkIfSyncIsValid(sync); !exitInfo) {
-                    LOG_WARN(_logger, "Error in checkIfSyncIsValid for syncDbId=" << sync.dbId() << " : " << exitInfo);
-                    addError(Error(sync.dbId(), errId(), exitInfo));
-                    continue;
-                }
-
-                bool start = !user.keychainKey().empty();
-
-                if (const auto exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
-                    LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo);
-                    mainExitInfo.merge(exitInfo, {ExitCode::SystemError});
-                    if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
-                        continue;
-                    }
-                    // Continue (ie. Init SyncPal but don't start it)
-                    start = false;
-                }
-
-                // Create and start SyncPal
                 startDelay += std::chrono::seconds(START_SYNCPALS_TIME_GAP);
-                if (const auto exitInfo =
-                            initSyncPal(sync, blackList, undecidedList, QSet<QString>(), start, startDelay, false, false);
-                    !exitInfo) {
-                    LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " : " << exitInfo);
+                if (const auto exitInfo = startSync(sync, startDelay); !exitInfo) {
+                    LOG_WARN(_logger, "Error in startSync for syncDbId=" << sync.dbId() << " : " << exitInfo);
                     addError(Error(sync.dbId(), errId(), exitInfo));
-                    mainExitInfo.merge(exitInfo, {ExitCode::SystemError});
+                    mainExitInfo.merge(exitInfo, {ExitCode::SystemError, ExitCode::DbError, ExitCode::InvalidSync});
+                    continue;
                 }
             }
         }
@@ -2777,6 +2706,67 @@ ExitInfo AppServer::startSyncs(User &user) {
             return {ExitCode::DataError, ExitCause::DbEntryNotFound};
         }
     }
+
+    return mainExitInfo;
+}
+
+void AppServer::startSyncAndRetryOnError(const int syncDbId) {
+    if (const auto exitInfo = startSync(syncDbId); !exitInfo) {
+        LOG_WARN(_logger, "Error in startSyncAndRetryOnError: " << exitInfo);
+        if (exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::SyncDirDoesntExist) {
+            LOG_DEBUG(_logger, "Retry to start syncs in " << START_SYNCPALS_RETRY_INTERVAL << " ms");
+            QTimer::singleShot(START_SYNCPALS_RETRY_INTERVAL, this, [syncDbId, this]() { startSyncAndRetryOnError(syncDbId); });
+        }
+    }
+}
+
+ExitInfo AppServer::startSync(const int syncDbId, const std::chrono::seconds startDelay /*= std::chrono::seconds::zero()*/) {
+    LOG_DEBUG(_logger, "Starting sync: " << syncDbId);
+
+    Sync sync;
+    bool found = false;
+    if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
+        LOG_WARN(_logger, "Error in ParmsDb::selectSync");
+        return ExitCode::DbError;
+    }
+    if (!found) {
+        LOG_WARN(_logger, "Sync not found in sync table for syncDbId=" << syncDbId);
+        return ExitCode::DataError;
+    }
+
+    return startSync(sync, startDelay);
+}
+
+ExitInfo AppServer::startSync(const Sync &sync, const std::chrono::seconds startDelay /*= std::chrono::seconds::zero()*/) {
+    // Clear old errors for this sync
+    (void) clearErrors(sync.dbId(), false);
+    (void) clearErrors(sync.dbId(), true);
+
+    if (const auto exitInfo = checkIfSyncIsValid(sync); !exitInfo) {
+        LOG_WARN(_logger, "Error in checkIfSyncIsValid for syncDbId=" << sync.dbId() << " : " << exitInfo);
+        addError(Error(sync.dbId(), errId(), exitInfo));
+        return exitInfo;
+    }
+
+    ExitInfo mainExitInfo = ExitCode::Ok;
+    bool start = true;
+    if (const auto exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
+        LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo);
+        if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
+            return exitInfo;
+        }
+        // Continue (i.e. Init SyncPal but don't start it)
+        mainExitInfo = exitInfo;
+        start = false;
+    }
+
+    if (const auto exitInfo = initSyncPal(sync, NodeSet(), NodeSet(), NodeSet(), start, startDelay, true, false); !exitInfo) {
+        LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " : " << exitInfo);
+        addError(Error(errId(), exitInfo));
+        mainExitInfo.merge(exitInfo, {ExitCode::SystemError});
+    }
+
+    Utility::restartFinderExtension();
 
     return mainExitInfo;
 }
@@ -4273,7 +4263,9 @@ void AppServer::onRestartSyncs() {
         if (syncPtr->isPaused() || syncPtr->pauseAsked()) {
             syncPtr->unpause();
         }
-        if (syncPtr->shouldBeRestarted()) syncPtr->start();
+        if (syncPtr->shouldRetry()) {
+            startSyncAndRetryOnError(syncPtr->syncDbId());
+        }
     }
 }
 

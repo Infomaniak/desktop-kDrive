@@ -160,10 +160,13 @@ class AppServer : public SharedTools::QtSingleApplication {
         void startSyncsAndRetryOnError();
         [[nodiscard]] ExitInfo startSyncs();
         [[nodiscard]] ExitInfo startSyncs(User &user);
+        void startSyncAndRetryOnError(int syncDbId);
+        [[nodiscard]] ExitInfo startSync(int syncDbId, std::chrono::seconds startDelay = std::chrono::seconds::zero());
+        [[nodiscard]] ExitInfo startSync(const Sync &sync, std::chrono::seconds startDelay = std::chrono::seconds::zero());
         [[nodiscard]] ExitInfo processMigratedSyncOnceConnected(int userDbId, int driveId, Sync &sync, QSet<QString> &blackList,
                                                                 QSet<QString> &undecidedList, bool &syncUpdated);
         ExitCode clearErrors(int syncDbId, bool autoResolved = false);
-        // Check if the synchronization `sync` is registred in the sync database and
+        // Check if the synchronization `sync` is registered in the sync database and
         // if the `sync` folder does not contain any other sync subfolder.
         [[nodiscard]] ExitInfo checkIfSyncIsValid(const Sync &sync);
 

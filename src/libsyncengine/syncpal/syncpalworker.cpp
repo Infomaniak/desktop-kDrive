@@ -52,7 +52,7 @@ void SyncPalWorker::execute() {
 #endif
     }
 
-    _restartLater = false;
+    _retryLater = false;
 
     // Wait before really starting
     bool awakenByStop = false;
@@ -189,7 +189,7 @@ void SyncPalWorker::execute() {
                     const auto exitCause = stepWorkers[0] ? stepWorkers[0]->exitCause() : stepWorkers[1]->exitCause();
                     switch (exitCause) {
                         case ExitCause::SyncDirDoesntExist:
-                            restartLater();
+                            retryLater();
                             [[fallthrough]];
                         case ExitCause::NotEnoughDiskSpace:
                         case ExitCause::FileAccessError:
@@ -284,9 +284,15 @@ void SyncPalWorker::unpause() {
     _syncPal->setRestart(true);
 }
 
-void SyncPalWorker::restartLater() {
-    _restartLater = true;
+void SyncPalWorker::retryLater() {
+    _retryLater = true;
     _pauseTime = std::chrono::steady_clock::now();
+}
+
+bool SyncPalWorker::shouldRetry() {
+    const auto val = _retryLater;
+    _retryLater = false;
+    return val;
 }
 
 std::string SyncPalWorker::stepName(SyncStep step) {

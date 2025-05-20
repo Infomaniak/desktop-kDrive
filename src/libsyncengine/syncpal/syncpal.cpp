@@ -1168,8 +1168,8 @@ bool SyncPal::pauseAsked() const {
     return _syncPalWorker && _syncPalWorker->pauseAsked();
 }
 
-bool SyncPal::shouldBeRestarted() const {
-    return _syncPalWorker && _syncPalWorker->shouldBeRestarted();
+bool SyncPal::shouldRetry() const {
+    return _syncPalWorker && _syncPalWorker->shouldRetry();
 }
 
 bool SyncPal::isIdle() const {
