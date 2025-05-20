@@ -41,7 +41,6 @@ bool UploadJobReplyHandler::extractData(const Poco::JSON::Object::Ptr jsonRes) {
 
     if (_modtimeIn != _modtimeOut) {
         // The backend refused the modification time. To avoid further EDIT operations, we apply the backend's time on local file.
-        bool exists = false;
         if (const IoError ioError = IoHelper::setFileDates(_absoluteFilePath, 0, _modtimeOut, false);
             ioError == IoError::Success) {
             LOG_INFO(Log::instance()->getLogger(),
