@@ -266,9 +266,6 @@ jobs:
 # Tests Windows
   test-Windows:
     needs: build-Windows
-    strategy:
-      matrix:
-        tests-exe: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server","kDrive_test_syncengine","kDrive_test_parms"]
     uses: ./.github/workflows/run-test.yml
     with: 
       test_common_artifact_name: "win-kDrive_test_common"
