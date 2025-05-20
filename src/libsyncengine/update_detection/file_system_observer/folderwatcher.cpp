@@ -36,6 +36,11 @@ void FolderWatcher::start() {
 
 #if defined(__APPLE__)
     _thread->detach();
+    uint16_t counter = 0;
+    while (!_ready && counter < 100) { // Wait max 1 sec
+        Utility::msleep(10);
+        counter++;
+    }
 #endif
 }
 
