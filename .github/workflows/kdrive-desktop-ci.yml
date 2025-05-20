@@ -264,13 +264,16 @@ jobs:
         run : rm -rf build-macos
 
 # Tests Windows
-  test-Windows:
+  Test-Windows:
     needs: build-Windows
+    strategy:
+      matrix:
+        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms" ]
     uses: ./.github/workflows/run-test.yml
     with: 
       test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
-      test_common_artifact_name: "win-kDrive_test_common"
-      test_common_exe_name: "kDrive_test_common.exe"
+      test_common_artifact_name: win-${{ matrix.test_name }}
+      test_common_exe_name: ${{ matrix.test_name }}.exe
 
 # Tests Linux
   test-common-Linux:

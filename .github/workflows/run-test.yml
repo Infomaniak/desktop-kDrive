@@ -14,13 +14,13 @@ on:
         type: string
 
 jobs:
-  test-common-Windows:
+  Common:
     runs-on: [ self-hosted, Windows ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
     steps:
         - uses: actions/checkout@v4
-        - name: Build Windows
+        - name: Run test
           uses: ./.github/actions/run_test_windows
           with:  
             artifact_name: ${{ inputs.test_common_artifact_name }}
