@@ -16,11 +16,6 @@ runs:
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
 
-      - name: Checkout the PR
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
       - name: Restore extension packages
         run : nuget restore extensions/windows/cfapi/kDriveExt.sln
         shell: powershell

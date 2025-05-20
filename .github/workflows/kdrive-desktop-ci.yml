@@ -28,12 +28,15 @@ jobs:
   build-Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
     steps:
-        - uses: actions/checkout@v4
-        - name: Build Windows
-          uses: ./.github/actions/build_windows
-          with:  
-            virtual_cert_id: ${{ secrets.WINDOWS_VIRTUAL_CERT }}
-            virtual_cert_pass: ${{ secrets.WINDOWS_VIRTUAL_CERT_PASSWORD }}
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build Windows
+        uses: ./.github/actions/build_windows
+        with:  
+          virtual_cert_id: ${{ secrets.WINDOWS_VIRTUAL_CERT }}
+          virtual_cert_pass: ${{ secrets.WINDOWS_VIRTUAL_CERT_PASSWORD }}
     
   build-Linux:
     if: false

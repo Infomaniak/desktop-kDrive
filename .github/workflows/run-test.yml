@@ -70,8 +70,8 @@ jobs:
           uses: ./.github/actions/run_test_windows
           with:  
             artifact_name: ${{ inputs.test_common_server_artifact_name }}
-            exe_name: ${{ inputs.test_common_exe_name }}
-            test_dependencies_version: ${{ inputs.test_common_server_exe_name }}
+            exe_name: ${{ inputs.test_common_server_exe_name }}
+            test_dependencies_version: ${{ inputs.test_dependencies_version }}
   Server:
     runs-on: [ self-hosted, Windows ]
     env:
@@ -82,8 +82,8 @@ jobs:
           uses: ./.github/actions/run_test_windows
           with:  
             artifact_name: ${{ inputs.test_server_artifact_name }}
-            exe_name: ${{ inputs.test_common_exe_name }}
-            test_dependencies_version: ${{ inputs.test_server_exe_name }}
+            exe_name: ${{ inputs.test_server_exe_name }}
+            test_dependencies_version: ${{ inputs.test_dependencies_version }}
   Syncengine:
     runs-on: [ self-hosted, Windows ]
     env:
@@ -94,8 +94,8 @@ jobs:
           uses: ./.github/actions/run_test_windows
           with:  
             artifact_name: ${{ inputs.test_syncengine_artifact_name }}
-            exe_name: ${{ inputs.test_common_exe_name }}
-            test_dependencies_version: ${{ inputs.test_syncengine_exe_name }}
+            exe_name: ${{ inputs.test_syncengine_exe_name }}
+            test_dependencies_version: ${{ inputs.test_dependencies_version }}
   Parms:
     runs-on: [ self-hosted, Windows ]
     env:
@@ -106,5 +106,5 @@ jobs:
           uses: ./.github/actions/run_test_windows
           with:  
             artifact_name: ${{ inputs.test_parms_exe_name }}
-            exe_name: ${{ inputs.test_common_exe_name }}
-            test_dependencies_version: ${{ inputs.test_parms_exe_name }}
+            exe_name: ${{ inputs.test_parms_exe_name }}
+            test_dependencies_version: ${{ inputs.test_dependencies_version }}
