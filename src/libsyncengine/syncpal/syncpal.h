@@ -263,8 +263,15 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const;
 
         // Returns a snapshot of the filesystem state at the start of the ongoing sync.
+        // This snapshot is immutable and remains consistent throughout the sync.
         // Returns nullptr if no sync is currently in progress.
         std::shared_ptr<ConstSnapshot> snapshot(ReplicaSide side) const;
+
+        // Returns a reference to the live snapshot, which reflects the real-time state of the filesystem.
+        // Unlike the immutable snapshot(), this one is continuously updated as changes occur.
+        //
+        // /!\ Must not be called before SyncPal::createWorkers() or after SyncPal::freeWorkers(),
+        // as the underlying data may not be initialized or may have already been released.
         const LiveSnapshot &liveSnapshot(ReplicaSide side) const;
 
     protected:
