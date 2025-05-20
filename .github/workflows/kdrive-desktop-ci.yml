@@ -276,6 +276,8 @@ jobs:
       test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
       test_common_artifact_name: win-${{ matrix.test_name }}
       test_common_exe_name: ${{ matrix.test_name }}.exe
+    secrets: inherit
+
 
 # Tests Linux
   test-common-Linux:
