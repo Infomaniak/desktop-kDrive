@@ -271,7 +271,8 @@ jobs:
         tests-exe: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server","kDrive_test_syncengine","kDrive_test_parms"]
     uses: ./.github/workflows/run-test.yml
     with: 
-      test-executable-name:  ${{ matrix.target }}
+      test_common_artifact_name: "win-kDrive_test_common"
+      test_common_exe_name: "kDrive_test_common.exe"
 
 # Tests Linux
   test-common-Linux:

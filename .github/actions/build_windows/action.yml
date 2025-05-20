@@ -8,10 +8,6 @@ inputs:
   virtual_cert_pass:
     description: 'Password of the virtual certificate'
     required: true
-outputs:
-  random-number:
-    description: "Random number"
-    value: ${{ steps.random-number-generator.outputs.random-number }}
 
 runs:
     using: "composite"
@@ -90,7 +86,7 @@ runs:
       - name: Upload build test common executable
         uses: actions/upload-artifact@v4
         with:
-          name: windows-build-test-common
+          name: win-kDrive_test_common
           path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_common.exe
           retention-days: 1
         if: steps.build.outcome == 'success'
@@ -98,7 +94,7 @@ runs:
       - name: Upload build test common server executable
         uses: actions/upload-artifact@v4
         with:
-          name: windows-build-test-common-server
+          name: win-kDrive_test_common_server.exe
           path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_common_server.exe
           retention-days: 1
         if: steps.build.outcome == 'success'
@@ -106,7 +102,7 @@ runs:
       - name: Upload build test server executable
         uses: actions/upload-artifact@v4
         with:
-          name: windows-build-test-server
+          name: win-kDrive_test_server.exe
           path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_server.exe
           retention-days: 1
         if: steps.build.outcome == 'success'
@@ -114,7 +110,7 @@ runs:
       - name: Upload build test syncengine executable
         uses: actions/upload-artifact@v4
         with:
-          name: windows-build-test-syncengine
+          name: win-kDrive_test_syncengine.exe
           path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_syncengine.exe
           retention-days: 1
         if: steps.build.outcome == 'success'
@@ -122,7 +118,7 @@ runs:
       - name: Upload build test parms executable
         uses: actions/upload-artifact@v4
         with:
-          name: windows-build-test-parms
+          name: win-kDrive_test_parms.exe
           path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_parms.exe
           retention-days: 1
         if: steps.build.outcome == 'success'
