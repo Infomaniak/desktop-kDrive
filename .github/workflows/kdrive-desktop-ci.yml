@@ -270,6 +270,7 @@ jobs:
     with: 
       test_common_artifact_name: "win-kDrive_test_common"
       test_common_exe_name: "kDrive_test_common.exe"
+      test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
 # Tests Linux
   test-common-Linux:
