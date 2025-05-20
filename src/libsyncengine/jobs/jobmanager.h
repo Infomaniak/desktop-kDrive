@@ -59,7 +59,7 @@ class JobManager {
 
     private:
         JobManager();
-        void startThreadIfNeeded();
+        void startMainThreadIfNeeded();
 
         void run() noexcept;
         void startJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority);

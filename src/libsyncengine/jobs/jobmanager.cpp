@@ -49,7 +49,7 @@ std::shared_ptr<JobManager> JobManager::instance() noexcept {
     return _instance;
 }
 
-void JobManager::startThreadIfNeeded() {
+void JobManager::startMainThreadIfNeeded() {
     if (!_mainThread) {
         const std::function<void()> runFunction = std::bind_front(&JobManager::run, this);
         _mainThread = std::make_unique<std::thread>(runFunction);
@@ -77,7 +77,7 @@ void JobManager::clear() {
 
 void JobManager::queueAsyncJob(const std::shared_ptr<AbstractJob> job,
                                const Poco::Thread::Priority priority /*= Poco::Thread::PRIO_NORMAL*/) noexcept {
-    startThreadIfNeeded();
+    startMainThreadIfNeeded();
     const std::function<void(const UniqueId)> callback = std::bind_front(&JobManager::eraseJob, this);
     job->setMainCallback(callback);
     _data.queue(job, priority);
