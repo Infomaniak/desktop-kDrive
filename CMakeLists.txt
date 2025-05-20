@@ -23,6 +23,8 @@ add_subdirectory(src/3rdparty/keychain)
 if (WIN32 AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     # Use fallback library types for imported dependencies
     set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO "RelWithDebInfo;Release;")
+
+    add_compile_definitions(POCO_DLL)
 endif ()
 
 IF(APPLE)
