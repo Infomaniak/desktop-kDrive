@@ -202,8 +202,8 @@ SyncStatus SyncPal::status() const {
             } else if (_syncPalWorker->stopAsked()) {
                 // Stopping at the request of the user
                 return SyncStatus::StopAsked;
-            } else if (_syncPalWorker->step() == SyncStep::Idle && !restart() &&
-                       !liveSnapshot(ReplicaSide::Local).updated() && !liveSnapshot(ReplicaSide::Remote).updated()) {
+            } else if (_syncPalWorker->step() == SyncStep::Idle && !restart() && !liveSnapshot(ReplicaSide::Local).updated() &&
+                       !liveSnapshot(ReplicaSide::Remote).updated()) {
                 // Sync pending
                 return SyncStatus::Idle;
             } else {
@@ -1330,14 +1330,11 @@ void SyncPal::copySnapshots() {
 }
 
 void SyncPal::freeSnapshotsCopies() {
-    if (_localSnapshot) {
-        assert(_localSnapshot.use_count() == 1);
-        _localSnapshot.reset();
-    }
-    if (_remoteSnapshot) {
-        assert(_remoteSnapshot.use_count() == 1);
-        _remoteSnapshot.reset();
-    }
+    assert(_localSnapshot.use_count() == 1);
+    _localSnapshot.reset();
+
+    assert(_remoteSnapshot.use_count() == 1);
+    _remoteSnapshot.reset();
 }
 
 void SyncPal::invalideSnapshots() {
