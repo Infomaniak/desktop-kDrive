@@ -20,8 +20,6 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/testhelpers.h"
 #include "config.h"
-#include "io/filestat.h"
-#include "io/iohelper.h"
 #include "libcommon/utility/utility.h" // CommonUtility::isSubDir
 #include "libcommonserver/log/log.h"
 
@@ -470,6 +468,7 @@ void TestUtility::testNormalizedSyncPath() {
     SyncPath normalizedPath;
     CPPUNIT_ASSERT(Utility::normalizedSyncPath("a/b/c", normalizedPath) && normalizedPath == SyncPath("a/b/c"));
     CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a/b/c", normalizedPath) && normalizedPath == SyncPath("/a/b/c"));
+    CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a\\b/c", normalizedPath) && normalizedPath != SyncPath("/a/b/c"));
 #ifdef _WIN32
     CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(a\b\c)", normalizedPath) && normalizedPath == SyncPath("a/b/c"));
     CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(\a\b\c)", normalizedPath) && normalizedPath == SyncPath("/a/b/c"));
@@ -530,13 +529,6 @@ void TestUtility::testUserName() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << Utility::formatSyncPath(homeDir));
     CPPUNIT_ASSERT_EQUAL(homeDir.filename().native(), userName);
 #endif
-}
-
-void TestUtility::testSplitPath() {
-    const auto fileNames = Utility::splitPath(SyncPath("A") / "B" / "file.txt");
-    CPPUNIT_ASSERT(Str("A") == fileNames[2]);
-    CPPUNIT_ASSERT(Str("B") == fileNames[1]);
-    CPPUNIT_ASSERT(Str("file.txt") == fileNames[0]);
 }
 
 } // namespace KDC

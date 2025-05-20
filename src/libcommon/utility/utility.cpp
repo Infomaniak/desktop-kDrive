@@ -1027,4 +1027,88 @@ bool CommonUtility::normalizedSyncName(const SyncName &name, SyncName &normalize
     return true;
 }
 #endif
+
+SyncName CommonUtility::preferredPathSeparator() {
+    return SyncName{std::filesystem::path::preferred_separator};
+}
+
+std::vector<SyncName> CommonUtility::splitPath(const SyncPath &path) {
+    std::vector<SyncName> itemNames;
+    SyncPath pathTmp(path);
+
+    while (pathTmp != pathTmp.root_path()) {
+        (void) itemNames.emplace_back(pathTmp.filename().native());
+        pathTmp = pathTmp.parent_path();
+    }
+
+    return itemNames;
+}
+
+std::vector<SyncName> CommonUtility::split(SyncName name, const SyncName &delimiter) {
+    std::vector<SyncName> tokens;
+    size_t pos = 0;
+    SyncName token;
+
+    while ((pos = name.find(delimiter)) != std::string::npos) {
+        token = name.substr(0, pos);
+        tokens.push_back(token);
+        name.erase(0, pos + delimiter.length());
+    }
+    tokens.push_back(name);
+
+    return tokens;
+}
+
+std::vector<SyncName> CommonUtility::splitPath(const SyncName &pathName) {
+    SyncPath path{pathName};
+
+    return split(path.make_preferred().native(), preferredPathSeparator());
+}
+
+std::unordered_set<SyncName> CommonUtility::computeSyncNameNormalizations(const SyncName &name) {
+    std::unordered_set<SyncName> result;
+    result.emplace(name);
+
+    SyncName nfcNormalizedName;
+    if (const bool nfcSuccess = CommonUtility::normalizedSyncName(name, nfcNormalizedName, UnicodeNormalization::NFC);
+        nfcSuccess) {
+        (void) result.emplace(nfcNormalizedName);
+    }
+
+    SyncName nfdNormalizedName;
+    if (const bool nfdSuccess = CommonUtility::normalizedSyncName(name, nfdNormalizedName, UnicodeNormalization::NFD);
+        nfdSuccess) {
+        (void) result.emplace(nfdNormalizedName);
+    }
+
+
+    return result;
+}
+
+std::unordered_set<SyncName> CommonUtility::computePathNormalizations(const std::vector<SyncName> &pathSegments, int lastIndex) {
+    if (lastIndex == -1 || pathSegments.empty()) return {};
+
+    auto lastSegmentNormalizations = computeSyncNameNormalizations(pathSegments[static_cast<size_t>(lastIndex)]);
+    auto headNormalizations = computePathNormalizations(pathSegments, lastIndex - 1);
+
+    std::unordered_set<SyncName> result;
+    for (const auto &lastSegmentNormalization: lastSegmentNormalizations) {
+        for (const auto &headNormalization: headNormalizations)
+            result.emplace(headNormalization + CommonUtility::preferredPathSeparator() + lastSegmentNormalization);
+        if (headNormalizations.empty()) result.emplace(lastSegmentNormalization);
+    }
+    return result;
+}
+
+std::unordered_set<SyncName> CommonUtility::computePathNormalizations(const std::vector<SyncName> &pathSegments) {
+    return computePathNormalizations(pathSegments, static_cast<int>(pathSegments.size() - 1));
+}
+
+std::unordered_set<SyncName> CommonUtility::computePathNormalizations(const SyncName &path) {
+    const auto pathSegments = CommonUtility::splitPath(path);
+
+    return computePathNormalizations(pathSegments);
+}
+
+
 } // namespace KDC

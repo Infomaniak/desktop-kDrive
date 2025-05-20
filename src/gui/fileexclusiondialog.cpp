@@ -164,6 +164,61 @@ void FileExclusionDialog::initUI() {
     connect(this, &CustomDialog::exit, this, &FileExclusionDialog::onExit);
 }
 
+namespace {
+void normalizeTemplateList(QList<ExclusionTemplateInfo> &templateList) {
+    for (auto &templateInfo: templateList) {
+        SyncName normalizedName;
+        if (const bool nfcSuccess = CommonUtility::normalizedSyncName(QStr2SyncName(templateInfo.templ()), normalizedName,
+                                                                      UnicodeNormalization::NFC);
+            !nfcSuccess) {
+            qCWarning(lcFileExclusionDialog()) << "Failed to NFC-normalize the template " << templateInfo.templ();
+        } else {
+            templateInfo.setTempl(SyncName2QStr(normalizedName));
+        }
+    }
+}
+
+void filterOutTemplatesWrtNfcNormalization(QList<ExclusionTemplateInfo> &templateList) {
+    std::set<SyncName> uniqueTemplateStrings; // Unique template names up to NFC-encoding.
+    for (const auto &templateInfo: templateList) {
+        SyncName normalizedName;
+        if (const bool nfcSuccess = CommonUtility::normalizedSyncName(QStr2SyncName(templateInfo.templ()), normalizedName,
+                                                                      UnicodeNormalization::NFC);
+            !nfcSuccess) {
+            qCWarning(lcFileExclusionDialog()) << "Failed to NFC-normalize the template " << templateInfo.templ();
+            (void) uniqueTemplateStrings.emplace(QStr2SyncName(templateInfo.templ()));
+        } else {
+            (void) uniqueTemplateStrings.emplace(normalizedName);
+        }
+    }
+
+    // Each set of template strings with the same NFC-normalization is reduced to a single element.
+    for (const auto &uniqueTemplateString: uniqueTemplateStrings) {
+        bool erase = false;
+        for (auto it = templateList.begin(); it != templateList.end();) {
+            SyncName normalizedName;
+            bool match = false;
+            if (const bool nfcSuccess =
+                        CommonUtility::normalizedSyncName(QStr2SyncName(it->templ()), normalizedName, UnicodeNormalization::NFC);
+                !nfcSuccess) {
+                qCWarning(lcFileExclusionDialog()) << "Failed to NFC-normalize the template " << it->templ();
+            } else {
+                match = normalizedName == uniqueTemplateString;
+            }
+
+            if (erase && match) {
+                it = templateList.erase(it);
+            } else {
+                ++it;
+            }
+            if (match) erase = true;
+        }
+    }
+
+    normalizeTemplateList(templateList);
+}
+} // namespace
+
 void FileExclusionDialog::updateUI() {
     ExitCode exitCode;
     exitCode = GuiRequests::getExclusionTemplateList(true, _defaultTemplateList);
@@ -173,6 +228,7 @@ void FileExclusionDialog::updateUI() {
     }
 
     exitCode = GuiRequests::getExclusionTemplateList(false, _userTemplateList);
+    filterOutTemplatesWrtNfcNormalization(_userTemplateList);
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcFileExclusionDialog()) << "Error in Requests::getExclusionTemplateList: code=" << exitCode;
         return;
@@ -275,15 +331,15 @@ void FileExclusionDialog::loadPatternTable(const QString &scrollToPattern) {
     _filesTableModel->clear();
 
     // Default patterns
-    for (const auto &templ: _defaultTemplateList) {
-        if (!templ.deleted()) {
-            addTemplate(templ, true, row, scrollToPattern, scrollToRow);
+    for (const auto &template_: _defaultTemplateList) {
+        if (!template_.deleted()) {
+            addTemplate(template_, true, row, scrollToPattern, scrollToRow);
         }
     }
 
     // User patterns
-    for (const auto &templ: _userTemplateList) {
-        addTemplate(templ, false, row, scrollToPattern, scrollToRow);
+    for (const auto &template_: _userTemplateList) {
+        addTemplate(template_, false, row, scrollToPattern, scrollToRow);
     }
 
     if (scrollToRow) {
@@ -323,47 +379,43 @@ void FileExclusionDialog::onExit() {
 
 namespace {
 //
-//! Computes and returns the NFC and NFD normalizations of `exclusionTemplate`.
+//! Computes and returns all possible NFC and NFD normalizations of `templateString` segments
+//! interpreted as a file system item path.
 /*!
-  \param exclusionTemplate is the pattern string the normalizations of which are queried.
+  \param templateString is the pattern string the normalizations of which are queried.
   \return a set of QString containing the NFC and NFD normalizations of exclusionTemplate, if those have been successful.
   The returned set contains additionally the string exclusionTemplate in any case.
 */
-std::set<QString> computeNormalizations(const QString &exclusionTemplate) {
-    const auto &syncNameTemplate = QStr2SyncName(exclusionTemplate);
-    std::set<QString> result;
-    result.emplace(exclusionTemplate);
+std::unordered_set<QString> computeNormalizations(const QString &templateString) {
+    const auto normalizations = CommonUtility::computePathNormalizations(QStr2SyncName(templateString));
+    std::unordered_set<QString> result;
 
-    SyncName nfcNormalizedTemplate;
-
-    if (const bool nfcSuccess =
-                CommonUtility::normalizedSyncName(syncNameTemplate, nfcNormalizedTemplate, UnicodeNormalization::NFC);
-        !nfcSuccess) {
-        qCWarning(lcFileExclusionDialog()) << "Failed to NFC-normalize the template " << exclusionTemplate;
-    } else {
-        (void) result.emplace(SyncName2QStr(nfcNormalizedTemplate));
-    }
-
-    SyncName nfdNormalizedTemplate;
-
-    if (const bool nfdSuccess =
-                CommonUtility::normalizedSyncName(syncNameTemplate, nfdNormalizedTemplate, UnicodeNormalization::NFD);
-        !nfdSuccess) {
-        qCWarning(lcFileExclusionDialog()) << "Error in normalizedSyncName: Failed to NFD-normalize the template "
-                                           << exclusionTemplate;
-    } else {
-        (void) result.emplace(SyncName2QStr(nfdNormalizedTemplate));
-    }
+    for (const SyncName &normalization: normalizations) (void) result.emplace(SyncName2QStr(normalization));
 
 
     return result;
 }
 
+
+QList<ExclusionTemplateInfo> computeNormalizations(const QList<ExclusionTemplateInfo> &templateList) {
+    QList<ExclusionTemplateInfo> result;
+
+    for (const auto &templateInfo: templateList) {
+        const auto normalizations = computeNormalizations(templateInfo.templ());
+        for (const auto &normalization: normalizations) result.append(ExclusionTemplateInfo{normalization});
+    }
+
+    return result;
+}
+
+
 bool containsStringPattern(const QList<ExclusionTemplateInfo> &exclusionList, const QString &pattern) {
-    const auto &it = std::find_if(exclusionList.cbegin(), exclusionList.cend(),
-                                  [&](const ExclusionTemplateInfo &eti) { return eti.templ() == pattern; });
+    const auto predicate = [&](const ExclusionTemplateInfo &eti) { return eti.templ() == pattern; };
+    const auto &it = std::find_if(exclusionList.cbegin(), exclusionList.cend(), predicate);
+
     return (it != exclusionList.cend());
 }
+
 } // namespace
 
 
@@ -373,25 +425,28 @@ void FileExclusionDialog::onAddFileButtonTriggered(bool checked) {
     EnableStateHolder _(this);
 
     FileExclusionNameDialog dialog(this);
-    if (dialog.exec() == QDialog::Accepted) {
-        const QString &templ = dialog.templ();
-        if (containsStringPattern(_userTemplateList, templ) || containsStringPattern(_defaultTemplateList, templ)) {
-            CustomMessageBox msgBox(QMessageBox::Information, tr("Exclusion template already exists!"), QMessageBox::Ok, this);
-            msgBox.exec();
-            return;
-        }
+    if (dialog.exec() != QDialog::Accepted) return;
 
-        const auto &normalizedTemplates = computeNormalizations(templ);
-        // If NCF and NFD normalizations of `templ` are both successful and yield different strings, insert both.
-        for (const auto &normalizedTemplate: normalizedTemplates) {
-            if (!containsStringPattern(_userTemplateList, normalizedTemplate)) {
-                _userTemplateList.append(ExclusionTemplateInfo(normalizedTemplate));
-            }
-        }
+    const QString &template_ = dialog.templ();
+    const auto &normalizedTemplates = computeNormalizations(template_);
 
-        loadPatternTable(templ); // Reload and scroll to newly inserted entry.
-        setNeedToSave(true);
+    const auto predicate = [&](const auto &templateNormalizedString) {
+        return containsStringPattern(_userTemplateList, templateNormalizedString) ||
+               containsStringPattern(_defaultTemplateList, templateNormalizedString);
+    };
+
+    // Insert `template_` only if none of its normalizations can be found in the default and user lists.
+    if (const auto it = std::find_if(normalizedTemplates.cbegin(), normalizedTemplates.cend(), predicate);
+        it != normalizedTemplates.cend()) {
+        CustomMessageBox msgBox(QMessageBox::Information, tr("Exclusion template already exists!"), QMessageBox::Ok, this);
+        msgBox.exec();
+        return;
     }
+
+    _userTemplateList.append(template_);
+
+    loadPatternTable(template_); // Reload and scroll to newly inserted entry.
+    setNeedToSave(true);
 }
 
 void FileExclusionDialog::onTableViewClicked(const QModelIndex &index) {
@@ -415,13 +470,11 @@ void FileExclusionDialog::onTableViewClicked(const QModelIndex &index) {
 
     // Delete template
     const QString &template_ = templateItem->data(Qt::DisplayRole).toString();
-    const auto &templateNormalizations = computeNormalizations(template_);
-
-    for (auto templateIt = _userTemplateList.begin(); templateIt != _userTemplateList.end();) {
-        if (templateNormalizations.contains(templateIt->templ())) {
-            templateIt = _userTemplateList.erase(templateIt);
-        } else
-            ++templateIt;
+    for (auto templateIt = _userTemplateList.begin(); templateIt != _userTemplateList.end(); ++templateIt) {
+        if (templateIt->templ() == template_) {
+            _userTemplateList.erase(templateIt);
+            break;
+        }
     }
 
     loadPatternTable();
@@ -440,18 +493,18 @@ void FileExclusionDialog::onWarningCheckBoxClicked(bool checked) {
     const QString &template_ = warningCheckBox->property(patternProperty).toString();
     bool done = false;
 
-    for (auto templateIt = _defaultTemplateList.begin(); templateIt != _defaultTemplateList.end(); ++templateIt) {
-        if (template_ == templateIt->templ()) {
-            templateIt->setWarning(checked);
+    for (auto &templateInfo: _defaultTemplateList) {
+        if (template_ == templateInfo.templ()) {
+            templateInfo.setWarning(checked);
             done = true;
             break;
         }
     }
 
     if (!done) {
-        for (auto templateIt = _userTemplateList.begin(); templateIt != _userTemplateList.end(); ++templateIt) {
-            if (template_ == templateIt->templ()) {
-                templateIt->setWarning(checked);
+        for (auto &templateInfo: _userTemplateList) {
+            if (template_ == templateInfo.templ()) {
+                templateInfo.setWarning(checked);
                 break;
             }
         }
@@ -472,7 +525,8 @@ void FileExclusionDialog::onSaveButtonTriggered(bool checked) {
         return;
     }
 
-    exitCode = GuiRequests::setExclusionTemplateList(false, _userTemplateList);
+    auto expandedUserTemplateList = computeNormalizations(_userTemplateList);
+    exitCode = GuiRequests::setExclusionTemplateList(false, expandedUserTemplateList);
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcFileExclusionDialog()) << "Error in Requests::setExclusionTemplateList: code=" << exitCode;
         CustomMessageBox msgBox(QMessageBox::Warning, tr("Cannot save changes!"), QMessageBox::Ok, this);
