@@ -68,9 +68,6 @@ int main(int argc, char **argv) {
 
     std::cout << "kDrive client starting" << std::endl;
 
-    // Initialize log4cplus - See https://github.com/log4cplus/log4cplus?tab=readme-ov-file#windows-and-visual-studio
-    log4cplus::Initializer initializer;
-
     // Working dir;
     KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
     KDC::sentry::Handler::init(KDC::AppType::Client);
