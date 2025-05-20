@@ -267,6 +267,8 @@ jobs:
   Test-Windows:
     needs: build-Windows
     strategy:
+      fail-fast: false
+      max-parallel: 5
       matrix:
         test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms" ]
     uses: ./.github/workflows/run-test.yml
