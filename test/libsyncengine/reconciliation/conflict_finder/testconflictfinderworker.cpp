@@ -82,7 +82,6 @@ void TestConflictFinderWorker::testCreateCreateDifferentEncoding() {
     rNodeAC->setName(testhelpers::makeNfdSyncName());
 
     _syncPal->copySnapshots();
-    _syncPal->copySnapshots();
     const auto conf = _syncPal->_conflictFinderWorker->checkCreateCreateConflict(lNodeAC);
     CPPUNIT_ASSERT(conf);
     CPPUNIT_ASSERT_EQUAL(lNodeAC, conf->node());
