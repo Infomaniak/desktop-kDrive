@@ -23,14 +23,14 @@ class KDriveDesktop(ConanFile):
         tc = CMakeToolchain(self)
         if self.settings.os == "Windows":
             tc.blocks.remove("generic_system")
-            tc.generator = "Ninja"
+            # tc.generator = "Ninja"
 
             # The default VSRuntimeBlock only configures CMAKE_MSVC_RUNTIME_LIBRARY for the profile's build_type
             # (in the CI's profile, its Release), yielding $<$<CONFIG:Release>:MultiThreadedDLL>. Other configs
             # (RelWithDebInfo, Debug) fall back to MSVC’s default CRT selection (/MT), here, we want /MD
             tc.blocks.remove("vs_runtime")
             tc.blocks["override_vs_runtime"] = OverrideVSRuntimeBlock
-            
+
         if self.settings.os == "Macos":
             tc.variables["CMAKE_OSX_ARCHITECTURES"] = "x86_64;arm64"
             tc.variables["CMAKE_MACOSX_DEPLOYMENT_TARGET"] = "10.15"
@@ -39,9 +39,9 @@ class KDriveDesktop(ConanFile):
     def layout(self):
         cmake_layout(self)
 
-    def build_requirements(self):
-        if self.settings.os == "Windows":
-            self.tool_requires("ninja/1.11.1")
+    # def build_requirements(self):
+    #     if self.settings.os == "Windows":
+    #         self.tool_requires("ninja/1.11.1")
 
     def requirements(self):
         """
