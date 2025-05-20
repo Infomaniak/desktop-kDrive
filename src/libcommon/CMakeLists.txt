@@ -7,9 +7,6 @@ endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Widgets Gui Sql)
 find_package(Poco 1.13.3 REQUIRED Foundation JSON Util)
-message(STATUS "==> Poco_DIR        = ${Poco_DIR}")
-message(STATUS "==> Poco_FOUND      = ${Poco_FOUND}")
-message(STATUS "==> Poco_VERSION    = ${Poco_VERSION}")
 find_package(log4cplus 2.1.0 REQUIRED)
 find_package(sentry REQUIRED)
 
