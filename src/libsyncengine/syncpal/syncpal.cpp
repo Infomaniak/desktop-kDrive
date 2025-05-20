@@ -411,7 +411,7 @@ void SyncPal::freeSharedObjects() {
 
     // Check that there is no memory leak
     LOG_IF_FAIL(_localSnapshot.use_count() == 0);
-    LOG_IF_FAIL(_localSnapshot.use_count() == 0);
+    LOG_IF_FAIL(_remoteSnapshot.use_count() == 0);
     LOG_IF_FAIL(_localOperationSet.use_count() == 0);
     LOG_IF_FAIL(_remoteOperationSet.use_count() == 0);
     LOG_IF_FAIL(_localUpdateTree.use_count() == 0);
