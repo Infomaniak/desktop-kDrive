@@ -1,0 +1,25 @@
+name: Update branch marked auto merge
+
+on:
+    # Runs every 15 minutes
+    schedule:
+        - cron: '0/1 * * * *' # change to 15 minutes
+    pull_request:
+      branches-ignore:
+        - 'main'
+
+concurrency:
+  group: auto-update
+  cancel-in-progress: true
+
+jobs:
+  update-branch:
+    if: auto_merge_enabled == 'true'
+    runs-on: runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    steps:
+      - run: |
+        echo Auto merge enabled, updating branch
+      #- uses: lcdsmao/update-branch@v3
+      #  with:
+      #    requiredLabels: auto-merge
+      #    requiredApprovals: 1
