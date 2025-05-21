@@ -71,7 +71,7 @@ class Snapshot {
 
         class SnapshotItemUnorderedMap : public std::unordered_map<NodeId, std::shared_ptr<SnapshotItem>> {
             public:
-                // To ensure the integrity of the liveSnapshot, we need to make sure that it is not used anywhere (i.e., as a
+                // To ensure the integrity of the snapshot, we need to make sure that it is not used anywhere (i.e., as a
                 // child of another item) when removing it from the main map.
                 void erase(const NodeId &id) {
                     const auto it = std::unordered_map<NodeId, std::shared_ptr<SnapshotItem>>::find(id);

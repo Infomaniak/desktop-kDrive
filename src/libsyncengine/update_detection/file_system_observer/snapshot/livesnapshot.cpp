@@ -41,8 +41,9 @@ void LiveSnapshot::init() {
     startUpdate();
 
     _items.clear();
-    (void) _items.try_emplace(rootFolderId(), std::make_shared<SnapshotItem>(rootFolderId()))
-            .first->second->setSnapshotRevisionHandler(_revisionHandlder);
+    auto [res, _] = _items.try_emplace(rootFolderId(), std::make_shared<SnapshotItem>(rootFolderId()));
+    auto newItemPtr = res->second;
+    newItemPtr->setSnapshotRevisionHandler(_revisionHandlder);
 
     _isValid = false;
 }
