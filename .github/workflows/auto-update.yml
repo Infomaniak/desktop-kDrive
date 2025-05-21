@@ -5,8 +5,8 @@ on:
     schedule:
         - cron: '*/15 * * * *'
     # Allows manual execution
-    workflow_dispatch:
-      
+    workflow_dispatch:  
+
   discussion:
     types: [created, edited, answered]
 
