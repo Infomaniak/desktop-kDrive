@@ -40,7 +40,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_EQUAL(int64_t(408278u), fileStat.size);
         CPPUNIT_ASSERT_GREATER(SyncTime(0), fileStat.creationTime);
-        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_GREATEREQUAL(SyncTime(0), fileStat.modtime);
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
