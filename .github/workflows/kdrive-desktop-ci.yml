@@ -159,19 +159,22 @@ jobs:
           keychain_password: ${{ secrets.KEYCHAIN_PASSWORD }}
     
 
-  Tests:
+# Tests Windows
+  Test-Windows:
     needs: build-Windows
-    strategy:
-      matrix:
-        os: [Windows ,macOS]
-    uses: ./.github/workflows/run-tests.yml
+    uses: ./.github/workflows/run-test-win.yml
     with: 
       test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
-      test_common_name: kDrive_test_common
-      test_common_server_name: kDrive_test_common_server
-      test_server_name: kDrive_test_server
-      test_syncengine_name: kDrive_test_syncengine
-      test_parms_name: kDrive_test_parms
+      test_common_artifact_name: win-kDrive_test_common
+      test_common_exe_name: kDrive_test_common.exe
+      test_common_server_artifact_name: win-kDrive_test_common_server
+      test_common_server_exe_name: kDrive_test_common_server.exe
+      test_server_artifact_name: win-kDrive_test_server
+      test_server_exe_name: kDrive_test_server.exe
+      test_syncengine_artifact_name: win-kDrive_test_syncengine
+      test_syncengine_exe_name: kDrive_test_syncengine.exe
+      test_parms_artifact_name: win-kDrive_test_parms
+      test_parms_exe_name: kDrive_test_parms.exe
     secrets: inherit
 
 
@@ -549,19 +552,19 @@ jobs:
         run : rm -rf /tmp/kDrive-logdir/* || true
 
 # Tests macOS
-#  Test-macOS:
-#    needs: build-MacOS
-#    uses: ./.github/workflows/run-test-mac.yml
-#    with: 
-#      test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
-#      test_common_artifact_name: mac-kDrive_test_common
-#      test_common_exe_name: kDrive_test_common
-#      test_common_server_artifact_name: mac-kDrive_test_common_server
-#      test_common_server_exe_name: kDrive_test_common_server
-#      test_server_artifact_name: mac-kDrive_test_server
-#      test_server_exe_name: kDrive_test_server
-#      test_syncengine_artifact_name: mac-kDrive_test_syncengine
-#      test_syncengine_exe_name: kDrive_test_syncengine
-#      test_parms_artifact_name: mac-kDrive_test_parms
-#      test_parms_exe_name: kDrive_test_parms
-#    secrets: inherit
+  Test-macOS:
+    needs: build-MacOS
+    uses: ./.github/workflows/run-test-mac.yml
+    with: 
+      test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+      test_common_artifact_name: mac-kDrive_test_common
+      test_common_exe_name: kDrive_test_common
+      test_common_server_artifact_name: mac-kDrive_test_common_server
+      test_common_server_exe_name: kDrive_test_common_server
+      test_server_artifact_name: mac-kDrive_test_server
+      test_server_exe_name: kDrive_test_server
+      test_syncengine_artifact_name: mac-kDrive_test_syncengine
+      test_syncengine_exe_name: kDrive_test_syncengine
+      test_parms_artifact_name: mac-kDrive_test_parms
+      test_parms_exe_name: kDrive_test_parms
+    secrets: inherit

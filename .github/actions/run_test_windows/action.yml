@@ -5,8 +5,11 @@ inputs:
   test_dependencies_version:
     description: 'The version of the kDrive tests dependencies'
     required: true
-  test_name:
-    description: 'The name of the test, the artifact must be named win-test_name'
+  artifact_name:
+    description: 'The name of the artifact containing the test executable'
+    required: true
+  exe_name:
+    description: 'The name of the executable'
     required: true
 
 runs:
@@ -39,11 +42,11 @@ runs:
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
-          name: win-${{ inputs.test_name }}
+          name: ${{ inputs.artifact_name }}
           path: ${{ github.workspace }}/build-windows/test/
 
       - name: Execute tests
-        run: powershell ./infomaniak-build-tools/run-test.ps1 ./build-windows/test/ ${{ inputs.test_name }}.exe
+        run: powershell ./infomaniak-build-tools/run-test.ps1 ./build-windows/test/ ${{ inputs.exe_name }}
         shell: powershell
 
       - name: Copy logs to workspace
@@ -63,7 +66,7 @@ runs:
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: win-logs-${{ inputs.test_name }}
+          name: win-logs-${{ inputs.artifact_name }}
           path: ${{ github.workspace }}\build-windows\logs\*
           retention-days: 1
         if: always()
