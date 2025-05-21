@@ -3,9 +3,6 @@ name: Run windows tests
 on:
   workflow_call:
     inputs:
-      runs-on:
-        required: true
-        type: string
       test_dependencies_version:
         required: true
         type: string
