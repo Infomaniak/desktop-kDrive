@@ -51,7 +51,7 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem) {
     const std::scoped_lock lock(_mutex);
 
     if (newItem.parentId().empty()) {
-        LOG_WARN(Log::instance()->getLogger(), "Parent ID is empty for item " << newItem.id().c_str());
+        LOG_WARN(Log::instance()->getLogger(), "Parent ID is empty for item " << newItem.id());
         assert(false);
         return false;
     }
