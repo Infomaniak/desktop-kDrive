@@ -42,39 +42,34 @@ runs:
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
         shell: cmd
 
+      - name: Fetch dependencies
+        run:
+          mkdir dependencies
+          cp ${{ github.workspace }}/build-windows/install/bin/*.dll ./dependencies/
+          cp ${{ github.workspace }}/build-windows/install/bin/sync-exclude.lst ./dependencies/
+          cp ${{ github.workspace }}/build-windows/install/bin/*.dll ./dependencies/
+          cp C:\Qt\6.2.3\msvc2019_64\bin\Qt6Widgets.dll ./dependencies/
+          cp C:\Qt\6.2.3\msvc2019_64\bin\Qt6Gui.dll ./dependencies/
+          cp C:\Qt\6.2.3\msvc2019_64\bin\Qt6Network.dll ./dependencies/
+          cp C:\Qt\6.2.3\msvc2019_64\bin\Qt6Sql.dll ./dependencies/
+          cp C:\Qt\6.2.3\msvc2019_64\bin\Qt6Core.dll ./dependencies/
+          cp C:\Qt\6.2.3\msvc2019_64\bin\Qt6DBus.dll ./dependencies/
+          cp C:\Qt\6.2.3\msvc2019_64\bin\icui18n.dll ./dependencies/
+          cp C:\Qt\6.2.3\msvc2019_64\bin\icuuc.dll ./dependencies/
+          cp C:\Qt\6.2.3\msvc2019_64\bin\icudata.dll ./dependencies/
+          cp C:\Qt\6.2.3\msvc2019_64\bin\Qt6Svg.dll ./dependencies/
+          cp C:\Qt\6.2.3\msvc2019_64\plugins\platforms\* ./dependencies/
+          cp C:\Program Files (x86)\cppunit\lib\cppunitd_dll.dll ./dependencies/
+
+        shell: powershell
+        if: steps.build.outcome == 'success'
+
       - name: Upload build common files
         uses: actions/upload-artifact@v4
         with:
           name: windows-build-common-files
           path: |
-              ${{ github.workspace }}/build-windows/install/bin/*.dll
-              ${{ github.workspace }}/build-windows/install/bin/sync-exclude.lst
-          retention-days: 1
-        if: steps.build.outcome == 'success'
-
-      - name: Upload build qt libs
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-build-qt-libs
-          path: |
-              C:\Qt\6.2.3\msvc2019_64\bin\Qt6Widgets.dll
-              C:\Qt\6.2.3\msvc2019_64\bin\Qt6Gui.dll
-              C:\Qt\6.2.3\msvc2019_64\bin\Qt6Network.dll
-              C:\Qt\6.2.3\msvc2019_64\bin\Qt6Sql.dll
-              C:\Qt\6.2.3\msvc2019_64\bin\Qt6Core.dll
-              C:\Qt\6.2.3\msvc2019_64\bin\Qt6DBus.dll
-              C:\Qt\6.2.3\msvc2019_64\bin\icui18n.dll
-              C:\Qt\6.2.3\msvc2019_64\bin\icuuc.dll
-              C:\Qt\6.2.3\msvc2019_64\bin\icudata.dll
-              C:\Qt\6.2.3\msvc2019_64\bin\Qt6Svg.dll
-          retention-days: 1
-        if: steps.build.outcome == 'success'
-
-      - name: Upload qt plugins
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-build-qt-plugin
-          path: C:\Qt\6.2.3\msvc2019_64\plugins\platforms\*
+              ./dependencies/*
           retention-days: 1
         if: steps.build.outcome == 'success'
 

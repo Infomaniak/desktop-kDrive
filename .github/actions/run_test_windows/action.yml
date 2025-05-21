@@ -44,13 +44,6 @@ runs:
           name: windows-build-common-files
           path: ${{ github.workspace }}/build-windows/cache/
 
-      - name: Download qt libs
-        if: steps.cache.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: windows-build-qt-libs
-          path: ${{ github.workspace }}/build-windows/cache/
-
       - name: Copy the cache to the test directory
         run: cp -r ${{ github.workspace }}/build-windows/cache/ ${{ github.workspace }}/build-windows/test/
         shell: powershell
