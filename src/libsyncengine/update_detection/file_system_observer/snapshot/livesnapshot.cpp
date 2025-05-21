@@ -72,7 +72,7 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem) {
                                      << L" with a different id. Removing it and adding the new one.");
                 auto child2 = child; // removeItem cannot be called on a const ref, we need to make a copy.
                 if (!removeItem(child2)) return false;
-                break; // There should be (at most) only one item with the same name in a folder
+                break; // There should be at most one item with the same normalized name in a folder.
             }
         }
     }
