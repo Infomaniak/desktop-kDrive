@@ -1027,4 +1027,26 @@ bool CommonUtility::normalizedSyncName(const SyncName &name, SyncName &normalize
     return true;
 }
 #endif
+
+ReplicaSide CommonUtility::syncNodeTypeSide(SyncNodeType type) {
+    switch (type) {
+        case KDC::SyncNodeType::BlackList:
+            // List of remote directories excluded from sync.
+            return ReplicaSide::Remote;
+        case KDC::SyncNodeType::WhiteList:
+            // List of large remote directories explicitly approved by the user.
+            return ReplicaSide::Remote;
+        case KDC::SyncNodeType::UndecidedList:
+            // List of large remote directories not yet approved by the user.
+            return ReplicaSide::Remote;
+        case KDC::SyncNodeType::TmpRemoteBlacklist:
+            // List of remote items temporarily excluded from sync.
+            return ReplicaSide::Remote;
+        case KDC::SyncNodeType::TmpLocalBlacklist:
+            // List of local items temporarily excluded from sync.
+            return ReplicaSide::Local;
+        default:
+            return ReplicaSide::Unknown;
+    }
+}
 } // namespace KDC

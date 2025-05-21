@@ -160,7 +160,7 @@ struct COMMON_EXPORT CommonUtility {
         static bool normalizedSyncName(const SyncName &name, SyncName &normalizedName,
                                        UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
 
-
+        static ReplicaSide syncNodeTypeSide(SyncNodeType type);
     private:
         static std::mutex _generateRandomStringMutex;
 

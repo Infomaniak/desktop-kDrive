@@ -135,8 +135,7 @@ ExitCode ComputeFSOperationWorker::updateSyncNode(SyncNodeType syncNodeType) {
     }
 
     std::erase_if(nodeIdSet, [this, &syncNodeType](auto &item) {
-        const bool ok = syncNodeType == SyncNodeType::TmpLocalBlacklist ? _syncPal->snapshot(ReplicaSide::Local)->exists(item)
-                                                                        : _syncPal->snapshot(ReplicaSide::Remote)->exists(item);
+        const bool ok = _syncPal->snapshot(CommonUtility::syncNodeTypeSide(syncNodeType))->exists(item);
         return !ok;
     });
 
