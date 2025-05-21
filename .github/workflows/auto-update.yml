@@ -3,10 +3,7 @@ name: Update branch marked auto merge
 on:
     # Runs every 15 minutes
     schedule:
-        - cron: '0/1 * * * *' # change to 15 minutes
-    pull_request:
-      branches-ignore:
-        - 'main'
+        - cron: '*/15 * * * *'
 
 concurrency:
   group: auto-update
@@ -14,14 +11,9 @@ concurrency:
 
 jobs:
   update-branch:
-    #if: ${{ github.event.pull_request.auto_merge }}
+    if: ${{ github.event.pull_request.auto_merge }}
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
     steps:
-      - if: ${{ github.event.pull_request.auto_merge }}
-        run: echo "Auto merge is enabled, updating branch"
-      #- uses: lcdsmao/update-branch@v3
-      #  with:
-      #    requiredApprovals: 1
-
-      - if: ${{ !github.event.pull_request.auto_merge }}
-        run: echo "Auto merge is disabled"
+      - uses: lcdsmao/update-branch@v3
+        with:
+          requiredApprovals: 1
