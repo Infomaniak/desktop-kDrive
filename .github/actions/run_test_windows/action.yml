@@ -15,15 +15,6 @@ inputs:
 runs:
     using: "composite"
     steps:
-      - name: Load system Path into Github environment
-        run : echo Path=%Path%>> %GITHUB_ENV%
-        shell: cmd
-
-      - name: Checkout the PR
-        uses: actions/checkout@v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
-
       - name: Clean up log directory
         run: powershell -ExecutionPolicy Bypass -Command "if (Test-Path '$env:TEMP\kDrive-logdir') { Remove-Item -Path '$env:TEMP\kDrive-logdir\*' -Recurse -Force }"
         shell: powershell
