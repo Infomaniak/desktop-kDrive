@@ -125,8 +125,8 @@ void ComputeFSOperationWorker::execute() {
     setDone(exitCode);
 }
 
+// Remove deleted nodes from sync_node table & cache
 ExitCode ComputeFSOperationWorker::updateSyncNode(SyncNodeType syncNodeType) {
-    // Remove deleted nodes from sync_node table & cache
     NodeSet nodeIdSet;
     ExitCode exitCode = SyncNodeCache::instance()->syncNodes(syncDbId(), syncNodeType, nodeIdSet);
     if (exitCode != ExitCode::Ok) {
