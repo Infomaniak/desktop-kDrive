@@ -1,7 +1,7 @@
 name: Update branch marked auto merge
 
 on:
-    # Runs every 15 minutes
+  # Runs every 15 minutes
     schedule:
         - cron: '*/15 * * * *'
     # Allows manual execution
