@@ -202,8 +202,11 @@ SyncStatus SyncPal::status() const {
             } else if (_syncPalWorker->stopAsked()) {
                 // Stopping at the request of the user
                 return SyncStatus::StopAsked;
-            } else if (_syncPalWorker->step() == SyncStep::Idle && !restart() && !liveSnapshot(ReplicaSide::Local).updated() &&
-                       !liveSnapshot(ReplicaSide::Remote).updated()) {
+            } else if (!_localFSObserverWorker || !_remoteFSObserverWorker) {
+                return SyncStatus::Error;
+            } else if (_syncPalWorker->step() == SyncStep::Idle &&
+                                                          !restart() && !liveSnapshot(ReplicaSide::Local).updated() &&
+                                                          !liveSnapshot(ReplicaSide::Remote).updated()) {
                 // Sync pending
                 return SyncStatus::Idle;
             } else {
@@ -1271,6 +1274,10 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
                 cause);
     addError(error);
 
+    LOG_IF_FAIL(_localFSObserverWorker)
+    LOG_IF_FAIL(_remoteFSObserverWorker)
+    if (!_localFSObserverWorker || !_remoteFSObserverWorker) return ExitCode::LogicError;
+    
     NodeId localNodeId = liveSnapshot(ReplicaSide::Local).itemId(relativeLocalPath);
     if (localNodeId.empty()) {
         SyncPath absolutePath = localPath() / relativeLocalPath;
