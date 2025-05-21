@@ -15,9 +15,6 @@ inputs:
 runs:
     using: "composite"
     steps:
-      - name: Checkout the PR
-        uses: actions/checkout@v4
-
       - name: Clean up log directory
         run: powershell -ExecutionPolicy Bypass -Command "if (Test-Path '$env:TEMP\kDrive-logdir') { Remove-Item -Path '$env:TEMP\kDrive-logdir\*' -Recurse -Force }"
         shell: powershell
