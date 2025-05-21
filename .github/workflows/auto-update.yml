@@ -17,8 +17,7 @@ jobs:
     if: auto_merge_enabled == 'true'
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
     steps:
-      - run: |
-        echo Auto merge enabled, updating branch
+      - run: echo "Auto merge enabled, updating branch"
       #- uses: lcdsmao/update-branch@v3
       #  with:
       #    requiredLabels: auto-merge
