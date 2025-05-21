@@ -84,7 +84,7 @@ jobs:
 # Tests Linux
   Test-Linux:
     needs: build-Linux
-    uses: ./.github/workflows/run-test-win.yml
+    uses: ./.github/workflows/run-test-linux.yml
     with: 
       test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
       test_common_artifact_name: linux-kDrive_test_common
