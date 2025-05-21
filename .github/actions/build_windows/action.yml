@@ -43,7 +43,7 @@ runs:
         shell: cmd
 
       - name: Fetch dependencies
-        run:
+        run: |
           mkdir dependencies
           cp "${{ github.workspace }}/build-windows/install/bin/*.dll" ./dependencies/
           cp "${{ github.workspace }}/build-windows/install/bin/sync-exclude.lst" ./dependencies/
@@ -60,7 +60,6 @@ runs:
           cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Svg.dll" ./dependencies/
           cp "C:\Qt\6.2.3\msvc2019_64\plugins\platforms\*" ./dependencies/
           cp "C:\Program Files (x86)\cppunit\lib\cppunitd_dll.dll" ./dependencies/
-
         shell: powershell
         if: steps.build.outcome == 'success'
 
