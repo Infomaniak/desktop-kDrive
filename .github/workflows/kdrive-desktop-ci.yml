@@ -149,123 +149,16 @@ jobs:
   build-MacOS:
     if: false
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
-
     steps:
-      - name: Clean-up XCode DerivedData
-        run : rm -rf /Users/runner/Library/Developer/Xcode/DerivedData
-        
-      - name: Checkout the code
-        uses: actions/checkout@v4.1.1
+      - name: Checkout the PR
+        uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
           submodules: recursive
-
-      - name: Grant empty trash script execute permission
-        run : chmod +x ./infomaniak-build-tools/empty_drive_trash.sh
-      - name: Empty drive's trash
-        run : ./infomaniak-build-tools/empty_drive_trash.sh
-
-      - name: Unlock keychain to use the certificate
-        run : security unlock-keychain -p '${{ secrets.KEYCHAIN_PASSWORD }}' login.keychain
-
-      - name: Grant building script execute permission
-        run : chmod +x ./infomaniak-build-tools/macos/build-ci.sh
-
-      - name: Build kDrive desktop
-        id: build
-        run : ./infomaniak-build-tools/macos/build-ci.sh
-
-      - name: Upload build common files
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-build-common-files
-          path: |
-              ${{ github.workspace }}/build-macos/client/bin/*.lst
-              ${{ github.workspace }}/build-macos/client/bin/*.dylib
-          retention-days: 1
-        if: steps.build.outcome == 'success'
-
-      - name: Upload frameworks
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-build-frameworks
-          path: |
-              ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtWidgets.framework
-              ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtGui.framework
-              ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtNetwork.framework
-              ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtSql.framework
-              ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtCore.framework
-              ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtSvg.framework
-              ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtDBus.framework
-              ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/Sparkle.framework
-          retention-days: 1
-        if: steps.build.outcome == 'success'
-
-      - name: Upload libs
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-build-libs
-          path: |
-              /usr/local/lib/libPocoNetSSL.103.dylib
-              /usr/local/lib/libPocoUtil.103.dylib
-              /usr/local/lib/libPocoJSON.103.dylib
-              /usr/local/lib/libPocoXML.103.dylib
-              /usr/local/lib/libPocoFoundation.103.dylib
-              /usr/local/lib/libPocoNet.103.dylib
-              /usr/local/lib/libPocoCrypto.103.dylib
-              /usr/local/lib/libcppunit-1.15.2.dylib
-              /usr/local/lib/liblog4cplusU.9.dylib
-              /usr/local/lib/libsentry.dylib
-              /usr/local/lib/libzip.5.dylib
-              /usr/local/lib/libzstd.1.dylib
-              /usr/local/lib/libssl.3.dylib
-              /usr/local/lib/libcrypto.3.dylib
-              /usr/local/lib/libxxhash.0.8.2.dylib
-          retention-days: 1
-        if: steps.build.outcome == 'success'
-
-      - name: Upload build test common executable
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-build-test-common
-          path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_common
-          retention-days: 1
-        if: steps.build.outcome == 'success'
-
-      - name: Upload build test common server executable
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-build-test-common-server
-          path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_common_server
-          retention-days: 1
-        if: steps.build.outcome == 'success'
-
-      - name: Upload build test server executable
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-build-test-server
-          path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_server
-          retention-days: 1
-        if: steps.build.outcome == 'success'
-
-      - name: Upload build test syncengine executable
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-build-test-syncengine
-          path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_syncengine
-          retention-days: 1
-        if: steps.build.outcome == 'success'
-
-      - name: Upload build test parms executable
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-build-test-parms
-          path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_parms
-          retention-days: 1
-        if: steps.build.outcome == 'success'
-
-      - name: Clean-up generated code
-        run : rm -rf build-macos
+      - name: Build Windows
+        uses: ./.github/actions/build_macos
+        with:  
+          keychain_password: ${{ secrets.KEYCHAIN_PASSWORD }}
+    
 
 # Tests Windows
   Test-Windows:
