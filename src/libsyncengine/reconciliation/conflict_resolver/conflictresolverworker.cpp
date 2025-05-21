@@ -67,6 +67,10 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
     if (continueSolving) return ExitCode::Ok;
 
     switch (conflict.type()) {
+        case ConflictType::MoveCreate: {
+            generateMoveCreateConflictOperation(conflict, continueSolving);
+            break;
+        }
         case ConflictType::CreateCreate:
         case ConflictType::EditEdit: {
             res = generateLocalRenameOperation(conflict, continueSolving);
@@ -87,9 +91,8 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
         }
         case ConflictType::MoveMoveSource:
         case ConflictType::MoveMoveDest:
-        case ConflictType::MoveMoveCycle:
-        case ConflictType::MoveCreate: {
-            res = generateUndoMoveOperation(conflict, getLoserNode(conflict));
+        case ConflictType::MoveMoveCycle: {
+            res = generateUndoMoveOperation(conflict, conflict.localNode());
             break;
         }
         default: {
@@ -164,6 +167,17 @@ ExitCode ConflictResolverWorker::generateLocalRenameOperation(const Conflict &co
     (void) _syncPal->syncOps()->pushOp(op);
     continueSolving = true; // solve them all in the same sync
     return ExitCode::Ok;
+}
+
+ExitCode ConflictResolverWorker::generateMoveCreateConflictOperation(const Conflict &conflict, bool &continueSolving) {
+    ExitInfo res = ExitCode::Ok;
+    if (conflict.localNode()->hasChangeEvent(OperationType::Move)) {
+        res = generateUndoMoveOperation(conflict, conflict.localNode());
+    } else {
+        res = generateLocalRenameOperation(conflict, continueSolving);
+    }
+
+    return res;
 }
 
 ExitCode ConflictResolverWorker::generateEditDeleteConflictOperation(const Conflict &conflict, bool &continueSolving) {
@@ -296,15 +310,6 @@ void ConflictResolverWorker::generateRescueOperation(const Conflict &conflict, c
     LOGW_SYNCPAL_INFO(_logger, getLogString(moveOp) << L" because it has been modified locally.");
 
     (void) _syncPal->syncOps()->pushOp(moveOp);
-}
-
-std::shared_ptr<Node> ConflictResolverWorker::getLoserNode(const Conflict &conflict) {
-    auto loserNode = conflict.localNode();
-    if (!loserNode->hasChangeEvent(OperationType::Move)) {
-        loserNode = conflict.remoteNode();
-    }
-
-    return loserNode;
 }
 
 bool ConflictResolverWorker::generateConflictedName(const std::shared_ptr<Node> node, SyncName &newName,

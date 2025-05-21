@@ -102,7 +102,7 @@ void TestConflictResolverWorker::testEditEdit() {
     CPPUNIT_ASSERT(op->affectedNode()->moveOriginInfos().path() != defaultInvalidPath);
 }
 
-void TestConflictResolverWorker::testMoveCreate() {
+void TestConflictResolverWorker::testMoveCreate1() {
     // Simulate create file A/AB/ABA on local replica
     const auto lNodeABA = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "aba", "ab");
 
@@ -116,9 +116,28 @@ void TestConflictResolverWorker::testMoveCreate() {
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
     const auto opId = _syncPal->_syncOps->opSortedList().front();
     const auto op = _syncPal->_syncOps->getOp(opId);
-    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, op->targetSide());
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, op->targetSide());
     CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
-    CPPUNIT_ASSERT_EQUAL(NodeId("r_aa"), op->newParentNode()->id().value());
+    CPPUNIT_ASSERT(op->relativeDestinationPath().filename().string().find("conflict") != 0);
+}
+
+void TestConflictResolverWorker::testMoveCreate2() {
+    // Simulate create file A/AB/ABA on remote replica
+    const auto lNodeABA = _testSituationGenerator.createNode(ReplicaSide::Remote, NodeType::File, "aba", "ab");
+
+    // Simulate move of file A/AA/AAA to A/AB/ABA on local replica
+    const auto rNodeAAA = _testSituationGenerator.moveNode(ReplicaSide::Local, "aaa", "ab", Str("ABA"));
+
+    const Conflict conflict(rNodeAAA, lNodeABA, ConflictType::MoveCreate);
+    _syncPal->_conflictQueue->push(conflict);
+    _syncPal->_conflictResolverWorker->execute();
+
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
+    const auto opId = _syncPal->_syncOps->opSortedList().front();
+    const auto op = _syncPal->_syncOps->getOp(opId);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, op->targetSide());
+    CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
+    CPPUNIT_ASSERT_EQUAL(NodeId("l_aa"), op->newParentNode()->id().value());
 }
 
 void TestConflictResolverWorker::testMoveCreateDehydratedPlaceholder() {

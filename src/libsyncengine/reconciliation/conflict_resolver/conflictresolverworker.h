@@ -69,6 +69,14 @@ class ConflictResolverWorker : public OperationProcessor {
          */
         ExitCode generateEditDeleteConflictOperation(const Conflict &conflict, bool &continueSolving);
         /**
+         * @brief If the moved item is local, revert the move operation. If the created item is local, rename it as a conflicted
+         * file. Remote always wins.
+         * @param conflict The conflict to be resolved.
+         * @param continueSolving A boolean value indicating if we can generate more conflict resolution operations.
+         * @return ExitCode indicating if the operation was successful.
+         */
+        ExitCode generateMoveCreateConflictOperation(const Conflict &conflict, bool &continueSolving);
+        /**
          * @brief If the move operation happens within a directory that was deleted on the other replica, therefore, we ignore the
          * Move-Delete conflict. This conflict will be handled as a Move-ParentDelete conflict. Otherwise, rescue the eventual
          * edited files then propagate the delete operation.
@@ -104,8 +112,6 @@ class ConflictResolverWorker : public OperationProcessor {
          * @param node The node that might need to be rescued.
          */
         void generateRescueOperation(const Conflict &conflict, std::shared_ptr<Node> node);
-
-        static std::shared_ptr<Node> getLoserNode(const Conflict &conflict);
 
         /*
          * If return false, the file path is too long, the file needs to be moved to root directory
