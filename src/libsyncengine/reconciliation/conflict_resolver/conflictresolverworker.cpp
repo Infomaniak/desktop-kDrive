@@ -172,10 +172,8 @@ ExitCode ConflictResolverWorker::generateMoveCreateConflictOperation(const Confl
     ExitInfo res = ExitCode::Ok;
     if (conflict.localNode()->hasChangeEvent(OperationType::Move)) {
         res = generateUndoMoveOperation(conflict, conflict.localNode());
-        continueSolving = false;
     } else {
         res = generateLocalRenameOperation(conflict, continueSolving);
-        continueSolving = true; // solve them all in the same sync
     }
 
     return res;
