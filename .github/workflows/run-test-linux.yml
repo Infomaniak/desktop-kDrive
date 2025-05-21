@@ -50,6 +50,8 @@ env:
 jobs:
   Common:
     runs-on: [ self-hosted, Linux, X64 ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     steps:
         - uses: actions/checkout@v4
         - name: Run test
@@ -60,6 +62,8 @@ jobs:
             test_dependencies_version: ${{ inputs.test_dependencies_version }}
   CommonServer:
     runs-on: [ self-hosted, Linux, X64 ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     steps:
         - uses: actions/checkout@v4
         - name: Run test
@@ -69,7 +73,9 @@ jobs:
             exe_name: ${{ inputs.test_common_server_exe_name }}
             test_dependencies_version: ${{ inputs.test_dependencies_version }}
   Server:
-    runs-on: [ self-hosted, Linux, X64, desktop-kdrive   ]
+    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     steps:
         - uses: actions/checkout@v4
         - name: Run test
@@ -80,6 +86,8 @@ jobs:
             test_dependencies_version: ${{ inputs.test_dependencies_version }}
   Syncengine:
     runs-on: [ self-hosted, Linux, X64 ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     steps:
         - uses: actions/checkout@v4
         - name: Run test
@@ -90,6 +98,8 @@ jobs:
             test_dependencies_version: ${{ inputs.test_dependencies_version }}
   Parms:
     runs-on: [ self-hosted, Linux, X64 ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     steps:
         - uses: actions/checkout@v4
         - name: Run test
