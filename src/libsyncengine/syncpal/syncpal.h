@@ -110,9 +110,9 @@ struct SyncProgress {
         int64_t _estimatedRemainingTime{0};
 
         bool operator==(const SyncProgress &other) const {
-           return _currentFile == other._currentFile && _totalFiles == other._totalFiles &&
-                _completedSize == other._completedSize && _totalSize == other._totalSize &&
-                _estimatedRemainingTime == other._estimatedRemainingTime;
+            return _currentFile == other._currentFile && _totalFiles == other._totalFiles &&
+                   _completedSize == other._completedSize && _totalSize == other._totalSize &&
+                   _estimatedRemainingTime == other._estimatedRemainingTime;
         }
 };
 
@@ -267,11 +267,22 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         // Returns nullptr if no sync is currently in progress.
         std::shared_ptr<ConstSnapshot> snapshot(ReplicaSide side) const;
 
-        // Returns a reference to the live snapshot, which reflects the real-time state of the filesystem.
-        // Unlike the immutable snapshot(), this one is continuously updated as changes occur.
-        //
-        // /!\ Must not be called before SyncPal::createWorkers() or after SyncPal::freeWorkers(),
-        // as the underlying data may not be initialized or may have already been released.
+        /* Returns a reference to the live snapshot, which reflects the real-time state of the filesystem.
+         * Unlike the immutable snapshot(), this one is continuously updated as changes occur.
+         *
+         * /!\ Must not be called before SyncPal::createWorkers() or after SyncPal::freeWorkers(),
+         * as the underlying data may not be initialized or may have already been released.
+         * 
+         * The live snapshot is intended to be modified only by the FSO workers.
+         * Workers should always retreive information from a ConstSnapshot (see SyncPal::snapshot(ReplicaSide side))
+         * There are a few exceptions where reading directly from the liveSnapshot is necessary:
+         * - To check if the filesystem has changed (liveSnapshot().updated()).
+         * - To create a ConstSnapshot (ConstSnapshot(liveSnapshot())).
+         * - When outside of a sync process (i.e., not in a worker), since no ConstSnapshot is available.
+         *      Ideally, we would query the filesystem directly in these situations. However, for optimization purposes,
+         *      it may be preferable to read from the live snapshot, accepting the trade-off that it might lag slightly
+         *      behind the actual state of the filesystem.
+         */ 
         const LiveSnapshot &liveSnapshot(ReplicaSide side) const;
 
     protected:
