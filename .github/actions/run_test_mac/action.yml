@@ -1,5 +1,5 @@
-name: Test Windows
-description: 'Build windows app'
+name: Test macOS
+description: 'Test macOS app'
 
 inputs:
   test_dependencies_version:
@@ -15,62 +15,72 @@ inputs:
 runs:
     using: "composite"
     steps:
-      - name: Clean up log directory
-        run: powershell -ExecutionPolicy Bypass -Command "if (Test-Path '$env:TEMP\kDrive-logdir') { Remove-Item -Path '$env:TEMP\kDrive-logdir\*' -Recurse -Force }"
-        shell: powershell
+      - name: Download common files
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-common-files
+          path: ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Load cached dependencies
         id: cache
         uses: herve-er/local-cache@v2
         with:
-          path: build-windows/cache
+          path: build-macos/client/cache
           base: ${{ github.workspace }}/../local-cache
           key: ${{ inputs.test_dependencies_version }}
-          clean-key: true        
+          clean-key: true
 
-      - name: Download common files
+      - name: Download libs
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
         with:
-          name: windows-build-common-files
-          path: ${{ github.workspace }}/build-windows/cache/
+          name: macos-build-libs
+          path: ${{ github.workspace }}/build-macos/client/cache/
 
-      - name: Copy the cache to the test directory
-        run: cp -r ${{ github.workspace }}/build-windows/cache/ ${{ github.workspace }}/build-windows/test/
-        shell: powershell
+      - name: Download Frameworks
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-frameworks
+          path: ${{ github.workspace }}/build-macos/client/cache/
+
+      - name: Copy the cache to the build directory
+        run: cp -r ${{ github.workspace }}/build-macos/client/cache/* ${{ github.workspace }}/build-macos/client/bin/
+        shell: bash
 
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.artifact_name }}
-          path: ${{ github.workspace }}/build-windows/test/
+          path: ${{ github.workspace }}/build-macos/client/bin/
+
+      - name: Grant tests script execute permission
+        run : chmod +x ./infomaniak-build-tools/run-test.sh
+        shell: bash
 
       - name: Execute tests
-        run: powershell ./infomaniak-build-tools/run-test.ps1 ./build-windows/test/ ${{ inputs.exe_name }}
-        shell: powershell
+        run : ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ ${{ inputs.exe_name }}
+        shell: bash
 
-      - name: Copy logs to workspace
-        run: |
-            $logSource = "$env:TEMP\kDrive-logdir"
-            $logDest = "${{ github.workspace }}\build-windows\logs"
-
-            if (Test-Path $logSource) {
-              New-Item -ItemType Directory -Force -Path $logDest | Out-Null
-              Copy-Item -Path "$logSource\*" -Destination $logDest -Recurse -Force
-            } else {
-              Write-Output "No logs found to copy."
-            }
-        shell: powershell
-        if: always()
+      - name: Get the path to kDrive-logdir
+        run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
+        if  : success() || failure()
+        shell: bash
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: win-logs-${{ inputs.artifact_name }}
-          path: ${{ github.workspace }}\build-windows\logs\*
+          name: macOS-logs-${{ inputs.artifact_name }}
+          path: ${{ env.logdir_path }}/*
           retention-days: 1
-        if: always()
+        if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
+
+      - name: Clean the log directory
+        if  : contains(env.logdir_path, 'kDrive-logdir')
+        run : rm -rf ${{ env.logdir_path }}/*
+        shell: bash
+        continue-on-error: true
 
       - name: Clean up
-        run : rm -r -force ${{ github.workspace }}/build-windows/test/
-        shell: powershell
+        run : rm -rf ${{ github.workspace }}/build-macos/client/bin/*
+        shell: bash
