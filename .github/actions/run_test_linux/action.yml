@@ -1,0 +1,87 @@
+name: Test Linux
+description: 'Test Linux app'
+
+inputs:
+  test_dependencies_version:
+    description: 'The version of the kDrive tests dependencies'
+    required: true
+  artifact_name:
+    description: 'The name of the artifact containing the test executable'
+    required: true
+  exe_name:
+    description: 'The name of the executable'
+    required: true
+
+runs:
+    using: "composite"
+    steps:
+      - name: Clean up log directory
+        if: always()
+        run : rm -rf /tmp/kDrive-logdir/* || true
+        shell: bash
+
+      - name: Download common files
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-common-files
+          path: ${{ github.workspace }}/build-linux/test/
+
+      - name: Load cached dependencies
+        id: cache
+        uses: herve-er/local-cache@v2
+        with:
+          path: build-linux/cache
+          base: ${{ github.workspace }}/../local-cache
+          key: ${{ inputs.test_dependencies_version }}
+          clean-key: true        
+
+      - name: Download usr libs
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-usr-lib
+          path: ${{ github.workspace }}/build-linux/cache/
+
+      - name: Download QT libs
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-qt-libs
+          path: ${{ github.workspace }}/build-linux/cache/
+          
+      - name: Copy the cache to the test directory
+        run: cp -r ${{ github.workspace }}/build-linux/cache/* ${{ github.workspace }}/build-linux/test/
+        shell: bash
+
+      - name: Download test executable
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: ${{ github.workspace }}/build-linux/test/
+
+      - name: Grant tests script execute permission
+        run : chmod +x ./infomaniak-build-tools/run-test.sh
+        shell: bash
+
+      - name: Execute tests
+        run : |
+            export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ github.workspace }}/build-linux/test/
+            ./infomaniak-build-tools/run-test.sh ./build-linux/test/ ${{ inputs.exe_name }}
+        shell: bash
+
+      - name: Upload tests logs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-logs-${{ inputs.artifact_name }}
+          path: /tmp/kDrive-logdir/*
+          retention-days: 1
+        if: always()
+
+      - name: Clean up log directory
+        if: always()
+        run : rm -rf /tmp/kDrive-logdir/* || true
+        shell: bash
+
+      - name: Clean up
+        run : rm -rf ${{ github.workspace }}/build-linux/test/*
+        shell: bash

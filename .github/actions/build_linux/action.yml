@@ -1,0 +1,114 @@
+name: Build macOS
+description: 'Build macOS app'
+
+runs:
+    using: "composite"
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+          submodules: recursive
+
+      - name: Clean the log directory
+        run : rm -rf /tmp/kDrive-logdir/*
+        shell: bash
+
+      - name: Grant building script execute permission
+        run : chmod +x ./infomaniak-build-tools/linux/build-ci-amd64.sh
+        shell: bash
+
+
+      - name: Build kDrive desktop
+        run : ./infomaniak-build-tools/linux/build-ci-amd64.sh -u
+        shell: bash
+
+      - name: Upload build common files
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build-common-files
+          path: ${{ github.workspace }}/build-linux/build/bin/sync-exclude.lst
+          retention-days: 1
+        if: always()
+
+      - name: Upload build qt libs
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build-qt-libs
+          path: |
+              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Widgets.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Gui.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Network.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Sql.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Core.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6DBus.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libicui18n.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libicuuc.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libicudata.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Svg.*
+          retention-days: 1
+        if: always()
+
+      - name: Upload build usr lib
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build-usr-lib
+          path: |
+              /usr/local/lib/libcppunit.so
+              /usr/local/lib/libPocoUtil.so
+              /usr/local/lib/libPocoJSON.so
+              /usr/local/lib/libPocoXML.so
+              /usr/local/lib/libPocoFoundation.so
+              /usr/local/lib/libPocoNetSSL.so
+              /usr/local/lib/libPocoCrypto.so
+              /usr/local/lib/libPocoNet.so
+              /usr/local/lib/liblog4cplus.so
+              /usr/local/lib/libsentry.so
+              /usr/local/lib/libzip.so
+              /usr/local/lib/libxxhash*
+          retention-days: 1
+        if: always()
+
+      - name: Upload build test common executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-kDrive_test_common
+          path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_common
+          retention-days: 1
+        if: always()
+
+      - name: Upload build test common server executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-kDrive_test_common_server
+          path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_common_server
+          retention-days: 1
+        if: always()
+
+      - name: Upload build test server executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-kDrive_test_server
+          path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_server
+          retention-days: 1
+        if: always()
+
+      - name: Upload build test syncengine executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-kDrive_test_syncengine
+          path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_syncengine
+          retention-days: 1
+        if: always()
+
+      - name: Upload build test parms executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-kDrive_test_parms
+          path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_parms
+          retention-days: 1
+        if: always()
+
+      - name: Clean-up generated code
+        run : rm -rf build-linux
+        shell: bash
