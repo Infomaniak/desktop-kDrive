@@ -101,7 +101,7 @@ void JobManager::setPoolCapacity(const int nbThread) {
 void JobManager::decreasePoolCapacity() {
     if (_maxNbThread > threadPoolMinCapacity) {
         // Divide the maximum number of thread by 2 (rounded up) on each call.
-        _maxNbThread = std::max(static_cast<int>(std::ceil(_maxNbThread / 2)), threadPoolMinCapacity);
+        _maxNbThread -= static_cast<int>(std::ceil((_maxNbThread - threadPoolMinCapacity) / 2.0));
         setPoolCapacity(_maxNbThread);
     } else {
         sentry::Handler::captureMessage(sentry::Level::Warning, "JobManager::defaultCallback",
