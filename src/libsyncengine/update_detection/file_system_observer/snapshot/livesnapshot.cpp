@@ -57,7 +57,7 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem) {
     }
 
     if (newItem.parentId() == newItem.id()) {
-        LOG_WARN(Log::instance()->getLogger(), "Parent ID equals item ID " << newItem.id().c_str());
+        LOG_WARN(Log::instance()->getLogger(), "Parent ID equals item ID " << newItem.id());
         assert(false);
         return false;
     }
