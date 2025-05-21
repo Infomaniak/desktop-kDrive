@@ -51,13 +51,13 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem) {
     const std::scoped_lock lock(_mutex);
 
     if (newItem.parentId().empty()) {
-        LOG_WARN(Log::instance()->getLogger(), "Parent ID is empty for item " << newItem.id().c_str());
+        LOG_WARN(Log::instance()->getLogger(), "Parent ID is empty for item " << newItem.id());
         assert(false);
         return false;
     }
 
     if (newItem.parentId() == newItem.id()) {
-        LOG_WARN(Log::instance()->getLogger(), "Parent ID equals item ID " << newItem.id().c_str());
+        LOG_WARN(Log::instance()->getLogger(), "Parent ID equals item ID " << newItem.id());
         assert(false);
         return false;
     }
@@ -67,12 +67,12 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem) {
         for (const auto &child: newParent->children()) {
             if (child->normalizedName() == newItem.normalizedName() && child->id() != newItem.id()) {
                 LOGW_DEBUG(Log::instance()->getLogger(),
-                           L"Item: " << SyncName2WStr(newItem.name()) << L" (" << Utility::s2ws(newItem.id())
+                           L"Item: " << Utility::formatSyncName(newItem.name()) << L" (" << Utility::s2ws(newItem.id())
                                      << L") already exists in parent: " << Utility::s2ws(newItem.parentId())
                                      << L" with a different id. Removing it and adding the new one.");
                 auto child2 = child; // removeItem cannot be called on a const ref, we need to make a copy.
                 if (!removeItem(child2)) return false;
-                break; // There should be (at most) only one item with the same name in a folder
+                break; // There should be at most one item with the same normalized name in a folder.
             }
         }
     }
