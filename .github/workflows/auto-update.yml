@@ -14,11 +14,15 @@ concurrency:
 
 jobs:
   update-branch:
-    if: auto_merge_enabled == 'true'
+    
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
     steps:
-      - run: echo "Auto merge enabled, updating branch"
+      - if: ${{ github.event.pull_request.auto_merge }}
+        run: echo "Auto merge is enabled, updating branch"
       #- uses: lcdsmao/update-branch@v3
       #  with:
       #    requiredLabels: auto-merge
       #    requiredApprovals: 1
+
+      - if: ${{ !github.event.pull_request.auto_merge }}
+        run: echo "Auto merge is disabled"
