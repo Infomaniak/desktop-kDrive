@@ -6,6 +6,9 @@ on:
         - cron: '*/15 * * * *'
     # Allows manual execution
     workflow_dispatch:
+      
+  discussion:
+    types: [created, edited, answered]
 
 concurrency:
   group: auto-update
