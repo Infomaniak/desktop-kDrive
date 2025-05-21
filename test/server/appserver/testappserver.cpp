@@ -101,17 +101,25 @@ void TestAppServer::tearDown() {
 void TestAppServer::testInitAndStopSyncPal() {
     const int syncDbId = 1;
 
+    std::cout << "TestAppServer::testInitAndStopSyncPal() begin" << std::endl;
+
     Sync sync;
     bool found = false;
     CPPUNIT_ASSERT(ParmsDb::instance()->selectSync(syncDbId, sync, found) && found);
+
+    std::cout << "test 1" << std::endl;
 
     // Check sync nesting
     ExitInfo exitInfo = _appPtr->checkIfSyncIsValid(sync);
     CPPUNIT_ASSERT(exitInfo);
 
+    std::cout << "test 2" << std::endl;
+
     // Start Vfs
     exitInfo = _appPtr->createAndStartVfs(sync);
     CPPUNIT_ASSERT(exitInfo);
+
+    std::cout << "test 3" << std::endl;
 
     // Start SyncPal
     const std::chrono::seconds startDelay{0};
@@ -120,10 +128,14 @@ void TestAppServer::testInitAndStopSyncPal() {
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
 
+    std::cout << "test 4" << std::endl;
+
     // Stop SyncPal (pause by user)
     exitInfo = _appPtr->stopSyncPal(syncDbId, /*pausedByUser*/ true);
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(waitForSyncStatus(syncDbId, SyncStatus::Stopped));
+
+    std::cout << "test 5" << std::endl;
 
     // Resume SyncPal
     exitInfo = _appPtr->initSyncPal(sync, QSet<QString>(), QSet<QString>(), QSet<QString>(), /*start*/ true, startDelay,
@@ -131,14 +143,20 @@ void TestAppServer::testInitAndStopSyncPal() {
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
 
+    std::cout << "test 6" << std::endl;
+
     // Stop SyncPal (cleanup)
     exitInfo = _appPtr->stopSyncPal(syncDbId, /*pausedByUser*/ false, /*quit*/ true, /*clear*/ true);
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(waitForSyncStatus(syncDbId, SyncStatus::Stopped));
 
+    std::cout << "test 7" << std::endl;
+
     // Stop Vfs
     exitInfo = _appPtr->stopVfs(syncDbId, /*unregister*/ false);
     CPPUNIT_ASSERT(exitInfo);
+
+    std::cout << "TestAppServer::testInitAndStopSyncPal() end" << std::endl;
 }
 
 void TestAppServer::testStartAndStopSync() {
