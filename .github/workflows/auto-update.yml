@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   update-branch:
-    
+    if: ${{ github.event.pull_request.auto_merge }}
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
     steps:
       - if: ${{ github.event.pull_request.auto_merge }}
