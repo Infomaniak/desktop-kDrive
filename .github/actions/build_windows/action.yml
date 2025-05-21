@@ -54,9 +54,6 @@ runs:
           cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Sql.dll" ./dependencies/
           cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Core.dll" ./dependencies/
           cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6DBus.dll" ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\icui18n.dll" ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\icuuc.dll" ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\icudata.dll" ./dependencies/
           cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Svg.dll" ./dependencies/
           cp "C:\Qt\6.2.3\msvc2019_64\plugins\platforms\*" ./dependencies/
           cp "C:\Program Files (x86)\cppunit\lib\cppunitd_dll.dll" ./dependencies/
