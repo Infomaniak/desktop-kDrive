@@ -73,7 +73,7 @@ jobs:
             exe_name: ${{ inputs.test_common_server_exe_name }}
             test_dependencies_version: ${{ inputs.test_dependencies_version }}
   Server:
-    runs-on: [ self-hosted, macOS ]
+    runs-on: [ self-hosted, macOS, desktop-kdrive  ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
     steps:
