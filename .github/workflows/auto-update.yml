@@ -15,7 +15,7 @@ concurrency:
 jobs:
   update-branch:
     if: auto_merge_enabled == 'true'
-    runs-on: runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    runs-on: [ self-hosted, macOS, desktop-kdrive ]
     steps:
       - run: |
         echo Auto merge enabled, updating branch
