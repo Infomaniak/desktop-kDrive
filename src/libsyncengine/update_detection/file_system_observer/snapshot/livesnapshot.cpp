@@ -67,7 +67,7 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem) {
         for (const auto &child: newParent->children()) {
             if (child->normalizedName() == newItem.normalizedName() && child->id() != newItem.id()) {
                 LOGW_DEBUG(Log::instance()->getLogger(),
-                           L"Item: " << SyncName2WStr(newItem.name()) << L" (" << Utility::s2ws(newItem.id())
+                           L"Item: " << Utility::formatSyncName(newItem.name()) << L" (" << Utility::s2ws(newItem.id())
                                      << L") already exists in parent: " << Utility::s2ws(newItem.parentId())
                                      << L" with a different id. Removing it and adding the new one.");
                 auto child2 = child; // removeItem cannot be called on a const ref, we need to make a copy.
