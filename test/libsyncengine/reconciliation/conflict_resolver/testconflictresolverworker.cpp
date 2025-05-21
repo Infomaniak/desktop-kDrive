@@ -97,6 +97,9 @@ void TestConflictResolverWorker::testEditEdit() {
     CPPUNIT_ASSERT(!op->newName().empty());
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, op->targetSide());
     CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
+    CPPUNIT_ASSERT(op->affectedNode()->hasChangeEvent(OperationType::Move));
+    CPPUNIT_ASSERT(op->affectedNode()->moveOriginInfos().parentNodeId() != defaultInvalidNodeId);
+    CPPUNIT_ASSERT(op->affectedNode()->moveOriginInfos().path() != defaultInvalidPath);
 }
 
 void TestConflictResolverWorker::testMoveCreate1() {
@@ -584,6 +587,9 @@ void TestConflictResolverWorker::testMoveMoveSource() {
     CPPUNIT_ASSERT(!op->newName().empty());
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, op->targetSide());
     CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
+    CPPUNIT_ASSERT(op->affectedNode()->hasChangeEvent(OperationType::Move));
+    CPPUNIT_ASSERT(op->affectedNode()->moveOriginInfos().parentNodeId() != defaultInvalidNodeId);
+    CPPUNIT_ASSERT(op->affectedNode()->moveOriginInfos().path() != defaultInvalidPath);
 }
 
 void TestConflictResolverWorker::testMoveMoveSourceDehydratedPlaceholder() {
@@ -637,6 +643,9 @@ void TestConflictResolverWorker::testMoveMoveDest() {
     CPPUNIT_ASSERT(!op->newName().empty());
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, op->targetSide());
     CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
+    CPPUNIT_ASSERT(op->affectedNode()->hasChangeEvent(OperationType::Move));
+    CPPUNIT_ASSERT(op->affectedNode()->moveOriginInfos().parentNodeId() != defaultInvalidNodeId);
+    CPPUNIT_ASSERT(op->affectedNode()->moveOriginInfos().path() != defaultInvalidPath);
     const auto lNodeAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aa");
     CPPUNIT_ASSERT_EQUAL(lNodeAA, op->newParentNode());
 }
@@ -695,6 +704,9 @@ void TestConflictResolverWorker::testMoveMoveCycle() {
     CPPUNIT_ASSERT_EQUAL(lNodeA, op->newParentNode());
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, op->targetSide());
     CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
+    CPPUNIT_ASSERT(op->affectedNode()->hasChangeEvent(OperationType::Move));
+    CPPUNIT_ASSERT(op->affectedNode()->moveOriginInfos().parentNodeId() != defaultInvalidNodeId);
+    CPPUNIT_ASSERT(op->affectedNode()->moveOriginInfos().path() != defaultInvalidPath);
 }
 
 void TestConflictResolverWorker::testMoveMoveCycle2() {
@@ -730,6 +742,9 @@ void TestConflictResolverWorker::testMoveMoveCycle2() {
     CPPUNIT_ASSERT_EQUAL(lNodeAA, op->newParentNode());
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, op->targetSide());
     CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
+    CPPUNIT_ASSERT(op->affectedNode()->hasChangeEvent(OperationType::Move));
+    CPPUNIT_ASSERT(op->affectedNode()->moveOriginInfos().parentNodeId() != defaultInvalidNodeId);
+    CPPUNIT_ASSERT(op->affectedNode()->moveOriginInfos().path() != defaultInvalidPath);
 }
 
 } // namespace KDC
