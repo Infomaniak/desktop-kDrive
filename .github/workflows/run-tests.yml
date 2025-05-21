@@ -1,39 +1,27 @@
-name: Run MacOS tests
+name: Run windows tests
 
 on:
   workflow_call:
     inputs:
+      runs-on:
+        required: true
+        type: string
       test_dependencies_version:
         required: true
         type: string
-      test_common_artifact_name:
+      test_common_name:
         required: true
         type: string
-      test_common_exe_name:
+      test_common_server_name:
         required: true
         type: string
-      test_common_server_artifact_name:
+      test_server_name:
         required: true
         type: string
-      test_common_server_exe_name:
+      test_syncengine_name:
         required: true
         type: string
-      test_server_artifact_name:
-        required: true
-        type: string
-      test_server_exe_name:
-        required: true
-        type: string
-      test_syncengine_artifact_name:
-        required: true
-        type: string
-      test_syncengine_exe_name:
-        required: true
-        type: string
-      test_parms_artifact_name:
-        required: true
-        type: string
-      test_parms_exe_name:
+      test_parms_name:
         required: true
         type: string
 
@@ -49,52 +37,57 @@ env:
 
 jobs:
   Common:
-    runs-on: [ self-hosted, macOS ]
+    runs-on:
+      - self-hosted
+      - ${{ inputs.runs-on }}   
     steps:
         - uses: actions/checkout@v4
         - name: Run test
-          uses: ./.github/actions/run_test_mac
+          uses: ./.github/actions/run_test_${{ inputs.runs-on }}   
           with:  
-            artifact_name: ${{ inputs.test_common_artifact_name }}
-            exe_name: ${{ inputs.test_common_exe_name }}
+            test_name: ${{ inputs.test_common_name }}
             test_dependencies_version: ${{ inputs.test_dependencies_version }}
   CommonServer:
-    runs-on: [ self-hosted, macOS ]
+    runs-on:
+      - self-hosted
+      - ${{ inputs.runs-on }}   
     steps:
         - uses: actions/checkout@v4
         - name: Run test
-          uses: ./.github/actions/run_test_mac
+          uses: ./.github/actions/run_test_${{ inputs.runs-on }}   
           with:  
-            artifact_name: ${{ inputs.test_common_server_artifact_name }}
-            exe_name: ${{ inputs.test_common_server_exe_name }}
+            test_name: ${{ inputs.test_common_server_name }}
             test_dependencies_version: ${{ inputs.test_dependencies_version }}
   Server:
-    runs-on: [ self-hosted, macOS ]
+    runs-on:
+      - self-hosted
+      - ${{ inputs.runs-on }}   
     steps:
         - uses: actions/checkout@v4
         - name: Run test
-          uses: ./.github/actions/run_test_mac
+          uses: ./.github/actions/run_test_${{ inputs.runs-on }}   
           with:  
-            artifact_name: ${{ inputs.test_server_artifact_name }}
-            exe_name: ${{ inputs.test_server_exe_name }}
+            test_name: ${{ inputs.test_server_name }}
             test_dependencies_version: ${{ inputs.test_dependencies_version }}
   Syncengine:
-    runs-on: [ self-hosted, macOS ]
+    runs-on:
+      - self-hosted
+      - ${{ inputs.runs-on }}   
     steps:
         - uses: actions/checkout@v4
         - name: Run test
-          uses: ./.github/actions/run_test_mac
+          uses: ./.github/actions/run_test_${{ inputs.runs-on }}   
           with:  
-            artifact_name: ${{ inputs.test_syncengine_artifact_name }}
-            exe_name: ${{ inputs.test_syncengine_exe_name }}
+            test_name: ${{ inputs.test_syncengine_name }}
             test_dependencies_version: ${{ inputs.test_dependencies_version }}
   Parms:
-    runs-on: [ self-hosted, macOS ]
+    runs-on:
+      - self-hosted
+      - ${{ inputs.runs-on }}   
     steps:
         - uses: actions/checkout@v4
         - name: Run test
-          uses: ./.github/actions/run_test_mac
+          uses: ./.github/actions/run_test_${{ inputs.runs-on }}   
           with:  
-            artifact_name: ${{ inputs.test_parms_artifact_name }}
-            exe_name: ${{ inputs.test_parms_exe_name }}
+            test_name: ${{ inputs.test_parms_name }}
             test_dependencies_version: ${{ inputs.test_dependencies_version }}

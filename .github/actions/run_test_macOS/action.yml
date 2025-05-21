@@ -5,11 +5,8 @@ inputs:
   test_dependencies_version:
     description: 'The version of the kDrive tests dependencies'
     required: true
-  artifact_name:
-    description: 'The name of the artifact containing the test executable'
-    required: true
-  exe_name:
-    description: 'The name of the executable'
+  test_name:
+    description: 'The name of the test, the artifact must be named win-test_name'
     required: true
 
 runs:
@@ -51,7 +48,7 @@ runs:
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.artifact_name }}
+          name: mac-${{ inputs.test_name }}
           path: ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Grant tests script execute permission
@@ -59,7 +56,7 @@ runs:
         shell: bash
 
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ ${{ inputs.exe_name }}
+        run : ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ ${{ inputs.test_name }}
         shell: bash
 
       - name: Get the path to kDrive-logdir
@@ -70,7 +67,7 @@ runs:
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: macOS-logs-${{ inputs.artifact_name }}
+          name: macOS-logs-${{ inputs.test_name }}
           path: ${{ env.logdir_path }}/*
           retention-days: 1
         if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
