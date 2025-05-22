@@ -45,7 +45,7 @@ runs:
           cp /usr/local/lib/libPocoNetSSL.so ./dependencies/
           cp /usr/local/lib/libPocoCrypto.so ./dependencies/
           cp /usr/local/lib/libPocoNet.so ./dependencies/
-          cp /usr/local/lib/liblog4cplus.so ./dependencies/
+          # cp /usr/local/lib/liblog4cplus.so ./dependencies/ TODO: Fix path
           cp /usr/local/lib/libsentry.so ./dependencies/
           cp /usr/local/lib/libzip.so ./dependencies/
           cp /usr/local/lib/libxxhash* ./dependencies/
