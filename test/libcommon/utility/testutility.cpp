@@ -428,7 +428,7 @@ void TestUtility::generatePaths(const std::vector<std::string> &itemsNames, cons
     if (pos == itemsNames.size()) {
         (void) result.emplace_back(start);
         for (const auto &separator: separators) {
-            result.emplace_back(start + separator);
+            (void) result.emplace_back(start + separator);
         }
         return;
     }
