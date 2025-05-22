@@ -1032,7 +1032,7 @@ SyncName CommonUtility::preferredPathSeparator() {
     return SyncName{std::filesystem::path::preferred_separator};
 }
 
-std::vector<SyncName> CommonUtility::splitPath(const SyncPath &path) {
+std::vector<SyncName> CommonUtility::splitSyncPath(const SyncPath &path) {
     std::vector<SyncName> itemNames;
     SyncPath pathTmp(path);
 
