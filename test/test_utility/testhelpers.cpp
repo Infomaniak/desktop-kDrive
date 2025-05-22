@@ -58,21 +58,8 @@ void generateOrEditTestFile(const SyncPath& path) {
 }
 
 void generateBigFiles(const SyncPath& dirPath, const uint16_t size, const uint16_t count) {
-    // Generate 1st big file
-    SyncPath bigFilePath;
-    {
-        std::stringstream fileName;
-        fileName << "big_file_" << size << "_" << 0 << ".txt";
-        const std::string str{"0123456789"};
-        bigFilePath = SyncPath(dirPath) / fileName.str();
-        {
-            std::ofstream ofs(bigFilePath, std::ios_base::in | std::ios_base::trunc);
-            for (uint64_t i = 0;
-                 i < static_cast<uint64_t>(round(static_cast<double>(size * 1000000) / static_cast<double>(str.length()))); i++) {
-                ofs << str;
-            }
-        }
-    }
+    // Generate the 1st big file
+    const auto bigFilePath = generateBigFile(dirPath, size);
 
     // Generate others big files
     for (uint16_t i = 1; i < count; i++) {
@@ -81,6 +68,21 @@ void generateBigFiles(const SyncPath& dirPath, const uint16_t size, const uint16
         const SyncPath newBigFilePath = SyncPath(dirPath) / fileName.str();
         (void) std::filesystem::copy_file(bigFilePath, newBigFilePath, std::filesystem::copy_options::overwrite_existing);
     }
+}
+
+SyncPath generateBigFile(const SyncPath& dirPath, const uint16_t size) {
+    std::stringstream fileName;
+    fileName << "big_file_" << size << "_" << 0 << ".txt";
+    const std::string str{"0123456789"};
+    SyncPath bigFilePath = SyncPath(dirPath) / fileName.str();
+
+    std::ofstream ofs(bigFilePath, std::ios_base::in | std::ios_base::trunc);
+    for (uint64_t i = 0;
+         i < static_cast<uint64_t>(round(static_cast<double>(size * 1000000) / static_cast<double>(str.length()))); i++) {
+        ofs << str;
+    }
+
+    return bigFilePath;
 }
 
 std::string loadEnvVariable(const std::string& key, const bool mandatory) {

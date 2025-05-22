@@ -111,28 +111,21 @@ IoError returnAccessDenied(const SyncPath &filePath) {
     return IoError::AccessDenied;
 }
 
-IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime ,
-                                 const SyncTime modificationDate, const bool ) noexcept {
+IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime, const SyncTime modificationDate, const bool) noexcept {
     try {
         const Poco::Timestamp lastModifiedTimestamp(Poco::Timestamp::fromEpochTime(modificationDate));
         Poco::File(Path2Str(filePath)).setLastModified(lastModifiedTimestamp);
-    }
-    catch (Poco::NotFoundException &) {
+    } catch (Poco::NotFoundException &) {
         return returnNoSuchFileOrDirectory(filePath);
-    }
-    catch (Poco::FileNotFoundException &) {
+    } catch (Poco::FileNotFoundException &) {
         return returnNoSuchFileOrDirectory(filePath);
-    }
-    catch (Poco::FileExistsException &) {
+    } catch (Poco::FileExistsException &) {
         return returnNoSuchFileOrDirectory(filePath);
-    }
-    catch (Poco::NoPermissionException &) {
+    } catch (Poco::NoPermissionException &) {
         return returnAccessDenied(filePath);
-    }
-    catch (Poco::FileAccessDeniedException &) {
+    } catch (Poco::FileAccessDeniedException &) {
         return returnAccessDenied(filePath);
-    }
-    catch (Poco::Exception &ex) {
+    } catch (Poco::Exception &ex) {
         LOG_WARN(Log::instance()->getLogger(), "Error in setLastModified : " << ex.message() << " (" << ex.code() << ")");
         return IoError::Unknown;
     }
