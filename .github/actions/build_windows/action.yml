@@ -35,9 +35,7 @@ runs:
       - name: Build kDrive desktop
         id: build
         run: |
-          call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
-          call "cov01.exe" "-0"
-          
+          call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"          
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
         shell: cmd
 
