@@ -32,3 +32,9 @@ add_subdirectory(server)
 
 include_directories(${log4cplus_INCLUDE_DIRS})
 
+if (MSVC)
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .dll)
+    find_library(CPPUNIT_SHARED_LIBRARY NAMES cppunit PATHS "C:/Program Files (x86)/cppunit/lib" NO_DEFAULT_PATH NO_CACHE)
+    message(STATUS "cppunit dll found in ${CPPUNIT_SHARED_LIBRARY}")
+    install(FILES ${CPPUNIT_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif ()
