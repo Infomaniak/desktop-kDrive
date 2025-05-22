@@ -1052,7 +1052,7 @@ std::vector<SyncName> CommonUtility::splitSyncName(SyncName name, const SyncName
     while ((pos = name.find(delimiter)) != std::string::npos) {
         token = name.substr(0, pos);
         tokens.push_back(token);
-        name.erase(0, pos + delimiter.length());
+        (void) name.erase(0, pos + delimiter.length());
     }
     tokens.push_back(name);
 
@@ -1067,7 +1067,7 @@ std::vector<SyncName> CommonUtility::splitPath(const SyncName &pathName) {
 
 std::unordered_set<SyncName> CommonUtility::computeSyncNameNormalizations(const SyncName &name) {
     std::unordered_set<SyncName> result;
-    result.emplace(name);
+    (void) result.emplace(name);
 
     SyncName nfcNormalizedName;
     if (const bool nfcSuccess = CommonUtility::normalizedSyncName(name, nfcNormalizedName, UnicodeNormalization::NFC);
@@ -1094,7 +1094,7 @@ std::unordered_set<SyncName> CommonUtility::computePathNormalizations(const std:
     std::unordered_set<SyncName> result;
     for (const auto &lastSegmentNormalization: lastSegmentNormalizations) {
         for (const auto &headNormalization: headNormalizations)
-            result.emplace(headNormalization + CommonUtility::preferredPathSeparator() + lastSegmentNormalization);
+            (void) result.emplace(headNormalization + CommonUtility::preferredPathSeparator() + lastSegmentNormalization);
         if (headNormalizations.empty()) result.emplace(lastSegmentNormalization);
     }
     return result;
