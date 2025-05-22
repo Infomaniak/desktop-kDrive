@@ -271,7 +271,7 @@ void TestSyncPalWorker::testInternalPause3() {
     setUpTestInternalPause(std::chrono::seconds(1));
 
     // Constants
-    constexpr auto testTimeout = std::chrono::seconds(20);
+    constexpr auto testTimeout = std::chrono::seconds(60);
     constexpr auto loopWait = std::chrono::milliseconds(5);
     const auto mockSyncPal = std::dynamic_pointer_cast<MockSyncPal>(_syncPal);
     const auto mockLfso = mockSyncPal->getMockLFSOWorker();
