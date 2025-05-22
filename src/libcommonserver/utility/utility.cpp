@@ -34,7 +34,8 @@
 #include <sys/statvfs.h>
 #include <sys/mount.h>
 #elif defined(__unix__)
-#include <sys/vfs.h>
+#include <sys/statvfs.h>
+#include <sys/statfs.h>
 #elif defined(_WIN32)
 #include <fileapi.h>
 #endif
@@ -346,7 +347,18 @@ bool Utility::isNtfs(const SyncPath &targetPath) {
 #endif
 
 std::string Utility::fileSystemName(const SyncPath &targetPath) {
-#if defined(_WIN32)
+
+#if defined(__APPLE__)
+    struct statfs stat;
+    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
+        return stat.f_fstypename;
+    }
+#elif defined(__unix__)
+    struct statfs stat;
+    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
+        return std::to_string(stat.f_type);
+    }
+#elif defined(_WIN32)
     TCHAR szFileSystemName[MAX_PATH + 1];
     DWORD dwMaxFileNameLength = 0;
     DWORD dwFileSystemFlags = 0;
@@ -363,17 +375,7 @@ std::string Utility::fileSystemName(const SyncPath &targetPath) {
         // !!! File system name can be OK or not !!!
         return ws2s(szFileSystemName);
     }
-#else
-    struct statfs stat;
-    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
-#if defined(__APPLE__)
-        return stat.f_fstypename;
-#else
-        return std::to_string(stat.f_type);
 #endif
-    }
-#endif
-
     return std::string();
 }
 
