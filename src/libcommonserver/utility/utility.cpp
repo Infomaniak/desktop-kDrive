@@ -75,8 +75,8 @@ static const SyncName resourcesPath(Str("../../Contents/Resources"));
 static const SyncName resourcesPath(Str(""));
 #elif defined(_WIN32)
 static const SyncName resourcesPath(Str(""));
-static const std::string NTFS("NTFS");
 #endif
+static const std::string NTFS("NTFS");
 
 struct VariantPrinter {
         std::wstring operator()(std::monostate) { return std::wstring(L"NULL"); }
@@ -347,7 +347,6 @@ bool Utility::isNtfs(const SyncPath &targetPath) {
 #endif
 
 std::string Utility::fileSystemName(const SyncPath &targetPath) {
-
 #if defined(__APPLE__)
     struct statfs stat;
     if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
@@ -356,7 +355,37 @@ std::string Utility::fileSystemName(const SyncPath &targetPath) {
 #elif defined(__unix__)
     struct statfs stat;
     if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
-        return std::to_string(stat.f_type);
+        std::function<std::string(std::string prettyName, int fsCode)> formatFsName = [](std::string prettyName, int fsCode) {
+            std::stringstream stream;
+            stream << std::hex << fsCode;
+            std::string fsHexCode(stream.str());
+            return prettyName + " | " + fsHexCode;
+        };
+        switch (stat.f_type) {
+            case 0x137d:
+                return formatFsName("EXT(1)", stat.f_type);
+            case 0xef51:
+                return formatFsName("EXT2", stat.f_type);
+            case 0xef53:
+                return formatFsName("EXT2/3/4", stat.f_type);
+            case 0xbad1dea:
+            case 0xa501fcf5:
+            case 0x58465342:
+                return formatFsName("XFS", stat.f_type);
+            case 0x9123683e:
+            case 0x73727279:
+                return formatFsName("BTRFS", stat.f_type);
+            case 0xf15f:
+                return formatFsName("ECRYPTFS", stat.f_type);
+            case 0x4244:
+                return formatFsName("HFS", stat.f_type);
+            case 0x5346544e:
+                return formatFsName(NTFS, stat.f_type);
+            case 0x858458f6:
+                return formatFsName("RAMFS", stat.f_type);
+            default:
+                return formatFsName("Unknown-see corresponding entry at https://man7.org/linux/man-pages/man2/statfs.2.html", stat.f_type);
+        }
     }
 #elif defined(_WIN32)
     TCHAR szFileSystemName[MAX_PATH + 1];
@@ -376,6 +405,7 @@ std::string Utility::fileSystemName(const SyncPath &targetPath) {
         return ws2s(szFileSystemName);
     }
 #endif
+
     return "Error";
 }
 
