@@ -44,7 +44,6 @@ SyncPath FolderWatcher_linux::makeSyncPath(const SyncPath &watchedFolderPath, co
 
 void FolderWatcher_linux::startWatching() {
     LOG4CPLUS_DEBUG(_logger, L"Start watching folder " << Utility::formatSyncPath(_folder));
-    LOG4CPLUS_DEBUG(_logger, "File system format: " << Utility::fileSystemName(_folder).c_str());
 
     _fileDescriptor = inotify_init();
     if (_fileDescriptor == -1) {

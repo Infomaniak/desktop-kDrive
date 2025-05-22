@@ -36,6 +36,7 @@ namespace KDC {
 
 void TestOperationProcessor::setUp() {
     TestBase::start();
+    std::cout << Utility::fileSystemName("./") << std::endl;
     const testhelpers::TestVariables testVariables;
 
     const std::string localPathStr = _localTempDir.path().string();
