@@ -375,8 +375,7 @@ std::string Utility::fileSystemName(const SyncPath &targetPath) {
         std::function<std::string(std::string prettyName, int fsCode)> formatFsName = [](std::string prettyName, int fsCode) {
             std::stringstream stream;
             stream << std::hex << fsCode;
-            std::string fsHexCode(stream.str());
-            return prettyName + " | 0x" + fsHexCode;
+            return prettyName + " | 0x" + stream.str();
         };
         switch (stat.f_type) {
             case 0x137d:
