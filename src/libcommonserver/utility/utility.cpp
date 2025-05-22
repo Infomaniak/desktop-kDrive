@@ -34,7 +34,7 @@
 #include <sys/statvfs.h>
 #include <sys/mount.h>
 #elif defined(__unix__)
-#include <sys/statvfs.h>
+#include <sys/vfs.h>
 #elif defined(_WIN32)
 #include <fileapi.h>
 #endif
