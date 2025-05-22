@@ -146,14 +146,14 @@ void TestExclusionTemplateCache::testIsExcluded() {
 #ifndef _WIN32
     {
         // Test hidden file
-        const SyncPath testPath = testhelpers::localTestDirPath / ".my_hidden_file.txt";
+        const SyncPath testPath = testhelpers::localTestDirPath() / ".my_hidden_file.txt";
         bool isWarning = true;
         CPPUNIT_ASSERT(!ExclusionTemplateCache::instance()->isExcluded(testPath, isWarning));
     }
 
     {
         // Test hidden folder
-        const SyncPath testPath = testhelpers::localTestDirPath / ".my_hidden_folder/AA/my_file.txt";
+        const SyncPath testPath = testhelpers::localTestDirPath() / ".my_hidden_folder/AA/my_file.txt";
         bool isWarning = true;
         CPPUNIT_ASSERT(!ExclusionTemplateCache::instance()->isExcluded(testPath, isWarning));
     }
