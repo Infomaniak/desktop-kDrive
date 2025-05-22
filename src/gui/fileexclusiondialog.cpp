@@ -402,7 +402,7 @@ void logIfTemplateNormalizationFails(const SyncName &template_) {
 
 //
 //! Computes and returns all possible NFC and NFD normalizations of `templateString` segments
-//! interpreted as a file system item path.
+//! interpreted as a file system path.
 /*!
   \param templateString is the pattern string the normalizations of which are queried.
   \return a set of QString containing the NFC and NFD normalizations of exclusionTemplate, if those have been successful.
