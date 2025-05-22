@@ -37,7 +37,9 @@ runs:
           path: ${{ github.workspace }}/build-linux/cache/
           
       - name: Copy the cache to the test directory
-        run: cp -r ${{ github.workspace }}/build-linux/cache/* ${{ github.workspace }}/build-linux/test/
+        run: |
+            mkdir ${{ github.workspace }}/build-linux/test
+            cp -r ${{ github.workspace }}/build-linux/cache/* ${{ github.workspace }}/build-linux/test/
         shell: bash
 
       - name: Download test executable

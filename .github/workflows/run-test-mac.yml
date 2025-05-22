@@ -6,34 +6,19 @@ on:
       test_dependencies_version:
         required: true
         type: string
-      test_common_artifact_name:
+      test_common_name:
         required: true
         type: string
-      test_common_exe_name:
+      test_common_server_name:
         required: true
         type: string
-      test_common_server_artifact_name:
+      test_server_name:
         required: true
         type: string
-      test_common_server_exe_name:
+      test_syncengine_name:
         required: true
         type: string
-      test_server_artifact_name:
-        required: true
-        type: string
-      test_server_exe_name:
-        required: true
-        type: string
-      test_syncengine_artifact_name:
-        required: true
-        type: string
-      test_syncengine_exe_name:
-        required: true
-        type: string
-      test_parms_artifact_name:
-        required: true
-        type: string
-      test_parms_exe_name:
+      test_parms_name:
         required: true
         type: string
 
@@ -48,63 +33,16 @@ env:
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
 
 jobs:
-  Common:
+  Test:
+    strategy:
+      fail-fast: false
+      matrix:
+        test_name: ["${{ inputs.test_common_name }}", "${{ inputs.test_common_server_name }}", "${{ inputs.test_server_name }}", "${{ inputs.test_syncengine_name }}", "${{ inputs.test_parms_name }}"]
     runs-on: [ self-hosted, macOS ]
-    env:
-      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
     steps:
         - uses: actions/checkout@v4
         - name: Run test
-          uses: ./.github/actions/run_test_mac
+          uses: ./.github/actions/run_test_macos
           with:  
-            artifact_name: ${{ inputs.test_common_artifact_name }}
-            exe_name: ${{ inputs.test_common_exe_name }}
-            test_dependencies_version: ${{ inputs.test_dependencies_version }}
-  CommonServer:
-    runs-on: [ self-hosted, macOS ]
-    env:
-      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
-    steps:
-        - uses: actions/checkout@v4
-        - name: Run test
-          uses: ./.github/actions/run_test_mac
-          with:  
-            artifact_name: ${{ inputs.test_common_server_artifact_name }}
-            exe_name: ${{ inputs.test_common_server_exe_name }}
-            test_dependencies_version: ${{ inputs.test_dependencies_version }}
-  Server:
-    runs-on: [ self-hosted, macOS, desktop-kdrive  ]
-    env:
-      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
-    steps:
-        - uses: actions/checkout@v4
-        - name: Run test
-          uses: ./.github/actions/run_test_mac
-          with:  
-            artifact_name: ${{ inputs.test_server_artifact_name }}
-            exe_name: ${{ inputs.test_server_exe_name }}
-            test_dependencies_version: ${{ inputs.test_dependencies_version }}
-  Syncengine:
-    runs-on: [ self-hosted, macOS ]
-    env:
-      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
-    steps:
-        - uses: actions/checkout@v4
-        - name: Run test
-          uses: ./.github/actions/run_test_mac
-          with:  
-            artifact_name: ${{ inputs.test_syncengine_artifact_name }}
-            exe_name: ${{ inputs.test_syncengine_exe_name }}
-            test_dependencies_version: ${{ inputs.test_dependencies_version }}
-  Parms:
-    runs-on: [ self-hosted, macOS ]
-    env:
-      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
-    steps:
-        - uses: actions/checkout@v4
-        - name: Run test
-          uses: ./.github/actions/run_test_mac
-          with:  
-            artifact_name: ${{ inputs.test_parms_artifact_name }}
-            exe_name: ${{ inputs.test_parms_exe_name }}
+            test_name: ${{ matrix.test_name }}
             test_dependencies_version: ${{ inputs.test_dependencies_version }}

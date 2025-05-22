@@ -35,6 +35,7 @@ env:
 jobs:
   Test:
     strategy:
+      fail-fast: false
       matrix:
         test_name: ["${{ inputs.test_common_name }}", "${{ inputs.test_common_server_name }}", "${{ inputs.test_server_name }}", "${{ inputs.test_syncengine_name }}", "${{ inputs.test_parms_name }}"]
     runs-on: [ self-hosted, Windows ]

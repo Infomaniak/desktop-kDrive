@@ -82,16 +82,11 @@ jobs:
     uses: ./.github/workflows/run-test-linux.yml
     with: 
       test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
-      test_common_artifact_name: linux-kDrive_test_common
-      test_common_exe_name: kDrive_test_common
-      test_common_server_artifact_name: linux-kDrive_test_common_server
-      test_common_server_exe_name: kDrive_test_common_server
-      test_server_artifact_name: linux-kDrive_test_server
-      test_server_exe_name: kDrive_test_server
-      test_syncengine_artifact_name: linux-kDrive_test_syncengine
-      test_syncengine_exe_name: kDrive_test_syncengine
-      test_parms_artifact_name: linux-kDrive_test_parms
-      test_parms_exe_name: kDrive_test_parms
+      test_common_name: linux-kDrive_test_common
+      test_common_server_name: linux-kDrive_test_common_server
+      test_server_name: linux-kDrive_test_server
+      test_syncengine_name: linux-kDrive_test_syncengine
+      test_parms_name: linux-kDrive_test_parms
     secrets: inherit
 
 # Tests macOS
@@ -100,14 +95,9 @@ jobs:
     uses: ./.github/workflows/run-test-mac.yml
     with: 
       test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
-      test_common_artifact_name: mac-kDrive_test_common
-      test_common_exe_name: kDrive_test_common
-      test_common_server_artifact_name: mac-kDrive_test_common_server
-      test_common_server_exe_name: kDrive_test_common_server
-      test_server_artifact_name: mac-kDrive_test_server
-      test_server_exe_name: kDrive_test_server
-      test_syncengine_artifact_name: mac-kDrive_test_syncengine
-      test_syncengine_exe_name: kDrive_test_syncengine
-      test_parms_artifact_name: mac-kDrive_test_parms
-      test_parms_exe_name: kDrive_test_parms
+      test_common_name: mac-kDrive_test_common
+      test_common_server_name: mac-kDrive_test_common_server
+      test_server_name: mac-kDrive_test_server
+      test_syncengine_name: mac-kDrive_test_syncengine
+      test_parms_name: mac-kDrive_test_parms
     secrets: inherit
