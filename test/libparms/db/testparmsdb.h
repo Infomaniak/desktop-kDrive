@@ -38,7 +38,9 @@ class TestParmsDb : public CppUnit::TestFixture, public TestBase {
 #endif
         CPPUNIT_TEST(testError);
         CPPUNIT_TEST(testAppState);
+#ifdef _WIN32
         CPPUNIT_TEST(testUpgradeOfShortPathNames);
+#endif
         CPPUNIT_TEST_SUITE_END();
 
     public:
