@@ -468,10 +468,12 @@ void TestUtility::testNormalizedSyncPath() {
     SyncPath normalizedPath;
     CPPUNIT_ASSERT(Utility::normalizedSyncPath("a/b/c", normalizedPath) && normalizedPath == SyncPath("a/b/c"));
     CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a/b/c", normalizedPath) && normalizedPath == SyncPath("/a/b/c"));
-    CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a\\b/c", normalizedPath) && normalizedPath != SyncPath("/a/b/c"));
 #ifdef _WIN32
     CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(a\b\c)", normalizedPath) && normalizedPath == SyncPath("a/b/c"));
     CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(\a\b\c)", normalizedPath) && normalizedPath == SyncPath("/a/b/c"));
+    CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a\\b/c", normalizedPath) && normalizedPath == SyncPath("/a/b/c"));
+#else
+    CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a\\b/c", normalizedPath) && normalizedPath != SyncPath("/a/b/c"));
 #endif
 }
 
