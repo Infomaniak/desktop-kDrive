@@ -4,9 +4,6 @@ on:
   # Runs every 15 minutes
   schedule:
     - cron: '*/15 * * * *'
-  # Runs on PR to a release branch
-  pull_request: 
-    types: [synchronize, review_requested, auto_merge_enabled]
 
 concurrency:
   group: auto-update
