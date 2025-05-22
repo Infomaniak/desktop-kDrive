@@ -30,8 +30,10 @@ env:
   KDRIVE_TEST_CI_REMOTE_DIR_ID: ${{ vars.KDRIVE_TEST_CI_REMOTE_DIR_ID }}
   KDRIVE_TEST_CI_LOCAL_PATH: ${{ vars.KDRIVE_TEST_CI_LOCAL_PATH }}
   KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
+  KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
- 
+  QT_QPA_PLATFORM: offscreen
+
 jobs:
   Test:
     strategy:
@@ -39,12 +41,15 @@ jobs:
       matrix:
         test_name: ["${{ inputs.test_common_name }}", "${{ inputs.test_common_server_name }}", "${{ inputs.test_server_name }}", "${{ inputs.test_syncengine_name }}", "${{ inputs.test_parms_name }}"]
     runs-on: [ self-hosted, Linux, X64 ]
-    env:
-      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     steps:
-        - uses: actions/checkout@v4
-        - name: Run test
-          uses: ./.github/actions/run_test_linux
-          with:  
+       - name: Checkout the PR
+         uses: actions/checkout@v4.1.1
+         with:
+          ref: ${{ github.head_ref }}
+          submodules: recursive
+
+       - name: Run test
+         uses: ./.github/actions/run_test_linux
+         with:  
             test_name: ${{ matrix.test_name }}
             test_dependencies_version: ${{ inputs.test_dependencies_version }}

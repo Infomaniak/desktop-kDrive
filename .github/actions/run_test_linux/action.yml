@@ -13,7 +13,6 @@ runs:
     using: "composite"
     steps:
       - name: Clean up log directory
-        if: always()
         run : rm -rf /tmp/kDrive-logdir/* || true
         shell: bash
 

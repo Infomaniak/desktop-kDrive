@@ -44,7 +44,6 @@ runs:
               cp /home/runner/Qt/6.2.3/gcc_64/lib/libicuuc.* ./dependencies/
               cp /home/runner/Qt/6.2.3/gcc_64/lib/libicudata.* ./dependencies/
               cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Svg.* ./dependencies/
-              cp /home/runner/Qt/6.2.3/gcc_64/plugins/platforms/* ./dependencies/
               cp /usr/local/lib/libcppunit.so ./dependencies/ 
               cp /usr/local/lib/libPocoUtil.so ./dependencies/
               cp /usr/local/lib/libPocoJSON.so ./dependencies/
@@ -60,11 +59,19 @@ runs:
           retention-days: 1
         if: always()
 
+      - name: Upload build test common files
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build-common-files
+          path: ./dependencies/
+          retention-days: 1
+        if: always()
+
       - name: Upload build test common executable
         uses: actions/upload-artifact@v4
         with:
           name: linux-kDrive_test_common
-          path: ./dependencies/
+          path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_common
           retention-days: 1
         if: always()
 
