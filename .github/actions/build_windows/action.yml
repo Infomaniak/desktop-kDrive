@@ -12,27 +12,15 @@ inputs:
 runs:
     using: "composite"
     steps:
-      - id: check
-        name: Check if ./dependencies exists (PowerShell)
-        shell: powershell
-        run: |
-          if (Test-Path "./dependencies" -PathType Container) {
-            "exists=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          } else {
-            "exists=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          }
-
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
 
       - name: Restore extension packages
-        if: ${{ steps.check.outputs.exists == 'false' }}
         run : nuget restore extensions/windows/cfapi/kDriveExt.sln
         shell: powershell
 
       - name: Import Windows virtual certificate
-        if: ${{ steps.check.outputs.exists == 'false' }}
         env:
           WINDOWS_VIRTUAL_CERT:  ${{ inputs.virtual_cert_id }}
           WINDOWS_VIRTUAL_CERT_PASSWORD: ${{ inputs.virtual_cert_pass }}
@@ -45,7 +33,6 @@ runs:
         shell: powershell
 
       - name: Build kDrive desktop
-        if: ${{ steps.check.outputs.exists == 'false' }}
         id: build
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
@@ -56,7 +43,6 @@ runs:
         shell: cmd
 
       - name: Fetch dependencies
-        if: ${{ steps.check.outputs.exists == 'false' }} && steps.build.outcome == 'success'
         run: |
           mkdir dependencies
           cp "${{ github.workspace }}/build-windows/install/bin/*.dll" ./dependencies/
@@ -72,6 +58,7 @@ runs:
           cp "C:\Qt\6.2.3\msvc2019_64\plugins\platforms\*" ./dependencies/
           cp "C:\Program Files (x86)\cppunit\lib\cppunit_dll.dll" ./dependencies/
         shell: powershell
+        if: steps.build.outcome == 'success'
 
       - name: Upload build common files
         uses: actions/upload-artifact@v4
