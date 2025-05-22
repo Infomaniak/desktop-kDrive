@@ -1044,7 +1044,7 @@ std::vector<SyncName> CommonUtility::splitPath(const SyncPath &path) {
     return itemNames;
 }
 
-std::vector<SyncName> CommonUtility::split(SyncName name, const SyncName &delimiter) {
+std::vector<SyncName> CommonUtility::splitSyncName(SyncName name, const SyncName &delimiter) {
     std::vector<SyncName> tokens;
     size_t pos = 0;
     SyncName token;
@@ -1062,7 +1062,7 @@ std::vector<SyncName> CommonUtility::split(SyncName name, const SyncName &delimi
 std::vector<SyncName> CommonUtility::splitPath(const SyncName &pathName) {
     SyncPath path{pathName};
 
-    return split(path.make_preferred().native(), preferredPathSeparator());
+    return splitSyncName(path.make_preferred().native(), preferredPathSeparator());
 }
 
 std::unordered_set<SyncName> CommonUtility::computeSyncNameNormalizations(const SyncName &name) {

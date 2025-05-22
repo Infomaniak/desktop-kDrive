@@ -583,44 +583,44 @@ void TestUtility::testSplitPathFromSyncPath() {
 
 void TestUtility::testSplitSyncName() {
     SyncName empty;
-    auto splitting = CommonUtility::split(empty, Str("/"));
+    auto splitting = CommonUtility::splitSyncName(empty, Str("/"));
     CPPUNIT_ASSERT_EQUAL(size_t(1), splitting.size());
     CPPUNIT_ASSERT(splitting.at(0).empty());
 
     SyncName noSegment = Str("*_blacklisted_*_*_*");
-    splitting = CommonUtility::split(noSegment, Str("/"));
+    splitting = CommonUtility::splitSyncName(noSegment, Str("/"));
     CPPUNIT_ASSERT_EQUAL(size_t(1), splitting.size());
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(noSegment), SyncName2Str(splitting.at(0)));
 
     SyncName oneSeparation = Str("A/B");
-    splitting = CommonUtility::split(oneSeparation, Str("/"));
+    splitting = CommonUtility::splitSyncName(oneSeparation, Str("/"));
     CPPUNIT_ASSERT_EQUAL(size_t(2), splitting.size());
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("A")}), SyncName2Str(splitting.at(0)));
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("B")}), SyncName2Str(splitting.at(1)));
 
     SyncName twoSeparations = Str("/A/B");
-    splitting = CommonUtility::split(twoSeparations, Str("/"));
+    splitting = CommonUtility::splitSyncName(twoSeparations, Str("/"));
     CPPUNIT_ASSERT_EQUAL(size_t(3), splitting.size());
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{}), SyncName2Str(splitting.at(0)));
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("A")}), SyncName2Str(splitting.at(1)));
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("B")}), SyncName2Str(splitting.at(2)));
 
     twoSeparations = Str("A/B/");
-    splitting = CommonUtility::split(twoSeparations, Str("/"));
+    splitting = CommonUtility::splitSyncName(twoSeparations, Str("/"));
     CPPUNIT_ASSERT_EQUAL(size_t(3), splitting.size());
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("A")}), SyncName2Str(splitting.at(0)));
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("B")}), SyncName2Str(splitting.at(1)));
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{}), SyncName2Str(splitting.at(2)));
 
     twoSeparations = Str("A/B/C");
-    splitting = CommonUtility::split(twoSeparations, Str("/"));
+    splitting = CommonUtility::splitSyncName(twoSeparations, Str("/"));
     CPPUNIT_ASSERT_EQUAL(size_t(3), splitting.size());
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("A")}), SyncName2Str(splitting.at(0)));
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("B")}), SyncName2Str(splitting.at(1)));
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("C")}), SyncName2Str(splitting.at(2)));
 
     twoSeparations = Str("A\\B\\C");
-    splitting = CommonUtility::split(twoSeparations, Str("\\"));
+    splitting = CommonUtility::splitSyncName(twoSeparations, Str("\\"));
     CPPUNIT_ASSERT_EQUAL(size_t(3), splitting.size());
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("A")}), SyncName2Str(splitting.at(0)));
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("B")}), SyncName2Str(splitting.at(1)));
