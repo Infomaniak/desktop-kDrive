@@ -103,15 +103,16 @@ jobs:
     secrets: inherit
 
   Check-all-tests-results:
-     runs-on:  [self-hosted]
-     needs: [Test-Windows, Test-Linux, Test-macOS]
-     if: always()  # Run even if dependencies fail
-     steps:
-       - name: Check if all dependencies succeeded
-         if: ${{ success() }}
-         run: echo "All dependent jobs succeeded."
-       - name: Fail if any dependency failed
-         if: ${{ !success() }}
-         run: |
-           echo "One or more dependent jobs failed."
-           exit 1
+    runs-on: [self-hosted]
+    needs: [Test-Windows, Test-Linux, Test-macOS]
+    if: always()  # Pour que cette étape s'exécute même si un test a échoué
+    steps:
+      - name: Check if all tests passed
+        run: |
+          if [[ "${{ needs.Test-Windows.result }}" != "success" || \
+                "${{ needs.Test-Linux.result }}" != "success" || \
+                "${{ needs.Test-macOS.result }}" != "success" ]]; then
+            echo "At least one test job failed."
+            exit 1
+          fi
+          echo "All test jobs passed successfully."
