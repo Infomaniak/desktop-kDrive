@@ -101,3 +101,17 @@ jobs:
       test_syncengine_name: kDrive_test_syncengine
       test_parms_name: kDrive_test_parms
     secrets: inherit
+
+  Check-all-tests-results:
+     runs-on:  [self-hosted]
+     needs: [Test-Windows, Test-Linux, Test-macOS]
+     if: always()  # Run even if dependencies fail
+     steps:
+       - name: Check if all dependencies succeeded
+         if: ${{ success() }}
+         run: echo "All dependent jobs succeeded."
+       - name: Fail if any dependency failed
+         if: ${{ !success() }}
+         run: |
+           echo "One or more dependent jobs failed."
+           exit 1
