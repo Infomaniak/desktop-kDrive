@@ -236,9 +236,6 @@ function CMake-Build-And-Install {
         $args += ("'-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'")
     }
 
-    # Enable Debug output for the CI, TODO Delete
-    $flags += ("'-DCMAKE_VERBOSE_MAKEFILE=ON'")
-    $flags += ("'-DCMAKE_EXE_LINKER_FLAGS=/VERBOSE'")
 
     $buildVersion = Get-Date -Format "yyyyMMdd"
 
@@ -267,6 +264,10 @@ function CMake-Build-And-Install {
     if ($coverage) {
         $flags += ("'-DKD_COVERAGE:BOOL=TRUE'")
     }
+
+    # Enable Debug output for the CI, TODO Delete
+    $flags += ("'-DCMAKE_VERBOSE_MAKEFILE=ON'")
+    $flags += ("'-DCMAKE_EXE_LINKER_FLAGS=/VERBOSE'")
 
     $args += $flags
 
