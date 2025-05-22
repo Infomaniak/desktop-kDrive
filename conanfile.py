@@ -23,7 +23,7 @@ class KDriveDesktop(ConanFile):
         tc = CMakeToolchain(self)
         if self.settings.os == "Windows":
             tc.blocks.remove("generic_system")
-            # tc.generator = "Ninja"
+            tc.generator = "Ninja"
 
             # The default VSRuntimeBlock only configures CMAKE_MSVC_RUNTIME_LIBRARY for the profile's build_type
             # (in the CI's profile, its Release), yielding $<$<CONFIG:Release>:MultiThreadedDLL>. Other configs
@@ -39,9 +39,9 @@ class KDriveDesktop(ConanFile):
     def layout(self):
         cmake_layout(self)
 
-    # def build_requirements(self):
-    #     if self.settings.os == "Windows":
-    #         self.tool_requires("ninja/1.11.1")
+    def build_requirements(self):
+        if self.settings.os == "Windows":
+            self.tool_requires("ninja/1.11.1")
 
     def requirements(self):
         """
