@@ -59,14 +59,6 @@ runs:
           retention-days: 1
         if: always()
 
-      - name: Upload build test common files
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-build-common-files
-          path: ./dependencies/
-          retention-days: 1
-        if: always()
-
       - name: Upload build test common executable
         uses: actions/upload-artifact@v4
         with:
