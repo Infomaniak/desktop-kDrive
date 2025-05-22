@@ -434,7 +434,7 @@ QList<ExclusionTemplateInfo> computeNormalizations(const QList<ExclusionTemplate
 
 
 bool containsStringPattern(const QList<ExclusionTemplateInfo> &exclusionList, const QString &pattern) {
-    const auto predicate = [&](const ExclusionTemplateInfo &eti) { return eti.templ() == pattern; };
+    const auto predicate = [&pattern](const ExclusionTemplateInfo &eti) { return eti.templ() == pattern; };
     const auto &it = std::find_if(exclusionList.cbegin(), exclusionList.cend(), predicate);
 
     return (it != exclusionList.cend());
@@ -454,7 +454,7 @@ void FileExclusionDialog::onAddFileButtonTriggered(bool checked) {
     const QString &template_ = dialog.templ();
     const auto &normalizedTemplates = computeNormalizations(template_);
 
-    const auto predicate = [&](const auto &templateNormalizedString) {
+    const auto predicate = [this](const auto &templateNormalizedString) {
         return containsStringPattern(_userTemplateList, templateNormalizedString) ||
                containsStringPattern(_defaultTemplateList, templateNormalizedString);
     };
