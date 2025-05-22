@@ -573,7 +573,7 @@ void TestUtility::testSplitSyncPath() {
 
 #ifdef _WIN32
     twoSeparators = Str("A\\B\\C");
-    splitting = CommonUtility::splitPath(SyncPath{twoSeparators});
+    splitting = CommonUtility::splitSyncPath(SyncPath{twoSeparators});
     CPPUNIT_ASSERT_EQUAL(size_t(3), splitting.size());
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("A")}), SyncName2Str(splitting.at(2)));
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("B")}), SyncName2Str(splitting.at(1)));
