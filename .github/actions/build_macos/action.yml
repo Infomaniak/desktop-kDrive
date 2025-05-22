@@ -37,14 +37,14 @@ runs:
       - name: Fetch dependencies
         run: |
           mkdir dependencies
-          cp ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtWidgets.framework ./dependencies/
-          cp ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtGui.framework ./dependencies/
-          cp ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtNetwork.framework ./dependencies/
-          cp ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtSql.framework ./dependencies/
-          cp ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtCore.framework ./dependencies/
-          cp ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtSvg.framework ./dependencies/
-          cp ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtDBus.framework ./dependencies/
-          cp ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/Sparkle.framework ./dependencies/
+          cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtWidgets.framework ./dependencies/
+          cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtGui.framework ./dependencies/
+          cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtNetwork.framework ./dependencies/
+          cp -R {{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtSql.framework ./dependencies/
+          cp -R {{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtCore.framework ./dependencies/
+          cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtSvg.framework ./dependencies/
+          cp -R {{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtDBus.framework ./dependencies/
+          cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/Sparkle.framework ./dependencies/
           mkdir dependencies/platforms
           cp /home/runner/Qt/6.2.3/gcc_64/plugins/platforms/* ./dependencies/platforms/
           cp /usr/local/lib/libPocoNetSSL.103.dylib ./dependencies/
@@ -64,42 +64,14 @@ runs:
           cp /usr/local/lib/libxxhash.0.8.2.dylib ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/*.lst ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/*.dylib ./dependencies/
-
-
-          cp ${{ github.workspace }}/build-linux/build/bin/sync-exclude.lst ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Widgets.* ./dependencies/ 
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Gui.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Network.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Sql.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Core.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6DBus.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libicui18n.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libicuuc.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libicudata.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Svg.* ./dependencies/
-          mkdir dependencies/platforms
-          cp /home/runner/Qt/6.2.3/gcc_64/plugins/platforms/* ./dependencies/platforms/
-          cp /usr/local/lib/libcppunit.so ./dependencies/ 
-          cp /usr/local/lib/libPocoUtil.so ./dependencies/
-          cp /usr/local/lib/libPocoJSON.so ./dependencies/
-          cp /usr/local/lib/libPocoXML.so ./dependencies/
-          cp /usr/local/lib/libPocoFoundation.so ./dependencies/
-          cp /usr/local/lib/libPocoNetSSL.so ./dependencies/
-          cp /usr/local/lib/libPocoCrypto.so ./dependencies/
-          cp /usr/local/lib/libPocoNet.so ./dependencies/
-          # cp /usr/local/lib/liblog4cplus.so ./dependencies/ TODO: Fix path
-          cp /usr/local/lib/libsentry.so ./dependencies/
-          cp /usr/local/lib/libzip.so ./dependencies/
-          cp /usr/local/lib/libxxhash* ./dependencies/
         shell: bash
+        if: steps.build.outcome == 'success'
 
       - name: Upload build common files
         uses: actions/upload-artifact@v4
         with:
           name: macos-build-common-files
-          path: |
-              ${{ github.workspace }}/build-macos/client/bin/*.lst
-              ${{ github.workspace }}/build-macos/client/bin/*.dylib
+          path: ./dependencies
           retention-days: 1
         if: steps.build.outcome == 'success'
 
