@@ -86,7 +86,7 @@ runs:
       - name: Upload build test common executable
         uses: actions/upload-artifact@v4
         with:
-          name: mac-kDrive_test_common
+          name: macos-kDrive_test_common
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_common
           retention-days: 1
         if: steps.build.outcome == 'success'
@@ -94,7 +94,7 @@ runs:
       - name: Upload build test common server executable
         uses: actions/upload-artifact@v4
         with:
-          name: mac-kDrive_test_common_server
+          name: macos-kDrive_test_common_server
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_common_server
           retention-days: 1
         if: steps.build.outcome == 'success'
@@ -102,7 +102,7 @@ runs:
       - name: Upload build test server executable
         uses: actions/upload-artifact@v4
         with:
-          name: mac-kDrive_test_server
+          name: macos-kDrive_test_server
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_server
           retention-days: 1
         if: steps.build.outcome == 'success'
@@ -110,7 +110,7 @@ runs:
       - name: Upload build test syncengine executable
         uses: actions/upload-artifact@v4
         with:
-          name: mac-kDrive_test_syncengine
+          name: macos-kDrive_test_syncengine
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_syncengine
           retention-days: 1
         if: steps.build.outcome == 'success'
@@ -118,7 +118,7 @@ runs:
       - name: Upload build test parms executable
         uses: actions/upload-artifact@v4
         with:
-          name: mac-kDrive_test_parms
+          name: macos-kDrive_test_parms
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_parms
           retention-days: 1
         if: steps.build.outcome == 'success'

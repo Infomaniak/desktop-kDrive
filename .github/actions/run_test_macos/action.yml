@@ -48,7 +48,7 @@ runs:
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
-          name: mac-${{ inputs.test_name }}
+          name: macos-${{ inputs.test_name }}
           path: ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Grant tests script execute permission
@@ -67,7 +67,7 @@ runs:
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: macOS-logs-${{ inputs.test_name }}
+          name: macos-logs-${{ inputs.test_name }}
           path: ${{ env.logdir_path }}/*
           retention-days: 1
         if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
