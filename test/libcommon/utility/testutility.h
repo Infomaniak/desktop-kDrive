@@ -41,7 +41,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testLogIfFail);
         CPPUNIT_TEST(testRelativePath);
         CPPUNIT_TEST(testSplitSyncName);
-        CPPUNIT_TEST(testSplitPathFromSyncPath);
+        CPPUNIT_TEST(testSplitSyncPath);
         CPPUNIT_TEST(testSplitPathFromSyncName);
         CPPUNIT_TEST(testComputeSyncNameNormalizations);
         CPPUNIT_TEST(testComputePathNormalizations);
@@ -69,7 +69,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testLogIfFail();
         void testRelativePath();
         void testSplitSyncName();
-        void testSplitPathFromSyncPath();
+        void testSplitSyncPath();
         void testSplitPathFromSyncName();
         void testComputeSyncNameNormalizations();
         void testComputePathNormalizations();

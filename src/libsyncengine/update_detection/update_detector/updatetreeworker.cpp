@@ -1013,7 +1013,7 @@ ExitCode UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &path, bool is
         return ExitCode::Ok;
     }
 
-    std::vector<SyncName> names = CommonUtility::splitPath(path);
+    std::vector<SyncName> names = CommonUtility::splitSyncPath(path);
 
     // create intermediate nodes if needed
     std::shared_ptr<Node> tmpNode = _updateTree->rootNode();
@@ -1117,7 +1117,7 @@ bool UpdateTreeWorker::integrityCheck() {
 }
 
 ExitCode UpdateTreeWorker::getNewPathAfterMove(const SyncPath &path, SyncPath &newPath) {
-    const std::vector<SyncName> itemNames = CommonUtility::splitPath(path);
+    const std::vector<SyncName> itemNames = CommonUtility::splitSyncPath(path);
     std::vector<NodeId> nodeIds(itemNames.size());
 
     // Vector ID
