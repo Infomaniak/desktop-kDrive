@@ -39,7 +39,7 @@ runs:
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
-          name: win-${{ inputs.test_name }}
+          name: ${{ inputs.test_name }}
           path: ${{ github.workspace }}/build-windows/test/
 
       - name: Execute tests
