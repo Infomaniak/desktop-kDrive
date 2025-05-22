@@ -208,7 +208,7 @@ struct COMMON_EXPORT CommonUtility {
 
         //
         //! Computes and returns all possible NFC and NFD normalizations of `path` segments
-        //! interpreted as a file system item path.
+        //! interpreted as a file system path.
         /*!
           \param templateString is the path string the normalizations of which are queried.
           \return a set of SyncNames containing the NFC and NFD normalizations of path, when those are successful.
@@ -226,7 +226,7 @@ struct COMMON_EXPORT CommonUtility {
 
         //
         //! Computes recursively and returns all possible NFC and NFD normalizations of `pathSegments` segments
-        //! interpreted as a file system item path.
+        //! interpreted as a file system path.
         /*!
           \param pathSegments is the split path string the normalizations of which are queried.
           \param lastIndex is the index of the las segment that should be considered.
@@ -239,7 +239,7 @@ struct COMMON_EXPORT CommonUtility {
 
         //
         //! Computes recursively and returns all possible NFC and NFD normalizations of `pathSegments` segments
-        //! interpreted as a file system item path.
+        //! interpreted as a file system path.
         /*!
           \param pathSegments is the split path strings the normalizations of which are queried.
           \return a set of SyncNames containing the NFC and NFD normalizations of pathSegments, when those are successful.
