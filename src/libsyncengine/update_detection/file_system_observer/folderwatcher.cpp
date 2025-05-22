@@ -29,8 +29,7 @@ FolderWatcher::FolderWatcher(LocalFileSystemObserverWorker *parent, const SyncPa
     _folder(path) {}
 
 void FolderWatcher::start() {
-    LOGW_DEBUG(_logger, L"Start Folder Watcher on " << Utility::formatSyncPath(_folder) << L"[fsType: "
-                                                    << Utility::s2ws((Utility::fileSystemName(_folder))) << L"]");
+    LOG_DEBUG(_logger, "Start Folder Watcher");
     _stop = false;
     _ready = false;
 

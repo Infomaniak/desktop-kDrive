@@ -44,6 +44,7 @@ void FolderWatcher_win::changeDetected(const SyncPath &path, OperationType opTyp
 
 void FolderWatcher_win::startWatching() {
     LOGW_DEBUG(_logger, L"Start watching folder: " << _folder.wstring().c_str());
+    LOG_DEBUG(_logger, "File system format: " << Utility::fileSystemName(_folder).c_str());
 
     _resultEventHandle = CreateEvent(nullptr, true, false, nullptr);
     _stopEventHandle = CreateEvent(nullptr, true, false, nullptr);
