@@ -83,7 +83,7 @@ std::shared_ptr<Node> UpdateTree::getNodeByPath(const SyncPath &path) {
         return _rootNode;
     }
 
-    const std::vector<SyncName> itemNames = CommonUtility::splitPath(path);
+    const std::vector<SyncName> itemNames = CommonUtility::splitSyncPath(path);
     std::shared_ptr<Node> tmpNode = _rootNode;
 
     for (auto nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
@@ -110,7 +110,7 @@ std::shared_ptr<Node> UpdateTree::getNodeByPathNormalized(const SyncPath &path) 
         return _rootNode;
     }
 
-    const std::vector<SyncName> itemNames = CommonUtility::splitPath(path);
+    const std::vector<SyncName> itemNames = CommonUtility::splitSyncPath(path);
     std::shared_ptr<Node> tmpNode = _rootNode;
 
     for (auto nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
