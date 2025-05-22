@@ -113,6 +113,7 @@ target_include_directories(${testserver_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/src/3rdparty/QProgressIndicator
     ${CMAKE_SOURCE_DIR}/src/3rdparty/qtlockedfile
     ${CMAKE_SOURCE_DIR}/src/3rdparty/qtsingleapplication
+    ${CMAKE_INCLUDE_PATH}
     ${CMAKE_CURRENT_BINARY_DIR})
 
 # Link

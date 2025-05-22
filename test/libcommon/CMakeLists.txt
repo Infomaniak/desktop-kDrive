@@ -25,6 +25,7 @@ set(testcommon_SRCS
 )
 
 if (WIN32)
+    include_directories(${log4cplus_INCLUDE_DIRS})
     include_directories("C:/Program Files (x86)/cppunit/include")
     include_directories("C:/Program Files (x86)/Sentry-Native/include")
 else ()
@@ -37,6 +38,9 @@ add_executable(${testcommon_NAME} ${testcommon_SRCS})
 set(PC_HEADER_FILES
     # std c++
     "$<$<COMPILE_LANGUAGE:CXX>:<filesystem$<ANGLE-R>>"
+    # cppunit
+    "$<$<COMPILE_LANGUAGE:CXX>:<cppunit/TestFixture.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<cppunit/extensions/HelperMacros.h$<ANGLE-R>>"
 )
 
 target_precompile_headers(${testcommon_NAME} PRIVATE ${PC_HEADER_FILES})

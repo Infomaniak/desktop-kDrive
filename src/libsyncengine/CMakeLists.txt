@@ -176,6 +176,9 @@ set(PC_HEADER_FILES
     "$<$<COMPILE_LANGUAGE:CXX>:<Poco/JSON/Object.h$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<Poco/JSON/Parser.h$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<Poco/ThreadPool.h$<ANGLE-R>>"
+    # log4cplus
+    "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/logger.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/loggingmacros.h$<ANGLE-R>>"
     # kDrive
     "$<$<COMPILE_LANGUAGE:CXX>:db/syncdb.h>"
     "$<$<COMPILE_LANGUAGE:CXX>:requests/parameterscache.h>"

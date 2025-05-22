@@ -87,6 +87,10 @@ set(PC_HEADER_FILES
     "$<$<COMPILE_LANGUAGE:CXX>:<qstring.h$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<qthread.h$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<qwaitcondition.h$<ANGLE-R>>"
+    # log4cplus
+    "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/fileappender.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/logger.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/loggingmacros.h$<ANGLE-R>>"
     # sqlite
     "$<$<COMPILE_LANGUAGE:CXX>:<sqlite3.h$<ANGLE-R>>"
     # kDrive
