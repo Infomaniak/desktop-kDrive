@@ -31,7 +31,3 @@ add_subdirectory(libsyncengine)
 add_subdirectory(server)
 
 include_directories(${log4cplus_INCLUDE_DIRS})
-
-if (MSVC)
-    install(FILES "C:/Program Files (x86)/cppunit/lib/cppunit_dll.dll" "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.dll" DESTINATION ${CMAKE_INSTALL_BINDIR})
-endif ()
