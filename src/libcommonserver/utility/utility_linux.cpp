@@ -78,21 +78,21 @@ static int moveItemToTrash_private(const SyncPath &itemPath) {
     std::error_code ec;
     if (!std::filesystem::exists(trash_path, ec)) {
         if (ec.value() != 0) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in std::filesystem::exists - err=" << ec.message().c_str() << " ("
+            LOG_WARN(Log::instance()->getLogger(), "Error in std::filesystem::exists - err=" << ec.message() << " ("
                                                                                              << std::to_string(ec.value()).c_str()
                                                                                              << ")");
             return false;
         }
 
         if (!std::filesystem::create_directories(trash_path)) {
-            LOG_WARN(Log::instance()->getLogger(), "Failed to create directory - path=" << trash_path.string().c_str());
+            LOG_WARN(Log::instance()->getLogger(), "Failed to create directory - path=" << trash_path.string());
             return false;
         }
     }
 
     int result = system(command.c_str());
     if (result != 0) {
-        LOG_WARN(Log::instance()->getLogger(), "Failed to move item to trash - err=" << std::to_string(result).c_str());
+        LOG_WARN(Log::instance()->getLogger(), "Failed to move item to trash - err=" << std::to_string(result));
         return false;
     }
     return true;

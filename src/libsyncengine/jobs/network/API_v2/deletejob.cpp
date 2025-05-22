@@ -44,8 +44,8 @@ bool DeleteJob::canRun() {
 
     if (_remoteItemId.empty() || _localItemId.empty() || _absoluteLocalFilepath.empty()) {
         LOGW_WARN(_logger, L"Error in DeleteJob::canRun: missing required input, remote ID:"
-                                   << Utility::s2ws(_remoteItemId).c_str() << L", local ID: "
-                                   << Utility::s2ws(_localItemId).c_str() << L", "
+                                   << Utility::s2ws(_remoteItemId) << L", local ID: "
+                                   << Utility::s2ws(_localItemId) << L", "
                                    << Utility::formatSyncPath(_absoluteLocalFilepath));
         _exitInfo = ExitCode::DataError;
         return false;
@@ -58,7 +58,7 @@ bool DeleteJob::canRun() {
     if (!IoHelper::checkIfPathExistsWithSameNodeId(_absoluteLocalFilepath, _localItemId, existsWithSameId, otherNodeId,
                                                    ioError)) {
         LOGW_WARN(_logger,
-                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absoluteLocalFilepath, ioError).c_str());
+                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absoluteLocalFilepath, ioError));
         _exitInfo = ExitCode::SystemError;
         return false;
     }
@@ -72,17 +72,17 @@ bool DeleteJob::canRun() {
         ioError = IoError::Success;
         if (!IoHelper::getFileStat(_absoluteLocalFilepath, &filestat, ioError)) {
             LOGW_WARN(_logger,
-                      L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_absoluteLocalFilepath, ioError).c_str());
+                      L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_absoluteLocalFilepath, ioError));
             _exitInfo = ExitCode::SystemError;
             return false;
         }
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str());
+            LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_absoluteLocalFilepath));
             _exitInfo = {ExitCode::DataError, ExitCause::InvalidSnapshot};
             return false;
         } else if (ioError == IoError::AccessDenied) {
-            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str());
+            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_absoluteLocalFilepath));
             _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
             return false;
         }
@@ -101,7 +101,7 @@ bool DeleteJob::canRun() {
     } else if (!otherNodeId.empty() && _localItemId != otherNodeId) {
         LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str()
                                       << L" exists on local replica with another ID (" << Utility::s2ws(_localItemId).c_str()
-                                      << L"/" << Utility::s2ws(otherNodeId).c_str() << L")");
+                                      << L"/" << Utility::s2ws(otherNodeId) << L")");
 
         std::stringstream ss;
         ss << "File exists with another ID (" << _localItemId << "/" << otherNodeId << ")";

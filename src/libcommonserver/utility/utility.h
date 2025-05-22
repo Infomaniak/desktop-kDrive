@@ -218,7 +218,7 @@ struct TimeCounter {
             _end = clock();
             _total += (double) (_end - _start) / CLOCKS_PER_SEC;
         }
-        void trace() { LOG_DEBUG(Log::instance()->getLogger(), "Time counter " << _name.c_str() << " value:" << _total); }
+        void trace() { LOG_DEBUG(Log::instance()->getLogger(), "Time counter " << _name << " value:" << _total); }
 
     private:
         std::string _name;
