@@ -38,7 +38,7 @@ runs:
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
           call "cov01.exe" "-0"
           
-          powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci -coverage false
+          powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
         shell: cmd
 
       - name: Fetch dependencies
