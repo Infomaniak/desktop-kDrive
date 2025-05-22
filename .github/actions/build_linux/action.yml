@@ -23,49 +23,40 @@ runs:
         run : ./infomaniak-build-tools/linux/build-ci-amd64.sh -u
         shell: bash
 
+      - name: Fetch dependencies
+        run: |
+          mkdir dependencies
+        shell: bash
+
       - name: Upload build common files
         uses: actions/upload-artifact@v4
         with:
           name: linux-build-common-files
-          path: ${{ github.workspace }}/build-linux/build/bin/sync-exclude.lst
-          retention-days: 1
-        if: always()
-
-      - name: Upload build qt libs
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-build-qt-libs
           path: |
-              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Widgets.*
-              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Gui.*
-              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Network.*
-              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Sql.*
-              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Core.*
-              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6DBus.*
-              /home/runner/Qt/6.2.3/gcc_64/lib/libicui18n.*
-              /home/runner/Qt/6.2.3/gcc_64/lib/libicuuc.*
-              /home/runner/Qt/6.2.3/gcc_64/lib/libicudata.*
-              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Svg.*
-          retention-days: 1
-        if: always()
-
-      - name: Upload build usr lib
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-build-usr-lib
-          path: |
-              /usr/local/lib/libcppunit.so
-              /usr/local/lib/libPocoUtil.so
-              /usr/local/lib/libPocoJSON.so
-              /usr/local/lib/libPocoXML.so
-              /usr/local/lib/libPocoFoundation.so
-              /usr/local/lib/libPocoNetSSL.so
-              /usr/local/lib/libPocoCrypto.so
-              /usr/local/lib/libPocoNet.so
-              /usr/local/lib/liblog4cplus.so
-              /usr/local/lib/libsentry.so
-              /usr/local/lib/libzip.so
-              /usr/local/lib/libxxhash*
+              cp ${{ github.workspace }}/build-linux/build/bin/sync-exclude.lst ./dependencies/
+              cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Widgets.* ./dependencies/ 
+              cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Gui.* ./dependencies/
+              cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Network.* ./dependencies/
+              cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Sql.* ./dependencies/
+              cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Core.* ./dependencies/
+              cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6DBus.* ./dependencies/
+              cp /home/runner/Qt/6.2.3/gcc_64/lib/libicui18n.* ./dependencies/
+              cp /home/runner/Qt/6.2.3/gcc_64/lib/libicuuc.* ./dependencies/
+              cp /home/runner/Qt/6.2.3/gcc_64/lib/libicudata.* ./dependencies/
+              cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Svg.* ./dependencies/
+              cp /home/runner/Qt/6.2.3/gcc_64/plugins/platforms/* ./dependencies/
+              cp /usr/local/lib/libcppunit.so ./dependencies/ 
+              cp /usr/local/lib/libPocoUtil.so ./dependencies/
+              cp /usr/local/lib/libPocoJSON.so ./dependencies/
+              cp /usr/local/lib/libPocoXML.so ./dependencies/
+              cp /usr/local/lib/libPocoFoundation.so ./dependencies/
+              cp /usr/local/lib/libPocoNetSSL.so ./dependencies/
+              cp /usr/local/lib/libPocoCrypto.so ./dependencies/
+              cp /usr/local/lib/libPocoNet.so ./dependencies/
+              cp /usr/local/lib/liblog4cplus.so ./dependencies/
+              cp /usr/local/lib/libsentry.so ./dependencies/
+              cp /usr/local/lib/libzip.so ./dependencies/
+              cp /usr/local/lib/libxxhash* ./dependencies/
           retention-days: 1
         if: always()
 
@@ -73,7 +64,7 @@ runs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-kDrive_test_common
-          path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_common
+          path: ./dependencies/
           retention-days: 1
         if: always()
 
