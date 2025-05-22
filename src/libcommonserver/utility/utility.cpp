@@ -352,7 +352,24 @@ std::string Utility::fileSystemName(const SyncPath &targetPath) {
     if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
         return stat.f_fstypename;
     }
-#elif defined(__unix__)
+#elif defined(_WIN32)
+    TCHAR szFileSystemName[MAX_PATH + 1];
+    DWORD dwMaxFileNameLength = 0;
+    DWORD dwFileSystemFlags = 0;
+
+    if (GetVolumeInformation(targetPath.root_path().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
+                             szFileSystemName, sizeof(szFileSystemName)) == TRUE) {
+        return ws2s(szFileSystemName);
+    } else {
+        // Not all the requested information is retrieved
+        DWORD dwError = GetLastError();
+        LOGW_WARN(logger(), L"Error in GetVolumeInformation for " << formatSyncName(targetPath.root_name()) << L" ("
+                                                                  << CommonUtility::getErrorMessage(dwError) << L")");
+
+        // !!! File system name can be OK or not !!!
+        return ws2s(szFileSystemName);
+    }
+#elif defined(__unix__) 
     struct statfs stat;
     if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
         std::function<std::string(std::string prettyName, int fsCode)> formatFsName = [](std::string prettyName, int fsCode) {
@@ -384,25 +401,9 @@ std::string Utility::fileSystemName(const SyncPath &targetPath) {
             case 0x858458f6:
                 return formatFsName("RAMFS", stat.f_type);
             default:
-                return formatFsName("Unknown-see corresponding entry at https://man7.org/linux/man-pages/man2/statfs.2.html", stat.f_type);
+                return formatFsName("Unknown-see corresponding entry at https://man7.org/linux/man-pages/man2/statfs.2.html",
+                                    stat.f_type);
         }
-    }
-#elif defined(_WIN32)
-    TCHAR szFileSystemName[MAX_PATH + 1];
-    DWORD dwMaxFileNameLength = 0;
-    DWORD dwFileSystemFlags = 0;
-
-    if (GetVolumeInformation(targetPath.root_path().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
-                             szFileSystemName, sizeof(szFileSystemName)) == TRUE) {
-        return ws2s(szFileSystemName);
-    } else {
-        // Not all the requested information is retrieved
-        DWORD dwError = GetLastError();
-        LOGW_WARN(logger(), L"Error in GetVolumeInformation for " << formatSyncName(targetPath.root_name()) << L" ("
-                                                                  << CommonUtility::getErrorMessage(dwError) << L")");
-
-        // !!! File system name can be OK or not !!!
-        return ws2s(szFileSystemName);
     }
 #endif
 
