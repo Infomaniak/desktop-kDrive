@@ -12,12 +12,6 @@ inputs:
 runs:
     using: "composite"
     steps:
-      - name: Download common files
-        uses: actions/download-artifact@v4
-        with:
-          name: macos-build-common-files
-          path: ${{ github.workspace }}/build-macos/client/bin/
-
       - name: Load cached dependencies
         id: cache
         uses: herve-er/local-cache@v2
@@ -27,18 +21,11 @@ runs:
           key: ${{ inputs.test_dependencies_version }}
           clean-key: true
 
-      - name: Download libs
+      - name: Download common files
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
         with:
-          name: macos-build-libs
-          path: ${{ github.workspace }}/build-macos/client/cache/
-
-      - name: Download Frameworks
-        if: steps.cache.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: macos-build-frameworks
+          name: macos-build-common-files
           path: ${{ github.workspace }}/build-macos/client/cache/
 
       - name: Copy the cache to the build directory
