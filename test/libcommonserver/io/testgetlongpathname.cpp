@@ -77,9 +77,7 @@ void TestIo::testGetLongPathName() {
         auto ioError = IoError::Success;
 
         const SyncPath inputPath = temporaryDirectory.path() / makeFileNameWithEmojis();
-        {
-            std::ofstream ofs(inputPath);
-        }
+        { std::ofstream ofs(inputPath); }
         _testObj->getLongPathName(inputPath, longPathName, ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT_EQUAL(inputPath, longPathName);
