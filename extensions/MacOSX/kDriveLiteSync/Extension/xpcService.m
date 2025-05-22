@@ -57,6 +57,7 @@
 - (void)initOpenWhiteListThumbnailSet
 {
     _defaultOpenWhiteListThumbnailSet = [NSSet setWithObjects:
+                                     @"com.apple.quicklook.QuickLookUIService",                 // Quicklook
                                      @"com.apple.quicklook.satellite",                          // Quicklook
                                      @"com.apple.quicklook.thumbnail.ImageExtension",           // Quicklook Thumbnail
                                      @"com.apple.quicklook.thumbnail.AudiovisualExtension",     // Quicklook Thumbnail
@@ -67,7 +68,6 @@
 - (void)initOpenWhiteListSet
 {
     _defaultOpenWhiteListSet = [NSSet setWithObjects:
-                            @"com.apple.quicklook.QuickLookUIService",          // Quicklook
                             @"com.apple.QuickLookDaemon",                       // Quicklook
                             @"com.apple.DesktopServicesHelper",                 // DesktopServicesHelper
                             nil
