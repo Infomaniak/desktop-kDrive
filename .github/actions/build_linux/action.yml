@@ -37,6 +37,7 @@ runs:
           cp /home/runner/Qt/6.2.3/gcc_64/lib/libicuuc.* ./dependencies/
           cp /home/runner/Qt/6.2.3/gcc_64/lib/libicudata.* ./dependencies/
           cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Svg.* ./dependencies/
+          cp /home/runner/Qt/6.2.3/gcc_64/plugins/platforms/* ./dependencies/
           cp /usr/local/lib/libcppunit.so ./dependencies/ 
           cp /usr/local/lib/libPocoUtil.so ./dependencies/
           cp /usr/local/lib/libPocoJSON.so ./dependencies/
