@@ -52,7 +52,7 @@ SyncName makeNfcSyncName() {
 }
 
 void generateOrEditTestFile(const SyncPath& path) {
-    std::ofstream testFile(path);
+    std::ofstream testFile(path, std::ios_base::app);
     testFile << "test" << std::endl;
     testFile.close();
 }
