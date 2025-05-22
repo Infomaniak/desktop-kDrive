@@ -376,7 +376,7 @@ std::string Utility::fileSystemName(const SyncPath &targetPath) {
         return ws2s(szFileSystemName);
     }
 #endif
-    return std::string();
+    return "Error";
 }
 
 bool Utility::startsWith(const std::string &str, const std::string &prefix) {
