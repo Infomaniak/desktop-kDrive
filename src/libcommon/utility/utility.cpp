@@ -1032,12 +1032,12 @@ SyncName CommonUtility::preferredPathSeparator() {
     return SyncName{std::filesystem::path::preferred_separator};
 }
 
-std::vector<SyncName> CommonUtility::splitSyncPath(const SyncPath &path) {
-    std::vector<SyncName> itemNames;
+std::list<SyncName> CommonUtility::splitSyncPath(const SyncPath &path) {
+    std::list<SyncName> itemNames;
     SyncPath pathTmp(path);
 
     while (pathTmp != pathTmp.root_path()) {
-        (void) itemNames.emplace_back(pathTmp.filename().native());
+        (void) itemNames.emplace_front(pathTmp.filename().native());
         pathTmp = pathTmp.parent_path();
     }
 

@@ -167,7 +167,7 @@ struct COMMON_EXPORT CommonUtility {
          * Example: the return value associated to path = SyncPath("A / B / c.txt") is the vector
          * ["c.txt", "B", "A"]
          */
-        static std::vector<SyncName> splitSyncPath(const SyncPath &path);
+        static std::list<SyncName> splitSyncPath(const SyncPath &path);
 
         /**
          * Split the input string wrt `separator` into a vector of strings.
