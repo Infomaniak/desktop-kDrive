@@ -29,12 +29,13 @@
 namespace KDC {
 
 UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &absoluteFilePath, const SyncName &filename,
-                     const NodeId &remoteParentDirId, SyncTime modtime) :
+                     const NodeId &remoteParentDirId, SyncTime creationTime, SyncTime modificationTime) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _absoluteFilePath(absoluteFilePath),
     _filename(filename),
     _remoteParentDirId(remoteParentDirId),
-    _modtimeIn(modtime),
+    _creationTimeIn(creationTime),
+    _modificationTimeIn(modificationTime),
     _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _customTimeout = 60;
@@ -43,8 +44,8 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncP
 }
 
 UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &absoluteFilePath, const NodeId &fileId,
-                     SyncTime modtime) :
-    UploadJob(vfs, driveDbId, absoluteFilePath, SyncName(), "", modtime) {
+                     SyncTime modificationTime) :
+    UploadJob(vfs, driveDbId, absoluteFilePath, SyncName(), "", 0, modificationTime) {
     _fileId = fileId;
 }
 
@@ -94,10 +95,11 @@ bool UploadJob::handleResponse(std::istream &is) {
         return false;
     }
 
-    UploadJobReplyHandler replyHandler(_absoluteFilePath, _modtimeIn);
+    UploadJobReplyHandler replyHandler(_absoluteFilePath, _creationTimeIn, _modificationTimeIn);
     if (!replyHandler.extractData(jsonRes())) return false;
     _nodeIdOut = replyHandler.nodeId();
-    _modtimeOut = replyHandler.modtime();
+    _creationTimeOut = replyHandler.creationTime();
+    _modificationTimeOut = replyHandler.modificationTime();
 
     return true;
 }
@@ -112,6 +114,7 @@ void UploadJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
     if (_fileId.empty()) {
         uri.addQueryParameter("file_name", SyncName2Str(_filename));
         uri.addQueryParameter("directory_id", _remoteParentDirId);
+        uri.addQueryParameter(createdAtKey, std::to_string(_creationTimeIn));
         // If an item already exists on the remote side with the same name, we want the backend to return an error.
         // However, in case of conflict with a directory, the backend will change the error resolution to `rename` and
         // automatically rename the uploaded file with a suffix counter (e.g.: test (1).txt)
@@ -123,7 +126,7 @@ void UploadJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
     uri.addQueryParameter("total_size", std::to_string(_data.size()));
 
     uri.addQueryParameter("total_chunk_hash", "xxh3:" + _contentHash);
-    uri.addQueryParameter(lastModifiedAtKey, std::to_string(_modtimeIn));
+    uri.addQueryParameter(lastModifiedAtKey, std::to_string(_modificationTimeIn));
 
     if (IoHelper::isLink(_linkType)) {
         auto str2HtmlStr = [](const std::string &str) { return str.empty() ? "%02%03" : str; };
