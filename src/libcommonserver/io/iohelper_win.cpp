@@ -211,12 +211,12 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError 
             if (counter && ioError != IoError::AccessDenied) {
                 retry = true;
                 Utility::msleep(10);
-                LOGW_DEBUG(logger(), L"Retrying to get handle: " << Utility::formatSyncPath(path.parent_path()).c_str());
+                LOGW_DEBUG(logger(), L"Retrying to get handle: " << Utility::formatSyncPath(path.parent_path()));
                 counter--;
                 continue;
             }
 
-            LOGW_WARN(logger(), L"Error in CreateFileW: " << Utility::formatIoError(path.parent_path(), ioError).c_str());
+            LOGW_WARN(logger(), L"Error in CreateFileW: " << Utility::formatIoError(path.parent_path(), ioError));
 
             return isExpectedError(ioError);
         }
@@ -530,7 +530,7 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
 
     if (!IsValidAcl(pACLnew)) {
         ioError = IoError::Unknown;
-        LOGW_WARN(logger, L"Invalid new ACL: " << Utility::formatSyncPath(path).c_str());
+        LOGW_WARN(logger, L"Invalid new ACL: " << Utility::formatSyncPath(path));
 
         LocalFree(pSecurityDescriptor);
         LocalFree(pACLnew);
@@ -648,7 +648,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     ioError = itemType.ioError;
 
     if (!success) {
-        LOGW_WARN(logger(), L"Failed to get item type: " << Utility::formatIoError(path, ioError).c_str());
+        LOGW_WARN(logger(), L"Failed to get item type: " << Utility::formatIoError(path, ioError));
         return false;
     }
 
@@ -662,7 +662,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
                                            : std::filesystem::status(path, ec).permissions();
     ioError = stdError2ioError(ec);
     if (ioError != IoError::Success) {
-        LOGW_WARN(logger(), L"Failed to get permissions: " << Utility::formatStdError(path, ec).c_str());
+        LOGW_WARN(logger(), L"Failed to get permissions: " << Utility::formatStdError(path, ec));
         return isExpectedError(ioError);
     }
     read = ((perms & std::filesystem::perms::owner_read) != std::filesystem::perms::none);
@@ -887,8 +887,8 @@ static void UnixTimevalToFileTime(timeval t, LPFILETIME pft) {
     pft->dwHighDateTime = ll >> 32;
 }
 
-IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime creationDate,
-                                    const SyncTime modificationDate, const bool) noexcept {
+IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime creationDate, const SyncTime modificationDate,
+                               const bool) noexcept {
     FILETIME creationTime;
     if (creationDate) {
         // Set creation time

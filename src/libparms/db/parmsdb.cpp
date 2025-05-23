@@ -644,7 +644,7 @@ bool ParmsDb::updateExclusionTemplates() {
         }
     } else {
         LOGW_WARN(_logger,
-                  L"Cannot open exclusion templates file " << SyncName2WStr(Utility::getExcludedTemplateFilePath(_test)).c_str());
+                  L"Cannot open exclusion templates file " << SyncName2WStr(Utility::getExcludedTemplateFilePath(_test)));
         return false;
     }
 
@@ -2853,7 +2853,7 @@ bool ParmsDb::selectConflicts(int syncDbId, ConflictType filter, std::vector<Err
     bool found = false;
     for (;;) {
         if (!queryNext(requestId, found)) {
-            LOG_WARN(_logger, "Error getting query result: " << requestId.c_str());
+            LOG_WARN(_logger, "Error getting query result: " << requestId);
             return false;
         }
         if (!found) {

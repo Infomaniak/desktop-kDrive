@@ -105,18 +105,18 @@ bool LocalDeleteJob::canRun() {
     bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_absolutePath, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absolutePath, ioError).c_str());
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absolutePath, ioError));
         _exitInfo = ExitCode::SystemError;
         return false;
     }
     if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_absolutePath).c_str());
+        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_absolutePath));
         _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         return false;
     }
 
     if (!exists) {
-        LOGW_DEBUG(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_absolutePath).c_str());
+        LOGW_DEBUG(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_absolutePath));
         _exitInfo = {ExitCode::DataError, ExitCause::NotFound};
         return false;
     }
@@ -161,7 +161,7 @@ void LocalDeleteJob::handleTrashMoveOutcome(bool success) {
         LOGW_WARN(_logger,
                   L"Failed to move item: " << Utility::formatSyncPath(_absolutePath) << L" to trash. Trying hard delete.");
     } else if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_absolutePath).c_str() << L" was moved to trash");
+        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_absolutePath) << L" was moved to trash");
     }
 }
 
@@ -180,11 +180,11 @@ void LocalDeleteJob::runJob() {
     _exitInfo = ExitCode::Ok;
     if (tryMoveToTrash && moveToTrash()) return;
 
-    LOGW_DEBUG(_logger, L"Delete item with " << Utility::formatSyncPath(_absolutePath).c_str());
+    LOGW_DEBUG(_logger, L"Delete item with " << Utility::formatSyncPath(_absolutePath));
     std::error_code ec;
     std::filesystem::remove_all(_absolutePath, ec);
     if (ec) {
-        LOGW_WARN(_logger, L"Failed to delete item with path " << Utility::formatStdError(_absolutePath, ec).c_str());
+        LOGW_WARN(_logger, L"Failed to delete item with path " << Utility::formatStdError(_absolutePath, ec));
         if (IoHelper::stdError2ioError(ec) == IoError::AccessDenied) {
             _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         } else {
