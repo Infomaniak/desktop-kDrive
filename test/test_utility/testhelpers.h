@@ -37,7 +37,6 @@ inline const SyncPath localTestDirPath() {
     std::error_code ec;
     testDirPath = Utility::s2ws(TEST_DIR) + L"/" + targetDirName;
     if (std::filesystem::exists(Utility::s2ws(TEST_DIR) + L"/test_ci", ec) && !ec) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"test_ci dir found at (default) -> " << Utility::formatSyncPath(testDirPath));
         return testDirPath;
     }
 
@@ -68,7 +67,6 @@ inline const SyncPath localTestDirPath() {
         std::filesystem::path direct = scanPath / targetDirName;
         if (std::filesystem::exists(direct) && std::filesystem::is_directory(direct)) {
             testDirPath = direct;
-            LOGW_DEBUG(Log::instance()->getLogger(), L"test_ci dir found at -> " << Utility::formatSyncPath(testDirPath));
             return testDirPath;
         }
 
@@ -76,7 +74,7 @@ inline const SyncPath localTestDirPath() {
         auto found = findDownward(scanPath);
         if (found.has_value()) {
             testDirPath = found.value();
-            break;
+            return testDirPath;
         }
 
         // Go up one level
@@ -88,7 +86,6 @@ inline const SyncPath localTestDirPath() {
             break; // Reached the root, give up
         }
     }
-    LOGW_DEBUG(Log::instance()->getLogger(), L"test_ci dir found at -> " << Utility::formatSyncPath(testDirPath));
     return testDirPath;
 }
 
