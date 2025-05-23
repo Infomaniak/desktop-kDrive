@@ -52,6 +52,8 @@ runs:
           cp /usr/local/lib/libsentry* ./dependencies/
           cp /usr/local/lib/libzip* ./dependencies/
           cp /usr/local/lib/libxxhash* ./dependencies/
+          cp /usr/local/lib/libglib* ./dependencies/
+
         shell: bash
         if: steps.build.outcome == 'success'
 
