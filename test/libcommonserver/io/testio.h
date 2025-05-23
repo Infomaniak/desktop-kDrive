@@ -72,6 +72,8 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
 #endif
 #if defined(_WIN32)
         CPPUNIT_TEST(testCreateJunction);
+        CPPUNIT_TEST(testGetLongPathName);
+        CPPUNIT_TEST(testGetShortPathName);
 #endif
         CPPUNIT_TEST(testCheckIfFileIsDehydrated);
         CPPUNIT_TEST(testAccesDeniedOnLockedFiles);
@@ -111,7 +113,9 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testRemoveXAttr(void);
         void testCreateAlias(void);
 #elif defined(_WIN32)
-        void testCreateJunction(void);
+        void testCreateJunction();
+        void testGetLongPathName();
+        void testGetShortPathName();
 #endif
         void testCheckIfFileIsDehydrated();
         void testCheckSetAndGetRights();

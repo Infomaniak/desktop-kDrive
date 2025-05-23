@@ -957,4 +957,58 @@ IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime creation
     return IoError::Success;
 }
 
+bool IoHelper::getLongPathName(const SyncPath &path, SyncPath &longPathName, IoError &ioError) {
+    longPathName.clear();
+    ioError = IoError::Success;
+
+    const auto &pathWStr = Path2WStr(path);
+    if (pathWStr.size() > MAX_PATH_LENGTH_WIN_LONG) {
+        ioError = IoError::FileNameTooLong;
+        LOGW_WARN(logger(), L"Error in GetLongPathName: " << L"Input file path length exceeds " << MAX_PATH_LENGTH_WIN_LONG
+                                                          << L", " << Utility::formatSyncPath(path));
+        return false;
+    };
+
+    WCHAR longPathName_[MAX_PATH_LENGTH_WIN_LONG];
+    const DWORD length = GetLongPathNameW(pathWStr.c_str(), longPathName_, MAX_PATH_LENGTH_WIN_LONG);
+    ioError = dWordError2ioError(GetLastError(), logger());
+
+    if (ioError != IoError::Success) {
+        LOGW_WARN(logger(), L"Error in GetLongPathName: " << CommonUtility::getLastErrorMessage());
+        return false;
+    }
+
+    std::wstring output(longPathName_, longPathName_ + length);
+    longPathName = SyncPath(output);
+
+    return true;
+}
+
+bool IoHelper::getShortPathName(const SyncPath &path, SyncPath &shortPathName, IoError &ioError) {
+    shortPathName.clear();
+    ioError = IoError::Success;
+
+    const auto &pathWstr = Path2WStr(path);
+    if (pathWstr.size() > MAX_PATH_LENGTH_WIN_LONG) {
+        ioError = IoError::FileNameTooLong;
+        LOGW_WARN(logger(), L"Error in GetShortPathName: " << L"Input file path length exceeds " << MAX_PATH_LENGTH_WIN_LONG
+                                                           << L", " << Utility::formatSyncPath(path));
+        return false;
+    };
+
+    WCHAR shortPathName_[MAX_PATH_LENGTH_WIN_LONG];
+    const DWORD length = GetShortPathNameW(pathWstr.c_str(), shortPathName_, MAX_PATH_LENGTH_WIN_LONG);
+    ioError = dWordError2ioError(GetLastError(), logger());
+
+    if (ioError != IoError::Success) {
+        LOGW_WARN(logger(), L"Error in GetShortPathName: " << CommonUtility::getLastErrorMessage());
+        return false;
+    }
+
+    std::wstring output(shortPathName_, shortPathName_ + length);
+    shortPathName = SyncPath(output);
+
+    return true;
+}
+
 } // namespace KDC

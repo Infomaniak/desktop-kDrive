@@ -17,6 +17,7 @@
  */
 
 #include "testparmsdb.h"
+#include "test_utility/localtemporarydirectory.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 
 using namespace CppUnit;
@@ -459,5 +460,53 @@ void TestParmsDb::testError() {
         CPPUNIT_ASSERT_EQUAL(ExitCause::SyncDirDoesntExist, error.exitCause());
     }
 }
+
+#ifdef _WIN32
+void TestParmsDb::testUpgradeOfShortPathNames() {
+    LocalTemporaryDirectory temporaryDirectory("testUpgrade");
+    std::vector<SyncPath> syncDbLongPaths(3, SyncPath{});
+    std::vector<SyncPath> syncDbShortPaths(syncDbLongPaths.size(), SyncPath{});
+    for (auto i = 0; i < syncDbLongPaths.size(); ++i) {
+        SyncName syncDbName = L".sync_" + std::to_wstring(i + 1) + L".db";
+        syncDbLongPaths[i] = temporaryDirectory.path() / syncDbName;
+        std::ofstream ofs(syncDbLongPaths[i]);
+        auto ioError = IoError::Success;
+        IoHelper::getShortPathName(syncDbLongPaths[i], syncDbShortPaths[i], ioError);
+    }
+
+    std::vector<Sync> syncList;
+    ParmsDb::instance()->selectAllSyncs(syncList);
+    CPPUNIT_ASSERT(syncList.empty());
+
+    const User user(1, 5555555, "123");
+    ParmsDb::instance()->insertUser(user);
+    const Account acc(1, 12345678, user.dbId());
+    ParmsDb::instance()->insertAccount(acc);
+    const Drive drive(1, 99999991, acc.dbId(), "Drive 1", 2000000000, "#000000");
+    ParmsDb::instance()->insertDrive(drive);
+
+    Sync syncWithLongPath;
+    syncWithLongPath.setDbPath(syncDbLongPaths[0]);
+    syncWithLongPath.setDriveDbId(1);
+    syncWithLongPath.setDbId(1);
+    ParmsDb::instance()->insertSync(syncWithLongPath);
+
+    for (auto i = 1; i < syncDbLongPaths.size(); ++i) {
+        Sync sync;
+        sync.setDbPath(syncDbShortPaths[i]);
+        sync.setDriveDbId(1);
+        sync.setDbId(i + 1);
+        ParmsDb::instance()->insertSync(sync);
+    }
+
+    CPPUNIT_ASSERT(ParmsDb::instance()->upgrade("3.6.1", "3.7.0"));
+
+    ParmsDb::instance()->selectAllSyncs(syncList);
+    CPPUNIT_ASSERT_EQUAL(size_t(3), syncList.size());
+    for (auto i = 0; i < syncDbLongPaths.size(); ++i) {
+        CPPUNIT_ASSERT_EQUAL(syncDbLongPaths[i], syncList[i].dbPath());
+    }
+}
+#endif
 
 } // namespace KDC
