@@ -43,9 +43,6 @@
 using namespace CppUnit;
 
 namespace KDC {
-
-static const SyncPath localTestDirPath_manyFiles(testhelpers::localTestDirPath() / "test_ci" / "many_files_dir");
-static const SyncPath localTestDirPath_pictures(testhelpers::localTestDirPath()  / "test_ci" / "test_pictures");
 static const int driveDbId = 1;
 void TestJobManager::setUp() {
     TestBase::start();
