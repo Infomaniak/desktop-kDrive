@@ -41,6 +41,8 @@ using namespace CppUnit;
 
 namespace KDC {
 
+static const SyncPath localTestDirPath(TEST_DIR "/test_ci");
+
 void TestUtility::testFreeDiskSpace() {
     int64_t freeSpace;
 
@@ -281,7 +283,7 @@ void TestUtility::testComputeMd5Hash() {
 }
 
 void TestUtility::testXxHash() {
-    SyncPath path = testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg";
+    SyncPath path = localTestDirPath / "test_pictures/picture-1.jpg";
     std::ifstream file(path, std::ios::binary);
     std::ostringstream ostrm;
     ostrm << file.rdbuf();

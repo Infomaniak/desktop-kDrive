@@ -34,6 +34,8 @@ set( APPLICATION_TRASH_URL "https://kdrive.infomaniak.com/app/drive/%s/trash" CA
 set( APPLICATION_THUMBNAIL_URL "index.php/apps/files/api/v1/thumbnail/%1/%1/%2" CACHE STRING "App thumbnail URL" )
 set( APPLICATION_PREVIEW_URL "https://kdrive.infomaniak.com/app/drive/%1/redirect/%2" CACHE STRING "App preview URL" )
 
+set( TEST_DIR "${CMAKE_SOURCE_DIR}/test" )
+
 set ( CLIENT_ID "5EA39279-FF64-4BB8-A872-4A40B5786317" CACHE STRING "App client ID" )
 set ( REDIRECT_URI "kdrive://auth-desktop" CACHE STRING "Redirect URI" )
 

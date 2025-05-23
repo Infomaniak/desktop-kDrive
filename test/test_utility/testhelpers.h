@@ -34,6 +34,14 @@ inline const SyncPath localTestDirPath() {
     if (!testDirPath.empty()) return testDirPath;
     const std::wstring targetDirName = L"test_ci";
 
+    std::error_code ec;
+    testDirPath = Utility::s2ws(TEST_DIR) + L"/" + targetDirName;
+    if (std::filesystem::exists(Utility::s2ws(TEST_DIR) + L"/test_ci", ec) && !ec) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"test_ci dir found at (default) -> " << Utility::formatSyncPath(testDirPath));
+        return testDirPath;
+    }
+
+    // If the test is run on a different device than the build one, we have to look for the closest test_ci
     testDirPath = SyncPath();
 
     // Helper lambda to recursively search downward
