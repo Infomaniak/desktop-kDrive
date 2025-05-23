@@ -43,7 +43,7 @@ runs:
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtSql.framework ./dependencies/
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtCore.framework ./dependencies/
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtSvg.framework ./dependencies/
-          cp -R {{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtDBus.framework ./dependencies/
+          cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtDBus.framework ./dependencies/
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/Sparkle.framework ./dependencies/
           mkdir dependencies/platforms
           cp /home/runner/Qt/6.2.3/gcc_64/plugins/platforms/* ./dependencies/platforms/
