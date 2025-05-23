@@ -204,7 +204,7 @@ struct COMMON_EXPORT CommonUtility {
           \return a set of SyncNames containing the NFC and NFD normalizations of name, when those are successful.
           The returned set contains additionally the SyncName name in any case.
         */
-        static std::unordered_set<SyncName> computeSyncNameNormalizations(const SyncName &name);
+        static SyncNameSet computeSyncNameNormalizations(const SyncName &name);
 
         //
         //! Computes and returns all possible NFC and NFD normalizations of `path` segments
@@ -214,7 +214,7 @@ struct COMMON_EXPORT CommonUtility {
           \return a set of SyncNames containing the NFC and NFD normalizations of path, when those are successful.
           The returned set contains additionally the string path in any case.
         */
-        static std::unordered_set<SyncName> computePathNormalizations(const SyncName &path);
+        static SyncNameSet computePathNormalizations(const SyncName &path);
 
     private:
         static std::mutex _generateRandomStringMutex;
@@ -235,7 +235,7 @@ struct COMMON_EXPORT CommonUtility {
           The returned set contains additionally the concatenated elements of pathSegments, from index 0 to index lastIndex,
           in any case.
         */
-        static std::unordered_set<SyncName> computePathNormalizations(const std::vector<SyncName> &pathSegments, int lastIndex);
+        static SyncNameSet computePathNormalizations(const std::vector<SyncName> &pathSegments, int lastIndex);
 
         //
         //! Computes recursively and returns all possible NFC and NFD normalizations of `pathSegments` segments
@@ -245,7 +245,7 @@ struct COMMON_EXPORT CommonUtility {
           \return a set of SyncNames containing the NFC and NFD normalizations of pathSegments, when those are successful.
           The returned set contains additionally the concatenated pathSegments in any case.
         */
-        static std::unordered_set<SyncName> computePathNormalizations(const std::vector<SyncName> &pathSegments);
+        static SyncNameSet computePathNormalizations(const std::vector<SyncName> &pathSegments);
 };
 
 struct COMMON_EXPORT StdLoggingThread : public std::thread {

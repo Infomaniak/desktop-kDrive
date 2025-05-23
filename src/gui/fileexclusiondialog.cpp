@@ -166,20 +166,10 @@ void FileExclusionDialog::initUI() {
 
 namespace {
 
-struct SyncNameHashFunction {
-        using is_transparent = void; // Enables heterogeneous operations.
-
-        std::size_t operator()(const SyncName &name) const {
-            constexpr std::hash<SyncName> hashFunction;
-            return hashFunction(name);
-        }
-};
-
 QList<ExclusionTemplateInfo> filterOutTemplatesWrtNfcNormalization(const QList<ExclusionTemplateInfo> &templateList) {
     QList<ExclusionTemplateInfo> result;
 
-    std::unordered_set<SyncName, SyncNameHashFunction, std::equal_to<>>
-            uniqueTemplateNames; // Unique template names up to NFC-encoding.
+    SyncNameSet uniqueTemplateNames; // Unique template names up to NFC-encoding.
     for (const auto &templateInfo: templateList) {
         SyncName normalizedName;
         SyncName insertedName = QStr2SyncName(templateInfo.templ());
