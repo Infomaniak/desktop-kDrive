@@ -2653,8 +2653,10 @@ ExitInfo AppServer::tryCreateAndStartVfs(const Sync &sync) noexcept {
     const std::string liteSyncMsg = liteSyncActivationLogMessage(sync.virtualFileMode() != VirtualFileMode::Off, sync.dbId());
     LOG_INFO(_logger, liteSyncMsg);
     if (const auto exitInfo = createAndStartVfs(sync); !exitInfo) {
-        LOG_WARN(_logger, "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo << ", pausing.");
-        addError(Error(sync.dbId(), errId(), exitInfo));
+        if (exitInfo != ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccessError)) {
+            LOG_WARN(_logger, "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo << ", pausing.");
+            addError(Error(sync.dbId(), errId(), exitInfo));
+        }
         return exitInfo;
     }
 
@@ -2745,7 +2747,7 @@ ExitInfo AppServer::startSyncs(User &user) {
                     if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
                         continue;
                     }
-                    // Continue (ie. Init SyncPal but don't start it)
+                    // Continue (i.e. Init SyncPal but don't start it)
                     start = false;
                 }
 
@@ -3515,6 +3517,11 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 
     if (!exists) {
         LOGW_WARN(_logger, L"Sync localpath " << Utility::formatSyncPath(sync.localPath()) << L" doesn't exist.");
+        auto tmpSync(sync);
+        tmpSync.setPaused(true);
+        if (bool found = false; !ParmsDb::instance()->updateSync(tmpSync, found) || !found) {
+            LOG_WARN(_logger, "Failed to update sync status!");
+        }
         return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
     }
 
@@ -4130,7 +4137,8 @@ void AppServer::onUpdateSyncsProgress() {
     for (const auto &sync: syncList) {
         if (const auto syncPalIt = _syncPalMap.find(sync.dbId()); syncPalIt == _syncPalMap.end()) {
             // No SyncPal for this sync
-            sendSyncProgressInfo(sync.dbId(), SyncStatus::Error, SyncStep::None, SyncProgress());
+            sendSyncProgressInfo(sync.dbId(), sync.paused() ? SyncStatus::Paused : SyncStatus::Error, SyncStep::None,
+                                 SyncProgress());
         } else {
             if (!syncPalIt->second) {
                 assert(false);
