@@ -54,23 +54,28 @@ void TestIo::testGetLongPathName() {
         const LocalTemporaryDirectory temporaryDirectory;
         SyncPath longPathName;
         auto ioError = IoError::Success;
-        CPPUNIT_ASSERT(IoHelper::getLongPathName(temporaryDirectory.path(), longPathName, ioError));
+        const SyncPath inputPath = temporaryDirectory.path() / "a_file_name_with_more_than_8_characters.txt";
+        {
+            std::ofstream ofs(inputPath);
+        }
+
+        CPPUNIT_ASSERT(IoHelper::getLongPathName(inputPath, longPathName, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-        CPPUNIT_ASSERT_EQUAL(temporaryDirectory.path(), longPathName);
+        CPPUNIT_ASSERT_EQUAL(inputPath, longPathName);
 
         // The short path name of a long path is shorter and end with ~ followed by a positive integer
         SyncPath shortPathName;
-        CPPUNIT_ASSERT(IoHelper::getShortPathName(temporaryDirectory.path(), shortPathName, ioError));
+        CPPUNIT_ASSERT(IoHelper::getShortPathName(inputPath, shortPathName, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         CPPUNIT_ASSERT_MESSAGE("Short and long names coincide: " + Path2Str(longPathName), longPathName != shortPathName);
         CPPUNIT_ASSERT_LESS(Path2WStr(longPathName).size(), Path2WStr(shortPathName).size());
-        CPPUNIT_ASSERT(std::regex_match(Path2WStr(shortPathName), std::wregex(L".*~[1-9][0-9]*$")));
+        CPPUNIT_ASSERT(std::regex_match(Path2WStr(shortPathName), std::wregex(L".*~[1-9][0-9]*\.TXT$")));
 
         // Check that getLongPathName reverts getShortPathName
         CPPUNIT_ASSERT(IoHelper::getLongPathName(shortPathName, longPathName, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-        CPPUNIT_ASSERT_EQUAL(temporaryDirectory.path(), longPathName);
+        CPPUNIT_ASSERT_EQUAL(inputPath, longPathName);
     }
 
     // The input path indicates an existing file and contains emojis
