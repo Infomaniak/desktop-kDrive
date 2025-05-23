@@ -38,7 +38,7 @@ void TestConflictFinderWorker::setUp() {
                                          KDRIVE_VERSION_STRING, true);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
-
+    _syncPal->createWorkers();
     _syncPal->_conflictFinderWorker = std::make_shared<ConflictFinderWorker>(_syncPal, "Conflict Finder", "COFD");
 
     // Generate initial situation
@@ -65,7 +65,7 @@ void TestConflictFinderWorker::testCreateCreate() {
     const auto lNodeAC = _situationGenerator.createNode(ReplicaSide::Local, NodeType::File, "ac", "a");
     lNodeAC->setSize(testhelpers::defaultFileSize + 1);
     const auto rNodeAC = _situationGenerator.createNode(ReplicaSide::Remote, NodeType::File, "ac", "a");
-
+    _syncPal->copySnapshots();
     const auto conf = _syncPal->_conflictFinderWorker->checkCreateCreateConflict(lNodeAC);
     CPPUNIT_ASSERT(conf);
     CPPUNIT_ASSERT_EQUAL(lNodeAC, conf->node());
@@ -81,6 +81,7 @@ void TestConflictFinderWorker::testCreateCreateDifferentEncoding() {
     const auto rNodeAC = _situationGenerator.createNode(ReplicaSide::Remote, NodeType::File, "ac", "a");
     rNodeAC->setName(testhelpers::makeNfdSyncName());
 
+    _syncPal->copySnapshots();
     const auto conf = _syncPal->_conflictFinderWorker->checkCreateCreateConflict(lNodeAC);
     CPPUNIT_ASSERT(conf);
     CPPUNIT_ASSERT_EQUAL(lNodeAC, conf->node());
@@ -93,6 +94,7 @@ void TestConflictFinderWorker::testEditEdit() {
     const auto lNodeAA = _situationGenerator.editNode(ReplicaSide::Local, "aa");
     const auto rNodeAA = _situationGenerator.editNode(ReplicaSide::Remote, "aa");
 
+    _syncPal->copySnapshots();
     const auto conf = _syncPal->_conflictFinderWorker->checkEditEditConflict(lNodeAA);
     CPPUNIT_ASSERT(conf);
     CPPUNIT_ASSERT_EQUAL(lNodeAA, conf->node());
@@ -106,6 +108,7 @@ void TestConflictFinderWorker::testMoveCreate() {
     // Simulate MOVE of A/AA to A/AC on remote replica
     const auto rNodeAA = _situationGenerator.renameNode(ReplicaSide::Remote, "aa", Str("AC"));
 
+    _syncPal->copySnapshots();
     const auto conf = _syncPal->_conflictFinderWorker->checkMoveCreateConflict(rNodeAA);
     CPPUNIT_ASSERT(conf);
     CPPUNIT_ASSERT_EQUAL(rNodeAA, conf->node());
@@ -119,6 +122,7 @@ void TestConflictFinderWorker::testEditDelete() {
     // Simulate DELETE of A/AA on remote replica
     const auto rNodeAA = _situationGenerator.deleteNode(ReplicaSide::Remote, "aa");
 
+    _syncPal->copySnapshots();
     const auto conf = _syncPal->_conflictFinderWorker->checkEditDeleteConflict(rNodeAA);
     CPPUNIT_ASSERT(conf);
     CPPUNIT_ASSERT_EQUAL(rNodeAA, conf->node());
@@ -132,6 +136,7 @@ void TestConflictFinderWorker::testMoveDeleteFile() {
     // Simulate DELETE of A/AA on remote replica
     const auto rNodeAA = _situationGenerator.deleteNode(ReplicaSide::Remote, "aa");
 
+    _syncPal->copySnapshots();
     const auto conf = _syncPal->_conflictFinderWorker->checkMoveDeleteConflict(rNodeAA);
     CPPUNIT_ASSERT(conf);
     CPPUNIT_ASSERT_EQUAL(rNodeAA, conf->node());
@@ -145,6 +150,7 @@ void TestConflictFinderWorker::testMoveDeleteDir() {
     // Simulate DELETE of A on remote replica
     const auto rNodeA = _situationGenerator.deleteNode(ReplicaSide::Remote, "a");
 
+    _syncPal->copySnapshots();
     const auto conf = _syncPal->_conflictFinderWorker->checkMoveDeleteConflict(rNodeA);
     CPPUNIT_ASSERT(conf);
     CPPUNIT_ASSERT_EQUAL(rNodeA, conf->node());
@@ -158,6 +164,7 @@ void TestConflictFinderWorker::testMoveParentDelete() {
     // Simulate DELETE of B on remote replica
     const auto rNodeB = _situationGenerator.deleteNode(ReplicaSide::Remote, "b");
 
+    _syncPal->copySnapshots();
     const auto conf = _syncPal->_conflictFinderWorker->checkMoveParentDeleteConflicts(rNodeB);
     CPPUNIT_ASSERT(conf);
     CPPUNIT_ASSERT_EQUAL(rNodeB, conf->back().node());
@@ -171,6 +178,7 @@ void TestConflictFinderWorker::testCreateParentDelete() {
     // Simulate DELETE of A on remote replica
     const auto rNodeA = _situationGenerator.deleteNode(ReplicaSide::Remote, "a");
 
+    _syncPal->copySnapshots();
     const auto conf = _syncPal->_conflictFinderWorker->checkCreateParentDeleteConflicts(rNodeA);
     CPPUNIT_ASSERT(conf);
     CPPUNIT_ASSERT_EQUAL(rNodeA, conf->back().node());
@@ -184,6 +192,7 @@ void TestConflictFinderWorker::testMoveMoveSrc() {
     // Simulate MOVE of A/AA to B/AA on remote replica
     const auto rNodeAA = _situationGenerator.moveNode(ReplicaSide::Remote, "aa", "b");
 
+    _syncPal->copySnapshots();
     const auto conf = _syncPal->_conflictFinderWorker->checkMoveMoveSourceConflict(lNodeAA);
     CPPUNIT_ASSERT(conf);
     CPPUNIT_ASSERT_EQUAL(lNodeAA, conf->node());
@@ -197,6 +206,7 @@ void TestConflictFinderWorker::testMoveMoveDest() {
     // Simulate MOVE of A/AB to B/AB on remote replica
     const auto rNodeAB = _situationGenerator.moveNode(ReplicaSide::Remote, "ab", "b", Str("AA"));
 
+    _syncPal->copySnapshots();
     const auto conf = _syncPal->_conflictFinderWorker->checkMoveMoveDestConflict(lNodeAA);
     CPPUNIT_ASSERT(conf);
     CPPUNIT_ASSERT_EQUAL(lNodeAA, conf->node());
@@ -230,6 +240,7 @@ void TestConflictFinderWorker::testCase55b() {
     // Simulate CREATE of A/AC on remote replica
     const auto rNodeAC = _situationGenerator.createNode(ReplicaSide::Remote, NodeType::File, "ac", "a");
 
+    _syncPal->copySnapshots();
     _syncPal->_conflictFinderWorker->findConflicts();
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), _syncPal->_conflictQueue->size());
 
@@ -257,6 +268,8 @@ void TestConflictFinderWorker::testCase55c() {
     // Simulate MOVE of A/AA to A/AD on remote replica
     const auto rNodeAA = _situationGenerator.renameNode(ReplicaSide::Remote, "aa", Str("AD"));
 
+    _syncPal->copySnapshots();
+
     _syncPal->_conflictFinderWorker->findConflicts();
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(3), _syncPal->_conflictQueue->size());
 
@@ -276,6 +289,7 @@ void TestConflictFinderWorker::testCase57() {
     const auto rNodeAA = _situationGenerator.moveNode(ReplicaSide::Remote, "aa", "");
     // Simulate DELETE of B on remote replica
     const auto rNodeB = _situationGenerator.deleteNode(ReplicaSide::Remote, "b");
+    _syncPal->copySnapshots();
 
     _syncPal->_conflictFinderWorker->findConflicts();
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), _syncPal->_conflictQueue->size());
@@ -306,6 +320,7 @@ void TestConflictFinderWorker::testCase58() {
     const auto rNodeAC = _situationGenerator.createNode(ReplicaSide::Remote, NodeType::File, "ac", "a");
     // Simulate DELETE of A/AA on remote replica
     const auto rNodeAA = _situationGenerator.deleteNode(ReplicaSide::Remote, "aa");
+    _syncPal->copySnapshots();
 
     _syncPal->_conflictFinderWorker->findConflicts();
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), _syncPal->_conflictQueue->size());
@@ -331,6 +346,7 @@ void TestConflictFinderWorker::testCase59() {
     const auto rNodeAB = _situationGenerator.deleteNode(ReplicaSide::Remote, "ab");
     // Simulate MOVE of A/AA to A/X on remote replica
     const auto rNodeAA = _situationGenerator.renameNode(ReplicaSide::Remote, "aa", Str("X"));
+    _syncPal->copySnapshots();
 
     _syncPal->_conflictFinderWorker->findConflicts();
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), _syncPal->_conflictQueue->size());
@@ -359,6 +375,7 @@ void TestConflictFinderWorker::testCase510() {
 
     // Simulate DELETE of A on remote replica
     const auto rNodeA = _situationGenerator.deleteNode(ReplicaSide::Remote, "a");
+    _syncPal->copySnapshots();
 
     _syncPal->_conflictFinderWorker->findConflicts();
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), _syncPal->_conflictQueue->size());
@@ -385,6 +402,7 @@ void TestConflictFinderWorker::testCase511() {
     const auto rNodeAE = _situationGenerator.moveNode(ReplicaSide::Remote, "ae", "");
     // Simulate CREATE of AE/AEA on remote replica
     const auto rNodeAEA = _situationGenerator.createNode(ReplicaSide::Remote, NodeType::File, "aea", "ae");
+    _syncPal->copySnapshots();
 
     _syncPal->_conflictFinderWorker->findConflicts();
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), _syncPal->_conflictQueue->size());
@@ -414,6 +432,7 @@ void TestConflictFinderWorker::testCase513() {
     const auto rNodeAE = _situationGenerator.moveNode(ReplicaSide::Remote, "ae", "", Str("AE2"));
     // Simulate MOVE of A to B/A on remote replica
     const auto rNodeA = _situationGenerator.moveNode(ReplicaSide::Remote, "a", "b");
+    _syncPal->copySnapshots();
 
     _syncPal->_conflictFinderWorker->findConflicts();
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_conflictQueue->size());
@@ -455,6 +474,7 @@ void TestConflictFinderWorker::testCase516() {
     const auto rNodeB = _situationGenerator.moveNode(ReplicaSide::Remote, "b", "a");
     // Simulate MOVE of A/AE to BE/AE on remote replica
     const auto rNodeAE = _situationGenerator.moveNode(ReplicaSide::Remote, "ae", "be");
+    _syncPal->copySnapshots();
 
     _syncPal->_conflictFinderWorker->findConflicts();
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(3), _syncPal->_conflictQueue->size());
