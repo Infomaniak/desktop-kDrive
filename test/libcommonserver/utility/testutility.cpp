@@ -507,7 +507,7 @@ void TestUtility::testIsSameOrParentPath() {
 
 void TestUtility::testUserName() {
     std::string userName(Utility::userName());
-    LOG_DEBUG(Log::instance()->getLogger(), "userName=" << userName.c_str());
+    LOG_DEBUG(Log::instance()->getLogger(), "userName=" << userName);
 
 #ifdef _WIN32
     const char *value = std::getenv("USERPROFILE");
