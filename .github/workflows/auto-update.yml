@@ -12,7 +12,7 @@ concurrency:
 jobs:
   update-branch:
     if: ${{ (github.event.pull_request.auto_merge) && (github.event.pull_request.mergeable) }}
-    runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    runs-on: [ macOS ]
     steps:
       - uses: lcdsmao/update-branch@v3
         with:
