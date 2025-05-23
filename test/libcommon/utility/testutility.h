@@ -39,10 +39,15 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testIsSupportedLanguage);
         CPPUNIT_TEST(testTruncateLongLogMessage);
         CPPUNIT_TEST(testLogIfFail);
+        CPPUNIT_TEST(testRelativePath);
+        CPPUNIT_TEST(testSplitSyncName);
+        CPPUNIT_TEST(testSplitSyncPath);
+        CPPUNIT_TEST(testSplitPathFromSyncName);
+        CPPUNIT_TEST(testComputeSyncNameNormalizations);
+        CPPUNIT_TEST(testComputePathNormalizations);
 #ifdef _WIN32
         CPPUNIT_TEST(testGetLastErrorMessage);
 #endif
-        CPPUNIT_TEST(testRelativePath);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -63,13 +68,19 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testTruncateLongLogMessage();
         void testLogIfFail();
         void testRelativePath();
+        void testSplitSyncName();
+        void testSplitSyncPath();
+        void testSplitPathFromSyncName();
+        void testComputeSyncNameNormalizations();
+        void testComputePathNormalizations();
+
 #ifdef _WIN32
         void testGetLastErrorMessage();
 #endif
 
     private:
         /* Generate all the possible path for a set of items and separators
-         * result vecor will contain all the generated paths, eg:
+         * result vector will contain all the generated paths, eg:
          *  itemsNames = {"Dir1", "Dir2", "Dir3"}
          *  separators = {'/', '\\'}
          *  result = {"Dir1/Dir2/Dir3/", "Dir1\\Dir2/Dir3/", "Dir1/Dir2\\Dir3", "Dir1/Dir2/Dir3\\", "Dir1\\Dir2\\Dir3",
