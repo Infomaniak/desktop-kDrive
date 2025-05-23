@@ -559,14 +559,14 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
 
     if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_SYNCPAL_WARN(_logger, L"Local " << Utility::formatSyncPath(absoluteParentDirPath) << L" doesn't exist");
-        setExitCause(ExitCause::SyncDirDoesntExist);
-        return {ExitCode::SystemError, ExitCause::SyncDirDoesntExist};
+        setExitCause(ExitCause::SyncDirAccessError);
+        return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
     }
 
     if (itemType.ioError == IoError::AccessDenied) {
         LOGW_SYNCPAL_WARN(_logger, L"Local " << Utility::formatSyncPath(absoluteParentDirPath) << L" misses read permission");
-        setExitCause(ExitCause::SyncDirAccesError);
-        return {ExitCode::SystemError, ExitCause::SyncDirAccesError};
+        setExitCause(ExitCause::SyncDirAccessError);
+        return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
     }
 
     if (itemType.linkType != LinkType::None) {
@@ -585,14 +585,14 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_SYNCPAL_WARN(_logger, L"Local " << Utility::formatIoError(absoluteParentDirPath, ioError));
-            setExitCause(ExitCause::SyncDirDoesntExist);
-            return {ExitCode::SystemError, ExitCause::SyncDirDoesntExist};
+            setExitCause(ExitCause::SyncDirAccessError);
+            return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
         }
 
         if (ioError == IoError::AccessDenied) {
             LOGW_SYNCPAL_WARN(_logger, L"Local " << Utility::formatIoError(absoluteParentDirPath, ioError));
-            setExitCause(ExitCause::SyncDirAccesError);
-            return {ExitCode::SystemError, ExitCause::SyncDirAccesError};
+            setExitCause(ExitCause::SyncDirAccessError);
+            return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
         }
         DirectoryEntry entry;
         bool endOfDirectory = false;

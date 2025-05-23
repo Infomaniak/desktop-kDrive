@@ -439,7 +439,7 @@ void TestParmsDb::testExclusionApp() {
 void TestParmsDb::testError() {
     // TOOD : créer le drive, sync et user
     Error error1("Fct1", ExitCode::DbError, ExitCause::DbAccessError);
-    Error error2(1, "Worker1", ExitCode::DataError, ExitCause::SyncDirDoesntExist);
+    Error error2(1, "Worker1", ExitCode::DataError, ExitCause::SyncDirAccessError);
     Error error3(1, "local node 1", "remote node 1", NodeType::File, "/dir1/file1.1", ConflictType::None,
                  InconsistencyType::None);
 
@@ -455,9 +455,9 @@ void TestParmsDb::testError() {
     }
 
     {
-        Error error(1, "Worker", {ExitCode::DataError, ExitCause::SyncDirDoesntExist});
+        Error error(1, "Worker", {ExitCode::DataError, ExitCause::SyncDirAccessError});
         CPPUNIT_ASSERT_EQUAL(ExitCode::DataError, error.exitCode());
-        CPPUNIT_ASSERT_EQUAL(ExitCause::SyncDirDoesntExist, error.exitCause());
+        CPPUNIT_ASSERT_EQUAL(ExitCause::SyncDirAccessError, error.exitCause());
     }
 }
 

@@ -96,7 +96,7 @@ bool DeleteJob::canRun() {
 
         LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str()
                                       << L" still exist on local replica. Aborting current sync and restart.");
-        _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent}; // Data error so the snapshots will be re-created
+        _exitInfo = {ExitCode::DataError, ExitCause::FileExists};
         return false;
     } else if (!otherNodeId.empty() && _localItemId != otherNodeId) {
         LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str()

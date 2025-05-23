@@ -2096,7 +2096,7 @@ void AppServer::startSyncsAndRetryOnError() {
     LOG_DEBUG(_logger, "Start syncs");
     if (const auto exitInfo = startSyncs(); !exitInfo) {
         LOG_WARN(_logger, "Error in startSyncsAndRetryOnError: " << exitInfo);
-        if (exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::SyncDirDoesntExist) {
+        if (exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::SyncDirAccessError) {
             LOG_DEBUG(_logger, "Retry to start syncs in " << START_SYNCPALS_RETRY_INTERVAL << " ms");
             QTimer::singleShot(START_SYNCPALS_RETRY_INTERVAL, this, [=, this]() { startSyncsAndRetryOnError(); });
         }
@@ -3515,7 +3515,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 
     if (!exists) {
         LOGW_WARN(_logger, L"Sync localpath " << Utility::formatSyncPath(sync.localPath()) << L" doesn't exist.");
-        return {ExitCode::SystemError, ExitCause::SyncDirDoesntExist};
+        return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
     }
 
 #ifdef __APPLE__

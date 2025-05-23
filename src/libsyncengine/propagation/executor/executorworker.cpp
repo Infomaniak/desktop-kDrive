@@ -359,7 +359,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
                               L"Error in Utility::checkIfPathExists: " << Utility::formatSyncPath(absoluteLocalFilePath));
                     return ExitCode::SystemError;
                 }
-                if (!exists) return {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent};
+                if (!exists) return {ExitCode::DataError, ExitCause::NotFound};
 
                 // Ignore operation
                 if (SyncFileItem syncItem; _syncPal->getSyncFileItem(relativeLocalFilePath, syncItem)) {
@@ -481,7 +481,7 @@ ExitInfo ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, cons
     if (!alreadyExist) {
         return ExitCode::Ok;
     }
-    return {ExitCode::DataError, ExitCause::FileAlreadyExists};
+    return {ExitCode::DataError, ExitCause::FileExists};
 }
 
 ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hydrating) noexcept {
@@ -1813,7 +1813,7 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
         if (node == nullptr) {
             std::cout << "Failed to allocate memory" << std::endl;
             LOG_SYNCPAL_ERROR(_logger, "Failed to allocate memory");
-            return {ExitCode::SystemError, ExitCause::NotEnoughtMemory};
+            return {ExitCode::SystemError, ExitCause::NotEnoughMemory};
         }
 
         std::shared_ptr<UpdateTree> updateTree = targetUpdateTree(syncOp);
@@ -2250,9 +2250,9 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
         case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::NotFound)): {
             return handleOpsFileNotFound(syncOp, opsExitInfo);
         }
-        case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExists)):
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAlreadyExists)):
-        case static_cast<int>(ExitInfo(ExitCode::DataError, ExitCause::FileAlreadyExists)): {
+        case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileExists)):
+        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileExists)):
+        case static_cast<int>(ExitInfo(ExitCode::DataError, ExitCause::FileExists)): {
             return handleOpsAlreadyExistError(syncOp, opsExitInfo);
         }
         default: {

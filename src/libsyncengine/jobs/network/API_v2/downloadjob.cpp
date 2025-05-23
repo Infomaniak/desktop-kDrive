@@ -132,7 +132,7 @@ bool DownloadJob::canRun() {
     if (_isCreate && exists) {
         LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_localpath)
                                           << L" already exists. Aborting current sync and restarting.");
-        _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent};
+        _exitInfo = {ExitCode::DataError, ExitCause::FileExists};
         return false;
     }
 
