@@ -108,23 +108,19 @@ void TestAppServer::testInitAndStopSyncPal() {
     // Check sync nesting
     ExitInfo exitInfo = _appPtr->checkIfSyncIsValid(sync);
     CPPUNIT_ASSERT(exitInfo);
-
     // Start Vfs
     exitInfo = _appPtr->createAndStartVfs(sync);
     CPPUNIT_ASSERT(exitInfo);
-
     // Start SyncPal
     const std::chrono::seconds startDelay{0};
     exitInfo = _appPtr->initSyncPal(sync, QSet<QString>(), QSet<QString>(), QSet<QString>(), /*start*/ true, startDelay,
                                     /*resumedByUser*/ false, /*firstInit*/ true);
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
-
     // Stop SyncPal (pause by user)
     exitInfo = _appPtr->stopSyncPal(syncDbId, /*pausedByUser*/ true);
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(waitForSyncStatus(syncDbId, SyncStatus::Stopped));
-
     // Resume SyncPal
     exitInfo = _appPtr->initSyncPal(sync, QSet<QString>(), QSet<QString>(), QSet<QString>(), /*start*/ true, startDelay,
                                     /*resumedByUser*/ true, /*firstInit*/ false);

@@ -31,11 +31,18 @@ FolderWatcher::FolderWatcher(LocalFileSystemObserverWorker *parent, const SyncPa
 void FolderWatcher::start() {
     LOG_DEBUG(_logger, "Start Folder Watcher");
     _stop = false;
+    _ready = false;
 
     _thread = std::make_unique<std::thread>(executeFunc, this);
 
 #if defined(__APPLE__)
     _thread->detach();
+    uint16_t counter = 0;
+    while (!_ready && counter < 100) { // Wait max 1 sec
+        LOG_DEBUG(_logger, "Waiting for folder watcher to be ready");
+        Utility::msleep(10);
+        counter++;
+    }
 #endif
 }
 

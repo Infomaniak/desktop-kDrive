@@ -75,7 +75,7 @@ void TestLog::testLargeLogRolling(void) {
 
     // Generate a log larger than the max log file size. (log header is 50bytes)
     const auto testLog = std::string(maxSize, 'a');
-    LOG_DEBUG(_logger, testLog.c_str());
+    LOG_DEBUG(_logger, testLog);
 
     CPPUNIT_ASSERT_GREATER(2, countFilesInDirectory(_logDir));
 

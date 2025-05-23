@@ -208,7 +208,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
     // Process download
     if (isLink) {
         // Create link
-        LOG_DEBUG(_logger, "Create link: mimeType=" << mimeType.c_str());
+        LOG_DEBUG(_logger, "Create link: mimeType=" << mimeType);
         if (!createLink(mimeType, linkData)) { // We consider this as a permission denied error
             _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
             return false;
@@ -423,7 +423,7 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
         }
 #endif
     } else {
-        LOG_WARN(_logger, "Link type not managed: MIME type=" << mimeType.c_str());
+        LOG_WARN(_logger, "Link type not managed: MIME type=" << mimeType);
         return false;
     }
 
