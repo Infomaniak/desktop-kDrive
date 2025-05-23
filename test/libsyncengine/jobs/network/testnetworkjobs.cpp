@@ -65,6 +65,8 @@ static const NodeId pictureDirRemoteId = "56851"; // test_ci/test_pictures
 static const NodeId picture1RemoteId = "97373"; // test_ci/test_pictures/picture-1.jpg
 static const NodeId testFileRemoteId = "97370"; // test_ci/test_networkjobs/test_download.txt
 static const NodeId testFileRemoteRenameId = "97376"; // test_ci/test_networkjobs/test_rename*.txt
+static const NodeId testFileSymlinkRemoteId = "4284808"; // test_ci/test_networkjobs/test_sl.log
+static const NodeId testFolderSymlinkRemoteId = "4284810"; // test_ci/test_networkjobs/Test_sl
 #ifdef __APPLE__
 static const NodeId testAliasDnDRemoteId = "2023013"; // test_ci/test_networkjobs/test_alias_dnd
 static const NodeId testAliasGoodRemoteId = "2017813"; // test_ci/test_networkjobs/test_alias_good.log
@@ -539,6 +541,85 @@ void TestNetworkJobs::testDownload() {
         // Check that the file has been copied
         CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
     }
+
+    // File symlink
+    {
+        const LocalTemporaryDirectory temporaryDirectory("tmp");
+        const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
+        SyncPath localDestFilePath = temporaryDirectorySync.path() / "test_sl";
+
+        const auto epochNow = std::chrono::system_clock::now().time_since_epoch();
+        auto creationTimeIn = std::chrono::duration_cast<std::chrono::seconds>(epochNow);
+        auto modificationTimeIn = creationTimeIn + std::chrono::minutes(1);
+
+        // Download a file symlink
+        {
+            DownloadJob job(nullptr, _driveDbId, testFileSymlinkRemoteId, localDestFilePath, 0, creationTimeIn.count(),
+                            modificationTimeIn.count(), false);
+            const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        }
+
+        // Check that the file has been copied
+        bool exists = false;
+        IoError error = IoError::Success;
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(localDestFilePath, exists, error) && exists);
+
+        // Check that the tmp file has been deleted
+        CPPUNIT_ASSERT(std::filesystem::is_empty(temporaryDirectory.path()));
+
+        // Check file dates
+        {
+            FileStat fileStat;
+            IoError ioError = IoError::Success;
+            IoHelper::getFileStat(localDestFilePath, &fileStat, ioError);
+            CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+#if defined(__APPLE__) or defined(_WIN32)
+            CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, creationTimeIn.count());
+#endif
+            CPPUNIT_ASSERT_EQUAL(fileStat.modtime, modificationTimeIn.count());
+        }
+    }
+
+    // Folder symlink
+    {
+        const LocalTemporaryDirectory temporaryDirectory("tmp");
+        const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
+        SyncPath localDestFilePath = temporaryDirectorySync.path() / "Test_sl";
+
+        const auto epochNow = std::chrono::system_clock::now().time_since_epoch();
+        auto creationTimeIn = std::chrono::duration_cast<std::chrono::seconds>(epochNow);
+        auto modificationTimeIn = creationTimeIn + std::chrono::minutes(1);
+
+        // Download a folder symlink
+        {
+            DownloadJob job(nullptr, _driveDbId, testFolderSymlinkRemoteId, localDestFilePath, 0, creationTimeIn.count(),
+                            modificationTimeIn.count(), false);
+            const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        }
+
+        // Check that the file has been copied
+        bool exists = false;
+        IoError error = IoError::Success;
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(localDestFilePath, exists, error) && exists);
+
+        // Check that the tmp file has been deleted
+        CPPUNIT_ASSERT(std::filesystem::is_empty(temporaryDirectory.path()));
+
+        // Check file dates
+        {
+            FileStat fileStat;
+            IoError ioError = IoError::Success;
+            IoHelper::getFileStat(localDestFilePath, &fileStat, ioError);
+            CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+#if defined(__APPLE__) or defined(_WIN32)
+            CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, creationTimeIn.count());
+#endif
+            CPPUNIT_ASSERT_EQUAL(fileStat.modtime, modificationTimeIn.count());
+        }
+    }
+
 #ifdef __APPLE__
     {
         const LocalTemporaryDirectory temporaryDirectory("tmp");
