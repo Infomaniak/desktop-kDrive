@@ -31,7 +31,7 @@ runs:
       - name: Copy the cache to the build directory
         run: |
             mkdir -p ${{ github.workspace }}/build-macos/client/bin/
-            & cp -r ${{ github.workspace }}/build-macos/client/cache/* ${{ github.workspace }}/build-macos/client/bin/
+            cp -r ${{ github.workspace }}/build-macos/client/cache/* ${{ github.workspace }}/build-macos/client/bin/
         shell: bash
 
       - name: Download test executable
