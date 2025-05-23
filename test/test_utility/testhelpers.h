@@ -29,66 +29,7 @@
 
 namespace KDC::testhelpers {
 
-inline const SyncPath localTestDirPath() {
-    static SyncPath testDirPath;
-    if (!testDirPath.empty()) return testDirPath;
-    const std::wstring targetDirName = L"test_ci";
-
-    std::error_code ec;
-    testDirPath = Utility::s2ws(TEST_DIR) + L"/" + targetDirName;
-    if (std::filesystem::exists(Utility::s2ws(TEST_DIR) + L"/test_ci", ec) && !ec) {
-        return testDirPath;
-    }
-
-    // If the test is run on a different device than the build one, we have to look for the closest test_ci
-    testDirPath = SyncPath();
-
-    // Helper lambda to recursively search downward
-    SyncPath previousPath;
-    auto findDownward = [&](const std::filesystem::path& base) -> std::optional<std::filesystem::path> {
-        auto it = std::filesystem::recursive_directory_iterator(base);
-        for (auto const& entry: it) {
-            if (entry.is_directory() && entry.path().filename() == targetDirName) {
-                return entry.path();
-            }
-            if (entry.path() == previousPath) {
-                it.disable_recursion_pending();
-            }
-        }
-        previousPath = base;
-        return std::nullopt;
-    };
-
-    // Look downward from current and then upward
-    std::filesystem::path scanPath = std::filesystem::current_path();
-
-    while (true) {
-        // First check direct subdirectory
-        std::filesystem::path direct = scanPath / targetDirName;
-        if (std::filesystem::exists(direct) && std::filesystem::is_directory(direct)) {
-            testDirPath = direct;
-            return testDirPath;
-        }
-
-        // Then search downward from here
-        auto found = findDownward(scanPath);
-        if (found.has_value()) {
-            testDirPath = found.value();
-            return testDirPath;
-        }
-
-        // Go up one level
-        if (scanPath.has_parent_path()) {
-            scanPath = scanPath.parent_path();
-        } else {
-            assert(false && "test_ci folder not found");
-            LOG_FATAL(Log::instance()->getLogger(), "test_ci dir not found");
-            break; // Reached the root, give up
-        }
-    }
-    return testDirPath;
-}
-
+const SyncPath localTestDirPath(Utility::s2ws(TEST_DIR) + L"/test_ci");
 const SyncTime defaultTime = std::time(nullptr);
 constexpr int64_t defaultFileSize = 123;
 constexpr int64_t defaultDirSize = 0;
