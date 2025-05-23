@@ -155,7 +155,7 @@ void ExecutorWorker::execute() {
             if (!executorExitInfo) {
                 executorExitInfo = handleExecutorError(syncOp, executorExitInfo);
                 if (!executorExitInfo) { // If the error is not handled, stop the execution
-                    increaseErrorCount(syncOp);
+                    increaseErrorCount(syncOp, executorExitInfo);
                     cancelAllOngoingJobs();
                     break;
                 } else { // If the error is handled, continue the execution
@@ -206,7 +206,7 @@ void ExecutorWorker::execute() {
     _syncPal->_syncOps->clear();
     _syncPal->_remoteFSObserverWorker->forceUpdate();
 
-    if (changesCounter > SNAPSHOT_INVALIDATION_THRESHOLD) {
+    if (changesCounter > SNAPSHOT_INVALIDATION_THRESHOLD || _snapshotToInvalidate) {
         // If there are too many changes on the local filesystem, the OS stops sending events at some point.
         LOG_SYNCPAL_INFO(_logger,
                          "Local snapshot is potentially invalid because of too many file system events. Forcing invalidation.");
@@ -214,9 +214,6 @@ void ExecutorWorker::execute() {
         _snapshotToInvalidate = true;
         LOG_SYNCPAL_INFO(_logger, "Invalidate local snapshot.");
         _syncPal->_localFSObserverWorker->invalidateSnapshot();
-    } else if (_snapshotToInvalidate) {
-        LOG_SYNCPAL_INFO(_logger, "Try to invalidate local snapshot.");
-        _syncPal->_localFSObserverWorker->tryToInvalidateSnapshot();
     }
 
     _syncPal->vfs()->cleanUpStatuses();
@@ -1362,7 +1359,7 @@ ExitInfo ExecutorWorker::deleteFinishedAsyncJobs() {
                     }
                 }
             } else {
-                increaseErrorCount(syncOp);
+                increaseErrorCount(syncOp, exitInfo);
             }
 
             // Delete job
@@ -1445,12 +1442,11 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, Syn
                                                    << Utility::formatSyncPath(relativeLocalPath) << L" " << exitInfo);
                 return exitInfo;
             }
-        } else if (!handleExecutorError(syncOp, job->exitInfo())) {
+        } else if (const auto exitInfo = handleExecutorError(syncOp, job->exitInfo()); !exitInfo) {
             // Cancel all queued jobs
             LOGW_SYNCPAL_WARN(_logger, L"Cancelling jobs. " << job->exitInfo());
             cancelAllOngoingJobs();
-            return job->exitInfo();
-
+            return exitInfo;
         } else { // The error is managed and the execution can continue.
             LOGW_DEBUG(_logger, L"Error successfully managed: " << job->exitInfo() << L" on " << syncOp->type()
                                                                 << L" operation for "
@@ -2173,6 +2169,10 @@ void ExecutorWorker::manageJobDependencies(SyncOpPtr syncOp, std::shared_ptr<Abs
 }
 
 void ExecutorWorker::increaseErrorCount(const SyncOpPtr syncOp, const ExitInfo exitInfo /*= ExitInfo()*/) {
+    if (exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccessError)) {
+        return; // Ignore error if sync folder is not accessible.
+    }
+
     if (syncOp->affectedNode() && syncOp->affectedNode()->id().has_value()) {
         _syncPal->increaseErrorCount(*syncOp->affectedNode()->id(), syncOp->affectedNode()->type(),
                                      syncOp->affectedNode()->getPath(), otherSide(syncOp->targetSide()), exitInfo);
@@ -2238,6 +2238,21 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
     }
 
     LOG_WARN(_logger, "Handling " << opsExitInfo << " in ExecutorWorker::handleExecutorError");
+
+    if (opsExitInfo.cause() == ExitCause::NotFound || opsExitInfo.cause() == ExitCause::FileAccessError) {
+        // Check that the root of the sync folder is still accessible
+        bool exists = false;
+        if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(_syncPal->localPath(), exists, ioError)) {
+            LOGW_WARN(_logger,
+                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_syncPal->localPath(), ioError));
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        }
+        if (!exists) {
+            LOGW_DEBUG(_logger, L"Sync dir " << Utility::formatSyncPath(_syncPal->localPath()) << L" not accessible anymore");
+            _snapshotToInvalidate = true;
+            return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
+        }
+    }
 
     // Handle specific errors
     switch (static_cast<int>(opsExitInfo)) {
@@ -2392,7 +2407,7 @@ ExitInfo ExecutorWorker::removeDependentOps(const std::shared_ptr<Node> localNod
         if (localNode && localNode2 && (localNode->isParentOf(localNode2))) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Removing " << syncOp2->type() << L" operation on " << Utility::formatSyncName(nodeName)
                                                      << L" because it depends on " << opType << L" operation on "
-                                                     << Utility::formatSyncName(localNode->name()) << L" wich failed.");
+                                                     << Utility::formatSyncName(localNode->name()) << L" which failed.");
 
             dependentOps.push_back(opId);
             continue;

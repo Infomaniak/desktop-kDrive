@@ -4272,6 +4272,7 @@ void AppServer::onRestartSyncs() {
         if ((syncPtr->isPaused() || syncPtr->pauseAsked()) &&
             syncPtr->pauseTime() + std::chrono::minutes(1) < std::chrono::steady_clock::now()) {
             syncPtr->unpause();
+            Utility::restartFinderExtension();
         }
     }
 }

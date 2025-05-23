@@ -939,6 +939,14 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                     return false;
             }
         }
+        case ExitCode::SystemError: {
+            switch (error.exitCause()) {
+                case ExitCause::SyncDirAccessError:
+                    return false;
+                default:
+                    return true;
+            }
+        }
         case ExitCode::Unknown: {
             return error.inconsistencyType() != InconsistencyType::PathLength &&
                    error.cancelType() != CancelType::AlreadyExistRemote;

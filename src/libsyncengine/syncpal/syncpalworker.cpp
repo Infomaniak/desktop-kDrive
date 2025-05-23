@@ -78,9 +78,12 @@ void SyncPalWorker::execute() {
                     LOG_SYNCPAL_DEBUG(_logger, "Stop FSO worker " << index);
                     isFSOInProgress[index] = false;
                     stopAndWaitForExitOfWorker(fsoWorkers[index]);
-                    bool shouldPause = fsoWorkers[index]->exitCode() == ExitCode::NetworkError ||
-                                       (fsoWorkers[index]->exitCode() == ExitCode::BackError &&
-                                        fsoWorkers[index]->exitCause() == ExitCause::ServiceUnavailable);
+                    const bool connectionIssue = fsoWorkers[index]->exitCode() == ExitCode::NetworkError;
+                    const bool serviceUnavailable = fsoWorkers[index]->exitCode() == ExitCode::BackError &&
+                                                    fsoWorkers[index]->exitCause() == ExitCause::ServiceUnavailable;
+                    const bool syncDirUnaccessible = fsoWorkers[index]->exitCode() == ExitCode::SystemError &&
+                                                     fsoWorkers[index]->exitCause() == ExitCause::SyncDirAccessError;
+                    const bool shouldPause = connectionIssue || serviceUnavailable || syncDirUnaccessible;
                     if (shouldPause && !pauseAsked()) {
                         pause();
                     }
@@ -149,7 +152,11 @@ void SyncPalWorker::execute() {
                     isStepInProgress = false;
                 }
             } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::NetworkError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCode::NetworkError)) {
+                       (stepWorkers[1] && workersExitCode[1] == ExitCode::NetworkError) ||
+                       ((stepWorkers[0] && workersExitCode[0] == ExitCode::SystemError &&
+                         stepWorkers[0]->exitCause() == ExitCause::SyncDirAccessError) ||
+                        (stepWorkers[1] && workersExitCode[1] == ExitCode::SystemError &&
+                         stepWorkers[1]->exitCause() == ExitCause::SyncDirAccessError))) {
                 LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has aborted");
 
                 // Stop the step workers and pause sync
@@ -182,12 +189,12 @@ void SyncPalWorker::execute() {
                 stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
                 if ((stepWorkers[0] && workersExitCode[0] == ExitCode::SystemError &&
                      (stepWorkers[0]->exitCause() == ExitCause::NotEnoughDiskSpace ||
-                      stepWorkers[0]->exitCause() == ExitCause::FileAccessError ||
-                      stepWorkers[0]->exitCause() == ExitCause::SyncDirAccessError)) ||
+                      stepWorkers[0]->exitCause() == ExitCause::FileAccessError /*||
+                      stepWorkers[0]->exitCause() == ExitCause::SyncDirAccessError*/)) ||
                     (stepWorkers[1] && workersExitCode[1] == ExitCode::SystemError &&
                      (stepWorkers[1]->exitCause() == ExitCause::NotEnoughDiskSpace ||
-                      stepWorkers[1]->exitCause() == ExitCause::FileAccessError ||
-                      stepWorkers[1]->exitCause() == ExitCause::SyncDirAccessError))) {
+                      stepWorkers[1]->exitCause() == ExitCause::FileAccessError /*||
+                      stepWorkers[1]->exitCause() == ExitCause::SyncDirAccessError*/))) {
                     // Exit without error
                     exitCode = ExitCode::Ok;
                 } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::UpdateRequired) ||

@@ -227,7 +227,6 @@ bool DownloadJob::handleResponse(std::istream &is) {
 
         _responseHandlingCanceled = isAborted() || readError || writeError || fetchCanceled || fetchError;
 
-        bool restartSync = false;
         if (!_responseHandlingCanceled) {
             if (_vfs && !_isHydrated && !fetchFinished) { // updateFetchStatus is used only for hydration.
                 // Update fetch status
@@ -246,12 +245,12 @@ bool DownloadJob::handleResponse(std::istream &is) {
                 _responseHandlingCanceled = fetchCanceled || fetchError || (!fetchFinished);
             } else if (_isHydrated) {
                 // Replace file by tmp one
-                if (!moveTmpFile(restartSync)) {
+                if (!moveTmpFile()) {
                     LOGW_WARN(_logger, L"Failed to replace file by tmp one: " << Utility::formatSyncPath(_tmpPath));
                     writeError = true;
                 }
 
-                _responseHandlingCanceled = writeError || restartSync;
+                _responseHandlingCanceled = writeError;
             }
         }
 
@@ -443,9 +442,7 @@ bool DownloadJob::removeTmpFile() {
     return true;
 }
 
-bool DownloadJob::moveTmpFile(bool &restartSync) {
-    restartSync = false;
-
+bool DownloadJob::moveTmpFile() {
     // Move downloaded file from tmp directory to sync directory
 #ifdef _WIN32
     bool retry = true;
@@ -527,8 +524,7 @@ bool DownloadJob::moveTmpFile(bool &restartSync) {
 
                 if (!exists) {
                     LOGW_INFO(_logger, L"Parent of item does not exist anymore " << Utility::formatSyncPath(_localpath));
-                    restartSync = true;
-                    return true;
+                    disableRetry();
                 }
 
                 return false;
