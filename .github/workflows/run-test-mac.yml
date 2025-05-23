@@ -40,6 +40,8 @@ jobs:
       matrix:
         test_name: ["${{ inputs.test_common_name }}", "${{ inputs.test_common_server_name }}", "${{ inputs.test_server_name }}", "${{ inputs.test_syncengine_name }}", "${{ inputs.test_parms_name }}"]
     runs-on: [ self-hosted, macOS ]
+    env:
+      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
     steps:
         - uses: actions/checkout@v4
         - name: Run test

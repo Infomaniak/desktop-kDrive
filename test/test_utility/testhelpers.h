@@ -28,8 +28,16 @@
 #include <chrono>
 
 namespace KDC::testhelpers {
+std::string loadEnvVariable(const std::string& key, bool mandatory);
 
-const SyncPath localTestDirPath(Utility::s2ws(TEST_DIR) + L"/test_ci");
+inline const SyncPath localTestDirPath() {
+    static SyncPath localTestDirPath;
+    if (!localTestDirPath.empty()) return localTestDirPath;
+    localTestDirPath = Utility::s2ws(loadEnvVariable("KDRIVE_TEST_CI_LOCAL_PATH", true)) + L"test_ci";
+    LOGW_INFO(Log::instance()->getLogger(), L"test_ci dir is: " << Utility::formatSyncPath(localTestDirPath));
+    return localTestDirPath;
+}
+
 const SyncTime defaultTime = std::time(nullptr);
 constexpr int64_t defaultFileSize = 123;
 constexpr int64_t defaultDirSize = 0;
@@ -37,7 +45,23 @@ constexpr int64_t defaultDirSize = 0;
 SyncName makeNfdSyncName();
 SyncName makeNfcSyncName();
 
-std::string loadEnvVariable(const std::string& key, bool mandatory);
+inline bool isRunningOnCI(bool print = true) {
+    static const bool isRunningOnCI = !loadEnvVariable("KDRIVE_TEST_CI_RUNNING_ON_CI", false).empty();
+    if (print && !isRunningOnCI) {
+        std::cout << " (Skipped, CI only test)"; // This will show up in the test output -> KDC::TestXXX::testxxx
+                                                 // (Skipped, CI only test) :  OK
+    }
+    return isRunningOnCI;
+}
+
+inline bool isExtendedTest(bool print = true) {
+    static const bool isExtended = !loadEnvVariable("KDRIVE_TEST_CI_EXTENDED_TEST", false).empty();
+    if (print && !isExtended) {
+        std::cout << " (Skipped, extended test)"; // This will show up in the test output -> KDC::TestXXX::testxxx
+                                                  // (Skipped, extended test) :  OK
+    }
+    return isExtended;
+}
 struct TestVariables {
         std::string userId;
         std::string accountId;
@@ -54,7 +78,7 @@ struct TestVariables {
             remoteDirId = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_DIR_ID", true);
             remotePath = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_PATH", true);
             apiToken = loadEnvVariable("KDRIVE_TEST_CI_API_TOKEN", true);
-            local8MoPartitionPath = loadEnvVariable("KDRIVE_TEST_CI_8MO_PARTITION_PATH", true);
+            local8MoPartitionPath = loadEnvVariable("KDRIVE_TEST_CI_8MO_PARTITION_PATH", isExtendedTest());
         }
 };
 
@@ -69,21 +93,4 @@ void generateBigFiles(const SyncPath& dirPath, uint16_t size, uint16_t count);
 
 void setModificationDate(const SyncPath& path, const std::chrono::time_point<std::chrono::system_clock>& timePoint);
 
-inline bool isRunningOnCI(bool print = true) {
-    static const bool isRunningOnCI = !loadEnvVariable("KDRIVE_TEST_CI_RUNNING_ON_CI", false).empty();
-    if (print && !isRunningOnCI) {
-        std::cout << " (Skipped, CI only test)"; // This will show up in the test output -> KDC::TestXXX::testxxx (Skipped, CI
-                                                 // only test) :  OK
-    }
-    return isRunningOnCI;
-}
-
-inline bool isExtendedTest(bool print = true) {
-    static const bool isExtended = !loadEnvVariable("KDRIVE_TEST_CI_EXTENDED_TEST", false).empty();
-    if (print && !isExtended) {
-        std::cout << " (Skipped, extended test)"; // This will show up in the test output -> KDC::TestXXX::testxxx (Skipped,
-                                                  // extended test) :  OK
-    }
-    return isExtended;
-}
 } // namespace KDC::testhelpers
