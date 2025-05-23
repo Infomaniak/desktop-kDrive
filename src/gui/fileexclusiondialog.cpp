@@ -165,57 +165,40 @@ void FileExclusionDialog::initUI() {
 }
 
 namespace {
-void normalizeTemplateList(QList<ExclusionTemplateInfo> &templateList) {
-    for (auto &templateInfo: templateList) {
-        SyncName normalizedName;
-        if (const bool nfcSuccess = CommonUtility::normalizedSyncName(QStr2SyncName(templateInfo.templ()), normalizedName,
-                                                                      UnicodeNormalization::NFC);
-            !nfcSuccess) {
-            qCWarning(lcFileExclusionDialog()) << "Failed to NFC-normalize the template " << templateInfo.templ();
-        } else {
-            templateInfo.setTempl(SyncName2QStr(normalizedName));
-        }
-    }
-}
 
-void filterOutTemplatesWrtNfcNormalization(QList<ExclusionTemplateInfo> &templateList) {
-    std::unordered_set<SyncName> uniqueTemplateStrings; // Unique template names up to NFC-encoding.
+struct SyncNameHashFunction {
+        using is_transparent = void; // Enables heterogeneous operations.
+
+        std::size_t operator()(const SyncName &name) const {
+            constexpr std::hash<SyncName> hashFunction;
+            return hashFunction(name);
+        }
+};
+
+QList<ExclusionTemplateInfo> filterOutTemplatesWrtNfcNormalization(const QList<ExclusionTemplateInfo> &templateList) {
+    QList<ExclusionTemplateInfo> result;
+
+    std::unordered_set<SyncName, SyncNameHashFunction, std::equal_to<>>
+            uniqueTemplateNames; // Unique template names up to NFC-encoding.
     for (const auto &templateInfo: templateList) {
         SyncName normalizedName;
-        if (const bool nfcSuccess = CommonUtility::normalizedSyncName(QStr2SyncName(templateInfo.templ()), normalizedName,
-                                                                      UnicodeNormalization::NFC);
+        SyncName insertedName = QStr2SyncName(templateInfo.templ());
+        QString insertedString;
+
+        if (const bool nfcSuccess = CommonUtility::normalizedSyncName(insertedName, normalizedName, UnicodeNormalization::NFC);
             !nfcSuccess) {
             qCWarning(lcFileExclusionDialog()) << "Failed to NFC-normalize the template " << templateInfo.templ();
-            (void) uniqueTemplateStrings.emplace(QStr2SyncName(templateInfo.templ()));
+            insertedString = templateInfo.templ();
         } else {
-            (void) uniqueTemplateStrings.emplace(normalizedName);
+            insertedName = normalizedName;
+            insertedString = SyncName2QStr(normalizedName);
         }
+
+        const bool isNew = uniqueTemplateNames.emplace(insertedName).second;
+        if (isNew) result.append(ExclusionTemplateInfo{insertedString});
     }
 
-    // Each set of template strings with the same NFC-normalization is reduced to a single element.
-    for (const auto &uniqueTemplateString: uniqueTemplateStrings) {
-        bool erase = false;
-        for (auto it = templateList.begin(); it != templateList.end();) {
-            SyncName normalizedName;
-            bool match = false;
-            if (const bool nfcSuccess =
-                        CommonUtility::normalizedSyncName(QStr2SyncName(it->templ()), normalizedName, UnicodeNormalization::NFC);
-                !nfcSuccess) {
-                qCWarning(lcFileExclusionDialog()) << "Failed to NFC-normalize the template " << it->templ();
-            } else {
-                match = normalizedName == uniqueTemplateString;
-            }
-
-            if (erase && match) {
-                it = templateList.erase(it);
-            } else {
-                ++it;
-            }
-            if (match) erase = true;
-        }
-    }
-
-    normalizeTemplateList(templateList);
+    return result;
 }
 } // namespace
 
@@ -228,12 +211,12 @@ void FileExclusionDialog::updateUI() {
     }
 
     exitCode = GuiRequests::getExclusionTemplateList(false, _userTemplateList);
-    filterOutTemplatesWrtNfcNormalization(_userTemplateList);
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcFileExclusionDialog()) << "Error in Requests::getExclusionTemplateList: code=" << exitCode;
         return;
     }
 
+    _userTemplateList = filterOutTemplatesWrtNfcNormalization(_userTemplateList);
     loadPatternTable();
 
     ClientGui::restoreGeometry(this);
