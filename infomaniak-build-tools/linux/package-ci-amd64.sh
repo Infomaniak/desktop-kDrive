@@ -37,7 +37,7 @@ cp -P -r $QTDIR/libexec $APP_DIR/usr
 cp -P -r $QTDIR/resources $APP_DIR/usr
 cp -P -r $QTDIR/translations/ $APP_DIR/usr
 
-mv $APP_DIR/usr/lib/x86_64-linux-gnu/* $APP_DIR/usr/lib/
+mv $APP_DIR/usr/lib/x86_64-linux-gnu/* $APP_DIR/usr/lib/ || echo "The folder $APP_DIR/usr/lib/aarch64-linux-gnu/ might not exist." >&2
 
 mkdir -p $APP_DIR/usr/qml
 

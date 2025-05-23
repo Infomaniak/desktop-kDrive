@@ -80,7 +80,7 @@ cp -P -r /opt/qt6.2.3/libexec ./usr
 cp -P -r /opt/qt6.2.3/resources ./usr
 cp -P -r /opt/qt6.2.3/translations ./usr
 
-mv ./usr/lib/x86_64-linux-gnu/* ./usr/lib/
+mv ./usr/lib/x86_64-linux-gnu/* ./usr/lib/ || echo "The folder /app/usr/lib/x86_64-linux-gnu/ might not exist." >&2
 
 cp -P /usr/local/lib/libssl.so* ./usr/lib/
 cp -P /usr/local/lib/libcrypto.so* ./usr/lib/
@@ -112,5 +112,5 @@ export LD_LIBRARY_PATH=/app/usr/lib/:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY
 
 /deploy/linuxdeploy/build/bin/linuxdeploy --appdir /app -e /app/usr/bin/kDrive -i /app/kdrive-win.png -d /app/usr/share/applications/kDrive_client.desktop --plugin qt --output appimage -v0
 
-mv kDrive*.AppImage /install/kDrive-${SUFFIX}-x86_64.AppImage
+mv kDrive*.AppImage /install/kDrive-x86_64.AppImage
 
