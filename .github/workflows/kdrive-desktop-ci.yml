@@ -1,0 +1,112 @@
+name: kDrive desktop CI
+
+on:
+  workflow_dispatch:  
+  pull_request:
+    branches-ignore:
+        - 'release/**'
+    types: [synchronize, review_requested, opened]
+
+concurrency:
+  group: kDrive-desktop-ci-${{ github.head_ref }}
+  cancel-in-progress: true
+
+env:
+  KDRIVE_TEST_CI_API_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
+  KDRIVE_TEST_CI_ACCOUNT_ID: ${{ vars.KDRIVE_TEST_CI_ACCOUNT_ID }}
+  KDRIVE_TEST_CI_USER_ID: ${{ vars.KDRIVE_TEST_CI_USER_ID }}
+  KDRIVE_TEST_CI_DRIVE_ID: ${{ vars.KDRIVE_TEST_CI_DRIVE_ID }}
+  KDRIVE_TEST_CI_REMOTE_DIR_ID: ${{ vars.KDRIVE_TEST_CI_REMOTE_DIR_ID }}
+  KDRIVE_TEST_CI_LOCAL_PATH: ${{ vars.KDRIVE_TEST_CI_LOCAL_PATH }}
+  KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
+  KDRIVE_TEST_CI_RUNNING_ON_CI: true
+
+
+jobs:
+
+# Build apps
+  build-Windows:
+    runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build Windows
+        uses: ./.github/actions/build_windows
+        with:  
+          virtual_cert_id: ${{ secrets.WINDOWS_VIRTUAL_CERT }}
+          virtual_cert_pass: ${{ secrets.WINDOWS_VIRTUAL_CERT_PASSWORD }}
+    
+
+  build-Linux:
+    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build Linux
+        uses: ./.github/actions/build_linux
+
+  build-MacOS:
+    runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build macOS
+        uses: ./.github/actions/build_macos
+        with:  
+          keychain_password: ${{ secrets.KEYCHAIN_PASSWORD }}
+    
+
+# Tests Windows
+  Test-Windows:
+    needs: build-Windows
+    uses: ./.github/workflows/run-test-win.yml
+    with: 
+      test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+      test_common_name: kDrive_test_common
+      test_common_server_name: kDrive_test_common_server
+      test_server_name: kDrive_test_server
+      test_syncengine_name: kDrive_test_syncengine
+      test_parms_name: kDrive_test_parms
+    secrets: inherit
+
+
+# Tests Linux
+  Test-Linux:
+    needs: build-Linux
+    uses: ./.github/workflows/run-test-linux.yml
+    with: 
+      test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+      test_common_name: kDrive_test_common
+      test_common_server_name: kDrive_test_common_server
+      test_server_name: kDrive_test_server
+      test_syncengine_name: kDrive_test_syncengine
+      test_parms_name: kDrive_test_parms
+    secrets: inherit
+
+# Tests macOS
+  Test-macOS:
+    needs: build-MacOS
+    uses: ./.github/workflows/run-test-mac.yml
+    with: 
+      test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+      test_common_name: kDrive_test_common
+      test_common_server_name: kDrive_test_common_server
+      test_server_name: kDrive_test_server
+      test_syncengine_name: kDrive_test_syncengine
+      test_parms_name: kDrive_test_parms
+    secrets: inherit
+
+  Check-all-tests-results:
+    runs-on: [self-hosted, Windows]
+    needs: [Test-Windows, Test-Linux, Test-macOS]
+    steps:
+     - name: Check if all tests passed
+       shell: powershell
+       run: exit 0
+    
