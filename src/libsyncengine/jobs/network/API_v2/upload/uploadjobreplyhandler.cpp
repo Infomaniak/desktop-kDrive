@@ -21,9 +21,11 @@
 
 namespace KDC {
 
-UploadJobReplyHandler::UploadJobReplyHandler(const SyncPath& absoluteFilePath, const SyncTime modtime) :
+UploadJobReplyHandler::UploadJobReplyHandler(const SyncPath& absoluteFilePath, const SyncTime creationTime,
+                                             SyncTime modificationTime) :
     _absoluteFilePath(absoluteFilePath),
-    _modtimeIn(modtime) {}
+    _creationTimeIn(creationTime),
+    _modificationTimeIn(modificationTime) {}
 
 bool UploadJobReplyHandler::extractData(const Poco::JSON::Object::Ptr jsonRes) {
     if (!jsonRes) return false;
@@ -37,18 +39,21 @@ bool UploadJobReplyHandler::extractData(const Poco::JSON::Object::Ptr jsonRes) {
     }
 
     if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeIdOut)) return false;
-    if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtimeOut)) return false;
+    if (!JsonParserUtility::extractValue(dataObj, createdAtKey, _creationTimeOut)) return false;
+    if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modificationTimeOut)) return false;
 
-    if (_modtimeIn != _modtimeOut) {
-        // The backend refused the modification time. To avoid further EDIT operations, we apply the backend's time on local file.
-        bool exists = false;
-        if (const IoError ioError = IoHelper::setFileDates(_absoluteFilePath, 0, _modtimeOut, false);
+    if (_creationTimeIn != _creationTimeOut || _modificationTimeIn != _modificationTimeOut) {
+        // The backend refused the creation/modification time. To avoid further EDIT operations, we apply the backend's time on
+        // local file.
+        if (const IoError ioError = IoHelper::setFileDates(_absoluteFilePath, _creationTimeOut, _modificationTimeOut, false);
             ioError == IoError::Success) {
             LOG_INFO(Log::instance()->getLogger(),
-                     "Modification time " << _modtimeIn << " refused by the backend. The modification time has been updated to "
-                                          << _modtimeOut << " on local file.");
+                     "Creation/modification time(s) "
+                             << _creationTimeIn << "/" << _modificationTimeIn
+                             << " refused by the backend. The creation/modification time(s) has(have) been updated to "
+                             << _creationTimeOut << "/" << _modificationTimeOut << " on local file.");
         } else {
-            LOG_WARN(Log::instance()->getLogger(), "Failed to change modification time on local file.");
+            LOG_WARN(Log::instance()->getLogger(), "Failed to change creation/modification time(s) on local file.");
         }
     }
     return true;
