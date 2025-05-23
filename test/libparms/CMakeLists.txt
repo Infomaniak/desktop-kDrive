@@ -14,7 +14,7 @@ set(testparms_NAME ${APPLICATION_NAME}_test_parms)
 set(testparms_SRCS
     ../test.cpp
     ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
-    ../test_utility/testbase.h
+    ../test_utility/testbase.h ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
     test.cpp
     # Database
     db/testparmsdb.h db/testparmsdb.cpp
