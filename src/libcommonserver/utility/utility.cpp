@@ -35,6 +35,7 @@
 #include <sys/mount.h>
 #elif defined(__unix__)
 #include <sys/statvfs.h>
+#include <sys/statfs.h>
 #elif defined(_WIN32)
 #include <fileapi.h>
 #endif
@@ -74,8 +75,8 @@ static const SyncName resourcesPath(Str("../../Contents/Resources"));
 static const SyncName resourcesPath(Str(""));
 #elif defined(_WIN32)
 static const SyncName resourcesPath(Str(""));
-static const std::string NTFS("NTFS");
 #endif
+static const std::string NTFS("NTFS");
 
 struct VariantPrinter {
         std::wstring operator()(std::monostate) { return std::wstring(L"NULL"); }
@@ -295,7 +296,7 @@ std::wstring Utility::formatErrno(const QString &path, long cError) {
 
 std::string Utility::formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description) {
     std::stringstream ss;
-    ss << uri.toString().c_str() << " : " << code.c_str() << " - " << description.c_str();
+    ss << uri.toString() << " : " << code << " - " << description;
 
     return ss.str();
 }
@@ -324,7 +325,7 @@ void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::
                                     const Poco::Net::HTTPResponse &httpResponse) {
     std::string errorMsg = formatGenericServerError(inputStream, httpResponse);
     sentry::Handler::captureMessage(sentry::Level::Warning, errorTitle, errorMsg);
-    LOG_WARN(logger, errorTitle.c_str() << ": " << errorMsg.c_str());
+    LOG_WARN(logger, errorTitle << ": " << errorMsg);
 }
 
 #ifdef _WIN32
@@ -368,11 +369,44 @@ std::string Utility::fileSystemName(const SyncPath &targetPath) {
         // !!! File system name can be OK or not !!!
         return ws2s(szFileSystemName);
     }
-#else
-    (void) targetPath;
+#elif defined(__unix__) 
+    struct statfs stat;
+    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
+        std::function<std::string(std::string prettyName, int fsCode)> formatFsName = [](std::string prettyName, int fsCode) {
+            std::stringstream stream;
+            stream << std::hex << fsCode;
+            return prettyName + " | 0x" + stream.str();
+        };
+        switch (stat.f_type) {
+            case 0x137d:
+                return formatFsName("EXT(1)", stat.f_type);
+            case 0xef51:
+                return formatFsName("EXT2", stat.f_type);
+            case 0xef53:
+                return formatFsName("EXT2/3/4", stat.f_type);
+            case 0xbad1dea:
+            case 0xa501fcf5:
+            case 0x58465342:
+                return formatFsName("XFS", stat.f_type);
+            case 0x9123683e:
+            case 0x73727279:
+                return formatFsName("BTRFS", stat.f_type);
+            case 0xf15f:
+                return formatFsName("ECRYPTFS", stat.f_type);
+            case 0x4244:
+                return formatFsName("HFS", stat.f_type);
+            case 0x5346544e:
+                return formatFsName(NTFS, stat.f_type);
+            case 0x858458f6:
+                return formatFsName("RAMFS", stat.f_type);
+            default:
+                return formatFsName("Unknown-see corresponding entry at https://man7.org/linux/man-pages/man2/statfs.2.html",
+                                    stat.f_type);
+        }
+    }
 #endif
 
-    return std::string();
+    return "Error";
 }
 
 bool Utility::startsWith(const std::string &str, const std::string &prefix) {

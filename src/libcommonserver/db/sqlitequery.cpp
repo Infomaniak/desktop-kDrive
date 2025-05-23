@@ -62,7 +62,7 @@ int SqliteQuery::prepare(const std::string &sql, bool allow_failure) {
 
         if (_errId != SQLITE_OK) {
             _error = std::string(sqlite3_errmsg(_sqlite3Db.get()));
-            LOG_WARN(_logger, "Sqlite prepare statement error: " << _error.c_str() << " in " << _sql.c_str());
+            LOG_WARN(_logger, "Sqlite prepare statement error: " << _error << " in " << _sql);
             LOG_MSG_IF_FAIL(allow_failure, "SQLITE Prepare error");
         } else {
             LOG_IF_FAIL(_stmt.get());
@@ -79,7 +79,7 @@ void SqliteQuery::resetAndClearBindings() {
 }
 
 bool SqliteQuery::bindValue(int index, const dbtype &value) {
-    // LOG_DEBUG(_logger, "SQL bind: " << index << " - " << Utility::v2ws(value).c_str());
+    // LOG_DEBUG(_logger, "SQL bind: " << index << " - " << Utility::v2ws(value));
 
     int res = -1;
     if (!_stmt) {
@@ -112,7 +112,7 @@ bool SqliteQuery::bindValue(int index, const dbtype &value) {
     }
 
     if (res != SQLITE_OK) {
-        LOGW_WARN(_logger, L"ERROR binding SQL value: " << Utility::v2ws(value).c_str() << L" error: " << res);
+        LOGW_WARN(_logger, L"ERROR binding SQL value: " << Utility::v2ws(value) << L" error: " << res);
         return false;
     }
 
@@ -145,7 +145,7 @@ bool SqliteQuery::exec() {
 
     if (_errId != SQLITE_DONE && _errId != SQLITE_ROW) {
         _error = sqlite3_errmsg(_sqlite3Db.get());
-        LOG_WARN(_logger, "Sqlite exec statement error: " << _errId << " - " << _error.c_str() << " in " << _sql.c_str());
+        LOG_WARN(_logger, "Sqlite exec statement error: " << _errId << " - " << _error << " in " << _sql);
         if (_errId == SQLITE_IOERR) {
             LOG_WARN(_logger, "IOERR extended errcode: " << sqlite3_extended_errcode(_sqlite3Db.get()));
 #if SQLITE_VERSION_NUMBER >= 3012000
@@ -189,7 +189,7 @@ SqliteQuery::NextResult KDC::SqliteQuery::next() {
     result._hasData = _errId == SQLITE_ROW;
     if (!result._ok) {
         _error = sqlite3_errmsg(_sqlite3Db.get());
-        LOG_WARN(_logger, "Sqlite step statement error: " << _errId << " - " << _error.c_str() << " in " << _sql.c_str());
+        LOG_WARN(_logger, "Sqlite step statement error: " << _errId << " - " << _error << " in " << _sql);
     }
 
     return result;

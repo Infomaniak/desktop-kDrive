@@ -115,7 +115,7 @@ bool ParmsDb::insertAppState(AppStateKey key, const std::string &value, const bo
     const std::scoped_lock lock(_mutex);
     std::string valueStr = value;
     if (valueStr.empty()) {
-        LOG_WARN(_logger, "Value is empty for AppStateKey: " << CommonUtility::appStateKeyToString(key).c_str());
+        LOG_WARN(_logger, "Value is empty for AppStateKey: " << CommonUtility::appStateKeyToString(key));
         return false;
     }
     if (valueStr == APP_STATE_DEFAULT_IS_EMPTY) {

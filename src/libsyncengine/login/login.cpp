@@ -40,7 +40,7 @@ Login::Login(const std::string &keychainKey) :
         LOG_WARN(_logger, "Failed to read authentification token from keychain");
     }
     if (!found) {
-        LOG_DEBUG(_logger, "Authentification token not found for keychainKey=" << _keychainKey.c_str());
+        LOG_DEBUG(_logger, "Authentification token not found for keychainKey=" << _keychainKey);
     }
 
     _info[_apiToken.userId()] = LoginInfo();
@@ -65,9 +65,9 @@ ExitCode Login::requestToken(const std::string &authorizationCode, const std::st
         std::string errorCode;
         std::string errorDescr;
         if (job.hasErrorApi(&errorCode, &errorDescr)) {
-            LOGW_WARN(_logger, L"Failed to retrieve authentification token. Error : " << KDC::Utility::s2ws(errorCode).c_str()
+            LOGW_WARN(_logger, L"Failed to retrieve authentification token. Error : " << KDC::Utility::s2ws(errorCode)
                                                                                       << L" - "
-                                                                                      << KDC::Utility::s2ws(errorDescr).c_str());
+                                                                                      << KDC::Utility::s2ws(errorDescr));
             _error = errorCode;
             _errorDescr = errorDescr;
             return ExitCode::BackError;
@@ -145,7 +145,7 @@ ExitCode Login::refreshToken(const std::string &keychainKey, ApiToken &apiToken,
 
         if (job.hasErrorApi(&error, &errorDescr)) {
             LOG_WARN(Log::instance()->getLogger(),
-                     "Failed to retrieve authentication token. Error : " << error.c_str() << " - " << errorDescr.c_str());
+                     "Failed to retrieve authentication token. Error : " << error << " - " << errorDescr);
             return ExitCode::NetworkError;
         }
 
