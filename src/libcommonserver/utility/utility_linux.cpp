@@ -78,9 +78,8 @@ static int moveItemToTrash_private(const SyncPath &itemPath) {
     std::error_code ec;
     if (!std::filesystem::exists(trash_path, ec)) {
         if (ec.value() != 0) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in std::filesystem::exists - err=" << ec.message() << " ("
-                                                                                             << std::to_string(ec.value()).c_str()
-                                                                                             << ")");
+            LOG_WARN(Log::instance()->getLogger(),
+                     "Error in std::filesystem::exists - err=" << ec.message() << " (" << std::to_string(ec.value()) << ")");
             return false;
         }
 

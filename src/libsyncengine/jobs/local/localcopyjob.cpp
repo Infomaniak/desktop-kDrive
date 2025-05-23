@@ -93,7 +93,7 @@ void LocalCopyJob::runJob() {
             _exitInfo.setCause(ExitCause::FileAccessError);
         }
     } catch (...) {
-        LOGW_WARN(_logger, L"Failed to copy item " << Path2WStr(_source) << L" to " << Path2WStr(_dest).c_str()
+        LOGW_WARN(_logger, L"Failed to copy item " << Path2WStr(_source) << L" to " << Path2WStr(_dest)
                                                    << L": Unknown error");
         _exitInfo = ExitCode::SystemError;
     }
