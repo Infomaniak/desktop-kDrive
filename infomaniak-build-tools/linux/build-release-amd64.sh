@@ -169,7 +169,7 @@ package_release() {
 	cp -P -r $QTDIR/resources $app_dir/usr
 	cp -P -r $QTDIR/translations/ $app_dir/usr
 	
-	mv $app_dir/usr/lib/x86_64-linux-gnu/* $app_dir/usr/lib/
+	mv $app_dir/usr/lib/x86_64-linux-gnu/* $app_dir/usr/lib/ || echo "The folder $app_dir/usr/lib/x86_64-linux-gnu/ might not exist." >&2
 
 	cp -P /usr/local/lib64/libssl.so* $app_dir/usr/lib/
 	cp -P /usr/local/lib64/libcrypto.so* $app_dir/usr/lib/

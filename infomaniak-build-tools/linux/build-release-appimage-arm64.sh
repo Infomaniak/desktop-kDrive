@@ -97,7 +97,7 @@ cp -P -r /opt/qt6.2.3/libexec ./usr
 cp -P -r /opt/qt6.2.3/resources ./usr
 cp -P -r /opt/qt6.2.3/translations ./usr
 
-mv ./usr/lib/aarch64-linux-gnu/* ./usr/lib/ || echo "failed to list ./usr/lib/aarch64-linux-gnu"
+mv ./usr/lib/aarch64-linux-gnu/* ./usr/lib/ || echo "The folder /app/usr/lib/aarch64-linux-gnu/ might not exist." >&2
 
 cp -P /usr/local/lib/libssl.so* ./usr/lib/
 cp -P /usr/local/lib/libcrypto.so* ./usr/lib/
