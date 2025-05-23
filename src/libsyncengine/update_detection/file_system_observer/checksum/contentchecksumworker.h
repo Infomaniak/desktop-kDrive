@@ -21,7 +21,7 @@
 #include "syncpal/isyncworker.h"
 #include "utility/types.h"
 #include "computechecksumjob.h"
-#include "update_detection/file_system_observer/snapshot/snapshot.h"
+#include "update_detection/file_system_observer/snapshot/livesnapshot.h"
 
 #include <Poco/ThreadPool.h>
 
@@ -37,7 +37,7 @@ class ComputeChecksumJob;
 class ContentChecksumWorker : public ISyncWorker {
     public:
         ContentChecksumWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
-                              std::shared_ptr<Snapshot> localSnapshot);
+                              std::shared_ptr<LiveSnapshot> localSnapshot);
         virtual ~ContentChecksumWorker();
 
         void computeChecksum(const NodeId &id, const SyncPath &file);
@@ -47,7 +47,7 @@ class ContentChecksumWorker : public ISyncWorker {
         void execute() override;
 
     private:
-        std::shared_ptr<Snapshot> _localSnapshot;
+        std::shared_ptr<LiveSnapshot> _localSnapshot;
         std::queue<std::pair<NodeId, SyncPath>> _toCompute;
 
         Poco::ThreadPool _threadPool;

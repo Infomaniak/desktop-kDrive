@@ -38,7 +38,7 @@ void TestConflictFinderWorker::setUp() {
                                          KDRIVE_VERSION_STRING, true);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
-
+    _syncPal->createWorkers();
     _syncPal->_conflictFinderWorker = std::make_shared<ConflictFinderWorker>(_syncPal, "Conflict Finder", "COFD");
 
     // Generate initial situation
@@ -65,7 +65,6 @@ void TestConflictFinderWorker::testCreateCreate() {
     const auto lNodeAC = _situationGenerator.createNode(ReplicaSide::Local, NodeType::File, "ac", "a");
     lNodeAC->setSize(testhelpers::defaultFileSize + 1);
     const auto rNodeAC = _situationGenerator.createNode(ReplicaSide::Remote, NodeType::File, "ac", "a");
-
     const auto conf = _syncPal->_conflictFinderWorker->checkCreateCreateConflict(lNodeAC);
     CPPUNIT_ASSERT(conf);
     CPPUNIT_ASSERT_EQUAL(lNodeAC, conf->node());
