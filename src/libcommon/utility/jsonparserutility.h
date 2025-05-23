@@ -47,7 +47,7 @@ struct COMMONSERVER_EXPORT JsonParserUtility {
             } catch (...) {
                 if (mandatory) {
                     const std::string msg = "Fail to extract value for key=" + key;
-                    LOG_WARN(Log::instance()->getLogger(), msg.c_str());
+                    LOG_WARN(Log::instance()->getLogger(), msg);
                     sentry::Handler::captureMessage(sentry::Level::Error, "JsonParserUtility::extractValue", msg);
                     return false;
                 }
@@ -64,7 +64,7 @@ struct COMMONSERVER_EXPORT JsonParserUtility {
 
             Poco::JSON::Object::Ptr obj = parentObj->getObject(key);
             if (!obj) {
-                LOG_WARN(Log::instance()->getLogger(), "Missing JSON object: " << key.c_str());
+                LOG_WARN(Log::instance()->getLogger(), "Missing JSON object: " << key);
             }
 
             return obj;
@@ -78,7 +78,7 @@ struct COMMONSERVER_EXPORT JsonParserUtility {
 
             Poco::JSON::Array::Ptr array = parentObj->getArray(key);
             if (!array) {
-                LOG_WARN(Log::instance()->getLogger(), "Missing JSON array: " << key.c_str());
+                LOG_WARN(Log::instance()->getLogger(), "Missing JSON array: " << key);
             }
 
             return array;
