@@ -76,6 +76,7 @@ inline const SyncPath localTestDirPath() {
             scanPath = scanPath.parent_path();
         } else {
             assert(false && "test_ci folder not found");
+            LOG_FATAL(Log::instance()->getLogger(), "test_ci dir not found");
             break; // Reached the root, give up
         }
     }
