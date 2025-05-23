@@ -108,13 +108,14 @@ if (WIN32)
     target_include_directories(${libcommon_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
-        "C:/Program Files (x86)/log4cplus/include"
+        ${CMAKE_INCLUDE_PATH}
         "C:/Program Files (x86)/libzip/include"
         ${CMAKE_SOURCE_DIR}/src/3rdparty/keychain/include)
 else()
     target_include_directories(${libcommon_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
+        ${CMAKE_INCLUDE_PATH}
         "/usr/local/include"
         ${CMAKE_SOURCE_DIR}/src/3rdparty/keychain/include)
 endif()
@@ -123,7 +124,7 @@ endif()
 target_link_libraries(${libcommon_NAME}
     Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Sql
     Poco::Foundation Poco::JSON Poco::Util
-    log4cplus::log4cplusU
+    log4cplus::log4cplus
     sentry::sentry
     keychain
     libzip::zip

@@ -57,11 +57,12 @@ if (WIN32)
     target_include_directories(${libparms_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
-        "C:/Program Files (x86)/log4cplus/include")
+        ${CMAKE_INCLUDE_PATH})
 else()
     target_include_directories(${libparms_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
+        ${CMAKE_INCLUDE_PATH}
         "/usr/local/include")
 endif()
 
