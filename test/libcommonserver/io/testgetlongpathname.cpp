@@ -32,7 +32,7 @@ void TestIo::testGetLongPathName() {
         const SyncPath veryLongPath = makeVeryLonPath("root");
         SyncPath longPathName{"anomalous_input_path"};
         auto ioError = IoError::Success;
-        _testObj->getLongPathName(veryLongPath, longPathName, ioError);
+        (void) IoHelper::getLongPathName(veryLongPath, longPathName, ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::FileNameTooLong, ioError);
         CPPUNIT_ASSERT(longPathName.empty());
     }
@@ -41,7 +41,7 @@ void TestIo::testGetLongPathName() {
     {
         SyncPath longPathName{"anomalous_input_path"};
         auto ioError = IoError::Success;
-        _testObj->getLongPathName("/root/directory/non-existing-text-file.txt", longPathName, ioError);
+        (void) IoHelper::getLongPathName("/root/directory/non-existing-text-file.txt", longPathName, ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
         CPPUNIT_ASSERT(longPathName.empty());
     }
@@ -52,19 +52,19 @@ void TestIo::testGetLongPathName() {
         const LocalTemporaryDirectory temporaryDirectory;
         SyncPath longPathName;
         auto ioError = IoError::Success;
-        _testObj->getLongPathName(temporaryDirectory.path(), longPathName, ioError);
+        (void) IoHelper::getLongPathName(temporaryDirectory.path(), longPathName, ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT_EQUAL(temporaryDirectory.path(), longPathName);
 
         // The short path name of a long path is shorter and end with ~ followed by a positive integer
         SyncPath shortPathName;
-        _testObj->getShortPathName(temporaryDirectory.path(), shortPathName, ioError);
+        (void) IoHelper::getShortPathName(temporaryDirectory.path(), shortPathName, ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT_LESS(Path2WStr(longPathName).size(), Path2WStr(shortPathName).size());
         CPPUNIT_ASSERT(std::regex_match(Path2WStr(shortPathName), std::wregex(L".*~[1-9][0-9]*$")));
 
         // Check that getLongPathName reverts getShortPathName
-        _testObj->getLongPathName(shortPathName, longPathName, ioError);
+        (void) IoHelper::getLongPathName(shortPathName, longPathName, ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT_EQUAL(temporaryDirectory.path(), longPathName);
     }
@@ -78,19 +78,19 @@ void TestIo::testGetLongPathName() {
 
         const SyncPath inputPath = temporaryDirectory.path() / makeFileNameWithEmojis();
         { std::ofstream ofs(inputPath); }
-        _testObj->getLongPathName(inputPath, longPathName, ioError);
+        (void) IoHelper::getLongPathName(inputPath, longPathName, ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT_EQUAL(inputPath, longPathName);
 
         // The short path name of a long path is shorter and end with ~ followed by a positive integer
         SyncPath shortPathName;
-        _testObj->getShortPathName(longPathName, shortPathName, ioError);
+        (void) IoHelper::getShortPathName(longPathName, shortPathName, ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT_LESS(Path2WStr(longPathName).size(), Path2WStr(shortPathName).size());
         CPPUNIT_ASSERT(std::regex_match(Path2WStr(shortPathName), std::wregex(L".*~[1-9][0-9]*$")));
 
         // Check that getLongPathName reverts getShortPathName
-        _testObj->getLongPathName(shortPathName, longPathName, ioError);
+        (void) IoHelper::getLongPathName(shortPathName, longPathName, ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT_EQUAL(inputPath, longPathName);
     }
@@ -102,7 +102,7 @@ void TestIo::testGetShortPathName() {
         const SyncPath veryLongPath = makeVeryLonPath("root");
         SyncPath shortPathName{"anomalous_input_path"};
         auto ioError = IoError::Success;
-        _testObj->getShortPathName(veryLongPath, shortPathName, ioError);
+        (void) IoHelper::getShortPathName(veryLongPath, shortPathName, ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::FileNameTooLong, ioError);
         CPPUNIT_ASSERT(shortPathName.empty());
     }
@@ -111,7 +111,7 @@ void TestIo::testGetShortPathName() {
     {
         SyncPath shortPathName{"anomalous_input_path"};
         auto ioError = IoError::Success;
-        _testObj->getShortPathName("/root/directory/non-existing-text-file.txt", shortPathName, ioError);
+        (void) IoHelper::getShortPathName("/root/directory/non-existing-text-file.txt", shortPathName, ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
         CPPUNIT_ASSERT(shortPathName.empty());
     }
