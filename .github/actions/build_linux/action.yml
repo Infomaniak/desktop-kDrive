@@ -40,17 +40,17 @@ runs:
           cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Svg.* ./dependencies/
           mkdir dependencies/platforms
           cp /home/runner/Qt/6.2.3/gcc_64/plugins/platforms/* ./dependencies/platforms/
-          cp /usr/local/lib/libcppunit.so ./dependencies/ 
-          cp /usr/local/lib/libPocoUtil.so ./dependencies/
-          cp /usr/local/lib/libPocoJSON.so ./dependencies/
-          cp /usr/local/lib/libPocoXML.so ./dependencies/
-          cp /usr/local/lib/libPocoFoundation.so ./dependencies/
-          cp /usr/local/lib/libPocoNetSSL.so ./dependencies/
-          cp /usr/local/lib/libPocoCrypto.so ./dependencies/
-          cp /usr/local/lib/libPocoNet.so ./dependencies/
-          # cp /usr/local/lib/liblog4cplus.so ./dependencies/ TODO: Fix path
-          cp /usr/local/lib/libsentry.so ./dependencies/
-          cp /usr/local/lib/libzip.so ./dependencies/
+          cp /usr/local/lib/libcppunit* ./dependencies/ 
+          cp /usr/local/lib/libPocoUtil* ./dependencies/
+          cp /usr/local/lib/libPocoJSON* ./dependencies/
+          cp /usr/local/lib/libPocoXML* ./dependencies/
+          cp /usr/local/lib/libPocoFoundation* ./dependencies/
+          cp /usr/local/lib/libPocoNetSSL* ./dependencies/
+          cp /usr/local/lib/libPocoCrypto* ./dependencies/
+          cp /usr/local/lib/libPocoNet* ./dependencies/
+          cp /usr/local/lib/liblog4cplus* ./dependencies/
+          cp /usr/local/lib/libsentry* ./dependencies/
+          cp /usr/local/lib/libzip* ./dependencies/
           cp /usr/local/lib/libxxhash* ./dependencies/
         shell: bash
         if: steps.build.outcome == 'success'
