@@ -43,12 +43,12 @@ std::shared_ptr<ExclusionTemplateCache> ExclusionTemplateCache::instance() {
 
 ExclusionTemplateCache::ExclusionTemplateCache() {
     // Load exclusion templates
-    if (!ParmsDb::instance()->selectAllExclusionTemplates(true, _defExclusionTemplates)) {
+    if (!ParmsDb::instance()->selectDefaultExclusionTemplates(_defExclusionTemplates)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllExclusionTemplates");
         throw std::runtime_error("Failed to create ExclusionTemplateCache instance!");
     }
 
-    if (!ParmsDb::instance()->selectAllExclusionTemplates(false, _userExclusionTemplates)) {
+    if (!ParmsDb::instance()->selectUserExclusionTemplates(_userExclusionTemplates)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllExclusionTemplates");
         throw std::runtime_error("Failed to create ExclusionTemplateCache instance!");
     }
