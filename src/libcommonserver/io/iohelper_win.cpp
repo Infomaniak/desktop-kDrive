@@ -887,8 +887,8 @@ static void UnixTimevalToFileTime(timeval t, LPFILETIME pft) {
     pft->dwHighDateTime = ll >> 32;
 }
 
-IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime creationDate,
-                                    const SyncTime modificationDate, const bool) noexcept {
+IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime creationDate, const SyncTime modificationDate,
+                               const bool) noexcept {
     FILETIME creationTime;
     if (creationDate) {
         // Set creation time

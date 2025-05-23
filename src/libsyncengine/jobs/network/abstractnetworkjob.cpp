@@ -85,11 +85,10 @@ AbstractNetworkJob::~AbstractNetworkJob() {
 }
 
 bool AbstractNetworkJob::isManagedError(const ExitInfo exitInfo) noexcept {
-    static const std::set managedExitCauses = {ExitCause::InvalidName,       ExitCause::ApiErr,
-                                               ExitCause::FileTooBig,        ExitCause::NotFound,
-                                               ExitCause::FileLocked,        ExitCause::QuotaExceeded,
-                                               ExitCause::FileAlreadyExists, ExitCause::ShareLinkAlreadyExists,
-                                               ExitCause::ServiceUnavailable};
+    static const std::set managedExitCauses = {
+            ExitCause::InvalidName,       ExitCause::ApiErr,        ExitCause::FileTooBig, ExitCause::NotFound,
+            ExitCause::FileLocked,        ExitCause::QuotaExceeded, ExitCause::FileExists, ExitCause::ShareLinkAlreadyExists,
+            ExitCause::ServiceUnavailable};
 
     switch (exitInfo.code()) {
         case ExitCode::BackError:
@@ -421,8 +420,8 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
         return true;
     }
 
-    LOG_DEBUG(_logger, "Request " << jobId() << " finished with status: " << _resHttp.getStatus() << " / "
-                                  << _resHttp.getReason());
+    LOG_DEBUG(_logger,
+              "Request " << jobId() << " finished with status: " << _resHttp.getStatus() << " / " << _resHttp.getReason());
 
     bool res = true;
     switch (_resHttp.getStatus()) {

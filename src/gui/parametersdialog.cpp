@@ -369,22 +369,15 @@ QString ParametersDialog::getAppErrorText(const QString &fctCode, const ExitCode
 
 QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, const ExitCause exitCause) const {
     switch (exitCause) {
-        case ExitCause::SyncDirDoesntExist:
+        case ExitCause::SyncDirAccessError:
             return tr("The synchronization folder is no longer accessible (error %1).<br>"
                       "Synchronization will resume as soon as the folder is accessible.")
                     .arg(err);
-
-        case ExitCause::SyncDirAccesError:
-            return tr("The synchronization folder is inaccessible (error %1).<br>"
-                      "Please check that you have read and write access to this folder.")
-                    .arg(err);
-
         case ExitCause::NotEnoughDiskSpace:
             return tr(
                     "There is not enough space left on your disk.<br>"
                     "The synchronization has been stopped.");
-
-        case ExitCause::NotEnoughtMemory:
+        case ExitCause::NotEnoughMemory:
             return tr(
                     "There is not enough memory left on your machine.<br>"
                     "The synchronization has been stopped.");
@@ -798,7 +791,7 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
             return getBackErrorText(errorInfo);
         }
         case ExitCode::DataError: {
-            if (errorInfo.exitCause() == ExitCause::FileAlreadyExists) {
+            if (errorInfo.exitCause() == ExitCause::FileExists) {
                 return tr(
                         "Item already exists on other side.<br>"
                         "It has been temporarily blacklisted.");

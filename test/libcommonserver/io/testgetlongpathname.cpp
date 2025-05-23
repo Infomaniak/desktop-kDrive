@@ -55,9 +55,7 @@ void TestIo::testGetLongPathName() {
         SyncPath longPathName;
         auto ioError = IoError::Success;
         const SyncPath inputPath = temporaryDirectory.path() / "a_file_name_with_more_than_8_characters.txt";
-        {
-            std::ofstream ofs(inputPath);
-        }
+        { std::ofstream ofs(inputPath); }
 
         CPPUNIT_ASSERT(IoHelper::getLongPathName(inputPath, longPathName, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
@@ -86,9 +84,7 @@ void TestIo::testGetLongPathName() {
         auto ioError = IoError::Success;
 
         const SyncPath inputPath = temporaryDirectory.path() / makeFileNameWithEmojis();
-        {
-            std::ofstream ofs(inputPath);
-        }
+        { std::ofstream ofs(inputPath); }
         CPPUNIT_ASSERT(IoHelper::getLongPathName(inputPath, longPathName, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT_EQUAL(inputPath, longPathName);

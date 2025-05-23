@@ -131,8 +131,7 @@ void AbstractUploadSession::uploadChunkCallback(const UniqueId jobId) {
 
         _threadCounter--;
         addProgress(static_cast<int64_t>(jobInfo.mapped()->chunkSize()));
-        LOG_INFO(_logger,
-                 "Session " << _sessionToken << ", thread " << jobId << " finished. " << _threadCounter << " running");
+        LOG_INFO(_logger, "Session " << _sessionToken << ", thread " << jobId << " finished. " << _threadCounter << " running");
     }
 }
 
@@ -178,7 +177,7 @@ bool AbstractUploadSession::canRun() {
     if (!exists) {
         LOGW_DEBUG(_logger,
                    L"Item does not exist anymore. Aborting current sync and restart " << Utility::formatSyncPath(_filePath));
-        _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent};
+        _exitInfo = {ExitCode::DataError, ExitCause::NotFound};
         return false;
     }
 
@@ -196,8 +195,7 @@ bool AbstractUploadSession::initChunks() {
 
     _totalChunks = static_cast<uint64_t>(std::ceil(static_cast<double>(_filesize) / static_cast<double>(_chunkSize)));
     if (_totalChunks > maxTotalChunks) {
-        LOGW_WARN(_logger,
-                  L"Impossible to upload file " << Path2WStr(_filePath.filename()) << L" because it is too big!");
+        LOGW_WARN(_logger, L"Impossible to upload file " << Path2WStr(_filePath.filename()) << L" because it is too big!");
         _exitInfo = ExitCode::DataError;
         return false;
     }
@@ -344,8 +342,8 @@ bool AbstractUploadSession::sendChunks() {
                     jobCreationError = true;
                     break;
                 }
-                LOG_INFO(_logger, "Session " << _sessionToken << ", job " << chunkJob->jobId() << " queued, "
-                                             << _threadCounter << " jobs in queue");
+                LOG_INFO(_logger, "Session " << _sessionToken << ", job " << chunkJob->jobId() << " queued, " << _threadCounter
+                                             << " jobs in queue");
             }
 
             waitForJobsToComplete(false);
@@ -353,8 +351,7 @@ bool AbstractUploadSession::sendChunks() {
             LOG_INFO(_logger, "Session " << _sessionToken << ", thread " << chunkJob->jobId() << " start.");
 
             if (const auto exitInfo = chunkJob->runSynchronously(); exitInfo.code() != ExitCode::Ok || chunkJob->hasHttpError()) {
-                LOGW_WARN(_logger,
-                          L"Failed to upload chunk " << chunkNb << L" of file " << Path2WStr(_filePath.filename()));
+                LOGW_WARN(_logger, L"Failed to upload chunk " << chunkNb << L" of file " << Path2WStr(_filePath.filename()));
 
                 _exitInfo = exitInfo;
                 _jobExecutionError = true;

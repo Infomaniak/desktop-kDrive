@@ -88,9 +88,8 @@ bool KeyChainManager::readDataFromKeystore(const std::string &keychainKey, std::
     keychain::Error error{};
     data = keychain::getPassword(PACKAGE, SERVICE, keychainKey, error);
     if (error.type == keychain::ErrorType::NotFound) {
-        LOG_DEBUG(KDC::Log::instance()->getLogger(), "Could not find data in keychain for key " << keychainKey << ": "
-                                                                                                << error.code << " - "
-                                                                                                << error.message);
+        LOG_DEBUG(KDC::Log::instance()->getLogger(),
+                  "Could not find data in keychain for key " << keychainKey << ": " << error.code << " - " << error.message);
         found = false;
         return true;
     } else if (error) {

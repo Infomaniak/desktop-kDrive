@@ -1333,11 +1333,10 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
             // Update change events
             tmpNode->setChangeEvents(prevNode->changeEvents());
 
-            LOGW_SYNCPAL_DEBUG(_logger,
-                               _side << L" update tree: Changed events to '" << prevNode->changeEvents() << L"' for node '"
-                                     << SyncName2WStr(tmpNode->name()) << L"' (node ID: '"
-                                     << Utility::s2ws((tmpNode->id().has_value() ? *tmpNode->id() : std::string()))
-                                     << L"')");
+            LOGW_SYNCPAL_DEBUG(_logger, _side << L" update tree: Changed events to '" << prevNode->changeEvents()
+                                              << L"' for node '" << SyncName2WStr(tmpNode->name()) << L"' (node ID: '"
+                                              << Utility::s2ws((tmpNode->id().has_value() ? *tmpNode->id() : std::string()))
+                                              << L"')");
         }
     }
 

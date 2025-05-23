@@ -60,7 +60,7 @@ bool LocalMoveJob::canRun() {
 
         if (exists) {
             LOGW_DEBUG(_logger, L"Item already exists: " << Utility::formatSyncPath(_dest));
-            _exitInfo = {ExitCode::DataError, ExitCause::FileAlreadyExists};
+            _exitInfo = {ExitCode::DataError, ExitCause::FileExists};
             return false;
         }
     }
