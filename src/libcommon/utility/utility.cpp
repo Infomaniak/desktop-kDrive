@@ -1065,8 +1065,8 @@ std::vector<SyncName> CommonUtility::splitPath(const SyncName &pathName) {
     return splitSyncName(path.make_preferred().native(), preferredPathSeparator());
 }
 
-std::unordered_set<SyncName> CommonUtility::computeSyncNameNormalizations(const SyncName &name) {
-    std::unordered_set<SyncName> result;
+SyncNameSet CommonUtility::computeSyncNameNormalizations(const SyncName &name) {
+    SyncNameSet result;
     (void) result.emplace(name);
 
     SyncName nfcNormalizedName;
@@ -1085,13 +1085,13 @@ std::unordered_set<SyncName> CommonUtility::computeSyncNameNormalizations(const 
     return result;
 }
 
-std::unordered_set<SyncName> CommonUtility::computePathNormalizations(const std::vector<SyncName> &pathSegments, int lastIndex) {
+SyncNameSet CommonUtility::computePathNormalizations(const std::vector<SyncName> &pathSegments, int lastIndex) {
     if (lastIndex == -1 || pathSegments.empty()) return {};
 
     auto lastSegmentNormalizations = computeSyncNameNormalizations(pathSegments[static_cast<size_t>(lastIndex)]);
     auto headNormalizations = computePathNormalizations(pathSegments, lastIndex - 1);
 
-    std::unordered_set<SyncName> result;
+    SyncNameSet result;
     for (const auto &lastSegmentNormalization: lastSegmentNormalizations) {
         for (const auto &headNormalization: headNormalizations)
             (void) result.emplace(headNormalization + CommonUtility::preferredPathSeparator() + lastSegmentNormalization);
@@ -1100,11 +1100,11 @@ std::unordered_set<SyncName> CommonUtility::computePathNormalizations(const std:
     return result;
 }
 
-std::unordered_set<SyncName> CommonUtility::computePathNormalizations(const std::vector<SyncName> &pathSegments) {
+SyncNameSet CommonUtility::computePathNormalizations(const std::vector<SyncName> &pathSegments) {
     return computePathNormalizations(pathSegments, static_cast<int>(pathSegments.size() - 1));
 }
 
-std::unordered_set<SyncName> CommonUtility::computePathNormalizations(const SyncName &path) {
+SyncNameSet CommonUtility::computePathNormalizations(const SyncName &path) {
     const auto pathSegments = CommonUtility::splitPath(path);
 
     return computePathNormalizations(pathSegments);

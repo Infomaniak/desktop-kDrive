@@ -690,14 +690,14 @@ void TestUtility::testComputeSyncNameNormalizations() {
 }
 
 namespace {
-std::unordered_set<SyncName> computeExpectedPathNormalizations() {
+SyncNameSet computeExpectedPathNormalizations() {
     SyncName nfcName;
     (void) CommonUtility::normalizedSyncName(Str("é"), nfcName, UnicodeNormalization::NFC);
 
     SyncName nfdName;
     (void) CommonUtility::normalizedSyncName(Str("é"), nfdName, UnicodeNormalization::NFD);
 
-    std::unordered_set<SyncName> result;
+    SyncNameSet result;
     for (const auto &n1: {nfcName, nfdName}) {
         for (const auto &n2: {nfcName, nfdName}) {
             for (const auto &n3: {nfcName, nfdName}) {
