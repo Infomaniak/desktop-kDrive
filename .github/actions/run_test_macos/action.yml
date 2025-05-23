@@ -68,5 +68,5 @@ runs:
         continue-on-error: true
 
       - name: Clean up
-        run : rm -rf ${{ github.workspace }}/build-macos/client/bin/*
+        run : rm -rf ${{ github.workspace }}/build-macos
         shell: bash
