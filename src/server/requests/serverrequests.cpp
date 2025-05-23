@@ -337,7 +337,7 @@ ExitCode ServerRequests::findGoodPathForNewSync(int driveDbId, const QString &ba
 
     if (syncDbId) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"The parent folder is a sync folder or contained in one : " << Path2WStr(QStr2Path(parentFolder)).c_str());
+                  L"The parent folder is a sync folder or contained in one : " << Path2WStr(QStr2Path(parentFolder)));
         error = QObject::tr("The parent folder is a sync folder or contained in one");
         return ExitCode::SystemError;
     }
@@ -405,7 +405,7 @@ ExitCode ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &n
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileInfoJob::GetFileInfoJob for userDbId="
                                                        << userDbId << " driveId=" << driveId
-                                                       << " nodeId=" << nodeId.toStdString().c_str() << " error=" << e.what());
+                                                       << " nodeId=" << nodeId.toStdString() << " error=" << e.what());
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
@@ -414,7 +414,7 @@ ExitCode ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &n
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileInfoJob::runSynchronously for userDbId="
                                                        << userDbId << " driveId=" << driveId
-                                                       << " nodeId=" << nodeId.toStdString().c_str() << " code=" << exitCode);
+                                                       << " nodeId=" << nodeId.toStdString() << " code=" << exitCode);
         return exitCode;
     }
 
@@ -422,7 +422,7 @@ ExitCode ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &n
     if (!resObj) {
         LOG_WARN(Log::instance()->getLogger(),
                  "GetFileInfoJob failed for userDbId=" << userDbId << " driveId=" << driveId
-                                                       << " nodeId=" << nodeId.toStdString().c_str());
+                                                       << " nodeId=" << nodeId.toStdString());
         return ExitCode::BackError;
     }
 
@@ -430,7 +430,7 @@ ExitCode ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &n
     if (!dataObj) {
         LOG_WARN(Log::instance()->getLogger(),
                  "GetFileInfoJob failed for userDbId=" << userDbId << " driveId=" << driveId
-                                                       << " nodeId=" << nodeId.toStdString().c_str());
+                                                       << " nodeId=" << nodeId.toStdString());
         return ExitCode::BackError;
     }
 
@@ -562,7 +562,7 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
         } catch (const std::exception &e) {
             LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for userDbId="
                                                            << userDbId << " driveId=" << driveId << " nodeId="
-                                                           << nodeId.toStdString().c_str() << " error=" << e.what());
+                                                           << nodeId.toStdString() << " error=" << e.what());
             return AbstractTokenNetworkJob::exception2ExitCode(e);
         }
     }
@@ -571,7 +571,7 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
     if (const auto exitInfo = job->runSynchronously(); exitInfo.code() != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::runSynchronously for userDbId="
                                                        << userDbId << " driveId=" << driveId
-                                                       << " nodeId=" << nodeId.toStdString().c_str() << " error=" << exitInfo);
+                                                       << " nodeId=" << nodeId.toStdString() << " error=" << exitInfo);
         return exitInfo;
     }
 
@@ -579,7 +579,7 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
     if (!resObj) {
         LOG_WARN(Log::instance()->getLogger(),
                  "GetFileListJob failed for userDbId=" << userDbId << " driveId=" << driveId
-                                                       << " nodeId=" << nodeId.toStdString().c_str());
+                                                       << " nodeId=" << nodeId.toStdString());
         return ExitCode::BackError;
     }
 
@@ -587,7 +587,7 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
     if (!dataArray) {
         LOG_WARN(Log::instance()->getLogger(),
                  "GetFileListJob failed for userDbId=" << userDbId << " driveId=" << driveId
-                                                       << " nodeId=" << nodeId.toStdString().c_str());
+                                                       << " nodeId=" << nodeId.toStdString());
         return ExitCode::BackError;
     }
 
@@ -743,17 +743,17 @@ ExitCode ServerRequests::migrateSelectiveSync(int syncDbId, std::pair<SyncPath, 
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(dbPath, exists, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dbPath, ioError).c_str());
+                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dbPath, ioError));
         return ExitCode::SystemError;
     }
 
     if (ioError == IoError::AccessDenied) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"DB to migrate " << Path2WStr(dbPath).c_str() << L" misses search permission.");
+        LOGW_DEBUG(Log::instance()->getLogger(), L"DB to migrate " << Path2WStr(dbPath) << L" misses search permission.");
         return ExitCode::SystemError;
     }
 
     if (!exists) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"DB to migrate " << Path2WStr(dbPath).c_str() << L" does not exist.");
+        LOGW_DEBUG(Log::instance()->getLogger(), L"DB to migrate " << Path2WStr(dbPath) << L" does not exist.");
         return ExitCode::SystemError;
     }
 
@@ -1056,8 +1056,8 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
 
     auto logWarning = [&](const std::string &context_, const int driveDbId_, const std::string &nodeId_,
                           const std::string &error_) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in " << context_.c_str() << " for driveDbId=" << driveDbId_
-                                                           << " nodeId=" << nodeId_.c_str() << " error=" << error_.c_str());
+        LOG_WARN(Log::instance()->getLogger(), "Error in " << context_ << " for driveDbId=" << driveDbId_
+                                                           << " nodeId=" << nodeId_ << " error=" << error_);
     };
 
     // Create link
@@ -1126,7 +1126,7 @@ ExitInfo ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetSizeJob::GetSizeJob for userDbId=" << userDbId << " driveId=" << driveId
-                                                                 << " nodeId=" << nodeId.c_str() << " error=" << e.what());
+                                                                 << " nodeId=" << nodeId << " error=" << e.what());
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
@@ -1134,7 +1134,7 @@ ExitInfo ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetSizeJob::runSynchronously for userDbId=" << userDbId << " driveId=" << driveId
-                                                                       << " nodeId=" << nodeId.c_str() << " code=" << exitCode);
+                                                                       << " nodeId=" << nodeId << " code=" << exitCode);
         return exitCode;
     }
 
@@ -1142,14 +1142,14 @@ ExitInfo ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &
     if (!resObj) {
         // Level = Debug because access forbidden is a normal case
         LOG_DEBUG(Log::instance()->getLogger(),
-                  "GetSizeJob failed for userDbId=" << userDbId << " driveId=" << driveId << " nodeId=" << nodeId.c_str());
+                  "GetSizeJob failed for userDbId=" << userDbId << " driveId=" << driveId << " nodeId=" << nodeId);
         return ExitCode::BackError;
     }
 
     Poco::JSON::Object::Ptr dataObj = resObj->getObject(dataKey);
     if (!dataObj) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "GetSizeJob failed for userDbId=" << userDbId << " driveId=" << driveId << " nodeId=" << nodeId.c_str());
+                 "GetSizeJob failed for userDbId=" << userDbId << " driveId=" << driveId << " nodeId=" << nodeId);
         return ExitCode::BackError;
     }
 
@@ -1469,8 +1469,8 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
                                  SyncInfo &syncInfo) {
     LOGW_INFO(Log::instance()->getLogger(),
               L"Adding new sync - driveDbId=" << driveDbId << L" localFolderPath="
-                                              << Path2WStr(QStr2Path(localFolderPath)).c_str() << L" serverFolderPath="
-                                              << Path2WStr(QStr2Path(serverFolderPath)).c_str() << L" liteSync=" << liteSync);
+                                              << Path2WStr(QStr2Path(localFolderPath)) << L" serverFolderPath="
+                                              << Path2WStr(QStr2Path(serverFolderPath)) << L" liteSync=" << liteSync);
 
 #ifndef Q_OS_WIN
     Q_UNUSED(showInNavigationPane)
@@ -1537,9 +1537,9 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
 
     LOGW_INFO(Log::instance()->getLogger(), L"New sync created in DB - syncDbId="
                                                     << syncDbId << L" driveDbId=" << driveDbId << L" localFolderPath="
-                                                    << Path2WStr(sync.localPath()).c_str() << L" serverFolderPath="
-                                                    << Path2WStr(sync.targetPath()).c_str() << L" dbPath="
-                                                    << Path2WStr(sync.dbPath()).c_str());
+                                                    << Path2WStr(sync.localPath()) << L" serverFolderPath="
+                                                    << Path2WStr(sync.targetPath()) << L" dbPath="
+                                                    << Path2WStr(sync.dbPath()));
 
     return ExitCode::Ok;
 }
@@ -1666,7 +1666,7 @@ ExitCode ServerRequests::getThumbnail(int driveDbId, NodeId nodeId, int width, s
         job = std::make_shared<GetThumbnailJob>(driveDbId, nodeId, width);
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetThumbnailJob::GetThumbnailJob for driveDbId="
-                                                       << driveDbId << " and nodeId=" << nodeId.c_str() << " error=" << e.what());
+                                                       << driveDbId << " and nodeId=" << nodeId << " error=" << e.what());
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
@@ -1679,11 +1679,11 @@ ExitCode ServerRequests::getThumbnail(int driveDbId, NodeId nodeId, int width, s
     if (httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_FORBIDDEN ||
         httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_NOT_FOUND) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Unable to get thumbnail for driveDbId=" << driveDbId << " and nodeId=" << nodeId.c_str());
+                 "Unable to get thumbnail for driveDbId=" << driveDbId << " and nodeId=" << nodeId);
         return ExitCode::DataError;
     } else if (httpStatus != Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK) {
         LOG_WARN(Log::instance()->getLogger(), "Network error in GetThumbnailJob::runSynchronously for driveDbId="
-                                                       << driveDbId << " and nodeId=" << nodeId.c_str());
+                                                       << driveDbId << " and nodeId=" << nodeId);
         return ExitCode::NetworkError;
     }
 
@@ -2110,7 +2110,7 @@ void ServerRequests::proxyConfigToProxyConfigInfo(const ProxyConfig &proxyConfig
             return;
         }
         if (!found) {
-            LOG_DEBUG(Log::instance()->getLogger(), "Proxy pwd not found for keychainKey=" << proxyConfig.token().c_str());
+            LOG_DEBUG(Log::instance()->getLogger(), "Proxy pwd not found for keychainKey=" << proxyConfig.token());
             proxyConfigInfo.setPwd(QString());
             return;
         }
