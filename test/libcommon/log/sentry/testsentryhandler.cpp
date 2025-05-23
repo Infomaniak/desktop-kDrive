@@ -25,7 +25,8 @@
 #include <thread>
 
 namespace KDC {
-MockTestSentryHandler::MockTestSentryHandler() : sentry::Handler() {
+MockTestSentryHandler::MockTestSentryHandler() :
+    sentry::Handler() {
     sentry::Handler::setIsSentryActivated(true);
     sentry::Handler::setMaxCaptureCountBeforeRateLimit(3);
     sentry::Handler::setMinUploadIntervalOnRateLimit(1);
@@ -132,7 +133,7 @@ void TestSentryHandler::testWriteEvent() {
 
     // Test send event
     {
-        auto eventFilePath = std::filesystem::temp_directory_path() / clientSendEventFileName;
+        auto eventFilePath = std::filesystem::temp_directory_path() / serverSendEventFileName;
         std::error_code ec;
         std::filesystem::remove(eventFilePath, ec);
 
@@ -152,7 +153,7 @@ void TestSentryHandler::testWriteEvent() {
 
     // Test crash event
     {
-        auto eventFilePath = std::filesystem::temp_directory_path() / clientCrashEventFileName;
+        auto eventFilePath = std::filesystem::temp_directory_path() / serverCrashEventFileName;
         std::error_code ec;
         std::filesystem::remove(eventFilePath, ec);
 
