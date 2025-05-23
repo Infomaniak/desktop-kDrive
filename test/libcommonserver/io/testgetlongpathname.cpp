@@ -21,6 +21,7 @@
 #include "libcommonserver/utility/utility.h" // Path2Str
 
 #include <windows.h>
+#include <fileapi.h>
 
 #include <regex>
 
@@ -28,7 +29,27 @@ using namespace CppUnit;
 
 namespace KDC {
 
+
+namespace {
+bool areShortNamesEnabled(const SyncPath &volumePath) {
+    const HANDLE handle =
+            CreateFileW(volumePath.wstring().c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL);
+    CloseHandle(handle);
+
+    DWORD lpMaximumComponentLength{0};
+    GetVolumeInformationByHandleW(handle, nullptr, MAX_PATH + 1, nullptr, &lpMaximumComponentLength, nullptr, nullptr,
+                                  MAX_PATH + 1);
+
+    return lpMaximumComponentLength < 255;
+}
+} // namespace
+
 void TestIo::testGetLongPathName() {
+    if (!areShortNamesEnabled(std::filesystem::temp_directory_path().root_path())) {
+        std::cout << " (Skipped as short names are disabled) ";
+        return;
+    };
+
     // The input path length of getLongPath exceeds the system requirements: error
     {
         const SyncPath veryLongPath = makeVeryLonPath("root");
@@ -108,6 +129,11 @@ void TestIo::testGetLongPathName() {
 }
 
 void TestIo::testGetShortPathName() {
+    if (!areShortNamesEnabled(std::filesystem::temp_directory_path().root_path())) {
+        std::cout << " (Skipped as short names are disabled) ";
+        return;
+    };
+
     // The input path length of getShorPath exceeds the system requirements: error
     {
         const SyncPath veryLongPath = makeVeryLonPath("root");
