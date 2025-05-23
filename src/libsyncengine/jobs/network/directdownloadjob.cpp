@@ -37,7 +37,7 @@ DirectDownloadJob::DirectDownloadJob(const SyncPath& destinationFile, const std:
 bool DirectDownloadJob::handleResponse(std::istream& is) {
     std::ofstream output(_destinationFile.native().c_str(), std::ios::binary);
     if (!output) {
-        LOGW_WARN(_logger, L"Failed to create file: " << Utility::formatSyncPath(_destinationFile).c_str());
+        LOGW_WARN(_logger, L"Failed to create file: " << Utility::formatSyncPath(_destinationFile));
         _exitInfo = {ExitCode::SystemError,
                      Utility::enoughSpace(_destinationFile) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace};
         return false;
@@ -114,7 +114,7 @@ bool DirectDownloadJob::handleError(std::istream& inputStream, const Poco::URI& 
     (void) inputStream;
     (void) uri;
     const auto errorCode = std::to_string(_resHttp.getStatus());
-    LOG_WARN(_logger, "Download failed with error: " << errorCode.c_str() << " - " << _resHttp.getReason().c_str());
+    LOG_WARN(_logger, "Download failed with error: " << errorCode << " - " << _resHttp.getReason());
     return false;
 }
 
