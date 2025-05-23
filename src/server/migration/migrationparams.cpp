@@ -255,7 +255,7 @@ ExitCode MigrationParams::migrateAccountsParams() {
     QSettings settings(configDir().filePath(configFileName()), QSettings::IniFormat);
     settings.beginGroup(accountsC);
     for (const auto &accountIdStr: settings.childGroups()) {
-        LOG_INFO(Log::instance()->getLogger(), "Migrate account " << accountIdStr.toStdString().c_str());
+        LOG_INFO(Log::instance()->getLogger(), "Migrate account " << accountIdStr.toStdString());
         settings.beginGroup(accountIdStr);
         code = loadAccount(settings);
         if (code != ExitCode::Ok) {
@@ -361,8 +361,8 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
                 user.email() + app_password + oldKeychainKeySeparator + urlKey + oldKeychainKeySeparator + oldAccountId;
 
 
-        LOG_DEBUG(_logger, "Old account id : " << oldAccountId.c_str()
-                                               << " old keychain app password : " << keychainKeyAppPassword.c_str());
+        LOG_DEBUG(_logger, "Old account id : " << oldAccountId
+                                               << " old keychain app password : " << keychainKeyAppPassword);
 
         found = false;
         std::string appPassword;
@@ -493,7 +493,7 @@ ExitCode MigrationParams::migrateTemplateExclusion() {
 
     QFile excludeFile(excludeFilePath);
     if (!excludeFile.open(QIODevice::ReadOnly)) {
-        LOGW_WARN(_logger, L"Unable to open file " << QStr2WStr(excludeFilePath).c_str());
+        LOGW_WARN(_logger, L"Unable to open file " << QStr2WStr(excludeFilePath));
         return ExitCode::SystemError;
     }
 
@@ -541,7 +541,7 @@ ExitCode MigrationParams::migrateAppExclusion() {
     QFile excludeAppFile(excludeFilePath);
 
     if (!excludeAppFile.open(QIODevice::ReadOnly)) {
-        LOGW_WARN(_logger, L"Unable to open file " << QStr2WStr(excludeFilePath).c_str());
+        LOGW_WARN(_logger, L"Unable to open file " << QStr2WStr(excludeFilePath));
         return ExitCode::SystemError;
     }
 
@@ -777,9 +777,9 @@ ExitCode MigrationParams::getTokenFromAppPassword(const std::string &email, cons
 
         LOG_DEBUG(_logger, "job.runSynchronously() done");
         if (job.hasErrorApi(&errorCode, &errorDescr)) {
-            LOGW_WARN(_logger, L"Failed to retrieve authentification token. code=" << KDC::Utility::s2ws(errorCode).c_str()
+            LOGW_WARN(_logger, L"Failed to retrieve authentification token. code=" << KDC::Utility::s2ws(errorCode)
                                                                                    << L" descr="
-                                                                                   << KDC::Utility::s2ws(errorDescr).c_str());
+                                                                                   << KDC::Utility::s2ws(errorDescr));
             return ExitCode::BackError;
         }
 

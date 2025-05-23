@@ -227,7 +227,7 @@ void UpdateTree::drawUpdateTree() {
 
     SyncName treeStr;
     drawUpdateTreeRow(rootNode(), treeStr);
-    LOGW_INFO(Log::instance()->getLogger(), _side << L" update tree:\n" << SyncName2WStr(treeStr).c_str());
+    LOGW_INFO(Log::instance()->getLogger(), _side << L" update tree:\n" << SyncName2WStr(treeStr));
 }
 
 void UpdateTree::drawUpdateTreeRow(const std::shared_ptr<Node> node, SyncName &treeStr, uint64_t depth /*= 0*/) {
