@@ -40,8 +40,8 @@ runs:
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtWidgets.framework ./dependencies/
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtGui.framework ./dependencies/
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtNetwork.framework ./dependencies/
-          cp -R {{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtSql.framework ./dependencies/
-          cp -R {{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtCore.framework ./dependencies/
+          cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtSql.framework ./dependencies/
+          cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtCore.framework ./dependencies/
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtSvg.framework ./dependencies/
           cp -R {{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtDBus.framework ./dependencies/
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/Sparkle.framework ./dependencies/
