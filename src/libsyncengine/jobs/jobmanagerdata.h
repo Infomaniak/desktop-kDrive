@@ -94,7 +94,7 @@ class JobManagerData {
         void removeFromPendingJobs(const UniqueId jobId);
 
         /**
-         * @brief Remove the job from JobManager. The job will not be handled by JobManager afterwards.
+         * @brief Remove the job from JobManager. The job will not be handled by JobManager afterward.
          * @param jobId The ID of the job.
          */
         void erase(const UniqueId jobId);
@@ -105,6 +105,7 @@ class JobManagerData {
          * @return A copy of the list of IDs of the running jobs.
          */
         std::unordered_set<UniqueId> runningJobs() const;
+
         /**
          * @brief Get a copy of the list of jobs currently pending.
          * @return A copy of the list of pending jobs.

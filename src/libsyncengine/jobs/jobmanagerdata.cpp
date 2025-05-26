@@ -50,6 +50,7 @@ bool JobManagerData::hasHighestPriorityJob() const {
 }
 
 bool JobManagerData::isManaged(const UniqueId jobId) const {
+    const std::scoped_lock lock(_mutex);
     return !_managedJobs.contains(jobId);
 }
 
@@ -66,6 +67,7 @@ bool JobManagerData::addToPendingJobs(const UniqueId jobId, std::shared_ptr<Abst
 }
 
 void JobManagerData::removeFromPendingJobs(const UniqueId jobId) {
+    const std::scoped_lock lock(_mutex);
     (void) _pendingJobs.erase(jobId);
 }
 
