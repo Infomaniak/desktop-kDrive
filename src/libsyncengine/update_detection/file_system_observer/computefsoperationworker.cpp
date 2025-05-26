@@ -804,11 +804,11 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
     // (The size of directories is not checked here, as it is not relevant for directories in the context of reuse.)
     if (snapshot->type(localNodeId) == NodeType::Directory) {
         isReused = true;
-        LOGW_SYNCPAL_DEBUG(_logger, L"Creation date (old: " << dbNode.created().value() << L" / new: "
-                                                            << snapshot->createdAt(localNodeId) << L") and name (old: "
-                                                            << dbNode.nameLocal() << L" / new: " << snapshot->name(localNodeId)
-                                                            << L") changed for" << Utility::s2ws(localNodeId)
-                                                            << L". Node is reused.");
+        LOGW_SYNCPAL_DEBUG(_logger, L"Creation date (old: "
+                                            << dbNode.created().value() << L" / new: " << snapshot->createdAt(localNodeId)
+                                            << L") and name (old: " << Utility::formatSyncName(dbNode.nameLocal()) << L" / new: "
+                                            << Utility::formatSyncName(snapshot->name(localNodeId)) << L") changed for"
+                                            << Utility::s2ws(localNodeId) << L". Node is reused.");
     }
 
     // Check if the mtime has changed
@@ -821,13 +821,14 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
         return ExitCode::Ok;
     }
 
-    LOGW_SYNCPAL_DEBUG(
-            _logger, L"Size (old: " << dbNode.size() << L" / new: " << snapshot->size(localNodeId)
-                                    << L"), creation date and modification date (old: " << dbNode.created().value() << L" | "
-                                    << dbNode.lastModified(ReplicaSide::Local) << L" / new: " << snapshot->createdAt(localNodeId)
-                                    << L" | " << snapshot->lastModified(localNodeId) << L") and name (old: " << dbNode.nameLocal()
-                                    << L" / new: " << snapshot->name(localNodeId) << L") have all changed for "
-                                    << Utility::s2ws(localNodeId) << L". Node is reused.");
+    LOGW_SYNCPAL_DEBUG(_logger, L"Size (old: "
+                                        << dbNode.size() << L" / new: " << snapshot->size(localNodeId)
+                                        << L"), creation date and modification date (old: " << dbNode.created().value() << L" | "
+                                        << dbNode.lastModified(ReplicaSide::Local) << L" / new: "
+                                        << snapshot->createdAt(localNodeId) << L" | " << snapshot->lastModified(localNodeId)
+                                        << L") and name (old: " << Utility::formatSyncName(dbNode.nameLocal()) << L" / new: "
+                                        << Utility::formatSyncName(snapshot->name(localNodeId)) << L") have all changed for "
+                                        << Utility::s2ws(localNodeId) << L". Node is reused.");
     isReused = true;
     return ExitCode::Ok;
 }
