@@ -122,7 +122,7 @@ void BenchmarkParallelJobs::benchmarkParallelJobs() {
             dataExtractor.addRow(std::to_string(nbThreads));
             for (uint16_t i = 0; i < nbRepetition; i++) {
                 runJobs(static_cast<uint16_t>(nbThreads), dataExtractor,
-                        generateDownloadJobs(remoteDirId, localTmpDir.path(), size * 1000 * 1000));
+                        generateDownloadJobs(remoteDirId, localTmpDir.path(), static_cast<uint64_t>(size * 1000 * 1000)));
             }
         }
         dataExtractor.print();
@@ -145,7 +145,8 @@ void BenchmarkParallelJobs::benchmarkParallelJobs() {
                 std::list<std::shared_ptr<AbstractJob>> downloadJobs;
                 const LocalTemporaryDirectory localTmpDirDownload(filename);
                 const NodeId remoteDirId = size == 1 ? "3477086" : "3477931";
-                downloadJobs = generateDownloadJobs(remoteDirId, localTmpDirDownload.path(), size * 1000 * 1000, nbFiles / 2);
+                downloadJobs = generateDownloadJobs(remoteDirId, localTmpDirDownload.path(),
+                                                    static_cast<uint64_t>(size * 1000 * 1000), nbFiles / 2);
                 // Mix jobs in list
                 std::list<std::shared_ptr<AbstractJob>> jobs;
                 auto it1 = uploadJobs.begin();

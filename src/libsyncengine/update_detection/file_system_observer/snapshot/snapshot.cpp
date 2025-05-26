@@ -88,13 +88,13 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
     const std::scoped_lock lock(_mutex);
 
     if (newItem.parentId().empty()) {
-        LOG_WARN(Log::instance()->getLogger(), "Parent ID is empty for item " << newItem.id().c_str());
+        LOG_WARN(Log::instance()->getLogger(), "Parent ID is empty for item " << newItem.id());
         assert(false);
         return false;
     }
 
     if (newItem.parentId() == newItem.id()) {
-        LOG_WARN(Log::instance()->getLogger(), "Parent ID equals item ID " << newItem.id().c_str());
+        LOG_WARN(Log::instance()->getLogger(), "Parent ID equals item ID " << newItem.id());
         assert(false);
         return false;
     }
@@ -141,8 +141,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
         // Add children to new parent
         if (auto newParent = findItem(newItem.parentId()); !newParent) {
             // New parent not found, create it
-            LOG_DEBUG(Log::instance()->getLogger(),
-                      "Parent " << newItem.parentId().c_str() << " does not exist yet, creating it");
+            LOG_DEBUG(Log::instance()->getLogger(), "Parent " << newItem.parentId() << " does not exist yet, creating it");
             newParent = std::make_shared<SnapshotItem>(newItem.parentId());
             newParent->setSnapshotRevisionHandler(_revisionHandlder);
             (void) _items.try_emplace(newItem.parentId(), newParent);
@@ -510,7 +509,7 @@ bool Snapshot::isOrphan(const NodeId &itemId) const {
         }
         if (tmpNextParentId == nextParentId) {
             // Should not happen
-            LOG_WARN(Log::instance()->getLogger(), "Parent ID equals item ID " << nextParentId.c_str());
+            LOG_WARN(Log::instance()->getLogger(), "Parent ID equals item ID " << nextParentId);
             assert(false);
             break;
         }

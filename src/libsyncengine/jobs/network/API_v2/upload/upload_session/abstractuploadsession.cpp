@@ -44,26 +44,26 @@ AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const Syn
     auto ioError = IoError::Success;
     if (!IoHelper::getFileSize(_filePath, _filesize, ioError)) {
         const std::wstring exceptionMessage = L"Error in IoHelper::getFileSize for " + Utility::formatIoError(_filePath, ioError);
-        LOGW_WARN(_logger, exceptionMessage.c_str());
+        LOGW_WARN(_logger, exceptionMessage);
         throw std::runtime_error(Utility::ws2s(exceptionMessage).c_str());
     }
 
     if (ioError == IoError::NoSuchFileOrDirectory) {
         const std::wstring exceptionMessage = L"File does not exist: " + Utility::formatSyncPath(_filePath);
-        LOGW_WARN(_logger, exceptionMessage.c_str());
+        LOGW_WARN(_logger, exceptionMessage);
         throw std::runtime_error(Utility::ws2s(exceptionMessage).c_str());
     }
 
     if (ioError == IoError::AccessDenied) {
         const std::wstring exceptionMessage = L"File search permission missing: " + Utility::formatSyncPath(_filePath);
-        LOGW_WARN(_logger, exceptionMessage.c_str());
+        LOGW_WARN(_logger, exceptionMessage);
         throw std::runtime_error(Utility::ws2s(exceptionMessage).c_str());
     }
 
     assert(ioError == IoError::Success);
     if (ioError != IoError::Success) {
         const std::wstring exceptionMessage = L"Unable to read file size for " + Utility::formatSyncPath(_filePath);
-        LOGW_WARN(_logger, exceptionMessage.c_str());
+        LOGW_WARN(_logger, exceptionMessage);
         throw std::runtime_error(Utility::ws2s(exceptionMessage).c_str());
     }
 
@@ -74,7 +74,7 @@ AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const Syn
 
 void AbstractUploadSession::runJob() {
     if (isExtendedLog()) {
-        LOGW_DEBUG(_logger, L"Starting upload session " << jobId() << L" for file " << Path2WStr(_filePath.filename()).c_str()
+        LOGW_DEBUG(_logger, L"Starting upload session " << jobId() << L" for file " << Path2WStr(_filePath.filename())
                                                         << L" with " << _nbParallelThread << L" threads");
     }
 
@@ -124,15 +124,14 @@ void AbstractUploadSession::uploadChunkCallback(const UniqueId jobId) {
     const auto jobInfo = _ongoingChunkJobs.extract(jobId);
     if (!jobInfo.empty() && jobInfo.mapped()) {
         if (jobInfo.mapped()->hasHttpError() || jobInfo.mapped()->exitInfo().code() != ExitCode::Ok) {
-            LOGW_WARN(_logger, L"Failed to upload chunk " << jobId << L" of file " << Path2WStr(_filePath.filename()).c_str());
+            LOGW_WARN(_logger, L"Failed to upload chunk " << jobId << L" of file " << Path2WStr(_filePath.filename()));
             _exitInfo = jobInfo.mapped()->exitInfo();
             _jobExecutionError = true;
         }
 
         _threadCounter--;
         addProgress(static_cast<int64_t>(jobInfo.mapped()->chunkSize()));
-        LOG_INFO(_logger,
-                 "Session " << _sessionToken.c_str() << ", thread " << jobId << " finished. " << _threadCounter << " running");
+        LOG_INFO(_logger, "Session " << _sessionToken << ", thread " << jobId << " finished. " << _threadCounter << " running");
     }
 }
 
@@ -143,7 +142,7 @@ void AbstractUploadSession::abort() {
 
 bool AbstractUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) {
     if (cancelJob->hasHttpError()) {
-        LOGW_WARN(_logger, L"Failed to cancel upload session for " << Utility::formatSyncPath(_filePath.filename()).c_str());
+        LOGW_WARN(_logger, L"Failed to cancel upload session for " << Utility::formatSyncPath(_filePath.filename()));
         _exitInfo = ExitCode::DataError;
         return false;
     }
@@ -165,7 +164,7 @@ bool AbstractUploadSession::canRun() {
     bool exists = false;
     auto ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_filePath, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_filePath, ioError).c_str());
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_filePath, ioError));
         _exitInfo = ExitCode::SystemError;
         return false;
     }
@@ -196,8 +195,7 @@ bool AbstractUploadSession::initChunks() {
 
     _totalChunks = static_cast<uint64_t>(std::ceil(static_cast<double>(_filesize) / static_cast<double>(_chunkSize)));
     if (_totalChunks > maxTotalChunks) {
-        LOGW_WARN(_logger,
-                  L"Impossible to upload file " << Path2WStr(_filePath.filename()).c_str() << L" because it is too big!");
+        LOGW_WARN(_logger, L"Impossible to upload file " << Path2WStr(_filePath.filename()) << L" because it is too big!");
         _exitInfo = ExitCode::DataError;
         return false;
     }
@@ -219,7 +217,7 @@ bool AbstractUploadSession::startSession() {
     }
 
     if (const auto exitInfo = startJob->runSynchronously(); startJob->hasHttpError() || exitInfo.code() != ExitCode::Ok) {
-        LOGW_ERROR(_logger, L"Failed to start upload session for " << Utility::formatSyncPath(_filePath.filename()).c_str());
+        LOGW_ERROR(_logger, L"Failed to start upload session for " << Utility::formatSyncPath(_filePath.filename()));
         _exitInfo = startJob->exitInfo();
         return false;
     }
@@ -277,14 +275,14 @@ bool AbstractUploadSession::sendChunks() {
     // Create a hash state
     XXH3_state_t *const state = XXH3_createState();
     if (!state) {
-        LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath).c_str());
+        LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath));
         _exitInfo = ExitCode::SystemError;
         return false;
     }
 
     // Initialize state with selected seed
     if (XXH3_64bits_reset(state) == XXH_ERROR) {
-        LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath).c_str());
+        LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath));
         _exitInfo = ExitCode::SystemError;
         return false;
     }
@@ -299,7 +297,7 @@ bool AbstractUploadSession::sendChunks() {
         (void) file.read(memblock.get(), static_cast<std::streamsize>(_chunkSize));
         if (file.bad() && !file.fail()) {
             // Read/writing error and not logical error
-            LOGW_WARN(_logger, L"Failed to read chunk - path=" << Path2WStr(_filePath).c_str());
+            LOGW_WARN(_logger, L"Failed to read chunk - path=" << Path2WStr(_filePath));
             readError = true;
             break;
         }
@@ -324,7 +322,7 @@ bool AbstractUploadSession::sendChunks() {
         }
 
         if (XXH3_64bits_update(state, chunkJob->chunkHash().data(), chunkJob->chunkHash().length()) == XXH_ERROR) {
-            LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath).c_str());
+            LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath));
             checksumError = true;
             break;
         }
@@ -339,23 +337,22 @@ bool AbstractUploadSession::sendChunks() {
                 JobManager::instance()->queueAsyncJob(chunkJob, Poco::Thread::PRIO_NORMAL);
                 const auto &[_, inserted] = _ongoingChunkJobs.try_emplace(chunkJob->jobId(), chunkJob);
                 if (!inserted) {
-                    LOG_ERROR(_logger, "Session " << _sessionToken.c_str() << ", job " << chunkJob->jobId()
+                    LOG_ERROR(_logger, "Session " << _sessionToken << ", job " << chunkJob->jobId()
                                                   << " not inserted in ongoing job list because its ID already exists.");
                     sentry::Handler::captureMessage(sentry::Level::Warning, "Upload chunk error", "Job ID already exists");
                     jobCreationError = true;
                     break;
                 }
-                LOG_INFO(_logger, "Session " << _sessionToken.c_str() << ", job " << chunkJob->jobId() << " queued, "
-                                             << _threadCounter << " jobs in queue");
+                LOG_INFO(_logger, "Session " << _sessionToken << ", job " << chunkJob->jobId() << " queued, " << _threadCounter
+                                             << " jobs in queue");
             }
 
             waitForJobsToComplete(false);
         } else {
-            LOG_INFO(_logger, "Session " << _sessionToken.c_str() << ", thread " << chunkJob->jobId() << " start.");
+            LOG_INFO(_logger, "Session " << _sessionToken << ", thread " << chunkJob->jobId() << " start.");
 
             if (const auto exitInfo = chunkJob->runSynchronously(); exitInfo.code() != ExitCode::Ok || chunkJob->hasHttpError()) {
-                LOGW_WARN(_logger,
-                          L"Failed to upload chunk " << chunkNb << L" of file " << Path2WStr(_filePath.filename()).c_str());
+                LOGW_WARN(_logger, L"Failed to upload chunk " << chunkNb << L" of file " << Path2WStr(_filePath.filename()));
 
                 _exitInfo = exitInfo;
                 _jobExecutionError = true;
@@ -434,7 +431,7 @@ bool AbstractUploadSession::closeSession() {
 
     if (const auto exitInfo = finishJob->runSynchronously(); exitInfo.code() != ExitCode::Ok || finishJob->hasHttpError()) {
         LOGW_WARN(_logger, L"Error in UploadSessionFinishJob::runSynchronously: " << exitInfo << L" file="
-                                                                                  << Path2WStr(_filePath.filename()).c_str());
+                                                                                  << Path2WStr(_filePath.filename()));
         return false;
     }
 
@@ -472,7 +469,7 @@ bool AbstractUploadSession::cancelSession() {
         }
     }
 
-    LOG_INFO(_logger, "Aborting upload session: " << _sessionToken.c_str());
+    LOG_INFO(_logger, "Aborting upload session: " << _sessionToken);
     std::shared_ptr<UploadSessionCancelJob> cancelJob = nullptr;
     try {
         cancelJob = createCancelJob();

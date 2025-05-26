@@ -119,7 +119,7 @@ void PerformanceWatcher::logHardwareResources() {
     std::string unit;
 
     uint64_t ra = getRamAvailable();
-    LOG_DEBUG(_logger, "RAM Available : " << bytesToBetterUnit(ra, unit) << " " << unit.c_str());
+    LOG_DEBUG(_logger, "RAM Available : " << bytesToBetterUnit(ra, unit) << " " << unit);
     uint64_t rcu = getRamCurrentlyUsed();
     LOG_DEBUG(_logger, "RAM Used : " << calculatePercent(rcu, ra) << " %");
     uint64_t rcup = getRamCurrentlyUsedByProcess();
