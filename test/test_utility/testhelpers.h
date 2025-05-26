@@ -86,4 +86,17 @@ inline bool isExtendedTest(bool print = true) {
     }
     return isExtended;
 }
+
+struct RemoteFileInfo {
+        NodeId id;
+        NodeId parentId;
+        SyncTime modificationTime{0};
+        SyncTime creationTime{0};
+        int64_t size{0};
+        NodeType type = NodeType::Unknown;
+
+        bool isValid() const { return !id.empty(); }
+};
+RemoteFileInfo getRemoteFileInfo(int _driveDbId, const SyncName& name, const NodeId& parentId);
+
 } // namespace KDC::testhelpers

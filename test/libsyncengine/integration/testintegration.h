@@ -105,15 +105,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testNodeIdReuseFile2File();
 
         void waitForSyncToFinish(const SourceLocation &srcLoc) const;
-        struct RemoteFileInfo {
-                NodeId nodeId;
-                SyncTime modificationTime{0};
-                SyncTime creationTime{0};
-                uint64_t size{0};
 
-                bool isValid() const { return !nodeId.empty(); }
-        };
-        RemoteFileInfo getRemoteFileInfo(const SyncName &name, const NodeId &parentId) const;
 
         log4cplus::Logger _logger;
 

@@ -18,6 +18,7 @@
 
 #include "testhelpers.h"
 
+#include "jobs/network/API_v2/getfilelistjob.h"
 #include "libcommon/utility/utility.h"
 
 #include <fstream>
@@ -51,13 +52,13 @@ SyncName makeNfcSyncName() {
     return nfcNormalized;
 }
 
-void generateOrEditTestFile(const SyncPath& path) {
+void generateOrEditTestFile(const SyncPath &path) {
     std::ofstream testFile(path, std::ios_base::app);
     testFile << "test" << std::endl;
     testFile.close();
 }
 
-void generateBigFiles(const SyncPath& dirPath, const uint16_t size, const uint16_t count) {
+void generateBigFiles(const SyncPath &dirPath, const uint16_t size, const uint16_t count) {
     // Generate 1st big file
     SyncPath bigFilePath;
     {
@@ -83,7 +84,7 @@ void generateBigFiles(const SyncPath& dirPath, const uint16_t size, const uint16
     }
 }
 
-std::string loadEnvVariable(const std::string& key, const bool mandatory) {
+std::string loadEnvVariable(const std::string &key, const bool mandatory) {
     const std::string val = KDC::CommonUtility::envVarValue(key);
     if (val.empty() && mandatory) {
         std::cout << "Environment variables " << key << " is missing!" << std::endl;
@@ -93,7 +94,7 @@ std::string loadEnvVariable(const std::string& key, const bool mandatory) {
 }
 
 #ifdef _WIN32
-void setModificationDate(const SyncPath& path, const std::chrono::time_point<std::chrono::system_clock>& timePoint) {
+void setModificationDate(const SyncPath &path, const std::chrono::time_point<std::chrono::system_clock> &timePoint) {
     struct _utimbuf timeBuffer;
     const std::time_t timeInSeconds = std::chrono::system_clock::to_time_t(timePoint);
 
@@ -107,7 +108,7 @@ void setModificationDate(const SyncPath& path, const std::chrono::time_point<std
 }
 
 #else
-void setModificationDate(const SyncPath& path, const std::chrono::time_point<std::chrono::system_clock>& timePoint) {
+void setModificationDate(const SyncPath &path, const std::chrono::time_point<std::chrono::system_clock> &timePoint) {
     struct stat fileStat;
     struct utimbuf newTime;
 
@@ -121,4 +122,34 @@ void setModificationDate(const SyncPath& path, const std::chrono::time_point<std
     utime(fileName, &newTime);
 }
 #endif
+
+RemoteFileInfo getRemoteFileInfo(int driveDbId, const SyncName &name, const NodeId &parentId) {
+    RemoteFileInfo fileInfo;
+
+    GetFileListJob job(driveDbId, parentId);
+    (void) job.runSynchronously();
+
+    const auto resObj = job.jsonRes();
+    if (!resObj) return fileInfo;
+
+    const auto dataArray = resObj->getArray(dataKey);
+    if (!dataArray) return fileInfo;
+
+    for (auto it = dataArray->begin(); it != dataArray->end(); ++it) {
+        const auto obj = it->extract<Poco::JSON::Object::Ptr>();
+        if (name == obj->get(nameKey).toString()) {
+            fileInfo.id = obj->get(idKey).toString();
+            fileInfo.parentId = obj->get(parentIdKey).toString();
+            fileInfo.modificationTime = toInt(obj->get(lastModifiedAtKey));
+            fileInfo.creationTime = toInt(obj->get(addedAtKey));
+            fileInfo.type = obj->get(typeKey).toString() == "file" ? NodeType::File : NodeType::Directory;
+            if (fileInfo.type == NodeType::File) {
+                fileInfo.size = toInt(obj->get(sizeKey));
+            }
+        }
+    }
+
+    return fileInfo;
+}
+
 } // namespace KDC::testhelpers
