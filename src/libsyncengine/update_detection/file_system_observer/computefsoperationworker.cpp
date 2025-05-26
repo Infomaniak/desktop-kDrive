@@ -161,12 +161,12 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     bool movedIntoUnsyncedFolder = false;
     const auto nodeExistsInSnapshot = snapshot->exists(nodeId);
     bool nodeIdReused = false;
-#ifndef __unix__
+#ifdef __unix__
     if (const ExitInfo exitInfo = isReusedNodeId(nodeId, dbNode, snapshot, nodeIdReused); !exitInfo) {
         setExitCause(exitInfo.cause());
         return exitInfo.code();
     }
-#endif !__unix__
+#endif __unix__
 
     if (side == ReplicaSide::Remote) {
         // In case of a move inside an excluded folder, the item must be removed in this sync
