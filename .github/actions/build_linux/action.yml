@@ -54,6 +54,7 @@ runs:
           cp /usr/local/lib/libxxhash* ./dependencies/
           cp /usr/lib/x86_64-linux-gnu/libglib* ./dependencies/
           cp /usr/lib/x86_64-linux-gnu/libsecret* ./dependencies/
+          cp /usr/lib/x86_64-linux-gnu/libgthread* ./dependencies/
 
         shell: bash
         if: steps.build.outcome == 'success'
