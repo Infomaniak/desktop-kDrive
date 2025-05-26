@@ -185,6 +185,7 @@ void TestUtility::testIsEqualUpToCaseAndEnc(void) {
 
 void TestUtility::testMoveItemToTrash(void) {
     // !!! Linux - Move to trash fails on tmpfs
+    if (Utility::userName() == "docker") return;
     LocalTemporaryDirectory tempDir;
     SyncPath path = tempDir.path() / "test.txt";
     std::ofstream file(path);
