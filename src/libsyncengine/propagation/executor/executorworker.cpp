@@ -437,7 +437,7 @@ ExitInfo ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, cons
     try {
         job = std::make_shared<GetFileListJob>(_syncPal->driveDbId(), parentId);
     } catch (const std::exception &e) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for driveDbId="
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for driveDbId="
                                                        << _syncPal->driveDbId() << " nodeId=" << parentId.c_str()
                                                        << " error=" << e.what());
         return AbstractTokenNetworkJob::exception2ExitCode(e);
@@ -2230,14 +2230,14 @@ bool ExecutorWorker::deleteOpNodes(const SyncOpPtr syncOp) {
 ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo) {
     assert((syncOp && !opsExitInfo) && "syncOp is nullptr in ExecutorWorker::handleExecutorError");
     if (!syncOp) {
-        LOG_WARN(_logger, "syncOp is nullptr in ExecutorWorker::handleExecutorError");
+        LOG_SYNCPAL_WARN(_logger, "syncOp is nullptr in ExecutorWorker::handleExecutorError");
         return ExitCode::DataError;
     }
     if (opsExitInfo) {
         return opsExitInfo;
     }
 
-    LOG_WARN(_logger, "Handling " << opsExitInfo << " in ExecutorWorker::handleExecutorError");
+    LOG_SYNCPAL_WARN(_logger, "Handling " << opsExitInfo << " in ExecutorWorker::handleExecutorError");
 
     // Handle specific errors
     switch (static_cast<int>(opsExitInfo)) {
@@ -2259,7 +2259,7 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
             break;
         }
     }
-    LOG_WARN(_logger, "Unhandled error in ExecutorWorker::handleExecutorError: " << opsExitInfo);
+    LOG_SYNCPAL_WARN(_logger, "Unhandled error in ExecutorWorker::handleExecutorError: " << opsExitInfo);
     return opsExitInfo;
 }
 
