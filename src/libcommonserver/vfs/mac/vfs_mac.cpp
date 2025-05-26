@@ -144,7 +144,7 @@ void VfsMac::stopImpl(bool unregister) {
 
 void VfsMac::dehydrate(const SyncPath &absoluteFilepathStd) {
     QString absoluteFilepath = SyncName2QStr(absoluteFilepathStd.native());
-    LOGW_DEBUG(logger(), L"dehydrate - " << Utility::formatPath(absoluteFilepath).c_str());
+    LOGW_DEBUG(logger(), L"dehydrate - " << Utility::formatPath(absoluteFilepath));
 
     const QString relativePath =
             QStringView(absoluteFilepath).mid(static_cast<qsizetype>(_vfsSetupParams.localPath.string().size())).toUtf8();

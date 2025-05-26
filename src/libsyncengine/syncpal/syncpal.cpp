@@ -1025,7 +1025,7 @@ ExitCode SyncPal::fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &l
         DbNodeId dbId = -1;
         bool found = false;
         if (!_syncDb->dbId(ReplicaSide::Local, localFileInfo.first, dbId, found)) {
-            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for nodeId=" << localFileInfo.first.c_str());
+            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for nodeId=" << localFileInfo.first);
             return ExitCode::DbError;
         }
         if (found) {
@@ -1195,7 +1195,7 @@ ExitCode SyncPal::cleanOldUploadSessionTokens() {
             }
 
             if (job->hasHttpError()) {
-                LOG_SYNCPAL_WARN(_logger, "Upload Session Token: " << uploadSessionToken.token().c_str()
+                LOG_SYNCPAL_WARN(_logger, "Upload Session Token: " << uploadSessionToken.token()
                                                                    << " has already been canceled or has expired.");
             }
         } catch (const std::exception &e) {

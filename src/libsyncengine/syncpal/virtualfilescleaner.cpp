@@ -101,7 +101,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
                     if (!std::filesystem::remove(dirIt->path(), ec)) {
                         if (ec.value() != 0) {
                             LOGW_WARN(_logger, L"Failed to remove all " << Utility::formatSyncPath(absolutePath) << L": "
-                                                                        << Utility::s2ws(ec.message()).c_str() << L" ("
+                                                                        << Utility::s2ws(ec.message()) << L" ("
                                                                         << ec.value() << L")");
                             _exitCode = ExitCode::SystemError;
                             _exitCause = ExitCause::FileAccessError;
@@ -176,7 +176,7 @@ bool VirtualFilesCleaner::folderCanBeProcessed(std::filesystem::recursive_direct
 
     if (dirIt->path().native().length() > CommonUtility::maxPathLength()) {
         LOGW_WARN(_logger,
-                  L"Ignore path=" << Path2WStr(dirIt->path()).c_str() << L" because size > " << CommonUtility::maxPathLength());
+                  L"Ignore path=" << Path2WStr(dirIt->path()) << L" because size > " << CommonUtility::maxPathLength());
         return false;
     }
 
@@ -189,7 +189,7 @@ bool VirtualFilesCleaner::recursiveDirectoryIterator(const SyncPath &path, std::
     dirIt = std::filesystem::recursive_directory_iterator(_rootPath, std::filesystem::directory_options::skip_permission_denied,
                                                           ec);
     if (ec) {
-        LOGW_WARN(_logger, L"Error in std::filesystem::recursive_directory_iterator: " << Utility::formatStdError(ec).c_str());
+        LOGW_WARN(_logger, L"Error in std::filesystem::recursive_directory_iterator: " << Utility::formatStdError(ec));
         return false;
     }
 
@@ -216,7 +216,7 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
                 const bool success = IoHelper::checkIfFileIsDehydrated(dirIt->path(), isDehydrated, ioError);
                 if (!success || ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
                     LOGW_WARN(_logger, L"Error in IoHelper::checkIfFileIsDehydrated: "
-                                               << Utility::formatIoError(dirIt->path(), ioError).c_str());
+                                               << Utility::formatIoError(dirIt->path(), ioError));
                     continue;
                 }
 
@@ -227,8 +227,8 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
                     std::error_code ec;
                     if (!std::filesystem::remove(filePath, ec)) {
                         if (ec.value() != 0) {
-                            LOGW_WARN(_logger, L"Failed to remove " << SyncName2WStr(filePathStr).c_str() << L": "
-                                                                    << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value()
+                            LOGW_WARN(_logger, L"Failed to remove " << SyncName2WStr(filePathStr) << L": "
+                                                                    << Utility::s2ws(ec.message()) << L" (" << ec.value()
                                                                     << L")");
                             _exitCode = ExitCode::SystemError;
                             _exitCause = ExitCause::FileAccessError;
@@ -237,12 +237,12 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
                             ret = false;
                         }
 
-                        LOGW_WARN(_logger, L"File does not exist " << SyncName2WStr(filePathStr).c_str());
+                        LOGW_WARN(_logger, L"File does not exist " << SyncName2WStr(filePathStr));
                     }
 
                     if (ParametersCache::isExtendedLogEnabled()) {
                         LOGW_DEBUG(_logger,
-                                   L"VFC removeDehydratedPlaceholders: removing item " << SyncName2WStr(filePathStr).c_str());
+                                   L"VFC removeDehydratedPlaceholders: removing item " << SyncName2WStr(filePathStr));
                     }
                 }
             }

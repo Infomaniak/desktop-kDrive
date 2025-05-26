@@ -296,7 +296,7 @@ std::wstring Utility::formatErrno(const QString &path, long cError) {
 
 std::string Utility::formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description) {
     std::stringstream ss;
-    ss << uri.toString().c_str() << " : " << code.c_str() << " - " << description.c_str();
+    ss << uri.toString() << " : " << code << " - " << description;
 
     return ss.str();
 }
@@ -325,7 +325,7 @@ void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::
                                     const Poco::Net::HTTPResponse &httpResponse) {
     std::string errorMsg = formatGenericServerError(inputStream, httpResponse);
     sentry::Handler::captureMessage(sentry::Level::Warning, errorTitle, errorMsg);
-    LOG_WARN(logger, errorTitle.c_str() << ": " << errorMsg.c_str());
+    LOG_WARN(logger, errorTitle << ": " << errorMsg);
 }
 
 #ifdef _WIN32
