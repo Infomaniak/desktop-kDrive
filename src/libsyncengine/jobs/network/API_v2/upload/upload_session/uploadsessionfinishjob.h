@@ -36,6 +36,7 @@ class UploadSessionFinishJob : public AbstractUploadSessionJob {
 
         const NodeId &nodeId() const { return _nodeId; }
         SyncTime modtime() const { return _modtimeOut; }
+        SyncTime size() const { return _sizeOut; }
 
     protected:
         bool handleResponse(std::istream &is) override;
@@ -51,6 +52,7 @@ class UploadSessionFinishJob : public AbstractUploadSessionJob {
 
         NodeId _nodeId;
         SyncTime _modtimeOut = 0;
+        int64_t _sizeOut = 0;
         const std::shared_ptr<Vfs> _vfs;
 };
 
