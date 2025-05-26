@@ -24,7 +24,8 @@
 namespace KDC {
 
 ConflictResolverWorker::ConflictResolverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                               const std::string &shortName) : OperationProcessor(syncPal, name, shortName) {}
+                                               const std::string &shortName) :
+    OperationProcessor(syncPal, name, shortName) {}
 
 void ConflictResolverWorker::execute() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
@@ -66,6 +67,10 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
     if (continueSolving) return ExitCode::Ok;
 
     switch (conflict.type()) {
+        case ConflictType::MoveCreate: {
+            generateMoveCreateConflictOperation(conflict, continueSolving);
+            break;
+        }
         case ConflictType::CreateCreate:
         case ConflictType::EditEdit: {
             res = generateLocalRenameOperation(conflict, continueSolving);
@@ -86,9 +91,8 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
         }
         case ConflictType::MoveMoveSource:
         case ConflictType::MoveMoveDest:
-        case ConflictType::MoveMoveCycle:
-        case ConflictType::MoveCreate: {
-            res = generateUndoMoveOperation(conflict, getLoserNode(conflict));
+        case ConflictType::MoveMoveCycle: {
+            res = generateUndoMoveOperation(conflict, conflict.localNode());
             break;
         }
         default: {
@@ -163,6 +167,17 @@ ExitCode ConflictResolverWorker::generateLocalRenameOperation(const Conflict &co
     (void) _syncPal->syncOps()->pushOp(op);
     continueSolving = true; // solve them all in the same sync
     return ExitCode::Ok;
+}
+
+ExitCode ConflictResolverWorker::generateMoveCreateConflictOperation(const Conflict &conflict, bool &continueSolving) {
+    ExitInfo res = ExitCode::Ok;
+    if (conflict.localNode()->hasChangeEvent(OperationType::Move)) {
+        res = generateUndoMoveOperation(conflict, conflict.localNode());
+    } else {
+        res = generateLocalRenameOperation(conflict, continueSolving);
+    }
+
+    return res;
 }
 
 ExitCode ConflictResolverWorker::generateEditDeleteConflictOperation(const Conflict &conflict, bool &continueSolving) {
@@ -297,15 +312,6 @@ void ConflictResolverWorker::generateRescueOperation(const Conflict &conflict, c
     (void) _syncPal->syncOps()->pushOp(moveOp);
 }
 
-std::shared_ptr<Node> ConflictResolverWorker::getLoserNode(const Conflict &conflict) {
-    auto loserNode = conflict.localNode();
-    if (!loserNode->hasChangeEvent(OperationType::Move)) {
-        loserNode = conflict.remoteNode();
-    }
-
-    return loserNode;
-}
-
 bool ConflictResolverWorker::generateConflictedName(const std::shared_ptr<Node> node, SyncName &newName,
                                                     const bool isOrphanNode /*= false*/) const {
     const auto absoluteLocalFilePath = _syncPal->localPath() / node->getPath();
@@ -363,6 +369,8 @@ ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, 
 
     moveOp->setType(OperationType::Move);
     const auto correspondingNode = correspondingNodeInOtherTree(moveNode);
+    correspondingNode->setMoveOriginInfos({moveNode->getPath(), moveNode->parentNode()->id().value_or("")});
+    correspondingNode->insertChangeEvent(OperationType::Move);
     moveOp->setAffectedNode(correspondingNode);
     moveOp->setCorrespondingNode(moveNode);
     moveOp->setTargetSide(moveNode->side());
