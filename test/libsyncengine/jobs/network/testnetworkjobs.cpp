@@ -946,6 +946,8 @@ void TestNetworkJobs::testUploadAborted() {
 }
 
 void TestNetworkJobs::testDriveUploadSessionConstructorException() {
+    if (!testhelpers::isExtendedTest()) return;
+
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDriveUploadSessionConstructorException");
 
     SyncPath localFilePath = testhelpers::localTestDirPath();
@@ -958,6 +960,8 @@ void TestNetworkJobs::testDriveUploadSessionConstructorException() {
 }
 
 void TestNetworkJobs::testDriveUploadSessionSynchronous() {
+    if (!testhelpers::isExtendedTest()) return;
+
     // Create a file
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionSynchronous Create");
 
@@ -1096,6 +1100,8 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
 }
 
 void TestNetworkJobs::testDriveUploadSessionSynchronousAborted() {
+    if (!testhelpers::isExtendedTest()) return;
+
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionSynchronousAborted");
 
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDriveUploadSessionSynchronousAborted");
@@ -1135,6 +1141,8 @@ void TestNetworkJobs::testDriveUploadSessionSynchronousAborted() {
 }
 
 void TestNetworkJobs::testDriveUploadSessionAsynchronousAborted() {
+    if (!testhelpers::isExtendedTest()) return;
+
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronousAborted");
 
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDriveUploadSessionAsynchronousAborted");
