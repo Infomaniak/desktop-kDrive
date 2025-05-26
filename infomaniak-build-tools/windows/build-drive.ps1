@@ -265,10 +265,6 @@ function CMake-Build-And-Install {
         $flags += ("'-DKD_COVERAGE:BOOL=TRUE'")
     }
 
-    # Enable Debug output for the CI, TODO Delete
-    $flags += ("'-DCMAKE_VERBOSE_MAKEFILE=ON'")
-    $flags += ("'-DCMAKE_EXE_LINKER_FLAGS=/VERBOSE'")
-
     $args += $flags
 
     $args += ("'-B$buildPath'")
