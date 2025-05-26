@@ -66,11 +66,11 @@ jobs:
         shell: cmd
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
-          "E:\test_GALLAND\Dependencies_x64_Release\Dependencies.exe" -modules build\bin\kDrive_test_common.exe
-          "E:\test_GALLAND\Dependencies_x64_Release\Dependencies.exe" -modules build\bin\kDrive_test_common_server.exe
-          "E:\test_GALLAND\Dependencies_x64_Release\Dependencies.exe" -modules build\bin\kDrive_test_parms.exe
-          "E:\test_GALLAND\Dependencies_x64_Release\Dependencies.exe" -modules build\bin\kDrive_test_server.exe
-          "E:\test_GALLAND\Dependencies_x64_Release\Dependencies.exe" -modules build\bin\kDrive_test_syncengine.exe
+          "E:\test_GALLAND\Dependencies_x64_Release\Dependencies.exe" -modules build-windows\build\bin\kDrive_test_common.exe
+          "E:\test_GALLAND\Dependencies_x64_Release\Dependencies.exe" -modules build-windows\build\bin\kDrive_test_common_server.exe
+          "E:\test_GALLAND\Dependencies_x64_Release\Dependencies.exe" -modules build-windows\build\bin\kDrive_test_parms.exe
+          "E:\test_GALLAND\Dependencies_x64_Release\Dependencies.exe" -modules build-windows\build\bin\kDrive_test_server.exe
+          "E:\test_GALLAND\Dependencies_x64_Release\Dependencies.exe" -modules build-windows\build\bin\kDrive_test_syncengine.exe
 
       - name: Execute tests
         run: |
