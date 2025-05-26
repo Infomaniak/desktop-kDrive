@@ -110,7 +110,7 @@ target_link_libraries(${testsyncengine_NAME}
 if (WIN32)
     target_link_libraries(${testsyncengine_NAME}
         debug
-        "C:/Program Files (x86)/cppunit/lib/cppunitd.lib"
+        "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"
         optimized
         "C:/Program Files (x86)/cppunit/lib/cppunit_dll.lib")
 elseif(APPLE)
