@@ -760,12 +760,10 @@ bool ComputeFSOperationWorker::isPathTooLong(const SyncPath &path, const NodeId 
     return false;
 }
 
+#ifdef __unix__
 ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const DbNode &dbNode,
                                                   const std::shared_ptr<const Snapshot> &snapshot, bool &isReused) const {
     isReused = false;
-#ifndef __unix__
-    return ExitCode::Ok;
-#endif // !__unix__
 
     // Check if the node is in the snapshot
     if (snapshot->side() != ReplicaSide::Local || !snapshot->exists(localNodeId)) {
@@ -799,8 +797,8 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
         return ExitCode::Ok;
     }
 
-    // For a directory, the last modified date in db is not updated when a child is added or removed, but only when the directory is
-    // renamed. Therefore, it does not make sense to check the last modified date for directories here.
+    // For a directory, the last modified date in db is not updated when a child is added or removed, but only when the directory
+    // is renamed. Therefore, it does not make sense to check the last modified date for directories here.
     if (snapshot->type(localNodeId) == NodeType::Directory) {
         isReused = true;
         LOGW_SYNCPAL_DEBUG(_logger, L"Creation date (old: "
@@ -831,6 +829,7 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
     isReused = true;
     return ExitCode::Ok;
 }
+#endif // !__unix__
 
 ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(const ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId,
                                                      bool &isExcluded) {
