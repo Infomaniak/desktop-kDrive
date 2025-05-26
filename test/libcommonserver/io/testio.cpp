@@ -343,7 +343,7 @@ void TestIo::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         (void) IoHelper::getFileStat(filepath, &filestat, ioError);
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(__APPLE__)
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
 #elif defined(_WIN32)
         CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.creationTime);
