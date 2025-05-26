@@ -822,8 +822,14 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
         return ExitCode::Ok;
     }
 
-    LOGW_SYNCPAL_DEBUG(_logger, L"Path, size, creation date and modification date have all changed for "
-                                        << Utility::s2ws(localNodeId) << L". Node is reused.");
+    LOGW_SYNCPAL_DEBUG(_logger, L"Path (old: " << Utility::formatSyncPath(localDbPath) << L" / new: "
+                                               << Utility::formatSyncPath(localSnapshotPath) << L"), size (old: " << dbNode.size()
+                                               << L" / new: " << snapshot->size(localNodeId)
+                                               << L"), creation date and modification date (old: " << dbNode.created().value()
+                                               << L" | " << dbNode.lastModified(ReplicaSide::Local) << L" / new: "
+                                               << snapshot->createdAt(localNodeId) << L" | "
+                                               << snapshot->lastModified(localNodeId) << L" have all changed for "
+                                               << Utility::s2ws(localNodeId) << L". Node is reused.");
     isReused = true;
     return ExitCode::Ok;
 }
