@@ -78,11 +78,13 @@ void JobManagerData::erase(const UniqueId jobId) {
 }
 
 std::unordered_set<UniqueId> JobManagerData::runningJobs() const {
+    const std::scoped_lock lock(_mutex);
     return _runningJobs;
 }
 
 const std::unordered_map<UniqueId, std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>> JobManagerData::pendingJobs()
         const {
+    const std::scoped_lock lock(_mutex);
     return _pendingJobs;
 }
 

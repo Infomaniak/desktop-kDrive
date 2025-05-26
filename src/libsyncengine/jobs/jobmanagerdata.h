@@ -50,21 +50,25 @@ class JobManagerData {
          * @param priority The job's priority.
          */
         void queue(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority = Poco::Thread::PRIO_NORMAL);
+
         /**
          * @brief Remove the top job from the queue.
          * @return The removed job and its associated priority.
          */
         std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority> pop();
+
         /**
          * @brief Check is there are jobs in the queue waiting to be executed.
          * @return 'true' if the queue is not empty.
          */
         bool hasQueuedJob() const;
+
         /**
          * @brief Check is the top job of the queue has the highest possible priority.
          * @return 'true' if the top job has value 'PRIO_HIGHEST'.
          */
         bool hasHighestPriorityJob() const;
+
         /**
          * @brief Check if the job is currently handled by the JobManager, meaning the job is either queued, pending or running.
          * @param jobId The ID of the job to be checked.
@@ -78,6 +82,7 @@ class JobManagerData {
          * @return 'true' if the job ID has been successfully inserted in the map.
          */
         bool addToRunningJobs(const UniqueId jobId);
+
         /**
          * @brief Add a job to the list of pending jobs.
          * @param jobId The ID of the job.
@@ -94,7 +99,8 @@ class JobManagerData {
         void removeFromPendingJobs(const UniqueId jobId);
 
         /**
-         * @brief Remove the job from JobManager. The job will not be handled by JobManager afterward.
+         * @brief Remove the job from JobManager. The job will not be handled by JobManager afterward. This method is the main one
+         * used in JobManager's callback.
          * @param jobId The ID of the job.
          */
         void erase(const UniqueId jobId);
