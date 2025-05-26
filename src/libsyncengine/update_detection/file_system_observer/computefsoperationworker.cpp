@@ -799,9 +799,8 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
         return ExitCode::Ok;
     }
 
-    // For a directory, the last modified date in db not updated when a child is added or removed, but only when the directory is
+    // For a directory, the last modified date in db is not updated when a child is added or removed, but only when the directory is
     // renamed. Therefore, it does not make sense to check the last modified date for directories here.
-    // (The size of directories is not checked here, as it is not relevant for directories in the context of reuse.)
     if (snapshot->type(localNodeId) == NodeType::Directory) {
         isReused = true;
         LOGW_SYNCPAL_DEBUG(_logger, L"Creation date (old: "
