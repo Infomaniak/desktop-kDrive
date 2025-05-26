@@ -799,37 +799,41 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
         return ExitCode::Ok;
     }
 
-    // Check if the node path has changed
-    SyncPath localDbPath;
-    if (bool found = false; !_syncDbReadOnlyCache.path(ReplicaSide::Local, localNodeId, localDbPath, found)) {
-        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
-        return {ExitCode::DbError, ExitCause::DbAccessError};
+    // Check if the node name has changed:
+    if (snapshot->name(localNodeId) == dbNode.nameLocal()) {
+        return ExitCode::Ok;
+    }
+
+    // Check if the node parent has changed
+    const auto parentDbNodeId = dbNode.parentNodeId();
+    if (!parentDbNodeId.has_value()) {
+        return ExitCode::Ok;
+    }
+
+    DbNode dbParentNode;
+    if (bool found = false; !_syncDbReadOnlyCache.node(*parentDbNodeId, dbParentNode, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDbReadOnlyCache::node");
+        return {ExitCode::DbError, ExitCause::Unknown};
     } else if (!found) {
         LOG_SYNCPAL_WARN(_logger, "Node not found in DB");
         return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
-    SyncPath localSnapshotPath;
-    if (bool ignore = false; !snapshot->path(localNodeId, localSnapshotPath, ignore)) {
-        if (ignore) {
-            return ExitCode::Ok;
-        }
-        LOG_SYNCPAL_WARN(_logger, "Failed to retrieve path from snapshot for item " << localNodeId);
-        return {ExitCode::DataError, ExitCause::InvalidSnapshot};
-    }
-
-    if (localDbPath == localSnapshotPath) {
+    if (!dbParentNode.hasLocalNodeId()) {
         return ExitCode::Ok;
     }
+    if (snapshot->parentId(localNodeId) == dbParentNode.nodeIdLocal()) {
+        return ExitCode::Ok;
+    }    
 
-    LOGW_SYNCPAL_DEBUG(_logger, L"Path (old: " << Utility::formatSyncPath(localDbPath) << L" / new: "
-                                               << Utility::formatSyncPath(localSnapshotPath) << L"), size (old: " << dbNode.size()
-                                               << L" / new: " << snapshot->size(localNodeId)
-                                               << L"), creation date and modification date (old: " << dbNode.created().value()
-                                               << L" | " << dbNode.lastModified(ReplicaSide::Local) << L" / new: "
-                                               << snapshot->createdAt(localNodeId) << L" | "
-                                               << snapshot->lastModified(localNodeId) << L" have all changed for "
-                                               << Utility::s2ws(localNodeId) << L". Node is reused.");
+    LOGW_SYNCPAL_DEBUG(_logger, L"ParentId (old: " << Utility::s2ws(dbParentNode.nodeIdLocal().value()) << L" / new: "
+                                                   << Utility::s2ws(snapshot->parentId(localNodeId)) << L"), size (old: "
+                                                   << dbNode.size() << L" / new: " << snapshot->size(localNodeId)
+                                                   << L"), creation date and modification date (old: " << dbNode.created().value()
+                                                   << L" | " << dbNode.lastModified(ReplicaSide::Local) << L" / new: "
+                                                   << snapshot->createdAt(localNodeId) << L" | "
+                                                   << snapshot->lastModified(localNodeId) << L" have all changed for "
+                                                   << Utility::s2ws(localNodeId) << L". Node is reused.");
     isReused = true;
     return ExitCode::Ok;
 }
