@@ -21,7 +21,6 @@
 #include "libcommonserver/utility/utility.h" // Path2Str
 
 #include <windows.h>
-#include <fileapi.h>
 
 #include <regex>
 
@@ -31,21 +30,41 @@ namespace KDC {
 
 
 namespace {
-bool areShortNamesEnabled(const SyncPath &volumePath) {
-    const HANDLE handle =
-            CreateFileW(volumePath.wstring().c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL);
-    CloseHandle(handle);
 
-    DWORD lpMaximumComponentLength{0};
-    GetVolumeInformationByHandleW(handle, nullptr, MAX_PATH + 1, nullptr, &lpMaximumComponentLength, nullptr, nullptr,
-                                  MAX_PATH + 1);
+// https://stackoverflow.com/a/35717/4675396
+LONG GetDWORDRegKey(HKEY hKey, const std::wstring& strValueName, DWORD& nValue, DWORD nDefaultValue) {
+    nValue = nDefaultValue;
+    DWORD dwBufferSize(sizeof(DWORD));
+    DWORD nResult(0);
+    LONG nError = ::RegQueryValueExW(hKey, strValueName.c_str(), 0, NULL, reinterpret_cast<LPBYTE>(&nResult), &dwBufferSize);
+    if (ERROR_SUCCESS == nError) {
+        nValue = nResult;
+    }
 
-    return lpMaximumComponentLength < 255;
+    return nError;
 }
+
+// Check whether the creation of 8dot3 names is activated on every volume (global registry value).
+// Note: If "NtfsDisable8dot3NameCreation" is set with 2 (default), it is possible that the creation of 8dot3 names
+// is enabled but this will not be detected by this function.
+bool areShortNamesEnabled() {
+    static const std::wstring regSubKey{L"SYSTEM\\CurrentControlSet\\Control\\FileSystem"};
+    static const std::wstring regValue{L"NtfsDisable8dot3NameCreation"};
+
+    HKEY hKey;
+    (void) RegOpenKeyExW(HKEY_LOCAL_MACHINE, regSubKey.c_str(), 0, KEY_READ, &hKey);
+
+    DWORD numericValue{3};
+    DWORD defaultValue{3};
+    (void) GetDWORDRegKey(hKey, regValue, numericValue, defaultValue);
+
+    return numericValue == 0;
+}
+
 } // namespace
 
 void TestIo::testGetLongPathName() {
-    if (!areShortNamesEnabled(std::filesystem::temp_directory_path().root_path())) {
+    if (!areShortNamesEnabled()) {
         std::cout << " (Skipped as short names are disabled) ";
         return;
     };
@@ -129,7 +148,7 @@ void TestIo::testGetLongPathName() {
 }
 
 void TestIo::testGetShortPathName() {
-    if (!areShortNamesEnabled(std::filesystem::temp_directory_path().root_path())) {
+    if (!areShortNamesEnabled()) {
         std::cout << " (Skipped as short names are disabled) ";
         return;
     };

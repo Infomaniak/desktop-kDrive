@@ -140,7 +140,7 @@ endif()
 if (WIN32)
     target_link_libraries(${testserver_NAME}
             debug
-            "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"
+            "C:/Program Files (x86)/cppunit/lib/cppunitd.lib"
             optimized
             "C:/Program Files (x86)/cppunit/lib/cppunit_dll.lib")
 elseif (APPLE)
