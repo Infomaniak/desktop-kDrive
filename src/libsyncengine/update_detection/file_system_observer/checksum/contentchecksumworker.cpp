@@ -57,7 +57,7 @@ void ContentChecksumWorker::callback(UniqueId jobId) {
 void ContentChecksumWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
 
-    LOG_DEBUG(_logger, "Worker started: name=" << name().c_str());
+    LOG_DEBUG(_logger, "Worker started: name=" << name());
 
     // Sync loop
     for (;;) {
@@ -103,7 +103,7 @@ void ContentChecksumWorker::execute() {
         Utility::msleep(10);
     }
 
-    LOG_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    LOG_DEBUG(_logger, "Worker stopped: name=" << name());
     setDone(exitCode);
 }
 

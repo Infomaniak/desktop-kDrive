@@ -313,7 +313,7 @@ bool Snapshot::isOrphan(const NodeId &itemId) const {
         }
         if (tmpNextParentId == nextParentId) {
             // Should not happen
-            LOG_WARN(Log::instance()->getLogger(), "Parent ID equals item ID " << nextParentId.c_str());
+            LOG_WARN(Log::instance()->getLogger(), "Parent ID equals item ID " << nextParentId);
             assert(false);
             break;
         }

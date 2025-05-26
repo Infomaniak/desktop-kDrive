@@ -213,7 +213,7 @@ void CommServer::onErrorOccurred(QAbstractSocket::SocketError socketError) {
 
     if (!_hasQuittedProperly) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Client connection was interrupted - err=" << (socket ? socket->errorString().toStdString().c_str() : "") << " ("
+                 "Client connection was interrupted - err=" << (socket ? socket->errorString().toStdString() : "") << " ("
                                                             << socketError << ")");
         // Restart comm server
         start();

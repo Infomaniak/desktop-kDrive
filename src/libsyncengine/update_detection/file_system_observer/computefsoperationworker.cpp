@@ -41,7 +41,7 @@ ComputeFSOperationWorker::ComputeFSOperationWorker(SyncDbReadOnlyCache &testSync
 void ComputeFSOperationWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
 
-    LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
+    LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
     auto start = std::chrono::steady_clock::now();
 
     // Update the sync parameters
@@ -59,7 +59,7 @@ void ComputeFSOperationWorker::execute() {
         ok = false;
     }
     if (!ok) {
-        LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+        LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
         setDone(exitCode);
         return;
     }
@@ -121,7 +121,7 @@ void ComputeFSOperationWorker::execute() {
         LOG_SYNCPAL_INFO(_logger, "FS operation sets generated in: " << elapsedSeconds.count() << "s");
     }
 
-    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
     setDone(exitCode);
 }
 
@@ -188,7 +188,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         return ExitCode::DbError;
     }
     if (!parentNodeIsFoundInDb) {
-        LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << nodeId.c_str());
+        LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << nodeId);
         setExitCause(ExitCause::DbEntryNotFound);
         return ExitCode::DataError;
     }
@@ -297,8 +297,8 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
             notifyIgnoredItem(nodeId, snapshotPath, dbNode.type());
             return ExitCode::Ok;
         }
-        LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve path from snapshot for item " << SyncName2WStr(dbName).c_str() << L" ("
-                                                                                      << Utility::s2ws(nodeId).c_str() << L")");
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve path from snapshot for item " << SyncName2WStr(dbName) << L" ("
+                                                                                      << Utility::s2ws(nodeId) << L")");
         setExitCause(ExitCause::InvalidSnapshot);
         return ExitCode::DataError;
     }
@@ -512,7 +512,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const N
                     continue;
                 }
 
-                LOG_SYNCPAL_WARN(_logger, "Failed to retrieve path from snapshot for item " << nodeId.c_str());
+                LOG_SYNCPAL_WARN(_logger, "Failed to retrieve path from snapshot for item " << nodeId);
                 setExitCause(ExitCause::InvalidSnapshot);
                 return ExitCode::DataError;
             }

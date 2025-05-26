@@ -60,7 +60,7 @@ class GetSizeJob;
 
 #define SYNCDBID this->syncDbId()
 
-#define LOG_SYNCDBID std::string("*" + std::to_string(SYNCDBID) + "*").c_str()
+#define LOG_SYNCDBID std::string("*" + std::to_string(SYNCDBID) + "*")
 
 #define LOG_SYNCPAL_DEBUG(logger, logEvent) LOG_DEBUG(logger, LOG_SYNCDBID << " " << logEvent)
 #define LOGW_SYNCPAL_DEBUG(logger, logEvent) LOGW_DEBUG(logger, Utility::s2ws(LOG_SYNCDBID) << L" " << logEvent)
