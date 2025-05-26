@@ -367,7 +367,6 @@ function Prepare-Archive {
         "${env:ProgramFiles(x86)}/Poco/bin/PocoUtil",
         "${env:ProgramFiles(x86)}/Poco/bin/PocoXML",
         "${env:ProgramFiles(x86)}/Sentry-Native/bin/sentry",
-        "${env:ProgramFiles(x86)}/xxHash/bin/xxhash",
         "$vfsDir/Vfs",
         "$buildPath/bin/kDrivecommonserver_vfs_win"
     )
@@ -381,6 +380,13 @@ function Prepare-Archive {
             Copy-Item -Path $file".dll" -Destination "$archivePath"
         }
     }
+    $find_dep_script = "$path/infomaniak-build-tools/conan/find_conan_dep.ps1"
+
+    $xxhash_folder = & $find_dep_script -Package "xxhash" -Version "0.8.2"
+    $log4cplus_folder = & $find_dep_script -Package "log4cplus" -Version "2.1.2"
+
+    Copy-Item -Path "$xxhash_folder/bin/xxhash.dll" -Destination "$archivePath"
+    Copy-Item -Path "$log4cplus/bin/log4cplus.dll" -Destination "$archivePath"
 
     Copy-Item -Path "$path/sync-exclude-win.lst" -Destination "$archivePath/sync-exclude.lst"
 
