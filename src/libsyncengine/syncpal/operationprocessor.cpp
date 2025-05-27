@@ -38,13 +38,15 @@ bool OperationProcessor::editChangeShouldBePropagated(std::shared_ptr<Node> affe
     bool found = false;
     DbNode affectedDbNode;
     if (affectedNode->idb().has_value()) {
-        if (!_syncPal->syncDb()->node(affectedNode->idb().value(), affectedDbNode, found)) {
+        if (!(_useSyncDbCache ? _syncPal->syncDb()->cache().node(affectedNode->idb().value(), affectedDbNode, found)
+                              : _syncPal->syncDb()->node(affectedNode->idb().value(), affectedDbNode, found))) {
             LOG_SYNCPAL_WARN(_logger, "hasChangeToPropagate: Failed to retrieve node from DB, id=" << *affectedNode->idb());
             _syncPal->addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
             return true;
         }
     } else {
-        if (!_syncPal->syncDb()->node(ReplicaSide::Local, *affectedNode->id(), affectedDbNode, found)) {
+        if (!(_useSyncDbCache ? _syncPal->syncDb()->cache().node(ReplicaSide::Local, *affectedNode->id(), affectedDbNode, found)
+                              : _syncPal->syncDb()->node(ReplicaSide::Local, *affectedNode->id(), affectedDbNode, found))) {
             LOG_SYNCPAL_WARN(_logger, "hasChangeToPropagate: Failed to retrieve node from DB, id=" << *affectedNode->id());
             _syncPal->addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
             return true;
