@@ -63,7 +63,7 @@ if (-not $conan_exe) { Err "Conan executable not found." }
 if ($CI) {
     $conan_home = "C:\Windows\System32\config\systemprofile\.conan2"
 } else {
-    $conan_home = & $conan_exe config home
+    $conan_home = & "$conan_exe" config home | Select-Object -First 1
     if ($VerboseLogging) { Write-Error "conan config home: $(conan_home)" }
 }
 $conan_db = Join-Path $conan_home "p\cache.sqlite3"
