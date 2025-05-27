@@ -1640,10 +1640,12 @@ ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::share
         case OperationType::Edit: {
             NodeId nodeId;
             SyncTime modtime = 0;
+            std::optional<SyncTime> crtime;
             if (syncOp->targetSide() == ReplicaSide::Local) {
                 auto castJob(std::dynamic_pointer_cast<DownloadJob>(job));
                 nodeId = castJob->localNodeId();
                 modtime = castJob->modtime();
+                crtime = castJob->crtime();
             } else {
                 bool jobOk = false;
                 auto uploadJob(std::dynamic_pointer_cast<UploadJob>(job));
@@ -1667,9 +1669,9 @@ ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::share
             }
 
             if (syncOp->type() == OperationType::Create) {
-                return propagateCreateToDbAndTree(syncOp, nodeId, modtime, node);
+                return propagateCreateToDbAndTree(syncOp, nodeId, modtime, crtime, node);
             } else {
-                return propagateEditToDbAndTree(syncOp, nodeId, modtime, node);
+                return propagateEditToDbAndTree(syncOp, nodeId, modtime, crtime, node);
             }
         }
         case OperationType::Move: {
@@ -1688,7 +1690,8 @@ ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::share
 }
 
 ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId,
-                                                    std::optional<SyncTime> newLastModTime, std::shared_ptr<Node> &node) {
+                                                    std::optional<SyncTime> newLastModTime, std::optional<SyncTime> newLastCrTime,
+                                                    std::shared_ptr<Node> &node) {
     std::shared_ptr<Node> newCorrespondingParentNode = nullptr;
     if (affectedUpdateTree(syncOp)->rootNode() == syncOp->affectedNode()->parentNode()) {
         newCorrespondingParentNode = targetUpdateTree(syncOp)->rootNode();
@@ -1718,25 +1721,24 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
         return ExitCode::DataError;
     }
 
-    DbNode dbNode(0, newCorrespondingParentNode->idb(), localName, remoteName, localId, remoteId,
-                  syncOp->affectedNode()->createdAt(), newLastModTime, newLastModTime, syncOp->affectedNode()->type(),
-                  syncOp->affectedNode()->size(),
+    const auto crtime = newLastCrTime.has_value() ? newLastCrTime : syncOp->affectedNode()->createdAt();
+    DbNode dbNode(0, newCorrespondingParentNode->idb(), localName, remoteName, localId, remoteId, crtime, newLastModTime,
+                  newLastModTime, syncOp->affectedNode()->type(), syncOp->affectedNode()->size(),
                   "" // TODO : change it once we start using content checksum
                   ,
                   syncOp->omit() ? SyncFileStatus::Success : SyncFileStatus::Unknown);
 
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_SYNCPAL_DEBUG(
-                _logger, L"Inserting in DB: "
-                                 << L" localName=" << Utility::formatSyncName(localName) << L" / remoteName="
-                                 << Utility::formatSyncName(remoteName) << L" / localId=" << Utility::s2ws(localId)
-                                 << L" / remoteId=" << Utility::s2ws(remoteId) << L" / parent DB ID="
-                                 << (newCorrespondingParentNode->idb().has_value() ? newCorrespondingParentNode->idb().value()
-                                                                                   : -1)
-                                 << L" / createdAt="
-                                 << (syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : -1)
-                                 << L" / lastModTime=" << (newLastModTime.has_value() ? *newLastModTime : -1) << L" / type="
-                                 << syncOp->affectedNode()->type());
+        LOGW_SYNCPAL_DEBUG(_logger,
+                           L"Inserting in DB: "
+                                   << L" localName=" << Utility::formatSyncName(localName) << L" / remoteName="
+                                   << Utility::formatSyncName(remoteName) << L" / localId=" << Utility::s2ws(localId)
+                                   << L" / remoteId=" << Utility::s2ws(remoteId) << L" / parent DB ID="
+                                   << (newCorrespondingParentNode->idb().has_value() ? newCorrespondingParentNode->idb().value()
+                                                                                     : -1)
+                                   << L" / createdAt=" << crtime.value_or(-1) << L" / lastModTime="
+                                   << (newLastModTime.has_value() ? *newLastModTime : -1) << L" / type="
+                                   << syncOp->affectedNode()->type());
     }
 
     if (dbNode.nameLocal().empty() || dbNode.nameRemote().empty() || !dbNode.nodeIdLocal().has_value() ||
@@ -1803,8 +1805,8 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
         // insert new node
         node = std::shared_ptr<Node>(
                 new Node(newDbNodeId, syncOp->targetSide() == ReplicaSide::Local ? ReplicaSide::Local : ReplicaSide::Remote,
-                         remoteName, syncOp->affectedNode()->type(), OperationType::None, newNodeId, newLastModTime,
-                         newLastModTime, syncOp->affectedNode()->size(), newCorrespondingParentNode));
+                         remoteName, syncOp->affectedNode()->type(), OperationType::None, newNodeId, crtime, newLastModTime,
+                         syncOp->affectedNode()->size(), newCorrespondingParentNode));
         if (node == nullptr) {
             std::cout << "Failed to allocate memory" << std::endl;
             LOG_SYNCPAL_ERROR(_logger, "Failed to allocate memory");
@@ -1829,7 +1831,8 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
 }
 
 ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId,
-                                                  std::optional<SyncTime> newLastModTime, std::shared_ptr<Node> &node) {
+                                                  std::optional<SyncTime> newLastModTime, std::optional<SyncTime> newLastCrtime,
+                                                  std::shared_ptr<Node> &node) {
     DbNode dbNode;
     bool found = false;
     if (!_syncPal->syncDb()->node(*syncOp->correspondingNode()->idb(), dbNode, found)) {
@@ -1865,7 +1868,7 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
     dbNode.setNodeIdRemote(remoteId);
     dbNode.setLastModifiedLocal(newLastModTime);
     dbNode.setLastModifiedRemote(newLastModTime);
-    dbNode.setCreated(syncOp->affectedNode()->createdAt());
+    dbNode.setCreated(newLastCrtime.has_value() ? newLastCrtime : syncOp->affectedNode()->createdAt());
     dbNode.setSize(syncOp->affectedNode()->size());
     dbNode.setChecksum(""); // TODO : change it once we start using content checksum
     if (syncOp->omit()) {
@@ -1873,15 +1876,13 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
     }
 
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_SYNCPAL_DEBUG(
-                _logger,
-                L"Updating DB: " << L" / localName=" << Utility::formatSyncName(localName) << L" / remoteName="
-                                 << Utility::formatSyncName(remoteName) << L" / localId=" << Utility::s2ws(localId)
-                                 << L" / remoteId=" << Utility::s2ws(remoteId) << L" / parent DB ID="
-                                 << (dbNode.parentNodeId().has_value() ? dbNode.parentNodeId().value() : -1) << L" / createdAt="
-                                 << (syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : -1)
-                                 << L" / lastModTime=" << (newLastModTime.has_value() ? *newLastModTime : -1) << L" / type="
-                                 << syncOp->affectedNode()->type());
+        LOGW_SYNCPAL_DEBUG(_logger, L"Updating DB: " << L" / localName=" << Utility::formatSyncName(localName)
+                                                     << L" / remoteName=" << Utility::formatSyncName(remoteName) << L" / localId="
+                                                     << Utility::s2ws(localId) << L" / remoteId=" << Utility::s2ws(remoteId)
+                                                     << L" / parent DB ID=" << dbNode.parentNodeId().value_or(-1)
+                                                     << L" / createdAt=" << dbNode.created().value_or(-1) << L" / lastModTime="
+                                                     << newLastModTime.value_or(-1) << L" / type="
+                                                     << syncOp->affectedNode()->type());
     }
 
     if (!_syncPal->syncDb()->updateNode(dbNode, found)) {
@@ -1908,6 +1909,8 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
             return ExitCode::DataError;
         }
         syncOp->correspondingNode()->setLastModified(newLastModTime);
+        syncOp->correspondingNode()->setCreatedAt(newLastCrtime.has_value() ? newLastCrtime
+                                                                            : syncOp->affectedNode()->createdAt());
     }
     node = syncOp->correspondingNode();
 
