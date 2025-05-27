@@ -43,8 +43,7 @@ print(exe)
 }
 
 if ($CI) {
-    & "C:\Program Files\Python313\.venv\Scripts\activate.ps1"`
-    Write-Err "Running in CI mode, activating Python venv."
+    & "C:\Program Files\Python313\.venv\Scripts\activate.ps1"
 }
 
 $reference = "$Package/$Version"
