@@ -162,10 +162,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     const auto nodeExistsInSnapshot = snapshot->exists(nodeId);
     bool nodeIdReused = false;
 #ifdef __unix__
-    if (const ExitInfo exitInfo = isReusedNodeId(nodeId, dbNode, snapshot, nodeIdReused); !exitInfo) {
-        setExitCause(exitInfo.cause());
-        return exitInfo.code();
-    }
+    isReusedNodeId(nodeId, dbNode, snapshot, nodeIdReused);
 #endif __unix__
 
     if (side == ReplicaSide::Remote) {
@@ -761,13 +758,13 @@ bool ComputeFSOperationWorker::isPathTooLong(const SyncPath &path, const NodeId 
 }
 
 #ifdef __unix__
-ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const DbNode &dbNode,
+void ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const DbNode &dbNode,
                                                   const std::shared_ptr<const Snapshot> &snapshot, bool &isReused) const {
     isReused = false;
 
     // Check if the node is in the snapshot
     if (snapshot->side() != ReplicaSide::Local || !snapshot->exists(localNodeId)) {
-        return ExitCode::Ok;
+        return;
     }
 
     // Check if the node type has changed
@@ -776,7 +773,7 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
         isReused = true;
         LOGW_SYNCPAL_DEBUG(_logger, L"Node type has changed for " << Utility::s2ws(localNodeId) << L" from " << dbNode.type()
                                                                   << L" to " << snapshot->type(localNodeId));
-        return ExitCode::Ok;
+        return;
     }
 
     /* The nodeId will be considered as reused if each of the following has changed :
@@ -789,12 +786,12 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
 
     // Check if the creation date has changed
     if (snapshot->createdAt(localNodeId) == dbNode.created().value()) {
-        return ExitCode::Ok;
+        return;
     }
 
     // Check if the node name has changed:
     if (snapshot->name(localNodeId) == dbNode.nameLocal()) {
-        return ExitCode::Ok;
+        return;
     }
 
     // For a directory, the last modified date in db is not updated when a child is added or removed, but only when the directory
@@ -810,12 +807,12 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
 
     // Check if the mtime has changed
     if (snapshot->lastModified(localNodeId) == dbNode.lastModified(ReplicaSide::Local)) {
-        return ExitCode::Ok;
+        return;
     }
 
     // Check if the node size has changed
     if (snapshot->size(localNodeId) == dbNode.size()) {
-        return ExitCode::Ok;
+        return;
     }
 
     LOGW_SYNCPAL_DEBUG(_logger, L"Size (old: "
@@ -827,7 +824,6 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
                                         << Utility::formatSyncName(snapshot->name(localNodeId)) << L") have all changed for "
                                         << Utility::s2ws(localNodeId) << L". Node is reused.");
     isReused = true;
-    return ExitCode::Ok;
 }
 #endif // __unix__
 
