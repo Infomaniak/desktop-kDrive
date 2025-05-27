@@ -26,11 +26,11 @@ class LocalCreateDirJob : public AbstractJob {
     public:
         LocalCreateDirJob(const SyncPath &destFilepath);
 
-        inline SyncPath destFilePath() const { return _destFilePath; }
+        SyncPath destFilePath() const { return _destFilePath; }
 
-        inline const NodeId &nodeId() const { return _nodeId; }
-        inline SyncTime modtime() const { return _modtime; }
-
+        const NodeId &nodeId() const { return _nodeId; }
+        SyncTime modtime() const { return _modtime; }
+        SyncTime crtime() const { return _crtime; }
     protected:
         virtual bool canRun() override;
 
@@ -41,6 +41,7 @@ class LocalCreateDirJob : public AbstractJob {
 
         NodeId _nodeId;
         SyncTime _modtime = 0;
+        SyncTime _crtime = 0;
 };
 
 } // namespace KDC
