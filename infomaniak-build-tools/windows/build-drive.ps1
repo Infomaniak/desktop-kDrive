@@ -382,8 +382,8 @@ function Prepare-Archive {
     }
     $find_dep_script = "$path/infomaniak-build-tools/conan/find_conan_dep.ps1"
 
-    $xxhash_folder = & $find_dep_script -Package "xxhash" -Version "0.8.2"
-    $log4cplus_folder = & $find_dep_script -Package "log4cplus" -Version "2.1.2"
+    $xxhash_folder = & $find_dep_script -Package "xxhash" -Version "0.8.2" -Ci
+    $log4cplus_folder = & $find_dep_script -Package "log4cplus" -Version "2.1.2" -Ci
 
     Copy-Item -Path "$xxhash_folder/bin/xxhash.dll" -Destination "$archivePath"
     Copy-Item -Path "$log4cplus/bin/log4cplus.dll" -Destination "$archivePath"

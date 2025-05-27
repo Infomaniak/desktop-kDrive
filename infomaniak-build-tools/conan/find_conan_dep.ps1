@@ -2,9 +2,12 @@
 
 param(
     [Parameter(Mandatory=$true)][string]$Package,
-    [Parameter(Mandatory=$true)][string]$Version
+    [Parameter(Mandatory=$true)][string]$Version,
+    [Parameter(Mandatory=$false)][switch]$CI
 )
 
+function Log { Write-Host "[INFO] $($args -join ' ')" }
+function Err { Write-Error "[ERROR] $($args -join ' ')" ; exit 1 }
 function Get-ConanExePath {
     try {
         $cmd = Get-Command conan.exe -ErrorAction Stop
@@ -45,6 +48,15 @@ print(exe)
 
     Log "Conan executable found at: $exePath"
     return $exePath
+}
+
+if ($CI) {
+    # Activate the python virtual environment.
+    & "C:\Program Files\Python313\.venv\Scripts\activate.ps1"
+
+    # Call vcvarsall.bat to set up the environment for MSVC
+    & "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
+    Log "CI mode enabled."
 }
 
 $reference = "$Package/$Version"
