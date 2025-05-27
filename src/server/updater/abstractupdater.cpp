@@ -96,7 +96,7 @@ bool AbstractUpdater::isVersionSkipped(const std::string& version) {
     if (seenVerison.empty()) return false;
 
     if (seenVerison == version || CommonUtility::isVersionLower(version, seenVerison)) {
-        LOG_INFO(Log::instance()->getLogger(), "Version " << seenVerison.c_str() << " has been skipped.");
+        LOG_INFO(Log::instance()->getLogger(), "Version " << seenVerison << " has been skipped.");
         return true;
     }
     return false;

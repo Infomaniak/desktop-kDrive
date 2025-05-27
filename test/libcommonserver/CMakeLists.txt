@@ -33,7 +33,7 @@ if (APPLE)
 endif ()
 
 if (WIN32)
-    list(APPEND testcommonserver_SRCS io/testcreatejunction.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp)
+    list(APPEND testcommonserver_SRCS io/testcreatejunction.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testgetlongpathname.cpp)
 endif ()
 
 if (WIN32)

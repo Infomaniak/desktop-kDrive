@@ -50,15 +50,32 @@ fi
 
 export KDRIVE_DEBUG=0
 
+folder=$PWD
+cd /src
+
+conan_folder=/build/conan
+
+bash /src/infomaniak-build-tools/conan/build_dependencies.sh Release --output-dir="$conan_folder"
+
+conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
+
+if [ ! -f "$conan_toolchain_file" ]; then
+  echo "Conan toolchain file not found: $conan_toolchain_file"
+  exit 1
+fi
+
+cd "$folder"
+
 cmake -DCMAKE_PREFIX_PATH=$QT_BASE_DIR \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DQT_FEATURE_neon=OFF \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DKDRIVE_THEME_DIR="/src/infomaniak" \
     -DBUILD_UNIT_TESTS=0 \
+	  -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
     "${CMAKE_PARAMS[@]}" \
     /src
-make -j4
+make "-j$(nproc)"
 
 objcopy --only-keep-debug ./bin/kDrive ../kDrive.dbg
 objcopy --strip-debug ./bin/kDrive
@@ -80,7 +97,7 @@ cp -P -r /opt/qt6.2.3/libexec ./usr
 cp -P -r /opt/qt6.2.3/resources ./usr
 cp -P -r /opt/qt6.2.3/translations ./usr
 
-mv ./usr/lib/x86_64-linux-gnu/* ./usr/lib/
+mv ./usr/lib/x86_64-linux-gnu/* ./usr/lib/ || echo "The folder /app/usr/lib/x86_64-linux-gnu/ might not exist." >&2
 
 cp -P /usr/local/lib/libssl.so* ./usr/lib/
 cp -P /usr/local/lib/libcrypto.so* ./usr/lib/
@@ -89,6 +106,8 @@ cp -P -r /usr/lib/x86_64-linux-gnu/nss ./usr/lib/
 
 cp -P /opt/qt6.2.3/lib/libQt6WaylandClient.so* ./usr/lib
 cp -P /opt/qt6.2.3/lib/libQt6WaylandEglClientHwIntegration.so* ./usr/lib
+
+find /root/.conan2/p/ -name 'libxxhash.so*' -exec cp -P {} ./usr/lib/ \;
 
 mkdir -p ./usr/qml
 
