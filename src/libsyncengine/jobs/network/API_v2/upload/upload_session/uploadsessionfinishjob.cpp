@@ -60,6 +60,7 @@ bool UploadSessionFinishJob::handleResponse(std::istream &is) {
     if (!replyHandler.extractData(jsonRes())) return false;
     _nodeId = replyHandler.nodeId();
     _modtimeOut = replyHandler.modtime();
+    _sizeOut = replyHandler.size();
 
     return true;
 }

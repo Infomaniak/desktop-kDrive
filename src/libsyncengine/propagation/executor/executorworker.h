@@ -117,11 +117,9 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propagateChange);
         ExitInfo propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job, std::shared_ptr<Node> &node);
         ExitInfo propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newLastModTime,
-                                            std::optional<SyncTime> newLastCrTime,
-                                            std::shared_ptr<Node> &node);
+                                            std::optional<SyncTime> newLastCrTime, std::shared_ptr<Node> &node, int64_t newSize = -1);
         ExitInfo propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newLastModTime,
-                                          std::optional<SyncTime> newLastCrTime,
-                                          std::shared_ptr<Node> &node);
+                                          std::optional<SyncTime> newLastCrTime, std::shared_ptr<Node> &node, int64_t newSize = -1);
         ExitInfo propagateMoveToDbAndTree(SyncOpPtr syncOp);
         ExitInfo propagateDeleteToDbAndTree(SyncOpPtr syncOp);
         ExitInfo deleteFromDb(std::shared_ptr<Node> node);

@@ -38,6 +38,7 @@ bool UploadJobReplyHandler::extractData(const Poco::JSON::Object::Ptr jsonRes) {
 
     if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeIdOut)) return false;
     if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtimeOut)) return false;
+    if (!JsonParserUtility::extractValue(dataObj, sizeKey, _sizeOut)) return false;
 
     if (_modtimeIn != _modtimeOut) {
         // The backend refused the modification time. To avoid further EDIT operations, we apply the backend's time on local file.
