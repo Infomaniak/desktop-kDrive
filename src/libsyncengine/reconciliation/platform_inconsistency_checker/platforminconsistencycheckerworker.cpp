@@ -50,7 +50,7 @@ void PlatformInconsistencyCheckerWorker::execute() {
         }
     }
 
-    LOG_SYNCPAL_DEBUG(_logger, "Platform Inconsistency checked tree in: " << timer.elapsed().count() << "s");
+    LOG_SYNCPAL_DEBUG(_logger, "Platform Inconsistency checked tree in: " << timer.elapsed<DoubleSeconds>().count() << "s");
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
     setDone(ExitCode::Ok);

@@ -42,7 +42,7 @@ void OperationSorterWorker::execute() {
     _filter.filterOperations();
     sortOperations();
 
-    LOG_SYNCPAL_INFO(_logger, "Operation sorting finished in: " << timer.elapsed().count() << "s");
+    LOG_SYNCPAL_INFO(_logger, "Operation sorting finished in: " << timer.elapsed<DoubleSeconds>().count() << "s");
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
     setDone(ExitCode::Ok);
