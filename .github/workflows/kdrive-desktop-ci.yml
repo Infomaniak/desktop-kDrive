@@ -62,7 +62,7 @@ jobs:
     
 
 # Tests Windows
-  Test-Wisndows:
+  Test-Windows:
     needs: build-Windows
     strategy:
       fail-fast: false
@@ -78,7 +78,7 @@ jobs:
           ref: ${{ github.head_ref }}
 
        - name: Run test
-         uses: ./.github/actions/run_test_windows
+         uses: ./.github/actions/test_windows
          with:  
             test_name: ${{ matrix.test_name }}
             test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
@@ -100,7 +100,7 @@ jobs:
           ref: ${{ github.head_ref }}
 
        - name: Run test
-         uses: ./.github/actions/run_test_linux
+         uses: ./.github/actions/test_linux
          with:  
             test_name: ${{ matrix.test_name }}
             test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
@@ -122,7 +122,7 @@ jobs:
           ref: ${{ github.head_ref }}
 
        - name: Run test
-         uses: ./.github/actions/run_test_macos
+         uses: ./.github/actions/test_macos
          with:  
             test_name: ${{ matrix.test_name }}
             test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
