@@ -78,7 +78,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
         SyncTime _crtimeIn = 0;
         SyncTime _modtimeIn = 0;
         SyncTime _crtimeOut = 0; // The effective creation time of the file on the local filesystem, it may differ from
-                                       // _crtimeIn if we fail to set it locally
+                                 // _crtimeIn if we fail to set it locally
         bool _isCreate = false;
         bool _ignoreDateTime = false;
         bool _responseHandlingCanceled = false;
