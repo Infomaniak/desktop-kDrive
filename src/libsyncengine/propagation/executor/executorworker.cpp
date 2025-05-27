@@ -1641,13 +1641,13 @@ ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::share
         case OperationType::Edit: {
             NodeId nodeId;
             SyncTime modtime = 0;
-            std::optional<SyncTime> crtime;
+            std::optional<SyncTime> creationTime;
             int64_t size = -1;
             if (syncOp->targetSide() == ReplicaSide::Local) {
                 auto castJob(std::dynamic_pointer_cast<DownloadJob>(job));
                 nodeId = castJob->localNodeId();
                 modtime = castJob->modtime();
-                crtime = castJob->crtime();
+                creationTime = castJob->creationTime();
             } else {
                 bool jobOk = false;
                 auto uploadJob(std::dynamic_pointer_cast<UploadJob>(job));
@@ -1673,10 +1673,10 @@ ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::share
             }
 
             if (syncOp->type() == OperationType::Create) {
-                return propagateCreateToDbAndTree(syncOp, nodeId, modtime, crtime ? crtime : syncOp->affectedNode()->createdAt(),
+                return propagateCreateToDbAndTree(syncOp, nodeId, modtime, creationTime ? creationTime : syncOp->affectedNode()->createdAt(),
                                                   node, size);
             } else {
-                return propagateEditToDbAndTree(syncOp, nodeId, modtime, crtime ? crtime : syncOp->affectedNode()->createdAt(),
+                return propagateEditToDbAndTree(syncOp, nodeId, modtime, creationTime ? creationTime : syncOp->affectedNode()->createdAt(),
                                                 node, size);
             }
         }
@@ -2113,7 +2113,7 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
         auto castJob(std::dynamic_pointer_cast<LocalCreateDirJob>(job));
         newNodeId = castJob->nodeId();
         newModTime = castJob->modtime();
-        newCrTime = castJob->crtime();
+        newCrTime = castJob->creationTime();
     } else {
         auto castJob(std::dynamic_pointer_cast<CreateDirJob>(job));
         newNodeId = castJob->nodeId();

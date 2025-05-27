@@ -51,7 +51,7 @@ DownloadJob::DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const N
     _remoteFileId(remoteFileId),
     _localpath(localpath),
     _expectedSize(expectedSize),
-    _crtimeIn(creationTime),
+    _creationTimeIn(creationTime),
     _modtimeIn(modtime),
     _isCreate(isCreate),
     _vfs(vfs) {
@@ -284,7 +284,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
     }
     if (!_ignoreDateTime) {
         bool exists = false;
-        if (!Utility::setFileDates(_localpath, std::make_optional<KDC::SyncTime>(_crtimeIn),
+        if (!Utility::setFileDates(_localpath, std::make_optional<KDC::SyncTime>(_creationTimeIn),
                                    std::make_optional<KDC::SyncTime>(_modtimeIn), isLink, exists)) {
             LOGW_WARN(_logger, L"Error in Utility::setFileDates: " << Utility::formatSyncPath(_localpath));
             // Do nothing (remote file will be updated during the next sync)
@@ -316,7 +316,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
     }
 
     _localNodeId = std::to_string(filestat.inode);
-    _crtimeOut = filestat.creationTime;
+    _creationTimeOut = filestat.creationTime;
     _exitInfo = ExitCode::Ok;
 
     return true;

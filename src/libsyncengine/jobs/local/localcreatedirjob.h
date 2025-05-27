@@ -30,7 +30,7 @@ class LocalCreateDirJob : public AbstractJob {
 
         const NodeId &nodeId() const { return _nodeId; }
         SyncTime modtime() const { return _modtime; }
-        SyncTime crtime() const { return _crtime; }
+        SyncTime creationTime() const { return _creationTime; }
     protected:
         virtual bool canRun() override;
 
@@ -41,7 +41,7 @@ class LocalCreateDirJob : public AbstractJob {
 
         NodeId _nodeId;
         SyncTime _modtime = 0;
-        SyncTime _crtime = 0;
+        SyncTime _creationTime = 0;
 };
 
 } // namespace KDC
