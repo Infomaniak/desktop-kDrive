@@ -60,7 +60,7 @@ class KDriveDesktop(ConanFile):
 
         if self.settings.os == "Macos":
             # On macOS, we need to use the universal version of OpenSSL
-            self.requires("openssl-universal/3.2.4@infomaniak/universal")
+            self.requires("openssl-universal/3.2.4")
         else:
             self.requires("openssl/3.2.4") # From https://conan.io/center/recipes/openssl
 

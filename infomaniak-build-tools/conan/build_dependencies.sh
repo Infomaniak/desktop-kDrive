@@ -96,7 +96,7 @@ conan create "$conan_recipes_folder/xxhash/all/" --build=missing $macos_arch -s:
 
 if [ "$platform" = "darwin" ]; then
   log "Creating openssl package..."
-  bash "$conan_recipes_folder/openssl-universal/3.2.4/openssl_universal_build.sh" --local_recipe_remote_name "$local_recipe_remote_name"
+  conan create "$conan_recipes_folder/openssl-universal/3.2.4/" --build=missing -r="$local_recipe_remote_name" -r=conancenter
 fi
 
 log "Installing dependencies..."

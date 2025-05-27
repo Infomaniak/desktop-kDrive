@@ -5,9 +5,7 @@ set -euox pipefail
 openssl_version="3.2.4"
 
 openssl_git_tag="openssl-${openssl_version}"
-master_temp_folder="$(mktemp -d)"
 src_url="https://github.com/openssl/openssl.git"
-recipe_folder="$PWD/infomaniak-build-tools/conan/recipes/openssl-universal/3.2.4"
 
 minimum_macos_version="10.15"
 
@@ -15,22 +13,18 @@ log() { echo -e "[INFO] $*"; }
 error() { echo -e "[ERROR] $*" >&2; exit 1; }
 
 # local_recipe_remote_name is the name of the local conan 'remote' given by the build_dependencies.sh script
-local_recipe_remote_name=""
+build_folder=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --local_recipe_remote_name)
-      local_recipe_remote_name="$2"
+    --build-folder)
+      build_folder="$2"
       shift 2
       ;;
     *)
-      error "Option inconnue : $1"
+      error "Unknown parameter : $1"
       ;;
   esac
 done
-
-if [ ! -d "infomaniak-build-tools/conan" ]; then
-  error "Please run this script from the root of the repository."
-fi
 
 if ! command -v conan >/dev/null 2>&1; then
   error "Conan is not installed. Please install it first."
@@ -40,7 +34,7 @@ if ! conan profile show 2>/dev/null | grep "arch=" | head -n 1 | cut -d'=' -f 2 
   error "This script should be run with a Conan profile that has multi-architecture support enabled (arch=armv8|x86_64)."
 fi
 
-pushd "$master_temp_folder"
+pushd "$build_folder"
 log "Cloning OpenSSL sources..."
 git clone --depth 1 --branch "$openssl_git_tag" "$src_url" openssl
 
@@ -73,15 +67,11 @@ install_name_tool -id "@rpath/libcrypto.3.dylib" openssl.multi/lib/libcrypto.3.d
 
 cp -R openssl.x86_64/include openssl.multi/include
 
-log "Copying universal OpenSSL into Conan recipe..."
-mkdir -p "$recipe_folder"/{lib,include}
-cp -R openssl.multi/lib/* "$recipe_folder/lib/"
-cp -R openssl.multi/include/* "$recipe_folder/include/"
+#log "Copying universal OpenSSL into Conan recipe..."
+#mkdir -p "$recipe_folder"/{lib,include}
+#cp -R openssl.multi/lib/* "$recipe_folder/lib/"
+#cp -R openssl.multi/include/* "$recipe_folder/include/"
 
 popd
-rm -rf "$master_temp_folder"
-
-log "Creating wrapper Conan package..."
-conan create "$recipe_folder" --user=infomaniak --channel=universal -r="$local_recipe_remote_name" --build=missing -r=conancenter
 
 log "Done."
