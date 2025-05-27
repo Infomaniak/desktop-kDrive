@@ -3,7 +3,8 @@
 param(
     [Parameter(Mandatory=$true)][string]$Package,
     [Parameter(Mandatory=$true)][string]$Version,
-    [Parameter(Mandatory=$false)][switch]$CI
+    [Parameter(Mandatory=$false)][switch]$CI,
+    [Parameter(Mandatory=$false)][switch]$Debug
 )
 
 function Log { Write-Host "[INFO] $($args -join ' ')" }
@@ -16,6 +17,7 @@ function Get-ConanExePath {
 
     try {
         $pythonCmd = Get-Command python -ErrorAction Stop
+        if ($Debug) { Write-Error "python interpreter found at: $($pythonCmd.Path)" }
     } catch {
         Err "Interpreter 'python' not found. Please install Python 3 and/or add it to the PATH."
         return $null
@@ -39,11 +41,13 @@ print(exe)
         Err "Unable to locate 'conan.exe' via Python."
         return $null
     }
+    if ($Debug) { Write-Error "Conan executable found at: $($cmd.Path)" }
     return $exePath
 }
 
 if ($CI) {
     & "C:\Program Files\Python313\.venv\Scripts\activate.ps1"
+    if ($Debug) { Write-Error "CI Mode enabled." }
 }
 
 $reference = "$Package/$Version"
@@ -54,7 +58,13 @@ if (-not (Get-Command sqlite3 -ErrorAction SilentlyContinue)) {
 }
 
 $conan_exe = Get-ConanExePath
-$conan_home = & $conan_exe config home
+if (-not $conan_exe) { Err "Conan executable not found." }
+if ($CI) {
+    $conan_home = "C:\Windows\System32\config\systemprofile\.conan2"
+} else {
+    $conan_home = & $conan_exe config home
+    if ($Debug) { Write-Error "conan config home: $(conan_home)" }
+}
 $conan_db = Join-Path $conan_home "p\cache.sqlite3"
 
 if (-not (Test-Path $conan_db)) {
