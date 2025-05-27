@@ -979,7 +979,9 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersi
     if (CommonUtility::isVersionLower(fromVersion, toVersion)) {
         LOG_INFO(_logger, "Upgrade " << dbType() << " DB from " << fromVersion << " to " << toVersion);
 #ifdef _WIN32
-        replaceShortDbPathsWithLongPaths();
+        if (!replaceShortDbPathsWithLongPaths()) {
+            LOG_WARN(_logger, "Failed to replace short DB paths with long ones.");
+        }
 #endif
     } else {
         LOG_INFO(_logger, "Apply generic upgrade fixes to " << dbType() << " DB version " << fromVersion);
@@ -3000,12 +3002,12 @@ bool ParmsDb::replaceShortDbPathsWithLongPaths() {
     for (auto &sync: syncList) {
         SyncPath longPathName;
         auto ioError = IoError::Success;
-        if (!IoHelper::getLongPathName(sync.dbPath(), longPathName, ioError) || ioError != IoError::Success) {
+        if (!IoHelper::getLongPathName(sync.dbPath(), longPathName, ioError)) {
             LOGW_WARN(_logger, L"Error in IoHelper::getLongPathName: " << Utility::formatIoError(sync.dbPath(), ioError));
             continue;
         }
         bool exists = false;
-        if (!IoHelper::checkIfPathExists(longPathName, exists, ioError) || ioError != IoError::Success) {
+        if (!IoHelper::checkIfPathExists(longPathName, exists, ioError)) {
             LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(sync.dbPath(), ioError));
             continue;
         } else if (!exists) {
