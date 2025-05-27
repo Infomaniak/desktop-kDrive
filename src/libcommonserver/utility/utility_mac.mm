@@ -118,7 +118,7 @@ bool setFileDates(const SyncPath &filePath, std::optional<KDC::SyncTime> creatio
     bool ret = false;
     if (symlink) {
         if (cDate) {
-            ret = [[NSURL fileURLWithPath:filePathStr isDirectory:NO] setResourceValue:mDate
+            ret = [[NSURL fileURLWithPath:filePathStr isDirectory:NO] setResourceValue:cDate
                                                                                 forKey:NSURLCreationDateKey
                                                                                  error:&error];
             if (!ret) {
