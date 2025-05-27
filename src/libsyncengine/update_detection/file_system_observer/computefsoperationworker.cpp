@@ -505,10 +505,6 @@ void ComputeFSOperationWorker::logOperationGeneration(const ReplicaSide side, co
         return;
     }
 
-    if (side == ReplicaSide::Remote && fsOp->operationType() == OperationType::Edit) {
-        int test = 0;
-    }
-
     std::wstringstream ss;
     ss << L"Generate " << side << L" " << fsOp->operationType() << L" FS operation. ";
     ss << L"type=" << (fsOp->objectType() == NodeType::Directory ? L"dir" : L"file");
