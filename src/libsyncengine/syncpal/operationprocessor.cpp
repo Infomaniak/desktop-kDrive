@@ -57,8 +57,7 @@ bool OperationProcessor::editChangeShouldBePropagated(std::shared_ptr<Node> affe
         return true;
     }
 
-    if (affectedNode->side() == ReplicaSide::Local && affectedNode->size() == affectedDbNode.size() &&
-        affectedNode->lastmodified() == affectedDbNode.lastModifiedLocal() &&
+    if (affectedNode->size() == affectedDbNode.size() && affectedNode->lastmodified() == affectedDbNode.lastModifiedLocal() &&
         affectedNode->createdAt() != affectedDbNode.created()) {
         return false;
     }
