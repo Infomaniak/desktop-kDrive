@@ -1695,7 +1695,7 @@ ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::share
     return ExitCode::LogicError;
 }
 
-ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId,
+ExitInfo ExecutorWorker::propagateCreateToDbAndTree(const SyncOpPtr syncOp, const NodeId &newNodeId,
                                                     std::optional<SyncTime> newLastModTime, std::optional<SyncTime> newCrtime,
                                                     std::shared_ptr<Node> &node, const int64_t newSize) {
     std::shared_ptr<Node> newCorrespondingParentNode = nullptr;
