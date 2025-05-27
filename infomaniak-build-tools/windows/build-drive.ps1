@@ -356,7 +356,6 @@ function Prepare-Archive {
     $dependencies = @(
         "${env:ProgramFiles(x86)}/zlib-1.2.11/bin/zlib1",
         "${env:ProgramFiles(x86)}/libzip/bin/zip",
-        "${env:ProgramFiles(x86)}/log4cplus/bin/log4cplusU",
         "${env:ProgramFiles}/OpenSSL/bin/libcrypto-3-x64",
         "${env:ProgramFiles}/OpenSSL/bin/libssl-3-x64",
         "${env:ProgramFiles(x86)}/Poco/bin/PocoCrypto",
