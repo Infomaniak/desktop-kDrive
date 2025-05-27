@@ -62,19 +62,6 @@ jobs:
     
 
 # Tests Windows
-  Test-Windows:
-    needs: build-Windows
-    uses: ./.github/workflows/run-test-win.yml
-    with: 
-      test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
-      test_common_name: kDrive_test_common
-      test_common_server_name: kDrive_test_common_server
-      test_server_name: kDrive_test_server
-      test_syncengine_name: kDrive_test_syncengine
-      test_parms_name: kDrive_test_parms
-    secrets: inherit
-
-# Tests Windows
   Test-Wisndows:
     needs: build-Windows
     strategy:
