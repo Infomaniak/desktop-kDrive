@@ -504,19 +504,20 @@ void ComputeFSOperationWorker::logOperationGeneration(const ReplicaSide side, co
         return;
     }
 
+    std::wstringstream ss;
+    ss << L"Generate " << side << L" " << fsOp->operationType() << L" FS operation. ";
+    ss << L"type=" << (fsOp->objectType() == NodeType::Directory ? L"dir" : L"file");
     if (fsOp->operationType() == OperationType::Move) {
-        LOGW_SYNCPAL_DEBUG(_logger, L"Generate " << side << L" " << fsOp->operationType() << L" FS operation from "
-                                                 << (fsOp->objectType() == NodeType::Directory ? L"dir with " : L"file with ")
-                                                 << Utility::formatSyncPath(fsOp->path()) << L" to "
-                                                 << Utility::formatSyncPath(fsOp->destinationPath()) << L" ("
-                                                 << Utility::s2ws(fsOp->nodeId()) << L")");
-        return;
+        ss << L", from " << Utility::formatSyncPath(fsOp->path()) << L", to " << Utility::formatSyncPath(fsOp->destinationPath());
+    } else {
+        ss << L", " << Utility::formatSyncPath(fsOp->path());
     }
+    ss << L", id=" << Utility::s2ws(fsOp->nodeId());
+    ss << L", last modification time=" << fsOp->lastModified();
+    ss << L", created at=" << fsOp->createdAt();
+    ss << L", size=" << fsOp->size();
 
-    LOGW_SYNCPAL_DEBUG(_logger, L"Generate " << side << L" " << fsOp->operationType() << L" FS operation on "
-                                             << (fsOp->objectType() == NodeType::Directory ? L"dir with " : L"file with ")
-                                             << Utility::formatSyncPath(fsOp->path()) << L" (" << Utility::s2ws(fsOp->nodeId())
-                                             << L")");
+    LOGW_SYNCPAL_DEBUG(_logger, ss.str())
 }
 
 ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {

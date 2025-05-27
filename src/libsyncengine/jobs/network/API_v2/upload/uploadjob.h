@@ -40,6 +40,7 @@ class UploadJob : public AbstractTokenNetworkJob {
 
         const NodeId &nodeId() const { return _nodeIdOut; }
         SyncTime modtime() const { return _modtimeOut; }
+        int64_t size() const { return _sizeOut; }
 
     protected:
         bool canRun() override;
@@ -63,6 +64,7 @@ class UploadJob : public AbstractTokenNetworkJob {
 
         NodeId _nodeIdOut;
         SyncTime _modtimeOut = 0;
+        int64_t _sizeOut = 0;
 
         LinkType _linkType = LinkType::None;
         SyncPath _linkTarget;

@@ -30,7 +30,8 @@
 namespace KDC {
 
 Snapshot::Snapshot(ReplicaSide side, const DbNode &dbNode) :
-    _side(side), _rootFolderId(side == ReplicaSide::Local ? dbNode.nodeIdLocal().value() : dbNode.nodeIdRemote().value()) {
+    _side(side),
+    _rootFolderId(side == ReplicaSide::Local ? dbNode.nodeIdLocal().value() : dbNode.nodeIdRemote().value()) {
     _revisionHandlder = std::make_shared<SnapshotRevisionHandler>();
     _items.try_emplace(_rootFolderId, std::make_shared<SnapshotItem>(_rootFolderId))
             .first->second->setSnapshotRevisionHandler(_revisionHandlder);
@@ -156,7 +157,8 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
 
     if (ParametersCache::isExtendedLogEnabled()) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Item: " << SyncName2WStr(item->name()) << L" (" << Utility::s2ws(item->id())
-                                                           << L") updated at:" << item->lastModified());
+                                                           << L") updated: lastModified=" << item->lastModified()
+                                                           << L", createdAt=" << item->createdAt() << L", size=" << item->size());
     }
     return true;
 }

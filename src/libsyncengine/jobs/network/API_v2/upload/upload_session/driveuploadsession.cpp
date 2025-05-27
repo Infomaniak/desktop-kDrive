@@ -92,6 +92,7 @@ bool DriveUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessio
 bool DriveUploadSession::handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) {
     _nodeId = finishJob->nodeId();
     _modtimeOut = finishJob->modtime();
+    _sizeOut = finishJob->size();
 
     if (bool found = false; _syncDb && !_syncDb->deleteUploadSessionTokenByDbId(_uploadSessionTokenDbId, found)) {
         LOG_WARN(getLogger(), "Error in SyncDb::deleteUploadSessionTokenByDbId");
