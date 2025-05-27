@@ -804,6 +804,7 @@ void ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const D
                                             << L") and name (old: " << Utility::formatSyncName(dbNode.nameLocal()) << L" / new: "
                                             << Utility::formatSyncName(snapshot->name(localNodeId)) << L") changed for"
                                             << Utility::s2ws(localNodeId) << L". Node is reused.");
+        return;
     }
 
     // Check if the mtime has changed
