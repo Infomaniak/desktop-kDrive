@@ -100,6 +100,7 @@ void LocalCreateDirJob::runJob() {
 
         _nodeId = std::to_string(filestat.inode);
         _modtime = filestat.modtime;
+        _creationTime = filestat.creationTime;
     }
 }
 
