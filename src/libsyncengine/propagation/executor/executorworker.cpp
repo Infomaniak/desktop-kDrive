@@ -1696,7 +1696,7 @@ ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::share
 }
 
 ExitInfo ExecutorWorker::propagateCreateToDbAndTree(const SyncOpPtr syncOp, const NodeId &newNodeId,
-                                                    std::optional<SyncTime> newLastModTime, std::optional<SyncTime> newCrtime,
+                                                    std::optional<SyncTime> newLastModTime, std::optional<SyncTime> newCreationTime,
                                                     std::shared_ptr<Node> &node, const int64_t newSize) {
     std::shared_ptr<Node> newCorrespondingParentNode = nullptr;
     if (affectedUpdateTree(syncOp)->rootNode() == syncOp->affectedNode()->parentNode()) {
@@ -1728,7 +1728,7 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(const SyncOpPtr syncOp, cons
         return ExitCode::DataError;
     }
 
-    DbNode dbNode(0, newCorrespondingParentNode->idb(), localName, remoteName, localId, remoteId, newCrtime, newLastModTime,
+    DbNode dbNode(0, newCorrespondingParentNode->idb(), localName, remoteName, localId, remoteId, newCreationTime, newLastModTime,
                   newLastModTime, syncOp->affectedNode()->type(), size,
                   "", // TODO : change it once we start using content checksum
                   syncOp->omit() ? SyncFileStatus::Success : SyncFileStatus::Unknown);
@@ -1741,7 +1741,7 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(const SyncOpPtr syncOp, cons
                                    << L" / remoteId=" << Utility::s2ws(remoteId) << L" / parent DB ID="
                                    << (newCorrespondingParentNode->idb().has_value() ? newCorrespondingParentNode->idb().value()
                                                                                      : -1)
-                                   << L" / createdAt=" << newCrtime.value_or(-1) << L" / lastModTime="
+                                   << L" / createdAt=" << newCreationTime.value_or(-1) << L" / lastModTime="
                                    << (newLastModTime.has_value() ? *newLastModTime : -1) << L" / type="
                                    << syncOp->affectedNode()->type() << L" / size=" << size);
     }
@@ -1810,7 +1810,7 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(const SyncOpPtr syncOp, cons
         // insert new node
         node = std::shared_ptr<Node>(
                 new Node(newDbNodeId, syncOp->targetSide() == ReplicaSide::Local ? ReplicaSide::Local : ReplicaSide::Remote,
-                         remoteName, syncOp->affectedNode()->type(), OperationType::None, newNodeId, newCrtime, newLastModTime,
+                         remoteName, syncOp->affectedNode()->type(), OperationType::None, newNodeId, newCreationTime, newLastModTime,
                          size,
                          newCorrespondingParentNode));
         if (node == nullptr) {
@@ -1837,7 +1837,7 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(const SyncOpPtr syncOp, cons
 }
 
 ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId,
-                                                  std::optional<SyncTime> newLastModTime, std::optional<SyncTime> newCrtime,
+                                                  std::optional<SyncTime> newLastModTime, std::optional<SyncTime> newCreationTime,
                                                   std::shared_ptr<Node> &node, const int64_t newSize) {
     DbNode dbNode;
     bool found = false;
@@ -1875,7 +1875,7 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
     dbNode.setNodeIdRemote(remoteId);
     dbNode.setLastModifiedLocal(newLastModTime);
     dbNode.setLastModifiedRemote(newLastModTime);
-    dbNode.setCreated(newCrtime);
+    dbNode.setCreated(newCreationTime);
     dbNode.setSize(size);
     dbNode.setChecksum(""); // TODO : change it once we start using content checksum
     if (syncOp->omit()) {
@@ -1917,7 +1917,7 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
             return ExitCode::DataError;
         }
         syncOp->correspondingNode()->setLastModified(newLastModTime);
-        syncOp->correspondingNode()->setCreatedAt(newCrtime);
+        syncOp->correspondingNode()->setCreatedAt(newCreationTime);
     }
     node = syncOp->correspondingNode();
 
@@ -2108,12 +2108,12 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
 
     NodeId newNodeId;
     SyncTime newModTime = 0;
-    std::optional<SyncTime> newCrTime;
+    std::optional<SyncTime> newCreationTime;
     if (syncOp->targetSide() == ReplicaSide::Local) {
         auto castJob(std::dynamic_pointer_cast<LocalCreateDirJob>(job));
         newNodeId = castJob->nodeId();
         newModTime = castJob->modtime();
-        newCrTime = castJob->creationTime();
+        newCreationTime = castJob->creationTime();
     } else {
         auto castJob(std::dynamic_pointer_cast<CreateDirJob>(job));
         newNodeId = castJob->nodeId();
@@ -2127,7 +2127,7 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
     }
 
     std::shared_ptr<Node> newNode = nullptr;
-    if (ExitInfo exitInfo = propagateCreateToDbAndTree(syncOp, newNodeId, newModTime, newCrTime, newNode); !exitInfo) {
+    if (ExitInfo exitInfo = propagateCreateToDbAndTree(syncOp, newNodeId, newModTime, newCreationTime, newNode); !exitInfo) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
                                            << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
         return exitInfo;
