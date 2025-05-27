@@ -964,8 +964,8 @@ bool IoHelper::getLongPathName(const SyncPath &path, SyncPath &longPathName, IoE
     const auto &pathWStr = Path2WStr(path);
     if (pathWStr.size() > MAX_PATH_LENGTH_WIN_LONG) {
         ioError = IoError::FileNameTooLong;
-        LOGW_WARN(logger(), L"Error in GetLongPathNameW: " << L"Input file path length exceeds " << MAX_PATH_LENGTH_WIN_LONG
-                                                           << L", " << Utility::formatSyncPath(path));
+        LOGW_WARN(logger(),
+                  L"Input file path length exceeds " << MAX_PATH_LENGTH_WIN_LONG << L", " << Utility::formatSyncPath(path));
         return false;
     };
 
@@ -991,8 +991,8 @@ bool IoHelper::getShortPathName(const SyncPath &path, SyncPath &shortPathName, I
     const auto &pathWstr = Path2WStr(path);
     if (pathWstr.size() > MAX_PATH_LENGTH_WIN_LONG) {
         ioError = IoError::FileNameTooLong;
-        LOGW_WARN(logger(), L"Error in GetShortPathNameW: " << L"Input file path length exceeds " << MAX_PATH_LENGTH_WIN_LONG
-                                                            << L", " << Utility::formatSyncPath(path));
+        LOGW_WARN(logger(),
+                  L"Input file path length exceeds " << MAX_PATH_LENGTH_WIN_LONG << L", " << Utility::formatSyncPath(path));
         return false;
     };
 
