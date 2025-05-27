@@ -21,7 +21,6 @@ env:
   KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
 
-
 jobs:
 
 # Build apps
@@ -75,34 +74,73 @@ jobs:
       test_parms_name: kDrive_test_parms
     secrets: inherit
 
+# Tests Windows
+  Test-Wisndows:
+    needs: build-Windows
+    strategy:
+      fail-fast: false
+      matrix:
+        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
+    runs-on: [ self-hosted, Windows ]
+    env:
+      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
+    steps:
+       - name: Checkout the PR
+         uses: actions/checkout@v4.1.1
+         with:
+          ref: ${{ github.head_ref }}
+
+       - name: Run test
+         uses: ./.github/actions/run_test_windows
+         with:  
+            test_name: ${{ matrix.test_name }}
+            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
 # Tests Linux
   Test-Linux:
     needs: build-Linux
-    uses: ./.github/workflows/run-test-linux.yml
-    with: 
-      test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
-      test_common_name: kDrive_test_common
-      test_common_server_name: kDrive_test_common_server
-      test_server_name: kDrive_test_server
-      test_syncengine_name: kDrive_test_syncengine
-      test_parms_name: kDrive_test_parms
-    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
+    runs-on: [ self-hosted,  Linux, X64  ]
+    env:
+      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
+    steps:
+       - name: Checkout the PR
+         uses: actions/checkout@v4.1.1
+         with:
+          ref: ${{ github.head_ref }}
+
+       - name: Run test
+         uses: ./.github/actions/run_test_linux
+         with:  
+            test_name: ${{ matrix.test_name }}
+            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
 # Tests macOS
   Test-macOS:
     needs: build-MacOS
-    uses: ./.github/workflows/run-test-mac.yml
-    with: 
-      test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
-      test_common_name: kDrive_test_common
-      test_common_server_name: kDrive_test_common_server
-      test_server_name: kDrive_test_server
-      test_syncengine_name: kDrive_test_syncengine
-      test_parms_name: kDrive_test_parms
-    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
+    runs-on: [ self-hosted, macOS ]
+    env:
+      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
+    steps:
+       - name: Checkout the PR
+         uses: actions/checkout@v4.1.1
+         with:
+          ref: ${{ github.head_ref }}
 
-  Check-all-tests-results:
+       - name: Run test
+         uses: ./.github/actions/run_test_macos
+         with:  
+            test_name: ${{ matrix.test_name }}
+            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+
+  Unit-Tests:
     runs-on: [self-hosted, Windows]
     needs: [Test-Windows, Test-Linux, Test-macOS]
     steps:
