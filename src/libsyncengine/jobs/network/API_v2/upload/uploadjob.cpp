@@ -95,7 +95,7 @@ bool UploadJob::handleResponse(std::istream &is) {
         return false;
     }
 
-    UploadJobReplyHandler replyHandler(_absoluteFilePath, _creationTimeIn, _modificationTimeIn);
+    UploadJobReplyHandler replyHandler(_absoluteFilePath, IoHelper::isLink(_linkType), _creationTimeIn, _modificationTimeIn);
     if (!replyHandler.extractData(jsonRes())) return false;
     _nodeIdOut = replyHandler.nodeId();
     _creationTimeOut = replyHandler.creationTime();

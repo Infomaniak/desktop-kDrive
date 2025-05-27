@@ -60,7 +60,7 @@ bool UploadSessionFinishJob::handleResponse(std::istream &is) {
         return false;
     }
 
-    UploadJobReplyHandler replyHandler(_absoluteFilePath, _creationTimeIn, _modificationTimeIn);
+    UploadJobReplyHandler replyHandler(_absoluteFilePath, false, _creationTimeIn, _modificationTimeIn);
     if (!replyHandler.extractData(jsonRes())) return false;
     _nodeId = replyHandler.nodeId();
     _creationTimeOut = replyHandler.creationTime();

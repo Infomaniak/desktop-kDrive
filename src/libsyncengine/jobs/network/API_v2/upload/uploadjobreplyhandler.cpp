@@ -21,9 +21,10 @@
 
 namespace KDC {
 
-UploadJobReplyHandler::UploadJobReplyHandler(const SyncPath& absoluteFilePath, const SyncTime creationTime,
+UploadJobReplyHandler::UploadJobReplyHandler(const SyncPath& absoluteFilePath, bool isLink, const SyncTime creationTime,
                                              SyncTime modificationTime) :
     _absoluteFilePath(absoluteFilePath),
+    _isLink(isLink),
     _creationTimeIn(creationTime),
     _modificationTimeIn(modificationTime) {}
 
@@ -43,17 +44,18 @@ bool UploadJobReplyHandler::extractData(const Poco::JSON::Object::Ptr jsonRes) {
     if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modificationTimeOut)) return false;
 
     if (_creationTimeIn != _creationTimeOut || _modificationTimeIn != _modificationTimeOut) {
-        // The backend refused the creation/modification time. To avoid further EDIT operations, we apply the backend's time on
-        // local file.
-        if (const IoError ioError = IoHelper::setFileDates(_absoluteFilePath, _creationTimeOut, _modificationTimeOut, false);
-            ioError == IoError::Success) {
-            LOG_INFO(Log::instance()->getLogger(),
-                     "Creation/modification time(s) "
-                             << _creationTimeIn << "/" << _modificationTimeIn
-                             << " refused by the backend. The creation/modification time(s) has(have) been updated to "
-                             << _creationTimeOut << "/" << _modificationTimeOut << " on local file.");
-        } else {
-            LOG_WARN(Log::instance()->getLogger(), "Failed to change creation/modification time(s) on local file.");
+        // The backend refused the creation/modification time(s). To avoid further EDIT operations, we apply the backend's times
+        // on local file.
+        LOGW_INFO(Log::instance()->getLogger(), L"Applying backend creation/modification times."
+                                                        << L" Sent values: " << _creationTimeIn << L"/" << _modificationTimeIn
+                                                        << L" Returned values: " << _creationTimeOut << L"/"
+                                                        << _modificationTimeOut << L" for "
+                                                        << Utility::formatSyncPath(_absoluteFilePath));
+
+        if (const IoError ioError = IoHelper::setFileDates(_absoluteFilePath, _creationTimeOut, _modificationTimeOut, _isLink);
+            ioError != IoError::Success) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in IoHelper::setFileDates: " << Utility::formatIoError(_absoluteFilePath, ioError));
         }
     }
     return true;

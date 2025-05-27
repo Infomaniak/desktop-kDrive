@@ -20,7 +20,7 @@ namespace KDC {
 
 class UploadJobReplyHandler {
     public:
-        UploadJobReplyHandler(const SyncPath& absoluteFilePath, SyncTime creationTime, SyncTime modificationTime);
+        UploadJobReplyHandler(const SyncPath& absoluteFilePath, bool isLink, SyncTime creationTime, SyncTime modificationTime);
 
         bool extractData(Poco::JSON::Object::Ptr jsonRes);
 
@@ -30,6 +30,7 @@ class UploadJobReplyHandler {
 
     private:
         const SyncPath _absoluteFilePath;
+        const bool _isLink = false;
         const SyncTime _creationTimeIn = 0;
         const SyncTime _modificationTimeIn = 0;
 

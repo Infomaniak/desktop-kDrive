@@ -115,8 +115,7 @@ IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime /*creati
     times[0].tv_usec = 0;
     times[1].tv_sec = modificationDate; // Modify date
     times[1].tv_usec = 0;
-    int rc = lutimes(filePath.c_str(), times);
-    if (rc != 0) {
+    if (int rc = lutimes(filePath.c_str(), times); rc != 0) {
         return posixError2ioError(errno);
     }
 
