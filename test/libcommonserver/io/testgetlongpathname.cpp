@@ -32,16 +32,17 @@ namespace KDC {
 namespace {
 
 // https://stackoverflow.com/a/35717/4675396
-LONG GetDWORDRegKey(HKEY hKey, const std::wstring& strValueName, DWORD& nValue, DWORD nDefaultValue) {
-    nValue = nDefaultValue;
+LONG GetDWORDRegKey(const HKEY hKey, const std::wstring &strValueName, DWORD &numericValue, const DWORD numericDefaultValue) {
+    numericValue = numericDefaultValue;
     DWORD dwBufferSize(sizeof(DWORD));
-    DWORD nResult(0);
-    LONG nError = ::RegQueryValueExW(hKey, strValueName.c_str(), 0, NULL, reinterpret_cast<LPBYTE>(&nResult), &dwBufferSize);
-    if (ERROR_SUCCESS == nError) {
-        nValue = nResult;
+    DWORD numericResult(0);
+    LONG numericError = ::RegQueryValueExW(hKey, strValueName.c_str(), nullptr, nullptr, reinterpret_cast<LPBYTE>(&numericResult),
+                                           &dwBufferSize);
+    if (ERROR_SUCCESS == numericError) {
+        numericValue = nResult;
     }
 
-    return nError;
+    return numericError;
 }
 
 // Check whether the creation of 8dot3 names is activated on every volume (global registry value).
@@ -51,11 +52,11 @@ bool areShortNamesEnabled() {
     static const std::wstring regSubKey{L"SYSTEM\\CurrentControlSet\\Control\\FileSystem"};
     static const std::wstring regValue{L"NtfsDisable8dot3NameCreation"};
 
-    HKEY hKey;
+    HKEY hKey{0};
     (void) RegOpenKeyExW(HKEY_LOCAL_MACHINE, regSubKey.c_str(), 0, KEY_READ, &hKey);
 
     DWORD numericValue{3};
-    DWORD defaultValue{3};
+    const DWORD defaultValue{3};
     (void) GetDWORDRegKey(hKey, regValue, numericValue, defaultValue);
 
     return numericValue == 0;
@@ -95,9 +96,7 @@ void TestIo::testGetLongPathName() {
         SyncPath longPathName;
         auto ioError = IoError::Success;
         const SyncPath inputPath = temporaryDirectory.path() / "a_file_name_with_more_than_8_characters.txt";
-        {
-            std::ofstream ofs(inputPath);
-        }
+        { std::ofstream ofs(inputPath); }
 
         CPPUNIT_ASSERT(IoHelper::getLongPathName(inputPath, longPathName, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
@@ -126,9 +125,7 @@ void TestIo::testGetLongPathName() {
         auto ioError = IoError::Success;
 
         const SyncPath inputPath = temporaryDirectory.path() / makeFileNameWithEmojis();
-        {
-            std::ofstream ofs(inputPath);
-        }
+        { std::ofstream ofs(inputPath); }
         CPPUNIT_ASSERT(IoHelper::getLongPathName(inputPath, longPathName, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT_EQUAL(inputPath, longPathName);
