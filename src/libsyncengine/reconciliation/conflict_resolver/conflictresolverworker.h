@@ -55,7 +55,7 @@ class ConflictResolverWorker : public OperationProcessor {
 
         /**
          * @brief If we have a conflict between a local edit and a remote operation,
-         * and if the local edit is omitted (i.e., only propagating a creation date to the DB),
+         * and if the local edit is omitted (i.e., the local creation date is different from DB local creation date and that is the only difference),
          * the local omited edit will be propagated during the conflict resolution sync. The remote file will be pulled on next
          * sync.
          * @param conflict The conflict to be resolved.
