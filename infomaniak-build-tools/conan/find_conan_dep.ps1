@@ -3,8 +3,9 @@
 param(
     [Parameter(Mandatory=$true)][string]$Package,
     [Parameter(Mandatory=$true)][string]$Version,
-    [Parameter(Mandatory=$false)][switch]$CI,
-    [Parameter(Mandatory=$false)][switch]$VerboseLogging
+    [Parameter(Mandatory=$false)][switch]$CI = $false,
+    [Parameter(Mandatory=$false)][switch]$VerboseLogging = $false,
+    [Parameter(Mandatory=$false)][string]$PythonVenvPath = "C:\Program Files\Python313\.venv"
 )
 
 function Log { Write-Host "[INFO] $($args -join ' ')" }
@@ -46,7 +47,7 @@ print(exe)
 }
 
 if ($CI) {
-    & "C:\Program Files\Python313\.venv\Scripts\activate.ps1"
+    & "$PythonVenvPath\Scripts\activate.ps1"
     if ($VerboseLogging) { Write-Error "CI Mode enabled." }
 }
 
