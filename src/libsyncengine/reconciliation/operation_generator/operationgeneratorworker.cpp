@@ -323,23 +323,6 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
     _deletedNodes.insert(*currentNode->id());
 }
 
-bool OperationGeneratorWorker::editChangeShouldBePropagated(std::shared_ptr<Node> currentNode,
-                                                            std::shared_ptr<Node> correspondingNode) {
-    if (!currentNode || !correspondingNode) {
-        LOG_SYNCPAL_WARN(_logger,
-                         "hasChangeToPropagate: provided node is(are) null: " << (currentNode ? "" : "currentNode")
-                                                                              << (correspondingNode ? "" : " correspondingNode"));
-        return true;
-    }
-
-    if (currentNode->side() == ReplicaSide::Local && currentNode->size() == correspondingNode->size() &&
-        currentNode->lastmodified() == correspondingNode->lastmodified() &&
-        currentNode->createdAt() != correspondingNode->createdAt()) {
-        return false;
-    }
-    return true;
-}
-
 void OperationGeneratorWorker::findAndMarkAllChildNodes(std::shared_ptr<Node> parentNode) {
     for (auto &childNode: parentNode->children()) {
         if (childNode.second->type() == NodeType::Directory) {

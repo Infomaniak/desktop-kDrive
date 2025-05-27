@@ -27,6 +27,23 @@ OperationProcessor::OperationProcessor(const std::shared_ptr<SyncPal> syncPal, c
     ISyncWorker(syncPal, name, shortName),
     _useSyncDbCache(useSyncDbCache) {}
 
+bool OperationProcessor::editChangeShouldBePropagated(std::shared_ptr<Node> affectedNode,
+                                                            std::shared_ptr<Node> correspondingNode) {
+    if (!affectedNode || !correspondingNode) {
+        LOG_SYNCPAL_WARN(_logger,
+                         "hasChangeToPropagate: provided node is(are) null: " << (affectedNode ? "" : "affectedNode")
+                                                                              << (correspondingNode ? "" : " correspondingNode"));
+        return true;
+    }
+
+    if (affectedNode->side() == ReplicaSide::Local && affectedNode->size() == correspondingNode->size() &&
+        affectedNode->lastmodified() == correspondingNode->lastmodified() &&
+        affectedNode->createdAt() != correspondingNode->createdAt()) {
+        return false;
+    }
+    return true;
+}
+
 bool OperationProcessor::isPseudoConflict(const std::shared_ptr<Node> node, const std::shared_ptr<Node> correspondingNode) {
     if (!node || !node->hasChangeEvent() || !correspondingNode || !correspondingNode->hasChangeEvent()) {
         // We can have a conflict only if the node on both replica has change events

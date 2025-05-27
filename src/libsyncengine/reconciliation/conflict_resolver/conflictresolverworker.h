@@ -52,9 +52,20 @@ class ConflictResolverWorker : public OperationProcessor {
          * @return ExitCode indicating if the operation was successful.
          */
         ExitCode handleConflictOnDehydratedPlaceholder(const Conflict &conflict, bool &continueSolving);
+
         /**
-         * @brief For Create-Create and Edit-Edit conflicts, the local file is renamed and excluded from the sync in order no to
-         * lose any changes. The remote file will be pulled on next sync.
+         * @brief If we have a conflict between a local edit and a remote operation, and if the local edit is omitted (ie, only
+         * propagation a creation date to db), the rempote operation always win
+         * @param conflict The conflict to be resolved.
+         * @param continueSolving A boolean value indicating if we can generate more conflict resolution operations.
+         * @return ExitCode indicating if the operation was successful.
+         */
+        void handleConflictOnOmittedEdit(const Conflict &conflict, bool &continueSolving);
+
+        /**
+         * @brief If we have a conflict between a local edit and a remote operation,
+         * and if the local edit is omitted (i.e., only propagating a creation date to the DB),
+         * the remote operation always wins.
          * @param conflict The conflict to be resolved.
          * @param continueSolving A boolean value indicating if we can generate more conflict resolution operations.
          * @return ExitCode indicating if the operation was successful.

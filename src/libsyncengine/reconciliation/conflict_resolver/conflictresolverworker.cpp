@@ -64,6 +64,9 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
     if (res != ExitCode::Ok) {
         return res;
     }
+
+    handleConflictOnOmittedEdit(conflict, continueSolving);
+
     if (continueSolving) return ExitCode::Ok;
 
     switch (conflict.type()) {
@@ -103,6 +106,15 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
     }
 
     return res;
+}
+
+void ConflictResolverWorker::handleConflictOnOmittedEdit(const Conflict &conflict, bool &continueSolving) {
+    if (const auto localNode = conflict.localNode();
+        localNode->hasChangeEvent(OperationType::Edit) && !editChangeShouldBePropagated(localNode, conflict.remoteNode())) {
+        // If the local edit should only be propagated to the db, it loses.
+        localNode->deleteChangeEvent(OperationType::Edit);
+        continueSolving = true;
+    }
 }
 
 ExitCode ConflictResolverWorker::handleConflictOnDehydratedPlaceholder(const Conflict &conflict, bool &continueSolving) {
