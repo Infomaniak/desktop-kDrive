@@ -1694,7 +1694,7 @@ ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::share
 }
 
 ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId,
-                                                    std::optional<SyncTime> newLastModTime, std::optional<SyncTime> newLastCrTime,
+                                                    std::optional<SyncTime> newLastModTime, std::optional<SyncTime> newCrtime,
                                                     std::shared_ptr<Node> &node, const int64_t newSize) {
     std::shared_ptr<Node> newCorrespondingParentNode = nullptr;
     if (affectedUpdateTree(syncOp)->rootNode() == syncOp->affectedNode()->parentNode()) {
@@ -1726,7 +1726,7 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
         return ExitCode::DataError;
     }
 
-    const auto crtime = newLastCrTime.has_value() ? newLastCrTime : syncOp->affectedNode()->createdAt();
+    const auto crtime = newCrtime.has_value() ? newCrtime : syncOp->affectedNode()->createdAt();
     DbNode dbNode(0, newCorrespondingParentNode->idb(), localName, remoteName, localId, remoteId,
                   crtime, newLastModTime, newLastModTime, syncOp->affectedNode()->type(), size,
                   "", // TODO : change it once we start using content checksum

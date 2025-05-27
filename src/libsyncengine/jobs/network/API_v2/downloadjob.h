@@ -37,7 +37,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
 
         inline const NodeId &localNodeId() const { return _localNodeId; }
         inline SyncTime modtime() const { return _modtimeIn; }
-        inline SyncTime crtime() const { return _creationTimeOut; }
+        inline SyncTime crtime() const { return _crtimeOut; }
 
     private:
         virtual std::string getSpecificUrl() override;
@@ -75,11 +75,11 @@ class DownloadJob : public AbstractTokenNetworkJob {
         SyncPath _localpath;
         SyncPath _tmpPath;
         int64_t _expectedSize = Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH;
-        SyncTime _creationTimeIn = 0;
+        SyncTime _crtimeIn = 0;
         SyncTime _modtimeIn = 0;
 
-        SyncTime _creationTimeOut = 0; // The effective creation time of the file on the local filesystem, it may differ from
-                                       // _creationTimeIn if we fail to set it locally
+        SyncTime _crtimeOut = 0; // The effective creation time of the file on the local filesystem, it may differ from
+                                       // _crtimeIn if we fail to set it locally
         bool _isCreate = false;
         bool _ignoreDateTime = false;
         bool _responseHandlingCanceled = false;
