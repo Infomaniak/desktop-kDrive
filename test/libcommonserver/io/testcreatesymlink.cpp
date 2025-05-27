@@ -95,9 +95,7 @@ void TestIo::testCreateSymlink() {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
         const SyncPath path = temporaryDirectory.path() / "file.txt";
-        {
-            std::ofstream ofs(path);
-        }
+        { std::ofstream ofs(path); }
 
         IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(!IoHelper::createSymlink(targetPath, path, false, ioError));
@@ -128,9 +126,7 @@ void TestIo::testCreateSymlink() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path() / "file.txt";
-        {
-            std::ofstream ofs(path);
-        }
+        { std::ofstream ofs(path); }
         const SyncPath targetPath = path;
 
         IoError aliasError;

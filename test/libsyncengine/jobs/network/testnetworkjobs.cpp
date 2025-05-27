@@ -437,7 +437,7 @@ void TestNetworkJobs::testDownload() {
         bool exist = false;
         CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(smallPartitionPath, exist, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-        CPPUNIT_ASSERT_MESSAGE("Small partition is not found", exist);
+        CPPUNIT_ASSERT_MESSAGE("Small partition not found", exist);
 
         // Not Enough disk space (tmp dir)
         {

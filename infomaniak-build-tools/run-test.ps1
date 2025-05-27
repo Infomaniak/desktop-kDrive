@@ -45,9 +45,7 @@ $testProcess = Start-Process -FilePath ./$tester -NoNewWindow -Wait -PassThru
 
 if ($testProcess.ExitCode -ne 0) {
     Write-Host "---------- Failure: $tester ----------" -ForegroundColor Red
-    Write-Host $testProcess.ExitCode
     Pop-Location
-    Write-Host Get-EventLog system -Newest 5 | Format-List -Property *
     exit 1
 } else {
     Write-Host "---------- Success: $tester ----------" -ForegroundColor Green

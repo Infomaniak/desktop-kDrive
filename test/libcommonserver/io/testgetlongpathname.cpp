@@ -45,6 +45,8 @@ bool areShortNamesEnabled(const SyncPath &volumePath) {
 } // namespace
 
 void TestIo::testGetLongPathName() {
+    // Short name are currently not supported in docker containers
+    if (Utility::userName() == "docker") return;
     return;
     if (!areShortNamesEnabled(std::filesystem::temp_directory_path().root_path())) {
         std::cout << " (Skipped as short names are disabled) ";
