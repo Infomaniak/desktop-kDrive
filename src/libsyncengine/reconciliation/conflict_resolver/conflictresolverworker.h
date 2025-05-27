@@ -54,8 +54,8 @@ class ConflictResolverWorker : public OperationProcessor {
         ExitCode handleConflictOnDehydratedPlaceholder(const Conflict &conflict, bool &continueSolving);
 
         /**
-         * @brief If we have a conflict between a local edit and a remote operation, and if the local edit is omitted (ie, only
-         * propagation a creation date to db), the rempote operation always win
+         * @brief If we have a conflict between a local edit and a remote operation,
+         * and if the local edit is omitted (i.e., only propagating a creation date to the DB),
          * @param conflict The conflict to be resolved.
          * @param continueSolving A boolean value indicating if we can generate more conflict resolution operations.
          * @return ExitCode indicating if the operation was successful.
@@ -63,9 +63,8 @@ class ConflictResolverWorker : public OperationProcessor {
         void handleConflictOnOmittedEdit(const Conflict &conflict, bool &continueSolving);
 
         /**
-         * @brief If we have a conflict between a local edit and a remote operation,
-         * and if the local edit is omitted (i.e., only propagating a creation date to the DB),
-         * the remote operation always wins.
+         * @brief For Create-Create and Edit-Edit conflicts, the local file is renamed and excluded from the sync in order no to
+         * lose any changes. The remote file will be pulled on next sync.
          * @param conflict The conflict to be resolved.
          * @param continueSolving A boolean value indicating if we can generate more conflict resolution operations.
          * @return ExitCode indicating if the operation was successful.
