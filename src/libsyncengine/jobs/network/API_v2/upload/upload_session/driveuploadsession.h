@@ -39,6 +39,7 @@ class DriveUploadSession : public AbstractUploadSession {
 
         const NodeId &nodeId() const { return _nodeId; }
         SyncTime modtime() const { return _modtimeOut; }
+        int64_t size() const { return _sizeOut; }
 
     protected:
         bool handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob,
@@ -65,6 +66,7 @@ class DriveUploadSession : public AbstractUploadSession {
 
         NodeId _nodeId;
         SyncTime _modtimeOut = 0;
+        int64_t _sizeOut = 0;
         const std::shared_ptr<Vfs> _vfs;
 };
 } // namespace KDC

@@ -1640,6 +1640,7 @@ ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::share
         case OperationType::Edit: {
             NodeId nodeId;
             SyncTime modtime = 0;
+            int64_t size = -1;
             if (syncOp->targetSide() == ReplicaSide::Local) {
                 auto castJob(std::dynamic_pointer_cast<DownloadJob>(job));
                 nodeId = castJob->localNodeId();
@@ -1650,12 +1651,14 @@ ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::share
                 if (uploadJob) {
                     nodeId = uploadJob->nodeId();
                     modtime = uploadJob->modtime();
+                    size = uploadJob->size();
                     jobOk = true;
                 } else {
                     auto uploadSessionJob(std::dynamic_pointer_cast<DriveUploadSession>(job));
                     if (uploadSessionJob) {
                         nodeId = uploadSessionJob->nodeId();
                         modtime = uploadSessionJob->modtime();
+                        size = uploadSessionJob->size();
                         jobOk = true;
                     }
                 }
@@ -1667,9 +1670,9 @@ ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::share
             }
 
             if (syncOp->type() == OperationType::Create) {
-                return propagateCreateToDbAndTree(syncOp, nodeId, modtime, node);
+                return propagateCreateToDbAndTree(syncOp, nodeId, modtime, node, size);
             } else {
-                return propagateEditToDbAndTree(syncOp, nodeId, modtime, node);
+                return propagateEditToDbAndTree(syncOp, nodeId, modtime, node, size);
             }
         }
         case OperationType::Move: {
@@ -1687,8 +1690,9 @@ ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::share
     return ExitCode::LogicError;
 }
 
-ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId,
-                                                    std::optional<SyncTime> newLastModTime, std::shared_ptr<Node> &node) {
+ExitInfo ExecutorWorker::propagateCreateToDbAndTree(const SyncOpPtr syncOp, const NodeId &newNodeId,
+                                                    std::optional<SyncTime> newLastModTime, std::shared_ptr<Node> &node,
+                                                    const int64_t newSize) {
     std::shared_ptr<Node> newCorrespondingParentNode = nullptr;
     if (affectedUpdateTree(syncOp)->rootNode() == syncOp->affectedNode()->parentNode()) {
         newCorrespondingParentNode = targetUpdateTree(syncOp)->rootNode();
@@ -1703,6 +1707,7 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
 
     // 2. Insert a new entry into the database, to avoid that the object is
     // detected again by compute_ops() on the next sync iteration.
+    const int64_t size = newSize > -1 ? newSize : syncOp->affectedNode()->size();
     std::string localId = syncOp->targetSide() == ReplicaSide::Local
                                   ? newNodeId
                                   : (syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : "");
@@ -1719,10 +1724,8 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
     }
 
     DbNode dbNode(0, newCorrespondingParentNode->idb(), localName, remoteName, localId, remoteId,
-                  syncOp->affectedNode()->createdAt(), newLastModTime, newLastModTime, syncOp->affectedNode()->type(),
-                  syncOp->affectedNode()->size(),
-                  "" // TODO : change it once we start using content checksum
-                  ,
+                  syncOp->affectedNode()->createdAt(), newLastModTime, newLastModTime, syncOp->affectedNode()->type(), size,
+                  "", // TODO : change it once we start using content checksum
                   syncOp->omit() ? SyncFileStatus::Success : SyncFileStatus::Unknown);
 
     if (ParametersCache::isExtendedLogEnabled()) {
@@ -1736,7 +1739,7 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
                                  << L" / createdAt="
                                  << (syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : -1)
                                  << L" / lastModTime=" << (newLastModTime.has_value() ? *newLastModTime : -1) << L" / type="
-                                 << syncOp->affectedNode()->type());
+                                 << syncOp->affectedNode()->type() << L" / size=" << size);
     }
 
     if (dbNode.nameLocal().empty() || dbNode.nameRemote().empty() || !dbNode.nodeIdLocal().has_value() ||
@@ -1804,7 +1807,7 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
         node = std::shared_ptr<Node>(
                 new Node(newDbNodeId, syncOp->targetSide() == ReplicaSide::Local ? ReplicaSide::Local : ReplicaSide::Remote,
                          remoteName, syncOp->affectedNode()->type(), OperationType::None, newNodeId, newLastModTime,
-                         newLastModTime, syncOp->affectedNode()->size(), newCorrespondingParentNode));
+                         newLastModTime, size, newCorrespondingParentNode));
         if (node == nullptr) {
             std::cout << "Failed to allocate memory" << std::endl;
             LOG_SYNCPAL_ERROR(_logger, "Failed to allocate memory");
@@ -1829,7 +1832,8 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
 }
 
 ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId,
-                                                  std::optional<SyncTime> newLastModTime, std::shared_ptr<Node> &node) {
+                                                  std::optional<SyncTime> newLastModTime, std::shared_ptr<Node> &node,
+                                                  const int64_t newSize) {
     DbNode dbNode;
     bool found = false;
     if (!_syncPal->syncDb()->node(*syncOp->correspondingNode()->idb(), dbNode, found)) {
@@ -1858,6 +1862,7 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
     }
 
     // In case of Delete+Create, the encoding might have changed. Therefor, we update the name anyway.
+    const int64_t size = newSize > -1 ? newSize : syncOp->affectedNode()->size();
     dbNode.setNameLocal(localName);
     dbNode.setNameRemote(remoteName);
 
@@ -1866,7 +1871,7 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
     dbNode.setLastModifiedLocal(newLastModTime);
     dbNode.setLastModifiedRemote(newLastModTime);
     dbNode.setCreated(syncOp->affectedNode()->createdAt());
-    dbNode.setSize(syncOp->affectedNode()->size());
+    dbNode.setSize(size);
     dbNode.setChecksum(""); // TODO : change it once we start using content checksum
     if (syncOp->omit()) {
         dbNode.setStatus(SyncFileStatus::Success);
@@ -1881,7 +1886,7 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
                                  << (dbNode.parentNodeId().has_value() ? dbNode.parentNodeId().value() : -1) << L" / createdAt="
                                  << (syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : -1)
                                  << L" / lastModTime=" << (newLastModTime.has_value() ? *newLastModTime : -1) << L" / type="
-                                 << syncOp->affectedNode()->type());
+                                 << syncOp->affectedNode()->type() << L" / size=" << size);
     }
 
     if (!_syncPal->syncDb()->updateNode(dbNode, found)) {
@@ -2111,7 +2116,7 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
 
     if (newNodeId.empty()) {
         LOGW_SYNCPAL_WARN(_logger,
-                          L"Failed to retreive ID for directory: " << Utility::formatSyncName(syncOp->affectedNode()->name()));
+                          L"Failed to retrieve ID for directory: " << Utility::formatSyncName(syncOp->affectedNode()->name()));
         return {ExitCode::DataError, ExitCause::ApiErr};
     }
 
