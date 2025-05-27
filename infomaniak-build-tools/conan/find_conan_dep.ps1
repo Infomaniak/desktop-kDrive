@@ -74,7 +74,7 @@ if (-not (Test-Path $conan_db)) {
 
 $sql_req = "SELECT path FROM packages WHERE reference='$reference' ORDER BY timestamp DESC LIMIT 1;"
 
-$subpath = & sqlite3 $conan_db $sql_req 2>$null
+$subpath = & sqlite3 "$conan_db" "$sql_req" 2>$null
 
 if (-not $subpath) {
     Err "The reference '$reference' does not exists in the conan cache.."
