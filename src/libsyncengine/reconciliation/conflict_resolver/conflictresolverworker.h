@@ -56,6 +56,7 @@ class ConflictResolverWorker : public OperationProcessor {
         /**
          * @brief If we have a conflict between a local edit and a remote operation,
          * and if the local edit is omitted (i.e., only propagating a creation date to the DB),
+         * the remote operation always wins.
          * @param conflict The conflict to be resolved.
          * @param continueSolving A boolean value indicating if we can generate more conflict resolution operations.
          * @return ExitCode indicating if the operation was successful.
