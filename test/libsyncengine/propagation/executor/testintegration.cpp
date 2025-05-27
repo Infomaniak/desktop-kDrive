@@ -2170,6 +2170,7 @@ void TestIntegration::testMoveMoveCycleConflict() {
     std::cout << "OK" << std::endl;
 }
 
+#ifdef __unix__
 void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     if (!testhelpers::isExtendedTest()) return;
     LOGW_DEBUG(_logger, L"$$$$$ testNodeIdReuseFile2DirAndDir2File");
@@ -2320,7 +2321,7 @@ void TestIntegration::testNodeIdReuseFile2File() {
     CPPUNIT_ASSERT_EQUAL(newRemoteFileId, newRemoteFileId2);
     CPPUNIT_ASSERT_EQUAL(remoteSnapshot->size(newRemoteFileId2), localSnapshot->size("2"));
 }
-
+#endif
 void TestIntegration::waitForSyncToFinish(const SourceLocation &srcLoc) {
     using namespace std::chrono;
     const auto waitForSyncToFinishStart = steady_clock::now();
