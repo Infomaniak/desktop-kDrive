@@ -58,6 +58,12 @@ class KDriveDesktop(ConanFile):
             log4cplus_options["thread_pool"] = False
         self.requires("log4cplus/2.1.2", options=log4cplus_options) # From https://conan.io/center/recipes/log4cplus
 
+        if self.settings.os == "Macos":
+            # On macOS, we need to use the universal version of OpenSSL
+            self.requires("openssl-universal/3.2.4@infomaniak/universal")
+        else:
+            self.requires("openssl/3.2.4") # From https://conan.io/center/recipes/openssl
+
 class OverrideVSRuntimeBlock(VSRuntimeBlock):
     template = textwrap.dedent("""\
     cmake_policy(SET CMP0091 NEW)
