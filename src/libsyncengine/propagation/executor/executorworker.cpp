@@ -208,11 +208,8 @@ void ExecutorWorker::execute() {
 
     if (changesCounter > SNAPSHOT_INVALIDATION_THRESHOLD || _snapshotToInvalidate) {
         // If there are too many changes on the local filesystem, the OS stops sending events at some point.
-        LOG_SYNCPAL_INFO(_logger,
-                         "Local snapshot is potentially invalid because of too many file system events. Forcing invalidation.");
-
-        _snapshotToInvalidate = true;
-        LOG_SYNCPAL_INFO(_logger, "Invalidate local snapshot.");
+        // Also, on some specific errors, we want to force the snapshot reconstruction.
+        LOG_SYNCPAL_INFO(_logger, "Forcing local snapshot invalidation.");
         _syncPal->_localFSObserverWorker->invalidateSnapshot();
     }
 
@@ -2249,7 +2246,7 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
         }
         if (!exists) {
             LOGW_DEBUG(_logger, L"Sync dir " << Utility::formatSyncPath(_syncPal->localPath()) << L" not accessible anymore");
-            _snapshotToInvalidate = true;
+            _snapshotToInvalidate = true; // The snapshot must be invalidated before the next sync
             return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
         }
     }
