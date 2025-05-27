@@ -386,7 +386,7 @@ function Prepare-Archive {
     $log4cplus_folder = & $find_dep_script -Package "log4cplus" -Version "2.1.2" -Ci
 
     Copy-Item -Path "$xxhash_folder/bin/xxhash.dll" -Destination "$archivePath"
-    Copy-Item -Path "$log4cplus/bin/log4cplus.dll" -Destination "$archivePath"
+    Copy-Item -Path "$log4cplus_folder/bin/log4cplus.dll" -Destination "$archivePath"
 
     Copy-Item -Path "$path/sync-exclude-win.lst" -Destination "$archivePath/sync-exclude.lst"
 
