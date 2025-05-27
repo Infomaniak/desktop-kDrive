@@ -30,7 +30,6 @@ class OperationProcessor : public ISyncWorker {
 
     protected:
         // Return false if only elements that are not synced with the corresponding side change (e.g., creation date). Else return
-        // true.
         bool editChangeShouldBePropagated(std::shared_ptr<Node> affectedNode);
         
         bool isPseudoConflict(std::shared_ptr<Node> node, std::shared_ptr<Node> correspondingNode);
