@@ -1673,11 +1673,11 @@ ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::share
             }
 
             if (syncOp->type() == OperationType::Create) {
-                return propagateCreateToDbAndTree(syncOp, nodeId, modtime, creationTime ? creationTime : syncOp->affectedNode()->createdAt(),
-                                                  node, size);
+                return propagateCreateToDbAndTree(syncOp, nodeId, modtime,
+                                                  creationTime ? creationTime : syncOp->affectedNode()->createdAt(), node, size);
             } else {
-                return propagateEditToDbAndTree(syncOp, nodeId, modtime, creationTime ? creationTime : syncOp->affectedNode()->createdAt(),
-                                                node, size);
+                return propagateEditToDbAndTree(syncOp, nodeId, modtime,
+                                                creationTime ? creationTime : syncOp->affectedNode()->createdAt(), node, size);
             }
         }
         case OperationType::Move: {
@@ -1696,8 +1696,9 @@ ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::share
 }
 
 ExitInfo ExecutorWorker::propagateCreateToDbAndTree(const SyncOpPtr syncOp, const NodeId &newNodeId,
-                                                    std::optional<SyncTime> newLastModTime, std::optional<SyncTime> newCreationTime,
-                                                    std::shared_ptr<Node> &node, const int64_t newSize) {
+                                                    std::optional<SyncTime> newLastModTime,
+                                                    std::optional<SyncTime> newCreationTime, std::shared_ptr<Node> &node,
+                                                    const int64_t newSize) {
     std::shared_ptr<Node> newCorrespondingParentNode = nullptr;
     if (affectedUpdateTree(syncOp)->rootNode() == syncOp->affectedNode()->parentNode()) {
         newCorrespondingParentNode = targetUpdateTree(syncOp)->rootNode();
@@ -1810,9 +1811,8 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(const SyncOpPtr syncOp, cons
         // insert new node
         node = std::shared_ptr<Node>(
                 new Node(newDbNodeId, syncOp->targetSide() == ReplicaSide::Local ? ReplicaSide::Local : ReplicaSide::Remote,
-                         remoteName, syncOp->affectedNode()->type(), OperationType::None, newNodeId, newCreationTime, newLastModTime,
-                         size,
-                         newCorrespondingParentNode));
+                         remoteName, syncOp->affectedNode()->type(), OperationType::None, newNodeId, newCreationTime,
+                         newLastModTime, size, newCorrespondingParentNode));
         if (node == nullptr) {
             std::cout << "Failed to allocate memory" << std::endl;
             LOG_SYNCPAL_ERROR(_logger, "Failed to allocate memory");
@@ -2127,7 +2127,9 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
     }
 
     std::shared_ptr<Node> newNode = nullptr;
-    if (ExitInfo exitInfo = propagateCreateToDbAndTree(syncOp, newNodeId, newModTime, newCreationTime, newNode); !exitInfo) {
+    if (ExitInfo exitInfo = propagateCreateToDbAndTree(
+                syncOp, newNodeId, newModTime, newCreationTime ? newCreationTime : syncOp->affectedNode()->createdAt(), newNode);
+        !exitInfo) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
                                            << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
         return exitInfo;
