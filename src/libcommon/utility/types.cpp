@@ -147,7 +147,7 @@ std::string toString(const ExitCause e) {
         case ExitCause::InvalidSize:
             return "InvalidSize";
         case ExitCause::FileExists:
-            return "FileAlreadyExist";
+            return "FileExists";
         case ExitCause::FileAccessError:
             return "FileAccessError";
         case ExitCause::FileLocked:
@@ -175,7 +175,7 @@ std::string toString(const ExitCause e) {
         case ExitCause::UnableToCreateVfs:
             return "UnableToCreateVfs";
         case ExitCause::NotEnoughMemory:
-            return "NotEnoughtMemory";
+            return "NotEnoughMemory";
         case ExitCause::FileTooBig:
             return "FileTooBig";
         case ExitCause::MoveToTrashFailed:
