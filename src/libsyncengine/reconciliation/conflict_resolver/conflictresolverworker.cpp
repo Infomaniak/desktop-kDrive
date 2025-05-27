@@ -110,9 +110,17 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
 
 void ConflictResolverWorker::handleConflictOnOmittedEdit(const Conflict &conflict, bool &continueSolving) {
     if (const auto localNode = conflict.localNode();
-        localNode->hasChangeEvent(OperationType::Edit) && !editChangeShouldBePropagated(localNode, conflict.remoteNode())) {
-        // If the local edit should only be propagated to the db, it loses.
-        localNode->deleteChangeEvent(OperationType::Edit);
+        localNode->hasChangeEvent(OperationType::Edit) && !editChangeShouldBePropagated(localNode)) {
+
+        const auto editOp = std::make_shared<SyncOperation>();
+        editOp->setType(OperationType::Edit);
+        editOp->setAffectedNode(localNode);
+        editOp->setCorrespondingNode(conflict.remoteNode());
+        editOp->setOmit(true);
+        editOp->setTargetSide(ReplicaSide::Remote);
+        editOp->setConflict(conflict);
+        LOGW_SYNCPAL_INFO(_logger, getLogString(editOp));
+        (void) _syncPal->syncOps()->pushOp(editOp);
         continueSolving = true;
     }
 }

@@ -27,18 +27,37 @@ OperationProcessor::OperationProcessor(const std::shared_ptr<SyncPal> syncPal, c
     ISyncWorker(syncPal, name, shortName),
     _useSyncDbCache(useSyncDbCache) {}
 
-bool OperationProcessor::editChangeShouldBePropagated(std::shared_ptr<Node> affectedNode,
-                                                            std::shared_ptr<Node> correspondingNode) {
-    if (!affectedNode || !correspondingNode) {
-        LOG_SYNCPAL_WARN(_logger,
-                         "hasChangeToPropagate: provided node is(are) null: " << (affectedNode ? "" : "affectedNode")
-                                                                              << (correspondingNode ? "" : " correspondingNode"));
+bool OperationProcessor::editChangeShouldBePropagated(std::shared_ptr<Node> affectedNode) {
+    if (!affectedNode) {
+        LOG_SYNCPAL_WARN(_logger, "hasChangeToPropagate: provided node is null");
         return true;
     }
 
-    if (affectedNode->side() == ReplicaSide::Local && affectedNode->size() == correspondingNode->size() &&
-        affectedNode->lastmodified() == correspondingNode->lastmodified() &&
-        affectedNode->createdAt() != correspondingNode->createdAt()) {
+    if (affectedNode->side() != ReplicaSide::Local) return true;
+
+    bool found = false;
+    DbNode affectedDbNode;
+    if (affectedNode->idb().has_value()) {
+        if (!_syncPal->syncDb()->node(affectedNode->idb().value(), affectedDbNode, found)) {
+            LOG_SYNCPAL_WARN(_logger, "hasChangeToPropagate: Failed to retrieve node from DB, id=" << *affectedNode->idb());
+            _syncPal->addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+            return true;
+        }
+    } else {
+        if (!_syncPal->syncDb()->node(ReplicaSide::Local, *affectedNode->id(), affectedDbNode, found)) {
+            LOG_SYNCPAL_WARN(_logger, "hasChangeToPropagate: Failed to retrieve node from DB, id=" << *affectedNode->id());
+            _syncPal->addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+            return true;
+        }
+    }
+    if (!found) {
+        LOG_SYNCPAL_WARN(_logger, "hasChangeToPropagate: node not found in DB");
+        return true;
+    }
+
+    if (affectedNode->side() == ReplicaSide::Local && affectedNode->size() == affectedDbNode.size() &&
+        affectedNode->lastmodified() == affectedDbNode.lastModifiedLocal() &&
+        affectedNode->createdAt() != affectedDbNode.created()) {
         return false;
     }
     return true;

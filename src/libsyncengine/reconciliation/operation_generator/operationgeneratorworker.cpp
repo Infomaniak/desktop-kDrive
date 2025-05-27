@@ -184,7 +184,7 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
     }
 
     // If only elements that are not synced with the corresponding side change (e.g., creation date), the operation can be omitted
-    if (!editChangeShouldBePropagated(currentNode, correspondingNode)) {
+    if (!editChangeShouldBePropagated(currentNode)) {
         // Only update DB and tree
         op->setOmit(true);
         if (ParametersCache::isExtendedLogEnabled()) {
