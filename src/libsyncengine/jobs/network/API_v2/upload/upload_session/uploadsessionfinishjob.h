@@ -36,7 +36,7 @@ class UploadSessionFinishJob : public AbstractUploadSessionJob {
 
         const NodeId &nodeId() const { return _nodeId; }
         SyncTime modtime() const { return _modtimeOut; }
-        SyncTime size() const { return _sizeOut; }
+        int64_t size() const { return _sizeOut; }
 
     protected:
         bool handleResponse(std::istream &is) override;
