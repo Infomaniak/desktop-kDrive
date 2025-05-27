@@ -173,7 +173,7 @@ git checkout v2.x
 Clone `CPPUnit`:
 
 ```powershell
-cd "C:\Program Files (x86)"
+cd F:\Projects
 git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
 ```
 
@@ -185,7 +185,7 @@ Then open `src/CppUnitLibrariesXXXX.sln` workspace in Visual Studio to configure
 - In the `Build` menu, select `Batch Build...`.
 - Select all projects in `x64` version and click on `build`.
 
-Only the two directories `lib` and `include` are required, everything else can be removed after the build.
+Copy `lib` and `include` folders from F:\Projects\cppunit\` to `C:\Program Files (x86)\cppunit`.
 
 ## Zlib
 
