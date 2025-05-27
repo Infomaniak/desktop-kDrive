@@ -72,6 +72,7 @@ void TestFileRescuer::setUp() {
                                          KDRIVE_VERSION_STRING);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
+    _syncPal->createWorkers();
 }
 
 void TestFileRescuer::tearDown() {

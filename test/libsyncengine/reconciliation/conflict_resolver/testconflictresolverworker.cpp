@@ -43,6 +43,7 @@ void TestConflictResolverWorker::setUp() {
     _syncPal = std::make_shared<SyncPal>(_mockVfs, syncDbPath, KDRIVE_VERSION_STRING, true);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
+    _syncPal->createWorkers();
 
     _syncPal->_conflictResolverWorker = std::make_shared<ConflictResolverWorker>(_syncPal, "Conflict Resolver", "CORE");
 
