@@ -373,9 +373,8 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         if (_snapshot->updateItem(item)) {
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in remote snapshot: name:"
-                                                    << SyncName2WStr(item.name()) << L", inode:"
-                                                    << Utility::s2ws(item.id()) << L", parent inode:"
-                                                    << Utility::s2ws(item.parentId()) << L", createdAt:"
+                                                    << SyncName2WStr(item.name()) << L", inode:" << Utility::s2ws(item.id())
+                                                    << L", parent inode:" << Utility::s2ws(item.parentId()) << L", createdAt:"
                                                     << item.createdAt() << L", modtime:" << item.lastModified() << L", isDir:"
                                                     << (item.type() == NodeType::Directory) << L", size:" << item.size()
                                                     << L", isLink:" << item.isLink());
@@ -405,7 +404,8 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         nodeIdIt++;
     }
 
-    LOG_SYNCPAL_DEBUG(_logger, "End reply parsing in " << timer.elapsed().count() << "s for " << itemCount << " items");
+    LOG_SYNCPAL_DEBUG(_logger,
+                      "End reply parsing in " << timer.elapsed<DoubleSeconds>().count() << "s for " << itemCount << " items");
 
     return ExitCode::Ok;
 }
@@ -688,9 +688,8 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
             [[fallthrough]];
         case ActionCode::ActionCodeTrash:
             if (!_snapshot->removeItem(actionInfo.snapshotItem.id())) {
-                LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: "
-                                                   << SyncName2WStr(actionInfo.snapshotItem.name()) << L" ("
-                                                   << Utility::s2ws(actionInfo.snapshotItem.id()) << L")");
+                LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(actionInfo.snapshotItem.name()) << L" ("
+                                                                    << Utility::s2ws(actionInfo.snapshotItem.id()) << L")");
                 tryToInvalidateSnapshot();
                 return ExitCode::BackError;
             }
@@ -736,9 +735,9 @@ ExitCode RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
             return ExitCode::Ok;
         }
 
-        LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
-                                           << SyncName2WStr(snapshotItem.name()) << L" ("
-                                           << Utility::s2ws(snapshotItem.id()) << L")");
+        LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: " << SyncName2WStr(snapshotItem.name())
+                                                                                      << L" (" << Utility::s2ws(snapshotItem.id())
+                                                                                      << L")");
         tryToInvalidateSnapshot();
         return ExitCode::BackError;
     }

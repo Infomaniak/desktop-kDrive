@@ -40,7 +40,7 @@
 namespace KDC {
 
 #define BUF_SIZE 4096 * 1000 // 4MB
-#define NOTIFICATION_DELAY 1 // 1 sec
+#define NOTIFICATION_DELAY 1000 // 1'000ms => 1 sec
 #define TRIALS 5
 #define READ_PAUSE_SLEEP_PERIOD 100 // 0.1 s
 #define READ_RETRIES 10
@@ -673,7 +673,7 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
                 }
 
                 if (_vfs && !_isHydrated) { // updateFetchStatus is used only for hydration.
-                    if (timer.elapsed().count() > NOTIFICATION_DELAY || done) {
+                    if (timer.elapsed<std::chrono::milliseconds>().count() > NOTIFICATION_DELAY || done) {
                         // Update fetch status
                         if (!_vfs->updateFetchStatus(_tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished)) {
                             LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_localpath));
