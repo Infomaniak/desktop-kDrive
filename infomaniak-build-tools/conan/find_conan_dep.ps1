@@ -71,7 +71,7 @@ if (-not (Test-Path $conan_db)) {
     Err "Conan database not found at $conan_db. Please execute this script from the root of the project: ./infomaniak-build-tools/conan/build_dependencies.ps1"
 }
 
-$sql_req = "SELECT path FROM packages WHERE reference='$reference' ORDER BY timestamp DESC LIMIT 1; .exit"
+$sql_req = "SELECT path FROM packages WHERE reference='$reference' ORDER BY timestamp DESC LIMIT 1;"
 
 $subpath = & sqlite3 $conan_db $sql_req 2>$null
 
