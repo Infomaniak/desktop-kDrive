@@ -32,10 +32,10 @@ namespace KDC {
 void TestAppServer::setUp() {
     TestBase::start();
 
-    if (QCoreApplication::instance()) {
+    /*if (QCoreApplication::instance()) {
         _appPtr = dynamic_cast<MockAppServer *>(QCoreApplication::instance());
         return;
-    }
+    }*/
 
     const testhelpers::TestVariables testVariables;
 
