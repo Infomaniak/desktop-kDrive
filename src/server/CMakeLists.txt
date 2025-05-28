@@ -51,9 +51,9 @@ set(server_SRCS
 )
 
 set(updater_SRCS
-        updater/abstractupdater.h updater/abstractupdater.cpp
-        updater/updatemanager.h updater/updatemanager.cpp
-        updater/updatechecker.h updater/updatechecker.cpp
+    updater/abstractupdater.h updater/abstractupdater.cpp
+    updater/updatemanager.h updater/updatemanager.cpp
+    updater/updatechecker.h updater/updatechecker.cpp
 )
 
 if(APPLE)
@@ -106,7 +106,7 @@ if(WIN32)
     set(server_version ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
 endif()
 
-set( final_src
+set(final_src
     ${KDRIVE_RC_SRC}
     ${server_SRCS}
     ${server_version}
