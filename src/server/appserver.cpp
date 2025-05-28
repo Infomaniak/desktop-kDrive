@@ -2809,7 +2809,7 @@ ExitInfo AppServer::processMigratedSyncOnceConnected(int userDbId, int driveId, 
 
     // Set sync target nodeId for advanced sync
     if (!sync.targetPath().empty()) {
-        std::vector<SyncName> itemNames = Utility::splitPath(sync.targetPath());
+        std::vector<SyncName> itemNames = CommonUtility::splitSyncPath(sync.targetPath());
 
         // Get root subfolders
         QList<NodeInfo> list;
