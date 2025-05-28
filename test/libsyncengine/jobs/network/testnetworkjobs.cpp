@@ -1032,7 +1032,7 @@ void TestNetworkJobs::testUpload(const SyncTime creationTimeIn, const SyncTime m
         (void) JsonParserUtility::extractValue(dataObj, createdAtKey, creationTimeOut, false);
         (void) JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, modificationTimeOut, false);
     }
-    CPPUNIT_ASSERT_EQUAL(SyncName2Str(localFilePath.filename().string()), name);
+    CPPUNIT_ASSERT_EQUAL(SyncName2Str(localFilePath.filename()), name);
 }
 
 void TestNetworkJobs::testUpload() {
@@ -1046,7 +1046,7 @@ void TestNetworkJobs::testUpload() {
     CPPUNIT_ASSERT_EQUAL(creationTimeIn.count(), creationTimeOut);
     CPPUNIT_ASSERT_EQUAL(modificationTimeIn.count(), modificationTimeOut);
 
-    // Upload job but local file has a modification far in the future (more than 24h).
+    // Upload job but the local file has a modification far in the future (more than 24h).
     modificationTimeIn += std::chrono::days(10);
     testUpload(creationTimeIn.count(), modificationTimeIn.count(), creationTimeOut, modificationTimeOut);
     CPPUNIT_ASSERT_LESS(modificationTimeIn.count(), modificationTimeOut);

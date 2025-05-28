@@ -317,10 +317,10 @@ void TestIo::testSetFileDates() {
 
         (void) IoHelper::getFileStat(linkPath, &filestat, ioError);
         CPPUNIT_ASSERT_EQUAL(linkTimestamp, filestat.creationTime);
-        CPPUNIT_ASSERT_EQUAL(linkTimestamp + 10, filestat.modtime);
+        CPPUNIT_ASSERT_EQUAL(linkTimestamp + 10, filestat.modificationTime);
         (void) IoHelper::getFileStat(filepath, &filestat, ioError);
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
-        CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modtime);
+        CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modificationTime);
 
         // Test on an alias on a folder.
         linkPath = tempDir.path() / "test_junction_folder";
@@ -332,10 +332,10 @@ void TestIo::testSetFileDates() {
 
         (void) IoHelper::getFileStat(linkPath, &filestat, ioError);
         CPPUNIT_ASSERT_EQUAL(linkTimestamp, filestat.creationTime);
-        CPPUNIT_ASSERT_EQUAL(linkTimestamp + 10, filestat.modtime);
+        CPPUNIT_ASSERT_EQUAL(linkTimestamp + 10, filestat.modificationTime);
         (void) IoHelper::getFileStat(filepath, &filestat, ioError);
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
-        CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modtime);
+        CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modificationTime);
 #endif
 
         // Test with creation date > modification date.
