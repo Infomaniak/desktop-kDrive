@@ -26,7 +26,7 @@ class KDriveDesktop(ConanFile):
             # tc.generator = "Ninja"
 
             # The default VSRuntimeBlock only configures CMAKE_MSVC_RUNTIME_LIBRARY for the profile's build_type
-            # (in the CI's profile, its Release), yielding $<$<CONFIG:Release>:MultiThreadedDLL>. Other configs
+            # (in the CI's profile, it is Release), yielding $<$<CONFIG:Release>:MultiThreadedDLL>. Other configs
             # (RelWithDebInfo, Debug) fall back to MSVC’s default CRT selection (/MT), here, we want /MD
             tc.blocks.remove("vs_runtime")
             tc.blocks["override_vs_runtime"] = OverrideVSRuntimeBlock

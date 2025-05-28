@@ -179,7 +179,7 @@ jobs:
           retention-days: 1
         if: always()
 
-      - name: Find Conan Dependencies
+      - name: Copy Conan Dependencies into Workspace
         run: |
           mkdir -p ${{ github.workspace }}/artifacts/libs
           find "$HOME/.conan2/p/" -type f -iname '*.so' \
