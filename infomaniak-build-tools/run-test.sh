@@ -41,7 +41,9 @@ if [ ! -f "$tester" ]; then
 fi
 
 chmod +x $tester
-DYLD_PRINT_STATISTICS=1 ./$tester
+lldb ./$tester
+run 
+bt
 
 if [ $? -ne 0 ]; then
     echo "---------- Failure: $tester ----------"
