@@ -331,6 +331,7 @@ struct ExitInfo {
         constexpr operator bool() const { return _code == ExitCode::Ok; }
         constexpr explicit operator int() const { return toInt(_code) * 100 + toInt(_cause); }
         constexpr bool operator==(const ExitInfo &other) const { return _code == other._code && _cause == other._cause; }
+        constexpr bool operator!=(const ExitInfo &other) const { return !(*this == other); }
 
         //! Merge 'this' object with an exitInfoToMerge given as a parameter, according to an ExitCode list ordered by priority:
         //! - If 'this' object's code has priority over the parameter's code, do nothing.

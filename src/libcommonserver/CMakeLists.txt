@@ -121,13 +121,13 @@ if (WIN32)
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
         "C:/Program Files (x86)/libzip/include"
-        "C:/Program Files (x86)/xxHash/include"
     )
 else()
     target_include_directories(${libcommonserver_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
         "/usr/local/include"
+        ${CMAKE_INCLUDE_PATH}
         ${CMAKE_SOURCE_DIR}/src/3rdparty/utf8proc)
 endif()
 
@@ -162,7 +162,9 @@ elseif(APPLE)
         ${CORESERVICES_LIBRARY}
         ${APPKIT_LIBRARY})
 else()
+    find_library(XXHASH_LIBRARIES NAMES xxhash PATHS CONAN_RUNTIME_LIB_DIRS) # Used for Linux appImage generation, the target xxHash::xxhash does not work here.
     target_link_libraries(${libcommonserver_NAME}
-        "/usr/local/lib/libxxhash.so"
-        utf8proc)
+        utf8proc
+        ${XXHASH_LIBRARIES}
+    )
 endif()
