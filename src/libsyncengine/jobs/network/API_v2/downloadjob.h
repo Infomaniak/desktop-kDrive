@@ -26,7 +26,7 @@ namespace KDC {
 class DownloadJob : public AbstractTokenNetworkJob {
     public:
         DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
-                    int64_t expectedSize, SyncTime creationTime, SyncTime modtime, bool isCreate);
+                    int64_t expectedSize, SyncTime creationTime, SyncTime modificationTime, bool isCreate);
         DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
                     int64_t expectedSize);
         ~DownloadJob() override;
@@ -35,7 +35,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
         inline const SyncPath &localPath() const { return _localpath; }
 
         inline const NodeId &localNodeId() const { return _localNodeId; }
-        inline SyncTime modtime() const { return _modtimeIn; }
+        inline SyncTime modtime() const { return _modificationTime; }
 
         [[nodiscard]] int64_t expectedSize() const { return _expectedSize; }
 
@@ -76,7 +76,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
         SyncPath _tmpPath;
         int64_t _expectedSize = Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH;
         SyncTime _creationTime = 0;
-        SyncTime _modtimeIn = 0;
+        SyncTime _modificationTime = 0;
         bool _isCreate = false;
         bool _ignoreDateTime = false;
         bool _responseHandlingCanceled = false;
