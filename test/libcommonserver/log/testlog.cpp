@@ -75,7 +75,7 @@ void TestLog::testLargeLogRolling(void) {
 
     // Generate a log larger than the max log file size. (log header is 50bytes)
     const auto testLog = std::string(maxSize, 'a');
-    LOG_DEBUG(_logger, testLog.c_str());
+    LOG_DEBUG(_logger, testLog);
 
     CPPUNIT_ASSERT_GREATER(2, countFilesInDirectory(_logDir));
 
@@ -98,10 +98,10 @@ void TestLog::testExpiredLogFiles(void) {
     fakeLogFile.close();
 
     // Ensure that a new log file is created
-    LOG_INFO(_logger, "Test log file expiration"); 
+    LOG_INFO(_logger, "Test log file expiration");
 
     // Check that we got 2 log files (the current one and the fake old one)
-    CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir)); 
+    CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));
 
     // Set the expiration time to 2 seconds
     auto *appender = static_cast<CustomRollingFileAppender *>(_logger.getAppender(Log::rfName).get());
@@ -117,7 +117,7 @@ void TestLog::testExpiredLogFiles(void) {
         if (now - start < std::chrono::milliseconds(1500)) { // The fake log file should not be deleted yet.
             CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));
         } else if (countFilesInDirectory(_logDir) == 1) { // The fake log file MIGHT be deleted now.
-            break;        
+            break;
         }
         Utility::msleep(500);
     }
@@ -156,7 +156,6 @@ void TestLog::clearLogDirectory(void) const {
         }
         IoHelper::deleteItem(entry.path(), ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-
     }
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(endOfDirectory);

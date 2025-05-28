@@ -456,6 +456,10 @@ struct IoHelper {
 
         static bool openFile(const SyncPath &path, std::ifstream &file, IoError &ioError, int timeOut = 10 /*in seconds*/);
         static ExitInfo openFile(const SyncPath &path, std::ifstream &file, int timeOut = 10 /*in seconds*/);
+#ifdef _WIN32
+        static bool getLongPathName(const SyncPath &path, SyncPath &longPathName, IoError &ioError);
+        static bool getShortPathName(const SyncPath &path, SyncPath &shortPathName, IoError &ioError);
+#endif
 
     protected:
         friend class DirectoryIterator;

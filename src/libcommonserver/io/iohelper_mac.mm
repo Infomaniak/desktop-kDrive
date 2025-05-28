@@ -72,15 +72,15 @@ bool IoHelper::_checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioErr
             if (ioError != IoError::Unknown) {
                 return true;
             } else {
-                LOGW_WARN(logger(), L"Error in getResourceValue: " << Utility::formatIoError(path, ioError).c_str());
+                LOGW_WARN(logger(), L"Error in getResourceValue: " << Utility::formatIoError(path, ioError));
                 return false;
             }
         }
-        LOGW_WARN(logger(), L"Error in getResourceValue: " << Utility::formatSyncPath(path).c_str());
+        LOGW_WARN(logger(), L"Error in getResourceValue: " << Utility::formatSyncPath(path));
         return false;
     } else if (isAliasNumber == nil) {
         // Property not available (should not happen)
-        LOGW_WARN(logger(), L"No NSURLIsAliasFileKey: " << Utility::formatSyncPath(path).c_str());
+        LOGW_WARN(logger(), L"No NSURLIsAliasFileKey: " << Utility::formatSyncPath(path));
         return false;
     }
 
@@ -108,12 +108,11 @@ bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, I
             if (ioError != IoError::Unknown) {
                 return true;
             } else {
-                LOGW_WARN(logger(),
-                          L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatIoError(aliasPath, ioError).c_str());
+                LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatIoError(aliasPath, ioError));
                 return false;
             }
         }
-        LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatSyncPath(aliasPath).c_str());
+        LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatSyncPath(aliasPath));
         return false;
     }
 
@@ -140,12 +139,11 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
             if (ioError != IoError::Unknown) {
                 return true;
             } else {
-                LOGW_WARN(logger(),
-                          L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError).c_str());
+                LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError));
                 return false;
             }
         }
-        LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatSyncPath(aliasPath).c_str());
+        LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatSyncPath(aliasPath));
         return false;
     }
 
@@ -198,7 +196,7 @@ bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &a
         }
         CFRelease(aliasUrl);
         CFRelease(targetUrl);
-        LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkData: " << Utility::formatSyncPath(targetPath).c_str());
+        LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkData: " << Utility::formatSyncPath(targetPath));
         return false;
     }
 
@@ -214,7 +212,7 @@ bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &a
             ioError = nsError2ioError((__bridge NSError *) error);
             CFRelease(error);
         }
-        LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatSyncPath(aliasPath).c_str());
+        LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatSyncPath(aliasPath));
         return false;
     }
 
@@ -262,7 +260,7 @@ IoError IoHelper::setFileDates(const SyncPath &filePath, SyncTime creationDate, 
     bool ret = false;
     if (symlink) {
         if (cDate) {
-            ret = [[NSURL fileURLWithPath:filePathStr isDirectory:NO] setResourceValue:mDate
+            ret = [[NSURL fileURLWithPath:filePathStr isDirectory:NO] setResourceValue:cDate
                                                                                 forKey:NSURLCreationDateKey
                                                                                  error:&error];
             if (!ret) {

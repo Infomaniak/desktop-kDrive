@@ -59,7 +59,7 @@ RemoteFileSystemObserverWorker::~RemoteFileSystemObserverWorker() {
 
 void RemoteFileSystemObserverWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
-    LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
+    LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
 
     // Sync loop
     for (;;) {
@@ -86,7 +86,7 @@ void RemoteFileSystemObserverWorker::execute() {
         _initializing = false;
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
-    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
     setDone(exitCode);
 }
 
@@ -198,7 +198,7 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
         Poco::JSON::Object::Ptr resObj = job->jsonRes();
         if (!resObj) {
             LOG_SYNCPAL_WARN(_logger, "Continue cursor listing request failed for drive: " << std::to_string(_driveDbId).c_str()
-                                                                                           << " and cursor: " << _cursor.c_str());
+                                                                                           << " and cursor: " << _cursor);
             exitCode = ExitCode::BackError;
             break;
         }
@@ -211,7 +211,7 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
             } else {
                 std::ostringstream os;
                 resObj->stringify(os);
-                LOGW_SYNCPAL_WARN(_logger, L"Continue cursor listing request failed: " << Utility::s2ws(os.str()).c_str());
+                LOGW_SYNCPAL_WARN(_logger, L"Continue cursor listing request failed: " << Utility::s2ws(os.str()));
                 exitCode = ExitCode::BackError;
                 break;
             }
@@ -227,7 +227,7 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
 
             if (cursor != _cursor) {
                 _cursor = cursor;
-                LOG_SYNCPAL_DEBUG(_logger, "Sync cursor updated: " << _cursor.c_str());
+                LOG_SYNCPAL_DEBUG(_logger, "Sync cursor updated: " << _cursor);
                 int64_t timestamp = static_cast<long int>(time(0));
                 exitCode = _syncPal->setListingCursor(_cursor, timestamp);
                 if (exitCode != ExitCode::Ok) {
@@ -303,7 +303,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         const std::string cursor = job->getCursor();
         if (cursor != _cursor) {
             _cursor = cursor;
-            LOG_SYNCPAL_DEBUG(_logger, "Cursor updated: " << _cursor.c_str());
+            LOG_SYNCPAL_DEBUG(_logger, "Cursor updated: " << _cursor);
             int64_t timestamp = static_cast<long int>(time(0));
             ExitCode exitCode = _syncPal->setListingCursor(_cursor, timestamp);
             if (exitCode != ExitCode::Ok) {
@@ -356,8 +356,8 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
 
         if (const auto &[_, inserted] = existingFiles.insert(Str2SyncName(item.parentId()) + item.name()); !inserted) {
             // An item with the exact same name already exists in the parent folder.
-            LOGW_SYNCPAL_DEBUG(_logger, L"Item \"" << SyncName2WStr(item.name()).c_str() << L"\" already exists in directory \""
-                                                   << SyncName2WStr(_snapshot->name(item.parentId())).c_str() << L"\"");
+            LOGW_SYNCPAL_DEBUG(_logger, L"Item \"" << SyncName2WStr(item.name()) << L"\" already exists in directory \""
+                                                   << SyncName2WStr(_snapshot->name(item.parentId())) << L"\"");
 
             SyncPath path;
             _snapshot->path(item.parentId(), path, ignore);
@@ -373,9 +373,8 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         if (_snapshot->updateItem(item)) {
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in remote snapshot: name:"
-                                                    << SyncName2WStr(item.name()).c_str() << L", inode:"
-                                                    << Utility::s2ws(item.id()).c_str() << L", parent inode:"
-                                                    << Utility::s2ws(item.parentId()).c_str() << L", createdAt:"
+                                                    << SyncName2WStr(item.name()) << L", inode:" << Utility::s2ws(item.id())
+                                                    << L", parent inode:" << Utility::s2ws(item.parentId()) << L", createdAt:"
                                                     << item.createdAt() << L", modtime:" << item.lastModified() << L", isDir:"
                                                     << (item.type() == NodeType::Directory) << L", size:" << item.size()
                                                     << L", isLink:" << item.isLink());
@@ -385,7 +384,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
 
     if (!eof) {
         const std::string msg = "Failed to parse CSV reply: missing EOF delimiter";
-        LOG_SYNCPAL_WARN(_logger, msg.c_str());
+        LOG_SYNCPAL_WARN(_logger, msg);
         sentry::Handler::captureMessage(sentry::Level::Warning, "RemoteFileSystemObserverWorker::getItemsInDir", msg);
         setExitCause(ExitCause::FullListParsingError);
         return ExitCode::NetworkError;
@@ -397,15 +396,16 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     auto nodeIdIt = nodeIds.begin();
     while (nodeIdIt != nodeIds.end()) {
         if (_snapshot->isOrphan(*nodeIdIt)) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Node '" << SyncName2WStr(_snapshot->name(*nodeIdIt)).c_str() << L"' ("
-                                                  << Utility::s2ws(*nodeIdIt).c_str() << L") is orphan. Removing it from "
+            LOGW_SYNCPAL_DEBUG(_logger, L"Node '" << SyncName2WStr(_snapshot->name(*nodeIdIt)) << L"' ("
+                                                  << Utility::s2ws(*nodeIdIt) << L") is orphan. Removing it from "
                                                   << _snapshot->side() << L" snapshot.");
             _snapshot->removeItem(*nodeIdIt);
         }
         nodeIdIt++;
     }
 
-    LOG_SYNCPAL_DEBUG(_logger, "End reply parsing in " << timer.elapsed().count() << "s for " << itemCount << " items");
+    LOG_SYNCPAL_DEBUG(_logger,
+                      "End reply parsing in " << timer.elapsed<DoubleSeconds>().count() << "s for " << itemCount << " items");
 
     return ExitCode::Ok;
 }
@@ -444,7 +444,7 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
 
         if (notifyJob->exitInfo().code() == ExitCode::NetworkError) {
             LOG_SYNCPAL_DEBUG(_logger, "Notify changes request failed for drive: " << std::to_string(_driveDbId).c_str()
-                                                                                   << " and cursor: " << _cursor.c_str());
+                                                                                   << " and cursor: " << _cursor);
             if (notifyJob->exitInfo().cause() == ExitCause::NetworkTimeout) {
                 _syncPal->addError(Error(errId(), notifyJob->exitInfo().code(), notifyJob->exitInfo().cause()));
             }
@@ -455,11 +455,11 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
                 LOG_SYNCPAL_INFO(_logger, "Notify changes request failed with error "
                                                   << Poco::Net::HTTPResponse::HTTP_BAD_GATEWAY
                                                   << "for drive: " << std::to_string(_driveDbId).c_str()
-                                                  << " and cursor: " << _cursor.c_str() << ". Check for changes anyway.");
+                                                  << " and cursor: " << _cursor << ". Check for changes anyway.");
                 changes = true; // TODO: perhaps not a good idea... what if longpoll crashed and not reachable for a long time???
             } else {
                 LOG_SYNCPAL_WARN(_logger, "Notify changes request failed for drive: " << std::to_string(_driveDbId).c_str()
-                                                                                      << " and cursor: " << _cursor.c_str());
+                                                                                      << " and cursor: " << _cursor);
                 return notifyJob->exitInfo();
             }
         } else {
@@ -467,7 +467,7 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
             if (!resObj) {
                 // If error, fall
                 LOG_SYNCPAL_DEBUG(_logger, "Notify changes request failed for drive: " << std::to_string(_driveDbId).c_str()
-                                                                                       << " and cursor: " << _cursor.c_str());
+                                                                                       << " and cursor: " << _cursor);
                 return ExitCode::BackError;
             }
 
@@ -688,9 +688,8 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
             [[fallthrough]];
         case ActionCode::ActionCodeTrash:
             if (!_snapshot->removeItem(actionInfo.snapshotItem.id())) {
-                LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: "
-                                                   << SyncName2WStr(actionInfo.snapshotItem.name()).c_str() << L" ("
-                                                   << Utility::s2ws(actionInfo.snapshotItem.id()).c_str() << L")");
+                LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(actionInfo.snapshotItem.name()) << L" ("
+                                                                    << Utility::s2ws(actionInfo.snapshotItem.id()) << L")");
                 tryToInvalidateSnapshot();
                 return ExitCode::BackError;
             }
@@ -708,8 +707,8 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
 
         default:
             LOGW_SYNCPAL_DEBUG(_logger, L"Unknown operation received on item: "
-                                                << SyncName2WStr(actionInfo.snapshotItem.name()).c_str() << L" ("
-                                                << Utility::s2ws(actionInfo.snapshotItem.id()).c_str() << L")");
+                                                << SyncName2WStr(actionInfo.snapshotItem.name()) << L" ("
+                                                << Utility::s2ws(actionInfo.snapshotItem.id()) << L")");
     }
 
 
@@ -736,9 +735,9 @@ ExitCode RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
             return ExitCode::Ok;
         }
 
-        LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
-                                           << SyncName2WStr(snapshotItem.name()).c_str() << L" ("
-                                           << Utility::s2ws(snapshotItem.id()).c_str() << L")");
+        LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: " << SyncName2WStr(snapshotItem.name())
+                                                                                      << L" (" << Utility::s2ws(snapshotItem.id())
+                                                                                      << L")");
         tryToInvalidateSnapshot();
         return ExitCode::BackError;
     }
@@ -764,7 +763,7 @@ bool RemoteFileSystemObserverWorker::hasUnsupportedCharacters(const SyncName &na
 
     if (!valid) {
         LOGW_SYNCPAL_DEBUG(_logger, L"The file/directory name contains a character not yet supported by the filesystem "
-                                            << SyncName2WStr(name).c_str() << L". Item is ignored.");
+                                            << SyncName2WStr(name) << L". Item is ignored.");
 
         Error err(_syncPal->syncDbId(), "", nodeId, type, name, ConflictType::None, InconsistencyType::NotYetSupportedChar);
         _syncPal->addError(err);

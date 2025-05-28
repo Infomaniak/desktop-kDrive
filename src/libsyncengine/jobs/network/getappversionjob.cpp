@@ -108,7 +108,7 @@ void GetAppVersionJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
 }
 
 bool GetAppVersionJob::handleError(std::istream &, const Poco::URI &uri) {
-    LOG_DEBUG(_logger, "Request failed: " << Utility::formatRequest(uri, _errorCode, _errorDescr).c_str());
+    LOG_DEBUG(_logger, "Request failed: " << Utility::formatRequest(uri, _errorCode, _errorDescr));
     return false;
 }
 

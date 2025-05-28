@@ -20,8 +20,10 @@
 
 #include "jobs/network/API_v2/getfilelistjob.h"
 #include "libcommon/utility/utility.h"
+#include "libsyncengine/jobs/network/networkjobsparams.h"
 
 #include <fstream>
+#include <Poco/JSON/Object.h>
 
 
 #ifdef _WIN32
