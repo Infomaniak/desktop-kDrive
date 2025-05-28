@@ -56,7 +56,7 @@ class KDriveDesktop(ConanFile):
         log4cplus_options = { "shared": True, "unicode": True }
         if self.settings.os == "Windows":
             log4cplus_options["thread_pool"] = False
-        self.requires("log4cplus/2.1.2", options=log4cplus_options) # From https://conan.io/center/recipes/log4cplus
+        self.requires("log4cplus/2.1.0", options=log4cplus_options) # From https://conan.io/center/recipes/log4cplus
 
 class OverrideVSRuntimeBlock(VSRuntimeBlock):
     template = textwrap.dedent("""\
