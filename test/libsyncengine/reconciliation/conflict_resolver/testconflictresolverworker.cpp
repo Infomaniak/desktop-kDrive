@@ -102,6 +102,29 @@ void TestConflictResolverWorker::testEditEdit() {
     CPPUNIT_ASSERT(op->affectedNode()->moveOriginInfos().path() != defaultInvalidPath);
 }
 
+
+void TestConflictResolverWorker::testOmitEditEdit() {
+    // Simulate edit conflict of file A/AA/AAA on both replica
+    const auto lNodeAAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aaa");
+    const auto rNodeAAA = _testSituationGenerator.editNode(ReplicaSide::Remote, "aaa");
+    lNodeAAA->setCreatedAt(testhelpers::defaultTime + 1); // Editing only the creation time is considered an omit edit.
+    lNodeAAA->setChangeEvents(OperationType::Edit);
+    rNodeAAA->setChangeEvents(OperationType::Edit);
+
+    const Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::EditEdit);
+    _syncPal->_conflictQueue->push(conflict);
+    _syncPal->_conflictResolverWorker->execute();
+
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
+    const auto opId = _syncPal->_syncOps->opSortedList().front();
+    const auto op = _syncPal->_syncOps->getOp(opId);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, op->targetSide());
+    CPPUNIT_ASSERT_EQUAL(OperationType::Edit, op->type());
+    CPPUNIT_ASSERT(op->omit());
+    CPPUNIT_ASSERT_EQUAL(lNodeAAA, op->affectedNode());
+    CPPUNIT_ASSERT_EQUAL(rNodeAAA, op->correspondingNode());
+}
+
 void TestConflictResolverWorker::testMoveCreate1() {
     // Simulate create file A/AB/ABA on local replica
     const auto lNodeABA = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "aba", "ab");
@@ -172,6 +195,31 @@ void TestConflictResolverWorker::testMoveCreateDehydratedPlaceholder() {
     CPPUNIT_ASSERT_EQUAL(OperationType::Delete, op->type());
     CPPUNIT_ASSERT_EQUAL(lNodeAAA, op->correspondingNode());
 }
+
+void TestConflictResolverWorker::testOmitEditDelete() {
+    // Simulate edit of file A/AA/AAA on local replica
+    const auto lNodeAAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aaa");
+    lNodeAAA->setCreatedAt(testhelpers::defaultTime + 1); // Editing only the creation time is considered an omit edit.
+    lNodeAAA->setChangeEvents(OperationType::Edit);
+
+    // and delete of file A/AA/AAA on remote replica
+    const auto rNodeAAA = _testSituationGenerator.getNode(ReplicaSide::Remote, "aaa");
+    rNodeAAA->setChangeEvents(OperationType::Delete);
+
+    const Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::EditDelete);
+    _syncPal->_conflictQueue->push(conflict);
+    _syncPal->_conflictResolverWorker->execute();
+
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
+    const auto opId = _syncPal->_syncOps->opSortedList().front();
+    const auto op = _syncPal->_syncOps->getOp(opId);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, op->targetSide());
+    CPPUNIT_ASSERT_EQUAL(OperationType::Edit, op->type());
+    CPPUNIT_ASSERT(op->omit());
+    CPPUNIT_ASSERT_EQUAL(lNodeAAA, op->affectedNode());
+    CPPUNIT_ASSERT_EQUAL(rNodeAAA, op->correspondingNode());
+}
+
 
 void TestConflictResolverWorker::testEditDelete1() {
     // Simulate edit of file A/AA/AAA on local replica

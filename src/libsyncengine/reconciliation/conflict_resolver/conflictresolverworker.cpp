@@ -64,6 +64,9 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
     if (res != ExitCode::Ok) {
         return res;
     }
+
+    handleConflictOnOmittedEdit(conflict, continueSolving);
+
     if (continueSolving) return ExitCode::Ok;
 
     switch (conflict.type()) {
@@ -103,6 +106,23 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
     }
 
     return res;
+}
+
+void ConflictResolverWorker::handleConflictOnOmittedEdit(const Conflict &conflict, bool &continueSolving) {
+    if (const auto localNode = conflict.localNode();
+        localNode->hasChangeEvent(OperationType::Edit) && !editChangeShouldBePropagated(localNode)) {
+
+        const auto editOp = std::make_shared<SyncOperation>();
+        editOp->setType(OperationType::Edit);
+        editOp->setAffectedNode(localNode);
+        editOp->setCorrespondingNode(conflict.remoteNode());
+        editOp->setOmit(true);
+        editOp->setTargetSide(ReplicaSide::Remote);
+        editOp->setConflict(conflict);
+        LOGW_SYNCPAL_INFO(_logger, getLogString(editOp));
+        (void) _syncPal->syncOps()->pushOp(editOp);
+        continueSolving = true;
+    }
 }
 
 ExitCode ConflictResolverWorker::handleConflictOnDehydratedPlaceholder(const Conflict &conflict, bool &continueSolving) {
