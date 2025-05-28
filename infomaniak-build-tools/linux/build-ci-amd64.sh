@@ -103,16 +103,25 @@ export SUFFIX=""
 
 mkdir -p "$build_dir/client"
 
-conan_folder="$build_dir/conan"
+conan_build_folder="$build_dir/conan"
 
-bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" "--output-dir=$conan_folder"
+conan_source_folder="$BASEPATH/infomaniak-build-tools/conan"
 
-conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
+bash "$conan_source_folder/build_dependencies.sh" "$build_type" "--output-dir=$conan_build_folder"
+
+conan_toolchain_file="$(find "$conan_build_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
 conan_generator_folder="$(dirname "$conan_toolchain_file")"
 
 if [ ! -f "$conan_toolchain_file" ]; then
   echo "Conan toolchain file not found: $conan_toolchain_file"
   exit 1
+fi
+
+openssl_folder="$(base "$conan_source_folder/find_conan_dep.sh" openssl 3.2.4 2>/dev/null)"
+if [ -z "$openssl_folder" ]; then
+  echo "OpenSSL folder not found. Please ensure the OpenSSL package is built and available in the conan cache." >&2; exit 1
+else
+  echo "OpenSSL folder found: $openssl_folder"
 fi
 
 # Build client
@@ -125,10 +134,10 @@ cmake_param=()
 export KDRIVE_DEBUG=0
 
 cmake -B$build_dir -H$BASEPATH \
-    -DOPENSSL_ROOT_DIR=/usr/local \
-    -DOPENSSL_INCLUDE_DIR=/usr/local/include \
-    -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib64/libcrypto.so \
-    -DOPENSSL_SSL_LIBRARY=/usr/local/lib64/libssl.so \
+    -DOPENSSL_ROOT_DIR="$openssl_folder" \
+    -DOPENSSL_INCLUDE_DIR="$openssl_folder/include" \
+    -DOPENSSL_CRYPTO_LIBRARY="$openssl_folder/lib/libcrypto.so" \
+    -DOPENSSL_SSL_LIBRARY="$openssl_folder/lib/libssl.so" \
     -DQT_FEATURE_neon=OFF \
     -DCMAKE_BUILD_TYPE=$build_type \
     -DCMAKE_PREFIX_PATH=$BASEPATH \
