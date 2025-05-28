@@ -260,7 +260,7 @@ IoError IoHelper::setFileDates(const SyncPath &filePath, SyncTime creationDate, 
     bool ret = false;
     if (symlink) {
         if (cDate) {
-            ret = [[NSURL fileURLWithPath:filePathStr isDirectory:NO] setResourceValue:mDate
+            ret = [[NSURL fileURLWithPath:filePathStr isDirectory:NO] setResourceValue:cDate
                                                                                 forKey:NSURLCreationDateKey
                                                                                  error:&error];
             if (!ret) {

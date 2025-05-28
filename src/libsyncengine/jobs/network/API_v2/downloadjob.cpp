@@ -46,13 +46,13 @@ namespace KDC {
 #define READ_RETRIES 10
 
 DownloadJob::DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
-                         int64_t expectedSize, SyncTime creationTime, SyncTime modtime, bool isCreate) :
+                         int64_t expectedSize, SyncTime creationTime, SyncTime modificationTime, bool isCreate) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
     _remoteFileId(remoteFileId),
     _localpath(localpath),
     _expectedSize(expectedSize),
     _creationTime(creationTime),
-    _modtimeIn(modtime),
+    _modificationTime(modificationTime),
     _isCreate(isCreate),
     _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
@@ -283,7 +283,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
     }
 
     if (!_ignoreDateTime) {
-        if (const IoError ioError = IoHelper::setFileDates(_localpath, _creationTime, _modtimeIn, isLink);
+        if (const IoError ioError = IoHelper::setFileDates(_localpath, _creationTime, _modificationTime, isLink);
             ioError == IoError::Unknown) {
             LOGW_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(_localpath));
             // Do nothing (remote file will be updated during the next sync)
