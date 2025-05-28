@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.1)
-
 set(CMAKE_CXX_STANDARD 20)
 project(client)
 if(APPLE)
@@ -43,18 +42,18 @@ include("${CMAKE_CURRENT_LIST_DIR}/THEME.cmake")
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
-IF (WIN32)
-    # TODO Remove lines once lib is managed by conan: add directories to search for libraries in .cmake files.
+IF (UNIX AND NOT APPLE)
+    SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
+            "/usr/local/lib"
+    )
+ELSEIF (WIN32)
     SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
         "C:/Program Files/OpenSSL"
         "C:/Program Files (x86)/Poco"
         "C:/Program Files (x86)/log4cplus"
         "C:/Program Files (x86)/Sentry-Native"
+        "C:/Program Files (x86)/xxHash"
         "C:/Program Files (x86)/libzip"
-    )
-ELSE ()
-    SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
-        "/usr/local/lib"
     )
 ENDIF ()
 
@@ -272,6 +271,11 @@ elseif(BUILD_CLIENT)
         find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
         message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
         install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+        # xxHash
+        find_library(XXHASH_SHARED_LIBRARY NAMES xxHash PATH_SUFFIXES "bin" NO_CACHE)
+        message(STATUS "xxHash dll found in ${XXHASH_SHARED_LIBRARY}")
+        install(FILES ${XXHASH_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
     else ()
         # Default sync exclude list
         if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -297,5 +301,10 @@ elseif(BUILD_CLIENT)
                 install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
             endif ()
         endif ()
+
+        # xxHash
+        find_library(XXHASH_SHARED_LIBRARY NAMES xxhash NO_CACHE)
+        message(STATUS "xxHash dll found in ${XXHASH_SHARED_LIBRARY}")
+        install(FILES ${XXHASH_SHARED_LIBRARY} DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME})
     endif ()
 endif ()
