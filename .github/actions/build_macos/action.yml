@@ -67,6 +67,12 @@ runs:
         shell: bash
         if: steps.build.outcome == 'success'
 
+      - name: Fetch Conan dependencies
+        run: |
+          find "$HOME/.conan2/p/" -type f -iname '*.dylib' \
+            -exec cp -P {} ./dependencies/ \;
+        shell: bash
+
       - name: Upload build common files
         uses: actions/upload-artifact@v4
         with:
