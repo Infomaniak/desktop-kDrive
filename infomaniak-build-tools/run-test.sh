@@ -41,7 +41,7 @@ if [ ! -f "$tester" ]; then
 fi
 
 chmod +x $tester
-./$tester
+DYLD_PRINT_STATISTICS=1 ./$tester
 
 if [ $? -ne 0 ]; then
     echo "---------- Failure: $tester ----------"

@@ -88,11 +88,9 @@ void TestAppServer::setUp() {
     std::cout << "12" << std::endl;
 
     ParmsDb::reset();
-    std::cout << "13" << std::endl;
 
     // Create AppServer
     SyncPath exePath = KDC::CommonUtility::applicationFilePath();
-    std::cout << "13b" << std::endl;
 
     try {
         std::cout << "14" << std::endl;
