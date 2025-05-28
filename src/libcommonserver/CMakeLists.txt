@@ -127,7 +127,6 @@ else()
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
         "/usr/local/include"
-        ${CMAKE_INCLUDE_PATH}
         ${CMAKE_SOURCE_DIR}/src/3rdparty/utf8proc)
 endif()
 
@@ -144,11 +143,11 @@ target_link_libraries(${libcommonserver_NAME}
     ${SQLITE3_LIBRARIES}
     Poco::Foundation Poco::Net Poco::JSON Poco::Util
     OpenSSL::SSL OpenSSL::Crypto
+    xxHash::xxhash
     libzip::zip)
 
 if (WIN32)
     target_link_libraries(${libcommonserver_NAME}
-        xxHash::xxhash
         Secur32)
 elseif(APPLE)
     # utility_mac.mm
@@ -157,14 +156,11 @@ elseif(APPLE)
     find_library(APPKIT_LIBRARY NAMES AppKit)
 
     target_link_libraries(${libcommonserver_NAME}
-        xxHash::xxhash
         ${FOUNDATION_LIBRARY}
         ${CORESERVICES_LIBRARY}
         ${APPKIT_LIBRARY})
 else()
-    find_library(XXHASH_LIBRARIES NAMES xxhash PATHS CONAN_RUNTIME_LIB_DIRS) # Used for Linux appImage generation, the target xxHash::xxhash does not work here.
     target_link_libraries(${libcommonserver_NAME}
         utf8proc
-        ${XXHASH_LIBRARIES}
     )
 endif()

@@ -108,14 +108,12 @@ if (WIN32)
     target_include_directories(${libcommon_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
-        ${CMAKE_INCLUDE_PATH}
         "C:/Program Files (x86)/libzip/include"
         ${CMAKE_SOURCE_DIR}/src/3rdparty/keychain/include)
 else()
     target_include_directories(${libcommon_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
-        ${CMAKE_INCLUDE_PATH}
         "/usr/local/include"
         ${CMAKE_SOURCE_DIR}/src/3rdparty/keychain/include)
 endif()
