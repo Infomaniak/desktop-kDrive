@@ -42,18 +42,16 @@ include("${CMAKE_CURRENT_LIST_DIR}/THEME.cmake")
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
-IF (UNIX AND NOT APPLE)
-    SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
-            "/usr/local/lib"
-    )
-ELSEIF (WIN32)
+IF (WIN32)
     SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
         "C:/Program Files/OpenSSL"
         "C:/Program Files (x86)/Poco"
-        "C:/Program Files (x86)/log4cplus"
-        "C:/Program Files (x86)/Sentry-Native"
         "C:/Program Files (x86)/xxHash"
         "C:/Program Files (x86)/libzip"
+    )
+ELSE ()
+    SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
+        "/usr/local/lib"
     )
 ENDIF ()
 
