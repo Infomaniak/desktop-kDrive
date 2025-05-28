@@ -107,7 +107,7 @@ cp -P -r /usr/lib/aarch64-linux-gnu/nss ./usr/lib/
 cp -P /opt/qt6.2.3/lib/libQt6WaylandClient.so* ./usr/lib
 cp -P /opt/qt6.2.3/lib/libQt6WaylandEglClientHwIntegration.so* ./usr/lib
 
-find /root/.conan2/p/ -name 'libxxhash.so*' -exec cp -P {} ./usr/lib/ \;
+cp -P ./build/client/conan_dependencies/* ./usr/lib
 
 mkdir -p ./usr/qml
 

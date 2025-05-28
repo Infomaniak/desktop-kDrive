@@ -23,6 +23,7 @@ class KDriveDesktop(ConanFile):
         tc = CMakeToolchain(self)
         if self.settings.os == "Windows":
             tc.blocks.remove("generic_system")
+            # tc.generator = "Ninja"
 
             # The default VSRuntimeBlock only configures CMAKE_MSVC_RUNTIME_LIBRARY for the profile's build_type
             # (in the CI's profile, it is Release), yielding $<$<CONFIG:Release>:MultiThreadedDLL>. Other configs
@@ -38,15 +39,24 @@ class KDriveDesktop(ConanFile):
     def layout(self):
         cmake_layout(self)
 
+    # def build_requirements(self):
+    #     if self.settings.os == "Windows":
+    #         self.tool_requires("ninja/1.11.1")
+
     def requirements(self):
         """
         Specify the dependencies required for this package.
         Here are the dependencies used:
         - `xxhash/0.8.2`: A fast non-cryptographic hash algorithm.
+        - ``log4cplus/2.1.2``: A C++ logging library.
         :return: None
         """
         self.requires("xxhash/0.8.2") # From local recipe
-
+        # log4cplus
+        log4cplus_options = { "shared": True, "unicode": True }
+        if self.settings.os == "Windows":
+            log4cplus_options["thread_pool"] = False
+        self.requires("log4cplus/2.1.0", options=log4cplus_options) # From https://conan.io/center/recipes/log4cplus
 
 class OverrideVSRuntimeBlock(VSRuntimeBlock):
     template = textwrap.dedent("""\

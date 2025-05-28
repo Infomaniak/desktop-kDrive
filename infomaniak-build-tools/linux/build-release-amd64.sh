@@ -80,6 +80,8 @@ build_dir="$src_dir/build-linux-amd64"
 app_dir="$build_dir/install"
 build_type="RelWithDebInfo"
 
+conan_dependencies_folder="$build_dir/conan_dependencies"
+
 echo
 echo "Build type: $build_type"
 echo "Source directory '$src_dir'"
@@ -140,6 +142,7 @@ build_release() {
       -DKDRIVE_VERSION_SUFFIX=$SUFFIX \
       -DKDRIVE_THEME_DIR="$src_dir/infomaniak" \
       -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
+      -DCONAN_DEP_DIR="$conan_dependencies_folder"
       -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
       "${CMAKE_PARAMS[@]}" \
 
@@ -170,6 +173,7 @@ package_release() {
   cp -P -r $QTDIR/translations/ $app_dir/usr
 
   mv $app_dir/usr/lib/x86_64-linux-gnu/* $app_dir/usr/lib/ || echo "The folder $app_dir/usr/lib/x86_64-linux-gnu/ might not exist." >&2
+  cp -P "$conan_dependencies_folder/*" "$app_dir/usr/lib"
 
   cp -P /usr/local/lib64/libssl.so* $app_dir/usr/lib/
   cp -P /usr/local/lib64/libcrypto.so* $app_dir/usr/lib/

@@ -148,6 +148,7 @@ Log "Current conan home configuration:"
 
 # Define a Conan "Remote" pointing at the on-disk recipe folder.
 $remotes = & $ConanExe remote list
+Log "Conan remotes: \n $remotes"
 if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
     Log "Adding Conan remote '$LocalRemoteName' at '$ConanRemoteBaseFolder'."
     & $ConanExe remote add $LocalRemoteName $ConanRemoteBaseFolder
@@ -155,7 +156,7 @@ if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
         Err "Failed to add local Conan remote."
     }
 } else {
-    Log "Conan remote '$LocalConanRemoteName' already exists and is enabled."
+    Log "Conan remote '$LocalRemoteName' already exists and is enabled."
 }
 
 # Ensure output directory exists

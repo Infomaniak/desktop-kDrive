@@ -24,10 +24,16 @@ BUILDDIR="$PWD/build-linux"
 CLIENTDIR="$BUILDDIR/client"
 INSTALLDIR="$BUILDDIR/install"
 
+CONAN_BASE_FOLDER="$HOME/.conan2_linux"
+CONAN_CACHE_FOLDER="$CONAN_BASE_FOLDER/p"
+LOCAL_RECIPE_INDEX_FOLDER="$CONAN_BASE_FOLDER/.local_recipes_index"
+
 rm -Rf "${BUILDDIR}"
 mkdir -p "${BUILDDIR}"
 mkdir -p "${CLIENTDIR}"
 mkdir -p "${INSTALLDIR}"
+mkdir -p "${CONAN_CACHE_FOLDER}"
+mkdir -p "${LOCAL_RECIPE_INDEX_FOLDER}"
 
 podman machine stop build_kdrive
 ulimit -n unlimited
@@ -35,9 +41,11 @@ podman machine start build_kdrive
 podman run --rm -it \
 	--privileged \
 	--ulimit nofile=4000000:4000000 \
-	--volume $HOME/Projects/desktop-kDrive:/src \
-	--volume $HOME/Projects/desktop-kDrive/build-linux:/build \
-	--volume $HOME/Projects/desktop-kDrive/build-linux/install:/install \
+	--volume "$HOME/Projects/desktop-kDrive:/src" \
+	--volume "$BUILDDIR:/build" \
+	--volume "$INSTALLDIR:/install" \
+	--volume "$CONAN_CACHE_FOLDER:/root/.conan2/p" \
+	--volume "$LOCAL_RECIPE_INDEX_FOLDER:/root/.conan2/.local_recipes_index/" \
 	--workdir "/src" \
 	--env APPLICATION_SERVER_URL="$APPLICATION_SERVER_URL" \
 	--env KDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
@@ -47,8 +55,7 @@ podman machine stop build_kdrive
 
 VERSION=$(grep "KDRIVE_VERSION_FULL" "$BUILDDIR/client/version.h" | awk '{print $3}')
 
-echo $SUFFIX
-mv "${INSTALLDIR}/kDrive-arm64.AppImage" $INSTALLDIR/kDrive-$VERSION-arm64.AppImage
+mv "${INSTALLDIR}/kDrive-arm64.AppImage" "$INSTALLDIR/kDrive-$VERSION-arm64.AppImage"
 
 rm -Rf "${BUILDDIR}-arm64"
 mv "${BUILDDIR}" "${BUILDDIR}-arm64"
