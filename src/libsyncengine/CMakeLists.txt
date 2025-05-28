@@ -209,8 +209,7 @@ GENERATE_EXPORT_HEADER(${libsyncengine_NAME}
 if (WIN32)
     target_include_directories(${libsyncengine_NAME} PUBLIC
             ${CMAKE_CURRENT_SOURCE_DIR}
-            ${CMAKE_CURRENT_BINARY_DIR}
-            "C:/Program Files (x86)/log4cplus/include")
+            ${CMAKE_CURRENT_BINARY_DIR})
 else ()
     target_include_directories(${libsyncengine_NAME} PUBLIC
             ${CMAKE_CURRENT_SOURCE_DIR}
