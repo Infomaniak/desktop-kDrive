@@ -61,7 +61,6 @@ runs:
           cp /usr/local/lib/libzstd.1.dylib ./dependencies/
           cp /usr/local/lib/libssl.3.dylib ./dependencies/
           cp /usr/local/lib/libcrypto.3.dylib ./dependencies/
-          cp /usr/local/lib/libxxhash.0.8.2.dylib ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/*.lst ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/*.dylib ./dependencies/
         shell: bash
@@ -72,6 +71,7 @@ runs:
           find "$HOME/.conan2/p/" -type f -iname '*.dylib' \
             -exec cp -P {} ./dependencies/ \;
         shell: bash
+        if: steps.build.outcome == 'success'
 
       - name: Upload build common files
         uses: actions/upload-artifact@v4
