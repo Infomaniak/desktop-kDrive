@@ -40,7 +40,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_EQUAL(int64_t(408278u), fileStat.size);
         CPPUNIT_ASSERT_GREATER(SyncTime(0), fileStat.creationTime);
-        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
@@ -63,7 +63,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(fileStat.size > 0);
 #endif
         CPPUNIT_ASSERT_GREATER(SyncTime(0), fileStat.creationTime);
-        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::Directory, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
@@ -89,7 +89,7 @@ void TestIo::testGetFileStat() {
 #else
         CPPUNIT_ASSERT(fileStat.size == static_cast<int64_t>(targetPath.native().length()));
 #endif
-        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
@@ -127,7 +127,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_EQUAL(int64_t(0), fileStat.size);
-        CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.creationTime);
         CPPUNIT_ASSERT_EQUAL(uint64_t(0), fileStat.inode);
         CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
@@ -144,7 +144,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_EQUAL(int64_t(0), fileStat.size);
         CPPUNIT_ASSERT_EQUAL(uint64_t(0), fileStat.inode);
-        CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.creationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
 #ifdef _WIN32
@@ -167,7 +167,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_EQUAL(int64_t(0), fileStat.size);
         CPPUNIT_ASSERT_EQUAL(uint64_t(0), fileStat.inode);
-        CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.creationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::FileNameTooLong, ioError);
@@ -196,7 +196,7 @@ void TestIo::testGetFileStat() {
 
         CPPUNIT_ASSERT(fileStat.isHidden);
         CPPUNIT_ASSERT_GREATER(int64_t(0), fileStat.size);
-        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
@@ -219,7 +219,7 @@ void TestIo::testGetFileStat() {
 
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(fileStat.isHidden);
-        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT_EQUAL(NodeType::Directory, fileStat.nodeType);
     }
@@ -238,15 +238,15 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(!_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_EQUAL(SyncTime(0u), fileStat.size);
-        CPPUNIT_ASSERT_EQUAL(SyncTime(0u), fileStat.modtime);
-        CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(SyncTime(0u), fileStat.modificationTime);
+        CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Unknown, ioError);
 #else
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_GREATER(int64_t(0), fileStat.size);
-        CPPUNIT_ASSERT_EQUAL(fileStat.modtime, fileStat.creationTime);
+        CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, fileStat.creationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 #endif
@@ -268,7 +268,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_GREATER(int64_t(0), fileStat.size);
-        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
@@ -291,7 +291,7 @@ void TestIo::testGetFileStat() {
 #else
         CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(targetPath.native().length()), fileStat.size);
 #endif
-        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
 #ifdef _WIN32
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
 #else
@@ -316,7 +316,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_GREATER(int64_t(0),
                                fileStat.size); // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
-        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
@@ -337,7 +337,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_GREATER(int64_t(0),
                                fileStat.size); // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
-        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
@@ -363,7 +363,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_GREATER(int64_t(0),
                                fileStat.size); // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
-        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
@@ -387,7 +387,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_GREATER(int64_t(0),
                                fileStat.size); // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
-        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
@@ -412,7 +412,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_EQUAL(int64_t(0),
                              fileStat.size); // `fileStat.size` is 0 for a junction`
-        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::Directory, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
@@ -434,7 +434,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_EQUAL(int64_t(0),
                              fileStat.size); // `fileStat.size` is 0 for a junction`
-        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::Directory, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
@@ -459,7 +459,7 @@ void TestIo::testGetFileStat() {
 
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_GREATER(int64_t(0), fileStat.size);
-        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
@@ -485,7 +485,7 @@ void TestIo::testGetFileStat() {
 #else
         CPPUNIT_ASSERT(fileStat.size > 0u);
 #endif
-        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::Directory, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
@@ -514,7 +514,7 @@ void TestIo::testGetFileStat() {
 
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_GREATER(int64_t(0), fileStat.size);
-        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
@@ -543,12 +543,12 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(!fileStat.isHidden);
 #ifdef _WIN32
         CPPUNIT_ASSERT_GREATER(int64_t(0u), fileStat.size);
-        CPPUNIT_ASSERT_GREATER(SyncTime(0), fileStat.modtime);
-        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_GREATER(SyncTime(0), fileStat.modificationTime);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
 #else
         CPPUNIT_ASSERT_EQUAL(int64_t(0u), fileStat.size);
-        CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.creationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, ioError);

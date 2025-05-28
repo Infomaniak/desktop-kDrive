@@ -440,8 +440,7 @@ bool SocketApi::syncFileStatus(const FileData &fileData, SyncFileStatus &status,
 
     if (vfsMapIt->second->mode() == KDC::VirtualFileMode::Mac || vfsMapIt->second->mode() == KDC::VirtualFileMode::Win) {
         if (!vfsMapIt->second->status(QStr2Path(fileData.localPath), vfsStatus)) {
-            LOGW_WARN(KDC::Log::instance()->getLogger(),
-                      L"Error in Vfs::status - " << Utility::formatPath(fileData.localPath));
+            LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in Vfs::status - " << Utility::formatPath(fileData.localPath));
             return false;
         }
 
@@ -563,8 +562,7 @@ void SocketApi::command_MAKE_AVAILABLE_LOCALLY_DIRECT(const QString &filesArg) {
         }
 
         if (fileData.isLink) {
-            LOGW_DEBUG(KDC::Log::instance()->getLogger(),
-                       L"Don't hydrate symlinks - " << Utility::formatSyncPath(filePath));
+            LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Don't hydrate symlinks - " << Utility::formatSyncPath(filePath));
             continue;
         }
 
@@ -579,14 +577,12 @@ void SocketApi::command_MAKE_AVAILABLE_LOCALLY_DIRECT(const QString &filesArg) {
 
         if (!vfsStatus.isPlaceholder) {
             // File is not a placeholder, this should never happen
-            LOGW_WARN(KDC::Log::instance()->getLogger(),
-                      L"File is not a placeholder - " << Utility::formatSyncPath(filePath));
+            LOGW_WARN(KDC::Log::instance()->getLogger(), L"File is not a placeholder - " << Utility::formatSyncPath(filePath));
             continue;
         }
 
         if (vfsStatus.isHydrated || status == KDC::SyncFileStatus::Syncing) {
-            LOGW_INFO(KDC::Log::instance()->getLogger(),
-                      L"File is already hydrated/ing - " << Utility::formatSyncPath(filePath));
+            LOGW_INFO(KDC::Log::instance()->getLogger(), L"File is already hydrated/ing - " << Utility::formatSyncPath(filePath));
             continue;
         }
 
@@ -686,8 +682,7 @@ void SocketApi::command_MAKE_ONLINE_ONLY_DIRECT(const QString &filesArg, SocketL
         }
 
         if (fileData.isLink) {
-            LOGW_DEBUG(KDC::Log::instance()->getLogger(),
-                       L"Don't dehydrate symlinks - " << Utility::formatSyncPath(filePath));
+            LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Don't dehydrate symlinks - " << Utility::formatSyncPath(filePath));
             continue;
         }
 
@@ -833,8 +828,7 @@ void SocketApi::command_GET_THUMBNAIL(const QString &argument, SocketListener *l
     QByteArray thumbnailArr(thumbnail.c_str(), thumbnail.length());
     QPixmap pixmap;
     if (!pixmap.loadFromData(thumbnailArr)) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(),
-                  L"Error in QPixmap::loadFromData - " << Utility::formatPath(filePath));
+        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in QPixmap::loadFromData - " << Utility::formatPath(filePath));
         return;
     }
 
@@ -905,8 +899,7 @@ void SocketApi::command_SET_THUMBNAIL(const QString &filePath) {
     QByteArray thumbnailArr(thumbnail.c_str(), static_cast<qsizetype>(thumbnail.length()));
     QPixmap pixmap;
     if (!pixmap.loadFromData(thumbnailArr)) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(),
-                  L"Error in QPixmap::loadFromData - " << Utility::formatPath(filePath));
+        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in QPixmap::loadFromData - " << Utility::formatPath(filePath));
         return;
     }
 
@@ -1332,8 +1325,7 @@ QString SocketApi::cancelHydrationText() {
 
 bool SocketApi::openBrowser(const QUrl &url) {
     if (!QDesktopServices::openUrl(url)) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(),
-                  L"QDesktopServices::openUrl failed - url=" << url.toString().toStdWString());
+        LOGW_WARN(KDC::Log::instance()->getLogger(), L"QDesktopServices::openUrl failed - url=" << url.toString().toStdWString());
         return false;
     }
     return true;
@@ -1353,8 +1345,7 @@ FileData FileData::get(const KDC::SyncPath &path) {
         if (notFound) {
             LOGW_WARN(KDC::Log::instance()->getLogger(), L"File not found - " << Utility::formatSyncPath(path));
         } else {
-            LOGW_WARN(KDC::Log::instance()->getLogger(),
-                      L"Error in Utility::longpath - " << Utility::formatSyncPath(path));
+            LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in Utility::longpath - " << Utility::formatSyncPath(path));
         }
         return FileData();
     }
@@ -1383,8 +1374,7 @@ FileData FileData::get(const KDC::SyncPath &path) {
     }
 
     if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-        LOGW_DEBUG(KDC::Log::instance()->getLogger(),
-                   L"Item does not exist anymore - " << Utility::formatSyncPath(tmpPath));
+        LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Item does not exist anymore - " << Utility::formatSyncPath(tmpPath));
         return FileData();
     }
 
@@ -1398,13 +1388,12 @@ FileData FileData::get(const KDC::SyncPath &path) {
             const bool exists = !CommonUtility::isLikeFileNotFoundError(ec);
             if (!exists) {
                 // Item doesn't exist anymore
-                LOGW_DEBUG(KDC::Log::instance()->getLogger(),
-                           L"Item doesn't exist - " << Utility::formatPath(data.localPath));
+                LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Item doesn't exist - " << Utility::formatPath(data.localPath));
             } else {
                 LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to check if the path is a directory - "
                                                                      << Utility::formatPath(data.localPath) << L" err="
-                                                                     << KDC::Utility::s2ws(ec.message()) << L" ("
-                                                                     << ec.value() << L")");
+                                                                     << KDC::Utility::s2ws(ec.message()) << L" (" << ec.value()
+                                                                     << L")");
             }
             return FileData();
         }

@@ -30,8 +30,8 @@ namespace KDC {
  * @param clientId clientId (field _id & cid in the url), if empty, a new one is generated and stored in QSettings.
  * @return the MatomoClient instance
  */
-MatomoClient& MatomoClient::instance(const QString& clientId) {
-    static MatomoClient _inst(qobject_cast<QCoreApplication*>(QCoreApplication::instance()), clientId);
+MatomoClient &MatomoClient::instance(const QString &clientId) {
+    static MatomoClient _inst(qobject_cast<QCoreApplication *>(QCoreApplication::instance()), clientId);
     // We needed to set the parent to the QCoreApplication instance to retrieve screen resolutions (and other details) in
     // PiwikTracker, but we then set it to nullptr to prevent Qt from freeing this object when QCoreApplication is destroyed.
     _inst.setParent(nullptr);
@@ -45,7 +45,7 @@ MatomoClient& MatomoClient::instance(const QString& clientId) {
  * @param app the QCoreApplication instance
  * @param clientId the clientId (field _id & cid in the URL), if empty, a new one is generated and stored in QSettings.
  */
-MatomoClient::MatomoClient(QCoreApplication* app, const QString& clientId) :
+MatomoClient::MatomoClient(QCoreApplication *app, const QString &clientId) :
     PiwikTracker(app, QUrl(MATOMO_URL), MATOMO_SITE_ID, clientId) {
     initNameFieldMap();
 }
@@ -74,7 +74,7 @@ void MatomoClient::sendVisit(const MatomoNameField page) {
  * @param name the name of the event
  * @param value the value of the event
  */
-void MatomoClient::sendEvent(const QString& category, const MatomoEventAction action, const QString& name, const int value) {
+void MatomoClient::sendEvent(const QString &category, const MatomoEventAction action, const QString &name, const int value) {
     QString actionStr;
     switch (action) {
         case MatomoEventAction::Click:
@@ -137,7 +137,7 @@ void MatomoClient::initNameFieldMap() {
  * @param path[out] the path associated with the MatomoNameField
  * @param action[out] the action associated with the MatomoNameField
  */
-void MatomoClient::getPathAndAction(const MatomoNameField name, QString& path, QString& action) const {
+void MatomoClient::getPathAndAction(const MatomoNameField name, QString &path, QString &action) const {
     const auto it = _nameFieldMap.find(name);
     if (it != _nameFieldMap.end()) {
         path = it->second.first;

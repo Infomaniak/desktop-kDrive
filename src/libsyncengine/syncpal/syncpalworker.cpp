@@ -526,8 +526,8 @@ void SyncPalWorker::resetVfsFilesStatus() {
             bool isManaged = true;
             IoError ioError = IoError::Success;
             if (!Utility::checkIfDirEntryIsManaged(*dirIt, isManaged, ioError)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged : "
-                                                   << Utility::formatSyncPath(absolutePath));
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Error in Utility::checkIfDirEntryIsManaged : " << Utility::formatSyncPath(absolutePath));
                 ok = false;
                 dirIt.disable_recursion_pending();
                 continue;
@@ -541,15 +541,13 @@ void SyncPalWorker::resetVfsFilesStatus() {
             }
 
             if (ioError == IoError::AccessDenied) {
-                LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Directory misses search permission : " << Utility::formatSyncPath(absolutePath));
+                LOGW_SYNCPAL_DEBUG(_logger, L"Directory misses search permission : " << Utility::formatSyncPath(absolutePath));
                 dirIt.disable_recursion_pending();
                 continue;
             }
 
             if (!isManaged) {
-                LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Directory entry is not managed : " << Utility::formatSyncPath(absolutePath));
+                LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry is not managed : " << Utility::formatSyncPath(absolutePath));
                 dirIt.disable_recursion_pending();
                 continue;
             }

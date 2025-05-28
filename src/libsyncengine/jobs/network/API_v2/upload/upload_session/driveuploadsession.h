@@ -39,8 +39,9 @@ class DriveUploadSession : public AbstractUploadSession {
         ~DriveUploadSession() override;
 
         const NodeId &nodeId() const { return _nodeId; }
-        SyncTime newCreationTime() const { return _creationTimeOut; }
-        SyncTime newModificationTime() const { return _modificationTimeOut; }
+        SyncTime creationTime() const { return _creationTimeOut; }
+        SyncTime modificationTime() const { return _modificationTimeOut; }
+        int64_t size() const { return _sizeOut; }
 
     protected:
         bool handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob,
@@ -60,8 +61,8 @@ class DriveUploadSession : public AbstractUploadSession {
         std::shared_ptr<SyncDb> _syncDb;
 
         NodeId _fileId;
-        SyncTime _creationTimeIn = 0;
-        SyncTime _modificationTimeIn = 0;
+        const SyncTime _creationTimeIn = 0;
+        const SyncTime _modificationTimeIn = 0;
 
         int64_t _uploadSessionTokenDbId = 0;
         NodeId _remoteParentDirId;
@@ -69,6 +70,7 @@ class DriveUploadSession : public AbstractUploadSession {
         NodeId _nodeId;
         SyncTime _creationTimeOut = 0;
         SyncTime _modificationTimeOut = 0;
+        int64_t _sizeOut = 0;
         const std::shared_ptr<Vfs> _vfs;
 };
 } // namespace KDC

@@ -64,9 +64,16 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
     if (res != ExitCode::Ok) {
         return res;
     }
+
+    handleConflictOnOmittedEdit(conflict, continueSolving);
+
     if (continueSolving) return ExitCode::Ok;
 
     switch (conflict.type()) {
+        case ConflictType::MoveCreate: {
+            generateMoveCreateConflictOperation(conflict, continueSolving);
+            break;
+        }
         case ConflictType::CreateCreate:
         case ConflictType::EditEdit: {
             res = generateLocalRenameOperation(conflict, continueSolving);
@@ -87,9 +94,8 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
         }
         case ConflictType::MoveMoveSource:
         case ConflictType::MoveMoveDest:
-        case ConflictType::MoveMoveCycle:
-        case ConflictType::MoveCreate: {
-            res = generateUndoMoveOperation(conflict, getLoserNode(conflict));
+        case ConflictType::MoveMoveCycle: {
+            res = generateUndoMoveOperation(conflict, conflict.localNode());
             break;
         }
         default: {
@@ -100,6 +106,23 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
     }
 
     return res;
+}
+
+void ConflictResolverWorker::handleConflictOnOmittedEdit(const Conflict &conflict, bool &continueSolving) {
+    if (const auto localNode = conflict.localNode();
+        localNode->hasChangeEvent(OperationType::Edit) && !editChangeShouldBePropagated(localNode)) {
+
+        const auto editOp = std::make_shared<SyncOperation>();
+        editOp->setType(OperationType::Edit);
+        editOp->setAffectedNode(localNode);
+        editOp->setCorrespondingNode(conflict.remoteNode());
+        editOp->setOmit(true);
+        editOp->setTargetSide(ReplicaSide::Remote);
+        editOp->setConflict(conflict);
+        LOGW_SYNCPAL_INFO(_logger, getLogString(editOp));
+        (void) _syncPal->syncOps()->pushOp(editOp);
+        continueSolving = true;
+    }
 }
 
 ExitCode ConflictResolverWorker::handleConflictOnDehydratedPlaceholder(const Conflict &conflict, bool &continueSolving) {
@@ -164,6 +187,17 @@ ExitCode ConflictResolverWorker::generateLocalRenameOperation(const Conflict &co
     (void) _syncPal->syncOps()->pushOp(op);
     continueSolving = true; // solve them all in the same sync
     return ExitCode::Ok;
+}
+
+ExitCode ConflictResolverWorker::generateMoveCreateConflictOperation(const Conflict &conflict, bool &continueSolving) {
+    ExitInfo res = ExitCode::Ok;
+    if (conflict.localNode()->hasChangeEvent(OperationType::Move)) {
+        res = generateUndoMoveOperation(conflict, conflict.localNode());
+    } else {
+        res = generateLocalRenameOperation(conflict, continueSolving);
+    }
+
+    return res;
 }
 
 ExitCode ConflictResolverWorker::generateEditDeleteConflictOperation(const Conflict &conflict, bool &continueSolving) {
@@ -298,15 +332,6 @@ void ConflictResolverWorker::generateRescueOperation(const Conflict &conflict, c
     (void) _syncPal->syncOps()->pushOp(moveOp);
 }
 
-std::shared_ptr<Node> ConflictResolverWorker::getLoserNode(const Conflict &conflict) {
-    auto loserNode = conflict.localNode();
-    if (!loserNode->hasChangeEvent(OperationType::Move)) {
-        loserNode = conflict.remoteNode();
-    }
-
-    return loserNode;
-}
-
 bool ConflictResolverWorker::generateConflictedName(const std::shared_ptr<Node> node, SyncName &newName,
                                                     const bool isOrphanNode /*= false*/) const {
     const auto absoluteLocalFilePath = _syncPal->localPath() / node->getPath();
@@ -364,6 +389,8 @@ ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, 
 
     moveOp->setType(OperationType::Move);
     const auto correspondingNode = correspondingNodeInOtherTree(moveNode);
+    correspondingNode->setMoveOriginInfos({moveNode->getPath(), moveNode->parentNode()->id().value_or("")});
+    correspondingNode->insertChangeEvent(OperationType::Move);
     moveOp->setAffectedNode(correspondingNode);
     moveOp->setCorrespondingNode(moveNode);
     moveOp->setTargetSide(moveNode->side());

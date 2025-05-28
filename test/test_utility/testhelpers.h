@@ -66,6 +66,7 @@ void generateOrEditTestFile(const SyncPath& path);
  * @param count The number of file to generate.
  */
 void generateBigFiles(const SyncPath& dirPath, uint16_t size, uint16_t count);
+SyncPath generateBigFile(const SyncPath& dirPath, uint16_t size);
 
 void setModificationDate(const SyncPath& path, const std::chrono::time_point<std::chrono::system_clock>& timePoint);
 

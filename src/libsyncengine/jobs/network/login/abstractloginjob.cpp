@@ -92,8 +92,7 @@ bool AbstractLoginJob::handleError(std::istream &inputStream, const Poco::URI &u
         if (!JsonParserUtility::extractValue(errorObj, descriptionKey, _errorDescr)) {
             return false;
         }
-        LOG_WARN(_logger,
-                 "Error in request " << uri.toString() << " : " << _errorCode << " - " << _errorDescr);
+        LOG_WARN(_logger, "Error in request " << uri.toString() << " : " << _errorCode << " - " << _errorDescr);
         _exitInfo = ExitCode::BackError;
     } else {
         JsonParserUtility::extractValue(jsonError, errorKey, _errorCode, false);

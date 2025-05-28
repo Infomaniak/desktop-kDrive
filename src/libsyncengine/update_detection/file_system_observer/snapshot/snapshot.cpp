@@ -141,8 +141,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
         // Add children to new parent
         if (auto newParent = findItem(newItem.parentId()); !newParent) {
             // New parent not found, create it
-            LOG_DEBUG(Log::instance()->getLogger(),
-                      "Parent " << newItem.parentId() << " does not exist yet, creating it");
+            LOG_DEBUG(Log::instance()->getLogger(), "Parent " << newItem.parentId() << " does not exist yet, creating it");
             newParent = std::make_shared<SnapshotItem>(newItem.parentId());
             newParent->setSnapshotRevisionHandler(_revisionHandlder);
             (void) _items.try_emplace(newItem.parentId(), newParent);
@@ -157,7 +156,8 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
 
     if (ParametersCache::isExtendedLogEnabled()) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Item: " << SyncName2WStr(item->name()) << L" (" << Utility::s2ws(item->id())
-                                                           << L") updated at:" << item->lastModified());
+                                                           << L") updated: lastModified=" << item->lastModified()
+                                                           << L", createdAt=" << item->createdAt() << L", size=" << item->size());
     }
     return true;
 }

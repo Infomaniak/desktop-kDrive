@@ -232,8 +232,8 @@ bool IoHelper::_setTargetType(ItemType &itemType) noexcept {
         const bool expected = isExpectedError(ioError);
         if (!expected) {
             itemType.ioError = ioError;
-            LOGW_WARN(logger(), L"Failed to check if the item is a directory: "
-                                        << Utility::formatStdError(itemType.targetPath, ec));
+            LOGW_WARN(logger(),
+                      L"Failed to check if the item is a directory: " << Utility::formatStdError(itemType.targetPath, ec));
         }
         return expected;
     }
@@ -390,8 +390,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     // Check whether the item indicated by `path` is an alias.
     bool isAlias = false;
     if (!_checkIfAlias(path, isAlias, itemType.ioError)) {
-        LOGW_WARN(logger(),
-                  L"Failed to check if the item is an alias: " << Utility::formatIoError(path, itemType.ioError));
+        LOGW_WARN(logger(), L"Failed to check if the item is an alias: " << Utility::formatIoError(path, itemType.ioError));
         return false;
     }
 
@@ -403,8 +402,8 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
         // !!! isAlias is true for a symlink and for a Finder alias !!!
         IoError aliasReadError = IoError::Success;
         if (!_readAlias(path, itemType.targetPath, aliasReadError)) {
-            LOGW_WARN(logger(), L"Failed to read an item first identified as an alias: "
-                                        << Utility::formatIoError(path, itemType.ioError));
+            LOGW_WARN(logger(),
+                      L"Failed to read an item first identified as an alias: " << Utility::formatIoError(path, itemType.ioError));
             itemType.ioError = aliasReadError;
 
             return false;
@@ -426,8 +425,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     if (fsSupportsSymlinks) {
         bool isJunction = false;
         if (!checkIfIsJunction(path, isJunction, itemType.ioError)) {
-            LOGW_WARN(logger(),
-                      L"Failed to check if the item is a junction: " << Utility::formatIoError(path, itemType.ioError));
+            LOGW_WARN(logger(), L"Failed to check if the item is a junction: " << Utility::formatIoError(path, itemType.ioError));
 
             return false;
         }
@@ -443,8 +441,8 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
 
             std::string data;
             if (!IoHelper::readJunction(path, data, itemType.targetPath, itemType.ioError)) {
-                LOGW_WARN(logger(), L"Failed to read an item identified as a junction: "
-                                            << Utility::formatIoError(path, itemType.ioError));
+                LOGW_WARN(logger(),
+                          L"Failed to read an item identified as a junction: " << Utility::formatIoError(path, itemType.ioError));
                 return false;
             }
 
@@ -568,8 +566,7 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
             if (ioError != IoError::Success) {
                 if (isExpectedError(ioError)) {
                     // Ignore the directory
-                    LOGW_DEBUG(logger(),
-                               L"Failed to get directory size, ignoring " << Utility::formatSyncPath(entry.path()));
+                    LOGW_DEBUG(logger(), L"Failed to get directory size, ignoring " << Utility::formatSyncPath(entry.path()));
                     continue;
                 } else {
                     LOGW_WARN(logger(), L"Failed to get directory size for " << Utility::formatSyncPath(entry.path()));
@@ -734,7 +731,7 @@ bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, Sy
         return isExpectedError(ioError);
     }
 
-    changed = (previousSize != fileStat.size) || (previousMtime != fileStat.modtime) ||
+    changed = (previousSize != fileStat.size) || (previousMtime != fileStat.modificationTime) ||
               (previousCreationTime != fileStat.creationTime);
 
     return true;
@@ -850,12 +847,11 @@ bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, b
 
     std::error_code ec;
     if (isFolder) {
-        LOGW_DEBUG(logger(), L"Create directory symlink: target " << Path2WStr(targetPath) << L", "
-                                                                  << Utility::formatSyncPath(path));
+        LOGW_DEBUG(logger(),
+                   L"Create directory symlink: target " << Path2WStr(targetPath) << L", " << Utility::formatSyncPath(path));
         std::filesystem::create_directory_symlink(targetPath, path, ec);
     } else {
-        LOGW_DEBUG(logger(), L"Create file symlink: target " << Path2WStr(targetPath) << L", "
-                                                             << Utility::formatSyncPath(path));
+        LOGW_DEBUG(logger(), L"Create file symlink: target " << Path2WStr(targetPath) << L", " << Utility::formatSyncPath(path));
         std::filesystem::create_symlink(targetPath, path, ec);
     }
 

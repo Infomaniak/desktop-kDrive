@@ -175,6 +175,8 @@ bool SyncDbReadOnlyCache::node(DbNodeId dbNodeId, DbNode &dbNode, bool &found) {
 
     auto dbNodeOptional = getDbNodeFromDbNodeId(dbNodeId);
     found = dbNodeOptional.has_value();
+
+    if (!found) return true;
     dbNode = *dbNodeOptional;
     return true;
 }

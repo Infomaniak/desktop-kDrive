@@ -52,6 +52,18 @@ class ConflictResolverWorker : public OperationProcessor {
          * @return ExitCode indicating if the operation was successful.
          */
         ExitCode handleConflictOnDehydratedPlaceholder(const Conflict &conflict, bool &continueSolving);
+
+        /**
+         * @brief If we have a conflict between a local edit and a remote operation,
+         * and if the local edit is omitted (i.e., the local creation date is different from DB local creation date and that is the only difference),
+         * the local omited edit will be propagated during the conflict resolution sync. The remote file will be pulled on next
+         * sync.
+         * @param conflict The conflict to be resolved.
+         * @param continueSolving A boolean value indicating if we can generate more conflict resolution operations.
+         * @return ExitCode indicating if the operation was successful.
+         */
+        void handleConflictOnOmittedEdit(const Conflict &conflict, bool &continueSolving);
+
         /**
          * @brief For Create-Create and Edit-Edit conflicts, the local file is renamed and excluded from the sync in order no to
          * lose any changes. The remote file will be pulled on next sync.
@@ -68,6 +80,14 @@ class ConflictResolverWorker : public OperationProcessor {
          * @return ExitCode indicating if the operation was successful.
          */
         ExitCode generateEditDeleteConflictOperation(const Conflict &conflict, bool &continueSolving);
+        /**
+         * @brief If the moved item is local, revert the move operation. If the created item is local, rename it as a conflicted
+         * file. Remote always wins.
+         * @param conflict The conflict to be resolved.
+         * @param continueSolving A boolean value indicating if we can generate more conflict resolution operations.
+         * @return ExitCode indicating if the operation was successful.
+         */
+        ExitCode generateMoveCreateConflictOperation(const Conflict &conflict, bool &continueSolving);
         /**
          * @brief If the move operation happens within a directory that was deleted on the other replica, therefore, we ignore the
          * Move-Delete conflict. This conflict will be handled as a Move-ParentDelete conflict. Otherwise, rescue the eventual
@@ -104,8 +124,6 @@ class ConflictResolverWorker : public OperationProcessor {
          * @param node The node that might need to be rescued.
          */
         void generateRescueOperation(const Conflict &conflict, std::shared_ptr<Node> node);
-
-        static std::shared_ptr<Node> getLoserNode(const Conflict &conflict);
 
         /*
          * If return false, the file path is too long, the file needs to be moved to root directory

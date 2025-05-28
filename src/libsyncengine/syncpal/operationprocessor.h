@@ -29,6 +29,9 @@ class OperationProcessor : public ISyncWorker {
                            bool useSyncDbCache = true);
 
     protected:
+        // Returns false if only non-synced file attributes(e.g., creation date) have changed. Otherwise, returns true.
+        bool editChangeShouldBePropagated(std::shared_ptr<Node> affectedNode);
+        
         bool isPseudoConflict(std::shared_ptr<Node> node, std::shared_ptr<Node> correspondingNode);
         /**
          * Find the corresponding node in other tree.

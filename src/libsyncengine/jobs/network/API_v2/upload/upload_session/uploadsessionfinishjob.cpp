@@ -65,6 +65,7 @@ bool UploadSessionFinishJob::handleResponse(std::istream &is) {
     _nodeId = replyHandler.nodeId();
     _creationTimeOut = replyHandler.creationTime();
     _modificationTimeOut = replyHandler.modificationTime();
+    _sizeOut = replyHandler.size();
 
     return true;
 }

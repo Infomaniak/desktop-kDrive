@@ -32,8 +32,11 @@ class TestConflictResolverWorker : public CppUnit::TestFixture, public TestBase 
         CPPUNIT_TEST_SUITE(TestConflictResolverWorker);
         CPPUNIT_TEST(testCreateCreate);
         CPPUNIT_TEST(testEditEdit);
-        CPPUNIT_TEST(testMoveCreate);
+        CPPUNIT_TEST(testOmitEditEdit);
+        CPPUNIT_TEST(testMoveCreate1);
+        CPPUNIT_TEST(testMoveCreate2);
         CPPUNIT_TEST(testMoveCreateDehydratedPlaceholder);
+        CPPUNIT_TEST(testOmitEditDelete);
         CPPUNIT_TEST(testEditDelete1);
         CPPUNIT_TEST(testEditDelete2);
         CPPUNIT_TEST(testMoveDelete1);
@@ -62,8 +65,11 @@ class TestConflictResolverWorker : public CppUnit::TestFixture, public TestBase 
     protected:
         void testCreateCreate();
         void testEditEdit();
-        void testMoveCreate();
+        void testOmitEditEdit();
+        void testMoveCreate1(); // Remote move and local create
+        void testMoveCreate2(); // Remote create and local move
         void testMoveCreateDehydratedPlaceholder();
+        void testOmitEditDelete();
         void testEditDelete1();
         void testEditDelete2();
         // Move-Delete tests : see thesis (https://hal.science/hal-02319573/) section 5.5 for the detailed test case

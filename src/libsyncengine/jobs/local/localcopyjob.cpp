@@ -66,8 +66,7 @@ bool LocalCopyJob::canRun() {
     }
 
     if (!exists) {
-        LOGW_DEBUG(_logger,
-                   L"Item does not exist anymore. Aborting current sync and restart. - path=" << Path2WStr(_source));
+        LOGW_DEBUG(_logger, L"Item does not exist anymore. Aborting current sync and restart. - path=" << Path2WStr(_source));
         _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent};
         return false;
     }
@@ -86,15 +85,13 @@ void LocalCopyJob::runJob() {
         _exitInfo = ExitCode::Ok;
     } catch (std::filesystem::filesystem_error &fsError) {
         LOGW_WARN(_logger, L"Failed to copy item " << Path2WStr(_source) << L" to " << Path2WStr(_dest) << L": "
-                                                   << Utility::s2ws(fsError.what()) << L" (" << fsError.code().value()
-                                                   << L")");
+                                                   << Utility::s2ws(fsError.what()) << L" (" << fsError.code().value() << L")");
         _exitInfo = ExitCode::SystemError;
         if (IoHelper::stdError2ioError(fsError.code()) == IoError::AccessDenied) {
             _exitInfo.setCause(ExitCause::FileAccessError);
         }
     } catch (...) {
-        LOGW_WARN(_logger, L"Failed to copy item " << Path2WStr(_source) << L" to " << Path2WStr(_dest)
-                                                   << L": Unknown error");
+        LOGW_WARN(_logger, L"Failed to copy item " << Path2WStr(_source) << L" to " << Path2WStr(_dest) << L": Unknown error");
         _exitInfo = ExitCode::SystemError;
     }
 }
