@@ -72,7 +72,7 @@ cmake -DCMAKE_PREFIX_PATH=$QT_BASE_DIR \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DKDRIVE_THEME_DIR="/src/infomaniak" \
     -DBUILD_UNIT_TESTS=0 \
-	  -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
+    -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
     "${CMAKE_PARAMS[@]}" \
     /src
 make "-j$(nproc)"
