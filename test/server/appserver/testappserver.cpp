@@ -32,10 +32,10 @@ namespace KDC {
 void TestAppServer::setUp() {
     TestBase::start();
 
-    /*if (QCoreApplication::instance()) {
+    if (QCoreApplication::instance()) {
         _appPtr = dynamic_cast<MockAppServer *>(QCoreApplication::instance());
         return;
-    }*/
+    }
 
     const testhelpers::TestVariables testVariables;
 
@@ -83,9 +83,9 @@ void TestAppServer::setUp() {
         std::vector<char *> argv;
         for (size_t i = 0; i < args.size(); ++i) argv.push_back(const_cast<char *>(args[i].c_str()));
         auto argc = static_cast<int>(args.size());
-        /*_appPtr = new MockAppServer(argc, &argv[0]);
+        _appPtr = new MockAppServer(argc, &argv[0]);
         _appPtr->setParmsDbPath(parmsDbPath);
-        _appPtr->init();*/
+        _appPtr->init();
     } catch (const std::exception &e) {
         std::cerr << "kDrive server initialization error: " << e.what() << std::endl;
         return;
@@ -99,7 +99,7 @@ void TestAppServer::tearDown() {
 }
 
 void TestAppServer::testInitAndStopSyncPal() {
-    /*const int syncDbId = 1;
+    const int syncDbId = 1;
 
     Sync sync;
     bool found = false;
@@ -113,33 +113,32 @@ void TestAppServer::testInitAndStopSyncPal() {
     CPPUNIT_ASSERT(exitInfo);
     // Start SyncPal
     const std::chrono::seconds startDelay{0};
-    exitInfo = _appPtr->initSyncPal(sync, QSet<QString>(), QSet<QString>(), QSet<QString>(), *start*
-    true, startDelay,
-    *resumedByUser* false, *firstInit* true);
-CPPUNIT_ASSERT(exitInfo);
-CPPUNIT_ASSERT(syncIsActive(syncDbId));
-// Stop SyncPal (pause by user)
-exitInfo = _appPtr->stopSyncPal(syncDbId, *pausedByUser* true);
-CPPUNIT_ASSERT(exitInfo);
-CPPUNIT_ASSERT(waitForSyncStatus(syncDbId, SyncStatus::Stopped));
-// Resume SyncPal
-exitInfo = _appPtr->initSyncPal(sync, QSet<QString>(), QSet<QString>(), QSet<QString>(), *start* true, startDelay,
-    *resumedByUser* true, *firstInit* false);
-CPPUNIT_ASSERT(exitInfo);
-CPPUNIT_ASSERT(syncIsActive(syncDbId));
+    exitInfo = _appPtr->initSyncPal(sync, QSet<QString>(), QSet<QString>(), QSet<QString>(), /*start*/ true, startDelay,
+                                    /*resumedByUser*/ false, /*firstInit*/ true);
+    CPPUNIT_ASSERT(exitInfo);
+    CPPUNIT_ASSERT(syncIsActive(syncDbId));
+    // Stop SyncPal (pause by user)
+    exitInfo = _appPtr->stopSyncPal(syncDbId, /*pausedByUser*/ true);
+    CPPUNIT_ASSERT(exitInfo);
+    CPPUNIT_ASSERT(waitForSyncStatus(syncDbId, SyncStatus::Stopped));
+    // Resume SyncPal
+    exitInfo = _appPtr->initSyncPal(sync, QSet<QString>(), QSet<QString>(), QSet<QString>(), /*start*/ true, startDelay,
+                                    /*resumedByUser*/ true, /*firstInit*/ false);
+    CPPUNIT_ASSERT(exitInfo);
+    CPPUNIT_ASSERT(syncIsActive(syncDbId));
 
-// Stop SyncPal (cleanup)
-exitInfo = _appPtr->stopSyncPal(syncDbId, *pausedByUser* false, *quit* true, *clear* true);
-CPPUNIT_ASSERT(exitInfo);
-CPPUNIT_ASSERT(waitForSyncStatus(syncDbId, SyncStatus::Stopped));
+    // Stop SyncPal (cleanup)
+    exitInfo = _appPtr->stopSyncPal(syncDbId, /*pausedByUser*/ false, /*quit*/ true, /*clear*/ true);
+    CPPUNIT_ASSERT(exitInfo);
+    CPPUNIT_ASSERT(waitForSyncStatus(syncDbId, SyncStatus::Stopped));
 
-// Stop Vfs
-exitInfo = _appPtr->stopVfs(syncDbId, *unregister* false);
-CPPUNIT_ASSERT(exitInfo);*/
+    // Stop Vfs
+    exitInfo = _appPtr->stopVfs(syncDbId, /*unregister*/ false);
+    CPPUNIT_ASSERT(exitInfo);
 }
 
 void TestAppServer::testStartAndStopSync() {
-    /*const int userDbId = 1;
+    const int userDbId = 1;
     const int syncDbId = 1;
 
     User user;
@@ -183,13 +182,13 @@ void TestAppServer::testStartAndStopSync() {
 
     // Update sync local folder with the good value
     CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync, found) && found);
-    sync.setLocalPath(_localPath);*/
+    sync.setLocalPath(_localPath);
 }
 
 void TestAppServer::testCleanup() {
-    /*_appPtr->cleanup();
+    _appPtr->cleanup();
     delete _appPtr;
-    CPPUNIT_ASSERT(true);*/
+    CPPUNIT_ASSERT(true);
 }
 
 bool TestAppServer::waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const {

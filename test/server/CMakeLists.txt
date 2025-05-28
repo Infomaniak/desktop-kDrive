@@ -7,8 +7,14 @@ endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Svg)
 find_package(Poco 1.13.3 REQUIRED XML Net)
+find_package(sentry REQUIRED)
 
-set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOMOC TRUE)
+set(CMAKE_AUTOUIC TRUE)
+set(CMAKE_AUTORCC TRUE)
+
+add_definitions(-DUNICODE)
+add_definitions(-D_UNICODE)
 
 if(WIN32)
     # Set stack size
@@ -47,7 +53,13 @@ if(APPLE)
         # Define this, we need to check in updater.cpp
         add_definitions(-DHAVE_SPARKLE)
         list(APPEND server_SRCS ${server_srcs_path}/updater/sparkleupdater.h ${server_srcs_path}/updater/sparkleupdater.mm)
+        set_property(SOURCE updater/sparkleupdater.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
         list(APPEND updater_DEPS ${SPARKLE_LIBRARY})
+
+        # Sparkle.framework is installed from here because macdeployqt's CopyFramework breaks on this bundle
+        # as its logic is tightly tailored around Qt6 frameworks
+        install(DIRECTORY "${SPARKLE_LIBRARY}"
+                DESTINATION "${KDRIVE_OSX_BUNDLE}/Contents/Frameworks" USE_SOURCE_PERMISSIONS)
     endif()
 elseif (WIN32)
     list(APPEND server_SRCS ${server_srcs_path}/updater/windowsupdater.h ${server_srcs_path}/updater/windowsupdater.cpp ${server_srcs_path}/../common/utility_win.cpp)
@@ -128,6 +140,7 @@ endif()
 # Link
 target_link_libraries(${testserver_NAME}
     Qt6::Svg
+    sentry::sentry
     updater
 )
 
