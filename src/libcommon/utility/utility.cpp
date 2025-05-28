@@ -67,6 +67,8 @@
 #include "utility_linux.cpp"
 #endif
 
+#include <iostream>
+
 #define MAX_PATH_LENGTH_WIN_LONG 32767
 #define MAX_PATH_LENGTH_WIN_SHORT 259
 #define MAX_PATH_LENGTH_MAC 1023
