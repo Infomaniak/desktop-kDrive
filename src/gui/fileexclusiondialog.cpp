@@ -352,7 +352,9 @@ void FileExclusionDialog::onExit() {
 
 namespace {
 
-void logIfTemplateNormalizationFails(const SyncName &template_) {
+void logIfTemplateNormalizationFails(const SyncName &template_, bool &normalizationHasFailed) {
+    normalizationHasFailed = false;
+
     SyncName nfcNormalizedName;
     const bool nfcSuccess = CommonUtility::normalizedSyncName(template_, nfcNormalizedName, UnicodeNormalization::NFC);
     if (!nfcSuccess) {
@@ -368,6 +370,7 @@ void logIfTemplateNormalizationFails(const SyncName &template_) {
     }
 
     if (!nfcSuccess || !nfdSuccess) {
+        normalizationHasFailed = true;
         qCWarning(lcFileExclusionDialog())
                 << "File exclusion based on user templates may fail to exclude file names depending on their normalizations.";
     }
@@ -382,13 +385,15 @@ void logIfTemplateNormalizationFails(const SyncName &template_) {
   The returned set contains additionally the string exclusionTemplate in any case.
 */
 std::unordered_set<QString> computeNormalizations(const QString &templateString) {
-    logIfTemplateNormalizationFails(QStr2SyncName(templateString));
+    bool normalizationHasFailed = false;
+    logIfTemplateNormalizationFails(QStr2SyncName(templateString), normalizationHasFailed);
+
+    if (normalizationHasFailed) return {templateString};
 
     const auto normalizations = CommonUtility::computePathNormalizations(QStr2SyncName(templateString));
     std::unordered_set<QString> result;
 
     for (const SyncName &normalization: normalizations) (void) result.emplace(SyncName2QStr(normalization));
-
 
     return result;
 }
