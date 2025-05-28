@@ -48,8 +48,8 @@ IF (UNIX AND NOT APPLE)
             "/usr/local/lib"
     )
 ELSEIF (WIN32)
-    # TODO Remove lines once lib is managed by conan: add directories to search for libraries in .cmake files.
     SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
+        # TODO Remove lines once lib is managed by conan: add directories to search for libraries in .cmake files.
         "C:/Program Files/OpenSSL"
         "C:/Program Files (x86)/Poco"
         "C:/Program Files (x86)/log4cplus"

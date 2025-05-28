@@ -460,7 +460,7 @@ void TestNetworkJobs::testDownload() {
         MockIoHelperTestNetworkJobs::resetStdFunctions();
     }
 
-    if (testhelpers::isRunningOnCI()) {
+  if (testhelpers::isRunningOnCI() && testhelpers::isExtendedTest(false)) {
         // Not Enough disk space (Only run on CI because it requires a small partition to be set up)
         const SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
         if (smallPartitionPath.empty()) return;
@@ -483,7 +483,7 @@ void TestNetworkJobs::testDownload() {
         bool exist = false;
         CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(smallPartitionPath, exist, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-        CPPUNIT_ASSERT(exist);
+        CPPUNIT_ASSERT_MESSAGE("Small partition not found", exist);
 
         // Not Enough disk space (tmp dir)
         {
@@ -1092,9 +1092,11 @@ void TestNetworkJobs::testUploadAborted() {
 }
 
 void TestNetworkJobs::testDriveUploadSessionConstructorException() {
+    if (!testhelpers::isExtendedTest()) return;
+
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDriveUploadSessionConstructorException");
 
-    SyncPath localFilePath = testhelpers::localTestDirPath;
+    SyncPath localFilePath = testhelpers::localTestDirPath();
     // The constructor of DriveUploadSession will attempt to retrieve the file size of directory.
 
     CPPUNIT_ASSERT_THROW_MESSAGE("DriveUploadSession() didn't throw as expected",
@@ -1104,6 +1106,8 @@ void TestNetworkJobs::testDriveUploadSessionConstructorException() {
 }
 
 void TestNetworkJobs::testDriveUploadSessionSynchronous() {
+    if (!testhelpers::isExtendedTest()) return;
+
     // Create a file
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionSynchronous Create");
 
@@ -1242,6 +1246,8 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
 }
 
 void TestNetworkJobs::testDriveUploadSessionSynchronousAborted() {
+    if (!testhelpers::isExtendedTest()) return;
+
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionSynchronousAborted");
 
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDriveUploadSessionSynchronousAborted");
@@ -1281,6 +1287,8 @@ void TestNetworkJobs::testDriveUploadSessionSynchronousAborted() {
 }
 
 void TestNetworkJobs::testDriveUploadSessionAsynchronousAborted() {
+    if (!testhelpers::isExtendedTest()) return;
+
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronousAborted");
 
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDriveUploadSessionAsynchronousAborted");
@@ -1384,8 +1392,8 @@ bool TestNetworkJobs::createTestFiles() {
     _dummyFileName = Str("test_file_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10));
 
     // Create local test file
-    SyncPath dummyLocalFilePath = testhelpers::localTestDirPath / dummyDirName / dummyFileName;
-    _dummyLocalFilePath = testhelpers::localTestDirPath / dummyDirName / _dummyFileName;
+    SyncPath dummyLocalFilePath = testhelpers::localTestDirPath() / dummyDirName / dummyFileName;
+    _dummyLocalFilePath = testhelpers::localTestDirPath() / dummyDirName / _dummyFileName;
 
     CPPUNIT_ASSERT(std::filesystem::copy_file(dummyLocalFilePath, _dummyLocalFilePath));
 

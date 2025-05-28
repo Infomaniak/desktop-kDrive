@@ -379,6 +379,9 @@ void TestUtility::testGenerateRandomStringAlphaNum() {
     }
 }
 void TestUtility::testLanguageCode() {
+    // Only the C language is installed in docker
+    if (Utility::userName() == "docker") return;
+
     CPPUNIT_ASSERT_EQUAL(std::string("en"), CommonUtility::languageCode(Language::English).toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("fr"), CommonUtility::languageCode(Language::French).toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("de"), CommonUtility::languageCode(Language::German).toStdString());

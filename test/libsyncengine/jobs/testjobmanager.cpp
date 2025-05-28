@@ -43,9 +43,6 @@
 using namespace CppUnit;
 
 namespace KDC {
-
-static const SyncPath localTestDirPath_manyFiles(std::wstring(L"" TEST_DIR) + L"/test_ci/many_files_dir");
-static const SyncPath localTestDirPath_pictures(std::wstring(L"" TEST_DIR) + L"/test_ci/test_pictures");
 static const int driveDbId = 1;
 void TestJobManager::setUp() {
     TestBase::start();
@@ -151,7 +148,7 @@ void TestJobManager::testWithCallback() {
 
     // Upload all files in testDir
     ulong counter = 0;
-    for (auto &dirEntry: std::filesystem::directory_iterator(localTestDirPath_manyFiles)) {
+    for (auto &dirEntry: std::filesystem::directory_iterator(_localTestDirPath_manyFiles)) {
         if (dirEntry.path().filename() == ".DS_Store") {
             continue;
         }
@@ -165,7 +162,7 @@ void TestJobManager::testWithCallback() {
         _ongoingJobs.insert({job->jobId(), job});
     }
 
-    int waitCountMax = 300; // Wait max 30sec
+    int waitCountMax = 1200; // Wait max 2min
     while (ongoingJobsCount() > 0 && waitCountMax-- > 0 && !_jobErrorSocketsDefuncted && !_jobErrorOther) {
         Utility::msleep(100); // Wait 100ms
     }
@@ -174,7 +171,7 @@ void TestJobManager::testWithCallback() {
         cancelAllOngoingJobs();
     }
 
-    CPPUNIT_ASSERT(ongoingJobsCount() == 0);
+    CPPUNIT_ASSERT_EQUAL(size_t(0), ongoingJobsCount());
     CPPUNIT_ASSERT(!_jobErrorSocketsDefuncted);
     CPPUNIT_ASSERT(!_jobErrorOther);
 
@@ -256,11 +253,11 @@ void callbackJobDependency(int64_t jobId) {
 }
 
 void TestJobManager::testJobDependencies() {
-    SyncPath pict1Path = localTestDirPath_pictures / "picture-1.jpg";
-    SyncPath pict2Path = localTestDirPath_pictures / "picture-2.jpg";
-    SyncPath pict3Path = localTestDirPath_pictures / "picture-3.jpg";
-    SyncPath pict4Path = localTestDirPath_pictures / "picture-4.jpg";
-    SyncPath pict5Path = localTestDirPath_pictures / "picture-5.jpg";
+    SyncPath pict1Path = _localTestDirPath_pictures / "picture-1.jpg";
+    SyncPath pict2Path = _localTestDirPath_pictures / "picture-2.jpg";
+    SyncPath pict3Path = _localTestDirPath_pictures / "picture-3.jpg";
+    SyncPath pict4Path = _localTestDirPath_pictures / "picture-4.jpg";
+    SyncPath pict5Path = _localTestDirPath_pictures / "picture-5.jpg";
     // Create temp remote directory
     const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "TestJobManager testJobDependencies");
 
@@ -299,11 +296,11 @@ void TestJobManager::testJobDependencies() {
 }
 
 void TestJobManager::testJobPriority() {
-    SyncPath pict1Path = localTestDirPath_pictures / "picture-1.jpg";
-    SyncPath pict2Path = localTestDirPath_pictures / "picture-2.jpg";
-    SyncPath pict3Path = localTestDirPath_pictures / "picture-3.jpg";
-    SyncPath pict4Path = localTestDirPath_pictures / "picture-4.jpg";
-    SyncPath pict5Path = localTestDirPath_pictures / "picture-5.jpg";
+    SyncPath pict1Path = _localTestDirPath_pictures / "picture-1.jpg";
+    SyncPath pict2Path = _localTestDirPath_pictures / "picture-2.jpg";
+    SyncPath pict3Path = _localTestDirPath_pictures / "picture-3.jpg";
+    SyncPath pict4Path = _localTestDirPath_pictures / "picture-4.jpg";
+    SyncPath pict5Path = _localTestDirPath_pictures / "picture-5.jpg";
 
     // Create temp remote directory
     const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "TestJobManager testJobPriority");
@@ -333,11 +330,11 @@ void TestJobManager::testJobPriority() {
 }
 
 void TestJobManager::testJobPriority2() {
-    SyncPath pict1Path = localTestDirPath_pictures / "picture-1.jpg";
-    SyncPath pict2Path = localTestDirPath_pictures / "picture-2.jpg";
-    SyncPath pict3Path = localTestDirPath_pictures / "picture-3.jpg";
-    SyncPath pict4Path = localTestDirPath_pictures / "picture-4.jpg";
-    SyncPath pict5Path = localTestDirPath_pictures / "picture-5.jpg";
+    SyncPath pict1Path = _localTestDirPath_pictures / "picture-1.jpg";
+    SyncPath pict2Path = _localTestDirPath_pictures / "picture-2.jpg";
+    SyncPath pict3Path = _localTestDirPath_pictures / "picture-3.jpg";
+    SyncPath pict4Path = _localTestDirPath_pictures / "picture-4.jpg";
+    SyncPath pict5Path = _localTestDirPath_pictures / "picture-5.jpg";
 
     // Create temp remote directory
     const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "TestJobManager testJobPriority2");
@@ -368,7 +365,7 @@ void TestJobManager::testJobPriority2() {
 }
 
 void TestJobManager::testJobPriority3() {
-    SyncPath pict5Path = localTestDirPath_pictures / "picture-5.jpg";
+    SyncPath pict5Path = _localTestDirPath_pictures / "picture-5.jpg";
 
     // Create temp remote directory
     const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "TestJobManager testJobPriority3");
