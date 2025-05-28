@@ -1044,7 +1044,7 @@ std::vector<SyncName> CommonUtility::splitSyncPath(const SyncPath &path) {
     return itemNames;
 }
 
-std::vector<SyncName> CommonUtility::splitSyncName(SyncName name, std::string_view separator) {
+std::vector<SyncName> CommonUtility::splitSyncName(SyncName name, const SyncName &separator) {
     std::vector<SyncName> tokens;
     size_t pos = 0;
     SyncName token;
