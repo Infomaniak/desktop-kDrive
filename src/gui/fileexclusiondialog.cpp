@@ -464,7 +464,7 @@ void FileExclusionDialog::onTableViewClicked(const QModelIndex &index) {
     CustomMessageBox msgBox(QMessageBox::Question, tr("Do you really want to delete?"), QMessageBox::Yes | QMessageBox::No, this);
     msgBox.setDefaultButton(QMessageBox::No);
 
-    const int ret = msgBox.exec();
+    const auto ret = msgBox.exec();
     MatomoClient::sendEvent("preferencesFileExclusion", MatomoEventAction::Click, "deleteItemButton",
                             ret == QMessageBox::Yes ? 1 : 0);
 
@@ -519,17 +519,15 @@ void FileExclusionDialog::onSaveButtonTriggered(bool checked) {
     Q_UNUSED(checked)
     MatomoClient::sendEvent("preferencesFileExclusion", MatomoEventAction::Click, "saveButton");
 
-    ExitCode exitCode = GuiRequests::setExclusionTemplateList(true, _defaultTemplateList);
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitCode = GuiRequests::setExclusionTemplateList(true, _defaultTemplateList); exitCode != ExitCode::Ok) {
         qCWarning(lcFileExclusionDialog()) << "Error in Requests::setExclusionTemplateList: code=" << exitCode;
         CustomMessageBox msgBox(QMessageBox::Warning, tr("Cannot save changes!"), QMessageBox::Ok, this);
         msgBox.exec();
         return;
     }
 
-    auto expandedUserTemplateList = computeNormalizations(_userTemplateList);
-    exitCode = GuiRequests::setExclusionTemplateList(false, expandedUserTemplateList);
-    if (exitCode != ExitCode::Ok) {
+    const auto expandedUserTemplateList = computeNormalizations(_userTemplateList);
+    if (const auto exitCode = GuiRequests::setExclusionTemplateList(false, expandedUserTemplateList); exitCode != ExitCode::Ok) {
         qCWarning(lcFileExclusionDialog()) << "Error in Requests::setExclusionTemplateList: code=" << exitCode;
         CustomMessageBox msgBox(QMessageBox::Warning, tr("Cannot save changes!"), QMessageBox::Ok, this);
         msgBox.exec();
@@ -538,8 +536,7 @@ void FileExclusionDialog::onSaveButtonTriggered(bool checked) {
 
     ParametersCache::instance()->saveParametersInfo();
 
-    exitCode = GuiRequests::propagateExcludeListChange();
-    if (exitCode != ExitCode::Ok) {
+    if (auto exitCode = GuiRequests::propagateExcludeListChange(); exitCode != ExitCode::Ok) {
         qCWarning(lcFileExclusionDialog()) << "Error in Requests::propagateExcludeListChange: code=" << exitCode;
     }
 

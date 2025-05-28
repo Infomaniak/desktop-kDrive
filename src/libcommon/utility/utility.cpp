@@ -1044,15 +1044,15 @@ std::vector<SyncName> CommonUtility::splitSyncPath(const SyncPath &path) {
     return itemNames;
 }
 
-std::vector<SyncName> CommonUtility::splitSyncName(SyncName name, const SyncName &delimiter) {
+std::vector<SyncName> CommonUtility::splitSyncName(SyncName name, std::string_view separator) {
     std::vector<SyncName> tokens;
     size_t pos = 0;
     SyncName token;
 
-    while ((pos = name.find(delimiter)) != std::string::npos) {
+    while ((pos = name.find(separator)) != std::string::npos) {
         token = name.substr(0, pos);
         tokens.push_back(token);
-        (void) name.erase(0, pos + delimiter.length());
+        (void) name.erase(0, pos + separator.length());
     }
     tokens.push_back(name);
 
@@ -1085,23 +1085,23 @@ SyncNameSet CommonUtility::computeSyncNameNormalizations(const SyncName &name) {
     return result;
 }
 
-SyncNameSet CommonUtility::computePathNormalizations(const std::vector<SyncName> &pathSegments, int lastIndex) {
+SyncNameSet CommonUtility::computePathNormalizations(const std::vector<SyncName> &pathSegments, const int64_t lastIndex) {
     if (lastIndex == -1 || pathSegments.empty()) return {};
 
-    auto lastSegmentNormalizations = computeSyncNameNormalizations(pathSegments[static_cast<size_t>(lastIndex)]);
-    auto headNormalizations = computePathNormalizations(pathSegments, lastIndex - 1);
+    const auto lastSegmentNormalizations = computeSyncNameNormalizations(pathSegments[static_cast<size_t>(lastIndex)]);
+    const auto headNormalizations = computePathNormalizations(pathSegments, lastIndex - 1);
 
     SyncNameSet result;
     for (const auto &lastSegmentNormalization: lastSegmentNormalizations) {
         for (const auto &headNormalization: headNormalizations)
             (void) result.emplace(headNormalization + CommonUtility::preferredPathSeparator() + lastSegmentNormalization);
-        if (headNormalizations.empty()) result.emplace(lastSegmentNormalization);
+        if (headNormalizations.empty()) (void) result.emplace(lastSegmentNormalization);
     }
     return result;
 }
 
 SyncNameSet CommonUtility::computePathNormalizations(const std::vector<SyncName> &pathSegments) {
-    return computePathNormalizations(pathSegments, static_cast<int>(pathSegments.size() - 1));
+    return computePathNormalizations(pathSegments, static_cast<int64_t>(pathSegments.size() - 1));
 }
 
 SyncNameSet CommonUtility::computePathNormalizations(const SyncName &path) {

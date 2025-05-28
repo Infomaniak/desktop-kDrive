@@ -176,11 +176,12 @@ struct COMMON_EXPORT CommonUtility {
          * Example: the return value associated to Str("A / B / c.txt") is the vector
          * ["A", "B", "c.txt"]
          */
-        static std::vector<SyncName> splitSyncName(SyncName name, const SyncName &delimiter);
+        static std::vector<SyncName> splitSyncName(SyncName name, std::string_view delimiter);
 
         /**
          * Split the input path string into a vector of file and directory names.
-         * @param pathName the path to split. This path can be a regular expression, e.g., 'A/file_*.txt'.
+         * @param name the path to split. This path can be a regular expression, e.g., 'A/file_*.txt'.
+         * @param separator string used as delimiter for the splitting, e.g. "/".
          * @return A vector of the file and directory names composing the path, sorted
          * in their natural order.
          * Example: the return value associated to path = SyncName("A / B / c.txt") is the vector
@@ -235,7 +236,7 @@ struct COMMON_EXPORT CommonUtility {
           The returned set contains additionally the concatenated elements of pathSegments, from index 0 to index lastIndex,
           in any case.
         */
-        static SyncNameSet computePathNormalizations(const std::vector<SyncName> &pathSegments, int lastIndex);
+        static SyncNameSet computePathNormalizations(const std::vector<SyncName> &pathSegments, const int64_t lastIndex);
 
         //
         //! Computes recursively and returns all possible NFC and NFD normalizations of `pathSegments` segments
