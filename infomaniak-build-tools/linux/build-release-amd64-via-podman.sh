@@ -19,6 +19,7 @@
 #
 
 set -ex
+
 BUILDDIR="$PWD/build-linux"
 CLIENTDIR="$BUILDDIR/client"
 INSTALLDIR="$BUILDDIR/install"
