@@ -40,19 +40,19 @@
 namespace KDC {
 
 #define BUF_SIZE 4096 * 1000 // 4MB
-#define NOTIFICATION_DELAY 1 // 1 sec
+#define NOTIFICATION_DELAY 1000 // 1'000ms => 1 sec
 #define TRIALS 5
 #define READ_PAUSE_SLEEP_PERIOD 100 // 0.1 s
 #define READ_RETRIES 10
 
 DownloadJob::DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
-                         int64_t expectedSize, SyncTime creationTime, SyncTime modtime, bool isCreate) :
+                         int64_t expectedSize, SyncTime creationTime, SyncTime modificationTime, bool isCreate) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
     _remoteFileId(remoteFileId),
     _localpath(localpath),
     _expectedSize(expectedSize),
     _creationTime(creationTime),
-    _modtimeIn(modtime),
+    _modificationTime(modificationTime),
     _isCreate(isCreate),
     _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
@@ -208,7 +208,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
     // Process download
     if (isLink) {
         // Create link
-        LOG_DEBUG(_logger, "Create link: mimeType=" << mimeType.c_str());
+        LOG_DEBUG(_logger, "Create link: mimeType=" << mimeType);
         if (!createLink(mimeType, linkData)) { // We consider this as a permission denied error
             _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
             return false;
@@ -284,7 +284,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
     }
 
     if (!_ignoreDateTime) {
-        if (const IoError ioError = IoHelper::setFileDates(_localpath, _creationTime, _modtimeIn, isLink);
+        if (const IoError ioError = IoHelper::setFileDates(_localpath, _creationTime, _modificationTime, isLink);
             ioError == IoError::Unknown) {
             LOGW_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(_localpath));
             // Do nothing (remote file will be updated during the next sync)
@@ -423,7 +423,7 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
         }
 #endif
     } else {
-        LOG_WARN(_logger, "Link type not managed: MIME type=" << mimeType.c_str());
+        LOG_WARN(_logger, "Link type not managed: MIME type=" << mimeType);
         return false;
     }
 
@@ -673,7 +673,7 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
                 }
 
                 if (_vfs && !_isHydrated) { // updateFetchStatus is used only for hydration.
-                    if (timer.elapsed().count() > NOTIFICATION_DELAY || done) {
+                    if (timer.elapsed<std::chrono::milliseconds>().count() > NOTIFICATION_DELAY || done) {
                         // Update fetch status
                         if (!_vfs->updateFetchStatus(_tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished)) {
                             LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_localpath));

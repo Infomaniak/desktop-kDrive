@@ -391,7 +391,7 @@ void LocalFileSystemObserverWorker::forceUpdate() {
 void LocalFileSystemObserverWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
 
-    LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
+    LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
     auto timerStart = std::chrono::steady_clock::now();
 
     // Sync loop
@@ -442,7 +442,7 @@ void LocalFileSystemObserverWorker::execute() {
         if (_initializing) _initializing = false;
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
-    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
     setDone(exitCode);
 }
 
@@ -458,13 +458,13 @@ ExitCode LocalFileSystemObserverWorker::generateInitialSnapshot() {
 
     if (res == ExitCode::Ok && !stopAsked()) {
         _snapshot->setValid(true);
-        LOG_SYNCPAL_INFO(_logger, "Local snapshot generated in: " << timer.elapsed().count() << "s for " << _snapshot->nbItems()
-                                                                  << " items");
+        LOG_SYNCPAL_INFO(_logger, "Local snapshot generated in: " << timer.elapsed<DoubleSeconds>().count() << "s for "
+                                                                  << _snapshot->nbItems() << " items");
         perfMonitor.stop();
     } else if (stopAsked()) {
-        LOG_SYNCPAL_INFO(_logger, "Local snapshot generation stopped after: " << timer.elapsed().count() << "s");
+        LOG_SYNCPAL_INFO(_logger, "Local snapshot generation stopped after: " << timer.elapsed<DoubleSeconds>().count() << "s");
     } else {
-        LOG_SYNCPAL_WARN(_logger, "Local snapshot generation failed after: " << timer.elapsed().count() << "s");
+        LOG_SYNCPAL_WARN(_logger, "Local snapshot generation failed after: " << timer.elapsed<DoubleSeconds>().count() << "s");
     }
 
     const std::lock_guard<std::recursive_mutex> lock(_recursiveMutex);

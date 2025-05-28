@@ -21,20 +21,23 @@
 
 namespace KDC {
 DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const std::shared_ptr<SyncDb> syncDb,
-                                       const SyncPath &filepath, const NodeId &fileId, const SyncTime modtime,
-                                       const bool liteSyncActivated, const uint64_t nbParallelThread /*= 1*/) :
-    DriveUploadSession(vfs, driveDbId, syncDb, filepath, SyncName(), fileId, modtime, liteSyncActivated, nbParallelThread) {
+                                       const SyncPath &filepath, const NodeId &fileId, const SyncTime creationTime,
+                                       SyncTime modificationTime, const bool liteSyncActivated,
+                                       const uint64_t nbParallelThread /*= 1*/) :
+    DriveUploadSession(vfs, driveDbId, syncDb, filepath, SyncName(), fileId, creationTime, modificationTime, liteSyncActivated,
+                       nbParallelThread) {
     _fileId = fileId;
 }
 
 DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const std::shared_ptr<SyncDb> syncDb,
                                        const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId,
-                                       const SyncTime modtime, const bool liteSyncActivated,
+                                       const SyncTime creationTime, SyncTime modificationTime, const bool liteSyncActivated,
                                        const uint64_t nbParallelThread /*= 1*/) :
     AbstractUploadSession(filepath, filename, nbParallelThread),
     _driveDbId(driveDbId),
     _syncDb(syncDb),
-    _modtimeIn(modtime),
+    _creationTimeIn(creationTime),
+    _modificationTimeIn(modificationTime),
     _remoteParentDirId(remoteParentDirId),
     _vfs(vfs) {
     (void) liteSyncActivated;
@@ -71,7 +74,7 @@ std::shared_ptr<UploadSessionChunkJob> DriveUploadSession::createChunkJob(const 
 
 std::shared_ptr<UploadSessionFinishJob> DriveUploadSession::createFinishJob() {
     return std::make_shared<UploadSessionFinishJob>(_vfs, UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken(),
-                                                    getTotalChunkHash(), getTotalChunks(), _modtimeIn);
+                                                    getTotalChunkHash(), getTotalChunks(), _creationTimeIn, _modificationTimeIn);
 }
 
 std::shared_ptr<UploadSessionCancelJob> DriveUploadSession::createCancelJob() {
@@ -91,7 +94,8 @@ bool DriveUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessio
 
 bool DriveUploadSession::handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) {
     _nodeId = finishJob->nodeId();
-    _modtimeOut = finishJob->modtime();
+    _creationTimeOut = finishJob->creationTime();
+    _modificationTimeOut = finishJob->modificationTime();
 
     if (bool found = false; _syncDb && !_syncDb->deleteUploadSessionTokenByDbId(_uploadSessionTokenDbId, found)) {
         LOG_WARN(getLogger(), "Error in SyncDb::deleteUploadSessionTokenByDbId");

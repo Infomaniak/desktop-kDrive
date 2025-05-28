@@ -18,7 +18,6 @@
 
 #include "abstracttokennetworkjob.h"
 #include "config.h"
-#include "../networkjobsparams.h"
 #include "libcommonserver/utility/utility.h"
 #include "libparms/db/parmsdb.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
@@ -173,14 +172,14 @@ bool AbstractTokenNetworkJob::defaultBackErrorHandling(NetworkErrorCode errorCod
 
     const auto &errorHandling = errorCodeHandlingMap.find(errorCode);
     if (errorHandling == errorCodeHandlingMap.cend()) {
-        LOG_WARN(_logger, "Error in request " << Utility::formatRequest(uri, _errorCode, _errorDescr).c_str());
+        LOG_WARN(_logger, "Error in request " << Utility::formatRequest(uri, _errorCode, _errorDescr));
         _exitInfo.setCause(ExitCause::HttpErr);
 
         return false;
     }
     // Regular handling
     const auto &exitHandler = errorHandling->second;
-    LOG_DEBUG(_logger, exitHandler.debugMessage.c_str());
+    LOG_DEBUG(_logger, exitHandler.debugMessage);
     _exitInfo.setCause(exitHandler.exitCause);
 
     return true;
@@ -209,7 +208,7 @@ bool AbstractTokenNetworkJob::handleError(std::istream &is, const Poco::URI &uri
     switch (errorCode) {
         case NetworkErrorCode::NotAuthorized: {
             if (!_accessTokenAlreadyRefreshed) {
-                LOG_DEBUG(_logger, "Request failed: " << Utility::formatRequest(uri, _errorCode, _errorDescr).c_str()
+                LOG_DEBUG(_logger, "Request failed: " << Utility::formatRequest(uri, _errorCode, _errorDescr)
                                                       << ". Refreshing access token.");
 
                 if (!refreshToken()) {
@@ -502,8 +501,8 @@ bool AbstractTokenNetworkJob::refreshToken() {
         std::shared_ptr<Login> login = it->second.first;
         ExitCode exitCode = login->refreshToken();
         if (exitCode != ExitCode::Ok) {
-            LOG_WARN(_logger, "Failed to refresh token: code=" << exitCode << " login error=" << login->error().c_str()
-                                                               << " login error descr=" << login->errorDescr().c_str());
+            LOG_WARN(_logger, "Failed to refresh token: code=" << exitCode << " login error=" << login->error()
+                                                               << " login error descr=" << login->errorDescr());
             _exitInfo = {exitCode, ExitCause::LoginError};
 
             // Clear the keychain key
