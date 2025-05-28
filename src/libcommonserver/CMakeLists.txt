@@ -163,4 +163,12 @@ else()
     target_link_libraries(${libcommonserver_NAME}
         utf8proc
     )
+
+    install(FILES
+            ${xxhash_PACKAGE_FOLDER_RELEASE}/lib/libxxhash.so
+            ${xxhash_PACKAGE_FOLDER_RELEASE}/lib/libxxhash.so.0
+            ${xxhash_PACKAGE_FOLDER_RELEASE}/lib/libxxhash.so.0.8.2
+            DESTINATION "${CONAN_DEP_DIR}"
+            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+    )
 endif()

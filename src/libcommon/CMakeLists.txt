@@ -142,6 +142,16 @@ endif()
 
 if(UNIX)
     target_link_libraries(${libcommon_NAME} utf8proc)
+
+    IF (NOT APPLE)
+        # Copy .so files to the conan dependency directory
+        install(FILES
+                ${log4cplus_PACKAGE_FOLDER_RELEASE}/lib/liblog4cplus.so
+                ${log4cplus_PACKAGE_FOLDER_RELEASE}/lib/liblog4cplus.so.9
+                DESTINATION "${CONAN_DEP_DIR}"
+                PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+        )
+    ENDIF()
 endif()
 
 if(ZLIB_FOUND)
