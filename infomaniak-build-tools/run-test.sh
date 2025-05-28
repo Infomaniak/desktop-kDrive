@@ -41,9 +41,7 @@ if [ ! -f "$tester" ]; then
 fi
 
 chmod +x $tester
-lldb ./$tester
-run 
-bt
+lldb ./$tester -o run -o bt
 
 if [ $? -ne 0 ]; then
     echo "---------- Failure: $tester ----------"
