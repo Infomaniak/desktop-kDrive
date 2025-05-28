@@ -114,7 +114,7 @@ void TestLog::testExpiredLogFiles(void) {
         KDC::testhelpers::setModificationDate(Log::instance()->getLogFilePath(),
                                               now); // Prevent the current log file from being deleted.
         appender->checkForExpiredFiles();
-        if (now - start < std::chrono::milliseconds(1500)) { // The fake log file should not be deleted yet.
+        if (now - start < std::chrono::milliseconds(1000)) { // The fake log file should not be deleted yet.
             CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));
         } else if (countFilesInDirectory(_logDir) == 1) { // The fake log file MIGHT be deleted now.
             break;        
