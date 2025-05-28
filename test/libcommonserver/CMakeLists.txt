@@ -37,7 +37,6 @@ if (WIN32)
 endif ()
 
 if (WIN32)
-    include_directories(${log4cplus_INCLUDE_DIRS})
     include_directories("C:/Program Files (x86)/cppunit/include")
     include_directories("C:/Program Files (x86)/Sentry-Native/include")
 else ()
