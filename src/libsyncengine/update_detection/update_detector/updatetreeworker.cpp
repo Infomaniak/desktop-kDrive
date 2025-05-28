@@ -96,9 +96,10 @@ void UpdateTreeWorker::execute() {
     }
 
     if (exitCode == ExitCode::Ok) {
-        LOG_SYNCPAL_DEBUG(_logger, "Update Tree " << _side << " updated in: " << timer.elapsed().count() << "s");
+        LOG_SYNCPAL_DEBUG(_logger, "Update Tree " << _side << " updated in: " << timer.elapsed<DoubleSeconds>().count() << "s");
     } else {
-        LOG_SYNCPAL_WARN(_logger, "Update Tree " << _side << " generation failed after: " << timer.elapsed().count() << "s");
+        LOG_SYNCPAL_WARN(_logger, "Update Tree " << _side << " generation failed after: "
+                                                 << timer.elapsed<DoubleSeconds>().count() << "s");
     }
 
     // Clear unexpected operation set once used
