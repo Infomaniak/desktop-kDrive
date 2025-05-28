@@ -404,7 +404,8 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         nodeIdIt++;
     }
 
-    LOG_SYNCPAL_DEBUG(_logger, "End reply parsing in " << timer.elapsed().count() << "s for " << itemCount << " items");
+    LOG_SYNCPAL_DEBUG(_logger,
+                      "End reply parsing in " << timer.elapsed<DoubleSeconds>().count() << "s for " << itemCount << " items");
 
     return ExitCode::Ok;
 }

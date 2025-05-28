@@ -116,7 +116,7 @@ void AbstractUploadSession::runJob() {
     }
 
     LOGW_DEBUG(_logger, L"Upload session job " << jobId() << (isAborted() ? L" aborted after " : L" finished after ")
-                                               << timer.elapsed().count() << L"s");
+                                               << timer.elapsed<DoubleSeconds>().count() << L"s");
 }
 
 void AbstractUploadSession::uploadChunkCallback(const UniqueId jobId) {

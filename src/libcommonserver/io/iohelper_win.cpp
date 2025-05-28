@@ -964,8 +964,8 @@ bool IoHelper::getLongPathName(const SyncPath &path, SyncPath &longPathName, IoE
     const auto &pathWStr = Path2WStr(path);
     if (pathWStr.size() > MAX_PATH_LENGTH_WIN_LONG) {
         ioError = IoError::FileNameTooLong;
-        LOGW_WARN(logger(), L"Error in GetLongPathName: " << L"Input file path length exceeds " << MAX_PATH_LENGTH_WIN_LONG
-                                                          << L", " << Utility::formatSyncPath(path));
+        LOGW_WARN(logger(),
+                  L"Input file path length exceeds " << MAX_PATH_LENGTH_WIN_LONG << L", " << Utility::formatSyncPath(path));
         return false;
     };
 
@@ -973,8 +973,8 @@ bool IoHelper::getLongPathName(const SyncPath &path, SyncPath &longPathName, IoE
     const DWORD length = GetLongPathNameW(pathWStr.c_str(), longPathName_, MAX_PATH_LENGTH_WIN_LONG);
     ioError = dWordError2ioError(GetLastError(), logger());
 
-    if (ioError != IoError::Success) {
-        LOGW_WARN(logger(), L"Error in GetLongPathName: " << CommonUtility::getLastErrorMessage());
+    if (ioError != IoError::Success && ioError != IoError::FileExists) {
+        LOGW_WARN(logger(), L"Error in GetLongPathNameW: " << CommonUtility::getLastErrorMessage());
         return false;
     }
 
@@ -991,8 +991,8 @@ bool IoHelper::getShortPathName(const SyncPath &path, SyncPath &shortPathName, I
     const auto &pathWstr = Path2WStr(path);
     if (pathWstr.size() > MAX_PATH_LENGTH_WIN_LONG) {
         ioError = IoError::FileNameTooLong;
-        LOGW_WARN(logger(), L"Error in GetShortPathName: " << L"Input file path length exceeds " << MAX_PATH_LENGTH_WIN_LONG
-                                                           << L", " << Utility::formatSyncPath(path));
+        LOGW_WARN(logger(),
+                  L"Input file path length exceeds " << MAX_PATH_LENGTH_WIN_LONG << L", " << Utility::formatSyncPath(path));
         return false;
     };
 
@@ -1000,8 +1000,8 @@ bool IoHelper::getShortPathName(const SyncPath &path, SyncPath &shortPathName, I
     const DWORD length = GetShortPathNameW(pathWstr.c_str(), shortPathName_, MAX_PATH_LENGTH_WIN_LONG);
     ioError = dWordError2ioError(GetLastError(), logger());
 
-    if (ioError != IoError::Success) {
-        LOGW_WARN(logger(), L"Error in GetShortPathName: " << CommonUtility::getLastErrorMessage());
+    if (ioError != IoError::Success && ioError != IoError::FileExists) {
+        LOGW_WARN(logger(), L"Error in GetShortPathNameW: " << CommonUtility::getLastErrorMessage());
         return false;
     }
 
