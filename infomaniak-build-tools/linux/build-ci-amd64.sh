@@ -117,7 +117,7 @@ if [ ! -f "$conan_toolchain_file" ]; then
   exit 1
 fi
 
-openssl_folder="$(base "$conan_source_folder/find_conan_dep.sh" openssl 3.2.4 2>/dev/null)"
+openssl_folder="$(bash "$conan_source_folder/find_conan_dep.sh" openssl 3.2.4 2>/dev/null)"
 if [ -z "$openssl_folder" ]; then
   echo "OpenSSL folder not found. Please ensure the OpenSSL package is built and available in the conan cache." >&2; exit 1
 else
