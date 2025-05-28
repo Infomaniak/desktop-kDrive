@@ -1633,22 +1633,22 @@ ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::share
             if (syncOp->targetSide() == ReplicaSide::Local) {
                 auto castJob(std::dynamic_pointer_cast<DownloadJob>(job));
                 nodeId = castJob->localNodeId();
-                modificationTime = castJob->modtime();
+                modificationTime = castJob->modificationTime();
             } else {
                 bool jobOk = false;
                 auto uploadJob(std::dynamic_pointer_cast<UploadJob>(job));
                 if (uploadJob) {
                     nodeId = uploadJob->nodeId();
-                    creationTime = uploadJob->newCreationTime();
-                    modificationTime = uploadJob->newModificationTime();
+                    creationTime = uploadJob->creationTime();
+                    modificationTime = uploadJob->modificationTime();
                     size = uploadJob->size();
                     jobOk = true;
                 } else {
                     auto uploadSessionJob(std::dynamic_pointer_cast<DriveUploadSession>(job));
                     if (uploadSessionJob) {
                         nodeId = uploadSessionJob->nodeId();
-                        creationTime = uploadJob->newCreationTime();
-                        modificationTime = uploadSessionJob->newModificationTime();
+                        creationTime = uploadJob->creationTime();
+                        modificationTime = uploadSessionJob->modificationTime();
                         size = uploadSessionJob->size();
                         jobOk = true;
                     }

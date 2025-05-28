@@ -200,7 +200,7 @@ void TestIo::testSetFileDates() {
 #if defined(__APPLE__) || defined(_WIN32)
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
 #endif
-        CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modtime);
+        CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modificationTime);
 
         // Test on a normal folder.
         const SyncPath folderPath = tempDir.path() / "test_dir";
@@ -213,7 +213,7 @@ void TestIo::testSetFileDates() {
 #if defined(__APPLE__) || defined(_WIN32)
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
 #endif
-        CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modtime);
+        CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modificationTime);
 
         // Test on a file without access right.
 #ifdef _WIN32
@@ -235,7 +235,7 @@ void TestIo::testSetFileDates() {
 #if defined(__APPLE__) || defined(_WIN32)
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
 #endif
-        CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modtime);
+        CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modificationTime);
 
         (void) IoHelper::setRights(rightPath, true, true, true, ioError);
 
@@ -250,12 +250,12 @@ void TestIo::testSetFileDates() {
 #if defined(__APPLE__) || defined(_WIN32)
         CPPUNIT_ASSERT_EQUAL(linkTimestamp, filestat.creationTime);
 #endif
-        CPPUNIT_ASSERT_EQUAL(linkTimestamp + 10, filestat.modtime);
+        CPPUNIT_ASSERT_EQUAL(linkTimestamp + 10, filestat.modificationTime);
         (void) IoHelper::getFileStat(filepath, &filestat, ioError);
 #if defined(__APPLE__) || defined(_WIN32)
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
 #endif
-        CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modtime);
+        CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modificationTime);
 
         // Test on a symlink on a folder.
         linkPath = tempDir.path() / "test_link_folder";
@@ -267,12 +267,12 @@ void TestIo::testSetFileDates() {
 #if defined(__APPLE__) || defined(_WIN32)
         CPPUNIT_ASSERT_EQUAL(linkTimestamp, filestat.creationTime);
 #endif
-        CPPUNIT_ASSERT_EQUAL(linkTimestamp + 10, filestat.modtime);
+        CPPUNIT_ASSERT_EQUAL(linkTimestamp + 10, filestat.modificationTime);
         (void) IoHelper::getFileStat(folderPath, &filestat, ioError);
 #if defined(__APPLE__) || defined(_WIN32)
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
 #endif
-        CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modtime);
+        CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modificationTime);
 
 #if defined(__APPLE__)
         // Test on an alias on a file.
@@ -285,10 +285,10 @@ void TestIo::testSetFileDates() {
 
         (void) IoHelper::getFileStat(linkPath, &filestat, ioError);
         CPPUNIT_ASSERT_EQUAL(linkTimestamp, filestat.creationTime);
-        CPPUNIT_ASSERT_EQUAL(linkTimestamp + 10, filestat.modtime);
+        CPPUNIT_ASSERT_EQUAL(linkTimestamp + 10, filestat.modificationTime);
         (void) IoHelper::getFileStat(filepath, &filestat, ioError);
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
-        CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modtime);
+        CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modificationTime);
 
         // Test on an alias on a folder.
         linkPath = tempDir.path() / "test_alias_folder";
@@ -300,10 +300,10 @@ void TestIo::testSetFileDates() {
 
         (void) IoHelper::getFileStat(linkPath, &filestat, ioError);
         CPPUNIT_ASSERT_EQUAL(linkTimestamp, filestat.creationTime);
-        CPPUNIT_ASSERT_EQUAL(linkTimestamp + 10, filestat.modtime);
+        CPPUNIT_ASSERT_EQUAL(linkTimestamp + 10, filestat.modificationTime);
         (void) IoHelper::getFileStat(filepath, &filestat, ioError);
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
-        CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modtime);
+        CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modificationTime);
 #endif
 
 #ifdef _WIN32
@@ -348,7 +348,7 @@ void TestIo::testSetFileDates() {
 #elif defined(_WIN32)
         CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.creationTime);
 #endif
-        CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modtime);
+        CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modificationTime);
     }
 
     // Test on a non-existing file.

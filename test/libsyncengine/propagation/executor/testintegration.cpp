@@ -713,7 +713,7 @@ void TestIntegration::testEditEditPseudoConflict() {
 
     // Upload this file manually so it simulate a remote edit
     UploadJob job(_syncPal->vfs(), _driveDbId, sourceFile, sourceFile.filename().native(), testExecutorFolderRemoteId,
-                  fileStat.creationTime, fileStat.modtime);
+                  fileStat.creationTime, fileStat.modificationTime);
     job.runSynchronously();
 
     Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
@@ -751,7 +751,7 @@ void TestIntegration::testEditEditConflict() {
 
     // Upload this file manually so it simulate a remote edit
     UploadJob job(_syncPal->vfs(), _driveDbId, sourceFile, sourceFile.filename().native(), testExecutorFolderRemoteId,
-                  fileStat.creationTime, fileStat.modtime);
+                  fileStat.creationTime, fileStat.modificationTime);
     job.runSynchronously();
 
     Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
@@ -816,7 +816,7 @@ void TestIntegration::testMoveCreateConflict() {
 
     // Simulate a remote create by uploading the file in "test_executor_sub" folder
     UploadJob createJob(_syncPal->vfs(), _driveDbId, sourceFile, sourceFile.filename().native(), testExecutorSubFolderRemoteId,
-                        fileStat.creationTime, fileStat.modtime);
+                        fileStat.creationTime, fileStat.modificationTime);
     createJob.runSynchronously();
     NodeId remoteId = createJob.nodeId();
 

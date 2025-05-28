@@ -39,8 +39,8 @@ class UploadJob : public AbstractTokenNetworkJob {
         ~UploadJob() override;
 
         const NodeId &nodeId() const { return _nodeIdOut; }
-        SyncTime newCreationTime() const { return _creationTimeOut; }
-        SyncTime newModificationTime() const { return _modificationTimeOut; }
+        SyncTime creationTime() const { return _creationTimeOut; }
+        SyncTime modificationTime() const { return _modificationTimeOut; }
         int64_t size() const { return _sizeOut; }
 
     protected:

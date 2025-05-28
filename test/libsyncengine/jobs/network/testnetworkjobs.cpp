@@ -314,7 +314,7 @@ void TestNetworkJobs::testDownload() {
 #if defined(__APPLE__) or defined(_WIN32)
             CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, creationTimeIn.count());
 #endif
-            CPPUNIT_ASSERT_EQUAL(fileStat.modtime, modificationTimeIn.count());
+            CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, modificationTimeIn.count());
         }
 
         // Get nodeid
@@ -346,7 +346,7 @@ void TestNetworkJobs::testDownload() {
 #if defined(__APPLE__) or defined(_WIN32)
             CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, creationTimeIn.count());
 #endif
-            CPPUNIT_ASSERT_EQUAL(fileStat.modtime, modificationTimeIn.count());
+            CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, modificationTimeIn.count());
         }
 
         // Check that the node id has not changed
@@ -383,7 +383,7 @@ void TestNetworkJobs::testDownload() {
 #if defined(__APPLE__) or defined(_WIN32)
             CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, creationTimeIn.count());
 #endif
-            CPPUNIT_ASSERT_EQUAL(fileStat.modtime, modificationTimeIn.count());
+            CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, modificationTimeIn.count());
         }
 
         // Check that the node id has not changed
@@ -570,7 +570,7 @@ void TestNetworkJobs::testDownload() {
 #if defined(__APPLE__) or defined(_WIN32)
             CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, creationTimeIn.count());
 #endif
-            CPPUNIT_ASSERT_EQUAL(fileStat.modtime, modificationTimeIn.count());
+            CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, modificationTimeIn.count());
         }
     }
 
@@ -609,7 +609,7 @@ void TestNetworkJobs::testDownload() {
 #if defined(__APPLE__) or defined(_WIN32)
             CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, creationTimeIn.count());
 #endif
-            CPPUNIT_ASSERT_EQUAL(fileStat.modtime, modificationTimeIn.count());
+            CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, modificationTimeIn.count());
         }
     }
 
@@ -644,7 +644,7 @@ void TestNetworkJobs::testDownload() {
             IoHelper::getFileStat(localDestFilePath, &fileStat, ioError);
             CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
             CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, creationTimeIn.count());
-            CPPUNIT_ASSERT_EQUAL(fileStat.modtime, modificationTimeIn.count());
+            CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, modificationTimeIn.count());
         }
     }
 
@@ -1003,12 +1003,12 @@ void TestNetworkJobs::testRename() {
     CPPUNIT_ASSERT(name == filename);
 }
 
-void TestNetworkJobs::testUpload(const SyncTime creationTimeIn, SyncTime modificationTimeIn, SyncTime &creationTimeOut,
+void TestNetworkJobs::testUpload(const SyncTime creationTimeIn, const SyncTime modificationTimeIn, SyncTime &creationTimeOut,
                                  SyncTime &modificationTimeOut) {
     const LocalTemporaryDirectory temporaryDirectory("testUpload");
-    const SyncName filename = Str("test_file.txt");
-    const SyncPath localFilePath = temporaryDirectory.path() / filename;
+    const SyncPath localFilePath = temporaryDirectory.path() / Str("test_file.txt");
     testhelpers::generateOrEditTestFile(localFilePath);
+    (void) IoHelper::setFileDates(localFilePath, creationTimeIn, modificationTimeIn, false);
 
     bool exist = false;
     FileStat fileStat;
@@ -1019,11 +1019,11 @@ void TestNetworkJobs::testUpload(const SyncTime creationTimeIn, SyncTime modific
                   modificationTimeIn);
     ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(fileStat.size, job.size());
 
     GetFileInfoJob fileInfoJob(_driveDbId, job.nodeId());
     exitCode = fileInfoJob.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
-    CPPUNIT_ASSERT_EQUAL(fileStat.size, job.size());
 
     Poco::JSON::Object::Ptr dataObj = fileInfoJob.jsonRes()->getObject(dataKey);
     std::string name;
@@ -1032,12 +1032,12 @@ void TestNetworkJobs::testUpload(const SyncTime creationTimeIn, SyncTime modific
         (void) JsonParserUtility::extractValue(dataObj, createdAtKey, creationTimeOut, false);
         (void) JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, modificationTimeOut, false);
     }
-    CPPUNIT_ASSERT(filename == Str2SyncName(name));
+    CPPUNIT_ASSERT_EQUAL(SyncName2Str(localFilePath.filename().string()), name);
 }
 
 void TestNetworkJobs::testUpload() {
     const auto epochNow = std::chrono::system_clock::now().time_since_epoch();
-    auto creationTimeIn = std::chrono::duration_cast<std::chrono::seconds>(epochNow);
+    const auto creationTimeIn = std::chrono::duration_cast<std::chrono::seconds>(epochNow);
     auto modificationTimeIn = creationTimeIn;
     SyncTime creationTimeOut = 0;
     SyncTime modificationTimeOut = 0;
@@ -1091,7 +1091,7 @@ void TestNetworkJobs::testUploadAborted() {
 void TestNetworkJobs::testDriveUploadSessionConstructorException() {
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDriveUploadSessionConstructorException");
 
-    SyncPath localFilePath = testhelpers::localTestDirPath;
+    const SyncPath localFilePath = testhelpers::localTestDirPath;
     // The constructor of DriveUploadSession will attempt to retrieve the file size of directory.
 
     CPPUNIT_ASSERT_THROW_MESSAGE("DriveUploadSession() didn't throw as expected",
@@ -1109,10 +1109,12 @@ void TestNetworkJobs::testDriveUploadSessionSynchronous() {
     const SyncPath localFilePath = testhelpers::generateBigFile(localTmpDir.path(), 97);
 
     DriveUploadSession driveUploadSessionJobCreate(nullptr, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(),
-                                                   remoteTmpDir.id(), testhelpers::defaultTime, false, 1);
+                                                   remoteTmpDir.id(), testhelpers::defaultTime, testhelpers::defaultTime, false,
+                                                   1);
     ExitCode exitCode = driveUploadSessionJobCreate.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
-    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime, driveUploadSessionJobCreate.modtime());
+    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime, driveUploadSessionJobCreate.creationTime());
+    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime, driveUploadSessionJobCreate.modificationTime());
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(97 * 1000000), driveUploadSessionJobCreate.size());
     CPPUNIT_ASSERT(!driveUploadSessionJobCreate.nodeId().empty());
 
@@ -1126,10 +1128,12 @@ void TestNetworkJobs::testDriveUploadSessionSynchronous() {
     IoHelper::getFileStat(localFilePath, &fileStat, exist);
 
     DriveUploadSession driveUploadSessionJobEdit(nullptr, _driveDbId, nullptr, localFilePath,
-                                                 driveUploadSessionJobCreate.nodeId(), testhelpers::defaultTime + 1, false, 1);
+                                                 driveUploadSessionJobCreate.nodeId(), testhelpers::defaultTime,
+                                                 testhelpers::defaultTime + 1, false, 1);
     exitCode = driveUploadSessionJobEdit.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
-    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime + 1, driveUploadSessionJobEdit.modtime());
+    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime, driveUploadSessionJobEdit.creationTime());
+    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime + 1, driveUploadSessionJobEdit.modificationTime());
     CPPUNIT_ASSERT_EQUAL(fileStat.size, driveUploadSessionJobEdit.size());
     CPPUNIT_ASSERT(!driveUploadSessionJobEdit.nodeId().empty());
 }
@@ -1143,10 +1147,11 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
     const SyncPath localFilePath = testhelpers::generateBigFile(localTmpDir.path(), 97);
 
     DriveUploadSession driveUploadSessionJobCreate(nullptr, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(),
-                                                   remoteTmpDir.id(), testhelpers::defaultTime, false, 3);
+                                                   remoteTmpDir.id(), testhelpers::defaultTime, testhelpers::defaultTime, false,
+                                                   3);
     auto exitInfo = driveUploadSessionJobCreate.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
-    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime, driveUploadSessionJobCreate.modtime());
+    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime, driveUploadSessionJobCreate.modificationTime());
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(97 * 1000000), driveUploadSessionJobCreate.size());
     CPPUNIT_ASSERT(!driveUploadSessionJobCreate.nodeId().empty());
 
@@ -1158,10 +1163,11 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
     IoHelper::getFileStat(localFilePath, &fileStat, exist);
 
     DriveUploadSession driveUploadSessionJobEdit(nullptr, _driveDbId, nullptr, localFilePath,
-                                                 driveUploadSessionJobCreate.nodeId(), testhelpers::defaultTime + 1, false, 3);
+                                                 driveUploadSessionJobCreate.nodeId(), testhelpers::defaultTime,
+                                                 testhelpers::defaultTime + 1, false, 3);
     exitInfo = driveUploadSessionJobEdit.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
-    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime + 1, driveUploadSessionJobEdit.modtime());
+    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime + 1, driveUploadSessionJobEdit.modificationTime());
     CPPUNIT_ASSERT_EQUAL(fileStat.size, driveUploadSessionJobEdit.size());
     CPPUNIT_ASSERT(!driveUploadSessionJobEdit.nodeId().empty());
 }

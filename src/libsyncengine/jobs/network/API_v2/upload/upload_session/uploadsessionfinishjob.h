@@ -51,8 +51,8 @@ class UploadSessionFinishJob : public AbstractUploadSessionJob {
 
         std::string _totalChunkHash;
         uint64_t _totalChunks = 0;
-        SyncTime _creationTimeIn = 0;
-        SyncTime _modificationTimeIn = 0;
+        const SyncTime _creationTimeIn = 0;
+        const SyncTime _modificationTimeIn = 0;
 
         NodeId _nodeId;
         SyncTime _creationTimeOut = 0;
