@@ -31,7 +31,7 @@ set(libcommon_SRCS
     utility/logiffail.h utility/qlogiffail.h
     utility/jsonparserutility.h
     utility/urlhelper.h utility/urlhelper.cpp
-    utility/timerutility.h utility/timerutility.cpp
+    utility/timerutility.h
     keychainmanager/apitoken.h keychainmanager/apitoken.cpp
     keychainmanager/keychainmanager.h keychainmanager/keychainmanager.cpp
     info/userinfo.h info/userinfo.cpp
@@ -139,6 +139,10 @@ if(APPLE)
         ${FOUNDATION_LIBRARY}
         ${CORESERVICES_LIBRARY}
         ${APPKIT_LIBRARY})
+endif()
+
+if(UNIX)
+    target_link_libraries(${libcommon_NAME} utf8proc)
 endif()
 
 if(ZLIB_FOUND)

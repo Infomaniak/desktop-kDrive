@@ -51,7 +51,10 @@ const int stateStringLength = 8;
 Q_LOGGING_CATEGORY(lcAddDriveLoginWidget, "gui.adddriveloginwidget", QtInfoMsg)
 
 AddDriveLoginWidget::AddDriveLoginWidget(QWidget *parent) :
-    QWidget(parent), _codeVerifier(QString()), _userDbId(0), _webView(nullptr) {
+    QWidget(parent),
+    _codeVerifier(QString()),
+    _userDbId(0),
+    _webView(nullptr) {
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(mainLayout);

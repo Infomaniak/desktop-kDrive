@@ -20,7 +20,6 @@
 #include "gui/errortabwidget.h"
 #include "parametersdialog.h"
 #include "bottomwidget.h"
-#include "actionwidget.h"
 #include "custommessagebox.h"
 #include "debugreporter.h"
 #include "guiutility.h"
@@ -30,10 +29,9 @@
 #include "genericerroritemwidget.h"
 #include "guirequests.h"
 #include "parameterscache.h"
-#include "libcommongui/logger.h"
+#include "libcommongui/matomoclient.h"
 #include "libcommon/utility/qlogiffail.h"
 #include "libcommon/utility/utility.h"
-#include "libcommongui/utility/utility.h"
 
 #include <QDesktopServices>
 #include <QDir>
@@ -66,7 +64,9 @@ static const int defaultLogoIconSize = 50;
 
 Q_LOGGING_CATEGORY(lcParametersDialog, "gui.parametersdialog", QtInfoMsg)
 
-ParametersDialog::ParametersDialog(std::shared_ptr<ClientGui> gui, QWidget *parent) : CustomDialog(false, parent), _gui(gui) {
+ParametersDialog::ParametersDialog(std::shared_ptr<ClientGui> gui, QWidget *parent) :
+    CustomDialog(false, parent),
+    _gui(gui) {
     initUI();
 
     connect(this, &ParametersDialog::exit, this, &ParametersDialog::onExit);
@@ -758,6 +758,11 @@ QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const {
         case ExitCause::NotFound: {
             return tr("Impossible to download the file.");
         }
+        case ExitCause::FileLocked: {
+            return tr(
+                    "This item is currently locked by another user online.<br>"
+                    "We will retry uploading your changes later.");
+        }
         default:
             return tr("Synchronization error.");
     }
@@ -955,10 +960,12 @@ void ParametersDialog::onItemCompleted(int syncDbId, const SyncFileItemInfo &ite
 }
 
 void ParametersDialog::onPreferencesButtonClicked() {
+    MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "preferencesButton");
     _pageStackedWidget->setCurrentIndex(Page::Preferences);
 }
 
 void ParametersDialog::onOpenHelp() {
+    MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "helpButton");
     QDesktopServices::openUrl(QUrl(Theme::instance()->helpUrl()));
 }
 
@@ -978,15 +985,18 @@ void ParametersDialog::onDriveSelected(int driveDbId) {
 }
 
 void ParametersDialog::onAddDrive() {
+    MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "addDriveButton");
     emit addDrive();
 }
 
 void ParametersDialog::onRemoveDrive(int driveDbId) {
+    MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "removeDriveButton", driveDbId);
     EnableStateHolder stateHolder(this);
     emit removeDrive(driveDbId);
 }
 
 void ParametersDialog::onDisplayDriveErrors(int driveDbId) {
+    MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "displayErrors", driveDbId);
     const auto driveInfoIt = _gui->driveInfoMap().find(driveDbId);
     if (driveInfoIt == _gui->driveInfoMap().end()) {
         qCDebug(lcParametersDialog()) << "Account id not found in account map!";
@@ -1014,23 +1024,28 @@ void ParametersDialog::onDisplayGeneralErrors() {
 
 void ParametersDialog::onDisplayDriveParameters() {
     _pageStackedWidget->setCurrentIndex(Page::Drive);
+    MatomoClient::sendVisit(MatomoNameField::PG_Parameters);
 }
 
 void ParametersDialog::onDisplayPreferences() {
     _pageStackedWidget->setCurrentIndex(Page::Preferences);
+    MatomoClient::sendVisit(MatomoNameField::PG_Preferences);
 }
 
 void ParametersDialog::onBackButtonClicked() {
     if (_pageStackedWidget->currentIndex() == Page::Preferences) {
         onDisplayDriveParameters();
+        MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "backButton", 0);
         return;
     }
 
     if (_pageStackedWidget->currentIndex() == Page::Errors) {
         if (_errorsStackedWidget->currentIndex() == toInt(DriveInfoClient::ParametersStackedWidget::General)) {
             onDisplayPreferences();
+            MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "backButton", 1);
         } else {
             onDisplayDriveParameters();
+            MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "backButton", 0);
         }
     }
 }

@@ -34,7 +34,8 @@ class ComputeFSOperationWorker : public ISyncWorker {
          * @param name
          * @param shortName
          */
-        ComputeFSOperationWorker(SyncDbReadOnlyCache &testSyncDbReadOnlyCache, const std::string &name, const std::string &shortName);
+        ComputeFSOperationWorker(SyncDbReadOnlyCache &testSyncDbReadOnlyCache, const std::string &name,
+                                 const std::string &shortName);
 
         const std::unordered_map<NodeId, SyncPath> getFileSizeMismatchMap() const { return _fileSizeMismatchMap; }
 
@@ -85,7 +86,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
         bool isPathTooLong(const SyncPath &path, const NodeId &nodeId, NodeType type) const;
 #ifdef __unix__
         void isReusedNodeId(const NodeId &localNodeId, const DbNode &dbNode, const std::shared_ptr<const Snapshot> &snapshot,
-                                bool &isReused) const;
+                            bool &isReused) const;
 #endif // __unix__
         ExitInfo checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId, bool &isExcluded);
 
@@ -107,7 +108,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
         std::unordered_set<SyncPath, PathHashFunction> _dirPathToDeleteSet;
         std::unordered_map<NodeId, SyncPath> _fileSizeMismatchMap; // File size mismatch checks are only enabled when env var:
                                                                    // KDRIVE_ENABLE_FILE_SIZE_MISMATCH_DETECTION is set
-        std::unordered_set<SyncName> _ignoredDirectoryNames;
+        SyncNameSet _ignoredDirectoryNames;
 
         bool addFolderToDelete(const SyncPath &path);
         bool checkIfPathIsInDeletedFolder(const SyncPath &path, bool &isInDeletedFolder);

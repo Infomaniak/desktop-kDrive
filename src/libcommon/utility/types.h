@@ -52,7 +52,7 @@ using SyncName = std::filesystem::path::string_type;
 using SyncChar = std::filesystem::path::value_type;
 using DirectoryEntry = std::filesystem::directory_entry;
 using DirectoryOptions = std::filesystem::directory_options;
-using SecondsDuration = std::chrono::duration<double>; // Use double instead of std::chrono::seconds to keep the precision
+using DoubleSeconds = std::chrono::duration<double>; // Use double instead of std::chrono::seconds to keep the precision
 
 // Hash functions
 struct StringHashFunction {
@@ -68,7 +68,17 @@ struct PathHashFunction {
         std::size_t operator()(const std::optional<SyncPath> &path) const { return path ? hash_value(path.value()) : 0; }
 };
 
+struct SyncNameHashFunction {
+        using is_transparent = void; // Enables heterogeneous operations.
+
+        std::size_t operator()(const SyncName &name) const {
+            constexpr std::hash<SyncName> hashFunction;
+            return hashFunction(name);
+        }
+};
+
 using NodeSet = std::unordered_set<NodeId, StringHashFunction, std::equal_to<>>;
+using SyncNameSet = std::unordered_set<SyncName, SyncNameHashFunction, std::equal_to<>>;
 
 using SigValueType = std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring>;
 
@@ -261,6 +271,7 @@ enum class ExitCause {
     InvalidSize,
     FileAlreadyExists,
     FileAccessError,
+    FileLocked,
     UnexpectedFileSystemEvent,
     NotEnoughDiskSpace,
     DriveAccessError,
@@ -320,6 +331,7 @@ struct ExitInfo {
         constexpr operator bool() const { return _code == ExitCode::Ok; }
         constexpr explicit operator int() const { return toInt(_code) * 100 + toInt(_cause); }
         constexpr bool operator==(const ExitInfo &other) const { return _code == other._code && _cause == other._cause; }
+        constexpr bool operator!=(const ExitInfo &other) const { return !(*this == other); }
 
         //! Merge 'this' object with an exitInfoToMerge given as a parameter, according to an ExitCode list ordered by priority:
         //! - If 'this' object's code has priority over the parameter's code, do nothing.
@@ -545,7 +557,7 @@ enum class NotificationsDisabled {
     Never,
     OneHour,
     UntilTomorrow,
-    TreeDays,
+    ThreeDays,
     OneWeek,
     Always,
     EnumEnd
@@ -762,6 +774,11 @@ struct VersionInfo {
         }
 };
 using AllVersionsInfo = std::unordered_map<VersionChannel, VersionInfo>;
+
+enum class UnicodeNormalization {
+    NFC,
+    NFD
+};
 
 namespace sentry {
 enum class ConfidentialityLevel {

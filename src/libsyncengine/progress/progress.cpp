@@ -22,7 +22,12 @@
 
 namespace KDC {
 
-Progress::Progress() : _progressPerSec(0), _prevCompleted(0), _initialSmoothing(1.0), _completed(0), _total(0) {}
+Progress::Progress() :
+    _progressPerSec(0),
+    _prevCompleted(0),
+    _initialSmoothing(1.0),
+    _completed(0),
+    _total(0) {}
 
 void Progress::update() {
     const double smoothing = 0.9 * (1.0 - _initialSmoothing);

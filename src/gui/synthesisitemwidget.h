@@ -29,6 +29,7 @@ namespace KDC {
 
 class SynthesisItemWidget : public QWidget {
         Q_OBJECT
+
     public:
         explicit SynthesisItemWidget(const SynchronizedItem &item, QWidget *parent = nullptr);
 

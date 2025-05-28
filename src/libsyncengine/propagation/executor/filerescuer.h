@@ -22,7 +22,8 @@ namespace KDC {
 
 class FileRescuer {
     public:
-        explicit FileRescuer(std::shared_ptr<SyncPal> syncPal) : _syncPal(syncPal) {}
+        explicit FileRescuer(std::shared_ptr<SyncPal> syncPal) :
+            _syncPal(syncPal) {}
 
         ExitInfo executeRescueMoveJob(SyncOpPtr syncOp);
 

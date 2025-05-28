@@ -96,7 +96,6 @@ if (WIN32)
     include_directories("F:/Projects/log4cplus/include")
     include_directories("C:/Program Files (x86)/cppunit/include")
     include_directories("C:/Program Files (x86)/Sentry-Native/include")
-    include_directories("C:/Program Files (x86)/xxHash/include")
     include_directories("C:/Program Files (x86)/libzip/include")
 else ()
     include_directories("/usr/local/include")
@@ -140,9 +139,9 @@ endif()
 if (WIN32)
     target_link_libraries(${testserver_NAME}
             debug
-            "C:/Program Files (x86)/cppunit/lib/cppunitd.lib"
+            "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"
             optimized
-            "C:/Program Files (x86)/cppunit/lib/cppunit.lib")
+            "C:/Program Files (x86)/cppunit/lib/cppunit_dll.lib")
 elseif (APPLE)
     target_link_libraries(${testserver_NAME}
             "/usr/local/lib/libcppunit.dylib")

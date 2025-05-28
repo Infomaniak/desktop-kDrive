@@ -20,6 +20,7 @@
 #include "guiutility.h"
 #include "customcheckbox.h"
 #include "guirequests.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QBoxLayout>
 #include <QDir>
@@ -48,7 +49,8 @@ static const char undecidedFolderProperty[] = "undecidedFolder";
 Q_LOGGING_CATEGORY(lcBigFoldersDialog, "gui.bigfoldersdialog", QtInfoMsg)
 
 BigFoldersDialog::BigFoldersDialog(const std::unordered_map<int, std::pair<SyncInfoClient, QSet<QString>>> &syncsUndecidedMap,
-                                   const DriveInfo &driveInfo, QWidget *parent) : CustomDialog(true, parent) {
+                                   const DriveInfo &driveInfo, QWidget *parent) :
+    CustomDialog(true, parent) {
     QVBoxLayout *mainLayout = this->mainLayout();
 
     // Text
@@ -189,6 +191,7 @@ const QHash<int, QHash<const QString, bool>> &BigFoldersDialog::mapWhiteListedSu
 void BigFoldersDialog::slotCheckboxClicked() {
     CustomCheckBox *checkbox = qobject_cast<CustomCheckBox *>(sender());
     if (!checkbox) return;
+    MatomoClient::sendEvent("bigFolderDialog", MatomoEventAction::Click, "slotCheckbox", checkbox->isChecked() ? 1 : 0);
 
     _mapWhiteListedSubFolders[_mapCheckboxToFolder[checkbox]].insert(checkbox->property(undecidedFolderProperty).toString(),
                                                                      checkbox->isChecked());

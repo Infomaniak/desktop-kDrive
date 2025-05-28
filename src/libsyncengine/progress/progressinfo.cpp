@@ -21,7 +21,8 @@
 
 namespace KDC {
 
-ProgressInfo::ProgressInfo(std::shared_ptr<SyncPal> syncPal) : _syncPal(syncPal) {
+ProgressInfo::ProgressInfo(std::shared_ptr<SyncPal> syncPal) :
+    _syncPal(syncPal) {
     reset();
 }
 

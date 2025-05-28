@@ -32,7 +32,10 @@ static const int titleBoxVMargin = 25;
 static const int startingManagerValue = 50;
 
 ResourcesManagerDialog::ResourcesManagerDialog(QWidget *parent) :
-    CustomDialog(true, parent), _slideBarResources(nullptr), _saveButton(nullptr), _sliderValueLabel(nullptr),
+    CustomDialog(true, parent),
+    _slideBarResources(nullptr),
+    _saveButton(nullptr),
+    _sliderValueLabel(nullptr),
     _needToSave(false) {
     initUI();
 

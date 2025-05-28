@@ -33,7 +33,7 @@ if (APPLE)
 endif ()
 
 if (WIN32)
-    list(APPEND testcommonserver_SRCS io/testcreatejunction.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp)
+    list(APPEND testcommonserver_SRCS io/testcreatejunction.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testgetlongpathname.cpp)
 endif ()
 
 if (WIN32)
@@ -64,9 +64,9 @@ target_link_libraries(${testcommonserver_NAME}
 if (WIN32)
     target_link_libraries(${testcommonserver_NAME}
             debug
-            "C:/Program Files (x86)/cppunit/lib/cppunitd.lib"
+            "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"
             optimized
-            "C:/Program Files (x86)/cppunit/lib/cppunit.lib")
+            "C:/Program Files (x86)/cppunit/lib/cppunit_dll.lib")
 elseif (APPLE)
     target_link_libraries(${testcommonserver_NAME}
             "/usr/local/lib/libcppunit.dylib")

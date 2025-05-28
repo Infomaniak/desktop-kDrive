@@ -179,7 +179,7 @@ void TestUtility::testIsEqualUpToCaseAndEnc(void) {
     SyncName nfcNormalizedName;
     CPPUNIT_ASSERT(Utility::normalizedSyncName(Str("éééé"), nfcNormalizedName));
     SyncName nfdNormalizedName;
-    CPPUNIT_ASSERT(Utility::normalizedSyncName(Str("éééé"), nfdNormalizedName, Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(Str("éééé"), nfdNormalizedName, UnicodeNormalization::NFD));
     CPPUNIT_ASSERT(Utility::checkIfEqualUpToCaseAndEncoding(nfcNormalizedName, nfdNormalizedName, isEqual) && isEqual);
 }
 
@@ -471,6 +471,9 @@ void TestUtility::testNormalizedSyncPath() {
 #ifdef _WIN32
     CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(a\b\c)", normalizedPath) && normalizedPath == SyncPath("a/b/c"));
     CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(\a\b\c)", normalizedPath) && normalizedPath == SyncPath("/a/b/c"));
+    CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a\\b/c", normalizedPath) && normalizedPath == SyncPath("/a/b/c"));
+#else
+    CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a\\b/c", normalizedPath) && normalizedPath != SyncPath("/a/b/c"));
 #endif
 }
 
@@ -482,7 +485,7 @@ bool TestUtility::checkNfcAndNfdNamesEqual(const SyncName &name, bool &equal) {
         return false;
     }
     SyncName nfdNormalized;
-    if (!Utility::normalizedSyncName(name, nfdNormalized, Utility::UnicodeNormalization::NFD)) {
+    if (!Utility::normalizedSyncName(name, nfdNormalized, UnicodeNormalization::NFD)) {
         return false;
     }
     equal = (nfcNormalized == nfdNormalized);
@@ -507,7 +510,7 @@ void TestUtility::testIsSameOrParentPath() {
 
 void TestUtility::testUserName() {
     std::string userName(Utility::userName());
-    LOG_DEBUG(Log::instance()->getLogger(), "userName=" << userName.c_str());
+    LOG_DEBUG(Log::instance()->getLogger(), "userName=" << userName);
 
 #ifdef _WIN32
     const char *value = std::getenv("USERPROFILE");
@@ -530,10 +533,4 @@ void TestUtility::testUserName() {
 #endif
 }
 
-void TestUtility::testSplitPath() {
-    const auto fileNames = Utility::splitPath(SyncPath("A") / "B" / "file.txt");
-    CPPUNIT_ASSERT(Str("A") == fileNames[2]);
-    CPPUNIT_ASSERT(Str("B") == fileNames[1]);
-    CPPUNIT_ASSERT(Str("file.txt") == fileNames[0]);
-}
 } // namespace KDC

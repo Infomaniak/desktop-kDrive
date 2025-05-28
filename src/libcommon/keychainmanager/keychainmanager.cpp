@@ -44,13 +44,15 @@ std::shared_ptr<KeyChainManager> KeyChainManager::instance(bool testing) {
     return _instance;
 }
 
-KeyChainManager::KeyChainManager(bool testing) : _testing(testing), _testingMap(std::unordered_map<std::string, std::string>()) {}
+KeyChainManager::KeyChainManager(bool testing) :
+    _testing(testing),
+    _testingMap(std::unordered_map<std::string, std::string>()) {}
 
 bool KeyChainManager::writeDummyTest() {
     // First, we check that we can write into the keychain
     if (!KeyChainManager::instance()->writeToken(dummyKeychainKey, dummyData)) {
         std::string error = "Test writing into the keychain failed. Token not refreshed.";
-        LOG_WARN(Log::instance()->getLogger(), error.c_str());
+        LOG_WARN(Log::instance()->getLogger(), error);
         sentry::Handler::captureMessage(sentry::Level::Warning, "KeyChain::writeDummyTest", error);
 
         return false;
@@ -73,7 +75,7 @@ bool KeyChainManager::writeToken(const std::string &keychainKey, const std::stri
     keychain::setPassword(PACKAGE, SERVICE, keychainKey, rawData, error);
     if (error) {
         LOG_DEBUG(KDC::Log::instance()->getLogger(),
-                  "Failed to save authentication info to keychain: " << error.code << " - " << error.message.c_str());
+                  "Failed to save authentication info to keychain: " << error.code << " - " << error.message);
         sentry::Handler::captureMessage(sentry::Level::Warning, "KeyChain::writeToken", error.message);
 
         return false;
@@ -86,14 +88,13 @@ bool KeyChainManager::readDataFromKeystore(const std::string &keychainKey, std::
     keychain::Error error{};
     data = keychain::getPassword(PACKAGE, SERVICE, keychainKey, error);
     if (error.type == keychain::ErrorType::NotFound) {
-        LOG_DEBUG(KDC::Log::instance()->getLogger(), "Could not find data in keychain for key " << keychainKey.c_str() << ": "
-                                                                                                << error.code << " - "
-                                                                                                << error.message.c_str());
+        LOG_DEBUG(KDC::Log::instance()->getLogger(),
+                  "Could not find data in keychain for key " << keychainKey << ": " << error.code << " - " << error.message);
         found = false;
         return true;
     } else if (error) {
         LOG_DEBUG(KDC::Log::instance()->getLogger(),
-                  "Failed to retrieve data from keychain: " << error.code << " - " << error.message.c_str());
+                  "Failed to retrieve data from keychain: " << error.code << " - " << error.message);
         return false;
     }
 
@@ -126,7 +127,7 @@ bool KeyChainManager::deleteToken(const std::string &keychainKey) {
     keychain::deletePassword(PACKAGE, SERVICE, keychainKey, error);
     if (error) {
         LOG_DEBUG(KDC::Log::instance()->getLogger(),
-                  "Failed to delete authentication info to keychain: " << error.code << " - " << error.message.c_str());
+                  "Failed to delete authentication info to keychain: " << error.code << " - " << error.message);
 
         sentry::Handler::captureMessage(sentry::Level::Warning, "KeyChain::deleteToken", error.message);
 

@@ -132,7 +132,7 @@ std::shared_ptr<Node> OperationProcessor::correspondingNodeInOtherTree(const std
         bool found = false;
         if (!(_useSyncDbCache ? _syncPal->syncDb()->cache().dbId(node->side(), *node->id(), tmpDbNodeId, found)
                               : _syncPal->syncDb()->dbId(node->side(), *node->id(), tmpDbNodeId, found))) {
-            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for nodeId=" << (*node->id()).c_str());
+            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for nodeId=" << (*node->id()));
             return nullptr;
         }
         if (found) {
@@ -187,7 +187,7 @@ std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(const st
     std::shared_ptr<UpdateTree> otherTree = _syncPal->updateTree(otherSide(node->side()));
     std::shared_ptr<Node> correspondingParentNode = otherTree->getNodeById(parentNodeId);
     if (correspondingParentNode == nullptr) {
-        LOG_SYNCPAL_WARN(_logger, "No corresponding node in the other tree for nodeId = " << parentNodeId.c_str());
+        LOG_SYNCPAL_WARN(_logger, "No corresponding node in the other tree for nodeId = " << parentNodeId);
         return nullptr;
     }
 

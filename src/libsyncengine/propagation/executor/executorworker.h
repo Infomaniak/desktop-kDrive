@@ -116,10 +116,12 @@ class ExecutorWorker : public OperationProcessor {
 
         ExitInfo propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propagateChange);
         ExitInfo propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job, std::shared_ptr<Node> &node);
-        ExitInfo propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newLastModTime,
-                                            std::optional<SyncTime> newCreationTime, std::shared_ptr<Node> &node, int64_t newSize = -1);
-        ExitInfo propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newLastModTime,
-                                          std::optional<SyncTime> newCreationTime, std::shared_ptr<Node> &node, int64_t newSize = -1);
+        ExitInfo propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newCreationTime,
+                                            std::optional<SyncTime> newLastModificationTime, std::shared_ptr<Node> &node,
+                                            int64_t newSize = -1);
+        ExitInfo propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newCreationTime,
+                                          std::optional<SyncTime> newLastModificationTime, std::shared_ptr<Node> &node,
+                                          int64_t newSize = -1);
         ExitInfo propagateMoveToDbAndTree(SyncOpPtr syncOp);
         ExitInfo propagateDeleteToDbAndTree(SyncOpPtr syncOp);
         ExitInfo deleteFromDb(std::shared_ptr<Node> node);
@@ -152,6 +154,7 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo handleExecutorError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
         ExitInfo handleOpsLocalFileAccessError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
         ExitInfo handleOpsFileNotFound(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
+        ExitInfo handleOpsRemoteFileLocked(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
         ExitInfo handleOpsAlreadyExistError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
 
         ExitInfo removeDependentOps(SyncOpPtr syncOp);

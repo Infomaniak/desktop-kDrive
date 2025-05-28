@@ -61,8 +61,6 @@ struct COMMONSERVER_EXPORT Utility {
         static int64_t freeDiskSpaceLimit();
         static bool enoughSpace(const SyncPath &path);
         static bool findNodeValue(const Poco::XML::Document &doc, const std::string &nodeName, std::string *outValue);
-        static bool setFileDates(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
-                                 std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists);
         static bool isCreationDateValid(int64_t creationDate);
 
         static std::wstring s2ws(const std::string &str);
@@ -136,15 +134,6 @@ struct COMMONSERVER_EXPORT Utility {
          * @return true if no normalization issue.
          */
         static bool checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame);
-        /**
-         * Split the input path into a vector of file and directory names.
-         * @param path SyncPath the path to split.
-         * @return A vector of the file and directory names composing the path, sorted
-         * in reverse order.
-         * Example: the return value associated to path = SyncPath("A / B / c.txt") is the vector
-         * ["c.txt", "B", "A"]
-         */
-        static std::vector<SyncName> splitPath(const SyncPath &path);
 
         static bool moveItemToTrash(const SyncPath &itemPath);
 #ifdef __APPLE__
@@ -182,11 +171,6 @@ struct COMMONSERVER_EXPORT Utility {
          */
         static std::string _errId(const char *file, int line);
 
-
-        enum class UnicodeNormalization {
-            NFC,
-            NFD
-        };
         static bool normalizedSyncName(const SyncName &name, SyncName &normalizedName,
                                        UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
         static bool normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
@@ -225,7 +209,7 @@ struct TimeCounter {
             _end = clock();
             _total += (double) (_end - _start) / CLOCKS_PER_SEC;
         }
-        void trace() { LOG_DEBUG(Log::instance()->getLogger(), "Time counter " << _name.c_str() << " value:" << _total); }
+        void trace() { LOG_DEBUG(Log::instance()->getLogger(), "Time counter " << _name << " value:" << _total); }
 
     private:
         std::string _name;

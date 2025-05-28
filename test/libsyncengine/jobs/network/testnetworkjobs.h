@@ -115,7 +115,8 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
     private:
         bool createTestFiles();
 
-        void testUpload(SyncTime timeInput, SyncTime &timeOutput);
+        void testUpload(SyncTime creationTimeIn, SyncTime modificationTimeIn, SyncTime &creationTimeOut,
+                        SyncTime &modificationTimeOut);
 
         int _driveDbId = 0;
         int _userDbId = 0;

@@ -26,7 +26,9 @@ static const int vMargin = 15;
 static const int hButtonsSpacing = 10;
 
 PreferencesMenuBarWidget::PreferencesMenuBarWidget(QWidget *parent) :
-    HalfRoundRectWidget(parent), _backButton(nullptr), _titleLabel(nullptr) {
+    HalfRoundRectWidget(parent),
+    _backButton(nullptr),
+    _titleLabel(nullptr) {
     setContentsMargins(hMargin, 0, hMargin, vMargin);
     setSpacing(0);
 

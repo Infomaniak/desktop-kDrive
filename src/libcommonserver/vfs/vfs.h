@@ -41,7 +41,8 @@ namespace KDC {
 
 struct VfsSetupParams {
         VfsSetupParams() = default;
-        explicit VfsSetupParams(const log4cplus::Logger &logger) : logger(logger) {}
+        explicit VfsSetupParams(const log4cplus::Logger &logger) :
+            logger(logger) {}
         int syncDbId{-1};
         int driveId{-1};
         int userId{-1};

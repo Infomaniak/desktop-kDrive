@@ -71,7 +71,11 @@ class ParametersDialog : public CustomDialog {
         void onRefreshStatusNeeded();
 
     private:
-        enum Page { Drive = 0, Preferences, Errors };
+        enum Page {
+            Drive = 0,
+            Preferences,
+            Errors
+        };
 
         std::shared_ptr<ClientGui> _gui;
         int _currentDriveDbId{0};

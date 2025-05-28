@@ -24,7 +24,8 @@ namespace KDC {
 
 static const std::string endOfFileDelimiter("#EOF");
 
-SnapshotItemHandler::SnapshotItemHandler(const log4cplus::Logger &logger) : _logger(logger) {}
+SnapshotItemHandler::SnapshotItemHandler(const log4cplus::Logger &logger) :
+    _logger(logger) {}
 
 void SnapshotItemHandler::logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
                                    const std::exception &exc) {
@@ -34,7 +35,7 @@ void SnapshotItemHandler::logError(const std::wstring &methodName, const std::ws
 
     const std::wstring msg = header + strStr + excStr;
 
-    LOGW_WARN(_logger, msg.c_str());
+    LOGW_WARN(_logger, msg);
 }
 
 bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, const CsvIndex index, SnapshotItem &item) {
@@ -78,7 +79,7 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, const CsvIn
             }
 
             if (item.size() < 0) {
-                LOGW_WARN(_logger, L"Error in setSize, got a negative value - str='" << Utility::s2ws(str).c_str() << L"'");
+                LOGW_WARN(_logger, L"Error in setSize, got a negative value - str='" << Utility::s2ws(str) << L"'");
                 return false;
             }
 
@@ -96,7 +97,7 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, const CsvIn
             }
 
             if (item.createdAt() < 0) {
-                LOGW_WARN(_logger, L"Error in setCreatedAt, got a negative value - str='" << Utility::s2ws(str).c_str() << L"'");
+                LOGW_WARN(_logger, L"Error in setCreatedAt, got a negative value - str='" << Utility::s2ws(str) << L"'");
                 return false;
             }
 
@@ -149,7 +150,7 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
             state.readingDoubleQuotedValue = false;
             state.prevCharDoubleQuotes = false;
             if (!updateSnapshotItem(state.tmp, state.index, item)) {
-                LOGW_WARN(_logger, L"Error in readSnapshotItemFields - line='" << Utility::s2ws(line).c_str() << L"'.");
+                LOGW_WARN(_logger, L"Error in readSnapshotItemFields - line='" << Utility::s2ws(line) << L"'.");
                 error = true;
                 return;
             }
@@ -158,8 +159,7 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
         } else if (c == '"') {
             if (state.index != CsvIndexName) {
                 // Double quotes are only allowed within file and directory names.
-                LOG_WARN(_logger,
-                         "Item '" << line.c_str() << "' ignored because the '\"' character is only allowed in the name field");
+                LOG_WARN(_logger, "Item '" << line << "' ignored because the '\"' character is only allowed in the name field");
                 return;
             }
 
@@ -214,7 +214,7 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
 
         // Ignore the lines containing escaped double quotes
         if (line.find(R"(\")") != std::string::npos) {
-            LOGW_WARN(_logger, L"Line containing an escaped double quotes, ignored it - line=" << Utility::s2ws(line).c_str());
+            LOGW_WARN(_logger, L"Line containing an escaped double quotes, ignored it - line=" << Utility::s2ws(line));
             ignore = true;
             return true;
         }
@@ -244,7 +244,7 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
 
     // Update last value
     if (!updateSnapshotItem(state.tmp, state.index, item)) {
-        LOGW_WARN(_logger, L"Error in updateSnapshotItem - line=" << Utility::s2ws(line).c_str());
+        LOGW_WARN(_logger, L"Error in updateSnapshotItem - line=" << Utility::s2ws(line));
         error = true;
         return true;
     }

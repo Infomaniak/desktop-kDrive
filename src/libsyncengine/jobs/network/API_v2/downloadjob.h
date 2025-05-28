@@ -27,7 +27,7 @@ namespace KDC {
 class DownloadJob : public AbstractTokenNetworkJob {
     public:
         DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
-                    int64_t expectedSize, SyncTime creationTime, SyncTime modtime, bool isCreate);
+                    int64_t expectedSize, SyncTime creationTime, SyncTime modificationTime, bool isCreate);
         DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
                     int64_t expectedSize);
         ~DownloadJob() override;
@@ -78,7 +78,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
         SyncTime _creationTimeIn = 0;
         SyncTime _modtimeIn = 0;
         SyncTime _creationTimeOut = 0; // The effective creation time of the file on the local filesystem, it may differ from
-                                 // _creationTimeIn if we fail to set it locally
+                                       // _creationTimeIn if we fail to set it locally
         bool _isCreate = false;
         bool _ignoreDateTime = false;
         bool _responseHandlingCanceled = false;

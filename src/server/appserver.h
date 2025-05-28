@@ -50,6 +50,7 @@ class Theme;
 
 class AppServer : public SharedTools::QtSingleApplication {
         Q_OBJECT
+
     public:
         struct SyncCache {
                 SyncStatus _status;
@@ -59,9 +60,7 @@ class AppServer : public SharedTools::QtSingleApplication {
                 bool operator==(const SyncCache &other) const {
                     return _status == other._status && _step == other._step && _progress == other._progress;
                 }
-                bool operator!=(const SyncCache &other) const {
-                    return !(*this == other);
-                }
+                bool operator!=(const SyncCache &other) const { return !(*this == other); }
         };
 
         struct Notification {

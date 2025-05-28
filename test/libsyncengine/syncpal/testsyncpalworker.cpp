@@ -22,6 +22,7 @@
 #include "libcommonserver/network/proxy.h"
 #include "libsyncengine/jobs/network/API_v2/movejob.h"
 #include "mocks/libcommonserver/db/mockdb.h"
+#include "jobs/jobmanager.h"
 
 #include "test_utility/testhelpers.h"
 #include "test_utility/timeouthelper.h"
@@ -88,14 +89,17 @@ void TestSyncPalWorker::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
 
-    for (auto& thread: _runningThreads) {
+    for (auto &thread: _runningThreads) {
         if (thread->joinable()) {
             thread->join();
         }
     }
+    JobManager::stop();
+    JobManager::clear();
+    JobManager::reset();
 }
 
-void TestSyncPalWorker::setUpTestInternalPause(const std::chrono::steady_clock::duration& longPollDuration) {
+void TestSyncPalWorker::setUpTestInternalPause(const std::chrono::steady_clock::duration &longPollDuration) {
     // Setup SyncPal
     _syncPal = std::make_shared<MockSyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(),
                                              KDRIVE_VERSION_STRING);
@@ -235,7 +239,7 @@ void TestSyncPalWorker::testInternalPause2() {
 
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the re-pause because the network is still down
-            [&syncpalWorker]() { return syncpalWorker->pauseAsked(); },
+            [&syncpalWorker]() { return syncpalWorker->pauseAsked() || syncpalWorker->isPaused(); },
             [&syncpalWorker, this]() {
                 CPPUNIT_ASSERT_EQUAL(SyncStep::Reconciliation1, syncpalWorker->step());
                 CPPUNIT_ASSERT_EQUAL(SyncStatus::Running, _syncPal->status());
@@ -350,7 +354,7 @@ std::shared_ptr<TestSyncPalWorker::MockExecutorWorker> TestSyncPalWorker::MockSy
     return std::static_pointer_cast<MockExecutorWorker>(_executorWorker);
 }
 
-void TestSyncPalWorker::MockSyncPal::createWorkers(const std::chrono::seconds& startDelay) {
+void TestSyncPalWorker::MockSyncPal::createWorkers(const std::chrono::seconds &startDelay) {
     _localFSObserverWorker = std::make_shared<MockLFSO>(shared_from_this(), "Mock Local File System Observer", "M_LFSO");
     _remoteFSObserverWorker = std::make_shared<MockRemoteFileSystemObserverWorker>(shared_from_this(),
                                                                                    "Mock Remote File System Observer", "M_RFSO");
@@ -374,7 +378,7 @@ void TestSyncPalWorker::MockSyncPal::createWorkers(const std::chrono::seconds& s
     _tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(shared_from_this());
 }
 
-ExitCode TestSyncPalWorker::MockRemoteFileSystemObserverWorker::sendLongPoll(bool& changes) {
+ExitCode TestSyncPalWorker::MockRemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
     using namespace std::chrono;
     changes = false;
     if (!_networkAvailable) {
@@ -392,19 +396,13 @@ ExitCode TestSyncPalWorker::MockRemoteFileSystemObserverWorker::sendLongPoll(boo
 }
 
 ExitCode TestSyncPalWorker::MockRemoteFileSystemObserverWorker::generateInitialSnapshot() {
-    _snapshot->init();
-    _updating = true;
-
     if (_networkAvailable) {
-        _snapshot->setValid(true);
-        _updating = false;
-        return ExitCode::Ok;
+        return RemoteFileSystemObserverWorker::generateInitialSnapshot();
     } else {
+        _snapshot->init();
         invalidateSnapshot();
         _updating = false;
         return ExitCode::NetworkError;
     }
 }
-
-
 } // namespace KDC

@@ -25,15 +25,11 @@
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
+#include "libcommongui/matomoclient.h"
 #include "libcommongui/commclient.h"
 #include "libcommongui/logger.h"
+
 #include <QDesktopServices>
-
-#include <sstream>
-#include <fstream>
-
-#include <map>
-
 #include <QBoxLayout>
 #include <QLabel>
 
@@ -52,7 +48,9 @@ std::map<LogLevel, std::pair<int, QString>> DebuggingDialog::_logLevelMap = {{Lo
                                                                              {LogLevel::Error, {3, QString(tr("Error"))}},
                                                                              {LogLevel::Fatal, {4, QString(tr("Fatal"))}}};
 
-DebuggingDialog::DebuggingDialog(std::shared_ptr<ClientGui> gui, QWidget *parent) : CustomDialog(true, parent), _gui(gui) {
+DebuggingDialog::DebuggingDialog(std::shared_ptr<ClientGui> gui, QWidget *parent) :
+    CustomDialog(true, parent),
+    _gui(gui) {
     initUI();
     _recordDebugging = ParametersCache::instance()->parametersInfo().useLog();
     _extendedLog = ParametersCache::instance()->parametersInfo().extendedLog();
@@ -604,6 +602,7 @@ QString DebuggingDialog::convertAppStateTimeToLocalHumanReadable(const QString &
 }
 
 void DebuggingDialog::onRecordDebuggingSwitchClicked(bool checked) {
+    MatomoClient::sendEvent("preferencesDebugging", MatomoEventAction::Click, "recordDebuggingSwitch", checked ? 1 : 0);
     _recordDebugging = checked;
     _debuggingInfoMainWidget->setVisible(checked);
     updateUI();
@@ -611,35 +610,43 @@ void DebuggingDialog::onRecordDebuggingSwitchClicked(bool checked) {
 }
 
 void DebuggingDialog::onExtendedLogCheckBoxClicked(bool checked) {
+    MatomoClient::sendEvent("preferencesDebugging", MatomoEventAction::Click, "extendedLogCheckbox", checked ? 1 : 0);
     _extendedLog = checked;
     updateUI();
     setNeedToSave(true);
 }
 
 void DebuggingDialog::onDebugLevelComboBoxActivated(int index) {
+    MatomoClient::sendEvent("preferencesDebugging", MatomoEventAction::Click, "debugLevelComboChange", index);
     _minLogLevel = qvariant_cast<LogLevel>(_debugLevelComboBox->itemData(index));
     updateUI();
     setNeedToSave(true);
 }
 
 void DebuggingDialog::onDeleteLogsCheckBoxClicked(bool checked) {
+    MatomoClient::sendEvent("preferencesDebugging", MatomoEventAction::Click, "deleteLogsOlderThan7DaysCheckbox",
+                            checked ? 1 : 0);
     _deleteLogs = checked;
     setNeedToSave(true);
 }
 
 void DebuggingDialog::onSendArchivedLogsCheckBoxClicked(bool checked) {
+    MatomoClient::sendEvent("preferencesDebugging", MatomoEventAction::Click, "shareOnlyLastSession", checked ? 1 : 0);
     _sendArchivedLogs = !checked;
 }
 
 void DebuggingDialog::onExit() {
     EnableStateHolder _(this);
 
+    MatomoClient::sendEvent("preferencesDebugging", MatomoEventAction::Click, "exitButton", _needToSave ? 1 : 0);
     if (_needToSave) {
         CustomMessageBox msgBox(QMessageBox::Question, tr("Do you want to save your modifications?"),
                                 QMessageBox::Yes | QMessageBox::No, this);
         msgBox.setDefaultButton(QMessageBox::Yes);
         int ret = msgBox.exec();
         if (ret != QDialog::Rejected) {
+            MatomoClient::sendEvent("preferencesDebugging", MatomoEventAction::Click, "saveOnExit",
+                                    ret == QMessageBox::Yes ? 1 : 0);
             if (ret == QMessageBox::Yes) {
                 onSaveButtonTriggered();
             } else {
@@ -652,17 +659,20 @@ void DebuggingDialog::onExit() {
 }
 
 void DebuggingDialog::onSendLogButtonTriggered() {
+    MatomoClient::sendEvent("preferencesDebugging", MatomoEventAction::Click, "sendLogButton");
     _sendLogButton->setEnabled(false);
     GuiRequests::sendLogToSupport(_sendArchivedLogs || _heavyLogBox->isHidden());
 }
 
 void DebuggingDialog::onCancelLogUploadButtonTriggered() {
+    MatomoClient::sendEvent("preferencesDebugging", MatomoEventAction::Click, "cancelLogUploadButton");
     _cancelLogUploadButton->setEnabled(false);
     GuiRequests::cancelLogUploadToSupport();
 }
 
 void DebuggingDialog::onSaveButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("preferencesDebugging", MatomoEventAction::Click, "saveButton");
 
     ParametersCache::instance()->parametersInfo().setUseLog(_recordDebugging);
     ParametersCache::instance()->parametersInfo().setExtendedLog(_extendedLog);
@@ -677,6 +687,7 @@ void DebuggingDialog::onLinkActivated(const QString &link) {
     QString folderPath;
     if (link == debuggingFolderLink) {
         folderPath = Logger::instance()->temporaryFolderLogDirPath();
+        MatomoClient::sendEvent("preferencesDebugging", MatomoEventAction::Click, "debuggingFolderLink");
     } else {
         folderPath = link;
     }
