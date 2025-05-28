@@ -356,8 +356,6 @@ function Prepare-Archive {
     $dependencies = @(
         "${env:ProgramFiles(x86)}/zlib-1.2.11/bin/zlib1",
         "${env:ProgramFiles(x86)}/libzip/bin/zip",
-        "${env:ProgramFiles}/OpenSSL/bin/libcrypto-3-x64",
-        "${env:ProgramFiles}/OpenSSL/bin/libssl-3-x64",
         "${env:ProgramFiles(x86)}/Poco/bin/PocoCrypto",
         "${env:ProgramFiles(x86)}/Poco/bin/PocoFoundation",
         "${env:ProgramFiles(x86)}/Poco/bin/PocoJSON",
@@ -383,9 +381,12 @@ function Prepare-Archive {
 
     $xxhash_folder = & $find_dep_script -Package "xxhash" -Version "0.8.2" -Ci
     $log4cplus_folder = & $find_dep_script -Package "log4cplus" -Version "2.1.2" -Ci
+    $openssl_folder = & $find_dep_script -Package "openssl" -Version "3.2.4" -Ci
 
     Copy-Item -Path "$xxhash_folder/bin/xxhash.dll" -Destination "$archivePath"
     Copy-Item -Path "$log4cplus_folder/bin/log4cplus.dll" -Destination "$archivePath"
+    Copy-Item -Path "$openssl_folder/bin/libcrypto-3-x64.dll" -Destination "$archivePath"
+    Copy-Item -Path "$openssl_folder/bin/libssl-3-x64.dll" -Destination "$archivePath"
 
     Copy-Item -Path "$path/sync-exclude-win.lst" -Destination "$archivePath/sync-exclude.lst"
 

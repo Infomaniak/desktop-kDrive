@@ -115,6 +115,13 @@ build_release() {
     exit 1
   fi
 
+  openssl_folder="$(base "$BASEPATH/infomaniak-build-tools/conan/find_conan_dep.sh" openssl 3.2.4 2>/dev/null)"
+  if [ -z "$openssl_folder" ]; then
+    echo "OpenSSL folder not found. Please ensure the OpenSSL package is built and available in the conan cache." >&2; exit 1
+  else
+    echo "OpenSSL folder found: $openssl_folder"
+  fi
+
   source "$conan_generator_folder/conanrun.sh"
 
   # Set defaults
@@ -129,10 +136,10 @@ build_release() {
   export KDRIVE_DEBUG=0
 
   cmake -B$build_dir/client -H$src_dir \
-      -DOPENSSL_ROOT_DIR=/usr/local \
-      -DOPENSSL_INCLUDE_DIR=/usr/local/include \
-      -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib64/libcrypto.so \
-      -DOPENSSL_SSL_LIBRARY=/usr/local/lib64/libssl.so \
+      -DOPENSSL_ROOT_DIR="$openssl_folder" \
+      -DOPENSSL_INCLUDE_DIR="$openssl_folder/include" \
+      -DOPENSSL_CRYPTO_LIBRARY="$openssl_folder/lib/libcrypto.so" \
+      -DOPENSSL_SSL_LIBRARY="$openssl_folder/lib/libssl.so" \
       -DQT_FEATURE_neon=OFF \
       -DCMAKE_BUILD_TYPE=$build_type \
       -DCMAKE_INSTALL_PREFIX=/usr \
@@ -161,6 +168,13 @@ package_release() {
   export LD_LIBRARY_PATH=$QT_BASE_DIR/lib:$app_dir/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH
   export PKG_CONFIG_PATH=$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
 
+  openssl_folder="$(base "$conan_source_folder/find_conan_dep.sh openssl 3.2.4" 2>/dev/null)"
+  if [ -z "$openssl_folder" ]; then
+    echo "OpenSSL folder not found. Please ensure the OpenSSL package is built and available in the conan cache." >&2; exit 1
+  else
+    echo "OpenSSL folder found: $openssl_folder"
+  fi
+
   mkdir -p $app_dir/usr/plugins
   cd $app_dir
 
@@ -171,8 +185,8 @@ package_release() {
 
   mv $app_dir/usr/lib/x86_64-linux-gnu/* $app_dir/usr/lib/ || echo "The folder $app_dir/usr/lib/x86_64-linux-gnu/ might not exist." >&2
 
-  cp -P /usr/local/lib64/libssl.so* $app_dir/usr/lib/
-  cp -P /usr/local/lib64/libcrypto.so* $app_dir/usr/lib/
+  cp -P "$openssl_folder"/lib/libssl.so* $app_dir/usr/lib/
+  cp -P "$openssl_folder"/lib/libcrypto.so* $app_dir/usr/lib/
 
   cp -P -r /usr/lib/x86_64-linux-gnu/nss/ $app_dir/usr/lib/
 

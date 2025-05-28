@@ -31,7 +31,7 @@ EOF
   exit 0
 fi
 
-set -euo pipefail
+set -euox pipefail
 
 log(){ echo "[INFO] $*"; }
 error(){ echo "[ERROR] $*" >&2; exit 1; }
@@ -93,6 +93,11 @@ mkdir -p "$output_dir"
 # Create the conan package for xxHash
 log "Creating package xxHash..."
 conan create "$conan_recipes_folder/xxhash/all/" --build=missing $macos_arch -s:a=build_type="$build_type" -r=$local_recipe_remote_name
+
+if [ "$platform" = "darwin" ]; then
+  log "Creating openssl package..."
+  conan create "$conan_recipes_folder/openssl-universal/3.2.4/" --build=missing -r="$local_recipe_remote_name" -r=conancenter
+fi
 
 log "Installing dependencies..."
 # Install this packet in the build folder.
