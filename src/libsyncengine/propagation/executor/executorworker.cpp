@@ -1627,29 +1627,30 @@ ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::share
         case OperationType::Create:
         case OperationType::Edit: {
             NodeId nodeId;
-            SyncTime creationTime = 0;
-            SyncTime modificationTime = 0;
-            int64_t size = -1;
+            SyncTime newCreationTime = 0;
+            SyncTime newModificationTime = 0;
+            int64_t newSize = -1;
             if (syncOp->targetSide() == ReplicaSide::Local) {
                 auto castJob(std::dynamic_pointer_cast<DownloadJob>(job));
                 nodeId = castJob->localNodeId();
-                modificationTime = castJob->modificationTime();
+                newCreationTime = castJob->creationTime();
+                newModificationTime = castJob->modificationTime();
             } else {
                 bool jobOk = false;
                 auto uploadJob(std::dynamic_pointer_cast<UploadJob>(job));
                 if (uploadJob) {
                     nodeId = uploadJob->nodeId();
-                    creationTime = uploadJob->creationTime();
-                    modificationTime = uploadJob->modificationTime();
-                    size = uploadJob->size();
+                    newCreationTime = uploadJob->creationTime();
+                    newModificationTime = uploadJob->modificationTime();
+                    newSize = uploadJob->size();
                     jobOk = true;
                 } else {
                     auto uploadSessionJob(std::dynamic_pointer_cast<DriveUploadSession>(job));
                     if (uploadSessionJob) {
                         nodeId = uploadSessionJob->nodeId();
-                        creationTime = uploadJob->creationTime();
-                        modificationTime = uploadSessionJob->modificationTime();
-                        size = uploadSessionJob->size();
+                        newCreationTime = uploadJob->creationTime();
+                        newModificationTime = uploadSessionJob->modificationTime();
+                        newSize = uploadSessionJob->size();
                         jobOk = true;
                     }
                 }
@@ -1661,9 +1662,9 @@ ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::share
             }
 
             if (syncOp->type() == OperationType::Create) {
-                return propagateCreateToDbAndTree(syncOp, nodeId, creationTime, modificationTime, node);
+                return propagateCreateToDbAndTree(syncOp, nodeId, newCreationTime, newModificationTime, node, newSize);
             } else {
-                return propagateEditToDbAndTree(syncOp, nodeId, creationTime, modificationTime, node);
+                return propagateEditToDbAndTree(syncOp, nodeId, newCreationTime, newModificationTime, node, newSize);
             }
         }
         case OperationType::Move: {
@@ -2078,8 +2079,8 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
     if (syncOp->targetSide() == ReplicaSide::Local) {
         auto castJob(std::dynamic_pointer_cast<LocalCreateDirJob>(job));
         newNodeId = castJob->nodeId();
-        newModificationTime = castJob->modtime();
         newCreationTime = castJob->creationTime();
+        newModificationTime = castJob->modtime();
     } else {
         auto castJob(std::dynamic_pointer_cast<CreateDirJob>(job));
         newNodeId = castJob->nodeId();
@@ -2093,7 +2094,7 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
     }
 
     std::shared_ptr<Node> newNode = nullptr;
-    if (ExitInfo exitInfo = propagateCreateToDbAndTree(syncOp, newNodeId, newModificationTime, newModificationTime, newNode);
+    if (ExitInfo exitInfo = propagateCreateToDbAndTree(syncOp, newNodeId, newCreationTime, newModificationTime, newNode);
         !exitInfo) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
                                            << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
