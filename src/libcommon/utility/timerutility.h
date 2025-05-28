@@ -23,26 +23,40 @@ class TimerUtility {
         /**
          * @brief Timer is started at creation.
          */
-        TimerUtility();
+        TimerUtility() :
+            _startTime(std::chrono::steady_clock::now()) {}
 
         /**
          * @brief Restart the timer.
          */
-        void restart();
+        void restart() { _startTime = std::chrono::steady_clock::now(); }
+
         /**
          * @brief Return the elapsed time since start.
-         * @param consoleMsg Optional. Print the message and the elapsed time in console is not empty.
          * @return Elapsed time in seconds.
          */
-        SecondsDuration elapsed(const std::string_view consoleMsg = {}) const;
+        template<typename T>
+        T elapsed() const {
+            return std::chrono::duration_cast<T>(timeDiff());
+        }
+
         /**
          * @brief Return the elapsed time since start and restart the timer.
-         * @param consoleMsg Optional. Print the message and the elapsed time in console is not empty.
          * @return Elapsed time in seconds.
          */
-        SecondsDuration lap(const std::string_view consoleMsg = {});
+        template<typename T>
+        T lap() {
+            const auto elapsedSeconds = elapsed<T>();
+            restart();
+            return elapsedSeconds;
+        }
 
     private:
+        DoubleSeconds timeDiff() const {
+            const auto duration = std::chrono::steady_clock::now() - _startTime;
+            return duration;
+        }
+
         std::chrono::time_point<std::chrono::steady_clock> _startTime;
 };
 

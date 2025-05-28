@@ -92,11 +92,13 @@ mkdir -p "$output_dir"
 
 # Create the conan package for xxHash
 log "Creating package xxHash..."
-conan create "$conan_recipes_folder/xxhash/all/" --build=missing $macos_arch -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter
-
+conan create "$conan_recipes_folder/xxhash/all/" --build=missing $macos_arch -s:a=build_type="$build_type" -r=$local_recipe_remote_name
 
 log "Installing dependencies..."
 # Install this packet in the build folder.
 conan install . --output-folder="$output_dir" --build=missing $macos_arch -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter
 
+if [ $? -ne 0 ]; then
+  error "Failed to install Conan dependencies."
+fi
 log "Conan dependencies installed successfully."

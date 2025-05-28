@@ -39,7 +39,7 @@ Currently, the build for Linux release is created from a podman container
 You will need cmake and clang to compile the libraries and the kDrive project  
 This documentation was made for Ubuntu 22.04 LTS
 
-We are migrating the dependency management from manually to using conan.
+We are migrating the dependency management from manual to using conan.
 Currently, only the dependency `xxHash` is managed by conan. 
 
 ## Packages
