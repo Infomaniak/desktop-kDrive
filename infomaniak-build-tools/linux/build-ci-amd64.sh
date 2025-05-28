@@ -134,10 +134,6 @@ cmake_param=()
 export KDRIVE_DEBUG=0
 
 cmake -B$build_dir -H$BASEPATH \
-    -DOPENSSL_ROOT_DIR="$openssl_folder" \
-    -DOPENSSL_INCLUDE_DIR="$openssl_folder/include" \
-    -DOPENSSL_CRYPTO_LIBRARY="$openssl_folder/lib/libcrypto.so" \
-    -DOPENSSL_SSL_LIBRARY="$openssl_folder/lib/libssl.so" \
     -DQT_FEATURE_neon=OFF \
     -DCMAKE_BUILD_TYPE=$build_type \
     -DCMAKE_PREFIX_PATH=$BASEPATH \
