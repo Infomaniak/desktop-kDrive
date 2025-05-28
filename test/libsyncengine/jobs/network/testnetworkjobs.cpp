@@ -1032,7 +1032,7 @@ void TestNetworkJobs::testUpload(const SyncTime creationTimeIn, const SyncTime m
         (void) JsonParserUtility::extractValue(dataObj, createdAtKey, creationTimeOut, false);
         (void) JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, modificationTimeOut, false);
     }
-    CPPUNIT_ASSERT_EQUAL(SyncName2Str(localFilePath.filename()), name);
+    CPPUNIT_ASSERT_EQUAL(Path2Str(localFilePath.filename()), name);
 }
 
 void TestNetworkJobs::testUpload() {
