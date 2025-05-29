@@ -1196,7 +1196,7 @@ bool SyncDb::node(DbNodeId dbNodeId, DbNode &dbNode, bool &found) {
 bool SyncDb::dbId(ReplicaSide side, const SyncPath &path, DbNodeId &dbNodeId, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    const std::vector<SyncName> names = Utility::splitPath(path);
+    const std::vector<SyncName> names = CommonUtility::splitSyncPath(path);
 
     // Find root node
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
@@ -1261,7 +1261,7 @@ bool SyncDb::clearNodes() {
 bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &nodeId, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    const std::vector<SyncName> itemNames = Utility::splitPath(path);
+    const std::vector<SyncName> itemNames = CommonUtility::splitSyncPath(path);
 
     // Find root node
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));

@@ -318,7 +318,7 @@ bool SyncDbReadOnlyCache::id(ReplicaSide side, const SyncPath &path, std::option
     if (side == ReplicaSide::Unknown) return false;
 
     found = false;
-    const std::vector<SyncName> itemNames = Utility::splitPath(path);
+    const std::vector<SyncName> itemNames = CommonUtility::splitSyncPath(path);
     DbNode tmpNode = _syncDb.rootNode();
     if (itemNames.empty()) {
         nodeId = tmpNode.nodeId(side);

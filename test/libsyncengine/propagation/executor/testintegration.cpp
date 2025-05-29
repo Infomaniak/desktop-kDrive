@@ -41,7 +41,7 @@
 #include "libsyncengine/jobs/network/API_v2/getfilelistjob.h"
 #include "libsyncengine/jobs/network/API_v2/movejob.h"
 #include "libsyncengine/jobs/network/API_v2/renamejob.h"
-#include "../../../../src/libsyncengine/jobs/network/API_v2/upload/uploadjob.h"
+#include "libsyncengine/jobs/network/API_v2/upload/uploadjob.h"
 #include "libsyncengine/update_detection/file_system_observer/filesystemobserverworker.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
@@ -368,7 +368,7 @@ void TestIntegration::testEditRemote() {
     std::system(SyncName2Str(testCallStr).c_str());
 
     UploadJob setupUploadJob(_syncPal->vfs(), _driveDbId, tmpFile, _newTestFilePath.filename().native(),
-                             testExecutorFolderRemoteId, 0);
+                             testExecutorFolderRemoteId, 0, 0);
     setupUploadJob.runSynchronously();
 
     waitForSyncToFinish(SourceLocation::currentLoc());
@@ -713,7 +713,7 @@ void TestIntegration::testEditEditPseudoConflict() {
 
     // Upload this file manually so it simulate a remote edit
     UploadJob job(_syncPal->vfs(), _driveDbId, sourceFile, sourceFile.filename().native(), testExecutorFolderRemoteId,
-                  fileStat.modtime);
+                  fileStat.creationTime, fileStat.modtime);
     job.runSynchronously();
 
     Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
@@ -751,7 +751,7 @@ void TestIntegration::testEditEditConflict() {
 
     // Upload this file manually so it simulate a remote edit
     UploadJob job(_syncPal->vfs(), _driveDbId, sourceFile, sourceFile.filename().native(), testExecutorFolderRemoteId,
-                  fileStat.modtime);
+                  fileStat.creationTime, fileStat.modtime);
     job.runSynchronously();
 
     Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
@@ -816,7 +816,7 @@ void TestIntegration::testMoveCreateConflict() {
 
     // Simulate a remote create by uploading the file in "test_executor_sub" folder
     UploadJob createJob(_syncPal->vfs(), _driveDbId, sourceFile, sourceFile.filename().native(), testExecutorSubFolderRemoteId,
-                        fileStat.modtime);
+                        fileStat.creationTime, fileStat.modtime);
     createJob.runSynchronously();
     NodeId remoteId = createJob.nodeId();
 
@@ -1254,7 +1254,7 @@ void TestIntegration::testMoveDeleteConflict2() {
                            Str(R"(" >> ")") + tmpFile.make_preferred().native() + Str(R"(")");
     std::system(SyncName2Str(testCallStr).c_str());
 
-    UploadJob setupUploadJob(_syncPal->vfs(), _driveDbId, tmpFile, Str("Q"), rRemoteId, 0);
+    UploadJob setupUploadJob(_syncPal->vfs(), _driveDbId, tmpFile, Str("Q"), rRemoteId, 0, 0);
     setupUploadJob.runSynchronously();
 
     // Create A/S/X
