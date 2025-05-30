@@ -32,14 +32,14 @@ namespace KDC {
 namespace {
 
 // https://stackoverflow.com/a/35717/4675396
-LONG GetDWORDRegKey(const HKEY hKey, const std::wstring &strValueName, DWORD &numericValue, const DWORD numericDefaultValue) {
+LONG GetDWORDRegKey(const HKEY hKey, const std::wstring &stringValueName, DWORD &numericValue, const DWORD numericDefaultValue) {
     numericValue = numericDefaultValue;
     DWORD dwBufferSize(sizeof(DWORD));
     DWORD numericResult(0);
-    LONG numericError = ::RegQueryValueExW(hKey, strValueName.c_str(), nullptr, nullptr, reinterpret_cast<LPBYTE>(&numericResult),
-                                           &dwBufferSize);
+    LONG numericError = ::RegQueryValueExW(hKey, stringValueName.c_str(), nullptr, nullptr,
+                                           reinterpret_cast<LPBYTE>(&numericResult), &dwBufferSize);
     if (ERROR_SUCCESS == numericError) {
-        numericValue = nResult;
+        numericValue = numericResult;
     }
 
     return numericError;
@@ -109,7 +109,7 @@ void TestIo::testGetLongPathName() {
 
         CPPUNIT_ASSERT_MESSAGE("Short and long names coincide: " + Path2Str(longPathName), longPathName != shortPathName);
         CPPUNIT_ASSERT_LESS(Path2WStr(longPathName).size(), Path2WStr(shortPathName).size());
-        CPPUNIT_ASSERT(std::regex_match(Path2WStr(shortPathName), std::wregex(L".*~[1-9][0-9]*\.TXT$")));
+        CPPUNIT_ASSERT(std::regex_match(Path2WStr(shortPathName), std::wregex(L".*~[1-9][0-9]*\\.TXT$")));
 
         // Check that getLongPathName reverts getShortPathName
         CPPUNIT_ASSERT(IoHelper::getLongPathName(shortPathName, longPathName, ioError));
