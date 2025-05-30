@@ -617,89 +617,169 @@ bool ParmsDb::insertDefaultParameters() {
     return true;
 }
 
+
+bool ParmsDb::getDefaultExclusionTemplatesFromFile(const SyncPath &syncExcludeListPath,
+                                                   std::vector<std::string> &fileDefaultExclusionTemplates) {
+    fileDefaultExclusionTemplates.clear();
+
+    if (std::ifstream exclusionFile(syncExcludeListPath); exclusionFile.is_open()) {
+        std::string line;
+        while (std::getline(exclusionFile, line)) {
+            // Remove end of line
+            if (!line.empty() && line.back() == '\n') {
+                line.pop_back();
+            }
+            if (!line.empty() && line.back() == '\r') {
+                line.pop_back();
+            }
+
+            (void) fileDefaultExclusionTemplates.emplace_back(line);
+        }
+        return true;
+    }
+    return false;
+}
+
+namespace {
+std::vector<ExclusionTemplate>::const_iterator findTemplateString(const std::vector<ExclusionTemplate> &templates,
+                                                                  const std::string &templateString) {
+    return std::find_if(templates.cbegin(), templates.cend(),
+                        [&templateString](const ExclusionTemplate &t) { return t.templ() == templateString; });
+}
+} // namespace
+
 bool ParmsDb::updateExclusionTemplates() {
-    // Load default exclusion templates in DB
-    std::vector<ExclusionTemplate> exclusionTemplateDbList;
-    if (!selectAllExclusionTemplates(true, exclusionTemplateDbList)) {
+    // Load default exclusion templates from DB
+    std::vector<ExclusionTemplate> dbDefaultExclusionTemplates;
+    if (!selectDefaultExclusionTemplates(dbDefaultExclusionTemplates)) {
         LOG_WARN(_logger, "Error in selectAllExclusionTemplates");
         return false;
     }
 
-    // Load default exclusion templates in configuration file
-    std::vector<std::string> exclusionTemplateFileList;
-    SyncName t = Utility::getExcludedTemplateFilePath(_test);
-    std::ifstream exclusionFile(Utility::getExcludedTemplateFilePath(_test));
-    if (exclusionFile.is_open()) {
-        std::string line;
-        while (std::getline(exclusionFile, line)) {
-            // Remove end of line
-            if (line.size() > 0 && line[line.size() - 1] == '\n') {
-                line.pop_back();
-            }
-            if (line.size() > 0 && line[line.size() - 1] == '\r') {
-                line.pop_back();
-            }
-
-            exclusionTemplateFileList.push_back(line);
-        }
-    } else {
-        LOGW_WARN(_logger,
-                  L"Cannot open exclusion templates file " << SyncName2WStr(Utility::getExcludedTemplateFilePath(_test)));
+    // Load default exclusion templates from the template configuration file
+    std::vector<std::string> fileDefaultExclusionTemplates;
+    if (const auto &excludeListFileName = Utility::getExcludedTemplateFilePath(_test);
+        !getDefaultExclusionTemplatesFromFile(excludeListFileName, fileDefaultExclusionTemplates)) {
+        LOGW_WARN(_logger, L"Cannot open exclusion templates file " << Utility::formatSyncName(excludeListFileName));
         return false;
     }
 
-    for (const auto &templDb: exclusionTemplateDbList) {
-        bool exists = false;
-        for (const auto &templFile: exclusionTemplateFileList) {
-            if (templFile == templDb.templ()) {
-                exists = true;
-                break;
-            }
-        }
-        if (!exists) {
+    for (const auto &defaultTemplateFromDb: dbDefaultExclusionTemplates) {
+        if (const auto it = std::find(fileDefaultExclusionTemplates.cbegin(), fileDefaultExclusionTemplates.cend(),
+                                      defaultTemplateFromDb.templ());
+            it == fileDefaultExclusionTemplates.cend()) {
             // Remove DB template
-            bool found;
-            if (!deleteExclusionTemplate(templDb.templ(), found)) {
+            bool found = false;
+            if (!deleteExclusionTemplate(defaultTemplateFromDb.templ(), found)) {
                 LOG_WARN(_logger, "Error in deleteExclusionTemplate");
                 return false;
             }
         }
     }
 
-    std::vector<ExclusionTemplate> exclusionTemplateUserDbList;
-    if (!selectAllExclusionTemplates(false, exclusionTemplateUserDbList)) {
+    std::vector<ExclusionTemplate> dbUserExclusionTemplates;
+    if (!selectUserExclusionTemplates(dbUserExclusionTemplates)) {
         LOG_WARN(_logger, "Error in selectAllExclusionTemplates");
         return false;
     }
 
-    for (const auto &templFile: exclusionTemplateFileList) {
-        bool exists = false;
-        for (const auto &templDb: exclusionTemplateDbList) {
-            if (templDb.templ() == templFile) {
-                exists = true;
-                break;
-            }
-        }
-        if (!exists) {
-            for (const auto &userTempDb: exclusionTemplateUserDbList) {
-                if (templFile == userTempDb.templ()) {
-                    bool found = false;
-                    if (!deleteExclusionTemplate(userTempDb.templ(), found)) {
-                        LOG_WARN(_logger, "Error in deleteExclusionTemplate");
-                        return false;
-                    }
-                    break;
-                }
-            }
-            // Add template in DB
-            bool constraintError;
-            if (!insertExclusionTemplate(ExclusionTemplate(templFile, false, true, false), constraintError)) {
-                LOG_WARN(_logger, "Error in insertExclusionTemplate");
+    for (const auto &templateFromFile: fileDefaultExclusionTemplates) {
+        if (const auto it = findTemplateString(dbDefaultExclusionTemplates, templateFromFile);
+            it != dbDefaultExclusionTemplates.cend())
+            continue;
+
+        if (const auto it = findTemplateString(dbUserExclusionTemplates, templateFromFile);
+            it != dbUserExclusionTemplates.cend()) {
+            if (bool found = false; !deleteExclusionTemplate(it->templ(), found)) {
+                LOG_WARN(_logger, "Error in deleteExclusionTemplate");
                 return false;
             }
         }
+
+        // Add template as a DB default template.
+        if (bool constraintError = false;
+            !insertExclusionTemplate(ExclusionTemplate(templateFromFile, false, true, false), constraintError)) {
+            LOG_WARN(_logger, "Error in insertExclusionTemplate");
+            return false;
+        }
     }
+
     return true;
+}
+
+
+//! Computes and returns the NFC and NFD normalizations of `exclusionTemplate`.
+/*!
+  \param exclusionTemplate is the pattern string the normalizations of which are queried.
+  \return a set of std::string containing the NFC and NFD normalizations of exclusionTemplate, if those have been successful.
+  The returned set contains additionally the string exclusionTemplate in any case.
+*/
+std::set<std::string> ParmsDb::computeNormalizations(const std::string &exclusionTemplateString) {
+    const auto &syncNameTemplate = Str2SyncName(exclusionTemplateString);
+    std::set<std::string> result;
+    result.emplace(exclusionTemplateString);
+
+    SyncName nfcNormalizedTemplate;
+
+    if (const bool nfcSuccess =
+                CommonUtility::normalizedSyncName(syncNameTemplate, nfcNormalizedTemplate, UnicodeNormalization::NFC);
+        !nfcSuccess) {
+        LOGW_WARN(_logger, L"Failed to NFC-normalize the template " << Utility::formatSyncName(syncNameTemplate));
+    } else {
+        result.emplace(SyncName2Str(nfcNormalizedTemplate));
+    }
+
+    SyncName nfdNormalizedTemplate;
+
+    if (const bool nfdSuccess =
+                CommonUtility::normalizedSyncName(syncNameTemplate, nfdNormalizedTemplate, UnicodeNormalization::NFD);
+        !nfdSuccess) {
+        LOGW_WARN(_logger, L"Failed to NFD-normalize the template " << Utility::formatSyncName(syncNameTemplate));
+    } else {
+        result.emplace(SyncName2Str(nfdNormalizedTemplate));
+    }
+
+    return result;
+}
+
+bool ParmsDb::insertUserTemplateNormalizations() {
+    LOG_INFO(_logger, "Inserting the normalizations of user exclusion file patterns.");
+
+    std::vector<ExclusionTemplate> dbUserExclusionTemplates;
+    if (!selectUserExclusionTemplates(dbUserExclusionTemplates)) {
+        LOG_WARN(_logger, "Error in selectAllExclusionTemplates");
+        return false;
+    }
+
+    std::list<std::string> dbUserExclusionStringsOutput;
+    for (const auto &userTemplate: dbUserExclusionTemplates) {
+        std::set<std::string> normalizedTemplates = computeNormalizations(userTemplate.templ());
+        for (auto &normalization: normalizedTemplates) dbUserExclusionStringsOutput.push_back(normalization);
+    }
+
+    // Remove duplicates
+    std::set<std::string> uniqueUserTemplates(dbUserExclusionStringsOutput.cbegin(), dbUserExclusionStringsOutput.cend());
+    for (const auto &uniqueTemplateString: uniqueUserTemplates) {
+        bool erase = false;
+        for (auto it = dbUserExclusionStringsOutput.begin(); it != dbUserExclusionStringsOutput.end();) {
+            const bool match = *it == uniqueTemplateString;
+            if (erase && match) {
+                it = dbUserExclusionStringsOutput.erase(it);
+            } else {
+                ++it;
+            }
+            if (match) erase = true;
+        }
+    }
+
+    std::vector<ExclusionTemplate> dbUserExclusionTemplatesOutput;
+    (void) std::transform(dbUserExclusionStringsOutput.cbegin(), dbUserExclusionStringsOutput.cend(),
+                          std::back_inserter(dbUserExclusionTemplatesOutput),
+                          [](const auto &str) { return ExclusionTemplate(str); });
+
+    LOG_INFO(_logger, "Normalizations prepared for updates.");
+
+    return updateUserExclusionTemplates(dbUserExclusionTemplatesOutput);
 }
 
 #ifdef __APPLE__
@@ -978,6 +1058,10 @@ bool ParmsDb::prepare() {
 bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersion) {
     if (CommonUtility::isVersionLower(fromVersion, toVersion)) {
         LOG_INFO(_logger, "Upgrade " << dbType() << " DB from " << fromVersion << " to " << toVersion);
+        if (!insertUserTemplateNormalizations()) {
+            LOG_WARN(_logger, "Insertion of the normalizations of user exclusion file patterns has failed.");
+            return false;
+        }
 #ifdef _WIN32
         if (!replaceShortDbPathsWithLongPaths()) {
             LOG_WARN(_logger, "Failed to replace short DB paths with long ones.");
@@ -1036,6 +1120,8 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersi
             return false;
         }
     }
+
+    LOG_INFO(_logger, "Upgrade " << dbType() << " successfully completed.");
 
     return true;
 }
@@ -1957,8 +2043,8 @@ bool ParmsDb::selectAllDrives(int accountDbId, std::vector<Drive> &driveList) {
         int admin;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 6, admin));
 
-        driveList.push_back(Drive(id, driveId, accountDbId, driveName, size, color, static_cast<bool>(notifications),
-                                  static_cast<bool>(admin)));
+        (void) driveList.emplace_back(Drive(id, driveId, accountDbId, driveName, size, color, static_cast<bool>(notifications),
+                                            static_cast<bool>(admin)));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID));
 
@@ -2460,7 +2546,7 @@ bool ParmsDb::selectAllExclusionTemplates(std::vector<ExclusionTemplate> &exclus
         int deleted;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 3, deleted));
 
-        exclusionTemplateList.push_back(
+        (void) exclusionTemplateList.emplace_back(
                 ExclusionTemplate(templ, static_cast<bool>(warning), static_cast<bool>(def), static_cast<bool>(deleted)));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID));
@@ -2468,13 +2554,13 @@ bool ParmsDb::selectAllExclusionTemplates(std::vector<ExclusionTemplate> &exclus
     return true;
 }
 
-bool ParmsDb::selectAllExclusionTemplates(bool def, std::vector<ExclusionTemplate> &exclusionTemplateList) {
+bool ParmsDb::selectAllExclusionTemplates(bool defaultTemplates, std::vector<ExclusionTemplate> &exclusionTemplateList) {
     const std::scoped_lock lock(_mutex);
 
     exclusionTemplateList.clear();
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID));
-    LOG_IF_FAIL(queryBindValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 1, def));
+    LOG_IF_FAIL(queryBindValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 1, defaultTemplates));
     bool found;
     for (;;) {
         if (!queryNext(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, found)) {
@@ -2492,14 +2578,15 @@ bool ParmsDb::selectAllExclusionTemplates(bool def, std::vector<ExclusionTemplat
         int deleted;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 2, deleted));
 
-        exclusionTemplateList.push_back(ExclusionTemplate(templ, static_cast<bool>(warning), def, static_cast<bool>(deleted)));
+        (void) exclusionTemplateList.emplace_back(templ, static_cast<bool>(warning), defaultTemplates,
+                                                  static_cast<bool>(deleted));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID));
 
     return true;
 }
 
-bool ParmsDb::updateAllExclusionTemplates(bool def, const std::vector<ExclusionTemplate> &exclusionTemplateList) {
+bool ParmsDb::updateAllExclusionTemplates(bool defaultTemplates, const std::vector<ExclusionTemplate> &exclusionTemplateList) {
     const std::scoped_lock lock(_mutex);
 
     int errId;
@@ -2509,7 +2596,7 @@ bool ParmsDb::updateAllExclusionTemplates(bool def, const std::vector<ExclusionT
 
     // Delete existing ExclusionTemplates
     LOG_IF_FAIL(queryResetAndClearBindings(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID));
-    LOG_IF_FAIL(queryBindValue(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 1, def));
+    LOG_IF_FAIL(queryBindValue(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 1, defaultTemplates));
     if (!queryExec(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID);
         rollbackTransaction();
