@@ -516,18 +516,6 @@ bool Utility::checkIfSameNormalization(const SyncPath &a, const SyncPath &b, boo
     return true;
 }
 
-std::vector<SyncName> Utility::splitPath(const SyncPath &path) {
-    std::vector<SyncName> itemNames;
-    SyncPath pathTmp(path);
-
-    while (pathTmp != pathTmp.root_path()) {
-        (void) itemNames.emplace_back(pathTmp.filename().native());
-        pathTmp = pathTmp.parent_path();
-    }
-
-    return itemNames;
-}
-
 bool Utility::isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path) {
     if (path == potentialDescendant) return true;
     for (auto it = potentialDescendant.begin(), it2 = path.begin(); it != potentialDescendant.end(); ++it, ++it2) {
