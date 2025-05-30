@@ -382,7 +382,6 @@ void TestParmsDb::testUpdateExclusionTemplates() {
 
 void TestParmsDb::testUpgrade() {
     const SyncName nfcEncodedName = testhelpers::makeNfcSyncName();
-    const SyncName nfdEncodedName = testhelpers::makeNfdSyncName();
     ExclusionTemplate exclusionTemplate1(SyncName2Str(nfcEncodedName)); // user template
     bool constraintError = false;
     CPPUNIT_ASSERT(ParmsDb::instance()->insertExclusionTemplate(exclusionTemplate1, constraintError));
@@ -396,7 +395,7 @@ void TestParmsDb::testUpgrade() {
     ParmsDb::instance()->selectUserExclusionTemplates(dbUserExclusionTemplates);
     CPPUNIT_ASSERT_EQUAL(size_t(3), dbUserExclusionTemplates.size());
 
-
+    const SyncName nfdEncodedName = testhelpers::makeNfdSyncName();
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(nfdEncodedName), dbUserExclusionTemplates.at(0).templ());
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(nfcEncodedName), dbUserExclusionTemplates.at(1).templ());
     CPPUNIT_ASSERT_EQUAL(std::string{"o"}, dbUserExclusionTemplates.at(2).templ());
