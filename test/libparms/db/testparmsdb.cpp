@@ -374,8 +374,8 @@ void TestParmsDb::testUpdateExclusionTemplates() {
 
     std::set<std::string> fileDefaults(fileDefaultExclusionTemplates.begin(), fileDefaultExclusionTemplates.end());
     std::set<std::string> dbDefaults;
-    std::transform(dbDefaultExclusionTemplates.begin(), dbDefaultExclusionTemplates.end(),
-                   std::inserter(dbDefaults, dbDefaults.begin()), [](const auto &t) { return t.templ(); });
+    (void) std::transform(dbDefaultExclusionTemplates.begin(), dbDefaultExclusionTemplates.end(),
+                          std::inserter(dbDefaults, dbDefaults.begin()), [](const auto &t) { return t.templ(); });
 
     CPPUNIT_ASSERT(dbDefaults == fileDefaults);
 }
@@ -392,8 +392,8 @@ void TestParmsDb::testUpgrade() {
     CPPUNIT_ASSERT(ParmsDb::instance()->upgrade("3.6.1", "3.7.0"));
 
     std::vector<ExclusionTemplate> dbUserExclusionTemplates;
-    ParmsDb::instance()->selectUserExclusionTemplates(dbUserExclusionTemplates);
-    CPPUNIT_ASSERT_EQUAL(size_t(3), dbUserExclusionTemplates.size());
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectUserExclusionTemplates(dbUserExclusionTemplates));
+    CPPUNIT_ASSERT_EQUAL(size_t{3}, dbUserExclusionTemplates.size());
 
     const SyncName nfdEncodedName = testhelpers::makeNfdSyncName();
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(nfdEncodedName), dbUserExclusionTemplates.at(0).templ());
