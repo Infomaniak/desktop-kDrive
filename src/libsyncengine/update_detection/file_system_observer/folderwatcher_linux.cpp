@@ -106,8 +106,8 @@ void FolderWatcher_linux::startWatching() {
                         auto ioError = IoError::Success;
                         const bool isDirSuccess = IoHelper::checkIfIsDirectory(path, isDirectory, ioError);
                         if (!isDirSuccess) {
-                            LOGW_WARN(_logger, L"Error in IoHelper::checkIfIsDirectory: "
-                                                       << Utility::formatIoError(path, ioError));
+                            LOGW_WARN(_logger,
+                                      L"Error in IoHelper::checkIfIsDirectory: " << Utility::formatIoError(path, ioError));
                             continue;
                         }
 
@@ -139,7 +139,7 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
     bool ok = true;
     if (access(dir.c_str(), R_OK) != 0) {
         LOGW_WARN(_logger, L"SyncDir is not readable: " << Utility::formatSyncPath(dir));
-        setExitInfo({ExitCode::SystemError, ExitCause::SyncDirAccesError});
+        setExitInfo({ExitCode::SystemError, ExitCause::SyncDirAccessError});
         return false;
     }
     if (std::error_code ec; !std::filesystem::exists(dir, ec)) {
@@ -179,8 +179,7 @@ bool FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
     if (std::error_code ec; !std::filesystem::exists(path, ec)) {
         if (ec.value() != 0) {
             LOGW_WARN(_logger, L"Failed to check if path exists " << Utility::formatSyncPath(path) << L": "
-                                                                       << Utility::s2ws(ec.message()) << L" ("
-                                                                       << ec.value() << L")");
+                                                                  << Utility::s2ws(ec.message()) << L" (" << ec.value() << L")");
         }
         return false;
     }
@@ -230,8 +229,8 @@ bool FolderWatcher_linux::addFolderRecursive(const SyncPath &path) {
         } else {
             if (ec.value() != 0) {
                 LOGW_WARN(_logger, L"Failed to check if path exists " << Utility::formatSyncPath(path) << L": "
-                                                                           << Utility::s2ws(ec.message()) << L" ("
-                                                                           << ec.value() << L")");
+                                                                      << Utility::s2ws(ec.message()) << L" (" << ec.value()
+                                                                      << L")");
             }
             LOGW_DEBUG(_logger, L"    `-> discarded: " << Utility::formatSyncPath(subDirPath));
         }

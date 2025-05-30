@@ -108,16 +108,14 @@ void OperationGeneratorWorker::execute() {
         const int64_t freeBytes = Utility::getFreeDiskSpace(_syncPal->localPath());
         if (freeBytes >= 0) {
             if (freeBytes < _bytesToDownload + Utility::freeDiskSpaceLimit()) {
-                LOGW_SYNCPAL_WARN(_logger, L"Disk almost full, only " << freeBytes << L" B available at path "
-                                                                      << Path2WStr(_syncPal->localPath()) << L", "
-                                                                      << _bytesToDownload
-                                                                      << L" B to download. Synchronization canceled.");
+                LOGW_SYNCPAL_WARN(_logger, L"Disk almost full, only "
+                                                   << freeBytes << L" B available at path " << Path2WStr(_syncPal->localPath())
+                                                   << L", " << _bytesToDownload << L" B to download. Synchronization canceled.");
                 exitCode = ExitCode::SystemError;
                 setExitCause(ExitCause::NotEnoughDiskSpace);
             }
         } else {
-            LOGW_SYNCPAL_WARN(_logger,
-                              L"Could not determine free space available at" << Path2WStr(_syncPal->localPath()));
+            LOGW_SYNCPAL_WARN(_logger, L"Could not determine free space available at" << Path2WStr(_syncPal->localPath()));
         }
     }
 
@@ -154,11 +152,11 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
         }
     } else {
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_SYNCPAL_DEBUG(_logger,
-                               L"Create operation "
-                                       << op->id() << L" to be propagated on " << op->targetSide() << L" replica for item "
-                                       << Utility::formatSyncPath(currentNode->getPath()) << L" ("
-                                       << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1") << L")");
+            LOGW_SYNCPAL_DEBUG(_logger, L"Create operation "
+                                                << op->id() << L" to be propagated on " << op->targetSide()
+                                                << L" replica for item " << Utility::formatSyncPath(currentNode->getPath())
+                                                << L" (" << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1")
+                                                << L")");
         }
 
         if (_syncPal->vfsMode() == VirtualFileMode::Off && op->targetSide() == ReplicaSide::Local &&
@@ -209,11 +207,11 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
 
     if (!op->omit()) {
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_SYNCPAL_DEBUG(_logger,
-                               L"Edit operation "
-                                       << op->id() << L" to be propagated on " << op->targetSide() << L" replica for item "
-                                       << Utility::formatSyncPath(currentNode->getPath()) << L"(ID: "
-                                       << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1") << L")");
+            LOGW_SYNCPAL_DEBUG(_logger, L"Edit operation " << op->id() << L" to be propagated on " << op->targetSide()
+                                                           << L" replica for item "
+                                                           << Utility::formatSyncPath(currentNode->getPath()) << L"(ID: "
+                                                           << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1")
+                                                           << L")");
         }
 
         if (_syncPal->vfsMode() == VirtualFileMode::Off && op->targetSide() == ReplicaSide::Local &&
@@ -313,11 +311,11 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
         // of next sync because nothing has changed but create events are not propagated
     } else {
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_SYNCPAL_DEBUG(_logger,
-                               L"Delete operation "
-                                       << op->id() << L" to be propagated on " << op->targetSide() << L" replica for item "
-                                       << Utility::formatSyncPath(currentNode->getPath()) << L" ("
-                                       << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1") << L")");
+            LOGW_SYNCPAL_DEBUG(_logger, L"Delete operation "
+                                                << op->id() << L" to be propagated on " << op->targetSide()
+                                                << L" replica for item " << Utility::formatSyncPath(currentNode->getPath())
+                                                << L" (" << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1")
+                                                << L")");
         }
     }
 

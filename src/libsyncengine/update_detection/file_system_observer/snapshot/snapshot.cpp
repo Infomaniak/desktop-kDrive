@@ -141,8 +141,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
         // Add children to new parent
         if (auto newParent = findItem(newItem.parentId()); !newParent) {
             // New parent not found, create it
-            LOG_DEBUG(Log::instance()->getLogger(),
-                      "Parent " << newItem.parentId() << " does not exist yet, creating it");
+            LOG_DEBUG(Log::instance()->getLogger(), "Parent " << newItem.parentId() << " does not exist yet, creating it");
             newParent = std::make_shared<SnapshotItem>(newItem.parentId());
             newParent->setSnapshotRevisionHandler(_revisionHandlder);
             (void) _items.try_emplace(newItem.parentId(), newParent);
