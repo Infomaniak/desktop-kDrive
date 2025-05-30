@@ -633,7 +633,7 @@ bool ParmsDb::getDefaultExclusionTemplatesFromFile(const SyncPath &syncExcludeLi
                 line.pop_back();
             }
 
-            fileDefaultExclusionTemplates.emplace_back(std::move(line));
+            (void) fileDefaultExclusionTemplates.emplace_back(line);
         }
         return true;
     }
@@ -773,8 +773,9 @@ bool ParmsDb::insertUserTemplateNormalizations() {
     }
 
     std::vector<ExclusionTemplate> dbUserExclusionTemplatesOutput;
-    std::transform(dbUserExclusionStringsOutput.cbegin(), dbUserExclusionStringsOutput.cend(),
-                   std::back_inserter(dbUserExclusionTemplatesOutput), [](const auto &str) { return ExclusionTemplate(str); });
+    (void) std::transform(dbUserExclusionStringsOutput.cbegin(), dbUserExclusionStringsOutput.cend(),
+                          std::back_inserter(dbUserExclusionTemplatesOutput),
+                          [](const auto &str) { return ExclusionTemplate(str); });
 
     LOG_INFO(_logger, "Normalizations prepared for updates.");
 
@@ -2042,8 +2043,8 @@ bool ParmsDb::selectAllDrives(int accountDbId, std::vector<Drive> &driveList) {
         int admin;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 6, admin));
 
-        driveList.emplace_back(Drive(id, driveId, accountDbId, driveName, size, color, static_cast<bool>(notifications),
-                                     static_cast<bool>(admin)));
+        (void) driveList.emplace_back(Drive(id, driveId, accountDbId, driveName, size, color, static_cast<bool>(notifications),
+                                            static_cast<bool>(admin)));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID));
 
@@ -2545,7 +2546,7 @@ bool ParmsDb::selectAllExclusionTemplates(std::vector<ExclusionTemplate> &exclus
         int deleted;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 3, deleted));
 
-        exclusionTemplateList.emplace_back(
+        (void) exclusionTemplateList.emplace_back(
                 ExclusionTemplate(templ, static_cast<bool>(warning), static_cast<bool>(def), static_cast<bool>(deleted)));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID));
@@ -2577,8 +2578,8 @@ bool ParmsDb::selectAllExclusionTemplates(bool defaultTemplates, std::vector<Exc
         int deleted;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 2, deleted));
 
-        exclusionTemplateList.emplace_back(
-                ExclusionTemplate(templ, static_cast<bool>(warning), defaultTemplates, static_cast<bool>(deleted)));
+        (void) exclusionTemplateList.emplace_back(templ, static_cast<bool>(warning), defaultTemplates,
+                                                  static_cast<bool>(deleted));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID));
 

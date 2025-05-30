@@ -101,7 +101,7 @@ class PARMS_EXPORT ParmsDb : public Db {
 
         bool insertExclusionTemplate(const ExclusionTemplate &exclusionTemplate, bool &constraintError);
         bool updateExclusionTemplate(const ExclusionTemplate &exclusionTemplate, bool &found);
-        bool deleteExclusionTemplate(const std::string &templ, bool &found);
+        bool deleteExclusionTemplate(const std::string &template_, bool &found);
         bool selectAllExclusionTemplates(std::vector<ExclusionTemplate> &exclusionTemplateList);
         bool selectDefaultExclusionTemplates(std::vector<ExclusionTemplate> &exclusionTemplateList) {
             return selectAllExclusionTemplates(true, exclusionTemplateList);
@@ -110,7 +110,7 @@ class PARMS_EXPORT ParmsDb : public Db {
             return selectAllExclusionTemplates(false, exclusionTemplateList);
         };
         bool updateAllExclusionTemplates(bool defaultTemplate, const std::vector<ExclusionTemplate> &exclusionTemplateList);
-        bool updateUserExclusionTemplates(std::vector<ExclusionTemplate> &exclusionTemplateList) {
+        bool updateUserExclusionTemplates(const std::vector<ExclusionTemplate> &exclusionTemplateList) {
             return updateAllExclusionTemplates(false, exclusionTemplateList);
         };
 
