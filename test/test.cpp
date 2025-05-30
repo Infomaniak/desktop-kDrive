@@ -19,6 +19,7 @@
 #include "testincludes.h"
 
 #include "libcommon/log/sentry/handler.h"
+#include "libcommon/utility//utility.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 #include "test_utility/testhelpers.h"
@@ -28,8 +29,16 @@ int runTestSuite(const std::string &logFileName) {
     /* initialize random seed: */
     srand(static_cast<unsigned int>(time(NULL)));
 
-    // Enable sentry if the env variable KDRIVE_SENTRY_ENVIRONMENT is set
-    KDC::sentry::Handler::init(KDC::AppType::Server);
+    // Enable sentry only if the environment variable KDRIVE_SENTRY_ENVIRONMENT is set.
+    bool isSentryEnvSet = false;
+    (void) KDC::CommonUtility::envVarValue("KDRIVE_SENTRY_ENVIRONMENT", isSentryEnvSet);
+    if (isSentryEnvSet) {
+        KDC::sentry::Handler::init(KDC::AppType::Server);
+    } else {
+        KDC::sentry::Handler::init(KDC::AppType::None); // Disable Sentry.
+    }
+
+
     // Setup log4cplus
     log4cplus::Initializer initializer;
     std::time_t now = std::time(nullptr);

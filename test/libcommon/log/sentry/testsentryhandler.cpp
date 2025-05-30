@@ -31,8 +31,8 @@ MockTestSentryHandler::MockTestSentryHandler() :
     sentry::Handler::setMaxCaptureCountBeforeRateLimit(3);
     sentry::Handler::setMinUploadIntervalOnRateLimit(1);
 }
-void MockTestSentryHandler::sendEventToSentry(const sentry::Level level, const std::string& title,
-                                              const std::string& message) const {
+void MockTestSentryHandler::sendEventToSentry(const sentry::Level level, const std::string &title,
+                                              const std::string &message) const {
     (void) level;
     (void) title;
     (void) message;
@@ -133,12 +133,12 @@ void TestSentryHandler::testWriteEvent() {
 
     // Test send event
     {
-        auto eventFilePath = std::filesystem::temp_directory_path() / serverSendEventFileName;
+        const auto eventFilePath = sentry::Handler::getEventFilePath(AppType::Server);
         std::error_code ec;
         std::filesystem::remove(eventFilePath, ec);
 
         std::string eventInStr("send event line 1\nsend event line 2\nsend event line 3");
-        sentry::Handler::writeEvent(eventInStr, false);
+        sentry::Handler::writeEvent(eventInStr);
 
         CPPUNIT_ASSERT(std::filesystem::exists(eventFilePath, ec));
 
@@ -153,12 +153,12 @@ void TestSentryHandler::testWriteEvent() {
 
     // Test crash event
     {
-        auto eventFilePath = std::filesystem::temp_directory_path() / serverCrashEventFileName;
+        const auto eventFilePath = sentry::Handler::getCrashEventFilePath(AppType::Server);
         std::error_code ec;
         std::filesystem::remove(eventFilePath, ec);
 
         std::string eventInStr = "crash event line 1\ncrash event line 2\ncrash event line 3";
-        sentry::Handler::writeEvent(eventInStr, true);
+        sentry::Handler::writeCrashEvent(eventInStr);
 
         CPPUNIT_ASSERT(std::filesystem::exists(eventFilePath, ec));
 
