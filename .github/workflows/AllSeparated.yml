@@ -60,6 +60,28 @@ jobs:
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
         shell: cmd
 
+      - name: Find Conan Dependencies
+        shell: pwsh
+        run: |
+          $dst = Join-Path $Env:GITHUB_WORKSPACE artifacts\libs
+          New-Item -ItemType Directory -Path $dst -Force | Out-Null
+          
+          Get-ChildItem -Path "$Env:USERPROFILE\.conan2\p" `
+            -Recurse -File -Filter '*.dll' | ForEach-Object {
+                 $rel = $_.FullName.Substring($Env:USERPROFILE.Length)
+                 $target = Join-Path $dst $rel
+          
+                 New-Item -ItemType Directory -Path (Split-Path $target) -Force | Out-Null
+                    Copy-Item -Path $_.FullName -Destination $target -Force
+          }
+      - name: Upload Conan dependencies
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-conan-dependencies
+          path: ${{ github.workspace }}/artifacts/libs
+          retention-days: 1
+        if: always()
+
       - name: Upload build common files
         uses: actions/upload-artifact@v4
         with:
@@ -157,6 +179,19 @@ jobs:
           retention-days: 1
         if: always()
 
+      - name: Copy Conan Dependencies into Workspace
+        run: |
+          mkdir -p ${{ github.workspace }}/artifacts/libs
+          find "$HOME/.conan2/p/" -type f -iname '*.so' \
+            -exec cp -P {} ${{ github.workspace }}/artifacts/libs \;
+      - name: Upload Conan dependencies
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build-conan-dependencies
+          path: ${{ github.workspace }}/artifacts/libs
+          retention-days: 1
+        if: always()
+
       - name: Upload build usr lib
         uses: actions/upload-artifact@v4
         with:
@@ -173,7 +208,6 @@ jobs:
               /usr/local/lib/liblog4cplus.so
               /usr/local/lib/libsentry.so
               /usr/local/lib/libzip.so
-              /usr/local/lib/libxxhash*
           retention-days: 1
         if: always()
 
@@ -272,6 +306,19 @@ jobs:
           retention-days: 1
         if: always()
 
+      - name: Find Conan Dependencies
+        run: |
+          mkdir -p ${{ github.workspace }}/artifacts/libs
+          find "$HOME/.conan2/p/" -type f -iname '*.dylib' \
+            -exec cp -P {} ${{ github.workspace }}/artifacts/libs \;
+      - name: Upload Conan dependencies
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build-conan-dependencies
+          path: ${{ github.workspace }}/artifacts/libs
+          retention-days: 1
+        if: always()
+
       - name: Upload libs
         uses: actions/upload-artifact@v4
         with:
@@ -291,7 +338,6 @@ jobs:
               /usr/local/lib/libzstd.1.dylib
               /usr/local/lib/libssl.3.dylib
               /usr/local/lib/libcrypto.3.dylib
-              /usr/local/lib/libxxhash.0.8.2.dylib
           retention-days: 1
         if: always()
 
