@@ -432,13 +432,13 @@ void Handler::updateEffectiveSentryUser(const SentryUser &user) {
 
 SyncPath Handler::getSentryTemporaryDir() {
     std::time_t now = std::time(nullptr);
-    std::tm tm = *std::localtime(&now);
+    const std::tm tm = *std::localtime(&now);
     std::ostringstream oss;
     oss << std::put_time(&tm, "%Y%m");
 
     const auto sentryDirectory = std::filesystem::temp_directory_path() / "sentry" / oss.str();
     std::error_code ec;
-    std::filesystem::create_directories(sentryDirectory, ec);
+    (void) std::filesystem::create_directories(sentryDirectory, ec);
 
     assert(!ec && "Sentry temporary directory failed to be created.");
 

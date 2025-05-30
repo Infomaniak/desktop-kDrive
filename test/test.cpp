@@ -19,7 +19,6 @@
 #include "testincludes.h"
 
 #include "libcommon/log/sentry/handler.h"
-#include "libcommon/utility//utility.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 #include "test_utility/testhelpers.h"
