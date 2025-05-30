@@ -79,9 +79,8 @@ bool SqliteDb::openOrCreateReadWrite(const std::filesystem::path &dbPath) {
         std::error_code ec;
         if (!std::filesystem::remove(dbPath, ec)) {
             if (ec.value() != 0) {
-                LOGW_WARN(_logger, L"Failed to remove db file " << Path2WStr(dbPath) << L": "
-                                                                << Utility::s2ws(ec.message()) << L" (" << ec.value()
-                                                                << L")");
+                LOGW_WARN(_logger, L"Failed to remove db file " << Path2WStr(dbPath) << L": " << Utility::s2ws(ec.message())
+                                                                << L" (" << ec.value() << L")");
                 close();
                 return false;
             }
@@ -363,8 +362,8 @@ bool SqliteDb::openHelper(const std::filesystem::path &dbPath, int sqliteFlags) 
     _sqlite3Db.reset(db, sqlite3_close);
 
     if (_errId != SQLITE_OK) {
-        LOGW_WARN(_logger, L"Opening database failed: " << _errId << L" " << Utility::s2ws(_error) << L" for "
-                                                        << Path2WStr(dbPath));
+        LOGW_WARN(_logger,
+                  L"Opening database failed: " << _errId << L" " << Utility::s2ws(_error) << L" for " << Path2WStr(dbPath));
         if (_errId == SQLITE_CANTOPEN) {
             LOG_WARN(_logger, "CANTOPEN extended errcode: " << sqlite3_extended_errcode(_sqlite3Db.get()));
 #if SQLITE_VERSION_NUMBER >= 3012000

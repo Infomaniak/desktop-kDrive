@@ -42,8 +42,8 @@ void ConflictingFilesCorrector::runJob() {
         bool exists = false;
         IoError ioError = IoError::Success;
         if (!IoHelper::checkIfPathExists(_syncPal->localPath() / error.destinationPath(), exists, ioError)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::checkIfPathExists: "
-                                                            << Utility::formatIoError(error.destinationPath(), ioError));
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(error.destinationPath(), ioError));
             _nbErrors++;
             continue;
         }

@@ -21,7 +21,7 @@
 
 namespace KDC {
 
-UploadJobReplyHandler::UploadJobReplyHandler(const SyncPath& absoluteFilePath, bool isLink, const SyncTime creationTime,
+UploadJobReplyHandler::UploadJobReplyHandler(const SyncPath &absoluteFilePath, bool isLink, const SyncTime creationTime,
                                              SyncTime modificationTime) :
     _absoluteFilePath(absoluteFilePath),
     _isLink(isLink),

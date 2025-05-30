@@ -109,9 +109,9 @@ struct SyncProgress {
         int64_t _estimatedRemainingTime{0};
 
         bool operator==(const SyncProgress &other) const {
-           return _currentFile == other._currentFile && _totalFiles == other._totalFiles &&
-                _completedSize == other._completedSize && _totalSize == other._totalSize &&
-                _estimatedRemainingTime == other._estimatedRemainingTime;
+            return _currentFile == other._currentFile && _totalFiles == other._totalFiles &&
+                   _completedSize == other._completedSize && _totalSize == other._totalSize &&
+                   _estimatedRemainingTime == other._estimatedRemainingTime;
         }
 };
 

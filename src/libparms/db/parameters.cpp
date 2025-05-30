@@ -21,22 +21,11 @@
 #define DEFAULT_VERSION "1"
 #define DEFAULT_BIG_FOLDERS_SIZE_LIMIT 500 // MB
 
-#ifdef _WIN32
 #define UPLOAD_SESSION_PARALLEL_THREADS 3
-#else
-#define UPLOAD_SESSION_PARALLEL_THREADS 5
-#endif
-
-#ifdef _WIN32
-#define THREAD_POOL_CAPACITY_FACTOR 2
-#else
-#define THREAD_POOL_CAPACITY_FACTOR 4
-#endif
 
 namespace KDC {
 
 int Parameters::_uploadSessionParallelJobsDefault = UPLOAD_SESSION_PARALLEL_THREADS;
-int Parameters::_jobPoolCapacityFactorDefault = THREAD_POOL_CAPACITY_FACTOR;
 
 Parameters::Parameters() :
     _language(Language::Default),
@@ -59,7 +48,6 @@ Parameters::Parameters() :
     _seenVersion(std::string()),
     _dialogGeometry(std::shared_ptr<std::vector<char>>()),
     _maxAllowedCpu(50),
-    _uploadSessionParallelJobs(UPLOAD_SESSION_PARALLEL_THREADS),
-    _jobPoolCapacityFactor(THREAD_POOL_CAPACITY_FACTOR) {}
+    _uploadSessionParallelJobs(UPLOAD_SESSION_PARALLEL_THREADS) {}
 
 } // namespace KDC
