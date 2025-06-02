@@ -357,7 +357,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         if (const auto &[_, inserted] = existingFiles.insert(Str2SyncName(item.parentId()) + item.name()); !inserted) {
             // An item with the exact same name already exists in the parent folder.
             LOGW_SYNCPAL_DEBUG(_logger, L"Item \"" << SyncName2WStr(item.name()) << L"\" already exists in directory \""
-                                                   << SyncName2WStr(_liveSnapshot->name(item.parentId())) << L"\"");
+                                                   << SyncName2WStr(_liveSnapshot.name(item.parentId())) << L"\"");
 
             SyncPath path;
             _liveSnapshot.path(item.parentId(), path, ignore);
@@ -395,11 +395,11 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     _liveSnapshot.ids(nodeIds);
     auto nodeIdIt = nodeIds.begin();
     while (nodeIdIt != nodeIds.end()) {
-        if (_snapshot->isOrphan(*nodeIdIt)) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Node '" << SyncName2WStr(_liveSnapshot->name(*nodeIdIt)) << L"' ("
+        if (_liveSnapshot.isOrphan(*nodeIdIt)) {
+            LOGW_SYNCPAL_DEBUG(_logger, L"Node '" << SyncName2WStr(_liveSnapshot.name(*nodeIdIt)) << L"' ("
                                                   << Utility::s2ws(*nodeIdIt) << L") is orphan. Removing it from "
-                                                  << _snapshot->side() << L" snapshot.");
-            _liveSnapshot->removeItem(*nodeIdIt);
+                                                  << _liveSnapshot.side() << L" snapshot.");
+            _liveSnapshot.removeItem(*nodeIdIt);
         }
         nodeIdIt++;
     }
