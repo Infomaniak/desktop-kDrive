@@ -61,6 +61,7 @@ runs:
           cp /usr/local/lib/libzstd.1.dylib ./dependencies/
           cp /usr/local/lib/libssl.3.dylib ./dependencies/
           cp /usr/local/lib/libcrypto.3.dylib ./dependencies/
+          cp ${{ github.workspace }}/build-macos/client/bin/crashpad_handler ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/*.lst ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/*.dylib ./dependencies/
         shell: bash

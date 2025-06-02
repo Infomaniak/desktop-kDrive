@@ -52,6 +52,7 @@ runs:
           cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Core.dll" ./dependencies/
           cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6DBus.dll" ./dependencies/
           cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Svg.dll" ./dependencies/
+          cp "C:\Program Files (x86)\Sentry-Native\bin\crashpad_handler.exe" ./dependencies/
           mkdir .\dependencies\platforms
           cp "C:\Qt\6.2.3\msvc2019_64\plugins\platforms\*" .\dependencies\platforms
           cp "C:\Program Files (x86)\cppunit\lib\cppunit_dll.dll" ./dependencies/
