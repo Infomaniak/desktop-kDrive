@@ -81,7 +81,6 @@ runs:
           retention-days: 1
         if: steps.build.outcome == 'success'
 
-
       - name: Upload build test common executable
         uses: actions/upload-artifact@v4
         with:
