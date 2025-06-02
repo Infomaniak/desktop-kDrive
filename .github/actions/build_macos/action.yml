@@ -69,7 +69,7 @@ runs:
       - name: Fetch Conan dependencies
         run: |
           find "$HOME/.conan2/p/" -type f -iname 'libxxhash.0.dylib' \
-            -exec cp -P {} ./dependencies/ \;
+            -exec cp -P --link {} ./dependencies/ \;
         shell: bash
         if: steps.build.outcome == 'success'
 
