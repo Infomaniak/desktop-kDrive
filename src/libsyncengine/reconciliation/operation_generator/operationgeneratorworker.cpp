@@ -109,13 +109,13 @@ void OperationGeneratorWorker::execute() {
         if (freeBytes >= 0) {
             if (freeBytes < _bytesToDownload + Utility::freeDiskSpaceLimit()) {
                 LOGW_SYNCPAL_WARN(_logger, L"Disk almost full, only "
-                                                   << freeBytes << L" B available at path " << Path2WStr(_syncPal->localPath())
+                                                   << freeBytes << L" B available at path " << Utility::formatSyncPath(_syncPal->localPath())
                                                    << L", " << _bytesToDownload << L" B to download. Synchronization canceled.");
                 exitCode = ExitCode::SystemError;
                 setExitCause(ExitCause::NotEnoughDiskSpace);
             }
         } else {
-            LOGW_SYNCPAL_WARN(_logger, L"Could not determine free space available at" << Path2WStr(_syncPal->localPath()));
+            LOGW_SYNCPAL_WARN(_logger, L"Could not determine free space available at " << Utility::formatSyncPath(_syncPal->localPath()));
         }
     }
 

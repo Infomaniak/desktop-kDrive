@@ -82,7 +82,7 @@ void ComputeChecksumJob::runJob() {
                 LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" aborted for file " << Path2WStr(_filePath));
             } else {
                 if (isExtendedLog()) {
-                    LOGW_DEBUG(_logger, L"Checksum computation " << jobId() << L" for file " << Path2WStr(_filePath) << L" took "
+                    LOGW_DEBUG(_logger, L"Checksum computation " << jobId() << L" for file " << Utility::formatSyncPath(_filePath) << L" took "
                                                                  << timer.elapsed<DoubleSeconds>().count() << L"s");
                 }
             }

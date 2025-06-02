@@ -91,7 +91,7 @@ bool DeleteJob::canRun() {
             return true;
         }
 
-        LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath) << L" still exist on local replica.");
+        LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath) << L" still exists on local replica.");
         _exitInfo = {ExitCode::DataError, ExitCause::FileExists};
         return false;
     } else if (!otherNodeId.empty() && _localItemId != otherNodeId) {
