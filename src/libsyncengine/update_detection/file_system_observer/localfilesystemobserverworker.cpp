@@ -340,7 +340,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             continue;
         }
 
-        if (fileStat.modtime > _liveSnapshot.lastModified(nodeId)) {
+        if (fileStat.modificationTime > _liveSnapshot.lastModified(nodeId)) {
             // This is an edit operation
 #ifdef __APPLE__
             if (_syncPal->vfsMode() == VirtualFileMode::Mac) {
@@ -362,7 +362,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
         // Update liveSnapshot
         if (_liveSnapshot.updateItem(SnapshotItem(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime,
-                                                  fileStat.modtime, nodeType, fileStat.size, isLink, true, true))) {
+                                                  fileStat.modificationTime, nodeType, fileStat.size, isLink, true, true))) {
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absolutePath) << L" (" << Utility::s2ws(nodeId)
                                                       << L") updated in local snapshot at " << fileStat.modificationTime);
@@ -723,7 +723,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             }
 
             const SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime,
-                                    fileStat.modtime, itemType.nodeType, fileStat.size, isLink, true, true);
+                                    fileStat.modificationTime, itemType.nodeType, fileStat.size, isLink, true, true);
             if (_liveSnapshot.updateItem(item)) {
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: "
