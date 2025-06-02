@@ -68,8 +68,9 @@ runs:
 
       - name: Fetch Conan dependencies
         run: |
-          find "$HOME/.conan2/p/" -iname 'libxxhash.0.dylib' \
-            -exec cp -P --dereference {} ./dependencies/ \;
+          find "$HOME/.conan2/p/" -iname 'libxxhash*.dylib' \
+            -exec cp -P {} ./dependencies/ \; \
+            -exec echo "Conan dependency found -> " {} \; 
         shell: bash
         if: steps.build.outcome == 'success'
 
