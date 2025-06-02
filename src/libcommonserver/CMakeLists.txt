@@ -165,9 +165,12 @@ else()
     )
 
     install(FILES
-            ${xxhash_PACKAGE_FOLDER_RELEASE}/lib/libxxhash.so
-            ${xxhash_PACKAGE_FOLDER_RELEASE}/lib/libxxhash.so.0
-            ${xxhash_PACKAGE_FOLDER_RELEASE}/lib/libxxhash.so.0.8.2
+            "$<$<CONFIG:Release>:${xxhash_LIB_DIRS_RELEASE}/libxxhash.so>" # Release
+            "$<$<CONFIG:Release>:${xxhash_LIB_DIRS_RELEASE}/libxxhash.so.0>"
+            "$<$<CONFIG:Release>:${xxhash_LIB_DIRS_RELEASE}/libxxhash.so.0.8.2>"
+            "$<$<CONFIG:RelWithDebInfo>:${xxhash_LIB_DIRS_RELWITHDEBINFO}/libxxhash.so>" # RelWithDebInfo
+            "$<$<CONFIG:RelWithDebInfo>:${xxhash_LIB_DIRS_RELWITHDEBINFO}/libxxhash.so.0>"
+            "$<$<CONFIG:RelWithDebInfo>:${xxhash_LIB_DIRS_RELWITHDEBINFO}/libxxhash.so.0.8.2>"
             DESTINATION "${CONAN_DEP_DIR}"
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
     )
