@@ -23,7 +23,7 @@ runs:
 
       - name: Clean the log directory
         if  : contains(env.logdir_path, 'kDrive-logdir')
-        run : rm -rf ${{ env.logdir_path }}/*
+        run : rm -rf ${{ env.logdir_path }}/* || true
         shell: bash
         continue-on-error: true
 
