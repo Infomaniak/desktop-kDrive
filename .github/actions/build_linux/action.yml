@@ -15,7 +15,7 @@ runs:
 
       - name: Build kDrive desktop
         id: build
-        run : ./infomaniak-build-tools/linux/build-ci-amd64.sh -u
+        run: ./infomaniak-build-tools/linux/build-ci-amd64.sh -u -t release
         shell: bash
 
       - name: Fetch dependencies
