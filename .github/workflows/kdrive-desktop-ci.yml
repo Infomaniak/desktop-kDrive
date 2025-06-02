@@ -72,6 +72,7 @@ jobs:
     runs-on: [ self-hosted, Windows ]
     env:
       KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
+      KDRIVE_SENTRY_ENVIRONMENT: "windows_ci_runner"
     steps:
        - name: Checkout the PR
          uses: actions/checkout@v4.1.1
@@ -94,6 +95,7 @@ jobs:
     runs-on: [ self-hosted,  Linux, X64  ]
     env:
       KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
+      KDRIVE_SENTRY_ENVIRONMENT: "linux_ci_runner"
     steps:
        - name: Checkout the PR
          uses: actions/checkout@v4.1.1
@@ -116,6 +118,7 @@ jobs:
     runs-on: [ self-hosted, macOS ]
     env:
       KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
+      KDRIVE_SENTRY_ENVIRONMENT: "macos_ci_runner"
     steps:
        - name: Checkout the PR
          uses: actions/checkout@v4.1.1

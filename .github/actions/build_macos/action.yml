@@ -68,6 +68,7 @@ runs:
 
       - name: Fetch Conan dependencies
         run: |
+          echo "Fetching Conan dependencies in $HOME/.conan2/p/"
           find "$HOME/.conan2/p/" -iname 'libxxhash*.dylib' \
             -exec cp -P {} ./dependencies/ \; \
             -exec echo "Conan dependency found -> " {} \; 
