@@ -4,7 +4,7 @@
 - [Installation Requirements](#installation-requirements)
     - [Qt 6.2.3](#qt-623)
     - [Sentry](#sentry)
-    - [xxHash](#xxhash)
+    - [xxHash & log4cplus](#xxhash--log4cplus)
     - [OpenSSL](#openssl)
     - [Poco](#poco)
     - [CPPUnit](#cppunit)
@@ -348,7 +348,6 @@ C:\Program Files (x86)\Poco\bin
 C:\Program Files (x86)\libzip\bin
 C:\Program Files (x86)\zlib-1.2.11\bin
 C:\Program Files (x86)\Sentry-Native\bin
-C:\Program Files (x86)\log4cplus\bin
 C:\Program Files (x86)\cppunit\bin
 C:\Program Files\OpenSSL\bin
 ```
@@ -473,7 +472,6 @@ Once done, right-click on the `kDrive_client` executable and then on `Install`.
 
 During the next step, you may encounter missing DLL errors. If so, copy the required DLLs into the `bin` folder of your output directory. The DLLs are located in:
 - `C:\Program Files (x86)\Poco\bin`
-- `C:\Program Files (x86)\log4cplus\bin`
 - `C:\Program Files (x86)\NSIS\Bin`
 - `C:\Program Files (x86)\zlib-1.2.11`
 - `C:\Program Files\OpenSSL\bin`

@@ -7,9 +7,9 @@
 	- [Qt 6.2.3](#qt-623)
 	- [Sentry](#sentry)
 	- [cppunit](#cppunit)
+    - [xxHash & log4cplus](#xxhash--log4cplus)
 	- [OpenSSL](#openssl)
 	- [Poco](#poco)
-	- [xxHash](#xxhash)
 	- [libzip](#libzip)
 	- [Sparkle](#sparkle)
 	- [Packages](#packages)
@@ -114,6 +114,10 @@ sudo make install
 ```
 
 If the server does not reply to the `git clone` command, you can download the source from https://www.freedesktop.org/wiki/Software/cppunit/.
+
+## xxHash & log4cplus
+
+See [Conan](#conan) for installation instructions.
 
 ## OpenSSL
 

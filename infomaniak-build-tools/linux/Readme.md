@@ -6,7 +6,7 @@
     - [Poco](#poco)
     - [CPPUnit](#cppunit)
     - [Sentry](#sentry)
-    - [xxHash](#xxhash)
+    - [xxHash & log4cplus](#xxhash--log4cplus)
     - [libzip](#libzip)
     - [Conan](#conan)
 - [Build in Debug](#build-in-debug)
@@ -69,7 +69,7 @@ sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/lib/llvm-18/bin
 
 Check the version again with `clang --version` to ensure that the version is now 18 or higher.
 
-## xxHash
+## xxHash & log4cplus
 
 See [Conan](#conan) part.
 
