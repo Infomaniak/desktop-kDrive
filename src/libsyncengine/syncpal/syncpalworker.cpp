@@ -40,6 +40,41 @@ SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string
                              const std::chrono::seconds &startDelay) :
     ISyncWorker(syncPal, name, shortName, startDelay) {}
 
+namespace {
+
+bool hasSuccessfullyFinished(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
+    return (!w1 || w1->exitCode() == ExitCode::Ok) && (!w2 || w2->exitCode() == ExitCode::Ok);
+}
+
+bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
+    const auto networkIssue =
+            (w1 && w1->exitCode() == ExitCode::NetworkError) || (w2 && w2->exitCode() == ExitCode::NetworkError);
+    const auto serviceUnavailable =
+            (w1 && w1->exitCode() == ExitCode::BackError && w1->exitCause() == ExitCause::ServiceUnavailable) ||
+            (w2 && w2->exitCode() == ExitCode::BackError && w2->exitCause() == ExitCause::ServiceUnavailable);
+    const auto syncDirNotAccessible =
+            (w1 && w1->exitCode() == ExitCode::SystemError && w1->exitCause() == ExitCause::SyncDirAccessError) ||
+            (w2 && w2->exitCode() == ExitCode::SystemError && w2->exitCause() == ExitCause::SyncDirAccessError);
+    return networkIssue || serviceUnavailable || syncDirNotAccessible;
+}
+
+bool shouldBeStoppedAndRestarted(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
+    const auto dataError = (w1 && w1->exitCode() == ExitCode::DataError) || (w2 && w2->exitCode() == ExitCode::DataError);
+    const auto backError = (w1 && w1->exitCode() == ExitCode::BackError) || (w2 && w2->exitCode() == ExitCode::BackError);
+    const auto logicError = (w1 && w1->exitCode() == ExitCode::LogicError) || (w2 && w2->exitCode() == ExitCode::LogicError);
+    return dataError || backError || logicError;
+}
+
+bool shouldBeStopped(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
+    const auto dbError = (w1 && w1->exitCode() == ExitCode::DbError) || (w2 && w2->exitCode() == ExitCode::DbError);
+    const auto systemError = (w1 && w1->exitCode() == ExitCode::SystemError) || (w2 && w2->exitCode() == ExitCode::SystemError);
+    const auto updateRequired =
+            (w1 && w1->exitCode() == ExitCode::UpdateRequired) || (w2 && w2->exitCode() == ExitCode::UpdateRequired);
+    return dbError || systemError || updateRequired;
+}
+
+} // namespace
+
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
     LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " started");
@@ -78,13 +113,7 @@ void SyncPalWorker::execute() {
                     LOG_SYNCPAL_DEBUG(_logger, "Stop FSO worker " << index);
                     isFSOInProgress[index] = false;
                     stopAndWaitForExitOfWorker(fsoWorkers[index]);
-                    const bool connectionIssue = fsoWorkers[index]->exitCode() == ExitCode::NetworkError;
-                    const bool serviceUnavailable = fsoWorkers[index]->exitCode() == ExitCode::BackError &&
-                                                    fsoWorkers[index]->exitCause() == ExitCause::ServiceUnavailable;
-                    const bool syncDirUnaccessible = fsoWorkers[index]->exitCode() == ExitCode::SystemError &&
-                                                     fsoWorkers[index]->exitCause() == ExitCause::SyncDirAccessError;
-                    const bool shouldPause = connectionIssue || serviceUnavailable || syncDirUnaccessible;
-                    if (shouldPause && !pauseAsked()) {
+                    if (shouldBePaused(fsoWorkers[index], nullptr) && !pauseAsked()) {
                         pause();
                     }
                 } else if (!pauseAsked()) {
@@ -135,28 +164,16 @@ void SyncPalWorker::execute() {
 
         if (isStepInProgress) {
             // Check workers status
-            ExitCode workersExitCode[2];
-            for (int index = 0; index < 2; index++) {
-                workersExitCode[index] = (stepWorkers[index] && !stepWorkers[index]->isRunning() ? stepWorkers[index]->exitCode()
-                                                                                                 : ExitCode::Unknown);
-            }
-
-            if ((!stepWorkers[0] || workersExitCode[0] == ExitCode::Ok) &&
-                (!stepWorkers[1] || workersExitCode[1] == ExitCode::Ok)) {
+            if (hasSuccessfullyFinished(stepWorkers[0], stepWorkers[1])) {
                 // Next step
-                SyncStep step = nextStep();
+                const SyncStep step = nextStep();
                 if (step != _step) {
                     LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " has finished");
                     waitForExitOfWorkers(stepWorkers);
                     initStep(step, stepWorkers, inputSharedObject);
                     isStepInProgress = false;
                 }
-            } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::NetworkError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCode::NetworkError) ||
-                       ((stepWorkers[0] && workersExitCode[0] == ExitCode::SystemError &&
-                         stepWorkers[0]->exitCause() == ExitCause::SyncDirAccessError) ||
-                        (stepWorkers[1] && workersExitCode[1] == ExitCode::SystemError &&
-                         stepWorkers[1]->exitCause() == ExitCause::SyncDirAccessError))) {
+            } else if (shouldBePaused(stepWorkers[0], stepWorkers[1])) {
                 LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " has aborted");
 
                 // Stop the step workers and pause sync
@@ -164,12 +181,7 @@ void SyncPalWorker::execute() {
                 isStepInProgress = false;
                 pause();
                 continue;
-            } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::DataError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCode::DataError) ||
-                       (stepWorkers[0] && workersExitCode[0] == ExitCode::BackError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCode::BackError) ||
-                       (stepWorkers[0] && workersExitCode[0] == ExitCode::LogicError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCode::LogicError)) {
+            } else if (shouldBeStoppedAndRestarted(stepWorkers[0], stepWorkers[1])) {
                 LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " has aborted");
 
                 // Stop the step workers and restart a full sync
@@ -177,26 +189,21 @@ void SyncPalWorker::execute() {
                 _syncPal->invalideSnapshots();
                 initStepFirst(stepWorkers, inputSharedObject, true);
                 continue;
-            } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::DbError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCode::DbError) ||
-                       (stepWorkers[0] && workersExitCode[0] == ExitCode::SystemError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCode::SystemError) ||
-                       (stepWorkers[0] && workersExitCode[0] == ExitCode::UpdateRequired) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCode::UpdateRequired)) {
+            } else if (shouldBeStopped(stepWorkers[0], stepWorkers[1])) {
                 LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " has aborted");
 
                 // Stop all workers and exit
                 stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
-                if ((stepWorkers[0] && workersExitCode[0] == ExitCode::SystemError &&
+                if ((stepWorkers[0] && stepWorkers[0]->exitCode() == ExitCode::SystemError &&
                      (stepWorkers[0]->exitCause() == ExitCause::NotEnoughDiskSpace ||
                       stepWorkers[0]->exitCause() == ExitCause::FileAccessError)) ||
-                    (stepWorkers[1] && workersExitCode[1] == ExitCode::SystemError &&
+                    (stepWorkers[1] && stepWorkers[1]->exitCode() == ExitCode::SystemError &&
                      (stepWorkers[1]->exitCause() == ExitCause::NotEnoughDiskSpace ||
                       stepWorkers[1]->exitCause() == ExitCause::FileAccessError))) {
                     // Exit without error
                     exitCode = ExitCode::Ok;
-                } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::UpdateRequired) ||
-                           (stepWorkers[1] && workersExitCode[1] == ExitCode::UpdateRequired)) {
+                } else if ((stepWorkers[0] && stepWorkers[0]->exitCode() == ExitCode::UpdateRequired) ||
+                           (stepWorkers[1] && stepWorkers[1]->exitCode() == ExitCode::UpdateRequired)) {
                     exitCode = ExitCode::UpdateRequired;
                 } else {
                     exitCode = ExitCode::FatalError;
@@ -228,6 +235,7 @@ void SyncPalWorker::execute() {
     LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " stoped");
     setDone(exitCode);
 }
+
 void SyncPalWorker::stop() {
     _pauseAsked = false;
     _unpauseAsked = true;
