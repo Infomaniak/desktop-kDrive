@@ -119,7 +119,7 @@ fi
 # Build client
 cd $build_dir
 
-source "$conan_generator_folder/conanrun.sh"
+source "$conan_generator_folder/conanbuild.sh"
 
 cmake_param=()
 
