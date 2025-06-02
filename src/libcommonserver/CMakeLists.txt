@@ -174,4 +174,16 @@ else()
             DESTINATION "${CONAN_DEP_DIR}"
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
     )
+    install(FILES
+            "$<$<CONFIG:Release>:${openssl_LIB_DIRS_RELEASE}/libcrypto.so>" # Release
+            "$<$<CONFIG:Release>:${openssl_LIB_DIRS_RELEASE}/libcrypto.so.3>"
+            "$<$<CONFIG:Release>:${openssl_LIB_DIRS_RELEASE}/libssl.so>"
+            "$<$<CONFIG:Release>:${openssl_LIB_DIRS_RELEASE}/libssl.so.3>"
+            "$<$<CONFIG:RelWithDebInfo>:${openssl_LIB_DIRS_RELWITHDEBINFO}/libcrypto.so>" # RelWithDebInfo
+            "$<$<CONFIG:RelWithDebInfo>:${openssl_LIB_DIRS_RELWITHDEBINFO}/libcrypto.so.3>"
+            "$<$<CONFIG:RelWithDebInfo>:${openssl_LIB_DIRS_RELWITHDEBINFO}/libssl.so>"
+            "$<$<CONFIG:RelWithDebInfo>:${openssl_LIB_DIRS_RELWITHDEBINFO}/libssl.so.3>"
+            DESTINATION "${CONAN_DEP_DIR}"
+            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+    )
 endif()
