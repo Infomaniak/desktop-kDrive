@@ -146,8 +146,10 @@ if(UNIX)
     IF (NOT APPLE)
         # Copy .so files to the conan dependency directory
         install(FILES
-                ${log4cplus_PACKAGE_FOLDER_RELEASE}/lib/liblog4cplus.so
-                ${log4cplus_PACKAGE_FOLDER_RELEASE}/lib/liblog4cplus.so.9
+                "$<$<CONFIG:Release>:${log4cplus_LIB_DIRS_RELEASE}/liblog4cplus.so>" # Release
+                "$<$<CONFIG:Release>:${log4cplus_LIB_DIRS_RELEASE}/liblog4cplus.so.9>"
+                "$<$<CONFIG:RelWithDebInfo>:${log4cplus_LIB_DIRS_RELWITHDEBINFO}/liblog4cplus.so>" # RelWithDebInfo
+                "$<$<CONFIG:RelWithDebInfo>:${log4cplus_LIB_DIRS_RELWITHDEBINFO}/liblog4cplus.so.9>"
                 DESTINATION "${CONAN_DEP_DIR}"
                 PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
         )
