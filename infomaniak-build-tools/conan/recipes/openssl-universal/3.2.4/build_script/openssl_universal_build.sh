@@ -67,11 +67,6 @@ install_name_tool -id "@rpath/libcrypto.3.dylib" openssl.multi/lib/libcrypto.3.d
 
 cp -R openssl.x86_64/include openssl.multi/include
 
-#log "Copying universal OpenSSL into Conan recipe..."
-#mkdir -p "$recipe_folder"/{lib,include}
-#cp -R openssl.multi/lib/* "$recipe_folder/lib/"
-#cp -R openssl.multi/include/* "$recipe_folder/include/"
-
 popd
 
 log "Done."
