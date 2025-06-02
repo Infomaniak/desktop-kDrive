@@ -17,7 +17,7 @@ class OpenSSLUniversalConan(ConanFile):
     default_options = {
         "shared": True,
     }
-    exports_sources = "./openssl_universal_build.sh"
+    exports_sources = "openssl_universal_build.sh"
 
 
     def validate(self):
