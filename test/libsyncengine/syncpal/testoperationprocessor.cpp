@@ -27,6 +27,7 @@
 
 #include "test_utility/testhelpers.h"
 #include "test_classes/testsituationgenerator.h"
+#include "update_detection/file_system_observer/filesystemobserverworker.h"
 
 #include <cstdlib>
 
@@ -79,6 +80,7 @@ void TestOperationProcessor::setUp() {
                                          KDRIVE_VERSION_STRING);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
+    _syncPal->createWorkers();
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 }
 
@@ -115,33 +117,33 @@ void TestOperationProcessor::testIsPseudoConflict() {
     const auto rNodeA = situationGenerator.getNode(ReplicaSide::Remote, "a");
     const auto lNodeAA = situationGenerator.getNode(ReplicaSide::Local, "aa");
     const auto rNodeAA = situationGenerator.getNode(ReplicaSide::Remote, "aa");
+    LiveSnapshot &localLiveSnapshot = _syncPal->_localFSObserverWorker->_liveSnapshot;
+    LiveSnapshot &remotelLiveSnapshot = _syncPal->_remoteFSObserverWorker->_liveSnapshot;
 
-    (void) _syncPal->snapshot(ReplicaSide::Local)
-            ->updateItem(SnapshotItem("ldid", _syncPal->snapshot(ReplicaSide::Local)->rootFolderId(), Str("testLocalDir"),
-                                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
-                                      testhelpers::defaultDirSize, false, true, true));
+    (void) localLiveSnapshot.updateItem(SnapshotItem("ldid", localLiveSnapshot.rootFolderId(), Str("testLocalDir"),
+                                                     testhelpers::defaultTime,
+            testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultDirSize, false, true, true));
     const auto newLocalDirNode = std::make_shared<Node>( // Not synced directory (no dbId)
             ReplicaSide::Local, Str("testLocalDir"), NodeType::Directory, OperationType::None, "ldid", testhelpers::defaultTime,
             testhelpers::defaultTime, testhelpers::defaultDirSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
 
-    (void) _syncPal->snapshot(ReplicaSide::Local)
-            ->updateItem(SnapshotItem("rdid", _syncPal->snapshot(ReplicaSide::Remote)->rootFolderId(), Str("testRemoteDir"),
+    (void) remotelLiveSnapshot.updateItem(SnapshotItem("rdid", remotelLiveSnapshot.rootFolderId(),
+                                                      Str("testRemoteDir"),
                                       testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                                       testhelpers::defaultDirSize, false, true, true));
     const auto newRemoteDirNode = std::make_shared<Node>( // Not synced directory (no dbId)
             ReplicaSide::Remote, Str("testRemoteDir"), NodeType::Directory, OperationType::None, "rdid", testhelpers::defaultTime,
             testhelpers::defaultTime, testhelpers::defaultDirSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
-    (void) _syncPal->snapshot(ReplicaSide::Local)
-            ->updateItem(SnapshotItem("lfid", _syncPal->snapshot(ReplicaSide::Local)->rootFolderId(), Str("testLocalFile"),
+    (void) localLiveSnapshot.updateItem(SnapshotItem("lfid", localLiveSnapshot.rootFolderId(),
+                                                    Str("testLocalFile"),
                                       testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
                                       testhelpers::defaultFileSize, true, true, true));
     const auto newLocalFileNode = std::make_shared<Node>( // Not synced file (no dbId)
             ReplicaSide::Local, Str("testLocalFile"), NodeType::File, OperationType::None, "lfid", testhelpers::defaultTime,
             testhelpers::defaultTime, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
 
-    (void) _syncPal->snapshot(ReplicaSide::Local)
-            ->updateItem(SnapshotItem("rfid", _syncPal->snapshot(ReplicaSide::Remote)->rootFolderId(), Str("testRemoteFile"),
+    (void) remotelLiveSnapshot.updateItem(SnapshotItem("rfid", remotelLiveSnapshot.rootFolderId(), Str("testRemoteFile"),
                                       testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
                                       testhelpers::defaultFileSize, true, true, true));
     const auto newRemoteFileNode = std::make_shared<Node>( // Not synced file (no dbId)
