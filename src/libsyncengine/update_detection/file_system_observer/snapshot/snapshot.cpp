@@ -62,7 +62,13 @@ Snapshot &Snapshot::operator=(const Snapshot &other) {
             }
             item->removeAllChildren();
             for (const auto &childId: childrenIds) {
-                item->addChild(_items.at(childId)); // Add the new pointer
+                const auto itemIt = _items.find(childId);
+                if (itemIt == _items.end()) {
+                    LOG_WARN(Log::instance()->getLogger(), "Item id=" << childId << " not found in snapshot");
+                    continue;
+                }
+
+                item->addChild(itemIt->second); // Add the new pointer
             }
         }
 
@@ -202,10 +208,13 @@ bool Snapshot::removeItem(std::shared_ptr<SnapshotItem> &item) {
 NodeId Snapshot::itemId(const SyncPath &path) const {
     const std::scoped_lock lock(_mutex);
 
-    NodeId ret;
-    auto item = _items.at(_rootFolderId);
-    LOG_IF_FAIL(Log::instance()->getLogger(), item);
+    const auto rootItemIt = _items.find(rootFolderId());
+    if (rootItemIt == _items.end()) {
+        LOG_WARN(Log::instance()->getLogger(), "Root folder id not found in snapshot");
+        return "";
+    }
 
+    auto item = rootItemIt->second;
     for (auto pathIt = path.begin(); pathIt != path.end(); pathIt++) {
 #ifndef _WIN32
         if (pathIt->lexically_normal() == SyncPath(Str("/")).lexically_normal()) {
@@ -544,7 +553,13 @@ SnapshotRevision Snapshot::revision() const {
 }
 
 bool Snapshot::checkIntegrityRecursively() const {
-    return checkIntegrityRecursively(_items.at(rootFolderId()));
+    const auto rootItemIt = _items.find(rootFolderId());
+    if (rootItemIt == _items.end()) {
+        LOG_WARN(Log::instance()->getLogger(), "Root folder id not found in snapshot");
+        return false;
+    }
+
+    return checkIntegrityRecursively(rootItemIt->second);
 }
 
 bool Snapshot::checkIntegrityRecursively(const std::shared_ptr<SnapshotItem> &parentItem) const {
