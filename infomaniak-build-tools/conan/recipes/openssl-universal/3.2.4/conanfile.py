@@ -25,7 +25,7 @@ class OpenSSLUniversalConan(ConanFile):
             raise ConanInvalidConfiguration("openssl-universal is only supported on Apple platforms (macOS, iOS, etc.)")
 
     def build(self):
-        script = os.path.join(self.build_folder, "build_script", "openssl_universal_build.sh")
+        script = os.path.join(self.build_folder, "openssl_universal_build.sh")
 
         self.run(f"chmod +x {script}")
         self.run(f"bash {script} --build-folder {self.build_folder}")
