@@ -31,6 +31,12 @@ EOF
   exit 0
 fi
 
+function search_in_local_db() {
+  local reference="$1"
+  conan search "$reference" -r=$local_recipe_remote_name 2>&1 | grep -q -e "ERROR: Recipe '[a-zA-Z-]*/[0-9\.]*' not found" && return 1
+  return 0
+}
+
 set -euox pipefail
 
 log(){ echo "[INFO] $*"; }
@@ -91,12 +97,20 @@ mkdir -p "$output_dir"
 
 
 # Create the conan package for xxHash
-log "Creating package xxHash..."
-conan create "$conan_recipes_folder/xxhash/all/" --build=missing $macos_arch -s:a=build_type="$build_type" -r=$local_recipe_remote_name
+if ! search_in_local_db "xxhash/0.8.2"; then
+  log "Creating package xxHash..."
+  conan create "$conan_recipes_folder/xxhash/all/" --build=missing $macos_arch -s:a=build_type="$build_type" -r=$local_recipe_remote_name
+else
+  log "xxHash is already available in the local recipe remote '$local_recipe_remote_name'. Skipping creation."
+fi
 
 if [ "$platform" = "darwin" ]; then
-  log "Creating openssl package..."
-  conan create "$conan_recipes_folder/openssl-universal/3.2.4/" --build=missing -r="$local_recipe_remote_name" -r=conancenter
+  if ! search_in_local_db "openssl-universal/3.2.4"; then
+    log "Creating openssl package..."
+    conan create "$conan_recipes_folder/openssl-universal/3.2.4/" --build=missing -r="$local_recipe_remote_name" -r=conancenter
+  else
+    log "openssl-universal is already available in the local recipe remote '$local_recipe_remote_name'. Skipping creation."
+  fi
 fi
 
 log "Installing dependencies..."
