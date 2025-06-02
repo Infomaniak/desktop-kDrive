@@ -25,6 +25,7 @@
 #include "jobs/local/localdeletejob.h"
 #include "jobs/local/localmovejob.h"
 #include "jobs/jobmanager.h"
+#include "jobs/network/API_v2/upload/uploadjob.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
 #include "libcommon/utility/utility.h"
@@ -55,8 +56,6 @@
 #include "requests/parameterscache.h"
 #include "test_utility/remotetemporarydirectory.h"
 
-#include <__ranges/join_view.h>
-
 using namespace CppUnit;
 
 namespace KDC {
@@ -65,8 +64,6 @@ namespace KDC {
 const NodeId commonDocumentsNodeId = "3";
 const NodeId testCiFolderId = "56850";
 const NodeId versionFolderId = "104387";
-
-const NodeId testFolderId = "26115";
 
 void TestIntegration::setUp() {
     TestBase::start();
@@ -100,13 +97,22 @@ void TestIntegration::setUp() {
     const Drive drive(_driveDbId, atoi(testVariables.driveId.c_str()), account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
-    const Sync sync(1, drive.dbId(), _localSyncDir.path(), testVariables.remotePath);
+    // Create remote sync folder (so that synchronisation only takes place in a subdirectory, not taking into account the whole
+    // drive items)
+    _remoteTestDir.generate(_driveDbId, testCiFolderId);
+    // Add initial test file
+    const SyncPath tmpFilePath = std::filesystem::temp_directory_path() / "tmpFile.txt";
+    testhelpers::generateOrEditTestFile(tmpFilePath);
+    UploadJob job(nullptr, _driveDbId, tmpFilePath, tmpFilePath.filename(), _remoteTestDir.id(), testhelpers::defaultTime,
+                  testhelpers::defaultTime);
+    (void) job.runSynchronously();
+
+    const Sync sync(1, drive.dbId(), _localSyncDir.path(), "/", _remoteTestDir.id());
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Setup proxy
     Parameters parameters;
-    bool found = false;
-    if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
+    if (bool found = false; ParmsDb::instance()->selectParameters(parameters, found) && found) {
         (void) Proxy::instance(parameters.proxyConfig());
     }
 
@@ -115,9 +121,6 @@ void TestIntegration::setUp() {
     _syncPal->createSharedObjects();
     _syncPal->syncDb()->setAutoDelete(true);
     ParametersCache::instance()->parameters().setExtendedLog(true); // Enable extended log to see more details in the logs
-
-    // Insert items to blacklist
-    (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {testCiFolderId, versionFolderId});
 }
 
 void TestIntegration::tearDown() {
@@ -137,26 +140,23 @@ void TestIntegration::testAll() {
 
     // Start sync
     _syncPal->start();
-    Utility::msleep(1000);
+    const TimerUtility timer;
+    // Wait at most 1sec for the sync to be started
+    while (!_syncPal->isRunning() && timer.elapsed<std::chrono::seconds>().count() < 1) {
+        Utility::msleep(10);
+    }
     CPPUNIT_ASSERT(_syncPal->isRunning());
-
-    // Create test folder
-    _remoteTestDir.generate(_driveDbId, testFolderId);
 
     // Wait for end of 1st sync
     waitForSyncToFinish(SourceLocation::currentLoc());
 
-    SyncPath relativePath;
-    (void) _syncPal->path(ReplicaSide::Remote, _remoteTestDir.id(), relativePath);
-    _localTestFolderPath = _syncPal->localPath() / relativePath;
+    std::stringstream ss;
+    ss << _timer.elapsed<std::chrono::milliseconds>();
+    LOG_DEBUG(_logger, "$$$$$ testAll initialisation done in " << ss.str());
 
     // Run test cases
     _testFctPtrVector = {
-            &TestIntegration::testLocalChanges,
-            // &TestIntegration::testEditLocal,
-            // &TestIntegration::testMoveLocal,
-            // &TestIntegration::testRenameLocal,
-            // &TestIntegration::testDeleteLocal,
+            &TestIntegration::basicTests,
             // &TestIntegration::testCreateRemote,
             // &TestIntegration::testEditRemote,
             // &TestIntegration::testMoveRemote,
@@ -189,14 +189,19 @@ void TestIntegration::testAll() {
     }
 }
 
+void TestIntegration::basicTests() {
+    testLocalChanges();
+    testRemoteChanges();
+}
+
 void TestIntegration::testLocalChanges() {
     // Generate create operations.
     LOG_DEBUG(_logger, "$$$$$ test create local file");
 
-    const std::filesystem::path subDirPath = _localTestFolderPath / "testSubDir";
+    const std::filesystem::path subDirPath = _syncPal->localPath() / "testSubDirLocal";
     (void) std::filesystem::create_directories(subDirPath);
 
-    SyncPath filePath = _localTestFolderPath / "testLocal.txt";
+    SyncPath filePath = _syncPal->localPath() / "testLocal.txt";
     testhelpers::generateOrEditTestFile(filePath);
 
     waitForSyncToFinish(SourceLocation::currentLoc());
@@ -257,6 +262,23 @@ void TestIntegration::testLocalChanges() {
 
     remoteTestFileInfo = testhelpers::getRemoteFileInfo(_driveDbId, filePath.filename(), remoteTestDirInfo.id);
     CPPUNIT_ASSERT_EQUAL(false, remoteTestFileInfo.isValid());
+}
+
+void TestIntegration::testRemoteChanges() {
+    // Generate create operations.
+    LOG_DEBUG(_logger, "$$$$$ test create remote file");
+
+    // CreateDirJob createDirJob(nullptr, _driveDbId, "testSubDirRemote", "1", "testSubDirRemote");
+    // (void) createDirJob.runSynchronously();
+    // DuplicateJob duplicateJob(nullptr, _driveDbId, );
+    //
+    // waitForSyncToFinish(SourceLocation::currentLoc());
+    //
+    // auto remoteTestFileInfo = testhelpers::getRemoteFileInfo(_driveDbId, filePath.filename(), _remoteTestDir.id());
+    // CPPUNIT_ASSERT_EQUAL(true, remoteTestFileInfo.isValid());
+    //
+    // const auto remoteTestDirInfo = testhelpers::getRemoteFileInfo(_driveDbId, subDirPath.filename(), _remoteTestDir.id());
+    // CPPUNIT_ASSERT_EQUAL(true, remoteTestDirInfo.isValid());
 }
 
 // void TestIntegration::testCreateRemote() {

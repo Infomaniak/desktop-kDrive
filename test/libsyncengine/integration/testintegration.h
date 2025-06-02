@@ -25,6 +25,7 @@
 #include "libcommonserver/io/filestat.h"
 #include "libcommon/utility/sourcelocation.h"
 #include "test_utility/remotetemporarydirectory.h"
+#include "utility/timerutility.h"
 
 using namespace CppUnit;
 
@@ -47,8 +48,10 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
 
     private:
         void testAll();
-        // Local changes
+
+        void basicTests();
         void testLocalChanges();
+        void testRemoteChanges();
         // // Remote changes
         // void testCreateRemote();
         // void testEditRemote();
@@ -81,6 +84,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         // void testMoveMoveSourceConflict();
         // void testMoveMoveDestConflict();
         // void testMoveMoveCycleConflict();
+
         class MockIoHelperFileStat : public IoHelper {
             public:
                 MockIoHelperFileStat() {
@@ -106,18 +110,17 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
 
         void waitForSyncToFinish(const SourceLocation &srcLoc) const;
 
-
         log4cplus::Logger _logger;
 
         std::shared_ptr<SyncPal> _syncPal = nullptr;
         std::shared_ptr<ParmsDb> _parmsDb = nullptr;
 
         int _driveDbId = 0;
-        SyncPath _localTestFolderPath;
 
         std::vector<testFctPtr> _testFctPtrVector;
         LocalTemporaryDirectory _localSyncDir;
         RemoteTemporaryDirectory _remoteTestDir{"testIntegration"};
+        TimerUtility _timer;
 };
 
 } // namespace KDC
