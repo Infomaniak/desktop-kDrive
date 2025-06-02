@@ -93,28 +93,18 @@ sudo apt install libxcb-cursor0
 ## Poco
 
 > :warning: **`Poco` requires OpenSSL to be installed.**
+>
+> You **must follow** the [Conan](#conan) section first to install `OpenSSL`.
 
-For ARM64:
 ```bash
 cd ~/Projects
+source "$(find ./desktop-kdrive/ -name "conanrun.sh")" || exit 1 # This will prepend the path to the conan-managed dependencies to the 'DYLD_LIBRARY_PATH' environment variable
 git clone https://github.com/pocoproject/poco.git
 cd poco
 git checkout tags/poco-1.13.3-release
 mkdir cmake-build
 cd cmake-build
-cmake .. -DOPENSSL_ROOT_DIR=/usr/local -DOPENSSL_INCLUDE_DIR=/usr/local/include -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib/libcrypto.so -DOPENSSL_SSL_LIBRARY=/usr/local/lib/libssl.so
-sudo cmake --build . --target install
-```
-
-For AMD64:
-```bash
-cd ~/Projects
-git clone https://github.com/pocoproject/poco.git
-cd poco
-git checkout tags/poco-1.13.3-release
-mkdir cmake-build
-cd cmake-build
-cmake .. -DOPENSSL_ROOT_DIR=/usr/local -DOPENSSL_INCLUDE_DIR=/usr/local/include -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib64/libcrypto.so -DOPENSSL_SSL_LIBRARY=/usr/local/lib64/libssl.so
+cmake ..
 sudo cmake --build . --target install
 ```
 
