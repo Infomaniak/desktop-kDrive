@@ -7,8 +7,7 @@
 	- [Qt 6.2.3](#qt-623)
 	- [Sentry](#sentry)
 	- [cppunit](#cppunit)
-    - [xxHash & log4cplus](#xxhash--log4cplus)
-	- [OpenSSL](#openssl)
+    - [xxHash, log4cplus, OpenSSL & zlib](#xxhash-log4cplus-openssl--zlib)
 	- [Poco](#poco)
 	- [libzip](#libzip)
 	- [Sparkle](#sparkle)
@@ -115,54 +114,13 @@ sudo make install
 
 If the server does not reply to the `git clone` command, you can download the source from https://www.freedesktop.org/wiki/Software/cppunit/.
 
-## xxHash & log4cplus
+## xxHash, log4cplus, OpenSSL & zlib
 
 See [Conan](#conan) for installation instructions.
 
-## OpenSSL
-
-Download and build `OpenSSL`:
-
-The configuration for the `x86_64` architecture is as follows:
-
-```bash
-cd ~/Projects
-git clone https://github.com/openssl/openssl.git
-cd openssl
-git checkout tags/openssl-3.2.1
-cd ..
-mv openssl openssl.x86_64
-cp -Rf openssl.x86_64 openssl.arm64
-mkdir openssl.multi
-cd openssl.x86_64
-./Configure darwin64-x86_64-cc shared -mmacosx-version-min=10.15
-make
-```
-
-If you have an `AMD` architecture, run `sudo make install` then continue.
-
-The configuration for the `ARM` architecture goes as follows:
-
-```bash
-cd ~/Projects/openssl.arm64
-./Configure darwin64-arm64-cc shared enable-rc5 zlib no-asm -mmacosx-version-min=10.15 
-make
-```
-
-If you have an `ARM` architecture, run `sudo make install` then continue.
-
-```bash
-cd ~/Projects
-lipo -arch arm64 openssl.arm64/libcrypto.3.dylib -arch x86_64 openssl.x86_64/libcrypto.3.dylib -output openssl.multi/libcrypto.3.dylib -create
-lipo -arch arm64 openssl.arm64/libssl.3.dylib -arch x86_64 openssl.x86_64/libssl.3.dylib -output openssl.multi/libssl.3.dylib -create
-lipo -arch arm64 openssl.arm64/libcrypto.a -arch x86_64 openssl.x86_64/libcrypto.a -output openssl.multi/libcrypto.a -create
-lipo -arch arm64 openssl.arm64/libssl.a -arch x86_64 openssl.x86_64/libssl.a -output openssl.multi/libssl.a -create
-sudo cp openssl.multi/* /usr/local/lib/
-```
-
 ## Poco
 
-> :warning: **`Poco` requires [OpenSSL](#openssl) to be installed.**
+> :warning: **`Poco` requires OpenSSL to be installed.**
 
 Download and build `Poco`:
 
@@ -312,7 +270,7 @@ The project requires additional CMake variables for a correct build. To inject t
 ./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release] [--output-dir=<output_dir>]
 ```
 
-> **Note:** Currently only **xxHash** and **log4cplus** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** Currently only **xxHash**, **log4cplus**, **OpenSSL** and **libzip** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
 
 ---
 # Build in Debug

@@ -2,11 +2,10 @@
 - [Installation Requirements](#installation-requirements)
     - [Packages](#packages)
     - [Qt 6.2.3](#qt-623)
-    - [OpenSSL](#openssl)
     - [Poco](#poco)
     - [CPPUnit](#cppunit)
     - [Sentry](#sentry)
-    - [xxHash & log4cplus](#xxhash--log4cplus)
+    - [xxHash, log4cplus, OpenSSL & zlib](#xxhash-log4cplus-openssl--zlib)
     - [libzip](#libzip)
     - [Conan](#conan)
 - [Build in Debug](#build-in-debug)
@@ -40,7 +39,6 @@ You will need cmake and clang to compile the libraries and the kDrive project
 This documentation was made for Ubuntu 22.04 LTS
 
 We are migrating the dependency management from manual to using conan.
-Currently, only the dependency `xxHash` is managed by conan. 
 
 ## Packages
 
@@ -69,7 +67,7 @@ sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/lib/llvm-18/bin
 
 Check the version again with `clang --version` to ensure that the version is now 18 or higher.
 
-## xxHash & log4cplus
+## xxHash, log4cplus, OpenSSL & zlib
 
 See [Conan](#conan) part.
 
@@ -92,23 +90,9 @@ If, following the installation, you cannot load the Qt platform plugin xcb, you 
 sudo apt install libxcb-cursor0
 ```
 
-## OpenSSL
-
-The OpenSSL Configure will require Perl to be installed first
-
-```bash
-cd ~/Projects
-git clone git@github.com:openssl/openssl.git
-cd openssl
-git checkout tags/openssl-3.2.1
-./Configure shared
-make
-sudo make install
-```
-
 ## Poco
 
-> :warning: **`Poco` requires [OpenSSL](#openssl) to be installed.**
+> :warning: **`Poco` requires OpenSSL to be installed.**
 
 For ARM64:
 ```bash
@@ -285,7 +269,7 @@ The project requires additional CMake variables for a correct build. To inject t
 ./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release] [--output-dir=<output_dir>]
 ```
 
-> **Note:** Currently only **xxHash** and **log4cplus** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** Currently only **xxHash**, **log4cplus**, **OpenSSL** and **zlib** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
 
 ---
 # Build in Debug

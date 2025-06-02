@@ -4,8 +4,7 @@
 - [Installation Requirements](#installation-requirements)
     - [Qt 6.2.3](#qt-623)
     - [Sentry](#sentry)
-    - [xxHash & log4cplus](#xxhash--log4cplus)
-    - [OpenSSL](#openssl)
+    - [xxHash, log4cplus, OpenSSL & ZLib](#xxhash-log4cplus-openssl--zlib)
     - [Poco](#poco)
     - [CPPUnit](#cppunit)
     - [Zlib](#zlib)
@@ -97,27 +96,13 @@ cmake --build build --config RelWithDebInfo
 cmake --install build --config RelWithDebInfo
 ```
 
-## xxHash & log4cplus
+## xxHash, log4cplus, OpenSSL & Zlib
 
 See [Conan](#conan) for installation instructions.
 
-## OpenSSL
-
-Clone `OpenSSL` sources:
-
-```powershell
-cd F:\Projects
-git clone git@github.com:openssl/openssl.git
-cd openssl
-git checkout tags/openssl-3.2.1
-```
-
-Then follow their [installation instructions](https://github.com/openssl/openssl/blob/master/NOTES-WINDOWS.md) for Windows. 
-Note that installing `NASM` is not required.
-
 ## Poco
 
-> :warning: **`Poco` requires [OpenSSL](#openssl) to be installed.**
+> :warning: **`Poco` requires OpenSSL to be installed.**
 
 Clone and build `Poco`:
 
@@ -163,6 +148,8 @@ Then open `src/CppUnitLibrariesXXXX.sln` workspace in Visual Studio to configure
 Copy `lib` and `include` folders from F:\Projects\cppunit\` to `C:\Program Files (x86)\cppunit`.
 
 ## Zlib
+
+> :warning: `zlib` is currently managed by [Conan](#conan) for OpenSSL, but it is also needed for libzip. Since libzip is not managed by Conan, you must install zlib manually using the instructions below.
 
 Download [Zlib](https://zlib.net/fossils/zlib-1.2.11.tar.gz) then run the following:
 ```cmd
@@ -332,7 +319,7 @@ The project requires additional CMake variables for a correct build. To inject t
 powershell ./infomaniak-build-tools/conan/build_dependencies.ps1 [Debug|Release] [-OutputDir <output_dir>]
 ```
 
-> **Note:** Currently only **xxHash** and **log4cplus** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** Currently only **xxHash**, **log4cplus**, **OpenSSL** and **zlib** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
 
 ---
 # Build in Debug
@@ -345,11 +332,11 @@ In order for CMake to be able to find all dependencies, add all libraries instal
 ```
 C:\Program Files (x86)\Poco\bin
 C:\Program Files (x86)\libzip\bin
-C:\Program Files (x86)\zlib-1.2.11\bin
 C:\Program Files (x86)\Sentry-Native\bin
 C:\Program Files (x86)\cppunit\bin
-C:\Program Files\OpenSSL\bin
 ```
+
+Since some dependencies are now managed by Conan, you may also need to run the `conanrun.bat` script to append the paths of the Conan-installed dependencies to the `PATH` environment variable.
 
 ## Using CLion
 
