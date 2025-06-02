@@ -1,11 +1,12 @@
 name: Linux kDrive desktop CI on x64 Arch
 
 on:
-  pull_request:
-    branches-ignore:
-      - 'release/**'
-    types: [review_requested ]
-
+  workflow_dispatch: 
+  # Legacy CI
+  #pull_request:
+  #  branches-ignore:
+  #    - 'release/**'
+  #  types: [ synchronize, review_requested ]	
 concurrency:
   group: linux-${{ github.head_ref }}
   cancel-in-progress: true
