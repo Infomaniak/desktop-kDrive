@@ -26,7 +26,7 @@
 #include "libsyncengine/jobs/network/API_v2/deletejob.h"
 #include "libsyncengine/jobs/network/API_v2/movejob.h"
 #include "libsyncengine/jobs/network/API_v2/renamejob.h"
-#include "../../../../src/libsyncengine/jobs/network/API_v2/upload/uploadjob.h"
+#include "libsyncengine/jobs/network/API_v2/upload/uploadjob.h"
 #include "libsyncengine/jobs/network/networkjobsparams.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 
@@ -150,7 +150,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         {
             using namespace std::chrono;
             const auto time = system_clock::to_time_t(system_clock::now());
-            UploadJob job(nullptr, _driveDbId, testFilePath, testFileName, remoteTmpDir.id(), time);
+            UploadJob job(nullptr, _driveDbId, testFilePath, testFileName, remoteTmpDir.id(), time, time);
             job.runSynchronously();
 
             // Extract file ID
@@ -174,7 +174,8 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         testCallStr = R"(echo "This is an edit test" >> )" + testFilePath.make_preferred().string();
         std::system(testCallStr.c_str());
 
-        SyncTime prevModTime = _syncPal->liveSnapshot(ReplicaSide::Remote).lastModified(_testFileId);
+        SyncTime prevCreationTime = _syncPal->liveSnapshot(ReplicaSide::Remote).createdAt(_testFileId);
+        SyncTime prevModificationTime = _syncPal->liveSnapshot(ReplicaSide::Remote).lastModified(_testFileId);
 
         Utility::msleep(1000);
 
@@ -185,7 +186,8 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         // Get activity from the server
         _syncPal->_remoteFSObserverWorker->processEvents();
 
-        CPPUNIT_ASSERT_GREATER(prevModTime, _syncPal->liveSnapshot(ReplicaSide::Remote).lastModified(_testFileId));
+        CPPUNIT_ASSERT_EQUAL(prevCreationTime, _syncPal->liveSnapshot(ReplicaSide::Remote).createdAt(_testFileId));
+        CPPUNIT_ASSERT_GREATER(prevModificationTime, _syncPal->liveSnapshot(ReplicaSide::Remote).lastModified(_testFileId));
     }
 
     {

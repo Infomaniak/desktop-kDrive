@@ -75,8 +75,8 @@ void BenchUpdateTreeWorker::setUp() {
         }
     }
     std::cout << std::endl;
-    std::cout << "Initial situation generated in " << timer.elapsed().count() << "s for " << _situationGenerator.size()
-              << " items" << std::endl;
+    std::cout << "Initial situation generated in " << timer.elapsed<DoubleSeconds>().count() << "s for "
+              << _situationGenerator.size() << " items" << std::endl;
 }
 
 void BenchUpdateTreeWorker::tearDown() {
@@ -93,7 +93,7 @@ void BenchUpdateTreeWorker::measureUpdateTreeGenerationFromScratch() {
     _updateTree->clear();
     const TimerUtility timer;
     _testObj->execute();
-    std::cout << "Update tree worker executed in " << timer.elapsed().count() << "s" << std::endl;
+    std::cout << "Update tree worker executed in " << timer.elapsed<DoubleSeconds>().count() << "s" << std::endl;
 }
 
 void BenchUpdateTreeWorker::measureUpdateTreeGenerationFromExisting() {
@@ -101,7 +101,7 @@ void BenchUpdateTreeWorker::measureUpdateTreeGenerationFromExisting() {
 
     const TimerUtility timer;
     _testObj->execute();
-    std::cout << "Update tree worker executed in " << timer.elapsed().count() << "s" << std::endl;
+    std::cout << "Update tree worker executed in " << timer.elapsed<DoubleSeconds>().count() << "s" << std::endl;
 }
 
 void BenchUpdateTreeWorker::measureUpdateTreeGenerationFromScratchWithFsOps() {
@@ -117,7 +117,7 @@ void BenchUpdateTreeWorker::measureUpdateTreeGenerationFromScratchWithFsOps() {
     _updateTree->clear();
     const TimerUtility timer;
     _testObj->execute();
-    std::cout << "Update tree worker executed in " << timer.elapsed().count() << "s" << std::endl;
+    std::cout << "Update tree worker executed in " << timer.elapsed<DoubleSeconds>().count() << "s" << std::endl;
 }
 
 void BenchUpdateTreeWorker::measureUpdateTreeGenerationFromExistingWithFsOps() {
@@ -132,7 +132,7 @@ void BenchUpdateTreeWorker::measureUpdateTreeGenerationFromExistingWithFsOps() {
 
     const TimerUtility timer;
     _testObj->execute();
-    std::cout << "Update tree worker executed in " << timer.elapsed().count() << "s" << std::endl;
+    std::cout << "Update tree worker executed in " << timer.elapsed<DoubleSeconds>().count() << "s" << std::endl;
 }
 
 } // namespace KDC

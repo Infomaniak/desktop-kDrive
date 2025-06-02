@@ -96,9 +96,10 @@ void UpdateTreeWorker::execute() {
     }
 
     if (exitCode == ExitCode::Ok) {
-        LOG_SYNCPAL_DEBUG(_logger, "Update Tree " << _side << " updated in: " << timer.elapsed().count() << "s");
+        LOG_SYNCPAL_DEBUG(_logger, "Update Tree " << _side << " updated in: " << timer.elapsed<DoubleSeconds>().count() << "s");
     } else {
-        LOG_SYNCPAL_WARN(_logger, "Update Tree " << _side << " generation failed after: " << timer.elapsed().count() << "s");
+        LOG_SYNCPAL_WARN(_logger, "Update Tree " << _side << " generation failed after: "
+                                                 << timer.elapsed<DoubleSeconds>().count() << "s");
     }
 
     // Clear unexpected operation set once used
@@ -1011,7 +1012,7 @@ ExitCode UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &path, bool is
         return ExitCode::Ok;
     }
 
-    std::vector<SyncName> names = Utility::splitPath(path);
+    std::vector<SyncName> names = CommonUtility::splitSyncPath(path);
 
     // create intermediate nodes if needed
     std::shared_ptr<Node> tmpNode = _updateTree->rootNode();
@@ -1115,7 +1116,7 @@ bool UpdateTreeWorker::integrityCheck() {
 }
 
 ExitCode UpdateTreeWorker::getNewPathAfterMove(const SyncPath &path, SyncPath &newPath) {
-    const std::vector<SyncName> itemNames = Utility::splitPath(path);
+    const std::vector<SyncName> itemNames = CommonUtility::splitSyncPath(path);
     std::vector<NodeId> nodeIds(itemNames.size());
 
     // Vector ID
@@ -1333,11 +1334,10 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
             // Update change events
             tmpNode->setChangeEvents(prevNode->changeEvents());
 
-            LOGW_SYNCPAL_DEBUG(_logger,
-                               _side << L" update tree: Changed events to '" << prevNode->changeEvents() << L"' for node '"
-                                     << SyncName2WStr(tmpNode->name()) << L"' (node ID: '"
-                                     << Utility::s2ws((tmpNode->id().has_value() ? *tmpNode->id() : std::string()))
-                                     << L"')");
+            LOGW_SYNCPAL_DEBUG(_logger, _side << L" update tree: Changed events to '" << prevNode->changeEvents()
+                                              << L"' for node '" << SyncName2WStr(tmpNode->name()) << L"' (node ID: '"
+                                              << Utility::s2ws((tmpNode->id().has_value() ? *tmpNode->id() : std::string()))
+                                              << L"')");
         }
     }
 
