@@ -25,7 +25,6 @@ if (USE_OUR_OWN_SQLITE3)
 endif()
 
 if (WIN32)
-    include_directories(${log4cplus_INCLUDE_DIRS})
     include_directories("C:/Program Files (x86)/cppunit/include")
 else()
     include_directories("/usr/local/include")

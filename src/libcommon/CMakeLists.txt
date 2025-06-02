@@ -108,14 +108,12 @@ if (WIN32)
     target_include_directories(${libcommon_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
-        ${CMAKE_INCLUDE_PATH}
         "C:/Program Files (x86)/libzip/include"
         ${CMAKE_SOURCE_DIR}/src/3rdparty/keychain/include)
 else()
     target_include_directories(${libcommon_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
-        ${CMAKE_INCLUDE_PATH}
         "/usr/local/include"
         ${CMAKE_SOURCE_DIR}/src/3rdparty/keychain/include)
 endif()
@@ -144,6 +142,16 @@ endif()
 
 if(UNIX)
     target_link_libraries(${libcommon_NAME} utf8proc)
+
+    IF (NOT APPLE)
+        # Copy .so files to the conan dependency directory
+        install(FILES
+                ${log4cplus_PACKAGE_FOLDER_RELEASE}/lib/liblog4cplus.so
+                ${log4cplus_PACKAGE_FOLDER_RELEASE}/lib/liblog4cplus.so.9
+                DESTINATION "${CONAN_DEP_DIR}"
+                PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+        )
+    ENDIF()
 endif()
 
 if(ZLIB_FOUND)

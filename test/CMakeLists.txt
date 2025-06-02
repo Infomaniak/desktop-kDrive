@@ -30,4 +30,3 @@ add_subdirectory(libparms)
 add_subdirectory(libsyncengine)
 add_subdirectory(server)
 
-include_directories(${log4cplus_INCLUDE_DIRS})

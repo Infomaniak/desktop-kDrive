@@ -321,7 +321,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     bool error = false;
     bool ignore = false;
     bool eof = false;
-    std::unordered_set<SyncName> existingFiles;
+    SyncNameSet existingFiles;
     uint64_t itemCount = 0;
     perfMonitorBackRequest.stop();
     sentry::pTraces::counterScoped::RFSOExploreItem perfMonitorExploreItem(!saveCursor, syncDbId());

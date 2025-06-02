@@ -19,7 +19,7 @@ add_subdirectory(src/3rdparty/keychain)
 
 #####
 
-if (WIN32 AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+if (CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     # Use fallback library types for imported dependencies
     set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO "RelWithDebInfo;Release;")
 endif ()
@@ -47,6 +47,7 @@ IF (UNIX AND NOT APPLE)
     SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
             "/usr/local/lib"
     )
+    set(CONAN_DEP_DIR "${CMAKE_BINARY_DIR}/conan_dependencies" CACHE PATH "Conan dependencies directory. Used to copy the .so files for the appimage builder.")
 ELSEIF (WIN32)
     # TODO Remove lines once lib is managed by conan: add directories to search for libraries in .cmake files.
     SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
