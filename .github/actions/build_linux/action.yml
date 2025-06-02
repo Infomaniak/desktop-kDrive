@@ -4,12 +4,6 @@ description: 'Build macOS app'
 runs:
     using: "composite"
     steps:
-      - name: Checkout the PR
-        uses: actions/checkout@v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
-          submodules: recursive
-
       - name: Clean the log directory
         run : rm -rf /tmp/kDrive-logdir/*
         shell: bash
