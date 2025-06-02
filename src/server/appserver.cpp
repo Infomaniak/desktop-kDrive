@@ -129,40 +129,33 @@ AppServer::~AppServer() {
 }
 
 void AppServer::init() {
-    std::cout << "AppServer::init 1" << std::endl;
-
     _startedAt.start();
     setOrganizationDomain(QLatin1String(APPLICATION_REV_DOMAIN));
     setApplicationName(_theme->appName());
     setWindowIcon(_theme->applicationIcon());
     setApplicationVersion(_theme->version());
-    std::cout << "AppServer::init 2" << std::endl;
 
     // Setup logging with default parameters
     if (!initLogging()) {
         throw std::runtime_error("Unable to init logging.");
     }
-    std::cout << "AppServer::init 3" << std::endl;
 
     parseOptions(_arguments);
     if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
         LOG_INFO(_logger, "Command line options processed");
         return;
     }
-    std::cout << "AppServer::init 4" << std::endl;
 
     if (isRunning()) {
         LOG_INFO(_logger, "AppServer already running");
         return;
     }
-    std::cout << "AppServer::init 5" << std::endl;
 
     // Cleanup at quit
     connect(this, &QCoreApplication::aboutToQuit, this, &AppServer::onCleanup);
 
     // Setup single application: show the Settings or Synthesis window if the application is running.
     connect(this, &QtSingleApplication::messageReceived, this, &AppServer::onMessageReceivedFromAnotherProcess);
-    std::cout << "AppServer::init 6" << std::endl;
 
     // Remove the files that keep a record of former crash or kill events
     SignalType signalType = SignalType::None;
@@ -170,13 +163,11 @@ void AppServer::init() {
     if (signalType != SignalType::None) {
         LOG_INFO(_logger, "Restarting after a " << SignalCategory::Crash << " with signal " << signalType);
     }
-    std::cout << "AppServer::init 7" << std::endl;
 
     CommonUtility::clearSignalFile(AppType::Server, SignalCategory::Kill, signalType);
     if (signalType != SignalType::None) {
         LOG_INFO(_logger, "Restarting after a " << SignalCategory::Kill << " with signal " << signalType);
     }
-    std::cout << "AppServer::init 8" << std::endl;
 
     // Init parms DB
     std::filesystem::path parmsDbPath = makeDbName();
@@ -184,7 +175,6 @@ void AppServer::init() {
         LOG_WARN(_logger, "Error in AppServer::makeDbName");
         throw std::runtime_error("Unable to get ParmsDb path.");
     }
-    std::cout << "AppServer::init 9" << std::endl;
 
     bool newDbExists = false;
     IoError ioError = IoError::Success;
@@ -192,7 +182,6 @@ void AppServer::init() {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(parmsDbPath, ioError));
         throw std::runtime_error("Unable to check if ParmsDb exists.");
     }
-    std::cout << "AppServer::init 10" << std::endl;
 
     std::filesystem::path pre334ConfigFilePath =
             std::filesystem::path(QStr2SyncName(MigrationParams::configDir().filePath(MigrationParams::configFileName())));
@@ -201,25 +190,21 @@ void AppServer::init() {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(pre334ConfigFilePath, ioError));
         throw std::runtime_error("Unable to check if a pre 3.3.4 config exists.");
     }
-    std::cout << "AppServer::init 11" << std::endl;
 
     LOGW_INFO(_logger, L"New DB exists : " << Path2WStr(parmsDbPath) << L" => " << newDbExists);
     LOGW_INFO(_logger, L"Old config exists : " << Path2WStr(pre334ConfigFilePath) << L" => " << oldConfigExists);
-    std::cout << "AppServer::init 12" << std::endl;
 
     // Init ParmsDb instance
     if (!initParmsDB(parmsDbPath, _theme->version().toStdString())) {
         LOG_WARN(_logger, "Error in AppServer::initParmsDB");
         throw std::runtime_error("Unable to initialize ParmsDb.");
     }
-    std::cout << "AppServer::init 13" << std::endl;
 
     // Clear old server errors
     if (clearErrors(0) != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in AppServer::clearErrors");
         throw std::runtime_error("Unable to clear old errors.");
     }
-    std::cout << "AppServer::init 14" << std::endl;
 
     bool migrateFromPre334 = !newDbExists && oldConfigExists;
     if (migrateFromPre334) {
@@ -237,14 +222,12 @@ void AppServer::init() {
             addError(Error(errId(), ExitCode::DataError, ExitCause::MigrationProxyNotImplemented));
         }
     }
-    std::cout << "AppServer::init 15" << std::endl;
 
     // Init KeyChainManager instance
     if (!KeyChainManager::instance()) {
         LOG_WARN(_logger, "Error in KeyChainManager::instance");
         throw std::runtime_error("Unable to initialize key chain manager.");
     }
-    std::cout << "AppServer::init 16" << std::endl;
 
 #if defined(__unix__) && !defined(__APPLE__)
     // For access to keyring in order to promt authentication popup
@@ -257,7 +240,6 @@ void AppServer::init() {
         LOG_WARN(_logger, "Error in ParametersCache::instance");
         throw std::runtime_error("Unable to initialize parameters cache.");
     }
-    std::cout << "AppServer::init 17" << std::endl;
 
     // Setup translations
     CommonUtility::setupTranslations(this, ParametersCache::instance()->parameters().language());
@@ -269,7 +251,6 @@ void AppServer::init() {
         LOG_WARN(_logger, "Error in Log::configure");
         addError(Error(errId(), ExitCode::SystemError, ExitCause::Unknown));
     }
-    std::cout << "AppServer::init 18" << std::endl;
 
     // Log usefull infomation
     logUsefulInformation();
@@ -328,7 +309,6 @@ void AppServer::init() {
         addLibraryPath(extraPluginPath);
     }
 #endif
-    std::cout << "AppServer::init 19" << std::endl;
 
     // Check vfs plugins
     QString error;
@@ -338,14 +318,12 @@ void AppServer::init() {
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Mac, error)) LOG_INFO(_logger, "VFS mac plugin is available");
 #endif
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
-    std::cout << "AppServer::init 20" << std::endl;
 
     // Init socket api
     _socketApi.reset(new SocketApi(_syncPalMap, _vfsMap));
     _socketApi->setAddErrorCallback(&addError);
     _socketApi->setGetThumbnailCallback(&ServerRequests::getThumbnail);
     _socketApi->setGetPublicLinkUrlCallback(&ServerRequests::getPublicLinkUrl);
-    std::cout << "AppServer::init 21" << std::endl;
 
     // Init CommServer instance
     if (!CommServer::instance()) {
