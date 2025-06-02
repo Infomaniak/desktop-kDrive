@@ -94,6 +94,8 @@ class ComputeFSOperationWorker : public ISyncWorker {
                                       NodeSet &tmpTooBigList);
 
         void updateUnsyncedList();
+        ExitCode updateSyncNode(SyncNodeType syncNodeType);
+        ExitCode updateSyncNode();
         void logOperationGeneration(const ReplicaSide side, const FSOpPtr fsOp);
         void notifyIgnoredItem(const NodeId &nodeId, const SyncPath &relativePath, NodeType nodeType);
         ExitInfo blacklistItem(const SyncPath &relativeLocalPath);

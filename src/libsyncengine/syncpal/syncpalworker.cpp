@@ -296,10 +296,6 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             workers[1] = nullptr;
             _syncPal->copySnapshots();
             LOG_IF_FAIL(_syncPal->syncDb()->cache().reloadIfNeeded());
-            assert(_syncPal->snapshotCopy(ReplicaSide::Local)->checkIntegrityRecursively() &&
-                   "Local snapshot is corrupted, see logs for details");
-            assert(_syncPal->snapshotCopy(ReplicaSide::Remote)->checkIntegrityRecursively() &&
-                   "Remote snapshot is corrupted, see logs for details");
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             _syncPal->setRestart(false);
@@ -384,20 +380,20 @@ void SyncPalWorker::initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2],
 SyncStep SyncPalWorker::nextStep() const {
     switch (_step) {
         case SyncStep::Idle: {
-            const bool areSnapshotsValid =
-                    _syncPal->isSnapshotValid(ReplicaSide::Local) && _syncPal->isSnapshotValid(ReplicaSide::Remote);
+            const bool areLiveSnapshotsValid =
+                    _syncPal->liveSnapshot(ReplicaSide::Local).isValid() && _syncPal->liveSnapshot(ReplicaSide::Remote).isValid();
             const bool areFSOWorkersRunning =
                     _syncPal->_localFSObserverWorker->isRunning() && _syncPal->_remoteFSObserverWorker->isRunning();
             const bool areFSOWorkersInitializing =
                     _syncPal->_localFSObserverWorker->initializing() || _syncPal->_remoteFSObserverWorker->initializing();
             const bool areFSOWorkersUpdating =
                     _syncPal->_localFSObserverWorker->updating() || _syncPal->_remoteFSObserverWorker->updating();
-            const bool areSnapshotsUpdated =
-                    _syncPal->snapshot(ReplicaSide::Local)->updated() || _syncPal->snapshot(ReplicaSide::Remote)->updated();
+            const bool areLiveSnapshotsUpdated =
+                    _syncPal->liveSnapshot(ReplicaSide::Local).updated() || _syncPal->liveSnapshot(ReplicaSide::Remote).updated();
 
 
-            return areSnapshotsValid && areFSOWorkersRunning && !areFSOWorkersInitializing && !areFSOWorkersUpdating &&
-                                   (areSnapshotsUpdated || _syncPal->restart())
+            return areLiveSnapshotsValid && areFSOWorkersRunning && !areFSOWorkersInitializing && !areFSOWorkersUpdating &&
+                                   (areLiveSnapshotsUpdated || _syncPal->restart())
                            ? SyncStep::UpdateDetection1
                            : SyncStep::Idle;
         }
