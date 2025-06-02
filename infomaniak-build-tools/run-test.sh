@@ -19,24 +19,30 @@
 #
 #!/bin/bash
 
+# Color coding
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+NC='\033[0m'
+
 if [ -z "$1" ]; then
-    echo -e "Error: No path provided. Usage: $0 <dir path> <filename>"
+    echo -e "${RED}Error: No path provided. Usage: $0 <dir path> <filename>${NC}"
     exit 1
 fi
 
 if [ -z "$2" ]; then
-    echo -e "Error: No filename provided. Usage: $0 <dir path> <filename>"
+    echo -e "${RED}Error: No filename provided. Usage: $0 <dir path> <filename>${NC}"
     exit 1
 fi
 
 dir=$1
 tester=$2
 
-echo "---------- Running: $tester ----------"
+echo "${YELLOW}---------- Running $($tester) ----------${NC}"
 pushd $dir 1>/dev/null
 
 if [ ! -f "$tester" ]; then
-    echo -e "Error: File $tester does not exist."
+    echo -e "${RED}Error: File $tester does not exist.${NC}"
     exit 1
 fi
 
@@ -44,10 +50,10 @@ chmod +x $tester
 ./$tester
 
 if [ $? -ne 0 ]; then
-    echo "---------- Failure: $tester ----------"
+    echo "${RED}---------- Failure: $($tester) ----------${NC}"
     exit 1
 else
-    echo "---------- Success: $tester ----------"
+    echo "${GREEN}---------- Success: $($tester) ----------${NC}"
 fi
 
 popd 1>/dev/null
