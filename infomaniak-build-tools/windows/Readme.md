@@ -13,7 +13,6 @@
     - [C++ Redistributable](#redistributable)
     - [NSIS](#nsis)
     - [7za](#7za)
-    - [IcoTool](#icotool)
 - [Certificate Configuration](#certificate-configuration)
 - [Build in Debug](#build-in-debug)
     - [Using CLion](#using-clion)
@@ -367,7 +366,7 @@ You can disable QML debugger from the settings to avoid some error pop-ups.
 
 ### Additionnal Requirements
 
-To be able to properly debug, you will need to install the `Qt Debug Information Files` from the [`Qt 6.2.3` Section](#qt-6.2.3).
+To be able to properly debug, you will need to install the `Qt Debug Information Files` from the [`Qt 6.2.3` Section](#qt-623).
 If you cannot see it, you need to tick the **Archive** box and filter again.
 
 ### CMake Parameters
