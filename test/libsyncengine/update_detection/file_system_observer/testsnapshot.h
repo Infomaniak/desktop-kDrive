@@ -51,7 +51,7 @@ class TestSnapshot : public CppUnit::TestFixture, public TestBase {
         void testCopySnapshot();
         void testSnapshotRevision();
 
-        std::unique_ptr<Snapshot> _snapshot;
+        std::unique_ptr<LiveSnapshot> _liveSnapshot;
         NodeId _rootNodeId;
         DbNode _dummyRootNode;
 };

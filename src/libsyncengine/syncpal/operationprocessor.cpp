@@ -64,12 +64,12 @@ bool OperationProcessor::isPseudoConflict(const std::shared_ptr<Node> node, cons
     }
 
     // Size can differ for links between remote and local replica, do not check it in that case
-    const auto snapshot = _syncPal->snapshotCopy(node->side());
+    const auto snapshot = _syncPal->snapshot(node->side());
     const bool sameSizeAndDate = node->lastmodified() == correspondingNode->lastmodified() &&
                                  (snapshot->isLink(*node->id()) || node->size() == correspondingNode->size());
 
     const auto nodeChecksum = snapshot->contentChecksum(*node->id());
-    const auto otherSnapshot = _syncPal->snapshotCopy(correspondingNode->side());
+    const auto otherSnapshot = _syncPal->snapshot(correspondingNode->side());
     const auto correspondingNodeChecksum = otherSnapshot->contentChecksum(*correspondingNode->id());
 
     const bool useContentChecksum = !nodeChecksum.empty() && !correspondingNodeChecksum.empty();

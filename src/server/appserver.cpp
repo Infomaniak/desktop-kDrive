@@ -3417,7 +3417,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, cons
         }
 
         if (!whiteList.empty()) {
-            // Set undecidedList (create or overwrite the possible existing list in DB)
+            // Set whiteList (create or overwrite the possible existing list in DB)
             if (const ExitInfo exitInfo = _syncPalMap[sync.dbId()]->setSyncIdSet(SyncNodeType::WhiteList, whiteList); !exitInfo) {
                 LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet for syncDbId=" << sync.dbId() << " : " << exitInfo);
                 return exitInfo;

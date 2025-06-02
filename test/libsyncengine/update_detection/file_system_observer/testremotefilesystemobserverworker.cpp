@@ -90,6 +90,7 @@ void TestRemoteFileSystemObserverWorker::setUp() {
     _syncPal = std::make_shared<SyncPalTest>(sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
+    _syncPal->createWorkers();
     /// Insert node in blacklist
     SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {testBlackListedDirId});
 
@@ -121,15 +122,15 @@ void TestRemoteFileSystemObserverWorker::tearDown() {
 
 void TestRemoteFileSystemObserverWorker::testGenerateRemoteInitialSnapshot() {
     NodeSet ids;
-    _syncPal->_remoteFSObserverWorker->snapshot()->ids(ids);
+    _syncPal->liveSnapshot(ReplicaSide::Remote).ids(ids);
 
     NodeSet childrenIds;
-    CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->snapshot()->getChildrenIds(testRemoteFsoDirId, childrenIds));
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).getChildrenIds(testRemoteFsoDirId, childrenIds));
     CPPUNIT_ASSERT_EQUAL(size_t(nbFileInTestDir), childrenIds.size());
 
-    // Blacklisted folder should not appear in snapshot.
-    CPPUNIT_ASSERT(!_syncPal->_remoteFSObserverWorker->snapshot()->exists(testBlackListedDirId));
-    CPPUNIT_ASSERT(!_syncPal->_remoteFSObserverWorker->snapshot()->exists(testBlackListedFileId));
+    // Blacklisted folder should not appear in liveSnapshot.
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(testBlackListedDirId));
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(testBlackListedFileId));
 }
 
 void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
@@ -163,8 +164,8 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         // Get activity from the server
         _syncPal->_remoteFSObserverWorker->processEvents();
 
-        CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->snapshot()->exists(_testFileId));
-        CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->snapshot()->canWrite(_testFileId));
+        CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(_testFileId));
+        CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).canWrite(_testFileId));
     }
 
     {
@@ -173,8 +174,8 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         testCallStr = R"(echo "This is an edit test" >> )" + testFilePath.make_preferred().string();
         std::system(testCallStr.c_str());
 
-        SyncTime prevCreationTime = _syncPal->_remoteFSObserverWorker->snapshot()->createdAt(_testFileId);
-        SyncTime prevModificationTime = _syncPal->_remoteFSObserverWorker->snapshot()->lastModified(_testFileId);
+        SyncTime prevCreationTime = _syncPal->liveSnapshot(ReplicaSide::Remote).createdAt(_testFileId);
+        SyncTime prevModificationTime = _syncPal->liveSnapshot(ReplicaSide::Remote).lastModified(_testFileId);
 
         Utility::msleep(1000);
 
@@ -185,8 +186,8 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         // Get activity from the server
         _syncPal->_remoteFSObserverWorker->processEvents();
 
-        CPPUNIT_ASSERT_EQUAL(prevCreationTime, _syncPal->_remoteFSObserverWorker->snapshot()->createdAt(_testFileId));
-        CPPUNIT_ASSERT_GREATER(prevModificationTime, _syncPal->_remoteFSObserverWorker->snapshot()->lastModified(_testFileId));
+        CPPUNIT_ASSERT_EQUAL(prevCreationTime, _syncPal->liveSnapshot(ReplicaSide::Remote).createdAt(_testFileId));
+        CPPUNIT_ASSERT_GREATER(prevModificationTime, _syncPal->liveSnapshot(ReplicaSide::Remote).lastModified(_testFileId));
     }
 
     {
@@ -198,7 +199,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         // Get activity from the server
         _syncPal->_remoteFSObserverWorker->processEvents();
 
-        CPPUNIT_ASSERT_EQUAL(nestedRemoteTmpDir.id(), _syncPal->_remoteFSObserverWorker->snapshot()->parentId(_testFileId));
+        CPPUNIT_ASSERT_EQUAL(nestedRemoteTmpDir.id(), _syncPal->liveSnapshot(ReplicaSide::Remote).parentId(_testFileId));
     }
 
     {
@@ -214,7 +215,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         _syncPal->_remoteFSObserverWorker->processEvents();
 
         CPPUNIT_ASSERT_EQUAL(SyncName2Str(newFileName),
-                             SyncName2Str(_syncPal->_remoteFSObserverWorker->snapshot()->name(_testFileId)));
+                             SyncName2Str(_syncPal->liveSnapshot(ReplicaSide::Remote).name(_testFileId)));
     }
 
     {
@@ -227,7 +228,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         // Get activity from the server
         _syncPal->_remoteFSObserverWorker->processEvents();
 
-        CPPUNIT_ASSERT(!_syncPal->_remoteFSObserverWorker->snapshot()->exists(_testFileId));
+        CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(_testFileId));
     }
 }
 
