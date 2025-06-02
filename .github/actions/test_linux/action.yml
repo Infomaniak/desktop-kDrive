@@ -62,11 +62,6 @@ runs:
           retention-days: 1
         if: always()
 
-      - name: Clean up log directory
-        if: always()
-        run : rm -rf /tmp/kDrive-logdir/* || true
-        shell: bash
-
       - name: Clean up
         run : rm -rf ${{ github.workspace }}/build-linux/test/*
         shell: bash

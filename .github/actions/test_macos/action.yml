@@ -21,6 +21,12 @@ runs:
           key: ${{ inputs.test_dependencies_version }}
           clean-key: true
 
+      - name: Clean the log directory
+        if  : contains(env.logdir_path, 'kDrive-logdir')
+        run : rm -rf ${{ env.logdir_path }}/*
+        shell: bash
+        continue-on-error: true
+
       - name: Download common files
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
@@ -60,12 +66,6 @@ runs:
           path: ${{ env.logdir_path }}/*
           retention-days: 1
         if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
-
-      - name: Clean the log directory
-        if  : contains(env.logdir_path, 'kDrive-logdir')
-        run : rm -rf ${{ env.logdir_path }}/*
-        shell: bash
-        continue-on-error: true
 
       - name: Clean up
         run : rm -rf ${{ github.workspace }}/build-macos/client/bin/*
