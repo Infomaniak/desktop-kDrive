@@ -17,7 +17,7 @@
  */
 
 #include "testsituationgenerator.h"
-
+#include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "db/dbnode.h"
 #include "syncpal/syncpal.h"
 #include "test_utility/testhelpers.h"
@@ -42,38 +42,25 @@ TestSituationGenerator::TestSituationGenerator() :
 
     _localUpdateTree = std::make_shared<UpdateTree>(ReplicaSide::Local, SyncDb::driveRootNode());
     _remoteUpdateTree = std::make_shared<UpdateTree>(ReplicaSide::Remote, SyncDb::driveRootNode());
-    _localSnapshot = std::make_shared<Snapshot>(ReplicaSide::Local, SyncDb::driveRootNode());
-    _remoteSnapshot = std::make_shared<Snapshot>(ReplicaSide::Remote, SyncDb::driveRootNode());
 }
 
 TestSituationGenerator::TestSituationGenerator(const std::shared_ptr<SyncPal> syncpal) :
     _syncDb(syncpal->syncDb()),
-    _localSnapshot(syncpal->snapshot(ReplicaSide::Local)),
-    _remoteSnapshot(syncpal->snapshot(ReplicaSide::Remote)),
+    _localLiveSnapshot(syncpal->_localFSObserverWorker->_liveSnapshot),
+    _remoteLiveSnapshot(syncpal->_remoteFSObserverWorker->_liveSnapshot),
     _localUpdateTree(syncpal->updateTree(ReplicaSide::Local)),
     _remoteUpdateTree(syncpal->updateTree(ReplicaSide::Remote)) {}
 
-TestSituationGenerator::TestSituationGenerator(const std::shared_ptr<SyncDb> syncDb,
-                                               const std::shared_ptr<Snapshot> localSnapshot,
-                                               const std::shared_ptr<Snapshot> remoteSnapshot,
-                                               const std::shared_ptr<UpdateTree> localUpdateTree,
-                                               const std::shared_ptr<UpdateTree> remoteUpdateTree) :
-    _syncDb(syncDb),
-    _localSnapshot(localSnapshot),
-    _remoteSnapshot(remoteSnapshot),
-    _localUpdateTree(localUpdateTree),
-    _remoteUpdateTree(remoteUpdateTree) {}
-
 void TestSituationGenerator::setSyncpal(const std::shared_ptr<SyncPal> syncpal) {
     _syncDb = syncpal->syncDb();
-    _localSnapshot = syncpal->snapshot(ReplicaSide::Local);
-    _remoteSnapshot = syncpal->snapshot(ReplicaSide::Remote);
+    _localLiveSnapshot = syncpal->_localFSObserverWorker->_liveSnapshot;
+    _remoteLiveSnapshot = syncpal->_remoteFSObserverWorker->_liveSnapshot;
     _localUpdateTree = syncpal->updateTree(ReplicaSide::Local);
     _remoteUpdateTree = syncpal->updateTree(ReplicaSide::Remote);
 }
 
 void TestSituationGenerator::generateInitialSituation(const std::string &jsonInputStr) {
-    if (!_syncDb || !_localSnapshot || !_remoteSnapshot || !_localUpdateTree || !_remoteUpdateTree)
+    if (!_syncDb || !_localLiveSnapshot || !_remoteLiveSnapshot || !_localUpdateTree || !_remoteUpdateTree)
         throw std::runtime_error("Invalid parameters!");
 
     Poco::JSON::Object::Ptr obj;
@@ -176,11 +163,12 @@ size_t TestSituationGenerator::size() const {
 void TestSituationGenerator::insertInAllSnapshot(const NodeType itemType, const NodeId &id, const NodeId &parentId) const {
     if (id.empty()) return;
     for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote}) {
+        if (!(side == ReplicaSide::Local ? _localLiveSnapshot : _remoteLiveSnapshot).has_value()) continue;
         const auto size = itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
         const auto parentFinalId = parentId.empty() ? "1" : generateId(side, parentId);
         const SnapshotItem item(generateId(side, id), parentFinalId, Str2SyncName(Utility::toUpper(id)), testhelpers::defaultTime,
                                 testhelpers::defaultTime, itemType, size, false, true, true);
-        (void) snapshot(side)->updateItem(item);
+        (void) liveSnapshot(side).updateItem(item);
     }
 }
 
