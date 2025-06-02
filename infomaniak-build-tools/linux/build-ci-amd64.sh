@@ -139,7 +139,7 @@ cmake -B$build_dir -H$BASEPATH \
     -DKDRIVE_THEME_DIR="$BASEPATH/infomaniak" \
     -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
     -DBUILD_UNIT_TESTS=$unit_tests \
-    -DCONAN_DEP_DIR="$conan_dependencies_folder"
+    -DCONAN_DEP_DIR="$conan_dependencies_folder" \
     -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
     "${cmake_param[@]}" \
 
