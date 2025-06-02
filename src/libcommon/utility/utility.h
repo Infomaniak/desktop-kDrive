@@ -217,6 +217,8 @@ struct COMMON_EXPORT CommonUtility {
         */
         static SyncNameSet computePathNormalizations(const SyncName &path);
 
+        static ReplicaSide syncNodeTypeSide(SyncNodeType type);
+
     private:
         static std::mutex _generateRandomStringMutex;
 
