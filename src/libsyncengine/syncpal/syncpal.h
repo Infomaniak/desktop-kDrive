@@ -91,6 +91,7 @@ struct SyncPalInfo {
         int userId{0};
         std::string driveName;
         SyncPath localPath;
+        NodeId localNodeId;
         SyncPath targetPath;
         VirtualFileMode vfsMode{VirtualFileMode::Off};
         bool restart{false};
@@ -109,9 +110,9 @@ struct SyncProgress {
         int64_t _estimatedRemainingTime{0};
 
         bool operator==(const SyncProgress &other) const {
-           return _currentFile == other._currentFile && _totalFiles == other._totalFiles &&
-                _completedSize == other._completedSize && _totalSize == other._totalSize &&
-                _estimatedRemainingTime == other._estimatedRemainingTime;
+            return _currentFile == other._currentFile && _totalFiles == other._totalFiles &&
+                   _completedSize == other._completedSize && _totalSize == other._totalSize &&
+                   _estimatedRemainingTime == other._estimatedRemainingTime;
         }
 };
 
@@ -146,10 +147,12 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         inline const std::string &driveName() const { return _syncInfo.driveName; }
         inline VirtualFileMode vfsMode() const { return _syncInfo.vfsMode; }
         inline SyncPath localPath() const { return _syncInfo.localPath; }
+        inline const NodeId &localNodeId() const { return _syncInfo.localNodeId; }
         inline bool restart() const { return _syncInfo.restart; }
         inline bool isAdvancedSync() const { return _syncInfo.isAdvancedSync(); }
 
         void setLocalPath(const SyncPath &path) { _syncInfo.localPath = path; }
+        ExitInfo setLocalNodeId(const NodeId &localNodeId);
         void setSyncHasFullyCompleted(bool completed) { _syncInfo.syncHasFullyCompleted = completed; }
         void setRestart(bool shouldRestart) { _syncInfo.restart = shouldRestart; }
         void setVfsMode(const VirtualFileMode mode) { _syncInfo.vfsMode = mode; }

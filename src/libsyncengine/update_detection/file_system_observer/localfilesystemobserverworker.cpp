@@ -401,6 +401,24 @@ void LocalFileSystemObserverWorker::execute() {
             tryToInvalidateSnapshot();
             break;
         }
+
+        bool isRootValid = false;
+        if (const ExitInfo exitInfo = isRootFolderValid(isRootValid); !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
+            exitCode = exitInfo.code();
+            setExitCause(exitInfo.cause());
+            invalidateSnapshot();
+            break;
+        }
+
+        if (!isRootValid) {
+            LOG_SYNCPAL_WARN(_logger, "Root folder is not valid (nodeId changed), stopping worker");
+            exitCode = ExitCode::SystemError;
+            setExitCause(ExitCause::SyncDirChanged);
+            invalidateSnapshot();
+            break;
+        }
+
         if (!_folderWatcher->exitInfo()) {
             LOG_SYNCPAL_WARN(_logger, "Error in FolderWatcher: " << _folderWatcher->exitInfo());
             exitCode = _folderWatcher->exitInfo().code();
@@ -478,6 +496,31 @@ ExitCode LocalFileSystemObserverWorker::generateInitialSnapshot() {
     _updating = false;
 
     return res;
+}
+
+ExitInfo LocalFileSystemObserverWorker::isRootFolderValid(bool &isValid) {
+    isValid = false;
+    if (NodeId rootNodeId; IoHelper::getNodeId(_rootFolder, rootNodeId)) {
+        if (rootNodeId.empty()) {
+            LOGW_SYNCPAL_WARN(_logger, L"Unable to get root folder nodeId: " << Utility::formatSyncPath(_rootFolder));
+            return ExitCode::SystemError;
+        }
+
+        if (_syncPal->localNodeId().empty()) {
+            if (ExitInfo exitInfo = _syncPal->setLocalNodeId(rootNodeId); !exitInfo) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setLocalNodeId: " << exitInfo);
+                return exitInfo;
+            }
+            isValid = true;
+            return ExitCode::Ok;
+        }
+
+        isValid = _syncPal->localNodeId() == rootNodeId;
+        return ExitCode::Ok;
+    } else {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getNodeId for root folder: " << Utility::formatSyncPath(_rootFolder));
+        return ExitCode::SystemError;
+    }
 }
 
 bool LocalFileSystemObserverWorker::canComputeChecksum(const SyncPath &absolutePath) {

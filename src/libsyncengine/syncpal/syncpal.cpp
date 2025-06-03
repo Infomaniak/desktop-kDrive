@@ -87,6 +87,7 @@ SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId_, const std::strin
     _syncInfo.driveDbId = sync.driveDbId();
     _syncInfo.localPath = sync.localPath();
     _syncInfo.localPath.make_preferred();
+    _syncInfo.localNodeId = sync.localNodeId();
     _syncInfo.targetPath = sync.targetPath();
     _syncInfo.targetPath.make_preferred();
 
@@ -753,6 +754,33 @@ void SyncPal::setSyncHasFullyCompletedInParms(bool syncHasFullyCompleted) {
         LOG_SYNCPAL_WARN(_logger, "Sync not found");
     }
 }
+
+ExitInfo SyncPal::setLocalNodeId(const NodeId &localNodeId) {
+    _syncInfo.localNodeId = localNodeId;
+    Sync sync;
+    bool found;
+    if (!ParmsDb::instance()->selectSync(syncDbId(), sync, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
+        return ExitCode::DbError;
+    }
+    if (!found) {
+        LOG_SYNCPAL_WARN(_logger, "Sync not found");
+        return ExitCode::DataError;
+    }
+
+    sync.setLocalNodeId(localNodeId);
+    if (!ParmsDb::instance()->updateSync(sync, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::updateSync");
+        return ExitCode::DbError;
+    }
+    if (!found) {
+        LOG_SYNCPAL_WARN(_logger, "Sync not found");
+        return ExitCode::DataError;
+    }
+
+    return ExitCode::Ok;
+}
+
 
 ExitCode SyncPal::setListingCursor(const std::string &value, int64_t timestamp) {
     Sync sync;

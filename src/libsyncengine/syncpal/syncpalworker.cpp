@@ -70,6 +70,7 @@ void SyncPalWorker::execute() {
     std::shared_ptr<ISyncWorker> stepWorkers[2] = {nullptr, nullptr};
     std::shared_ptr<SharedObject> inputSharedObject[2] = {nullptr, nullptr};
     time_t lastEstimateUpdate = 0;
+    bool syncDirChanged = false;
     for (;;) {
         // Check File System Observer workers status
         for (int index = 0; index < 2; index++) {
@@ -78,11 +79,18 @@ void SyncPalWorker::execute() {
                     LOG_SYNCPAL_DEBUG(_logger, "Stop FSO worker " << index);
                     isFSOInProgress[index] = false;
                     stopAndWaitForExitOfWorker(fsoWorkers[index]);
-                    bool shouldPause = fsoWorkers[index]->exitCode() == ExitCode::NetworkError ||
-                                       (fsoWorkers[index]->exitCode() == ExitCode::BackError &&
-                                        fsoWorkers[index]->exitCause() == ExitCause::ServiceUnavailable);
+                    const bool shouldPause = fsoWorkers[index]->exitCode() == ExitCode::NetworkError ||
+                                             (fsoWorkers[index]->exitCode() == ExitCode::BackError &&
+                                              fsoWorkers[index]->exitCause() == ExitCause::ServiceUnavailable);
                     if (shouldPause && !pauseAsked()) {
                         pause();
+                        continue;
+                    }
+
+                    syncDirChanged = fsoWorkers[index]->exitCode() == ExitCode::SystemError &&
+                                 fsoWorkers[index]->exitCause() == ExitCause::SyncDirChanged;
+                    if (syncDirChanged) {
+                        break;
                     }
                 } else if (!pauseAsked()) {
                     LOG_SYNCPAL_DEBUG(_logger, "Start FSO worker " << index);
@@ -92,6 +100,15 @@ void SyncPalWorker::execute() {
             }
         }
 
+        // Manage SyncDir change (might happen if the sync folder is deleted and recreated e.g migration from an other device) 
+        if (syncDirChanged) {
+            LOG_SYNCPAL_INFO(_logger, "Sync dir changed, stopping all workers and exiting");
+            stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
+            exitCode = ExitCode::FatalError;
+            setExitCause(ExitCause::WorkerExited);
+            break;
+        } 
+        
         // Manage stop
         if (stopAsked()) {
             // Stop all workers
@@ -526,8 +543,8 @@ void SyncPalWorker::resetVfsFilesStatus() {
             bool isManaged = true;
             IoError ioError = IoError::Success;
             if (!Utility::checkIfDirEntryIsManaged(*dirIt, isManaged, ioError)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged : "
-                                                   << Utility::formatSyncPath(absolutePath));
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Error in Utility::checkIfDirEntryIsManaged : " << Utility::formatSyncPath(absolutePath));
                 ok = false;
                 dirIt.disable_recursion_pending();
                 continue;
@@ -541,15 +558,13 @@ void SyncPalWorker::resetVfsFilesStatus() {
             }
 
             if (ioError == IoError::AccessDenied) {
-                LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Directory misses search permission : " << Utility::formatSyncPath(absolutePath));
+                LOGW_SYNCPAL_DEBUG(_logger, L"Directory misses search permission : " << Utility::formatSyncPath(absolutePath));
                 dirIt.disable_recursion_pending();
                 continue;
             }
 
             if (!isManaged) {
-                LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Directory entry is not managed : " << Utility::formatSyncPath(absolutePath));
+                LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry is not managed : " << Utility::formatSyncPath(absolutePath));
                 dirIt.disable_recursion_pending();
                 continue;
             }
