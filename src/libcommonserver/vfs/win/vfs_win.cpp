@@ -180,8 +180,8 @@ ExitInfo VfsWin::setPlaceholderStatus(const SyncPath &path, bool syncOngoing) {
 
 ExitInfo VfsWin::updateMetadata(const SyncPath &filePathStd, time_t creationTime, time_t modtime, int64_t size, const NodeId &) {
     const QString filePath = SyncName2QStr(filePathStd.native());
-    LOGW_DEBUG(logger(), L"updateMetadata: " << Utility::formatSyncPath(QStr2Path(filePath)) << L" creationTime="
-                                             << creationTime << L" modtime=" << modtime);
+    LOGW_DEBUG(logger(), L"updateMetadata: " << Utility::formatSyncPath(QStr2Path(filePath)) << L" creationTime=" << creationTime
+                                             << L" modtime=" << modtime);
 
     SyncPath fullPath(_vfsSetupParams.localPath / QStr2Path(filePath));
     if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
@@ -288,8 +288,7 @@ ExitInfo VfsWin::convertToPlaceholder(const SyncPath &pathStd, const SyncFileIte
     DWORD dwAttrs = GetFileAttributesW(fullPath.lexically_normal().native().c_str());
     if (dwAttrs == INVALID_FILE_ATTRIBUTES) {
         DWORD errorCode = GetLastError();
-        LOGW_WARN(logger(),
-                  L"Error in GetFileAttributesW: " << Utility::formatSyncPath(fullPath) << L" code=" << errorCode);
+        LOGW_WARN(logger(), L"Error in GetFileAttributesW: " << Utility::formatSyncPath(fullPath) << L" code=" << errorCode);
         return handleVfsError(fullPath);
     }
 
@@ -358,8 +357,7 @@ void VfsWin::convertDirContentToPlaceholder(const QString &filePath, bool isHydr
                 LOGW_DEBUG(logger(), L"Directory entry does not exist anymore: " << Utility::formatSyncPath(fullPath));
                 continue;
             } else if (ioError == IoError::AccessDenied) {
-                LOGW_WARN(logger(),
-                          L"Item: " << Utility::formatSyncPath(fullPath) << L" rejected because access is denied");
+                LOGW_WARN(logger(), L"Item: " << Utility::formatSyncPath(fullPath) << L" rejected because access is denied");
                 continue;
             }
 
@@ -504,8 +502,7 @@ ExitInfo VfsWin::setPinState(const SyncPath &relativePathStd, PinState state) {
     DWORD dwAttrs = GetFileAttributesW(fullPath.lexically_normal().native().c_str());
     if (dwAttrs == INVALID_FILE_ATTRIBUTES) {
         DWORD errorCode = GetLastError();
-        LOGW_WARN(logger(),
-                  L"Error in GetFileAttributesW: " << Utility::formatSyncPath(fullPath) << L" code=" << errorCode);
+        LOGW_WARN(logger(), L"Error in GetFileAttributesW: " << Utility::formatSyncPath(fullPath) << L" code=" << errorCode);
         return handleVfsError(fullPath);
     }
 
@@ -603,8 +600,7 @@ bool VfsWin::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
             bool isDirectory = false;
 
             if (IoError ioError = IoError::Success; !IoHelper::checkIfIsDirectory(fullPath, isDirectory, ioError)) {
-                LOGW_WARN(logger(),
-                          L"Failed to check if path is a directory: " << Utility::formatIoError(fullPath, ioError));
+                LOGW_WARN(logger(), L"Failed to check if path is a directory: " << Utility::formatIoError(fullPath, ioError));
                 return false;
             }
 
@@ -624,8 +620,7 @@ bool VfsWin::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
             bool isDirectory = false;
 
             if (IoError ioError = IoError::Success; !IoHelper::checkIfIsDirectory(fullPath, isDirectory, ioError)) {
-                LOGW_WARN(logger(),
-                          L"Failed to check if path is a directory: " << Utility::formatIoError(fullPath, ioError));
+                LOGW_WARN(logger(), L"Failed to check if path is a directory: " << Utility::formatIoError(fullPath, ioError));
                 return false;
             }
             if (isDirectory) break;

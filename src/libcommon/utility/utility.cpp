@@ -1111,7 +1111,6 @@ SyncNameSet CommonUtility::computePathNormalizations(const SyncName &path) {
 }
 
 
-
 ReplicaSide CommonUtility::syncNodeTypeSide(SyncNodeType type) {
     switch (type) {
         case KDC::SyncNodeType::BlackList:

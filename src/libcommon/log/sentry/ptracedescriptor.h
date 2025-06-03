@@ -74,11 +74,11 @@ struct PTraceDescriptor {
             _pTraceDescription{std::move(pTraceDescription)},
             _customSampleRate{customSampleRate} {}
 
-        [[nodiscard]] const PTraceName& pTraceName() const { return _pTraceName; }
-        [[nodiscard]] const PTraceName& parentPTraceName() const { return _parentPTraceName; }
-        [[nodiscard]] const std::string& pTraceTitle() const { return _pTraceTitle; }
-        [[nodiscard]] const std::string& pTraceDescription() const { return _pTraceDescription; }
-        [[nodiscard]] const double& customSampleRate() const { return _customSampleRate; }
+        [[nodiscard]] const PTraceName &pTraceName() const { return _pTraceName; }
+        [[nodiscard]] const PTraceName &parentPTraceName() const { return _parentPTraceName; }
+        [[nodiscard]] const std::string &pTraceTitle() const { return _pTraceTitle; }
+        [[nodiscard]] const std::string &pTraceDescription() const { return _pTraceDescription; }
+        [[nodiscard]] const double &customSampleRate() const { return _customSampleRate; }
 
     private:
         const PTraceName _pTraceName = PTraceName::None;
