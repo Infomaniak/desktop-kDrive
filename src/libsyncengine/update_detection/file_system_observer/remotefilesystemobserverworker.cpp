@@ -108,8 +108,8 @@ ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     const std::chrono::duration<double> elapsedSeconds = end - start;
     if (exitCode == ExitCode::Ok && !stopAsked()) {
         _liveSnapshot.setValid(true);
-        LOG_SYNCPAL_INFO(_logger, "Remote snapshot generated in: " << elapsedSeconds.count() << "s for " << _liveSnapshot.nbItems()
-                                                                   << " items");
+        LOG_SYNCPAL_INFO(_logger, "Remote snapshot generated in: " << elapsedSeconds.count() << "s for "
+                                                                   << _liveSnapshot.nbItems() << " items");
         perfMonitor.stop();
     } else {
         tryToInvalidateSnapshot();
@@ -688,9 +688,8 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
             [[fallthrough]];
         case ActionCode::ActionCodeTrash:
             if (!_liveSnapshot.removeItem(actionInfo.snapshotItem.id())) {
-                LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: "
-                                                   << SyncName2WStr(actionInfo.snapshotItem.name()) << L" ("
-                                                   << Utility::s2ws(actionInfo.snapshotItem.id()) << L")");
+                LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(actionInfo.snapshotItem.name()) << L" ("
+                                                                    << Utility::s2ws(actionInfo.snapshotItem.id()) << L")");
                 tryToInvalidateSnapshot();
                 return ExitCode::BackError;
             }

@@ -361,8 +361,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
                 user.email() + app_password + oldKeychainKeySeparator + urlKey + oldKeychainKeySeparator + oldAccountId;
 
 
-        LOG_DEBUG(_logger, "Old account id : " << oldAccountId
-                                               << " old keychain app password : " << keychainKeyAppPassword);
+        LOG_DEBUG(_logger, "Old account id : " << oldAccountId << " old keychain app password : " << keychainKeyAppPassword);
 
         found = false;
         std::string appPassword;
@@ -777,8 +776,7 @@ ExitCode MigrationParams::getTokenFromAppPassword(const std::string &email, cons
 
         LOG_DEBUG(_logger, "job.runSynchronously() done");
         if (job.hasErrorApi(&errorCode, &errorDescr)) {
-            LOGW_WARN(_logger, L"Failed to retrieve authentification token. code=" << KDC::Utility::s2ws(errorCode)
-                                                                                   << L" descr="
+            LOGW_WARN(_logger, L"Failed to retrieve authentification token. code=" << KDC::Utility::s2ws(errorCode) << L" descr="
                                                                                    << KDC::Utility::s2ws(errorDescr));
             return ExitCode::BackError;
         }

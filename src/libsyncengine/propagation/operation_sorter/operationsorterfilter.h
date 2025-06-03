@@ -28,6 +28,7 @@ class OperationSorterFilter {
         explicit OperationSorterFilter(const std::unordered_map<UniqueId, SyncOpPtr> &ops);
 
         void filterOperations();
+        void clear();
 
         [[nodiscard]] const std::list<std::pair<SyncOpPtr, SyncOpPtr>> &fixDeleteBeforeMoveCandidates() const {
             return _fixDeleteBeforeMoveCandidates;
