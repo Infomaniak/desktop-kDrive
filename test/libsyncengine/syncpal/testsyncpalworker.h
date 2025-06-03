@@ -106,9 +106,7 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
                 using RemoteFileSystemObserverWorker::RemoteFileSystemObserverWorker;
                 void setNetworkAvailability(bool networkAvailable) { _networkAvailable = networkAvailable; }
                 void simulateFSEvent() {
-                    std::dynamic_pointer_cast<TestSyncPalWorker::MockSyncPal>(_syncPal)
-                            ->snapshot(ReplicaSide::Local)
-                            ->startUpdate();
+                    _liveSnapshot.startUpdate();
                 }
                 void setLongPollDuration(std::chrono::steady_clock::duration duration) { _longPollDuration = duration; }
 
@@ -173,7 +171,7 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
             public:
                 using LocalFileSystemObserverWorker_unix::LocalFileSystemObserverWorker_unix;
 #endif
-                void simulateFSEvent() { _snapshot->startUpdate(); }
+                void simulateFSEvent() { _liveSnapshot.startUpdate(); }
         };
 
         class MockOperationGeneratorWorker : public OperationGeneratorWorker {
@@ -216,9 +214,7 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
                 std::shared_ptr<MockExecutorWorker> getMockExecutorWorker();
                 std::shared_ptr<SyncPalWorker> getSyncPalWorker() { return _syncPalWorker; }
                 std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const { return SyncPal::updateTree(side); }
-                std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false) const {
-                    return SyncPal::snapshot(side, copy);
-                }
+                std::shared_ptr<Snapshot> snapshot(ReplicaSide side) const { return SyncPal::snapshot(side); }
                 std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side) const { return SyncPal::operationSet(side); }
 
 
