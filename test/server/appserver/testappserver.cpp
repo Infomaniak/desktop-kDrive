@@ -31,12 +31,14 @@ namespace KDC {
 
 void TestAppServer::setUp() {
     TestBase::start();
+
     if (QCoreApplication::instance()) {
         _appPtr = dynamic_cast<MockAppServer *>(QCoreApplication::instance());
         return;
     }
 
     const testhelpers::TestVariables testVariables;
+
     const std::string localPathStr = _localTempDir.path().string();
 
     // Insert api token into keystore
@@ -57,22 +59,25 @@ void TestAppServer::setUp() {
     const int userId(atoi(testVariables.userId.c_str()));
     const User user(1, userId, keychainKey);
     (void) ParmsDb::instance()->insertUser(user);
+
     const int accountId(atoi(testVariables.accountId.c_str()));
     const Account account(1, accountId, user.dbId());
     (void) ParmsDb::instance()->insertAccount(account);
+
     const int driveId = atoi(testVariables.driveId.c_str());
     const Drive drive(1, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
+
     _localPath = localPathStr;
     _remotePath = testVariables.remotePath;
     Sync sync(1, drive.dbId(), _localPath, _remotePath);
     (void) ParmsDb::instance()->insertSync(sync);
+
     ParmsDb::instance()->close();
     ParmsDb::reset();
 
     // Create AppServer
     SyncPath exePath = KDC::CommonUtility::applicationFilePath();
-
     try {
         const std::vector<std::string> args = {Path2Str(exePath)};
         std::vector<char *> argv;
