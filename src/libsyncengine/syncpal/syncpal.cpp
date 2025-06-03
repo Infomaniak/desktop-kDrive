@@ -745,7 +745,7 @@ void SyncPal::setSyncHasFullyCompletedInParms(bool syncHasFullyCompleted) {
 ExitInfo SyncPal::setLocalNodeId(const NodeId &localNodeId) {
     _syncInfo.localNodeId = localNodeId;
     Sync sync;
-    bool found;
+    bool found = false;
     if (!ParmsDb::instance()->selectSync(syncDbId(), sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
         return ExitCode::DbError;
