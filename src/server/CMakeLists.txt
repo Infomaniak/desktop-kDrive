@@ -31,7 +31,7 @@ endif()
 
 # Sources
 set(KDRIVE_RC_SRC ../../client.qrc)
-if (EXISTS "${KDRIVE_THEME_DIR}/theme.qrc")
+if(EXISTS "${KDRIVE_THEME_DIR}/theme.qrc")
     list(APPEND KDRIVE_RC_SRC ${KDRIVE_THEME_DIR}/theme.qrc)
     set(theme_dir ${KDRIVE_THEME_DIR}/theme)
 else()
@@ -76,10 +76,10 @@ if(APPLE)
         install(DIRECTORY "${SPARKLE_LIBRARY}"
                 DESTINATION "${KDRIVE_OSX_BUNDLE}/Contents/Frameworks" USE_SOURCE_PERMISSIONS)
     endif()
-elseif (WIN32)
+elseif(WIN32)
     list(APPEND server_SRCS ../common/utility_win.cpp)
     list(APPEND updater_SRCS updater/windowsupdater.h updater/windowsupdater.cpp)
-else ()
+else()
     list(APPEND server_SRCS ../common/utility_linux.cpp)
     list(APPEND updater_SRCS updater/linuxupdater.h updater/linuxupdater.cpp)
 endif()
@@ -125,7 +125,7 @@ include(ECMAddAppIcon)
 file(GLOB_RECURSE KDRIVE_ICONS "${theme_dir}/colored/*-${APPLICATION_ICON_NAME}-icon*")
 if(APPLE)
     file(GLOB_RECURSE KDRIVE_SIDEBAR_ICONS "${theme_dir}/colored/*-${APPLICATION_ICON_NAME}-sidebar*")
-    MESSAGE(STATUS "KDRIVE_SIDEBAR_ICONS: ${APPLICATION_ICON_NAME}: ${KDRIVE_SIDEBAR_ICONS}")
+    message(STATUS "KDRIVE_SIDEBAR_ICONS: ${APPLICATION_ICON_NAME}: ${KDRIVE_SIDEBAR_ICONS}")
 endif()
 ecm_add_app_icon(final_src ICONS "${KDRIVE_ICONS}" SIDEBAR_ICONS "${KDRIVE_SIDEBAR_ICONS}" OUTFILE_BASENAME "${APPLICATION_ICON_NAME}")
 
@@ -179,7 +179,7 @@ list(APPEND PC_HEADER_FILES
 
 target_precompile_headers(${APPLICATION_EXECUTABLE} PRIVATE ${PC_HEADER_FILES})
 
-if (APPLE)
+if(APPLE)
     set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY  ${INSTALL_OUTPUT_DIRECTORY}
         MACOSX_BUNDLE TRUE
@@ -192,20 +192,11 @@ else()
 endif()
 
 # Includes
-if (WIN32)
-    target_include_directories(${APPLICATION_EXECUTABLE} PRIVATE
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/QProgressIndicator
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtlockedfile
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtsingleapplication
-        ${CMAKE_CURRENT_BINARY_DIR}
-        "C:/Program Files (x86)/log4cplus/include")
-else()
-    target_include_directories(${APPLICATION_EXECUTABLE} PRIVATE
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/QProgressIndicator
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtlockedfile
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtsingleapplication
-        ${CMAKE_CURRENT_BINARY_DIR})
-endif()
+target_include_directories(${APPLICATION_EXECUTABLE} PRIVATE
+    ${CMAKE_SOURCE_DIR}/src/3rdparty/QProgressIndicator
+    ${CMAKE_SOURCE_DIR}/src/3rdparty/qtlockedfile
+    ${CMAKE_SOURCE_DIR}/src/3rdparty/qtsingleapplication
+    ${CMAKE_CURRENT_BINARY_DIR})
 
 # Link
 add_library(updater STATIC ${updater_SRCS})
@@ -235,7 +226,7 @@ if( UNIX AND NOT APPLE )
     target_link_libraries(${APPLICATION_EXECUTABLE} PkgConfig::LIBSECRET)
 endif()
 
-if (APPLE)
+if(APPLE)
     find_library(SERVICE_MANAGEMENT_LIBRARY NAMES ServiceManagement)
     target_link_libraries(${APPLICATION_EXECUTABLE} ${SERVICE_MANAGEMENT_LIBRARY})
 endif()
@@ -265,16 +256,16 @@ if(NOT BUILD_KDRIVE_OSX_BUNDLE AND NOT WIN32)
 endif()
 
 if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
-    get_target_property (QT_QMAKE_EXECUTABLE Qt6::qmake IMPORTED_LOCATION)
+    get_target_property(QT_QMAKE_EXECUTABLE Qt6::qmake IMPORTED_LOCATION)
 
     set(ENV_QTDIR $ENV{QTDIR})
     set(ENV_DESTDIR $ENV{DESTDIR})
 
     cmake_path(GET SPARKLE_LIBRARY PARENT_PATH USER_FRAMEWORK_PATH)
 
-    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         message(STATUS "Build type is Debug, you might need to run \"macdeployqt\" manually to deploy the dependencies.")
-    else ()
+    else()
         install(CODE "
             message(STATUS \"Deploying (Qt) dependencies for kDrive...\")
             execute_process(COMMAND ${ENV_QTDIR}/bin/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -libpath=/usr/local/lib -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})

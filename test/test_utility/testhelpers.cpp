@@ -54,7 +54,7 @@ SyncName makeNfcSyncName() {
 }
 
 void generateOrEditTestFile(const SyncPath &path) {
-    std::ofstream testFile(path);
+    std::ofstream testFile(path, std::ios::app);
     testFile << "test" << std::endl;
     testFile.close();
 }
@@ -76,14 +76,13 @@ SyncPath generateBigFile(const SyncPath &dirPath, const uint16_t size) {
     std::stringstream fileName;
     fileName << "big_file_" << size << "_" << 0 << ".txt";
     const std::string str{"0123456789"};
-    SyncPath bigFilePath = SyncPath(dirPath) / fileName.str();
+    const auto bigFilePath = SyncPath(dirPath) / fileName.str();
 
     std::ofstream ofs(bigFilePath, std::ios_base::in | std::ios_base::trunc);
     for (uint64_t i = 0;
          i < static_cast<uint64_t>(round(static_cast<double>(size * 1000000) / static_cast<double>(str.length()))); i++) {
         ofs << str;
     }
-
     return bigFilePath;
 }
 

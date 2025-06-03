@@ -42,6 +42,7 @@ bool UploadJobReplyHandler::extractData(const Poco::JSON::Object::Ptr jsonRes) {
     if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeIdOut)) return false;
     if (!JsonParserUtility::extractValue(dataObj, createdAtKey, _creationTimeOut)) return false;
     if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modificationTimeOut)) return false;
+    if (!JsonParserUtility::extractValue(dataObj, sizeKey, _sizeOut)) return false;
 
     if (_creationTimeIn != _creationTimeOut || _modificationTimeIn != _modificationTimeOut) {
         // The backend refused the creation/modification time(s). To avoid further EDIT operations, we apply the backend's times

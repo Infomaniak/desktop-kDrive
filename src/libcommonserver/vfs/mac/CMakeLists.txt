@@ -44,6 +44,6 @@ if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
         execute_process(COMMAND \"install_name_tool\" -change /usr/local/lib/libcrypto.3.dylib @rpath/libcrypto.3.dylib ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/PlugIns/${libcommonserver_NAME}_vfs_mac.dylib)
         execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.dylib ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/PlugIns/${libcommonserver_NAME}_vfs_mac.dylib)
         " COMPONENT RUNTIME)
-endif ()
+endif()
 
 

@@ -2,12 +2,11 @@
 - [Installation Requirements](#installation-requirements)
     - [Packages](#packages)
     - [Qt 6.2.3](#qt-623)
-    - [log4cplus](#log4cplus)
     - [OpenSSL](#openssl)
     - [Poco](#poco)
     - [CPPUnit](#cppunit)
     - [Sentry](#sentry)
-    - [xxHash](#xxhash)
+    - [xxHash & log4cplus](#xxhash--log4cplus)
     - [libzip](#libzip)
     - [Conan](#conan)
 - [Build in Debug](#build-in-debug)
@@ -70,7 +69,7 @@ sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/lib/llvm-18/bin
 
 Check the version again with `clang --version` to ensure that the version is now 18 or higher.
 
-## xxHash
+## xxHash & log4cplus
 
 See [Conan](#conan) part.
 
@@ -91,29 +90,6 @@ In Qt 6.2.3 Additional Libraries, select :
 If, following the installation, you cannot load the Qt platform plugin xcb, you can run the following command :
 ```bash
 sudo apt install libxcb-cursor0
-```
-
-## log4cplus
-
-```bash
-cd ~/Projects
-git clone --recurse-submodules https://github.com/log4cplus/log4cplus.git
-cd log4cplus
-git checkout 2.1.x
-cd catch
-git checkout v2.x
-cd ..
-mkdir cmake-build
-cd cmake-build
-cmake .. -DUNICODE=1
-sudo cmake --build . --target install
-```
-
-If an error occurs with the the include of `catch.hpp`, you need to change branch inside the `catch` directory:
-
-```bash
-cd ../catch
-git checkout v2.x
 ```
 
 ## OpenSSL
@@ -309,7 +285,7 @@ The project requires additional CMake variables for a correct build. To inject t
 ./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release] [--output-dir=<output_dir>]
 ```
 
-> **Note:** Currently only **xxHash** is managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** Currently only **xxHash** and **log4cplus** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
 
 ---
 # Build in Debug
