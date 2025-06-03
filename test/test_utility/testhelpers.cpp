@@ -19,8 +19,10 @@
 #include "testhelpers.h"
 
 #include "libcommon/utility/utility.h"
+#include "libsyncengine/jobs/network/networkjobsparams.h"
 
 #include <fstream>
+#include <Poco/JSON/Object.h>
 
 
 #ifdef _WIN32
@@ -51,28 +53,15 @@ SyncName makeNfcSyncName() {
     return nfcNormalized;
 }
 
-void generateOrEditTestFile(const SyncPath& path) {
-    std::ofstream testFile(path);
+void generateOrEditTestFile(const SyncPath &path) {
+    std::ofstream testFile(path, std::ios::app);
     testFile << "test" << std::endl;
     testFile.close();
 }
 
-void generateBigFiles(const SyncPath& dirPath, const uint16_t size, const uint16_t count) {
+void generateBigFiles(const SyncPath &dirPath, const uint16_t size, const uint16_t count) {
     // Generate 1st big file
-    SyncPath bigFilePath;
-    {
-        std::stringstream fileName;
-        fileName << "big_file_" << size << "_" << 0 << ".txt";
-        const std::string str{"0123456789"};
-        bigFilePath = SyncPath(dirPath) / fileName.str();
-        {
-            std::ofstream ofs(bigFilePath, std::ios_base::in | std::ios_base::trunc);
-            for (uint64_t i = 0;
-                 i < static_cast<uint64_t>(round(static_cast<double>(size * 1000000) / static_cast<double>(str.length()))); i++) {
-                ofs << str;
-            }
-        }
-    }
+    const SyncPath bigFilePath = generateBigFile(dirPath, size);
 
     // Generate others big files
     for (uint16_t i = 1; i < count; i++) {
@@ -83,7 +72,21 @@ void generateBigFiles(const SyncPath& dirPath, const uint16_t size, const uint16
     }
 }
 
-std::string loadEnvVariable(const std::string& key, const bool mandatory) {
+SyncPath generateBigFile(const SyncPath &dirPath, const uint16_t size) {
+    std::stringstream fileName;
+    fileName << "big_file_" << size << "_" << 0 << ".txt";
+    const std::string str{"0123456789"};
+    const auto bigFilePath = SyncPath(dirPath) / fileName.str();
+
+    std::ofstream ofs(bigFilePath, std::ios_base::in | std::ios_base::trunc);
+    for (uint64_t i = 0;
+         i < static_cast<uint64_t>(round(static_cast<double>(size * 1000000) / static_cast<double>(str.length()))); i++) {
+        ofs << str;
+    }
+    return bigFilePath;
+}
+
+std::string loadEnvVariable(const std::string &key, const bool mandatory) {
     const std::string val = KDC::CommonUtility::envVarValue(key);
     if (val.empty() && mandatory) {
         std::cout << "Environment variables " << key << " is missing!" << std::endl;
@@ -93,7 +96,7 @@ std::string loadEnvVariable(const std::string& key, const bool mandatory) {
 }
 
 #ifdef _WIN32
-void setModificationDate(const SyncPath& path, const std::chrono::time_point<std::chrono::system_clock>& timePoint) {
+void setModificationDate(const SyncPath &path, const std::chrono::time_point<std::chrono::system_clock> &timePoint) {
     struct _utimbuf timeBuffer;
     const std::time_t timeInSeconds = std::chrono::system_clock::to_time_t(timePoint);
 
@@ -107,7 +110,7 @@ void setModificationDate(const SyncPath& path, const std::chrono::time_point<std
 }
 
 #else
-void setModificationDate(const SyncPath& path, const std::chrono::time_point<std::chrono::system_clock>& timePoint) {
+void setModificationDate(const SyncPath &path, const std::chrono::time_point<std::chrono::system_clock> &timePoint) {
     struct stat fileStat;
     struct utimbuf newTime;
 

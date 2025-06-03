@@ -108,8 +108,7 @@ bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, I
             if (ioError != IoError::Unknown) {
                 return true;
             } else {
-                LOGW_WARN(logger(),
-                          L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatIoError(aliasPath, ioError));
+                LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatIoError(aliasPath, ioError));
                 return false;
             }
         }
@@ -140,8 +139,7 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
             if (ioError != IoError::Unknown) {
                 return true;
             } else {
-                LOGW_WARN(logger(),
-                          L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError));
+                LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError));
                 return false;
             }
         }
@@ -262,7 +260,7 @@ IoError IoHelper::setFileDates(const SyncPath &filePath, SyncTime creationDate, 
     bool ret = false;
     if (symlink) {
         if (cDate) {
-            ret = [[NSURL fileURLWithPath:filePathStr isDirectory:NO] setResourceValue:mDate
+            ret = [[NSURL fileURLWithPath:filePathStr isDirectory:NO] setResourceValue:cDate
                                                                                 forKey:NSURLCreationDateKey
                                                                                  error:&error];
             if (!ret) {
