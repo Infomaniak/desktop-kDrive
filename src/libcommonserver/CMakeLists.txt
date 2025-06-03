@@ -164,7 +164,7 @@ else()
         utf8proc
     )
     include(ConanGetLibDirs)
-    get_library_dirs("openssl" "openssl")
+    get_library_dirs("OpenSSL" "openssl")
     get_library_dirs("xxhash" "xxhash")
     install(FILES
             # xxHash
@@ -173,10 +173,10 @@ else()
             "${xxhash_LIB_DIRS}/libxxhash.so.0.8.2>"
 
             # OpenSSL
-            "${_openssl_LIB_DIRS}/libcrypto.so"
-            "${_openssl_LIB_DIRS}/libcrypto.so.3"
-            "${_openssl_LIB_DIRS}/libssl.so"
-            "${_openssl_LIB_DIRS}/libssl.so.3"
+            "${_OpenSSL_LIB_DIRS}/libcrypto.so"
+            "${_OpenSSL_LIB_DIRS}/libcrypto.so.3"
+            "${_OpenSSL_LIB_DIRS}/libssl.so"
+            "${_OpenSSL_LIB_DIRS}/libssl.so.3"
             DESTINATION "${CONAN_DEP_DIR}"
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
     )
