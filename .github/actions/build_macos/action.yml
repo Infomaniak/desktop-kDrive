@@ -55,7 +55,6 @@ runs:
           cp /usr/local/lib/libPocoNet.103.dylib ./dependencies/
           cp /usr/local/lib/libPocoCrypto.103.dylib ./dependencies/
           cp /usr/local/lib/libcppunit-1.15.2.dylib ./dependencies/
-          cp /usr/local/lib/liblog4cplusU.9.dylib ./dependencies/
           cp /usr/local/lib/libsentry.dylib ./dependencies/
           cp /usr/local/lib/libzip.5.dylib ./dependencies/
           cp /usr/local/lib/libzstd.1.dylib ./dependencies/
@@ -70,7 +69,7 @@ runs:
       - name: Fetch Conan dependencies
         run: |
           echo "Fetching Conan dependencies in $HOME/.conan2/p/"
-          find "$HOME/.conan2/p/" -iname 'libxxhash*.dylib' \
+          find "$HOME/.conan2/p/" '(' -iname 'libxxhash*.dylib' -o -iname 'liblog4cplus*.dylib' ')' \
             -exec cp -P {} ./dependencies/ \; \
             -exec echo "Conan dependency found -> " {} \; 
         shell: bash
