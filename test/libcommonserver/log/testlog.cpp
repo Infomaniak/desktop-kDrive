@@ -111,8 +111,9 @@ void TestLog::testExpiredLogFiles(void) {
     auto now = std::chrono::system_clock::now();
     while (now - start < std::chrono::seconds(3)) {
         now = std::chrono::system_clock::now();
-        KDC::testhelpers::setModificationDate(Log::instance()->getLogFilePath(),
-                                              now); // Prevent the current log file from being deleted.
+        KDC::testhelpers::setModificationDate(Log::instance()->getLogFilePath(), now);
+        (void) IoHelper::setFileDates(Log::instance()->getLogFilePath(), now.time_since_epoch().count(),
+                                      now.time_since_epoch().count(), false); // Prevent the current log file from being deleted.
         appender->checkForExpiredFiles();
         if (now - start < std::chrono::milliseconds(1500)) { // The fake log file should not be deleted yet.
             CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));

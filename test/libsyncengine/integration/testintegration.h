@@ -110,6 +110,8 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
 
         void waitForSyncToFinish(const SourceLocation &srcLoc) const;
 
+        void logStep(const std::string &str);
+
         log4cplus::Logger _logger;
 
         std::shared_ptr<SyncPal> _syncPal = nullptr;
@@ -118,8 +120,10 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         int _driveDbId = 0;
 
         std::vector<testFctPtr> _testFctPtrVector;
+        SyncPath _tmpFilePath;
         LocalTemporaryDirectory _localSyncDir;
-        RemoteTemporaryDirectory _remoteTestDir{"testIntegration"};
+        RemoteTemporaryDirectory _remoteSyncDir{"testIntegration"};
+        NodeId _testFileRemoteId;
         TimerUtility _timer;
 };
 

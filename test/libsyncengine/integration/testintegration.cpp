@@ -63,7 +63,6 @@ namespace KDC {
 // Temporary test in drive "kDrive Desktop Team"
 const NodeId commonDocumentsNodeId = "3";
 const NodeId testCiFolderId = "56850";
-const NodeId versionFolderId = "104387";
 
 void TestIntegration::setUp() {
     TestBase::start();
@@ -99,15 +98,16 @@ void TestIntegration::setUp() {
 
     // Create remote sync folder (so that synchronisation only takes place in a subdirectory, not taking into account the whole
     // drive items)
-    _remoteTestDir.generate(_driveDbId, testCiFolderId);
+    _remoteSyncDir.generate(_driveDbId, testCiFolderId);
     // Add initial test file
-    const SyncPath tmpFilePath = std::filesystem::temp_directory_path() / "tmpFile.txt";
-    testhelpers::generateOrEditTestFile(tmpFilePath);
-    UploadJob job(nullptr, _driveDbId, tmpFilePath, tmpFilePath.filename(), _remoteTestDir.id(), testhelpers::defaultTime,
+    _tmpFilePath = std::filesystem::temp_directory_path() / "tmpFile.txt";
+    testhelpers::generateOrEditTestFile(_tmpFilePath);
+    UploadJob job(nullptr, _driveDbId, _tmpFilePath, _tmpFilePath.filename(), _remoteSyncDir.id(), testhelpers::defaultTime,
                   testhelpers::defaultTime);
     (void) job.runSynchronously();
+    _testFileRemoteId = job.nodeId();
 
-    const Sync sync(1, drive.dbId(), _localSyncDir.path(), "/", _remoteTestDir.id());
+    const Sync sync(1, drive.dbId(), _localSyncDir.path(), "/", _remoteSyncDir.id());
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Setup proxy
@@ -125,7 +125,7 @@ void TestIntegration::setUp() {
 
 void TestIntegration::tearDown() {
     _syncPal->stop(false, true, false);
-    _remoteTestDir.deleteNow();
+    _remoteSyncDir.deleteNow();
 
     ParmsDb::instance()->close();
     ParmsDb::reset();
@@ -150,9 +150,7 @@ void TestIntegration::testAll() {
     // Wait for end of 1st sync
     waitForSyncToFinish(SourceLocation::currentLoc());
 
-    std::stringstream ss;
-    ss << _timer.elapsed<std::chrono::milliseconds>();
-    LOG_DEBUG(_logger, "$$$$$ testAll initialisation done in " << ss.str());
+    logStep("initialisation");
 
     // Run test cases
     _testFctPtrVector = {
@@ -196,9 +194,7 @@ void TestIntegration::basicTests() {
 
 void TestIntegration::testLocalChanges() {
     // Generate create operations.
-    LOG_DEBUG(_logger, "$$$$$ test create local file");
-
-    const std::filesystem::path subDirPath = _syncPal->localPath() / "testSubDirLocal";
+    const SyncPath subDirPath = _syncPal->localPath() / "testSubDirLocal";
     (void) std::filesystem::create_directories(subDirPath);
 
     SyncPath filePath = _syncPal->localPath() / "testLocal.txt";
@@ -206,15 +202,15 @@ void TestIntegration::testLocalChanges() {
 
     waitForSyncToFinish(SourceLocation::currentLoc());
 
-    auto remoteTestFileInfo = testhelpers::getRemoteFileInfo(_driveDbId, filePath.filename(), _remoteTestDir.id());
+    auto remoteTestFileInfo = testhelpers::getRemoteFileInfo(_driveDbId, _remoteSyncDir.id(), filePath.filename());
     CPPUNIT_ASSERT_EQUAL(true, remoteTestFileInfo.isValid());
 
-    const auto remoteTestDirInfo = testhelpers::getRemoteFileInfo(_driveDbId, subDirPath.filename(), _remoteTestDir.id());
+    const auto remoteTestDirInfo = testhelpers::getRemoteFileInfo(_driveDbId, _remoteSyncDir.id(), subDirPath.filename());
     CPPUNIT_ASSERT_EQUAL(true, remoteTestDirInfo.isValid());
 
-    // Generate an edit operation.
-    LOG_DEBUG(_logger, "$$$$$ test edit local file");
+    logStep("test create local file");
 
+    // Generate an edit operation.
     testhelpers::generateOrEditTestFile(filePath);
 
     FileStat fileStat;
@@ -224,165 +220,115 @@ void TestIntegration::testLocalChanges() {
     waitForSyncToFinish(SourceLocation::currentLoc());
 
     const auto prevRemoteTestFileInfo = remoteTestFileInfo;
-    remoteTestFileInfo = testhelpers::getRemoteFileInfo(_driveDbId, filePath.filename(), _remoteTestDir.id());
+    remoteTestFileInfo = testhelpers::getRemoteFileInfo(_driveDbId, _remoteSyncDir.id(), filePath.filename());
     CPPUNIT_ASSERT_EQUAL(fileStat.modtime, remoteTestFileInfo.modificationTime);
     CPPUNIT_ASSERT_LESS(remoteTestFileInfo.modificationTime, prevRemoteTestFileInfo.modificationTime);
     CPPUNIT_ASSERT_EQUAL(fileStat.size, remoteTestFileInfo.size);
     CPPUNIT_ASSERT_LESS(remoteTestFileInfo.size, prevRemoteTestFileInfo.size);
 
-    // Generate a move operation.
-    LOG_DEBUG(_logger, "$$$$$ test move local file");
+    logStep("test edit local file");
 
+    // Generate a move operation.
     const auto newName = "testLocal_renamed.txt";
     const std::filesystem::path destinationPath = subDirPath / newName;
-
     {
-        LocalMoveJob moveJob(filePath, destinationPath);
-        (void) moveJob.runSynchronously();
+        LocalMoveJob job(filePath, destinationPath);
+        (void) job.runSynchronously();
     }
 
     waitForSyncToFinish(SourceLocation::currentLoc());
 
-    remoteTestFileInfo = testhelpers::getRemoteFileInfo(_driveDbId, newName, remoteTestDirInfo.id);
+    remoteTestFileInfo = testhelpers::getRemoteFileInfo(_driveDbId, remoteTestDirInfo.id, newName);
 
     CPPUNIT_ASSERT_EQUAL(true, remoteTestFileInfo.isValid());
     CPPUNIT_ASSERT_EQUAL(remoteTestDirInfo.id, remoteTestFileInfo.parentId);
 
     filePath = destinationPath;
 
-    // Generate a delete operation.
-    LOG_DEBUG(_logger, "$$$$$ test delete local file");
+    logStep("test move local file");
 
+    // Generate a delete operation.
     {
-        LocalDeleteJob deleteJob(filePath);
+        LocalDeleteJob deleteJob(subDirPath);
         (void) deleteJob.runSynchronously();
     }
 
     waitForSyncToFinish(SourceLocation::currentLoc());
 
-    remoteTestFileInfo = testhelpers::getRemoteFileInfo(_driveDbId, filePath.filename(), remoteTestDirInfo.id);
+    remoteTestFileInfo = testhelpers::getRemoteFileInfo(_driveDbId, remoteTestDirInfo.id, filePath.filename());
     CPPUNIT_ASSERT_EQUAL(false, remoteTestFileInfo.isValid());
+
+    logStep("test delete local file");
 }
 
 void TestIntegration::testRemoteChanges() {
     // Generate create operations.
-    LOG_DEBUG(_logger, "$$$$$ test create remote file");
+    const SyncPath subDirPath = _syncPal->localPath() / "testSubDirRemote";
+    NodeId subDirId;
+    SyncPath filePath = _syncPal->localPath() / "testRemote.txt";
+    {
+        CreateDirJob createDirJob(nullptr, _driveDbId, subDirPath, _remoteSyncDir.id(), subDirPath.filename());
+        (void) createDirJob.runSynchronously();
+        subDirId = createDirJob.nodeId();
 
-    // CreateDirJob createDirJob(nullptr, _driveDbId, "testSubDirRemote", "1", "testSubDirRemote");
-    // (void) createDirJob.runSynchronously();
-    // DuplicateJob duplicateJob(nullptr, _driveDbId, );
-    //
-    // waitForSyncToFinish(SourceLocation::currentLoc());
-    //
-    // auto remoteTestFileInfo = testhelpers::getRemoteFileInfo(_driveDbId, filePath.filename(), _remoteTestDir.id());
-    // CPPUNIT_ASSERT_EQUAL(true, remoteTestFileInfo.isValid());
-    //
-    // const auto remoteTestDirInfo = testhelpers::getRemoteFileInfo(_driveDbId, subDirPath.filename(), _remoteTestDir.id());
-    // CPPUNIT_ASSERT_EQUAL(true, remoteTestDirInfo.isValid());
+        DuplicateJob duplicateJob(nullptr, _driveDbId, _testFileRemoteId, filePath);
+        (void) duplicateJob.runSynchronously();
+    }
+
+    waitForSyncToFinish(SourceLocation::currentLoc());
+
+    CPPUNIT_ASSERT_EQUAL(true, std::filesystem::exists(subDirPath));
+    CPPUNIT_ASSERT_EQUAL(true, std::filesystem::exists(filePath));
+
+    logStep("test create remote file");
+
+    // Generate an edit operation.
+    int64_t modificationTime = 0;
+    testhelpers::generateOrEditTestFile(_tmpFilePath);
+    {
+        UploadJob job(nullptr, _driveDbId, _tmpFilePath, _testFileRemoteId, testhelpers::defaultTime);
+        (void) job.runSynchronously();
+        modificationTime = job.newModificationTime();
+    }
+
+    waitForSyncToFinish(SourceLocation::currentLoc());
+
+    FileStat filestat;
+    IoError ioError = IoError::Unknown;
+    (void) IoHelper::getFileStat(filePath, &filestat, ioError);
+    // CPPUNIT_ASSERT_EQUAL(modificationTime, filestat.modtime);
+    // CPPUNIT_ASSERT_EQUAL(size, filestat.size);
+    logStep("test edit remote file");
+
+    // Generate a move operation.
+    filePath = subDirPath / "testRemote_renamed.txt";
+    {
+        MoveJob job(nullptr, _driveDbId, filePath, _testFileRemoteId, subDirId, filePath.filename());
+        job.setBypassCheck(true);
+        (void) job.runSynchronously();
+    }
+
+    waitForSyncToFinish(SourceLocation::currentLoc());
+
+    CPPUNIT_ASSERT_EQUAL(true, std::filesystem::exists(filePath));
+
+    logStep("test move remote file");
+
+    // Generate a delete operation.
+    {
+        DeleteJob job(_driveDbId, subDirId);
+        job.setBypassCheck(true);
+        (void) job.runSynchronously();
+    }
+
+    waitForSyncToFinish(SourceLocation::currentLoc());
+
+    CPPUNIT_ASSERT_EQUAL(false, std::filesystem::exists(subDirPath));
+    CPPUNIT_ASSERT_EQUAL(false, std::filesystem::exists(filePath));
+
+    logStep("test delete remote file");
 }
 
-// void TestIntegration::testCreateRemote() {
-//     LOGW_DEBUG(_logger, L"$$$$$ test create remote file");
-//     std::cout << "test create remote file : ";
-//
-//     // Simulate a create by duplicating an existing file
-//     _newTestFilePath = Str("testRemote_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) + Str(".txt");
-//     DuplicateJob job(_syncPal->vfs(), _driveDbId, testExecutorFileRemoteId, _newTestFilePath.native());
-//     job.runSynchronously();
-//     _newTestFileRemoteId = job.nodeId();
-//
-//     waitForSyncToFinish(SourceLocation::currentLoc());
-//
-//     bool found = false;
-//     CPPUNIT_ASSERT(
-//             _syncPal->syncDb()->correspondingNodeId(ReplicaSide::Remote, _newTestFileRemoteId, _newTestFileLocalId, found));
-//     CPPUNIT_ASSERT(found);
-//     CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(_newTestFileLocalId));
-//
-//     std::cout << "OK" << std::endl;
-// }
-//
-// void TestIntegration::testEditRemote() {
-//     LOGW_DEBUG(_logger, L"$$$$$ test edit remote file");
-//     std::cout << "test edit remote file : ";
-//
-//     SyncTime prevModTime = _syncPal->_localSnapshot->lastModified(_newTestFileLocalId);
-//
-//     std::filesystem::path tmpFile = std::filesystem::temp_directory_path() / "tmp_test_file.txt";
-//     SyncName testCallStr = Str(R"(echo "This is an edit test )") +
-//     Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) +
-//                            Str(R"(" >> ")") + tmpFile.make_preferred().native() + Str(R"(")");
-//     std::system(SyncName2Str(testCallStr).c_str());
-//
-//     UploadJob setupUploadJob(_syncPal->vfs(), _driveDbId, tmpFile, _newTestFilePath.filename().native(),
-//                              testExecutorFolderRemoteId, 0);
-//     setupUploadJob.runSynchronously();
-//
-//     waitForSyncToFinish(SourceLocation::currentLoc());
-//
-//     bool found = false;
-//     CPPUNIT_ASSERT(_syncPal->syncDb()->correspondingNodeId(ReplicaSide::Remote, _newTestFileRemoteId, _newTestFileLocalId,
-//                                                            found)); // Update the local ID
-//     CPPUNIT_ASSERT(found);
-//     SyncTime newModTime = _syncPal->_localSnapshot->lastModified(_newTestFileLocalId);
-//     CPPUNIT_ASSERT(newModTime > prevModTime);
-//
-//     std::cout << "OK" << std::endl;
-// }
-//
-// void TestIntegration::testMoveRemote() {
-//     LOGW_DEBUG(_logger, L"$$$$$ test move remote file");
-//     std::cout << "test move remote file : ";
-//
-//     NodeId parentId = _syncPal->_localSnapshot->parentId(_newTestFileLocalId);
-//     SyncName parentName = _syncPal->_localSnapshot->name(parentId);
-//     CPPUNIT_ASSERT(parentName == testExecutorFolderName);
-//
-//     MoveJob job(_syncPal->vfs(), _driveDbId, "", _newTestFileRemoteId, testExecutorSubFolderRemoteId);
-//     job.runSynchronously();
-//
-//     waitForSyncToFinish(SourceLocation::currentLoc());
-//
-//     parentId = _syncPal->_localSnapshot->parentId(_newTestFileLocalId);
-//     parentName = _syncPal->_localSnapshot->name(parentId);
-//     CPPUNIT_ASSERT(parentName == testExecutorSubFolderName);
-//
-//     std::cout << "OK" << std::endl;
-// }
-//
-// void TestIntegration::testRenameRemote() {
-//     LOGW_DEBUG(_logger, L"$$$$$ test rename remote file");
-//     std::cout << "test rename remote file : ";
-//
-//     std::string newName = _newTestFilePath.stem().string() + "_renamed" + _newTestFilePath.extension().string();
-//
-//     RenameJob job(_syncPal->vfs(), _driveDbId, _newTestFileRemoteId, Str2SyncName(newName));
-//     job.runSynchronously();
-//
-//     waitForSyncToFinish(SourceLocation::currentLoc());
-//
-//     SyncName localName = _syncPal->_localSnapshot->name(_newTestFileLocalId);
-//     SyncName::size_type n = localName.find(Str("_renamed"));
-//     CPPUNIT_ASSERT(n != std::string::npos);
-//
-//     std::cout << "OK" << std::endl;
-// }
-//
-// void TestIntegration::testDeleteRemote() {
-//     LOGW_DEBUG(_logger, L"$$$$$ test delete remote file");
-//     std::cout << "test delete remote file : ";
-//
-//     DeleteJob job(_driveDbId, _newTestFileRemoteId, "", "",
-//                   NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
-//     job.runSynchronously();
-//
-//     waitForSyncToFinish(SourceLocation::currentLoc());
-//
-//     CPPUNIT_ASSERT(!_syncPal->_localSnapshot->exists(_newTestFileLocalId));
-//
-//     std::cout << "OK" << std::endl;
-// }
-//
 // void TestIntegration::testSimultaneousChanges() {
 //     LOGW_DEBUG(_logger, L"$$$$$ test simultaneous changes");
 //     std::cout << "test simultaneous changes : ";
@@ -2306,6 +2252,12 @@ void TestIntegration::waitForSyncToFinish(const SourceLocation &srcLoc) const {
         }
         Utility::msleep(100);
     }
+}
+
+void TestIntegration::logStep(const std::string &str) {
+    std::stringstream ss;
+    ss << "$$$$$ Step `" << str << "` done in " << _timer.lap<std::chrono::milliseconds>() << " $$$$$";
+    LOG_DEBUG(_logger, ss.str());
 }
 
 } // namespace KDC

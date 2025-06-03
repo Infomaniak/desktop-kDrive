@@ -18,9 +18,9 @@
 
 #include "testhelpers.h"
 
-#include "jobs/network/API_v2/getfilelistjob.h"
 #include "libcommon/utility/utility.h"
 #include "libsyncengine/jobs/network/networkjobsparams.h"
+#include "libsyncengine/jobs/network/API_v2/getfilelistjob.h"
 
 #include <fstream>
 #include <Poco/JSON/Object.h>
@@ -95,37 +95,7 @@ std::string loadEnvVariable(const std::string &key, const bool mandatory) {
     return val;
 }
 
-#ifdef _WIN32
-void setModificationDate(const SyncPath &path, const std::chrono::time_point<std::chrono::system_clock> &timePoint) {
-    struct _utimbuf timeBuffer;
-    const std::time_t timeInSeconds = std::chrono::system_clock::to_time_t(timePoint);
-
-    IoError ioError = IoError::Success;
-    FileStat fileStat;
-    ::KDC::IoHelper::getFileStat(path, &fileStat, ioError);
-
-    timeBuffer.actime = fileStat.creationTime;
-    timeBuffer.modtime = timeInSeconds;
-    _wutime(path.wstring().c_str(), &timeBuffer);
-}
-
-#else
-void setModificationDate(const SyncPath &path, const std::chrono::time_point<std::chrono::system_clock> &timePoint) {
-    struct stat fileStat;
-    struct utimbuf newTime;
-
-    const auto fileNameStr = path.string();
-    const auto fileName = fileNameStr.c_str();
-
-    stat(fileName, &fileStat);
-
-    const std::time_t timeInSeconds = std::chrono::system_clock::to_time_t(timePoint);
-    newTime.modtime = timeInSeconds;
-    utime(fileName, &newTime);
-}
-#endif
-
-RemoteFileInfo getRemoteFileInfo(int driveDbId, const SyncName &name, const NodeId &parentId) {
+RemoteFileInfo getRemoteFileInfo(const int driveDbId, const NodeId &parentId, const SyncName &name) {
     RemoteFileInfo fileInfo;
 
     GetFileListJob job(driveDbId, parentId);
@@ -153,5 +123,7 @@ RemoteFileInfo getRemoteFileInfo(int driveDbId, const SyncName &name, const Node
 
     return fileInfo;
 }
+
+FileStat getLocalFileInfo(const SyncPath &parentAbsolutPath, const SyncName &name) {}
 
 } // namespace KDC::testhelpers
