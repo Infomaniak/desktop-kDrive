@@ -20,8 +20,6 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 function(get_library_dirs prefix libname)
-    find_package(${prefix} REQUIRED)
-
     string(TOUPPER "${CMAKE_BUILD_TYPE}" _BUILD_TYPE_UPPER)
     set(var_name "${libname}_LIB_DIRS_${_BUILD_TYPE_UPPER}")                            # e.g., openssl_LIB_DIRS_RELEASE or xxhash_LIB_DIRS_RELWITHDEBINFO
     if(DEFINED ${var_name})                                                             # check if the variable is defined
