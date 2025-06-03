@@ -108,14 +108,16 @@ void OperationGeneratorWorker::execute() {
         const int64_t freeBytes = Utility::getFreeDiskSpace(_syncPal->localPath());
         if (freeBytes >= 0) {
             if (freeBytes < _bytesToDownload + Utility::freeDiskSpaceLimit()) {
-                LOGW_SYNCPAL_WARN(_logger, L"Disk almost full, only "
-                                                   << freeBytes << L" B available at path " << Utility::formatSyncPath(_syncPal->localPath())
-                                                   << L", " << _bytesToDownload << L" B to download. Synchronization canceled.");
+                LOGW_SYNCPAL_WARN(_logger, L"Disk almost full, only " << freeBytes << L" B available at path "
+                                                                      << Utility::formatSyncPath(_syncPal->localPath()) << L", "
+                                                                      << _bytesToDownload
+                                                                      << L" B to download. Synchronization canceled.");
                 exitCode = ExitCode::SystemError;
                 setExitCause(ExitCause::NotEnoughDiskSpace);
             }
         } else {
-            LOGW_SYNCPAL_WARN(_logger, L"Could not determine free space available at " << Utility::formatSyncPath(_syncPal->localPath()));
+            LOGW_SYNCPAL_WARN(_logger,
+                              L"Could not determine free space available at " << Utility::formatSyncPath(_syncPal->localPath()));
         }
     }
 
@@ -183,7 +185,7 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
     }
 
     // If only elements that are not synced with the corresponding side change (e.g., creation date), the operation can be omitted
-    if (!editChangeShouldBePropagated(currentNode, correspondingNode)) {
+    if (!editChangeShouldBePropagated(currentNode)) {
         // Only update DB and tree
         op->setOmit(true);
         if (ParametersCache::isExtendedLogEnabled()) {
@@ -320,23 +322,6 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
     }
 
     _deletedNodes.insert(*currentNode->id());
-}
-
-bool OperationGeneratorWorker::editChangeShouldBePropagated(std::shared_ptr<Node> currentNode,
-                                                            std::shared_ptr<Node> correspondingNode) {
-    if (!currentNode || !correspondingNode) {
-        LOG_SYNCPAL_WARN(_logger,
-                         "hasChangeToPropagate: provided node is(are) null: " << (currentNode ? "" : "currentNode")
-                                                                              << (correspondingNode ? "" : " correspondingNode"));
-        return true;
-    }
-
-    if (currentNode->side() == ReplicaSide::Local && currentNode->size() == correspondingNode->size() &&
-        currentNode->lastmodified() == correspondingNode->lastmodified() &&
-        currentNode->createdAt() != correspondingNode->createdAt()) {
-        return false;
-    }
-    return true;
 }
 
 void OperationGeneratorWorker::findAndMarkAllChildNodes(std::shared_ptr<Node> parentNode) {

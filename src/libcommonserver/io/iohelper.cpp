@@ -731,7 +731,7 @@ bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, Sy
         return isExpectedError(ioError);
     }
 
-    changed = (previousSize != fileStat.size) || (previousMtime != fileStat.modtime) ||
+    changed = (previousSize != fileStat.size) || (previousMtime != fileStat.modificationTime) ||
               (previousCreationTime != fileStat.creationTime);
 
     return true;

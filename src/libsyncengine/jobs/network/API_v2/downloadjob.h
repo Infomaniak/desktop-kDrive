@@ -36,7 +36,8 @@ class DownloadJob : public AbstractTokenNetworkJob {
         inline const SyncPath &localPath() const { return _localpath; }
 
         inline const NodeId &localNodeId() const { return _localNodeId; }
-        inline SyncTime modtime() const { return _modificationTime; }
+        inline SyncTime creationTime() const { return _creationTimeOut; }
+        inline SyncTime modificationTime() const { return _modificationTimeOut; }
 
     private:
         virtual std::string getSpecificUrl() override;
@@ -73,14 +74,18 @@ class DownloadJob : public AbstractTokenNetworkJob {
         NodeId _remoteFileId;
         SyncPath _localpath;
         SyncPath _tmpPath;
-        int64_t _expectedSize = Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH;
-        SyncTime _creationTime = 0;
-        SyncTime _modificationTime = 0;
+        const int64_t _expectedSize = Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH;
+        const SyncTime _creationTimeIn = 0;
+        const SyncTime _modificationTimeIn = 0;
+
         bool _isCreate = false;
         bool _ignoreDateTime = false;
         bool _responseHandlingCanceled = false;
 
         NodeId _localNodeId;
+        SyncTime _creationTimeOut = 0; // The effective creation time of the file on the local filesystem, it may differ from
+                                       // _creationTimeIn if we fail to set it locally
+        SyncTime _modificationTimeOut = 0;
         const std::shared_ptr<Vfs> _vfs;
         bool _isHydrated{true};
 
