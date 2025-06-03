@@ -69,7 +69,8 @@ class SyncPalWorker : public ISyncWorker {
          *
          * - It first loads the SyncDb cache if needed and retrieves all known nodes (in db).
          * - For each nodes, it verifies whether the file still exists, retrieves and save its new node ID.
-         * - If all the nodes in db are present under the syncroot with the same path, the node IDs are updated in the SyncDb. *
+         * - If all the nodes in db are present under the syncroot with the same path, the node IDs are updated in the SyncDb.
+         *   Else the process is aborted and false is returned.
          * - After all updates, the new local root node ID is saved.
          *
          * @note This is a best-effort operation and will return false at the first unrecoverable error (e.g., file deleted/moved,
