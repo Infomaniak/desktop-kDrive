@@ -70,8 +70,8 @@ void SyncPalWorker::execute() {
     std::shared_ptr<ISyncWorker> stepWorkers[2] = {nullptr, nullptr};
     std::shared_ptr<SharedObject> inputSharedObject[2] = {nullptr, nullptr};
     time_t lastEstimateUpdate = 0;
-    bool syncDirChanged = false;
     for (;;) {
+        bool syncDirChanged = false;
         // Check File System Observer workers status
         for (int index = 0; index < 2; index++) {
             if (fsoWorkers[index] && !fsoWorkers[index]->isRunning()) {
