@@ -45,14 +45,15 @@ namespace KDC {
 #define READ_PAUSE_SLEEP_PERIOD 100 // 0.1 s
 #define READ_RETRIES 10
 
-DownloadJob::DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
-                         int64_t expectedSize, SyncTime creationTime, SyncTime modificationTime, bool isCreate) :
+DownloadJob::DownloadJob(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const NodeId &remoteFileId,
+                         const SyncPath &localpath, const int64_t expectedSize, const SyncTime creationTime,
+                         const SyncTime modificationTime, const bool isCreate) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
     _remoteFileId(remoteFileId),
     _localpath(localpath),
     _expectedSize(expectedSize),
-    _creationTime(creationTime),
-    _modificationTime(modificationTime),
+    _creationTimeIn(creationTime),
+    _modificationTimeIn(modificationTime),
     _isCreate(isCreate),
     _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
@@ -159,8 +160,8 @@ void DownloadJob::runJob() noexcept {
             return;
         }
 
-        if (const ExitInfo exitInfo = _vfs->updateMetadata(_localpath, filestat.creationTime, filestat.modtime, _expectedSize,
-                                                           std::to_string(filestat.inode));
+        if (const ExitInfo exitInfo = _vfs->updateMetadata(_localpath, filestat.creationTime, filestat.modificationTime,
+                                                           _expectedSize, std::to_string(filestat.inode));
             !exitInfo) {
             LOGW_WARN(_logger, L"Update metadata failed " << exitInfo << L" " << Utility::formatSyncPath(_localpath));
             _exitInfo = exitInfo;
@@ -282,9 +283,8 @@ bool DownloadJob::handleResponse(std::istream &is) {
             }
         }
     }
-
     if (!_ignoreDateTime) {
-        if (const IoError ioError = IoHelper::setFileDates(_localpath, _creationTime, _modificationTime, isLink);
+        if (const IoError ioError = IoHelper::setFileDates(_localpath, _creationTimeIn, _modificationTimeIn, isLink);
             ioError == IoError::Unknown) {
             LOGW_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(_localpath));
             // Do nothing (remote file will be updated during the next sync)
@@ -317,6 +317,15 @@ bool DownloadJob::handleResponse(std::istream &is) {
     }
 
     _localNodeId = std::to_string(filestat.inode);
+    _creationTimeOut = filestat.creationTime;
+    _modificationTimeOut = filestat.modificationTime;
+    if (_modificationTimeIn != _modificationTimeOut) {
+        std::wstringstream ss;
+        ss << "Impossible to set modification date " << _modificationTimeIn << " to local file "
+           << Utility::formatSyncPath(_localpath);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "Failed tl o set modification date on local file ",
+                                        Utility::ws2s(ss.str()));
+    }
     _exitInfo = ExitCode::Ok;
 
     return true;
@@ -382,7 +391,7 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
             LOGW_WARN(_logger, L"Failed to create alias: " << Utility::formatIoError(_localpath, ioError));
 
             if (ioError == IoError::Unknown) {
-                // Could be an alias imported into the drive by dragndrop in the webapp
+                // Could be an alias imported into the drive by drag&drop in the webapp
                 bool writeError = false;
                 if (!createTmpFile(data, writeError)) {
                     LOGW_WARN(_logger, L"Error in createTmpFile");

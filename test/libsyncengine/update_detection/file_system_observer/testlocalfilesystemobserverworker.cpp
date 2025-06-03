@@ -583,7 +583,8 @@ void MockLocalFileSystemObserverWorker::waitForUpdate(SnapshotRevision previousR
                                                       const std::chrono::milliseconds timeoutMs) const {
     using namespace std::chrono;
     const auto start = system_clock::now();
-    while (previousRevision == liveSnapshot().revision() && duration_cast<milliseconds>(system_clock::now() - start) < timeoutMs) {
+    while (previousRevision == liveSnapshot().revision() &&
+           duration_cast<milliseconds>(system_clock::now() - start) < timeoutMs) {
         Utility::msleep(10);
     }
     CPPUNIT_ASSERT_LESS(timeoutMs.count(), duration_cast<milliseconds>(system_clock::now() - start).count());

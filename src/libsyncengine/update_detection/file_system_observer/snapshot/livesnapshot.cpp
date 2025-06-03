@@ -120,8 +120,9 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem) {
     }
 
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Item: " << Utility::formatSyncName(item->name()) << L" (" << Utility::s2ws(item->id())
-                                                           << L") updated at:" << item->lastModified());
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Item: " << Utility::formatSyncName(item->name()) << L" ("
+                                                           << Utility::s2ws(item->id()) << L") updated at:"
+                                                           << item->lastModified());
     }
     return true;
 }

@@ -272,7 +272,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
          *
          * /!\ Must not be called before SyncPal::createWorkers() or after SyncPal::freeWorkers(),
          * as the underlying data may not be initialized or may have already been released.
-         * 
+         *
          * The live snapshot is intended to be modified only by the FSO workers.
          * Workers should always retreive information from a ConstSnapshot (see SyncPal::snapshot(ReplicaSide side))
          * There are a few exceptions where reading directly from the liveSnapshot is necessary:
@@ -282,7 +282,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
          *      Ideally, we would query the filesystem directly in these situations. However, for optimization purposes,
          *      it may be preferable to read from the live snapshot, accepting the trade-off that it might lag slightly
          *      behind the actual state of the filesystem.
-         */ 
+         */
         const LiveSnapshot &liveSnapshot(ReplicaSide side) const;
 
     protected:

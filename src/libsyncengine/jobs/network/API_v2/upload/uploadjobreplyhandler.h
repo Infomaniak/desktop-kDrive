@@ -20,13 +20,14 @@ namespace KDC {
 
 class UploadJobReplyHandler {
     public:
-        UploadJobReplyHandler(const SyncPath& absoluteFilePath, bool isLink, SyncTime creationTime, SyncTime modificationTime);
+        UploadJobReplyHandler(const SyncPath &absoluteFilePath, bool isLink, SyncTime creationTime, SyncTime modificationTime);
 
         bool extractData(Poco::JSON::Object::Ptr jsonRes);
 
-        [[nodiscard]] const NodeId& nodeId() const { return _nodeIdOut; }
+        [[nodiscard]] const NodeId &nodeId() const { return _nodeIdOut; }
         [[nodiscard]] SyncTime creationTime() const { return _creationTimeOut; }
         [[nodiscard]] SyncTime modificationTime() const { return _modificationTimeOut; }
+        [[nodiscard]] int64_t size() const { return _sizeOut; }
 
     private:
         const SyncPath _absoluteFilePath;
@@ -37,6 +38,7 @@ class UploadJobReplyHandler {
         NodeId _nodeIdOut;
         SyncTime _creationTimeOut = 0;
         SyncTime _modificationTimeOut = 0;
+        int64_t _sizeOut = 0;
 };
 
 } // namespace KDC
