@@ -52,14 +52,8 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void basicTests();
         void testLocalChanges();
         void testRemoteChanges();
-        // // Remote changes
-        // void testCreateRemote();
-        // void testEditRemote();
-        // void testMoveRemote();
-        // void testRenameRemote();
-        // void testDeleteRemote();
-        // // Other tests
-        // void testSimultaneousChanges();
+        void testSimultaneousChanges();
+
         // // Inconsistency
         // void testInconsistency();
         // // TODO : other tests
@@ -119,7 +113,6 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
 
         int _driveDbId = 0;
 
-        std::vector<testFctPtr> _testFctPtrVector;
         SyncPath _tmpFilePath;
         LocalTemporaryDirectory _localSyncDir;
         RemoteTemporaryDirectory _remoteSyncDir{"testIntegration"};

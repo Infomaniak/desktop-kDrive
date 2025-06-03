@@ -153,43 +153,33 @@ void TestIntegration::testAll() {
     logStep("initialisation");
 
     // Run test cases
-    _testFctPtrVector = {
-            &TestIntegration::basicTests,
-            // &TestIntegration::testCreateRemote,
-            // &TestIntegration::testEditRemote,
-            // &TestIntegration::testMoveRemote,
-            // &TestIntegration::testRenameRemote,
-            // &TestIntegration::testDeleteRemote,
-            // &TestIntegration::testSimultaneousChanges,
-            // &TestIntegration::testInconsistency,
-            // &TestIntegration::testCreateCreatePseudoConflict,
-            // &TestIntegration::testCreateCreateConflict,
-            // &TestIntegration::testEditEditPseudoConflict,
-            // &TestIntegration::testEditEditConflict,
-            // &TestIntegration::testMoveCreateConflict,
-            // &TestIntegration::testEditDeleteConflict1,
-            // &TestIntegration::testEditDeleteConflict2,
-            // &TestIntegration::testMoveDeleteConflict1,
-            // &TestIntegration::testMoveDeleteConflict2,
-            // &TestIntegration::testMoveDeleteConflict3,
-            // &TestIntegration::testMoveDeleteConflict4,
-            // &TestIntegration::testMoveDeleteConflict5,
-            // &TestIntegration::testMoveParentDeleteConflict,
-            // &TestIntegration::testCreateParentDeleteConflict,
-            // &TestIntegration::testMoveMoveSourcePseudoConflict,
-            // &TestIntegration::testMoveMoveSourceConflict,
-            // &TestIntegration::testMoveMoveDestConflict,
-            // &TestIntegration::testMoveMoveCycleConflict,
-    };
+    basicTests();
 
-    for (const auto fct: _testFctPtrVector) {
-        (this->*fct)();
-    }
+    // &TestIntegration::testInconsistency,
+    // &TestIntegration::testCreateCreatePseudoConflict,
+    // &TestIntegration::testCreateCreateConflict,
+    // &TestIntegration::testEditEditPseudoConflict,
+    // &TestIntegration::testEditEditConflict,
+    // &TestIntegration::testMoveCreateConflict,
+    // &TestIntegration::testEditDeleteConflict1,
+    // &TestIntegration::testEditDeleteConflict2,
+    // &TestIntegration::testMoveDeleteConflict1,
+    // &TestIntegration::testMoveDeleteConflict2,
+    // &TestIntegration::testMoveDeleteConflict3,
+    // &TestIntegration::testMoveDeleteConflict4,
+    // &TestIntegration::testMoveDeleteConflict5,
+    // &TestIntegration::testMoveParentDeleteConflict,
+    // &TestIntegration::testCreateParentDeleteConflict,
+    // &TestIntegration::testMoveMoveSourcePseudoConflict,
+    // &TestIntegration::testMoveMoveSourceConflict,
+    // &TestIntegration::testMoveMoveDestConflict,
+    // &TestIntegration::testMoveMoveCycleConflict,
 }
 
 void TestIntegration::basicTests() {
     testLocalChanges();
     testRemoteChanges();
+    testSimultaneousChanges();
 }
 
 void TestIntegration::testLocalChanges() {
@@ -266,6 +256,7 @@ void TestIntegration::testRemoteChanges() {
     const SyncPath subDirPath = _syncPal->localPath() / "testSubDirRemote";
     NodeId subDirId;
     SyncPath filePath = _syncPal->localPath() / "testRemote.txt";
+    NodeId fileId;
     {
         CreateDirJob createDirJob(nullptr, _driveDbId, subDirPath, _remoteSyncDir.id(), subDirPath.filename());
         (void) createDirJob.runSynchronously();
@@ -273,6 +264,7 @@ void TestIntegration::testRemoteChanges() {
 
         DuplicateJob duplicateJob(nullptr, _driveDbId, _testFileRemoteId, filePath);
         (void) duplicateJob.runSynchronously();
+        fileId = duplicateJob.nodeId();
     }
 
     waitForSyncToFinish(SourceLocation::currentLoc());
@@ -286,7 +278,7 @@ void TestIntegration::testRemoteChanges() {
     int64_t modificationTime = 0;
     testhelpers::generateOrEditTestFile(_tmpFilePath);
     {
-        UploadJob job(nullptr, _driveDbId, _tmpFilePath, _testFileRemoteId, testhelpers::defaultTime);
+        UploadJob job(nullptr, _driveDbId, _tmpFilePath, fileId, testhelpers::defaultTime);
         (void) job.runSynchronously();
         modificationTime = job.newModificationTime();
     }
@@ -303,7 +295,7 @@ void TestIntegration::testRemoteChanges() {
     // Generate a move operation.
     filePath = subDirPath / "testRemote_renamed.txt";
     {
-        MoveJob job(nullptr, _driveDbId, filePath, _testFileRemoteId, subDirId, filePath.filename());
+        MoveJob job(nullptr, _driveDbId, filePath, fileId, subDirId, filePath.filename());
         job.setBypassCheck(true);
         (void) job.runSynchronously();
     }
@@ -329,49 +321,23 @@ void TestIntegration::testRemoteChanges() {
     logStep("test delete remote file");
 }
 
-// void TestIntegration::testSimultaneousChanges() {
-//     LOGW_DEBUG(_logger, L"$$$$$ test simultaneous changes");
-//     std::cout << "test simultaneous changes : ";
-//
-//     // Simulate local file edition
-//     std::filesystem::path localFilePath = _localPath / testExecutorFolderRelativePath / "test_executor_copy.txt";
-//
-//     SyncTime prevModTime = _syncPal->_remoteSnapshot->lastModified(testExecutorFileCopyRemoteId);
-//     SyncName testCallStr = Str(R"(echo "This is an edit test )") +
-//     Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) +
-//                            Str(R"(" >> ")") + localFilePath.make_preferred().native() + Str(R"(")");
-//     std::system(SyncName2Str(testCallStr).c_str());
-//
-//     // Simulate a remote file creation by duplicating an existing file
-//     SyncName newTestFileName =
-//             Str("testSimultaneousChanges_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) + Str(".txt");
-//     DuplicateJob job(_syncPal->vfs(), _driveDbId, testExecutorFileRemoteId, newTestFileName);
-//     job.runSynchronously();
-//     NodeId remoteId = job.nodeId();
-//
-//     waitForSyncToFinish(SourceLocation::currentLoc());
-//
-//     // Check effect of local change on remote snapshot
-//     SyncTime newModTime = _syncPal->_remoteSnapshot->lastModified(testExecutorFileCopyRemoteId);
-//     CPPUNIT_ASSERT(newModTime > prevModTime);
-//
-//     // Check effect of remote change on local snapshot
-//     bool found = false;
-//     NodeId localId;
-//     CPPUNIT_ASSERT(_syncPal->syncDb()->correspondingNodeId(ReplicaSide::Remote, remoteId, localId, found));
-//     CPPUNIT_ASSERT(found);
-//     CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(localId));
-//
-//     // Remove the test file
-//     DeleteJob deleteJob(_driveDbId, remoteId, "", "",
-//                         NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
-//     deleteJob.runSynchronously();
-//
-//     waitForSyncToFinish(SourceLocation::currentLoc());
-//
-//     std::cout << "OK" << std::endl;
-// }
-//
+void TestIntegration::testSimultaneousChanges() {
+    // Simulate local file creation.
+    const SyncPath localFilePath = _syncPal->localPath() / "testSimultaneousChanges.txt";
+    testhelpers::generateOrEditTestFile(localFilePath);
+
+    // Simulate a remote move.
+    const SyncPath remoteFilePath = _syncPal->localPath() / "renamed.txt";
+    RenameJob job(nullptr, _driveDbId, _testFileRemoteId, remoteFilePath);
+    (void) job.runSynchronously();
+
+    waitForSyncToFinish(SourceLocation::currentLoc());
+
+    CPPUNIT_ASSERT_EQUAL(true, std::filesystem::exists(remoteFilePath));
+    const auto remoteTestFileInfo = testhelpers::getRemoteFileInfo(_driveDbId, _remoteSyncDir.id(), localFilePath.filename());
+    CPPUNIT_ASSERT_EQUAL(true, remoteTestFileInfo.isValid());
+}
+
 // void TestIntegration::testInconsistency() {
 //     LOGW_DEBUG(_logger, L"$$$$$ test inconsistency checker");
 //     std::cout << "test inconsistency checker : ";
