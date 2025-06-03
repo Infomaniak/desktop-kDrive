@@ -381,11 +381,17 @@ function Prepare-Archive {
     }
     $find_dep_script = "$path/infomaniak-build-tools/conan/find_conan_dep.ps1"
 
-    $xxhash_args = @("-Package", "xxhash", "-Version", "0.8.2")
-    $log4cplus_args = @("-Package", "log4cplus", "-Version", "2.1.2")
+    $xxhash_args = @{
+        Package = "xxhash"
+        Version = "0.8.2"
+    }
+    $log4cplus_args = @{
+        Package = "log4cplus"
+        Version = "2.1.2"
+    }
     if ($ci) {
-        $xxhash_args += "-Ci"
-        $log4cplus_args += "-Ci"
+        $xxhash_args["Ci"]       = $true
+        $log4cplus_args["Ci"]    = $true
     }
     $xxhash_folder = & $find_dep_script @xxhash_args
     $log4cplus_folder = & $find_dep_script @log4cplus_args
