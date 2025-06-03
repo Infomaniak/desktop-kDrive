@@ -155,7 +155,7 @@ if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
         Err "Failed to add local Conan remote."
     }
 } else {
-    Log "Conan remote '$LocalConanRemoteName' already exists and is enabled."
+    Log "Conan remote '$LocalRemoteName' already exists and is enabled."
 }
 
 # Ensure output directory exists

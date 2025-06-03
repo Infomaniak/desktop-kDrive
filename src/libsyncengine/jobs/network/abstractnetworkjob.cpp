@@ -421,8 +421,8 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
         return true;
     }
 
-    LOG_DEBUG(_logger, "Request " << jobId() << " finished with status: " << _resHttp.getStatus() << " / "
-                                  << _resHttp.getReason());
+    LOG_DEBUG(_logger,
+              "Request " << jobId() << " finished with status: " << _resHttp.getStatus() << " / " << _resHttp.getReason());
 
     bool res = true;
     switch (_resHttp.getStatus()) {

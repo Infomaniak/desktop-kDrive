@@ -143,12 +143,10 @@ void TestSyncPal::testCopySnapshots() {
     _syncPal->copySnapshots();
 
     // Check that the copy is the same as the original
-    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSide::Local)->nbItems(),
-                         _syncPal->liveSnapshot(ReplicaSide::Local).nbItems());
+    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSide::Local)->nbItems(), _syncPal->liveSnapshot(ReplicaSide::Local).nbItems());
     CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSide::Local)->rootFolderId(),
                          _syncPal->liveSnapshot(ReplicaSide::Local).rootFolderId());
     CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSide::Local)->side(), _syncPal->liveSnapshot(ReplicaSide::Local).side());
-
 }
 void TestSyncPal::testSyncFileItem() {
     _syncPal->_progressInfo = std::make_shared<ProgressInfo>(_syncPal);
@@ -200,7 +198,7 @@ void TestSyncPal::testSyncFileItem() {
 
 void TestSyncPal::testCheckIfExistsOnServer() {
     bool exists = false;
-   // CPPUNIT_ASSERT(!_syncPal->checkIfExistsOnServer(SyncPath("dummy"), exists));
+    // CPPUNIT_ASSERT(!_syncPal->checkIfExistsOnServer(SyncPath("dummy"), exists));
 }
 
 void TestSyncPal::testBlacklist() {

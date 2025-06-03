@@ -613,7 +613,7 @@ void TestExecutorWorker::testFixModificationDate() {
     IoHelper::getFileStat(path, &filestat, ioError);
 
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime, filestat.modtime);
+    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime, filestat.modificationTime);
 }
 
 void TestExecutorWorker::testAffectedUpdateTree() {

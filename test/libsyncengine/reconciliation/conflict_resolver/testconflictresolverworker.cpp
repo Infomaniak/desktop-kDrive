@@ -98,9 +98,35 @@ void TestConflictResolverWorker::testEditEdit() {
     CPPUNIT_ASSERT(!op->newName().empty());
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, op->targetSide());
     CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
+    CPPUNIT_ASSERT(op->affectedNode()->hasChangeEvent(OperationType::Move));
+    CPPUNIT_ASSERT(op->affectedNode()->moveOriginInfos().parentNodeId() != defaultInvalidNodeId);
+    CPPUNIT_ASSERT(op->affectedNode()->moveOriginInfos().path() != defaultInvalidPath);
 }
 
-void TestConflictResolverWorker::testMoveCreate() {
+
+void TestConflictResolverWorker::testOmitEditEdit() {
+    // Simulate edit conflict of file A/AA/AAA on both replica
+    const auto lNodeAAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aaa");
+    const auto rNodeAAA = _testSituationGenerator.editNode(ReplicaSide::Remote, "aaa");
+    lNodeAAA->setCreatedAt(testhelpers::defaultTime + 1); // Editing only the creation time is considered an omit edit.
+    lNodeAAA->setChangeEvents(OperationType::Edit);
+    rNodeAAA->setChangeEvents(OperationType::Edit);
+
+    const Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::EditEdit);
+    _syncPal->_conflictQueue->push(conflict);
+    _syncPal->_conflictResolverWorker->execute();
+
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
+    const auto opId = _syncPal->_syncOps->opSortedList().front();
+    const auto op = _syncPal->_syncOps->getOp(opId);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, op->targetSide());
+    CPPUNIT_ASSERT_EQUAL(OperationType::Edit, op->type());
+    CPPUNIT_ASSERT(op->omit());
+    CPPUNIT_ASSERT_EQUAL(lNodeAAA, op->affectedNode());
+    CPPUNIT_ASSERT_EQUAL(rNodeAAA, op->correspondingNode());
+}
+
+void TestConflictResolverWorker::testMoveCreate1() {
     // Simulate create file A/AB/ABA on local replica
     const auto lNodeABA = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "aba", "ab");
 
@@ -114,9 +140,28 @@ void TestConflictResolverWorker::testMoveCreate() {
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
     const auto opId = _syncPal->_syncOps->opSortedList().front();
     const auto op = _syncPal->_syncOps->getOp(opId);
-    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, op->targetSide());
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, op->targetSide());
     CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
-    CPPUNIT_ASSERT_EQUAL(NodeId("r_aa"), op->newParentNode()->id().value());
+    CPPUNIT_ASSERT(op->relativeDestinationPath().filename().string().find("conflict") != 0);
+}
+
+void TestConflictResolverWorker::testMoveCreate2() {
+    // Simulate create file A/AB/ABA on remote replica
+    const auto lNodeABA = _testSituationGenerator.createNode(ReplicaSide::Remote, NodeType::File, "aba", "ab");
+
+    // Simulate move of file A/AA/AAA to A/AB/ABA on local replica
+    const auto rNodeAAA = _testSituationGenerator.moveNode(ReplicaSide::Local, "aaa", "ab", Str("ABA"));
+
+    const Conflict conflict(rNodeAAA, lNodeABA, ConflictType::MoveCreate);
+    _syncPal->_conflictQueue->push(conflict);
+    _syncPal->_conflictResolverWorker->execute();
+
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
+    const auto opId = _syncPal->_syncOps->opSortedList().front();
+    const auto op = _syncPal->_syncOps->getOp(opId);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, op->targetSide());
+    CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
+    CPPUNIT_ASSERT_EQUAL(NodeId("l_aa"), op->newParentNode()->id().value());
 }
 
 void TestConflictResolverWorker::testMoveCreateDehydratedPlaceholder() {
@@ -151,6 +196,31 @@ void TestConflictResolverWorker::testMoveCreateDehydratedPlaceholder() {
     CPPUNIT_ASSERT_EQUAL(OperationType::Delete, op->type());
     CPPUNIT_ASSERT_EQUAL(lNodeAAA, op->correspondingNode());
 }
+
+void TestConflictResolverWorker::testOmitEditDelete() {
+    // Simulate edit of file A/AA/AAA on local replica
+    const auto lNodeAAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aaa");
+    lNodeAAA->setCreatedAt(testhelpers::defaultTime + 1); // Editing only the creation time is considered an omit edit.
+    lNodeAAA->setChangeEvents(OperationType::Edit);
+
+    // and delete of file A/AA/AAA on remote replica
+    const auto rNodeAAA = _testSituationGenerator.getNode(ReplicaSide::Remote, "aaa");
+    rNodeAAA->setChangeEvents(OperationType::Delete);
+
+    const Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::EditDelete);
+    _syncPal->_conflictQueue->push(conflict);
+    _syncPal->_conflictResolverWorker->execute();
+
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
+    const auto opId = _syncPal->_syncOps->opSortedList().front();
+    const auto op = _syncPal->_syncOps->getOp(opId);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, op->targetSide());
+    CPPUNIT_ASSERT_EQUAL(OperationType::Edit, op->type());
+    CPPUNIT_ASSERT(op->omit());
+    CPPUNIT_ASSERT_EQUAL(lNodeAAA, op->affectedNode());
+    CPPUNIT_ASSERT_EQUAL(rNodeAAA, op->correspondingNode());
+}
+
 
 void TestConflictResolverWorker::testEditDelete1() {
     // Simulate edit of file A/AA/AAA on local replica
@@ -566,6 +636,9 @@ void TestConflictResolverWorker::testMoveMoveSource() {
     CPPUNIT_ASSERT(!op->newName().empty());
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, op->targetSide());
     CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
+    CPPUNIT_ASSERT(op->affectedNode()->hasChangeEvent(OperationType::Move));
+    CPPUNIT_ASSERT(op->affectedNode()->moveOriginInfos().parentNodeId() != defaultInvalidNodeId);
+    CPPUNIT_ASSERT(op->affectedNode()->moveOriginInfos().path() != defaultInvalidPath);
 }
 
 void TestConflictResolverWorker::testMoveMoveSourceDehydratedPlaceholder() {
@@ -619,6 +692,9 @@ void TestConflictResolverWorker::testMoveMoveDest() {
     CPPUNIT_ASSERT(!op->newName().empty());
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, op->targetSide());
     CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
+    CPPUNIT_ASSERT(op->affectedNode()->hasChangeEvent(OperationType::Move));
+    CPPUNIT_ASSERT(op->affectedNode()->moveOriginInfos().parentNodeId() != defaultInvalidNodeId);
+    CPPUNIT_ASSERT(op->affectedNode()->moveOriginInfos().path() != defaultInvalidPath);
     const auto lNodeAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aa");
     CPPUNIT_ASSERT_EQUAL(lNodeAA, op->newParentNode());
 }
@@ -677,6 +753,9 @@ void TestConflictResolverWorker::testMoveMoveCycle() {
     CPPUNIT_ASSERT_EQUAL(lNodeA, op->newParentNode());
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, op->targetSide());
     CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
+    CPPUNIT_ASSERT(op->affectedNode()->hasChangeEvent(OperationType::Move));
+    CPPUNIT_ASSERT(op->affectedNode()->moveOriginInfos().parentNodeId() != defaultInvalidNodeId);
+    CPPUNIT_ASSERT(op->affectedNode()->moveOriginInfos().path() != defaultInvalidPath);
 }
 
 void TestConflictResolverWorker::testMoveMoveCycle2() {
@@ -712,6 +791,9 @@ void TestConflictResolverWorker::testMoveMoveCycle2() {
     CPPUNIT_ASSERT_EQUAL(lNodeAA, op->newParentNode());
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, op->targetSide());
     CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
+    CPPUNIT_ASSERT(op->affectedNode()->hasChangeEvent(OperationType::Move));
+    CPPUNIT_ASSERT(op->affectedNode()->moveOriginInfos().parentNodeId() != defaultInvalidNodeId);
+    CPPUNIT_ASSERT(op->affectedNode()->moveOriginInfos().path() != defaultInvalidPath);
 }
 
 } // namespace KDC

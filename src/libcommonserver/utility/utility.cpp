@@ -369,7 +369,7 @@ std::string Utility::fileSystemName(const SyncPath &targetPath) {
         // !!! File system name can be OK or not !!!
         return ws2s(szFileSystemName);
     }
-#elif defined(__unix__) 
+#elif defined(__unix__)
     struct statfs stat;
     if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
         std::function<std::string(std::string prettyName, int fsCode)> formatFsName = [](std::string prettyName, int fsCode) {
