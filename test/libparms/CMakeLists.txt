@@ -20,12 +20,11 @@ set(testparms_SRCS
     db/testparmsdb.h db/testparmsdb.cpp
 )
 
-if (USE_OUR_OWN_SQLITE3)
+if(USE_OUR_OWN_SQLITE3)
     list(APPEND testparms_SRCS ${SQLITE3_SOURCE})
 endif()
 
-if (WIN32)
-    include_directories("F:/Projects/log4cplus/include")
+if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
 else()
     include_directories("/usr/local/include")
@@ -41,7 +40,7 @@ target_link_libraries(${testparms_NAME}
     ${SQLITE3_LIBRARIES}
 )
 
-if (WIN32)
+if(WIN32)
     target_link_libraries(${testparms_NAME}
         debug
         "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"

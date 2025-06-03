@@ -43,10 +43,15 @@ class KDriveDesktop(ConanFile):
         Specify the dependencies required for this package.
         Here are the dependencies used:
         - `xxhash/0.8.2`: A fast non-cryptographic hash algorithm.
+        - `log4cplus/2.1.2`: A C++ logging library.
         :return: None
         """
         self.requires("xxhash/0.8.2") # From local recipe
-
+        # log4cplus
+        log4cplus_options = { "shared": True, "unicode": True }
+        if self.settings.os == "Windows":
+            log4cplus_options["thread_pool"] = False
+        self.requires("log4cplus/2.1.0", options=log4cplus_options) # From https://conan.io/center/recipes/log4cplus
 
 class OverrideVSRuntimeBlock(VSRuntimeBlock):
     template = textwrap.dedent("""\
