@@ -42,14 +42,21 @@ runs:
           cp /usr/local/lib/libPocoNetSSL* ./dependencies/
           cp /usr/local/lib/libPocoCrypto* ./dependencies/
           cp /usr/local/lib/libPocoNet* ./dependencies/
-          cp /usr/local/lib/liblog4cplus* ./dependencies/
           cp /usr/local/lib/libsentry* ./dependencies/
           cp /usr/local/lib/libzip* ./dependencies/
-          cp /usr/local/lib/libxxhash* ./dependencies/
           cp /usr/lib/x86_64-linux-gnu/libglib* ./dependencies/
           cp /usr/lib/x86_64-linux-gnu/libsecret* ./dependencies/
           cp /usr/lib/x86_64-linux-gnu/libgthread* ./dependencies/
           cp /usr/lib/x86_64-linux-gnu/libdbus-1.so.3 ./dependencies/
+        shell: bash
+        if: steps.build.outcome == 'success'
+
+      - name: Fetch Conan dependencies
+        run: |
+          echo "Fetching Conan dependencies in $HOME/.conan2/p/"
+          find "$HOME/.conan2/p/" '(' -iname 'libxxhash*.so' -o -iname 'liblog4cplus*.so' ')' \
+            -exec cp -P {} ./dependencies/ \; \
+            -exec echo "Conan dependency found -> " {} \; 
         shell: bash
         if: steps.build.outcome == 'success'
 
