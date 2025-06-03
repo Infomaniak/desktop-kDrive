@@ -3,7 +3,7 @@
 # If defined, make sure it contains the full path to the file
 # The file should be an image that will then be the background of the package installer for MacOS
 
-if (DEFINED MAC_INSTALLER_BACKGROUND_FILE )
+if(DEFINED MAC_INSTALLER_BACKGROUND_FILE)
   set(MAC_INSTALLER_DO_CUSTOM_BACKGROUND "1")
 else()
   set(MAC_INSTALLER_DO_CUSTOM_BACKGROUND "0")

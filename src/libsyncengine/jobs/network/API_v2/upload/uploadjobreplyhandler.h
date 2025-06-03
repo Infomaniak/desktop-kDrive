@@ -27,6 +27,7 @@ class UploadJobReplyHandler {
         [[nodiscard]] const NodeId &nodeId() const { return _nodeIdOut; }
         [[nodiscard]] SyncTime creationTime() const { return _creationTimeOut; }
         [[nodiscard]] SyncTime modificationTime() const { return _modificationTimeOut; }
+        [[nodiscard]] int64_t size() const { return _sizeOut; }
 
     private:
         const SyncPath _absoluteFilePath;
@@ -37,6 +38,7 @@ class UploadJobReplyHandler {
         NodeId _nodeIdOut;
         SyncTime _creationTimeOut = 0;
         SyncTime _modificationTimeOut = 0;
+        int64_t _sizeOut = 0;
 };
 
 } // namespace KDC

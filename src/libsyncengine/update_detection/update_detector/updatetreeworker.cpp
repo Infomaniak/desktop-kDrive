@@ -299,8 +299,8 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
 
         if (!insertionResult.second) {
             // Failed to insert Create operation. A full rebuild of the snapshot is required.
-            // The following issue has been identified: the operating system missed a delete operation, in which case a snapshot
-            // rebuild is both required and sufficient.
+            // The following issue has been identified: the operating system missed a delete operation, in which case a
+            // liveSnapshot rebuild is both required and sufficient.
 
 
             LOGW_SYNCPAL_WARN(_logger, _side << L" update tree: Operation Create already exists on item with "
@@ -1012,7 +1012,7 @@ ExitCode UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &path, bool is
         return ExitCode::Ok;
     }
 
-    std::vector<SyncName> names = Utility::splitPath(path);
+    std::vector<SyncName> names = CommonUtility::splitSyncPath(path);
 
     // create intermediate nodes if needed
     std::shared_ptr<Node> tmpNode = _updateTree->rootNode();
@@ -1116,7 +1116,7 @@ bool UpdateTreeWorker::integrityCheck() {
 }
 
 ExitCode UpdateTreeWorker::getNewPathAfterMove(const SyncPath &path, SyncPath &newPath) {
-    const std::vector<SyncName> itemNames = Utility::splitPath(path);
+    const std::vector<SyncName> itemNames = CommonUtility::splitSyncPath(path);
     std::vector<NodeId> nodeIds(itemNames.size());
 
     // Vector ID

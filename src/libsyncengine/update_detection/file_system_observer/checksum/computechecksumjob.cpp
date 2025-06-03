@@ -28,7 +28,8 @@
 
 namespace KDC {
 
-ComputeChecksumJob::ComputeChecksumJob(const NodeId &nodeId, const SyncPath &filepath, std::shared_ptr<Snapshot> localSnapshot) :
+ComputeChecksumJob::ComputeChecksumJob(const NodeId &nodeId, const SyncPath &filepath,
+                                       const std::shared_ptr<LiveSnapshot> localSnapshot) :
     _logger(Log::instance()->getLogger()),
     _nodeId(nodeId),
     _filePath(filepath),

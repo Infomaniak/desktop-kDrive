@@ -67,6 +67,7 @@ void generateOrEditTestFile(const SyncPath &path);
  * @param count The number of file to generate.
  */
 void generateBigFiles(const SyncPath &dirPath, uint16_t size, uint16_t count);
+SyncPath generateBigFile(const SyncPath &dirPath, uint16_t size);
 
 inline bool isRunningOnCI(bool print = true) {
     static const bool isRunningOnCI = !loadEnvVariable("KDRIVE_TEST_CI_RUNNING_ON_CI", false).empty();

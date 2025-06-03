@@ -43,28 +43,28 @@ class FileExclusionDialog : public CustomDialog {
             Action
         };
 
-        QStandardItemModel *_filesTableModel;
-        QTableView *_filesTableView;
-        QPushButton *_saveButton;
+        QStandardItemModel *_filesTableModel{nullptr};
+        QTableView *_filesTableView{nullptr};
+        QPushButton *_saveButton{nullptr};
         QColor _actionIconColor;
         QSize _actionIconSize;
-        bool _needToSave;
+        bool _needToSave{false};
         QList<ExclusionTemplateInfo> _defaultTemplateList;
         QList<ExclusionTemplateInfo> _userTemplateList;
 
-        inline QColor actionIconColor() const { return _actionIconColor; }
-        inline QSize actionIconSize() const { return _actionIconSize; }
+        [[nodiscard]] QColor actionIconColor() const { return _actionIconColor; }
+        [[nodiscard]] QSize actionIconSize() const { return _actionIconSize; }
 
         void initUI();
         void updateUI();
-        void addTemplate(const ExclusionTemplateInfo &templateInfo, bool readOnly, int &row, QString scrollToTempl,
-                         int &scrollToRow);
+        void addTemplate(const ExclusionTemplateInfo &templateInfo, const bool readOnly, int &row,
+                         const QString &scrollToTemplate, int &scrollToRow);
         void setActionIconColor(const QColor &color);
         void setActionIconSize(const QSize &size);
         void setActionIcon();
         void setActionIcon(QStandardItem *item, const QString &viewIconPath);
         void setNeedToSave(bool value);
-        void loadPatternTable(QString scrollToPattern = QString());
+        void loadPatternTable(const QString &scrollToPattern = QString());
 
     private slots:
         void onExit();
