@@ -88,7 +88,7 @@ void SyncPalWorker::execute() {
                     }
 
                     syncDirChanged = fsoWorkers[index]->exitCode() == ExitCode::SystemError &&
-                                 fsoWorkers[index]->exitCause() == ExitCause::SyncDirChanged;
+                                     fsoWorkers[index]->exitCause() == ExitCause::SyncDirChanged;
                     if (syncDirChanged) {
                         break;
                     }
@@ -100,15 +100,15 @@ void SyncPalWorker::execute() {
             }
         }
 
-        // Manage SyncDir change (might happen if the sync folder is deleted and recreated e.g migration from an other device) 
-        if (syncDirChanged) {
-            LOG_SYNCPAL_INFO(_logger, "Sync dir changed, stopping all workers and exiting");
+        // Manage SyncDir change (might happen if the sync folder is deleted and recreated e.g migration from an other device)
+        if (syncDirChanged && !tryToFixDbNodeIdsAfterSyncDirChange()) {
+            LOG_SYNCPAL_INFO(_logger, "Sync dir changed and we are unable to automaticaly fix syncDb, stopping all workers and exiting");
             stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
             exitCode = ExitCode::FatalError;
             setExitCause(ExitCause::WorkerExited);
             break;
-        } 
-        
+        }
+
         // Manage stop
         if (stopAsked()) {
             // Stop all workers
@@ -508,6 +508,89 @@ void SyncPalWorker::stopAndWaitForExitOfAllWorkers(std::shared_ptr<ISyncWorker> 
     waitForExitOfWorkers(stepWorkers);
 
     LOG_SYNCPAL_INFO(_logger, "***** Stop done");
+}
+bool SyncPalWorker::tryToFixDbNodeIdsAfterSyncDirChange() {
+    SyncDbReadOnlyCache &dbCache = _syncPal->syncDb()->cache();
+    LOG_SYNCPAL_INFO(_logger, "Trying to fix SyncDb node IDs after sync dir nodeId change...");
+    if (!dbCache.reloadIfNeeded()) {
+        LOGW_SYNCPAL_WARN(_logger, L"Unable to reload SyncDb cache.");
+        return false;
+    }
+
+    std::unordered_set<NodeIds, NodeIds::HashFunction> remainingNodeIds;
+    bool found = false;
+    if (!dbCache.ids(remainingNodeIds, found)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Unable to get node IDs from SyncDb cache.");
+        return false;
+    }
+    if (!found) {
+        LOGW_SYNCPAL_WARN(_logger, L"No node IDs found in SyncDb cache.");
+        return false;
+    }
+
+    NodeId newLocalRootNodeId;
+    if (!IoHelper::getNodeId(_syncPal->localPath(), newLocalRootNodeId)) {
+        LOGW_SYNCPAL_WARN(_logger,
+                          L"Unable to get new local node ID for " << Utility::formatSyncPath(_syncPal->localPath()) << L".");
+        return false;
+    }
+
+    std::list<std::pair<DbNodeId, NodeId>> updatedNodeIds;
+    const auto rootDbNodeId = dbCache.rootNode().nodeId();
+    for (const auto &nodeIds: remainingNodeIds) {
+        const DbNodeId dbNodeId = nodeIds.dbNodeId;
+        if (dbNodeId == rootDbNodeId) continue; // Skip root node
+        SyncPath relativelocalPath;
+        SyncPath remotePath;
+        if (!dbCache.path(dbNodeId, relativelocalPath, remotePath, found)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Unable to get paths for DbNode ID " << dbNodeId);
+            return false;
+        }
+        if (!found) {
+            LOGW_SYNCPAL_WARN(_logger, L"DbNode with ID " << dbNodeId << L" not found in cache.");
+            return false;
+        }
+        SyncPath absoluteLocalPath = _syncPal->localPath() / relativelocalPath;
+        NodeId newLocalNodeId;
+
+        if (!IoHelper::getNodeId(absoluteLocalPath, newLocalNodeId)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Unable to get new local node ID for "
+                                               << Utility::formatSyncPath(absoluteLocalPath)
+                                               << L". It might have been deleted or moved, the syncDb cannot be fixed.");
+            return false;
+        }
+        (void) updatedNodeIds.emplace_back(dbNodeId, newLocalNodeId);
+    }
+
+    for (const auto &[dbNodeId, newLocalNodeId]: updatedNodeIds) {
+        DbNode dbNode;
+        if (!dbCache.node(dbNodeId, dbNode, found)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Unable to get DbNode with ID " << dbNodeId);
+            return false;
+        }
+        if (!found) {
+            LOGW_SYNCPAL_WARN(_logger, L"DbNode with ID " << dbNodeId << L" not found in cache.");
+            return false;
+        }
+        dbNode.setNodeIdLocal(newLocalNodeId);
+
+        if (!_syncPal->syncDb()->updateNode(dbNode, found)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Unable to update local node ID for DbNode ID " << dbNodeId);
+            return false;
+        }
+        if (!found) {
+            LOGW_SYNCPAL_WARN(_logger, L"DbNode with ID " << dbNodeId << L" not found in SyncDb.");
+            return false;
+        }
+
+        LOG_SYNCPAL_INFO(_logger, "Updated DbNode ID " << dbNodeId << " with new local node ID " << newLocalNodeId);
+    }
+    LOG_SYNCPAL_INFO(_logger, "SyncDb node IDs successfully fixed after sync dir change.");
+    if (const ExitInfo exitInfo = _syncPal->setLocalNodeId(newLocalRootNodeId); !exitInfo) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in setLocalNodeId: " << exitInfo);
+        return false;
+    }
+    return true;
 }
 
 void SyncPalWorker::resetVfsFilesStatus() {
