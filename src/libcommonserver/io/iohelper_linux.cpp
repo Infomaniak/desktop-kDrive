@@ -21,13 +21,19 @@
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 
-#include <log4cplus/loggingmacros.h>
-
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
 #include <fcntl.h>
-#include <Poco/File.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/xattr.h>
+#include <sys/time.h>
+
+#include <log4cplus/loggingmacros.h>
+
+#include <Poco/File.h>
+
 namespace KDC {
 
 bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydrated, IoError &ioError) noexcept {
@@ -83,7 +89,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
         }
     }
 
-    buf->modtime = sb.stx_mtime.tv_sec;
+    buf->modificationTime = sb.stx_mtime.tv_sec;
     buf->size = static_cast<int64_t>(sb.stx_size);
     if (S_ISLNK(sb.stx_mode)) {
         // The item is a symlink.
@@ -101,40 +107,16 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
     return true;
 }
 
-IoError returnNoSuchFileOrDirectory(const SyncPath &filePath) {
-    LOGW_WARN(Log::instance()->getLogger(), L"File not found : " << Utility::formatSyncPath(filePath));
-    return IoError::NoSuchFileOrDirectory;
-}
-
-IoError returnAccessDenied(const SyncPath &filePath) {
-    LOGW_WARN(Log::instance()->getLogger(), L"Access denied on file : " << Utility::formatSyncPath(filePath));
-    return IoError::AccessDenied;
-}
-
-IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime ,
-                                 const SyncTime modificationDate, const bool ) noexcept {
-    try {
-        const Poco::Timestamp lastModifiedTimestamp(Poco::Timestamp::fromEpochTime(modificationDate));
-        Poco::File(Path2Str(filePath)).setLastModified(lastModifiedTimestamp);
-    }
-    catch (Poco::NotFoundException &) {
-        return returnNoSuchFileOrDirectory(filePath);
-    }
-    catch (Poco::FileNotFoundException &) {
-        return returnNoSuchFileOrDirectory(filePath);
-    }
-    catch (Poco::FileExistsException &) {
-        return returnNoSuchFileOrDirectory(filePath);
-    }
-    catch (Poco::NoPermissionException &) {
-        return returnAccessDenied(filePath);
-    }
-    catch (Poco::FileAccessDeniedException &) {
-        return returnAccessDenied(filePath);
-    }
-    catch (Poco::Exception &ex) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in setLastModified : " << ex.message() << " (" << ex.code() << ")");
-        return IoError::Unknown;
+IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime /*creationDate*/, const SyncTime modificationDate,
+                               const bool) noexcept {
+    // /!\ It is not possible to update the Birth date of a file on Linux
+    struct timeval times[2];
+    times[0].tv_sec = modificationDate; // Access date
+    times[0].tv_usec = 0;
+    times[1].tv_sec = modificationDate; // Modify date
+    times[1].tv_usec = 0;
+    if (int rc = lutimes(filePath.c_str(), times); rc != 0) {
+        return posixError2ioError(errno);
     }
 
     return IoError::Success;
