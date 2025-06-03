@@ -576,7 +576,7 @@ bool Db::addIntegerColumnIfMissing(const std::string &tableName, const std::stri
     return addColumnIfMissing(tableName, columnName, requestId, request, columnAdded);
 }
 
-bool Db::addIntegerColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded /*= nullptr*/) {
+bool Db::addTextColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded /*= nullptr*/) {
     const auto requestId = tableName + "add_column_" + columnName;
     const auto request = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " TEXT;";
     return addColumnIfMissing(tableName, columnName, requestId, request, columnAdded);
