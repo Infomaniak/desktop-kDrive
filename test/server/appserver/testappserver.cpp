@@ -99,6 +99,7 @@ void TestAppServer::tearDown() {
 }
 
 void TestAppServer::testInitAndStopSyncPal() {
+    if (testhelpers::isExtendedTest()) return;
     const int syncDbId = 1;
 
     Sync sync;
