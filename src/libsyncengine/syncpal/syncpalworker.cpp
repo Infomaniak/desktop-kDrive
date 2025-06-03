@@ -380,16 +380,16 @@ void SyncPalWorker::initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2],
 SyncStep SyncPalWorker::nextStep() const {
     switch (_step) {
         case SyncStep::Idle: {
-            const bool areLiveSnapshotsValid = _syncPal->liveSnapshot(ReplicaSide::Local).isValid() &&
-                                           _syncPal->liveSnapshot(ReplicaSide::Remote).isValid();
+            const bool areLiveSnapshotsValid =
+                    _syncPal->liveSnapshot(ReplicaSide::Local).isValid() && _syncPal->liveSnapshot(ReplicaSide::Remote).isValid();
             const bool areFSOWorkersRunning =
                     _syncPal->_localFSObserverWorker->isRunning() && _syncPal->_remoteFSObserverWorker->isRunning();
             const bool areFSOWorkersInitializing =
                     _syncPal->_localFSObserverWorker->initializing() || _syncPal->_remoteFSObserverWorker->initializing();
             const bool areFSOWorkersUpdating =
                     _syncPal->_localFSObserverWorker->updating() || _syncPal->_remoteFSObserverWorker->updating();
-            const bool areLiveSnapshotsUpdated = _syncPal->liveSnapshot(ReplicaSide::Local).updated() ||
-                                             _syncPal->liveSnapshot(ReplicaSide::Remote).updated();
+            const bool areLiveSnapshotsUpdated =
+                    _syncPal->liveSnapshot(ReplicaSide::Local).updated() || _syncPal->liveSnapshot(ReplicaSide::Remote).updated();
 
 
             return areLiveSnapshotsValid && areFSOWorkersRunning && !areFSOWorkersInitializing && !areFSOWorkersUpdating &&
@@ -522,8 +522,8 @@ void SyncPalWorker::resetVfsFilesStatus() {
             bool isManaged = true;
             IoError ioError = IoError::Success;
             if (!Utility::checkIfDirEntryIsManaged(*dirIt, isManaged, ioError)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged : "
-                                                   << Utility::formatSyncPath(absolutePath));
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Error in Utility::checkIfDirEntryIsManaged : " << Utility::formatSyncPath(absolutePath));
                 ok = false;
                 dirIt.disable_recursion_pending();
                 continue;
@@ -537,15 +537,13 @@ void SyncPalWorker::resetVfsFilesStatus() {
             }
 
             if (ioError == IoError::AccessDenied) {
-                LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Directory misses search permission : " << Utility::formatSyncPath(absolutePath));
+                LOGW_SYNCPAL_DEBUG(_logger, L"Directory misses search permission : " << Utility::formatSyncPath(absolutePath));
                 dirIt.disable_recursion_pending();
                 continue;
             }
 
             if (!isManaged) {
-                LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Directory entry is not managed : " << Utility::formatSyncPath(absolutePath));
+                LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry is not managed : " << Utility::formatSyncPath(absolutePath));
                 dirIt.disable_recursion_pending();
                 continue;
             }
