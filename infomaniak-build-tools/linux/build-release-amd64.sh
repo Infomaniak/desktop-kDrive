@@ -162,13 +162,6 @@ package_release() {
   export LD_LIBRARY_PATH=$QT_BASE_DIR/lib:$app_dir/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH
   export PKG_CONFIG_PATH=$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
 
-  openssl_folder="$(base "$conan_source_folder/find_conan_dep.sh openssl 3.2.4" 2>/dev/null)"
-  if [ -z "$openssl_folder" ]; then
-    echo "OpenSSL folder not found. Please ensure the OpenSSL package is built and available in the conan cache." >&2; exit 1
-  else
-    echo "OpenSSL folder found: $openssl_folder"
-  fi
-
   mkdir -p $app_dir/usr/plugins
   cd $app_dir
 
