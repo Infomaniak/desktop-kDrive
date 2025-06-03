@@ -2,7 +2,7 @@ add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
 
 if(APPLE)
-  add_subdirectory(MacOSX)
+#  add_subdirectory(MacOSX)
 endif()
 
 if(BUILD_EXTENSIONS_ICONS)

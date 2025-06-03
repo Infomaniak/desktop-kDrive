@@ -163,7 +163,7 @@ else()
     target_link_libraries(${libcommonserver_NAME}
         utf8proc
     )
-
+    include(OpenSSLLibDirs)
     install(FILES
             "$<$<CONFIG:Release>:${xxhash_LIB_DIRS_RELEASE}/libxxhash.so>" # Release
             "$<$<CONFIG:Release>:${xxhash_LIB_DIRS_RELEASE}/libxxhash.so.0>"
@@ -175,14 +175,10 @@ else()
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
     )
     install(FILES
-            "$<$<CONFIG:Release>:${openssl_LIB_DIRS_RELEASE}/libcrypto.so>" # Release
-            "$<$<CONFIG:Release>:${openssl_LIB_DIRS_RELEASE}/libcrypto.so.3>"
-            "$<$<CONFIG:Release>:${openssl_LIB_DIRS_RELEASE}/libssl.so>"
-            "$<$<CONFIG:Release>:${openssl_LIB_DIRS_RELEASE}/libssl.so.3>"
-            "$<$<CONFIG:RelWithDebInfo>:${openssl_LIB_DIRS_RELWITHDEBINFO}/libcrypto.so>" # RelWithDebInfo
-            "$<$<CONFIG:RelWithDebInfo>:${openssl_LIB_DIRS_RELWITHDEBINFO}/libcrypto.so.3>"
-            "$<$<CONFIG:RelWithDebInfo>:${openssl_LIB_DIRS_RELWITHDEBINFO}/libssl.so>"
-            "$<$<CONFIG:RelWithDebInfo>:${openssl_LIB_DIRS_RELWITHDEBINFO}/libssl.so.3>"
+            "${_OpenSSL_LIB_DIRS}/libcrypto.so"
+            "${_OpenSSL_LIB_DIRS}/libcrypto.so.3"
+            "${_OpenSSL_LIB_DIRS}/libssl.so"
+            "${_OpenSSL_LIB_DIRS}/libssl.so.3"
             DESTINATION "${CONAN_DEP_DIR}"
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
     )

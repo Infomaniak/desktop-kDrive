@@ -1,0 +1,11 @@
+if(NOT CMAKE_BUILD_TYPE)
+    message(FATAL_ERROR "You have to set -DCMAKE_BUILD_TYPE=<Debug|Release|RelWithDebInfo|...>.")
+endif()
+find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
+string(TOUPPER "${CMAKE_BUILD_TYPE}" _BUILD_TYPE_UPPER)
+
+if(APPLE)
+    set(_OpenSSL_LIB_DIRS "${openssl-universal_LIB_DIRS_${_BUILD_TYPE_UPPER}}")
+elseif(UNIX)
+    set(_OpenSSL_LIB_DIRS "${openssl_LIB_DIRS_${_BUILD_TYPE_UPPER}}")
+endif()
