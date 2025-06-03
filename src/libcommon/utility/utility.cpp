@@ -67,8 +67,6 @@
 #include "utility_linux.cpp"
 #endif
 
-#include <iostream>
-
 #define MAX_PATH_LENGTH_WIN_LONG 32767
 #define MAX_PATH_LENGTH_WIN_SHORT 259
 #define MAX_PATH_LENGTH_MAC 1023
@@ -981,30 +979,16 @@ QString CommonUtility::truncateLongLogMessage(const QString &message) {
 }
 
 SyncPath CommonUtility::applicationFilePath() {
-    std::cout << "CommonUtility::applicationFilePath 1" << std::endl;
-
     const auto maxPathLength = CommonUtility::maxPathLength();
-    std::cout << "CommonUtility::applicationFilePath 2" << std::endl;
-
     std::vector<SyncChar> pathStr(maxPathLength + 1, '\0');
-    std::cout << "CommonUtility::applicationFilePath 3" << std::endl;
-
 #if defined(_WIN32)
     const auto pathLength = static_cast<DWORD>(maxPathLength);
     const auto count = GetModuleFileNameW(nullptr, pathStr.data(), pathLength);
     assert(count);
 #elif defined(__APPLE__)
-    std::cout << "CommonUtility::applicationFilePath 4" << std::endl;
-
     auto pathLength = static_cast<uint32_t>(maxPathLength);
-    std::cout << "CommonUtility::applicationFilePath 5" << std::endl;
-
     const auto ret = _NSGetExecutablePath(pathStr.data(), &pathLength);
-    std::cout << "CommonUtility::applicationFilePath 6" << std::endl;
-
     assert(!ret);
-    std::cout << "CommonUtility::applicationFilePath 7" << std::endl;
-
 #else
     const auto count = readlink("/proc/self/exe", pathStr.data(), maxPathLength);
     assert(count != -1);
