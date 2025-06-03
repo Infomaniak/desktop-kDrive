@@ -5,7 +5,6 @@
     - [Poco](#poco)
     - [CPPUnit](#cppunit)
     - [Sentry](#sentry)
-    - [xxHash, log4cplus, OpenSSL & zlib](#xxhash-log4cplus-openssl--zlib)
     - [libzip](#libzip)
     - [Conan](#conan)
 - [Build in Debug](#build-in-debug)
@@ -66,10 +65,6 @@ sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/lib/llvm-18/bin
 ```
 
 Check the version again with `clang --version` to ensure that the version is now 18 or higher.
-
-## xxHash, log4cplus, OpenSSL & zlib
-
-See [Conan](#conan) part.
 
 ## Qt 6.2.3
 

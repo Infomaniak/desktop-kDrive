@@ -4,7 +4,6 @@
 - [Installation Requirements](#installation-requirements)
     - [Qt 6.2.3](#qt-623)
     - [Sentry](#sentry)
-    - [xxHash, log4cplus, OpenSSL & ZLib](#xxhash-log4cplus-openssl--zlib)
     - [Poco](#poco)
     - [CPPUnit](#cppunit)
     - [Zlib](#zlib)
@@ -12,6 +11,7 @@
     - [C++ Redistributable](#redistributable)
     - [NSIS](#nsis)
     - [7za](#7za)
+    - [Conan](#conan)
 - [Certificate Configuration](#certificate-configuration)
 - [Build in Debug](#build-in-debug)
     - [Using CLion](#using-clion)
@@ -95,10 +95,6 @@ cmake -B build -DSENTRY_INTEGRATION_QT=YES -DCMAKE_PREFIX_PATH=%QTDIR%
 cmake --build build --config RelWithDebInfo
 cmake --install build --config RelWithDebInfo
 ```
-
-## xxHash, log4cplus, OpenSSL & Zlib
-
-See [Conan](#conan) for installation instructions.
 
 ## Poco
 
