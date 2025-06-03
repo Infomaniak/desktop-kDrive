@@ -61,7 +61,7 @@ runs:
 
       - name: Fetch Conan dependencies (Windows)
         if: steps.build.outcome == 'success'
-        shell: pwsh
+        shell: powershell
         run: |
             $conanPath = "$env:USERPROFILE\.conan2\p"
             Write-Host "Fetching Conan dependencies in $conanPath"
