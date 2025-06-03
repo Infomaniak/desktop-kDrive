@@ -25,7 +25,7 @@ set(parms_SRCS
     db/parmsdbappstate.cpp
 )
 
-if (APPLE)
+if(APPLE)
     list(APPEND parms_SRCS db/exclusionapp.h db/exclusionapp.cpp)
 endif()
 
@@ -46,14 +46,14 @@ set_target_properties(${libparms_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY}
 )
 
-GENERATE_EXPORT_HEADER(${libparms_NAME}
+generate_export_header(${libparms_NAME}
     BASE_NAME ${libparms_NAME}
     EXPORT_MACRO_NAME PARMS_EXPORT
     EXPORT_FILE_NAME parmslib.h
 )
 
 # Includes
-if (WIN32)
+if(WIN32)
     target_include_directories(${libparms_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR})

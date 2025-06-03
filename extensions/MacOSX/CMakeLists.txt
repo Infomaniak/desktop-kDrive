@@ -10,10 +10,10 @@ add_custom_target(mac_loginitemagent ALL
         "KD_APPLICATION_VERSION=${KDRIVE_VERSION}"
     COMMENT building FinderSync Extension
     VERBATIM)
-set_property (TARGET mac_loginitemagent APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+set_property(TARGET mac_loginitemagent APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 add_dependencies(mac_loginitemagent ${APPLICATION_EXECUTABLE})
 
-INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${SOCKETAPI_TEAM_IDENTIFIER_PREFIX}${APPLICATION_REV_DOMAIN}.LoginItemAgent.app
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${SOCKETAPI_TEAM_IDENTIFIER_PREFIX}${APPLICATION_REV_DOMAIN}.LoginItemAgent.app
     DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Library/LoginItems
     USE_SOURCE_PERMISSIONS)
 
@@ -28,10 +28,10 @@ add_custom_target(mac_findersyncext ALL
         "KD_APPLICATION_VERSION=${KDRIVE_VERSION}"
     COMMENT building FinderSync Extension
     VERBATIM)
-set_property (TARGET mac_findersyncext APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+set_property(TARGET mac_findersyncext APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 add_dependencies(mac_findersyncext ${APPLICATION_EXECUTABLE})
 
-INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/Extension.appex
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/Extension.appex
     DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/PlugIns
     USE_SOURCE_PERMISSIONS)
 
@@ -44,10 +44,10 @@ add_custom_target(mac_litesyncext ALL
         "KD_APPLICATION_VERSION=${KDRIVE_VERSION}"
     COMMENT building LiteSync Extension
     VERBATIM)
-set_property (TARGET mac_litesyncext APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+set_property(TARGET mac_litesyncext APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 add_dependencies(mac_litesyncext ${APPLICATION_EXECUTABLE})
 
-INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${APPLICATION_REV_DOMAIN}.LiteSyncExt.systemextension
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${APPLICATION_REV_DOMAIN}.LiteSyncExt.systemextension
     DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Library/SystemExtensions
     USE_SOURCE_PERMISSIONS)
 
