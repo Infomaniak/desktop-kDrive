@@ -20,7 +20,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 function(get_library_dirs prefix libname)
-    if(NOT libname)
+    if(libname STREQUAL "")
         set(libname "${prefix}")
     endif()
 
@@ -34,9 +34,3 @@ function(get_library_dirs prefix libname)
         message(FATAL_ERROR "The variable ${var_name} is not defined.")
     endif()
 endfunction()
-
-if(APPLE)
-    get_library_dirs("OpenSSL" "openssl-universal")
-elseif(UNIX)
-    get_library_dirs("OpenSSL" "openssl")
-endif()

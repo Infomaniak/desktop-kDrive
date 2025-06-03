@@ -164,8 +164,8 @@ else()
         utf8proc
     )
     include(ConanGetLibDirs)
-    get_library_dirs("openssl")
-    get_library_dirs("xxhash")
+    get_library_dirs("openssl", "")
+    get_library_dirs("xxhash", "")
     install(FILES
             # xxHash
             "${xxhash_LIB_DIRS}/libxxhash.so>"
