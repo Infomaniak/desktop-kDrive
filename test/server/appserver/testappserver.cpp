@@ -31,6 +31,7 @@ namespace KDC {
 
 void TestAppServer::setUp() {
     TestBase::start();
+    if (testhelpers::isExtendedTest()) return;
 
     if (QCoreApplication::instance()) {
         _appPtr = dynamic_cast<MockAppServer *>(QCoreApplication::instance());
@@ -96,6 +97,7 @@ void TestAppServer::setUp() {
 
 void TestAppServer::tearDown() {
     TestBase::stop();
+    if (testhelpers::isExtendedTest()) return;
 }
 
 void TestAppServer::testInitAndStopSyncPal() {
@@ -139,6 +141,7 @@ void TestAppServer::testInitAndStopSyncPal() {
 }
 
 void TestAppServer::testStartAndStopSync() {
+    if (testhelpers::isExtendedTest()) return;
     const int userDbId = 1;
     const int syncDbId = 1;
 
@@ -187,6 +190,7 @@ void TestAppServer::testStartAndStopSync() {
 }
 
 void TestAppServer::testCleanup() {
+    if (testhelpers::isExtendedTest()) return;
     _appPtr->cleanup();
     delete _appPtr;
     CPPUNIT_ASSERT(true);
