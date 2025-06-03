@@ -89,7 +89,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
         }
     }
 
-    buf->modtime = sb.stx_mtime.tv_sec;
+    buf->modificationTime = sb.stx_mtime.tv_sec;
     buf->size = static_cast<int64_t>(sb.stx_size);
     if (S_ISLNK(sb.stx_mode)) {
         // The item is a symlink.

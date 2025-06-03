@@ -236,6 +236,7 @@ function CMake-Build-And-Install {
         $args += ("'-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'")
     }
 
+
     $buildVersion = Get-Date -Format "yyyyMMdd"
 
     $flags = @(
@@ -355,7 +356,6 @@ function Prepare-Archive {
     $dependencies = @(
         "${env:ProgramFiles(x86)}/zlib-1.2.11/bin/zlib1",
         "${env:ProgramFiles(x86)}/libzip/bin/zip",
-        "${env:ProgramFiles(x86)}/log4cplus/bin/log4cplusU",
         "${env:ProgramFiles}/OpenSSL/bin/libcrypto-3-x64",
         "${env:ProgramFiles}/OpenSSL/bin/libssl-3-x64",
         "${env:ProgramFiles(x86)}/Poco/bin/PocoCrypto",
@@ -366,7 +366,6 @@ function Prepare-Archive {
         "${env:ProgramFiles(x86)}/Poco/bin/PocoUtil",
         "${env:ProgramFiles(x86)}/Poco/bin/PocoXML",
         "${env:ProgramFiles(x86)}/Sentry-Native/bin/sentry",
-        "${env:ProgramFiles(x86)}/xxHash/bin/xxhash",
         "$vfsDir/Vfs",
         "$buildPath/bin/kDrivecommonserver_vfs_win"
     )
@@ -380,6 +379,25 @@ function Prepare-Archive {
             Copy-Item -Path $file".dll" -Destination "$archivePath"
         }
     }
+    $find_dep_script = "$path/infomaniak-build-tools/conan/find_conan_dep.ps1"
+
+    $xxhash_args = @{
+        Package = "xxhash"
+        Version = "0.8.2"
+    }
+    $log4cplus_args = @{
+        Package = "log4cplus"
+        Version = "2.1.2"
+    }
+    if ($ci) {
+        $xxhash_args["Ci"]       = $true
+        $log4cplus_args["Ci"]    = $true
+    }
+    $xxhash_folder = & $find_dep_script @xxhash_args
+    $log4cplus_folder = & $find_dep_script @log4cplus_args
+
+    Copy-Item -Path "$xxhash_folder/bin/xxhash.dll" -Destination "$archivePath"
+    Copy-Item -Path "$log4cplus_folder/bin/log4cplus.dll" -Destination "$archivePath"
 
     Copy-Item -Path "$path/sync-exclude-win.lst" -Destination "$archivePath/sync-exclude.lst"
 

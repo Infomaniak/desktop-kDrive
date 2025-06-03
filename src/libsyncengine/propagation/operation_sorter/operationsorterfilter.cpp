@@ -22,6 +22,8 @@ OperationSorterFilter::OperationSorterFilter(const std::unordered_map<UniqueId, 
     _ops(ops) {}
 
 void OperationSorterFilter::filterOperations() {
+    clear();
+
     NameToOpMap deleteBeforeMoveCandidates;
     NameToOpMap moveBeforeCreateCandidates;
     SyncPathToSyncOpMap deletedDirectoryPaths;
@@ -44,6 +46,18 @@ void OperationSorterFilter::filterOperations() {
         filterMoveBeforeMoveHierarchyFlipCandidates(op, moveBeforeMoveHierarchyFlipCandidates);
     }
 }
+
+void OperationSorterFilter::clear() {
+    _fixDeleteBeforeMoveCandidates.clear();
+    _fixMoveBeforeCreateCandidates.clear();
+    _fixMoveBeforeDeleteCandidates.clear();
+    _fixCreateBeforeMoveCandidates.clear();
+    _fixDeleteBeforeCreateCandidates.clear();
+    _fixMoveBeforeMoveOccupiedCandidates.clear();
+    _fixEditBeforeMoveCandidates.clear();
+    _fixMoveBeforeMoveHierarchyFlipCandidates.clear();
+}
+
 // delete before move, e.g. user deletes an object at path "x" and moves another object "a" to "x".
 void OperationSorterFilter::filterDeleteBeforeMoveCandidates(const SyncOpPtr &op, NameToOpMap &deleteBeforeMoveCandidates) {
     if (op->type() == OperationType::Delete || op->type() == OperationType::Move) {

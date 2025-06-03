@@ -299,8 +299,8 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             }
 
             // This can be either Create, Move or Edit operation
-            SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime, fileStat.modtime,
-                              nodeType, fileStat.size, isLink, true, true);
+            SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime,
+                              fileStat.modificationTime, nodeType, fileStat.size, isLink, true, true);
 
             if (!_liveSnapshot.updateItem(item)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to insert item: " << Utility::formatSyncPath(absolutePath) << L" ("
@@ -312,7 +312,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: " << Utility::formatSyncPath(absolutePath) << L" ("
                                                                                  << Utility::s2ws(nodeId) << L") at "
-                                                                                 << fileStat.modtime);
+                                                                                 << fileStat.modificationTime);
 
                 //                if (nodeType == NodeType::File) {
                 //                    if (canComputeChecksum(absolutePath)) {
@@ -340,13 +340,13 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             continue;
         }
 
-        if (fileStat.modtime > _liveSnapshot.lastModified(nodeId)) {
+        if (fileStat.modificationTime > _liveSnapshot.lastModified(nodeId)) {
             // This is an edit operation
 #ifdef __APPLE__
             if (_syncPal->vfsMode() == VirtualFileMode::Mac) {
                 // Exclude spurious operations (for example setIcon)
                 bool valid = true;
-                ExitCode exitCode = isEditValid(nodeId, absolutePath, fileStat.modtime, valid);
+                ExitCode exitCode = isEditValid(nodeId, absolutePath, fileStat.modificationTime, valid);
                 if (exitCode != ExitCode::Ok) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in LocalFileSystemObserverWorker::isEditValid");
                     tryToInvalidateSnapshot();
@@ -362,10 +362,10 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
         // Update liveSnapshot
         if (_liveSnapshot.updateItem(SnapshotItem(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime,
-                                               fileStat.modtime, nodeType, fileStat.size, isLink, true, true))) {
+                                                  fileStat.modificationTime, nodeType, fileStat.size, isLink, true, true))) {
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absolutePath) << L" (" << Utility::s2ws(nodeId)
-                                                      << L") updated in local snapshot at " << fileStat.modtime);
+                                                      << L") updated in local snapshot at " << fileStat.modificationTime);
             }
 
             if (nodeType == NodeType::File) {
@@ -458,8 +458,8 @@ ExitCode LocalFileSystemObserverWorker::generateInitialSnapshot() {
 
     if (res == ExitCode::Ok && !stopAsked()) {
         _liveSnapshot.setValid(true);
-        LOG_SYNCPAL_INFO(_logger, "Local snapshot generated in: " << timer.elapsed<DoubleSeconds>().count() << "s for " << _liveSnapshot.nbItems()
-                                                                  << " items");
+        LOG_SYNCPAL_INFO(_logger, "Local snapshot generated in: " << timer.elapsed<DoubleSeconds>().count() << "s for "
+                                                                  << _liveSnapshot.nbItems() << " items");
         perfMonitor.stop();
     } else if (stopAsked()) {
         LOG_SYNCPAL_INFO(_logger, "Local snapshot generation stopped after: " << timer.elapsed<DoubleSeconds>().count() << "s");
@@ -723,14 +723,14 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             }
 
             const SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime,
-                                    fileStat.modtime, itemType.nodeType, fileStat.size, isLink, true, true);
+                                    fileStat.modificationTime, itemType.nodeType, fileStat.size, isLink, true, true);
             if (_liveSnapshot.updateItem(item)) {
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: "
                                                         << Utility::formatSyncPath(absolutePath.filename()) << L" inode:"
                                                         << Utility::s2ws(nodeId) << L" parent inode:"
                                                         << Utility::s2ws(parentNodeId) << L" createdAt:" << fileStat.creationTime
-                                                        << L" modtime:" << fileStat.modtime << L" isDir:"
+                                                        << L" modtime:" << fileStat.modificationTime << L" isDir:"
                                                         << (itemType.nodeType == NodeType::Directory) << L" size:"
                                                         << fileStat.size << L" isLink:" << isLink);
                 }
