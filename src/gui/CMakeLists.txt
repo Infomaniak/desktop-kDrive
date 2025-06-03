@@ -29,7 +29,7 @@ if(UNIX AND NOT APPLE)
 endif()
 
 set(KDRIVE_RC_SRC ../../client.qrc)
-if (EXISTS "${KDRIVE_THEME_DIR}/theme.qrc")
+if(EXISTS "${KDRIVE_THEME_DIR}/theme.qrc")
     list(APPEND KDRIVE_RC_SRC ${KDRIVE_THEME_DIR}/theme.qrc)
     set(theme_dir ${KDRIVE_THEME_DIR}/theme)
 else()
@@ -142,16 +142,16 @@ set(client_SRCS
     synthesisbar.h synthesisbar.cpp
 )
 
-IF( APPLE )
+if( APPLE )
     list(APPEND client_SRCS cocoainitializer_mac.mm ../libcommongui/utility/utility_mac.cpp)
     set_property(SOURCE cocoainitializer_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
     list(APPEND client_SRCS systray.mm)
     set_property(SOURCE systray.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
-ELSEIF( UNIX )
+elseif( UNIX )
     list(APPEND client_SRCS ../libcommongui/utility/utility_linux.cpp)
-ENDIF()
+endif()
 
 set(3rdparty_SRC
     ../3rdparty/QProgressIndicator/QProgressIndicator.cpp
@@ -167,13 +167,13 @@ else()
     list(APPEND 3rdparty_SRC ../3rdparty/qtlockedfile/qtlockedfile_unix.cpp)
 endif()
 
-IF( WIN32 )
+if( WIN32 )
     configure_file(
       ${CMAKE_CURRENT_SOURCE_DIR}/version.rc.in
       ${CMAKE_CURRENT_BINARY_DIR}/version.rc
       @ONLY)
     set(client_version ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
-ENDIF()
+endif()
 
 set(final_src
     ${KDRIVE_RC_SRC}
@@ -197,7 +197,7 @@ include(ECMAddAppIcon)
 file(GLOB_RECURSE KDRIVE_ICONS "${theme_dir}/colored/*-${APPLICATION_ICON_NAME}-icon*")
 if(APPLE)
     file(GLOB_RECURSE KDRIVE_SIDEBAR_ICONS "${theme_dir}/colored/*-${APPLICATION_ICON_NAME}-sidebar*")
-    MESSAGE(STATUS "KDRIVE_SIDEBAR_ICONS: ${APPLICATION_ICON_NAME}: ${KDRIVE_SIDEBAR_ICONS}")
+    message(STATUS "KDRIVE_SIDEBAR_ICONS: ${APPLICATION_ICON_NAME}: ${KDRIVE_SIDEBAR_ICONS}")
 endif()
 ecm_add_app_icon(final_src ICONS "${KDRIVE_ICONS}" SIDEBAR_ICONS "${KDRIVE_SIDEBAR_ICONS}" OUTFILE_BASENAME "${APPLICATION_ICON_NAME}")
 
@@ -229,7 +229,7 @@ else()
     # we must add MACOSX_BUNDLE only if building a bundle
     add_executable(${APPLICATION_CLIENT_EXECUTABLE} WIN32 mainclient.cpp ${final_src})
 
-    set (QM_DIR ${KDRIVE_OSX_BUNDLE}/Contents/Resources/Translations)
+    set(QM_DIR ${KDRIVE_OSX_BUNDLE}/Contents/Resources/Translations)
     install(FILES ${client_I18N} DESTINATION ${QM_DIR})
     get_target_property(_qmake Qt6::qmake LOCATION)
     execute_process(COMMAND ${_qmake} -query QT_INSTALL_TRANSLATIONS
@@ -240,7 +240,7 @@ else()
     install(FILES ${qt_I18N} DESTINATION ${QM_DIR})
     file(GLOB qtbase_I18N ${QT_TRANSLATIONS_DIR}/qtbase_??.qm ${QT_TRANSLATIONS_DIR}/qt_??_??.qm)
     install(FILES ${qtbase_I18N} DESTINATION ${QM_DIR})
-    foreach (LPROJ_DIR in ${TRANSLATIONS})
+    foreach(LPROJ_DIR in ${TRANSLATIONS})
         string(REPLACE "${CMAKE_SOURCE_DIR}/translations/client_" "\${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/Resources/" LPROJ_DIR ${LPROJ_DIR})
         string(REPLACE ".ts" ".lproj" LPROJ_DIR ${LPROJ_DIR})
         install(CODE "file(MAKE_DIRECTORY ${LPROJ_DIR})")
@@ -332,7 +332,7 @@ list(APPEND PC_HEADER_FILES
 
 target_precompile_headers(${APPLICATION_CLIENT_EXECUTABLE} PRIVATE ${PC_HEADER_FILES})
 
-if (APPLE)
+if(APPLE)
     set_target_properties(${APPLICATION_CLIENT_EXECUTABLE} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY  ${BIN_OUTPUT_DIRECTORY}
         INSTALL_RPATH "@executable_path/../Frameworks"
@@ -364,7 +364,7 @@ if( UNIX AND NOT APPLE )
     target_compile_definitions(${APPLICATION_CLIENT_EXECUTABLE} PRIVATE "USE_FDO_NOTIFICATIONS")
 endif()
 
-if (APPLE)
+if(APPLE)
     find_library(SERVICE_MANAGEMENT_LIBRARY NAMES ServiceManagement)
     target_link_libraries(${APPLICATION_CLIENT_EXECUTABLE} ${SERVICE_MANAGEMENT_LIBRARY})
 endif()
@@ -404,14 +404,14 @@ if(BUILD_KDRIVE_OSX_BUNDLE)
 endif()
 
 if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
-    get_target_property (QT_QMAKE_EXECUTABLE Qt6::qmake IMPORTED_LOCATION)
+    get_target_property(QT_QMAKE_EXECUTABLE Qt6::qmake IMPORTED_LOCATION)
 
     set(ENV_QTDIR $ENV{QTDIR})
     set(ENV_DESTDIR $ENV{DESTDIR})
 
-    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         message(STATUS "Build type is Debug, you might need to run \"macdeployqt\" manually to deploy the dependencies.")
-    else ()
+    else()
         install(CODE "
             message(STATUS \"Deploying (Qt) dependencies for kdrive_client...\")
             execute_process(COMMAND ${ENV_QTDIR}/bin/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -libpath=/usr/local/lib -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_CLIENT_EXECUTABLE})
