@@ -20,10 +20,6 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 function(get_library_dirs prefix libname)
-    if(libname STREQUAL "")
-        set(libname "${prefix}")
-    endif()
-
     find_package(${prefix} REQUIRED)
 
     string(TOUPPER "${CMAKE_BUILD_TYPE}" _BUILD_TYPE_UPPER)

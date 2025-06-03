@@ -146,7 +146,7 @@ if(UNIX)
     if(NOT APPLE)
         # Copy .so files to the conan dependency directory
         include(ConanGetLibDirs)
-        get_library_dirs("log4cplus", "")
+        get_library_dirs("log4cplus", "log4cplus")
         install(FILES
                 "${log4cplus_LIB_DIRS}/liblog4cplus.so"
                 "${log4cplus_LIB_DIRS}/liblog4cplus.so.9"
