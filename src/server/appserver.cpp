@@ -2787,7 +2787,7 @@ ExitInfo AppServer::processMigratedSyncOnceConnected(int userDbId, int driveId, 
 
     // Set sync target nodeId for advanced sync
     if (!sync.targetPath().empty()) {
-        std::vector<SyncName> itemNames = Utility::splitPath(sync.targetPath());
+        std::vector<SyncName> itemNames = CommonUtility::splitSyncPath(sync.targetPath());
 
         // Get root subfolders
         QList<NodeInfo> list;
@@ -3417,7 +3417,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, cons
         }
 
         if (!whiteList.empty()) {
-            // Set undecidedList (create or overwrite the possible existing list in DB)
+            // Set whiteList (create or overwrite the possible existing list in DB)
             if (const ExitInfo exitInfo = _syncPalMap[sync.dbId()]->setSyncIdSet(SyncNodeType::WhiteList, whiteList); !exitInfo) {
                 LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet for syncDbId=" << sync.dbId() << " : " << exitInfo);
                 return exitInfo;

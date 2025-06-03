@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
+
 set(CMAKE_CXX_STANDARD 20)
 project(client)
 if(APPLE)
@@ -9,30 +10,30 @@ endif()
 ##### Submodules
 
 # utf8proc
-if (UNIX)
+if(UNIX)
     add_subdirectory(src/3rdparty/utf8proc)
-endif ()
+endif()
 
 # keychain
 add_subdirectory(src/3rdparty/keychain)
 
 #####
 
-if (WIN32 AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+if(CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     # Use fallback library types for imported dependencies
     set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO "RelWithDebInfo;Release;")
-endif ()
+endif()
 
-IF(APPLE)
-    IF(NOT BUILD_UNIT_TESTS AND CMAKE_BUILD_TYPE MATCHES "Release")
-        SET(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for Mac OS X" FORCE)
-    ELSE()
+if(APPLE)
+    if(NOT BUILD_UNIT_TESTS AND CMAKE_BUILD_TYPE MATCHES "Release")
+        set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for Mac OS X" FORCE)
+    else()
         execute_process(COMMAND uname -m OUTPUT_VARIABLE OSX_ARCH)
         string(REPLACE "\n" "" OSX_ARCH ${OSX_ARCH})
-        SET(CMAKE_OSX_ARCHITECTURES "${OSX_ARCH}" CACHE STRING "Build architectures for Mac OS X" FORCE)
-    ENDIF()
+        set(CMAKE_OSX_ARCHITECTURES "${OSX_ARCH}" CACHE STRING "Build architectures for Mac OS X" FORCE)
+    endif()
     message(STATUS "CMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}")
-ENDIF(APPLE)
+endif(APPLE)
 
 set(BIN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(INSTALL_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/install")
@@ -42,20 +43,20 @@ include("${CMAKE_CURRENT_LIST_DIR}/THEME.cmake")
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
-IF (UNIX AND NOT APPLE)
-    SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
+if(UNIX AND NOT APPLE)
+    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
             "/usr/local/lib"
     )
-ELSEIF (WIN32)
-    SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
+    set(CONAN_DEP_DIR "${CMAKE_BINARY_DIR}/conan_dependencies" CACHE PATH "Conan dependencies directory. Used to copy the .so files for the appimage builder.")
+elseif(WIN32)
+    # TODO Remove lines once lib is managed by conan: add directories to search for libraries in .cmake files.
+    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
         "C:/Program Files/OpenSSL"
         "C:/Program Files (x86)/Poco"
-        "C:/Program Files (x86)/log4cplus"
         "C:/Program Files (x86)/Sentry-Native"
-        "C:/Program Files (x86)/xxHash"
         "C:/Program Files (x86)/libzip"
     )
-ENDIF ()
+endif()
 
 set(libcommon_NAME "${APPLICATION_NAME}common")
 set(libcommonserver_NAME "${APPLICATION_NAME}commonserver")
@@ -85,25 +86,25 @@ add_definitions(
         -DQT_DEPRECATED_WARNINGS
 )
 
-if (APPLE)
+if(APPLE)
     set(DATADIR ${DATA_INSTALL_DIR})
-else ()
+else()
     set(DATADIR "share")
-endif ()
+endif()
 
 set(SHAREDIR ${DATADIR})
 
-if (NOT APPLE)
+if(NOT APPLE)
     set(PLUGINDIR "${CMAKE_INSTALL_FULL_LIBDIR}/${APPLICATION_SHORTNAME}/plugins" CACHE STRING "Extra path to look for Qt plugins like for VFS. May be relative to binary.")
-else ()
+else()
     # Inside the .app bundle
     set(PLUGINDIR "../PlugIns" CACHE STRING "Extra path to look for Qt plugins like for VFS. May be relative to binary.")
-endif ()
+endif()
 
 #####
 ## handle BUILD_KDRIVE_OSX_BUNDLE
 # BUILD_KDRIVE_OSX_BUNDLE was not initialized OR set to true on OSX
-if (APPLE AND (NOT DEFINED BUILD_KDRIVE_OSX_BUNDLE OR BUILD_KDRIVE_OSX_BUNDLE))
+if(APPLE AND (NOT DEFINED BUILD_KDRIVE_OSX_BUNDLE OR BUILD_KDRIVE_OSX_BUNDLE))
     set(BUILD_KDRIVE_OSX_BUNDLE ON)
     set(KDRIVE_OSX_BUNDLE "${APPLICATION_NAME}.app")
 
@@ -111,19 +112,19 @@ if (APPLE AND (NOT DEFINED BUILD_KDRIVE_OSX_BUNDLE OR BUILD_KDRIVE_OSX_BUNDLE))
     set(BIN_INSTALL_DIR "${APPLICATION_NAME}.app/Contents/MacOS")
 
     # BUILD_KDRIVE_OSX_BUNDLE was disabled on OSX
-elseif (APPLE AND NOT BUILD_KDRIVE_OSX_BUNDLE)
+elseif(APPLE AND NOT BUILD_KDRIVE_OSX_BUNDLE)
     message(FATAL_ERROR "Building in non-bundle mode on OSX is currently not supported. Comment this error out if you want to work on it.")
 
     # any other platform
-else ()
+else()
     set(BUILD_KDRIVE_OSX_BUNDLE OFF)
-endif ()
+endif()
 #####
 
 option(NO_MSG_HANDLER "Don't redirect QDebug outputs to the log window/file" OFF)
-if (NO_MSG_HANDLER)
+if(NO_MSG_HANDLER)
     add_definitions(-DNO_MSG_HANDLER=1)
-endif ()
+endif()
 
 # this option builds the shell integration
 option(BUILD_EXTENSIONS "BUILD_EXTENSIONS" ON)
@@ -146,29 +147,29 @@ option(BUILD_GUI "BUILD_GUI" ON)
 # build the tests
 option(BUILD_UNIT_TESTS "BUILD_UNIT_TESTS" OFF)
 
-if (APPLE)
+if(APPLE)
     # build uninstaller
     option(BUILD_UNINSTALLER "BUILD_UNINSTALLER" ON)
-endif (APPLE)
+endif(APPLE)
 
-if (APPLE)
+if(APPLE)
     set(SOCKETAPI_TEAM_IDENTIFIER_PREFIX "" CACHE STRING "SocketApi prefix (including a following dot) that must match the codesign key's TeamIdentifier/Organizational Unit")
-endif ()
+endif()
 
-if (BUILD_CLIENT)
-    if (APPLE)
+if(BUILD_CLIENT)
+    if(APPLE)
         find_package(Sparkle)
-    endif (APPLE)
+    endif(APPLE)
 
     find_package(ZLIB REQUIRED)
-endif ()
+endif()
 
-if (NOT DEFINED APPLICATION_ICON_NAME)
+if(NOT DEFINED APPLICATION_ICON_NAME)
     set(APPLICATION_ICON_NAME "${APPLICATION_SHORTNAME}")
-endif ()
+endif()
 
 
-if (WIN32)
+if(WIN32)
     add_definitions(-D__USE_MINGW_ANSI_STDIO=1)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS=1)
     #add_definitions(-DNOMINMAX)
@@ -177,20 +178,20 @@ if (WIN32)
     add_definitions(-DWINVER=0x0600)
     add_definitions(-DNTDDI_VERSION=0x0A000003)
     add_definitions(-DWIN32_LEAN_AND_MEAN)
-endif (WIN32)
+endif(WIN32)
 
-if (UNIX)
+if(UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wformat=2 -g")
-    if (APPLE)
+    if(APPLE)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
     endif()
 endif()
 
-if (WIN32)
+if(WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 endif()
 
-if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11)
+if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconcepts")
 endif()
 
@@ -198,31 +199,31 @@ endif()
 file(GLOB TRANS_FILES ${CMAKE_SOURCE_DIR}/translations/client_*.ts)
 set(TRANSLATIONS ${TRANS_FILES})
 
-if (BUILD_CLIENT)
+if(BUILD_CLIENT)
     add_subdirectory(src)
-    if (NOT BUILD_LIBRARIES_ONLY)
-        if (IS_DIRECTORY ${CMAKE_SOURCE_DIR}/admin)
+    if(NOT BUILD_LIBRARIES_ONLY)
+        if(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/admin)
             add_subdirectory(admin)
-        endif (IS_DIRECTORY ${CMAKE_SOURCE_DIR}/admin)
-    endif (NOT BUILD_LIBRARIES_ONLY)
-endif ()
+        endif(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/admin)
+    endif(NOT BUILD_LIBRARIES_ONLY)
+endif()
 
-if (BUILD_DOCS)
+if(BUILD_DOCS)
     add_subdirectory(docs)
-endif ()
+endif()
 
-if (BUILD_EXTENSIONS)
+if(BUILD_EXTENSIONS)
     add_subdirectory(extensions)
-endif ()
+endif()
 
-if (BUILD_UNINSTALLER)
+if(BUILD_UNINSTALLER)
     add_subdirectory(uninstaller)
-endif ()
+endif()
 
 # Tests
-if (BUILD_UNIT_TESTS)
+if(BUILD_UNIT_TESTS)
     add_subdirectory("test")
-endif ()
+endif()
 
 message(STATUS "Configure files")
 message("prefix: ${CMAKE_FIND_LIBRARY_PREFIXES}")
@@ -232,7 +233,7 @@ configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 
 set(QTDIR $ENV{QTDIR})
 
-if (BUILD_KDRIVE_OSX_BUNDLE)
+if(BUILD_KDRIVE_OSX_BUNDLE)
     # Provision profile
     install(FILES embedded.provisionprofile DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/)
 
@@ -247,7 +248,7 @@ if (BUILD_KDRIVE_OSX_BUNDLE)
     message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
     install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/MacOS/)
 elseif(BUILD_CLIENT)
-    if (WIN32)
+    if(WIN32)
         # NSIS
         configure_file(cmake/modules/NSIS.template.nsi.in ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.nsi @ONLY)
 
@@ -271,19 +272,14 @@ elseif(BUILD_CLIENT)
         find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
         message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
         install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
-
-        # xxHash
-        find_library(XXHASH_SHARED_LIBRARY NAMES xxHash PATH_SUFFIXES "bin" NO_CACHE)
-        message(STATUS "xxHash dll found in ${XXHASH_SHARED_LIBRARY}")
-        install(FILES ${XXHASH_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
-    else ()
+    else()
         # Default sync exclude list
-        if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
             file(COPY sync-exclude-linux.lst DESTINATION ${CMAKE_BINARY_DIR}/bin)
             file(RENAME ${CMAKE_BINARY_DIR}/bin/sync-exclude-linux.lst ${CMAKE_BINARY_DIR}/bin/sync-exclude.lst)
         else()
             install(FILES sync-exclude-linux.lst DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME} RENAME sync-exclude.lst)
-        endif ()
+        endif()
 
         # Sentry
         find_library(SENTRY_SHARED_LIBRARY NAMES sentry NO_CACHE)
@@ -292,19 +288,14 @@ elseif(BUILD_CLIENT)
 
         # Crashpad_handler
         message(STATUS "CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}")
-        if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+        if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
             find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
             message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
-            if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+            if(CMAKE_BUILD_TYPE STREQUAL "Debug")
                 file(COPY ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_BINARY_DIR}/bin)
             else()
                 install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
-            endif ()
-        endif ()
-
-        # xxHash
-        find_library(XXHASH_SHARED_LIBRARY NAMES xxhash NO_CACHE)
-        message(STATUS "xxHash dll found in ${XXHASH_SHARED_LIBRARY}")
-        install(FILES ${XXHASH_SHARED_LIBRARY} DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME})
-    endif ()
-endif ()
+            endif()
+        endif()
+    endif()
+endif()

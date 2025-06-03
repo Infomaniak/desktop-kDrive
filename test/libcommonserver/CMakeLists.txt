@@ -28,21 +28,20 @@ set(testcommonserver_SRCS
         io/testcheckifisdirectory.cpp io/testcreatesymlink.cpp io/testcheckifdehydrated.cpp io/testcheckdirectoryiterator.cpp io/testchecksetgetrights.cpp io/testopenfile.cpp
 )
 
-if (APPLE)
+if(APPLE)
     list(APPEND testcommonserver_SRCS io/testcreatealias.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testremovexattr.cpp)
-endif ()
+endif()
 
-if (WIN32)
+if(WIN32)
     list(APPEND testcommonserver_SRCS io/testcreatejunction.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testgetlongpathname.cpp)
-endif ()
+endif()
 
-if (WIN32)
-    include_directories("F:/Projects/log4cplus/include")
+if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
     include_directories("C:/Program Files (x86)/Sentry-Native/include")
-else ()
+else()
     include_directories("/usr/local/include")
-endif ()
+endif()
 
 add_executable(${testcommonserver_NAME} ${testcommonserver_SRCS})
 
@@ -61,21 +60,21 @@ target_link_libraries(${testcommonserver_NAME}
         ${libcommonserver_NAME}
 )
 
-if (WIN32)
+if(WIN32)
     target_link_libraries(${testcommonserver_NAME}
             debug
             "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"
             optimized
             "C:/Program Files (x86)/cppunit/lib/cppunit_dll.lib")
-elseif (APPLE)
+elseif(APPLE)
     target_link_libraries(${testcommonserver_NAME}
             "/usr/local/lib/libcppunit.dylib")
-else ()
+else()
     target_link_libraries(${testcommonserver_NAME}
             "/usr/local/lib/libcppunit.so")
-endif ()
+endif()
 
-if (APPLE)
+if(APPLE)
     install(CODE "
         message(STATUS \"Fixing library paths for ${testcommonserver_NAME}...\")
         execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.8.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testcommonserver_NAME})
@@ -85,6 +84,5 @@ if (APPLE)
         execute_process(COMMAND \"install_name_tool\" -add_rpath /usr/local/lib ${BIN_OUTPUT_DIRECTORY}/${testcommonserver_NAME})
         execute_process(COMMAND \"install_name_tool\" -add_rpath @executable_path ${BIN_OUTPUT_DIRECTORY}/${testcommonserver_NAME})
         execute_process(COMMAND \"install_name_tool\" -add_rpath /opt/homebrew/opt/openssl@3/lib ${BIN_OUTPUT_DIRECTORY}/${testcommonserver_NAME})
-
         " COMPONENT RUNTIME)
-endif ()
+endif()

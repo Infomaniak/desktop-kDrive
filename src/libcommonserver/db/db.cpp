@@ -156,8 +156,7 @@ std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int
 
     if (!exists) {
         if (!IoHelper::createDirectory(dbPath, ioError)) {
-            LOGW_WARN(Log::instance()->getLogger(),
-                      L"Failed to create directory: " << Utility::formatIoError(dbPath, ioError));
+            LOGW_WARN(Log::instance()->getLogger(), L"Failed to create directory: " << Utility::formatIoError(dbPath, ioError));
             return std::filesystem::path();
         }
     }

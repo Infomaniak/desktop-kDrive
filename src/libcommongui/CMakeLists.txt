@@ -17,9 +17,9 @@ set(libcommongui_SRCS
 
 if(APPLE)
     list(APPEND libcommongui_SRCS utility/utility_mac.cpp)
-elseif (WIN32)
+elseif(WIN32)
     list(APPEND libcommongui_SRCS utility/utility_win.cpp)
-else ()
+else()
     list(APPEND libcommongui_SRCS utility/utility_linux.cpp)
 endif()
 
@@ -36,7 +36,7 @@ set(PC_HEADER_FILES
 
 target_precompile_headers(${libcommongui_NAME} PRIVATE ${PC_HEADER_FILES})
 
-GENERATE_EXPORT_HEADER(${libcommongui_NAME}
+generate_export_header(${libcommongui_NAME}
     BASE_NAME ${libcommongui_NAME}
     EXPORT_MACRO_NAME COMMONGUI_EXPORT
     EXPORT_FILE_NAME libcommongui.h
