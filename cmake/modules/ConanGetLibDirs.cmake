@@ -24,7 +24,7 @@ function(get_library_dirs prefix libname)
     set(var_name "${libname}_LIB_DIRS_${_BUILD_TYPE_UPPER}")                            # e.g., openssl_LIB_DIRS_RELEASE or xxhash_LIB_DIRS_RELWITHDEBINFO
     if(DEFINED ${var_name})                                                             # check if the variable is defined
         set(_${prefix}_LIB_DIRS "${${var_name}}" PARENT_SCOPE)     # e.g., _openssl_LIB_DIRS or _xxhash_LIB_DIRS@
-        message(STATUS "Using ${var_name} = ${${var_name}}")
+        message(STATUS "Using _${prefix}_LIB_DIRS (${var_name}) = ${${var_name}}")
     else()
         message(FATAL_ERROR "The variable ${var_name} (${${var_name}}) is not defined.")
     endif()
