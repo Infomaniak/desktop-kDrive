@@ -72,22 +72,21 @@ set(testsyncengine_SRCS
         benchmark/benchmarkparalleljobs.h benchmark/benchmarkparalleljobs.cpp
 )
 
-if (APPLE)
+if(APPLE)
     list(APPEND testsyncengine_SRCS update_detection/file_system_observer/testfolderwatchermac.h update_detection/file_system_observer/testfolderwatchermac.cpp)
-elseif (UNIX)
+elseif(UNIX)
     list(APPEND testsyncengine_SRCS update_detection/file_system_observer/testfolderwatcherlinux.h update_detection/file_system_observer/testfolderwatcherlinux.cpp)
-endif ()
+endif()
 
-if (USE_OUR_OWN_SQLITE3)
+if(USE_OUR_OWN_SQLITE3)
     list(APPEND testsyncengine_SRCS ${SQLITE3_SOURCE})
-endif ()
+endif()
 
-if (WIN32)
-    include_directories("F:/Projects/log4cplus/include")
+if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
 else()
     include_directories("/usr/local/include")
-endif ()
+endif()
 
 add_executable(${testsyncengine_NAME} ${testsyncengine_SRCS})
 
@@ -107,7 +106,7 @@ target_link_libraries(${testsyncengine_NAME}
         ${SQLITE3_LIBRARIES}
 )
 
-if (WIN32)
+if(WIN32)
     target_link_libraries(${testsyncengine_NAME}
         debug
         "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"
@@ -116,7 +115,7 @@ if (WIN32)
 elseif(APPLE)
     target_link_libraries(${testsyncengine_NAME}
             "/usr/local/lib/libcppunit.dylib")
-else ()
+else()
     target_link_libraries(${testsyncengine_NAME}
             "/usr/local/lib/libcppunit.so")
 endif ()

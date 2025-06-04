@@ -49,9 +49,9 @@ if(APPLE)
         list(APPEND server_SRCS ${server_srcs_path}/updater/sparkleupdater.h ${server_srcs_path}/updater/sparkleupdater.mm)
         list(APPEND updater_DEPS ${SPARKLE_LIBRARY})
     endif()
-elseif (WIN32)
+elseif(WIN32)
     list(APPEND server_SRCS ${server_srcs_path}/updater/windowsupdater.h ${server_srcs_path}/updater/windowsupdater.cpp ${server_srcs_path}/../common/utility_win.cpp)
-else ()
+else()
     list(APPEND server_SRCS ${server_srcs_path}/updater/linuxupdater.h ${server_srcs_path}/updater/linuxupdater.cpp ${server_srcs_path}/../common/utility_linux.cpp)
 endif()
 
@@ -92,13 +92,12 @@ if(APPLE)
     list(APPEND testserver_SRCS vfs/mac/testvfsmac.h vfs/mac/testvfsmac.cpp)
 endif()
 
-if (WIN32)
-    include_directories("F:/Projects/log4cplus/include")
+if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
     include_directories("C:/Program Files (x86)/Sentry-Native/include")
     include_directories("C:/Program Files (x86)/xxHash/include")
     include_directories("C:/Program Files (x86)/libzip/include")
-else ()
+else()
     include_directories("/usr/local/include")
 endif()
 
@@ -111,20 +110,11 @@ set_target_properties(${testserver_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY})
 
 # Includes
-if (WIN32)
-    target_include_directories(${testserver_NAME} PRIVATE
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/QProgressIndicator
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtlockedfile
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtsingleapplication
-        ${CMAKE_CURRENT_BINARY_DIR}
-        "C:/Program Files (x86)/log4cplus/include")
-else()
-    target_include_directories(${testserver_NAME} PRIVATE
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/QProgressIndicator
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtlockedfile
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtsingleapplication
-        ${CMAKE_CURRENT_BINARY_DIR})
-endif()
+target_include_directories(${testserver_NAME} PRIVATE
+    ${CMAKE_SOURCE_DIR}/src/3rdparty/QProgressIndicator
+    ${CMAKE_SOURCE_DIR}/src/3rdparty/qtlockedfile
+    ${CMAKE_SOURCE_DIR}/src/3rdparty/qtsingleapplication
+    ${CMAKE_CURRENT_BINARY_DIR})
 
 # Link
 target_link_libraries(${testserver_NAME}
@@ -132,35 +122,35 @@ target_link_libraries(${testserver_NAME}
     updater
 )
 
-if (APPLE)
+if(APPLE)
     find_library(SERVICE_MANAGEMENT_LIBRARY NAMES ServiceManagement)
     target_link_libraries(${testserver_NAME} ${SERVICE_MANAGEMENT_LIBRARY})
 endif()
 
-if (WIN32)
+if(WIN32)
     target_link_libraries(${testserver_NAME}
             debug
             "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"
             optimized
             "C:/Program Files (x86)/cppunit/lib/cppunit_dll.lib")
-elseif (APPLE)
+elseif(APPLE)
     target_link_libraries(${testserver_NAME}
             "/usr/local/lib/libcppunit.dylib")
-else ()
+else()
     target_link_libraries(${testserver_NAME}
             "/usr/local/lib/libcppunit.so")
 endif()
 
-if (APPLE)
+if(APPLE)
     target_link_libraries(${testserver_NAME}
         "${libcommonserver_NAME}_vfs_mac"
         "${updater_DEPS}")
-elseif (WIN32)
+elseif(WIN32)
     target_link_libraries(${testserver_NAME}
         "${libcommonserver_NAME}_vfs_win")
 endif()
 
-if( UNIX AND NOT APPLE )
+if(UNIX AND NOT APPLE)
     # For migrationparams
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(LIBSECRET IMPORTED_TARGET libsecret-1)
@@ -168,7 +158,7 @@ if( UNIX AND NOT APPLE )
 endif()
 
 # Install
-if (APPLE)
+if(APPLE)
     cmake_path(GET SPARKLE_LIBRARY PARENT_PATH USER_FRAMEWORK_PATH)
 
     install(CODE "

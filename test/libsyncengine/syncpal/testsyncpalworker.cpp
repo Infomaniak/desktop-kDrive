@@ -89,7 +89,7 @@ void TestSyncPalWorker::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
 
-    for (auto& thread: _runningThreads) {
+    for (auto &thread: _runningThreads) {
         if (thread->joinable()) {
             thread->join();
         }
@@ -99,7 +99,7 @@ void TestSyncPalWorker::tearDown() {
     JobManager::reset();
 }
 
-void TestSyncPalWorker::setUpTestInternalPause(const std::chrono::steady_clock::duration& longPollDuration) {
+void TestSyncPalWorker::setUpTestInternalPause(const std::chrono::steady_clock::duration &longPollDuration) {
     // Setup SyncPal
     _syncPal = std::make_shared<MockSyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(),
                                              KDRIVE_VERSION_STRING);
@@ -354,7 +354,7 @@ std::shared_ptr<TestSyncPalWorker::MockExecutorWorker> TestSyncPalWorker::MockSy
     return std::static_pointer_cast<MockExecutorWorker>(_executorWorker);
 }
 
-void TestSyncPalWorker::MockSyncPal::createWorkers(const std::chrono::seconds& startDelay) {
+void TestSyncPalWorker::MockSyncPal::createWorkers(const std::chrono::seconds &startDelay) {
     _localFSObserverWorker = std::make_shared<MockLFSO>(shared_from_this(), "Mock Local File System Observer", "M_LFSO");
     _remoteFSObserverWorker = std::make_shared<MockRemoteFileSystemObserverWorker>(shared_from_this(),
                                                                                    "Mock Remote File System Observer", "M_RFSO");
@@ -378,7 +378,7 @@ void TestSyncPalWorker::MockSyncPal::createWorkers(const std::chrono::seconds& s
     _tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(shared_from_this());
 }
 
-ExitCode TestSyncPalWorker::MockRemoteFileSystemObserverWorker::sendLongPoll(bool& changes) {
+ExitCode TestSyncPalWorker::MockRemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
     using namespace std::chrono;
     changes = false;
     if (!_networkAvailable) {

@@ -64,7 +64,7 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
         SyncPath _localPath;
         SyncPath _remotePath;
 
-        void setUpTestInternalPause(const std::chrono::steady_clock::duration& longPollDuration);
+        void setUpTestInternalPause(const std::chrono::steady_clock::duration &longPollDuration);
 
         /* This test ensure that a RFSO network error while the synchronization is idle lead to a pause state immediately and
          * that the synchronization is automatically restarted when the network is back.
@@ -105,15 +105,13 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
             public:
                 using RemoteFileSystemObserverWorker::RemoteFileSystemObserverWorker;
                 void setNetworkAvailability(bool networkAvailable) { _networkAvailable = networkAvailable; }
-                void simulateFSEvent() {
-                    _liveSnapshot.startUpdate();
-                }
+                void simulateFSEvent() { _liveSnapshot.startUpdate(); }
                 void setLongPollDuration(std::chrono::steady_clock::duration duration) { _longPollDuration = duration; }
 
             private:
                 bool _networkAvailable{true};
                 std::chrono::steady_clock::duration _longPollDuration = std::chrono::seconds(50);
-                ExitCode sendLongPoll(bool& changes) override;
+                ExitCode sendLongPoll(bool &changes) override;
                 ExitCode generateInitialSnapshot() override;
         };
 
@@ -219,7 +217,7 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
 
 
             private:
-                void createWorkers(const std::chrono::seconds& startDelay = std::chrono::seconds(0)) override;
+                void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0)) override;
         };
 };
 
