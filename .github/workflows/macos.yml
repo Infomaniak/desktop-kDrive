@@ -55,8 +55,8 @@ jobs:
         run : chmod +x ./infomaniak-build-tools/run-tests.sh
       - name: Execute tests
         run : |
-            env;
-            ./infomaniak-build-tools/run-tests.sh
+            env | grep KDRIVE | sed 's/^/export /' > /tmp/export 
+            env -i bash -l -c 'source /tmp/export; ./infomaniak-build-tools/run-tests.sh; rm /tmp/export'           
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
