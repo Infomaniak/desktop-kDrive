@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include "../abstractnetworkjob.h"
-#include "../networkjobsparams.h"
+#include "jobs/network/abstractnetworkjob.h"
+#include "jobs/network/networkjobsparams.h"
 #include "login/login.h"
 
 #include <unordered_map>
@@ -33,13 +33,29 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         };
 
     public:
+        struct DbError : std::runtime_error {
+                using std::runtime_error::runtime_error;
+        };
+
+        struct DataError : std::runtime_error {
+                using std::runtime_error::runtime_error;
+        };
+
+        struct TokenError : std::runtime_error {
+                using std::runtime_error::runtime_error;
+        };
+
         enum class ApiType { Drive, DriveByUser, Profile, NotifyDrive, Desktop };
 
+        /// @throw std::runtime_error
+        /// @throw DbError
+        /// @throw DataError
+        /// @throw TokenError
         AbstractTokenNetworkJob(ApiType apiType, int userDbId, int userId, int driveDbId, int driveId, bool returnJson = true);
         explicit AbstractTokenNetworkJob(ApiType apiType, bool returnJson = true);
         ~AbstractTokenNetworkJob() override = default;
 
-        ExitCause getExitCause();
+        ExitCause getExitCause() const;
 
         static void updateLoginByUserDbId(const Login &login, int userDbId);
 
@@ -48,6 +64,8 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         bool refreshToken();
         long tokenUpdateDurationFromNow();
+
+        static ExitCode exception2ExitCode(const std::exception &e);
 
     protected:
         std::string getSpecificUrl() override;

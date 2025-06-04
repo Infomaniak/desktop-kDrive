@@ -17,14 +17,15 @@
  */
 
 #include "testcomputefsoperationworker.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommon/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
 #include "syncpal/tmpblacklistmanager.h"
 #include "requests/exclusiontemplatecache.h"
 #include "requests/syncnodecache.h"
 #include "requests/parameterscache.h"
-#include "test_classes/testinitialsituationgenerator.h"
+#include "libcommon/keychainmanager/keychainmanager.h"
+#include "libcommon/utility/utility.h"
+#include "libcommonserver/io/iohelper.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+
 #include "test_utility/testhelpers.h"
 
 namespace KDC {
@@ -52,30 +53,30 @@ void TestComputeFSOperationWorker::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     std::string keychainKey("123");
-    KeyChainManager::instance(true);
-    KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     /// Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     /// Insert user, account, drive & sync
     int userId = atoi(testVariables.userId.c_str());
     User user(1, userId, keychainKey);
-    ParmsDb::instance()->insertUser(user);
+    (void) ParmsDb::instance()->insertUser(user);
 
     int accountId(atoi(testVariables.accountId.c_str()));
     Account account(1, accountId, user.dbId());
-    ParmsDb::instance()->insertAccount(account);
+    (void) ParmsDb::instance()->insertAccount(account);
 
     int driveDbId = 1;
     int driveId = atoi(testVariables.driveId.c_str());
     Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
-    ParmsDb::instance()->insertDrive(drive);
+    (void) ParmsDb::instance()->insertDrive(drive);
 
     Sync sync(1, drive.dbId(), localPathStr, testVariables.remotePath);
-    ParmsDb::instance()->insertSync(sync);
+    (void) ParmsDb::instance()->insertSync(sync);
 
     _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
                                          KDRIVE_VERSION_STRING);
@@ -108,6 +109,7 @@ void TestComputeFSOperationWorker::tearDown() {
         _syncPal->syncDb()->close();
     }
     ParmsDb::reset();
+    ParametersCache::reset();
     TestBase::stop();
 }
 
@@ -156,12 +158,14 @@ void TestComputeFSOperationWorker::testAccessDenied() {
             std::ofstream ofs(_syncPal->localPath() / bbNodePath);
             ofs << "Some content.\n";
         }
-        CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / bbNodePath, false, false, false, ioError) &&
-                       ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::setRights(_syncPal->localPath() / bbNodePath, false, false, false, ioError) &&
+                                       ioError == IoError::Success);
 #endif
 
-        CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / bNodePath, false, false, false, ioError) &&
-                       ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::setRights(_syncPal->localPath() / bNodePath, false, false, false, ioError) &&
+                                       ioError == IoError::Success);
 
         _syncPal->copySnapshots();
         _syncPal->computeFSOperationsWorker()->execute();
@@ -195,12 +199,14 @@ void TestComputeFSOperationWorker::testAccessDenied() {
             std::ofstream ofs(_syncPal->localPath() / aaNodePath);
             ofs << "Some content.\n";
         }
-        CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / aaNodePath, false, false, false, ioError) &&
-                       ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::setRights(_syncPal->localPath() / aaNodePath, false, false, false, ioError) &&
+                                       ioError == IoError::Success);
 #endif
 
-        CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / aNodePath, false, false, false, ioError) &&
-                       ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::setRights(_syncPal->localPath() / aNodePath, false, false, false, ioError) &&
+                                       ioError == IoError::Success);
 
         // Mock checkIfOkToDelete to simulate the Access Denied
         _syncPal->setComputeFSOperationsWorker(
@@ -225,6 +231,8 @@ void TestComputeFSOperationWorker::testCreateDuplicateNamesWithDistinctEncodings
     // TODO: Use the default tmp directory
     _syncPal->setLocalPath(testhelpers::localTestDirPath);
 
+    _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision = _syncPal->_localSnapshot->revision();
+    _syncPal->computeFSOperationsWorker()->_lastRemoteSnapshotSyncedRevision = _syncPal->_remoteSnapshot->revision();
     // Duplicated items with distinct encodings are not supported, and only one of them will be synced. We do not guarantee
     // that it will always be the same one.
     _syncPal->_localSnapshot->updateItem(SnapshotItem("l_a_nfc", "l_a", testhelpers::makeNfcSyncName(), testhelpers::defaultTime,
@@ -246,6 +254,9 @@ void TestComputeFSOperationWorker::testMultipleOps() {
     // TODO: Use the default tmp directory
     _syncPal->setLocalPath(testhelpers::localTestDirPath);
 
+    _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision = _syncPal->_localSnapshot->revision();
+    _syncPal->computeFSOperationsWorker()->_lastRemoteSnapshotSyncedRevision = _syncPal->_remoteSnapshot->revision();
+
     // On local replica
     // Create operation
     _syncPal->_localSnapshot->updateItem(SnapshotItem("l_ad", "l_a", Str("AD"), testhelpers::defaultTime,
@@ -253,7 +264,10 @@ void TestComputeFSOperationWorker::testMultipleOps() {
     // Edit operation
     _syncPal->_localSnapshot->setLastModified("l_aa", testhelpers::defaultTime + 60);
     // Move operation
-    _syncPal->_localSnapshot->setParentId("l_ab", "l_b");
+    _syncPal->_localSnapshot->removeItem("l_ab");
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("l_ab", "l_b", Str("AB"), testhelpers::defaultTime,
+                                                      testhelpers::defaultTime, NodeType::File, 0, false, true, true));
+
     // Rename operation
     _syncPal->_localSnapshot->setName("l_ba", Str("BA-renamed"));
     // Delete operation
@@ -318,6 +332,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFD() {
                                                       testhelpers::defaultFileSize, false, true, true));
 
     _syncPal->copySnapshots();
+    _syncPal->syncDb()->cache().reloadIfNeeded();
     _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
     CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_test", OperationType::Move, tmpOp));
@@ -337,6 +352,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFC() {
                                                       testhelpers::defaultFileSize, false, true, true));
 
     _syncPal->copySnapshots();
+    _syncPal->syncDb()->cache().reloadIfNeeded();
     _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
     CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_test", OperationType::Move, tmpOp));
@@ -356,6 +372,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFD() {
                                                       testhelpers::defaultFileSize, false, true, true));
 
     _syncPal->copySnapshots();
+    _syncPal->syncDb()->cache().reloadIfNeeded();
     _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
     CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("l_test", OperationType::Move, tmpOp));
@@ -376,6 +393,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFC() {
                                                       testhelpers::defaultFileSize, false, true, true));
 
     _syncPal->copySnapshots();
+    _syncPal->syncDb()->cache().reloadIfNeeded();
     _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
     CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("l_test", OperationType::Move, tmpOp));
@@ -449,6 +467,40 @@ void TestComputeFSOperationWorker::testIsInUnsyncedList() {
     testIsInUnsyncedList(true, "r_b", ReplicaSide::Remote);
     testIsInUnsyncedList(true, "l_bb", ReplicaSide::Local);
     testIsInUnsyncedList(true, "r_bb", ReplicaSide::Remote);
+}
+
+void TestComputeFSOperationWorker::testHasChangedSinceLastSeen() {
+    _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision = 0;
+    _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision = 0;
+
+
+    NodeIds nodeIds;
+    nodeIds.localNodeId = "l_test";
+    nodeIds.remoteNodeId = "r_test";
+
+    SnapshotItem localItem(nodeIds.localNodeId, *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("test.txt"),
+                           testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize,
+                           false, true, true);
+    SnapshotItem remoteItem(nodeIds.remoteNodeId, *_syncPal->syncDb()->rootNode().nodeIdRemote(), Str("test.txt"),
+                            testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize,
+                            false, true, true);
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->updateItem(localItem));
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Remote)->updateItem(remoteItem));
+    _syncPal->copySnapshots();
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
+
+    _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision =
+            _syncPal->snapshotCopy(ReplicaSide::Local)->lastChangeRevision(nodeIds.localNodeId);
+    _syncPal->computeFSOperationsWorker()->_lastRemoteSnapshotSyncedRevision =
+            _syncPal->snapshotCopy(ReplicaSide::Remote)->lastChangeRevision(nodeIds.remoteNodeId);
+
+    CPPUNIT_ASSERT(!_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
+
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->updateItem(localItem));
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Remote)->updateItem(remoteItem));
+    _syncPal->copySnapshots();
+
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
 }
 
 void TestComputeFSOperationWorker::testIsInUnsyncedList(const bool expectedResult, const NodeId &nodeId,

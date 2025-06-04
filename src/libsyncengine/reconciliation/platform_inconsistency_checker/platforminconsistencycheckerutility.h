@@ -28,14 +28,19 @@ namespace KDC {
 
 class PlatformInconsistencyCheckerUtility {
     public:
-        enum class SuffixType { Conflict, Orphan, Blacklisted };
+        enum class SuffixType {
+            Conflict,
+            Orphan,
+            Blacklisted
+        };
 
-    public:
         static std::shared_ptr<PlatformInconsistencyCheckerUtility> instance();
 
         bool isNameTooLong(const SyncName &name) const;
         bool isPathTooLong(size_t pathSize);
         bool nameHasForbiddenChars(const SyncPath &name);
+        static bool isNameOnlySpaces(const SyncName &name);
+        static bool nameEndWithForbiddenSpace(const SyncName &name);
 
 #ifdef _WIN32
         bool fixNameWithBackslash(const SyncName &name, SyncName &newName);

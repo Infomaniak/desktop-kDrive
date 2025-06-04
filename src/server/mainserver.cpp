@@ -20,7 +20,6 @@
 #include "config.h"
 #include "version.h"
 #include "common/utility.h"
-#include "libcommon/asserts.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/handler.h"
@@ -86,6 +85,7 @@ int main(int argc, char **argv) {
     std::unique_ptr<KDC::AppServer> appPtr = nullptr;
     try {
         appPtr = std::make_unique<KDC::AppServer>(argc, argv);
+        appPtr->init();
     } catch (const std::exception &e) {
         std::cerr << "kDrive server initialization error: " << e.what() << std::endl;
         return -1;

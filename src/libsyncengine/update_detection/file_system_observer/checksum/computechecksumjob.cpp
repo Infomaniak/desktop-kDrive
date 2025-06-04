@@ -20,6 +20,7 @@
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
+#include "utility/timerutility.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -28,14 +29,17 @@
 namespace KDC {
 
 ComputeChecksumJob::ComputeChecksumJob(const NodeId &nodeId, const SyncPath &filepath, std::shared_ptr<Snapshot> localSnapshot) :
-    _logger(Log::instance()->getLogger()), _nodeId(nodeId), _filePath(filepath), _localSnapshot(localSnapshot) {}
+    _logger(Log::instance()->getLogger()),
+    _nodeId(nodeId),
+    _filePath(filepath),
+    _localSnapshot(localSnapshot) {}
 
 void ComputeChecksumJob::runJob() {
     if (isExtendedLog()) {
         LOGW_DEBUG(_logger, L"Checksum job started: id: " << jobId() << L", path: " << Path2WStr(_filePath).c_str());
     }
 
-    auto start = std::chrono::steady_clock::now();
+    const TimerUtility timer;
     bool stopped = false;
 
     // Create a hash stat
@@ -78,10 +82,9 @@ void ComputeChecksumJob::runJob() {
             if (stopped) {
                 LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" aborted for file " << Path2WStr(_filePath).c_str());
             } else {
-                std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
                 if (isExtendedLog()) {
                     LOGW_DEBUG(_logger, L"Checksum computation " << jobId() << L" for file " << Path2WStr(_filePath).c_str()
-                                                                 << L" took " << elapsed_seconds.count() << L"s");
+                                                                 << L" took " << timer.elapsed().count() << L"s");
                 }
             }
         } else {

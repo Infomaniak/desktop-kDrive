@@ -19,7 +19,7 @@
 #pragma once
 
 #include "testincludes.h"
-#include "test_classes/testinitialsituationgenerator.h"
+#include "test_classes/testsituationgenerator.h"
 
 #include <propagation/operation_sorter/operationsorterworker.h>
 
@@ -37,10 +37,15 @@ class TestOperationSorterWorker final : public CppUnit::TestFixture, public Test
         CPPUNIT_TEST(testFixCreateBeforeCreate);
         CPPUNIT_TEST(testFixEditBeforeMove);
         CPPUNIT_TEST(testFixMoveBeforeMoveParentChildFlip);
+        CPPUNIT_TEST(testFixMoveBeforeMoveParentChildFlip2);
+        CPPUNIT_TEST(testFixMoveBeforeMoveParentChildFlip3);
+        CPPUNIT_TEST(testCheckAllMethods);
+        CPPUNIT_TEST(testDifferentEncodings);
         CPPUNIT_TEST(testFixImpossibleFirstMoveOp);
         CPPUNIT_TEST(testFindCompleteCycles);
         CPPUNIT_TEST(testBreakCycle);
         CPPUNIT_TEST(testBreakCycle2);
+        CPPUNIT_TEST(testExtractOpsByType);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -57,16 +62,25 @@ class TestOperationSorterWorker final : public CppUnit::TestFixture, public Test
         void testFixCreateBeforeCreate();
         void testFixEditBeforeMove();
         void testFixMoveBeforeMoveParentChildFlip();
+        void testFixMoveBeforeMoveParentChildFlip2();
+        void testFixMoveBeforeMoveParentChildFlip3();
+        void testCheckAllMethods();
+        void testDifferentEncodings();
         void testFixImpossibleFirstMoveOp();
         void testFindCompleteCycles();
         void testBreakCycle();
         void testBreakCycle2();
+        void testExtractOpsByType();
 
     private:
         SyncOpPtr generateSyncOperation(OperationType opType, const std::shared_ptr<Node> &affectedNode) const;
+        void generateLotsOfDummySyncOperations(OperationType opType1, OperationType opType2 = OperationType::None,
+                                               NodeType nodeType = NodeType::File) const;
+
+        void findIndexesInOpList(std::unordered_map<UniqueId, uint32_t> &mapIndex) const;
 
         std::shared_ptr<SyncPal> _syncPal = nullptr;
-        TestInitialSituationGenerator _initialSituationGenerator;
+        TestSituationGenerator _testSituationGenerator;
 };
 
 } // namespace KDC

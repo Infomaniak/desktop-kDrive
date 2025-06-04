@@ -44,18 +44,33 @@ namespace KDC {
 using SyncTime = int64_t;
 using DbNodeId = int64_t;
 using UniqueId = int64_t;
+using SyncDbRevision = uint64_t;
+using SnapshotRevision = uint64_t;
 using NodeId = std::string;
 using SyncPath = std::filesystem::path;
 using SyncName = std::filesystem::path::string_type;
 using SyncChar = std::filesystem::path::value_type;
 using DirectoryEntry = std::filesystem::directory_entry;
 using DirectoryOptions = std::filesystem::directory_options;
+using SecondsDuration = std::chrono::duration<double>; // Use double instead of std::chrono::seconds to keep the precision
 
-using SigValueType = std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring>;
+// Hash functions
+struct StringHashFunction {
+        using is_transparent = void; // Enables heterogeneous operations.
 
-struct hashPathFunction {
+        std::size_t operator()(const std::string_view sv) const {
+            constexpr std::hash<std::string_view> hasher;
+            return hasher(sv);
+        }
+};
+
+struct PathHashFunction {
         std::size_t operator()(const std::optional<SyncPath> &path) const { return path ? hash_value(path.value()) : 0; }
 };
+
+using NodeSet = std::unordered_set<NodeId, StringHashFunction, std::equal_to<>>;
+
+using SigValueType = std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring>;
 
 #ifdef _WIN32
 using StringStream = std::wstringstream;
@@ -144,10 +159,19 @@ inline constexpr C fromInt(int e) {
     return static_cast<C>(e);
 }
 
-enum class AppType { None, Server, Client };
+enum class AppType {
+    None,
+    Server,
+    Client,
+    EnumEnd
+};
 std::string toString(AppType e);
 
-enum class SignalCategory { Kill, Crash };
+enum class SignalCategory {
+    Kill,
+    Crash,
+    EnumEnd
+};
 std::string toString(SignalCategory e);
 
 enum class SignalType {
@@ -165,7 +189,12 @@ enum class SignalType {
 std::string toString(SignalType e);
 
 using ExecuteCommand = std::function<void(const char *)>;
-enum class ReplicaSide { Unknown, Local, Remote };
+enum class ReplicaSide {
+    Unknown,
+    Local,
+    Remote,
+    EnumEnd
+};
 std::string toString(ReplicaSide e);
 
 inline ReplicaSide otherSide(const ReplicaSide side) {
@@ -176,7 +205,8 @@ inline ReplicaSide otherSide(const ReplicaSide side) {
 enum class NodeType {
     Unknown,
     File, // File or symlink
-    Directory
+    Directory,
+    EnumEnd
 };
 std::string toString(NodeType e);
 
@@ -211,7 +241,8 @@ enum class ExitCode {
     OperationCanceled,
     UpdateRequired,
     LogUploadFailed,
-    UpdateFailed
+    UpdateFailed,
+    EnumEnd
 };
 std::string toString(ExitCode e);
 
@@ -228,7 +259,7 @@ enum class ExitCause {
     RedirectionError,
     ApiErr,
     InvalidSize,
-    FileAlreadyExist,
+    FileAlreadyExists,
     FileAccessError,
     UnexpectedFileSystemEvent,
     NotEnoughDiskSpace,
@@ -255,7 +286,12 @@ enum class ExitCause {
     FullListParsingError,
     OperationCanceled,
     ShareLinkAlreadyExists,
-    InvalidArgument
+    InvalidArgument,
+    InvalidDestination,
+    DriveAsleep,
+    DriveWakingUp,
+    ServiceUnavailable,
+    EnumEnd
 };
 std::string toString(ExitCause e);
 
@@ -263,13 +299,17 @@ struct ExitInfo {
         ExitInfo() = default;
         constexpr ExitInfo(const ExitCode &code, const ExitCause &cause,
                            const SourceLocation srcLoc = SourceLocation::currentLoc()) :
-            _code(code), _cause(cause), _srcLoc(srcLoc) {}
+            _code(code),
+            _cause(cause),
+            _srcLoc(srcLoc) {}
 
         ExitInfo(const ExitCode &code, const SourceLocation srcLoc = SourceLocation::currentLoc()) :
-            _code(code), _srcLoc(srcLoc) {}
+            _code(code),
+            _srcLoc(srcLoc) {}
 
         const ExitCode &code() const { return _code; }
         const ExitCause &cause() const { return _cause; }
+        void setCause(const ExitCause cause) { _cause = cause; }
         operator ExitCode() const { return _code; }
         operator ExitCause() const { return _cause; }
         explicit operator std::string() const {
@@ -281,6 +321,18 @@ struct ExitInfo {
         constexpr explicit operator int() const { return toInt(_code) * 100 + toInt(_cause); }
         constexpr bool operator==(const ExitInfo &other) const { return _code == other._code && _cause == other._cause; }
 
+        //! Merge 'this' object with an exitInfoToMerge given as a parameter, according to an ExitCode list ordered by priority:
+        //! - If 'this' object's code has priority over the parameter's code, do nothing.
+        //! - Else, update 'this' object using the exitInfoToMerge parameter.
+        /*!
+          \param exitInfo is used to update 'this' object.
+          \param exitCodeList is a vector of ExitCode(s) ranked by decreasing priority.
+        */
+        void merge(const ExitInfo &exitInfoToMerge, const std::vector<ExitCode> &exitCodeList);
+        static ExitInfo fromInt(const int val) {
+            return ExitInfo(static_cast<ExitCode>(val / 100), static_cast<ExitCause>(val % 100));
+        }
+
     private:
         ExitCode _code{ExitCode::Unknown};
         ExitCause _cause{ExitCause::Unknown};
@@ -290,44 +342,47 @@ struct ExitInfo {
             if (_code == ExitCode::Ok) return "";
             return " from (" + _srcLoc.toString() + ")";
         }
+
+        static long indexInList(const ExitCode &exitCode, const std::vector<ExitCode> &exitCodeList);
+
+        friend class TestTypes;
 };
 std::string toString(ExitInfo e);
 
 // Conflict types ordered by priority
 enum class ConflictType {
     None,
-    MoveParentDelete,
+    EditDelete,
     MoveDelete,
+    MoveParentDelete,
     CreateParentDelete,
     MoveMoveSource,
     MoveMoveDest,
     MoveCreate,
-    EditDelete,
     CreateCreate,
     EditEdit,
-    MoveMoveCycle
+    MoveMoveCycle,
+    EnumEnd
 };
 std::string toString(ConflictType e);
 
-static const std::unordered_set<ConflictType> conflictsWithLocalRename = { // All conflicts that rename the local file
-        ConflictType::CreateCreate, ConflictType::EditEdit, ConflictType::MoveCreate, ConflictType::MoveMoveDest};
-
-inline bool isConflictsWithLocalRename(ConflictType type) {
+// All conflict types whose resolution involves adding a "_conflict_" suffix to the local file's name.
+static const std::unordered_set<ConflictType> conflictsWithLocalRename = {ConflictType::CreateCreate, ConflictType::EditEdit};
+inline bool isConflictsWithLocalRename(const ConflictType type) {
     return conflictsWithLocalRename.contains(type);
 }
 
-enum class ConflictTypeResolution { None, DeleteCanceled, FileMovedToRoot };
-std::string toString(ConflictTypeResolution e);
-
 enum class InconsistencyType {
-    None = 0x00,
-    Case = 0x01,
-    ForbiddenChar = 0x02, // Char unsupported by OS
-    ReservedName = 0x04,
-    NameLength = 0x08,
-    PathLength = 0x10,
-    NotYetSupportedChar = 0x20, // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
-    DuplicateNames = 0x40 // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
+    None = 0x000,
+    Case = 0x001,
+    ForbiddenChar = 0x002, // Char unsupported by OS
+    ReservedName = 0x004,
+    NameLength = 0x008,
+    PathLength = 0x010,
+    NotYetSupportedChar = 0x020, // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
+    DuplicateNames = 0x040, // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
+    ForbiddenCharOnlySpaces = 0x080, // The name contains only spaces (not supported by back end)
+    ForbiddenCharEndWithSpace = 0x100, // The name ends with a space
 };
 std::string toString(InconsistencyType e);
 
@@ -342,11 +397,20 @@ enum class CancelType {
     AlreadyExistLocal,
     TmpBlacklisted,
     ExcludedByTemplate,
-    Hardlink
+    Hardlink,
+    FileRescued,
+    EnumEnd
 };
 std::string toString(CancelType e);
 
-enum class NodeStatus { Unknown = 0, Unprocessed, PartiallyProcessed, Processed };
+enum class NodeStatus {
+    Unknown = 0,
+    Unprocessed,
+    PartiallyProcessed,
+    Processed,
+    ConflictOpGenerated,
+    EnumEnd
+};
 std::string toString(NodeStatus e);
 
 enum class SyncStatus {
@@ -359,10 +423,16 @@ enum class SyncStatus {
     StopAsked,
     Stopped,
     Error,
+    EnumEnd
 };
 std::string toString(SyncStatus e);
 
-enum class UploadSessionType { Unknown, Drive, Log };
+enum class UploadSessionType {
+    Unknown,
+    Drive,
+    Log,
+    EnumEnd
+};
 std::string toString(UploadSessionType e);
 
 enum class SyncNodeType {
@@ -372,17 +442,42 @@ enum class SyncNodeType {
                // nodes in none of those lists are implicitly whitelisted
     UndecidedList, // Considered as blacklisted until user action
     TmpRemoteBlacklist, // Blacklisted temporarily
-    TmpLocalBlacklist // Blacklisted temporarily
+    TmpLocalBlacklist, // Blacklisted temporarily
+    EnumEnd
 };
 std::string toString(SyncNodeType e);
 
-enum class SyncDirection { Unknown = 0, Up, Down };
+enum class SyncDirection {
+    Unknown = 0,
+    Up,
+    Down,
+    EnumEnd
+};
 std::string toString(SyncDirection e);
 
-enum class SyncFileStatus { Unknown = 0, Error, Success, Conflict, Inconsistency, Ignored, Syncing };
+enum class SyncFileStatus {
+    Unknown = 0,
+    Error,
+    Success,
+    Conflict,
+    Inconsistency,
+    Ignored,
+    Syncing,
+    EnumEnd
+};
 std::string toString(SyncFileStatus e);
 
-enum class SyncFileInstruction { None = 0, Update, UpdateMetadata, Remove, Move, Get, Put, Ignore };
+enum class SyncFileInstruction {
+    None = 0,
+    Update,
+    UpdateMetadata,
+    Remove,
+    Move,
+    Get,
+    Put,
+    Ignore,
+    EnumEnd
+};
 std::string toString(SyncFileInstruction e);
 
 enum class SyncStep {
@@ -396,29 +491,74 @@ enum class SyncStep {
     Reconciliation4, // Operation Generator
     Propagation1, // Sorter
     Propagation2, // Executor
-    Done
+    Done,
+    EnumEnd
 };
 std::string toString(SyncStep e);
 
-enum class ActionType { Stop = 0, Start };
+enum class ActionType {
+    Stop = 0,
+    Start,
+    EnumEnd
+};
 std::string toString(ActionType e);
 
-enum class ActionTarget { Drive = 0, Sync, AllDrives };
+enum class ActionTarget {
+    Drive = 0,
+    Sync,
+    AllDrives,
+    EnumEnd
+};
 std::string toString(ActionTarget e);
 
-enum class ErrorLevel { Unknown = 0, Server, SyncPal, Node };
+enum class ErrorLevel {
+    Unknown = 0,
+    Server,
+    SyncPal,
+    Node,
+    EnumEnd
+};
 std::string toString(ErrorLevel e);
 
-enum class Language { Default = 0, English, French, German, Spanish, Italian };
+enum class Language {
+    Default = 0,
+    English,
+    French,
+    German,
+    Spanish,
+    Italian,
+    EnumEnd
+};
 std::string toString(Language e);
 
-enum class LogLevel { Debug = 0, Info, Warning, Error, Fatal };
+enum class LogLevel {
+    Debug = 0,
+    Info,
+    Warning,
+    Error,
+    Fatal,
+    EnumEnd
+};
 std::string toString(LogLevel e);
 
-enum class NotificationsDisabled { Never, OneHour, UntilTomorrow, TreeDays, OneWeek, Always };
+enum class NotificationsDisabled {
+    Never,
+    OneHour,
+    UntilTomorrow,
+    TreeDays,
+    OneWeek,
+    Always,
+    EnumEnd
+};
 std::string toString(NotificationsDisabled e);
 
-enum class VirtualFileMode { Off, Win, Mac, Suffix };
+enum class VirtualFileMode {
+    Off,
+    Win,
+    Mac,
+    Suffix,
+    EnumEnd
+};
 std::string toString(VirtualFileMode e);
 
 enum class PinState {
@@ -427,6 +567,7 @@ enum class PinState {
     OnlineOnly, // The content resides only on the server and is downloaded on demand.
     Unspecified, // Indicates that the system is free to (de)hydrate the content as needed.
     Unknown, // Represents an uninitialized state or an error. It has no equivalent in filesystems.
+    EnumEnd
 };
 
 std::string toString(PinState e);
@@ -436,14 +577,27 @@ enum class ProxyType {
     None,
     System,
     HTTP,
-    Socks5 // Don't use, not implemented in Poco library
+    Socks5, // Don't use, not implemented in Poco library
+    EnumEnd
 };
 std::string toString(ProxyType e);
 
-enum class ExclusionTemplateComplexity { Simplest = 0, Simple, Complex };
+enum class ExclusionTemplateComplexity {
+    Simplest = 0,
+    Simple,
+    Complex,
+    EnumEnd
+};
 std::string toString(ExclusionTemplateComplexity e);
 
-enum class LinkType { None = 0, Symlink, Hardlink, FinderAlias, Junction };
+enum class LinkType {
+    None = 0,
+    Symlink,
+    Hardlink,
+    FinderAlias,
+    Junction,
+    EnumEnd
+};
 std::string toString(LinkType e);
 
 enum class IoError {
@@ -463,7 +617,8 @@ enum class IoError {
     NoSuchFileOrDirectory,
     ResultOutOfRange,
     CrossDeviceLink,
-    Unknown
+    Unknown,
+    EnumEnd
 };
 std::string toString(IoError e);
 
@@ -477,6 +632,10 @@ struct ItemType {
         // - the file or directory indicated by `path` is a symlink or an alias (in which case `linkType` is different from
         // `LinkType::Unknown`) and its target doesn't exist.
         IoError ioError{IoError::Success};
+        bool operator==(const ItemType &other) const {
+            return nodeType == other.nodeType && linkType == other.linkType && targetType == other.targetType &&
+                   targetPath == other.targetPath && ioError == other.ioError;
+        }
 };
 
 enum class AppStateKey {
@@ -489,14 +648,24 @@ enum class AppStateKey {
     LogUploadPercent,
     LogUploadToken,
     AppUid,
-    Unknown //!\ keep in last position (For tests) /!\\ Only for initialization purpose
+    Unknown, // Only for initialization purpose
+    EnumEnd
 };
 std::string toString(AppStateKey e);
 
 static constexpr int64_t selfRestarterDisableValue = -1;
 static constexpr int64_t selfRestarterNoCrashDetected = 0;
 
-enum class LogUploadState { None, Archiving, Uploading, Success, Failed, CancelRequested, Canceled };
+enum class LogUploadState {
+    None,
+    Archiving,
+    Uploading,
+    Success,
+    Failed,
+    CancelRequested,
+    Canceled,
+    EnumEnd
+};
 std::string toString(LogUploadState e);
 enum class UpdateState {
     UpToDate,
@@ -508,14 +677,31 @@ enum class UpdateState {
     CheckError,
     DownloadError,
     UpdateError,
-    Unknown
+    Unknown,
+    EnumEnd
 };
 std::string toString(UpdateState e);
 
-enum class VersionChannel { Prod, Next, Beta, Internal, Legacy, Unknown };
+enum class VersionChannel {
+    Prod,
+    Next,
+    Beta,
+    Internal,
+    Legacy,
+    Unknown,
+    EnumEnd
+};
 std::string toString(VersionChannel e);
 
-enum class Platform { MacOS, Windows, LinuxAMD, LinuxARM, Unknown };
+enum class Platform {
+    MacOS,
+    Windows,
+    WindowsServer,
+    LinuxAMD,
+    LinuxARM,
+    Unknown,
+    EnumEnd
+};
 std::string toString(Platform e);
 
 struct VersionInfo {
@@ -523,10 +709,10 @@ struct VersionInfo {
         std::string tag; // Version number. Example: 3.6.4
         // std::string changeLog; // List of changes in this version, not used for now.
         uint64_t buildVersion{0}; // Example: 20240816
-        std::string buildMinOsVersion; // Optionnal. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
+        std::string buildMinOsVersion; // Optional. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
         std::string downloadUrl; // URL to download the version
 
-        bool operator==(const VersionInfo& other) const {
+        bool operator==(const VersionInfo &other) const {
             return channel == other.channel && tag == other.tag && buildVersion == other.buildVersion &&
                    buildMinOsVersion == other.buildMinOsVersion && downloadUrl == other.downloadUrl;
         }
@@ -583,13 +769,27 @@ enum class ConfidentialityLevel {
     Authenticated, // The sentry will contain information about the last user connected to the application. (email,
                    // username, user id, ...)
     Specific, // The sentry will contain information about the user passed as a parameter of the call to captureMessage.
-    None // Not initialized
+    None, // Not initialized
+    EnumEnd
 };
 } // namespace sentry
 std::string toString(sentry::ConfidentialityLevel e);
 
 // Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
 using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
+
+struct NodeIds {
+        DbNodeId dbNodeId;
+        NodeId localNodeId;
+        NodeId remoteNodeId;
+        NodeId nodeId(const ReplicaSide side) const { return side == ReplicaSide::Local ? localNodeId : remoteNodeId; }
+        struct HashFunction {
+                std::size_t operator()(const NodeIds &nodeIds) const { return std::hash<DbNodeId>()(nodeIds.dbNodeId); }
+        };
+        bool operator==(const NodeIds &other) const {
+            return dbNodeId == other.dbNodeId && localNodeId == other.localNodeId && remoteNodeId == other.remoteNodeId;
+        }
+};
 
 /*
  * Define operator and converter for enum class

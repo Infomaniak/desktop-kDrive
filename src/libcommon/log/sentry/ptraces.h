@@ -24,8 +24,10 @@
 namespace KDC::sentry::pTraces {
 
 struct None : public AbstractPTrace {
-        None() : AbstractPTrace({}) {};
-        explicit None(int syncdbId) : AbstractPTrace({}, syncdbId) {}
+        None() :
+            AbstractPTrace({}) {};
+        explicit None(int syncdbId) :
+            AbstractPTrace({}, syncdbId) {}
         void start() final { /* Do nothing */ }
         void stop([[maybe_unused]] PTraceStatus status = PTraceStatus::Ok) final { /* Do nothing */ }
         void restart() final { /* Do nothing */ }
@@ -44,7 +46,8 @@ struct None : public AbstractPTrace {
  */
 namespace basic {
 struct AppStart : public AbstractPTrace {
-        [[nodiscard]] AppStart() : AbstractPTrace({"AppStart", "Strat the application", PTraceName::AppStart}) {}
+        [[nodiscard]] AppStart() :
+            AbstractPTrace({"AppStart", "Strat the application", PTraceName::AppStart}) {}
 };
 
 struct Sync : public AbstractPTrace {
@@ -138,17 +141,10 @@ struct RFSOBackRequest : public AbstractScopedPTrace {
 };
 
 // This scoped performance trace expects to be manually stopped.
-struct SyncInit : public AbstractScopedPTrace {
-        explicit SyncInit(int syncDbId) :
-            AbstractScopedPTrace({"SyncInit", "Synchronisation initialization", PTraceName::SyncInit}, PTraceStatus::Aborted,
-                                 syncDbId) {}
-};
-
-// This scoped performance trace expects to be manually stopped.
 struct ResetStatus : public AbstractScopedPTrace {
         explicit ResetStatus(int syncDbId) :
-            AbstractScopedPTrace({"ResetStatus", "Reseting vfs status", PTraceName::ResetStatus, PTraceName::SyncInit},
-                                 PTraceStatus::Aborted, syncDbId) {}
+            AbstractScopedPTrace({"ResetStatus", "Reseting vfs status", PTraceName::ResetStatus}, PTraceStatus::Aborted,
+                                 syncDbId) {}
 };
 
 // This scoped performance trace expects to be manually stopped.

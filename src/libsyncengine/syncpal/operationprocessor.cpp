@@ -22,17 +22,53 @@
 
 namespace KDC {
 
-OperationProcessor::OperationProcessor(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
-    ISyncWorker(syncPal, name, shortName) {}
+OperationProcessor::OperationProcessor(const std::shared_ptr<SyncPal> syncPal, const std::string &name,
+                                       const std::string &shortName, bool useSyncDbCache) :
+    ISyncWorker(syncPal, name, shortName),
+    _useSyncDbCache(useSyncDbCache) {}
 
-bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::shared_ptr<Node> correspondingNode) {
+bool OperationProcessor::editChangeShouldBePropagated(std::shared_ptr<Node> affectedNode) {
+    if (!affectedNode) {
+        LOG_SYNCPAL_WARN(_logger, "hasChangeToPropagate: provided node is null");
+        return true;
+    }
+
+    if (affectedNode->side() != ReplicaSide::Local) return true;
+
+    bool found = false;
+    DbNode affectedDbNode;
+    if (affectedNode->idb().has_value()) {
+        if (!(_useSyncDbCache ? _syncPal->syncDb()->cache().node(affectedNode->idb().value(), affectedDbNode, found)
+                              : _syncPal->syncDb()->node(affectedNode->idb().value(), affectedDbNode, found))) {
+            LOG_SYNCPAL_WARN(_logger, "hasChangeToPropagate: Failed to retrieve node from DB, id=" << *affectedNode->idb());
+            _syncPal->addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+            return true;
+        }
+    } else {
+        if (!(_useSyncDbCache ? _syncPal->syncDb()->cache().node(ReplicaSide::Local, *affectedNode->id(), affectedDbNode, found)
+                              : _syncPal->syncDb()->node(ReplicaSide::Local, *affectedNode->id(), affectedDbNode, found))) {
+            LOG_SYNCPAL_WARN(_logger, "hasChangeToPropagate: Failed to retrieve node from DB, id=" << *affectedNode->id());
+            _syncPal->addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+            return true;
+        }
+    }
+    if (!found) {
+        LOG_SYNCPAL_WARN(_logger, "hasChangeToPropagate: node not found in DB");
+        return true;
+    }
+
+    if (affectedNode->size() == affectedDbNode.size() && affectedNode->lastmodified() == affectedDbNode.lastModifiedLocal() &&
+        affectedNode->createdAt() != affectedDbNode.created()) {
+        return false;
+    }
+    return true;
+}
+
+bool OperationProcessor::isPseudoConflict(const std::shared_ptr<Node> node, const std::shared_ptr<Node> correspondingNode) {
     if (!node || !node->hasChangeEvent() || !correspondingNode || !correspondingNode->hasChangeEvent()) {
         // We can have a conflict only if the node on both replica has change events
         return false;
     }
-
-    std::shared_ptr<const Snapshot> snapshot = _syncPal->snapshotCopy(node->side());
-    std::shared_ptr<const Snapshot> otherSnapshot = _syncPal->snapshotCopy(correspondingNode->side());
 
     // Create-Create pseudo-conflict
     if (node->hasChangeEvent(OperationType::Create) && correspondingNode->hasChangeEvent(OperationType::Create) &&
@@ -51,6 +87,10 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
 
     if (node->hasChangeEvent(OperationType::Move) && correspondingNode->hasChangeEvent(OperationType::Move) &&
         node->parentNode()->idb() == correspondingNode->parentNode()->idb() && isEqual) {
+        if (!node->parentNode()->idb().has_value() && !correspondingNode->parentNode()->idb().has_value() &&
+            node->parentNode()->getPath() != correspondingNode->parentNode()->getPath()) {
+            return false; // The parent nodes are not in DB and have different paths
+        }
         return true;
     }
 
@@ -60,15 +100,19 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
         return false;
     }
 
-    bool useContentChecksum =
-            !snapshot->contentChecksum(*node->id()).empty() && !otherSnapshot->contentChecksum(*correspondingNode->id()).empty();
-    bool sameSizeAndDate = snapshot->lastModified(*node->id()) == otherSnapshot->lastModified(*correspondingNode->id()) &&
-                           snapshot->size(*node->id()) == otherSnapshot->size(*correspondingNode->id());
-    bool hasSameContent = useContentChecksum ? snapshot->contentChecksum(*node->id()) ==
-                                                       otherSnapshot->contentChecksum(*correspondingNode->id())
-                                             : sameSizeAndDate;
+    // Size can differ for links between remote and local replica, do not check it in that case
+    const auto snapshot = _syncPal->snapshotCopy(node->side());
+    const bool sameSizeAndDate = node->lastmodified() == correspondingNode->lastmodified() &&
+                                 (snapshot->isLink(*node->id()) || node->size() == correspondingNode->size());
 
-    bool hasCreateOrEditChangeEvent =
+    const auto nodeChecksum = snapshot->contentChecksum(*node->id());
+    const auto otherSnapshot = _syncPal->snapshotCopy(correspondingNode->side());
+    const auto correspondingNodeChecksum = otherSnapshot->contentChecksum(*correspondingNode->id());
+
+    const bool useContentChecksum = !nodeChecksum.empty() && !correspondingNodeChecksum.empty();
+    const bool hasSameContent = useContentChecksum ? nodeChecksum == correspondingNodeChecksum : sameSizeAndDate;
+
+    const bool hasCreateOrEditChangeEvent =
             (node->hasChangeEvent(OperationType::Create) || node->hasChangeEvent(OperationType::Edit)) &&
             (correspondingNode->hasChangeEvent(OperationType::Create) || correspondingNode->hasChangeEvent(OperationType::Edit));
 
@@ -80,13 +124,14 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
     return false;
 }
 
-std::shared_ptr<Node> OperationProcessor::correspondingNodeInOtherTree(std::shared_ptr<Node> node) {
+std::shared_ptr<Node> OperationProcessor::correspondingNodeInOtherTree(const std::shared_ptr<Node> node) {
     std::optional<DbNodeId> dbNodeId = node->idb();
     if (!dbNodeId && node->id()) {
         // Find node in DB
         DbNodeId tmpDbNodeId = -1;
         bool found = false;
-        if (!_syncPal->_syncDb->dbId(node->side(), *node->id(), tmpDbNodeId, found)) {
+        if (!(_useSyncDbCache ? _syncPal->syncDb()->cache().dbId(node->side(), *node->id(), tmpDbNodeId, found)
+                              : _syncPal->syncDb()->dbId(node->side(), *node->id(), tmpDbNodeId, found))) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for nodeId=" << (*node->id()).c_str());
             return nullptr;
         }
@@ -101,19 +146,21 @@ std::shared_ptr<Node> OperationProcessor::correspondingNodeInOtherTree(std::shar
     return findCorrespondingNodeFromPath(node);
 }
 
-std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(std::shared_ptr<Node> node) {
+std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(const std::shared_ptr<Node> node) {
     std::shared_ptr<Node> parentNode = node;
     std::vector<SyncName> names;
-    DbNodeId parentDbNodeId;
+    DbNodeId parentDbNodeId = 0;
     bool found = false;
+
     while (parentNode != nullptr && !found) {
         if (!parentNode->id()) {
             LOG_SYNCPAL_WARN(_logger, "Parent node has an empty nodeId");
             return nullptr;
         }
 
-        if (!_syncPal->_syncDb->dbId(node->side(), *parentNode->id(), parentDbNodeId, found)) {
-            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for nodeId=" << (*parentNode->id()).c_str());
+        if (!(_useSyncDbCache ? _syncPal->syncDb()->cache().dbId(node->side(), *parentNode->id(), parentDbNodeId, found)
+                              : _syncPal->syncDb()->dbId(node->side(), *parentNode->id(), parentDbNodeId, found))) {
+            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for nodeId=" << (*parentNode->id()));
             return nullptr;
         }
         if (!found) {
@@ -124,13 +171,14 @@ std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(std::sha
 
     // Construct relative path
     SyncPath relativeTraversedPath;
-    for (std::vector<SyncName>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
+    for (auto nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
         relativeTraversedPath /= *nameIt;
     }
 
     // Find corresponding ancestor node id
     NodeId parentNodeId;
-    if (!_syncPal->_syncDb->id(otherSide(node->side()), parentDbNodeId, parentNodeId, found)) {
+    if (!(_useSyncDbCache ? _syncPal->syncDb()->cache().id(otherSide(node->side()), parentDbNodeId, parentNodeId, found)
+                          : _syncPal->syncDb()->id(otherSide(node->side()), parentDbNodeId, parentNodeId, found))) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id for dbNodeId=" << parentDbNodeId);
         return nullptr;
     }
@@ -145,7 +193,7 @@ std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(std::sha
 
     // Construct path with ancestor path / relative path
     SyncPath correspondingPath = correspondingParentNode->getPath() / relativeTraversedPath;
-    std::shared_ptr<Node> correspondingNode = otherTree->getNodeByPath(correspondingPath);
+    std::shared_ptr<Node> correspondingNode = otherTree->getNodeByPathNormalized(correspondingPath);
     if (correspondingNode == nullptr) {
         return nullptr;
     }
@@ -153,14 +201,15 @@ std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(std::sha
     return correspondingNode;
 }
 
-std::shared_ptr<Node> OperationProcessor::correspondingNodeDirect(std::shared_ptr<Node> node) {
+std::shared_ptr<Node> OperationProcessor::correspondingNodeDirect(const std::shared_ptr<Node> node) {
     if (node->idb() == std::nullopt) {
         return nullptr;
     }
 
     bool found = false;
     NodeId correspondingId;
-    if (!_syncPal->_syncDb->id(otherSide(node->side()), *node->idb(), correspondingId, found)) {
+    if (!(_useSyncDbCache ? _syncPal->syncDb()->cache().id(otherSide(node->side()), *node->idb(), correspondingId, found)
+                          : _syncPal->syncDb()->id(otherSide(node->side()), *node->idb(), correspondingId, found))) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
         return nullptr;
     }
@@ -184,7 +233,7 @@ std::shared_ptr<Node> OperationProcessor::correspondingNodeDirect(std::shared_pt
     return nullptr;
 }
 
-bool OperationProcessor::isABelowB(std::shared_ptr<Node> a, std::shared_ptr<Node> b) {
+bool OperationProcessor::isABelowB(const std::shared_ptr<Node> a, const std::shared_ptr<Node> b) {
     std::shared_ptr<Node> tmpNode = a;
     while (tmpNode->parentNode() != nullptr) {
         if (tmpNode == b) {

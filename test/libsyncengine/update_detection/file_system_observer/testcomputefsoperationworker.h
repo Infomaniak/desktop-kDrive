@@ -22,7 +22,7 @@
 #include "testincludes.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "syncpal/syncpal.h"
-#include "test_classes/testinitialsituationgenerator.h"
+#include "test_classes/testsituationgenerator.h"
 
 namespace KDC {
 
@@ -48,6 +48,7 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture, public TestBas
         CPPUNIT_TEST(testAccessDenied);
         CPPUNIT_TEST(testExclusion);
         CPPUNIT_TEST(testIsInUnsyncedList);
+        CPPUNIT_TEST(testHasChangedSinceLastSeen);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -93,12 +94,14 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture, public TestBas
         void testExclusion();
         void testIsInUnsyncedList();
 
+        void testHasChangedSinceLastSeen();
+
     private:
         void testIsInUnsyncedList(bool expectedResult, const NodeId &nodeId, ReplicaSide side) const;
 
         std::shared_ptr<SyncPal> _syncPal;
         LocalTemporaryDirectory _localTempDir{"TestSyncPal"};
-        TestInitialSituationGenerator _situationGenerator;
+        TestSituationGenerator _situationGenerator;
 };
 
 } // namespace KDC

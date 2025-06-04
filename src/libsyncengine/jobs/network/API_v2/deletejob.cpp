@@ -23,12 +23,14 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
-DeleteJob::DeleteJob(int driveDbId, const NodeId &remoteItemId, const NodeId &localItemId,
-                     const SyncPath &absoluteLocalFilepath) :
+DeleteJob::DeleteJob(const int driveDbId, const NodeId &remoteItemId, const NodeId &localItemId,
+                     const SyncPath &absoluteLocalFilepath, const NodeType nodeType) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _remoteItemId(remoteItemId), _localItemId(localItemId),
-    _absoluteLocalFilepath(absoluteLocalFilepath) {
+    _absoluteLocalFilepath(absoluteLocalFilepath), _nodeType(nodeType) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_DELETE;
 }
 
@@ -42,8 +44,7 @@ bool DeleteJob::canRun() {
                                    << Utility::s2ws(_remoteItemId).c_str() << L", local ID: "
                                    << Utility::s2ws(_localItemId).c_str() << L", "
                                    << Utility::formatSyncPath(_absoluteLocalFilepath));
-        _exitCode = ExitCode::DataError;
-        _exitCause = ExitCause::Unknown;
+        _exitInfo = ExitCode::DataError;
         return false;
     }
 
@@ -55,13 +56,11 @@ bool DeleteJob::canRun() {
                                                    ioError)) {
         LOGW_WARN(_logger,
                   L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absoluteLocalFilepath, ioError).c_str());
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::Unknown;
+        _exitInfo = ExitCode::SystemError;
         return false;
     }
     if (ioError == IoError::AccessDenied) {
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::FileAccessError;
+        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         return false;
     }
 
@@ -71,32 +70,30 @@ bool DeleteJob::canRun() {
         if (!IoHelper::getFileStat(_absoluteLocalFilepath, &filestat, ioError)) {
             LOGW_WARN(_logger,
                       L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_absoluteLocalFilepath, ioError).c_str());
-            _exitCode = ExitCode::SystemError;
-            _exitCause = ExitCause::Unknown;
+            _exitInfo = ExitCode::SystemError;
             return false;
         }
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str());
-            _exitCode = ExitCode::DataError;
-            _exitCause = ExitCause::InvalidSnapshot;
+            _exitInfo = {ExitCode::DataError, ExitCause::InvalidSnapshot};
             return false;
         } else if (ioError == IoError::AccessDenied) {
             LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str());
-            _exitCode = ExitCode::SystemError;
-            _exitCause = ExitCause::FileAccessError;
+            _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
             return false;
         }
 
-        if (!ParametersCache::instance()->parameters().syncHiddenFiles() && filestat.isHidden) {
-            // The item is hidden, remove it from sync
+        if (filestat.nodeType != _nodeType && filestat.nodeType != NodeType::Unknown && _nodeType != NodeType::Unknown) {
+            // The nodeId has been reused by a new item: we remove the old one from sync.
+            LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath)
+                                          << L" has been reused by a new item. Removing the old item from sync.");
             return true;
         }
 
         LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str()
                                       << L" still exist on local replica. Aborting current sync and restart.");
-        _exitCode = ExitCode::DataError; // Data error so the snapshots will be re-created
-        _exitCause = ExitCause::UnexpectedFileSystemEvent;
+        _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent}; // Data error so the snapshots will be re-created
         return false;
     } else if (!otherNodeId.empty() && _localItemId != otherNodeId) {
         LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str()

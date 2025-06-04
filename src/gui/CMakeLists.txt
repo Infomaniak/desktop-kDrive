@@ -139,14 +139,18 @@ set(client_SRCS
     resourcesmanagerdialog.h resourcesmanagerdialog.cpp
     fixconflictingfilesdialog.h fixconflictingfilesdialog.cpp
     widgetwithcustomtooltip.h widgetwithcustomtooltip.cpp
+    synthesisbar.h synthesisbar.cpp
 )
 
 IF( APPLE )
-    list(APPEND client_SRCS cocoainitializer_mac.mm)
+    list(APPEND client_SRCS cocoainitializer_mac.mm ../libcommongui/utility/utility_mac.cpp)
     set_property(SOURCE cocoainitializer_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
     list(APPEND client_SRCS systray.mm)
     set_property(SOURCE systray.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+
+ELSEIF( UNIX )
+    list(APPEND client_SRCS ../libcommongui/utility/utility_linux.cpp)
 ENDIF()
 
 set(3rdparty_SRC
@@ -179,7 +183,6 @@ set(final_src
     ${guiMoc}
     ${client_I18N}
     ${3rdparty_SRC}
-    ${3rdparty_MOC}
 )
 
 # Target
@@ -406,9 +409,13 @@ if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
     set(ENV_QTDIR $ENV{QTDIR})
     set(ENV_DESTDIR $ENV{DESTDIR})
 
-    install(CODE "
-        message(STATUS \"Deploying (Qt) dependencies for kdrive_client...\")
-        execute_process(COMMAND ${ENV_QTDIR}/bin/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -libpath=/usr/local/lib -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_CLIENT_EXECUTABLE})
-        " COMPONENT RUNTIME)
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        message(STATUS "Build type is Debug, you might need to run \"macdeployqt\" manually to deploy the dependencies.")
+    else ()
+        install(CODE "
+            message(STATUS \"Deploying (Qt) dependencies for kdrive_client...\")
+            execute_process(COMMAND ${ENV_QTDIR}/bin/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -libpath=/usr/local/lib -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_CLIENT_EXECUTABLE})
+            " COMPONENT RUNTIME)
+        endif()
 endif()
 

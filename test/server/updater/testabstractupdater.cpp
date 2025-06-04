@@ -34,18 +34,13 @@
 
 #include "mockupdater.h"
 #include "mockupdatechecker.h"
+#include "mocks/libcommonserver/db/mockdb.h"
 
 namespace KDC {
 
 namespace {
 void unskipVersion() {
-#if defined(__APPLE__)
-    SparkleUpdater::instance()->unskipVersion();
-#elif defined(_WIN32)
-    WindowsUpdater::instance()->unskipVersion();
-#elif defined(__linux__)
-    LinuxUpdater::instance()->unskipVersion();
-#endif
+    createUpdater()->unskipVersion();
 }
 } // namespace
 
@@ -53,11 +48,18 @@ void TestAbstractUpdater::setUp() {
     TestBase::start();
     // Init parmsDb
     bool alreadyExists = false;
-    const std::filesystem::path parmsDbPath = ParmsDb::makeDbName(alreadyExists, true);
+    const std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Setup parameters cache in test mode
     ParametersCache::instance(true);
+}
+
+void TestAbstractUpdater::tearDown() {
+    ParmsDb::instance()->close();
+    ParmsDb::reset();
+    ParametersCache::reset();
+    TestBase::stop();
 }
 
 void TestAbstractUpdater::testSkipUnskipVersion() {

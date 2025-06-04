@@ -20,6 +20,8 @@
 
 #include "utility/jsonparserutility.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 static const std::string displayNameKey = "display_name";
@@ -39,17 +41,17 @@ bool GetInfoUserJob::handleJsonResponse(std::istream& is) {
 
 
     if (!JsonParserUtility::extractValue(dataObj, displayNameKey, _name)) {
-        _exitCode = ExitCode::BackError;
+        _exitInfo = ExitCode::BackError;
         return false;
     }
 
     if (!JsonParserUtility::extractValue(dataObj, emailKey, _email)) {
-        _exitCode = ExitCode::BackError;
+        _exitInfo = ExitCode::BackError;
         return false;
     }
 
     if (!JsonParserUtility::extractValue(dataObj, avatarKey, _avatarUrl)) {
-        _exitCode = ExitCode::BackError;
+        _exitInfo = ExitCode::BackError;
         return false;
     }
 

@@ -74,7 +74,7 @@ bool UpdateTree::deleteNode(std::shared_ptr<Node> node, int depth) {
 }
 
 bool UpdateTree::deleteNode(const NodeId &id) {
-    std::shared_ptr<Node> node = getNodeById(id);
+    const auto node = getNodeById(id);
     return deleteNode(node);
 }
 
@@ -83,37 +83,58 @@ std::shared_ptr<Node> UpdateTree::getNodeByPath(const SyncPath &path) {
         return _rootNode;
     }
 
-    // Split path
-    std::vector<SyncName> names;
-    SyncPath pathTmp(path);
-    while (pathTmp != pathTmp.root_path()) {
-        names.push_back(pathTmp.filename().native());
-        pathTmp = pathTmp.parent_path();
-    }
-
+    const std::vector<SyncName> itemNames = Utility::splitPath(path);
     std::shared_ptr<Node> tmpNode = _rootNode;
-    for (std::vector<SyncName>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
-        std::shared_ptr<Node> tmpChildNode = nullptr;
-        for (const auto &childNode: tmpNode->children()) {
-            bool isEqual = false;
-            if (!Utility::checkIfSameNormalization(*nameIt, childNode.second->name(), isEqual)) {
-                LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::checkIfSameNormalization: "
-                                                                << Utility::formatSyncName(*nameIt) << L" / "
-                                                                << Utility::formatSyncName(childNode.second->name()));
-                // Ignore child node
-                continue;
-            }
 
-            if (isEqual) {
-                tmpChildNode = childNode.second;
+    for (auto nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
+        std::shared_ptr<Node> tmpChildNode = nullptr;
+
+        for (const auto &[_, childNode]: tmpNode->children()) {
+            if (*nameIt == childNode->name()) {
+                tmpChildNode = childNode;
                 break;
             }
         }
+
         if (tmpChildNode == nullptr) {
             return nullptr;
         }
         tmpNode = tmpChildNode;
     }
+
+    return tmpNode;
+}
+
+std::shared_ptr<Node> UpdateTree::getNodeByPathNormalized(const SyncPath &path) {
+    if (path.empty()) {
+        return _rootNode;
+    }
+
+    const std::vector<SyncName> itemNames = Utility::splitPath(path);
+    std::shared_ptr<Node> tmpNode = _rootNode;
+
+    for (auto nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
+        std::shared_ptr<Node> tmpChildNode = nullptr;
+        SyncName normalizedSyncName;
+        if (!Utility::normalizedSyncName(*nameIt, normalizedSyncName)) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(*nameIt));
+            return nullptr;
+        }
+
+        for (const auto &[_, childNode]: tmpNode->children()) {
+            if (normalizedSyncName == childNode->normalizedName()) {
+                tmpChildNode = childNode;
+                break;
+            }
+        }
+
+        if (tmpChildNode == nullptr) {
+            return nullptr;
+        }
+        tmpNode = tmpChildNode;
+    }
+
     return tmpNode;
 }
 
@@ -158,7 +179,6 @@ void UpdateTree::markAllNodesUnprocessed() {
 
 void UpdateTree::init() {
     insertNode(_rootNode);
-    _inconsistencyCheckDone = false;
 }
 
 bool UpdateTree::updateNodeId(std::shared_ptr<Node> node, const NodeId &newId) {
@@ -195,13 +215,9 @@ bool UpdateTree::updateNodeId(std::shared_ptr<Node> node, const NodeId &newId) {
 }
 
 void UpdateTree::clear() {
-    std::unordered_map<NodeId, std::shared_ptr<Node>>::iterator it = _nodes.begin();
-    while (it != _nodes.end()) {
-        it->second->parentNode().reset();
-        it->second->children().clear();
-        it++;
-    }
     _nodes.clear();
+    _previousIdSet.clear();
+    init();
 }
 
 void UpdateTree::drawUpdateTree() {

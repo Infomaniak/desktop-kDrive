@@ -101,6 +101,7 @@ class Handler {
         static void writeEvent(const std::string &eventStr, bool crash) noexcept;
 
         void setDistributionChannel(VersionChannel channel);
+        void setAppUUID(std::string appUUID);
 
     protected:
         Handler() = default;
@@ -134,14 +135,6 @@ class Handler {
         // Convert a `SentryUser` structure to a `sentry_value_t` that can safely be passed to
         // `sentry_set_user(sentry_value_t)`
         sentry_value_t toSentryValue(const SentryUser &user) const;
-
-        struct StringHash {
-                using is_transparent = void; // Enables heterogeneous operations.
-                std::size_t operator()(std::string_view sv) const {
-                    std::hash<std::string_view> hasher;
-                    return hasher(sv);
-                }
-        };
 
         // SentryEvent is a structure that represents an event that has been send to sentry. It allows us to keep track of
         // the sent event and block any sentry flood from a single user.
@@ -186,7 +179,7 @@ class Handler {
         void updateEffectiveSentryUser(const SentryUser &user = SentryUser());
 
         // The events that have been recently captured, used to prevent flood from a single user.
-        std::unordered_map<std::string, SentryEvent, StringHash, std::equal_to<>> _events;
+        std::unordered_map<std::string, SentryEvent, StringHashFunction, std::equal_to<>> _events;
 
         // Number of captures before rate limiting an event
         unsigned int _sentryMaxCaptureCountBeforeRateLimit = 10;

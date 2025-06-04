@@ -20,17 +20,17 @@
 
 #include "qtsingleapplication.h"
 #include "commserver.h"
-#include "syncpal/syncpal.h"
-#include "libcommonserver/vfs/vfs.h"
 #include "navigationpanehelper.h"
 #include "socketapi.h"
+#include "config.h"
+#include "syncpal/syncpal.h"
 #include "libparms/db/user.h"
 #include "libcommon/info/userinfo.h"
 #include "libcommon/info/accountinfo.h"
 #include "libcommon/info/driveinfo.h"
 #include "libcommon/info/syncinfo.h"
 #include "libcommon/info/syncfileiteminfo.h"
-#include "config.h"
+#include "libcommonserver/vfs/vfs.h"
 
 #include <QApplication>
 #include <QElapsedTimer>
@@ -54,11 +54,14 @@ class AppServer : public SharedTools::QtSingleApplication {
         struct SyncCache {
                 SyncStatus _status;
                 SyncStep _step;
-                int64_t _currentFile;
-                int64_t _totalFiles;
-                int64_t _completedSize;
-                int64_t _totalSize;
-                int64_t _estimatedRemainingTime;
+                SyncProgress _progress;
+
+                bool operator==(const SyncCache &other) const {
+                    return _status == other._status && _step == other._step && _progress == other._progress;
+                }
+                bool operator!=(const SyncCache &other) const {
+                    return !(*this == other);
+                }
         };
 
         struct Notification {
@@ -70,6 +73,10 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         explicit AppServer(int &argc, char **argv);
         ~AppServer();
+
+        void init();
+        virtual void cleanup();
+        static void reset();
 
         inline bool helpAsked() { return _helpAsked; }
         inline bool versionAsked() { return _versionAsked; }
@@ -87,9 +94,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         void clearKeychainKeys();
 
         void showHint(std::string errorHint);
-        bool startClient();
 
     private:
+        QStringList _arguments;
         log4cplus::Logger _logger;
         static std::unordered_map<int, std::shared_ptr<SyncPal>> _syncPalMap;
         static std::unordered_map<int, std::shared_ptr<Vfs>> _vfsMap;
@@ -116,9 +123,15 @@ class AppServer : public SharedTools::QtSingleApplication {
         QTimer _sendFilesNotificationsTimer;
         QTimer _restartSyncsTimer;
         std::unordered_map<int, SyncCache> _syncCacheMap;
-        std::unordered_map<int, std::unordered_set<NodeId>> _undecidedListCacheMap;
+        std::unordered_map<int, NodeSet> _undecidedListCacheMap;
 
-        void parseOptions(const QStringList &);
+        static std::unique_ptr<UpdateManager> _updateManager;
+
+        virtual std::filesystem::path makeDbName();
+        virtual std::shared_ptr<ParmsDb> initParmsDB(const std::filesystem::path &dbPath, const std::string &version);
+        virtual bool startClient();
+
+        void parseOptions(const QStringList &options);
         bool initLogging() noexcept;
         void logUsefulInformation() const;
         bool setupProxy() noexcept;
@@ -131,32 +144,32 @@ class AppServer : public SharedTools::QtSingleApplication {
         ExitCode migrateConfiguration(bool &proxyNotSupported);
         ExitCode updateUserInfo(User &user);
         ExitCode updateAllUsersInfo();
-        ExitCode initSyncPal(const Sync &sync, const std::unordered_set<NodeId> &blackList = std::unordered_set<NodeId>(),
-                             const std::unordered_set<NodeId> &undecidedList = std::unordered_set<NodeId>(),
-                             const std::unordered_set<NodeId> &whiteList = std::unordered_set<NodeId>(), bool start = true,
-                             const std::chrono::seconds &startDelay = std::chrono::seconds(0), bool resumedByUser = false,
-                             bool firstInit = false);
-        ExitCode initSyncPal(const Sync &sync, const QSet<QString> &blackList, const QSet<QString> &undecidedList,
-                             const QSet<QString> &whiteList, bool start = true,
-                             const std::chrono::seconds &startDelay = std::chrono::seconds(0), bool resumedByUser = false,
-                             bool firstInit = false);
-        ExitCode stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
+        [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const NodeSet &blackList = {}, const NodeSet &undecidedList = {},
+                                           const NodeSet &whiteList = {}, bool start = true,
+                                           const std::chrono::seconds &startDelay = std::chrono::seconds(0),
+                                           bool resumedByUser = false, bool firstInit = false);
+        [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const QSet<QString> &blackList, const QSet<QString> &undecidedList,
+                                           const QSet<QString> &whiteList, bool start = true,
+                                           const std::chrono::seconds &startDelay = std::chrono::seconds(0),
+                                           bool resumedByUser = false, bool firstInit = false);
+        [[nodiscard]] ExitInfo stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
 
-        ExitInfo createAndStartVfs(const Sync &sync) noexcept;
+        [[nodiscard]] ExitInfo createAndStartVfs(const Sync &sync) noexcept;
         // Call createAndStartVfs. Issue warnings, errors and pause the synchronization `sync` if needed.
-        [[nodiscard]] ExitInfo tryCreateAndStartVfs(Sync &sync) noexcept;
-        ExitCode stopVfs(int syncDbId, bool unregister);
+        [[nodiscard]] ExitInfo tryCreateAndStartVfs(const Sync &sync) noexcept;
+        [[nodiscard]] ExitInfo stopVfs(int syncDbId, bool unregister);
 
-        ExitCode setSupportsVirtualFiles(int syncDbId, bool value);
+        [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value);
 
-        ExitCode startSyncs(ExitCause &exitCause);
-        ExitCode startSyncs(User &user, ExitCause &exitCause);
-        ExitCode processMigratedSyncOnceConnected(int userDbId, int driveId, Sync &sync, QSet<QString> &blackList,
-                                                  QSet<QString> &undecidedList, bool &syncUpdated);
+        void startSyncsAndRetryOnError();
+        [[nodiscard]] ExitInfo startSyncs();
+        [[nodiscard]] ExitInfo startSyncs(User &user);
+        [[nodiscard]] ExitInfo processMigratedSyncOnceConnected(int userDbId, int driveId, Sync &sync, QSet<QString> &blackList,
+                                                                QSet<QString> &undecidedList, bool &syncUpdated);
         ExitCode clearErrors(int syncDbId, bool autoResolved = false);
         // Check if the synchronization `sync` is registred in the sync database and
         // if the `sync` folder does not contain any other sync subfolder.
-        ExitCode checkIfSyncIsValid(const Sync &sync);
+        [[nodiscard]] ExitInfo checkIfSyncIsValid(const Sync &sync);
 
         void sendUserAdded(const UserInfo &userInfo);
         static void sendUserUpdated(const UserInfo &userInfo);
@@ -170,8 +183,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used);
         void sendDriveRemoved(int driveDbId);
         void sendDriveDeletionFailed(int driveDbId);
-        void sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
-                                  int64_t completedSize, int64_t totalSize, int64_t estimatedRemainingTime);
+        void sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, const SyncProgress &progress);
         void sendSyncAdded(const SyncInfo &syncInfo);
         void sendSyncUpdated(const SyncInfo &syncInfo);
         void sendSyncRemoved(int syncDbId);
@@ -184,11 +196,11 @@ class AppServer : public SharedTools::QtSingleApplication {
         void uploadLog(bool includeArchivedLogs);
         void sendLogUploadStatusUpdated(LogUploadState status, int percent);
 
-        void startSyncPals();
         void stopSyncTask(int syncDbId); // Long task which can block GUI: post-poned in the event loop by means of timer
         void stopAllSyncsTask(const std::vector<int> &syncDbIdList); // Idem.
-        void deleteAccountIfNeeded(int accountDbId); // Remove the account if no drive is associated to it.
-        void deleteDrive(int driveDbId, int accountDbId);
+        void deleteAccount(int accountDbId);
+        void deleteDrive(int driveDbId);
+        void deleteSync(int syncDbId);
 
         static void addError(const Error &error);
         static void sendErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId);
@@ -200,7 +212,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         static void syncFileStatus(int syncDbId, const KDC::SyncPath &path, KDC::SyncFileStatus &status);
         static void syncFileSyncing(int syncDbId, const KDC::SyncPath &path, bool &syncing);
         static void setSyncFileSyncing(int syncDbId, const KDC::SyncPath &path, bool syncing);
-#ifdef Q_OS_MAC
+#ifdef __APPLE__
         static void exclusionAppList(QString &appList);
 #endif
         static void sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &item);
@@ -219,8 +231,15 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool clientHasCrashed() const;
         void handleClientCrash(bool &quit);
 
+#ifdef __APPLE__
+        bool noMacVfsSync() const;
+        bool areMacVfsAuthsOk() const;
+#endif
+
         // For testing purpose
         void crash() const;
+
+        friend class TestAppServer;
 
     private slots:
         void onLoadInfo();

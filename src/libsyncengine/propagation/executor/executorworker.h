@@ -22,6 +22,7 @@
 #include "syncpal/syncpal.h"
 #include "reconciliation/syncoperation.h"
 #include "jobs/abstractjob.h"
+#include "utility/timerutility.h"
 
 #include <queue>
 #include <unordered_map>
@@ -103,13 +104,9 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
         ExitInfo generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
 
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns with hasError == true
-        void waitForAllJobsToFinish(bool &hasError);
-
         ExitInfo waitForAllJobsToFinish();
         ExitInfo deleteFinishedAsyncJobs();
-        ExitInfo handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool isInconsistencyIssue,
-                                        bool downloadImpossible);
+        ExitInfo handleManagedBackError(const ExitInfo &jobExitInfo, SyncOpPtr syncOp, bool invalidName);
         ExitInfo handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath,
                                    bool &ignored, bool &bypassProgressComplete);
         ExitInfo handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath, bool &ignored);
@@ -120,9 +117,9 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propagateChange);
         ExitInfo propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job, std::shared_ptr<Node> &node);
         ExitInfo propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newLastModTime,
-                                            std::shared_ptr<Node> &node);
+                                            std::optional<SyncTime> newCreationTime, std::shared_ptr<Node> &node, int64_t newSize = -1);
         ExitInfo propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newLastModTime,
-                                          std::shared_ptr<Node> &node);
+                                          std::optional<SyncTime> newCreationTime, std::shared_ptr<Node> &node, int64_t newSize = -1);
         ExitInfo propagateMoveToDbAndTree(SyncOpPtr syncOp);
         ExitInfo propagateDeleteToDbAndTree(SyncOpPtr syncOp);
         ExitInfo deleteFromDb(std::shared_ptr<Node> node);
@@ -131,22 +128,24 @@ class ExecutorWorker : public OperationProcessor {
         void cancelAllOngoingJobs();
         void manageJobDependencies(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
 
-        inline bool isLiteSyncActivated() { return _syncPal->vfsMode() != VirtualFileMode::Off; }
+        [[nodiscard]] bool isLiteSyncActivated() const { return _syncPal->vfsMode() != VirtualFileMode::Off; }
 
-        inline std::shared_ptr<UpdateTree> affectedUpdateTree(SyncOpPtr syncOp) {
+        [[nodiscard]] std::shared_ptr<UpdateTree> affectedUpdateTree(SyncOpPtr syncOp) const {
             return _syncPal->updateTree(otherSide(syncOp->targetSide()));
         }
-        inline std::shared_ptr<UpdateTree> targetUpdateTree(SyncOpPtr syncOp) {
+        [[nodiscard]] std::shared_ptr<UpdateTree> targetUpdateTree(SyncOpPtr syncOp) const {
             return _syncPal->updateTree(syncOp->targetSide());
         }
 
-        void increaseErrorCount(SyncOpPtr syncOp);
+        void increaseErrorCount(SyncOpPtr syncOp, ExitInfo exitInfo = ExitInfo());
 
         ExitInfo getFileSize(const SyncPath &path, uint64_t &size);
 
-        bool deleteOpNodes(const SyncOpPtr syncOp);
+        bool deleteOpNodes(SyncOpPtr syncOp);
 
-        void setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus status);
+        void setProgressComplete(SyncOpPtr syncOp, SyncFileStatus status);
+
+        static void getNodeIdsFromOp(SyncOpPtr syncOp, NodeId &localNodeId, NodeId &remoteNodeId);
 
         // This methode will return ExitCode::Ok if the error is safely managed and the executor can continue. Else, it will
         // return opsExitInfo.
@@ -166,7 +165,7 @@ class ExecutorWorker : public OperationProcessor {
         std::list<UniqueId> _opList;
         std::recursive_mutex _opListMutex;
 
-        std::chrono::steady_clock::time_point _fileProgressTimer = std::chrono::steady_clock::now();
+        TimerUtility _timer;
 
         bool _snapshotToInvalidate = false;
 

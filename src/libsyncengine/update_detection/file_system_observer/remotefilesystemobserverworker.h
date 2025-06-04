@@ -46,9 +46,8 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         ExitCode exploreDirectory(const NodeId &nodeId);
         ExitCode getItemsInDir(const NodeId &dirId, bool saveCursor);
 
-
         struct ActionInfo {
-                ActionCode actionCode{ActionCode::actionCodeUnknown};
+                ActionCode actionCode{ActionCode::ActionCodeUnknown};
                 SnapshotItem snapshotItem;
                 SyncName path;
         };
@@ -64,7 +63,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         int _driveDbId = -1;
         std::string _cursor;
-
+        NodeSet _blackList; // A list of user-selected folders not to be synchronized.
         int _listingFullCounter = 0;
         std::chrono::steady_clock::time_point _listingFullTimer = std::chrono::steady_clock::now();
 

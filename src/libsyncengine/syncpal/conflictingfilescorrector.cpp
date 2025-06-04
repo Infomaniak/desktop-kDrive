@@ -39,7 +39,7 @@ void ConflictingFilesCorrector::runJob() {
     for (auto &error: _errors) {
         bool exists = false;
         IoError ioError = IoError::Success;
-        if (!IoHelper::checkIfPathExists(error.destinationPath(), exists, ioError)) {
+        if (!IoHelper::checkIfPathExists(_syncPal->localPath() / error.destinationPath(), exists, ioError)) {
             LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::checkIfPathExists: "
                                                             << Utility::formatIoError(error.destinationPath(), ioError).c_str());
             _nbErrors++;
@@ -67,27 +67,27 @@ void ConflictingFilesCorrector::runJob() {
         }
     }
 
-    _exitCode = ExitCode::Ok;
+    _exitInfo = ExitCode::Ok;
 }
 
 bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
     // Delete remote version locally
-    SyncPath originalAbsolutePath = error.destinationPath().parent_path() / error.path().filename();
+    SyncPath originalAbsolutePath = _syncPal->localPath() / error.destinationPath().parent_path() / error.path().filename();
     LocalDeleteJob deleteJob(originalAbsolutePath);
     deleteJob.runSynchronously();
-    if (deleteJob.exitCode() != ExitCode::Ok) {
+    if (deleteJob.exitInfo().code() != ExitCode::Ok) {
         return false;
     }
 
     // Rename the local version
-    LocalMoveJob renameJob(error.destinationPath(), originalAbsolutePath);
+    LocalMoveJob renameJob(_syncPal->localPath() / error.destinationPath(), originalAbsolutePath);
     renameJob.runSynchronously();
-    if (renameJob.exitCode() != ExitCode::Ok) {
+    if (renameJob.exitInfo().code() != ExitCode::Ok) {
         return false;
     }
 
     // Set the local modification time to now
-    Poco::Timestamp lastModifiedTimestamp;
+    const Poco::Timestamp lastModifiedTimestamp;
     Poco::File(Path2Str(originalAbsolutePath)).setLastModified(lastModifiedTimestamp);
 
     return true;
@@ -95,9 +95,9 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
 
 bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
     // Delete local version
-    LocalDeleteJob deleteJob(error.destinationPath());
+    LocalDeleteJob deleteJob(_syncPal->localPath() / error.destinationPath());
     deleteJob.runSynchronously();
-    if (deleteJob.exitCode() != ExitCode::Ok) {
+    if (deleteJob.exitInfo().code() != ExitCode::Ok) {
         return false;
     }
 

@@ -17,7 +17,7 @@
  */
 
 #include "testoldsyncdb.h"
-#include "libcommonserver/utility/logiffail.h"
+#include "libcommon/utility/logiffail.h"
 
 
 using namespace CppUnit;

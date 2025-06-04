@@ -66,9 +66,8 @@ const VersionInfo &UpdateChecker::versionInfo(const VersionChannel choosedChanne
     // Otherwise, we need to check if there is not a newer version in other channels.
     const VersionInfo &betaVersion =
             _versionsInfo.contains(VersionChannel::Beta) ? _versionsInfo[VersionChannel::Beta] : _defaultVersionInfo;
-    const VersionInfo &internalVersion = _versionsInfo.contains(VersionChannel::Internal)
-                                                 ? _versionsInfo[VersionChannel::Internal]
-                                                 : _defaultVersionInfo;
+    const VersionInfo &internalVersion =
+            _versionsInfo.contains(VersionChannel::Internal) ? _versionsInfo[VersionChannel::Internal] : _defaultVersionInfo;
     std::set<std::reference_wrapper<const VersionInfo>, VersionInfoCmp> sortedVersionList;
     sortedVersionList.insert(prodVersion);
     sortedVersionList.insert(betaVersion);
@@ -100,10 +99,9 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
         ss << errorCode.c_str() << " - " << errorDescr;
         sentry::Handler::captureMessage(sentry::Level::Warning, "AbstractUpdater::checkUpdateAvailable", ss.str());
         LOG_ERROR(Log::instance()->getLogger(), ss.str().c_str());
-    } else if (getAppVersionJobPtr->exitCode() != ExitCode::Ok) {
-        LOG_ERROR(Log::instance()->getLogger(), "Error in UpdateChecker::versionInfoReceived : exit code: "
-                                                        << getAppVersionJobPtr->exitCode()
-                                                        << ", exit cause: " << getAppVersionJobPtr->exitCause());
+    } else if (getAppVersionJobPtr->exitInfo().code() != ExitCode::Ok) {
+        LOG_ERROR(Log::instance()->getLogger(),
+                  "Error in UpdateChecker::versionInfoReceived : " << getAppVersionJobPtr->exitInfo());
     } else {
         _versionsInfo = getAppVersionJobPtr->versionsInfo();
         _prodVersionChannel = getAppVersionJobPtr->prodVersionChannel();
@@ -115,9 +113,11 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
 
 ExitCode UpdateChecker::generateGetAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job) {
     AppStateValue appStateValue = "";
-    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found) || !found) {
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
         return ExitCode::DbError;
+    } else if (!found) {
+        return ExitCode::DataError;
     }
 
     std::vector<User> userList;
@@ -127,6 +127,7 @@ ExitCode UpdateChecker::generateGetAppVersionJob(std::shared_ptr<AbstractNetwork
     }
     std::vector<int> userIdList;
     for (const auto &user: userList) {
+        if (user.userId() == 0) continue;
         userIdList.push_back(user.userId());
     }
 

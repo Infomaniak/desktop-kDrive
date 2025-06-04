@@ -115,6 +115,8 @@ std::string toString(const ExitCode e) {
             return "UpdateRequired";
         case ExitCode::LogUploadFailed:
             return "LogUploadFailed";
+        case ExitCode::UpdateFailed:
+            return "UpdateFailed";
         default:
             return noConversionStr;
     }
@@ -146,7 +148,7 @@ std::string toString(const ExitCause e) {
             return "ApiErr";
         case ExitCause::InvalidSize:
             return "InvalidSize";
-        case ExitCause::FileAlreadyExist:
+        case ExitCause::FileAlreadyExists:
             return "FileAlreadyExist";
         case ExitCause::FileAccessError:
             return "FileAccessError";
@@ -178,10 +180,14 @@ std::string toString(const ExitCause e) {
             return "NotEnoughtMemory";
         case ExitCause::FileTooBig:
             return "FileTooBig";
+        case ExitCause::MoveToTrashFailed:
+            return "MoveToTrashFailed";
         case ExitCause::InvalidName:
             return "InvalidName";
         case ExitCause::LiteSyncNotAllowed:
             return "LiteSyncNotAllowed";
+        case ExitCause::NotPlaceHolder:
+            return "NotPlaceHolder";
         case ExitCause::NetworkTimeout:
             return "NetworkTimeout";
         case ExitCause::SocketsDefuncted:
@@ -196,6 +202,16 @@ std::string toString(const ExitCause e) {
             return "OperationCanceled";
         case ExitCause::ShareLinkAlreadyExists:
             return "ShareLinkAlreadyExists";
+        case ExitCause::InvalidArgument:
+            return "InvalidArgument";
+        case ExitCause::InvalidDestination:
+            return "InvalidDestination";
+        case ExitCause::DriveAsleep:
+            return "DriveAsleep";
+        case ExitCause::DriveWakingUp:
+            return "DriveWakingUp";
+        case ExitCause::ServiceUnavailable:
+            return "ServiceUnavailable";
         default:
             return noConversionStr;
     }
@@ -234,19 +250,6 @@ std::string toString(const ConflictType e) {
     }
 }
 
-std::string toString(const ConflictTypeResolution e) {
-    switch (e) {
-        case ConflictTypeResolution::None:
-            return "None";
-        case ConflictTypeResolution::DeleteCanceled:
-            return "DeleteCanceled";
-        case ConflictTypeResolution::FileMovedToRoot:
-            return "FileMovedToRoot";
-        default:
-            return noConversionStr;
-    }
-}
-
 std::string toString(const InconsistencyType e) {
     switch (e) {
         case InconsistencyType::None:
@@ -265,6 +268,10 @@ std::string toString(const InconsistencyType e) {
             return "NotYetSupportedChar";
         case InconsistencyType::DuplicateNames:
             return "DuplicateNames";
+        case InconsistencyType::ForbiddenCharOnlySpaces:
+            return "ForbiddenCharOnlySpaces";
+        case InconsistencyType::ForbiddenCharEndWithSpace:
+            return "ForbiddenCharEndWithSpace";
         default:
             return noConversionStr;
     }
@@ -294,6 +301,8 @@ std::string toString(const CancelType e) {
             return "ExcludedByTemplate";
         case CancelType::Hardlink:
             return "Hardlink";
+        case CancelType::FileRescued:
+            return "FileRescued";
         default:
             return noConversionStr;
     }
@@ -309,6 +318,8 @@ std::string toString(const NodeStatus e) {
             return "PartiallyProcessed";
         case NodeStatus::Processed:
             return "Processed";
+        case NodeStatus::ConflictOpGenerated:
+            return "ConflictOpGenerated";
         default:
             return noConversionStr;
     }
@@ -662,6 +673,8 @@ std::string toString(const IoError e) {
             return "NoSuchFileOrDirectory";
         case IoError::ResultOutOfRange:
             return "ResultOutOfRange";
+        case IoError::CrossDeviceLink:
+            return "CrossDeviceLink";
         case IoError::Unknown:
             return "Unknown";
         default:
@@ -685,6 +698,8 @@ std::string toString(const AppStateKey e) {
             return "LogUploadPercent";
         case AppStateKey::LogUploadToken:
             return "LogUploadToken";
+        case AppStateKey::AppUid:
+            return "AppUid";
         case AppStateKey::Unknown:
             return "Unknown";
         default:
@@ -733,6 +748,8 @@ std::string toString(const UpdateState e) {
             return "DownloadError";
         case UpdateState::UpdateError:
             return "UpdateError";
+        case UpdateState::Unknown:
+            return "Unknown";
         default:
             return noConversionStr;
     }
@@ -758,10 +775,12 @@ std::string toString(const VersionChannel e) {
 }
 std::string toString(const Platform e) {
     switch (e) {
-        case Platform::Windows:
-            return "Windows";
         case Platform::MacOS:
             return "MacOS";
+        case Platform::Windows:
+            return "Windows";
+        case Platform::WindowsServer:
+            return "WindowsServer";
         case Platform::LinuxAMD:
             return "LinuxAMD";
         case Platform::LinuxARM:
@@ -779,6 +798,10 @@ std::string toString(const sentry::ConfidentialityLevel e) {
             return "Authenticated";
         case sentry::ConfidentialityLevel::Anonymous:
             return "Anonymous";
+        case sentry::ConfidentialityLevel::None:
+            return "None";
+        case sentry::ConfidentialityLevel::Specific:
+            return "Specific";
         default:
             return noConversionStr;
     }
@@ -831,6 +854,21 @@ std::string toString(const SignalType e) {
         default:
             return noConversionStr;
     }
+}
+
+void ExitInfo::merge(const ExitInfo &exitInfoToMerge, const std::vector<ExitCode> &exitCodeList) {
+    const long index = indexInList(exitInfoToMerge.code(), exitCodeList);
+    const long thisIndex = indexInList(this->code(), exitCodeList);
+
+    if (index < thisIndex) {
+        *this = exitInfoToMerge;
+    }
+}
+
+long ExitInfo::indexInList(const ExitCode &exitCode, const std::vector<ExitCode> &exitCodeList) {
+    const auto it = std::find(exitCodeList.begin(), exitCodeList.end(), exitCode);
+    const long index = it - exitCodeList.begin();
+    return index;
 }
 
 } // namespace KDC

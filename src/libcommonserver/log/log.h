@@ -120,26 +120,28 @@ namespace KDC {
         LOG4CPLUS_ERROR(logger, customLogWStreamStr_.c_str());                                                    \
     }
 
-#define LOG_FATAL(logger, logEvent)                                                               \
-    {                                                                                             \
-        CustomLogStream customLogStream_;                                                         \
-        customLogStream_ << logEvent;                                                             \
-        const auto customLogStreamStr_ = customLogStream_.str();                                  \
-        sentry_value_t crumb = sentry_value_new_breadcrumb(nullptr, customLogStreamStr_.c_str()); \
-        sentry_value_set_by_key(crumb, "level", sentry_value_new_string("fatal"));                \
-        sentry_add_breadcrumb(crumb);                                                             \
-        LOG4CPLUS_FATAL(logger, customLogStreamStr_.c_str());                                     \
+#define LOG_FATAL(logger, logEvent)                                                                    \
+    {                                                                                                  \
+        CustomLogStream customLogStream_;                                                              \
+        customLogStream_ << logEvent;                                                                  \
+        const auto customLogStreamStr_ = customLogStream_.str();                                       \
+        sentry_value_t crumb = sentry_value_new_breadcrumb(nullptr, customLogStreamStr_.c_str());      \
+        sentry_value_set_by_key(crumb, "level", sentry_value_new_string("fatal"));                     \
+        sentry_add_breadcrumb(crumb);                                                                  \
+        sentry::Handler::captureMessage(sentry::Level::Fatal, "Log fatal error", customLogStreamStr_); \
+        LOG4CPLUS_FATAL(logger, customLogStreamStr_.c_str());                                          \
     }
 
-#define LOGW_FATAL(logger, logEvent)                                                                              \
-    {                                                                                                             \
-        CustomLogWStream customLogWStream_;                                                                       \
-        customLogWStream_ << logEvent;                                                                            \
-        const auto &customLogWStreamStr_ = customLogWStream_.str();                                               \
-        sentry_value_t crumb = sentry_value_new_breadcrumb(nullptr, Utility::ws2s(customLogWStreamStr_).c_str()); \
-        sentry_value_set_by_key(crumb, "level", sentry_value_new_string("fatal"));                                \
-        sentry_add_breadcrumb(crumb);                                                                             \
-        LOG4CPLUS_FATAL(logger, customLogWStreamStr_.c_str());                                                    \
+#define LOGW_FATAL(logger, logEvent)                                                                                   \
+    {                                                                                                                  \
+        CustomLogWStream customLogWStream_;                                                                            \
+        customLogWStream_ << logEvent;                                                                                 \
+        const auto &customLogWStreamStr_ = customLogWStream_.str();                                                    \
+        sentry_value_t crumb = sentry_value_new_breadcrumb(nullptr, Utility::ws2s(customLogWStreamStr_).c_str());      \
+        sentry_value_set_by_key(crumb, "level", sentry_value_new_string("fatal"));                                     \
+        sentry_add_breadcrumb(crumb);                                                                                  \
+        sentry::Handler::captureMessage(sentry::Level::Fatal, "Log fatal error", Utility::ws2s(customLogWStreamStr_)); \
+        LOG4CPLUS_FATAL(logger, customLogWStreamStr_.c_str());                                                         \
     }
 #else
 #define LOG_DEBUG(logger, logEvent)                              \

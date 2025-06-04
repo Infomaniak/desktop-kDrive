@@ -17,10 +17,12 @@
  */
 
 #include "testincludes.h"
+#include "benchmark/benchmarkparalleljobs.h"
 #include "db/testsyncdb.h"
 #include "olddb/testoldsyncdb.h"
 #include "syncpal/testsyncpal.h"
 #include "syncpal/testsyncpalworker.h"
+#include "syncpal/testoperationprocessor.h"
 #include "update_detection/file_system_observer/testfsoperation.h"
 #include "update_detection/file_system_observer/testfsoperationset.h"
 #include "update_detection/file_system_observer/testremotefilesystemobserverworker.h"
@@ -42,7 +44,9 @@
 #include "jobs/network/testsnapshotitemhandler.h"
 #include "jobs/local/testlocaljobs.h"
 #include "jobs/testjobmanager.h"
+#include "propagation/executor/testfilerescuer.h"
 #include "requests/testexclusiontemplatecache.h"
+#include "update_detection/update_detector/benchupdatetreeworker.h"
 
 #ifdef __APPLE__
 #include "update_detection/file_system_observer/testfolderwatchermac.h"
@@ -51,6 +55,7 @@
 #endif
 
 namespace KDC {
+CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationProcessor);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestNetworkJobs);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLogUploadJob);
@@ -75,17 +80,21 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestComputeFSOperationWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestNode);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTree);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTreeWorker);
+// CPPUNIT_TEST_SUITE_REGISTRATION(BenchUpdateTreeWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestPlatformInconsistencyCheckerWorker);
-// CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictFinderWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictFinderWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictResolverWorker);
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationGeneratorWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationSorterWorker);
 
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestOldSyncDb); // Needs a pre 3.3.4 DB
 CPPUNIT_TEST_SUITE_REGISTRATION(TestExecutorWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestFileRescuer);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPal);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPalWorker);
-// CPPUNIT_TEST_SUITE_REGISTRATION(TestIntegration);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestIntegration);
+
+// CPPUNIT_TEST_SUITE_REGISTRATION(BenchmarkParallelJobs);
 } // namespace KDC
 
 int main(int, char **) {

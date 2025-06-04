@@ -28,7 +28,6 @@ add_subdirectory(vfs)
 set(libcommonserver_SRCS
     # Utility
     utility/utility.h utility/utility.cpp
-    utility/logiffail.h
     utility/stateholder.h
     # Db
     db/sqlitedb.h db/sqlitedb.cpp
@@ -56,7 +55,7 @@ if(APPLE)
     list(APPEND libcommonserver_SRCS utility/utility_mac.mm)
     set_property(SOURCE utility/utility_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 elseif(WIN32)
-    list(APPEND libcommonserver_SRCS io/iohelper_win.h io/iohelper_win.cpp)
+    list(APPEND libcommonserver_SRCS io/iohelper_win.h io/iohelper_win.cpp ../common/utility_win.cpp)
 else()
     list(APPEND libcommonserver_SRCS io/iohelper_linux.cpp)
 endif()

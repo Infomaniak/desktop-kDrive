@@ -37,15 +37,15 @@ class SYNCENGINE_EXPORT SyncNodeCache {
         SyncNodeCache(SyncNodeCache const &) = delete;
         void operator=(SyncNodeCache const &) = delete;
 
-        ExitCode syncNodes(int syncDbId, SyncNodeType type, std::unordered_set<NodeId> &syncNodes);
-        ExitCode update(int syncDbId, SyncNodeType type, const std::unordered_set<NodeId> &syncNodes);
+        ExitCode syncNodes(int syncDbId, SyncNodeType type, NodeSet &syncNodes);
+        ExitCode update(int syncDbId, SyncNodeType type, const NodeSet &syncNodes);
         ExitCode initCache(int syncDbId, std::shared_ptr<SyncDb> syncDb);
-        ExitCode clearCache(int syncDbId);
+        ExitCode clear(int syncDbId);
 
     private:
         static std::shared_ptr<SyncNodeCache> _instance;
         std::unordered_map<int, std::shared_ptr<SyncDb>> _syncDbMap;
-        std::unordered_map<int, std::unordered_map<SyncNodeType, std::unordered_set<NodeId>>> _syncNodesMap;
+        std::unordered_map<int, std::unordered_map<SyncNodeType, NodeSet>> _syncNodesMap;
 
         std::mutex _mutex;
 

@@ -135,20 +135,25 @@ QIcon GuiUtility::getIconWithColor(const QString &path, const QColor &color) {
     return icon;
 }
 
-GuiUtility::systrayPosition GuiUtility::getSystrayPosition(QScreen *screen) {
-    QRect displayRect = screen->geometry();
-    QRect desktopRect = screen->availableGeometry();
-    if (desktopRect.height() < displayRect.height()) {
-        if (desktopRect.y() > displayRect.y()) {
-            return systrayPosition::Top;
-        } else {
-            return systrayPosition::Bottom;
-        }
+GuiUtility::systrayPosition GuiUtility::getSystrayPosition(const QScreen *const screen) {
+    const QRect displayRect = screen->geometry();
+    const QRect desktopRect = screen->availableGeometry();
+    if (displayRect == desktopRect) {
+        // Unable to get systray position
+        return systrayPosition::Top;
     } else {
-        if (desktopRect.x() > displayRect.x()) {
-            return systrayPosition::Left;
+        if (desktopRect.height() < displayRect.height()) {
+            if (desktopRect.y() > displayRect.y()) {
+                return systrayPosition::Top;
+            } else {
+                return systrayPosition::Bottom;
+            }
         } else {
-            return systrayPosition::Right;
+            if (desktopRect.x() > displayRect.x()) {
+                return systrayPosition::Left;
+            } else {
+                return systrayPosition::Right;
+            }
         }
     }
 }
@@ -248,28 +253,30 @@ void GuiUtility::setStyle(QApplication *app, bool isDarkTheme) {
 }
 
 QString GuiUtility::getFileStatusIconPath(::KDC::SyncFileStatus status) {
-    QString path;
     switch (status) {
-        case ::KDC::SyncFileStatus::Unknown:
-            path = QString();
-            break;
         case ::KDC::SyncFileStatus::Error:
-            path = QString(":/client/resources/icons/statuts/error-sync.svg");
+            return QString(":/client/resources/icons/statuts/error-sync.svg");
             break;
         case ::KDC::SyncFileStatus::Success:
         case ::KDC::SyncFileStatus::Inconsistency:
-            path = QString(":/client/resources/icons/statuts/success.svg");
+            return QString(":/client/resources/icons/statuts/success.svg");
             break;
         case ::KDC::SyncFileStatus::Conflict:
         case ::KDC::SyncFileStatus::Ignored:
-            path = QString(":/client/resources/icons/statuts/warning.svg");
+            return QString(":/client/resources/icons/statuts/warning.svg");
             break;
         case ::KDC::SyncFileStatus::Syncing:
-            path = QString(":/client/resources/icons/statuts/sync.svg");
+            return QString(":/client/resources/icons/statuts/sync.svg");
             break;
+        case ::KDC::SyncFileStatus::Unknown:
+            break;
+        case ::KDC::SyncFileStatus::EnumEnd: {
+            assert(false && "Invalid enum value in switch statement.");
+            break;
+        }
     }
 
-    return path;
+    return {};
 }
 
 QString GuiUtility::getSyncStatusIconPath(StatusInfo &statusInfo) {
@@ -550,23 +557,25 @@ bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<
     const QString selectedFolderName = CommonUtility::getRelativePathFromHome(dirPath);
     const SyncPath directoryPath = QStr2Path(dirPath);
 
+    bool warn = false;
+    QString warningMsg;
     for (const auto &sync: syncInfoMap) {
         const QString syncFolderName = sync.second.name();
         const SyncPath syncLocalPath = QStr2Path(sync.second.localPath());
 
-        bool warn = false;
-        QString warningMsg;
         if (syncLocalPath == directoryPath) {
             warn = true;
             warningMsg = QCoreApplication::translate(
                                  "utility", "Folder <b>%1</b> cannot be selected because another sync is using the same folder.")
                                  .arg(selectedFolderName);
+            break;
         } else if (CommonUtility::isSubDir(directoryPath, syncLocalPath)) {
             warn = true;
             warningMsg = QCoreApplication::translate(
                                  "utility",
                                  "Folder <b>%1</b> cannot be selected because it contains the synchronized folder <b>%2</b>.")
                                  .arg(selectedFolderName, syncFolderName);
+            break;
         } else if (CommonUtility::isSubDir(syncLocalPath, directoryPath)) {
             warn = true;
             warningMsg =
@@ -574,13 +583,21 @@ bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<
                             "utility",
                             "Folder <b>%1</b> cannot be selected because it is contained in the synchronized folder <b>%2</b>.")
                             .arg(selectedFolderName, syncFolderName);
+            break;
         }
+    }
 
-        if (warn) {
-            CustomMessageBox msgBox(QMessageBox::Warning, warningMsg, QMessageBox::Ok, parent);
-            msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(parent));
-            return false;
-        }
+    if (CommonUtility::isDiskRootFolder(directoryPath)) {
+        warn = true;
+        warningMsg = QCoreApplication::translate(
+                             "utility", "Folder <b>%1</b> cannot be selected as sync folder. Please, select another folder.")
+                             .arg(selectedFolderName);
+    }
+
+    if (warn) {
+        CustomMessageBox msgBox(QMessageBox::Warning, warningMsg, QMessageBox::Ok, parent);
+        msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(parent));
+        return false;
     }
 
     return true;

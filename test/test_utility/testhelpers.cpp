@@ -52,12 +52,39 @@ SyncName makeNfcSyncName() {
 }
 
 void generateOrEditTestFile(const SyncPath& path) {
-    std::ofstream testFile(path);
+    std::ofstream testFile(path, std::ios::app);
     testFile << "test" << std::endl;
     testFile.close();
 }
 
-std::string loadEnvVariable(const std::string& key, bool mandatory) {
+void generateBigFiles(const SyncPath& dirPath, const uint16_t size, const uint16_t count) {
+    // Generate 1st big file
+    const SyncPath bigFilePath = generateBigFile(dirPath, size);
+
+    // Generate others big files
+    for (uint16_t i = 1; i < count; i++) {
+        std::stringstream fileName;
+        fileName << "big_file_" << size << "_" << i << ".txt";
+        const SyncPath newBigFilePath = SyncPath(dirPath) / fileName.str();
+        (void) std::filesystem::copy_file(bigFilePath, newBigFilePath, std::filesystem::copy_options::overwrite_existing);
+    }
+}
+
+SyncPath generateBigFile(const SyncPath& dirPath, const uint16_t size) {
+    std::stringstream fileName;
+    fileName << "big_file_" << size << "_" << 0 << ".txt";
+    const std::string str{"0123456789"};
+    const auto bigFilePath = SyncPath(dirPath) / fileName.str();
+
+    std::ofstream ofs(bigFilePath, std::ios_base::in | std::ios_base::trunc);
+    for (uint64_t i = 0;
+         i < static_cast<uint64_t>(round(static_cast<double>(size * 1000000) / static_cast<double>(str.length()))); i++) {
+        ofs << str;
+    }
+    return bigFilePath;
+}
+
+std::string loadEnvVariable(const std::string& key, const bool mandatory) {
     const std::string val = KDC::CommonUtility::envVarValue(key);
     if (val.empty() && mandatory) {
         std::cout << "Environment variables " << key << " is missing!" << std::endl;
@@ -65,6 +92,7 @@ std::string loadEnvVariable(const std::string& key, bool mandatory) {
     }
     return val;
 }
+
 #ifdef _WIN32
 void setModificationDate(const SyncPath& path, const std::chrono::time_point<std::chrono::system_clock>& timePoint) {
     struct _utimbuf timeBuffer;

@@ -19,6 +19,7 @@
 #include "config.h"
 #include "testutility.h"
 #include "test_utility/testhelpers.h"
+#include "libcommon/utility/logiffail.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/sourcelocation.h"
 #include "libcommonserver/io/iohelper.h"
@@ -250,9 +251,9 @@ void TestUtility::testCompressFile() {
     CommonUtility::compressFile(filePath.string(), outPath.string());
 
     bool exists = false;
-    IoError error = IoError::Unknown;
-    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(outPath, exists, error));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, error);
+    IoError ioError = IoError::Unknown;
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(outPath, exists, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(exists);
 
     // Test with a non empty file
@@ -263,40 +264,40 @@ void TestUtility::testCompressFile() {
     file.close();
 
     uint64_t size = 0;
-    CPPUNIT_ASSERT(IoHelper::getFileSize(filePath, size, error));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, error);
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getFileSize(filePath, size, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     outPath = tmpDir.path() / "resFile.zip";
     CommonUtility::compressFile(filePath.string(), outPath.string());
 
-    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(outPath, exists, error));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, error);
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(outPath, exists, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(exists);
 
     uint64_t compressedSize = 0;
-    CPPUNIT_ASSERT(IoHelper::getFileSize(outPath, compressedSize, error));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, error);
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getFileSize(outPath, compressedSize, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(compressedSize < size);
 
     // Test with a non existing file
     outPath = tmpDir.path() / "resNonExistingFile.zip";
     CPPUNIT_ASSERT(!CommonUtility::compressFile("nonExistingFile.txt", outPath.string()));
-    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(outPath, exists, error));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, error);
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(outPath, exists, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(!exists);
 
     // Test with a non existing output dir
     outPath = tmpDir.path() / "nonExistingDir" / "resNonExistingDir.zip";
     CPPUNIT_ASSERT(!CommonUtility::compressFile(filePath.string(), outPath.string()));
-    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(outPath, exists, error));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, error);
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(outPath, exists, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(!exists);
 
     // Test with wstring path
     outPath = tmpDir.path() / "resWstring.zip";
     CommonUtility::compressFile(filePath.wstring(), outPath.wstring());
-    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(outPath, exists, error));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, error);
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(outPath, exists, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(exists);
 }
 
@@ -384,8 +385,7 @@ void TestUtility::testLanguageCode() {
     CPPUNIT_ASSERT_EQUAL(std::string("es"), CommonUtility::languageCode(Language::Spanish).toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("it"), CommonUtility::languageCode(Language::Italian).toStdString());
 
-    const auto systemLanguages = QLocale::system().uiLanguages();
-    const auto systemLanguage = systemLanguages.first().left(2);
+    const auto systemLanguage = QLocale::languageToCode(QLocale::system().language());
     CPPUNIT_ASSERT_EQUAL(systemLanguage.toStdString(), CommonUtility::languageCode(Language::Default).toStdString());
 
     // English is the default language and is always returned if the provided language code is unknown.
@@ -420,7 +420,27 @@ void TestUtility::testGetLastErrorMessage() {
         CPPUNIT_ASSERT(msg.starts_with(L"(2) - "));
     }
 }
+
 #endif
+
+void TestUtility::generatePaths(const std::vector<std::string> &itemsNames, const std::vector<char> &separators,
+                                bool startWithSeparator, std::vector<SyncPath> &result, const std::string &start, size_t pos) {
+    if (pos == itemsNames.size()) {
+        (void) result.emplace_back(start);
+        for (const auto &separator: separators) {
+            result.emplace_back(start + separator);
+        }
+        return;
+    }
+    if (!startWithSeparator && start.empty()) {
+        generatePaths(itemsNames, separators, false, result, itemsNames.at(pos), pos + 1);
+
+    } else {
+        for (const auto &separator: separators) {
+            generatePaths(itemsNames, separators, false, result, start + separator + itemsNames.at(pos), pos + 1);
+        }
+    }
+};
 
 void TestUtility::testTruncateLongLogMessage() {
     // No truncation
@@ -435,5 +455,72 @@ void TestUtility::testTruncateLongLogMessage() {
         const QString truncatedMessage = CommonUtility::truncateLongLogMessage(QString::fromStdString(message));
         CPPUNIT_ASSERT(QString::fromStdString(message.substr(0, 2048) + std::string(" (truncated)")) == truncatedMessage);
     }
+}
+
+void TestUtility::testLogIfFail() {
+    // Logs nothing. Don't abort execution.
+    auto logger = Log::instance()->getLogger();
+    LOG_IF_FAIL(logger, true)
+    LOG_MSG_IF_FAIL(Log::instance()->getLogger(), true, "Surprisingly incorrect!")
+
+#ifdef NDEBUG
+    // Log failure messages but do not abort execution.
+    LOG_IF_FAIL(Log::instance()->getLogger(), false)
+    LOG_MSG_IF_FAIL(Log::instance()->getLogger(), false, "Check your logs, something went wrong.")
+#endif
+}
+
+void TestUtility::testRelativePath() {
+    const std::vector<char> separators = {'/', '\\'};
+    const std::vector<std::string> rootPathItems = {"dir1", "dir2", "??"}; // "/dir1/dir2/??
+    const std::vector<std::string> relativePathItems = {"syncDir1", "syncDir2", "syncDir3"}; // "syncDir1/syncDir2/syncDir3
+
+    // Root path is empty
+    std::vector<SyncPath> relativePaths;
+    generatePaths(relativePathItems, separators, false, relativePaths);
+
+    for (const auto &relativePath: relativePaths) {
+        CPPUNIT_ASSERT_EQUAL(relativePath, CommonUtility::relativePath(SyncPath(), relativePath));
+    }
+
+    // Absolute path is empty
+    std::vector<SyncPath> rootPaths;
+    generatePaths(rootPathItems, separators, true, rootPaths);
+
+    for (const auto &rootPath: rootPaths) {
+        CPPUNIT_ASSERT_EQUAL(SyncPath(), CommonUtility::relativePath(rootPath, SyncPath()));
+    }
+
+    // Both paths are empty
+    CPPUNIT_ASSERT_EQUAL(SyncPath(), CommonUtility::relativePath(SyncPath(), SyncPath()));
+
+    // Both paths are the same
+    for (const auto &rootPath: rootPaths) {
+        for (const auto &absolutePath: rootPaths) {
+            CPPUNIT_ASSERT_EQUAL(SyncPath(), CommonUtility::relativePath(rootPath, absolutePath));
+        }
+    }
+
+    // Absolute path is a subpath of the root path
+    std::vector<std::pair<SyncPath /*Absolute path*/, SyncPath /*Relative paths*/>> absolutePaths;
+    for (const auto &rootPath: rootPaths) {
+        if (rootPath.string().back() == separators[0] || rootPath.string().back() == separators[1]) continue;
+        for (const auto &relativePath: relativePaths) {
+            for (const auto &separator: separators) {
+                const SyncPath absolutePath = rootPath.string() + separator + relativePath.string();
+                (void) absolutePaths.emplace_back(absolutePath, relativePath);
+            }
+        }
+    }
+
+    for (const auto &rootPath: rootPaths) {
+        for (const auto &[absolutePath, relativePaths]: absolutePaths) {
+            CPPUNIT_ASSERT_EQUAL_MESSAGE("Root path: " + rootPath.string() + " Absolute path: " + absolutePath.string(),
+                                         relativePaths, CommonUtility::relativePath(rootPath, absolutePath));
+        }
+    }
+
+    // Absolute path is not a subpath of the root path
+    CPPUNIT_ASSERT_EQUAL(SyncPath(), CommonUtility::relativePath(SyncPath("dir1"), SyncPath("dir2/test")));
 }
 } // namespace KDC

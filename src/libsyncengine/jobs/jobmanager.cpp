@@ -20,8 +20,8 @@
 #include "jobs/network/networkjobsparams.h"
 #include "jobs/network/abstractnetworkjob.h"
 #include "log/log.h"
-#include "jobs/network/API_v2/upload_session/abstractuploadsession.h"
 #include "libcommonserver/utility/utility.h"
+#include "network/API_v2/upload/upload_session/abstractuploadsession.h"
 #include "performance_watcher/performancewatcher.h"
 #include "requests/parameterscache.h"
 
@@ -37,7 +37,8 @@ namespace KDC {
 const int secondsBetweenCpuCalculation = 10;
 const double cpuThreadsThreshold = 0.5;
 
-JobManager *JobManager::_instance = nullptr;
+std::shared_ptr<JobManager> JobManager::_instance = nullptr;
+
 bool JobManager::_stop = false;
 
 int JobManager::_maxNbThread = 0;
@@ -53,10 +54,15 @@ std::unordered_set<UniqueId> JobManager::_runningJobs;
 std::unordered_map<UniqueId, std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>> JobManager::_pendingJobs;
 std::recursive_mutex JobManager::_mutex;
 
-JobManager *JobManager::instance() {
-    if (!_instance) {
-        _instance = new JobManager();
+std::shared_ptr<JobManager> JobManager::instance() noexcept {
+    if (_instance == nullptr) {
+        try {
+            _instance = std::shared_ptr<JobManager>(new JobManager());
+        } catch (...) {
+            return nullptr;
+        }
     }
+
     return _instance;
 }
 
@@ -67,8 +73,10 @@ void JobManager::stop() {
 void JobManager::clear() {
     if (_instance) {
         Poco::ThreadPool::defaultPool().stopAll();
-        _instance->_thread->join();
-        _instance->_thread = nullptr;
+        if (_instance->_thread) {
+            if (_instance->_thread->joinable()) _instance->_thread->join();
+            _instance->_thread = nullptr;
+        }
     }
 
     const std::scoped_lock lock(_mutex);
@@ -78,6 +86,13 @@ void JobManager::clear() {
     }
     _managedJobs.clear();
     _runningJobs.clear();
+    _stop = false;
+}
+
+void JobManager::reset() {
+    if (_instance) {
+        _instance = nullptr;
+    }
 }
 
 void JobManager::queueAsyncJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority /*= Poco::Thread::PRIO_NORMAL*/,
@@ -106,9 +121,11 @@ std::shared_ptr<AbstractJob> JobManager::getJob(const UniqueId &jobId) {
     return nullptr;
 }
 
-void JobManager::setPoolCapacity(int count) {
-    _maxNbThread = count;
+void JobManager::setPoolCapacity(const int count) {
+    _maxNbThread = std::max(count, 2); // Poco::ThreadPool throw an exception if the capacity is set to a value less than then
+                                       // minimum capacity (2 by default)
     Poco::ThreadPool::defaultPool().addCapacity(_maxNbThread - Poco::ThreadPool::defaultPool().capacity());
+    LOG_DEBUG(_logger, "Max number of thread changed to " << _maxNbThread << " threads");
 }
 
 void JobManager::decreasePoolCapacity() {
@@ -130,7 +147,8 @@ void JobManager::defaultCallback(UniqueId jobId) {
     _runningJobs.erase(jobId);
 }
 
-JobManager::JobManager() : _logger(Log::instance()->getLogger()) {
+JobManager::JobManager() :
+    _logger(Log::instance()->getLogger()) {
     int jobPoolCapacityFactor = ParametersCache::instance()->parameters().jobPoolCapacityFactor();
 
     _maxNbThread = std::max(threadPoolMinCapacity, jobPoolCapacityFactor * (int) std::thread::hardware_concurrency());

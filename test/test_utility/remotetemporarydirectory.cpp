@@ -30,7 +30,7 @@ RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& 
                                                    const std::string& testType /*= "undef"*/) : _driveDbId(driveDbId) {
     int retry = 5;
     do {
-        std::string suffix = CommonUtility::generateRandomStringAlphaNum(5);
+        const std::string suffix = CommonUtility::generateRandomStringAlphaNum(5);
         // Generate directory name
         const std::time_t now = std::time(nullptr);
         const std::tm tm = *std::localtime(&now);
@@ -41,7 +41,7 @@ RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& 
         // Create remote test dir
         CreateDirJob job(nullptr, _driveDbId, parentId, _dirName);
         job.runSynchronously();
-        if (job.exitInfo() == ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExist) && retry > 0) {
+        if (job.exitInfo() == ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExists) && retry > 0) {
             retry--;
             continue;
         }
@@ -63,9 +63,9 @@ RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& 
 RemoteTemporaryDirectory::~RemoteTemporaryDirectory() {
     if (_isDeleted) return;
 
-    DeleteJob job(_driveDbId, _dirId, "", "");
+    DeleteJob job(_driveDbId, _dirId, "", "", NodeType::Directory);
     job.setBypassCheck(true);
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("~RemoteTemporaryDirectory() failed to delete the directory on remote side.", ExitCode::Ok,
-                                 job.runSynchronously());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("~RemoteTemporaryDirectory() failed to delete the directory on remote side.",
+                                 ExitInfo(ExitCode::Ok), job.runSynchronously());
 }
 } // namespace KDC

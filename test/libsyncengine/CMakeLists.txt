@@ -20,11 +20,12 @@ set(testsyncengine_SRCS
         ../test_utility/testbase.h
         ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
         ../test_utility/remotetemporarydirectory.h ../test_utility/remotetemporarydirectory.cpp
+        ../test_utility/dataextractor.h ../test_utility/dataextractor.cpp
         # Mocks
         ../mocks/libsyncengine/vfs/mockvfs.h
         ../mocks/libsyncengine/jobs/network/API_v2/mockloguploadjob.h
         ../test_classes/syncpaltest.h ../test_classes/syncpaltest.cpp
-        ../test_classes/testinitialsituationgenerator.h ../test_classes/testinitialsituationgenerator.cpp
+        ../test_classes/testsituationgenerator.h ../test_classes/testsituationgenerator.cpp
         # Database
         db/testsyncdb.h db/testsyncdb.cpp
         olddb/testoldsyncdb.h olddb/testoldsyncdb.cpp
@@ -48,6 +49,7 @@ set(testsyncengine_SRCS
         update_detection/update_detector/testupdatetree.h update_detection/update_detector/testupdatetree.cpp
         update_detection/update_detector/testupdatetreeworker.h update_detection/update_detector/testupdatetreeworker.cpp
         update_detection/update_detector/testnode.h update_detection/update_detector/testnode.cpp
+        update_detection/update_detector/benchupdatetreeworker.h update_detection/update_detector/benchupdatetreeworker.cpp
         # Reconciliation
         reconciliation/platform_inconsistency_checker/testplatforminconsistencycheckerworker.h reconciliation/platform_inconsistency_checker/testplatforminconsistencycheckerworker.cpp
         reconciliation/conflict_finder/testconflictfinderworker.h reconciliation/conflict_finder/testconflictfinderworker.cpp
@@ -59,11 +61,15 @@ set(testsyncengine_SRCS
         propagation/operation_sorter/testoperationsorterworker.h propagation/operation_sorter/testoperationsorterworker.cpp
         propagation/executor/testintegration.h propagation/executor/testintegration.cpp
         propagation/executor/testexecutorworker.h propagation/executor/testexecutorworker.cpp
+        propagation/executor/testfilerescuer.h propagation/executor/testfilerescuer.cpp
         # SyncPal
         syncpal/testsyncpal.h syncpal/testsyncpal.cpp
         syncpal/testsyncpalworker.h syncpal/testsyncpalworker.cpp
+        syncpal/testoperationprocessor.h syncpal/testoperationprocessor.cpp
         # Requests
         requests/testexclusiontemplatecache.h requests/testexclusiontemplatecache.cpp
+
+        benchmark/benchmarkparalleljobs.h benchmark/benchmarkparalleljobs.cpp
 )
 
 if (APPLE)

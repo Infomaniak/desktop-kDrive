@@ -33,9 +33,6 @@ export PATH=$QT_BASE_DIR/bin:$QT_BASE_DIR/libexec:$PATH
 export LD_LIBRARY_PATH=$QT_BASE_DIR/lib:$LD_LIBRARY_PATH
 export PKG_CONFIG_PATH=$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
 
-# Set defaults
-export SUFFIX="master"
-
 # Build client
 cd /build
 mkdir -p client
@@ -57,7 +54,6 @@ cmake -DCMAKE_PREFIX_PATH=$QT_BASE_DIR \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DQT_FEATURE_neon=OFF \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-    -DKDRIVE_VERSION_SUFFIX=$SUFFIX \
     -DKDRIVE_THEME_DIR="/src/infomaniak" \
     -DBUILD_UNIT_TESTS=0 \
     "${CMAKE_PARAMS[@]}" \
@@ -86,6 +82,14 @@ cp -P -r /opt/qt6.2.3/translations ./usr
 
 mv ./usr/lib/x86_64-linux-gnu/* ./usr/lib/
 
+cp -P /usr/local/lib/libssl.so* ./usr/lib/
+cp -P /usr/local/lib/libcrypto.so* ./usr/lib/
+
+cp -P -r /usr/lib/x86_64-linux-gnu/nss ./usr/lib/
+
+cp -P /opt/qt6.2.3/lib/libQt6WaylandClient.so* ./usr/lib
+cp -P /opt/qt6.2.3/lib/libQt6WaylandEglClientHwIntegration.so* ./usr/lib
+
 mkdir -p ./usr/qml
 
 rm -rf ./usr/lib/x86_64-linux-gnu/
@@ -103,17 +107,10 @@ rm -rf ./etc
 
 cp ./usr/share/icons/hicolor/512x512/apps/kdrive-win.png . # Workaround for linuxeployqt bug, FIXME
 
-# Because distros need to get their shit together
-cp -P /usr/local/lib/libssl.so* ./usr/lib/
-cp -P /usr/local/lib/libcrypto.so* ./usr/lib/
-
-# NSS fun
-cp -P -r /usr/lib/x86_64-linux-gnu/nss ./usr/lib/
-
 # Build AppImage
 export LD_LIBRARY_PATH=/app/usr/lib/:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH
 
 /deploy/linuxdeploy/build/bin/linuxdeploy --appdir /app -e /app/usr/bin/kDrive -i /app/kdrive-win.png -d /app/usr/share/applications/kDrive_client.desktop --plugin qt --output appimage -v0
 
-mv kDrive*.AppImage /install/kDrive-${SUFFIX}-x86_64.AppImage
+mv kDrive*.AppImage /install/kDrive-x86_64.AppImage
 

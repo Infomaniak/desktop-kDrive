@@ -1,10 +1,10 @@
 name: Linux kDrive desktop CI on x64 Arch
 
 on:
-  pull_request: 
+  pull_request:
     branches-ignore:
-        - 'release/**'
-    types: [synchronize, review_requested]
+      - 'release/**'
+    types: [ synchronize, review_requested ]
 
 concurrency:
   group: linux-${{ github.head_ref }}
@@ -20,6 +20,7 @@ env:
   KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
   KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
+  QT_QPA_PLATFORM: offscreen
 
 jobs:
   build-kDrive:
@@ -33,17 +34,17 @@ jobs:
           submodules: recursive
 
       - name: Clean the log directory
-        run : rm -rf /tmp/kDrive-logdir/*
+        run: rm -rf /tmp/kDrive-logdir/*
 
       - name: Grant building script execute permission
-        run : chmod +x ./infomaniak-build-tools/linux/build-ci-amd64.sh
+        run: chmod +x ./infomaniak-build-tools/linux/build-ci-amd64.sh
       - name: Build kDrive desktop
-        run : ./infomaniak-build-tools/linux/build-ci-amd64.sh -u
+        run: ./infomaniak-build-tools/linux/build-ci-amd64.sh -u -t release
 
       - name: Grant tests script execute permission
-        run : chmod +x ./infomaniak-build-tools/run-tests.sh
+        run: chmod +x ./infomaniak-build-tools/run-tests.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-tests.sh
+        run: ./infomaniak-build-tools/run-tests.sh
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
@@ -55,4 +56,4 @@ jobs:
         if: always()
 
       - name: Clean-up generated code
-        run : rm -rf build-linux
+        run: rm -rf build-linux

@@ -18,7 +18,7 @@
 
 #include "parmsdb.h"
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/utility/logiffail.h"
+#include "libcommon/utility/logiffail.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <3rdparty/sqlite3/sqlite3.h>
@@ -581,7 +581,7 @@ bool ParmsDb::insertDefaultParameters() {
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 6, parameters.useLog()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 7, static_cast<int>(parameters.logLevel())));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 8, parameters.purgeOldLogs()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 9, parameters.syncHiddenFiles()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 9, 0)); // Sync hidden files : not used anymore
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 10, static_cast<int>(parameters.proxyConfig().type())));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 11, parameters.proxyConfig().hostName()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 12, parameters.proxyConfig().port()));
@@ -726,7 +726,7 @@ bool ParmsDb::updateExclusionApps() {
             exclusionAppFileList.push_back(std::make_pair(appId, descr));
         }
     } else {
-        LOG_WARN(_logger, "Cannot open exclusion app file");
+        LOG_WARN(_logger, "Cannot open exclusion app file with " << Utility::getExcludedAppFilePath(_test));
         return false;
     }
 
@@ -1085,7 +1085,7 @@ bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 6, parameters.useLog()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 7, static_cast<int>(parameters.logLevel())));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 8, parameters.purgeOldLogs()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 9, parameters.syncHiddenFiles()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 9, 0)); // Sync hidden files : not used anymore
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 10, static_cast<int>(parameters.proxyConfig().type())));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 11, parameters.proxyConfig().hostName()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 12, parameters.proxyConfig().port()));
@@ -1159,31 +1159,31 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 7, intResult));
     parameters.setPurgeOldLogs(intResult);
 
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 8, intResult));
-    parameters.setSyncHiddenFiles(intResult);
+    // Sync hidden files : not used anymore
+    // LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 8, intResult));
 
-    ProxyType type;
+    auto proxyType = ProxyType::Undefined;
     std::string hostName;
-    int port;
-    bool needsAuth;
+    int port = 0;
+    bool needsAuth = false;
     std::string user;
     std::string token;
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 9, intResult));
-    type = static_cast<ProxyType>(intResult);
+    proxyType = static_cast<ProxyType>(intResult);
     LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 10, hostName));
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 11, port));
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 12, intResult));
     needsAuth = static_cast<bool>(intResult);
     LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 13, user));
     LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 14, token));
-    parameters.setProxyConfig(ProxyConfig(type, hostName, port, needsAuth, user, token));
+    parameters.setProxyConfig(ProxyConfig(proxyType, hostName, port, needsAuth, user, token));
 
-    bool useBigFolderSizeLimit;
+    bool useBigFolderSizeLimit = false;
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 15, intResult));
     useBigFolderSizeLimit = static_cast<bool>(intResult);
     parameters.setUseBigFolderSizeLimit(useBigFolderSizeLimit);
 
-    int64_t int64Result;
+    int64_t int64Result = 0;
     LOG_IF_FAIL(queryInt64Value(SELECT_PARAMETERS_REQUEST_ID, 16, int64Result));
     parameters.setBigFolderSizeLimit(int64Result);
 

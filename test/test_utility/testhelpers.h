@@ -31,7 +31,7 @@ namespace KDC::testhelpers {
 
 const SyncPath localTestDirPath(Utility::s2ws(TEST_DIR) + L"/test_ci");
 const SyncTime defaultTime = std::time(nullptr);
-constexpr int64_t defaultFileSize = 1654788079;
+constexpr int64_t defaultFileSize = 123;
 constexpr int64_t defaultDirSize = 0;
 
 SyncName makeNfdSyncName();
@@ -59,6 +59,15 @@ struct TestVariables {
 };
 
 void generateOrEditTestFile(const SyncPath& path);
+/**
+ * @brief Generate test files.
+ * @param dirPath Directory in which the files will be created.
+ * @param size The size of each file in MB.
+ * @param count The number of file to generate.
+ */
+void generateBigFiles(const SyncPath& dirPath, uint16_t size, uint16_t count);
+SyncPath generateBigFile(const SyncPath& dirPath, uint16_t size);
+
 void setModificationDate(const SyncPath& path, const std::chrono::time_point<std::chrono::system_clock>& timePoint);
 
 inline bool isRunningOnCI(bool print = true) {

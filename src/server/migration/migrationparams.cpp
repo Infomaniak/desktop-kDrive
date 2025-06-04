@@ -499,10 +499,10 @@ ExitCode MigrationParams::migrateTemplateExclusion() {
         QString line = QString::fromUtf8(excludeFile.readLine());
 
         // Remove end of line
-        if (line.count() > 0 && line[line.count() - 1] == '\n') {
+        if (line.size() > 0 && line[line.size() - 1] == '\n') {
             line.chop(1);
         }
-        if (line.count() > 0 && line[line.count() - 1] == '\r') {
+        if (line.size() > 0 && line[line.size() - 1] == '\r') {
             line.chop(1);
         }
 
@@ -527,6 +527,7 @@ ExitCode MigrationParams::migrateTemplateExclusion() {
     return ExitCode::Ok;
 }
 
+#ifdef __APPLE__
 ExitCode MigrationParams::migrateAppExclusion() {
     LOG_INFO(Log::instance()->getLogger(), "Migrate app exclusion");
 
@@ -546,16 +547,15 @@ ExitCode MigrationParams::migrateAppExclusion() {
         QString line = QString::fromUtf8(excludeAppFile.readLine());
 
         // Remove end of line
-        if (line.count() > 0 && line[line.count() - 1] == '\n') {
+        if (line.size() > 0 && line[line.size() - 1] == '\n') {
             line.chop(1);
         }
-        if (line.count() > 0 && line[line.count() - 1] == '\r') {
+        if (line.size() > 0 && line[line.size() - 1] == '\r') {
             line.chop(1);
         }
 
         QList<QString> appExcl = line.split(";", Qt::SkipEmptyParts);
 
-#ifdef __APPLE__
         ExclusionApp exclApp(appExcl[0].toStdString(), appExcl[1].toStdString());
         bool constraintError;
         if (!ParmsDb::instance()->insertExclusionApp(exclApp, constraintError)) {
@@ -564,13 +564,13 @@ ExitCode MigrationParams::migrateAppExclusion() {
                 return ExitCode::DbError;
             }
         }
-#endif
     }
 
     excludeAppFile.close();
 
     return ExitCode::Ok;
 }
+#endif
 
 void MigrationParams::migrateGeometry(std::shared_ptr<std::vector<char>> &geometry) {
     std::string geometryStr;
@@ -706,7 +706,15 @@ ExitCode MigrationParams::getOldAppPwd(const std::string &keychainKey, std::stri
                                              {serverFieldName, SECRET_SCHEMA_ATTRIBUTE_STRING},
                                              {typeFieldName, SECRET_SCHEMA_ATTRIBUTE_STRING},
                                              {nullptr, SecretSchemaAttributeType(0)},
-                                     }};
+                                     },
+                                     0,
+                                     nullptr,
+                                     nullptr,
+                                     nullptr,
+                                     nullptr,
+                                     nullptr,
+                                     nullptr,
+                                     nullptr};
 
     GError *error = nullptr;
 

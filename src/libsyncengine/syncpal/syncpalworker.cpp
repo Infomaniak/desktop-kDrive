@@ -37,37 +37,20 @@
 namespace KDC {
 
 SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
-                             const std::chrono::seconds &startDelay) : ISyncWorker(syncPal, name, shortName, startDelay) {}
+                             const std::chrono::seconds &startDelay) :
+    ISyncWorker(syncPal, name, shortName, startDelay) {}
 
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
-    sentry::pTraces::scoped::SyncInit perfMonitor(syncDbId());
     LOG_SYNCPAL_INFO(_logger, "Worker " << name().c_str() << " started");
     if (_syncPal->vfsMode() != VirtualFileMode::Off) {
-        sentry::pTraces::scoped::ResetStatus perfMonitor1(syncDbId());
-        // Reset vfs files status
-        if (!resetVfsFilesStatus()) {
-            LOG_SYNCPAL_WARN(_logger, "Error in resetVfsFilesStatus for syncDbId=" << _syncPal->syncDbId());
-        } else {
-            perfMonitor1.stop();
-        }
-
-        // Manage stop
-        if (stopAsked()) {
-            // Exit
-            exitCode = ExitCode::Ok;
-            setDone(exitCode);
-            return;
-        }
-
-        if (_syncPal->vfsMode() == VirtualFileMode::Mac) {
-            // Reset nodes syncing flag
-            if (!_syncPal->_syncDb->updateNodesSyncing(false)) {
-                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::updateNodesSyncing for syncDbId=" << _syncPal->syncDbId());
-            }
-        }
+#ifdef _WIN32
+        auto resetFunc = std::function<void()>([this]() { resetVfsFilesStatus(); });
+        _resetVfsFilesStatusThread = StdLoggingThread(resetFunc);
+#else
+        resetVfsFilesStatus();
+#endif
     }
-    perfMonitor.stop();
 
     // Wait before really starting
     bool awakenByStop = false;
@@ -95,7 +78,10 @@ void SyncPalWorker::execute() {
                     LOG_SYNCPAL_DEBUG(_logger, "Stop FSO worker " << index);
                     isFSOInProgress[index] = false;
                     stopAndWaitForExitOfWorker(fsoWorkers[index]);
-                    if (fsoWorkers[index]->exitCode() == ExitCode::NetworkError && !pauseAsked()) {
+                    bool shouldPause = fsoWorkers[index]->exitCode() == ExitCode::NetworkError ||
+                                       (fsoWorkers[index]->exitCode() == ExitCode::BackError &&
+                                        fsoWorkers[index]->exitCause() == ExitCause::ServiceUnavailable);
+                    if (shouldPause && !pauseAsked()) {
                         pause();
                     }
                 } else if (!pauseAsked()) {
@@ -241,6 +227,9 @@ void SyncPalWorker::stop() {
     _pauseAsked = false;
     _unpauseAsked = true;
     ISyncWorker::stop();
+    if (_resetVfsFilesStatusThread.joinable()) {
+        _resetVfsFilesStatusThread.join();
+    }
 }
 
 void SyncPalWorker::pause() {
@@ -279,49 +268,7 @@ void SyncPalWorker::unpause() {
 }
 
 std::string SyncPalWorker::stepName(SyncStep step) {
-    std::string name;
-
-    name = "<";
-
-    switch (step) {
-        case SyncStep::None:
-            name += "None";
-            break;
-        case SyncStep::Idle:
-            name += "Idle";
-            break;
-        case SyncStep::UpdateDetection1:
-            name += "Compute FS operations";
-            break;
-        case SyncStep::UpdateDetection2:
-            name += "Update Trees";
-            break;
-        case SyncStep::Reconciliation1:
-            name += "Platform Inconsistency Checker";
-            break;
-        case SyncStep::Reconciliation2:
-            name += "Conflict Finder";
-            break;
-        case SyncStep::Reconciliation3:
-            name += "Conflict Resolver";
-            break;
-        case SyncStep::Reconciliation4:
-            name += "Operation Generator";
-            break;
-        case SyncStep::Propagation1:
-            name += "Sorter";
-            break;
-        case SyncStep::Propagation2:
-            name += "Executor";
-            break;
-        case SyncStep::Done:
-            name += "Done";
-            break;
-    }
-
-    name += ">";
-
-    return name;
+    return "<" + toString(step) + ">";
 }
 
 void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&workers)[2],
@@ -341,11 +288,14 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             inputSharedObject[1] = nullptr;
             _syncPal->resetEstimateUpdates();
             _syncPal->refreshTmpBlacklist();
+            _syncPal->freeSnapshotsCopies();
+            _syncPal->syncDb()->cache().clear();
             break;
         case SyncStep::UpdateDetection1:
             workers[0] = _syncPal->computeFSOperationsWorker();
             workers[1] = nullptr;
             _syncPal->copySnapshots();
+            LOG_IF_FAIL(_syncPal->syncDb()->cache().reloadIfNeeded());
             assert(_syncPal->snapshotCopy(ReplicaSide::Local)->checkIntegrityRecursively() &&
                    "Local snapshot is corrupted, see logs for details");
             assert(_syncPal->snapshotCopy(ReplicaSide::Remote)->checkIntegrityRecursively() &&
@@ -396,6 +346,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
+            _syncPal->syncDb()->cache().clear(); // Cache is not needed anymore, free resources
             break;
         case SyncStep::Done:
             workers[0] = nullptr;
@@ -485,9 +436,10 @@ SyncStep SyncPalWorker::nextStep() const {
             LOG_SYNCPAL_DEBUG(_logger, _syncPal->_conflictQueue->size() << " conflicts found")
             return _syncPal->_conflictQueue->empty() ? SyncStep::Reconciliation4 : SyncStep::Reconciliation3;
         case SyncStep::Reconciliation3:
+            return SyncStep::Propagation2; // Go directly to the Executor step
         case SyncStep::Reconciliation4:
             LOG_SYNCPAL_DEBUG(_logger, _syncPal->_syncOps->size() << " operations generated")
-            return _syncPal->_conflictQueue->empty() ? SyncStep::Propagation1 : SyncStep::Propagation2;
+            return SyncStep::Propagation1;
         case SyncStep::Propagation1:
             return SyncStep::Propagation2;
         case SyncStep::Propagation2:
@@ -541,7 +493,10 @@ void SyncPalWorker::stopAndWaitForExitOfAllWorkers(std::shared_ptr<ISyncWorker> 
     LOG_SYNCPAL_INFO(_logger, "***** Stop done");
 }
 
-bool SyncPalWorker::resetVfsFilesStatus() {
+void SyncPalWorker::resetVfsFilesStatus() {
+    if (_syncPal->vfsMode() == VirtualFileMode::Off) return;
+    sentry::pTraces::scoped::ResetStatus perfMonitor1(syncDbId());
+
     bool ok = true;
     try {
         std::error_code ec;
@@ -549,34 +504,32 @@ bool SyncPalWorker::resetVfsFilesStatus() {
                 _syncPal->localPath(), std::filesystem::directory_options::skip_permission_denied, ec);
         if (ec) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in resetVfsFilesStatus: " << Utility::formatStdError(ec).c_str());
-            return false;
+            return;
         }
         for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
             if (stopAsked()) {
-                return true;
+                LOGW_SYNCPAL_DEBUG(_logger, L"Stop asked in resetVfsFilesStatus");
+                return;
             }
-#ifdef _WIN32
-            // skip_permission_denied doesn't work on Windows
+            SyncPath absolutePath;
             try {
-                bool dummy = dirIt->exists();
-                (void) (dummy);
+                if (dirIt->is_directory()) {
+                    continue;
+                }
+                absolutePath = dirIt->path();
             } catch (std::filesystem::filesystem_error &) {
                 dirIt.disable_recursion_pending();
                 continue;
             }
-#endif
-
-            const SyncPath absolutePath = dirIt->path();
 
             // Check if the directory entry is managed
             bool isManaged = true;
-            bool isLink = false;
             IoError ioError = IoError::Success;
-            if (!Utility::checkIfDirEntryIsManaged(dirIt, isManaged, isLink, ioError)) {
+            if (!Utility::checkIfDirEntryIsManaged(*dirIt, isManaged, ioError)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged : "
                                                    << Utility::formatSyncPath(absolutePath).c_str());
-                dirIt.disable_recursion_pending();
                 ok = false;
+                dirIt.disable_recursion_pending();
                 continue;
             }
 
@@ -601,28 +554,26 @@ bool SyncPalWorker::resetVfsFilesStatus() {
                 continue;
             }
 
-            if (dirIt->is_directory()) {
-                continue;
-            }
-
             VfsStatus vfsStatus;
             if (ExitInfo exitInfo = _syncPal->vfs()->status(dirIt->path(), vfsStatus); !exitInfo) {
                 LOGW_SYNCPAL_WARN(_logger,
                                   L"Error in vfsStatus : " << Utility::formatSyncPath(dirIt->path()) << L": " << exitInfo);
                 ok = false;
+                dirIt.disable_recursion_pending();
                 continue;
             }
 
             if (!vfsStatus.isPlaceholder) continue;
 
-            PinState pinState = _syncPal->vfs()->pinState(dirIt->path());
-
+            const PinState pinState = _syncPal->vfs()->pinState(dirIt->path());
+#ifndef _WIN32 // Handle by the API on windows.
             if (vfsStatus.isSyncing) {
                 // Force status to dehydrate
-                if (ExitInfo exitInfo = _syncPal->vfs()->forceStatus(dirIt->path(), VfsStatus()); !exitInfo) {
+                if (const ExitInfo exitInfo = _syncPal->vfs()->forceStatus(dirIt->path(), VfsStatus()); !exitInfo) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(dirIt->path()) << L": "
                                                                              << exitInfo);
                     ok = false;
+                    dirIt.disable_recursion_pending();
                     continue;
                 }
                 vfsStatus.isHydrated = false;
@@ -631,18 +582,19 @@ bool SyncPalWorker::resetVfsFilesStatus() {
             bool hydrationOrDehydrationInProgress = false;
             const SyncPath relativePath =
                     CommonUtility::relativePath(_syncPal->localPath(), dirIt->path()); // Get the relative path of the file
-            _syncPal->fileSyncing(ReplicaSide::Local, relativePath, hydrationOrDehydrationInProgress);
+            (void) _syncPal->fileSyncing(ReplicaSide::Local, relativePath, hydrationOrDehydrationInProgress);
             if (hydrationOrDehydrationInProgress) {
                 _syncPal->vfs()->cancelHydrate(
                         dirIt->path()); // Cancel any (de)hydration that could still be in progress on the OS side.
             }
-
+#endif
             // Fix hydration state if needed.
             if ((vfsStatus.isHydrated && pinState == PinState::OnlineOnly) ||
                 (!vfsStatus.isHydrated && pinState == PinState::AlwaysLocal)) {
                 if (!_syncPal->vfs()->fileStatusChanged(dirIt->path(), SyncFileStatus::Syncing)) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
                     ok = false;
+                    dirIt.disable_recursion_pending();
                     continue;
                 }
             }
@@ -656,7 +608,16 @@ bool SyncPalWorker::resetVfsFilesStatus() {
         ok = false;
     }
 
-    return ok;
+    if (ok) {
+        if (!_syncPal->syncDb()->updateNodesSyncing(false)) {
+            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::updateNodesSyncing for syncDbId=" << _syncPal->syncDbId());
+        }
+        LOG_SYNCPAL_DEBUG(_logger, "VFS files status reset");
+        perfMonitor1.stop();
+    } else {
+        LOG_SYNCPAL_WARN(_logger, "Error in resetVfsFilesStatus");
+    }
+    return;
 }
 
 } // namespace KDC

@@ -56,11 +56,8 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testGetFileInfo);
         CPPUNIT_TEST(testGetFileList);
         CPPUNIT_TEST(testGetFileListWithCursor);
-        CPPUNIT_TEST(testFullFileListWithCursorJson);
-        CPPUNIT_TEST(testFullFileListWithCursorJsonZip);
         CPPUNIT_TEST(testFullFileListWithCursorCsv);
         CPPUNIT_TEST(testFullFileListWithCursorCsvZip);
-        CPPUNIT_TEST(testFullFileListWithCursorJsonBlacklist);
         CPPUNIT_TEST(testFullFileListWithCursorCsvBlacklist);
         CPPUNIT_TEST(testFullFileListWithCursorMissingEof);
         CPPUNIT_TEST(testGetInfoUser);
@@ -73,6 +70,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDriveUploadSessionConstructorException);
         CPPUNIT_TEST(testDriveUploadSessionSynchronous);
         CPPUNIT_TEST(testDriveUploadSessionAsynchronous);
+        CPPUNIT_TEST(testDefuncted);
         CPPUNIT_TEST(testDriveUploadSessionSynchronousAborted);
         CPPUNIT_TEST(testDriveUploadSessionAsynchronousAborted);
         CPPUNIT_TEST(testGetAppVersionInfo);
@@ -94,11 +92,8 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testGetFileInfo();
         void testGetFileList();
         void testGetFileListWithCursor();
-        void testFullFileListWithCursorJson();
-        void testFullFileListWithCursorJsonZip();
         void testFullFileListWithCursorCsv();
         void testFullFileListWithCursorCsvZip();
-        void testFullFileListWithCursorJsonBlacklist();
         void testFullFileListWithCursorCsvBlacklist();
         void testFullFileListWithCursorMissingEof();
         void testGetInfoUser();
@@ -111,6 +106,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testDriveUploadSessionConstructorException();
         void testDriveUploadSessionSynchronous();
         void testDriveUploadSessionAsynchronous();
+        void testDefuncted();
         void testDriveUploadSessionSynchronousAborted();
         void testDriveUploadSessionAsynchronousAborted();
         void testGetAppVersionInfo();
@@ -118,6 +114,8 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
 
     private:
         bool createTestFiles();
+
+        void testUpload(SyncTime timeInput, SyncTime &timeOutput);
 
         int _driveDbId = 0;
         int _userDbId = 0;
@@ -128,6 +126,6 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         NodeId _dummyLocalFileId;
         NodeId _dummyRemoteFileId;
 
-        static uint64_t _nbParalleleThreads;
+        static uint64_t _nbParallelThreads;
 };
 } // namespace KDC

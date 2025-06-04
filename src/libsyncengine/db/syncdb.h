@@ -19,6 +19,7 @@
 #pragma once
 
 #include "dbnode.h"
+#include "syncdbreadonlycache.h"
 #include "libcommon/utility/types.h"
 #include "libcommonserver/db/db.h"
 #include "db/uploadsessiontoken.h"
@@ -65,7 +66,7 @@ class SyncDb : public Db {
         bool name(ReplicaSide side, const NodeId &nodeId, SyncName &name, bool &found);
         bool checksum(ReplicaSide side, const NodeId &nodeId, std::optional<std::string> &cs, bool &found);
         bool ids(ReplicaSide side, std::vector<NodeId> &ids, bool &found);
-        bool ids(ReplicaSide side, std::unordered_set<NodeId> &ids, bool &found);
+        bool ids(ReplicaSide side, NodeSet &ids, bool &found);
         bool ancestor(ReplicaSide side, const NodeId &nodeId1, const NodeId &nodeId2, bool &ret, bool &found);
         bool dbId(ReplicaSide side, const NodeId &nodeId, DbNodeId &dbNodeId, bool &found);
         bool dbId(ReplicaSide side, const SyncPath &path, DbNodeId &dbNodeId, bool &found);
@@ -74,10 +75,13 @@ class SyncDb : public Db {
 
         // Getters with db IDs
         bool dbIds(std::unordered_set<DbNodeId> &ids, bool &found);
+        bool ids(std::unordered_set<NodeIds, NodeIds::HashFunction> &ids, bool &found);
+
         bool path(DbNodeId dbNodeId, SyncPath &localPath, SyncPath &remotePath, bool &found);
         bool node(DbNodeId dbNodeId, DbNode &dbNode, bool &found);
         bool pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<DbNodeId> &ids);
-
+        bool pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<NodeIds, NodeIds::HashFunction> &ids);
+        bool dbNodes(std::unordered_set<DbNode, DbNode::HashFunction> &nodes, SyncDbRevision &revision, bool &found);
         bool status(ReplicaSide side, const SyncPath &path, SyncFileStatus &status, bool &found);
         bool status(ReplicaSide side, const NodeId &nodeId, SyncFileStatus &status, bool &found);
         bool setStatus(ReplicaSide side, const SyncPath &path, SyncFileStatus status, bool &found);
@@ -85,8 +89,8 @@ class SyncDb : public Db {
         bool syncing(ReplicaSide side, const SyncPath &path, bool &syncing, bool &found);
         bool setSyncing(ReplicaSide side, const SyncPath &path, bool syncing, bool &found);
 
-        bool updateAllSyncNodes(SyncNodeType type, const std::unordered_set<NodeId> &nodeIdSet);
-        bool selectAllSyncNodes(SyncNodeType type, std::unordered_set<NodeId> &nodeIdSet);
+        bool updateAllSyncNodes(SyncNodeType type, const NodeSet &nodeIdSet);
+        bool selectAllSyncNodes(SyncNodeType type, NodeSet &nodeIdSet);
 
         bool selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyColon);
         bool deleteNodesWithNullParentNodeId();
@@ -101,15 +105,20 @@ class SyncDb : public Db {
 
         bool setTargetNodeId(const std::string &targetNodeId, bool &found);
 
+        SyncDbRevision revision() const;
+        SyncDbReadOnlyCache &cache() { return _cache; }
+
     protected:
         virtual bool updateNames(const char *requestId, const SyncName &localName, const SyncName &remoteName);
 
     private:
         static DbNode _driveRootNode;
-        DbNode _rootNode;
-
+        DbNode _rootNode = _driveRootNode;
+        SyncDbRevision _revision = 1;
+        SyncDbReadOnlyCache _cache;
+        void invalidateCache() { ++_revision; }
         bool pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, std::vector<NodeId> &ids);
-        bool pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, std::unordered_set<NodeId> &ids);
+        bool pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, NodeSet &ids);
 
         // Helpers
         bool checkNodeIds(const DbNode &node);

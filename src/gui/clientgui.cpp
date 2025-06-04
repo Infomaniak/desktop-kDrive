@@ -48,7 +48,9 @@ namespace KDC {
 
 Q_LOGGING_CATEGORY(lcClientGui, "gui.clientgui", QtInfoMsg)
 
-ClientGui::ClientGui(AppClient *parent) : QObject(), _app(parent) {
+ClientGui::ClientGui(AppClient *parent) :
+    QObject(),
+    _app(parent) {
     connect(qGuiApp, &QGuiApplication::screenAdded, this, &ClientGui::onScreenUpdated);
     connect(qGuiApp, &QGuiApplication::screenRemoved, this, &ClientGui::onScreenUpdated);
 
@@ -145,6 +147,9 @@ void ClientGui::onErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId) 
         auto userIt = _userInfoMap.find(_currentUserDbId);
         if (userIt != _userInfoMap.end() && !userIt->second.credentialsAsked()) {
             userIt->second.setCredentialsAsked(true);
+            if (_addDriveWizard) {
+                emit _addDriveWizard->exit();
+            }
             _app->askUserToLoginAgain(_currentUserDbId, userIt->second.email(), true);
         }
     }
@@ -619,9 +624,6 @@ void ClientGui::computeTrayOverallStatus(SyncStatus &status, bool &unresolvedCon
                 abortOrPausedSeen++;
             } else {
                 switch (syncInfoMapIt.second.status()) {
-                    case SyncStatus::Undefined:
-                    case SyncStatus::Starting:
-                        break;
                     case SyncStatus::Running:
                         runSeen++;
                         break;
@@ -636,6 +638,13 @@ void ClientGui::computeTrayOverallStatus(SyncStatus &status, bool &unresolvedCon
                     case SyncStatus::StopAsked:
                     case SyncStatus::Stopped:
                         abortOrPausedSeen++;
+                        break;
+                    case SyncStatus::Undefined:
+                    case SyncStatus::Starting:
+                        break;
+                    case SyncStatus::EnumEnd: {
+                        assert(false && "Invalid enum value in switch statement.");
+                    }
                 }
             }
             if (syncInfoMapIt.second.unresolvedConflicts()) {
@@ -688,6 +697,9 @@ QString ClientGui::trayTooltipStatusString(SyncStatus status, bool unresolvedCon
             statusString = tr("Sync is paused.");
             break;
             // no default case on purpose, check compiler warnings
+        case SyncStatus::EnumEnd: {
+            assert(false && "Invalid enum value in switch statement.");
+        }
     }
     if (paused) {
         // sync is disabled.
@@ -712,28 +724,35 @@ void ClientGui::executeSyncAction(ActionType type, int syncDbId) {
                 currentStatus == SyncStatus::Stopped || currentStatus == SyncStatus::Error) {
                 return;
             }
+
+            syncInfoMapIt->second.setStatus(SyncStatus::PauseAsked);
+            emit updateProgress(syncDbId);
+
             exitCode = GuiRequests::syncStop(syncDbId);
             if (exitCode != ExitCode::Ok) {
                 qCWarning(lcClientGui()) << "Error in Requests::syncStop for syncDbId=" << syncDbId << " code=" << exitCode;
-                return;
             }
-            syncInfoMapIt->second.setStatus(SyncStatus::PauseAsked);
             break;
         case ActionType::Start:
             if (currentStatus == SyncStatus::Undefined || currentStatus == SyncStatus::Idle ||
                 currentStatus == SyncStatus::Running || currentStatus == SyncStatus::Starting) {
                 return;
             }
+
+            syncInfoMapIt->second.setStatus(SyncStatus::Starting);
+            emit updateProgress(syncDbId);
+
             exitCode = GuiRequests::syncStart(syncDbId);
             if (exitCode != ExitCode::Ok) {
                 qCWarning(lcClientGui()) << "Error in Requests::syncStart for syncDbId=" << syncDbId << " code=" << exitCode;
-                return;
+                syncInfoMapIt->second.setStatus(SyncStatus::Paused);
+                emit updateProgress(syncDbId);
             }
-            syncInfoMapIt->second.setStatus(SyncStatus::Starting);
             break;
+        case ActionType::EnumEnd: {
+            assert(false && "Invalid enum value in switch statement.");
+        }
     }
-
-    emit updateProgress(syncDbId);
 }
 
 void ClientGui::refreshErrorList(int driveDbId) {
@@ -997,6 +1016,23 @@ void ClientGui::closeAllExcept(const QWidget *exceptWidget) {
             dialog->hide();
         }
     }
+}
+
+bool ClientGui::isUserUsed(int userDbId) const {
+    for (const auto &[accountDbId, accountInfoClient]: _accountInfoMap) {
+        if (accountInfoClient.userDbId() == userDbId) {
+            for (const auto &[driveDbId, driveInfoClient]: _driveInfoMap) {
+                if (driveInfoClient.accountDbId() == accountDbId) {
+                    for (const auto &[syncDbId, syncInfoClient]: _syncInfoMap) {
+                        if (syncInfoClient.driveDbId() == driveDbId) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return false;
 }
 
 void ClientGui::onAppVersionLocked(bool currentVersionLocked) {
@@ -1310,6 +1346,10 @@ void ClientGui::onSyncUpdated(const SyncInfo &syncInfo) {
 }
 
 void ClientGui::onRemoveSync(int syncDbId) {
+    const auto &syncInfoMapIt = _syncInfoMap.find(syncDbId);
+    if (syncInfoMapIt != _syncInfoMap.end()) {
+        CommonGuiUtility::removeDirIcon(syncInfoMapIt->second.localPath());
+    }
     const ExitCode exitCode = GuiRequests::deleteSync(syncDbId);
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::deleteSync for syncDbId=" << syncDbId;
@@ -1440,8 +1480,7 @@ bool ClientGui::osRequireMenuTray() const {
 }
 
 void ClientGui::raiseDialog(QWidget *raiseWidget) {
-    QWidget *activeWindow = QApplication::activeWindow();
-    if (activeWindow && activeWindow != raiseWidget) {
+    if (auto *activeWindow = QApplication::activeWindow(); activeWindow && activeWindow != raiseWidget) {
         activeWindow->hide();
     }
     if (raiseWidget && !raiseWidget->parentWidget()) {
@@ -1459,27 +1498,6 @@ void ClientGui::raiseDialog(QWidget *raiseWidget) {
         raiseWidget->showNormal();
         raiseWidget->raise();
         raiseWidget->activateWindow();
-
-#if defined(Q_OS_X11)
-        WId wid = raiseWidget->winId();
-        NETWM::init();
-
-        XEvent e;
-        e.xclient.type = ClientMessage;
-        e.xclient.message_type = NETWM::NET_ACTIVE_WINDOW;
-        e.xclient.display = QX11Info::display();
-        e.xclient.window = wid;
-        e.xclient.format = 32;
-        e.xclient.data.l[0] = 2;
-        e.xclient.data.l[1] = QX11Info::appTime();
-        e.xclient.data.l[2] = 0;
-        e.xclient.data.l[3] = 0l;
-        e.xclient.data.l[4] = 0l;
-        Display *display = QX11Info::display();
-        XSendEvent(display, RootWindow(display, DefaultScreen(display)),
-                   False, // propagate
-                   SubstructureRedirectMask | SubstructureNotifyMask, &e);
-#endif
     }
 }
 

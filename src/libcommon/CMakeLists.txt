@@ -25,10 +25,13 @@ add_definitions(-D_UNICODE)
 set(libcommon_SRCS
     ../common/utility.h ../common/utility.cpp
     comm.h
-    utility/types.h
-    utility/types.cpp
+    utility/types.h utility/types.cpp
     utility/utility_base.h utility/utility.h utility/utility.cpp
+    utility/filename.h utility/commonmacros.h utility/coveragemacros.h
+    utility/logiffail.h utility/qlogiffail.h
     utility/jsonparserutility.h
+    utility/urlhelper.h utility/urlhelper.cpp
+    utility/timerutility.h utility/timerutility.cpp
     keychainmanager/apitoken.h keychainmanager/apitoken.cpp
     keychainmanager/keychainmanager.h keychainmanager/keychainmanager.cpp
     info/userinfo.h info/userinfo.cpp

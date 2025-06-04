@@ -74,13 +74,10 @@ static const SyncName excludedAppFileName(Str("litesync-exclude.lst"));
 // Resources relative path from working dir
 #if defined(__APPLE__)
 static const SyncName resourcesPath(Str("../../Contents/Resources"));
-static const SyncName testResourcesPath(Str("kDrive.app/Contents/Resources/"));
 #elif defined(__unix__)
 static const SyncName resourcesPath(Str(""));
-static const SyncName testResourcesPath(Str(""));
 #elif defined(_WIN32)
 static const SyncName resourcesPath(Str(""));
-static const SyncName testResourcesPath(Str(""));
 static const std::string NTFS("NTFS");
 #endif
 
@@ -189,14 +186,16 @@ std::string Utility::ws2s(const std::wstring &wstr) {
 
 std::string Utility::ltrim(const std::string &s) {
     std::string sout(s);
-    auto it = std::find_if(sout.begin(), sout.end(), [](char c) { return !std::isspace<char>(c, std::locale::classic()); });
+    const auto it =
+            std::find_if(sout.begin(), sout.end(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
     sout.erase(sout.begin(), it);
     return sout;
 }
 
 std::string Utility::rtrim(const std::string &s) {
     std::string sout(s);
-    auto it = std::find_if(sout.rbegin(), sout.rend(), [](char c) { return !std::isspace<char>(c, std::locale::classic()); });
+    const auto it =
+            std::find_if(sout.rbegin(), sout.rend(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
     sout.erase(it.base(), sout.end());
     return sout;
 }
@@ -204,6 +203,28 @@ std::string Utility::rtrim(const std::string &s) {
 std::string Utility::trim(const std::string &s) {
     return ltrim(rtrim(s));
 }
+
+#ifdef _WIN32
+SyncName Utility::ltrim(const SyncName &s) {
+    SyncName sout(s);
+    const auto it =
+            std::find_if(sout.begin(), sout.end(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
+    sout.erase(sout.begin(), it);
+    return sout;
+}
+
+SyncName Utility::rtrim(const SyncName &s) {
+    SyncName sout(s);
+    const auto it =
+            std::find_if(sout.rbegin(), sout.rend(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
+    sout.erase(it.base(), sout.end());
+    return sout;
+}
+
+SyncName Utility::trim(const SyncName &s) {
+    return ltrim(rtrim(s));
+}
+#endif
 
 void Utility::msleep(int msec) {
     std::chrono::milliseconds dura(msec);
@@ -417,6 +438,10 @@ bool Utility::checkIfEqualUpToCaseAndEncoding(const SyncPath &a, const SyncPath 
     return true;
 }
 
+bool Utility::contains(const std::string &str, const std::string &substr) {
+    return str.find(substr) != std::string::npos;
+}
+
 #ifdef _WIN32
 bool Utility::startsWithInsensitive(const SyncName &str, const SyncName &prefix) {
     return str.size() >= prefix.size() && std::equal(prefix.begin(), prefix.end(), str.begin(), [](SyncChar c1, SyncChar c2) {
@@ -471,6 +496,18 @@ bool Utility::checkIfSameNormalization(const SyncPath &a, const SyncPath &b, boo
     return true;
 }
 
+std::vector<SyncName> Utility::splitPath(const SyncPath &path) {
+    std::vector<SyncName> itemNames;
+    SyncPath pathTmp(path);
+
+    while (pathTmp != pathTmp.root_path()) {
+        (void) itemNames.emplace_back(pathTmp.filename().native());
+        pathTmp = pathTmp.parent_path();
+    }
+
+    return itemNames;
+}
+
 bool Utility::isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path) {
     if (path == potentialDescendant) return true;
     for (auto it = potentialDescendant.begin(), it2 = path.begin(); it != potentialDescendant.end(); ++it, ++it2) {
@@ -482,6 +519,11 @@ bool Utility::isDescendantOrEqual(const SyncPath &potentialDescendant, const Syn
         }
     }
     return false;
+}
+
+bool Utility::isStrictDescendant(const SyncPath &potentialDescendant, const SyncPath &path) {
+    if (path == potentialDescendant) return false;
+    return isDescendantOrEqual(potentialDescendant, path);
 }
 
 bool Utility::moveItemToTrash(const SyncPath &itemPath) {
@@ -544,30 +586,15 @@ std::string Utility::joinStr(const std::vector<std::string> &strList, char sep /
     return str;
 }
 
-std::string Utility::list2str(std::unordered_set<std::string> inList) {
+std::string Utility::nodeSet2str(const NodeSet &set) {
     bool first = true;
     std::string out;
-    for (const auto &str: inList) {
+    for (const auto &nodeId: set) {
         if (!first) {
             out += ",";
         }
-        if (!str.empty()) {
-            out += str;
-            first = false;
-        }
-    }
-    return out;
-}
-
-std::string Utility::list2str(std::list<std::string> inList) {
-    bool first = true;
-    std::string out;
-    for (const auto &str: inList) {
-        if (!first) {
-            out += ",";
-        }
-        if (!str.empty()) {
-            out += str;
+        if (!nodeId.empty()) {
+            out += nodeId;
             first = false;
         }
     }
@@ -710,8 +737,8 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
     }
 
     if (!strResult) { // Some special characters seem to be not supported, therefore a null pointer is returned if the
-                      // conversion has failed. e.g.: Linux can sometimes send filesystem events with strange characters in the
-                      // path
+                      // conversion has failed. e.g.: Linux can sometimes send filesystem events with strange characters in
+                      // the path
         LOGW_DEBUG(logger(), L"Failed to normalize " << formatSyncName(name));
         return false;
     }
@@ -753,43 +780,40 @@ bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
     return true;
 }
 
-bool Utility::checkIfDirEntryIsManaged(const std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,
-                                       IoError &ioError) {
-    return checkIfDirEntryIsManaged(*dirIt, isManaged, isLink, ioError);
-}
-
-bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, bool &isLink, IoError &ioError) {
+bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, IoError &ioError,
+                                       const ItemType &itemType) {
     isManaged = true;
-    isLink = false;
     ioError = IoError::Success;
-
-    ItemType itemType;
-    bool result = IoHelper::getItemType(dirEntry.path(), itemType);
-    ioError = itemType.ioError;
-    if (!result) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
-        return false;
-    }
-
-    if (itemType.ioError == IoError::NoSuchFileOrDirectory || itemType.ioError == IoError::AccessDenied) {
-        LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
-        return true;
-    }
-
-    isLink = itemType.linkType != LinkType::None;
-    if (!dirEntry.is_directory() && !dirEntry.is_regular_file() && !isLink) {
-        LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirEntry.path())
-                                       << L" because it is not a directory, a regular file or a symlink");
-        isManaged = false;
-        return true;
-    }
-
     if (dirEntry.path().native().length() > CommonUtility::maxPathLength()) {
         LOGW_WARN(logger(),
                   L"Ignore " << formatSyncPath(dirEntry.path()) << L" because size > " << CommonUtility::maxPathLength());
         isManaged = false;
         return true;
     }
+
+    if (!dirEntry.is_regular_file() && !dirEntry.is_directory()) {
+        auto tmpItemType = itemType;
+        if (tmpItemType == ItemType()) {
+            bool result = IoHelper::getItemType(dirEntry.path(), tmpItemType);
+            ioError = tmpItemType.ioError;
+            if (!result) {
+                LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
+                return false;
+            }
+
+            if (ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
+                LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
+                return true;
+            }
+        }
+        if (tmpItemType.linkType == LinkType::None) {
+            LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirEntry.path())
+                                           << L" because it is not a directory, a regular file or a symlink");
+            isManaged = false;
+            return true;
+        }
+    }
+
 
     return true;
 }
@@ -815,7 +839,7 @@ bool Utility::getLinuxDesktopType(std::string &currentDesktop) {
 bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound) {
     int length = GetLongPathNameW(shortPathIn.native().c_str(), 0, 0);
     if (!length) {
-        const bool exists = CommonUtility::isLikeFileNotFoundError(GetLastError());
+        const bool exists = !CommonUtility::isLikeFileNotFoundError(GetLastError());
         if (!exists) {
             notFound = true;
         }
@@ -829,7 +853,7 @@ bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool 
 
     length = GetLongPathNameW(shortPathIn.native().c_str(), buffer, length);
     if (!length) {
-        const bool exists = CommonUtility::isLikeFileNotFoundError(GetLastError());
+        const bool exists = !CommonUtility::isLikeFileNotFoundError(GetLastError());
         if (!exists) {
             notFound = true;
         }

@@ -37,14 +37,14 @@ bool DirectDownloadJob::handleResponse(std::istream& is) {
     std::ofstream output(_destinationFile.native().c_str(), std::ios::binary);
     if (!output) {
         LOGW_WARN(_logger, L"Failed to create file: " << Utility::formatSyncPath(_destinationFile).c_str());
-        _exitCode = ExitCode::SystemError;
-        _exitCause = Utility::enoughSpace(_destinationFile) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace;
+        _exitInfo = {ExitCode::SystemError,
+                     Utility::enoughSpace(_destinationFile) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace};
         return false;
     }
 
     setProgress(0);
-    std::streamsize expectedSize = _resHttp.getContentLength();
-    if (expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH || expectedSize > 0) {
+    if (std::streamsize expectedSize = _resHttp.getContentLength();
+        expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH || expectedSize > 0) {
         std::unique_ptr<char[]> buffer(new char[BUF_SIZE]);
         bool done = false;
         while (!done) {

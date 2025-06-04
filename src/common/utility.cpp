@@ -19,6 +19,7 @@
 #include "config.h"
 
 #include "common/utility.h"
+#include "libcommon/utility/utility.h"
 
 // Note:  This file must compile without QtGui
 #include <QDir>
@@ -38,33 +39,7 @@
 #include <math.h>
 #include <stdarg.h>
 
-#if defined(Q_OS_WIN)
-#include "utility_win.cpp"
-#elif defined(Q_OS_MAC)
-#include "utility_mac.cpp"
-#else
-#include "utility_linux.cpp"
-#endif
-
 namespace KDC {
-
-bool OldUtility::hasSystemLaunchOnStartup(const QString &appName, log4cplus::Logger logger) {
-#if defined(Q_OS_WIN)
-    return hasSystemLaunchOnStartup_private(appName, logger);
-#else
-    Q_UNUSED(appName)
-    Q_UNUSED(logger)
-    return false;
-#endif
-}
-
-bool OldUtility::hasLaunchOnStartup(const QString &appName, log4cplus::Logger logger) {
-    return KDC::hasLaunchOnStartup_private(appName, logger);
-}
-
-void OldUtility::setLaunchOnStartup(const QString &appName, const QString &guiName, bool enable, log4cplus::Logger logger) {
-    KDC::setLaunchOnStartup_private(appName, guiName, enable, logger);
-}
 
 #ifdef Q_OS_WIN
 void OldUtility::setFolderPinState(const QUuid &clsid, bool show) {
@@ -100,7 +75,7 @@ void OldUtility::addLegacySyncRootKeys(const QUuid &clsid, const QString &folder
 
     QDir path = QDir(folderPath);
     QString title = path.dirName();
-    QString iconPath = QDir::toNativeSeparators(qApp->applicationFilePath());
+    QString iconPath = QString::fromStdWString(CommonUtility::applicationFilePath().native());
     QString targetFolderPath = QDir::toNativeSeparators(QDir::cleanPath(folderPath));
 
     // qCInfo(lcUtility) << "Explorer Cloud storage provider: saving path" << targetFolderPath << "to CLSID" << clsidStr;
@@ -189,6 +164,7 @@ void OldUtility::removeLegacySyncRootKeys(const QUuid &clsid) {
         OldUtility::registryDeleteKeyValue(HKEY_CURRENT_USER, newstartpanelPath, clsidStr);
     }
 }
+
 #endif
 
 } // namespace KDC

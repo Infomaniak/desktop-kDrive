@@ -21,6 +21,7 @@
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/commonserverlib.h"
 #include "libcommonserver/db/dbdefs.h"
+#include "libcommon/utility/filename.h"
 #include "libcommon/utility/types.h"
 
 #include <xxhash.h>
@@ -48,11 +49,11 @@ class URI;
 /* TODO : Replace with std::source_location when we will bump gcc version to 10 or higher
  *  static std::string errId(std::source_location location = std::source_location::current());
  */
-#define errId() Utility::_errId(__FILE__, __LINE__)
+#define errId() Utility::_errId(__FILENAME__, __LINE__)
 
 namespace KDC {
 struct COMMONSERVER_EXPORT Utility {
-        inline static void setLogger(log4cplus::Logger logger) { _logger = logger; }
+        inline static void setLogger(const log4cplus::Logger &logger) { _logger = logger; }
 
         static bool init();
         static void free();
@@ -69,6 +70,11 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string ltrim(const std::string &s);
         static std::string rtrim(const std::string &s);
         static std::string trim(const std::string &s);
+#ifdef _WIN32
+        static SyncName ltrim(const SyncName &s);
+        static SyncName rtrim(const SyncName &s);
+        static SyncName trim(const SyncName &s);
+#endif
         static void msleep(int msec);
         static std::wstring v2ws(const dbtype &v);
 
@@ -97,6 +103,7 @@ struct COMMONSERVER_EXPORT Utility {
         static bool startsWithInsensitive(const std::string &str, const std::string &prefix);
         static bool endsWith(const std::string &str, const std::string &suffix);
         static bool endsWithInsensitive(const std::string &str, const std::string &suffix);
+        static bool contains(const std::string &str, const std::string &substr);
 #ifdef _WIN32
         static bool startsWithInsensitive(const SyncName &str, const SyncName &prefix);
         static bool startsWith(const SyncName &str, const SyncName &prefix);
@@ -112,6 +119,7 @@ struct COMMONSERVER_EXPORT Utility {
          */
         static bool checkIfEqualUpToCaseAndEncoding(const SyncPath &a, const SyncPath &b, bool &isEqual);
         static bool isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path);
+        static bool isStrictDescendant(const SyncPath &potentialDescendant, const SyncPath &path);
         /**
          * Normalize the SyncName parameters before comparing them.
          * @param a SyncName value to be compared.
@@ -128,6 +136,15 @@ struct COMMONSERVER_EXPORT Utility {
          * @return true if no normalization issue.
          */
         static bool checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame);
+        /**
+         * Split the input path into a vector of file and directory names.
+         * @param path SyncPath the path to split.
+         * @return A vector of the file and directory names composing the path, sorted
+         * in reverse order.
+         * Example: the return value associated to path = SyncPath("A / B / c.txt") is the vector
+         * ["c.txt", "B", "A"]
+         */
+        static std::vector<SyncName> splitPath(const SyncPath &path);
 
         static bool moveItemToTrash(const SyncPath &itemPath);
 #ifdef __APPLE__
@@ -140,10 +157,10 @@ struct COMMONSERVER_EXPORT Utility {
         static void strhex2str(const std::string &hexstr, std::string &str);
         static std::vector<std::string> splitStr(const std::string &str, char sep);
         static std::string joinStr(const std::vector<std::string> &strList, char sep = 0);
-        static std::string list2str(std::unordered_set<std::string> inList);
-        static std::string list2str(std::list<std::string> inList);
 
-        inline static int pathDepth(const SyncPath &path) { return (int) std::distance(path.begin(), path.end()); };
+        static std::string nodeSet2str(const NodeSet &set);
+
+        inline static int pathDepth(const SyncPath &path) { return (int) std::distance(path.begin(), path.end()); }
         static std::string computeMd5Hash(const std::string &in);
         static std::string computeMd5Hash(const char *in, std::size_t length);
         static std::string computeXxHash(const std::string &in);
@@ -166,7 +183,10 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string _errId(const char *file, int line);
 
 
-        enum class UnicodeNormalization { NFC, NFD };
+        enum class UnicodeNormalization {
+            NFC,
+            NFD
+        };
         static bool normalizedSyncName(const SyncName &name, SyncName &normalizedName,
                                        UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
         static bool normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
@@ -176,10 +196,8 @@ struct COMMONSERVER_EXPORT Utility {
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);
         static bool runDetachedProcess(std::wstring cmd);
 #endif
-        static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, bool &isLink, IoError &ioError);
-        static bool checkIfDirEntryIsManaged(const std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged,
-                                             bool &isLink, IoError &ioError);
-
+        static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, IoError &ioError,
+                                             const ItemType &itemType = ItemType());
         /* Resources analyser */
         static bool totalRamAvailable(uint64_t &ram, int &errorCode);
         static bool ramCurrentlyUsed(uint64_t &ram, int &errorCode);
@@ -200,7 +218,8 @@ struct COMMONSERVER_EXPORT Utility {
 };
 
 struct TimeCounter {
-        explicit TimeCounter(const std::string &name) : _name(name) {}
+        explicit TimeCounter(const std::string &name) :
+            _name(name) {}
         void start() { _start = clock(); }
         void end() {
             _end = clock();

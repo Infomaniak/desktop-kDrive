@@ -28,13 +28,14 @@ namespace KDC {
 
 class TestPlatformInconsistencyCheckerWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestPlatformInconsistencyCheckerWorker);
-        CPPUNIT_TEST(testFixNameSize);
+        CPPUNIT_TEST(testIsNameTooLong);
         CPPUNIT_TEST(testCheckNameForbiddenChars);
         CPPUNIT_TEST(testCheckReservedNames);
         CPPUNIT_TEST(testNameClash);
         CPPUNIT_TEST(testNameClashAfterRename);
         CPPUNIT_TEST(testExecute);
         CPPUNIT_TEST(testNameSizeLocalTree);
+        CPPUNIT_TEST(testOnlySpaces);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -42,13 +43,14 @@ class TestPlatformInconsistencyCheckerWorker : public CppUnit::TestFixture, publ
         void tearDown() override;
 
     protected:
-        void testFixNameSize();
+        void testIsNameTooLong();
         void testCheckNameForbiddenChars();
         void testCheckReservedNames();
         void testNameClash();
         void testNameClashAfterRename();
         void testExecute();
         void testNameSizeLocalTree();
+        void testOnlySpaces();
 
     private:
         std::shared_ptr<SyncPal> _syncPal{nullptr};

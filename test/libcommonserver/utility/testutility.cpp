@@ -18,6 +18,7 @@
 
 #include "testutility.h"
 #include "test_utility/localtemporarydirectory.h"
+#include "test_utility/testhelpers.h"
 #include "config.h"
 #include "libcommon/utility/utility.h" // CommonUtility::isSubDir
 #include "libcommonserver/log/log.h"
@@ -306,7 +307,7 @@ void TestUtility::testErrId() {
     CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), errId());
 }
 
-void TestUtility::isSubDir() {
+void TestUtility::testIsSubDir() {
     SyncPath path1 = "A/AA/AAA";
     SyncPath path2 = "A/AA";
     CPPUNIT_ASSERT(CommonUtility::isSubDir(path2, path1));
@@ -319,7 +320,26 @@ void TestUtility::isSubDir() {
     CPPUNIT_ASSERT(!CommonUtility::isSubDir(path2, path1));
 }
 
-void TestUtility::testcheckIfDirEntryIsManaged() {
+void TestUtility::testIsDiskRootFolder() {
+    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("A/AA/AAA"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("/"));
+    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("/Users"));
+    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("/home"));
+#if defined(_WIN32)
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("C:\\"));
+    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("C:\\Users"));
+#elif defined(__APPLE__)
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("/Volumes/drivename"));
+    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("/Volumes/drivename/kDrive"));
+#else
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("/media"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("/media/username"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("/media/username/drivename"));
+    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("/media/username/drivename/kDrive"));
+#endif
+}
+
+void TestUtility::testCheckIfDirEntryIsManaged() {
     LocalTemporaryDirectory tempDir;
     SyncPath path = tempDir.path() / "test.txt";
     std::ofstream file(path);
@@ -327,32 +347,28 @@ void TestUtility::testcheckIfDirEntryIsManaged() {
     file.close();
 
     bool isManaged = false;
-    bool isLink = false;
     IoError ioError = IoError::Success;
     std::filesystem::recursive_directory_iterator entry(tempDir.path());
 
     // Check with an existing file (managed)
-    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
+    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
     CPPUNIT_ASSERT(isManaged);
-    CPPUNIT_ASSERT(!isLink);
-    CPPUNIT_ASSERT(ioError == IoError::Success);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
     // Check with a simlink (managed)
     const SyncPath simLinkDir = tempDir.path() / "simLinkDir";
     std::filesystem::create_directory(simLinkDir);
     std::filesystem::create_symlink(path, simLinkDir / "testLink.txt");
     entry = std::filesystem::recursive_directory_iterator(simLinkDir);
-    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
+    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
     CPPUNIT_ASSERT(isManaged);
-    CPPUNIT_ASSERT(isLink);
-    CPPUNIT_ASSERT(ioError == IoError::Success);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
     // Check with a directory
     entry = std::filesystem::recursive_directory_iterator(tempDir.path());
-    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
+    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
     CPPUNIT_ASSERT(isManaged);
-    CPPUNIT_ASSERT(!isLink);
-    CPPUNIT_ASSERT(ioError == IoError::Success);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 }
 
 void TestUtility::testFormatStdError() {
@@ -514,4 +530,10 @@ void TestUtility::testUserName() {
 #endif
 }
 
+void TestUtility::testSplitPath() {
+    const auto fileNames = Utility::splitPath(SyncPath("A") / "B" / "file.txt");
+    CPPUNIT_ASSERT(Str("A") == fileNames[2]);
+    CPPUNIT_ASSERT(Str("B") == fileNames[1]);
+    CPPUNIT_ASSERT(Str("file.txt") == fileNames[0]);
+}
 } // namespace KDC

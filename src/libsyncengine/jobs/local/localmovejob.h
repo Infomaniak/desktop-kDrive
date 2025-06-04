@@ -27,10 +27,10 @@ class LocalMoveJob : public AbstractJob {
         LocalMoveJob(const SyncPath &source, const SyncPath &dest);
 
     protected:
-        virtual bool canRun() override;
+        bool canRun() override;
 
     private:
-        virtual void runJob() override;
+        void runJob() override;
 
         SyncPath _source;
         SyncPath _dest;

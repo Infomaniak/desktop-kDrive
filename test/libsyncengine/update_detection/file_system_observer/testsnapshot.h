@@ -29,9 +29,12 @@ class TestSnapshot : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestSnapshot);
         CPPUNIT_TEST(testItemId);
         CPPUNIT_TEST(testSnapshot);
+        CPPUNIT_TEST(testSize);
         CPPUNIT_TEST(testDuplicatedItem);
         CPPUNIT_TEST(testSnapshotInsertionWithDifferentEncodings);
         CPPUNIT_TEST(testPath);
+        CPPUNIT_TEST(testCopySnapshot);
+        CPPUNIT_TEST(testSnapshotRevision);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -41,9 +44,12 @@ class TestSnapshot : public CppUnit::TestFixture, public TestBase {
     private:
         void testItemId();
         void testSnapshot();
+        void testSize();
         void testDuplicatedItem();
         void testSnapshotInsertionWithDifferentEncodings();
         void testPath();
+        void testCopySnapshot();
+        void testSnapshotRevision();
 
         std::unique_ptr<Snapshot> _snapshot;
         NodeId _rootNodeId;

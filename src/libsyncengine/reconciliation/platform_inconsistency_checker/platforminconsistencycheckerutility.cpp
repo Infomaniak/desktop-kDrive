@@ -92,7 +92,7 @@ ExitInfo PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &ab
         *newPathPtr = std::move(newFullPath);
     }
 
-    return {moveJob.exitCode(), moveJob.exitCause()};
+    return moveJob.exitInfo();
 }
 
 bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncPath &name) {
@@ -103,11 +103,6 @@ bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncPath &
     }
 
 #ifdef _WIN32
-    // Can't finish with a space
-    if (SyncName nameStr(name.native()); nameStr[nameStr.size() - 1] == ' ') {
-        return true;
-    }
-
     // Check for forbidden ascii codes
     for (wchar_t c: name.native()) {
         int asciiCode(c);
@@ -118,6 +113,20 @@ bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncPath &
 #endif
 
     return false;
+}
+
+bool PlatformInconsistencyCheckerUtility::isNameOnlySpaces(const SyncName &name) {
+    return Utility::ltrim(name).empty();
+}
+
+bool PlatformInconsistencyCheckerUtility::nameEndWithForbiddenSpace([[maybe_unused]] const SyncName &name) {
+#ifdef _WIN32
+    // Can't finish with a space
+    if (SyncName nameStr(name); nameStr[nameStr.size() - 1] == ' ') {
+        return true;
+    }
+#endif
+    return false; // Name ending with a space is only forbidden on Windows.
 }
 
 #ifdef _WIN32
@@ -137,7 +146,7 @@ bool PlatformInconsistencyCheckerUtility::fixNameWithBackslash(const SyncName &n
 #endif
 
 bool PlatformInconsistencyCheckerUtility::isNameTooLong(const SyncName &name) const {
-    return name.size() > maxNameLengh;
+    return SyncName2Str(name).size() > maxNameLengh;
 }
 
 // return false if the file name is ok

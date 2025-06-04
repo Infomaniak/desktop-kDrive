@@ -27,7 +27,6 @@ namespace KDC {
 class TmpBlacklistManager {
     public:
         struct TmpErrorInfo {
-                int count = 0;
                 std::chrono::time_point<std::chrono::steady_clock> lastErrorTime = std::chrono::steady_clock::now();
                 SyncPath path;
         };
@@ -35,7 +34,8 @@ class TmpBlacklistManager {
         explicit TmpBlacklistManager(std::shared_ptr<SyncPal> syncPal);
         ~TmpBlacklistManager();
 
-        void increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side);
+        void increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side,
+                                ExitInfo exitInfo = ExitInfo());
         void blacklistItem(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side);
         void refreshBlacklist();
 
@@ -43,7 +43,6 @@ class TmpBlacklistManager {
         void removeItemFromTmpBlacklist(const SyncPath &relativePath);
         void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
         bool isTmpBlacklisted(const SyncPath &path, ReplicaSide side) const;
-        int getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept;
 
     private:
         void insertInBlacklist(const NodeId &nodeId, ReplicaSide side) const;

@@ -25,12 +25,9 @@
 #include <queue>
 
 #include <Poco/Net/HTTPSClientSession.h>
-#include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
 #include <Poco/URI.h>
 #include <Poco/JSON/Object.h>
-#include <log4cplus/logger.h>
-#include <log4cplus/loggingmacros.h>
 
 namespace KDC {
 
@@ -38,24 +35,22 @@ class AbstractJob;
 
 class AbstractNetworkJob : public AbstractJob {
     public:
-        /// @exception std::runtime_error
+        /// @throw std::runtime_error
         AbstractNetworkJob();
 
         ~AbstractNetworkJob() override;
 
         [[nodiscard]] bool hasHttpError(std::string *errorCode = nullptr) const;
         bool hasErrorApi(std::string *errorCode = nullptr, std::string *errorDescr = nullptr) const;
-        [[nodiscard]] inline Poco::Net::HTTPResponse::HTTPStatus getStatusCode() const { return _resHttp.getStatus(); }
+        [[nodiscard]] Poco::Net::HTTPResponse::HTTPStatus getStatusCode() const { return _resHttp.getStatus(); }
         void abort() override;
 
-        [[nodiscard]] inline bool isDownloadImpossible() const { return _downloadImpossible; }
-
-        inline std::string octetStreamRes() { return _octetStreamRes; }
-        inline Poco::JSON::Object::Ptr jsonRes() { return _jsonRes; }
+        [[nodiscard]] std::string octetStreamRes() const { return _octetStreamRes; }
+        Poco::JSON::Object::Ptr jsonRes() { return _jsonRes; }
 
     protected:
         void runJob() noexcept override;
-        virtual void addRawHeader(const std::string &key, const std::string &value) final;
+        void addRawHeader(const std::string &key, const std::string &value);
 
         virtual bool handleResponse(std::istream &inputStream) = 0;
         virtual bool handleError(std::istream &inputStream, const Poco::URI &uri) = 0;
@@ -69,7 +64,7 @@ class AbstractNetworkJob : public AbstractJob {
         [[nodiscard]] std::string errorText(Poco::Exception const &e) const;
         [[nodiscard]] std::string errorText(std::exception const &e) const;
 
-        inline void noRetry() { _trials = 0; }
+        void disableRetry() { _trials = 0; }
 
         virtual bool handleJsonResponse(std::istream &is);
         virtual bool handleOctetStreamResponse(std::istream &is);
@@ -130,16 +125,14 @@ class AbstractNetworkJob : public AbstractJob {
         bool sendRequest(const Poco::URI &uri);
         bool receiveResponse(const Poco::URI &uri);
         bool followRedirect();
-        bool processSocketError(const std::string &msg, const UniqueId jobId);
-        bool processSocketError(const std::string &msg, const UniqueId jobId, const std::exception &e);
-        bool processSocketError(const std::string &msg, const UniqueId jobId, const Poco::Exception &e);
-        bool processSocketError(const std::string &msg, const UniqueId jobId, int err, const std::string &errMsg);
+        bool processSocketError(const std::string &msg, UniqueId jobId);
+        bool processSocketError(const std::string &msg, UniqueId jobId, const std::exception &e);
+        bool processSocketError(const std::string &msg, UniqueId jobId, const Poco::Exception &e);
+        bool processSocketError(const std::string &msg, UniqueId jobId, int err, const std::string &errMsg);
         bool ioOrLogicalErrorOccurred(std::ios &stream);
-        static bool isManagedError(ExitCode exitCode, ExitCause exitCause) noexcept;
+        static bool isManagedError(ExitInfo exitInfo) noexcept;
 
         std::unordered_map<std::string, std::string> _rawHeaders;
-
-        bool _downloadImpossible{false};
 };
 
 } // namespace KDC

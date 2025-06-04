@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "operationsorterfilter.h"
 #include "syncpal/operationprocessor.h"
 #include "syncpal/syncpal.h"
 #include "reconciliation/syncoperation.h"
@@ -35,9 +36,6 @@ class OperationSorterWorker : public OperationProcessor {
         [[nodiscard]] bool hasOrderChanged() const { return _hasOrderChanged; }
 
     private:
-        std::list<std::pair<SyncOpPtr, SyncOpPtr>> _reorderings;
-        bool _hasOrderChanged{false};
-
         void sortOperations();
 
         /**
@@ -49,7 +47,7 @@ class OperationSorterWorker : public OperationProcessor {
          */
         void fixMoveBeforeCreate();
         /**
-         * @brief move before delete, e.g. user moves object "X/y" outside of directory "X" (e.g. to "z") and then deletes "X".
+         * @brief move before delete, e.g. user moves object "X/y" outside of directory "X" and then deletes "X".
          */
         void fixMoveBeforeDelete();
         /**
@@ -110,6 +108,13 @@ class OperationSorterWorker : public OperationProcessor {
                                       SyncOpPtr &ancestorOpWithHighestDistance, int32_t &relativeDepth) const;
 
         bool getIdFromDb(ReplicaSide side, const SyncPath &path, NodeId &id) const;
+
+        std::pair<SyncOpPtr, SyncOpPtr> extractOpsByType(OperationType type1, OperationType type2, SyncOpPtr op,
+                                                         SyncOpPtr otherOp) const;
+
+        std::list<std::pair<SyncOpPtr, SyncOpPtr>> _reorderings;
+        bool _hasOrderChanged{false};
+        OperationSorterFilter _filter;
 
         friend class TestOperationSorterWorker;
 };

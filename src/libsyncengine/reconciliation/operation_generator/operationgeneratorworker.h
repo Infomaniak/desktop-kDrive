@@ -42,9 +42,8 @@ class OperationGeneratorWorker : public OperationProcessor {
         void generateDeleteOperation(std::shared_ptr<Node> currentNode, std::shared_ptr<Node> correspondingNode);
 
         void findAndMarkAllChildNodes(std::shared_ptr<Node> parentNode);
-
         std::queue<std::shared_ptr<Node>> _queuedToExplore;
-        std::unordered_set<NodeId> _deletedNodes;
+        NodeSet _deletedNodes;
 
         int64_t _bytesToDownload = 0;
 

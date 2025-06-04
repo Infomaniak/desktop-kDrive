@@ -17,6 +17,7 @@
  */
 
 #include "testparmsdb.h"
+#include "mocks/libcommonserver/db/mockdb.h"
 
 using namespace CppUnit;
 
@@ -26,7 +27,7 @@ void TestParmsDb::setUp() {
     TestBase::start();
     // Create a temp parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = ParmsDb::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, "3.6.1", true, true);
 }
 
@@ -40,7 +41,7 @@ void TestParmsDb::testParameters() {
 
     Parameters defaultParameters;
     Parameters parameters;
-    bool found;
+    bool found = false;
     CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parameters, found) && found);
     CPPUNIT_ASSERT(parameters.language() == defaultParameters.language());
     CPPUNIT_ASSERT(parameters.monoIcons() == defaultParameters.monoIcons());
@@ -50,7 +51,6 @@ void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(parameters.useLog() == defaultParameters.useLog());
     CPPUNIT_ASSERT(parameters.logLevel() == defaultParameters.logLevel());
     CPPUNIT_ASSERT(parameters.purgeOldLogs() == defaultParameters.purgeOldLogs());
-    CPPUNIT_ASSERT(parameters.syncHiddenFiles() == defaultParameters.syncHiddenFiles());
     CPPUNIT_ASSERT(parameters.proxyConfig().type() == defaultParameters.proxyConfig().type());
     CPPUNIT_ASSERT(parameters.proxyConfig().hostName() == defaultParameters.proxyConfig().hostName());
     CPPUNIT_ASSERT(parameters.proxyConfig().port() == defaultParameters.proxyConfig().port());
@@ -72,7 +72,6 @@ void TestParmsDb::testParameters() {
     parameters2.setUseLog(true);
     parameters2.setLogLevel(LogLevel::Warning);
     parameters2.setPurgeOldLogs(true);
-    parameters2.setSyncHiddenFiles(true);
     parameters2.setProxyConfig(ProxyConfig(ProxyType::HTTP, "host name", 44444444, true, "user", "token"));
     parameters2.setUseBigFolderSizeLimit(true);
     parameters2.setBigFolderSizeLimit(1000);
@@ -88,7 +87,6 @@ void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(parameters.autoStart() == parameters2.autoStart());
     CPPUNIT_ASSERT(parameters.moveToTrash() == parameters2.moveToTrash());
     CPPUNIT_ASSERT(parameters.notificationsDisabled() == parameters2.notificationsDisabled());
-    CPPUNIT_ASSERT(parameters.syncHiddenFiles() == parameters2.syncHiddenFiles());
     CPPUNIT_ASSERT(parameters.useLog() == parameters2.useLog());
     CPPUNIT_ASSERT(parameters.logLevel() == parameters2.logLevel());
     CPPUNIT_ASSERT(parameters.purgeOldLogs() == parameters2.purgeOldLogs());
@@ -387,6 +385,7 @@ void TestParmsDb::testAppState(void) {
     while (true) {
         AppStateKey key = static_cast<AppStateKey>(i); // Test for all known keys
         if (key == AppStateKey::Unknown) {
+            CPPUNIT_ASSERT_EQUAL(AppStateKey::EnumEnd, fromInt<AppStateKey>(i + 1));
             break;
         }
         AppStateValue valueRes = "";
@@ -447,6 +446,18 @@ void TestParmsDb::testError() {
     // there is no sync, drive or account Fin the database
     CPPUNIT_ASSERT(!ParmsDb::instance()->insertError(error2));
     CPPUNIT_ASSERT(!ParmsDb::instance()->insertError(error3));
+
+    {
+        Error error("Fct", {ExitCode::DbError, ExitCause::DbAccessError});
+        CPPUNIT_ASSERT_EQUAL(ExitCode::DbError, error.exitCode());
+        CPPUNIT_ASSERT_EQUAL(ExitCause::DbAccessError, error.exitCause());
+    }
+
+    {
+        Error error(1, "Worker", {ExitCode::DataError, ExitCause::SyncDirDoesntExist});
+        CPPUNIT_ASSERT_EQUAL(ExitCode::DataError, error.exitCode());
+        CPPUNIT_ASSERT_EQUAL(ExitCause::SyncDirDoesntExist, error.exitCause());
+    }
 }
 
 } // namespace KDC

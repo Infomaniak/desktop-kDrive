@@ -17,7 +17,7 @@
  */
 
 #include "common/utility.h"
-#include "libcommon/asserts.h"
+#include "libcommon/utility/qlogiffail.h"
 #include "libcommon/utility/types.h"
 
 #include <shlobj.h>
@@ -41,51 +41,19 @@ static const char lightThemeKeyC[] = "SystemUsesLightTheme";
 
 namespace KDC {
 
-static void setupFavLink_private(const QString &folder) {
-    // First create a Desktop.ini so that the folder and favorite link show our application's icon.
-    QFile desktopIni(folder + QLatin1String("/Desktop.ini"));
-    if (!desktopIni.exists()) {
-        desktopIni.open(QFile::WriteOnly);
-        desktopIni.write("[.ShellClassInfo]\r\nIconResource=");
-        desktopIni.write(QDir::toNativeSeparators(qApp->applicationFilePath()).toUtf8());
-        desktopIni.write(",0\r\n");
-        desktopIni.close();
-
-        // Set the folder as system and Desktop.ini as hidden+system for explorer to pick it.
-        // https://msdn.microsoft.com/en-us/library/windows/desktop/cc144102
-        DWORD folderAttrs = GetFileAttributesW((wchar_t *) folder.utf16());
-        SetFileAttributesW((wchar_t *) folder.utf16(), folderAttrs | FILE_ATTRIBUTE_SYSTEM);
-        SetFileAttributesW((wchar_t *) desktopIni.fileName().utf16(), FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM);
-    }
-
-    // Windows Explorer: Place under "Favorites" (Links)
-    QString linkName;
-    QDir folderDir(QDir::fromNativeSeparators(folder));
-
-    /* Use new WINAPI functions */
-    PWSTR path;
-
-    if (SHGetKnownFolderPath(FOLDERID_Links, 0, NULL, &path) == S_OK) {
-        QString links = QDir::fromNativeSeparators(QString::fromWCharArray(path));
-        linkName = QDir(links).filePath(folderDir.dirName() + QLatin1String(".lnk"));
-        CoTaskMemFree(path);
-    }
-    QFile::link(folder, linkName);
-}
-
-bool hasSystemLaunchOnStartup_private(const QString &appName, log4cplus::Logger logger) {
+bool OldUtility::hasSystemLaunchOnStartup(const QString &appName, log4cplus::Logger logger) {
     QString runPath = QLatin1String(systemRunPathC);
     QSettings settings(runPath, QSettings::NativeFormat);
     return settings.contains(appName);
 }
 
-bool hasLaunchOnStartup_private(const QString &appName, log4cplus::Logger logger) {
+bool OldUtility::hasLaunchOnStartup(const QString &appName, log4cplus::Logger logger) {
     QString runPath = QLatin1String(runPathC);
     QSettings settings(runPath, QSettings::NativeFormat);
     return settings.contains(appName);
 }
 
-void setLaunchOnStartup_private(const QString &appName, const QString &guiName, bool enable, log4cplus::Logger logger) {
+void OldUtility::setLaunchOnStartup(const QString &appName, const QString &guiName, bool enable, log4cplus::Logger logger) {
     Q_UNUSED(guiName);
     QString runPath = QLatin1String(runPathC);
     QSettings settings(runPath, QSettings::NativeFormat);
@@ -105,7 +73,7 @@ bool OldUtility::registryExistKeyTree(HKEY hRootKey, const QString &subKey) {
 
     REGSAM sam = KEY_READ | KEY_WOW64_64KEY;
     LONG result = RegOpenKeyEx(hRootKey, reinterpret_cast<LPCWSTR>(subKey.utf16()), 0, sam, &hKey);
-    LOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND);
+    QLOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
     if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) return false;
 
     RegCloseKey(hKey);
@@ -120,12 +88,12 @@ bool OldUtility::registryExistKeyValue(HKEY hRootKey, const QString &subKey, con
 
     REGSAM sam = KEY_READ | KEY_WOW64_64KEY;
     LONG result = RegOpenKeyEx(hRootKey, reinterpret_cast<LPCWSTR>(subKey.utf16()), 0, sam, &hKey);
-    LOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND);
+    QLOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
     if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) return false;
 
     DWORD type = 0, sizeInBytes = 0;
     result = RegQueryValueEx(hKey, reinterpret_cast<LPCWSTR>(valueName.utf16()), 0, &type, nullptr, &sizeInBytes);
-    LOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND);
+    QLOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
     if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) return false;
 
     RegCloseKey(hKey);
@@ -140,12 +108,12 @@ QVariant OldUtility::registryGetKeyValue(HKEY hRootKey, const QString &subKey, c
 
     REGSAM sam = KEY_READ | KEY_WOW64_64KEY;
     LONG result = RegOpenKeyEx(hRootKey, reinterpret_cast<LPCWSTR>(subKey.utf16()), 0, sam, &hKey);
-    LOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND);
+    QLOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
     if (result != ERROR_SUCCESS) return value;
 
     DWORD type = 0, sizeInBytes = 0;
     result = RegQueryValueEx(hKey, reinterpret_cast<LPCWSTR>(valueName.utf16()), 0, &type, nullptr, &sizeInBytes);
-    LOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND);
+    QLOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
     if (result == ERROR_SUCCESS) {
         switch (type) {
             case REG_DWORD:
@@ -179,7 +147,7 @@ QVariant OldUtility::registryGetKeyValue(HKEY hRootKey, const QString &subKey, c
                 Q_UNREACHABLE();
         }
     }
-    LOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND);
+    QLOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
 
     RegCloseKey(hKey);
     return value;
@@ -196,7 +164,7 @@ bool OldUtility::registrySetKeyValue(HKEY hRootKey, const QString &subKey, const
     REGSAM sam = KEY_WRITE | KEY_WOW64_64KEY;
     LONG result =
             RegCreateKeyEx(hRootKey, reinterpret_cast<LPCWSTR>(subKey.utf16()), 0, nullptr, 0, sam, nullptr, &hKey, nullptr);
-    LOG_IF_FAIL(result == ERROR_SUCCESS);
+    QLOG_IF_FAIL(result == ERROR_SUCCESS)
     if (result != ERROR_SUCCESS) {
         LPTSTR errorText = NULL;
         if (!FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
@@ -230,7 +198,7 @@ bool OldUtility::registrySetKeyValue(HKEY hRootKey, const QString &subKey, const
         default:
             Q_UNREACHABLE();
     }
-    LOG_IF_FAIL(result == ERROR_SUCCESS);
+    QLOG_IF_FAIL(result == ERROR_SUCCESS)
     if (result != ERROR_SUCCESS) {
         LPTSTR errorText = NULL;
         if (!FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
@@ -253,15 +221,15 @@ bool OldUtility::registryDeleteKeyTree(HKEY hRootKey, const QString &subKey) {
     HKEY hKey;
     REGSAM sam = DELETE | KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE | KEY_SET_VALUE | KEY_WOW64_64KEY;
     LONG result = RegOpenKeyEx(hRootKey, reinterpret_cast<LPCWSTR>(subKey.utf16()), 0, sam, &hKey);
-    LOG_IF_FAIL(result == ERROR_SUCCESS);
+    QLOG_IF_FAIL(result == ERROR_SUCCESS)
     if (result != ERROR_SUCCESS) return false;
 
     result = RegDeleteTree(hKey, nullptr);
     RegCloseKey(hKey);
-    LOG_IF_FAIL(result == ERROR_SUCCESS);
+    QLOG_IF_FAIL(result == ERROR_SUCCESS)
 
     result |= RegDeleteKeyEx(hRootKey, reinterpret_cast<LPCWSTR>(subKey.utf16()), sam, 0);
-    LOG_IF_FAIL(result == ERROR_SUCCESS);
+    QLOG_IF_FAIL(result == ERROR_SUCCESS)
 
     return result == ERROR_SUCCESS;
 }
@@ -270,11 +238,11 @@ bool OldUtility::registryDeleteKeyValue(HKEY hRootKey, const QString &subKey, co
     HKEY hKey;
     REGSAM sam = KEY_WRITE | KEY_WOW64_64KEY;
     LONG result = RegOpenKeyEx(hRootKey, reinterpret_cast<LPCWSTR>(subKey.utf16()), 0, sam, &hKey);
-    LOG_IF_FAIL(result == ERROR_SUCCESS);
+    QLOG_IF_FAIL(result == ERROR_SUCCESS)
     if (result != ERROR_SUCCESS) return false;
 
     result = RegDeleteValue(hKey, reinterpret_cast<LPCWSTR>(valueName.utf16()));
-    LOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND);
+    QLOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
 
     RegCloseKey(hKey);
     return result == ERROR_SUCCESS;
@@ -285,14 +253,14 @@ bool OldUtility::registryWalkSubKeys(HKEY hRootKey, const QString &subKey,
     HKEY hKey;
     REGSAM sam = KEY_READ | KEY_WOW64_64KEY;
     LONG result = RegOpenKeyEx(hRootKey, reinterpret_cast<LPCWSTR>(subKey.utf16()), 0, sam, &hKey);
-    LOG_IF_FAIL(result == ERROR_SUCCESS);
+    QLOG_IF_FAIL(result == ERROR_SUCCESS)
     if (result != ERROR_SUCCESS) return false;
 
     DWORD maxSubKeyNameSize;
     // Get the largest keyname size once instead of relying each call on ERROR_MORE_DATA.
     result = RegQueryInfoKey(hKey, nullptr, nullptr, nullptr, nullptr, &maxSubKeyNameSize, nullptr, nullptr, nullptr, nullptr,
                              nullptr, nullptr);
-    LOG_IF_FAIL(result == ERROR_SUCCESS);
+    QLOG_IF_FAIL(result == ERROR_SUCCESS)
     if (result != ERROR_SUCCESS) {
         RegCloseKey(hKey);
         return false;
@@ -310,7 +278,7 @@ bool OldUtility::registryWalkSubKeys(HKEY hRootKey, const QString &subKey,
         retCode = RegEnumKeyEx(hKey, i, reinterpret_cast<LPWSTR>(subKeyName.data()), &subKeyNameSize, nullptr, nullptr, nullptr,
                                nullptr);
 
-        LOG_IF_FAIL(result == ERROR_SUCCESS || retCode == ERROR_NO_MORE_ITEMS);
+        QLOG_IF_FAIL(result == ERROR_SUCCESS || retCode == ERROR_NO_MORE_ITEMS)
         if (retCode == ERROR_SUCCESS) {
             // subKeyNameSize excludes the trailing \0
             subKeyName.resize(subKeyNameSize);

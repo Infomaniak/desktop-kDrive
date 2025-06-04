@@ -17,13 +17,13 @@
  */
 
 #include "abstractloginjob.h"
-#include "config.h"
 #include "jobs/network/networkjobsparams.h"
 #include "libcommonserver/utility/utility.h"
-#include "requests/parameterscache.h"
 #include "utility/jsonparserutility.h"
+#include "utility/urlhelper.h"
 
 #include <Poco/JSON/Parser.h>
+#include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
 
@@ -50,7 +50,7 @@ std::string AbstractLoginJob::getSpecificUrl() {
 }
 
 std::string AbstractLoginJob::getUrl() {
-    return std::string(LOGIN_URL) + getSpecificUrl();
+    return std::string(UrlHelper::loginApiUrl()) + getSpecificUrl();
 }
 
 std::string AbstractLoginJob::getContentType(bool &canceled) {
@@ -74,8 +74,7 @@ bool AbstractLoginJob::handleError(std::istream &inputStream, const Poco::URI &u
         LOG_WARN(_logger, "Reply " << jobId() << " received doesn't contain a valid JSON error: " << exc.displayText().c_str());
         Utility::logGenericServerError(_logger, "Login error", inputStream, _resHttp);
 
-        _exitCode = ExitCode::BackError;
-        _exitCause = ExitCause::ApiErr;
+        _exitInfo = {ExitCode::BackError, ExitCause::ApiErr};
         return false;
     }
 
@@ -95,26 +94,26 @@ bool AbstractLoginJob::handleError(std::istream &inputStream, const Poco::URI &u
         }
         LOG_WARN(_logger,
                  "Error in request " << uri.toString().c_str() << " : " << _errorCode.c_str() << " - " << _errorDescr.c_str());
-        _exitCode = ExitCode::BackError;
+        _exitInfo = ExitCode::BackError;
     } else {
         JsonParserUtility::extractValue(jsonError, errorKey, _errorCode, false);
 
         std::string errorReason;
         JsonParserUtility::extractValue(jsonError, reasonKey, errorReason, false);
 
-        if (getNetworkErrorCode(_errorCode) == NetworkErrorCode::invalidGrant ||
-            getNetworkErrorReason(errorReason) == NetworkErrorReason::refreshTokenRevoked) {
+        if (getNetworkErrorCode(_errorCode) == NetworkErrorCode::InvalidGrant ||
+            getNetworkErrorReason(errorReason) == NetworkErrorReason::RefreshTokenRevoked) {
             _errorDescr = errorReason;
             LOG_WARN(_logger, "Error in request " << uri.toString().c_str() << " : refresh token has been revoked ");
-            noRetry();
-            _exitCode = ExitCode::InvalidToken;
+            disableRetry();
+            _exitInfo = ExitCode::InvalidToken;
         } else {
             LOG_WARN(_logger, "Error in request " << uri.toString().c_str() << " : " << errorReason.c_str());
-            _exitCode = ExitCode::BackError;
+            _exitInfo = ExitCode::BackError;
         }
     }
 
-    _exitCause = ExitCause::LoginError;
+    _exitInfo.setCause(ExitCause::LoginError);
     return false;
 }
 

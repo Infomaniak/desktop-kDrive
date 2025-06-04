@@ -79,7 +79,9 @@ class GetSizeJob;
 struct SyncPalInfo {
         SyncPalInfo() = default;
         SyncPalInfo(const int driveDbId_, const SyncPath &localPath_, const SyncPath targetPath_ = {}) :
-            driveDbId(driveDbId_), localPath(localPath_), targetPath(targetPath_) {}
+            driveDbId(driveDbId_),
+            localPath(localPath_),
+            targetPath(targetPath_) {}
 
         int syncDbId{0};
         int driveDbId{0};
@@ -99,12 +101,25 @@ struct SyncPalInfo {
         bool isAdvancedSync() const { return !targetPath.empty(); }
 };
 
+struct SyncProgress {
+        int64_t _currentFile{0};
+        int64_t _totalFiles{0};
+        int64_t _completedSize{0};
+        int64_t _totalSize{0};
+        int64_t _estimatedRemainingTime{0};
+
+        bool operator==(const SyncProgress &other) const {
+           return _currentFile == other._currentFile && _totalFiles == other._totalFiles &&
+                _completedSize == other._completedSize && _totalSize == other._totalSize &&
+                _estimatedRemainingTime == other._estimatedRemainingTime;
+        }
+};
+
 
 class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
     public:
-        SyncPal(const std::shared_ptr<Vfs> &vfs, const SyncPath &syncDbPath, const std::string &version,
-                const bool hasFullyCompleted);
-        SyncPal(const std::shared_ptr<Vfs> &vfs, const int syncDbId, const std::string &version);
+        SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted);
+        SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId, const std::string &version);
         virtual ~SyncPal();
 
         ExitCode setTargetNodeId(const std::string &targetNodeId);
@@ -117,6 +132,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             _sendSignal = sendSignal;
         }
 
+        void setVfs(std::shared_ptr<Vfs> vfs);
         inline std::shared_ptr<Vfs> vfs() { return _vfs; }
 
         // SyncPalInfo
@@ -141,14 +157,15 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void setIsPaused(const bool paused) { _syncInfo.isPaused = paused; }
 
         [[nodiscard]] const std::shared_ptr<SyncOperationList> &syncOps() const { return _syncOps; }
+        [[nodiscard]] const std::shared_ptr<ConflictQueue> &conflictQueue() const { return _conflictQueue; }
 
         // TODO : not ideal, to be refactored
         bool checkIfExistsOnServer(const SyncPath &path, bool &exists) const;
         bool checkIfCanShareItem(const SyncPath &path, bool &canShare) const;
 
         ExitCode fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId) const;
-        ExitCode syncIdSet(SyncNodeType type, std::unordered_set<NodeId> &nodeIdSet);
-        ExitCode setSyncIdSet(SyncNodeType type, const std::unordered_set<NodeId> &nodeIdSet);
+        ExitCode syncIdSet(SyncNodeType type, NodeSet &nodeIdSet);
+        ExitCode setSyncIdSet(SyncNodeType type, const NodeSet &nodeIdSet);
         ExitCode syncListUpdated(bool restartSync);
         ExitCode excludeListUpdated();
         ExitCode fixConflictingFiles(bool keepLocalVersion, std::vector<Error> &errorList);
@@ -192,8 +209,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         bool wipeVirtualFiles();
         bool wipeOldPlaceholders();
 
-        void loadProgress(int64_t &currentFile, int64_t &totalFiles, int64_t &_completedSize, int64_t &_totalSize,
-                          int64_t &estimatedRemainingTime) const;
+        void loadProgress(SyncProgress &syncProgress) const;
         [[nodiscard]] bool getSyncFileItem(const SyncPath &path, SyncFileItem &item);
 
         bool isSnapshotValid(ReplicaSide side);
@@ -211,8 +227,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         void fixNodeTableDeleteItemsWithNullParentNodeId();
 
-        virtual void increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side);
-        virtual int getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept;
+        virtual void increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side,
+                                        ExitInfo exitInfo = ExitInfo());
         virtual void blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side);
         virtual bool isTmpBlacklisted(const SyncPath &relativePath, ReplicaSide side) const;
         virtual void refreshTmpBlacklist();
@@ -231,6 +247,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
+        void freeSnapshotsCopies();
         void invalideSnapshots();
 
         // Workers
@@ -238,6 +255,11 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void setComputeFSOperationsWorker(std::shared_ptr<ComputeFSOperationWorker> worker) {
             _computeFSOperationsWorker = worker;
         }
+
+        void createSharedObjects();
+        void freeSharedObjects();
+        void initSharedObjects();
+        void resetSharedObjects();
 
         std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const;
         std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false) const;
@@ -252,14 +274,14 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<ConflictingFilesCorrector> _conflictingFilesCorrector = nullptr;
 
         std::unordered_map<UniqueId, std::shared_ptr<DownloadJob>> _directDownloadJobsMap;
-        std::unordered_map<SyncPath, UniqueId, hashPathFunction> _syncPathToDownloadJobMap;
+        std::unordered_map<SyncPath, UniqueId, PathHashFunction> _syncPathToDownloadJobMap;
         std::mutex _directDownloadJobsMapMutex;
 
         // Callbacks
         std::function<void(const Error &error)> _addError;
         std::function<void(int syncDbId, const SyncFileItem &item, bool notify)> _addCompletedItem;
         std::function<void(SignalNum sigId, int syncDbId, const SigValueType &val)> _sendSignal;
-        const std::shared_ptr<Vfs> _vfs;
+        std::shared_ptr<Vfs> _vfs;
 
         // DB
         std::shared_ptr<SyncDb> _syncDb{nullptr};
@@ -295,10 +317,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         std::shared_ptr<TmpBlacklistManager> _tmpBlacklistManager{nullptr};
 
-        void createSharedObjects();
-        void freeSharedObjects();
-        void initSharedObjects();
-        void resetSharedObjects();
+
         void freeWorkers();
         ExitCode setSyncPaused(bool value);
         bool createOrOpenDb(const SyncPath &syncDbPath, const std::string &version,
@@ -339,7 +358,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class PlatformInconsistencyCheckerWorker;
         friend class OperationProcessor;
         friend class ConflictFinderWorker;
-        friend class ConflictResolverWorker;
         friend class OperationGeneratorWorker;
         friend class OperationSorterWorker;
         friend class ExecutorWorker;
@@ -350,6 +368,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class TmpBlacklistManager;
 
         friend class TestSyncPal;
+        friend class TestOperationProcessor;
         friend class TestLocalFileSystemObserverWorker;
         friend class TestRemoteFileSystemObserverWorker;
         friend class TestComputeFSOperationWorker;
@@ -364,6 +383,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class TestLocalJobs;
         friend class TestIntegration;
         friend class TestWorkers;
+        friend class TestAppServer;
         friend class MockSyncPal;
 };
 

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#include "libcommon/log/sentry/handler.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h" // Path2WStr
@@ -46,6 +46,9 @@ std::function<std::uintmax_t(const SyncPath &path, std::error_code &ec)> IoHelpe
         static_cast<std::uintmax_t (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::file_size);
 std::function<SyncPath(std::error_code &ec)> IoHelper::_tempDirectoryPath =
         static_cast<SyncPath (*)(std::error_code &ec)>(&std::filesystem::temp_directory_path);
+
+std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> IoHelper::_getFileStat = IoHelper::_getFileStatFn;
+bool IoHelper::_unsuportedFSLogged = false;
 #ifdef __APPLE__
 std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> IoHelper::_readAlias =
         [](const SyncPath &path, SyncPath &targetPath, IoError &ioError) -> bool {
@@ -254,51 +257,6 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
 
 bool IoHelper::isFileAccessible(const SyncPath &, IoError &ioError) {
     ioError = IoError::Success;
-
-    return true;
-}
-
-bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
-    ioError = IoError::Success;
-
-    struct stat sb;
-
-    if (lstat(path.string().c_str(), &sb) < 0) {
-        ioError = posixError2ioError(errno);
-        return isExpectedError(ioError);
-    }
-
-#if defined(__APPLE__)
-    buf->isHidden = false;
-    if (sb.st_flags & UF_HIDDEN) {
-        buf->isHidden = true;
-    }
-#elif defined(__unix__)
-    if (!_checkIfIsHiddenFile(path, buf->isHidden, ioError)) {
-        return false;
-    }
-#endif
-
-    buf->inode = sb.st_ino;
-#if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
-    buf->creationTime = sb.st_birthtime;
-#else
-    buf->creationTime = sb.st_ctime;
-#endif
-    buf->modtime = sb.st_mtime;
-    buf->size = sb.st_size;
-    if (S_ISLNK(sb.st_mode)) {
-        // Symlink
-        struct stat sbTarget;
-        if (stat(path.string().c_str(), &sbTarget) < 0) {
-            // Cannot access target => undetermined
-            buf->nodeType = NodeType::Unknown;
-        } else {
-            buf->nodeType = S_ISDIR(sbTarget.st_mode) ? NodeType::Directory : NodeType::File;
-        }
-    } else {
-        buf->nodeType = S_ISDIR(sb.st_mode) ? NodeType::Directory : NodeType::File;
-    }
 
     return true;
 }
@@ -706,8 +664,9 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
     }
 #ifdef _WIN32 // TODO: Remove this block when migrating the release process to Visual Studio 2022.
     // Prior to Visual Studio 2022, std::filesystem::symlink_status would return a misleading InvalidArgument if the path is
-    // found but located on a FAT32 disk. If the file is not found, it works as expected. This behavior is fixed when compiling
-    // with VS2022, see https://developercommunity.visualstudio.com/t/std::filesystem::is_symlink-is-broken-on/1638272
+    // found but located on a FAT32 disk. If the file is not found, it works as expected. This behavior is fixed when
+    // compiling with VS2022, see
+    // https://developercommunity.visualstudio.com/t/std::filesystem::is_symlink-is-broken-on/1638272
     if (ioError == IoError::InvalidArgument && !Utility::isNtfs(path)) {
         (void) std::filesystem::status(
                 path, ec); // Symlink are only supported on NTFS on Windows, there is no risk to follow a symlink.
@@ -746,7 +705,12 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
     return true;
 }
 
+bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept {
+    return _getFileStat(path, filestat, ioError);
+}
+
 void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists) {
+    exists = true;
     IoError ioError = IoError::Success;
     if (!getFileStat(path, buf, ioError)) {
         exists = (ioError != IoError::NoSuchFileOrDirectory);
@@ -755,8 +719,8 @@ void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists) {
     }
 }
 
-bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, time_t previousMtime, bool &changed,
-                                  IoError &ioError) noexcept {
+bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, SyncTime previousMtime,
+                                  SyncTime previousCreationTime, bool &changed, IoError &ioError) noexcept {
     changed = false;
 
     FileStat fileStat;
@@ -770,7 +734,8 @@ bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, ti
         return isExpectedError(ioError);
     }
 
-    changed = (previousSize != fileStat.size) || (previousMtime != fileStat.modtime);
+    changed = (previousSize != fileStat.size) || (previousMtime != fileStat.modtime) ||
+              (previousCreationTime != fileStat.creationTime);
 
     return true;
 }
@@ -924,8 +889,8 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
         ioError = IoError::InvalidArgument;
         return false;
     }
-
-    if (_dirIterator == std::filesystem::end(std::filesystem::recursive_directory_iterator(_directoryPath, ec))) {
+    const auto dirIteratorEnd = std::filesystem::end(_dirIterator);
+    if (_dirIterator == dirIteratorEnd) {
         endOfDirectory = true;
         ioError = IoError::Success;
         return true;
@@ -937,25 +902,19 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
 
     if (!_firstElement) {
         _dirIterator.increment(ec);
-        ioError = IoHelper::stdError2ioError(ec);
-
-        if (ioError != IoError::Success) {
-            _invalid = true;
-            return true;
+        if (ec) {
+            ioError = IoHelper::stdError2ioError(ec);
+            if (ioError != IoError::Success) {
+                _invalid = true;
+                return true;
+            }
         }
 
     } else {
         _firstElement = false;
     }
 
-    if (_dirIterator != std::filesystem::end(std::filesystem::recursive_directory_iterator(_directoryPath, ec))) {
-        ioError = IoHelper::stdError2ioError(ec);
-
-        if (ioError != IoError::Success) {
-            _invalid = true;
-            return true;
-        }
-
+    if (_dirIterator != dirIteratorEnd) {
 #ifdef _WIN32
         // skip_permission_denied doesn't work on Windows
         try {

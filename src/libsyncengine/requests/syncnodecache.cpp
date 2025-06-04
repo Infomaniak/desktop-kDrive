@@ -40,7 +40,7 @@ std::shared_ptr<SyncNodeCache> SyncNodeCache::instance() {
 
 SyncNodeCache::SyncNodeCache() {}
 
-ExitCode SyncNodeCache::syncNodes(int syncDbId, SyncNodeType type, std::unordered_set<NodeId> &syncNodes) {
+ExitCode SyncNodeCache::syncNodes(int syncDbId, SyncNodeType type, NodeSet &syncNodes) {
     const std::scoped_lock lock(_mutex);
 
     if (_syncNodesMap.find(syncDbId) == _syncNodesMap.end()) {
@@ -58,7 +58,7 @@ ExitCode SyncNodeCache::syncNodes(int syncDbId, SyncNodeType type, std::unordere
     return ExitCode::Ok;
 }
 
-ExitCode SyncNodeCache::update(int syncDbId, SyncNodeType type, const std::unordered_set<NodeId> &syncNodes) {
+ExitCode SyncNodeCache::update(int syncDbId, SyncNodeType type, const NodeSet &syncNodes) {
     const std::scoped_lock lock(_mutex);
 
     if (_syncDbMap.find(syncDbId) == _syncDbMap.end()) {
@@ -96,7 +96,7 @@ ExitCode SyncNodeCache::initCache(int syncDbId, std::shared_ptr<SyncDb> syncDb) 
     // Load sync nodes for all sync node types
     for (int typeInt = toInt(SyncNodeType::BlackList); typeInt <= toInt(SyncNodeType::TmpLocalBlacklist); typeInt++) {
         SyncNodeType type = fromInt<SyncNodeType>(typeInt);
-        std::unordered_set<NodeId> nodeIdSet;
+        NodeSet nodeIdSet;
         if (!syncDb->selectAllSyncNodes(type, nodeIdSet)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in SyncDb::selectAllSyncNodes");
             return ExitCode::DbError;
@@ -107,7 +107,7 @@ ExitCode SyncNodeCache::initCache(int syncDbId, std::shared_ptr<SyncDb> syncDb) 
     return ExitCode::Ok;
 }
 
-ExitCode SyncNodeCache::clearCache(int syncDbId) {
+ExitCode SyncNodeCache::clear(int syncDbId) {
     const std::scoped_lock lock(_mutex);
 
     if (_syncDbMap.find(syncDbId) == _syncDbMap.end()) {

@@ -19,7 +19,7 @@
 #include "appclient.h"
 #include "guiutility.h"
 #include "config.h"
-#include "libcommon/asserts.h"
+#include "libcommon/utility/qlogiffail.h"
 #include "customproxystyle.h"
 #include "config.h"
 #include "guirequests.h"
@@ -194,9 +194,9 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
         _gui->onNewDriveWizard();
     } else {
         // Ask user to log in if needed
-        for (auto const &userInfoClient: _gui->userInfoMap()) {
-            if (!userInfoClient.second.connected()) {
-                askUserToLoginAgain(userInfoClient.second.dbId(), userInfoClient.second.email(), false);
+        for (auto const &[userDbId, userInfoClient]: _gui->userInfoMap()) {
+            if (!userInfoClient.connected() && _gui->isUserUsed(userDbId)) {
+                askUserToLoginAgain(userInfoClient.dbId(), userInfoClient.email(), false);
             }
         }
     }
