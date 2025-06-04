@@ -46,7 +46,7 @@ runs:
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtDBus.framework ./dependencies/
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/Sparkle.framework ./dependencies/
           mkdir dependencies/platforms
-          cp /Users/runner/Qt/6.2.3/macos/plugins/platforms/qoffscreen.dylib ./dependencies/platforms/
+          cp /Users/runner/Qt/6.2.3/macos/plugins/platforms/libqoffscreen.dylib ./dependencies/platforms/
           cp /usr/local/lib/libPocoNetSSL.103.dylib ./dependencies/
           cp /usr/local/lib/libPocoUtil.103.dylib ./dependencies/
           cp /usr/local/lib/libPocoJSON.103.dylib ./dependencies/
@@ -69,7 +69,7 @@ runs:
       - name: Fetch Conan dependencies
         run: |
           echo "Fetching Conan dependencies in $HOME/.conan2/p/"
-          find "$HOME/.conan2/p/" '(' -iname 'libxxhash*.dylib' -o -iname 'liblog4cplus*.dylib' ')' \
+          find "$HOME/.conan2/p/" '(' -iname 'libxxhash.0.dylib' -o -iname 'liblog4cplus*.dylib' ')' \
             -exec cp -P {} ./dependencies/ \; \
             -exec echo "Conan dependency found -> " {} \; 
         shell: bash

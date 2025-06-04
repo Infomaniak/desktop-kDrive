@@ -33,7 +33,7 @@ runs:
           cp /home/runner/Qt/6.2.3/gcc_64/lib/libicudata.* ./dependencies/
           cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Svg.* ./dependencies/
           mkdir dependencies/platforms
-          cp /home/runner/Qt/6.2.3/gcc_64/plugins/platforms/qoffscreen.so ./dependencies/platforms/
+          cp /home/runner/Qt/6.2.3/gcc_64/plugins/platforms/libqoffscreen.so ./dependencies/platforms/
           cp /usr/local/lib/libcppunit* ./dependencies/ 
           cp /usr/local/lib/libPocoUtil* ./dependencies/
           cp /usr/local/lib/libPocoJSON* ./dependencies/
