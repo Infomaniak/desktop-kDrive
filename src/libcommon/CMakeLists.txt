@@ -148,8 +148,8 @@ if(UNIX)
         include(ConanGetLibDirs)
         get_library_dirs("log4cplus" "log4cplus")
         install(FILES
-                "${log4cplus_LIB_DIRS}/liblog4cplus.so"
-                "${log4cplus_LIB_DIRS}/liblog4cplus.so.9"
+                "${_log4cplus_LIB_DIRS}/liblog4cplus.so"
+                "${_log4cplus_LIB_DIRS}/liblog4cplus.so.9"
                 DESTINATION "${CONAN_DEP_DIR}"
                 PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
         )
