@@ -34,6 +34,7 @@
 #include "mocks/libcommonserver/db/mockdb.h"
 
 #include "test_utility/testhelpers.h"
+#include "test_utility/timeouthelper.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -118,6 +119,23 @@ void TestLocalFileSystemObserverWorker::tearDown() {
     }
     TestBase::stop();
 }
+void TestLocalFileSystemObserverWorker::testSyncDirChange() {
+    _syncPal->_localFSObserverWorker->stop();
+    _syncPal->_localFSObserverWorker->waitForExit();
+
+    IoError ioError = IoError::Unknown;
+    CPPUNIT_ASSERT(IoHelper::deleteItem(_rootFolderPath, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(IoHelper::createDirectory(_rootFolderPath, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+    _syncPal->_localFSObserverWorker->start();
+    CPPUNIT_ASSERT(TimeoutHelper::waitFor([this]() { return !_syncPal->_localFSObserverWorker->isRunning(); },
+                                          std::chrono::seconds(20), std::chrono::milliseconds(5)));
+    ExitInfo exitInfo = {_syncPal->_localFSObserverWorker->exitCode(), _syncPal->_localFSObserverWorker->exitCause()};
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::SyncDirChanged), exitInfo);
+}
+
 
 void TestLocalFileSystemObserverWorker::testLFSOWithInitialSnapshot() {
     NodeSet ids;
