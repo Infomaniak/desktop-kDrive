@@ -1107,14 +1107,16 @@ void TestNetworkJobs::testDriveUploadSessionSynchronous() {
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDriveUploadSessionSynchronous");
     const LocalTemporaryDirectory localTmpDir("testDriveUploadSessionSynchronous");
     const SyncPath localFilePath = testhelpers::generateBigFile(localTmpDir.path(), 97);
+    bool exist = false;
+    FileStat fileStat;
+    IoHelper::getFileStat(localFilePath, &fileStat, exist);
 
     DriveUploadSession driveUploadSessionJobCreate(nullptr, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(),
-                                                   remoteTmpDir.id(), testhelpers::defaultTime, testhelpers::defaultTime, false,
-                                                   1);
+                                                   remoteTmpDir.id(), fileStat.creationTime, fileStat.modificationTime, false, 1);
     ExitCode exitCode = driveUploadSessionJobCreate.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
-    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime, driveUploadSessionJobCreate.creationTime());
-    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime, driveUploadSessionJobCreate.modificationTime());
+    CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, driveUploadSessionJobCreate.creationTime());
+    CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, driveUploadSessionJobCreate.modificationTime());
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(97 * 1000000), driveUploadSessionJobCreate.size());
     CPPUNIT_ASSERT(!driveUploadSessionJobCreate.nodeId().empty());
 
@@ -1122,17 +1124,14 @@ void TestNetworkJobs::testDriveUploadSessionSynchronous() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionSynchronous Edit");
 
     testhelpers::generateOrEditTestFile(localFilePath);
-
-    bool exist = false;
-    FileStat fileStat;
     IoHelper::getFileStat(localFilePath, &fileStat, exist);
 
     DriveUploadSession driveUploadSessionJobEdit(nullptr, _driveDbId, nullptr, localFilePath,
-                                                 driveUploadSessionJobCreate.nodeId(), testhelpers::defaultTime + 1, false, 1);
+                                                 driveUploadSessionJobCreate.nodeId(), fileStat.modificationTime, false, 1);
     exitCode = driveUploadSessionJobEdit.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
-    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime, driveUploadSessionJobEdit.creationTime());
-    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime + 1, driveUploadSessionJobEdit.modificationTime());
+    CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, driveUploadSessionJobEdit.creationTime());
+    CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, driveUploadSessionJobEdit.modificationTime());
     CPPUNIT_ASSERT_EQUAL(fileStat.size, driveUploadSessionJobEdit.size());
     CPPUNIT_ASSERT(!driveUploadSessionJobEdit.nodeId().empty());
 }
