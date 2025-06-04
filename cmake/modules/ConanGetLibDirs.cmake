@@ -20,6 +20,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 function(get_library_dirs prefix libname)
+    find_package(${prefix} REQUIRED) # Find the package using the prefix, e.g., OpenSSL, xxHash, etc.
     # Let a variable named like openssl_LIB_DIRS_RELEASE or xxhash_LIB_DIRS_RELWITHDEBINFO become _openssl_LIB_DIRS or _xxhash_LIB_DIRS independent of the build type.
     # This let us use the same variable name in the CMakeLists.txt file, independent of the build type.
     string(TOUPPER "${CMAKE_BUILD_TYPE}" _BUILD_TYPE_UPPER)
