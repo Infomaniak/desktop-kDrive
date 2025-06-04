@@ -40,12 +40,12 @@ if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
 
     install(CODE "
         message(STATUS \"Fixing library paths for kDrivecommonserver_vfs_mac...\")
-        otool -L ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/PlugIns/${libcommonserver_NAME}_vfs_mac.dylib
+        execute_process(COMMAND \"otool\" -L ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/PlugIns/${libcommonserver_NAME}_vfs_mac.dylib)
         execute_process(COMMAND \"install_name_tool\" -change /usr/local/lib/libssl.3.dylib @rpath/libssl.3.dylib ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/PlugIns/${libcommonserver_NAME}_vfs_mac.dylib)
         execute_process(COMMAND \"install_name_tool\" -change /usr/local/lib/libcrypto.3.dylib @rpath/libcrypto.3.dylib ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/PlugIns/${libcommonserver_NAME}_vfs_mac.dylib)
         execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.dylib ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/PlugIns/${libcommonserver_NAME}_vfs_mac.dylib)
         message(STATUS \"Fixed library paths for kDrivecommonserver_vfs_mac\")
-        otool -L ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/PlugIns/${libcommonserver_NAME}_vfs_mac.dylib
+        execute_process(COMMAND \"otool\" -L ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/PlugIns/${libcommonserver_NAME}_vfs_mac.dylib)
         " COMPONENT RUNTIME)
 endif()
 
