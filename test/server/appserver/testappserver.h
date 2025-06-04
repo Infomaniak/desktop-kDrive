@@ -21,7 +21,7 @@
 #include "test_utility/localtemporarydirectory.h"
 
 namespace KDC {
-
+/*
 class MockAppServer : public AppServer {
     public:
         explicit MockAppServer(int &argc, char **argv) : AppServer(argc, argv) {}
@@ -60,5 +60,5 @@ class TestAppServer : public CppUnit::TestFixture, public TestBase {
         bool waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const;
         bool syncIsActive(int syncDbId) const;
 };
-
+*/
 } // namespace KDC
