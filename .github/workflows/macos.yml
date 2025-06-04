@@ -3,10 +3,10 @@ name: MacOS kDrive desktop CI
 on:
   workflow_dispatch: 
   # Legacy CI
-  pull_request:
-    branches-ignore:
-      - 'release/**'
-    types: [ synchronize, review_requested ]	
+  #pull_request:
+  #  branches-ignore:
+  #    - 'release/**'
+  #  types: [ synchronize, review_requested ]	
 
 concurrency:
   group: macos-${{ github.head_ref }}
