@@ -20,12 +20,9 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 function(get_library_dirs prefix libname)
+    # Let a variable named like openssl_LIB_DIRS_RELEASE or xxhash_LIB_DIRS_RELWITHDEBINFO become _openssl_LIB_DIRS or _xxhash_LIB_DIRS independent of the build type.
+    # This let us use the same variable name in the CMakeLists.txt file, independent of the build type.
     string(TOUPPER "${CMAKE_BUILD_TYPE}" _BUILD_TYPE_UPPER)
-    set(var_name "${libname}_LIB_DIRS_${_BUILD_TYPE_UPPER}")                            # e.g., openssl_LIB_DIRS_RELEASE or xxhash_LIB_DIRS_RELWITHDEBINFO
-    if(DEFINED ${var_name})                                                             # check if the variable is defined
-        set(_${prefix}_LIB_DIRS "${${var_name}}" PARENT_SCOPE)     # e.g., _openssl_LIB_DIRS or _xxhash_LIB_DIRS@
-        message(STATUS "Using _${prefix}_LIB_DIRS (${var_name}) = ${${var_name}}")
-    else()
-        message(FATAL_ERROR "The variable ${var_name} (${${var_name}}) is not defined.")
-    endif()
+    set(_${prefix}_LIB_DIRS "${${libname}_LIB_DIRS_${_BUILD_TYPE_UPPER}}" PARENT_SCOPE)
+    message(STATUS "Using _${prefix}_LIB_DIRS (${libname}_LIB_DIRS_${_BUILD_TYPE_UPPER}) = ${_${prefix}_LIB_DIRS}")
 endfunction()
