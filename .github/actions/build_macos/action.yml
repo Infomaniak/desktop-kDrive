@@ -81,6 +81,7 @@ runs:
           name: macos-build-common-files
           path: ./dependencies
           retention-days: 1
+          compression-level: 0
         if: steps.build.outcome == 'success'
 
       - name: Upload build test common executable
@@ -89,6 +90,7 @@ runs:
           name: macos-kDrive_test_common
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_common
           retention-days: 1
+          compression-level: 0
         if: steps.build.outcome == 'success'
 
       - name: Upload build test common server executable
@@ -97,6 +99,7 @@ runs:
           name: macos-kDrive_test_common_server
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_common_server
           retention-days: 1
+          compression-level: 0
         if: steps.build.outcome == 'success'
 
       - name: Upload build test server executable
@@ -105,6 +108,7 @@ runs:
           name: macos-kDrive_test_server
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_server
           retention-days: 1
+          compression-level: 0
         if: steps.build.outcome == 'success'
 
       - name: Upload build test syncengine executable
@@ -113,6 +117,7 @@ runs:
           name: macos-kDrive_test_syncengine
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_syncengine
           retention-days: 1
+          compression-level: 0
         if: steps.build.outcome == 'success'
 
       - name: Upload build test parms executable
@@ -121,6 +126,7 @@ runs:
           name: macos-kDrive_test_parms
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_parms
           retention-days: 1
+          compression-level: 0
         if: steps.build.outcome == 'success'
 
       - name: Clean-up generated code
