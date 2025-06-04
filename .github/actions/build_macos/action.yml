@@ -70,7 +70,7 @@ runs:
         run: |
           echo "Fetching Conan dependencies in $HOME/.conan2/p/"
           find "$HOME/.conan2/p/" '(' -iname 'libxxhash.0.dylib' -o -iname 'liblog4cplus*.dylib' ')' \
-            -exec cp -P {} ./dependencies/ \; \
+            -exec cp {} ./dependencies/ \; \
             -exec echo "Conan dependency found -> " {} \; 
         shell: bash
         if: steps.build.outcome == 'success'
