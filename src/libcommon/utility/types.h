@@ -497,7 +497,7 @@ enum class SyncStep {
     Idle,
     UpdateDetection1, // Compute operations
     UpdateDetection2, // Update Trees
-    Reconciliation1, // Platform Inconstistency Checker
+    Reconciliation1, // Platform Inconsistency Checker
     Reconciliation2, // Conflict Finder
     Reconciliation3, // Conflict Resolver
     Reconciliation4, // Operation Generator

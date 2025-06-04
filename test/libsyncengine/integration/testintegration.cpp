@@ -154,8 +154,8 @@ void TestIntegration::testAll() {
 
     // Run test cases
     basicTests();
+    testInconsistency();
 
-    // &TestIntegration::testInconsistency,
     // &TestIntegration::testCreateCreatePseudoConflict,
     // &TestIntegration::testCreateCreateConflict,
     // &TestIntegration::testEditEditPseudoConflict,
@@ -211,7 +211,7 @@ void TestIntegration::testLocalChanges() {
 
     const auto prevRemoteTestFileInfo = remoteTestFileInfo;
     remoteTestFileInfo = testhelpers::getRemoteFileInfo(_driveDbId, _remoteSyncDir.id(), filePath.filename());
-    CPPUNIT_ASSERT_EQUAL(fileStat.modtime, remoteTestFileInfo.modificationTime);
+    CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, remoteTestFileInfo.modificationTime);
     CPPUNIT_ASSERT_LESS(remoteTestFileInfo.modificationTime, prevRemoteTestFileInfo.modificationTime);
     CPPUNIT_ASSERT_EQUAL(fileStat.size, remoteTestFileInfo.size);
     CPPUNIT_ASSERT_LESS(remoteTestFileInfo.size, prevRemoteTestFileInfo.size);
@@ -276,11 +276,13 @@ void TestIntegration::testRemoteChanges() {
 
     // Generate an edit operation.
     int64_t modificationTime = 0;
+    int64_t size = 0;
     testhelpers::generateOrEditTestFile(_tmpFilePath);
     {
         UploadJob job(nullptr, _driveDbId, _tmpFilePath, fileId, testhelpers::defaultTime);
         (void) job.runSynchronously();
-        modificationTime = job.newModificationTime();
+        modificationTime = job.modificationTime();
+        size = job.size();
     }
 
     waitForSyncToFinish(SourceLocation::currentLoc());
@@ -288,8 +290,8 @@ void TestIntegration::testRemoteChanges() {
     FileStat filestat;
     IoError ioError = IoError::Unknown;
     (void) IoHelper::getFileStat(filePath, &filestat, ioError);
-    // CPPUNIT_ASSERT_EQUAL(modificationTime, filestat.modtime);
-    // CPPUNIT_ASSERT_EQUAL(size, filestat.size);
+    CPPUNIT_ASSERT_EQUAL(modificationTime, filestat.modificationTime);
+    CPPUNIT_ASSERT_EQUAL(size, filestat.size);
     logStep("test edit remote file");
 
     // Generate a move operation.
@@ -328,129 +330,74 @@ void TestIntegration::testSimultaneousChanges() {
 
     // Simulate a remote move.
     const SyncPath remoteFilePath = _syncPal->localPath() / "renamed.txt";
-    RenameJob job(nullptr, _driveDbId, _testFileRemoteId, remoteFilePath);
-    (void) job.runSynchronously();
+    (void) RenameJob(nullptr, _driveDbId, _testFileRemoteId, remoteFilePath).runSynchronously();
 
     waitForSyncToFinish(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT_EQUAL(true, std::filesystem::exists(remoteFilePath));
     const auto remoteTestFileInfo = testhelpers::getRemoteFileInfo(_driveDbId, _remoteSyncDir.id(), localFilePath.filename());
     CPPUNIT_ASSERT_EQUAL(true, remoteTestFileInfo.isValid());
+
+    logStep("testSimultaneousChanges");
 }
 
-// void TestIntegration::testInconsistency() {
-//     LOGW_DEBUG(_logger, L"$$$$$ test inconsistency checker");
-//     std::cout << "test inconsistency checker : ";
-//
-//     // Simulate a create by duplicating an existing file
-//
-//     // Check path length
-//     _newTestFilePath = Str("test_inconsistency") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(220)) +
-//     Str(".txt"); DuplicateJob job(_syncPal->vfs(), _driveDbId, testInconsistencyFileRemoteId, _newTestFilePath.native());
-//     job.runSynchronously();
-//     NodeId testSizeRemoteId = job.nodeId();
-//
-//     // Check forbidden characters
-//     _newTestFilePath = Str("test_:inco/nsiste::ncy.txt");
-//     DuplicateJob job2(_syncPal->vfs(), _driveDbId, testInconsistencyFileRemoteId, _newTestFilePath.native());
-//     job2.runSynchronously();
-//     NodeId testSpecialCharsRemoteId = job2.nodeId();
-//
-//     // Check name clash
-//     _newTestFilePath = L"test_caseSensitive.txt";
-//     DuplicateJob job3(_syncPal->vfs(), _driveDbId, testInconsistencyFileRemoteId, _newTestFilePath.native());
-//     job3.runSynchronously();
-//     NodeId testCaseSensitiveRemoteId1 = job3.nodeId();
-//
-//     _newTestFilePath = L"test_Casesensitive.txt";
-//     DuplicateJob job4(_syncPal->vfs(), _driveDbId, testInconsistencyFileRemoteId, _newTestFilePath.native());
-//     job4.runSynchronously();
-//     NodeId testCaseSensitiveRemoteId2 = job4.nodeId();
-//
-//     _newTestFilePath = L"TEST_casesensitive.txt";
-//     DuplicateJob job5(_syncPal->vfs(), _driveDbId, testInconsistencyFileRemoteId, _newTestFilePath.native());
-//     job5.runSynchronously();
-//     NodeId testCaseSensitiveRemoteId3 = job5.nodeId();
-//
-//     _newTestFilePath = Str("test_long_file") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(20)) + Str(".txt");
-//     DuplicateJob job6(_syncPal->vfs(), _driveDbId, testLongFileRemoteId, _newTestFilePath.native());
-//     job6.runSynchronously();
-//     NodeId testLongFilePathRemoteId = job6.nodeId();
-//
-//     waitForSyncToFinish(SourceLocation::currentLoc());
-//
-//     bool found = false;
-//
-//     // Check path length
-//     CPPUNIT_ASSERT(_syncPal->syncDb()->correspondingNodeId(ReplicaSide::Remote, testSizeRemoteId, _newTestFileLocalId, found));
-//     CPPUNIT_ASSERT(found);
-//     std::shared_ptr<Node> node = _syncPal->updateTree(ReplicaSide::Local)->getNodeById(_newTestFileLocalId);
-//     CPPUNIT_ASSERT(node);
-//     CPPUNIT_ASSERT(node->name().size() < 255);
-//
-//     // Check forbidden characters
-//     CPPUNIT_ASSERT(
-//             _syncPal->syncDb()->correspondingNodeId(ReplicaSide::Remote, testSpecialCharsRemoteId, _newTestFileLocalId,
-//             found));
-//     CPPUNIT_ASSERT(found);
-//     std::shared_ptr<Node> node2 = _syncPal->updateTree(ReplicaSide::Local)->getNodeById(_newTestFileLocalId);
-//     CPPUNIT_ASSERT(node2);
-//     CPPUNIT_ASSERT(node2->name() == Str("test_%3ainco%3ansiste%3a%3ancy.txt"));
-//
-//     // Check name clash
-//     CPPUNIT_ASSERT(
-//             _syncPal->syncDb()->correspondingNodeId(ReplicaSide::Remote, testCaseSensitiveRemoteId1, _newTestFileLocalId,
-//             found));
-//     CPPUNIT_ASSERT(found);
-//     std::shared_ptr<Node> node3 = _syncPal->updateTree(ReplicaSide::Local)->getNodeById(_newTestFileLocalId);
-//     CPPUNIT_ASSERT(node3);
-//
-//     CPPUNIT_ASSERT(
-//             _syncPal->syncDb()->correspondingNodeId(ReplicaSide::Remote, testCaseSensitiveRemoteId2, _newTestFileLocalId,
-//             found));
-//     CPPUNIT_ASSERT(found);
-//     std::shared_ptr<Node> node4 = _syncPal->updateTree(ReplicaSide::Local)->getNodeById(_newTestFileLocalId);
-//     CPPUNIT_ASSERT(node4);
-//     CPPUNIT_ASSERT(node4->name() != node3->name());
-//
-//     CPPUNIT_ASSERT(
-//             _syncPal->syncDb()->correspondingNodeId(ReplicaSide::Remote, testCaseSensitiveRemoteId3, _newTestFileLocalId,
-//             found));
-//     CPPUNIT_ASSERT(found);
-//     std::shared_ptr<Node> node5 = _syncPal->updateTree(ReplicaSide::Local)->getNodeById(_newTestFileLocalId);
-//     CPPUNIT_ASSERT(node5);
-//     CPPUNIT_ASSERT(node5->name() != node4->name());
-//
-//     CPPUNIT_ASSERT(
-//             _syncPal->syncDb()->correspondingNodeId(ReplicaSide::Remote, testLongFilePathRemoteId, _newTestFileLocalId,
-//             found));
-//     CPPUNIT_ASSERT(!found);
-//
-//     // Remove the test file
-//     DeleteJob deleteJob(_driveDbId, testSizeRemoteId, "", "",
-//                         NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
-//     deleteJob.runSynchronously();
-//     DeleteJob deleteJob2(_driveDbId, testSpecialCharsRemoteId, "", "",
-//                          NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
-//     deleteJob2.runSynchronously();
-//     DeleteJob deleteJob3(_driveDbId, testCaseSensitiveRemoteId1, "", "",
-//                          NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
-//     deleteJob3.runSynchronously();
-//     DeleteJob deleteJob4(_driveDbId, testCaseSensitiveRemoteId2, "", "",
-//                          NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
-//     deleteJob4.runSynchronously();
-//     DeleteJob deleteJob5(_driveDbId, testCaseSensitiveRemoteId3, "", "",
-//                          NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
-//     deleteJob5.runSynchronously();
-//     DeleteJob deleteJob6(_driveDbId, testLongFilePathRemoteId, "", "",
-//                          NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
-//     deleteJob6.runSynchronously();
-//
-//     waitForSyncToFinish(SourceLocation::currentLoc());
-//
-//     std::cout << "OK" << std::endl;
-// }
-//
+NodeId TestIntegration::duplicateRemoteFile(const NodeId &id, const SyncName &newName) const {
+    DuplicateJob job(nullptr, _driveDbId, _testFileRemoteId, newName);
+    (void) job.runSynchronously();
+    return job.nodeId();
+}
+
+void TestIntegration::testInconsistency() {
+    // Duplicate remote files to set up the tests.
+    const auto testForbiddenCharsRemoteId = duplicateRemoteFile(_testFileRemoteId, "testForbiddenChar");
+    const auto testNameClashRemoteId1 = duplicateRemoteFile(_testFileRemoteId, "testNameClash");
+    const auto testNameClashRemoteId2 = duplicateRemoteFile(_testFileRemoteId, "testnameclash1");
+
+    waitForSyncToFinish(SourceLocation::currentLoc());
+
+    CPPUNIT_ASSERT_EQUAL(true, std::filesystem::exists(_syncPal->localPath() / "testForbiddenChar"));
+    CPPUNIT_ASSERT_EQUAL(true, std::filesystem::exists(_syncPal->localPath() / "testNameClash"));
+    const SyncPath nameClashLocalPath = _syncPal->localPath() / "testnameclash1";
+    CPPUNIT_ASSERT_EQUAL(true, std::filesystem::exists(nameClashLocalPath));
+
+    // Rename files on remote side.
+    (void) RenameJob(nullptr, _driveDbId, testForbiddenCharsRemoteId, "test/:*ForbiddenChar").runSynchronously();
+    (void) RenameJob(nullptr, _driveDbId, testNameClashRemoteId2, "testnameclash").runSynchronously();
+
+    waitForSyncToFinish(SourceLocation::currentLoc());
+
+    CPPUNIT_ASSERT_EQUAL(false, std::filesystem::exists(_syncPal->localPath() / "testForbiddenChar"));
+    CPPUNIT_ASSERT_EQUAL(false, std::filesystem::exists(_syncPal->localPath() / "test/:*ForbiddenChar"));
+    CPPUNIT_ASSERT_EQUAL(true, std::filesystem::exists(_syncPal->localPath() / "testNameClash"));
+    CPPUNIT_ASSERT_EQUAL(true, std::filesystem::exists(nameClashLocalPath));
+
+    // Edit local name clash file.
+    testhelpers::generateOrEditTestFile(nameClashLocalPath);
+    FileStat filestat;
+    IoError ioError = IoError::Unknown;
+    (void) IoHelper::getFileStat(nameClashLocalPath, &filestat, ioError);
+
+    waitForSyncToFinish(SourceLocation::currentLoc());
+
+    auto remoteFileInfo = testhelpers::getRemoteFileInfo(_driveDbId, _remoteSyncDir.id(), "testnameclash");
+    CPPUNIT_ASSERT_EQUAL(true, remoteFileInfo.isValid());
+    CPPUNIT_ASSERT_LESS(filestat.size, remoteFileInfo.size); // The local edit is not propagated.
+
+    // Rename again remote file to avoid the name clash.
+    (void) RenameJob(nullptr, _driveDbId, testNameClashRemoteId2, "testnameclash2").runSynchronously();
+
+    waitForSyncToFinish(SourceLocation::currentLoc());
+
+    (void) IoHelper::getFileStat(_syncPal->localPath() / "testnameclash2", &filestat, ioError);
+    remoteFileInfo = testhelpers::getRemoteFileInfo(_driveDbId, _remoteSyncDir.id(), "testnameclash2");
+
+    CPPUNIT_ASSERT_EQUAL(true, remoteFileInfo.isValid());
+    CPPUNIT_ASSERT_EQUAL(filestat.size, remoteFileInfo.size); // The local edit has been propagated.
+    CPPUNIT_ASSERT_EQUAL(true, std::filesystem::exists(_syncPal->localPath() / "testnameclash2"));
+
+    logStep("testInconsistency");
+}
+
 // void TestIntegration::testCreateCreatePseudoConflict() {
 //     LOGW_DEBUG(_logger, L"$$$$$ test Create-Create pseudo conflict");
 //     std::cout << "test Create-Create pseudo conflict : " << std::endl;
@@ -504,7 +451,8 @@ void TestIntegration::testSimultaneousChanges() {
 //     _syncPal->pause();
 //
 //     std::filesystem::path newTestFileName =
-//             Str("test_createCreateConflict_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) + Str(".txt");
+//             Str("test_createCreateConflict_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) +
+//             Str(".txt");
 //
 //     // Simulate a remote file creation by duplicating an existing file
 //     DuplicateJob job(_syncPal->vfs(), _driveDbId, testExecutorFileRemoteId, newTestFileName.native());
@@ -537,7 +485,8 @@ void TestIntegration::testSimultaneousChanges() {
 //     bool found = false;
 //     std::filesystem::path localExcludedPath;
 //     for (auto const &dir_entry: std::filesystem::directory_iterator{localExecutorFolderPath}) {
-//         if (Utility::startsWith(dir_entry.path().filename().native(), newTestFileName.stem().native() + Str("_conflict_"))) {
+//         if (Utility::startsWith(dir_entry.path().filename().native(), newTestFileName.stem().native() + Str("_conflict_")))
+//         {
 //             found = true;
 //             localExcludedPath = dir_entry.path();
 //             break;
@@ -682,7 +631,8 @@ void TestIntegration::testSimultaneousChanges() {
 //     IoHelper::getFileStat(sourceFile.make_preferred(), &fileStat, exists);
 //
 //     // Simulate a remote create by uploading the file in "test_executor_sub" folder
-//     UploadJob createJob(_syncPal->vfs(), _driveDbId, sourceFile, sourceFile.filename().native(), testExecutorSubFolderRemoteId,
+//     UploadJob createJob(_syncPal->vfs(), _driveDbId, sourceFile, sourceFile.filename().native(),
+//     testExecutorSubFolderRemoteId,
 //                         fileStat.modtime);
 //     createJob.runSynchronously();
 //     NodeId remoteId = createJob.nodeId();
@@ -1070,8 +1020,9 @@ void TestIntegration::testSimultaneousChanges() {
 //
 //     // On local
 //     // Look for local file that have been renamed (and excluded from sync)
-//     CPPUNIT_ASSERT(std::filesystem::exists(_localPath / testExecutorFolderRelativePath / testConflictFolderName / "B/R/Q"));
-//     CPPUNIT_ASSERT(!std::filesystem::exists(_localPath / testExecutorFolderRelativePath / testConflictFolderName / "B/S"));
+//     CPPUNIT_ASSERT(std::filesystem::exists(_localPath / testExecutorFolderRelativePath / testConflictFolderName /
+//     "B/R/Q")); CPPUNIT_ASSERT(!std::filesystem::exists(_localPath / testExecutorFolderRelativePath / testConflictFolderName
+//     / "B/S"));
 //
 //     // Clean phase
 //     LOGW_DEBUG(_logger, L"----- test Move-Delete conflict 1 : Clean phase");
@@ -1224,8 +1175,9 @@ void TestIntegration::testSimultaneousChanges() {
 //
 //     // On local
 //     // Look for local file that have been renamed (and excluded from sync)
-//     CPPUNIT_ASSERT(std::filesystem::exists(_localPath / testExecutorFolderRelativePath / testConflictFolderName / "B/R/Q"));
-//     CPPUNIT_ASSERT(std::filesystem::exists(_localPath / testExecutorFolderRelativePath / testConflictFolderName / "B/S/X"));
+//     CPPUNIT_ASSERT(std::filesystem::exists(_localPath / testExecutorFolderRelativePath / testConflictFolderName /
+//     "B/R/Q")); CPPUNIT_ASSERT(std::filesystem::exists(_localPath / testExecutorFolderRelativePath / testConflictFolderName
+//     / "B/S/X"));
 //
 //     // Clean phase
 //     LOGW_DEBUG(_logger, L"----- test Move-Delete conflict 2 : Clean phase");
@@ -1349,8 +1301,9 @@ void TestIntegration::testSimultaneousChanges() {
 //
 //     // On local
 //     // Look for local file that have been renamed (and excluded from sync)
-//     CPPUNIT_ASSERT(std::filesystem::exists(_localPath / testExecutorFolderRelativePath / testConflictFolderName / "B/R/Q"));
-//     CPPUNIT_ASSERT(std::filesystem::exists(_localPath / testExecutorFolderRelativePath / testConflictFolderName / "S"));
+//     CPPUNIT_ASSERT(std::filesystem::exists(_localPath / testExecutorFolderRelativePath / testConflictFolderName /
+//     "B/R/Q")); CPPUNIT_ASSERT(std::filesystem::exists(_localPath / testExecutorFolderRelativePath / testConflictFolderName
+//     / "S"));
 //
 //     // Clean phase
 //     LOGW_DEBUG(_logger, L"----- test Move-Delete conflict 3 : Clean phase");
@@ -1476,8 +1429,9 @@ void TestIntegration::testSimultaneousChanges() {
 //
 //     // On local
 //     // Look for local file that have been renamed (and excluded from sync)
-//     CPPUNIT_ASSERT(std::filesystem::exists(_localPath / testExecutorFolderRelativePath / testConflictFolderName / "B/R/Q"));
-//     CPPUNIT_ASSERT(std::filesystem::exists(_localPath / testExecutorFolderRelativePath / testConflictFolderName / "S"));
+//     CPPUNIT_ASSERT(std::filesystem::exists(_localPath / testExecutorFolderRelativePath / testConflictFolderName /
+//     "B/R/Q")); CPPUNIT_ASSERT(std::filesystem::exists(_localPath / testExecutorFolderRelativePath / testConflictFolderName
+//     / "S"));
 //
 //     // Clean phase
 //     LOGW_DEBUG(_logger, L"----- test Move-Delete conflict 4 : Clean phase");
@@ -1633,8 +1587,9 @@ void TestIntegration::testSimultaneousChanges() {
 //
 //     // On local
 //     // Look for local file that have been renamed (and excluded from sync)
-//     CPPUNIT_ASSERT(!std::filesystem::exists(_localPath / testExecutorFolderRelativePath / testConflictFolderName / "A/R/Q"));
-//     CPPUNIT_ASSERT(std::filesystem::exists(_localPath / testExecutorFolderRelativePath / testConflictFolderName / "A/S"));
+//     CPPUNIT_ASSERT(!std::filesystem::exists(_localPath / testExecutorFolderRelativePath / testConflictFolderName /
+//     "A/R/Q")); CPPUNIT_ASSERT(std::filesystem::exists(_localPath / testExecutorFolderRelativePath / testConflictFolderName
+//     / "A/S"));
 //
 //     // Clean phase
 //     LOGW_DEBUG(_logger, L"----- test MoveParent-Delete conflict : Clean phase");
@@ -2042,6 +1997,7 @@ void TestIntegration::testSimultaneousChanges() {
 //     std::cout << "OK" << std::endl;
 // }
 
+#ifdef __unix__
 void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     if (!testhelpers::isExtendedTest()) return;
 
@@ -2194,6 +2150,7 @@ void TestIntegration::testNodeIdReuseFile2File() {
     CPPUNIT_ASSERT_EQUAL(newRemoteFileId, newRemoteFileId2);
     CPPUNIT_ASSERT_EQUAL(remoteSnapshot->size(newRemoteFileId2), localSnapshot->size("2"));
 }
+#endif
 
 void TestIntegration::waitForSyncToFinish(const SourceLocation &srcLoc) const {
     using namespace std::chrono;

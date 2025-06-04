@@ -37,7 +37,7 @@ typedef void (TestIntegration::*testFctPtr)();
 
 class TestIntegration : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestIntegration);
-        // CPPUNIT_TEST(testAll);
+        CPPUNIT_TEST(testAll);
 #ifdef __unix__
         CPPUNIT_TEST(testNodeIdReuseFile2DirAndDir2File);
         CPPUNIT_TEST(testNodeIdReuseFile2File);
@@ -56,8 +56,9 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testRemoteChanges();
         void testSimultaneousChanges();
 
-        // // Inconsistency
-        // void testInconsistency();
+        NodeId duplicateRemoteFile(const NodeId &id, const SyncName &newName) const;
+        void testInconsistency();
+
         // // TODO : other tests
         // // - many sync ops (ex: upload 100 files)
         // // - create dir + subdir + file in same sync
@@ -106,7 +107,6 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testNodeIdReuseFile2File();
 #endif
         void waitForSyncToFinish(const SourceLocation &srcLoc) const;
-
         void logStep(const std::string &str);
 
         log4cplus::Logger _logger;
