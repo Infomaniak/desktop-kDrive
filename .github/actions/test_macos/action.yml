@@ -47,7 +47,9 @@ runs:
           path: ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Grant tests script execute permission
-        run : chmod +x ./infomaniak-build-tools/run-test.sh
+        run : |
+            chmod +x ./infomaniak-build-tools/run-test.sh
+            chmod +x ./build-macos/client/bin/crashpad_handler
         shell: bash
 
       - name: Execute tests
