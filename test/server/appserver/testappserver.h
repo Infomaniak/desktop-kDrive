@@ -35,30 +35,31 @@ class MockAppServer : public AppServer {
     private:
         std::filesystem::path _parmsDbPath;
 };
+*/
 
 class TestAppServer : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestAppServer);
-        CPPUNIT_TEST(testInitAndStopSyncPal);
-        CPPUNIT_TEST(testStartAndStopSync);
-        CPPUNIT_TEST(testCleanup); // Must be the last test
+       // CPPUNIT_TEST(testInitAndStopSyncPal);
+      //  CPPUNIT_TEST(testStartAndStopSync);
+      //  CPPUNIT_TEST(testCleanup); // Must be the last test
         CPPUNIT_TEST_SUITE_END();
 
     public:
-        void setUp() final;
-        void tearDown() override;
+      //  void setUp() final;
+      //  void tearDown() override;
 
-        void testInitAndStopSyncPal();
-        void testStartAndStopSync();
-        void testCleanup();
+        //void testInitAndStopSyncPal();
+        //void testStartAndStopSync();
+       // void testCleanup();
 
     private:
-        MockAppServer *_appPtr;
+        //MockAppServer *_appPtr;
         LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestSyncpal");
         SyncPath _localPath;
         SyncPath _remotePath;
 
-        bool waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const;
-        bool syncIsActive(int syncDbId) const;
+       // bool waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const;
+       // bool syncIsActive(int syncDbId) const;
 };
-*/
+
 } // namespace KDC
