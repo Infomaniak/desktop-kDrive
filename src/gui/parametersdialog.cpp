@@ -374,7 +374,7 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, const Ex
                       "Synchronization will resume as soon as the folder is accessible.")
                     .arg(err);
 
-        case ExitCause::SyncDirAccesError:
+        case ExitCause::SyncDirAccessError:
             return tr("The synchronization folder is inaccessible (error %1).<br>"
                       "Please check that you have read and write access to this folder.")
                     .arg(err);
@@ -536,9 +536,15 @@ QString ParametersDialog::getSyncPalErrorText(const QString &fctCode, const Exit
                       "Token invalid or revoked.")
                     .arg(err);
         case ExitCode::InvalidSync:
-            return tr("Nested synchronizations are prohibited (error %1).<br>"
-                      "You should only keep synchronizations whose folders are not nested.")
-                    .arg(err);
+            if (exitCause == ExitCause::SyncDirNestingError) {
+                return tr("Nested synchronizations are prohibited (error %1).<br>"
+                          "You should only keep synchronizations whose folders are not nested.")
+                        .arg(err);
+            } else if (exitCause == ExitCause::SyncDirAccessError) {
+                return tr("The sync folder on the remote kDrive no longer exists or is no longer accessible (error %1).<br>"
+                          "You need to restore it or give it back access rights or delete/recreate the synchronization.")
+                        .arg(err);
+            }
         case ExitCode::LogicError:
             if (exitCause == ExitCause::FullListParsingError) {
                 return tr("File name parsing error (error %1).<br>"

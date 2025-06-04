@@ -120,9 +120,8 @@ ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
                 _syncPal->addError(Error(errId(), exitCode, exitCause()));
                 break;
             case ExitCode::LogicError:
-                if (exitCause() == ExitCause::FullListParsingError) {
-                    _syncPal->addError(Error(_syncPal->syncDbId(), name(), exitCode, exitCause()));
-                }
+            case ExitCode::InvalidSync:
+                _syncPal->addError(Error(_syncPal->syncDbId(), name(), exitCode, exitCause()));
                 break;
             default:
                 break;

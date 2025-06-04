@@ -136,8 +136,8 @@ std::string toString(const ExitCause e) {
             return "InvalidSnapshot";
         case ExitCause::SyncDirDoesntExist:
             return "SyncDirDoesntExist";
-        case ExitCause::SyncDirAccesError:
-            return "SyncDirAccesError";
+        case ExitCause::SyncDirAccessError:
+            return "SyncDirAccessError";
         case ExitCause::HttpErr:
             return "HttpErr";
         case ExitCause::HttpErrForbidden:
