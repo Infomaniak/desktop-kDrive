@@ -19,12 +19,12 @@
 #include "localfolderdialog.h"
 #include "customtoolbutton.h"
 #include "guiutility.h"
-#include "common/utility.h"
-#include "libcommon/utility/utility.h"
 #include "custommessagebox.h"
 #include "config.h"
 #include "enablestateholder.h"
 #include "guirequests.h"
+#include "libcommon/utility/utility.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QBoxLayout>
 #include <QDesktopServices>
@@ -46,7 +46,9 @@ static const int warningBoxSpacing = 10;
 Q_LOGGING_CATEGORY(lcLocalFolderDialog, "gui.localfolderdialog", QtInfoMsg)
 
 LocalFolderDialog::LocalFolderDialog(std::shared_ptr<ClientGui> gui, const QString &localFolderPath, QWidget *parent) :
-    CustomDialog(true, parent), _gui(gui), _localFolderPath(localFolderPath) {
+    CustomDialog(true, parent),
+    _gui(gui),
+    _localFolderPath(localFolderPath) {
     initUI();
     updateUI();
 }
@@ -258,18 +260,21 @@ void LocalFolderDialog::setWarningIcon() {
 }
 
 void LocalFolderDialog::onExit() {
+    MatomoClient::sendEvent("localFolderDialog", MatomoEventAction::Click, "cancelButton");
     reject();
 }
 
 void LocalFolderDialog::onContinueButtonTriggered(bool checked) {
     Q_UNUSED(checked)
 
+    MatomoClient::sendEvent("localFolderDialog", MatomoEventAction::Click, "continueButton");
     accept();
 }
 
 void LocalFolderDialog::onSelectFolderButtonTriggered(bool checked) {
     Q_UNUSED(checked)
 
+    MatomoClient::sendEvent("localFolderDialog", MatomoEventAction::Click, "selectFolderButton");
     selectFolder(QDir::homePath());
 }
 

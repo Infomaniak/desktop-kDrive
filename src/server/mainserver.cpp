@@ -118,7 +118,7 @@ int main(int argc, char **argv) {
         KDC::SyncPath destPath = "/Applications/kDrive/kDrive Uninstaller.app";
         std::filesystem::copy(uninstallerPath, destPath,
                               std::filesystem::copy_options::overwrite_existing | std::filesystem::copy_options::recursive);
-        // LOGW_INFO(KDC::Log::instance()->getLogger(), L"Uninstaller copied to: " << Path2WStr(destPath).c_str());
+        // LOGW_INFO(KDC::Log::instance()->getLogger(), L"Uninstaller copied to: " << Path2WStr(destPath));
     } catch (std::filesystem::filesystem_error &fsError) {
         LOG_ERROR(KDC::Log::instance()->getLogger(), "Failed to copy uninstaller: " << fsError.what());
     } catch (...) {

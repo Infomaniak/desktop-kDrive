@@ -14,18 +14,17 @@ set(testparms_NAME ${APPLICATION_NAME}_test_parms)
 set(testparms_SRCS
     ../test.cpp
     ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
-    ../test_utility/testbase.h
+    ../test_utility/testbase.h ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
     test.cpp
     # Database
     db/testparmsdb.h db/testparmsdb.cpp
 )
 
-if (USE_OUR_OWN_SQLITE3)
+if(USE_OUR_OWN_SQLITE3)
     list(APPEND testparms_SRCS ${SQLITE3_SOURCE})
 endif()
 
-if (WIN32)
-    include_directories("F:/Projects/log4cplus/include")
+if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
 else()
     include_directories("/usr/local/include")
@@ -41,12 +40,12 @@ target_link_libraries(${testparms_NAME}
     ${SQLITE3_LIBRARIES}
 )
 
-if (WIN32)
+if(WIN32)
     target_link_libraries(${testparms_NAME}
         debug
-        "C:/Program Files (x86)/cppunit/lib/cppunitd.lib"
+        "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"
         optimized
-        "C:/Program Files (x86)/cppunit/lib/cppunit.lib")
+        "C:/Program Files (x86)/cppunit/lib/cppunit_dll.lib")
 elseif(APPLE)
     target_link_libraries(${testparms_NAME}
         "/usr/local/lib/libcppunit.dylib")

@@ -41,7 +41,7 @@ void TestOperationSorterWorker::setUp() {
                                          KDRIVE_VERSION_STRING, true);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
-
+    _syncPal->createWorkers();
     _syncPal->_operationsSorterWorker = std::make_shared<OperationSorterWorker>(_syncPal, "Operation Sorter", "OPSO");
 
     // Initial situation
@@ -110,11 +110,8 @@ void TestOperationSorterWorker::testFixDeleteBeforeMove() {
         (void) _syncPal->syncOps()->pushOp(editOp);
         (void) _syncPal->syncOps()->pushOp(moveOp);
         (void) _syncPal->syncOps()->pushOp(deleteOp);
-
-        const TimerUtility timer;
         _syncPal->_operationsSorterWorker->_filter.filterOperations();
         _syncPal->_operationsSorterWorker->fixDeleteBeforeMove();
-        (void) timer.elapsed("Operations sorted in");
 
         CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
         std::unordered_map<UniqueId, uint32_t> mapIndex = {{moveOp->id(), 0}, {deleteOp->id(), 0}};
@@ -162,10 +159,8 @@ void TestOperationSorterWorker::testFixMoveBeforeCreate() {
     (void) _syncPal->syncOps()->pushOp(createOp);
     (void) _syncPal->syncOps()->pushOp(moveOp);
 
-    const TimerUtility timer;
     _syncPal->_operationsSorterWorker->_filter.filterOperations();
     _syncPal->_operationsSorterWorker->fixMoveBeforeCreate();
-    (void) timer.elapsed("Operations sorted in");
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
     std::unordered_map<UniqueId, uint32_t> mapIndex = {{moveOp->id(), 0}, {createOp->id(), 0}};
@@ -188,10 +183,8 @@ void TestOperationSorterWorker::testFixMoveBeforeDelete() {
     (void) _syncPal->syncOps()->pushOp(deleteOp);
     (void) _syncPal->syncOps()->pushOp(moveOp);
 
-    const TimerUtility timer;
     _syncPal->_operationsSorterWorker->_filter.filterOperations();
     _syncPal->_operationsSorterWorker->fixMoveBeforeDelete();
-    (void) timer.elapsed("Operations sorted in");
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
     std::unordered_map<UniqueId, uint32_t> mapIndex = {{deleteOp->id(), 0}, {moveOp->id(), 0}};
@@ -214,10 +207,8 @@ void TestOperationSorterWorker::testFixCreateBeforeMove() {
     (void) _syncPal->syncOps()->pushOp(moveOp);
     (void) _syncPal->syncOps()->pushOp(createOp);
 
-    const TimerUtility timer;
     _syncPal->_operationsSorterWorker->_filter.filterOperations();
     _syncPal->_operationsSorterWorker->fixCreateBeforeMove();
-    (void) timer.elapsed("Operations sorted in");
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
     std::unordered_map<UniqueId, uint32_t> mapIndex = {{createOp->id(), 0}, {moveOp->id(), 0}};
@@ -241,10 +232,8 @@ void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
     (void) _syncPal->syncOps()->pushOp(createOp);
     (void) _syncPal->syncOps()->pushOp(deleteOp);
 
-    const TimerUtility timer;
     _syncPal->_operationsSorterWorker->_filter.filterOperations();
     _syncPal->_operationsSorterWorker->fixDeleteBeforeCreate();
-    (void) timer.elapsed("Operations sorted in");
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
     std::unordered_map<UniqueId, uint32_t> mapIndex = {{createOp->id(), 0}, {deleteOp->id(), 0}};
@@ -267,10 +256,8 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveOccupied() {
     (void) _syncPal->syncOps()->pushOp(moveOp2);
     (void) _syncPal->syncOps()->pushOp(moveOp);
 
-    const TimerUtility timer;
     _syncPal->_operationsSorterWorker->_filter.filterOperations();
     _syncPal->_operationsSorterWorker->fixMoveBeforeMoveOccupied();
-    (void) timer.elapsed("Operations sorted in");
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
     std::unordered_map<UniqueId, uint32_t> mapIndex = {{moveOp2->id(), 0}, {moveOp->id(), 0}};
@@ -424,10 +411,8 @@ void TestOperationSorterWorker::testFixEditBeforeMove() {
     (void) _syncPal->syncOps()->pushOp(editOp);
     (void) _syncPal->syncOps()->pushOp(moveOp);
 
-    const TimerUtility timer;
     _syncPal->_operationsSorterWorker->_filter.filterOperations();
     _syncPal->_operationsSorterWorker->fixEditBeforeMove();
-    (void) timer.elapsed("Operations sorted in");
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
     std::unordered_map<UniqueId, uint32_t> mapIndex = {{editOp->id(), 0}, {moveOp->id(), 0}};
@@ -451,10 +436,8 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFlip() {
     (void) _syncPal->syncOps()->pushOp(moveOp2);
     (void) _syncPal->syncOps()->pushOp(moveOp1);
 
-    const TimerUtility timer;
     _syncPal->_operationsSorterWorker->_filter.filterOperations();
     _syncPal->_operationsSorterWorker->fixMoveBeforeMoveHierarchyFlip();
-    (void) timer.elapsed("Operations sorted in");
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
     std::unordered_map<UniqueId, uint32_t> mapIndex = {{moveOp2->id(), 0}, {moveOp1->id(), 0}};
@@ -523,7 +506,6 @@ void TestOperationSorterWorker::testCheckAllMethods() {
     (void) _syncPal->syncOps()->pushOp(moveOp);
 
     // ... but apply all sorter methods
-    const TimerUtility timer;
     _syncPal->_operationsSorterWorker->_filter.filterOperations();
     _syncPal->_operationsSorterWorker->fixDeleteBeforeMove();
     _syncPal->_operationsSorterWorker->fixMoveBeforeCreate();
@@ -534,7 +516,6 @@ void TestOperationSorterWorker::testCheckAllMethods() {
     _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
     _syncPal->_operationsSorterWorker->fixEditBeforeMove();
     _syncPal->_operationsSorterWorker->fixMoveBeforeMoveHierarchyFlip();
-    (void) timer.elapsed("Operations sorted in");
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
     CPPUNIT_ASSERT_EQUAL(moveOp->id(), _syncPal->syncOps()->opSortedList().front());
@@ -558,10 +539,8 @@ void TestOperationSorterWorker::testDifferentEncodings() {
     (void) _syncPal->syncOps()->pushOp(createOp);
     (void) _syncPal->syncOps()->pushOp(moveOp);
 
-    const TimerUtility timer;
     _syncPal->_operationsSorterWorker->_filter.filterOperations();
     _syncPal->_operationsSorterWorker->fixMoveBeforeCreate();
-    (void) timer.elapsed("Operations sorted in");
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
     CPPUNIT_ASSERT_EQUAL(moveOp->id(), _syncPal->syncOps()->opSortedList().front());

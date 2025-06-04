@@ -22,7 +22,8 @@ namespace KDC {
 
 ContinueFileListWithCursorJob::ContinueFileListWithCursorJob(const int driveDbId, const std::string &cursor,
                                                              NodeSet blacklist /*= {}*/) :
-    AbstractListingJob(driveDbId, blacklist), _cursor(cursor) {}
+    AbstractListingJob(driveDbId, blacklist),
+    _cursor(cursor) {}
 
 std::string ContinueFileListWithCursorJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();

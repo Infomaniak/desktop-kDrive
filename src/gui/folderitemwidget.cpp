@@ -22,6 +22,7 @@
 #include "guiutility.h"
 #include "clientgui.h"
 #include "parameterscache.h"
+#include "libcommongui/matomoclient.h"
 #include "libcommon/utility/utility.h"
 
 #include <QBoxLayout>
@@ -50,7 +51,13 @@ static const QString liteSyncDeactivatedQstr =
 #endif
 Q_LOGGING_CATEGORY(lcFolderItemWidget, "gui.folderitemwidget", QtInfoMsg)
 
-enum class MenuAction : char { LiteSyncOn, LiteSyncOff, Pause, Remove, Resume };
+enum class MenuAction : char {
+    LiteSyncOn,
+    LiteSyncOff,
+    Pause,
+    Remove,
+    Resume
+};
 
 QString menuIconPath(MenuAction action) {
     static const QString actionIconsPath = ":/client/resources/icons/actions/";
@@ -67,7 +74,9 @@ QString menuIconPath(MenuAction action) {
 
 
 FolderItemWidget::FolderItemWidget(int syncDbId, std::shared_ptr<ClientGui> gui, QWidget *parent) :
-    QWidget(parent), _gui(gui), _syncDbId(syncDbId) {
+    QWidget(parent),
+    _gui(gui),
+    _syncDbId(syncDbId) {
     QHBoxLayout *mainLayout = new QHBoxLayout();
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(hSpacing);
@@ -386,14 +395,17 @@ void FolderItemWidget::onMenuButtonClicked() {
 void FolderItemWidget::onExpandButtonClicked() {
     _isExpanded = !_isExpanded;
     setExpandButton();
+    MatomoClient::sendEvent("folderItem", MatomoEventAction::Click, "expandButton", _isExpanded ? 1 : 0);
     emit displayFolderDetail(_syncDbId, _isExpanded);
 }
 
 void FolderItemWidget::onCancelButtonClicked() {
+    MatomoClient::sendEvent("folderItem", MatomoEventAction::Click, "cancelButton");
     emit cancelUpdate(_syncDbId);
 }
 
 void FolderItemWidget::onValidateButtonClicked() {
+    MatomoClient::sendEvent("folderItem", MatomoEventAction::Click, "validateButton");
     emit validateUpdate(_syncDbId);
 }
 
@@ -409,10 +421,12 @@ void FolderItemWidget::onOpenFolder(const QString &link) {
 }
 
 void FolderItemWidget::onPauseTriggered() {
+    MatomoClient::sendEvent("folderItem", MatomoEventAction::Click, "pauseSyncButton");
     emit pauseSync(_syncDbId);
 }
 
 void FolderItemWidget::onResumeTriggered() {
+    MatomoClient::sendEvent("folderItem", MatomoEventAction::Click, "resumeSyncButton");
     emit resumeSync(_syncDbId);
 }
 
@@ -420,6 +434,7 @@ void FolderItemWidget::onUnsyncTriggered() {
     if (auto syncInfoClient = getSyncInfoClient(); syncInfoClient) {
         syncInfoClient->setIsBeingDeleted(true);
     }
+    MatomoClient::sendEvent("folderItem", MatomoEventAction::Click, "removeSyncButton");
     emit unSync(_syncDbId);
 }
 
@@ -429,10 +444,12 @@ void FolderItemWidget::onDisplayFolderDetailCanceled() {
 }
 
 void FolderItemWidget::onActivateLitesyncTriggered() {
+    MatomoClient::sendEvent("folderItem", MatomoEventAction::Click, "turnOnLiteSyncButton");
     emit triggerLiteSyncChanged(_syncDbId, true);
 }
 
 void FolderItemWidget::onDeactivateLitesyncTriggered() {
+    MatomoClient::sendEvent("folderItem", MatomoEventAction::Click, "turnOffLiteSyncButton");
     emit triggerLiteSyncChanged(_syncDbId, false);
 }
 

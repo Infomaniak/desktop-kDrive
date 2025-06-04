@@ -18,12 +18,13 @@
 
 #include "updatedialog.h"
 
-#include "../wizard/webview.h"
-#include "libcommon/utility/utility.h"
 #include "../guiutility.h"
-#include "config.h"
+#include "../wizard/webview.h"
 #include "../parameterscache.h"
+#include "libcommongui/matomoclient.h"
+#include "libcommon/utility/utility.h"
 #include "libcommon/theme/theme.h"
+#include "config.h"
 
 #include <QLabel>
 #include <QNetworkReply>
@@ -37,7 +38,8 @@ static const int mainBoxVBMargin = 40;
 static const int boxHSpacing = 10;
 static const int webviewHeight = 300;
 
-UpdateDialog::UpdateDialog(const VersionInfo &versionInfo, QWidget *parent /*= nullptr*/) : CustomDialog(false, parent) {
+UpdateDialog::UpdateDialog(const VersionInfo &versionInfo, QWidget *parent /*= nullptr*/) :
+    CustomDialog(false, parent) {
     KDC::GuiUtility::setStyle(qApp, false);
     initUi(versionInfo);
 }
@@ -114,7 +116,13 @@ void UpdateDialog::initUi(const VersionInfo &versionInfo) {
 
 void UpdateDialog::reject() {
     if (sender() == _skipButton) _skip = true;
+    MatomoClient::sendEvent("updateDialog", MatomoEventAction::Click, "rejectButton", _skip ? 1 : 0);
     QDialog::reject();
+}
+
+void UpdateDialog::accept() {
+    MatomoClient::sendEvent("updateDialog", MatomoEventAction::Click, "acceptButton");
+    QDialog::accept();
 }
 
 } // namespace KDC

@@ -176,27 +176,6 @@ SyncPal::~SyncPal() {
     LOG_SYNCPAL_DEBUG(_logger, "~SyncPal");
 }
 
-ExitCode SyncPal::setTargetNodeId(const std::string &targetNodeId) {
-    bool found = false;
-
-    LOG_IF_FAIL(_remoteSnapshot)
-    LOG_IF_FAIL(_remoteUpdateTree)
-
-    if (!_syncDb->setTargetNodeId(targetNodeId, found)) {
-        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::setTargetNodeId");
-        return ExitCode::DbError;
-    }
-    if (!found) {
-        LOG_SYNCPAL_WARN(_logger, "Root node not found in node table");
-        return ExitCode::DataError;
-    }
-
-    _remoteSnapshot->setRootFolderId(targetNodeId);
-    _remoteUpdateTree->setRootFolderId(targetNodeId);
-
-    return ExitCode::Ok;
-}
-
 void SyncPal::setVfs(std::shared_ptr<Vfs> vfs) {
     assert(!isRunning());
     _vfs = vfs;
@@ -214,8 +193,8 @@ SyncStatus SyncPal::status() const {
         // Has started
         if (_syncPalWorker->isRunning()) {
             // Still running
-            LOG_IF_FAIL(_localSnapshot)
-            LOG_IF_FAIL(_remoteSnapshot)
+            LOG_IF_FAIL(_localFSObserverWorker)
+            LOG_IF_FAIL(_remoteFSObserverWorker)
 
             if (_syncPalWorker->isPaused()) {
                 // Auto paused after a NON fatal error
@@ -223,8 +202,10 @@ SyncStatus SyncPal::status() const {
             } else if (_syncPalWorker->stopAsked()) {
                 // Stopping at the request of the user
                 return SyncStatus::StopAsked;
-            } else if (_syncPalWorker->step() == SyncStep::Idle && !restart() && !_localSnapshot->updated() &&
-                       !_remoteSnapshot->updated()) {
+            } else if (!_localFSObserverWorker || !_remoteFSObserverWorker) {
+                return SyncStatus::Error;
+            } else if (_syncPalWorker->step() == SyncStep::Idle && !restart() && !liveSnapshot(ReplicaSide::Local).updated() &&
+                       !liveSnapshot(ReplicaSide::Remote).updated()) {
                 // Sync pending
                 return SyncStatus::Idle;
             } else {
@@ -407,10 +388,6 @@ void SyncPal::loadProgress(SyncProgress &syncProgress) const {
 
 void SyncPal::createSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Create shared objects");
-    _localSnapshot = std::make_shared<Snapshot>(ReplicaSide::Local, _syncDb->rootNode());
-    _remoteSnapshot = std::make_shared<Snapshot>(ReplicaSide::Remote, _syncDb->rootNode());
-    _localSnapshotCopy = std::make_shared<Snapshot>(ReplicaSide::Local, _syncDb->rootNode());
-    _remoteSnapshotCopy = std::make_shared<Snapshot>(ReplicaSide::Remote, _syncDb->rootNode());
     _localOperationSet = std::make_shared<FSOperationSet>(ReplicaSide::Local);
     _remoteOperationSet = std::make_shared<FSOperationSet>(ReplicaSide::Remote);
     _localUpdateTree = std::make_shared<UpdateTree>(ReplicaSide::Local, _syncDb->rootNode());
@@ -426,8 +403,6 @@ void SyncPal::freeSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Free shared objects");
     _localSnapshot.reset();
     _remoteSnapshot.reset();
-    _localSnapshotCopy.reset();
-    _remoteSnapshotCopy.reset();
     _localOperationSet.reset();
     _remoteOperationSet.reset();
     _localUpdateTree.reset();
@@ -439,8 +414,6 @@ void SyncPal::freeSharedObjects() {
     // Check that there is no memory leak
     LOG_IF_FAIL(_localSnapshot.use_count() == 0);
     LOG_IF_FAIL(_remoteSnapshot.use_count() == 0);
-    LOG_IF_FAIL(_localSnapshotCopy.use_count() == 0);
-    LOG_IF_FAIL(_remoteSnapshotCopy.use_count() == 0);
     LOG_IF_FAIL(_localOperationSet.use_count() == 0);
     LOG_IF_FAIL(_remoteOperationSet.use_count() == 0);
     LOG_IF_FAIL(_localUpdateTree.use_count() == 0);
@@ -654,13 +627,6 @@ bool SyncPal::getSyncFileItem(const SyncPath &path, SyncFileItem &item) {
     return _progressInfo->getSyncFileItem(path, item);
 }
 
-bool SyncPal::isSnapshotValid(ReplicaSide side) {
-    LOG_IF_FAIL(_localSnapshot)
-    LOG_IF_FAIL(_remoteSnapshot)
-
-    return side == ReplicaSide::Local ? _localSnapshot->isValid() : _remoteSnapshot->isValid();
-}
-
 void SyncPal::resetSnapshotInvalidationCounters() {
     _localFSObserverWorker->resetInvalidateCounter();
     _remoteFSObserverWorker->resetInvalidateCounter();
@@ -816,60 +782,22 @@ ExitCode SyncPal::listingCursor(std::string &value, int64_t &timestamp) {
     return ExitCode::Ok;
 }
 
-ExitCode SyncPal::updateSyncNode(SyncNodeType syncNodeType) {
-    // Remove deleted nodes from sync_node table & cache
-    NodeSet nodeIdSet;
-    ExitCode exitCode = SyncNodeCache::instance()->syncNodes(syncDbId(), syncNodeType, nodeIdSet);
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in SyncNodeCache::syncNodes");
-        return exitCode;
-    }
-
-    auto nodeIdIt = nodeIdSet.begin();
-    while (nodeIdIt != nodeIdSet.end()) {
-        const bool ok = syncNodeType == SyncNodeType::TmpLocalBlacklist ? snapshotCopy(ReplicaSide::Local)->exists(*nodeIdIt)
-                                                                        : snapshotCopy(ReplicaSide::Remote)->exists(*nodeIdIt);
-        if (!ok) {
-            nodeIdIt = nodeIdSet.erase(nodeIdIt);
-        } else {
-            nodeIdIt++;
-        }
-    }
-
-    exitCode = SyncNodeCache::instance()->update(syncDbId(), syncNodeType, nodeIdSet);
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in SyncNodeCache::update");
-        return exitCode;
-    }
-
-    return ExitCode::Ok;
-}
-
-ExitCode SyncPal::updateSyncNode() {
-    for (int syncNodeTypeIdx = toInt(SyncNodeType::WhiteList); syncNodeTypeIdx <= toInt(SyncNodeType::UndecidedList);
-         syncNodeTypeIdx++) {
-        SyncNodeType syncNodeType = static_cast<SyncNodeType>(syncNodeTypeIdx);
-
-        ExitCode exitCode = updateSyncNode(syncNodeType);
-        if (exitCode != ExitCode::Ok) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in SyncPal::updateSyncNode for syncNodeType=" << toInt(syncNodeType));
-            return exitCode;
-        }
-    }
-
-    return ExitCode::Ok;
-}
-
-std::shared_ptr<Snapshot> SyncPal::snapshot(ReplicaSide side, bool copy) const {
+std::shared_ptr<ConstSnapshot> SyncPal::snapshot(const ReplicaSide side) const {
+    LOG_IF_FAIL(side != ReplicaSide::Unknown);
     if (side == ReplicaSide::Unknown) {
         LOG_ERROR(_logger, "Call to SyncPal::snapshot with 'ReplicaSide::Unknown').");
         return nullptr;
     }
-    if (copy) {
-        return (side == ReplicaSide::Local ? _localSnapshotCopy : _remoteSnapshotCopy);
-    } else {
-        return (side == ReplicaSide::Local ? _localSnapshot : _remoteSnapshot);
-    }
+    LOG_IF_FAIL(_localSnapshot);
+    LOG_IF_FAIL(_remoteSnapshot);
+    return (side == ReplicaSide::Local ? _localSnapshot : _remoteSnapshot);
+}
+
+const LiveSnapshot &SyncPal::liveSnapshot(ReplicaSide side) const {
+    LOG_IF_FAIL(side != ReplicaSide::Unknown);
+    LOG_IF_FAIL(_localFSObserverWorker);
+    LOG_IF_FAIL(_remoteFSObserverWorker);
+    return (side == ReplicaSide::Local ? _localFSObserverWorker->liveSnapshot() : _remoteFSObserverWorker->liveSnapshot());
 }
 
 std::shared_ptr<FSOperationSet> SyncPal::operationSet(ReplicaSide side) const {
@@ -919,7 +847,7 @@ ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId
 bool SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) const {
     exists = false;
 
-    if (!_remoteSnapshot) return false;
+    if (!_remoteFSObserverWorker) return false;
 
     // Path is normalized on server side
     SyncPath normalizedPath;
@@ -927,7 +855,7 @@ bool SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) const {
         LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
         return false;
     }
-    const NodeId nodeId = _remoteSnapshot->itemId(normalizedPath);
+    const NodeId nodeId = liveSnapshot(ReplicaSide::Remote).itemId(normalizedPath);
     exists = !nodeId.empty();
     return true;
 }
@@ -935,7 +863,7 @@ bool SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) const {
 bool SyncPal::checkIfCanShareItem(const SyncPath &path, bool &canShare) const {
     canShare = false;
 
-    if (!_remoteSnapshot) return false;
+    if (!_remoteFSObserverWorker) return false;
 
     // Path is normalized on server side
     SyncPath normalizedPath;
@@ -944,8 +872,8 @@ bool SyncPal::checkIfCanShareItem(const SyncPath &path, bool &canShare) const {
         return false;
     }
 
-    if (const NodeId nodeId = _remoteSnapshot->itemId(normalizedPath); !nodeId.empty()) {
-        canShare = _remoteSnapshot->canShare(nodeId);
+    if (const NodeId nodeId = liveSnapshot(ReplicaSide::Remote).itemId(normalizedPath); !nodeId.empty()) {
+        canShare = liveSnapshot(ReplicaSide::Remote).canShare(nodeId);
     }
 
     return true;
@@ -1046,7 +974,7 @@ ExitCode SyncPal::fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &l
         DbNodeId dbId = -1;
         bool found = false;
         if (!_syncDb->dbId(ReplicaSide::Local, localFileInfo.first, dbId, found)) {
-            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for nodeId=" << localFileInfo.first.c_str());
+            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for nodeId=" << localFileInfo.first);
             return ExitCode::DbError;
         }
         if (found) {
@@ -1216,7 +1144,7 @@ ExitCode SyncPal::cleanOldUploadSessionTokens() {
             }
 
             if (job->hasHttpError()) {
-                LOG_SYNCPAL_WARN(_logger, "Upload Session Token: " << uploadSessionToken.token().c_str()
+                LOG_SYNCPAL_WARN(_logger, "Upload Session Token: " << uploadSessionToken.token()
                                                                    << " has already been canceled or has expired.");
             }
         } catch (const std::exception &e) {
@@ -1345,7 +1273,11 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
                 cause);
     addError(error);
 
-    NodeId localNodeId = snapshot(ReplicaSide::Local)->itemId(relativeLocalPath);
+    LOG_IF_FAIL(_localFSObserverWorker)
+    LOG_IF_FAIL(_remoteFSObserverWorker)
+    if (!_localFSObserverWorker || !_remoteFSObserverWorker) return ExitCode::LogicError;
+
+    NodeId localNodeId = liveSnapshot(ReplicaSide::Local).itemId(relativeLocalPath);
     if (localNodeId.empty()) {
         SyncPath absolutePath = localPath() / relativeLocalPath;
         if (!IoHelper::getNodeId(absolutePath, localNodeId)) {
@@ -1368,7 +1300,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
                                          << Utility::s2ws(localNodeId)
                                          << L" is blacklisted temporarily because of a denied access.");
 
-    NodeId remoteNodeId = snapshot(ReplicaSide::Remote)->itemId(relativeLocalPath);
+    NodeId remoteNodeId = liveSnapshot(ReplicaSide::Remote).itemId(relativeLocalPath);
     if (bool found; remoteNodeId.empty() && !localNodeId.empty() &&
                     !_syncDb->correspondingNodeId(ReplicaSide::Local, localNodeId, remoteNodeId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::correspondingNodeId");
@@ -1394,24 +1326,21 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
 }
 
 void SyncPal::copySnapshots() {
-    LOG_IF_FAIL(_localSnapshot)
-    LOG_IF_FAIL(_remoteSnapshot)
+    LOG_IF_FAIL(_localFSObserverWorker)
+    LOG_IF_FAIL(_remoteFSObserverWorker)
 
-    if (!_localSnapshotCopy) _localSnapshotCopy = std::make_shared<Snapshot>(ReplicaSide::Local, _syncDb->rootNode());
-    if (!_remoteSnapshotCopy) _remoteSnapshotCopy = std::make_shared<Snapshot>(ReplicaSide::Remote, _syncDb->rootNode());
-    *_localSnapshotCopy = *_localSnapshot;
-    *_remoteSnapshotCopy = *_remoteSnapshot;
-    _localSnapshot->startRead();
-    _remoteSnapshot->startRead();
+    _localSnapshot = std::make_shared<ConstSnapshot>(liveSnapshot(ReplicaSide::Local));
+    _remoteSnapshot = std::make_shared<ConstSnapshot>(liveSnapshot(ReplicaSide::Remote));
+    liveSnapshot(ReplicaSide::Local).startRead();
+    liveSnapshot(ReplicaSide::Remote).startRead();
 }
 
 void SyncPal::freeSnapshotsCopies() {
-    if (_localSnapshotCopy) {
-        _localSnapshotCopy.reset();
-    }
-    if (_remoteSnapshotCopy) {
-        _remoteSnapshotCopy.reset();
-    }
+    assert(_localSnapshot.use_count() == 1);
+    _localSnapshot.reset();
+
+    assert(_remoteSnapshot.use_count() == 1);
+    _remoteSnapshot.reset();
 }
 
 void SyncPal::invalideSnapshots() {

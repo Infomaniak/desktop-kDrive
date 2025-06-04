@@ -24,7 +24,9 @@
 
 namespace KDC {
 
-LocalCopyJob::LocalCopyJob(const SyncPath &source, const SyncPath &dest) : _source(source), _dest(dest) {}
+LocalCopyJob::LocalCopyJob(const SyncPath &source, const SyncPath &dest) :
+    _source(source),
+    _dest(dest) {}
 
 bool LocalCopyJob::canRun() {
     if (bypassCheck()) {
@@ -35,37 +37,36 @@ bool LocalCopyJob::canRun() {
     bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_dest, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dest, ioError).c_str());
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dest, ioError));
         _exitInfo = ExitCode::SystemError;
         return false;
     }
     if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Access denied to " << Path2WStr(_dest).c_str());
+        LOGW_WARN(_logger, L"Access denied to " << Path2WStr(_dest));
         _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         return false;
     }
 
     if (exists) {
-        LOGW_DEBUG(_logger, L"Item " << Path2WStr(_dest).c_str() << L" already exist. Aborting current sync and restart.");
+        LOGW_DEBUG(_logger, L"Item " << Path2WStr(_dest) << L" already exist. Aborting current sync and restart.");
         _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent};
         return false;
     }
 
     // Check that source file still exists
     if (!IoHelper::checkIfPathExists(_source, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_source, ioError).c_str());
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_source, ioError));
         _exitInfo = ExitCode::SystemError;
         return false;
     }
     if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Access denied to " << Path2WStr(_source).c_str());
+        LOGW_WARN(_logger, L"Access denied to " << Path2WStr(_source));
         _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         return false;
     }
 
     if (!exists) {
-        LOGW_DEBUG(_logger,
-                   L"Item does not exist anymore. Aborting current sync and restart. - path=" << Path2WStr(_source).c_str());
+        LOGW_DEBUG(_logger, L"Item does not exist anymore. Aborting current sync and restart. - path=" << Path2WStr(_source));
         _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent};
         return false;
     }
@@ -80,19 +81,17 @@ void LocalCopyJob::runJob() {
 
     try {
         std::filesystem::copy(_source, _dest);
-        LOGW_INFO(_logger, L"Item " << Path2WStr(_source).c_str() << L" copied to " << Path2WStr(_dest).c_str());
+        LOGW_INFO(_logger, L"Item " << Path2WStr(_source) << L" copied to " << Path2WStr(_dest));
         _exitInfo = ExitCode::Ok;
     } catch (std::filesystem::filesystem_error &fsError) {
-        LOGW_WARN(_logger, L"Failed to copy item " << Path2WStr(_source).c_str() << L" to " << Path2WStr(_dest).c_str() << L": "
-                                                   << Utility::s2ws(fsError.what()).c_str() << L" (" << fsError.code().value()
-                                                   << L")");
+        LOGW_WARN(_logger, L"Failed to copy item " << Path2WStr(_source) << L" to " << Path2WStr(_dest) << L": "
+                                                   << Utility::s2ws(fsError.what()) << L" (" << fsError.code().value() << L")");
         _exitInfo = ExitCode::SystemError;
         if (IoHelper::stdError2ioError(fsError.code()) == IoError::AccessDenied) {
             _exitInfo.setCause(ExitCause::FileAccessError);
         }
     } catch (...) {
-        LOGW_WARN(_logger, L"Failed to copy item " << Path2WStr(_source).c_str() << L" to " << Path2WStr(_dest).c_str()
-                                                   << L": Unknown error");
+        LOGW_WARN(_logger, L"Failed to copy item " << Path2WStr(_source) << L" to " << Path2WStr(_dest) << L": Unknown error");
         _exitInfo = ExitCode::SystemError;
     }
 }

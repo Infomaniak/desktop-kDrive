@@ -41,7 +41,7 @@
 #include "libsyncengine/jobs/network/API_v2/getfilelistjob.h"
 #include "libsyncengine/jobs/network/API_v2/movejob.h"
 #include "libsyncengine/jobs/network/API_v2/renamejob.h"
-#include "../../../../src/libsyncengine/jobs/network/API_v2/upload/uploadjob.h"
+#include "libsyncengine/jobs/network/API_v2/upload/uploadjob.h"
 #include "libsyncengine/update_detection/file_system_observer/filesystemobserverworker.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
@@ -368,7 +368,7 @@ void TestIntegration::testEditRemote() {
     std::system(SyncName2Str(testCallStr).c_str());
 
     UploadJob setupUploadJob(_syncPal->vfs(), _driveDbId, tmpFile, _newTestFilePath.filename().native(),
-                             testExecutorFolderRemoteId, 0);
+                             testExecutorFolderRemoteId, 0, 0);
     setupUploadJob.runSynchronously();
 
     waitForSyncToFinish(SourceLocation::currentLoc());
@@ -713,7 +713,7 @@ void TestIntegration::testEditEditPseudoConflict() {
 
     // Upload this file manually so it simulate a remote edit
     UploadJob job(_syncPal->vfs(), _driveDbId, sourceFile, sourceFile.filename().native(), testExecutorFolderRemoteId,
-                  fileStat.modtime);
+                  fileStat.creationTime, fileStat.modificationTime);
     job.runSynchronously();
 
     Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
@@ -751,7 +751,7 @@ void TestIntegration::testEditEditConflict() {
 
     // Upload this file manually so it simulate a remote edit
     UploadJob job(_syncPal->vfs(), _driveDbId, sourceFile, sourceFile.filename().native(), testExecutorFolderRemoteId,
-                  fileStat.modtime);
+                  fileStat.creationTime, fileStat.modificationTime);
     job.runSynchronously();
 
     Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
@@ -816,7 +816,7 @@ void TestIntegration::testMoveCreateConflict() {
 
     // Simulate a remote create by uploading the file in "test_executor_sub" folder
     UploadJob createJob(_syncPal->vfs(), _driveDbId, sourceFile, sourceFile.filename().native(), testExecutorSubFolderRemoteId,
-                        fileStat.modtime);
+                        fileStat.creationTime, fileStat.modificationTime);
     createJob.runSynchronously();
     NodeId remoteId = createJob.nodeId();
 
@@ -1254,7 +1254,7 @@ void TestIntegration::testMoveDeleteConflict2() {
                            Str(R"(" >> ")") + tmpFile.make_preferred().native() + Str(R"(")");
     std::system(SyncName2Str(testCallStr).c_str());
 
-    UploadJob setupUploadJob(_syncPal->vfs(), _driveDbId, tmpFile, Str("Q"), rRemoteId, 0);
+    UploadJob setupUploadJob(_syncPal->vfs(), _driveDbId, tmpFile, Str("Q"), rRemoteId, 0, 0);
     setupUploadJob.runSynchronously();
 
     // Create A/S/X
@@ -2183,20 +2183,20 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     _syncPal->start();
     waitForSyncToFinish(SourceLocation::currentLoc());
 
-    const auto localSnapshot = _syncPal->snapshot(ReplicaSide::Local);
-    const auto remoteSnapshot = _syncPal->snapshot(ReplicaSide::Remote);
-    CPPUNIT_ASSERT(!localSnapshot->itemId(relativeWorkingDirPath).empty());
-    CPPUNIT_ASSERT(!remoteSnapshot->itemId(relativeWorkingDirPath).empty());
+    const auto &localSnapshot = _syncPal->liveSnapshot(ReplicaSide::Local);
+    const auto &remoteSnapshot = _syncPal->liveSnapshot(ReplicaSide::Remote);
+    CPPUNIT_ASSERT(!localSnapshot.itemId(relativeWorkingDirPath).empty());
+    CPPUNIT_ASSERT(!remoteSnapshot.itemId(relativeWorkingDirPath).empty());
 
     MockIoHelperFileStat mockIoHelper;
     // Create a file with a custom inode on the local side
-    mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile", 2);
+    mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile", 3);
     { const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string()); }
     waitForSyncToFinish(SourceLocation::currentLoc());
-    CPPUNIT_ASSERT_EQUAL(NodeId("2"), localSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile"));
-    const NodeId remoteFileId = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
+    CPPUNIT_ASSERT_EQUAL(NodeId("3"), localSnapshot.itemId(relativeWorkingDirPath / "testNodeIdReuseFile"));
+    const NodeId remoteFileId = remoteSnapshot.itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
     CPPUNIT_ASSERT(!remoteFileId.empty());
-    CPPUNIT_ASSERT_EQUAL(NodeType::File, remoteSnapshot->type(remoteFileId));
+    CPPUNIT_ASSERT_EQUAL(NodeType::File, remoteSnapshot.type(remoteFileId));
 
     // Replace the file with a directory on the local side (with the same id)
     _syncPal->pause();
@@ -2206,7 +2206,7 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     IoError ioError = IoError::Success;
     IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseFile", ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseDir", 2);
+    mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseDir", 3);
     IoHelper::createDirectory(absoluteLocalWorkingDir / "testNodeIdReuseDir", ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
@@ -2214,11 +2214,11 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     waitForSyncToFinish(SourceLocation::currentLoc());
 
     // Check that the file has been replaced by a directory on the remote with a different ID
-    const NodeId newRemoteDirId = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseDir");
+    const NodeId newRemoteDirId = remoteSnapshot.itemId(relativeWorkingDirPath / "testNodeIdReuseDir");
     CPPUNIT_ASSERT(!newRemoteDirId.empty());
     CPPUNIT_ASSERT(newRemoteDirId != remoteFileId);
-    CPPUNIT_ASSERT_EQUAL(NodeType::Directory, remoteSnapshot->type(newRemoteDirId));
-    CPPUNIT_ASSERT(!remoteSnapshot->exists(remoteFileId));
+    CPPUNIT_ASSERT_EQUAL(NodeType::Directory, remoteSnapshot.type(newRemoteDirId));
+    CPPUNIT_ASSERT(!remoteSnapshot.exists(remoteFileId));
 
     // Replace the directory with a file on the local side with the same id
     _syncPal->pause();
@@ -2234,13 +2234,13 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     waitForSyncToFinish(SourceLocation::currentLoc());
 
     // Check that the directory has been replaced by a file on the remote with a different ID
-    const NodeId newRemoteFileId = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
+    const NodeId newRemoteFileId = remoteSnapshot.itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
     CPPUNIT_ASSERT(newRemoteFileId != "");
     CPPUNIT_ASSERT(newRemoteFileId != newRemoteDirId);
     CPPUNIT_ASSERT(newRemoteFileId != remoteFileId);
-    CPPUNIT_ASSERT(!remoteSnapshot->exists(remoteFileId));
-    CPPUNIT_ASSERT(!remoteSnapshot->exists(newRemoteDirId));
-    CPPUNIT_ASSERT_EQUAL(NodeType::File, remoteSnapshot->type(newRemoteFileId));
+    CPPUNIT_ASSERT(!remoteSnapshot.exists(remoteFileId));
+    CPPUNIT_ASSERT(!remoteSnapshot.exists(newRemoteDirId));
+    CPPUNIT_ASSERT_EQUAL(NodeType::File, remoteSnapshot.type(newRemoteFileId));
 }
 
 void TestIntegration::testNodeIdReuseFile2File() {
@@ -2255,19 +2255,19 @@ void TestIntegration::testNodeIdReuseFile2File() {
     _syncPal->start();
     waitForSyncToFinish(SourceLocation::currentLoc());
 
-    const auto localSnapshot = _syncPal->snapshot(ReplicaSide::Local);
-    const auto remoteSnapshot = _syncPal->snapshot(ReplicaSide::Remote);
-    CPPUNIT_ASSERT(!localSnapshot->itemId(relativeWorkingDirPath).empty());
-    CPPUNIT_ASSERT(!remoteSnapshot->itemId(relativeWorkingDirPath).empty());
+    const auto &localSnapshot = _syncPal->liveSnapshot(ReplicaSide::Local);
+    const auto &remoteSnapshot = _syncPal->liveSnapshot(ReplicaSide::Remote);
+    CPPUNIT_ASSERT(!localSnapshot.itemId(relativeWorkingDirPath).empty());
+    CPPUNIT_ASSERT(!remoteSnapshot.itemId(relativeWorkingDirPath).empty());
 
     MockIoHelperFileStat mockIoHelper;
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile", 2);
     { const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string()); }
     waitForSyncToFinish(SourceLocation::currentLoc());
-    CPPUNIT_ASSERT_EQUAL(NodeId("2"), localSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile"));
-    const NodeId remoteFileId = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
+    CPPUNIT_ASSERT_EQUAL(NodeId("2"), localSnapshot.itemId(relativeWorkingDirPath / "testNodeIdReuseFile"));
+    const NodeId remoteFileId = remoteSnapshot.itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
     CPPUNIT_ASSERT(!remoteFileId.empty());
-    CPPUNIT_ASSERT_EQUAL(NodeType::File, remoteSnapshot->type(remoteFileId));
+    CPPUNIT_ASSERT_EQUAL(NodeType::File, remoteSnapshot.type(remoteFileId));
 
     // Expected behavior:
     // - changed: ctime, mtime/size/content, path (chmod or + edit + move)
@@ -2296,10 +2296,10 @@ void TestIntegration::testNodeIdReuseFile2File() {
     _syncPal->unpause();
     waitForSyncToFinish(SourceLocation::currentLoc());
     _syncPal->pause();
-    const NodeId newRemoteFileId = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile2");
+    const NodeId newRemoteFileId = remoteSnapshot.itemId(relativeWorkingDirPath / "testNodeIdReuseFile2");
     CPPUNIT_ASSERT(!newRemoteFileId.empty());
     CPPUNIT_ASSERT(remoteFileId != newRemoteFileId);
-    CPPUNIT_ASSERT(!remoteSnapshot->exists(remoteFileId));
+    CPPUNIT_ASSERT(!remoteSnapshot.exists(remoteFileId));
 
     // Edit a file and move it to a different path.
     // Expected behavior: Edit + Move on remote side
@@ -2315,11 +2315,11 @@ void TestIntegration::testNodeIdReuseFile2File() {
 
     _syncPal->unpause();
     waitForSyncToFinish(SourceLocation::currentLoc());
-    CPPUNIT_ASSERT(remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile2").empty());
-    const NodeId newRemoteFileId2 = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile3");
+    CPPUNIT_ASSERT(remoteSnapshot.itemId(relativeWorkingDirPath / "testNodeIdReuseFile2").empty());
+    const NodeId newRemoteFileId2 = remoteSnapshot.itemId(relativeWorkingDirPath / "testNodeIdReuseFile3");
     CPPUNIT_ASSERT(!newRemoteFileId2.empty());
     CPPUNIT_ASSERT_EQUAL(newRemoteFileId, newRemoteFileId2);
-    CPPUNIT_ASSERT_EQUAL(remoteSnapshot->size(newRemoteFileId2), localSnapshot->size("2"));
+    CPPUNIT_ASSERT_EQUAL(remoteSnapshot.size(newRemoteFileId2), localSnapshot.size("2"));
 }
 #endif
 void TestIntegration::waitForSyncToFinish(const SourceLocation &srcLoc) {

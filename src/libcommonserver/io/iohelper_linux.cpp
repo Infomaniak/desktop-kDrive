@@ -21,12 +21,19 @@
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 
-#include <log4cplus/loggingmacros.h>
-
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/xattr.h>
+#include <sys/time.h>
+
+#include <log4cplus/loggingmacros.h>
+
+#include <Poco/File.h>
+
 namespace KDC {
 
 bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydrated, IoError &ioError) noexcept {
@@ -82,7 +89,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
         }
     }
 
-    buf->modtime = sb.stx_mtime.tv_sec;
+    buf->modificationTime = sb.stx_mtime.tv_sec;
     buf->size = static_cast<int64_t>(sb.stx_size);
     if (S_ISLNK(sb.stx_mode)) {
         // The item is a symlink.
@@ -98,6 +105,21 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
     }
 
     return true;
+}
+
+IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime /*creationDate*/, const SyncTime modificationDate,
+                               const bool) noexcept {
+    // /!\ It is not possible to update the Birth date of a file on Linux
+    struct timeval times[2];
+    times[0].tv_sec = modificationDate; // Access date
+    times[0].tv_usec = 0;
+    times[1].tv_sec = modificationDate; // Modify date
+    times[1].tv_usec = 0;
+    if (int rc = lutimes(filePath.c_str(), times); rc != 0) {
+        return posixError2ioError(errno);
+    }
+
+    return IoError::Success;
 }
 
 } // namespace KDC

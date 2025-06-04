@@ -25,6 +25,9 @@
 #include "appclient.h"
 #include "parameterscache.h"
 #include "guirequests.h"
+#include "libcommongui/matomoclient.h"
+
+#include "libcommon/utility/utility.h"
 
 #include <QFile>
 #include <QHeaderView>
@@ -58,7 +61,7 @@ static const char patternProperty[] = "pattern";
 Q_LOGGING_CATEGORY(lcFileExclusionDialog, "gui.fileexclusiondialog", QtInfoMsg)
 
 FileExclusionDialog::FileExclusionDialog(QWidget *parent) :
-    CustomDialog(true, parent), _filesTableModel(nullptr), _filesTableView(nullptr), _saveButton(nullptr), _needToSave(false) {
+    CustomDialog(true, parent) {
     initUI();
     updateUI();
 }
@@ -135,7 +138,7 @@ void FileExclusionDialog::initUI() {
     mainLayout->setStretchFactor(_filesTableView, 1);
 
     // Add dialog buttons
-    QHBoxLayout *buttonsHBox = new QHBoxLayout();
+    auto *const buttonsHBox = new QHBoxLayout();
     buttonsHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
     buttonsHBox->setSpacing(boxHSpacing);
     mainLayout->addLayout(buttonsHBox);
@@ -147,7 +150,7 @@ void FileExclusionDialog::initUI() {
     _saveButton->setEnabled(false);
     buttonsHBox->addWidget(_saveButton);
 
-    QPushButton *cancelButton = new QPushButton(this);
+    auto *const cancelButton = new QPushButton(this);
     cancelButton->setObjectName("nondefaultbutton");
     cancelButton->setFlat(true);
     cancelButton->setText(tr("CANCEL"));
@@ -160,6 +163,34 @@ void FileExclusionDialog::initUI() {
     connect(cancelButton, &QPushButton::clicked, this, &FileExclusionDialog::onExit);
     connect(this, &CustomDialog::exit, this, &FileExclusionDialog::onExit);
 }
+
+namespace {
+
+QList<ExclusionTemplateInfo> filterOutTemplatesWrtNfcNormalization(const QList<ExclusionTemplateInfo> &templateList) {
+    QList<ExclusionTemplateInfo> result;
+
+    SyncNameSet uniqueTemplateNames; // Unique template names up to NFC-encoding.
+    for (const auto &templateInfo: templateList) {
+        SyncName normalizedName;
+        SyncName insertedName = QStr2SyncName(templateInfo.templ());
+        QString insertedString;
+
+        if (const bool nfcSuccess = CommonUtility::normalizedSyncName(insertedName, normalizedName, UnicodeNormalization::NFC);
+            !nfcSuccess) {
+            qCWarning(lcFileExclusionDialog()) << "Failed to NFC-normalize the template " << templateInfo.templ();
+            insertedString = templateInfo.templ();
+        } else {
+            insertedName = normalizedName;
+            insertedString = SyncName2QStr(normalizedName);
+        }
+
+        const bool isNew = uniqueTemplateNames.emplace(insertedName).second;
+        if (isNew) result.append(ExclusionTemplateInfo{insertedString});
+    }
+
+    return result;
+}
+} // namespace
 
 void FileExclusionDialog::updateUI() {
     ExitCode exitCode;
@@ -175,17 +206,18 @@ void FileExclusionDialog::updateUI() {
         return;
     }
 
+    _userTemplateList = filterOutTemplatesWrtNfcNormalization(_userTemplateList);
     loadPatternTable();
 
     ClientGui::restoreGeometry(this);
     setResizable(true);
 }
 
-void FileExclusionDialog::addTemplate(const ExclusionTemplateInfo &templateInfo, bool readOnly, int &row, QString scrollToTempl,
-                                      int &scrollToRow) {
-    QStandardItem *patternItem = new QStandardItem(templateInfo.templ());
-    QStandardItem *warningItem = new QStandardItem();
-    QStandardItem *actionItem = new QStandardItem();
+void FileExclusionDialog::addTemplate(const ExclusionTemplateInfo &templateInfo, const bool readOnly, int &row,
+                                      const QString &scrollToTemplate, int &scrollToRow) {
+    auto *const patternItem = new QStandardItem(templateInfo.templ());
+    auto *const warningItem = new QStandardItem();
+    auto *const actionItem = new QStandardItem();
 
     QList<QStandardItem *> itemList;
     itemList.insert(tableColumn::Pattern, patternItem);
@@ -201,12 +233,12 @@ void FileExclusionDialog::addTemplate(const ExclusionTemplateInfo &templateInfo,
         setActionIcon(actionItem, QString());
     } else {
         // Set custom checkbox for Warning column
-        QWidget *warningWidget = new QWidget(this);
-        QHBoxLayout *noWarningHBox = new QHBoxLayout();
+        auto *const warningWidget = new QWidget(this);
+        auto *const noWarningHBox = new QHBoxLayout();
         warningWidget->setLayout(noWarningHBox);
         noWarningHBox->setContentsMargins(0, 0, 0, 0);
         noWarningHBox->setAlignment(Qt::AlignCenter);
-        CustomCheckBox *warningCheckBox = new CustomCheckBox(this);
+        auto *const warningCheckBox = new CustomCheckBox(this);
         warningCheckBox->setChecked(templateInfo.warning());
         warningCheckBox->setAutoFillBackground(true);
         warningCheckBox->setProperty(patternProperty, templateInfo.templ());
@@ -220,7 +252,7 @@ void FileExclusionDialog::addTemplate(const ExclusionTemplateInfo &templateInfo,
     }
 
     row++;
-    if (!scrollToTempl.isEmpty() && templateInfo.templ() == scrollToTempl) {
+    if (!scrollToTemplate.isEmpty() && templateInfo.templ() == scrollToTemplate) {
         scrollToRow = row;
     }
 }
@@ -241,7 +273,7 @@ void FileExclusionDialog::setActionIcon() {
             QStandardItem *item = _filesTableModel->item(row, tableColumn::Action);
             QVariant viewIconPathV = item->data(viewIconPathRole);
             if (!viewIconPathV.isNull()) {
-                QString viewIconPath = qvariant_cast<QString>(viewIconPathV);
+                const auto viewIconPath = qvariant_cast<QString>(viewIconPathV);
                 setActionIcon(item, viewIconPath);
             }
         }
@@ -265,22 +297,22 @@ void FileExclusionDialog::setNeedToSave(bool value) {
     _saveButton->setEnabled(value);
 }
 
-void FileExclusionDialog::loadPatternTable(QString scrollToPattern) {
+void FileExclusionDialog::loadPatternTable(const QString &scrollToPattern) {
     int row = -1;
     int scrollToRow = 0;
 
     _filesTableModel->clear();
 
     // Default patterns
-    for (const auto &templ: _defaultTemplateList) {
-        if (!templ.deleted()) {
-            addTemplate(templ, true, row, scrollToPattern, scrollToRow);
+    for (const auto &template_: _defaultTemplateList) {
+        if (!template_.deleted()) {
+            addTemplate(template_, true, row, scrollToPattern, scrollToRow);
         }
     }
 
     // User patterns
-    for (const auto &templ: _userTemplateList) {
-        addTemplate(templ, false, row, scrollToPattern, scrollToRow);
+    for (const auto &template_: _userTemplateList) {
+        addTemplate(template_, false, row, scrollToPattern, scrollToRow);
     }
 
     if (scrollToRow) {
@@ -310,135 +342,192 @@ void FileExclusionDialog::onExit() {
             } else {
                 reject();
             }
+            MatomoClient::sendEvent("preferencesFileExclusion", MatomoEventAction::Click, "exitButton",
+                                    ret == QMessageBox::Yes ? 1 : 0);
         }
     } else {
         reject();
     }
 }
 
+namespace {
+
+void logIfTemplateNormalizationFails(const SyncName &template_, bool &normalizationHasFailed) {
+    normalizationHasFailed = false;
+
+    SyncName nfcNormalizedName;
+    const bool nfcSuccess = CommonUtility::normalizedSyncName(template_, nfcNormalizedName, UnicodeNormalization::NFC);
+    if (!nfcSuccess) {
+        qCDebug(lcFileExclusionDialog()) << "Error in CommonUtility::normalizedSyncName. Failed to NFC-normalize the template '"
+                                         << SyncName2QStr(template_) << "'.";
+    }
+
+    SyncName nfdNormalizedName;
+    const bool nfdSuccess = CommonUtility::normalizedSyncName(template_, nfdNormalizedName, UnicodeNormalization::NFD);
+    if (!nfdSuccess) {
+        qCDebug(lcFileExclusionDialog()) << "Error in CommonUtility::normalizedSyncName. Failed to NFD-normalize the template '"
+                                         << SyncName2QStr(template_) << "'.";
+    }
+
+    if (!nfcSuccess || !nfdSuccess) {
+        normalizationHasFailed = true;
+        qCWarning(lcFileExclusionDialog())
+                << "File exclusion based on user templates may fail to exclude file names depending on their normalizations.";
+    }
+}
+
+//
+//! Computes and returns all possible NFC and NFD normalizations of `templateString` segments
+//! interpreted as a file system path.
+/*!
+  \param templateString is the pattern string the normalizations of which are queried.
+  \return a set of QString containing the NFC and NFD normalizations of exclusionTemplate, if those have been successful.
+  The returned set contains additionally the string exclusionTemplate in any case.
+*/
+std::unordered_set<QString> computeNormalizations(const QString &templateString) {
+    bool normalizationHasFailed = false;
+    logIfTemplateNormalizationFails(QStr2SyncName(templateString), normalizationHasFailed);
+
+    if (normalizationHasFailed) return {templateString};
+
+    const auto normalizations = CommonUtility::computePathNormalizations(QStr2SyncName(templateString));
+    std::unordered_set<QString> result;
+
+    for (const SyncName &normalization: normalizations) (void) result.emplace(SyncName2QStr(normalization));
+
+    return result;
+}
+
+
+QList<ExclusionTemplateInfo> computeNormalizations(const QList<ExclusionTemplateInfo> &templateList) {
+    QList<ExclusionTemplateInfo> result;
+
+    for (const auto &templateInfo: templateList) {
+        const auto normalizations = computeNormalizations(templateInfo.templ());
+        for (const auto &normalization: normalizations) result.append(ExclusionTemplateInfo{normalization});
+    }
+
+    return result;
+}
+
+
+bool containsStringPattern(const QList<ExclusionTemplateInfo> &exclusionList, const QString &pattern) {
+    const auto predicate = [&pattern](const ExclusionTemplateInfo &eti) { return eti.templ() == pattern; };
+    const auto &it = std::find_if(exclusionList.cbegin(), exclusionList.cend(), predicate);
+
+    return (it != exclusionList.cend());
+}
+
+} // namespace
+
+
 void FileExclusionDialog::onAddFileButtonTriggered(bool checked) {
     Q_UNUSED(checked)
-
+    MatomoClient::sendEvent("preferencesFileExclusion", MatomoEventAction::Click, "addFileButton");
     EnableStateHolder _(this);
 
     FileExclusionNameDialog dialog(this);
-    if (dialog.exec() == QDialog::Accepted) {
-        QString templ = dialog.templ();
-        for (const auto &templInfo: _userTemplateList) {
-            if (templInfo.templ() == templ) {
-                CustomMessageBox msgBox(QMessageBox::Information, tr("Exclusion template already exists!"), QMessageBox::Ok,
-                                        this);
-                msgBox.exec();
-                return;
-            }
-        }
+    if (dialog.exec() != QDialog::Accepted) return;
 
-        _userTemplateList.append(ExclusionTemplateInfo(templ));
+    const QString &template_ = dialog.templ();
+    const auto &normalizedTemplates = computeNormalizations(template_);
 
-        // Reload table
-        loadPatternTable(templ);
+    const auto predicate = [this](const auto &templateNormalizedString) {
+        return containsStringPattern(_userTemplateList, templateNormalizedString) ||
+               containsStringPattern(_defaultTemplateList, templateNormalizedString);
+    };
 
-        setNeedToSave(true);
+    // Insert `template_` only if none of its normalizations can be found in the default and user lists.
+    if (const auto it = std::find_if(normalizedTemplates.cbegin(), normalizedTemplates.cend(), predicate);
+        it != normalizedTemplates.cend()) {
+        CustomMessageBox msgBox(QMessageBox::Information, tr("Exclusion template already exists!"), QMessageBox::Ok, this);
+        msgBox.exec();
+        return;
     }
+
+    _userTemplateList.append(template_);
+
+    loadPatternTable(template_); // Reload and scroll to newly inserted entry.
+    setNeedToSave(true);
 }
 
 void FileExclusionDialog::onTableViewClicked(const QModelIndex &index) {
-    if (index.isValid()) {
-        QStandardItem *templateItem = _filesTableModel->item(index.row(), tableColumn::Pattern);
-        bool readOnly = templateItem->data(readOnlyRole).toBool();
-        if (readOnly) return;
+    if (!index.isValid()) return;
 
-        if (index.column() == tableColumn::Action) {
-            QStandardItem *actionItem = _filesTableModel->item(index.row(), tableColumn::Action);
-            if (actionItem) {
-                // Delete pattern
-                CustomMessageBox msgBox(QMessageBox::Question, tr("Do you really want to delete?"),
-                                        QMessageBox::Yes | QMessageBox::No, this);
-                msgBox.setDefaultButton(QMessageBox::No);
-                int ret = msgBox.exec();
-                if (ret != QDialog::Rejected) {
-                    if (ret == QMessageBox::Yes) {
-                        QString templ = templateItem->data(Qt::DisplayRole).toString();
+    const QStandardItem *const templateItem = _filesTableModel->item(index.row(), tableColumn::Pattern);
+    if (const bool readOnly = templateItem->data(readOnlyRole).toBool(); readOnly) return;
 
-                        bool done = false;
-                        auto templateIt = _defaultTemplateList.begin();
-                        while (templateIt != _defaultTemplateList.end()) {
-                            if (templ == templateIt->templ()) {
-                                templateIt->setDeleted(true);
-                                done = true;
-                                break;
-                            }
-                            templateIt++;
-                        }
+    if (index.column() != tableColumn::Action) return;
 
-                        if (!done) {
-                            templateIt = _userTemplateList.begin();
-                            while (templateIt != _userTemplateList.end()) {
-                                if (templ == templateIt->templ()) {
-                                    _userTemplateList.erase(templateIt);
-                                    break;
-                                }
-                                templateIt++;
-                            }
-                        }
+    if (const QStandardItem *const actionItem = _filesTableModel->item(index.row(), tableColumn::Action); !actionItem) return;
 
-                        // Reload table
-                        loadPatternTable(templ);
+    CustomMessageBox msgBox(QMessageBox::Question, tr("Do you really want to delete?"), QMessageBox::Yes | QMessageBox::No, this);
+    msgBox.setDefaultButton(QMessageBox::No);
 
-                        setNeedToSave(true);
-                    }
-                }
-            }
+    const auto ret = msgBox.exec();
+    MatomoClient::sendEvent("preferencesFileExclusion", MatomoEventAction::Click, "deleteItemButton",
+                            ret == QMessageBox::Yes ? 1 : 0);
+
+    if (ret != QMessageBox::Yes) return;
+
+    // Delete template
+    const QString &template_ = templateItem->data(Qt::DisplayRole).toString();
+    for (auto templateIt = _userTemplateList.begin(); templateIt != _userTemplateList.end(); ++templateIt) {
+        if (templateIt->templ() == template_) {
+            _userTemplateList.erase(templateIt);
+            break;
         }
     }
+
+    loadPatternTable();
+    setNeedToSave(true);
 }
 
 void FileExclusionDialog::onWarningCheckBoxClicked(bool checked) {
-    CustomCheckBox *warningCheckBox = qobject_cast<CustomCheckBox *>(sender());
-    if (warningCheckBox) {
-        QString templ = warningCheckBox->property(patternProperty).toString();
+    const auto *const warningCheckBox = qobject_cast<CustomCheckBox *>(sender());
+    MatomoClient::sendEvent("preferencesFileExclusion", MatomoEventAction::Click, "warningCheckbox", checked ? 1 : 0);
 
-        bool done = false;
-        auto templateIt = _defaultTemplateList.begin();
-        while (templateIt != _defaultTemplateList.end()) {
-            if (templ == templateIt->templ()) {
-                templateIt->setWarning(checked);
-                done = true;
+    if (!warningCheckBox) {
+        qCDebug(lcFileExclusionDialog()) << "Null pointer!";
+        return;
+    }
+
+    const QString &template_ = warningCheckBox->property(patternProperty).toString();
+    bool done = false;
+
+    for (auto &templateInfo: _defaultTemplateList) {
+        if (template_ == templateInfo.templ()) {
+            templateInfo.setWarning(checked);
+            done = true;
+            break;
+        }
+    }
+
+    if (!done) {
+        for (auto &templateInfo: _userTemplateList) {
+            if (template_ == templateInfo.templ()) {
+                templateInfo.setWarning(checked);
                 break;
             }
-            templateIt++;
         }
-
-        if (!done) {
-            templateIt = _userTemplateList.begin();
-            while (templateIt != _userTemplateList.end()) {
-                if (templ == templateIt->templ()) {
-                    templateIt->setWarning(checked);
-                    break;
-                }
-                templateIt++;
-            }
-        }
-
-        setNeedToSave(true);
-    } else {
-        qCDebug(lcFileExclusionDialog()) << "Null pointer!";
     }
+
+    setNeedToSave(true);
 }
 
 void FileExclusionDialog::onSaveButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("preferencesFileExclusion", MatomoEventAction::Click, "saveButton");
 
-    ExitCode exitCode = GuiRequests::setExclusionTemplateList(true, _defaultTemplateList);
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitCode = GuiRequests::setExclusionTemplateList(true, _defaultTemplateList); exitCode != ExitCode::Ok) {
         qCWarning(lcFileExclusionDialog()) << "Error in Requests::setExclusionTemplateList: code=" << exitCode;
         CustomMessageBox msgBox(QMessageBox::Warning, tr("Cannot save changes!"), QMessageBox::Ok, this);
         msgBox.exec();
         return;
     }
 
-    exitCode = GuiRequests::setExclusionTemplateList(false, _userTemplateList);
-    if (exitCode != ExitCode::Ok) {
+    const auto expandedUserTemplateList = computeNormalizations(_userTemplateList);
+    if (const auto exitCode = GuiRequests::setExclusionTemplateList(false, expandedUserTemplateList); exitCode != ExitCode::Ok) {
         qCWarning(lcFileExclusionDialog()) << "Error in Requests::setExclusionTemplateList: code=" << exitCode;
         CustomMessageBox msgBox(QMessageBox::Warning, tr("Cannot save changes!"), QMessageBox::Ok, this);
         msgBox.exec();
@@ -447,8 +536,7 @@ void FileExclusionDialog::onSaveButtonTriggered(bool checked) {
 
     ParametersCache::instance()->saveParametersInfo();
 
-    exitCode = GuiRequests::propagateExcludeListChange();
-    if (exitCode != ExitCode::Ok) {
+    if (auto exitCode = GuiRequests::propagateExcludeListChange(); exitCode != ExitCode::Ok) {
         qCWarning(lcFileExclusionDialog()) << "Error in Requests::propagateExcludeListChange: code=" << exitCode;
     }
 

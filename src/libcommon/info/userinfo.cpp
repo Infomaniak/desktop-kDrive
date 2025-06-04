@@ -22,7 +22,12 @@ namespace KDC {
 
 UserInfo::UserInfo(const int dbId, const int userId, const QString &name, const QString &email, const QImage &avatar,
                    const bool connected) :
-    _dbId(dbId), _userId(userId), _name(name), _email(email), _avatar(avatar), _connected(connected) {}
+    _dbId(dbId),
+    _userId(userId),
+    _name(name),
+    _email(email),
+    _avatar(avatar),
+    _connected(connected) {}
 
 UserInfo::UserInfo() {}
 

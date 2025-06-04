@@ -20,11 +20,9 @@
 #include "basefoldertreeitemwidget.h"
 #include "customtreewidgetitem.h"
 #include "guiutility.h"
-#include "common/utility.h"
-#include "libcommon/utility/utility.h"
-#include "libcommongui/utility/utility.h"
 #include "clientgui.h"
-#include "libcommon/theme/theme.h"
+#include "libcommongui/matomoclient.h"
+#include "libcommongui/utility/utility.h"
 
 #include <QDir>
 #include <QHeaderView>
@@ -51,8 +49,13 @@ Q_LOGGING_CATEGORY(lcBaseFolderTreeItemWidget, "gui.foldertreeitemwidget", QtInf
 
 BaseFolderTreeItemWidget::BaseFolderTreeItemWidget(std::shared_ptr<ClientGui> gui, int driveDbId, bool displayRoot,
                                                    QWidget *parent) :
-    QTreeWidget(parent), _gui(gui), _driveDbId(driveDbId), _displayRoot(displayRoot), _folderIconColor(QColor()),
-    _folderIconSize(QSize()), _inserting(false) {
+    QTreeWidget(parent),
+    _gui(gui),
+    _driveDbId(driveDbId),
+    _displayRoot(displayRoot),
+    _folderIconColor(QColor()),
+    _folderIconSize(QSize()),
+    _inserting(false) {
     initUI();
 }
 
@@ -310,6 +313,7 @@ void BaseFolderTreeItemWidget::onItemClicked(QTreeWidgetItem *item, int column) 
         // Allow editing new item name
         newItem->setFlags(newItem->flags() | Qt::ItemIsEditable);
         editItem(newItem, TreeWidgetColumn::Folder);
+        MatomoClient::sendEvent("baseFolderTreeItemWidget", MatomoEventAction::Click, "createNewFolderButton");
     } else {
         QString currentFolderBasePath = item->data(TreeWidgetColumn::Folder, baseDirRole).toString();
 
@@ -322,6 +326,7 @@ void BaseFolderTreeItemWidget::onItemDoubleClicked(QTreeWidgetItem *item, int co
     if (column == TreeWidgetColumn::Folder && item->flags() & Qt::ItemIsEditable) {
         // Allow editing item name
         editItem(item, TreeWidgetColumn::Folder);
+        MatomoClient::sendEvent("baseFolderTreeItemWidget", MatomoEventAction::Click, "editFolder");
     }
 }
 
@@ -346,7 +351,8 @@ void BaseFolderTreeItemWidget::onItemChanged(QTreeWidgetItem *item, int column) 
 }
 
 BaseFolderTreeItemWidget::CustomDelegate::CustomDelegate(BaseFolderTreeItemWidget *treeWidget, QObject *parent) :
-    QStyledItemDelegate(parent), _treeWidget(treeWidget) {}
+    QStyledItemDelegate(parent),
+    _treeWidget(treeWidget) {}
 
 void BaseFolderTreeItemWidget::CustomDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option,
                                                                     const QModelIndex &index) const {

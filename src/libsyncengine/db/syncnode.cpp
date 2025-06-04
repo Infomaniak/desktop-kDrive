@@ -20,8 +20,12 @@
 
 namespace KDC {
 
-SyncNode::SyncNode() : _nodeId(NodeId()), _type(SyncNodeType::Undefined) {}
+SyncNode::SyncNode() :
+    _nodeId(NodeId()),
+    _type(SyncNodeType::Undefined) {}
 
-SyncNode::SyncNode(const NodeId &nodeId, SyncNodeType type) : _nodeId(nodeId), _type(type) {}
+SyncNode::SyncNode(const NodeId &nodeId, SyncNodeType type) :
+    _nodeId(nodeId),
+    _type(type) {}
 
 } // namespace KDC

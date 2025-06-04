@@ -27,6 +27,7 @@ class SocketApiSocketPrivate;
 
 class SocketApiSocket : public QIODevice {
         Q_OBJECT
+
     public:
         SocketApiSocket(QObject *parent, SocketApiSocketPrivate *p);
         ~SocketApiSocket();
@@ -50,6 +51,7 @@ class SocketApiSocket : public QIODevice {
 
 class SocketApiServer : public QObject {
         Q_OBJECT
+
     public:
         SocketApiServer();
         ~SocketApiServer();

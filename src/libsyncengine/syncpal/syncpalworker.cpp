@@ -42,7 +42,7 @@ SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string
 
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
-    LOG_SYNCPAL_INFO(_logger, "Worker " << name().c_str() << " started");
+    LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " started");
     if (_syncPal->vfsMode() != VirtualFileMode::Off) {
 #ifdef _WIN32
         auto resetFunc = std::function<void()>([this]() { resetVfsFilesStatus(); });
@@ -143,14 +143,14 @@ void SyncPalWorker::execute() {
                 // Next step
                 SyncStep step = nextStep();
                 if (step != _step) {
-                    LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has finished");
+                    LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " has finished");
                     waitForExitOfWorkers(stepWorkers);
                     initStep(step, stepWorkers, inputSharedObject);
                     isStepInProgress = false;
                 }
             } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::NetworkError) ||
                        (stepWorkers[1] && workersExitCode[1] == ExitCode::NetworkError)) {
-                LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has aborted");
+                LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " has aborted");
 
                 // Stop the step workers and pause sync
                 stopAndWaitForExitOfWorkers(stepWorkers);
@@ -163,7 +163,7 @@ void SyncPalWorker::execute() {
                        (stepWorkers[1] && workersExitCode[1] == ExitCode::BackError) ||
                        (stepWorkers[0] && workersExitCode[0] == ExitCode::LogicError) ||
                        (stepWorkers[1] && workersExitCode[1] == ExitCode::LogicError)) {
-                LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has aborted");
+                LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " has aborted");
 
                 // Stop the step workers and restart a full sync
                 stopAndWaitForExitOfWorkers(stepWorkers);
@@ -176,7 +176,7 @@ void SyncPalWorker::execute() {
                        (stepWorkers[1] && workersExitCode[1] == ExitCode::SystemError) ||
                        (stepWorkers[0] && workersExitCode[0] == ExitCode::UpdateRequired) ||
                        (stepWorkers[1] && workersExitCode[1] == ExitCode::UpdateRequired)) {
-                LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has aborted");
+                LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " has aborted");
 
                 // Stop all workers and exit
                 stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
@@ -201,7 +201,7 @@ void SyncPalWorker::execute() {
             }
         } else {
             // Start workers
-            LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " start");
+            LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " start");
             isStepInProgress = true;
             for (int index = 0; index < 2; index++) {
                 if (inputSharedObject[index]) {
@@ -220,7 +220,7 @@ void SyncPalWorker::execute() {
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
 
-    LOG_SYNCPAL_INFO(_logger, "Worker " << name().c_str() << " stoped");
+    LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " stoped");
     setDone(exitCode);
 }
 void SyncPalWorker::stop() {
@@ -296,10 +296,6 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             workers[1] = nullptr;
             _syncPal->copySnapshots();
             LOG_IF_FAIL(_syncPal->syncDb()->cache().reloadIfNeeded());
-            assert(_syncPal->snapshotCopy(ReplicaSide::Local)->checkIntegrityRecursively() &&
-                   "Local snapshot is corrupted, see logs for details");
-            assert(_syncPal->snapshotCopy(ReplicaSide::Remote)->checkIntegrityRecursively() &&
-                   "Remote snapshot is corrupted, see logs for details");
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             _syncPal->setRestart(false);
@@ -384,20 +380,20 @@ void SyncPalWorker::initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2],
 SyncStep SyncPalWorker::nextStep() const {
     switch (_step) {
         case SyncStep::Idle: {
-            const bool areSnapshotsValid =
-                    _syncPal->isSnapshotValid(ReplicaSide::Local) && _syncPal->isSnapshotValid(ReplicaSide::Remote);
+            const bool areLiveSnapshotsValid =
+                    _syncPal->liveSnapshot(ReplicaSide::Local).isValid() && _syncPal->liveSnapshot(ReplicaSide::Remote).isValid();
             const bool areFSOWorkersRunning =
                     _syncPal->_localFSObserverWorker->isRunning() && _syncPal->_remoteFSObserverWorker->isRunning();
             const bool areFSOWorkersInitializing =
                     _syncPal->_localFSObserverWorker->initializing() || _syncPal->_remoteFSObserverWorker->initializing();
             const bool areFSOWorkersUpdating =
                     _syncPal->_localFSObserverWorker->updating() || _syncPal->_remoteFSObserverWorker->updating();
-            const bool areSnapshotsUpdated =
-                    _syncPal->snapshot(ReplicaSide::Local)->updated() || _syncPal->snapshot(ReplicaSide::Remote)->updated();
+            const bool areLiveSnapshotsUpdated =
+                    _syncPal->liveSnapshot(ReplicaSide::Local).updated() || _syncPal->liveSnapshot(ReplicaSide::Remote).updated();
 
 
-            return areSnapshotsValid && areFSOWorkersRunning && !areFSOWorkersInitializing && !areFSOWorkersUpdating &&
-                                   (areSnapshotsUpdated || _syncPal->restart())
+            return areLiveSnapshotsValid && areFSOWorkersRunning && !areFSOWorkersInitializing && !areFSOWorkersUpdating &&
+                                   (areLiveSnapshotsUpdated || _syncPal->restart())
                            ? SyncStep::UpdateDetection1
                            : SyncStep::Idle;
         }
@@ -503,7 +499,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
         auto dirIt = std::filesystem::recursive_directory_iterator(
                 _syncPal->localPath(), std::filesystem::directory_options::skip_permission_denied, ec);
         if (ec) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in resetVfsFilesStatus: " << Utility::formatStdError(ec).c_str());
+            LOGW_SYNCPAL_WARN(_logger, L"Error in resetVfsFilesStatus: " << Utility::formatStdError(ec));
             return;
         }
         for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
@@ -526,8 +522,8 @@ void SyncPalWorker::resetVfsFilesStatus() {
             bool isManaged = true;
             IoError ioError = IoError::Success;
             if (!Utility::checkIfDirEntryIsManaged(*dirIt, isManaged, ioError)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged : "
-                                                   << Utility::formatSyncPath(absolutePath).c_str());
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Error in Utility::checkIfDirEntryIsManaged : " << Utility::formatSyncPath(absolutePath));
                 ok = false;
                 dirIt.disable_recursion_pending();
                 continue;
@@ -535,21 +531,19 @@ void SyncPalWorker::resetVfsFilesStatus() {
 
             if (ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Directory entry does not exist anymore : " << Utility::formatSyncPath(absolutePath).c_str());
+                                   L"Directory entry does not exist anymore : " << Utility::formatSyncPath(absolutePath));
                 dirIt.disable_recursion_pending();
                 continue;
             }
 
             if (ioError == IoError::AccessDenied) {
-                LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Directory misses search permission : " << Utility::formatSyncPath(absolutePath).c_str());
+                LOGW_SYNCPAL_DEBUG(_logger, L"Directory misses search permission : " << Utility::formatSyncPath(absolutePath));
                 dirIt.disable_recursion_pending();
                 continue;
             }
 
             if (!isManaged) {
-                LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Directory entry is not managed : " << Utility::formatSyncPath(absolutePath).c_str());
+                LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry is not managed : " << Utility::formatSyncPath(absolutePath));
                 dirIt.disable_recursion_pending();
                 continue;
             }
@@ -592,7 +586,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
             if ((vfsStatus.isHydrated && pinState == PinState::OnlineOnly) ||
                 (!vfsStatus.isHydrated && pinState == PinState::AlwaysLocal)) {
                 if (!_syncPal->vfs()->fileStatusChanged(dirIt->path(), SyncFileStatus::Syncing)) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()));
                     ok = false;
                     dirIt.disable_recursion_pending();
                     continue;

@@ -83,7 +83,7 @@ std::shared_ptr<Node> UpdateTree::getNodeByPath(const SyncPath &path) {
         return _rootNode;
     }
 
-    const std::vector<SyncName> itemNames = Utility::splitPath(path);
+    const std::vector<SyncName> itemNames = CommonUtility::splitSyncPath(path);
     std::shared_ptr<Node> tmpNode = _rootNode;
 
     for (auto nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
@@ -110,7 +110,7 @@ std::shared_ptr<Node> UpdateTree::getNodeByPathNormalized(const SyncPath &path) 
         return _rootNode;
     }
 
-    const std::vector<SyncName> itemNames = Utility::splitPath(path);
+    const std::vector<SyncName> itemNames = CommonUtility::splitSyncPath(path);
     std::shared_ptr<Node> tmpNode = _rootNode;
 
     for (auto nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
@@ -227,7 +227,7 @@ void UpdateTree::drawUpdateTree() {
 
     SyncName treeStr;
     drawUpdateTreeRow(rootNode(), treeStr);
-    LOGW_INFO(Log::instance()->getLogger(), _side << L" update tree:\n" << SyncName2WStr(treeStr).c_str());
+    LOGW_INFO(Log::instance()->getLogger(), _side << L" update tree:\n" << SyncName2WStr(treeStr));
 }
 
 void UpdateTree::drawUpdateTreeRow(const std::shared_ptr<Node> node, SyncName &treeStr, uint64_t depth /*= 0*/) {

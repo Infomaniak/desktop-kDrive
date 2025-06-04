@@ -27,7 +27,7 @@ namespace KDC {
 class DownloadJob : public AbstractTokenNetworkJob {
     public:
         DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
-                    int64_t expectedSize, SyncTime creationTime, SyncTime modtime, bool isCreate);
+                    int64_t expectedSize, SyncTime creationTime, SyncTime modificationTime, bool isCreate);
         DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
                     int64_t expectedSize);
         ~DownloadJob() override;
@@ -36,8 +36,8 @@ class DownloadJob : public AbstractTokenNetworkJob {
         inline const SyncPath &localPath() const { return _localpath; }
 
         inline const NodeId &localNodeId() const { return _localNodeId; }
-        inline SyncTime modtime() const { return _modtimeIn; }
         inline SyncTime creationTime() const { return _creationTimeOut; }
+        inline SyncTime modificationTime() const { return _modificationTimeOut; }
 
     private:
         virtual std::string getSpecificUrl() override;
@@ -51,7 +51,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
         bool createLink(const std::string &mimeType, const std::string &data);
         bool removeTmpFile();
         bool moveTmpFile(bool &restartSync);
-        //! Create a tmp file from an std::istream or a std::string
+        //! Create a tmp file from a std::istream or a std::string
         /*!
           \param istr is a stream used to read the file data.
           \param data is a string containing the file data.
@@ -74,16 +74,18 @@ class DownloadJob : public AbstractTokenNetworkJob {
         NodeId _remoteFileId;
         SyncPath _localpath;
         SyncPath _tmpPath;
-        int64_t _expectedSize = Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH;
-        SyncTime _creationTimeIn = 0;
-        SyncTime _modtimeIn = 0;
-        SyncTime _creationTimeOut = 0; // The effective creation time of the file on the local filesystem, it may differ from
-                                 // _creationTimeIn if we fail to set it locally
+        const int64_t _expectedSize = Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH;
+        const SyncTime _creationTimeIn = 0;
+        const SyncTime _modificationTimeIn = 0;
+
         bool _isCreate = false;
         bool _ignoreDateTime = false;
         bool _responseHandlingCanceled = false;
 
         NodeId _localNodeId;
+        SyncTime _creationTimeOut = 0; // The effective creation time of the file on the local filesystem, it may differ from
+                                       // _creationTimeIn if we fail to set it locally
+        SyncTime _modificationTimeOut = 0;
         const std::shared_ptr<Vfs> _vfs;
         bool _isHydrated{true};
 

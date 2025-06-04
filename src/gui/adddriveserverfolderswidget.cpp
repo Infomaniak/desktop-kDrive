@@ -19,10 +19,10 @@
 #include "adddriveserverfolderswidget.h"
 #include "custommessagebox.h"
 #include "guiutility.h"
-#include "common/utility.h"
-#include "libcommon/utility/utility.h"
-#include "libcommongui/utility/utility.h"
 #include "clientgui.h"
+#include "libcommon/utility/utility.h"
+#include "libcommongui/matomoclient.h"
+#include "libcommongui/utility/utility.h"
 
 #include <QBoxLayout>
 #include <QDir>
@@ -47,9 +47,18 @@ static const int progressBarMax = 5;
 Q_LOGGING_CATEGORY(lcAddDriveServerFoldersWidget, "gui.adddriveserverfolderswidget", QtInfoMsg)
 
 AddDriveServerFoldersWidget::AddDriveServerFoldersWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
-    QWidget(parent), _gui(gui), _logoTextIconLabel(nullptr), _infoIconLabel(nullptr), _availableSpaceTextLabel(nullptr),
-    _folderTreeItemWidget(nullptr), _backButton(nullptr), _continueButton(nullptr), _infoIconColor(QColor()),
-    _infoIconSize(QSize()), _logoColor(QColor()), _needToSave(false) {
+    QWidget(parent),
+    _gui(gui),
+    _logoTextIconLabel(nullptr),
+    _infoIconLabel(nullptr),
+    _availableSpaceTextLabel(nullptr),
+    _folderTreeItemWidget(nullptr),
+    _backButton(nullptr),
+    _continueButton(nullptr),
+    _infoIconColor(QColor()),
+    _infoIconSize(QSize()),
+    _logoColor(QColor()),
+    _needToSave(false) {
     initUI();
     updateUI();
 }
@@ -215,12 +224,14 @@ void AddDriveServerFoldersWidget::onNeedToSave() {
 
 void AddDriveServerFoldersWidget::onBackButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveServerFolders", MatomoEventAction::Click, "backButton");
 
     emit terminated(false);
 }
 
 void AddDriveServerFoldersWidget::onContinueButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveServerFolders", MatomoEventAction::Click, "continueButton");
 
     emit terminated();
 }

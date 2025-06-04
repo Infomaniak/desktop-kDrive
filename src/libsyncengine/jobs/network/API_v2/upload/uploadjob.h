@@ -32,14 +32,15 @@ class UploadJob : public AbstractTokenNetworkJob {
     public:
         // Using file name and parent ID, for file creation only.
         UploadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &absoluteFilePath, const SyncName &filename,
-                  const NodeId &remoteParentDirId, SyncTime modtime);
+                  const NodeId &remoteParentDirId, SyncTime creationTime, SyncTime modificationTime);
         // Using file ID, for file edition only.
         UploadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &absoluteFilePath, const NodeId &fileId,
-                  SyncTime modtime);
+                  SyncTime modificationTime);
         ~UploadJob() override;
 
         const NodeId &nodeId() const { return _nodeIdOut; }
-        SyncTime modtime() const { return _modtimeOut; }
+        SyncTime creationTime() const { return _creationTimeOut; }
+        SyncTime modificationTime() const { return _modificationTimeOut; }
         int64_t size() const { return _sizeOut; }
 
     protected:
@@ -60,10 +61,12 @@ class UploadJob : public AbstractTokenNetworkJob {
         NodeId _fileId;
         NodeId _remoteParentDirId;
         std::string _contentHash;
-        SyncTime _modtimeIn = 0;
+        SyncTime _creationTimeIn = 0;
+        SyncTime _modificationTimeIn = 0;
 
         NodeId _nodeIdOut;
-        SyncTime _modtimeOut = 0;
+        SyncTime _creationTimeOut = 0;
+        SyncTime _modificationTimeOut = 0;
         int64_t _sizeOut = 0;
 
         LinkType _linkType = LinkType::None;
