@@ -17,17 +17,11 @@
  */
 
 #include "driveuploadsession.h"
+
+#include "io/filestat.h"
 #include "utility/utility.h"
 
 namespace KDC {
-DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const std::shared_ptr<SyncDb> syncDb,
-                                       const SyncPath &filepath, const NodeId &fileId, const SyncTime creationTime,
-                                       SyncTime modificationTime, const bool liteSyncActivated,
-                                       const uint64_t nbParallelThread /*= 1*/) :
-    DriveUploadSession(vfs, driveDbId, syncDb, filepath, SyncName(), fileId, creationTime, modificationTime, liteSyncActivated,
-                       nbParallelThread) {
-    _fileId = fileId;
-}
 
 DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const std::shared_ptr<SyncDb> syncDb,
                                        const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId,
@@ -42,6 +36,22 @@ DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, const in
     _vfs(vfs) {
     (void) liteSyncActivated;
     _uploadSessionType = UploadSessionType::Drive;
+}
+
+DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const std::shared_ptr<SyncDb> syncDb,
+                                       const SyncPath &filepath, const NodeId &fileId, SyncTime modificationTime,
+                                       const bool liteSyncActivated, const uint64_t nbParallelThread /*= 1*/) :
+    DriveUploadSession(vfs, driveDbId, syncDb, filepath, SyncName(), fileId, 0, modificationTime, liteSyncActivated,
+                       nbParallelThread) {
+    _fileId = fileId;
+
+    // Retrieve creation date from the local file
+    FileStat fileStat;
+    auto ioError = IoError::Unknown;
+    if (!IoHelper::getFileStat(filepath, &fileStat, ioError) || ioError != IoError::Success) {
+        LOGW_WARN(getLogger(), L"Failed to get FileStat for " << Utility::formatSyncPath(filepath) << L": " << ioError);
+    }
+    _creationTimeIn = fileStat.creationTime;
 }
 
 DriveUploadSession::~DriveUploadSession() {

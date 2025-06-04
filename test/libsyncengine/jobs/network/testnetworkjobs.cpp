@@ -1128,8 +1128,7 @@ void TestNetworkJobs::testDriveUploadSessionSynchronous() {
     IoHelper::getFileStat(localFilePath, &fileStat, exist);
 
     DriveUploadSession driveUploadSessionJobEdit(nullptr, _driveDbId, nullptr, localFilePath,
-                                                 driveUploadSessionJobCreate.nodeId(), testhelpers::defaultTime,
-                                                 testhelpers::defaultTime + 1, false, 1);
+                                                 driveUploadSessionJobCreate.nodeId(), testhelpers::defaultTime + 1, false, 1);
     exitCode = driveUploadSessionJobEdit.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
     CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime, driveUploadSessionJobEdit.creationTime());
@@ -1163,8 +1162,7 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
     IoHelper::getFileStat(localFilePath, &fileStat, exist);
 
     DriveUploadSession driveUploadSessionJobEdit(nullptr, _driveDbId, nullptr, localFilePath,
-                                                 driveUploadSessionJobCreate.nodeId(), testhelpers::defaultTime,
-                                                 testhelpers::defaultTime + 1, false, 3);
+                                                 driveUploadSessionJobCreate.nodeId(), testhelpers::defaultTime + 1, false, 3);
     exitInfo = driveUploadSessionJobEdit.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
     CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime + 1, driveUploadSessionJobEdit.modificationTime());
