@@ -17,6 +17,7 @@
  */
 
 #include "excludelistpropagator.h"
+#include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "requests/exclusiontemplatecache.h"
 #include "requests/parameterscache.h"
 #include "libcommon/utility/utility.h"
@@ -86,9 +87,9 @@ ExitCode ExcludeListPropagator::checkItems() {
             const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), dirIt->path());
             if (bool isWarning = false; ExclusionTemplateCache::instance()->isExcluded(relativePath, isWarning)) {
                 if (isWarning) {
-                    NodeId localNodeId = _syncPal->snapshot(ReplicaSide::Local)->itemId(relativePath);
+                    NodeId localNodeId = _syncPal->liveSnapshot(ReplicaSide::Local)->itemId(relativePath);
                     NodeType localNodeType =
-                            localNodeId.empty() ? NodeType::Unknown : _syncPal->snapshot(ReplicaSide::Local)->type(localNodeId);
+                            localNodeId.empty() ? NodeType::Unknown : _syncPal->liveSnapshot(ReplicaSide::Local)->type(localNodeId);
                     Error error(_syncPal->syncDbId(), "", localNodeId, localNodeType, relativePath, ConflictType::None,
                                 InconsistencyType::None, CancelType::ExcludedByTemplate);
                     _syncPal->addError(error);

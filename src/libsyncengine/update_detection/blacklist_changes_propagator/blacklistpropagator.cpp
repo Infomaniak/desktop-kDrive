@@ -201,8 +201,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
                     continue;
                 }
 
-                LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
-                                   L"Cancel hydration: " << Utility::formatSyncPath(absolutePath));
+                LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Cancel hydration: " << Utility::formatSyncPath(absolutePath));
                 _syncPal->vfs()->cancelHydrate(dirIt->path());
             }
         } catch (std::filesystem::filesystem_error &e) {
@@ -229,10 +228,9 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
 
     if (exists) {
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Removing item with "
-                                                                     << Utility::formatSyncPath(localPath) << L" ("
-                                                                     << Utility::s2ws(localNodeId)
-                                                                     << L") on local replica because it is blacklisted.");
+            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
+                               L"Removing item with " << Utility::formatSyncPath(localPath) << L" (" << Utility::s2ws(localNodeId)
+                                                      << L") on local replica because it is blacklisted.");
         }
 
         LocalDeleteJob job(_syncPal->syncInfo(), localPath, liteSyncActivated, remoteNodeId);
@@ -252,8 +250,8 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
                       InconsistencyType::None, CancelType::MoveToBinFailed, destPath);
             _syncPal->addError(err);
         } else {
-            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Item with " << Utility::formatSyncPath(absolutePath)
-                                                                           << L" (" << Utility::s2ws(localNodeId)
+            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Item with " << Utility::formatSyncPath(absolutePath) << L" ("
+                                                                           << Utility::s2ws(localNodeId)
                                                                            << L") removed from local replica.");
         }
     }
