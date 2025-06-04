@@ -800,6 +800,10 @@ const LiveSnapshot &SyncPal::liveSnapshot(ReplicaSide side) const {
     return (side == ReplicaSide::Local ? _localFSObserverWorker->liveSnapshot() : _remoteFSObserverWorker->liveSnapshot());
 }
 
+uint64_t SyncPal::syncCount() const {
+    return _syncPalWorker ? _syncPalWorker->syncCounter() : 0;
+}
+
 std::shared_ptr<FSOperationSet> SyncPal::operationSet(ReplicaSide side) const {
     if (side == ReplicaSide::Unknown) {
         LOG_ERROR(_logger, "Call to SyncPal::operationSet with 'ReplicaSide::Unknown').");
@@ -1343,7 +1347,7 @@ void SyncPal::freeSnapshotsCopies() {
     _remoteSnapshot.reset();
 }
 
-void SyncPal::invalideSnapshots() {
+void SyncPal::invalidateSnapshots() {
     _localFSObserverWorker->tryToInvalidateSnapshot();
     _remoteFSObserverWorker->forceUpdate();
     _remoteFSObserverWorker->tryToInvalidateSnapshot();

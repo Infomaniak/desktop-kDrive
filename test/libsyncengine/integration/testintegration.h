@@ -57,7 +57,10 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testSimultaneousChanges();
 
         NodeId duplicateRemoteFile(const NodeId &id, const SyncName &newName) const;
-        void testInconsistency();
+        void inconsistencyTests();
+
+        void conflictTests();
+        void testCreateCreatePseudoConflict();
 
         // // TODO : other tests
         // // - many sync ops (ex: upload 100 files)
@@ -106,7 +109,8 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testNodeIdReuseFile2DirAndDir2File();
         void testNodeIdReuseFile2File();
 #endif
-        void waitForSyncToFinish(const SourceLocation &srcLoc) const;
+        void waitForSyncToFinish(const SourceLocation &srcLoc, std::chrono::seconds minWaitTime = std::chrono::seconds(3)) const;
+        void waitForNextSyncToFinish(const SourceLocation &srcLoc);
         void logStep(const std::string &str);
 
         log4cplus::Logger _logger;
@@ -121,6 +125,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         RemoteTemporaryDirectory _remoteSyncDir{"testIntegration"};
         NodeId _testFileRemoteId;
         TimerUtility _timer;
+        uint64_t _syncCount{0};
 };
 
 } // namespace KDC
