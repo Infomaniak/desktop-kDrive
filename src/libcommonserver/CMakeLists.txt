@@ -168,9 +168,9 @@ else()
     get_library_dirs("xxHash" "xxhash")
     install(FILES
             # xxHash
-            "${_xxHash_LIB_DIRS}/libxxhash.so>"
-            "${_xxHash_LIB_DIRS}/libxxhash.so.0>"
-            "${_xxHash_LIB_DIRS}/libxxhash.so.0.8.2>"
+            "${_xxHash_LIB_DIRS}/libxxhash.so"
+            "${_xxHash_LIB_DIRS}/libxxhash.so.0"
+            "${_xxHash_LIB_DIRS}/libxxhash.so.0.8.2"
 
             # OpenSSL
             "${_OpenSSL_LIB_DIRS}/libcrypto.so"
