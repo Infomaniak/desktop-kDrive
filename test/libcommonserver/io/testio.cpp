@@ -124,6 +124,14 @@ void TestIo::testTempDirectoryPath() {
     }
 }
 
+void TestIo::testCacheDirectoryPath() {
+    SyncPath cachePath;
+    IoError ioError = IoError::Success;
+    CPPUNIT_ASSERT(_testObj->cacheDirectoryPath(cachePath, ioError));
+    CPPUNIT_ASSERT(!cachePath.empty());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+}
+
 void TestIo::testLogDirectoryPath() {
     {
         SyncPath logDirPath;

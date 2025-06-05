@@ -268,6 +268,34 @@ void TestIo::testCreateDirectory() {
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
+    // Creates successfully a directory with missing parent when recursive option is set to true
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "regular_directory" / "subdir";
+
+        IoError ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(_testObj->createDirectory(path, true, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+
+        ioError = IoError::Unknown;
+        bool isDirectory = false;
+
+        CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
+        CPPUNIT_ASSERT(isDirectory);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+    }
+
+    // Fails to create a directory because the parent path does not exists and recursive option is set to false.
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "regular_directory" / "subdir";
+
+        IoError ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(!_testObj->createDirectory(path, false, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::NoSuchFileOrDirectory),
+                                     IoError::NoSuchFileOrDirectory, ioError);
+    }
+
     // Fails to create a directory because the dir path indicates an existing directory
     {
         const LocalTemporaryDirectory temporaryDirectory;

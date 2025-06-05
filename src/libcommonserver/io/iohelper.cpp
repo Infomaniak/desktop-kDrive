@@ -643,9 +643,11 @@ bool IoHelper::cacheDirectoryPath(SyncPath &directoryPath, IoError &ioError) noe
                                     "Falling back to temporary directory location");
 #endif
 
-    std::error_code ec;
-    directoryPath = _tempDirectoryPath(ec) / cacheDirName;
-    ioError = stdError2ioError(ec);
+    if (!tempDirectoryPath(directoryPath, ioError)) {
+        LOGW_WARN(logger(), L"Failed to get temporary directory path: " << Utility::formatIoError(directoryPath, ioError));
+        return false;
+    }
+    directoryPath /=  cacheDirName;
     return ioError == IoError::Success;
 }
 
