@@ -752,17 +752,17 @@ bool ParmsDb::insertUserTemplateNormalizations() {
     std::list<std::string> dbUserExclusionStringsOutput;
     StrSet dbUserExclusionUniqueStrings;
     for (const auto &userTemplate: dbUserExclusionTemplates) {
+        const SyncName &templateName = Str2SyncName(userTemplate.templ());
         bool normalizationHasFailed = false;
-        logIfTemplateNormalizationFails(_logger, userTemplate.templ(), normalizationHasFailed);
+        logIfTemplateNormalizationFails(_logger, templateName, normalizationHasFailed);
 
         if (normalizationHasFailed) continue;
 
-        const auto normalizedTemplates = CommonUtility::computePathNormalizations(userTemplate.templ());
-        for (const auto &normalization: normalizedTemplates) {
-            std::string normalizationStdStr = SyncName2Str(normalization);
-            if (const auto &[_, successfulInsertion] = dbUserExclusionUniqueStrings.emplace(normalizationStdStr);
-                successfulInsertion) {
-                dbUserExclusionStringsOutput.push_back(normalization);
+        const auto normalizedTemplateNames = CommonUtility::computePathNormalizations(templateName);
+        for (const auto &normalizedName: normalizedTemplateNames) {
+            const std::string &normalizedStr = SyncName2Str(normalizedName);
+            if (const auto &[_, successfulInsertion] = dbUserExclusionUniqueStrings.emplace(normalizedStr); successfulInsertion) {
+                dbUserExclusionStringsOutput.push_back(normalizedStr);
             }
         }
     }
