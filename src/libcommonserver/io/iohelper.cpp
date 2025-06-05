@@ -618,7 +618,8 @@ namespace details {
 class CacheDirectoryHanlder {
     public:
         CacheDirectoryHanlder() {
-            if (_directoryPath = buildPath(); !_directoryPath.empty()) {
+            initDirectoryPath();
+            if (!_directoryPath.empty()) {
                 // It is a best effort, we cannot log/sentry anything here as the logger/sentry may not be initialized yet.
                 IoError ioError = IoError::Success;
                 if (!IoHelper::createDirectory(_directoryPath, true, ioError) && ioError != IoError::DirectoryExists) {
@@ -635,13 +636,13 @@ class CacheDirectoryHanlder {
         const SyncPath &getPath() const noexcept { return _directoryPath; }
 
     private:
-        const SyncPath &buildPath() noexcept {
+        const void initDirectoryPath() noexcept {
             static const SyncName cacheDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName("-cache"));
-            if (buildPathFromEnv("KDRIVE_CACHE_PATH", cacheDirName, _directoryPath)) return;
+            if (initDirectoryPathFromEnv("KDRIVE_CACHE_PATH", cacheDirName)) return;
 
 #ifdef __unix__
-            if (buildPathFromEnv("XDG_CACHE_HOME", cacheDirName, _directoryPath)) return;
-            if (buildPathFromEnv("HOME", cacheDirName, _directoryPath, ".cache")) return;
+            if (initDirectoryPathFromEnv("XDG_CACHE_HOME", cacheDirName)) return;
+            if (initDirectoryPathFromEnv("HOME", cacheDirName, ".cache")) return;
 #endif
             IoError ioError = IoError::Success;
             if (!IoHelper::tempDirectoryPath(_directoryPath, ioError)) {
@@ -651,7 +652,7 @@ class CacheDirectoryHanlder {
             return;
         }
 
-        const bool buildPathFromEnv(const std::string &envVar, const SyncName &cacheDirName,
+        const bool initDirectoryPathFromEnv(const std::string &envVar, const SyncName &cacheDirName,
                                     const SyncPath &subDir = "") noexcept {
             bool isSet = false;
             if (const auto value = CommonUtility::envVarValue(envVar, isSet); isSet && !value.empty()) {

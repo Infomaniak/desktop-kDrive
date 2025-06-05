@@ -177,6 +177,7 @@ void AppServer::init() {
     }
 
     bool newDbExists = false;
+    IoError ioError = IoError::Unknown;
     if (!IoHelper::checkIfPathExists(parmsDbPath, newDbExists, ioError) || ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(parmsDbPath, ioError));
         throw std::runtime_error("Unable to check if ParmsDb exists.");
