@@ -111,7 +111,6 @@ void TestLog::testExpiredLogFiles(void) {
     auto now = std::chrono::system_clock::now();
     while (now - start < std::chrono::seconds(3)) {
         now = std::chrono::system_clock::now();
-        KDC::testhelpers::setModificationDate(Log::instance()->getLogFilePath(), now);
         (void) IoHelper::setFileDates(Log::instance()->getLogFilePath(), now.time_since_epoch().count(),
                                       now.time_since_epoch().count(), false); // Prevent the current log file from being deleted.
         appender->checkForExpiredFiles();

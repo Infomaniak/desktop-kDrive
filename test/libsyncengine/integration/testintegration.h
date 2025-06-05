@@ -56,7 +56,6 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testRemoteChanges();
         void testSimultaneousChanges();
 
-
         void inconsistencyTests();
 
         void conflictTests();
@@ -64,13 +63,12 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testCreateCreateConflict();
         void testEditEditPseudoConflict();
         void testEditEditConflict();
+        void testMoveCreateConflict();
 
         // // TODO : other tests
         // // - many sync ops (ex: upload 100 files)
         // // - create dir + subdir + file in same sync
         // // Conflicts
-        // void testEditEditPseudoConflict();
-        // void testEditEditConflict();
         // void testMoveCreateConflict();
         // void testEditDeleteConflict1();
         // void testEditDeleteConflict2();
@@ -117,6 +115,17 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         NodeId duplicateRemoteFile(const NodeId &id, const SyncName &newName) const;
         SyncPath findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix);
 
+        struct RemoteFileInfo {
+                NodeId id;
+                NodeId parentId;
+                SyncTime modificationTime{0};
+                SyncTime creationTime{0};
+                int64_t size{0};
+                NodeType type = NodeType::Unknown;
+
+                bool isValid() const { return !id.empty(); }
+        };
+        RemoteFileInfo getRemoteFileInfo(int _driveDbId, const NodeId &parentId, const SyncName &name);
         log4cplus::Logger _logger;
 
         std::shared_ptr<SyncPal> _syncPal = nullptr;

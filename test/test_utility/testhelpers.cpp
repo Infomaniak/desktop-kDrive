@@ -19,8 +19,6 @@
 #include "testhelpers.h"
 
 #include "libcommon/utility/utility.h"
-#include "libsyncengine/jobs/network/networkjobsparams.h"
-#include "libsyncengine/jobs/network/API_v2/getfilelistjob.h"
 
 #include <fstream>
 #include <Poco/JSON/Object.h>
@@ -95,35 +93,5 @@ std::string loadEnvVariable(const std::string &key, const bool mandatory) {
     }
     return val;
 }
-
-RemoteFileInfo getRemoteFileInfo(const int driveDbId, const NodeId &parentId, const SyncName &name) {
-    RemoteFileInfo fileInfo;
-
-    GetFileListJob job(driveDbId, parentId);
-    (void) job.runSynchronously();
-
-    const auto resObj = job.jsonRes();
-    if (!resObj) return fileInfo;
-
-    const auto dataArray = resObj->getArray(dataKey);
-    if (!dataArray) return fileInfo;
-
-    for (auto it = dataArray->begin(); it != dataArray->end(); ++it) {
-        const auto obj = it->extract<Poco::JSON::Object::Ptr>();
-        if (name == obj->get(nameKey).toString()) {
-            fileInfo.id = obj->get(idKey).toString();
-            fileInfo.parentId = obj->get(parentIdKey).toString();
-            fileInfo.modificationTime = toInt(obj->get(lastModifiedAtKey));
-            fileInfo.creationTime = toInt(obj->get(addedAtKey));
-            fileInfo.type = obj->get(typeKey).toString() == "file" ? NodeType::File : NodeType::Directory;
-            if (fileInfo.type == NodeType::File) {
-                fileInfo.size = toInt(obj->get(sizeKey));
-            }
-        }
-    }
-
-    return fileInfo;
-}
-
 
 } // namespace KDC::testhelpers
