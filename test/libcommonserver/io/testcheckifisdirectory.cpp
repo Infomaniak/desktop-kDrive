@@ -351,7 +351,7 @@ void TestIo::testCreateDirectory() {
         CPPUNIT_ASSERT(!_testObj->createDirectory(path, false, ioError));
         CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
 #else
-        CPPUNIT_ASSERT(!_testObj->createDirectory(path, false, ioError));
+        CPPUNIT_ASSERT(!_testObj->createDirectory(path, ioError));
         CPPUNIT_ASSERT(ioError == IoError::FileNameTooLong);
 #endif
     }
