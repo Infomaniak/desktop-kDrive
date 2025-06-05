@@ -670,7 +670,7 @@ class CacheDirectoryHanlder {
 } // namespace details
 
 bool IoHelper::cacheDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
-    static const details::CacheDirectoryHanlder cacheDirectoryHandler(logger());
+    static const details::CacheDirectoryHanlder cacheDirectoryHandler;
     directoryPath = cacheDirectoryHandler.getPath();
     return !directoryPath.empty();
 }

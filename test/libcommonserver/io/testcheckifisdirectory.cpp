@@ -271,7 +271,7 @@ void TestIo::testCreateDirectory() {
     // Creates successfully a directory with missing parent when recursive option is set to true
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path() / "regular_directory" / "subdir";
+        const SyncPath path = temporaryDirectory.path() / "non_existing_directory" / "subdir";
 
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->createDirectory(path, true, ioError));
@@ -288,7 +288,7 @@ void TestIo::testCreateDirectory() {
     // Fails to create a directory because the parent path does not exists and recursive option is set to false.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path() / "regular_directory" / "subdir";
+        const SyncPath path = temporaryDirectory.path() / "non_existing_directory" / "subdir";
 
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(!_testObj->createDirectory(path, false, ioError));
