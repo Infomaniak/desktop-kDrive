@@ -186,3 +186,53 @@ Then follow their [installation instructions](https://github.com/openssl/openssl
 Note that installing `NASM` is not required.
 
 </details>
+
+<details>
+<summary>Sentry - 0.7.9 (0.6.4 on Linux for Ubuntu 20.04)</summary>
+
+### macOS
+
+Download [Sentry Sources](https://github.com/getsentry/sentry-native/releases) (you can download the released zip and extract it to `~/Projects`):
+
+```bash
+cd ~/Projects/sentry-native
+cmake -B build -DSENTRY_BACKEND=crashpad -DSENTRY_INTEGRATION_QT=YES -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -DCMAKE_PREFIX_PATH=$QTDIR/lib/cmake
+cmake --build build --parallel
+sudo cmake --install build
+```
+
+### Linux
+
+You will need to install the dev libcurl package to build sentry-native
+
+```bash
+sudo apt install -y libcurl4-openssl-dev
+cd ~/Projects
+git clone https://github.com/getsentry/sentry-native.git
+cd sentry-native
+git checkout tags/0.7.9
+git submodule init
+git submodule update --recursive
+cd external/crashpad
+git submodule init
+git submodule update --recursive
+cd ../..
+cmake -B build -DSENTRY_INTEGRATION_QT=YES -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_PREFIX_PATH=~/Qt/6.2.3/gcc_64
+cmake --build build --parallel
+sudo cmake --install build
+```
+
+
+### Windows
+
+Download the [Sentry sources (`sentry-native.zip`)](https://github.com/getsentry/sentry-native/releases) and extract them to `F:\Projects`.
+After successful extraction, run:
+
+```cmd
+cd F:\Projects\sentry-native
+cmake -B build -DSENTRY_INTEGRATION_QT=YES -DCMAKE_PREFIX_PATH=%QTDIR%
+cmake --build build --config RelWithDebInfo
+cmake --install build --config RelWithDebInfo
+```
+
+</details>
