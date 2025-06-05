@@ -272,7 +272,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError 
     filestat->size = ((long long) pFileInfo->EndOfFile.HighPart << 32) + (long long) pFileInfo->EndOfFile.LowPart;
 
     DWORD rem;
-    filestat->modtime = FileTimeToUnixTime(pFileInfo->LastWriteTime, &rem);
+    filestat->modificationTime = FileTimeToUnixTime(pFileInfo->LastWriteTime, &rem);
     filestat->creationTime = FileTimeToUnixTime(pFileInfo->CreationTime, &rem);
 
     filestat->isHidden = pFileInfo->FileAttributes & FILE_ATTRIBUTE_HIDDEN;

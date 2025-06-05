@@ -20,11 +20,11 @@ set(testparms_SRCS
     db/testparmsdb.h db/testparmsdb.cpp
 )
 
-if (USE_OUR_OWN_SQLITE3)
+if(USE_OUR_OWN_SQLITE3)
     list(APPEND testparms_SRCS ${SQLITE3_SOURCE})
 endif()
 
-if (WIN32)
+if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
 else()
     include_directories("/usr/local/include")
@@ -40,7 +40,7 @@ target_link_libraries(${testparms_NAME}
     ${SQLITE3_LIBRARIES}
 )
 
-if (WIN32)
+if(WIN32)
     target_link_libraries(${testparms_NAME}
         debug
         "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"
@@ -61,14 +61,16 @@ if(APPLE)
     # Default Lite Sync app exclude list
     install(FILES ${CMAKE_SOURCE_DIR}/litesync-exclude.lst DESTINATION ${BIN_OUTPUT_DIRECTORY})
 
+    include(ConanGetLibDirs)
+    get_library_dirs("OpenSSL" "openssl-universal")
     install(CODE "
         message(STATUS \"Fixing library paths for ${testparms_NAME}...\")
         execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.8.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testparms_NAME})
         execute_process(COMMAND \"install_name_tool\" -change /usr/local/lib/libcppunit-1.15.2.dylib @rpath/libcppunit-1.15.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testparms_NAME})
-        execute_process(COMMAND \"install_name_tool\" -change /opt/homebrew/opt/openssl@3/lib/libssl.3.dylib @rpath/libssl.3.dylib ${BIN_OUTPUT_DIRECTORY}/${testparms_NAME})
-        execute_process(COMMAND \"install_name_tool\" -change /opt/homebrew/opt/openssl@3/lib/libcrypto.3.dylib @rpath/libcrypto.3.dylib ${BIN_OUTPUT_DIRECTORY}/${testparms_NAME})
+        execute_process(COMMAND \"install_name_tool\" -change ${_OpenSSL_LIB_DIRS}/libssl.3.dylib @rpath/libssl.3.dylib ${BIN_OUTPUT_DIRECTORY}/${testparms_NAME})
+        execute_process(COMMAND \"install_name_tool\" -change ${_OpenSSL_LIB_DIRS}/libcrypto.3.dylib @rpath/libcrypto.3.dylib ${BIN_OUTPUT_DIRECTORY}/${testparms_NAME})
         execute_process(COMMAND \"install_name_tool\" -add_rpath /usr/local/lib ${BIN_OUTPUT_DIRECTORY}/${testparms_NAME})
         execute_process(COMMAND \"install_name_tool\" -add_rpath @executable_path ${BIN_OUTPUT_DIRECTORY}/${testparms_NAME})
-        execute_process(COMMAND \"install_name_tool\" -add_rpath /opt/homebrew/opt/openssl@3/lib ${BIN_OUTPUT_DIRECTORY}/${testparms_NAME})
+        execute_process(COMMAND \"install_name_tool\" -add_rpath ${_OpenSSL_LIB_DIRS} ${BIN_OUTPUT_DIRECTORY}/${testparms_NAME})
         " COMPONENT RUNTIME)
 endif()

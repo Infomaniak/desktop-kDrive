@@ -101,10 +101,6 @@ sudo make install
 
 If the server does not reply to the `git clone` command, you can download the source from https://www.freedesktop.org/wiki/Software/cppunit/.
 
-## xxHash, log4cplus, OpenSSL & zlib
-
-See [Conan](#conan) for installation instructions.
-
 ## Poco
 
 > :warning: **`Poco` requires OpenSSL to be installed.**

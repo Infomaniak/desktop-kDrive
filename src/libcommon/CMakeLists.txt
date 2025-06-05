@@ -10,10 +10,10 @@ find_package(Poco 1.13.3 REQUIRED Foundation JSON Util)
 find_package(log4cplus 2.1.0 REQUIRED)
 find_package(sentry REQUIRED)
 
-if (UNIX AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+if(UNIX AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     # Use fallback library types for imported dependencies
     set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO RelWithDebInfo NoConfig)
-endif ()
+endif()
 find_package(libzip 1.10.1 REQUIRED)
 
 set(CMAKE_AUTOMOC TRUE)
@@ -97,14 +97,14 @@ set_target_properties(${libcommon_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY}
 )
 
-GENERATE_EXPORT_HEADER(${libcommon_NAME}
+generate_export_header(${libcommon_NAME}
     BASE_NAME ${libcommon_NAME}
     EXPORT_MACRO_NAME COMMON_EXPORT
     EXPORT_FILE_NAME libcommon.h
 )
 
 # Includes
-if (WIN32)
+if(WIN32)
     target_include_directories(${libcommon_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
@@ -143,17 +143,17 @@ endif()
 if(UNIX)
     target_link_libraries(${libcommon_NAME} utf8proc)
 
-    IF (NOT APPLE)
+    if(NOT APPLE)
         # Copy .so files to the conan dependency directory
+        include(ConanGetLibDirs)
+        get_library_dirs("log4cplus" "log4cplus")
         install(FILES
-                "$<$<CONFIG:Release>:${log4cplus_LIB_DIRS_RELEASE}/liblog4cplus.so>" # Release
-                "$<$<CONFIG:Release>:${log4cplus_LIB_DIRS_RELEASE}/liblog4cplus.so.9>"
-                "$<$<CONFIG:RelWithDebInfo>:${log4cplus_LIB_DIRS_RELWITHDEBINFO}/liblog4cplus.so>" # RelWithDebInfo
-                "$<$<CONFIG:RelWithDebInfo>:${log4cplus_LIB_DIRS_RELWITHDEBINFO}/liblog4cplus.so.9>"
+                "${_log4cplus_LIB_DIRS}/liblog4cplus.so"
+                "${_log4cplus_LIB_DIRS}/liblog4cplus.so.9"
                 DESTINATION "${CONAN_DEP_DIR}"
                 PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
         )
-    ENDIF()
+    endif()
 endif()
 
 if(ZLIB_FOUND)

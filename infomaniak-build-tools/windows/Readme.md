@@ -10,6 +10,7 @@
     - [C++ Redistributable](#redistributable)
     - [NSIS](#nsis)
     - [7za](#7za)
+    - [Conan](#conan)
 - [Certificate Configuration](#certificate-configuration)
 - [Build in Debug](#build-in-debug)
     - [Using CLion](#using-clion)

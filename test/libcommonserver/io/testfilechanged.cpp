@@ -35,8 +35,8 @@ void TestIo::testFileChanged() {
         _testObj->getFileStat(path, &fileStat, ioError);
 
         bool changed = true;
-        CPPUNIT_ASSERT(
-                _testObj->checkIfFileChanged(path, fileStat.size, fileStat.modtime, fileStat.creationTime, changed, ioError));
+        CPPUNIT_ASSERT(_testObj->checkIfFileChanged(path, fileStat.size, fileStat.modificationTime, fileStat.creationTime,
+                                                    changed, ioError));
         CPPUNIT_ASSERT(!changed);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -50,8 +50,8 @@ void TestIo::testFileChanged() {
         _testObj->getFileStat(path, &fileStat, ioError);
 
         bool changed = true;
-        CPPUNIT_ASSERT(
-                _testObj->checkIfFileChanged(path, fileStat.size, fileStat.modtime, fileStat.creationTime, changed, ioError));
+        CPPUNIT_ASSERT(_testObj->checkIfFileChanged(path, fileStat.size, fileStat.modificationTime, fileStat.creationTime,
+                                                    changed, ioError));
         CPPUNIT_ASSERT(!changed);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -68,8 +68,8 @@ void TestIo::testFileChanged() {
         _testObj->getFileStat(path, &fileStat, ioError);
 
         bool changed = true;
-        CPPUNIT_ASSERT(
-                _testObj->checkIfFileChanged(path, fileStat.size, fileStat.modtime, fileStat.creationTime, changed, ioError));
+        CPPUNIT_ASSERT(_testObj->checkIfFileChanged(path, fileStat.size, fileStat.modificationTime, fileStat.creationTime,
+                                                    changed, ioError));
         CPPUNIT_ASSERT(!changed);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -105,8 +105,8 @@ void TestIo::testFileChanged() {
         }
 
         bool changed = false;
-        CPPUNIT_ASSERT(
-                _testObj->checkIfFileChanged(path, fileStat.size, fileStat.modtime, fileStat.creationTime, changed, ioError));
+        CPPUNIT_ASSERT(_testObj->checkIfFileChanged(path, fileStat.size, fileStat.modificationTime, fileStat.creationTime,
+                                                    changed, ioError));
         CPPUNIT_ASSERT(changed);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -128,8 +128,8 @@ void TestIo::testFileChanged() {
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::remove);
 
         bool changed = true;
-        CPPUNIT_ASSERT(
-                _testObj->checkIfFileChanged(path, fileStat.size, fileStat.modtime, fileStat.creationTime, changed, ioError));
+        CPPUNIT_ASSERT(_testObj->checkIfFileChanged(path, fileStat.size, fileStat.modificationTime, fileStat.creationTime,
+                                                    changed, ioError));
 
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::add);
 
@@ -151,8 +151,8 @@ void TestIo::testFileChanged() {
 
         _testObj->setFileHidden(path, true);
         bool changed = true;
-        CPPUNIT_ASSERT(
-                _testObj->checkIfFileChanged(path, fileStat.size, fileStat.modtime, fileStat.creationTime, changed, ioError));
+        CPPUNIT_ASSERT(_testObj->checkIfFileChanged(path, fileStat.size, fileStat.modificationTime, fileStat.creationTime,
+                                                    changed, ioError));
         CPPUNIT_ASSERT(!changed);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }

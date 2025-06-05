@@ -70,7 +70,7 @@ void RemoteFileSystemObserverWorker::execute() {
         }
         // We never pause this thread
 
-        if (!_snapshot->isValid()) {
+        if (!_liveSnapshot.isValid()) {
             exitCode = generateInitialSnapshot();
             if (exitCode != ExitCode::Ok) {
                 LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot: code=" << exitCode);
@@ -98,7 +98,7 @@ ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     // Retrieve the list of blacklisted folders.
     (void) SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, _blackList);
 
-    _snapshot->init();
+    _liveSnapshot.init();
     _updating = true;
     countListingRequests();
 
@@ -107,9 +107,9 @@ ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     const auto end = std::chrono::steady_clock::now();
     const std::chrono::duration<double> elapsedSeconds = end - start;
     if (exitCode == ExitCode::Ok && !stopAsked()) {
-        _snapshot->setValid(true);
-        LOG_SYNCPAL_INFO(_logger, "Remote snapshot generated in: " << elapsedSeconds.count() << "s for " << _snapshot->nbItems()
-                                                                   << " items");
+        _liveSnapshot.setValid(true);
+        LOG_SYNCPAL_INFO(_logger, "Remote snapshot generated in: " << elapsedSeconds.count() << "s for "
+                                                                   << _liveSnapshot.nbItems() << " items");
         perfMonitor.stop();
     } else {
         tryToInvalidateSnapshot();
@@ -260,7 +260,7 @@ ExitCode RemoteFileSystemObserverWorker::initWithCursor() {
         return ExitCode::Ok;
     }
 
-    return getItemsInDir(_snapshot->rootFolderId(), true);
+    return getItemsInDir(_liveSnapshot.rootFolderId(), true);
 }
 
 ExitCode RemoteFileSystemObserverWorker::exploreDirectory(const NodeId &nodeId) {
@@ -357,10 +357,10 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         if (const auto &[_, inserted] = existingFiles.insert(Str2SyncName(item.parentId()) + item.name()); !inserted) {
             // An item with the exact same name already exists in the parent folder.
             LOGW_SYNCPAL_DEBUG(_logger, L"Item \"" << SyncName2WStr(item.name()) << L"\" already exists in directory \""
-                                                   << SyncName2WStr(_snapshot->name(item.parentId())) << L"\"");
+                                                   << SyncName2WStr(_liveSnapshot.name(item.parentId())) << L"\"");
 
             SyncPath path;
-            _snapshot->path(item.parentId(), path, ignore);
+            _liveSnapshot.path(item.parentId(), path, ignore);
             path /= item.name();
 
             Error err(_syncPal->syncDbId(), "", item.id(), NodeType::Directory, path, ConflictType::None, InconsistencyType::None,
@@ -370,7 +370,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
             continue;
         }
 
-        if (_snapshot->updateItem(item)) {
+        if (_liveSnapshot.updateItem(item)) {
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in remote snapshot: name:"
                                                     << SyncName2WStr(item.name()) << L", inode:" << Utility::s2ws(item.id())
@@ -392,14 +392,14 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
 
     // Delete orphans
     NodeSet nodeIds;
-    _snapshot->ids(nodeIds);
+    _liveSnapshot.ids(nodeIds);
     auto nodeIdIt = nodeIds.begin();
     while (nodeIdIt != nodeIds.end()) {
-        if (_snapshot->isOrphan(*nodeIdIt)) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Node '" << SyncName2WStr(_snapshot->name(*nodeIdIt)) << L"' ("
+        if (_liveSnapshot.isOrphan(*nodeIdIt)) {
+            LOGW_SYNCPAL_DEBUG(_logger, L"Node '" << SyncName2WStr(_liveSnapshot.name(*nodeIdIt)) << L"' ("
                                                   << Utility::s2ws(*nodeIdIt) << L") is orphan. Removing it from "
-                                                  << _snapshot->side() << L" snapshot.");
-            _snapshot->removeItem(*nodeIdIt);
+                                                  << _liveSnapshot.side() << L" snapshot.");
+            _liveSnapshot.removeItem(*nodeIdIt);
         }
         nodeIdIt++;
     }
@@ -411,7 +411,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
 }
 
 ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
-    if (_snapshot->isValid()) {
+    if (_liveSnapshot.isValid()) {
         std::shared_ptr<LongPollJob> notifyJob = nullptr;
         try {
             notifyJob = std::make_shared<LongPollJob>(_driveDbId, _cursor);
@@ -511,8 +511,8 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
                             actionInfo.path, ConflictType::None, InconsistencyType::None, CancelType::ExcludedByTemplate);
                 _syncPal->addError(error);
             }
-            // Remove it from snapshot
-            _snapshot->removeItem(actionInfo.snapshotItem.id());
+            // Remove it from liveSnapshot
+            _liveSnapshot.removeItem(actionInfo.snapshotItem.id());
             continue;
         }
 
@@ -635,8 +635,8 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
         case ActionCode::ActionCodeRename: {
             const bool exploreDir = actionInfo.snapshotItem.type() == NodeType::Directory &&
                                     actionInfo.actionCode != ActionCode::ActionCodeCreate &&
-                                    !_snapshot->exists(actionInfo.snapshotItem.id());
-            _snapshot->updateItem(actionInfo.snapshotItem);
+                                    !_liveSnapshot.exists(actionInfo.snapshotItem.id());
+            _liveSnapshot.updateItem(actionInfo.snapshotItem);
             if (exploreDir) {
                 // Retrieve all children
                 const ExitCode exitCode = exploreDirectory(actionInfo.snapshotItem.id());
@@ -665,7 +665,7 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
         }
         // Item edited
         case ActionCode::ActionCodeEdit:
-            _snapshot->updateItem(actionInfo.snapshotItem);
+            _liveSnapshot.updateItem(actionInfo.snapshotItem);
             break;
 
         // Item removed
@@ -687,7 +687,7 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
             if (movedItems.find(actionInfo.snapshotItem.id()) != movedItems.end()) break;
             [[fallthrough]];
         case ActionCode::ActionCodeTrash:
-            if (!_snapshot->removeItem(actionInfo.snapshotItem.id())) {
+            if (!_liveSnapshot.removeItem(actionInfo.snapshotItem.id())) {
                 LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(actionInfo.snapshotItem.name()) << L" ("
                                                                     << Utility::s2ws(actionInfo.snapshotItem.id()) << L")");
                 tryToInvalidateSnapshot();

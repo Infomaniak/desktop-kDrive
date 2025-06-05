@@ -36,19 +36,19 @@ AbstractUpdater::AbstractUpdater() :
     _updateChecker->setCallback(callback);
 }
 
-AbstractUpdater::AbstractUpdater(const std::shared_ptr<UpdateChecker>& updateChecker) :
+AbstractUpdater::AbstractUpdater(const std::shared_ptr<UpdateChecker> &updateChecker) :
     _updateChecker(updateChecker) {
     const std::function callback = [this] { onAppVersionReceived(); };
     _updateChecker->setCallback(callback);
 }
 
-ExitCode AbstractUpdater::checkUpdateAvailable(const VersionChannel currentChannel, UniqueId* id /*= nullptr*/) {
+ExitCode AbstractUpdater::checkUpdateAvailable(const VersionChannel currentChannel, UniqueId *id /*= nullptr*/) {
     _currentChannel = currentChannel;
     setState(UpdateState::Checking);
     return _updateChecker->checkUpdateAvailability(id);
 }
 
-void AbstractUpdater::setStateChangeCallback(const std::function<void(UpdateState)>& stateChangeCallback) {
+void AbstractUpdater::setStateChangeCallback(const std::function<void(UpdateState)> &stateChangeCallback) {
     LOG_INFO(Log::instance()->getLogger(), "Set state change callback");
     _stateChangeCallback = stateChangeCallback;
 }
@@ -60,7 +60,7 @@ void AbstractUpdater::onAppVersionReceived() {
         return;
     }
 
-    const VersionInfo& versionInfo = _updateChecker->versionInfo(_currentChannel);
+    const VersionInfo &versionInfo = _updateChecker->versionInfo(_currentChannel);
     if (!versionInfo.isValid()) {
         LOG_INFO(Log::instance()->getLogger(), "No valid update info retrieved for distribution channel: " << _currentChannel);
         setState(UpdateState::UpToDate);
@@ -77,7 +77,7 @@ void AbstractUpdater::onAppVersionReceived() {
     sentry::Handler::instance()->setDistributionChannel(currentVersionChannel());
 }
 
-void AbstractUpdater::skipVersion(const std::string& skippedVersion) {
+void AbstractUpdater::skipVersion(const std::string &skippedVersion) {
     ParametersCache::instance()->parameters().setSeenVersion(skippedVersion);
     ParametersCache::instance()->save();
 }
@@ -89,7 +89,7 @@ void AbstractUpdater::unskipVersion() {
     }
 }
 
-bool AbstractUpdater::isVersionSkipped(const std::string& version) {
+bool AbstractUpdater::isVersionSkipped(const std::string &version) {
     if (version.empty()) return false;
 
     const auto seenVerison = ParametersCache::instance()->parameters().seenVersion();

@@ -11,10 +11,10 @@ find_package(Poco 1.13.3 REQUIRED Foundation Net JSON Util)
 find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
 find_package(xxHash 0.8.2 REQUIRED)
 
-if (UNIX AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+if(UNIX AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     # Use fallback library types for imported dependencies
     set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO RelWithDebInfo NoConfig)
-endif ()
+endif()
 find_package(libzip 1.10.1 REQUIRED)
 
 set(CMAKE_AUTOMOC TRUE)
@@ -60,7 +60,7 @@ else()
     list(APPEND libcommonserver_SRCS io/iohelper_linux.cpp)
 endif()
 
-if (USE_OUR_OWN_SQLITE3)
+if(USE_OUR_OWN_SQLITE3)
     list(APPEND libcommonserver_SRCS ${SQLITE3_SOURCE})
 endif()
 
@@ -109,14 +109,14 @@ set_target_properties(${libcommonserver_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY}
 )
 
-GENERATE_EXPORT_HEADER(${libcommonserver_NAME}
+generate_export_header(${libcommonserver_NAME}
     BASE_NAME ${libcommonserver_NAME}
     EXPORT_MACRO_NAME COMMONSERVER_EXPORT
     EXPORT_FILE_NAME commonserverlib.h
 )
 
 # Includes
-if (WIN32)
+if(WIN32)
     target_include_directories(${libcommonserver_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
@@ -130,7 +130,7 @@ else()
         ${CMAKE_SOURCE_DIR}/src/3rdparty/utf8proc)
 endif()
 
-if (USE_OUR_OWN_SQLITE3)
+if(USE_OUR_OWN_SQLITE3)
     # make sure that the path for the local sqlite3 is before the system one
     target_include_directories("${libcommonserver_NAME}" BEFORE PRIVATE ${SQLITE3_INCLUDE_DIR})
 else()
@@ -146,7 +146,7 @@ target_link_libraries(${libcommonserver_NAME}
     xxHash::xxhash
     libzip::zip)
 
-if (WIN32)
+if(WIN32)
     target_link_libraries(${libcommonserver_NAME}
         Secur32)
 elseif(APPLE)
@@ -163,26 +163,20 @@ else()
     target_link_libraries(${libcommonserver_NAME}
         utf8proc
     )
+    include(ConanGetLibDirs)
+    get_library_dirs("OpenSSL" "openssl")
+    get_library_dirs("xxHash" "xxhash")
+    install(FILES
+            # xxHash
+            "${_xxHash_LIB_DIRS}/libxxhash.so"
+            "${_xxHash_LIB_DIRS}/libxxhash.so.0"
+            "${_xxHash_LIB_DIRS}/libxxhash.so.0.8.2"
 
-    install(FILES
-            "$<$<CONFIG:Release>:${xxhash_LIB_DIRS_RELEASE}/libxxhash.so>" # Release
-            "$<$<CONFIG:Release>:${xxhash_LIB_DIRS_RELEASE}/libxxhash.so.0>"
-            "$<$<CONFIG:Release>:${xxhash_LIB_DIRS_RELEASE}/libxxhash.so.0.8.2>"
-            "$<$<CONFIG:RelWithDebInfo>:${xxhash_LIB_DIRS_RELWITHDEBINFO}/libxxhash.so>" # RelWithDebInfo
-            "$<$<CONFIG:RelWithDebInfo>:${xxhash_LIB_DIRS_RELWITHDEBINFO}/libxxhash.so.0>"
-            "$<$<CONFIG:RelWithDebInfo>:${xxhash_LIB_DIRS_RELWITHDEBINFO}/libxxhash.so.0.8.2>"
-            DESTINATION "${CONAN_DEP_DIR}"
-            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
-    )
-    install(FILES
-            "$<$<CONFIG:Release>:${openssl_LIB_DIRS_RELEASE}/libcrypto.so>" # Release
-            "$<$<CONFIG:Release>:${openssl_LIB_DIRS_RELEASE}/libcrypto.so.3>"
-            "$<$<CONFIG:Release>:${openssl_LIB_DIRS_RELEASE}/libssl.so>"
-            "$<$<CONFIG:Release>:${openssl_LIB_DIRS_RELEASE}/libssl.so.3>"
-            "$<$<CONFIG:RelWithDebInfo>:${openssl_LIB_DIRS_RELWITHDEBINFO}/libcrypto.so>" # RelWithDebInfo
-            "$<$<CONFIG:RelWithDebInfo>:${openssl_LIB_DIRS_RELWITHDEBINFO}/libcrypto.so.3>"
-            "$<$<CONFIG:RelWithDebInfo>:${openssl_LIB_DIRS_RELWITHDEBINFO}/libssl.so>"
-            "$<$<CONFIG:RelWithDebInfo>:${openssl_LIB_DIRS_RELWITHDEBINFO}/libssl.so.3>"
+            # OpenSSL
+            "${_OpenSSL_LIB_DIRS}/libcrypto.so"
+            "${_OpenSSL_LIB_DIRS}/libcrypto.so.3"
+            "${_OpenSSL_LIB_DIRS}/libssl.so"
+            "${_OpenSSL_LIB_DIRS}/libssl.so.3"
             DESTINATION "${CONAN_DEP_DIR}"
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
     )
