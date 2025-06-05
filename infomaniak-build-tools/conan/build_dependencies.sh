@@ -39,10 +39,7 @@ error(){ echo "[ERROR] $*" >&2; exit 1; }
 
 function get_platform {
     platform=$(uname | tr '[:upper:]' '[:lower:]')
-    if [ "$platform" != "darwin" ] && [ "$platform" != "linux" ]; then
-        error "Unsupported platform: $platform. Supported platforms: Linux, macOS"
-    fi
-
+    
     echo $platform
 }
 
@@ -56,7 +53,6 @@ function get_architecture {
 
     echo $architecture
 }
-
 
 function get_output_dir {
     output_dir="${KDRIVE_OUTPUT_DIR:-}"
@@ -93,20 +89,23 @@ if ! command -v conan >/dev/null 2>&1; then
 fi
 
 conan_remote_base_folder="$PWD/infomaniak-build-tools/conan"
-conan_recipes_folder="$conan_remote_base_folder/recipes"
-
 local_recipe_remote_name="localrecipes"
 if ! conan remote list | grep -qE "^$local_recipe_remote_name.*\[.*Enabled: True.*\]"; then
-  log "Adding Conan remote '$local_recipe_remote_name' at '$conan_remote_base_folder'. "
-  conan remote add "$local_recipe_remote_name" "$conan_remote_base_folder"
+    log "Adding Conan remote '$local_recipe_remote_name' at '$conan_remote_base_folder'. "
+    conan remote add "$local_recipe_remote_name" "$conan_remote_base_folder"
 else
-  log "Conan remote '$local_recipe_remote_name' already exists and is enabled."
+    log "Conan remote '$local_recipe_remote_name' already exists and is enabled."
 fi
 
 # Build conan recipe for the platforms x86_64 & arm64
 platform=$(get_platform)
+
+if [ "$platform" != "darwin" ] && [ "$platform" != "linux" ]; then
+    error "Unsupported platform: $platform. Supported platforms: Linux, macOS."
+fi
+
 if [[ "$platform" == "darwin" ]]; then
-  log "Building universal binary for macOS."
+    log "Building universal binary for macOS."
 fi
 
 architecture=$(get_architecture $platform)
@@ -123,6 +122,7 @@ log "- Output directory: '$output_dir'"
 echo
 
 # Create the conan package for xxHash.
+conan_recipes_folder="$conan_remote_base_folder/recipes"
 log "Creating package xxHash..."
 conan create "$conan_recipes_folder/xxhash/all/" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name
 
@@ -133,4 +133,4 @@ conan install . --output-folder="$output_dir" --build=missing $architecture -s:a
 if [ $? -ne 0 ]; then
   error "Failed to install Conan dependencies."
 fi
-log "Conan dependencies installed successfully for platform $platform ($build_type mode) in '$output_dir'."
+log "Conan dependencies installed successfully for platform $platform ($build_type) in '$output_dir'."
