@@ -96,7 +96,7 @@ void TestIntegration::setUp() {
     const Drive drive(_driveDbId, atoi(testVariables.driveId.c_str()), account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
-    // Create remote sync folder (so that synchronisation only takes place in a subdirectory, not taking into account the whole
+    // Create remote sync folder (so that synchronization only takes place in a subdirectory, not taking into account the whole
     // drive items)
     _remoteSyncDir.generate(_driveDbId, testCiFolderId);
     // Add initial test file
@@ -140,17 +140,8 @@ void TestIntegration::testAll() {
 
     // Start sync
     _syncPal->start();
-    // const TimerUtility timer;
-    // // Wait at most 1sec for the sync to be started
-    // while (!_syncPal->isRunning() && timer.elapsed<std::chrono::seconds>().count() < 1) {
-    //     Utility::msleep(10);
-    // }
-    // CPPUNIT_ASSERT(_syncPal->isRunning());
-
-    // Wait for end of 1st sync
-    // waitForSyncToFinish(SourceLocation::currentLoc());
+    // Wait for the end of 1st sync
     waitForNextSyncToFinish(SourceLocation::currentLoc());
-
     logStep("initialisation");
 
     // Run test cases
@@ -269,9 +260,7 @@ void TestIntegration::testRemoteChanges() {
         (void) createDirJob.runSynchronously();
         subDirId = createDirJob.nodeId();
 
-        DuplicateJob duplicateJob(nullptr, _driveDbId, _testFileRemoteId, filePath);
-        (void) duplicateJob.runSynchronously();
-        fileId = duplicateJob.nodeId();
+        fileId = duplicateRemoteFile(_testFileRemoteId, filePath.filename());
     }
 
     waitForNextSyncToFinish(SourceLocation::currentLoc());
@@ -352,12 +341,6 @@ void TestIntegration::testSimultaneousChanges() {
     logStep("testSimultaneousChanges");
 }
 
-NodeId TestIntegration::duplicateRemoteFile(const NodeId &id, const SyncName &newName) const {
-    DuplicateJob job(nullptr, _driveDbId, id, newName);
-    (void) job.runSynchronously();
-    return job.nodeId();
-}
-
 void TestIntegration::inconsistencyTests() {
     // Duplicate remote files to set up the tests.
     waitForNextSyncToFinish(SourceLocation::currentLoc());
@@ -397,7 +380,7 @@ void TestIntegration::inconsistencyTests() {
     CPPUNIT_ASSERT_EQUAL(true, remoteFileInfo.isValid());
     CPPUNIT_ASSERT_LESS(filestat.size, remoteFileInfo.size); // The local edit is not propagated.
 
-    // Rename again remote file to avoid the name clash.
+    // Rename again the remote file to avoid the name clash.
     (void) RenameJob(nullptr, _driveDbId, testNameClashRemoteId2, "testnameclash2").runSynchronously();
     _syncPal->_remoteFSObserverWorker->forceUpdate();
 
@@ -422,10 +405,54 @@ void TestIntegration::inconsistencyTests() {
 
 void TestIntegration::conflictTests() {
     testCreateCreatePseudoConflict();
+    testCreateCreateConflict();
 }
 
 void TestIntegration::testCreateCreatePseudoConflict() {
-    logStep("testCreateCreatePseudoConflict");
+    // Remove the test file from DB to simulate the pseudo conflict.
+    DbNodeId dbNodeId = 0;
+    bool found = false;
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->syncDb()->dbId(ReplicaSide::Remote, _testFileRemoteId, dbNodeId, found) && found);
+    NodeId localId;
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->syncDb()->id(ReplicaSide::Local, dbNodeId, localId, found) && found);
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->syncDb()->deleteNode(dbNodeId, found) && found);
+
+    // Remove the test file from the update trees.
+    (void) _syncPal->_localUpdateTree->deleteNode(localId);
+    (void) _syncPal->_remoteUpdateTree->deleteNode(_testFileRemoteId);
+
+    _syncPal->invalidateSnapshots();
+    waitForNextSyncToFinish(SourceLocation::currentLoc());
+
+    // Check that both remote and local ID has been re-inserted in DB.
+    SyncName name;
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->syncDb()->name(ReplicaSide::Remote, _testFileRemoteId, name, found) && found);
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->syncDb()->name(ReplicaSide::Local, localId, name, found) && found);
+}
+
+void TestIntegration::testCreateCreateConflict() {
+    // Simulate remote create.
+    waitForNextSyncToFinish(SourceLocation::currentLoc());
+    const auto remoteId = duplicateRemoteFile(_testFileRemoteId, "testCreateCreatePseudoConflict");
+
+    // Simulate local file creation.
+    const SyncPath localFilePath = _syncPal->localPath() / "testCreateCreatePseudoConflict";
+    testhelpers::generateOrEditTestFile(localFilePath);
+
+    _syncPal->_remoteFSObserverWorker->forceUpdate();
+    waitForNextSyncToFinish(SourceLocation::currentLoc());
+
+    const auto conflictedFilePath = findLocalFileByNamePrefix(_localSyncDir.path(), "testCreateCreatePseudoConflict_conflict_");
+    CPPUNIT_ASSERT_EQUAL(true, std::filesystem::exists(conflictedFilePath));
+    CPPUNIT_ASSERT_EQUAL(false, std::filesystem::exists(localFilePath));
+
+    _syncPal->_remoteFSObserverWorker->forceUpdate();
+    waitForNextSyncToFinish(SourceLocation::currentLoc());
+
+    CPPUNIT_ASSERT_EQUAL(true, std::filesystem::exists(conflictedFilePath));
+    CPPUNIT_ASSERT_EQUAL(true, std::filesystem::exists(localFilePath));
+
+    logStep("testCreateCreateConflict");
 }
 
 // void TestIntegration::testCreateCreatePseudoConflict() {
@@ -2232,6 +2259,23 @@ void TestIntegration::logStep(const std::string &str) {
     std::stringstream ss;
     ss << "$$$$$ Step `" << str << "` done in " << _timer.lap<std::chrono::milliseconds>() << " $$$$$";
     LOG_DEBUG(_logger, ss.str());
+}
+
+NodeId TestIntegration::duplicateRemoteFile(const NodeId &id, const SyncName &newName) const {
+    DuplicateJob job(nullptr, _driveDbId, id, newName);
+    (void) job.runSynchronously();
+    return job.nodeId();
+}
+
+SyncPath TestIntegration::findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix) {
+    IoError ioError(IoError::Unknown);
+    IoHelper::DirectoryIterator dirIt(parentAbsolutePath, false, ioError);
+    bool endOfDir = false;
+    DirectoryEntry entry;
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+        if (Utility::startsWith(entry.path().filename(), namePrefix)) return entry.path();
+    }
+    return SyncPath();
 }
 
 } // namespace KDC

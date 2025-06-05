@@ -98,6 +98,5 @@ struct RemoteFileInfo {
         bool isValid() const { return !id.empty(); }
 };
 RemoteFileInfo getRemoteFileInfo(int _driveDbId, const NodeId &parentId, const SyncName &name);
-FileStat getLocalFileInfo(const SyncPath &parentAbsolutPath, const SyncName &name);
 
 } // namespace KDC::testhelpers

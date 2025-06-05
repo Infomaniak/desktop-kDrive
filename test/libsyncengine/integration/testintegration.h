@@ -56,11 +56,12 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testRemoteChanges();
         void testSimultaneousChanges();
 
-        NodeId duplicateRemoteFile(const NodeId &id, const SyncName &newName) const;
+
         void inconsistencyTests();
 
         void conflictTests();
         void testCreateCreatePseudoConflict();
+        void testCreateCreateConflict();
 
         // // TODO : other tests
         // // - many sync ops (ex: upload 100 files)
@@ -112,6 +113,9 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void waitForSyncToFinish(const SourceLocation &srcLoc, std::chrono::seconds minWaitTime = std::chrono::seconds(3)) const;
         void waitForNextSyncToFinish(const SourceLocation &srcLoc);
         void logStep(const std::string &str);
+
+        NodeId duplicateRemoteFile(const NodeId &id, const SyncName &newName) const;
+        SyncPath findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix);
 
         log4cplus::Logger _logger;
 

@@ -1559,9 +1559,10 @@ ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &pr
         case ConflictType::MoveMoveDest: // Name clash conflict pattern
         case ConflictType::MoveMoveSource: // Name clash conflict pattern
         {
-            if (syncOp->conflict().type() != ConflictType::MoveMoveSource) {
+            if (syncOp->conflict().type() != ConflictType::MoveMoveSource &&
+                syncOp->conflict().type() != ConflictType::CreateCreate) {
                 if (const ExitInfo exitInfo = deleteFromDb(syncOp->conflict().localNode()); !exitInfo) {
-                    if (exitInfo.code() == ExitCode::DataError) {
+                    if (exitInfo.code() == ExitCode::DataError && exitInfo.cause() == ExitCause::DbEntryNotFound) {
                         // The node was not found in DB, this ok since we wanted to remove it anyway
                         LOGW_SYNCPAL_INFO(_logger,
                                           L"Node `" << Utility::formatSyncName(syncOp->conflict().localNode()->name())

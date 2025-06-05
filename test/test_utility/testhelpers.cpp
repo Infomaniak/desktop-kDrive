@@ -125,6 +125,5 @@ RemoteFileInfo getRemoteFileInfo(const int driveDbId, const NodeId &parentId, co
     return fileInfo;
 }
 
-FileStat getLocalFileInfo(const SyncPath &parentAbsolutPath, const SyncName &name) {}
 
 } // namespace KDC::testhelpers
