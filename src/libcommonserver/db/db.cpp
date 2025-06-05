@@ -602,6 +602,8 @@ bool Db::addColumnIfMissing(const std::string &tableName, const std::string &col
 }
 
 bool Db::createAndPrepareRequest(const char *requestId, const char *query) {
+    queryFree(requestId);
+
     int errId = 0;
     std::string error;
 

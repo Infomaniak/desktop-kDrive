@@ -711,43 +711,37 @@ bool ParmsDb::updateExclusionTemplates() {
     return true;
 }
 
+namespace {
+void logIfTemplateNormalizationFails(log4cplus::Logger &logger, const SyncName &template_, bool &normalizationHasFailed) {
+    normalizationHasFailed = false;
 
-//! Computes and returns the NFC and NFD normalizations of `exclusionTemplate`.
-/*!
-  \param exclusionTemplate is the pattern string the normalizations of which are queried.
-  \return a set of std::string containing the NFC and NFD normalizations of exclusionTemplate, if those have been successful.
-  The returned set contains additionally the string exclusionTemplate in any case.
-*/
-std::set<std::string> ParmsDb::computeNormalizations(const std::string &exclusionTemplateString) {
-    const auto &syncNameTemplate = Str2SyncName(exclusionTemplateString);
-    std::set<std::string> result;
-    result.emplace(exclusionTemplateString);
-
-    SyncName nfcNormalizedTemplate;
-
-    if (const bool nfcSuccess =
-                CommonUtility::normalizedSyncName(syncNameTemplate, nfcNormalizedTemplate, UnicodeNormalization::NFC);
-        !nfcSuccess) {
-        LOGW_WARN(_logger, L"Failed to NFC-normalize the template " << Utility::formatSyncName(syncNameTemplate));
-    } else {
-        result.emplace(SyncName2Str(nfcNormalizedTemplate));
+    SyncName nfcNormalizedName;
+    const bool nfcSuccess = CommonUtility::normalizedSyncName(template_, nfcNormalizedName, UnicodeNormalization::NFC);
+    if (!nfcSuccess) {
+        LOGW_WARN(logger, L"Error in CommonUtility::normalizedSyncName. Failed to NFC-normalize the template '"
+                                  << SyncName2WStr(template_) << L"'.");
     }
 
-    SyncName nfdNormalizedTemplate;
-
-    if (const bool nfdSuccess =
-                CommonUtility::normalizedSyncName(syncNameTemplate, nfdNormalizedTemplate, UnicodeNormalization::NFD);
-        !nfdSuccess) {
-        LOGW_WARN(_logger, L"Failed to NFD-normalize the template " << Utility::formatSyncName(syncNameTemplate));
-    } else {
-        result.emplace(SyncName2Str(nfdNormalizedTemplate));
+    SyncName nfdNormalizedName;
+    const bool nfdSuccess = CommonUtility::normalizedSyncName(template_, nfdNormalizedName, UnicodeNormalization::NFD);
+    if (!nfdSuccess) {
+        LOGW_WARN(logger, L"Error in CommonUtility::normalizedSyncName. Failed to NFD-normalize the template '"
+                                  << SyncName2WStr(template_) << L"'.");
     }
 
-    return result;
+    if (!nfcSuccess || !nfdSuccess) {
+        normalizationHasFailed = true;
+        LOG_WARN(logger,
+                 "File exclusion based on user templates may fail to exclude file names depending on their normalizations.");
+    }
 }
+} // namespace
 
 bool ParmsDb::insertUserTemplateNormalizations() {
     LOG_INFO(_logger, "Inserting the normalizations of user exclusion file patterns.");
+
+    if (!createAndPrepareRequest(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST))
+        return false;
 
     std::vector<ExclusionTemplate> dbUserExclusionTemplates;
     if (!selectUserExclusionTemplates(dbUserExclusionTemplates)) {
@@ -756,23 +750,20 @@ bool ParmsDb::insertUserTemplateNormalizations() {
     }
 
     std::list<std::string> dbUserExclusionStringsOutput;
+    StrSet dbUserExclusionUniqueStrings;
     for (const auto &userTemplate: dbUserExclusionTemplates) {
-        std::set<std::string> normalizedTemplates = computeNormalizations(userTemplate.templ());
-        for (auto &normalization: normalizedTemplates) dbUserExclusionStringsOutput.push_back(normalization);
-    }
+        bool normalizationHasFailed = false;
+        logIfTemplateNormalizationFails(_logger, userTemplate.templ(), normalizationHasFailed);
 
-    // Remove duplicates
-    std::set<std::string> uniqueUserTemplates(dbUserExclusionStringsOutput.cbegin(), dbUserExclusionStringsOutput.cend());
-    for (const auto &uniqueTemplateString: uniqueUserTemplates) {
-        bool erase = false;
-        for (auto it = dbUserExclusionStringsOutput.begin(); it != dbUserExclusionStringsOutput.end();) {
-            const bool match = *it == uniqueTemplateString;
-            if (erase && match) {
-                it = dbUserExclusionStringsOutput.erase(it);
-            } else {
-                ++it;
+        if (normalizationHasFailed) continue;
+
+        const auto normalizedTemplates = CommonUtility::computePathNormalizations(userTemplate.templ());
+        for (const auto &normalization: normalizedTemplates) {
+            std::string normalizationStdStr = SyncName2Str(normalization);
+            if (const auto &[_, successfulInsertion] = dbUserExclusionUniqueStrings.emplace(normalizationStdStr);
+                successfulInsertion) {
+                dbUserExclusionStringsOutput.push_back(normalization);
             }
-            if (match) erase = true;
         }
     }
 
@@ -783,7 +774,14 @@ bool ParmsDb::insertUserTemplateNormalizations() {
 
     LOG_INFO(_logger, "Normalizations prepared for updates.");
 
-    return updateUserExclusionTemplates(dbUserExclusionTemplatesOutput);
+    if (!createAndPrepareRequest(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST))
+        return false;
+
+    if (!createAndPrepareRequest(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, INSERT_EXCLUSION_TEMPLATE_REQUEST)) return false;
+
+    const bool result = updateUserExclusionTemplates(dbUserExclusionTemplatesOutput);
+
+    return result;
 }
 
 #ifdef __APPLE__
@@ -1073,6 +1071,10 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersi
 #endif
     } else {
         LOG_INFO(_logger, "Apply generic upgrade fixes to " << dbType() << " DB version " << fromVersion);
+        if (!insertUserTemplateNormalizations()) {
+            LOG_WARN(_logger, "Insertion of the normalizations of user exclusion file patterns has failed.");
+            return false;
+        }
     }
 
     const std::string tableName = "parameters";

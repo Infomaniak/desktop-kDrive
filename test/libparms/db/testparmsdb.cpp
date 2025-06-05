@@ -382,7 +382,7 @@ void TestParmsDb::testUpdateExclusionTemplates() {
 
 void TestParmsDb::testUpgrade() {
     const SyncName nfcEncodedName = testhelpers::makeNfcSyncName();
-    ExclusionTemplate exclusionTemplate1(SyncName2Str(nfcEncodedName)); // user template
+    ExclusionTemplate exclusionTemplate1(SyncName2Str(nfcEncodedName + Str("/A/") + nfcEncodedName)); // user template
     bool constraintError = false;
     CPPUNIT_ASSERT(ParmsDb::instance()->insertExclusionTemplate(exclusionTemplate1, constraintError));
 
@@ -393,12 +393,25 @@ void TestParmsDb::testUpgrade() {
 
     std::vector<ExclusionTemplate> dbUserExclusionTemplates;
     CPPUNIT_ASSERT(ParmsDb::instance()->selectUserExclusionTemplates(dbUserExclusionTemplates));
-    CPPUNIT_ASSERT_EQUAL(size_t{3}, dbUserExclusionTemplates.size());
+    CPPUNIT_ASSERT_EQUAL(size_t{5}, dbUserExclusionTemplates.size());
 
     const SyncName nfdEncodedName = testhelpers::makeNfdSyncName();
-    CPPUNIT_ASSERT_EQUAL(SyncName2Str(nfdEncodedName), dbUserExclusionTemplates.at(0).templ());
-    CPPUNIT_ASSERT_EQUAL(SyncName2Str(nfcEncodedName), dbUserExclusionTemplates.at(1).templ());
-    CPPUNIT_ASSERT_EQUAL(std::string{"o"}, dbUserExclusionTemplates.at(2).templ());
+
+    StrSet expectedTemplateSet;
+    (void) expectedTemplateSet.emplace("o");
+    for (const auto &name1: {nfcEncodedName, nfdEncodedName}) {
+        for (const auto &name2: {nfcEncodedName, nfdEncodedName}) {
+            (void) expectedTemplateSet.emplace(SyncName2Str(name1 + Str("/A/") + name2));
+        }
+    }
+
+    StrSet actualTemplateSet;
+    for (const auto &template_: dbUserExclusionTemplates) {
+        actualTemplateSet.emplace(template_.templ());
+    }
+
+    CPPUNIT_ASSERT(expectedTemplateSet == actualTemplateSet);
+    CPPUNIT_ASSERT(dbUserExclusionTemplates.at(4).templ() == "o");
 }
 
 void TestParmsDb::testAppState(void) {
@@ -490,7 +503,7 @@ void TestParmsDb::testExclusionApp() {
 
     exclusionAppList.clear();
     CPPUNIT_ASSERT(ParmsDb::instance()->selectAllExclusionApps(true, exclusionAppList));
-    CPPUNIT_ASSERT(exclusionAppList.size() > 0);
+    CPPUNIT_ASSERT(!exclusionAppList.empty());
 
     CPPUNIT_ASSERT(ParmsDb::instance()->deleteExclusionApp(exclusionApp3.appId(), found) && found);
 }
