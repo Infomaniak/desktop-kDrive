@@ -3,7 +3,7 @@
 > **Note:** This file contains the old instructions used to compile and use the dependencies that are now managed by Conan.
 
 <details>
-<summary>xxHash 0.8.2</summary>
+<summary>xxHash - 0.8.2</summary>
 
 ### macOS
 ```bash
@@ -46,7 +46,7 @@ cmake --build . --target install --config Release
 </details>
 
 <details>
-<summary>log4cplus</summary>
+<summary>log4cplus - 2.1.0</summary>
 
 ### macOS
 
@@ -115,7 +115,7 @@ git checkout v2.x
 </details>
 
 <details>
-<summary>OpenSSL</summary>
+<summary>OpenSSL - 3.2.4</summary>
 
 ### macOS
 Download and build `OpenSSL`:
