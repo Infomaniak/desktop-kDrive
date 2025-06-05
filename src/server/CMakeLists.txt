@@ -258,17 +258,18 @@ endif()
 if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
     get_target_property(QT_QMAKE_EXECUTABLE Qt6::qmake IMPORTED_LOCATION)
 
+    cmake_path(GET SPARKLE_LIBRARY PARENT_PATH USER_FRAMEWORK_PATH)
+
     set(ENV_QTDIR $ENV{QTDIR})
     set(ENV_DESTDIR $ENV{DESTDIR})
 
-    cmake_path(GET SPARKLE_LIBRARY PARENT_PATH USER_FRAMEWORK_PATH)
+    set(ENV_DEPLOY_LIBS_MANUALLY $ENV{DEPLOY_LIBS_MANUALLY})
+    if (NOT ENV_DEPLOY_LIBS_MANUALLY)
+        set(ENV_DYLD_LIBRARY_PATH $ENV{DYLD_LIBRARY_PATH})
 
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        message(STATUS "Build type is Debug, you might need to run \"macdeployqt\" manually to deploy the dependencies.")
-    else()
         install(CODE "
             message(STATUS \"Deploying (Qt) dependencies for kDrive...\")
-            execute_process(COMMAND ${ENV_QTDIR}/bin/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -libpath=/usr/local/lib -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
+            execute_process(COMMAND ${ENV_QTDIR}/bin/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -libpath=${ENV_DYLD_LIBRARY_PATH} -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
             " COMPONENT RUNTIME)
     endif()
 
