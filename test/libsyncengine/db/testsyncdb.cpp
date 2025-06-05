@@ -411,10 +411,9 @@ void TestSyncDb::testDbNode() {
 
     bool found = false;
     DbNode dbNodeFromReplicaId;
-    CPPUNIT_ASSERT(
-                         _testObj->node(ReplicaSide::Remote, *testNode.nodeIdRemote(), dbNodeFromReplicaId, found) && found);
+    CPPUNIT_ASSERT(_testObj->node(ReplicaSide::Remote, *testNode.nodeIdRemote(), dbNodeFromReplicaId, found) && found);
     DbNode dbNodeFromDbId;
-    CPPUNIT_ASSERT_EQUAL(_testObj->node(dbNodeId, dbNodeFromDbId, found) && found);
+    CPPUNIT_ASSERT(_testObj->node(dbNodeId, dbNodeFromDbId, found) && found);
     CPPUNIT_ASSERT(dbNodeFromReplicaId == dbNodeFromDbId);
 }
 
