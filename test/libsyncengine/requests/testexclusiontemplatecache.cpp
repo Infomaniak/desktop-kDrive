@@ -29,34 +29,6 @@ using namespace CppUnit;
 
 namespace KDC {
 
-static const std::vector<ExclusionTemplate> excludedTemplates = {
-        ExclusionTemplate(".parms.db"), ExclusionTemplate(".sync_*.db"), ExclusionTemplate(".parms.db-shm"),
-        ExclusionTemplate(".parms.db-wal"), ExclusionTemplate(".sync_*.db-shm"), ExclusionTemplate(".sync_*.db-wal"),
-        ExclusionTemplate(".sentry-native_client"), ExclusionTemplate(".sentry-native_server"),
-        ExclusionTemplate("*_conflict_*_*_*"), ExclusionTemplate("*_blacklisted_*_*_*"), ExclusionTemplate("*~"),
-        ExclusionTemplate("~$*"), ExclusionTemplate("*.~*"), ExclusionTemplate("._*"), ExclusionTemplate("~*.tmp"),
-        ExclusionTemplate("*.idlk"), ExclusionTemplate("*.lock"), ExclusionTemplate("*.lck"), ExclusionTemplate("*.part"),
-        ExclusionTemplate(".~lock.*"), ExclusionTemplate("*.symform"), ExclusionTemplate("*.symform-store"),
-        ExclusionTemplate("*.unison"), ExclusionTemplate(".directory"), ExclusionTemplate(".sync.ffs_db"),
-        ExclusionTemplate(".synkron.*"), ExclusionTemplate("*.crdownload"),
-#if defined(__APPLE__)
-        // macOS only
-        ExclusionTemplate(".fuse_hidden*"), ExclusionTemplate("*.kate-swp"), ExclusionTemplate(".DS_Store"),
-        ExclusionTemplate(".ds_store"), ExclusionTemplate(".TemporaryItems"), ExclusionTemplate(".Trashes"),
-        ExclusionTemplate(".DocumentRevisions-V100"), ExclusionTemplate(".fseventd"), ExclusionTemplate(".apdisk"),
-        ExclusionTemplate("*.photoslibrary"), ExclusionTemplate("*.tvlibrary"), ExclusionTemplate("*.musiclibrary"),
-        ExclusionTemplate("Icon\r*"), ExclusionTemplate(".Spotlight-V100"), ExclusionTemplate("*.lnk")
-#elif defined(_WIN32)
-        // Windows only
-        ExclusionTemplate("*.kate-swp"), ExclusionTemplate("System Volume Information"), ExclusionTemplate("Thumbs.db"),
-        ExclusionTemplate("Desktop.ini"), ExclusionTemplate("*.filepart"), ExclusionTemplate("*.app")
-#else
-        // Linux only
-        ExclusionTemplate(".fuse_hidden*"), ExclusionTemplate("*.kate-swp"), ExclusionTemplate("*.gnucash.tmp-*"),
-        ExclusionTemplate(".Trash-*"), ExclusionTemplate(".nfs*"), ExclusionTemplate("*.app"), ExclusionTemplate("*.lnk")
-#endif
-};
-
 // List of names that should be rejected
 static const std::vector<std::string> rejectedFiles = {
         "test~",
@@ -117,8 +89,6 @@ void TestExclusionTemplateCache::setUp() {
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
-
-    ExclusionTemplateCache::instance()->update(true, excludedTemplates);
 }
 
 void TestExclusionTemplateCache::tearDown() {
@@ -159,5 +129,17 @@ void TestExclusionTemplateCache::testIsExcluded() {
     }
 #endif
 }
+void TestExclusionTemplateCache::testCacheFolderIsExcluded() {
+    SyncPath cachePath;
+    IoError ioError = IoError::Unknown;
+    CPPUNIT_ASSERT(IoHelper::cacheDirectoryPath(cachePath, ioError));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+    CPPUNIT_ASSERT(!cachePath.empty());
+    bool isWarning = false;
+    CPPUNIT_ASSERT_MESSAGE(cachePath.filename().string() + " is not excluded",
+                           ExclusionTemplateCache::instance()->isExcluded(cachePath.filename(), isWarning));
+    CPPUNIT_ASSERT(!isWarning);
+}
+
 
 } // namespace KDC
