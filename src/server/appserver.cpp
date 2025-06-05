@@ -2915,6 +2915,14 @@ void AppServer::logUsefulInformation() const {
     LOG_INFO(_logger, "kernel type : " << QSysInfo::kernelType().toStdString());
     LOG_INFO(_logger, "locale: " << QLocale::system().name().toStdString());
 
+    // Log cache path
+    IoError ioError = IoError::Success;
+    SyncPath cachePath;
+    if (!IoHelper::cacheDirectoryPath(cachePath, ioError)) {
+        LOGW_WARN(_logger, L"Error getting cache directory path: " << Utility::formatIoError(ioError));
+    }
+    LOGW_INFO(_logger, L"cache " << Utility::formatSyncPath(cachePath));
+
     // Log app ID
     AppStateValue appStateValue = "";
 
