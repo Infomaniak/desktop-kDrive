@@ -103,7 +103,7 @@ struct IoHelper {
          */
         static bool tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
 
-        
+
         //! Returns the directory location suitable for temporary files.
         /*! This directory is deleted at the end of the application run.
           ! The location of this folder can be enforce with the env variable: KDRIVE_CACHE_PATH
@@ -491,6 +491,7 @@ struct IoHelper {
         static std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> _getFileStat;
         static bool _getFileStatFn(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept;
         static bool _unsuportedFSLogged;
+        static void setCacheDirectoryPath(const SyncPath &newPath);
 
     private:
         static log4cplus::Logger _logger;

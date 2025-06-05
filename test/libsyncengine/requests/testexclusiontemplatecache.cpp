@@ -118,14 +118,16 @@ void TestExclusionTemplateCache::testIsExcluded() {
         // Test hidden file
         const SyncPath testPath = testhelpers::localTestDirPath / ".my_hidden_file.txt";
         bool isWarning = true;
-        CPPUNIT_ASSERT(str + " should not be excluded", !ExclusionTemplateCache::instance()->isExcluded(testPath, isWarning));
+        CPPUNIT_ASSERT_MESSAGE(str + " should not be excluded",
+                               !ExclusionTemplateCache::instance()->isExcluded(testPath, isWarning));
     }
 
     {
         // Test hidden folder
         const SyncPath testPath = testhelpers::localTestDirPath / ".my_hidden_folder/AA/my_file.txt";
         bool isWarning = true;
-        CPPUNIT_ASSERT(str + " should not be excluded", !ExclusionTemplateCache::instance()->isExcluded(testPath, isWarning));
+        CPPUNIT_ASSERT_MESSAGE(str + " should not be excluded",
+                               !ExclusionTemplateCache::instance()->isExcluded(testPath, isWarning));
     }
 #endif
 }

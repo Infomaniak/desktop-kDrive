@@ -618,9 +618,9 @@ namespace details {
 class CacheDirectoryHanlder {
     public:
         CacheDirectoryHanlder() {
-            initDirectoryPath();
+            if (_directoryPath.empty()) initDirectoryPath();
+            // It is a best effort, we cannot log/sentry anything here as the logger/sentry may not be initialized yet.
             if (!_directoryPath.empty()) {
-                // It is a best effort, we cannot log/sentry anything here as the logger/sentry may not be initialized yet.
                 IoError ioError = IoError::Success;
                 if (!IoHelper::createDirectory(_directoryPath, true, ioError) && ioError != IoError::DirectoryExists) {
                     _directoryPath.clear(); // Clear the path if the directory could not be created.
@@ -653,7 +653,7 @@ class CacheDirectoryHanlder {
         }
 
         bool initDirectoryPathFromEnv(const std::string &envVar, const SyncName &cacheDirName,
-                                    const SyncPath &subDir = "") noexcept {
+                                      const SyncPath &subDir = "") noexcept {
             bool isSet = false;
             if (const auto value = CommonUtility::envVarValue(envVar, isSet); isSet && !value.empty()) {
                 if (subDir.empty()) {
@@ -666,9 +666,14 @@ class CacheDirectoryHanlder {
             return false;
         };
 
-        SyncPath _directoryPath;
+        inline static SyncPath _directoryPath;
+        friend class IoHelper;
 };
 } // namespace details
+
+void IoHelper::setCacheDirectoryPath(const SyncPath &newPath) {
+    KDC::details::CacheDirectoryHanlder::_directoryPath = newPath;
+}
 
 bool IoHelper::cacheDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
     static const details::CacheDirectoryHanlder cacheDirectoryHandler;

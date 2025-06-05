@@ -20,6 +20,7 @@
 
 #include "testincludes.h"
 #include "test_utility/localtemporarydirectory.h"
+#include "test_utility/iohelpertests.h"
 #include "libcommonserver/io/iohelper.h"
 
 #include <algorithm>
@@ -27,22 +28,6 @@
 using namespace CppUnit;
 
 namespace KDC {
-
-struct IoHelperTests : public IoHelper {
-        IoHelperTests();
-        static void setIsDirectoryFunction(std::function<bool(const SyncPath &path, std::error_code &ec)> f);
-        static void setIsSymlinkFunction(std::function<bool(const SyncPath &path, std::error_code &ec)> f);
-        static void setReadSymlinkFunction(std::function<SyncPath(const SyncPath &path, std::error_code &ec)> f);
-        static void setFileSizeFunction(std::function<std::uintmax_t(const SyncPath &path, std::error_code &ec)> f);
-        static void setTempDirectoryPathFunction(std::function<SyncPath(std::error_code &ec)> f);
-
-#ifdef __APPLE__
-        static void setReadAliasFunction(std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> f);
-#endif
-
-        static void resetFunctions();
-};
-
 class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestIo);
         CPPUNIT_TEST(testCheckSetAndGetRights); // Keep this test before any tests that may use set/get rights functions
