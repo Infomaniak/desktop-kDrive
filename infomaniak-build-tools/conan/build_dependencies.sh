@@ -22,14 +22,14 @@
 
 
 if [[ "${1:-}" =~ ^-h|--help$ ]]; then
-  cat << EOF >&2
+    cat << EOF >&2
 Usage: $0 [Debug|Release] [--output-dir=<output_dir>]
   There are three ways to set the output directory (in descending order of priority):
     1. --output-dir=<output_dir> argument
     2. KDRIVE_OUTPUT_DIR environment variable
     3. Default directory based on the system (macOS: build-macos/client, Linux: build-linux/build)
 EOF
-  exit 0
+    exit 0
 fi
 
 set -euo pipefail
@@ -55,13 +55,10 @@ function get_architecture {
 }
 
 function get_output_dir {
+    args=$1
+
     output_dir="${KDRIVE_OUTPUT_DIR:-}"
-
-    if [ -n "${KDRIVE_OUTPUT_DIR:-}" ]; then
-        log "Using environment variable 'KDRIVE_OUTPUT_DIR' as conan output_dir : '$KDRIVE_OUTPUT_DIR'"
-    fi
-
-    for arg in "$@"; do
+    for arg in $args; do
         if [[ "$arg" =~ ^--output-dir= ]]; then
             output_dir="${arg#--output-dir=}"
             break
@@ -69,6 +66,7 @@ function get_output_dir {
     done
 
     if [ -z "$output_dir" ]; then
+        platform=$(get_platform)
         if [ "$platform" = "darwin" ]; then
             output_dir="./build-macos/client"
         else
@@ -79,13 +77,21 @@ function get_output_dir {
     echo $output_dir
 }
 
+args="$@"
+build_type="${1:-Debug}"
+output_dir=$(get_output_dir "$args")
+
+if [[ -n "${KDRIVE_OUTPUT_DIR:-}" && "$output_dir" == "$KDRIVE_OUTPUT_DIR" ]]; then
+    log "Using environment variable 'KDRIVE_OUTPUT_DIR' as conan output_dir : '$KDRIVE_OUTPUT_DIR'"
+fi
+
 # check if we launched this in the right folder.
 if [ ! -d "infomaniak-build-tools/conan" ]; then
-  error "Please run this script from the root of the repository."
+    error "Please run this script from the root of the repository."
 fi
 
 if ! command -v conan >/dev/null 2>&1; then
-  error "Conan is not installed. Please install it first."
+    error "Conan is not installed. Please install it first."
 fi
 
 conan_remote_base_folder="$PWD/infomaniak-build-tools/conan"
@@ -109,12 +115,12 @@ if [[ "$platform" == "darwin" ]]; then
 fi
 
 architecture=$(get_architecture $platform)
-build_type="${1:-Debug}"
-output_dir=$(get_output_dir)
+
 mkdir -p "$output_dir"
 
 echo 
 log "Configuration:"
+log "--------------"
 log "- Platform: '$platform'"
 log "- Architecture option: '$architecture'"
 log "- Build type: '$build_type'"
