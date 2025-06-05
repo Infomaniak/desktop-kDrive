@@ -162,7 +162,7 @@ if(APPLE)
 
     install(CODE "
         message(STATUS \"Fixing library paths for ${testserver_NAME}...\")
-        execute_process(COMMAND \"otool\" \"-L\" ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
+        execute_process(COMMAND otool \"-L\" ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
 
         execute_process(COMMAND \"install_name_tool\" -change /usr/local/lib/libcppunit-1.15.2.dylib @rpath/libcppunit-1.15.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
         execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.8.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
@@ -175,6 +175,6 @@ if(APPLE)
         execute_process(COMMAND \"install_name_tool\" -add_rpath /opt/homebrew/opt/openssl@3/lib ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
         execute_process(COMMAND \"install_name_tool\" -add_rpath @executable_path ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
         message(STATUS \"Fixed library paths for ${testserver_NAME}\")
-        execute_process(COMMAND \"otool\" \"-L\" ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
+        execute_process(COMMAND otool \"-L\" ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
         " COMPONENT RUNTIME)
 endif()
