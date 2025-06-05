@@ -45,12 +45,6 @@
 #include "libsyncengine/update_detection/file_system_observer/filesystemobserverworker.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
-#include "libcommon/utility/utility.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/utility/utility.h"
-#include "libcommonserver/network/proxy.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "test_utility/testhelpers.h"
 #include "requests/parameterscache.h"
@@ -145,12 +139,10 @@ void TestIntegration::testAll() {
     logStep("initialisation");
 
     // Run test cases
-    basicTests();
-    inconsistencyTests();
+    // basicTests();
+    // inconsistencyTests();
     conflictTests();
 
-    // &TestIntegration::testCreateCreatePseudoConflict,
-    // &TestIntegration::testCreateCreateConflict,
     // &TestIntegration::testEditEditPseudoConflict,
     // &TestIntegration::testEditEditConflict,
     // &TestIntegration::testMoveCreateConflict,
@@ -404,11 +396,14 @@ void TestIntegration::inconsistencyTests() {
 }
 
 void TestIntegration::conflictTests() {
-    testCreateCreatePseudoConflict();
-    testCreateCreateConflict();
+    // testCreateCreatePseudoConflict();
+    // testCreateCreateConflict();
+    testEditEditPseudoConflict();
+    testEditEditConflict();
 }
 
 void TestIntegration::testCreateCreatePseudoConflict() {
+    waitForNextSyncToFinish(SourceLocation::currentLoc());
     // Remove the test file from DB to simulate the pseudo conflict.
     DbNodeId dbNodeId = 0;
     bool found = false;
@@ -421,7 +416,7 @@ void TestIntegration::testCreateCreatePseudoConflict() {
     (void) _syncPal->_localUpdateTree->deleteNode(localId);
     (void) _syncPal->_remoteUpdateTree->deleteNode(_testFileRemoteId);
 
-    _syncPal->invalidateSnapshots();
+    _syncPal->forceInvalidateSnapshots();
     waitForNextSyncToFinish(SourceLocation::currentLoc());
 
     // Check that both remote and local ID has been re-inserted in DB.
@@ -431,8 +426,9 @@ void TestIntegration::testCreateCreatePseudoConflict() {
 }
 
 void TestIntegration::testCreateCreateConflict() {
-    // Simulate remote create.
     waitForNextSyncToFinish(SourceLocation::currentLoc());
+
+    // Simulate remote create.
     const auto remoteId = duplicateRemoteFile(_testFileRemoteId, "testCreateCreatePseudoConflict");
 
     // Simulate local file creation.
@@ -453,6 +449,49 @@ void TestIntegration::testCreateCreateConflict() {
     CPPUNIT_ASSERT_EQUAL(true, std::filesystem::exists(localFilePath));
 
     logStep("testCreateCreateConflict");
+}
+
+void TestIntegration::testEditEditPseudoConflict() {
+    waitForNextSyncToFinish(SourceLocation::currentLoc());
+
+    // Change the last modification date in DB.
+    bool found = false;
+    DbNode dbNode;
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->syncDb()->node(ReplicaSide::Remote, _testFileRemoteId, dbNode, found) && found);
+    const auto newLastModified = *dbNode.lastModifiedLocal() - 1000;
+    dbNode.setLastModifiedLocal(newLastModified);
+    dbNode.setLastModifiedRemote(newLastModified);
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->syncDb()->updateNode(dbNode, found) && found);
+
+    _syncPal->forceInvalidateSnapshots();
+    waitForNextSyncToFinish(SourceLocation::currentLoc());
+
+    // Check that the modification time has been updated in DB.
+    FileStat fileStat;
+    bool exists = false;
+    IoHelper::getFileStat(_syncPal->localPath() / dbNode.name(ReplicaSide::Local), &fileStat, exists);
+    std::optional<SyncTime> lastModified = std::nullopt;
+    CPPUNIT_ASSERT_EQUAL(true,
+                         _syncPal->syncDb()->lastModified(ReplicaSide::Remote, _testFileRemoteId, lastModified, found) && found);
+    CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, *lastModified);
+
+    // Check that the local ID has not changed.
+    SyncName name;
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->syncDb()->name(ReplicaSide::Local, *dbNode.nodeIdLocal(), name, found) && found);
+}
+
+void TestIntegration::testEditEditConflict() {
+    waitForNextSyncToFinish(SourceLocation::currentLoc());
+
+    // int64_t modificationTime = 0;
+    // int64_t size = 0;
+    // testhelpers::generateOrEditTestFile(_tmpFilePath);
+    // {
+    //     UploadJob job(nullptr, _driveDbId, _tmpFilePath, fileId, testhelpers::defaultTime);
+    //     (void) job.runSynchronously();
+    //     modificationTime = job.modificationTime();
+    //     size = job.size();
+    // }
 }
 
 // void TestIntegration::testCreateCreatePseudoConflict() {

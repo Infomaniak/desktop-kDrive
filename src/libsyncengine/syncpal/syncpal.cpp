@@ -1353,4 +1353,10 @@ void SyncPal::invalidateSnapshots() {
     _remoteFSObserverWorker->tryToInvalidateSnapshot();
 }
 
+void SyncPal::forceInvalidateSnapshots() {
+    _localFSObserverWorker->invalidateSnapshot();
+    _remoteFSObserverWorker->forceUpdate();
+    _remoteFSObserverWorker->invalidateSnapshot();
+}
+
 } // namespace KDC

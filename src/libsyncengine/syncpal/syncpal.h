@@ -248,6 +248,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void copySnapshots();
         void freeSnapshotsCopies();
         void invalidateSnapshots();
+        void forceInvalidateSnapshots();
 
         // Workers
         std::shared_ptr<ComputeFSOperationWorker> computeFSOperationsWorker() const { return _computeFSOperationsWorker; }
