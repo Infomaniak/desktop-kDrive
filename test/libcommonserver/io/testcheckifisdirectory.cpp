@@ -304,7 +304,7 @@ void TestIo::testCreateDirectory() {
         CPPUNIT_ASSERT(_testObj->createDirectory(path, false, ioError));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 #else
-        CPPUNIT_ASSERT(!_testObj->createDirectory(path, ioError));
+        CPPUNIT_ASSERT(!_testObj->createDirectory(path, false, ioError));
         CPPUNIT_ASSERT(ioError == IoError::AccessDenied);
 #endif
         // Restore permission to allow subdir removal

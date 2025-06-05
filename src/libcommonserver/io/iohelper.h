@@ -106,7 +106,7 @@ struct IoHelper {
         
         //! Returns the directory location suitable for temporary files.
         /*! This directory is deleted at the end of the application run.
-        /*! The location of this folder can be enforce with the env variable: KDRIVE_CACHE_PATH
+          ! The location of this folder can be enforce with the env variable: KDRIVE_CACHE_PATH
          \param directoryPath is a path to a directory suitable for temporary files. Empty if there is a an error.
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
