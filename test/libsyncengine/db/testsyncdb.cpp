@@ -406,16 +406,16 @@ void TestSyncDb::testDbNode() {
                     std::nullopt);
     DbNodeId dbNodeId;
     bool constraintError = false;
-    CPPUNIT_ASSERT_EQUAL(true, _testObj->insertNode(testNode, dbNodeId, constraintError));
+    CPPUNIT_ASSERT(_testObj->insertNode(testNode, dbNodeId, constraintError));
     CPPUNIT_ASSERT_EQUAL(false, constraintError);
 
     bool found = false;
     DbNode dbNodeFromReplicaId;
-    CPPUNIT_ASSERT_EQUAL(true,
+    CPPUNIT_ASSERT(
                          _testObj->node(ReplicaSide::Remote, *testNode.nodeIdRemote(), dbNodeFromReplicaId, found) && found);
     DbNode dbNodeFromDbId;
-    CPPUNIT_ASSERT_EQUAL(true, _testObj->node(dbNodeId, dbNodeFromDbId, found) && found);
-    CPPUNIT_ASSERT_EQUAL(true, dbNodeFromReplicaId == dbNodeFromDbId);
+    CPPUNIT_ASSERT_EQUAL(_testObj->node(dbNodeId, dbNodeFromDbId, found) && found);
+    CPPUNIT_ASSERT(dbNodeFromReplicaId == dbNodeFromDbId);
 }
 
 void TestSyncDb::testReloadIfNeeded() {
