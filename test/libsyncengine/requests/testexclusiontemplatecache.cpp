@@ -20,7 +20,7 @@
 #include "libparms/db/parmsdb.h"
 #include "requests/parameterscache.h"
 #include "mocks/libcommonserver/db/mockdb.h"
-
+#include "libsyncengine/propagation/executor/filerescuer.h"
 #include "test_utility/testhelpers.h"
 
 #include <filesystem>
@@ -138,6 +138,13 @@ void TestExclusionTemplateCache::testCacheFolderIsExcluded() {
     bool isWarning = false;
     CPPUNIT_ASSERT_MESSAGE(cachePath.filename().string() + " is not excluded",
                            ExclusionTemplateCache::instance()->isExcluded(cachePath.filename(), isWarning));
+    CPPUNIT_ASSERT(!isWarning);
+}
+
+void TestExclusionTemplateCache::testRescueFolderIsExcluded() {
+    bool isWarning = false;
+    CPPUNIT_ASSERT_MESSAGE(FileRescuer::rescueFolderName().string() + " is not excluded",
+                           ExclusionTemplateCache::instance()->isExcluded(FileRescuer::rescueFolderName(), isWarning));
     CPPUNIT_ASSERT(!isWarning);
 }
 
