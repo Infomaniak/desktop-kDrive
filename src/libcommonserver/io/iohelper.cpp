@@ -616,7 +616,7 @@ bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noex
 
 bool IoHelper::cacheDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
     // Warning: never log anything in this method. If the logger is not set, the app will crash.
-    static const SyncName cacheDirName = Str2SyncName(APPLICATION_NAME) + Str2SyncName("-cachedir");
+    static const SyncName cacheDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName("-cachedir"));
 
     auto tryEnvPath = [&](const char *varName, const SyncPath &subDir = "") -> bool {
         bool isSet = false;
