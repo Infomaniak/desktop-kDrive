@@ -169,24 +169,6 @@ void AppServer::init() {
         LOG_INFO(_logger, "Restarting after a " << SignalCategory::Kill << " with signal " << signalType);
     }
 
-    // Init Temporary directory
-    SyncPath tempDir;
-    IoError ioError = IoError::Success;
-    bool success = true;
-    if (!IoHelper::cacheDirectoryPath(tempDir, ioError)) {
-        LOGW_ERROR(_logger, L"Failed to get temporary directory path: " << Utility::formatIoError(tempDir, ioError));
-        success = false;
-    } else {
-        if (!IoHelper::createDirectory(tempDir, true, ioError) && ioError != IoError::DirectoryExists) {
-            LOGW_ERROR(_logger, L"Failed to create temporary directory: " << Utility::formatIoError(tempDir, ioError));
-            success = false;
-        }
-    }
-    if (!success) {
-        LOG_ERROR(_logger, "Unable to initialize temporary directory.");
-        sentry::Handler::captureMessage(sentry::Level::Error, "AppServer::init", "Unable to initialize temporary directory");
-    }
-
     // Init parms DB
     std::filesystem::path parmsDbPath = makeDbName();
     if (parmsDbPath.empty()) {
@@ -448,16 +430,6 @@ void AppServer::cleanup() {
     // Close ParmsDb
     ParmsDb::instance()->close();
     LOG_DEBUG(_logger, "ParmsDb closed");
-
-    // Clear temporary files
-    IoError ioError = IoError::Success;
-    if (SyncPath tmpDirPath; !IoHelper::cacheDirectoryPath(tmpDirPath, ioError)) {
-        LOGW_WARN(_logger, L"Failed to resolve temporary directory path: " << Utility::formatIoError(ioError));
-    } else if (!IoHelper::deleteItem(tmpDirPath, ioError) || ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Failed to delete temporary files at path: " << Utility::formatIoError(tmpDirPath, ioError));
-    } else {
-        LOGW_DEBUG(_logger, L"Temporary files successfully cleared: " << Utility::formatSyncPath(tmpDirPath));
-    }
 }
 
 void AppServer::reset() {
