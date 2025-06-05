@@ -614,6 +614,41 @@ bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noex
     return ioError == IoError::Success;
 }
 
+bool IoHelper::cacheDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
+    // Warning: never log anything in this method. If the logger is not set, the app will crash.
+    static const SyncName cacheDirName = Str2SyncName(APPLICATION_NAME) + Str2SyncName("-cachedir");
+
+    auto tryEnvPath = [&](const char *varName, const SyncPath &subDir = "") -> bool {
+        bool isSet = false;
+        const std::string value = CommonUtility::envVarValue(varName, isSet);
+        if (isSet && !value.empty()) {
+            if (subDir.empty()) {
+                directoryPath = SyncPath(value) / cacheDirName;
+            } else {
+                directoryPath = SyncPath(value) / subDir / cacheDirName;
+            }
+            ioError = IoError::Success;
+            return true;
+        }
+        return false;
+    };
+
+    if (tryEnvPath("KDRIVE_CACHE_PATH")) return true;
+
+#ifdef __unix__
+    if (tryEnvPath("XDG_CACHE_HOME")) return true;
+    if (tryEnvPath("HOME", ".cache")) return true;
+
+    sentry::Handler::captureMessage(sentry::Level::Info, "XDG_CACHE_HOME and HOME environment variables are not set",
+                                    "Falling back to temporary directory location");
+#endif
+
+    std::error_code ec;
+    directoryPath = _tempDirectoryPath(ec) / cacheDirName;
+    ioError = stdError2ioError(ec);
+    return ioError == IoError::Success;
+}
+
 bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
     if (Log::instance()) {
         SyncPath filePath = Log::instance()->getLogFilePath();
@@ -785,9 +820,10 @@ bool IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoErr
     return true;
 }
 
-bool IoHelper::createDirectory(const SyncPath &path, IoError &ioError) noexcept {
+bool IoHelper::createDirectory(const SyncPath &path, bool recursive, IoError &ioError) noexcept {
     std::error_code ec;
-    const bool creationSuccess = std::filesystem::create_directory(path, ec);
+    const bool creationSuccess =
+            recursive ? std::filesystem::create_directories(path, ec) : std::filesystem::create_directory(path, ec);
     ioError = stdError2ioError(ec);
 
     if (!creationSuccess && ioError == IoError::Success) {

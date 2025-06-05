@@ -554,7 +554,7 @@ void TestIo::testCheckIfPathExistsMixedSeparators(void) {
 
     // Create subDir and subFile
     IoError ioError = IoError::Success;
-    CPPUNIT_ASSERT(IoHelper::createDirectory(subDirForward.lexically_normal(), ioError));
+    CPPUNIT_ASSERT(IoHelper::createDirectory(subDirForward.lexically_normal(), false, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     testhelpers::generateOrEditTestFile(subFileForward.lexically_normal());
 
