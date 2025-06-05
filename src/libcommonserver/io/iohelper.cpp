@@ -614,40 +614,66 @@ bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noex
     return ioError == IoError::Success;
 }
 
-bool IoHelper::cacheDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
-    static const SyncName cacheDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName("-cache"));
-
-    auto tryEnvPath = [&](const char *varName, const SyncPath &subDir = "") -> bool {
-        bool isSet = false;
-        const std::string value = CommonUtility::envVarValue(varName, isSet);
-        if (isSet && !value.empty()) {
-            if (subDir.empty()) {
-                directoryPath = SyncPath(value) / cacheDirName;
-            } else {
-                directoryPath = SyncPath(value) / subDir / cacheDirName;
+namespace details {
+class CacheDirectoryHanlder {
+    public:
+        CacheDirectoryHanlder() {
+            if (_directoryPath = buildPath(); !_directoryPath.empty()) {
+                // It is a best effort, we cannot log/sentry anything here as the logger/sentry may not be initialized yet.
+                IoError ioError = IoError::Success;
+                if (!IoHelper::createDirectory(_directoryPath, true, ioError) && ioError != IoError::DirectoryExists) {
+                    _directoryPath.clear(); // Clear the path if the directory could not be created.
+                    return;
+                }
             }
-            ioError = IoError::Success;
-            return true;
         }
-        return false;
-    };
+        ~CacheDirectoryHanlder() {
+            // Clear the cache
+            // It is a best effort, we cannot log/sentry anything here as the logger/sentry may have been destroyed already.
+            IoError ioError = IoError::Success;
+            IoHelper::deleteItem(_directoryPath, ioError);
+        }
+        const SyncPath &getPath() const noexcept { return _directoryPath; }
 
-    if (tryEnvPath("KDRIVE_CACHE_PATH")) return true;
+    private:
+        const SyncPath &buildPath() noexcept {
+            static const SyncName cacheDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName("-cache"));
+            if (buildPathFromEnv("KDRIVE_CACHE_PATH", cacheDirName, _directoryPath)) return;
 
 #ifdef __unix__
-    if (tryEnvPath("XDG_CACHE_HOME")) return true;
-    if (tryEnvPath("HOME", ".cache")) return true;
-
-    sentry::Handler::captureMessage(sentry::Level::Info, "XDG_CACHE_HOME and HOME environment variables are not set",
-                                    "Falling back to temporary directory location");
+            if (buildPathFromEnv("XDG_CACHE_HOME", cacheDirName, _directoryPath)) return;
+            if (buildPathFromEnv("HOME", cacheDirName, _directoryPath, ".cache")) return;
 #endif
+            IoError ioError = IoError::Success;
+            if (!IoHelper::tempDirectoryPath(_directoryPath, ioError)) {
+                return;
+            }
+            _directoryPath /= cacheDirName;
+            return;
+        }
 
-    if (!tempDirectoryPath(directoryPath, ioError)) {
-        LOGW_WARN(logger(), L"Failed to get temporary directory path: " << Utility::formatIoError(directoryPath, ioError));
-        return false;
-    }
-    directoryPath /=  cacheDirName;
-    return ioError == IoError::Success;
+        const bool buildPathFromEnv(const std::string &envVar, const SyncName &cacheDirName,
+                                    const SyncPath &subDir = "") noexcept {
+            bool isSet = false;
+            if (const auto value = CommonUtility::envVarValue(envVar, isSet); isSet && !value.empty()) {
+                if (subDir.empty()) {
+                    _directoryPath = SyncPath(value) / cacheDirName;
+                } else {
+                    _directoryPath = SyncPath(value) / subDir / cacheDirName;
+                }
+                return true;
+            }
+            return false;
+        };
+
+        SyncPath _directoryPath;
+};
+} // namespace details
+
+bool IoHelper::cacheDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
+    static const details::CacheDirectoryHanlder cacheDirectoryHandler(logger());
+    directoryPath = cacheDirectoryHandler.getPath();
+    return !directoryPath.empty();
 }
 
 bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
