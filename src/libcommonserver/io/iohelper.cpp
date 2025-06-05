@@ -631,12 +631,12 @@ class CacheDirectoryHanlder {
         ~CacheDirectoryHanlder() {
             // It is a best effort, we cannot log/sentry anything here as the logger/sentry may have been destroyed already.
             IoError ioError = IoError::Success;
-            IoHelper::deleteItem(_directoryPath, ioError);
+            (void) IoHelper::deleteItem(_directoryPath, ioError);
         }
         const SyncPath &getPath() const noexcept { return _directoryPath; }
 
     private:
-        const void initDirectoryPath() noexcept {
+        void initDirectoryPath() noexcept {
             static const SyncName cacheDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName("-cache"));
             if (initDirectoryPathFromEnv("KDRIVE_CACHE_PATH", cacheDirName)) return;
 
@@ -652,7 +652,7 @@ class CacheDirectoryHanlder {
             return;
         }
 
-        const bool initDirectoryPathFromEnv(const std::string &envVar, const SyncName &cacheDirName,
+        bool initDirectoryPathFromEnv(const std::string &envVar, const SyncName &cacheDirName,
                                     const SyncPath &subDir = "") noexcept {
             bool isSet = false;
             if (const auto value = CommonUtility::envVarValue(envVar, isSet); isSet && !value.empty()) {
@@ -847,7 +847,7 @@ bool IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoErr
     return true;
 }
 
-bool IoHelper::createDirectory(const SyncPath &path, bool recursive, IoError &ioError) noexcept {
+bool IoHelper::createDirectory(const SyncPath &path, const bool recursive, IoError &ioError) noexcept {
     std::error_code ec;
     const bool creationSuccess =
             recursive ? std::filesystem::create_directories(path, ec) : std::filesystem::create_directory(path, ec);
