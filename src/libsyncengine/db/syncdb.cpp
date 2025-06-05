@@ -913,9 +913,9 @@ bool SyncDb::node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &
     LOG_IF_FAIL(querySyncNameValue(id, SELECT_NODE_BY_REPLICAID_NAMEDRIVE, nameDrive));
 
     NodeId idLocal;
-    LOG_IF_FAIL(querySyncNameValue(id, SELECT_NODE_BY_REPLICAID_IDLOCAL, idLocal));
+    LOG_IF_FAIL(queryStringValue(id, SELECT_NODE_BY_REPLICAID_IDLOCAL, idLocal));
     NodeId idDrive;
-    LOG_IF_FAIL(querySyncNameValue(id, SELECT_NODE_BY_REPLICAID_IDDRIVE, idDrive));
+    LOG_IF_FAIL(queryStringValue(id, SELECT_NODE_BY_REPLICAID_IDDRIVE, idDrive));
 
     std::optional<SyncTime> created;
     LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_REPLICAID_CREATED, isNull));
