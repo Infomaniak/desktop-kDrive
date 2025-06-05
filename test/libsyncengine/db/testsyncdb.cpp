@@ -397,6 +397,27 @@ void TestSyncDb::testDummyUpgrade() {
     CPPUNIT_ASSERT(_testObj->upgrade("3.6.4 (build 20240112)", "3.6.4 (build 20240112)"));
 }
 
+void TestSyncDb::testDbNode() {
+    _testObj->enablePrepare(true);
+    (void) _testObj->prepare();
+
+    DbNode testNode(0, _testObj->rootNode().nodeId(), Str("test"), Str("test"), "l_test", "r_test", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize,
+                    std::nullopt);
+    DbNodeId dbNodeId;
+    bool constraintError = false;
+    CPPUNIT_ASSERT_EQUAL(true, _testObj->insertNode(testNode, dbNodeId, constraintError));
+    CPPUNIT_ASSERT_EQUAL(false, constraintError);
+
+    bool found = false;
+    DbNode dbNodeFromReplicaId;
+    CPPUNIT_ASSERT_EQUAL(true,
+                         _testObj->node(ReplicaSide::Remote, *testNode.nodeIdRemote(), dbNodeFromReplicaId, found) && found);
+    DbNode dbNodeFromDbId;
+    CPPUNIT_ASSERT_EQUAL(true, _testObj->node(dbNodeId, dbNodeFromDbId, found) && found);
+    CPPUNIT_ASSERT_EQUAL(true, dbNodeFromReplicaId == dbNodeFromDbId);
+}
+
 void TestSyncDb::testReloadIfNeeded() {
     // Insert node
     time_t tLoc = std::time(nullptr);
