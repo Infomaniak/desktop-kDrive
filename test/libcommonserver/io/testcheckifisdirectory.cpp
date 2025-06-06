@@ -31,7 +31,7 @@ void TestIo::testCheckIfIsDirectory() {
         bool isDirectory = true;
         IoError ioError = IoError::Unknown;
 
-        CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -42,7 +42,7 @@ void TestIo::testCheckIfIsDirectory() {
         IoError ioError = IoError::Unknown;
         bool isDirectory = false;
 
-        CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(isDirectory);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -57,7 +57,7 @@ void TestIo::testCheckIfIsDirectory() {
         IoError ioError = IoError::Unknown;
         bool isDirectory = false;
 
-        CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
@@ -74,7 +74,7 @@ void TestIo::testCheckIfIsDirectory() {
         IoError ioError = IoError::Unknown;
         bool isDirectory = false;
 
-        CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -90,7 +90,7 @@ void TestIo::testCheckIfIsDirectory() {
         bool isDirectory = false;
 
 
-        CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
@@ -107,7 +107,7 @@ void TestIo::testCheckIfIsDirectory() {
         IoError ioError = IoError::Success;
         bool isDirectory = true;
 
-        CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
         CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
     }
@@ -122,7 +122,7 @@ void TestIo::testCheckIfIsDirectory() {
         IoError ioError = IoError::Success;
         bool isDirectory = true;
 
-        CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success,
                                      ioError); // Although the target path is invalid.
@@ -139,7 +139,7 @@ void TestIo::testCheckIfIsDirectory() {
         IoError ioError = IoError::Unknown;
         bool isDirectory = false;
 
-        CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(isDirectory);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
@@ -157,10 +157,10 @@ void TestIo::testCheckIfIsDirectory() {
         IoError ioError = IoError::Success;
         bool isDirectory = true;
 #ifdef _WIN32
-        CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
 #else
-        CPPUNIT_ASSERT(!_testObj->checkIfIsDirectory(path, isDirectory, ioError));
+        CPPUNIT_ASSERT(!IoHelper::checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(ioError == IoError::FileNameTooLong);
 #endif
         CPPUNIT_ASSERT(!isDirectory);
@@ -180,7 +180,7 @@ void TestIo::testCheckIfIsDirectory() {
         IoError ioError = IoError::Success;
         bool isDirectory = true;
 
-        CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfIsDirectory(path, isDirectory, ioError));
 #ifdef _WIN32
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(isDirectory);
@@ -206,7 +206,7 @@ void TestIo::testCheckIfIsDirectory() {
         IoError ioError = IoError::Unknown;
         bool isDirectory = true;
 
-        CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -223,7 +223,7 @@ void TestIo::testCheckIfIsDirectory() {
         IoError ioError = IoError::Unknown;
         bool isDirectory = true;
 
-        CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -243,7 +243,7 @@ void TestIo::testCheckIfIsDirectory() {
         IoError ioError = IoError::Unknown;
         bool isDirectory = true;
 
-        CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -257,13 +257,13 @@ void TestIo::testCreateDirectory() {
         const SyncPath path = temporaryDirectory.path() / "regular_directory";
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(_testObj->createDirectory(path, ioError));
+        CPPUNIT_ASSERT(IoHelper::createDirectory(path, ioError));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         ioError = IoError::Unknown;
         bool isDirectory = false;
 
-        CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(isDirectory);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -274,7 +274,7 @@ void TestIo::testCreateDirectory() {
         const SyncPath path = temporaryDirectory.path();
 
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(!_testObj->createDirectory(path, ioError));
+        CPPUNIT_ASSERT(!IoHelper::createDirectory(path, ioError));
         CPPUNIT_ASSERT(ioError == IoError::DirectoryExists);
     }
 
@@ -285,7 +285,7 @@ void TestIo::testCreateDirectory() {
         { std::ofstream ofs(path); }
 
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(!_testObj->createDirectory(path, ioError));
+        CPPUNIT_ASSERT(!IoHelper::createDirectory(path, ioError));
         CPPUNIT_ASSERT(ioError == IoError::FileExists);
     }
 
@@ -301,10 +301,10 @@ void TestIo::testCreateDirectory() {
 
         IoError ioError = IoError::Success;
 #ifdef _WIN32
-        CPPUNIT_ASSERT(_testObj->createDirectory(path, ioError));
+        CPPUNIT_ASSERT(IoHelper::createDirectory(path, ioError));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 #else
-        CPPUNIT_ASSERT(!_testObj->createDirectory(path, ioError));
+        CPPUNIT_ASSERT(!IoHelper::createDirectory(path, ioError));
         CPPUNIT_ASSERT(ioError == IoError::AccessDenied);
 #endif
         // Restore permission to allow subdir removal
@@ -320,10 +320,10 @@ void TestIo::testCreateDirectory() {
 
         IoError ioError = IoError::Success;
 #ifdef _WIN32
-        CPPUNIT_ASSERT(!_testObj->createDirectory(path, ioError));
+        CPPUNIT_ASSERT(!IoHelper::createDirectory(path, ioError));
         CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
 #else
-        CPPUNIT_ASSERT(!_testObj->createDirectory(path, ioError));
+        CPPUNIT_ASSERT(!IoHelper::createDirectory(path, ioError));
         CPPUNIT_ASSERT(ioError == IoError::FileNameTooLong);
 #endif
     }

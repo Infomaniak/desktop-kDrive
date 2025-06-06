@@ -26,7 +26,7 @@ namespace KDC {
 
 
 void TestIo::testCreateAlias() {
-    GetItemChecker checker{_testObj};
+    GetItemChecker checker;
 
     // A MacOSX Finder alias on a regular file.
     {
