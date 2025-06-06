@@ -564,7 +564,7 @@ void TestIo::testGetItemTypeAllBranches() {
         CPPUNIT_ASSERT(aliasError == IoError::Success);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
-        IoHelper::setReadAliasFunction([](const SyncPath &, SyncPath &, IoError &ioError) -> bool {
+        _testObj->setReadAliasFunction([](const SyncPath &, SyncPath &, IoError &ioError) -> bool {
             ioError = IoError::Unknown;
             return false;
         });
