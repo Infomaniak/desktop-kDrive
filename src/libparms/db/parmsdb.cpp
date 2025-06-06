@@ -1040,7 +1040,7 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersi
             return false;
         }
     }
-    
+
     // Add localNodeId to sync table
     if (!addTextColumnIfMissing("sync", "localNodeId")) {
         return false;
@@ -3019,6 +3019,8 @@ bool ParmsDb::replaceShortDbPathsWithLongPaths() {
     std::vector<Sync> syncList;
     selectAllSyncs(syncList);
 
+    if (!createAndPrepareRequest(UPDATE_SYNC_REQUEST_ID, UPDATE_SYNC_REQUEST)) return false;
+
     for (auto &sync: syncList) {
         SyncPath longPathName;
         auto ioError = IoError::Success;
@@ -3037,8 +3039,13 @@ bool ParmsDb::replaceShortDbPathsWithLongPaths() {
         }
         sync.setDbPath(longPathName);
         bool found = false;
-        if (!updateSync(sync, found)) return false;
+        if (!updateSync(sync, found)) {
+            queryFree(UPDATE_SYNC_REQUEST_ID);
+            return false;
+        }
     }
+
+    queryFree(UPDATE_SYNC_REQUEST_ID);
 
     return true;
 }
