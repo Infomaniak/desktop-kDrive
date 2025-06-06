@@ -143,8 +143,6 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
 
 
 struct GetItemChecker {
-        GetItemChecker(IoHelperTests *iohelper);
-
         struct Result {
                 bool success{true};
                 std::string message;
@@ -160,9 +158,6 @@ struct GetItemChecker {
                                                        NodeType targetType) noexcept;
 
         Result checkAccessIsDenied(const SyncPath &path) noexcept;
-
-    private:
-        IoHelperTests *_iohelper{nullptr};
 };
 
 SyncPath makeVeryLonPath(const SyncPath &rootPath);
