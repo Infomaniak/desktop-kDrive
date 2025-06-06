@@ -58,6 +58,7 @@ SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std
     _vfs(vfs),
     _logger(Log::instance()->getLogger()) {
     _syncInfo.syncHasFullyCompleted = hasFullyCompleted;
+    _syncInfo.syncDbId = 1;
     LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init: " << Utility::formatSyncPath(syncDbPath));
     assert(_vfs);
 
