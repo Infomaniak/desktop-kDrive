@@ -674,7 +674,7 @@ void IoHelper::setCacheDirectoryPath(const SyncPath &newPath) {
 
 bool IoHelper::cacheDirectoryPath(SyncPath &directoryPath) noexcept {
     static const details::CacheDirectoryHanlder cacheDirectoryHandler;
-    directoryPath = cacheDirectoryHandler.directoryPath;
+    directoryPath = details::CacheDirectoryHanlder::directoryPath;
     return !directoryPath.empty();
 }
 

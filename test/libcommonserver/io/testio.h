@@ -143,7 +143,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
 
 
 struct GetItemChecker {
-        GetItemChecker(IoHelperTests *iohelper);
+        explicit GetItemChecker(IoHelperTests *iohelper);
 
         struct Result {
                 bool success{true};
