@@ -321,9 +321,9 @@ The project requires additional CMake variables for a correct build. To inject t
 
 Dependencies are deployed using utilitary tool `macdeployqt` provided with the Qt binaries:
 
-`/Users/<user_name>/Qt/6.2.3/macos/bin/macdeployqt /Users/<user_name>/Projects/CLion-build-debug/install/kDrive.app -libpath=/usr/local/lib -no-strip -executable=/Users/<user_name>/Projects/CLion-build-debug/install/kDrive.app/Contents/MacOS/kDrive`.
+`/Users/<user_name>/Qt/6.2.3/macos/bin/macdeployqt /Users/<user_name>/Projects/CLion-build-debug/install/kDrive.app -libpath=$DYLD_LIBRARY_PATH -no-strip -executable=/Users/<user_name>/Projects/CLion-build-debug/install/kDrive.app/Contents/MacOS/kDrive`.
 
-This command is run each time we build in release mode. However, since it takes some time to find all dependencies, this program is run manually in debug mode every time we need to rebuild the binary directory.
+This command is run each time we build. However, since it takes some time to find all dependencies, it is possible to disable it by setting the variable DEPLOY_LIBS_MANUALLY.
 
 ## Using CLion
 
