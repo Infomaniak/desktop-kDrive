@@ -72,7 +72,6 @@ class COMMONSERVER_EXPORT Db {
         virtual bool upgrade(const std::string &fromVersion, const std::string &toVersion) = 0;
 
         inline const std::string &fromVersion() const { return _fromVersion; }
-        std::filesystem::path dbPath() const { return _dbPath; };
 
         inline int createNormalizeSyncNameFunc() { return _sqliteDb->createNormalizeSyncNameFunc(); }
 
