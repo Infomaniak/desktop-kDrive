@@ -3039,7 +3039,10 @@ bool ParmsDb::replaceShortDbPathsWithLongPaths() {
         }
         sync.setDbPath(longPathName);
         bool found = false;
-        if (!updateSync(sync, found)) return false;
+        if (!updateSync(sync, found)) {
+            queryFree(UPDATE_SYNC_REQUEST_ID);
+            return false;
+        }
     }
 
     queryFree(UPDATE_SYNC_REQUEST_ID);
