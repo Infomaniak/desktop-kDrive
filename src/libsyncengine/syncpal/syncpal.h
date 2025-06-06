@@ -153,6 +153,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         inline bool isAdvancedSync() const { return _syncInfo.isAdvancedSync(); }
 
         void setLocalPath(const SyncPath &path) { _syncInfo.localPath = path; }
+        ExitInfo isRootFolderValid();
         ExitInfo setLocalNodeId(const NodeId &localNodeId);
         void setSyncHasFullyCompleted(bool completed) { _syncInfo.syncHasFullyCompleted = completed; }
         void setRestart(bool shouldRestart) { _syncInfo.restart = shouldRestart; }

@@ -742,6 +742,28 @@ void SyncPal::setSyncHasFullyCompletedInParms(bool syncHasFullyCompleted) {
     }
 }
 
+ExitInfo SyncPal::isRootFolderValid() {
+    if (NodeId rootNodeId; IoHelper::getNodeId(localPath(), rootNodeId)) {
+        if (rootNodeId.empty()) {
+            LOGW_SYNCPAL_WARN(_logger, L"Unable to get root folder nodeId: " << Utility::formatSyncPath(localPath()));
+            return ExitCode::SystemError;
+        }
+
+        if (localNodeId().empty()) {
+            if (ExitInfo exitInfo = setLocalNodeId(rootNodeId); !exitInfo) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setLocalNodeId: " << exitInfo);
+                return exitInfo;
+            }
+            return ExitCode::Ok;
+        }
+
+        return localNodeId() == rootNodeId ? ExitInfo(ExitCode::Ok) : ExitInfo(ExitCode::DataError, ExitCause::SyncDirChanged);
+    } else {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getNodeId for root folder: " << Utility::formatSyncPath(localPath()));
+        return ExitCode::SystemError;
+    }
+}
+
 ExitInfo SyncPal::setLocalNodeId(const NodeId &localNodeId) {
     _syncInfo.localNodeId = localNodeId;
     Sync sync;
