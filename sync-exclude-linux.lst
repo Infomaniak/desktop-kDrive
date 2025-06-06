@@ -8,6 +8,7 @@
 .sentry-native_server
 *_conflict_*_*_*
 *_blacklisted_*_*_*
+kDrive Rescue Folder
 *~
 ~$*
 *.~*
@@ -32,4 +33,3 @@
 .nfs*
 *.app
 *.lnk
-kDrive Rescue Folder

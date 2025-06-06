@@ -402,19 +402,10 @@ void LocalFileSystemObserverWorker::execute() {
             break;
         }
 
-        bool isRootValid = false;
-        if (const ExitInfo exitInfo = isRootFolderValid(isRootValid); !exitInfo) {
+        if (const ExitInfo exitInfo = _syncPal->isRootFolderValid(); !exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
             exitCode = exitInfo.code();
             setExitCause(exitInfo.cause());
-            invalidateSnapshot();
-            break;
-        }
-
-        if (!isRootValid) {
-            LOG_SYNCPAL_WARN(_logger, "Root folder is not valid (nodeId changed), stopping worker");
-            exitCode = ExitCode::SystemError;
-            setExitCause(ExitCause::SyncDirChanged);
             invalidateSnapshot();
             break;
         }
@@ -452,6 +443,15 @@ void LocalFileSystemObserverWorker::execute() {
                 auto diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
                                                                                      _needUpdateTimerStart);
                 if (diff_ms.count() > waitForUpdateDelay) {
+                    // Check if root folder is still valid
+                    if (const ExitInfo exitInfo = _syncPal->isRootFolderValid(); !exitInfo) {
+                        LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
+                        exitCode = exitInfo.code();
+                        setExitCause(exitInfo.cause());
+                        invalidateSnapshot();
+                        break;
+                    }
+
                     const std::lock_guard<std::recursive_mutex> lk(_recursiveMutex);
                     _updating = false;
                 }
@@ -496,31 +496,6 @@ ExitCode LocalFileSystemObserverWorker::generateInitialSnapshot() {
     _updating = false;
 
     return res;
-}
-
-ExitInfo LocalFileSystemObserverWorker::isRootFolderValid(bool &isValid) {
-    isValid = false;
-    if (NodeId rootNodeId; IoHelper::getNodeId(_rootFolder, rootNodeId)) {
-        if (rootNodeId.empty()) {
-            LOGW_SYNCPAL_WARN(_logger, L"Unable to get root folder nodeId: " << Utility::formatSyncPath(_rootFolder));
-            return ExitCode::SystemError;
-        }
-
-        if (_syncPal->localNodeId().empty()) {
-            if (ExitInfo exitInfo = _syncPal->setLocalNodeId(rootNodeId); !exitInfo) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setLocalNodeId: " << exitInfo);
-                return exitInfo;
-            }
-            isValid = true;
-            return ExitCode::Ok;
-        }
-
-        isValid = _syncPal->localNodeId() == rootNodeId;
-        return ExitCode::Ok;
-    } else {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getNodeId for root folder: " << Utility::formatSyncPath(_rootFolder));
-        return ExitCode::SystemError;
-    }
 }
 
 bool LocalFileSystemObserverWorker::canComputeChecksum(const SyncPath &absolutePath) {
