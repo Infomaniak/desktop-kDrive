@@ -78,11 +78,17 @@ void SyncPalWorker::execute() {
                     LOG_SYNCPAL_DEBUG(_logger, "Stop FSO worker " << index);
                     isFSOInProgress[index] = false;
                     stopAndWaitForExitOfWorker(fsoWorkers[index]);
+
                     bool shouldPause = fsoWorkers[index]->exitCode() == ExitCode::NetworkError ||
                                        (fsoWorkers[index]->exitCode() == ExitCode::BackError &&
                                         fsoWorkers[index]->exitCause() == ExitCause::ServiceUnavailable);
                     if (shouldPause && !pauseAsked()) {
                         pause();
+                    }
+
+                    bool shouldStop = fsoWorkers[index]->exitCode() == ExitCode::InvalidSync;
+                    if (shouldStop && !stopAsked()) {
+                        stop();
                     }
                 } else if (!pauseAsked()) {
                     LOG_SYNCPAL_DEBUG(_logger, "Start FSO worker " << index);
@@ -183,11 +189,11 @@ void SyncPalWorker::execute() {
                 if ((stepWorkers[0] && workersExitCode[0] == ExitCode::SystemError &&
                      (stepWorkers[0]->exitCause() == ExitCause::NotEnoughDiskSpace ||
                       stepWorkers[0]->exitCause() == ExitCause::FileAccessError ||
-                      stepWorkers[0]->exitCause() == ExitCause::SyncDirAccesError)) ||
+                      stepWorkers[0]->exitCause() == ExitCause::SyncDirAccessError)) ||
                     (stepWorkers[1] && workersExitCode[1] == ExitCode::SystemError &&
                      (stepWorkers[1]->exitCause() == ExitCause::NotEnoughDiskSpace ||
                       stepWorkers[1]->exitCause() == ExitCause::FileAccessError ||
-                      stepWorkers[1]->exitCause() == ExitCause::SyncDirAccesError))) {
+                      stepWorkers[1]->exitCause() == ExitCause::SyncDirAccessError))) {
                     // Exit without error
                     exitCode = ExitCode::Ok;
                 } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::UpdateRequired) ||
