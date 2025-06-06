@@ -185,7 +185,7 @@ void TestIo::testSetFileDates() {
 
     {
         // /!\ Linux: The creation date cannot be set
-        // /!\ macOS: If creation date > modification date, creation date is set to modification date
+        // /!\ macOS: If creation date = 0 or creation date > modification date, creation date is set to modification date
 
         const LocalTemporaryDirectory tempDir("testSetFileDates");
         filepath = tempDir.path() / "test.txt";
@@ -339,16 +339,49 @@ void TestIo::testSetFileDates() {
 #endif
 
         // Test with creation date > modification date.
+        filepath = tempDir.path() / "test2.txt";
+        testhelpers::generateOrEditTestFile(filepath);
+
         ioError = IoHelper::setFileDates(filepath, timestamp + 10, timestamp, false);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         (void) IoHelper::getFileStat(filepath, &filestat, ioError);
 #if defined(__APPLE__)
+        // Creation date is set to modification date
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
 #elif defined(_WIN32)
         CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.creationTime);
 #endif
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modificationTime);
+
+        // Test with creation date = 0.
+        filepath = tempDir.path() / "test3.txt";
+        testhelpers::generateOrEditTestFile(filepath);
+
+        ioError = IoHelper::setFileDates(filepath, 0, timestamp, false);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError);
+#if defined(__APPLE__) || defined(_WIN32)
+        CPPUNIT_ASSERT(filestat.creationTime == 0);
+#endif
+        CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modificationTime);
+
+        // Test with modification date = 0.
+        filepath = tempDir.path() / "test4.txt";
+        testhelpers::generateOrEditTestFile(filepath);
+
+        ioError = IoHelper::setFileDates(filepath, timestamp, 0, false);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError);
+#if defined(__APPLE__)
+        // Creation date is set to modification date = 0
+        CPPUNIT_ASSERT(filestat.creationTime == 0);
+#elif defined(_WIN32)
+        CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
+#endif
+        CPPUNIT_ASSERT(filestat.modificationTime == 0);
     }
 
     // Test on a non-existing file.
