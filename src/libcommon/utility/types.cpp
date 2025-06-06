@@ -134,7 +134,7 @@ std::string toString(const ExitCause e) {
             return "DbEntryNotFound";
         case ExitCause::InvalidSnapshot:
             return "InvalidSnapshot";
-        case ExitCause::SyncDirAccesError:
+        case ExitCause::SyncDirAccessError:
             return "SyncDirAccesError";
         case ExitCause::SyncDirChanged:
             return "SyncDirChanged";

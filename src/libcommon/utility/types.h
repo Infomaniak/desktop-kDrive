@@ -262,7 +262,7 @@ enum class ExitCause {
     DbAccessError,
     DbEntryNotFound,
     InvalidSnapshot,
-    SyncDirAccesError,
+    SyncDirAccessError,
     SyncDirChanged,
     HttpErr,
     HttpErrForbidden,
