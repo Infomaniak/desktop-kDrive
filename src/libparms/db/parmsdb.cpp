@@ -737,7 +737,11 @@ void logIfTemplateNormalizationFails(log4cplus::Logger &logger, const SyncName &
 }
 } // namespace
 
-bool ParmsDb::insertUserTemplateNormalizations() {
+bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
+    if (!CommonUtility::isVersionLower(fromVersion, "3.7.2")) {
+        return true;
+    }
+
     LOG_INFO(_logger, "Inserting the normalizations of user exclusion file patterns.");
 
     if (!createAndPrepareRequest(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST))
@@ -1060,7 +1064,7 @@ bool ParmsDb::prepare() {
 bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersion) {
     if (CommonUtility::isVersionLower(fromVersion, toVersion)) {
         LOG_INFO(_logger, "Upgrade " << dbType() << " DB from " << fromVersion << " to " << toVersion);
-        if (!insertUserTemplateNormalizations()) {
+        if (!insertUserTemplateNormalizations(fromVersion)) {
             LOG_WARN(_logger, "Insertion of the normalizations of user exclusion file patterns has failed.");
             return false;
         }
@@ -1071,10 +1075,6 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersi
 #endif
     } else {
         LOG_INFO(_logger, "Apply generic upgrade fixes to " << dbType() << " DB version " << fromVersion);
-        if (!insertUserTemplateNormalizations()) {
-            LOG_WARN(_logger, "Insertion of the normalizations of user exclusion file patterns has failed.");
-            return false;
-        }
     }
 
     const std::string tableName = "parameters";
