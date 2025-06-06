@@ -67,7 +67,7 @@ void TestSyncPal::setUp() {
 
     _localPath = localPathStr;
     _remotePath = testVariables.remotePath;
-    Sync sync(1, drive.dbId(), _localPath, _remotePath);
+    Sync sync(1, drive.dbId(), _localPath, "", _remotePath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Setup proxy
@@ -197,7 +197,7 @@ void TestSyncPal::testSyncFileItem() {
 }
 
 void TestSyncPal::testCheckIfExistsOnServer() {
-    bool exists = false;
+    // bool exists = false;
     // CPPUNIT_ASSERT(!_syncPal->checkIfExistsOnServer(SyncPath("dummy"), exists));
 }
 

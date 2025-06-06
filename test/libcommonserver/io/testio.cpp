@@ -27,49 +27,6 @@ using namespace CppUnit;
 
 namespace KDC {
 
-IoHelperTests::IoHelperTests() :
-    IoHelper() {}
-
-void IoHelperTests::setIsDirectoryFunction(std::function<bool(const SyncPath &path, std::error_code &ec)> f) {
-    _isDirectory = f;
-};
-void IoHelperTests::setIsSymlinkFunction(std::function<bool(const SyncPath &path, std::error_code &ec)> f) {
-    _isSymlink = f;
-};
-void IoHelperTests::setReadSymlinkFunction(std::function<SyncPath(const SyncPath &path, std::error_code &ec)> f) {
-    _readSymlink = f;
-};
-void IoHelperTests::setFileSizeFunction(std::function<std::uintmax_t(const SyncPath &path, std::error_code &ec)> f) {
-    _fileSize = f;
-}
-
-void IoHelperTests::setTempDirectoryPathFunction(std::function<SyncPath(std::error_code &ec)> f) {
-    _tempDirectoryPath = f;
-}
-
-#ifdef __APPLE__
-void IoHelperTests::setReadAliasFunction(std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> f) {
-    _readAlias = f;
-};
-#endif
-
-void IoHelperTests::resetFunctions() {
-    // Reset to default std::filesytem implementation.
-    setIsDirectoryFunction(static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_directory));
-    setIsSymlinkFunction(static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_symlink));
-    setReadSymlinkFunction(static_cast<SyncPath (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::read_symlink));
-    setFileSizeFunction(static_cast<std::uintmax_t (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::file_size));
-    setTempDirectoryPathFunction(static_cast<SyncPath (*)(std::error_code &ec)>(&std::filesystem::temp_directory_path));
-
-#ifdef __APPLE__
-    // Default Utility::readAlias implementation
-    setReadAliasFunction([](const SyncPath &path, SyncPath &targetPath, IoError &ioError) -> bool {
-        std::string data;
-        return readAlias(path, data, targetPath, ioError);
-    });
-#endif
-}
-
 SyncPath makeVeryLonPath(const SyncPath &rootPath) {
     const std::string pathSegment(50, 'a');
     SyncPath path = rootPath;
@@ -126,10 +83,8 @@ void TestIo::testTempDirectoryPath() {
 
 void TestIo::testCacheDirectoryPath() {
     SyncPath cachePath;
-    IoError ioError = IoError::Success;
-    CPPUNIT_ASSERT(_testObj->cacheDirectoryPath(cachePath, ioError));
+    CPPUNIT_ASSERT(_testObj->cacheDirectoryPath(cachePath));
     CPPUNIT_ASSERT(!cachePath.empty());
-    CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 }
 
 void TestIo::testLogDirectoryPath() {

@@ -34,6 +34,7 @@
 #include "mocks/libcommonserver/db/mockdb.h"
 
 #include "test_utility/testhelpers.h"
+#include "test_utility/timeouthelper.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -67,25 +68,38 @@ void TestLocalFileSystemObserverWorker::setUp() {
         _testFiles.emplace_back(std::to_string(fileStat.inode), filepath);
     }
 
-    // Create parmsDb
-    bool alreadyExists = false;
-    const SyncPath parmsDbPath = MockDb::makeDbName(alreadyExists);
 
+    // Create parmsDb
+    const testhelpers::TestVariables testVariables;
+
+    bool alreadyExists = false;
+    const std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
-    bool constraintError = false;
-    ParmsDb::instance()->insertExclusionTemplate(
-            ExclusionTemplate(".DS_Store", true),
-            constraintError); // TODO : to be removed once we have a default list of file excluded implemented
-    const SyncPath syncDbPath = MockDb::makeDbName(1, 1, 1, 1, alreadyExists);
+    // Insert user, account, drive & sync
+    const int userId(atoi(testVariables.userId.c_str()));
+    const User user(1, userId, "123");
+    (void) ParmsDb::instance()->insertUser(user);
+
+    const int accountId(atoi(testVariables.accountId.c_str()));
+    const Account account(1, accountId, user.dbId());
+    (void) ParmsDb::instance()->insertAccount(account);
+
+    const int driveId = atoi(testVariables.driveId.c_str());
+    const Drive drive(1, driveId, account.dbId(), std::string(), 0, std::string());
+    (void) ParmsDb::instance()->insertDrive(drive);
+
+    Sync sync(1, drive.dbId(), _rootFolderPath, "", testVariables.remotePath);
+    (void) ParmsDb::instance()->insertSync(sync);
 
     // Create SyncPal
-    _syncPal = std::make_shared<SyncPalTest>(syncDbPath, KDRIVE_VERSION_STRING, true);
+    const SyncPath syncDbPath = MockDb::makeDbName(1, 1, 1, 1, alreadyExists);
+    _syncPal = std::make_shared<SyncPalTest>(1, KDRIVE_VERSION_STRING);
+    _syncPal->setSyncHasFullyCompleted(true);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
     _syncPal->createWorkers();
-    _syncPal->setLocalPath(_rootFolderPath);
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 
 #if defined(_WIN32)
@@ -118,6 +132,23 @@ void TestLocalFileSystemObserverWorker::tearDown() {
     }
     TestBase::stop();
 }
+void TestLocalFileSystemObserverWorker::testSyncDirChange() {
+    _syncPal->_localFSObserverWorker->stop();
+    _syncPal->_localFSObserverWorker->waitForExit();
+
+    IoError ioError = IoError::Unknown;
+    CPPUNIT_ASSERT(IoHelper::deleteItem(_rootFolderPath, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(IoHelper::createDirectory(_rootFolderPath, false, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+    _syncPal->_localFSObserverWorker->start();
+    CPPUNIT_ASSERT(TimeoutHelper::waitFor([this]() { return !_syncPal->_localFSObserverWorker->isRunning(); },
+                                          std::chrono::seconds(20), std::chrono::milliseconds(5)));
+    ExitInfo exitInfo = {_syncPal->_localFSObserverWorker->exitCode(), _syncPal->_localFSObserverWorker->exitCause()};
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::SyncDirChanged), exitInfo);
+}
+
 
 void TestLocalFileSystemObserverWorker::testLFSOWithInitialSnapshot() {
     NodeSet ids;

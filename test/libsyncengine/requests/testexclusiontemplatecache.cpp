@@ -89,6 +89,14 @@ void TestExclusionTemplateCache::setUp() {
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+
+    const auto &exclList = ExclusionTemplateCache::instance()->exclusionTemplates();
+    std::cout << "ExclusionTemplate: START" << std::endl;
+    for (const auto &excl: exclList) {
+        std::cout << "ExclusionTemplate: " << excl.templ() << " (complexity: " << static_cast<int>(excl.complexity())
+                  << ", warning: " << excl.warning() << ", deleted: " << excl.deleted() << ")" << std::endl;
+    }
+    std::cout << "ExclusionTemplate END" << std::endl;
 }
 
 void TestExclusionTemplateCache::tearDown() {
@@ -118,22 +126,22 @@ void TestExclusionTemplateCache::testIsExcluded() {
         // Test hidden file
         const SyncPath testPath = testhelpers::localTestDirPath / ".my_hidden_file.txt";
         bool isWarning = true;
-        CPPUNIT_ASSERT(str + " should not be excluded", !ExclusionTemplateCache::instance()->isExcluded(testPath, isWarning));
+        CPPUNIT_ASSERT_MESSAGE(testPath + " should not be excluded",
+                               !ExclusionTemplateCache::instance()->isExcluded(testPath, isWarning));
     }
 
     {
         // Test hidden folder
         const SyncPath testPath = testhelpers::localTestDirPath / ".my_hidden_folder/AA/my_file.txt";
         bool isWarning = true;
-        CPPUNIT_ASSERT(str + " should not be excluded", !ExclusionTemplateCache::instance()->isExcluded(testPath, isWarning));
+        CPPUNIT_ASSERT_MESSAGE(testPath + " should not be excluded",
+                               !ExclusionTemplateCache::instance()->isExcluded(testPath, isWarning));
     }
 #endif
 }
 void TestExclusionTemplateCache::testCacheFolderIsExcluded() {
     SyncPath cachePath;
-    IoError ioError = IoError::Unknown;
-    CPPUNIT_ASSERT(IoHelper::cacheDirectoryPath(cachePath, ioError));
-    CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+    CPPUNIT_ASSERT(IoHelper::cacheDirectoryPath(cachePath));
     CPPUNIT_ASSERT(!cachePath.empty());
     bool isWarning = false;
     CPPUNIT_ASSERT_MESSAGE(cachePath.filename().string() + " is not excluded",

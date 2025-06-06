@@ -177,6 +177,7 @@ void AppServer::init() {
     }
 
     bool newDbExists = false;
+    IoError ioError = IoError::Unknown;
     if (!IoHelper::checkIfPathExists(parmsDbPath, newDbExists, ioError) || ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(parmsDbPath, ioError));
         throw std::runtime_error("Unable to check if ParmsDb exists.");
@@ -2888,10 +2889,9 @@ void AppServer::logUsefulInformation() const {
     LOG_INFO(_logger, "locale: " << QLocale::system().name().toStdString());
 
     // Log cache path
-    IoError ioError = IoError::Success;
     SyncPath cachePath;
-    if (!IoHelper::cacheDirectoryPath(cachePath, ioError)) {
-        LOGW_WARN(_logger, L"Error getting cache directory path: " << Utility::formatIoError(ioError));
+    if (!IoHelper::cacheDirectoryPath(cachePath)) {
+        LOGW_WARN(_logger, L"Error getting cache directory");
     }
     LOGW_INFO(_logger, L"cache " << Utility::formatSyncPath(cachePath));
 

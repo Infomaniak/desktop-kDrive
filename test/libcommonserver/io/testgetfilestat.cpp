@@ -36,7 +36,7 @@ void TestIo::testGetFileStat() {
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_EQUAL(int64_t(408278u), fileStat.size);
         CPPUNIT_ASSERT_GREATER(SyncTime(0), fileStat.creationTime);
@@ -45,7 +45,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         NodeId nodeId;
-        CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
         CPPUNIT_ASSERT_EQUAL(nodeId, std::to_string(fileStat.inode));
     }
 
@@ -55,7 +55,7 @@ void TestIo::testGetFileStat() {
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
 #ifdef _WIN32
         CPPUNIT_ASSERT_EQUAL(int64_t(0u), fileStat.size);
@@ -68,7 +68,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         NodeId nodeId;
-        CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
         CPPUNIT_ASSERT_EQUAL(nodeId, std::to_string(fileStat.inode));
     }
 
@@ -82,7 +82,7 @@ void TestIo::testGetFileStat() {
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
 #ifdef _WIN32
         CPPUNIT_ASSERT_EQUAL(int64_t(0), fileStat.size);
@@ -94,7 +94,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         NodeId nodeId;
-        CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
         CPPUNIT_ASSERT_EQUAL(nodeId, std::to_string(fileStat.inode));
     }
 
@@ -108,7 +108,7 @@ void TestIo::testGetFileStat() {
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
 #ifdef _WIN32
         CPPUNIT_ASSERT_EQUAL(int64_t(0), fileStat.size);
@@ -124,7 +124,7 @@ void TestIo::testGetFileStat() {
         FileStat fileStat;
         IoError ioError = IoError::Success;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_EQUAL(int64_t(0), fileStat.size);
         CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.modificationTime);
@@ -140,7 +140,7 @@ void TestIo::testGetFileStat() {
         const SyncPath path = _localTestDirPath / veryLongfileName; // This file doesn't exist.
         FileStat fileStat;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(!_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(!IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_EQUAL(int64_t(0), fileStat.size);
         CPPUNIT_ASSERT_EQUAL(uint64_t(0), fileStat.inode);
@@ -163,7 +163,7 @@ void TestIo::testGetFileStat() {
         FileStat fileStat;
         IoError ioError = IoError::Success;
 
-        CPPUNIT_ASSERT(!_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(!IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_EQUAL(int64_t(0), fileStat.size);
         CPPUNIT_ASSERT_EQUAL(uint64_t(0), fileStat.inode);
@@ -186,13 +186,13 @@ void TestIo::testGetFileStat() {
         }
 
 #if defined(__APPLE__) || defined(WIN32)
-        _testObj->setFileHidden(path, true);
+        IoHelper::setFileHidden(path, true);
 #endif
 
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
 
         CPPUNIT_ASSERT(fileStat.isHidden);
         CPPUNIT_ASSERT_GREATER(int64_t(0), fileStat.size);
@@ -212,12 +212,12 @@ void TestIo::testGetFileStat() {
 #endif
 
 #if defined(__APPLE__) || defined(WIN32)
-        _testObj->setFileHidden(path, true);
+        IoHelper::setFileHidden(path, true);
 #endif
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(fileStat.isHidden);
         CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
@@ -235,7 +235,7 @@ void TestIo::testGetFileStat() {
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
 #ifdef _WIN32
-        CPPUNIT_ASSERT(!_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(!IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_EQUAL(SyncTime(0u), fileStat.size);
         CPPUNIT_ASSERT_EQUAL(SyncTime(0u), fileStat.modificationTime);
@@ -243,7 +243,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Unknown, ioError);
 #else
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_GREATER(int64_t(0), fileStat.size);
         CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, fileStat.creationTime);
@@ -265,7 +265,7 @@ void TestIo::testGetFileStat() {
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_GREATER(int64_t(0), fileStat.size);
         CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
@@ -283,7 +283,7 @@ void TestIo::testGetFileStat() {
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
 #ifdef _WIN32
         CPPUNIT_ASSERT_EQUAL(int64_t(0), fileStat.size);
@@ -312,7 +312,7 @@ void TestIo::testGetFileStat() {
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_GREATER(int64_t(0),
                                fileStat.size); // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
@@ -333,7 +333,7 @@ void TestIo::testGetFileStat() {
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_GREATER(int64_t(0),
                                fileStat.size); // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
@@ -359,7 +359,7 @@ void TestIo::testGetFileStat() {
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_GREATER(int64_t(0),
                                fileStat.size); // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
@@ -383,7 +383,7 @@ void TestIo::testGetFileStat() {
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_GREATER(int64_t(0),
                                fileStat.size); // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
@@ -408,7 +408,7 @@ void TestIo::testGetFileStat() {
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_EQUAL(int64_t(0),
                              fileStat.size); // `fileStat.size` is 0 for a junction`
@@ -430,7 +430,7 @@ void TestIo::testGetFileStat() {
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_EQUAL(int64_t(0),
                              fileStat.size); // `fileStat.size` is 0 for a junction`
@@ -453,7 +453,7 @@ void TestIo::testGetFileStat() {
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
 
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::add);
 
@@ -475,7 +475,7 @@ void TestIo::testGetFileStat() {
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
 
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::add);
 
@@ -505,9 +505,9 @@ void TestIo::testGetFileStat() {
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
 #ifdef _WIN32
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
 #else
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
 #endif
         // Restore permission to allow subdir removal
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
@@ -535,7 +535,7 @@ void TestIo::testGetFileStat() {
 
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
 
         // Restore permission to allow subdir removal
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);

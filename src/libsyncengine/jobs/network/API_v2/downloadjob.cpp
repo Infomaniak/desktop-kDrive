@@ -577,9 +577,8 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
     fetchError = false;
 
     SyncPath cacheDirectoryPath;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::cacheDirectoryPath(cacheDirectoryPath, ioError)) {
-        LOGW_WARN(_logger, L"Failed to get cache directory path: " << Utility::formatIoError(cacheDirectoryPath, ioError));
+    if (!IoHelper::cacheDirectoryPath(cacheDirectoryPath)) {
+        LOGW_WARN(_logger, L"Failed to get cache directory");
         _exitInfo = ExitCode::SystemError;
         return false;
     }
