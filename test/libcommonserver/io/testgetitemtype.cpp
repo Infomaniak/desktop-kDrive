@@ -24,9 +24,6 @@ using namespace CppUnit;
 
 namespace KDC {
 
-
-GetItemChecker::GetItemChecker(IoHelperTests *iohelper) : _iohelper{iohelper} {};
-
 std::string GetItemChecker::makeMessage(const CppUnit::Exception &e) {
     std::string msg = "Details: \n    -" + e.message().details();
     msg += "    -- line: " + e.sourceLine().fileName() + ":" + std::to_string(e.sourceLine().lineNumber());
@@ -37,7 +34,7 @@ std::string GetItemChecker::makeMessage(const CppUnit::Exception &e) {
 GetItemChecker::Result GetItemChecker::checkSuccessfulRetrieval(const SyncPath &path, NodeType fileType) noexcept {
     ItemType itemType;
     try {
-        CPPUNIT_ASSERT(_iohelper->getItemType(path, itemType));
+        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoError::Success);
         CPPUNIT_ASSERT(itemType.nodeType == fileType);
         CPPUNIT_ASSERT(itemType.linkType == LinkType::None);
@@ -54,7 +51,7 @@ GetItemChecker::Result GetItemChecker::checkSuccessfulLinkRetrieval(const SyncPa
                                                                     LinkType linkType, NodeType fileType) noexcept {
     ItemType itemType;
     try {
-        CPPUNIT_ASSERT(_iohelper->getItemType(path, itemType));
+        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoError::Success);
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::File);
         CPPUNIT_ASSERT(itemType.linkType == linkType);
@@ -70,7 +67,7 @@ GetItemChecker::Result GetItemChecker::checkSuccessfulLinkRetrieval(const SyncPa
 GetItemChecker::Result GetItemChecker::checkItemIsNotFound(const SyncPath &path) noexcept {
     ItemType itemType;
     try {
-        CPPUNIT_ASSERT(_iohelper->getItemType(path, itemType));
+        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoError::NoSuchFileOrDirectory);
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::Unknown);
         CPPUNIT_ASSERT(itemType.linkType == LinkType::None);
@@ -87,7 +84,7 @@ GetItemChecker::Result GetItemChecker::checkSuccessfullRetrievalOfDanglingLink(c
                                                                                LinkType linkType, NodeType targetType) noexcept {
     ItemType itemType;
     try {
-        CPPUNIT_ASSERT(_iohelper->getItemType(path, itemType));
+        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoError::Success); // Although `targetPath` is invalid.
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::File);
         CPPUNIT_ASSERT(itemType.linkType == linkType);
@@ -103,7 +100,7 @@ GetItemChecker::Result GetItemChecker::checkSuccessfullRetrievalOfDanglingLink(c
 GetItemChecker::Result GetItemChecker::checkAccessIsDenied(const SyncPath &path) noexcept {
     ItemType itemType;
     try {
-        CPPUNIT_ASSERT(_iohelper->getItemType(path, itemType));
+        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoError::AccessDenied);
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::Unknown);
         CPPUNIT_ASSERT(itemType.linkType == LinkType::None);
@@ -118,7 +115,7 @@ GetItemChecker::Result GetItemChecker::checkAccessIsDenied(const SyncPath &path)
 
 
 void TestIo::testGetItemTypeSimpleCases() {
-    GetItemChecker checker{_testObj};
+    GetItemChecker checker;
 
     // A regular file
     {
@@ -168,11 +165,11 @@ void TestIo::testGetItemTypeSimpleCases() {
         const SyncPath path = _localTestDirPath / veryLongfileName; // This file doesn't exist.
         ItemType itemType;
 #ifdef _WIN32
-        CPPUNIT_ASSERT(_testObj->getItemType(path, itemType));
+        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoError::NoSuchFileOrDirectory);
 #else
         // We got std::errc::filename_too_long, equivalent to the POSIX error ENAMETOOLONG
-        CPPUNIT_ASSERT(!_testObj->getItemType(path, itemType));
+        CPPUNIT_ASSERT(!IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoError::FileNameTooLong);
 #endif
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::Unknown);
@@ -190,11 +187,11 @@ void TestIo::testGetItemTypeSimpleCases() {
         }
         ItemType itemType;
 #ifdef _WIN32
-        CPPUNIT_ASSERT(_testObj->getItemType(path, itemType));
+        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoError::NoSuchFileOrDirectory);
 #else
         // We got std::errc::filename_too_long, equivalent to the POSIX error ENAMETOOLONG
-        CPPUNIT_ASSERT(!_testObj->getItemType(path, itemType));
+        CPPUNIT_ASSERT(!IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoError::FileNameTooLong);
 #endif
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::Unknown);
@@ -211,7 +208,7 @@ void TestIo::testGetItemTypeSimpleCases() {
 
 #ifdef _WIN32
         ItemType itemType;
-        CPPUNIT_ASSERT(_testObj->getItemType(
+        CPPUNIT_ASSERT(IoHelper::getItemType(
                 path, itemType)); // Invalid name is considered as IoError::NoSuchFileOrDirectory (expected error)
         CPPUNIT_ASSERT(itemType.ioError == IoError::NoSuchFileOrDirectory);
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::Unknown);
@@ -325,10 +322,10 @@ void TestIo::testGetItemTypeSimpleCases() {
         const SyncPath path = temporaryDirectory.path() / "regular_dir_junction";
 
         IoError ioError = IoError::Success;
-        _testObj->createJunctionFromPath(targetPath, path, ioError);
+        IoHelper::createJunctionFromPath(targetPath, path, ioError);
 
         ItemType itemType;
-        CPPUNIT_ASSERT(_testObj->getItemType(path, itemType));
+        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::File);
         CPPUNIT_ASSERT(itemType.linkType == LinkType::Junction);
         CPPUNIT_ASSERT(itemType.targetType == NodeType::Directory);
@@ -391,7 +388,7 @@ void TestIo::testGetItemTypeSimpleCases() {
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::remove);
 
         ItemType itemType;
-        CPPUNIT_ASSERT(_testObj->getItemType(path, itemType));
+        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
 #ifdef _WIN32
         CPPUNIT_ASSERT(itemType.ioError == IoError::Success);
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::File);
@@ -423,7 +420,7 @@ void TestIo::testGetItemTypeSimpleCases() {
 
 #ifdef _WIN32
         ItemType itemType;
-        CPPUNIT_ASSERT(_testObj->getItemType(path, itemType));
+        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
         // Restore permission to allow subdir removal
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
         CPPUNIT_ASSERT(itemType.ioError == IoError::Success);
@@ -441,7 +438,7 @@ void TestIo::testGetItemTypeSimpleCases() {
 }
 
 void TestIo::testGetItemTypeAllBranches() {
-    GetItemChecker checker{_testObj};
+    GetItemChecker checker;
 
     // Failing to read a regular symbolic link because of an unexpected error.
     {
@@ -456,7 +453,7 @@ void TestIo::testGetItemTypeAllBranches() {
         });
 
         ItemType itemType;
-        CPPUNIT_ASSERT(!_testObj->getItemType(path, itemType));
+        CPPUNIT_ASSERT(!IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoError::Unknown);
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::Unknown);
         CPPUNIT_ASSERT(itemType.linkType == LinkType::None);
@@ -502,7 +499,7 @@ void TestIo::testGetItemTypeAllBranches() {
 
 #ifdef _WIN32
         ItemType itemType;
-        CPPUNIT_ASSERT(_testObj->getItemType(path, itemType));
+        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoError::Success);
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::File);
         CPPUNIT_ASSERT(itemType.linkType == LinkType::Symlink);
@@ -563,7 +560,7 @@ void TestIo::testGetItemTypeAllBranches() {
         const SyncPath path = temporaryDirectory.path() / "test_pictures_alias";
 
         IoError aliasError;
-        CPPUNIT_ASSERT(_testObj->createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
@@ -573,7 +570,7 @@ void TestIo::testGetItemTypeAllBranches() {
         });
 
         ItemType itemType;
-        CPPUNIT_ASSERT(!_testObj->getItemType(path, itemType));
+        CPPUNIT_ASSERT(!IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoError::Unknown);
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::Unknown);
         CPPUNIT_ASSERT(itemType.linkType == LinkType::None);
@@ -593,7 +590,7 @@ void TestIo::testGetItemTypeAllBranches() {
         const SyncPath path = subdir / "regular_file_alias";
 
         IoError aliasError;
-        CPPUNIT_ASSERT(_testObj->createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
@@ -649,7 +646,7 @@ void TestIo::testGetItemTypeEdgeCases() {
     { std::ofstream{path}; }
 
     ItemType itemType;
-    CPPUNIT_ASSERT(!_testObj->getItemType(path, itemType));
+    CPPUNIT_ASSERT(!IoHelper::getItemType(path, itemType));
     // The outcome depends on the value of `temporaryDirectory.path`.
     if (std::filesystem::exists(path, ec)) {
         CPPUNIT_ASSERT_EQUAL(IoError::InvalidFileName, // Ooops! Because of NSFileReadInvalidNameError with code 258 issued within

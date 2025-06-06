@@ -86,6 +86,7 @@ class COMMONSERVER_EXPORT Db {
         bool checkConnect(const std::string &version);
 
         bool addIntegerColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded = nullptr);
+        bool addTextColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded = nullptr);
         bool addColumnIfMissing(const std::string &tableName, const std::string &columnName, const std::string &requestId,
                                 const std::string &request, bool *columnAdded = nullptr);
 
