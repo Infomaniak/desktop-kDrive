@@ -64,12 +64,12 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testEditEditPseudoConflict();
         void testEditEditConflict();
         void testMoveCreateConflict();
+        void testEditDeleteConflict();
 
         // // TODO : other tests
         // // - many sync ops (ex: upload 100 files)
         // // - create dir + subdir + file in same sync
         // // Conflicts
-        // void testMoveCreateConflict();
         // void testEditDeleteConflict1();
         // void testEditDeleteConflict2();
         // void testMoveDeleteConflict1();
@@ -108,13 +108,13 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testNodeIdReuseFile2DirAndDir2File();
         void testNodeIdReuseFile2File();
 #endif
-        uint64_t waitForSyncToFinish(const SourceLocation &srcLoc,
+        uint64_t waitForSyncToBeIdle(const SourceLocation &srcLoc,
                                      std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
-        void waitForNextSyncToFinish(uint64_t syncCount);
+        void waitForSyncToFinish(uint64_t syncCount);
         void logStep(const std::string &str);
 
         NodeId duplicateRemoteFile(const NodeId &id, const SyncName &newName) const;
-        SyncPath findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix);
+        SyncPath findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix) const;
 
         struct RemoteFileInfo {
                 NodeId id;
@@ -126,9 +126,8 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
 
                 bool isValid() const { return !id.empty(); }
         };
-        RemoteFileInfo getRemoteFileInfo(int _driveDbId, const NodeId &parentId, const SyncName &name);
+        RemoteFileInfo getRemoteFileInfo(int _driveDbId, const NodeId &parentId, const SyncName &name) const;
         log4cplus::Logger _logger;
-
         std::shared_ptr<SyncPal> _syncPal = nullptr;
         std::shared_ptr<ParmsDb> _parmsDb = nullptr;
 
