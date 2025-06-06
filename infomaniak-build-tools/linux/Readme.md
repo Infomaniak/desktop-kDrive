@@ -4,7 +4,6 @@
     - [Qt 6.2.3](#qt-623)
     - [Poco](#poco)
     - [CPPUnit](#cppunit)
-    - [Sentry](#sentry)
     - [libzip](#libzip)
     - [Conan](#conan)
 - [Build in Debug](#build-in-debug)
@@ -122,27 +121,6 @@ If the server does not reply to the `git clone` command, you can download the so
 
 You can also download cppunit version 1.15.1 using the ["Wayback Machine"](https://web.archive.org/) here: https://web.archive.org/web/20231118010938/http://dev-www.libreoffice.org/src/cppunit-1.15.1.tar.gz
 
-## Sentry
-
-You will need to install the dev libcurl package to build sentry-native
-
-```bash
-sudo apt install -y libcurl4-openssl-dev
-cd ~/Projects
-git clone https://github.com/getsentry/sentry-native.git
-cd sentry-native
-git checkout tags/0.7.9
-git submodule init
-git submodule update --recursive
-cd external/crashpad
-git submodule init
-git submodule update --recursive
-cd ../..
-cmake -B build -DSENTRY_INTEGRATION_QT=YES -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_PREFIX_PATH=~/Qt/6.2.3/gcc_64
-cmake --build build --parallel
-sudo cmake --install build
-```
-
 ## libzip
 
 First, install the `dev` version of zlib:
@@ -254,7 +232,7 @@ The project requires additional CMake variables for a correct build. To inject t
 ./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release] [--output-dir=<output_dir>]
 ```
 
-> **Note:** Currently only **xxHash**, **log4cplus**, **OpenSSL** and **zlib** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** Currently only **xxHash**, **log4cplus**, **OpenSSL**, **zlib** and **Sentry** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
 
 ---
 # Build in Debug
