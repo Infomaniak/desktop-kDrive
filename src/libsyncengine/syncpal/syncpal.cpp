@@ -774,7 +774,7 @@ ExitInfo SyncPal::setLocalNodeId(const NodeId &localNodeId) {
     }
     if (!found) {
         LOG_SYNCPAL_WARN(_logger, "Sync not found");
-        return ExitCode::Ok;
+        return ExitCode::DataError;
     }
 
     sync.setLocalNodeId(localNodeId);
@@ -784,7 +784,7 @@ ExitInfo SyncPal::setLocalNodeId(const NodeId &localNodeId) {
     }
     if (!found) {
         LOG_SYNCPAL_WARN(_logger, "Sync not found");
-        return ExitCode::Ok;
+        return ExitCode::DataError;
     }
 
     return ExitCode::Ok;
