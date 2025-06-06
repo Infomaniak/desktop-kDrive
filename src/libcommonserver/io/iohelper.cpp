@@ -672,7 +672,7 @@ class CacheDirectoryHanlder {
 } // namespace details
 
 void IoHelper::setCacheDirectoryPath(const SyncPath &newPath) {
-    KDC::details::CacheDirectoryHanlder::_directoryPath = newPath;
+    details::CacheDirectoryHanlder::_directoryPath = newPath;
 }
 
 bool IoHelper::cacheDirectoryPath(SyncPath &directoryPath) noexcept {
