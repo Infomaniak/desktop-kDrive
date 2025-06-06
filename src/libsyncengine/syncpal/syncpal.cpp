@@ -58,7 +58,6 @@ SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std
     _vfs(vfs),
     _logger(Log::instance()->getLogger()) {
     _syncInfo.syncHasFullyCompleted = hasFullyCompleted;
-    _syncInfo.syncDbId = 1;
     LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init: " << Utility::formatSyncPath(syncDbPath));
     assert(_vfs);
 
@@ -775,7 +774,7 @@ ExitInfo SyncPal::setLocalNodeId(const NodeId &localNodeId) {
     }
     if (!found) {
         LOG_SYNCPAL_WARN(_logger, "Sync not found");
-        return ExitCode::DataError;
+        return ExitCode::Ok;
     }
 
     sync.setLocalNodeId(localNodeId);
@@ -785,7 +784,7 @@ ExitInfo SyncPal::setLocalNodeId(const NodeId &localNodeId) {
     }
     if (!found) {
         LOG_SYNCPAL_WARN(_logger, "Sync not found");
-        return ExitCode::DataError;
+        return ExitCode::Ok;
     }
 
     return ExitCode::Ok;
