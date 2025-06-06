@@ -1040,7 +1040,7 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersi
             return false;
         }
     }
-    
+
     // Add localNodeId to sync table
     if (!addTextColumnIfMissing("sync", "localNodeId")) {
         return false;

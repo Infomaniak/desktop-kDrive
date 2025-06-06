@@ -139,7 +139,7 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
     bool ok = true;
     if (access(dir.c_str(), R_OK) != 0) {
         LOGW_WARN(_logger, L"SyncDir is not readable: " << Utility::formatSyncPath(dir));
-        setExitInfo({ExitCode::SystemError, ExitCause::SyncDirAccesError});
+        setExitInfo({ExitCode::SystemError, ExitCause::SyncDirAccessError});
         return false;
     }
     if (std::error_code ec; !std::filesystem::exists(dir, ec)) {

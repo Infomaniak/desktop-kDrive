@@ -79,7 +79,7 @@ bool SqliteDb::openOrCreateReadWrite(const std::filesystem::path &dbPath) {
         std::error_code ec;
         if (!std::filesystem::remove(dbPath, ec)) {
             if (ec.value() != 0) {
-                LOGW_WARN(_logger, L"Failed to remove db file " << Path2WStr(dbPath) << L": " << Utility::s2ws(ec.message())
+                LOGW_WARN(_logger, L"Failed to remove db file " << Utility::formatSyncPath(dbPath) << L": " << Utility::s2ws(ec.message())
                                                                 << L" (" << ec.value() << L")");
                 close();
                 return false;
