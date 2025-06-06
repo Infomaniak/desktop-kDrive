@@ -95,7 +95,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
 
     // Create SyncPal
     const SyncPath syncDbPath = MockDb::makeDbName(1, 1, 1, 1, alreadyExists);
-    _syncPal = std::make_shared<SyncPalTest>(1, KDRIVE_VERSION_STRING, true);
+    _syncPal = std::make_shared<SyncPalTest>(1, KDRIVE_VERSION_STRING);
     _syncPal->setSyncHasFullyCompleted(true);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();

@@ -790,7 +790,6 @@ ExitInfo SyncPal::setLocalNodeId(const NodeId &localNodeId) {
     return ExitCode::Ok;
 }
 
-
 ExitCode SyncPal::setListingCursor(const std::string &value, int64_t timestamp) {
     Sync sync;
     bool found;
