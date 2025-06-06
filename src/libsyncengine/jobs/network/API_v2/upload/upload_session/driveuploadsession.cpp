@@ -25,8 +25,8 @@ namespace KDC {
 
 DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const std::shared_ptr<SyncDb> syncDb,
                                        const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId,
-                                       const SyncTime creationTime, SyncTime modificationTime, const bool liteSyncActivated,
-                                       const uint64_t nbParallelThread /*= 1*/) :
+                                       const SyncTime creationTime, const SyncTime modificationTime, const bool liteSyncActivated,
+                                       const uint64_t nbParallelThread) :
     AbstractUploadSession(filepath, filename, nbParallelThread),
     _driveDbId(driveDbId),
     _syncDb(syncDb),
@@ -39,8 +39,8 @@ DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, const in
 }
 
 DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const std::shared_ptr<SyncDb> syncDb,
-                                       const SyncPath &filepath, const NodeId &fileId, SyncTime modificationTime,
-                                       const bool liteSyncActivated, const uint64_t nbParallelThread /*= 1*/) :
+                                       const SyncPath &filepath, const NodeId &fileId, const SyncTime modificationTime,
+                                       const bool liteSyncActivated, const uint64_t nbParallelThread) :
     DriveUploadSession(vfs, driveDbId, syncDb, filepath, SyncName(), fileId, 0, modificationTime, liteSyncActivated,
                        nbParallelThread) {
     _fileId = fileId;
@@ -76,10 +76,10 @@ std::shared_ptr<UploadSessionStartJob> DriveUploadSession::createStartJob() {
     }
 }
 
-std::shared_ptr<UploadSessionChunkJob> DriveUploadSession::createChunkJob(const std::string &chunckContent, uint64_t chunkNb,
+std::shared_ptr<UploadSessionChunkJob> DriveUploadSession::createChunkJob(const std::string &chunkContent, uint64_t chunkNb,
                                                                           std::streamsize actualChunkSize) {
     return std::make_shared<UploadSessionChunkJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken(),
-                                                   chunckContent, chunkNb, actualChunkSize, jobId());
+                                                   chunkContent, chunkNb, actualChunkSize, jobId());
 }
 
 std::shared_ptr<UploadSessionFinishJob> DriveUploadSession::createFinishJob() {

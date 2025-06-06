@@ -1094,10 +1094,11 @@ void TestNetworkJobs::testDriveUploadSessionConstructorException() {
     const SyncPath localFilePath = testhelpers::localTestDirPath;
     // The constructor of DriveUploadSession will attempt to retrieve the file size of directory.
 
-    CPPUNIT_ASSERT_THROW_MESSAGE("DriveUploadSession() didn't throw as expected",
-                                 DriveUploadSession(nullptr, _driveDbId, nullptr, localFilePath,
-                                                    localFilePath.filename().native(), remoteTmpDir.id(), 12345, false, 1),
-                                 std::runtime_error);
+    CPPUNIT_ASSERT_THROW_MESSAGE(
+            "DriveUploadSession() didn't throw as expected",
+            DriveUploadSession(nullptr, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+                               testhelpers::defaultTime, testhelpers::defaultTime, false, 1),
+            std::runtime_error);
 }
 
 void TestNetworkJobs::testDriveUploadSessionSynchronous() {
@@ -1182,7 +1183,8 @@ void TestNetworkJobs::testDefuncted() { // Create a file
     while (_nbParallelThreads > 0) {
         LOG_DEBUG(Log::instance()->getLogger(), "$$$$$ testDefuncted - " << _nbParallelThreads << " threads");
         DriveUploadSession driveUploadSessionJob(nullptr, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(),
-                                                 remoteTmpDir.id(), 12345, false, _nbParallelThreads);
+                                                 remoteTmpDir.id(), testhelpers::defaultTime, testhelpers::defaultTime, false,
+                                                 _nbParallelThreads);
         exitCode = driveUploadSessionJob.runSynchronously();
         if (exitCode == ExitCode::Ok) {
             newNodeId = driveUploadSessionJob.nodeId();
@@ -1232,8 +1234,9 @@ void TestNetworkJobs::testDriveUploadSessionSynchronousAborted() {
                 return ExitCode::Ok;
             });
 
-    auto DriveUploadSessionJob = std::make_shared<DriveUploadSession>(
-            vfs, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 12345, false, 1);
+    auto DriveUploadSessionJob =
+            std::make_shared<DriveUploadSession>(vfs, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(),
+                                                 remoteTmpDir.id(), testhelpers::defaultTime, testhelpers::defaultTime, false, 1);
     JobManager::instance()->queueAsyncJob(DriveUploadSessionJob);
 
     int counter = 0;
@@ -1267,9 +1270,9 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronousAborted() {
                 return ExitCode::Ok;
             });
 
-    auto driveUploadSessionJob =
-            std::make_shared<DriveUploadSession>(vfs, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(),
-                                                 remoteTmpDir.id(), 12345, false, _nbParallelThreads);
+    auto driveUploadSessionJob = std::make_shared<DriveUploadSession>(
+            vfs, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+            testhelpers::defaultTime, testhelpers::defaultTime, false, _nbParallelThreads);
     JobManager::instance()->queueAsyncJob(driveUploadSessionJob);
 
     int counter = 0;
