@@ -30,8 +30,8 @@ void TestParmsDb::setUp() {
     TestBase::start();
     // Create a temp parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    ParmsDb::instance(parmsDbPath, "3.6.1", true, true);
+    const std::filesystem::path parmsDbPath = _parmsDbTemporarDirectory.path() / MockDb::makeDbName(alreadyExists);
+    ParmsDb::instance(parmsDbPath, "3.6.1", false, true);
 }
 
 void TestParmsDb::tearDown() {
@@ -389,7 +389,9 @@ void TestParmsDb::testUpgrade() {
     ExclusionTemplate exclusionTemplate2("o"); // user template
     CPPUNIT_ASSERT(ParmsDb::instance()->insertExclusionTemplate(exclusionTemplate2, constraintError));
 
-    CPPUNIT_ASSERT(ParmsDb::instance()->upgrade("3.6.1", "3.7.0"));
+    const std::filesystem::path parmsDbPath = ParmsDb::instance()->dbPath();
+    ParmsDb::reset();
+    ParmsDb::instance(parmsDbPath, "3.7.2", true, true);
 
     std::vector<ExclusionTemplate> dbUserExclusionTemplates;
     CPPUNIT_ASSERT(ParmsDb::instance()->selectUserExclusionTemplates(dbUserExclusionTemplates));
