@@ -400,9 +400,9 @@ void TestParmsDb::testUpgrade() {
     StrSet expectedTemplateSet;
     (void) expectedTemplateSet.emplace("o");
     for (const auto &name1: {nfcEncodedName, nfdEncodedName}) {
-        for (const auto &name2: {nfcEncodedName, nfdEncodedName}) {
-            (void) expectedTemplateSet.emplace(SyncName2Str(name1 + Str("/A/") + name2));
-        }
+        for (const auto &name2: {nfcEncodedName, nfdEncodedName})
+            (void) expectedTemplateSet.emplace(SyncName2Str(name1 + CommonUtility::preferredPathSeparator() + Str("A") +
+                                                            CommonUtility::preferredPathSeparator() + name2));
     }
 
     StrSet actualTemplateSet;
