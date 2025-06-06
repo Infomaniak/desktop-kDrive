@@ -167,7 +167,7 @@ void SyncPalWorker::execute() {
 
                 // Stop the step workers and restart a full sync
                 stopAndWaitForExitOfWorkers(stepWorkers);
-                _syncPal->invalideSnapshots();
+                _syncPal->invalidateSnapshots();
                 initStepFirst(stepWorkers, inputSharedObject, true);
                 continue;
             } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::DbError) ||
@@ -290,6 +290,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             _syncPal->refreshTmpBlacklist();
             _syncPal->freeSnapshotsCopies();
             _syncPal->syncDb()->cache().clear();
+            _syncCounter++;
             break;
         case SyncStep::UpdateDetection1:
             workers[0] = _syncPal->computeFSOperationsWorker();
