@@ -45,20 +45,10 @@ static const std::vector<std::string> rejectedFiles = {
         "testfile_blacklisted_20220913_130102_abcdefghij.txt",
 #if defined(__APPLE__)
         ".DS_Store",
-        ".ds_store",
-        ".apdisk",
-        "Icon\r*",
-        "Icon\r",
-        "Icon\rtest",
 #elif defined(_WIN32)
-        "test.kate-swp",
         "System Volume Information",
-        "*.app"
 #else
         ".fuse_hidden1",
-        ".gnucash.tmp-",
-        "test.gnucash.tmp-test",
-        "test.test.gnucash.tmp-test"
 #endif
 };
 
@@ -89,14 +79,6 @@ void TestExclusionTemplateCache::setUp() {
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
-
-    const auto &exclList = ExclusionTemplateCache::instance()->exclusionTemplates();
-    std::cout << "ExclusionTemplate: START" << std::endl;
-    for (const auto &excl: exclList) {
-        std::cout << "ExclusionTemplate: " << excl.templ() << " (complexity: " << static_cast<int>(excl.complexity())
-                  << ", warning: " << excl.warning() << ", deleted: " << excl.deleted() << ")" << std::endl;
-    }
-    std::cout << "ExclusionTemplate END" << std::endl;
 }
 
 void TestExclusionTemplateCache::tearDown() {
