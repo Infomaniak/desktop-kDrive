@@ -106,6 +106,7 @@ void SyncPalWorker::execute() {
     std::shared_ptr<SharedObject> inputSharedObject[2] = {nullptr, nullptr};
     time_t lastEstimateUpdate = 0;
     for (;;) {
+        bool syncDirChanged = false;
         // Check File System Observer workers status
         for (int index = 0; index < 2; index++) {
             if (fsoWorkers[index] && !fsoWorkers[index]->isRunning()) {
@@ -115,6 +116,13 @@ void SyncPalWorker::execute() {
                     stopAndWaitForExitOfWorker(fsoWorkers[index]);
                     if (shouldBePaused(fsoWorkers[index], nullptr) && !pauseAsked()) {
                         pause();
+                        continue;
+                    }
+
+                    syncDirChanged = fsoWorkers[index]->exitCode() == ExitCode::SystemError &&
+                                     fsoWorkers[index]->exitCause() == ExitCause::SyncDirChanged;
+                    if (syncDirChanged) {
+                        break;
                     }
                 } else if (!pauseAsked()) {
                     LOG_SYNCPAL_DEBUG(_logger, "Start FSO worker " << index);
@@ -122,6 +130,15 @@ void SyncPalWorker::execute() {
                     fsoWorkers[index]->start();
                 }
             }
+        }
+
+        // Manage SyncDir change (might happen if the sync folder is deleted and recreated e.g migration from an other device)
+        if (syncDirChanged) {
+            LOG_SYNCPAL_INFO(_logger, "Sync dir changed, stopping all workers and exiting");
+            stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
+            exitCode = ExitCode::FatalError;
+            setExitCause(ExitCause::WorkerExited);
+            break;
         }
 
         // Manage stop

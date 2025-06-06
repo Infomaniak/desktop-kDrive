@@ -134,8 +134,10 @@ std::string toString(const ExitCause e) {
             return "DbEntryNotFound";
         case ExitCause::InvalidSnapshot:
             return "InvalidSnapshot";
-        case ExitCause::SyncDirAccessError:
-            return "SyncDirAccessError";
+        case ExitCause::SyncDirAccesError:
+            return "SyncDirAccesError";
+        case ExitCause::SyncDirChanged:
+            return "SyncDirChanged";
         case ExitCause::HttpErr:
             return "HttpErr";
         case ExitCause::HttpErrForbidden:

@@ -70,7 +70,7 @@ void TestAppServer::setUp() {
 
     _localPath = localPathStr;
     _remotePath = testVariables.remotePath;
-    Sync sync(1, drive.dbId(), _localPath, _remotePath);
+    Sync sync(1, drive.dbId(), _localPath, "", _remotePath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     ParmsDb::instance()->close();
