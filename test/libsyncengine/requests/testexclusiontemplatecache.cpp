@@ -89,6 +89,14 @@ void TestExclusionTemplateCache::setUp() {
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+
+    const auto &exclList = ExclusionTemplateCache::instance()->exclusionTemplates();
+    std::cout << "ExclusionTemplate: START" << std::endl;
+    for (const auto &excl: exclList) {
+        std::cout << "ExclusionTemplate: " << excl.templ() << " (complexity: " << static_cast<int>(excl.complexity())
+                  << ", warning: " << excl.warning() << ", deleted: " << excl.deleted() << ")" << std::endl;
+    }
+    std::cout << "ExclusionTemplate END" << std::endl;
 }
 
 void TestExclusionTemplateCache::tearDown() {
