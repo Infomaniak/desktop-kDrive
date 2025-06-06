@@ -201,7 +201,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
 #if defined(__unix__)
     isReusedNodeId(nodeId, dbNode, snapshot, nodeIdReused);
 #endif // __unix__
-  
+
     if (side == ReplicaSide::Remote) {
         // In case of a move inside an excluded folder, the item must be removed in this sync
         if (isInUnsyncedListParentSearchInDb(nodeId, ReplicaSide::Remote)) {
