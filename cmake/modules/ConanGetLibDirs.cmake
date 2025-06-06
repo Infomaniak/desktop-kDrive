@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # -----------------------------------------------------------------------------
-# This module generates the OpenSSL library directories based on the build type.
+# This module help find the library directories of the dependencies installed with Conan.
 if(NOT CMAKE_BUILD_TYPE)
     message(FATAL_ERROR "You have to set -DCMAKE_BUILD_TYPE=<Debug|Release|RelWithDebInfo|...>.")
 endif()
