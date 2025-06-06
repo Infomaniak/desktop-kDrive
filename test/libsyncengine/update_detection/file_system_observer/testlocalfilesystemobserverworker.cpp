@@ -82,13 +82,16 @@ void TestLocalFileSystemObserverWorker::setUp() {
     const SyncPath syncDbPath = MockDb::makeDbName(1, 1, 1, 1, alreadyExists);
 
     // Create SyncPal
+    Sync sync(1, 1, _rootFolderPath, "", "");
+    (void) ParmsDb::instance()->insertSync(sync);
+
     _syncPal = std::make_shared<SyncPalTest>(syncDbPath, KDRIVE_VERSION_STRING, true);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
     _syncPal->createWorkers();
     _syncPal->setLocalPath(_rootFolderPath);
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
-
+    
 #if defined(_WIN32)
     _syncPal->_localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
             new LocalFileSystemObserverWorker_win(_syncPal, "Local File System Observer", "LFSO"));
