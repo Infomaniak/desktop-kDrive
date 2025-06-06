@@ -675,7 +675,7 @@ void IoHelper::setCacheDirectoryPath(const SyncPath &newPath) {
     KDC::details::CacheDirectoryHanlder::_directoryPath = newPath;
 }
 
-bool IoHelper::cacheDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
+bool IoHelper::cacheDirectoryPath(SyncPath &directoryPath) noexcept {
     static const details::CacheDirectoryHanlder cacheDirectoryHandler;
     directoryPath = cacheDirectoryHandler.getPath();
     return !directoryPath.empty();

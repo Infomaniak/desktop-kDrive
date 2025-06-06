@@ -41,9 +41,8 @@ void IoHelperTests::setTempDirectoryPathFunction(std::function<SyncPath(std::err
 }
 
 void IoHelperTests::setCacheDirectoryPath(const SyncPath &newPath) {
-    IoError ioError = IoError::Success;
     if (_previousCacheDirectoryPath.empty())
-        (void) IoHelper::cacheDirectoryPath(_previousCacheDirectoryPath, ioError); // Save the previous cache directory path
+        (void) IoHelper::cacheDirectoryPath(_previousCacheDirectoryPath); // Save the previous cache directory path
     IoHelper::setCacheDirectoryPath(newPath);
 }
 

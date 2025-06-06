@@ -133,9 +133,7 @@ void TestExclusionTemplateCache::testIsExcluded() {
 }
 void TestExclusionTemplateCache::testCacheFolderIsExcluded() {
     SyncPath cachePath;
-    IoError ioError = IoError::Unknown;
-    CPPUNIT_ASSERT(IoHelper::cacheDirectoryPath(cachePath, ioError));
-    CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+    CPPUNIT_ASSERT(IoHelper::cacheDirectoryPath(cachePath));
     CPPUNIT_ASSERT(!cachePath.empty());
     bool isWarning = false;
     CPPUNIT_ASSERT_MESSAGE(cachePath.filename().string() + " is not excluded",

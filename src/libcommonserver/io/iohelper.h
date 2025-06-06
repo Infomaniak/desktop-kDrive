@@ -108,10 +108,9 @@ struct IoHelper {
         /*! This directory is deleted at the end of the application run.
           ! The location of this folder can be enforce with the env variable: KDRIVE_CACHE_PATH
          \param directoryPath is a path to a directory suitable for temporary files. Empty if there is a an error.
-         \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool cacheDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
+        static bool cacheDirectoryPath(SyncPath &directoryPath) noexcept;
 
         //! Returns the log directory path of the application.
         /*!
