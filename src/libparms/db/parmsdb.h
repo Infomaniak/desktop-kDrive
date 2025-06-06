@@ -161,7 +161,7 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool getDefaultExclusionTemplatesFromFile(const SyncPath &syncExcludeListPath,
                                                   std::vector<std::string> &fileDefaultExclusionTemplates);
         std::set<std::string> computeNormalizations(const std::string &exclusionTemplateString);
-        bool insertUserTemplateNormalizations();
+        bool insertUserTemplateNormalizations(const std::string &fromVersion);
 
 #ifdef __APPLE__
         bool updateExclusionApps();
