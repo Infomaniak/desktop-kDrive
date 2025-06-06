@@ -30,6 +30,7 @@ class ContinueFileListWithCursorJob final : public AbstractListingJob {
         std::string getSpecificUrl() override;
         void setSpecificQueryParameters(Poco::URI &uri) override;
         ExitInfo setData() override { return ExitCode::Ok; }
+        bool handleError(std::istream &is, const Poco::URI &uri) override;
 
         std::string _cursor;
 };
