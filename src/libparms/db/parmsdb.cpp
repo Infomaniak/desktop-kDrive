@@ -748,7 +748,9 @@ bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
         return false;
 
     std::vector<ExclusionTemplate> dbUserExclusionTemplates;
-    if (!selectUserExclusionTemplates(dbUserExclusionTemplates)) {
+    const bool successfulSelection = selectUserExclusionTemplates(dbUserExclusionTemplates);
+    queryFree(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID);
+    if (!successfulSelection) {
         LOG_WARN(_logger, "Error in selectAllExclusionTemplates");
         return false;
     }
@@ -784,6 +786,9 @@ bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
     if (!createAndPrepareRequest(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, INSERT_EXCLUSION_TEMPLATE_REQUEST)) return false;
 
     const bool result = updateUserExclusionTemplates(dbUserExclusionTemplatesOutput);
+
+    queryFree(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID);
+    queryFree(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID);
 
     return result;
 }

@@ -17,6 +17,8 @@
  */
 
 #include "testincludes.h"
+#include "test_utility/localtemporarydirectory.h"
+
 #include "libparms/db/parmsdb.h"
 
 #include <filesystem>
@@ -66,6 +68,9 @@ class TestParmsDb : public CppUnit::TestFixture, public TestBase {
 #ifdef _WIN32
         void testUpgradeOfShortPathNames();
 #endif
+
+    private:
+        LocalTemporaryDirectory _parmsDbTemporarDirectory;
 };
 
 } // namespace KDC
