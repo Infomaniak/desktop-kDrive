@@ -641,6 +641,7 @@ bool ParmsDb::updateExclusionTemplates() {
             }
 
             exclusionTemplateFileList.push_back(line);
+            std::cout << "Find template in file: " << line << std::endl;
         }
     } else {
         LOGW_WARN(_logger,
@@ -697,6 +698,7 @@ bool ParmsDb::updateExclusionTemplates() {
                 LOG_WARN(_logger, "Error in insertExclusionTemplate");
                 return false;
             }
+            std::cout << "Template added to db: " << templFile << std::endl;
         }
     }
     return true;

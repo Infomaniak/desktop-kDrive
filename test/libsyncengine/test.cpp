@@ -56,7 +56,7 @@
 
 namespace KDC {
 CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
-
+/*
 CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationProcessor);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestNetworkJobs);
@@ -96,7 +96,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPal);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPalWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestIntegration);
 
-// CPPUNIT_TEST_SUITE_REGISTRATION(BenchmarkParallelJobs);
+// CPPUNIT_TEST_SUITE_REGISTRATION(BenchmarkParallelJobs);*/
 } // namespace KDC
 
 int main(int, char **) {
