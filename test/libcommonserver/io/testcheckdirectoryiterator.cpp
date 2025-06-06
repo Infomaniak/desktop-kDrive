@@ -209,9 +209,9 @@ void TestIo::testCheckDirectoryIteratorPermission() {
 
         IoError ioError = IoError::Success;
 
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(noPermissionDir.parent_path(), ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(noPermissionDir.parent_path(), false, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(noPermissionDir, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(noPermissionDir, false, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         std::ofstream file(noPermissionFile);

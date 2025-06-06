@@ -76,7 +76,10 @@ static const SyncName resourcesPath(Str(""));
 #elif defined(_WIN32)
 static const SyncName resourcesPath(Str(""));
 #endif
+
+#ifndef __APPLE__ // Not used on macOS
 static const std::string NTFS("NTFS");
+#endif
 
 struct VariantPrinter {
         std::wstring operator()(std::monostate) { return std::wstring(L"NULL"); }

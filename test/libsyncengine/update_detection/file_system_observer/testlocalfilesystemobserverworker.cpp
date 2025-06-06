@@ -139,7 +139,7 @@ void TestLocalFileSystemObserverWorker::testSyncDirChange() {
     IoError ioError = IoError::Unknown;
     CPPUNIT_ASSERT(IoHelper::deleteItem(_rootFolderPath, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    CPPUNIT_ASSERT(IoHelper::createDirectory(_rootFolderPath, ioError));
+    CPPUNIT_ASSERT(IoHelper::createDirectory(_rootFolderPath, false, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     _syncPal->_localFSObserverWorker->start();

@@ -576,10 +576,9 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
     fetchFinished = false;
     fetchError = false;
 
-    SyncPath tmpDirectoryPath;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::tempDirectoryPath(tmpDirectoryPath, ioError)) {
-        LOGW_WARN(_logger, L"Failed to get temporary directory path: " << Utility::formatIoError(tmpDirectoryPath, ioError));
+    SyncPath cacheDirectoryPath;
+    if (!IoHelper::cacheDirectoryPath(cacheDirectoryPath)) {
+        LOGW_WARN(_logger, L"Failed to get cache directory");
         _exitInfo = ExitCode::SystemError;
         return false;
     }
@@ -587,7 +586,7 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
     std::ofstream output;
     do {
         const std::string tmpFileName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
-        _tmpPath = tmpDirectoryPath / tmpFileName;
+        _tmpPath = cacheDirectoryPath / tmpFileName;
 
         output.open(_tmpPath.native().c_str(), std::ofstream::out | std::ofstream::binary);
         if (!output.is_open()) {

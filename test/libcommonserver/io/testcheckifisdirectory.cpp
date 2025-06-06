@@ -257,7 +257,7 @@ void TestIo::testCreateDirectory() {
         const SyncPath path = temporaryDirectory.path() / "regular_directory";
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::createDirectory(path, ioError));
+        CPPUNIT_ASSERT(IoHelper::createDirectory(path, true, ioError));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         ioError = IoError::Unknown;
@@ -274,7 +274,8 @@ void TestIo::testCreateDirectory() {
         const SyncPath path = temporaryDirectory.path();
 
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(!IoHelper::createDirectory(path, ioError));
+      
+        CPPUNIT_ASSERT(!IoHelper::createDirectory(path,  false, ioError));
         CPPUNIT_ASSERT(ioError == IoError::DirectoryExists);
     }
 
@@ -285,7 +286,7 @@ void TestIo::testCreateDirectory() {
         { std::ofstream ofs(path); }
 
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(!IoHelper::createDirectory(path, ioError));
+        CPPUNIT_ASSERT(!IoHelper::createDirectory(path, false, ioError));
         CPPUNIT_ASSERT(ioError == IoError::FileExists);
     }
 
@@ -301,10 +302,10 @@ void TestIo::testCreateDirectory() {
 
         IoError ioError = IoError::Success;
 #ifdef _WIN32
-        CPPUNIT_ASSERT(IoHelper::createDirectory(path, ioError));
+        CPPUNIT_ASSERT(IoHelper::createDirectory(path, false, ioError));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 #else
-        CPPUNIT_ASSERT(!IoHelper::createDirectory(path, ioError));
+        CPPUNIT_ASSERT(!IoHelper::createDirectory(path, false, ioError));
         CPPUNIT_ASSERT(ioError == IoError::AccessDenied);
 #endif
         // Restore permission to allow subdir removal
@@ -320,10 +321,10 @@ void TestIo::testCreateDirectory() {
 
         IoError ioError = IoError::Success;
 #ifdef _WIN32
-        CPPUNIT_ASSERT(!IoHelper::createDirectory(path, ioError));
+        CPPUNIT_ASSERT(!IoHelper::createDirectory(path, false, ioError));
         CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
 #else
-        CPPUNIT_ASSERT(!IoHelper::createDirectory(path, ioError));
+        CPPUNIT_ASSERT(!IoHelper::createDirectory(path, false, ioError));
         CPPUNIT_ASSERT(ioError == IoError::FileNameTooLong);
 #endif
     }

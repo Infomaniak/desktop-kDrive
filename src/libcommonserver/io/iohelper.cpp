@@ -614,6 +614,70 @@ bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noex
     return ioError == IoError::Success;
 }
 
+namespace details {
+class CacheDirectoryHanlder {
+    public:
+        CacheDirectoryHanlder() {
+            if (directoryPath.empty()) initDirectoryPath();
+            // It is a best effort, we cannot log/sentry anything here as the logger/sentry may not be initialized yet.
+            if (!directoryPath.empty()) {
+                IoError ioError = IoError::Success;
+                if (!IoHelper::createDirectory(directoryPath, true, ioError) && ioError != IoError::DirectoryExists) {
+                    directoryPath.clear(); // Clear the path if the directory could not be created.
+                    return;
+                }
+            }
+        }
+        ~CacheDirectoryHanlder() {
+            // It is a best effort, we cannot log/sentry anything here as the logger/sentry may have been destroyed already.
+            IoError ioError = IoError::Success;
+            (void) IoHelper::deleteItem(directoryPath, ioError);
+        }
+        inline static SyncPath directoryPath;
+
+    private:
+        void initDirectoryPath() noexcept {
+            static const SyncName cacheDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName("-cache"));
+            if (initDirectoryPathFromEnv("KDRIVE_CACHE_PATH", cacheDirName)) return;
+
+#ifdef __unix__
+            if (initDirectoryPathFromEnv("XDG_CACHE_HOME", cacheDirName)) return;
+            if (initDirectoryPathFromEnv("HOME", cacheDirName, ".cache")) return;
+#endif
+            IoError ioError = IoError::Success;
+            if (!IoHelper::tempDirectoryPath(directoryPath, ioError)) {
+                return;
+            }
+            directoryPath /= cacheDirName;
+            return;
+        }
+
+        bool initDirectoryPathFromEnv(const std::string &envVar, const SyncName &cacheDirName,
+                                      const SyncPath &subDir = "") noexcept {
+            bool isSet = false;
+            if (const auto value = CommonUtility::envVarValue(envVar, isSet); isSet && !value.empty()) {
+                if (subDir.empty()) {
+                    directoryPath = SyncPath(value) / cacheDirName;
+                } else {
+                    directoryPath = SyncPath(value) / subDir / cacheDirName;
+                }
+                return true;
+            }
+            return false;
+        };
+};
+} // namespace details
+
+void IoHelper::setCacheDirectoryPath(const SyncPath &newPath) {
+    details::CacheDirectoryHanlder::directoryPath = newPath;
+}
+
+bool IoHelper::cacheDirectoryPath(SyncPath &directoryPath) noexcept {
+    static const details::CacheDirectoryHanlder cacheDirectoryHandler;
+    directoryPath = details::CacheDirectoryHanlder::directoryPath;
+    return !directoryPath.empty();
+}
+
 bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
     if (Log::instance()) {
         SyncPath filePath = Log::instance()->getLogFilePath();
@@ -785,9 +849,10 @@ bool IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoErr
     return true;
 }
 
-bool IoHelper::createDirectory(const SyncPath &path, IoError &ioError) noexcept {
+bool IoHelper::createDirectory(const SyncPath &path, const bool recursive, IoError &ioError) noexcept {
     std::error_code ec;
-    const bool creationSuccess = std::filesystem::create_directory(path, ec);
+    const bool creationSuccess =
+            recursive ? std::filesystem::create_directories(path, ec) : std::filesystem::create_directory(path, ec);
     ioError = stdError2ioError(ec);
 
     if (!creationSuccess && ioError == IoError::Success) {
