@@ -242,18 +242,13 @@ bool isLocked(const SyncPath &path) {
     return isLocked;
 }
 
-// If creation date > modification date, creation date is set to modification date.
 IoError IoHelper::setFileDates(const SyncPath &filePath, SyncTime creationDate, SyncTime modificationDate,
                                bool symlink) noexcept {
     NSDate *cDate = nil;
-    if (creationDate) {
-        cDate = [[NSDate alloc] initWithTimeIntervalSince1970:creationDate];
-    }
+    cDate = [[NSDate alloc] initWithTimeIntervalSince1970:creationDate];
 
     NSDate *mDate = nil;
-    if (modificationDate) {
-        mDate = [[NSDate alloc] initWithTimeIntervalSince1970:modificationDate];
-    }
+    mDate = [[NSDate alloc] initWithTimeIntervalSince1970:modificationDate];
 
     NSString *filePathStr = [NSString stringWithUTF8String:filePath.native().c_str()];
     NSError *error = nil;

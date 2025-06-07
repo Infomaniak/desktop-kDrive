@@ -1156,7 +1156,9 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
         unsigned long long fileSize = [attributes fileSize];
         finished = (completed == fileSize);
         if (finished) {
-            time_t creationDate = OldUtility::qDateTimeToTime_t(QFileInfo(filePath).birthTime());
+            auto fileInfo = QFileInfo(filePath);
+            time_t creationDate = OldUtility::qDateTimeToTime_t(fileInfo.birthTime());
+            time_t modificationDate = OldUtility::qDateTimeToTime_t(fileInfo.lastModified());
 
             // Copy tmp file content to file
             @try {
@@ -1217,7 +1219,7 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
             }
 
             // Set file dates
-            if (const IoError ioError = IoHelper::setFileDates(QStr2Path(filePath), creationDate, 0, false);
+            if (const IoError ioError = IoHelper::setFileDates(QStr2Path(filePath), creationDate, modificationDate, false);
                 ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_DEBUG(_logger, L"Item doesn't exist: " << Utility::formatPath(filePath));
                 return false;

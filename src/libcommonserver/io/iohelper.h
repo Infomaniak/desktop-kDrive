@@ -432,6 +432,7 @@ struct IoHelper {
 
         /**
          * @brief Set the dates using native API.
+         * - If creation date = 0 or creation date > modification date, creation date is set to modification date
          * @param filePath The absolute path to the file to be modified.
          * @param creationDate The creation date to be set.
          * @param modificationDate The modification date to be set.
