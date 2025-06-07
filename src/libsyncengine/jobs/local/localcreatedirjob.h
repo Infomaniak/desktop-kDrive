@@ -31,6 +31,7 @@ class LocalCreateDirJob : public AbstractJob {
         const NodeId &nodeId() const { return _nodeId; }
         SyncTime modtime() const { return _modtime; }
         SyncTime creationTime() const { return _creationTime; }
+
     protected:
         virtual bool canRun() override;
 

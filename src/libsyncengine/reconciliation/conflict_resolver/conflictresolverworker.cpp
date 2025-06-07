@@ -111,7 +111,6 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
 void ConflictResolverWorker::handleConflictOnOmittedEdit(const Conflict &conflict, bool &continueSolving) {
     if (const auto localNode = conflict.localNode();
         localNode->hasChangeEvent(OperationType::Edit) && !editChangeShouldBePropagated(localNode)) {
-
         const auto editOp = std::make_shared<SyncOperation>();
         editOp->setType(OperationType::Edit);
         editOp->setAffectedNode(localNode);

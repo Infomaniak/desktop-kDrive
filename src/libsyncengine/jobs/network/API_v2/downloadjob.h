@@ -19,7 +19,6 @@
 #pragma once
 
 #include "abstracttokennetworkjob.h"
-#include "../networkjobsparams.h"
 #include "libcommonserver/vfs/vfs.h"
 
 namespace KDC {
@@ -38,6 +37,8 @@ class DownloadJob : public AbstractTokenNetworkJob {
         inline const NodeId &localNodeId() const { return _localNodeId; }
         inline SyncTime creationTime() const { return _creationTimeOut; }
         inline SyncTime modificationTime() const { return _modificationTimeOut; }
+
+        [[nodiscard]] int64_t expectedSize() const { return _expectedSize; }
 
     private:
         virtual std::string getSpecificUrl() override;

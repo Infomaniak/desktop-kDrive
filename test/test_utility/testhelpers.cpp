@@ -60,8 +60,8 @@ void generateOrEditTestFile(const SyncPath &path) {
 }
 
 void generateBigFiles(const SyncPath &dirPath, const uint16_t size, const uint16_t count) {
-    // Generate 1st big file
-    const SyncPath bigFilePath = generateBigFile(dirPath, size);
+    // Generate the 1st big file
+    const auto bigFilePath = generateBigFile(dirPath, size);
 
     // Generate others big files
     for (uint16_t i = 1; i < count; i++) {
