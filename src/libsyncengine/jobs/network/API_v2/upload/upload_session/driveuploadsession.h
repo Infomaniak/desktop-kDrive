@@ -26,16 +26,14 @@ namespace KDC {
 
 class DriveUploadSession : public AbstractUploadSession {
     public:
-        // Using file ID, for file edition only.
-        DriveUploadSession(const std::shared_ptr<Vfs> &vfs, int driveDbId, std::shared_ptr<SyncDb> syncDb,
-                           const SyncPath &filepath, const NodeId &fileId, SyncTime creationTime, SyncTime modificationTime,
-                           bool liteSyncActivated, uint64_t nbParallelThread = 1);
-
         // Using file name and parent ID, for file creation only.
         DriveUploadSession(const std::shared_ptr<Vfs> &vfs, int driveDbId, std::shared_ptr<SyncDb> syncDb,
                            const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId,
-                           SyncTime creationTime, SyncTime modificationTime, bool liteSyncActivated,
-                           uint64_t nbParallelThread = 1);
+                           SyncTime creationTime, SyncTime modificationTime, bool liteSyncActivated, uint64_t nbParallelThread);
+        // Using file ID, for file edition only.
+        DriveUploadSession(const std::shared_ptr<Vfs> &vfs, int driveDbId, std::shared_ptr<SyncDb> syncDb,
+                           const SyncPath &filepath, const NodeId &fileId, SyncTime modificationTime, bool liteSyncActivated,
+                           uint64_t nbParallelThread);
         ~DriveUploadSession() override;
 
         const NodeId &nodeId() const { return _nodeId; }
@@ -61,7 +59,7 @@ class DriveUploadSession : public AbstractUploadSession {
         std::shared_ptr<SyncDb> _syncDb;
 
         NodeId _fileId;
-        const SyncTime _creationTimeIn = 0;
+        SyncTime _creationTimeIn = 0;
         const SyncTime _modificationTimeIn = 0;
 
         int64_t _uploadSessionTokenDbId = 0;

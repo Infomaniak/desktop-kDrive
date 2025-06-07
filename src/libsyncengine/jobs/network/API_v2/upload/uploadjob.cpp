@@ -17,6 +17,7 @@
 #include "uploadjob.h"
 
 #include "uploadjobreplyhandler.h"
+#include "io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/jsonparserutility.h"
@@ -48,6 +49,14 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const
                      const SyncTime modificationTime) :
     UploadJob(vfs, driveDbId, absoluteFilePath, SyncName(), "", 0, modificationTime) {
     _fileId = fileId;
+
+    // Retrieve creation date from the local file
+    FileStat fileStat;
+    auto ioError = IoError::Unknown;
+    if (!IoHelper::getFileStat(_absoluteFilePath, &fileStat, ioError) || ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Failed to get FileStat for " << Utility::formatSyncPath(_absoluteFilePath) << L": " << ioError);
+    }
+    _creationTimeIn = fileStat.creationTime;
 }
 
 UploadJob::~UploadJob() {

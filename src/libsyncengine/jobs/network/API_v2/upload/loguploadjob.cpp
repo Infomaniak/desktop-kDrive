@@ -501,7 +501,7 @@ ExitInfo LogUploadJob::upload(const SyncPath &archivePath) {
 
     std::shared_ptr<LogUploadSession> uploadSessionLog = nullptr;
     try {
-        uploadSessionLog = std::make_shared<LogUploadSession>(archivePath);
+        uploadSessionLog = std::make_shared<LogUploadSession>(archivePath, 1);
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadSession::LogUploadSession: error=" << e.what());
         return AbstractTokenNetworkJob::exception2ExitCode(e);

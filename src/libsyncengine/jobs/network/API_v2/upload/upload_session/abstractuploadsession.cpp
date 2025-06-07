@@ -36,7 +36,7 @@
 namespace KDC {
 
 AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const SyncName &filename,
-                                             const uint64_t nbParallelThread /*= 1*/) :
+                                             const uint64_t nbParallelThread) :
     _logger(Log::instance()->getLogger()),
     _filePath(filepath),
     _filename(filename),

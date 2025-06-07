@@ -22,7 +22,7 @@
 
 namespace KDC {
 
-LogUploadSession::LogUploadSession(const SyncPath &filepath, const uint64_t nbParallelThread /*= 1*/) :
+LogUploadSession::LogUploadSession(const SyncPath &filepath, const uint64_t nbParallelThread) :
     AbstractUploadSession(filepath, filepath.filename(), nbParallelThread) {
     _uploadSessionType = UploadSessionType::Log;
 }

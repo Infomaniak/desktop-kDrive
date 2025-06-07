@@ -17,22 +17,16 @@
  */
 
 #include "driveuploadsession.h"
+
+#include "io/filestat.h"
 #include "utility/utility.h"
 
 namespace KDC {
-DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const std::shared_ptr<SyncDb> syncDb,
-                                       const SyncPath &filepath, const NodeId &fileId, const SyncTime creationTime,
-                                       SyncTime modificationTime, const bool liteSyncActivated,
-                                       const uint64_t nbParallelThread /*= 1*/) :
-    DriveUploadSession(vfs, driveDbId, syncDb, filepath, SyncName(), fileId, creationTime, modificationTime, liteSyncActivated,
-                       nbParallelThread) {
-    _fileId = fileId;
-}
 
 DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const std::shared_ptr<SyncDb> syncDb,
                                        const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId,
-                                       const SyncTime creationTime, SyncTime modificationTime, const bool liteSyncActivated,
-                                       const uint64_t nbParallelThread /*= 1*/) :
+                                       const SyncTime creationTime, const SyncTime modificationTime, const bool liteSyncActivated,
+                                       const uint64_t nbParallelThread) :
     AbstractUploadSession(filepath, filename, nbParallelThread),
     _driveDbId(driveDbId),
     _syncDb(syncDb),
@@ -42,6 +36,22 @@ DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, const in
     _vfs(vfs) {
     (void) liteSyncActivated;
     _uploadSessionType = UploadSessionType::Drive;
+}
+
+DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const std::shared_ptr<SyncDb> syncDb,
+                                       const SyncPath &filepath, const NodeId &fileId, const SyncTime modificationTime,
+                                       const bool liteSyncActivated, const uint64_t nbParallelThread) :
+    DriveUploadSession(vfs, driveDbId, syncDb, filepath, SyncName(), fileId, 0, modificationTime, liteSyncActivated,
+                       nbParallelThread) {
+    _fileId = fileId;
+
+    // Retrieve creation date from the local file
+    FileStat fileStat;
+    auto ioError = IoError::Unknown;
+    if (!IoHelper::getFileStat(filepath, &fileStat, ioError) || ioError != IoError::Success) {
+        LOGW_WARN(getLogger(), L"Failed to get FileStat for " << Utility::formatSyncPath(filepath) << L": " << ioError);
+    }
+    _creationTimeIn = fileStat.creationTime;
 }
 
 DriveUploadSession::~DriveUploadSession() {
@@ -66,10 +76,10 @@ std::shared_ptr<UploadSessionStartJob> DriveUploadSession::createStartJob() {
     }
 }
 
-std::shared_ptr<UploadSessionChunkJob> DriveUploadSession::createChunkJob(const std::string &chunckContent, uint64_t chunkNb,
+std::shared_ptr<UploadSessionChunkJob> DriveUploadSession::createChunkJob(const std::string &chunkContent, uint64_t chunkNb,
                                                                           std::streamsize actualChunkSize) {
     return std::make_shared<UploadSessionChunkJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken(),
-                                                   chunckContent, chunkNb, actualChunkSize, jobId());
+                                                   chunkContent, chunkNb, actualChunkSize, jobId());
 }
 
 std::shared_ptr<UploadSessionFinishJob> DriveUploadSession::createFinishJob() {

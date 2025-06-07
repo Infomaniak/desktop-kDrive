@@ -42,7 +42,7 @@ class AbstractUploadSession : public AbstractJob {
             StateFinished
         };
 
-        AbstractUploadSession(const SyncPath &filepath, const SyncName &filename, uint64_t nbParallelThread = 1);
+        AbstractUploadSession(const SyncPath &filepath, const SyncName &filename, uint64_t nbParallelThread);
         virtual ~AbstractUploadSession() = default;
         void uploadChunkCallback(UniqueId jobId);
         void abort() override;
