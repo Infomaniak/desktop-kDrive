@@ -113,3 +113,76 @@ git checkout v2.x
 ```
 
 </details>
+
+<details>
+<summary>OpenSSL</summary>
+
+### macOS
+Download and build `OpenSSL`:
+
+The configuration for the `x86_64` architecture is as follows:
+
+```bash
+cd ~/Projects
+git clone https://github.com/openssl/openssl.git
+cd openssl
+git checkout tags/openssl-3.2.1
+cd ..
+mv openssl openssl.x86_64
+cp -Rf openssl.x86_64 openssl.arm64
+mkdir openssl.multi
+cd openssl.x86_64
+./Configure darwin64-x86_64-cc shared -mmacosx-version-min=10.15
+make
+```
+
+If you have an `AMD` architecture, run `sudo make install` then continue.
+
+The configuration for the `ARM` architecture goes as follows:
+
+```bash
+cd ~/Projects/openssl.arm64
+./Configure darwin64-arm64-cc shared enable-rc5 zlib no-asm -mmacosx-version-min=10.15 
+make
+```
+
+If you have an `ARM` architecture, run `sudo make install` then continue.
+
+```bash
+cd ~/Projects
+lipo -arch arm64 openssl.arm64/libcrypto.3.dylib -arch x86_64 openssl.x86_64/libcrypto.3.dylib -output openssl.multi/libcrypto.3.dylib -create
+lipo -arch arm64 openssl.arm64/libssl.3.dylib -arch x86_64 openssl.x86_64/libssl.3.dylib -output openssl.multi/libssl.3.dylib -create
+lipo -arch arm64 openssl.arm64/libcrypto.a -arch x86_64 openssl.x86_64/libcrypto.a -output openssl.multi/libcrypto.a -create
+lipo -arch arm64 openssl.arm64/libssl.a -arch x86_64 openssl.x86_64/libssl.a -output openssl.multi/libssl.a -create
+sudo cp openssl.multi/* /usr/local/lib/
+```
+
+### Linux
+
+The OpenSSL Configure will require Perl to be installed first
+
+```bash
+cd ~/Projects
+git clone git@github.com:openssl/openssl.git
+cd openssl
+git checkout tags/openssl-3.2.1
+./Configure shared
+make
+sudo make install
+```
+
+### Windows
+
+Clone `OpenSSL` sources:
+
+```powershell
+cd F:\Projects
+git clone git@github.com:openssl/openssl.git
+cd openssl
+git checkout tags/openssl-3.2.1
+```
+
+Then follow their [installation instructions](https://github.com/openssl/openssl/blob/master/NOTES-WINDOWS.md) for Windows.
+Note that installing `NASM` is not required.
+
+</details>

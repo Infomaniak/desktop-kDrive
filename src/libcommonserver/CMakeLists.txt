@@ -163,14 +163,20 @@ else()
     target_link_libraries(${libcommonserver_NAME}
         utf8proc
     )
-
+    include(ConanGetLibDirs)
+    get_library_dirs("OpenSSL" "openssl")
+    get_library_dirs("xxHash" "xxhash")
     install(FILES
-            "$<$<CONFIG:Release>:${xxhash_LIB_DIRS_RELEASE}/libxxhash.so>" # Release
-            "$<$<CONFIG:Release>:${xxhash_LIB_DIRS_RELEASE}/libxxhash.so.0>"
-            "$<$<CONFIG:Release>:${xxhash_LIB_DIRS_RELEASE}/libxxhash.so.0.8.2>"
-            "$<$<CONFIG:RelWithDebInfo>:${xxhash_LIB_DIRS_RELWITHDEBINFO}/libxxhash.so>" # RelWithDebInfo
-            "$<$<CONFIG:RelWithDebInfo>:${xxhash_LIB_DIRS_RELWITHDEBINFO}/libxxhash.so.0>"
-            "$<$<CONFIG:RelWithDebInfo>:${xxhash_LIB_DIRS_RELWITHDEBINFO}/libxxhash.so.0.8.2>"
+            # xxHash
+            "${_xxHash_LIB_DIRS}/libxxhash.so"
+            "${_xxHash_LIB_DIRS}/libxxhash.so.0"
+            "${_xxHash_LIB_DIRS}/libxxhash.so.0.8.2"
+
+            # OpenSSL
+            "${_OpenSSL_LIB_DIRS}/libcrypto.so"
+            "${_OpenSSL_LIB_DIRS}/libcrypto.so.3"
+            "${_OpenSSL_LIB_DIRS}/libssl.so"
+            "${_OpenSSL_LIB_DIRS}/libssl.so.3"
             DESTINATION "${CONAN_DEP_DIR}"
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
     )
