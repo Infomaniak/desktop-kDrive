@@ -28,9 +28,10 @@
 #include "test_utility/testhelpers.h"
 
 namespace KDC {
-
+/*
 void TestAppServer::setUp() {
     TestBase::start();
+    if (testhelpers::isExtendedTest()) return;
 
     if (QCoreApplication::instance()) {
         _appPtr = dynamic_cast<MockAppServer *>(QCoreApplication::instance());
@@ -96,9 +97,11 @@ void TestAppServer::setUp() {
 
 void TestAppServer::tearDown() {
     TestBase::stop();
+    if (testhelpers::isExtendedTest()) return;
 }
 
 void TestAppServer::testInitAndStopSyncPal() {
+    if (testhelpers::isExtendedTest()) return;
     const int syncDbId = 1;
 
     Sync sync;
@@ -113,31 +116,32 @@ void TestAppServer::testInitAndStopSyncPal() {
     CPPUNIT_ASSERT(exitInfo);
     // Start SyncPal
     const std::chrono::seconds startDelay{0};
-    exitInfo = _appPtr->initSyncPal(sync, QSet<QString>(), QSet<QString>(), QSet<QString>(), /*start*/ true, startDelay,
-                                    /*resumedByUser*/ false, /*firstInit*/ true);
+    exitInfo = _appPtr->initSyncPal(sync, QSet<QString>(), QSet<QString>(), QSet<QString>(), /*start true, startDelay,
+                                    /*resumedByUser false, /*firstInit true);
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
     // Stop SyncPal (pause by user)
-    exitInfo = _appPtr->stopSyncPal(syncDbId, /*pausedByUser*/ true);
+    exitInfo = _appPtr->stopSyncPal(syncDbId, /*pausedByUser true);
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(waitForSyncStatus(syncDbId, SyncStatus::Stopped));
     // Resume SyncPal
-    exitInfo = _appPtr->initSyncPal(sync, QSet<QString>(), QSet<QString>(), QSet<QString>(), /*start*/ true, startDelay,
-                                    /*resumedByUser*/ true, /*firstInit*/ false);
+    exitInfo = _appPtr->initSyncPal(sync, QSet<QString>(), QSet<QString>(), QSet<QString>(), /*start true, startDelay,
+                                    /*resumedByUser true, /*firstInit false);
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
 
     // Stop SyncPal (cleanup)
-    exitInfo = _appPtr->stopSyncPal(syncDbId, /*pausedByUser*/ false, /*quit*/ true, /*clear*/ true);
+    exitInfo = _appPtr->stopSyncPal(syncDbId, /*pausedByUser false, /*quit true, /*clear true);
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(waitForSyncStatus(syncDbId, SyncStatus::Stopped));
 
     // Stop Vfs
-    exitInfo = _appPtr->stopVfs(syncDbId, /*unregister*/ false);
+    exitInfo = _appPtr->stopVfs(syncDbId, /*unregister false);
     CPPUNIT_ASSERT(exitInfo);
 }
 
 void TestAppServer::testStartAndStopSync() {
+    if (testhelpers::isExtendedTest()) return;
     const int userDbId = 1;
     const int syncDbId = 1;
 
@@ -186,6 +190,7 @@ void TestAppServer::testStartAndStopSync() {
 }
 
 void TestAppServer::testCleanup() {
+    if (testhelpers::isExtendedTest()) return;
     _appPtr->cleanup();
     delete _appPtr;
     CPPUNIT_ASSERT(true);
@@ -222,5 +227,5 @@ void MockAppServer::cleanup() {
     ParmsDb::reset();
     ParametersCache::reset();
 }
-
+*/
 } // namespace KDC

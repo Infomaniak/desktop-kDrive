@@ -39,8 +39,6 @@ using namespace CppUnit;
 
 namespace KDC {
 
-static const SyncPath localTestDirPath(TEST_DIR "/test_ci");
-
 void TestUtility::testFreeDiskSpace() {
     int64_t freeSpace;
 
@@ -185,6 +183,7 @@ void TestUtility::testIsEqualUpToCaseAndEnc(void) {
 
 void TestUtility::testMoveItemToTrash(void) {
     // !!! Linux - Move to trash fails on tmpfs
+    if (Utility::userName() == "docker") return;
     LocalTemporaryDirectory tempDir;
     SyncPath path = tempDir.path() / "test.txt";
     std::ofstream file(path);
@@ -281,7 +280,7 @@ void TestUtility::testComputeMd5Hash() {
 }
 
 void TestUtility::testXxHash() {
-    SyncPath path = localTestDirPath / "test_pictures/picture-1.jpg";
+    SyncPath path = testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg";
     std::ifstream file(path, std::ios::binary);
     std::ostringstream ostrm;
     ostrm << file.rdbuf();
