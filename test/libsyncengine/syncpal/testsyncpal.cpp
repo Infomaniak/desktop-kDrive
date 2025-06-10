@@ -197,7 +197,7 @@ void TestSyncPal::testSyncFileItem() {
 }
 
 void TestSyncPal::testCheckIfExistsOnServer() {
-    // bool exists = false;
+    bool exists = false;
     // CPPUNIT_ASSERT(!_syncPal->checkIfExistsOnServer(SyncPath("dummy"), exists));
 }
 

@@ -41,18 +41,20 @@ std::shared_ptr<ExclusionTemplateCache> ExclusionTemplateCache::instance() {
     return _instance;
 }
 
+void ExclusionTemplateCache::reset() {
+    _instance.reset();
+}
+
 ExclusionTemplateCache::ExclusionTemplateCache() {
     // Load exclusion templates
     if (!ParmsDb::instance()->selectAllExclusionTemplates(true, _defExclusionTemplates)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllExclusionTemplates");
         throw std::runtime_error("Failed to create ExclusionTemplateCache instance!");
     }
-
     if (!ParmsDb::instance()->selectAllExclusionTemplates(false, _userExclusionTemplates)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllExclusionTemplates");
         throw std::runtime_error("Failed to create ExclusionTemplateCache instance!");
     }
-
     populateUndeletedExclusionTemplates();
 }
 
@@ -62,7 +64,7 @@ void ExclusionTemplateCache::populateUndeletedExclusionTemplates() {
     for (const auto &exclusionTemplate: _defExclusionTemplates) {
         if (!exclusionTemplate.deleted()) {
             _undeletedExclusionTemplates.push_back(exclusionTemplate);
-        }
+        } 
     }
 
     for (const auto &exclusionTemplate: _userExclusionTemplates) {
