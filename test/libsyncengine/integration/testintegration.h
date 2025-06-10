@@ -113,6 +113,8 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void waitForSyncToFinish(uint64_t syncCount);
         void logStep(const std::string &str);
 
+        void editRemoteFile(const NodeId &remoteFileId, SyncTime *creationTime = nullptr, SyncTime *modificationTime = nullptr,
+                            int64_t *size = nullptr);
         NodeId duplicateRemoteFile(const NodeId &id, const SyncName &newName) const;
         SyncPath findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix) const;
 
@@ -132,8 +134,6 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         std::shared_ptr<ParmsDb> _parmsDb = nullptr;
 
         int _driveDbId = 0;
-
-        SyncPath _tmpFilePath;
         LocalTemporaryDirectory _localSyncDir;
         RemoteTemporaryDirectory _remoteSyncDir{"testIntegration"};
         NodeId _testFileRemoteId;

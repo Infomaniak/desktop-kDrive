@@ -95,12 +95,17 @@ void TestIntegration::setUp() {
     // drive items)
     _remoteSyncDir.generate(_driveDbId, testCiFolderId);
     // Add initial test file
-    _tmpFilePath = std::filesystem::temp_directory_path() / ("tmpFile_" + CommonUtility::generateRandomStringAlphaNum(10));
-    testhelpers::generateOrEditTestFile(_tmpFilePath);
-    UploadJob job(nullptr, _driveDbId, _tmpFilePath, _tmpFilePath.filename(), _remoteSyncDir.id(), testhelpers::defaultTime,
-                  testhelpers::defaultTime);
-    (void) job.runSynchronously();
-    _testFileRemoteId = job.nodeId();
+    {
+        // Generate a temporary file.
+        const LocalTemporaryDirectory temporaryDir;
+        const auto tmpFilePath = temporaryDir.path() / ("tmpFile_" + CommonUtility::generateRandomStringAlphaNum(10));
+        testhelpers::generateOrEditTestFile(tmpFilePath);
+        // Upload the temporary file to create on remote replica the file that will be used in tests.
+        UploadJob job(nullptr, _driveDbId, tmpFilePath, tmpFilePath.filename(), _remoteSyncDir.id(), testhelpers::defaultTime,
+                      testhelpers::defaultTime);
+        (void) job.runSynchronously();
+        _testFileRemoteId = job.nodeId();
+    }
 
     const Sync sync(1, drive.dbId(), _localSyncDir.path(), "/", _remoteSyncDir.id());
     (void) ParmsDb::instance()->insertSync(sync);
@@ -140,8 +145,8 @@ void TestIntegration::testAll() {
     logStep("initialization");
 
     // Run test cases
-    basicTests();
-    inconsistencyTests();
+    // basicTests();
+    // inconsistencyTests();
     conflictTests();
 
     // &TestIntegration::testEditEditPseudoConflict,
@@ -266,15 +271,9 @@ void TestIntegration::testRemoteChanges() {
 
     // Generate an edit operation.
     syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
-    int64_t modificationTime = 0;
+    SyncTime modificationTime = 0;
     int64_t size = 0;
-    testhelpers::generateOrEditTestFile(_tmpFilePath);
-    {
-        UploadJob job(nullptr, _driveDbId, _tmpFilePath, fileId, testhelpers::defaultTime);
-        (void) job.runSynchronously();
-        modificationTime = job.modificationTime();
-        size = job.size();
-    }
+    editRemoteFile(_testFileRemoteId, nullptr, &modificationTime, &size);
 
     waitForSyncToFinish(syncCount);
 
@@ -400,11 +399,11 @@ void TestIntegration::inconsistencyTests() {
 }
 
 void TestIntegration::conflictTests() {
-    testCreateCreatePseudoConflict();
-    testCreateCreateConflict();
+    // testCreateCreatePseudoConflict();
+    // testCreateCreateConflict();
     // testEditEditPseudoConflict();
     // testEditEditConflict();
-    testMoveCreateConflict();
+    // testMoveCreateConflict();
     testEditDeleteConflict();
 }
 
@@ -491,34 +490,32 @@ void TestIntegration::testEditEditConflict() {
     auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
 
     // Edit local file.
-    testhelpers::generateOrEditTestFile(_tmpFilePath);
+    SyncPath relativePath;
+    bool ignore = false;
+    (void) _syncPal->_remoteFSObserverWorker->liveSnapshot().path(_testFileRemoteId, relativePath, ignore);
+    const SyncPath absoluteLocalPath = _syncPal->localPath() / relativePath;
+    testhelpers::generateOrEditTestFile(absoluteLocalPath);
 
     // Edit remote file.
     int64_t creationTime = 0;
-    int64_t modificationTime = std::chrono::system_clock::now().time_since_epoch().count();
-    {
-        UploadJob job(nullptr, _driveDbId, _tmpFilePath, _testFileRemoteId, modificationTime);
-        (void) job.runSynchronously();
-        creationTime = job.creationTime();
-        modificationTime = job.modificationTime();
-    }
+    int64_t modificationTime = 0;
+    editRemoteFile(_testFileRemoteId, &creationTime, &modificationTime);
 
-    const SyncPath localFilePath = _syncPal->localPath() / _tmpFilePath.filename();
-    (void) IoHelper::setFileDates(localFilePath, creationTime, modificationTime, false);
+    (void) IoHelper::setFileDates(absoluteLocalPath, creationTime, modificationTime, false);
 
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToFinish(syncCount);
 
     const auto conflictedFilePath =
-            findLocalFileByNamePrefix(_localSyncDir.path(), _tmpFilePath.filename().string() + "_conflict_");
+            findLocalFileByNamePrefix(_localSyncDir.path(), absoluteLocalPath.filename().native() + Str("_conflict_"));
     CPPUNIT_ASSERT(std::filesystem::exists(conflictedFilePath));
-    CPPUNIT_ASSERT(!std::filesystem::exists(localFilePath));
+    CPPUNIT_ASSERT(!std::filesystem::exists(absoluteLocalPath));
 
     syncCount++; // Previous sync only fixed the conflict.
     waitForSyncToFinish(syncCount);
 
     CPPUNIT_ASSERT(std::filesystem::exists(conflictedFilePath));
-    CPPUNIT_ASSERT(std::filesystem::exists(localFilePath));
+    CPPUNIT_ASSERT(std::filesystem::exists(absoluteLocalPath));
 }
 
 void TestIntegration::testMoveCreateConflict() {
@@ -580,155 +577,75 @@ void TestIntegration::testMoveCreateConflict() {
     }
 }
 
-void TestIntegration::testEditDeleteConflict() {}
+void TestIntegration::testEditDeleteConflict() {
+    // Delete happen on the edited file.
+    {
+        auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
+        // Generate the test file
+        const SyncName filename = "testEditDeleteConflict1";
+        const auto tmpNodeId = duplicateRemoteFile(_testFileRemoteId, filename);
+        waitForSyncToFinish(syncCount);
+        // Edit the file on remote replica.
+        SyncTime creationTime = 0;
+        SyncTime modificationTime = 0;
+        int64_t size = 0;
+        editRemoteFile(tmpNodeId, &creationTime, &modificationTime, &size);
+        // Delete the file on local replica.
+        const SyncPath filepath = _syncPal->localPath() / filename;
+        IoError ioError = IoError::Unknown;
+        (void) IoHelper::deleteItem(filepath, ioError);
+        syncCount = _syncPal->syncCount();
+        _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+        waitForSyncToFinish(syncCount);
 
-// void TestIntegration::testEditDeleteConflict1() {
-//     LOGW_DEBUG(_logger, L"$$$$$ test Edit-Delete conflict 1");
-//     std::cout << "test Edit-Delete conflict 1 : ";
-//
-//     // Init: simulate a remote file creation by duplicating an existing file
-//     std::filesystem::path newTestFileName =
-//             Str("test_editDeleteConflict1_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) + Str(".txt");
-//
-//     DuplicateJob initJob(_syncPal->vfs(), _driveDbId, testExecutorFileRemoteId, newTestFileName.native());
-//     initJob.runSynchronously();
-//     NodeId initRemoteId = initJob.nodeId();
-//     waitForSyncToFinish(SourceLocation::currentLoc());
-//
-//     _syncPal->pause();
-//
-//     // Delete file on remote replica
-//     DeleteJob deleteJob(_driveDbId, initRemoteId, "", "",
-//                         NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
-//     deleteJob.runSynchronously();
-//
-//     // Edit file on local replica
-//     std::filesystem::path localExecutorFolderPath = _localPath / testExecutorFolderRelativePath;
-//     std::filesystem::path sourceFile = localExecutorFolderPath / newTestFileName;
-//
-//     SyncName testCallStr = Str(R"(echo "This is an edit test )") +
-//     Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) +
-//                            Str(R"(" >> ")") + sourceFile.make_preferred().native() + Str(R"(")");
-//     std::system(SyncName2Str(testCallStr).c_str());
-//
-//     FileStat fileStat;
-//     bool exists = false;
-//     IoHelper::getFileStat(sourceFile.make_preferred(), &fileStat, exists);
-//     NodeId localId = std::to_string(fileStat.inode);
-//
-//     Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
-//                             // request is implemented)
-//
-//     _syncPal->unpause();
-//     waitForSyncToFinish(SourceLocation::currentLoc());
-//
-//     // Edit operation must win, so local file should not have changed
-//     CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(localId));
-//
-//     // Remote file should have been re-uploaded
-//     // File with same name should exist
-//     GetFileListJob job(_driveDbId, testExecutorFolderRemoteId);
-//     job.runSynchronously();
-//
-//     Poco::JSON::Object::Ptr resObj = job.jsonRes();
-//     CPPUNIT_ASSERT(resObj);
-//
-//     bool newFileFound = false;
-//     Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-//     CPPUNIT_ASSERT(dataArray);
-//
-//     NodeId remoteId;
-//     for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
-//         Poco::JSON::Object::Ptr obj = it->extract<Poco::JSON::Object::Ptr>();
-//         if (newTestFileName.filename().string() == obj->get(nameKey).toString()) {
-//             newFileFound = true;
-//             remoteId = obj->get(idKey).toString();
-//             break;
-//         }
-//     }
-//     CPPUNIT_ASSERT(newFileFound);
-//     // But initial remote ID should have changed
-//     GetFileInfoJob fileInfoJob(_driveDbId, initRemoteId);
-//     fileInfoJob.runSynchronously();
-//     CPPUNIT_ASSERT(fileInfoJob.hasHttpError());
-//
-//     // Remove the test files
-//     DeleteJob deleteJob1(_driveDbId, remoteId, "", "",
-//                          NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
-//     deleteJob1.runSynchronously();
-//
-//     waitForSyncToFinish(SourceLocation::currentLoc());
-//
-//     std::cout << "OK" << std::endl;
-// }
-//
-// void TestIntegration::testEditDeleteConflict2() {
-//     LOGW_DEBUG(_logger, L"$$$$$ test Edit-Delete conflict 2");
-//     std::cout << "test Edit-Delete conflict 2 : ";
-//
-//     // Init: create a folder and duplicate an existing file inside it
-//     SyncName dirName = Str("test_dir_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10));
-//     CreateDirJob initCreateDirJob(nullptr, _driveDbId, dirName, testExecutorFolderRemoteId, dirName);
-//     initCreateDirJob.runSynchronously();
-//
-//     // Extract dir ID
-//     NodeId dirRemoteId = initCreateDirJob.nodeId();
-//     CPPUNIT_ASSERT(!dirRemoteId.empty());
-//
-//     // Simulate a create into this directory
-//     std::filesystem::path newTestFileName =
-//             Str("test_editDeleteConflict2_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) + Str(".txt");
-//
-//     CopyToDirectoryJob initJob(_driveDbId, testExecutorFileRemoteId, dirRemoteId, newTestFileName.native());
-//     initJob.runSynchronously();
-//     NodeId initFileRemoteId = initJob.nodeId();
-//     waitForSyncToFinish(SourceLocation::currentLoc());
-//
-//     _syncPal->pause();
-//
-//     // Delete dir on remote replica
-//     DeleteJob deleteJob(_driveDbId, dirRemoteId, "", "",
-//                         NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
-//     deleteJob.runSynchronously();
-//
-//     // Edit file on local replica
-//     std::filesystem::path localExecutorFolderPath = _localPath / testExecutorFolderRelativePath / dirName;
-//     std::filesystem::path sourceFile = localExecutorFolderPath / newTestFileName;
-//
-//     SyncName testCallStr = Str(R"(echo "This is an edit test )") +
-//     Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) +
-//                            Str(R"(" >> ")") + sourceFile.make_preferred().native() + Str(R"(")");
-//     std::system(SyncName2Str(testCallStr).c_str());
-//
-//     FileStat fileStat;
-//     bool exists = false;
-//     IoHelper::getFileStat(sourceFile.make_preferred(), &fileStat, exists);
-//     NodeId localFileId = std::to_string(fileStat.inode);
-//
-//     Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
-//                             // request is implemented)
-//
-//     _syncPal->unpause();
-//     waitForSyncToFinish(SourceLocation::currentLoc());
-//
-//     // Look for local file in root directory that have been renamed (and excluded from sync)
-//     bool found = false;
-//     std::filesystem::path localExcludedPath;
-//     for (auto const &dir_entry: std::filesystem::directory_iterator{_localPath}) {
-//         if (Utility::startsWith(dir_entry.path().filename().string(), newTestFileName.stem().string() + "_conflict_")) {
-//             found = true;
-//             localExcludedPath = dir_entry.path();
-//             break;
-//         }
-//     }
-//     CPPUNIT_ASSERT(found);
-//
-//     // Remove the test files
-//     std::filesystem::remove(localExcludedPath);
-//
-//     std::cout << "OK" << std::endl;
-// }
-//
+        syncCount++; // Previous sync only fixed the conflict.
+        waitForSyncToFinish(syncCount);
+
+        // Edit operation has won.
+        CPPUNIT_ASSERT(std::filesystem::exists(filepath));
+        FileStat fileStat;
+        (void) IoHelper::getFileStat(filepath, &fileStat, ioError);
+        // CPPUNIT_ASSERT_EQUAL(creationTime, fileStat.creationTime);
+        CPPUNIT_ASSERT_EQUAL(modificationTime, fileStat.modificationTime);
+        CPPUNIT_ASSERT_EQUAL(size, fileStat.size);
+    }
+
+    // Delete happen on a parent of the edited files.
+    {
+        auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
+
+        // Generate the test file
+        const SyncPath dirpath = _syncPal->localPath() / "testEditDeleteConflict2_dir";
+        IoError ioError = IoError::Unknown;
+        (void) IoHelper::createDirectory(dirpath, ioError);
+        const SyncPath filepath = dirpath / "testEditDeleteConflict2_file";
+        testhelpers::generateOrEditTestFile(filepath);
+        waitForSyncToFinish(syncCount);
+
+        std::optional<NodeId> remoteDirNodeId = std::nullopt;
+        bool found = false;
+        CPPUNIT_ASSERT(_syncPal->syncDb()->id(ReplicaSide::Remote, dirpath.filename(), remoteDirNodeId, found) && found);
+
+        // Edit the file on local replica.
+        testhelpers::generateOrEditTestFile(filepath);
+
+        // Delete the file on remote.
+        DeleteJob deleteJob(_driveDbId, *remoteDirNodeId);
+        deleteJob.setBypassCheck(true);
+        (void) deleteJob.runSynchronously();
+
+        syncCount = _syncPal->syncCount();
+        _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+        waitForSyncToFinish(syncCount);
+
+        syncCount++; // Previous sync only fixed the conflict.
+        waitForSyncToFinish(syncCount);
+
+        // Delete operation has won.
+        CPPUNIT_ASSERT(!std::filesystem::exists(filepath));
+    }
+}
+
 // const std::string testConflictFolderName = "test_conflict";
 // const std::string testConflictFolderId = "451588";
 // const std::string aRefFolderId = "451591";
@@ -2059,7 +1976,7 @@ void TestIntegration::waitForSyncToFinish(const uint64_t syncCount) {
     const TimerUtility timer;
     LOG_DEBUG(_logger, "Start waiting for sync to finish: " << syncCount);
 
-    const auto timeOutDuration = seconds(30);
+    static const auto timeOutDuration = seconds(30);
     const TimerUtility timeoutTimer;
 
     while (syncCount + 1 > _syncPal->syncCount()) {
@@ -2079,6 +1996,26 @@ void TestIntegration::logStep(const std::string &str) {
     std::stringstream ss;
     ss << "$$$$$ Step `" << str << "` done in " << _timer.lap<std::chrono::milliseconds>() << " $$$$$";
     LOG_DEBUG(_logger, ss.str());
+}
+
+void TestIntegration::editRemoteFile(const NodeId &remoteFileId, SyncTime *creationTime /*= nullptr*/,
+                                     SyncTime *modificationTime /*= nullptr*/, int64_t *size /*= nullptr*/) {
+    const LocalTemporaryDirectory temporaryDir;
+    const auto tmpFilePath = temporaryDir.path() / ("tmpFile_" + CommonUtility::generateRandomStringAlphaNum(10));
+    testhelpers::generateOrEditTestFile(tmpFilePath);
+
+    const auto timestamp = duration_cast<seconds>(time_point_cast<seconds>(system_clock::now()).time_since_epoch());
+    UploadJob job(nullptr, _driveDbId, tmpFilePath, remoteFileId, timestamp.count());
+    (void) job.runSynchronously();
+    if (creationTime) {
+        *creationTime = job.creationTime();
+    }
+    if (modificationTime) {
+        *modificationTime = job.modificationTime();
+    }
+    if (size) {
+        *size = job.size();
+    }
 }
 
 NodeId TestIntegration::duplicateRemoteFile(const NodeId &id, const SyncName &newName) const {

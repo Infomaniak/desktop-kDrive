@@ -291,6 +291,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             _syncPal->freeSnapshotsCopies();
             _syncPal->syncDb()->cache().clear();
             _syncCounter++;
+            LOG_SYNCPAL_DEBUG(_logger, "Sync " << _syncCounter << " started");
             break;
         case SyncStep::UpdateDetection1:
             workers[0] = _syncPal->computeFSOperationsWorker();
