@@ -2518,4 +2518,91 @@ bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumbe
     return true;
 }
 
+bool SyncDb::tryToFixDbNodeIdsAfterSyncDirChange(const SyncPath &syncDirPath) {
+    SyncDbReadOnlyCache &dbCache = cache();
+    if (!dbCache.reloadIfNeeded()) {
+        LOGW_WARN(_logger, L"Unable to reload SyncDb cache.");
+        return false;
+    }
+
+    std::unordered_set<NodeIds, NodeIds::HashFunction> remainingNodeIds;
+    bool found = false;
+    if (!dbCache.ids(remainingNodeIds, found)) {
+        LOGW_WARN(_logger, L"Unable to get node IDs from SyncDb cache.");
+        dbCache.clear();
+        return false;
+    }
+    if (!found) {
+        LOGW_WARN(_logger, L"No node IDs found in SyncDb cache.");
+        dbCache.clear();
+        return false;
+    }
+
+    NodeId newLocalRootNodeId;
+    if (!IoHelper::getNodeId(syncDirPath, newLocalRootNodeId)) {
+        LOGW_WARN(_logger, L"Unable to get new local node ID for " << Utility::formatSyncPath(syncDirPath) << L".");
+        return false;
+    }
+
+    std::list<std::pair<DbNodeId, NodeId>> updatedNodeIds;
+    const auto rootDbNodeId = dbCache.rootNode().nodeId();
+    for (const auto &nodeIds: remainingNodeIds) {
+        const DbNodeId dbNodeId = nodeIds.dbNodeId;
+        if (dbNodeId == rootDbNodeId) continue; // Skip root node
+        SyncPath relativelocalPath;
+        SyncPath remotePath;
+        if (!dbCache.path(dbNodeId, relativelocalPath, remotePath, found)) {
+            LOGW_WARN(_logger, L"Unable to get paths for DbNode ID " << dbNodeId);
+            dbCache.clear();
+            return false;
+        }
+        if (!found) {
+            LOGW_WARN(_logger, L"DbNode with ID " << dbNodeId << L" not found in cache.");
+            dbCache.clear();
+            return false;
+        }
+        SyncPath absoluteLocalPath = syncDirPath / relativelocalPath;
+        NodeId newLocalNodeId;
+
+        if (!IoHelper::getNodeId(absoluteLocalPath, newLocalNodeId)) {
+            LOGW_WARN(_logger, L"Unable to get new local node ID for "
+                                               << Utility::formatSyncPath(absoluteLocalPath)
+                                               << L". It might have been deleted or moved, the syncDb cannot be fixed.");
+            dbCache.clear();
+            return false;
+        }
+        (void) updatedNodeIds.emplace_back(dbNodeId, newLocalNodeId);
+    }
+
+    for (const auto &[dbNodeId, newLocalNodeId]: updatedNodeIds) {
+        DbNode dbNode;
+        if (!dbCache.node(dbNodeId, dbNode, found)) {
+            LOGW_WARN(_logger, L"Unable to get DbNode with ID " << dbNodeId);
+            dbCache.clear();
+            return false;
+        }
+        if (!found) {
+            LOGW_WARN(_logger, L"DbNode with ID " << dbNodeId << L" not found in cache.");
+            dbCache.clear();
+            return false;
+        }
+        dbNode.setNodeIdLocal(newLocalNodeId);
+
+        if (!updateNode(dbNode, found)) {
+            LOGW_WARN(_logger, L"Unable to update local node ID for DbNode ID " << dbNodeId);
+            dbCache.clear();
+            return false;
+        }
+        if (!found) {
+            LOGW_WARN(_logger, L"DbNode with ID " << dbNodeId << L" not found in SyncDb.");
+            dbCache.clear();
+            return false;
+        }
+
+        LOG_INFO(_logger, "Updated DbNode ID " << dbNodeId << " with new local node ID " << newLocalNodeId);
+    }
+    dbCache.clear();
+    return true;
+}
+
 } // namespace KDC

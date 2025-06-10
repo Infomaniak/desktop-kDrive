@@ -244,7 +244,7 @@ bool IoHelper::_setTargetType(ItemType &itemType) noexcept {
 }
 
 #if defined(__APPLE__) || defined(__unix__)
-bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
+bool IoHelper::c(const SyncPath &path, NodeId &nodeId) noexcept {
     struct stat sb;
 
     if (lstat(path.string().c_str(), &sb) < 0) {
