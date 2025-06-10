@@ -369,7 +369,7 @@ std::string Utility::fileSystemName(const SyncPath &targetPath) {
         // !!! File system name can be OK or not !!!
         return ws2s(szFileSystemName);
     }
-#elif defined(__unix__) 
+#elif defined(__unix__)
     struct statfs stat;
     if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
         std::function<std::string(std::string prettyName, int fsCode)> formatFsName = [](std::string prettyName, int fsCode) {
@@ -514,18 +514,6 @@ bool Utility::checkIfSameNormalization(const SyncPath &a, const SyncPath &b, boo
     }
     areSame = (aNormalized == bNormalized);
     return true;
-}
-
-std::vector<SyncName> Utility::splitPath(const SyncPath &path) {
-    std::vector<SyncName> itemNames;
-    SyncPath pathTmp(path);
-
-    while (pathTmp != pathTmp.root_path()) {
-        (void) itemNames.emplace_back(pathTmp.filename().native());
-        pathTmp = pathTmp.parent_path();
-    }
-
-    return itemNames;
 }
 
 bool Utility::isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path) {

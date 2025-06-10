@@ -37,9 +37,9 @@ TmpBlacklistManager::~TmpBlacklistManager() {
 
 void TmpBlacklistManager::logMessage(const std::wstring &msg, const NodeId &id, const ReplicaSide side,
                                      const SyncPath &path) const {
-    LOGW_SYNCPAL_INFO(Log::instance()->getLogger(),
-                      msg.c_str() << L" - node ID='" << Utility::s2ws(id) << L"' - side='" << side
-                                  << (path.empty() ? L"'" : (L"' - " + Utility::formatSyncPath(path))));
+    LOGW_SYNCPAL_INFO(Log::instance()->getLogger(), msg.c_str()
+                                                            << L" - node ID='" << Utility::s2ws(id) << L"' - side='" << side
+                                                            << (path.empty() ? L"'" : (L"' - " + Utility::formatSyncPath(path))));
 }
 
 void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, const NodeType type, const SyncPath &relativePath,

@@ -26,6 +26,7 @@ env:
   KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
   KDRIVE_TEST_CI_EXTENDED_TEST : true
+  KDRIVE_SENTRY_ENVIRONMENT: "windows_ci_runner"
 
 jobs:
   Windows-extended-tests:
@@ -85,8 +86,7 @@ jobs:
           & "covhtml.exe" "coverage_html"
 
       - name: Deactivate code coverage
-        run :  |
-            "cov01.exe" "-0" # coverage off
+        run : "cov01.exe -0" # coverage off
         if: always()
 
       - name: Upload tests logs artifacts
