@@ -65,13 +65,12 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testEditEditConflict();
         void testMoveCreateConflict();
         void testEditDeleteConflict();
+        void testMoveDeleteConflict();
 
         // // TODO : other tests
         // // - many sync ops (ex: upload 100 files)
         // // - create dir + subdir + file in same sync
         // // Conflicts
-        // void testEditDeleteConflict1();
-        // void testEditDeleteConflict2();
         // void testMoveDeleteConflict1();
         // void testMoveDeleteConflict2();
         // void testMoveDeleteConflict3();
@@ -110,13 +109,8 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
 #endif
         uint64_t waitForSyncToBeIdle(const SourceLocation &srcLoc,
                                      std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
-        void waitForSyncToFinish(uint64_t syncCount);
+        void waitForCurrentSyncToFinish(uint64_t syncCount) const;
         void logStep(const std::string &str);
-
-        void editRemoteFile(const NodeId &remoteFileId, SyncTime *creationTime = nullptr, SyncTime *modificationTime = nullptr,
-                            int64_t *size = nullptr);
-        NodeId duplicateRemoteFile(const NodeId &id, const SyncName &newName) const;
-        SyncPath findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix) const;
 
         struct RemoteFileInfo {
                 NodeId id;
