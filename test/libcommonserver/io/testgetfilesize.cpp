@@ -32,7 +32,7 @@ void TestIo::testGetFileSizeSimpleCases() {
         uint64_t fileSize = 0u;
         IoError ioError = IoError::Success;
 
-        CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileSize(path, fileSize, ioError));
         CPPUNIT_ASSERT_EQUAL(uint64_t(408278u), fileSize);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -52,7 +52,7 @@ void TestIo::testGetFileSizeSimpleCases() {
         uint64_t fileSize = 0u;
         IoError ioError = IoError::Success;
 
-        CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileSize(path, fileSize, ioError));
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::add);
 
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
@@ -66,7 +66,7 @@ void TestIo::testGetFileSizeSimpleCases() {
         uint64_t fileSize = 0u;
         IoError ioError = IoError::Success;
 
-        CPPUNIT_ASSERT(!_testObj->getFileSize(path, fileSize, ioError));
+        CPPUNIT_ASSERT(!IoHelper::getFileSize(path, fileSize, ioError));
         CPPUNIT_ASSERT(fileSize == 0u);
         CPPUNIT_ASSERT(ioError == IoError::IsADirectory);
     }
@@ -81,7 +81,7 @@ void TestIo::testGetFileSizeSimpleCases() {
         uint64_t fileSize = 0u;
         IoError ioError = IoError::Success;
 
-        CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileSize(path, fileSize, ioError));
         CPPUNIT_ASSERT(fileSize == targetPath.native().size());
 
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
@@ -97,7 +97,7 @@ void TestIo::testGetFileSizeSimpleCases() {
         uint64_t fileSize = 0u;
         IoError ioError = IoError::Success;
 
-        CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileSize(path, fileSize, ioError));
         CPPUNIT_ASSERT(fileSize == targetPath.native().size());
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
@@ -113,7 +113,7 @@ void TestIo::testGetFileSizeSimpleCases() {
             uint64_t fileSize = 0u;
             IoError ioError = IoError::Success;
 
-            CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
+            CPPUNIT_ASSERT(IoHelper::getFileSize(path, fileSize, ioError));
             CPPUNIT_ASSERT(fileSize == targetPath.native().size());
             CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success,
                                          ioError); // Although the target path is invalid.
@@ -128,13 +128,13 @@ void TestIo::testGetFileSizeSimpleCases() {
         const SyncPath path = temporaryDirectory.path() / "regular_file_alias";
 
         IoError aliasError;
-        CPPUNIT_ASSERT(_testObj->createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
 
         uint64_t fileSize = 0u;
         IoError ioError = IoError::Success;
 
-        CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileSize(path, fileSize, ioError));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(fileSize == std::filesystem::file_size(path));
     }
@@ -146,13 +146,13 @@ void TestIo::testGetFileSizeSimpleCases() {
         const SyncPath path = temporaryDirectory.path() / "regular_dir_alias";
 
         IoError aliasError;
-        CPPUNIT_ASSERT(_testObj->createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
 
         uint64_t fileSize = 0u;
         IoError ioError = IoError::Success;
 
-        CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileSize(path, fileSize, ioError));
         CPPUNIT_ASSERT(fileSize == std::filesystem::file_size(path));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -169,7 +169,7 @@ void TestIo::testGetFileSizeSimpleCases() {
         }
 
         IoError aliasError;
-        CPPUNIT_ASSERT(_testObj->createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
 
         std::filesystem::remove(targetPath);
@@ -178,7 +178,7 @@ void TestIo::testGetFileSizeSimpleCases() {
         uint64_t fileSize = 0u;
         IoError ioError = IoError::Success;
 
-        CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileSize(path, fileSize, ioError));
         CPPUNIT_ASSERT(fileSize == std::filesystem::file_size(path));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -193,13 +193,13 @@ void TestIo::testGetFileSizeSimpleCases() {
         CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == 0);
 
         IoError junctionError{IoError::Unknown};
-        CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, junctionError));
+        CPPUNIT_ASSERT(IoHelper::createJunctionFromPath(targetPath, path, junctionError));
         CPPUNIT_ASSERT(junctionError == IoError::Success);
 
         uint64_t fileSize = 0u;
         IoError ioError = IoError::Success;
 
-        CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileSize(path, fileSize, ioError));
         CPPUNIT_ASSERT(fileSize == 0); // The size of a junction is 0 (consistent with IoHelper::getFileStat)
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -211,13 +211,13 @@ void TestIo::testGetFileSizeSimpleCases() {
         const SyncPath path = temporaryDirectory.path() / "dangling_junction";
 
         IoError junctionError{IoError::Unknown};
-        CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, junctionError));
+        CPPUNIT_ASSERT(IoHelper::createJunctionFromPath(targetPath, path, junctionError));
         CPPUNIT_ASSERT(junctionError == IoError::Success);
 
         uint64_t fileSize = 0u;
         IoError ioError = IoError::Success;
 
-        CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileSize(path, fileSize, ioError));
         CPPUNIT_ASSERT(fileSize == 0); // The size of a junction is 0 (consistent with IoHelper::getFileStat)
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -240,7 +240,7 @@ void TestIo::testGetFileSizeAllBranches() {
 
         uint64_t fileSize = 0u;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileSize(path, fileSize, ioError));
 
         // Restore permission to allow subdir removal
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
