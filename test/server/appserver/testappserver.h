@@ -37,7 +37,6 @@ class MockAppServer : public AppServer {
         std::filesystem::path _parmsDbPath;
 };
 
-
 class TestAppServer : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestAppServer);
         CPPUNIT_TEST(testInitAndStopSyncPal);

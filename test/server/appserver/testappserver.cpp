@@ -30,8 +30,6 @@
 namespace KDC {
 void TestAppServer::setUp() {
     TestBase::start();
-    if (testhelpers::isExtendedTest()) return;
-
     if (QCoreApplication::instance()) {
         _appPtr = dynamic_cast<MockAppServer *>(QCoreApplication::instance());
         return;
@@ -96,11 +94,9 @@ void TestAppServer::setUp() {
 
 void TestAppServer::tearDown() {
     TestBase::stop();
-    if (testhelpers::isExtendedTest()) return;
 }
 
 void TestAppServer::testInitAndStopSyncPal() {
-    if (testhelpers::isExtendedTest()) return;
     const int syncDbId = 1;
 
     Sync sync;
@@ -130,7 +126,7 @@ void TestAppServer::testInitAndStopSyncPal() {
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
 
     // Stop SyncPal (cleanup)
-    exitInfo = _appPtr->stopSyncPal(syncDbId, /*pausedByUser false, /*quit*/ true, /*clear*/ true);
+    exitInfo = _appPtr->stopSyncPal(syncDbId, /*pausedByUser*/ false, /*quit*/ true, /*clear*/ true);
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(waitForSyncStatus(syncDbId, SyncStatus::Stopped));
 
@@ -140,7 +136,6 @@ void TestAppServer::testInitAndStopSyncPal() {
 }
 
 void TestAppServer::testStartAndStopSync() {
-    if (testhelpers::isExtendedTest()) return;
     const int userDbId = 1;
     const int syncDbId = 1;
 
@@ -189,7 +184,6 @@ void TestAppServer::testStartAndStopSync() {
 }
 
 void TestAppServer::testCleanup() {
-    if (testhelpers::isExtendedTest()) return;
     _appPtr->cleanup();
     delete _appPtr;
     CPPUNIT_ASSERT(true);
@@ -226,4 +220,5 @@ void MockAppServer::cleanup() {
     ParmsDb::reset();
     ParametersCache::reset();
 }
+
 } // namespace KDC
