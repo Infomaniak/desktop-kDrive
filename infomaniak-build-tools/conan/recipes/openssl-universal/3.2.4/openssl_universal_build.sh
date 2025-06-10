@@ -38,7 +38,7 @@ pushd "$build_folder"
 log "Cloning OpenSSL sources..."
 git clone --depth 1 --branch "$openssl_git_tag" "$src_url" openssl
 
-# Creating two version of openssl, one for each architecture
+# Creating two versions of openssl, one for each architecture
 log "Preparing source trees for architectures..."
 mv openssl openssl.x86_64
 cp -R openssl.x86_64 openssl.arm64
