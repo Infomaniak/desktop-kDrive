@@ -79,6 +79,16 @@ void TestExclusionTemplateCache::setUp() {
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    std::vector<ExclusionTemplate> exclusionTemplates;
+    ParmsDb::instance()->selectAllExclusionTemplates(exclusionTemplates);
+    for (const auto &exclTemplate: exclusionTemplates) {
+        std::cout << "ParmsDb Exclusion template: " << exclTemplate.templ() << std::endl;
+    }
+    exclusionTemplates.clear();
+    exclusionTemplates = ExclusionTemplateCache::instance()->exclusionTemplates();
+    for (const auto &exclTemplate: exclusionTemplates) {
+        std::cout << "Cache Exclusion template: " << exclTemplate.templ() << std::endl;
+    }
 }
 
 void TestExclusionTemplateCache::tearDown() {
@@ -89,6 +99,11 @@ void TestExclusionTemplateCache::tearDown() {
 }
 
 void TestExclusionTemplateCache::testIsExcluded() {
+    std::vector<ExclusionTemplate> exclusionTemplates;
+    exclusionTemplates = ExclusionTemplateCache::instance()->exclusionTemplates();
+    for (const auto &exclTemplate: exclusionTemplates) {
+        std::cout << "Cache in func Exclusion template: " << exclTemplate.templ() << std::endl;
+    }
     // Test rejected files
     for (const auto &str: rejectedFiles) {
         bool isWarning = false;
