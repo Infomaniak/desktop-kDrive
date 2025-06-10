@@ -254,28 +254,23 @@ void callbackJobDependency(int64_t jobId) {
 }
 
 void TestJobManager::testJobDependencies() {
-    SyncPath pict1Path = _localTestDirPath_pictures / "picture-1.jpg";
-    SyncPath pict2Path = _localTestDirPath_pictures / "picture-2.jpg";
-    SyncPath pict3Path = _localTestDirPath_pictures / "picture-3.jpg";
-    SyncPath pict4Path = _localTestDirPath_pictures / "picture-4.jpg";
-    SyncPath pict5Path = _localTestDirPath_pictures / "picture-5.jpg";
     // Create temp remote directory
     const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "TestJobManager testJobDependencies");
 
     // Upload all files in testDir
     std::shared_ptr<UploadJob> job1 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict1Path, pict1Path.filename().native(), remoteTmpDir.id(), 0, 0);
+            std::make_shared<UploadJob>(nullptr, driveDbId, _pict1Path, _pict1Path.filename().native(), remoteTmpDir.id(), 0, 0);
     std::shared_ptr<UploadJob> job2 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict2Path, pict2Path.filename().native(), remoteTmpDir.id(), 0, 0);
+            std::make_shared<UploadJob>(nullptr, driveDbId, _pict2Path, _pict2Path.filename().native(), remoteTmpDir.id(), 0, 0);
     job2->setParentJobId(job1->jobId());
     std::shared_ptr<UploadJob> job3 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict3Path, pict3Path.filename().native(), remoteTmpDir.id(), 0, 0);
+            std::make_shared<UploadJob>(nullptr, driveDbId, _pict3Path, _pict3Path.filename().native(), remoteTmpDir.id(), 0, 0);
     job3->setParentJobId(job2->jobId());
     std::shared_ptr<UploadJob> job4 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict4Path, pict4Path.filename().native(), remoteTmpDir.id(), 0, 0);
+            std::make_shared<UploadJob>(nullptr, driveDbId, _pict4Path, _pict4Path.filename().native(), remoteTmpDir.id(), 0, 0);
     job4->setParentJobId(job3->jobId());
     std::shared_ptr<UploadJob> job5 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict5Path, pict5Path.filename().native(), remoteTmpDir.id(), 0, 0);
+            std::make_shared<UploadJob>(nullptr, driveDbId, _pict5Path, _pict5Path.filename().native(), remoteTmpDir.id(), 0, 0);
     job5->setParentJobId(job4->jobId());
     JobManager::instance()->queueAsyncJob(job1, Poco::Thread::PRIO_NORMAL, callbackJobDependency);
     JobManager::instance()->queueAsyncJob(job2, Poco::Thread::PRIO_NORMAL, callbackJobDependency);
@@ -297,26 +292,20 @@ void TestJobManager::testJobDependencies() {
 }
 
 void TestJobManager::testJobPriority() {
-    SyncPath pict1Path = _localTestDirPath_pictures / "picture-1.jpg";
-    SyncPath pict2Path = _localTestDirPath_pictures / "picture-2.jpg";
-    SyncPath pict3Path = _localTestDirPath_pictures / "picture-3.jpg";
-    SyncPath pict4Path = _localTestDirPath_pictures / "picture-4.jpg";
-    SyncPath pict5Path = _localTestDirPath_pictures / "picture-5.jpg";
-
     // Create temp remote directory
     const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "TestJobManager testJobPriority");
 
     // Upload all files in testDir
     std::shared_ptr<UploadJob> job1 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict1Path, pict1Path.filename().native(), remoteTmpDir.id(), 0, 0);
+            std::make_shared<UploadJob>(nullptr, driveDbId, _pict1Path, _pict1Path.filename().native(), remoteTmpDir.id(), 0, 0);
     std::shared_ptr<UploadJob> job2 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict2Path, pict2Path.filename().native(), remoteTmpDir.id(), 0, 0);
+            std::make_shared<UploadJob>(nullptr, driveDbId, _pict2Path, _pict2Path.filename().native(), remoteTmpDir.id(), 0, 0);
     std::shared_ptr<UploadJob> job3 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict3Path, pict3Path.filename().native(), remoteTmpDir.id(), 0, 0);
+            std::make_shared<UploadJob>(nullptr, driveDbId, _pict3Path, _pict3Path.filename().native(), remoteTmpDir.id(), 0, 0);
     std::shared_ptr<UploadJob> job4 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict4Path, pict4Path.filename().native(), remoteTmpDir.id(), 0, 0);
+            std::make_shared<UploadJob>(nullptr, driveDbId, _pict4Path, _pict4Path.filename().native(), remoteTmpDir.id(), 0, 0);
     std::shared_ptr<UploadJob> job5 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict5Path, pict5Path.filename().native(), remoteTmpDir.id(), 0, 0);
+            std::make_shared<UploadJob>(nullptr, driveDbId, _pict5Path, _pict5Path.filename().native(), remoteTmpDir.id(), 0, 0);
     JobManager::instance()->queueAsyncJob(job1, Poco::Thread::PRIO_LOWEST);
     JobManager::instance()->queueAsyncJob(job2, Poco::Thread::PRIO_LOW);
     JobManager::instance()->queueAsyncJob(job3, Poco::Thread::PRIO_NORMAL);
@@ -331,26 +320,20 @@ void TestJobManager::testJobPriority() {
 }
 
 void TestJobManager::testJobPriority2() {
-    SyncPath pict1Path = _localTestDirPath_pictures / "picture-1.jpg";
-    SyncPath pict2Path = _localTestDirPath_pictures / "picture-2.jpg";
-    SyncPath pict3Path = _localTestDirPath_pictures / "picture-3.jpg";
-    SyncPath pict4Path = _localTestDirPath_pictures / "picture-4.jpg";
-    SyncPath pict5Path = _localTestDirPath_pictures / "picture-5.jpg";
-
     // Create temp remote directory
     const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "TestJobManager testJobPriority2");
     // Upload all files in testDir
 
     std::shared_ptr<UploadJob> job1 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict1Path, pict1Path.filename().native(), remoteTmpDir.id(), 0, 0);
+            std::make_shared<UploadJob>(nullptr, driveDbId, _pict1Path, _pict1Path.filename().native(), remoteTmpDir.id(), 0, 0);
     std::shared_ptr<UploadJob> job2 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict2Path, pict2Path.filename().native(), remoteTmpDir.id(), 0, 0);
+            std::make_shared<UploadJob>(nullptr, driveDbId, _pict2Path, _pict2Path.filename().native(), remoteTmpDir.id(), 0, 0);
     std::shared_ptr<UploadJob> job3 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict3Path, pict3Path.filename().native(), remoteTmpDir.id(), 0, 0);
+            std::make_shared<UploadJob>(nullptr, driveDbId, _pict3Path, _pict3Path.filename().native(), remoteTmpDir.id(), 0, 0);
     std::shared_ptr<UploadJob> job4 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict4Path, pict4Path.filename().native(), remoteTmpDir.id(), 0, 0);
+            std::make_shared<UploadJob>(nullptr, driveDbId, _pict4Path, _pict4Path.filename().native(), remoteTmpDir.id(), 0, 0);
     std::shared_ptr<UploadJob> job5 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict5Path, pict5Path.filename().native(), remoteTmpDir.id(), 0, 0);
+            std::make_shared<UploadJob>(nullptr, driveDbId, _pict5Path, _pict5Path.filename().native(), remoteTmpDir.id(), 0, 0);
 
     JobManager::instance()->queueAsyncJob(job1, Poco::Thread::PRIO_NORMAL);
     JobManager::instance()->queueAsyncJob(job2, Poco::Thread::PRIO_NORMAL);
@@ -366,14 +349,12 @@ void TestJobManager::testJobPriority2() {
 }
 
 void TestJobManager::testJobPriority3() {
-    SyncPath pict5Path = _localTestDirPath_pictures / "picture-5.jpg";
-
     // Create temp remote directory
     const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "TestJobManager testJobPriority3");
     // Upload all files in testDir
     for (int i = 0; i < 100; i++) {
         std::shared_ptr<UploadJob> job = std::make_shared<UploadJob>(
-                nullptr, driveDbId, pict5Path, pict5Path.filename().native() + Str2SyncName(std::to_string(i)), remoteTmpDir.id(),
+                nullptr, driveDbId, _pict5Path, _pict5Path.filename().native() + Str2SyncName(std::to_string(i)), remoteTmpDir.id(),
                 0, 0);
         JobManager::instance()->queueAsyncJob(job, i % 2 ? Poco::Thread::PRIO_HIGHEST : Poco::Thread::PRIO_NORMAL);
         Utility::msleep(10);

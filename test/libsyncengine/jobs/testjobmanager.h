@@ -77,6 +77,11 @@ class TestJobManager : public CppUnit::TestFixture, public TestBase {
         SyncPath _localDirPath;
         const SyncPath _localTestDirPath_manyFiles = testhelpers::localTestDirPath() / "many_files_dir";
         const SyncPath _localTestDirPath_pictures = testhelpers::localTestDirPath() / "test_pictures";
+        SyncPath _pict1Path = _localTestDirPath_pictures / "picture-1.jpg";
+        SyncPath _pict2Path = _localTestDirPath_pictures / "picture-2.jpg";
+        SyncPath _pict3Path = _localTestDirPath_pictures / "picture-3.jpg";
+        SyncPath _pict4Path = _localTestDirPath_pictures / "picture-4.jpg";
+        SyncPath _pict5Path = _localTestDirPath_pictures / "picture-5.jpg";
         std::unordered_map<uint64_t, std::shared_ptr<AbstractJob>> _ongoingJobs;
         std::recursive_mutex _mutex;
 
