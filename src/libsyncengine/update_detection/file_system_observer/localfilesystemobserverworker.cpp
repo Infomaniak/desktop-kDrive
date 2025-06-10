@@ -438,10 +438,8 @@ void LocalFileSystemObserverWorker::execute() {
                                                                                      _needUpdateTimerStart);
                 if (diff_ms.count() > waitForUpdateDelay) {
                     // Check if root folder is still valid
-                    if (const ExitInfo exitInfo = _syncPal->isRootFolderValid(); !exitInfo) {
+                    if (exitInfo = _syncPal->isRootFolderValid(); !exitInfo) {
                         LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
-                        exitCode = exitInfo.code();
-                        setExitCause(exitInfo.cause());
                         invalidateSnapshot();
                         break;
                     }
