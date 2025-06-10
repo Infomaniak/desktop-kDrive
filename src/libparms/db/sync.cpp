@@ -23,26 +23,22 @@ namespace KDC {
 Sync::Sync() :
     _dbId(0),
     _driveDbId(0),
-    _localPath(std::filesystem::path()),
-    _targetPath(std::filesystem::path()),
-    _targetNodeId(NodeId()),
     _paused(false),
     _supportVfs(false),
     _virtualFileMode(VirtualFileMode::Off),
     _notificationsDisabled(false),
-    _dbPath(std::filesystem::path()),
     _hasFullyCompleted(false),
-    _navigationPaneClsid(std::string()),
-    _listingCursor(std::string()),
     _listingCursorTimestamp(0) {}
 
-Sync::Sync(int dbId, int driveDbId, const std::filesystem::path &localPath, const std::filesystem::path &targetPath,
-           const NodeId &targetNodeId, bool paused, bool supportVfs, VirtualFileMode virtualFileMode, bool notificationsDisabled,
-           const std::filesystem::path &dbPath, bool hasFullyCompleted, const std::string &navigationPaneClsid,
-           const std::string &listingCursor, int64_t listingCursorTimestamp) :
+Sync::Sync(int dbId, int driveDbId, const std::filesystem::path &localPath, const NodeId &localNodeId,
+           const std::filesystem::path &targetPath, const NodeId &targetNodeId, bool paused, bool supportVfs,
+           VirtualFileMode virtualFileMode, bool notificationsDisabled, const std::filesystem::path &dbPath,
+           bool hasFullyCompleted, const std::string &navigationPaneClsid, const std::string &listingCursor,
+           int64_t listingCursorTimestamp) :
     _dbId(dbId),
     _driveDbId(driveDbId),
     _localPath(localPath),
+    _localNodeId(localNodeId),
     _targetPath(targetPath),
     _targetNodeId(targetNodeId),
     _paused(paused),

@@ -66,7 +66,7 @@ void TestOperationProcessor::setUp() {
     int driveId = atoi(testVariables.driveId.c_str());
     Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
-    Sync sync(1, drive.dbId(), localPathStr, testVariables.remotePath);
+    Sync sync(1, drive.dbId(), localPathStr, "", testVariables.remotePath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Setup proxy
