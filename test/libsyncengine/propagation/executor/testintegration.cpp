@@ -112,7 +112,9 @@ void TestIntegration::setUp() {
 
     _localPath = _localTmpDir.path();
     _remotePath = testVariables.remotePath;
-    Sync sync(1, drive.dbId(), _localPath, _remotePath);
+    NodeId localNodeId;
+    CPPUNIT_ASSERT(IoHelper::getNodeId(_localPath, localNodeId));
+    Sync sync(1, drive.dbId(), _localPath, localNodeId, _remotePath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Setup proxy

@@ -87,6 +87,7 @@ SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId_, const std::strin
     _syncInfo.driveDbId = sync.driveDbId();
     _syncInfo.localPath = sync.localPath();
     _syncInfo.localPath.make_preferred();
+    _syncInfo.localNodeId = sync.localNodeId();
     _syncInfo.targetPath = sync.targetPath();
     _syncInfo.targetPath.make_preferred();
 
@@ -740,6 +741,54 @@ void SyncPal::setSyncHasFullyCompletedInParms(bool syncHasFullyCompleted) {
     if (!found) {
         LOG_SYNCPAL_WARN(_logger, "Sync not found");
     }
+}
+
+ExitInfo SyncPal::isRootFolderValid() {
+    if (NodeId rootNodeId; IoHelper::getNodeId(localPath(), rootNodeId)) {
+        if (rootNodeId.empty()) {
+            LOGW_SYNCPAL_WARN(_logger, L"Unable to get root folder nodeId: " << Utility::formatSyncPath(localPath()));
+            return ExitCode::SystemError;
+        }
+
+        if (localNodeId().empty()) {
+            if (ExitInfo exitInfo = setLocalNodeId(rootNodeId); !exitInfo) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setLocalNodeId: " << exitInfo);
+                return exitInfo;
+            }
+            return ExitCode::Ok;
+        }
+
+        return localNodeId() == rootNodeId ? ExitInfo(ExitCode::Ok) : ExitInfo(ExitCode::DataError, ExitCause::SyncDirChanged);
+    } else {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getNodeId for root folder: " << Utility::formatSyncPath(localPath()));
+        return ExitCode::SystemError;
+    }
+}
+
+ExitInfo SyncPal::setLocalNodeId(const NodeId &localNodeId) {
+    _syncInfo.localNodeId = localNodeId;
+    Sync sync;
+    bool found = false;
+    if (!ParmsDb::instance()->selectSync(syncDbId(), sync, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
+        return ExitCode::DbError;
+    }
+    if (!found) {
+        LOG_SYNCPAL_WARN(_logger, "Sync not found");
+        return ExitCode::DataError;
+    }
+
+    sync.setLocalNodeId(localNodeId);
+    if (!ParmsDb::instance()->updateSync(sync, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::updateSync");
+        return ExitCode::DbError;
+    }
+    if (!found) {
+        LOG_SYNCPAL_WARN(_logger, "Sync not found");
+        return ExitCode::DataError;
+    }
+
+    return ExitCode::Ok;
 }
 
 ExitCode SyncPal::setListingCursor(const std::string &value, int64_t timestamp) {
