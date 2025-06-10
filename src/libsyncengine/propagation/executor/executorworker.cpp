@@ -632,11 +632,12 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
 
             if (filesize > bigFileThreshold) {
                 try {
-                    int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
+                    const int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
                     job = std::make_shared<DriveUploadSession>(
                             _syncPal->vfs(), _syncPal->driveDbId(), _syncPal->syncDb(), absoluteLocalFilePath,
                             syncOp->affectedNode()->name(), newCorrespondingParentNode->id().value_or(""),
-                            syncOp->affectedNode()->lastmodified().value_or(0), isLiteSyncActivated(), uploadSessionParallelJobs);
+                            syncOp->affectedNode()->createdAt().value_or(0), syncOp->affectedNode()->lastmodified().value_or(0),
+                            isLiteSyncActivated(), uploadSessionParallelJobs);
                 } catch (std::exception const &e) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in DriveUploadSession::DriveUploadSession: " << Utility::s2ws(e.what()));
                     return ExitCode::DataError;

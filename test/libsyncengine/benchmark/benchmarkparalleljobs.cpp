@@ -215,7 +215,7 @@ std::list<std::shared_ptr<AbstractJob>> BenchmarkParallelJobs::generateUploadSes
                 std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
         const auto job = std::make_shared<DriveUploadSession>(nullptr, driveDbId, nullptr, dirEntry.path(),
                                                               dirEntry.path().filename().native(), remoteTmpDirId,
-                                                              timeInput.count(), false, nbParallelChunkJobs);
+                                                              timeInput.count(), timeInput.count(), false, nbParallelChunkJobs);
         (void) jobs.push_back(job);
     }
     return jobs;
