@@ -47,7 +47,6 @@ if(UNIX AND NOT APPLE)
     set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
             "/usr/local/lib"
     )
-    
     set(CONAN_DEP_DIR "${CMAKE_BINARY_DIR}/conan_dependencies" CACHE PATH "Conan dependencies directory. Used to copy the .so files for the appimage builder.")
 elseif(WIN32)
     # TODO Remove lines once lib is managed by conan: add directories to search for libraries in .cmake files.

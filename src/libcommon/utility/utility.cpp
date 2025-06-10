@@ -981,6 +981,7 @@ QString CommonUtility::truncateLongLogMessage(const QString &message) {
 SyncPath CommonUtility::applicationFilePath() {
     const auto maxPathLength = CommonUtility::maxPathLength();
     std::vector<SyncChar> pathStr(maxPathLength + 1, '\0');
+
 #if defined(_WIN32)
     const auto pathLength = static_cast<DWORD>(maxPathLength);
     const auto count = GetModuleFileNameW(nullptr, pathStr.data(), pathLength);
