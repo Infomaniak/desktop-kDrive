@@ -377,10 +377,13 @@ void TestIo::testSetFileDates() {
 #if defined(__APPLE__)
         // Creation date is set to modification date = 0
         CPPUNIT_ASSERT(filestat.creationTime == 0);
+        CPPUNIT_ASSERT(filestat.modificationTime == 0);
 #elif defined(_WIN32)
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
-#endif
+        CPPUNIT_ASSERT_GREATER(timestamp, filestat.modificationTime);
+#else
         CPPUNIT_ASSERT(filestat.modificationTime == 0);
+#endif
     }
 
     // Test on a non-existing file.
