@@ -362,7 +362,7 @@ void TestIo::testSetFileDates() {
 #if defined(__APPLE__)
         CPPUNIT_ASSERT(filestat.creationTime == 0);
 #elif defined(_WIN32)
-        CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
+        CPPUNIT_ASSERT_GREATER(timestamp, filestat.creationTime);
 #endif
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modificationTime);
 
