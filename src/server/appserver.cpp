@@ -252,7 +252,7 @@ void AppServer::init() {
         addError(Error(errId(), ExitCode::SystemError, ExitCause::Unknown));
     }
 
-    // Log usefull infomation
+    // Log useful information
     logUsefulInformation();
 
     // Init ExclusionTemplateCache instance
@@ -401,7 +401,7 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "AppServer::cleanup");
 
     // Stop JobManager
-    JobManager::stop();
+    JobManager::instance()->stop();
     LOG_DEBUG(_logger, "JobManager stopped");
 
     // Stop SyncPals
@@ -421,7 +421,7 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "Vfs(s) stopped");
 
     // Clear JobManager
-    JobManager::clear();
+    JobManager::instance()->clear();
     LOG_DEBUG(_logger, "JobManager::clear() done");
 
     // Clear maps
@@ -2178,7 +2178,8 @@ void AppServer::uploadLog(const bool includeArchivedLogs) {
             addError(Error(errId(), ExitCode::LogUploadFailed, exitInfo.cause()));
         }
     };
-    JobManager::instance()->queueAsyncJob(logUploadJob, Poco::Thread::PRIO_HIGH, jobResultCallback);
+    logUploadJob->setAdditionalCallback(jobResultCallback);
+    JobManager::instance()->queueAsyncJob(logUploadJob, Poco::Thread::PRIO_HIGH);
 }
 
 ExitInfo AppServer::checkIfSyncIsValid(const Sync &sync) {
@@ -2887,6 +2888,7 @@ void AppServer::logUsefulInformation() const {
     LOG_INFO(_logger, "kernel version : " << QSysInfo::kernelVersion().toStdString());
     LOG_INFO(_logger, "kernel type : " << QSysInfo::kernelType().toStdString());
     LOG_INFO(_logger, "locale: " << QLocale::system().name().toStdString());
+    LOG_INFO(_logger, "# of logical CPU core: " << std::thread::hardware_concurrency());
 
     // Log app ID
     AppStateValue appStateValue = "";
