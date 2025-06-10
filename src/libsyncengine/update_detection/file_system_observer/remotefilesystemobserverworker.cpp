@@ -130,28 +130,24 @@ ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     return exitInfo;
 }
 
-ExitCode RemoteFileSystemObserverWorker::processEvents() {
+ExitInfo RemoteFileSystemObserverWorker::processEvents() {
     if (stopAsked()) {
         return ExitCode::Ok;
     }
 
     // Get last listing cursor used
     int64_t timestamp = 0;
-    ExitCode exitCode = _syncPal->listingCursor(_cursor, timestamp);
-    if (exitCode != ExitCode::Ok) {
-        LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::listingCursor");
-
-        setExitCause(ExitCause::DbAccessError);
-        return exitCode;
+    if (const auto exitInfo = _syncPal->listingCursor(_cursor, timestamp); exitInfo.code() != ExitCode::Ok) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::listingCursor: " << exitInfo);
+        return exitInfo;
     }
 
     if (!_updating && !_initializing) {
         // Send long poll request
         bool changes = false;
-        exitCode = sendLongPoll(changes);
-        if (exitCode != ExitCode::Ok) {
-            setExitCause(ExitCause::ApiErr);
-            return exitCode;
+        if (const auto exitInfo = sendLongPoll(changes); exitInfo.code() != ExitCode::Ok) {
+            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::sendLongPoll: " << exitInfo);
+            return exitInfo;
         }
         if (!changes) {
             // No change, return
@@ -161,12 +157,13 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
 
     // Retrieve changes
     _updating = true;
+    ExitInfo exitInfo = ExitCode::Ok;
     bool hasMore = true;
     while (hasMore) {
         hasMore = false;
 
         if (stopAsked()) {
-            exitCode = ExitCode::Ok;
+            exitInfo = ExitCode::Ok;
             break;
         }
 
@@ -174,7 +171,7 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
         if (_cursor.empty()) {
             LOG_SYNCPAL_WARN(_logger, "Cursor is empty for driveDbId=" << _driveDbId << ", invalidating snapshot");
             tryToInvalidateSnapshot();
-            exitCode = ExitCode::DataError;
+            exitInfo = ExitCode::DataError;
             break;
         }
 
@@ -183,15 +180,12 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
         } catch (const std::exception &e) {
             LOG_SYNCPAL_WARN(_logger, "Error in ContinueFileListWithCursorJob::ContinueFileListWithCursorJob for driveDbId="
                                               << _driveDbId << " error=" << e.what());
-            exitCode = AbstractTokenNetworkJob::exception2ExitCode(e);
+            exitInfo = AbstractTokenNetworkJob::exception2ExitCode(e);
             break;
         }
 
-        exitCode = job->runSynchronously();
-        if (exitCode != ExitCode::Ok) {
-            LOG_SYNCPAL_WARN(_logger, "Error in ContinuousCursorListingJob::runSynchronously: code=" << exitCode);
-            setExitCause(job->getExitCause());
-            exitCode = job->exitInfo();
+        if (exitInfo = job->runSynchronously(); exitInfo.code() != ExitCode::Ok) {
+            LOG_SYNCPAL_WARN(_logger, "Error in ContinuousCursorListingJob: " << exitInfo);
             break;
         }
 
@@ -199,20 +193,20 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
         if (!resObj) {
             LOG_SYNCPAL_WARN(_logger, "Continue cursor listing request failed for drive: " << std::to_string(_driveDbId).c_str()
                                                                                            << " and cursor: " << _cursor);
-            exitCode = ExitCode::BackError;
+            exitInfo = ExitCode::BackError;
             break;
         }
 
         if (std::string errorCode; job->hasErrorApi(&errorCode)) {
             if (getNetworkErrorCode(errorCode) == NetworkErrorCode::ForbiddenError) {
                 LOG_SYNCPAL_WARN(_logger, "Access forbidden");
-                exitCode = ExitCode::Ok;
+                exitInfo = ExitCode::Ok;
                 break;
             } else {
                 std::ostringstream os;
                 resObj->stringify(os);
                 LOGW_SYNCPAL_WARN(_logger, L"Continue cursor listing request failed: " << Utility::s2ws(os.str()));
-                exitCode = ExitCode::BackError;
+                exitInfo = ExitCode::BackError;
                 break;
             }
         }
@@ -221,7 +215,7 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
         if (dataObj) {
             std::string cursor;
             if (!JsonParserUtility::extractValue(dataObj, cursorKey, cursor)) {
-                exitCode = ExitCode::BackError;
+                exitInfo = ExitCode::BackError;
                 break;
             }
 
@@ -229,21 +223,19 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
                 _cursor = cursor;
                 LOG_SYNCPAL_DEBUG(_logger, "Sync cursor updated: " << _cursor);
                 int64_t timestamp = static_cast<long int>(time(0));
-                exitCode = _syncPal->setListingCursor(_cursor, timestamp);
-                if (exitCode != ExitCode::Ok) {
-                    LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::setListingCursor");
-                    setExitCause(ExitCause::DbAccessError);
+                if (exitInfo = _syncPal->setListingCursor(_cursor, timestamp); exitInfo.code() != ExitCode::Ok) {
+                    LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::setListingCursor: " << exitInfo);
                     break;
                 }
             }
 
             if (!JsonParserUtility::extractValue(dataObj, hasMoreKey, hasMore)) {
-                return ExitCode::BackError;
+                exitInfo = ExitCode::BackError;
             }
 
             // Look for new actions
-            exitCode = processActions(dataObj->getArray(actionsKey));
-            if (exitCode != ExitCode::Ok) {
+            if (exitInfo = processActions(dataObj->getArray(actionsKey)); exitInfo.code() != ExitCode::Ok) {
+                LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::processActions: " << exitInfo);
                 tryToInvalidateSnapshot();
                 break;
             }
@@ -252,7 +244,7 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
 
     _updating = false;
 
-    return ExitCode::Ok;
+    return exitInfo;
 }
 
 ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
@@ -294,8 +286,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     }
 
     if (job->exitInfo().code() != ExitCode::Ok) {
-        LOG_SYNCPAL_WARN(_logger, "Error in GetFileListWithCursorJob::runSynchronously : " << job->exitInfo());
-        setExitCause(job->getExitCause());
+        LOG_SYNCPAL_WARN(_logger, "Error in GetFileListWithCursorJob: " << job->exitInfo());
         return job->exitInfo();
     }
 
@@ -410,7 +401,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     return ExitCode::Ok;
 }
 
-ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
+ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
     if (_liveSnapshot.isValid()) {
         std::shared_ptr<LongPollJob> notifyJob = nullptr;
         try {
@@ -442,39 +433,33 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
             Utility::msleep(100);
         }
 
-        if (notifyJob->exitInfo().code() == ExitCode::NetworkError) {
-            LOG_SYNCPAL_DEBUG(_logger, "Notify changes request failed for drive: " << std::to_string(_driveDbId).c_str()
-                                                                                   << " and cursor: " << _cursor);
-            if (notifyJob->exitInfo().cause() == ExitCause::NetworkTimeout) {
-                _syncPal->addError(Error(errId(), notifyJob->exitInfo().code(), notifyJob->exitInfo().cause()));
-            }
-            return ExitCode::NetworkError;
-        } else if (notifyJob->hasHttpError()) {
-            if (notifyJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_BAD_GATEWAY) {
+        if (notifyJob->exitInfo().code() != ExitCode::Ok) {
+            LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob: " << notifyJob->exitInfo() << " for drive: "
+                                                               << std::to_string(_driveDbId) << " and cursor: " << _cursor);
+
+            if (notifyJob->exitInfo() == ExitInfo(ExitCode::NetworkError, ExitCause::NetworkTimeout)) {
+                _syncPal->addError(Error(errId(), notifyJob->exitInfo()));
+            } else if (notifyJob->exitInfo() == ExitInfo(ExitCode::NetworkError, ExitCause::BadGateway)) {
                 // Ignore this error and check for changes anyway
-                LOG_SYNCPAL_INFO(_logger, "Notify changes request failed with error "
-                                                  << Poco::Net::HTTPResponse::HTTP_BAD_GATEWAY
-                                                  << "for drive: " << std::to_string(_driveDbId).c_str()
-                                                  << " and cursor: " << _cursor << ". Check for changes anyway.");
+                LOG_SYNCPAL_INFO(_logger, "Bad gateway error, check for changes anyway.");
                 changes = true; // TODO: perhaps not a good idea... what if longpoll crashed and not reachable for a long time???
-            } else {
-                LOG_SYNCPAL_WARN(_logger, "Notify changes request failed for drive: " << std::to_string(_driveDbId).c_str()
-                                                                                      << " and cursor: " << _cursor);
-                return notifyJob->exitInfo();
-            }
-        } else {
-            Poco::JSON::Object::Ptr resObj = notifyJob->jsonRes();
-            if (!resObj) {
-                // If error, fall
-                LOG_SYNCPAL_DEBUG(_logger, "Notify changes request failed for drive: " << std::to_string(_driveDbId).c_str()
-                                                                                       << " and cursor: " << _cursor);
-                return ExitCode::BackError;
+                return ExitCode::Ok;
             }
 
-            // If no changes, return
-            if (!JsonParserUtility::extractValue(resObj, changesKey, changes)) {
-                return ExitCode::BackError;
-            }
+            return notifyJob->exitInfo();
+        }
+
+        Poco::JSON::Object::Ptr resObj = notifyJob->jsonRes();
+        if (!resObj) {
+            // If error, fall
+            LOG_SYNCPAL_DEBUG(_logger, "Notify changes request failed for drive: " << std::to_string(_driveDbId).c_str()
+                                                                                   << " and cursor: " << _cursor);
+            return {ExitCode::BackError, ExitCause::ApiErr};
+        }
+
+        // If no changes, return
+        if (!JsonParserUtility::extractValue(resObj, changesKey, changes)) {
+            return {ExitCode::BackError, ExitCause::ApiErr};
         }
     }
 
@@ -523,8 +508,8 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
         }
 #endif
 
-        if (const ExitCode exitCode = processAction(actionInfo, movedItems); exitCode != ExitCode::Ok) {
-            return exitCode;
+        if (const auto exitInfo = processAction(actionInfo, movedItems); exitInfo.code() != ExitCode::Ok) {
+            return exitInfo;
         }
     }
 

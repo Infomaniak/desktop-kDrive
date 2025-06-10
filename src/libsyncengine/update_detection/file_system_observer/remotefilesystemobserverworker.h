@@ -35,11 +35,11 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
     protected:
         void execute() override;
-        virtual ExitCode sendLongPoll(bool &changes);
+        virtual ExitInfo sendLongPoll(bool &changes);
         ExitInfo generateInitialSnapshot() override;
 
     private:
-        ExitCode processEvents() override;
+        ExitInfo processEvents() override;
         [[nodiscard]] ReplicaSide getSnapshotType() const override { return ReplicaSide::Remote; }
 
         ExitInfo initWithCursor();

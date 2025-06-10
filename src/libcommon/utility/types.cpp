@@ -218,6 +218,8 @@ std::string toString(const ExitCause e) {
             return "DriveWakingUp";
         case ExitCause::ServiceUnavailable:
             return "ServiceUnavailable";
+        case ExitCause::BadGateway:
+            return "BadGateway";
         default:
             return noConversionStr;
     }
