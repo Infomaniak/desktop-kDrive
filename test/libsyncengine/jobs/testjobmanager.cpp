@@ -350,12 +350,12 @@ void TestJobManager::testCanRunjob() {
         const LocalTemporaryDirectory localTmpDir("testCanRunjob");
         const auto filepath = testhelpers::generateBigFile(localTmpDir.path(), 50); // Generate 1 file of 50 MB
 
-        const auto job1 =
-                std::make_shared<DriveUploadSession>(nullptr, driveDbId, nullptr, filepath, filepath.filename().native(),
-                                                     remoteTmpDir.id(), testhelpers::defaultTime, false, 3);
-        const auto job2 =
-                std::make_shared<DriveUploadSession>(nullptr, driveDbId, nullptr, filepath, filepath.filename().native(),
-                                                     remoteTmpDir.id(), testhelpers::defaultTime, false, 3);
+        const auto job1 = std::make_shared<DriveUploadSession>(nullptr, driveDbId, nullptr, filepath,
+                                                               filepath.filename().native(), remoteTmpDir.id(),
+                                                               testhelpers::defaultTime, testhelpers::defaultTime, false, 3);
+        const auto job2 = std::make_shared<DriveUploadSession>(nullptr, driveDbId, nullptr, filepath,
+                                                               filepath.filename().native(), remoteTmpDir.id(),
+                                                               testhelpers::defaultTime, testhelpers::defaultTime, false, 3);
         CPPUNIT_ASSERT_EQUAL(true, JobManager::instance()->canRunjob(job1));
         JobManager::instance()->queueAsyncJob(job1, Poco::Thread::PRIO_NORMAL);
         Utility::msleep(200);
@@ -511,7 +511,8 @@ void TestJobManager::testWithCallbackBigFiles(const SyncPath &dirPath, const uin
             } else {
                 auto job = std::make_shared<DriveUploadSession>(
                         nullptr, driveDbId, nullptr, dirEntry.path(), dirEntry.path().filename().native(), remoteTmpDir.id(),
-                        12345, false, ParametersCache::instance()->parameters().uploadSessionParallelJobs());
+                        testhelpers::defaultTime, testhelpers::defaultTime, false,
+                        ParametersCache::instance()->parameters().uploadSessionParallelJobs());
                 job->setAdditionalCallback(callback);
                 JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
                 const std::scoped_lock lock(_mutex);
