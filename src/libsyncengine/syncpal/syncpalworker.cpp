@@ -586,6 +586,7 @@ bool SyncPalWorker::tryToFixDbNodeIdsAfterSyncDirChange() {
         LOGW_SYNCPAL_WARN(_logger, L"Error in setLocalNodeId: " << exitInfo);
         return false;
     }
+    LOG_SYNCPAL_INFO(_logger, "SyncDb successfully fixed after sync dir change, new local node ID is " << newLocalRootNodeId);
     return true;
 }
 
