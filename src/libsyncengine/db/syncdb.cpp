@@ -2525,9 +2525,9 @@ bool SyncDb::tryToFixDbNodeIdsAfterSyncDirChange(const SyncPath &syncDirPath) {
         return false;
     }
 
-    std::unordered_set<NodeIds, NodeIds::HashFunction> remainingNodeIds;
+    std::unordered_set<NodeIds, NodeIds::HashFunction> nodeIdsFromDb;
     bool found = false;
-    if (!dbCache.ids(remainingNodeIds, found)) {
+    if (!dbCache.ids(nodeIdsFromDb, found)) {
         LOGW_WARN(_logger, L"Unable to get node IDs from SyncDb cache.");
         dbCache.clear();
         return false;
@@ -2538,15 +2538,9 @@ bool SyncDb::tryToFixDbNodeIdsAfterSyncDirChange(const SyncPath &syncDirPath) {
         return false;
     }
 
-    NodeId newLocalRootNodeId;
-    if (!IoHelper::getNodeId(syncDirPath, newLocalRootNodeId)) {
-        LOGW_WARN(_logger, L"Unable to get new local node ID for " << Utility::formatSyncPath(syncDirPath) << L".");
-        return false;
-    }
-
     std::list<std::pair<DbNodeId, NodeId>> updatedNodeIds;
     const auto rootDbNodeId = dbCache.rootNode().nodeId();
-    for (const auto &nodeIds: remainingNodeIds) {
+    for (const auto &nodeIds: nodeIdsFromDb) {
         const DbNodeId dbNodeId = nodeIds.dbNodeId;
         if (dbNodeId == rootDbNodeId) continue; // Skip root node
         SyncPath relativelocalPath;
