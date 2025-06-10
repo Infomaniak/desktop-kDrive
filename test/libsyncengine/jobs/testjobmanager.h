@@ -65,9 +65,7 @@ class TestJobManager : public CppUnit::TestFixture, public TestBase {
         void testJobPriority(); // Test execution order of jobs with different priority. Jobs with higher priority must be
                                 // executed first.
         void testJobPriority2(); // Test execution order of jobs with same priority. Jobs created first must be executed first.
-        void testJobPriority3(); // Test execution order of jobs. Jobs are created with priority alternating between Normal and
-                                 // Highest. It checks that jobs are dequed correctly in JobManager (issue #320:
-                                 // https://gitlab.infomaniak.ch/infomaniak/desktop-app/multi/kdrive/-/issues/320)
+
         void testCanRunjob();
         void testReuseSocket();
 
