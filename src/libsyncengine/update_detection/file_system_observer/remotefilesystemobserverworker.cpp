@@ -71,15 +71,13 @@ void RemoteFileSystemObserverWorker::execute() {
         // We never pause this thread
 
         if (!_liveSnapshot.isValid()) {
-            exitInfo = generateInitialSnapshot();
-            if (exitInfo.code() != ExitCode::Ok) {
+            if (exitInfo = generateInitialSnapshot(); exitInfo.code() != ExitCode::Ok) {
                 LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot: " << exitInfo);
                 break;
             }
         }
 
-        exitInfo = processEvents();
-        if (exitInfo.code() != ExitCode::Ok) {
+        if (exitInfo = processEvents(); exitInfo.code() != ExitCode::Ok) {
             LOG_SYNCPAL_DEBUG(_logger, "Error in processEvents: " << exitInfo);
             break;
         }
@@ -87,10 +85,13 @@ void RemoteFileSystemObserverWorker::execute() {
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
+    setExitCause(exitInfo.cause());
     setDone(exitInfo.code());
 }
 
-ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
+ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
+    ExitInfo exitInfo;
+
     LOG_SYNCPAL_INFO(_logger, "Starting remote snapshot generation");
     auto start = std::chrono::steady_clock::now();
     sentry::pTraces::scoped::RFSOGenerateInitialSnapshot perfMonitor(syncDbId());
@@ -102,11 +103,9 @@ ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     _updating = true;
     countListingRequests();
 
-    const auto exitInfo = initWithCursor();
-
     const auto end = std::chrono::steady_clock::now();
     const std::chrono::duration<double> elapsedSeconds = end - start;
-    if (exitInfo.code() == ExitCode::Ok && !stopAsked()) {
+    if (exitInfo = initWithCursor(); exitInfo.code() == ExitCode::Ok && !stopAsked()) {
         _liveSnapshot.setValid(true);
         LOG_SYNCPAL_INFO(_logger, "Remote snapshot generated in: " << elapsedSeconds.count() << "s for "
                                                                    << _liveSnapshot.nbItems() << " items");
@@ -121,7 +120,7 @@ ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
                 break;
             case ExitCode::LogicError:
             case ExitCode::InvalidSync:
-                _syncPal->addError(Error(_syncPal->syncDbId(), name(), exitInfo));
+                _syncPal->addError(Error(_syncPal->syncDbId(), shortName(), exitInfo));
                 break;
             default:
                 break;
@@ -649,7 +648,7 @@ ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
                         break;
                     case ExitCode::LogicError:
                         if (exitCause() == ExitCause::FullListParsingError) {
-                            _syncPal->addError(Error(_syncPal->syncDbId(), name(), exitInfo));
+                            _syncPal->addError(Error(_syncPal->syncDbId(), shortName(), exitInfo));
                         }
                         break;
                     default:

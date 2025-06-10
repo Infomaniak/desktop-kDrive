@@ -112,7 +112,7 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
                 bool _networkAvailable{true};
                 std::chrono::steady_clock::duration _longPollDuration = std::chrono::seconds(50);
                 ExitCode sendLongPoll(bool &changes) override;
-                ExitCode generateInitialSnapshot() override;
+                ExitInfo generateInitialSnapshot() override;
         };
 
         class MockComputeFSOperationWorkerTestSyncPalWorker : public ComputeFSOperationWorker {

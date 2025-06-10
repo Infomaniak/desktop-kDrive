@@ -389,7 +389,7 @@ void LocalFileSystemObserverWorker::forceUpdate() {
 }
 
 void LocalFileSystemObserverWorker::execute() {
-    ExitCode exitCode(ExitCode::Unknown);
+    ExitInfo exitInfo;
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
     auto timerStart = std::chrono::steady_clock::now();
@@ -397,14 +397,12 @@ void LocalFileSystemObserverWorker::execute() {
     // Sync loop
     for (;;) {
         if (stopAsked()) {
-            exitCode = ExitCode::Ok;
+            exitInfo = ExitCode::Ok;
             tryToInvalidateSnapshot();
             break;
         }
-        if (!_folderWatcher->exitInfo()) {
-            LOG_SYNCPAL_WARN(_logger, "Error in FolderWatcher: " << _folderWatcher->exitInfo());
-            exitCode = _folderWatcher->exitInfo().code();
-            setExitCause(_folderWatcher->exitInfo().cause());
+        if (exitInfo = _folderWatcher->exitInfo(); !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error in FolderWatcher: " << exitInfo);
             tryToInvalidateSnapshot();
             break;
         }
@@ -415,16 +413,14 @@ void LocalFileSystemObserverWorker::execute() {
             // The folder watcher became unreliable so fallback to static synchronization
             timerStart = std::chrono::steady_clock::now();
             tryToInvalidateSnapshot();
-            exitCode = generateInitialSnapshot();
-            if (exitCode != ExitCode::Ok) {
-                LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot: code=" << exitCode);
+            if (exitInfo = generateInitialSnapshot(); exitInfo.code() != ExitCode::Ok) {
+                LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot: " << exitInfo);
                 break;
             }
         } else {
             if (!_liveSnapshot.isValid()) {
-                exitCode = generateInitialSnapshot();
-                if (exitCode != ExitCode::Ok) {
-                    LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot: code=" << exitCode);
+                if (exitInfo = generateInitialSnapshot(); exitInfo.code() != ExitCode::Ok) {
+                    LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot: " << exitInfo);
                     break;
                 }
             }
@@ -443,10 +439,13 @@ void LocalFileSystemObserverWorker::execute() {
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
-    setDone(exitCode);
+    setExitCause(exitInfo.cause());
+    setDone(exitInfo.code());
 }
 
-ExitCode LocalFileSystemObserverWorker::generateInitialSnapshot() {
+ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
+    ExitInfo exitInfo;
+
     LOG_SYNCPAL_INFO(_logger, "Starting local snapshot generation");
     const TimerUtility timer;
     auto perfMonitor = sentry::pTraces::scoped::LFSOGenerateInitialSnapshot(syncDbId());
@@ -454,9 +453,7 @@ ExitCode LocalFileSystemObserverWorker::generateInitialSnapshot() {
     _liveSnapshot.init();
     _updating = true;
 
-    ExitCode res = exploreDir(_rootFolder);
-
-    if (res == ExitCode::Ok && !stopAsked()) {
+    if (exitInfo = exploreDir(_rootFolder); exitInfo.code() == ExitCode::Ok && !stopAsked()) {
         _liveSnapshot.setValid(true);
         LOG_SYNCPAL_INFO(_logger, "Local snapshot generated in: " << timer.elapsed<DoubleSeconds>().count() << "s for "
                                                                   << _liveSnapshot.nbItems() << " items");
@@ -477,7 +474,7 @@ ExitCode LocalFileSystemObserverWorker::generateInitialSnapshot() {
 
     _updating = false;
 
-    return res;
+    return exitInfo;
 }
 
 bool LocalFileSystemObserverWorker::canComputeChecksum(const SyncPath &absolutePath) {

@@ -44,7 +44,7 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
         std::unique_ptr<FolderWatcher> _folderWatcher = nullptr;
 
     private:
-        virtual ExitCode generateInitialSnapshot() override;
+        virtual ExitInfo generateInitialSnapshot() override;
         virtual ReplicaSide getSnapshotType() const override { return ReplicaSide::Local; }
 
         bool canComputeChecksum(const SyncPath &absolutePath);

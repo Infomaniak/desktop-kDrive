@@ -36,7 +36,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
     protected:
         void execute() override;
         virtual ExitCode sendLongPoll(bool &changes);
-        ExitCode generateInitialSnapshot() override;
+        ExitInfo generateInitialSnapshot() override;
 
     private:
         ExitCode processEvents() override;

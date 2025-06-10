@@ -41,7 +41,7 @@ bool ContinueFileListWithCursorJob::handleError(std::istream &is, const Poco::UR
     if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN) {
         // Access to the directory is forbidden or it doesn't exist
         _exitInfo = {ExitCode::InvalidSync, ExitCause::SyncDirAccessError};
-        return false;
+        return true;
     } else {
         return AbstractTokenNetworkJob::handleError(is, uri);
     }

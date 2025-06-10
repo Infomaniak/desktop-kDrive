@@ -395,14 +395,14 @@ ExitCode TestSyncPalWorker::MockRemoteFileSystemObserverWorker::sendLongPoll(boo
     return ExitCode::Ok;
 }
 
-ExitCode TestSyncPalWorker::MockRemoteFileSystemObserverWorker::generateInitialSnapshot() {
+ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::generateInitialSnapshot() {
     if (_networkAvailable) {
         return RemoteFileSystemObserverWorker::generateInitialSnapshot();
     } else {
         _liveSnapshot.init();
         invalidateSnapshot();
         _updating = false;
-        return ExitCode::NetworkError;
+        return {ExitCode::NetworkError, ExitCause::Unknown};
     }
 }
 } // namespace KDC
