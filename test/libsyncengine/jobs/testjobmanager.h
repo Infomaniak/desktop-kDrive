@@ -26,6 +26,7 @@
 #include "utility/types.h"
 #include "jobs/abstractjob.h"
 #include "test_utility/testhelpers.h"
+#include "jobs/network/API_v2/upload/uploadjob.h"
 
 #include <mutex>
 #include <unordered_map>
