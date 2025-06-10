@@ -89,6 +89,7 @@ class TestJobManager : public CppUnit::TestFixture, public TestBase {
         size_t ongoingJobsCount();
         void testWithCallbackBigFiles(const SyncPath &dirPath, int size, int count);
         void cancelAllOngoingJobs();
+        std::array<std::shared_ptr<UploadJob>, 5> getJobArray(const NodeId &remoteParentId);
 };
 
 } // namespace KDC
