@@ -184,9 +184,6 @@ void TestIo::testSetFileDates() {
     const auto timestamp = testhelpers::defaultTime;
 
     {
-        // /!\ Linux: The creation date cannot be set
-        // /!\ macOS: If creation date = 0 or creation date > modification date, creation date is set to modification date
-
         const LocalTemporaryDirectory tempDir("testSetFileDates");
         filepath = tempDir.path() / "test.txt";
         testhelpers::generateOrEditTestFile(filepath);
@@ -362,8 +359,10 @@ void TestIo::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         (void) IoHelper::getFileStat(filepath, &filestat, ioError);
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(__APPLE__)
         CPPUNIT_ASSERT(filestat.creationTime == 0);
+#elif defined(_WIN32)
+        CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
 #endif
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modificationTime);
 
