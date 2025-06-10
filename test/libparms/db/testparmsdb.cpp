@@ -31,7 +31,7 @@ void TestParmsDb::setUp() {
     // Create a temp parmsDb
     bool alreadyExists = false;
     const std::filesystem::path parmsDbPath = _parmsDbTemporarDirectory.path() / MockDb::makeDbName(alreadyExists);
-    ParmsDb::instance(parmsDbPath, "3.6.1", false, true);
+    (void) ParmsDb::instance(parmsDbPath, "3.6.1", false, true);
 }
 
 void TestParmsDb::tearDown() {
@@ -360,7 +360,7 @@ void TestParmsDb::testUpdateExclusionTemplates() {
     CPPUNIT_ASSERT(ParmsDb::instance()->updateExclusionTemplates());
 
     std::vector<ExclusionTemplate> dbDefaultExclusionTemplates;
-    ParmsDb::instance()->selectDefaultExclusionTemplates(dbDefaultExclusionTemplates);
+    (void) ParmsDb::instance()->selectDefaultExclusionTemplates(dbDefaultExclusionTemplates);
     CPPUNIT_ASSERT(!dbDefaultExclusionTemplates.empty());
 
     std::vector<std::string> fileDefaultExclusionTemplates;
@@ -368,12 +368,12 @@ void TestParmsDb::testUpdateExclusionTemplates() {
     ParmsDb::instance()->getDefaultExclusionTemplatesFromFile(excludeListFileName, fileDefaultExclusionTemplates);
 
     std::vector<ExclusionTemplate> dbUserExclusionTemplates;
-    ParmsDb::instance()->selectUserExclusionTemplates(dbUserExclusionTemplates);
-    CPPUNIT_ASSERT_EQUAL(size_t(1), dbUserExclusionTemplates.size());
+    (void) ParmsDb::instance()->selectUserExclusionTemplates(dbUserExclusionTemplates);
+    CPPUNIT_ASSERT_EQUAL(size_t{1}, dbUserExclusionTemplates.size());
     CPPUNIT_ASSERT_EQUAL(std::string{"template 3"}, dbUserExclusionTemplates.at(0).templ());
 
-    std::set<std::string> fileDefaults(fileDefaultExclusionTemplates.begin(), fileDefaultExclusionTemplates.end());
-    std::set<std::string> dbDefaults;
+    std::set<std::string, std::less<>> fileDefaults(fileDefaultExclusionTemplates.begin(), fileDefaultExclusionTemplates.end());
+    std::set<std::string, std::less<>> dbDefaults;
     (void) std::transform(dbDefaultExclusionTemplates.begin(), dbDefaultExclusionTemplates.end(),
                           std::inserter(dbDefaults, dbDefaults.begin()), [](const auto &t) { return t.templ(); });
 
@@ -391,7 +391,7 @@ void TestParmsDb::testUpgrade() {
 
     const std::filesystem::path parmsDbPath = ParmsDb::instance()->dbPath();
     ParmsDb::reset();
-    ParmsDb::instance(parmsDbPath, "3.7.2", true, true);
+    (void) ParmsDb::instance(parmsDbPath, "3.7.2", true, true);
 
     std::vector<ExclusionTemplate> dbUserExclusionTemplates;
     CPPUNIT_ASSERT(ParmsDb::instance()->selectUserExclusionTemplates(dbUserExclusionTemplates));
@@ -409,7 +409,7 @@ void TestParmsDb::testUpgrade() {
 
     StrSet actualTemplateSet;
     for (const auto &template_: dbUserExclusionTemplates) {
-        actualTemplateSet.emplace(template_.templ());
+        (void) actualTemplateSet.emplace(template_.templ());
     }
 
     CPPUNIT_ASSERT(expectedTemplateSet == actualTemplateSet);

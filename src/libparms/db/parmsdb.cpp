@@ -1131,7 +1131,7 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersi
             return false;
         }
     }
-    
+
     // Add localNodeId to sync table
     if (!addTextColumnIfMissing("sync", "localNodeId")) {
         return false;
@@ -2562,8 +2562,8 @@ bool ParmsDb::selectAllExclusionTemplates(std::vector<ExclusionTemplate> &exclus
             break;
         }
 
-        std::string templ;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 0, templ));
+        std::string template_;
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 0, template_));
         int warning;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 1, warning));
         int def;
@@ -2571,8 +2571,8 @@ bool ParmsDb::selectAllExclusionTemplates(std::vector<ExclusionTemplate> &exclus
         int deleted;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 3, deleted));
 
-        (void) exclusionTemplateList.emplace_back(
-                ExclusionTemplate(templ, static_cast<bool>(warning), static_cast<bool>(def), static_cast<bool>(deleted)));
+        (void) exclusionTemplateList.emplace_back(template_, static_cast<bool>(warning), static_cast<bool>(def),
+                                                  static_cast<bool>(deleted));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID));
 
