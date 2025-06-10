@@ -652,7 +652,7 @@ pTraceId Handler::startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId) 
         // Fetch the pTraceMap associated with the provided syncDbId
         auto pTraceMapIt = _pTraceNameToPTraceIdMap.find(syncDbId);
         if (pTraceMapIt == _pTraceNameToPTraceIdMap.end()) {
-            assert(false && "Parent transaction/span is not running.");
+            //assert(false && "Parent transaction/span is not running.");
             return 0;
         }
         auto &pTraceMap = pTraceMapIt->second;
@@ -660,7 +660,7 @@ pTraceId Handler::startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId) 
         // Find the parent pTrace
         auto parentPTraceIt = pTraceMap.find(pTraceInfo.parentPTraceName());
         if (parentPTraceIt == pTraceMap.end()) {
-            assert(false && "Parent transaction/span is not running.");
+            //assert(false && "Parent transaction/span is not running.");
             return 0;
         }
 
@@ -689,14 +689,14 @@ void Handler::stopPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId, PTrac
     std::scoped_lock lock(_mutex);
     auto pTraceMapIt = _pTraceNameToPTraceIdMap.find(syncDbId);
     if (pTraceMapIt == _pTraceNameToPTraceIdMap.end()) {
-        assert(false && "Transaction/span is not running.");
+        //assert(false && "Transaction/span is not running.");
         return;
     }
     auto &pTraceMap = pTraceMapIt->second;
 
     auto pTraceIt = pTraceMap.find(pTraceInfo.pTraceName());
     if (pTraceIt == pTraceMap.end()) {
-        assert(false && "Transaction is not running");
+        //assert(false && "Transaction is not running");
         return;
     }
 

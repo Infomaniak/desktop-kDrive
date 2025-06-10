@@ -89,11 +89,6 @@ void TestExclusionTemplateCache::tearDown() {
 }
 
 void TestExclusionTemplateCache::testIsExcluded() {
-    std::vector<ExclusionTemplate> exclusionTemplates;
-    exclusionTemplates = ExclusionTemplateCache::instance()->exclusionTemplates();
-    for (const auto &exclTemplate: exclusionTemplates) {
-        std::cout << "Cache in func Exclusion template: " << exclTemplate.templ() << std::endl;
-    }
     // Test rejected files
     for (const auto &str: rejectedFiles) {
         bool isWarning = false;
