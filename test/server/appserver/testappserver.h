@@ -21,10 +21,11 @@
 #include "test_utility/localtemporarydirectory.h"
 
 namespace KDC {
-/*
+
 class MockAppServer : public AppServer {
     public:
-        explicit MockAppServer(int &argc, char **argv) : AppServer(argc, argv) {}
+        explicit MockAppServer(int &argc, char **argv) :
+            AppServer(argc, argv) {}
         std::filesystem::path makeDbName() override;
         std::shared_ptr<ParmsDb> initParmsDB(const std::filesystem::path &dbPath, const std::string &version) override;
         bool startClient() override { return true; }
@@ -35,31 +36,31 @@ class MockAppServer : public AppServer {
     private:
         std::filesystem::path _parmsDbPath;
 };
-*/
+
 
 class TestAppServer : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestAppServer);
-       // CPPUNIT_TEST(testInitAndStopSyncPal);
-      //  CPPUNIT_TEST(testStartAndStopSync);
-      //  CPPUNIT_TEST(testCleanup); // Must be the last test
+        CPPUNIT_TEST(testInitAndStopSyncPal);
+        CPPUNIT_TEST(testStartAndStopSync);
+        CPPUNIT_TEST(testCleanup); // Must be the last test
         CPPUNIT_TEST_SUITE_END();
 
     public:
-      //  void setUp() final;
-      //  void tearDown() override;
+        void setUp() final;
+        void tearDown() override;
 
-        //void testInitAndStopSyncPal();
-        //void testStartAndStopSync();
-       // void testCleanup();
+        void testInitAndStopSyncPal();
+        void testStartAndStopSync();
+        void testCleanup();
 
     private:
-        //MockAppServer *_appPtr;
+        MockAppServer *_appPtr;
         LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestSyncpal");
         SyncPath _localPath;
         SyncPath _remotePath;
 
-       // bool waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const;
-       // bool syncIsActive(int syncDbId) const;
+        bool waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const;
+        bool syncIsActive(int syncDbId) const;
 };
 
 } // namespace KDC

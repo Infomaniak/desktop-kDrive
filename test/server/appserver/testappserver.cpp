@@ -28,7 +28,6 @@
 #include "test_utility/testhelpers.h"
 
 namespace KDC {
-/*
 void TestAppServer::setUp() {
     TestBase::start();
     if (testhelpers::isExtendedTest()) return;
@@ -227,5 +226,4 @@ void MockAppServer::cleanup() {
     ParmsDb::reset();
     ParametersCache::reset();
 }
-*/
 } // namespace KDC
