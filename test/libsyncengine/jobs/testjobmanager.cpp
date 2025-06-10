@@ -486,7 +486,8 @@ void TestJobManager::testWithCallbackBigFiles(const SyncPath &dirPath, int size,
             } else {
                 auto job = std::make_shared<DriveUploadSession>(
                         nullptr, driveDbId, nullptr, dirEntry.path(), dirEntry.path().filename().native(), remoteTmpDir.id(),
-                        12345, false, ParametersCache::instance()->parameters().uploadSessionParallelJobs());
+                        testhelpers::defaultTime, testhelpers::defaultTime, false,
+                        ParametersCache::instance()->parameters().uploadSessionParallelJobs());
                 JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL, callback);
                 const std::scoped_lock lock(_mutex);
                 _ongoingJobs.insert({job->jobId(), job});
