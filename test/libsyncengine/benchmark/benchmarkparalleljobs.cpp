@@ -82,9 +82,8 @@ void BenchmarkParallelJobs::setUp() {
 void BenchmarkParallelJobs::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
-    JobManager::stop();
-    JobManager::clear();
-    JobManager::reset();
+    JobManager::instance()->stop();
+    JobManager::instance()->clear();
     TestBase::stop();
 }
 
