@@ -12,7 +12,6 @@ minimum_macos_version="10.15"
 log() { echo -e "[INFO] $*"; }
 error() { echo -e "[ERROR] $*" >&2; exit 1; }
 
-# local_recipe_remote_name is the name of the local conan 'remote' given by the build_dependencies.sh script
 build_folder=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
