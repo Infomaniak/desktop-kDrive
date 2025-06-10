@@ -68,7 +68,7 @@ void TestSyncPalWorker::setUp() {
 
     _localPath = localPathStr;
     _remotePath = testVariables.remotePath;
-    _sync = Sync(1, drive.dbId(), _localPath, _remotePath);
+    _sync = Sync(1, drive.dbId(), _localPath, "", _remotePath);
     (void) ParmsDb::instance()->insertSync(_sync);
 
     // Setup proxy
