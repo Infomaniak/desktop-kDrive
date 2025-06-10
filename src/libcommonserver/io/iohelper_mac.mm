@@ -244,12 +244,8 @@ bool isLocked(const SyncPath &path) {
 
 IoError IoHelper::setFileDates(const SyncPath &filePath, SyncTime creationDate, SyncTime modificationDate,
                                bool symlink) noexcept {
-    NSDate *cDate = nil;
-    cDate = [[NSDate alloc] initWithTimeIntervalSince1970:creationDate];
-
-    NSDate *mDate = nil;
-    mDate = [[NSDate alloc] initWithTimeIntervalSince1970:modificationDate];
-
+    NSDate *cDate = [[NSDate alloc] initWithTimeIntervalSince1970:creationDate];
+    NSDate *mDate = [[NSDate alloc] initWithTimeIntervalSince1970:modificationDate];
     NSString *filePathStr = [NSString stringWithUTF8String:filePath.native().c_str()];
     NSError *error = nil;
     bool ret = false;
