@@ -140,6 +140,8 @@ std::string toString(const ExitCause e) {
             return "SyncDirAccessError";
         case ExitCause::SyncDirNestingError:
             return "SyncDirNestingError";
+        case ExitCause::SyncDirChanged:
+            return "SyncDirChanged";
         case ExitCause::HttpErr:
             return "HttpErr";
         case ExitCause::HttpErrForbidden:

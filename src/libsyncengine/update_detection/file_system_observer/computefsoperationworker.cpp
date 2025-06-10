@@ -198,7 +198,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     bool movedIntoUnsyncedFolder = false;
     const auto nodeExistsInSnapshot = snapshot->exists(nodeId);
     bool nodeIdReused = false;
-#ifdef __unix__
+#if defined(__unix__)
     isReusedNodeId(nodeId, dbNode, snapshot, nodeIdReused);
 #endif
 

@@ -269,7 +269,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 // afterward. Typically, editors of the MS suite (xlsx, docx) or Adobe suite (pdf) perform a
                 // Delete-followed-by-Create operation during a single edit.
                 NodeId itemId = _liveSnapshot.itemId(relativePath);
-                if (_liveSnapshot.removeItem(itemId)) {
+                if (!itemId.empty() && _liveSnapshot.removeItem(itemId)) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath)
                                                                                       << L" (" << Utility::s2ws(itemId) << L")");
                 } else {
@@ -286,7 +286,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 // If an item with the same path already exists, remove it from snapshot because its ID might have changed (i.e.
                 // the file has been downloaded in the tmp folder then moved to override the existing one). The item will be
                 // inserted below anyway.
-                if (_liveSnapshot.removeItem(previousItemId)) {
+                if (!previousItemId.empty() && _liveSnapshot.removeItem(previousItemId)) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath)
                                                                                       << L" (" << Utility::s2ws(previousItemId)
                                                                                       << L")");
@@ -401,8 +401,15 @@ void LocalFileSystemObserverWorker::execute() {
             tryToInvalidateSnapshot();
             break;
         }
+
+        if (exitInfo = _syncPal->isRootFolderValid(); !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
+            invalidateSnapshot();
+            break;
+        }
+
         if (exitInfo = _folderWatcher->exitInfo(); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in FolderWatcher: " << exitInfo);
+            LOG_SYNCPAL_WARN(_logger, "Error in FolderWatcher: " << _folderWatcher->exitInfo());
             tryToInvalidateSnapshot();
             break;
         }
@@ -430,6 +437,15 @@ void LocalFileSystemObserverWorker::execute() {
                 auto diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
                                                                                      _needUpdateTimerStart);
                 if (diff_ms.count() > waitForUpdateDelay) {
+                    // Check if root folder is still valid
+                    if (const ExitInfo exitInfo = _syncPal->isRootFolderValid(); !exitInfo) {
+                        LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
+                        exitCode = exitInfo.code();
+                        setExitCause(exitInfo.cause());
+                        invalidateSnapshot();
+                        break;
+                    }
+
                     const std::lock_guard<std::recursive_mutex> lk(_recursiveMutex);
                     _updating = false;
                 }

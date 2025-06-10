@@ -378,6 +378,12 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, const Ex
             return tr("The synchronization folder is inaccessible (error %1).<br>"
                       "Please check that you have read and write access to this folder.")
                     .arg(err);
+        case ExitCause::SyncDirChanged:
+            return tr("The synchronization folder has been replaced or moved in a way that prevents syncing (error %1).<br>"
+                      "This can happen after copying, moving, or restoring the folder.<br>"
+                      "To fix this, please create a new synchronization with a new folder.<br>"
+                      "Note: if you have unsynced changes in the old folder, you will need to copy them manually into the new one.")
+                    .arg(err);
 
         case ExitCause::NotEnoughDiskSpace:
             return tr(
