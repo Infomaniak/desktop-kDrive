@@ -46,6 +46,7 @@
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
 #include "mocks/libcommonserver/db/mockdb.h"
+#include "propagation/executor/filerescuer.h"
 #include "test_utility/testhelpers.h"
 #include "requests/parameterscache.h"
 #include "test_utility/remotetemporarydirectory.h"
@@ -107,7 +108,11 @@ void TestIntegration::setUp() {
         _testFileRemoteId = job.nodeId();
     }
 
-    const Sync sync(1, drive.dbId(), _localSyncDir.path(), "/", _remoteSyncDir.id());
+    FileStat fileStat;
+    IoError ioError = IoError::Unknown;
+    (void) IoHelper::getFileStat(_localSyncDir.path(), &fileStat, ioError);
+
+    const Sync sync(1, drive.dbId(), _localSyncDir.path(), std::to_string(fileStat.inode), "/", _remoteSyncDir.id());
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Setup proxy
@@ -149,11 +154,6 @@ void TestIntegration::testAll() {
     // inconsistencyTests();
     conflictTests();
 
-    // &TestIntegration::testEditEditPseudoConflict,
-    // &TestIntegration::testEditEditConflict,
-    // &TestIntegration::testMoveCreateConflict,
-    // &TestIntegration::testEditDeleteConflict1,
-    // &TestIntegration::testEditDeleteConflict2,
     // &TestIntegration::testMoveDeleteConflict1,
     // &TestIntegration::testMoveDeleteConflict2,
     // &TestIntegration::testMoveDeleteConflict3,
@@ -405,6 +405,7 @@ void TestIntegration::conflictTests() {
     // testEditEditConflict();
     // testMoveCreateConflict();
     testEditDeleteConflict();
+    // testMoveDeleteConflict();
 }
 
 void TestIntegration::testCreateCreatePseudoConflict() {
@@ -581,15 +582,18 @@ void TestIntegration::testEditDeleteConflict() {
     // Delete happen on the edited file.
     {
         auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
+
         // Generate the test file
         const SyncName filename = "testEditDeleteConflict1";
         const auto tmpNodeId = duplicateRemoteFile(_testFileRemoteId, filename);
         waitForSyncToFinish(syncCount);
+
         // Edit the file on remote replica.
         SyncTime creationTime = 0;
         SyncTime modificationTime = 0;
         int64_t size = 0;
         editRemoteFile(tmpNodeId, &creationTime, &modificationTime, &size);
+
         // Delete the file on local replica.
         const SyncPath filepath = _syncPal->localPath() / filename;
         IoError ioError = IoError::Unknown;
@@ -643,6 +647,47 @@ void TestIntegration::testEditDeleteConflict() {
 
         // Delete operation has won.
         CPPUNIT_ASSERT(!std::filesystem::exists(filepath));
+        CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / FileRescuer::rescueFolderName() / filepath.filename()));
+    }
+}
+
+void TestIntegration::testMoveDeleteConflict() {
+    {
+        // Simulate rename of node A to B on local replica
+        // Simulate a delete of node A/AB on local replica
+        // Simulate a delete of node A on remote replica
+
+        // Delete operation wins
+    }
+    {
+        // Simulate rename of node A to B on local replica
+        // Simulate edit of node A/AA/AAA on local replica
+        // Simulate create of node A/AA/ABA on local replica
+        // Simulate a delete of node A on remote replica
+
+        // Delete operation wins but edited and created files should be rescued
+    }
+    {
+        // Simulate rename of node A to B on local replica
+        // Simulate move of node A/AB to AB on local replica
+        // Simulate a delete of node A on remote replica
+
+        // Delete operation wins
+    }
+    {
+        // Simulate rename of node A to B on local replica
+        // Simulate move of node A/AB to AB on remote replica
+        // Simulate a delete of node A on remote replica
+
+        // Delete operation wins
+    }
+    {
+        // Simulate rename of node AA to AA* on local replica
+        // Simulate a delete of node A on remote replica
+
+        // This should be treated as a Move-ParentDelete conflict, the Move-Delete conflict must be ignored.
+        // For this test, we only make sure that the Move-Delete conflict is ignored and a Move-ParentDelete conflict resolution
+        // operation is generated.
     }
 }
 
