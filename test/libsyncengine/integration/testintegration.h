@@ -71,11 +71,6 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         // // - many sync ops (ex: upload 100 files)
         // // - create dir + subdir + file in same sync
         // // Conflicts
-        // void testMoveDeleteConflict1();
-        // void testMoveDeleteConflict2();
-        // void testMoveDeleteConflict3();
-        // void testMoveDeleteConflict4();
-        // void testMoveDeleteConflict5();
         // void testMoveParentDeleteConflict();
         // void testCreateParentDeleteConflict();
         // void testMoveMoveSourcePseudoConflict();
