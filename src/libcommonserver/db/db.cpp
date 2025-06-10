@@ -575,6 +575,12 @@ bool Db::addIntegerColumnIfMissing(const std::string &tableName, const std::stri
     return addColumnIfMissing(tableName, columnName, requestId, request, columnAdded);
 }
 
+bool Db::addTextColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded /*= nullptr*/) {
+    const auto requestId = tableName + "add_column_" + columnName;
+    const auto request = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " TEXT;";
+    return addColumnIfMissing(tableName, columnName, requestId, request, columnAdded);
+}
+
 bool Db::addColumnIfMissing(const std::string &tableName, const std::string &columnName, const std::string &requestId,
                             const std::string &request, bool *columnAdded /*= nullptr*/) {
     bool exist = false;
