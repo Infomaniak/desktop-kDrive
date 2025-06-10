@@ -47,12 +47,16 @@ ExclusionTemplateCache::ExclusionTemplateCache() {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllExclusionTemplates");
         throw std::runtime_error("Failed to create ExclusionTemplateCache instance!");
     }
-
+    for (const auto &exclTemplate: _defExclusionTemplates) {
+        std::cout << "Def Exclusion template: " << exclTemplate.templ() << std::endl;
+    }
     if (!ParmsDb::instance()->selectAllExclusionTemplates(false, _userExclusionTemplates)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllExclusionTemplates");
         throw std::runtime_error("Failed to create ExclusionTemplateCache instance!");
     }
-
+    for (const auto &exclTemplate: _userExclusionTemplates) {
+        std::cout << "User Exclusion template: " << exclTemplate.templ() << std::endl;
+    }
     populateUndeletedExclusionTemplates();
 }
 
@@ -62,12 +66,18 @@ void ExclusionTemplateCache::populateUndeletedExclusionTemplates() {
     for (const auto &exclusionTemplate: _defExclusionTemplates) {
         if (!exclusionTemplate.deleted()) {
             _undeletedExclusionTemplates.push_back(exclusionTemplate);
+            std::cout << "Def Exclusion template added: " << exclusionTemplate.templ() << std::endl;
+        } else {
+            std::cout << "Def Exclusion template deleted: " << exclusionTemplate.templ() << std::endl;
         }
     }
 
     for (const auto &exclusionTemplate: _userExclusionTemplates) {
         if (!exclusionTemplate.deleted()) {
             _undeletedExclusionTemplates.push_back(exclusionTemplate);
+            std::cout << "User Exclusion template added: " << exclusionTemplate.templ() << std::endl;
+        } else {
+            std::cout << "User Exclusion template deleted: " << exclusionTemplate.templ() << std::endl;
         }
     }
 
