@@ -610,7 +610,7 @@ bool ParmsDb::insertDefaultParameters() {
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 26, static_cast<int>(_test ? true : parameters.extendedLog())));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 27, parameters.maxAllowedCpu()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 28, parameters.uploadSessionParallelJobs()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 29, parameters.jobPoolCapacityFactor()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 29, 0));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 30, static_cast<int>(parameters.distributionChannel())));
 
     if (!queryExec(INSERT_PARAMETERS_REQUEST_ID, errId, error)) {
@@ -1015,7 +1015,7 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersi
         if (!createAndPrepareRequest(UPDATE_PARAMETERS_JOB_REQUEST_ID, UPDATE_PARAMETERS_JOB_REQUEST)) return false;
         LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_PARAMETERS_JOB_REQUEST_ID));
         LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 1, Parameters::_uploadSessionParallelJobsDefault));
-        LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 2, Parameters::_jobPoolCapacityFactorDefault));
+        LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 2, 0));
         if (!queryExec(UPDATE_PARAMETERS_JOB_REQUEST_ID, errId, error)) {
             queryFree(UPDATE_PARAMETERS_JOB_REQUEST_ID);
             return sqlFail(UPDATE_PARAMETERS_JOB_REQUEST_ID, error);
@@ -1124,7 +1124,7 @@ bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 26, static_cast<int>(parameters.extendedLog())));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 27, parameters.maxAllowedCpu()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 28, parameters.uploadSessionParallelJobs()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 29, parameters.jobPoolCapacityFactor()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 29, 0));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 30, static_cast<int>(parameters.distributionChannel())));
 
     if (!queryExec(UPDATE_PARAMETERS_REQUEST_ID, errId, error)) {
@@ -1178,8 +1178,7 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 7, intResult));
     parameters.setPurgeOldLogs(intResult);
 
-    // Sync hidden files : not used anymore
-    // LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 8, intResult));
+    // Sync hidden files (8): not used anymore
 
     auto proxyType = ProxyType::Undefined;
     std::string hostName;
@@ -1241,8 +1240,7 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 27, intResult));
     parameters.setUploadSessionParallelJobs(intResult);
 
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 28, intResult));
-    parameters.setJobPoolCapacityFactor(intResult);
+    // Job pool capacity factor (28): not used anymore
 
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 29, intResult));
     parameters.setDistributionChannel(static_cast<VersionChannel>(intResult));
