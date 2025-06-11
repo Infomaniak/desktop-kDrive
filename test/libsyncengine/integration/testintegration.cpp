@@ -244,7 +244,7 @@ void TestIntegration::testLocalChanges() {
     const SyncPath subDirPath = _syncPal->localPath() / "testSubDirLocal";
     (void) std::filesystem::create_directories(subDirPath);
 
-    SyncPath filePath = _syncPal->localPath() / "testLocal.txt";
+    SyncPath filePath = _syncPal->localPath() / "testFileLocal";
     testhelpers::generateOrEditTestFile(filePath);
 
     waitForCurrentSyncToFinish(syncCount);
@@ -254,7 +254,6 @@ void TestIntegration::testLocalChanges() {
 
     const auto remoteTestDirInfo = getRemoteFileInfo(_driveDbId, _remoteSyncDir.id(), subDirPath.filename());
     CPPUNIT_ASSERT(remoteTestDirInfo.isValid());
-
     logStep("test create local file");
 
     // Generate an edit operation.
@@ -273,12 +272,11 @@ void TestIntegration::testLocalChanges() {
     CPPUNIT_ASSERT_LESS(remoteTestFileInfo.modificationTime, prevRemoteTestFileInfo.modificationTime);
     CPPUNIT_ASSERT_EQUAL(fileStat.size, remoteTestFileInfo.size);
     CPPUNIT_ASSERT_LESS(remoteTestFileInfo.size, prevRemoteTestFileInfo.size);
-
     logStep("test edit local file");
 
     // Generate a move operation.
     syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
-    const auto newName = "testLocal_renamed.txt";
+    const auto newName = "testFileLocal_renamed";
     const std::filesystem::path destinationPath = subDirPath / newName;
     {
         LocalMoveJob job(filePath, destinationPath);
@@ -293,7 +291,6 @@ void TestIntegration::testLocalChanges() {
     CPPUNIT_ASSERT_EQUAL(remoteTestDirInfo.id, remoteTestFileInfo.parentId);
 
     filePath = destinationPath;
-
     logStep("test move local file");
 
     // Generate a delete operation.
@@ -307,7 +304,6 @@ void TestIntegration::testLocalChanges() {
 
     remoteTestFileInfo = getRemoteFileInfo(_driveDbId, remoteTestDirInfo.id, filePath.filename());
     CPPUNIT_ASSERT(!remoteTestFileInfo.isValid());
-
     logStep("test delete local file");
 }
 
@@ -316,7 +312,7 @@ void TestIntegration::testRemoteChanges() {
     auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
     const SyncPath subDirPath = _syncPal->localPath() / "testSubDirRemote";
     NodeId subDirId;
-    SyncPath filePath = _syncPal->localPath() / "testRemote.txt";
+    SyncPath filePath = _syncPal->localPath() / "testFileRemote";
     NodeId fileId;
     {
         CreateDirJob createDirJob(nullptr, _driveDbId, subDirPath, _remoteSyncDir.id(), subDirPath.filename());
@@ -337,7 +333,7 @@ void TestIntegration::testRemoteChanges() {
     syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
     SyncTime modificationTime = 0;
     int64_t size = 0;
-    editRemoteFile(_driveDbId, _testFileRemoteId, nullptr, &modificationTime, &size);
+    editRemoteFile(_driveDbId, fileId, nullptr, &modificationTime, &size);
 
     waitForCurrentSyncToFinish(syncCount);
 
@@ -350,7 +346,7 @@ void TestIntegration::testRemoteChanges() {
 
     // Generate a move operation.
     syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
-    filePath = subDirPath / "testRemote_renamed.txt";
+    filePath = subDirPath / "testFileRemote_renamed";
     {
         MoveJob job(nullptr, _driveDbId, filePath, fileId, subDirId, filePath.filename());
         job.setBypassCheck(true);
@@ -360,7 +356,6 @@ void TestIntegration::testRemoteChanges() {
     waitForCurrentSyncToFinish(syncCount);
 
     CPPUNIT_ASSERT(std::filesystem::exists(filePath));
-
     logStep("test move remote file");
 
     // Generate a delete operation.
@@ -375,7 +370,6 @@ void TestIntegration::testRemoteChanges() {
 
     CPPUNIT_ASSERT(!std::filesystem::exists(subDirPath));
     CPPUNIT_ASSERT(!std::filesystem::exists(filePath));
-
     logStep("test delete remote file");
 }
 
@@ -383,11 +377,11 @@ void TestIntegration::testSimultaneousChanges() {
     const auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
 
     // Create a file on local replica.
-    const SyncPath localFilePath = _syncPal->localPath() / "testSimultaneousChanges.txt";
+    const SyncPath localFilePath = _syncPal->localPath() / "testSimultaneousChanges_local";
     testhelpers::generateOrEditTestFile(localFilePath);
 
     // Rename a file on remote replica.
-    const SyncPath remoteFilePath = _syncPal->localPath() / "renamed.txt";
+    const SyncPath remoteFilePath = _syncPal->localPath() / "testSimultaneousChanges_remote";
     (void) RenameJob(nullptr, _driveDbId, _testFileRemoteId, remoteFilePath).runSynchronously();
 
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
@@ -396,7 +390,6 @@ void TestIntegration::testSimultaneousChanges() {
     CPPUNIT_ASSERT(std::filesystem::exists(remoteFilePath));
     const auto remoteTestFileInfo = getRemoteFileInfo(_driveDbId, _remoteSyncDir.id(), localFilePath.filename());
     CPPUNIT_ASSERT(remoteTestFileInfo.isValid());
-
     logStep("testSimultaneousChanges");
 }
 
@@ -458,7 +451,6 @@ void TestIntegration::inconsistencyTests() {
     CPPUNIT_ASSERT(remoteFileInfo.isValid());
     CPPUNIT_ASSERT_EQUAL(filestat.size, remoteFileInfo.size); // The local edit has been propagated.
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "testnameclash2"));
-
     logStep("testInconsistency");
 }
 
@@ -495,6 +487,7 @@ void TestIntegration::testCreateCreatePseudoConflict() {
     SyncName name;
     CPPUNIT_ASSERT(_syncPal->syncDb()->name(ReplicaSide::Remote, _testFileRemoteId, name, found) && found);
     CPPUNIT_ASSERT(_syncPal->syncDb()->name(ReplicaSide::Local, localId, name, found) && found);
+    logStep("testCreateCreatePseudoConflict");
 }
 
 void TestIntegration::testCreateCreateConflict() {
@@ -519,7 +512,6 @@ void TestIntegration::testCreateCreateConflict() {
 
     CPPUNIT_ASSERT(std::filesystem::exists(conflictedFilePath));
     CPPUNIT_ASSERT(std::filesystem::exists(localFilePath));
-
     logStep("testCreateCreateConflict");
 }
 
@@ -550,6 +542,7 @@ void TestIntegration::testEditEditPseudoConflict() {
     // Check that the local ID has not changed.
     SyncName name;
     CPPUNIT_ASSERT(_syncPal->syncDb()->name(ReplicaSide::Local, *dbNode.nodeIdLocal(), name, found) && found);
+    logStep("testEditEditPseudoConflict");
 }
 
 void TestIntegration::testEditEditConflict() {
@@ -582,6 +575,7 @@ void TestIntegration::testEditEditConflict() {
 
     CPPUNIT_ASSERT(std::filesystem::exists(conflictedFilePath));
     CPPUNIT_ASSERT(std::filesystem::exists(absoluteLocalPath));
+    logStep("testEditEditConflict");
 }
 
 void TestIntegration::testMoveCreateConflict() {
@@ -612,6 +606,7 @@ void TestIntegration::testMoveCreateConflict() {
         // The remote rename operation has been propagated.
         CPPUNIT_ASSERT(std::filesystem::exists(conflictedFilePath));
         CPPUNIT_ASSERT(std::filesystem::exists(localFilePath));
+        logStep("testMoveCreateConflict1");
     }
 
     // 2 - if local file has been moved, undo move operation.
@@ -640,6 +635,7 @@ void TestIntegration::testMoveCreateConflict() {
         // The remote creation has been propagated.
         CPPUNIT_ASSERT(std::filesystem::exists(localFilePath));
         CPPUNIT_ASSERT(std::filesystem::exists(newLocalFilePath));
+        logStep("testMoveCreateConflict2");
     }
 }
 
@@ -677,6 +673,7 @@ void TestIntegration::testEditDeleteConflict() {
         // CPPUNIT_ASSERT_EQUAL(creationTime, fileStat.creationTime);
         CPPUNIT_ASSERT_EQUAL(modificationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(size, fileStat.size);
+        logStep("testEditDeleteConflict1");
     }
 
     // Delete happen on a parent of the edited files.
@@ -714,6 +711,7 @@ void TestIntegration::testEditDeleteConflict() {
         CPPUNIT_ASSERT(!std::filesystem::exists(filepath));
         // ... but edited file has been rescued.
         CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / FileRescuer::rescueFolderName() / filepath.filename()));
+        logStep("testEditDeleteConflict2");
     }
 }
 
@@ -782,6 +780,7 @@ void TestIntegration::testMoveDeleteConflict() {
         CPPUNIT_ASSERT(!std::filesystem::exists(localPathA));
         CPPUNIT_ASSERT(!std::filesystem::exists(localPathB));
         CPPUNIT_ASSERT(!std::filesystem::exists(localPathS));
+        logStep("testMoveDeleteConflict1");
     }
     {
         auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
@@ -820,6 +819,7 @@ void TestIntegration::testMoveDeleteConflict() {
         // ... but created and edited files has been rescued.
         CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / FileRescuer::rescueFolderName() / "Q"));
         CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / FileRescuer::rescueFolderName() / "X"));
+        logStep("testMoveDeleteConflict2");
     }
     {
         auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
@@ -860,6 +860,7 @@ void TestIntegration::testMoveDeleteConflict() {
         // first. Therefore, solving the first conflict (propagating operation delete on local node B) will also resolve the
         // conflict on node S. However, S will be seen as new on local replica and re-created on remote replica.
         CPPUNIT_ASSERT(std::filesystem::exists(destLocalPathS));
+        logStep("testMoveDeleteConflict3");
     }
     {
         auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
@@ -896,6 +897,7 @@ void TestIntegration::testMoveDeleteConflict() {
         CPPUNIT_ASSERT(!std::filesystem::exists(localPathB));
         // But S has been moved outside deleted branch.
         CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / ""));
+        logStep("testMoveDeleteConflict4");
     }
     {
         auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
@@ -925,6 +927,7 @@ void TestIntegration::testMoveDeleteConflict() {
         CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / "A"));
         CPPUNIT_ASSERT(!std::filesystem::exists(localPathR));
         CPPUNIT_ASSERT(!std::filesystem::exists(localPathX));
+        logStep("testMoveDeleteConflict5");
     }
 }
 
