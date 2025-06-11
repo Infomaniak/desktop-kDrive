@@ -18,6 +18,8 @@
 
 #include "testparmsdb.h"
 #include "test_utility/localtemporarydirectory.h"
+#include "test_utility/testhelpers.h"
+
 #include "mocks/libcommonserver/db/mockdb.h"
 
 using namespace CppUnit;
@@ -28,8 +30,8 @@ void TestParmsDb::setUp() {
     TestBase::start();
     // Create a temp parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    ParmsDb::instance(parmsDbPath, "3.6.1", true, true);
+    const std::filesystem::path parmsDbPath = _parmsDbTemporarDirectory.path() / MockDb::makeDbName(alreadyExists);
+    (void) ParmsDb::instance(parmsDbPath, "3.6.1", false, true);
 }
 
 void TestParmsDb::tearDown() {
@@ -336,9 +338,82 @@ void TestParmsDb::testExclusionTemplate() {
 
     exclusionTemplateList.clear();
     CPPUNIT_ASSERT(ParmsDb::instance()->selectAllExclusionTemplates(true, exclusionTemplateList));
-    CPPUNIT_ASSERT(exclusionTemplateList.size() > 0);
+    CPPUNIT_ASSERT(!exclusionTemplateList.empty());
 
     CPPUNIT_ASSERT(ParmsDb::instance()->deleteExclusionTemplate(exclusionTemplate3.templ(), found) && found);
+}
+
+void TestParmsDb::testUpdateExclusionTemplates() {
+    ExclusionTemplate exclusionTemplate1("template 1", false, true, false); // extra default template
+    bool constraintError = false;
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertExclusionTemplate(exclusionTemplate1, constraintError));
+
+    bool found = false;
+    CPPUNIT_ASSERT(ParmsDb::instance()->deleteExclusionTemplate(".parms.db", found));
+
+    ExclusionTemplate exclusionTemplate2(".parms.db"); // user template
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertExclusionTemplate(exclusionTemplate2, constraintError));
+    ExclusionTemplate exclusionTemplate3("template 3"); // user template
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertExclusionTemplate(exclusionTemplate3, constraintError));
+
+    // Update
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateExclusionTemplates());
+
+    std::vector<ExclusionTemplate> dbDefaultExclusionTemplates;
+    (void) ParmsDb::instance()->selectDefaultExclusionTemplates(dbDefaultExclusionTemplates);
+    CPPUNIT_ASSERT(!dbDefaultExclusionTemplates.empty());
+
+    std::vector<std::string> fileDefaultExclusionTemplates;
+    const auto &excludeListFileName = Utility::getExcludedTemplateFilePath(true);
+    ParmsDb::instance()->getDefaultExclusionTemplatesFromFile(excludeListFileName, fileDefaultExclusionTemplates);
+
+    std::vector<ExclusionTemplate> dbUserExclusionTemplates;
+    (void) ParmsDb::instance()->selectUserExclusionTemplates(dbUserExclusionTemplates);
+    CPPUNIT_ASSERT_EQUAL(size_t{1}, dbUserExclusionTemplates.size());
+    CPPUNIT_ASSERT_EQUAL(std::string{"template 3"}, dbUserExclusionTemplates.at(0).templ());
+
+    std::set<std::string, std::less<>> fileDefaults(fileDefaultExclusionTemplates.begin(), fileDefaultExclusionTemplates.end());
+    std::set<std::string, std::less<>> dbDefaults;
+    (void) std::transform(dbDefaultExclusionTemplates.begin(), dbDefaultExclusionTemplates.end(),
+                          std::inserter(dbDefaults, dbDefaults.begin()), [](const auto &t) { return t.templ(); });
+
+    CPPUNIT_ASSERT(dbDefaults == fileDefaults);
+}
+
+void TestParmsDb::testUpgrade() {
+    const SyncName nfcEncodedName = testhelpers::makeNfcSyncName();
+    ExclusionTemplate exclusionTemplate1(SyncName2Str(nfcEncodedName + Str("/A/") + nfcEncodedName)); // user template
+    bool constraintError = false;
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertExclusionTemplate(exclusionTemplate1, constraintError));
+
+    ExclusionTemplate exclusionTemplate2("o"); // user template
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertExclusionTemplate(exclusionTemplate2, constraintError));
+
+    const std::filesystem::path parmsDbPath = ParmsDb::instance()->dbPath();
+    ParmsDb::reset();
+    (void) ParmsDb::instance(parmsDbPath, "3.7.2", true, true);
+
+    std::vector<ExclusionTemplate> dbUserExclusionTemplates;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectUserExclusionTemplates(dbUserExclusionTemplates));
+    CPPUNIT_ASSERT_EQUAL(size_t{5}, dbUserExclusionTemplates.size());
+
+    const SyncName nfdEncodedName = testhelpers::makeNfdSyncName();
+
+    StrSet expectedTemplateSet;
+    (void) expectedTemplateSet.emplace("o");
+    for (const auto &name1: {nfcEncodedName, nfdEncodedName}) {
+        for (const auto &name2: {nfcEncodedName, nfdEncodedName})
+            (void) expectedTemplateSet.emplace(SyncName2Str(name1 + CommonUtility::preferredPathSeparator() + Str("A") +
+                                                            CommonUtility::preferredPathSeparator() + name2));
+    }
+
+    StrSet actualTemplateSet;
+    for (const auto &template_: dbUserExclusionTemplates) {
+        (void) actualTemplateSet.emplace(template_.templ());
+    }
+
+    CPPUNIT_ASSERT(expectedTemplateSet == actualTemplateSet);
+    CPPUNIT_ASSERT(dbUserExclusionTemplates.at(4).templ() == "o");
 }
 
 void TestParmsDb::testAppState(void) {
@@ -430,7 +505,7 @@ void TestParmsDb::testExclusionApp() {
 
     exclusionAppList.clear();
     CPPUNIT_ASSERT(ParmsDb::instance()->selectAllExclusionApps(true, exclusionAppList));
-    CPPUNIT_ASSERT(exclusionAppList.size() > 0);
+    CPPUNIT_ASSERT(!exclusionAppList.empty());
 
     CPPUNIT_ASSERT(ParmsDb::instance()->deleteExclusionApp(exclusionApp3.appId(), found) && found);
 }

@@ -55,7 +55,9 @@ cd /src
 
 conan_folder=/build/conan
 
-bash /src/infomaniak-build-tools/conan/build_dependencies.sh Release --output-dir="$conan_folder"
+build_type="RelWithDebInfo"
+
+bash /src/infomaniak-build-tools/conan/build_dependencies.sh $build_type --output-dir="$conan_folder"
 
 conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
 
@@ -69,7 +71,7 @@ cd "$folder"
 cmake -DCMAKE_PREFIX_PATH=$QT_BASE_DIR \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DQT_FEATURE_neon=OFF \
-    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_BUILD_TYPE=$build_type \
     -DKDRIVE_THEME_DIR="/src/infomaniak" \
     -DBUILD_UNIT_TESTS=0 \
     -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \

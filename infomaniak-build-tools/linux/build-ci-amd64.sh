@@ -103,12 +103,14 @@ export SUFFIX=""
 
 mkdir -p "$build_dir/client"
 
-conan_folder="$build_dir/conan"
+conan_build_folder="$build_dir/conan"
 conan_dependencies_folder="$build_dir/conan/dependencies"
 
-bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" "--output-dir=$conan_folder"
+conan_source_folder="$BASEPATH/infomaniak-build-tools/conan"
 
-conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
+bash "$conan_source_folder/build_dependencies.sh" "$build_type" "--output-dir=$conan_build_folder"
+
+conan_toolchain_file="$(find "$conan_build_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
 conan_generator_folder="$(dirname "$conan_toolchain_file")"
 
 if [ ! -f "$conan_toolchain_file" ]; then
@@ -126,10 +128,6 @@ cmake_param=()
 export KDRIVE_DEBUG=0
 
 cmake -B$build_dir -H$BASEPATH \
-    -DOPENSSL_ROOT_DIR=/usr/local \
-    -DOPENSSL_INCLUDE_DIR=/usr/local/include \
-    -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib64/libcrypto.so \
-    -DOPENSSL_SSL_LIBRARY=/usr/local/lib64/libssl.so \
     -DQT_FEATURE_neon=OFF \
     -DCMAKE_BUILD_TYPE=$build_type \
     -DCMAKE_PREFIX_PATH=$BASEPATH \
