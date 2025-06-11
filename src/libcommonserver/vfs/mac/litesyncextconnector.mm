@@ -25,6 +25,7 @@
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/io/filestat.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 
@@ -369,8 +370,7 @@
     [doneCondition lock];
     NSDate *timeoutDate = [NSDate dateWithTimeIntervalSinceNow:1];
     BOOL success = FALSE;
-    while (!done && (success = [doneCondition waitUntilDate:timeoutDate])) {
-    }
+    while (!done && (success = [doneCondition waitUntilDate:timeoutDate])) {}
     [doneCondition unlock];
 
     if (!success) {
@@ -1156,7 +1156,24 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
         unsigned long long fileSize = [attributes fileSize];
         finished = (completed == fileSize);
         if (finished) {
-            time_t creationDate = OldUtility::qDateTimeToTime_t(QFileInfo(filePath).birthTime());
+            // Get file dates
+            IoError ioError = IoError::Success;
+            FileStat filestat;
+            if (!IoHelper::getFileStat(QStr2Path(filePath), &filestat, ioError)) {
+                LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(QStr2Path(filePath), ioError));
+                return false;
+            }
+
+            if (ioError == IoError::NoSuchFileOrDirectory) {
+                LOGW_WARN(_logger, L"Item doesn't exist: " << Utility::formatSyncPath(QStr2Path(filePath)));
+                return false;
+            } else if (ioError == IoError::AccessDenied) {
+                LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(QStr2Path(filePath)));
+                return false;
+            }
+
+            SyncTime modificationDate = filestat.modificationTime;
+            SyncTime creationDate = filestat.creationTime;
 
             // Copy tmp file content to file
             @try {
@@ -1217,7 +1234,7 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
             }
 
             // Set file dates
-            if (const IoError ioError = IoHelper::setFileDates(QStr2Path(filePath), creationDate, 0, false);
+            if (const IoError ioError = IoHelper::setFileDates(QStr2Path(filePath), creationDate, modificationDate, false);
                 ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_DEBUG(_logger, L"Item doesn't exist: " << Utility::formatPath(filePath));
                 return false;
