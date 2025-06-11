@@ -123,8 +123,6 @@ cd $build_dir
 
 source "$conan_generator_folder/conanbuild.sh"
 
-cmake_param=()
-
 export KDRIVE_DEBUG=0
 
 cmake -B$build_dir -H$BASEPATH \
@@ -139,7 +137,6 @@ cmake -B$build_dir -H$BASEPATH \
     -DBUILD_UNIT_TESTS=$unit_tests \
     -DCONAN_DEP_DIR="$conan_dependencies_folder" \
     -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
-    "${cmake_param[@]}" \
 
 make "-j$(nproc)"
 
