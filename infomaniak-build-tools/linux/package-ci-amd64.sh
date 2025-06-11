@@ -68,7 +68,7 @@ else
 	to_upload_files=("$app_name" "kDrive-amd64.dbg" "kDrive_client-amd64.dbg")
 	source "$base_dir/infomaniak-build-tools/upload_version.sh"
 
-	for FILE in "${to_upload_files[@]}"; do
+	for FILE in ${to_upload_files[@]}; do
 		upload_file "$FILE" "linux-amd"
 	done
 fi

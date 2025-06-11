@@ -32,7 +32,7 @@ else
 	FILES=("$app_name" "kDrive-debug-macos.tar")
 	source "../infomaniak-build-tools/upload_version.sh"
 
-	for FILE in "${FILES[@]}"; do
+	for FILE in ${FILES[@]}; do
 		upload_file "$FILE" "macos"
 	done
 fi
