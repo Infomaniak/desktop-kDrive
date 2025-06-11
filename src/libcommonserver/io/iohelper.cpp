@@ -633,7 +633,7 @@ class CacheDirectoryHanlder {
 
     private:
         static CacheDirectoryHanlder _instance;
-        inline static SyncPath _directoryPath;
+        SyncPath _directoryPath;
 
         CacheDirectoryHanlder() {
             if (_directoryPath.empty()) initDirectoryPath();
