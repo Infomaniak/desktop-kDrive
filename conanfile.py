@@ -53,6 +53,15 @@ class KDriveDesktop(ConanFile):
             log4cplus_options["thread_pool"] = False
         self.requires("log4cplus/2.1.0", options=log4cplus_options) # From https://conan.io/center/recipes/log4cplus
 
+        # openssl depends on zlib, which is already inside the conanfile.py of openssl-universal
+        # but since we build openssl-universal two times (for x86_64 and arm64) in single arch and then merge them, we need to add zlib in 'armv8|x86_64' arch mode.
+        self.requires("zlib/[>=1.2.11 <2]", options={ "shared": True }) # From https://conan.io/center/recipes/zlib
+        if self.settings.os == "Macos":
+            # On macOS, we need to use the universal version of OpenSSL
+            self.requires("openssl-universal/3.2.4")
+        else:
+            self.requires("openssl/3.2.4", options={ "shared": True }) # From https://conan.io/center/recipes/openssl
+
 class OverrideVSRuntimeBlock(VSRuntimeBlock):
     template = textwrap.dedent("""\
     cmake_policy(SET CMP0091 NEW)
