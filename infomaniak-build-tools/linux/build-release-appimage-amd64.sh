@@ -27,11 +27,11 @@ mkdir -p /build
 
 # Set Qt-6.2
 export QT_BASE_DIR=/opt/qt6.2.3
-export QTDIR=$QT_BASE_DIR
-export QMAKE=$QT_BASE_DIR/bin/qmake
-export PATH=$QT_BASE_DIR/bin:$QT_BASE_DIR/libexec:$PATH
-export LD_LIBRARY_PATH=$QT_BASE_DIR/lib:$LD_LIBRARY_PATH
-export PKG_CONFIG_PATH=$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
+export QTDIR="$QT_BASE_DIR"
+export QMAKE="$QT_BASE_DIR/bin/qmake"
+export PATH="$QT_BASE_DIR/bin:$QT_BASE_DIR/libexec:$PATH"
+export LD_LIBRARY_PATH="$QT_BASE_DIR/lib:$LD_LIBRARY_PATH"
+export PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 # Build client
 cd /build
@@ -50,7 +50,7 @@ fi
 
 export KDRIVE_DEBUG=0
 
-folder=$PWD
+build_folder="$PWD"
 cd /src
 
 conan_folder=/build/conan
@@ -66,9 +66,9 @@ if [ ! -f "$conan_toolchain_file" ]; then
   exit 1
 fi
 
-cd "$folder"
+cd "$build_folder"
 
-cmake -DCMAKE_PREFIX_PATH=$QT_BASE_DIR \
+cmake -DCMAKE_PREFIX_PATH="$QT_BASE_DIR" \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DQT_FEATURE_neon=OFF \
     -DCMAKE_BUILD_TYPE=$build_type \
@@ -129,9 +129,8 @@ rm -rf ./etc
 cp ./usr/share/icons/hicolor/512x512/apps/kdrive-win.png . # Workaround for linuxeployqt bug, FIXME
 
 # Build AppImage
-export LD_LIBRARY_PATH=/app/usr/lib/:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH="/app/usr/lib/:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
 
 /deploy/linuxdeploy/build/bin/linuxdeploy --appdir /app -e /app/usr/bin/kDrive -i /app/kdrive-win.png -d /app/usr/share/applications/kDrive_client.desktop --plugin qt --output appimage -v0
 
 mv kDrive*.AppImage /install/kDrive-x86_64.AppImage
-
