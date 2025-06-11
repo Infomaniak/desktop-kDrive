@@ -32,7 +32,7 @@ namespace KDC {
 class Snapshot {
     public:
         Snapshot(const Snapshot &);
-        ~Snapshot() = default;
+        virtual ~Snapshot() = default;
         NodeId itemId(const SyncPath &path) const;
         NodeId parentId(const NodeId &itemId) const;
         virtual bool path(const NodeId &itemId, SyncPath &path, bool &ignore) const noexcept;

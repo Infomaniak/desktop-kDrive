@@ -93,7 +93,7 @@ sudo apt install libxcb-cursor0
 
 ```bash
 cd ~/Projects
-source "$(find ./desktop-kdrive/ -name "conanrun.sh")" || exit 1 # This will prepend the path to the conan-managed dependencies to the 'DYLD_LIBRARY_PATH' environment variable
+source "$(find ./desktop-kdrive/ -name "conanrun.sh")" || exit 1 # This will prepend the path to the conan-managed dependencies to the 'LD_LIBRARY_PATH' environment variable
 git clone https://github.com/pocoproject/poco.git
 cd poco
 git checkout tags/poco-1.13.3-release

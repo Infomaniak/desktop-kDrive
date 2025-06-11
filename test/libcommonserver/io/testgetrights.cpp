@@ -136,7 +136,7 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(std::filesystem::exists(targetPath, ec) && ec.value() == 0);
 
         IoError aliasError;
-        CPPUNIT_ASSERT(_testObj->createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
 
         bool readPermission = false;
@@ -160,7 +160,7 @@ void TestIo::testGetRights() {
         { std::ofstream ofs(targetPath); }
 
         IoError aliasError;
-        CPPUNIT_ASSERT(_testObj->createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
 
         std::error_code ec;
@@ -190,7 +190,7 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(std::filesystem::exists(targetPath, ec) && ec.value() == 0);
 
         IoError aliasError;
-        CPPUNIT_ASSERT(_testObj->createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
 
         bool readPermission = false;
@@ -215,7 +215,7 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == 0);
 
         IoError aliasError;
-        CPPUNIT_ASSERT(_testObj->createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
 
         CPPUNIT_ASSERT(std::filesystem::remove(targetPath, ec) && ec.value() == 0);
@@ -244,7 +244,7 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(std::filesystem::exists(targetPath, ec) && ec.value() == 0);
 
         IoError junctionError{IoError::Unknown};
-        CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, junctionError));
+        CPPUNIT_ASSERT(IoHelper::createJunctionFromPath(targetPath, path, junctionError));
         CPPUNIT_ASSERT(junctionError == IoError::Success);
 
         bool readPermission = false;
@@ -269,7 +269,7 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(!std::filesystem::exists(targetPath, ec));
 
         IoError junctionError{IoError::Unknown};
-        CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, junctionError));
+        CPPUNIT_ASSERT(IoHelper::createJunctionFromPath(targetPath, path, junctionError));
         CPPUNIT_ASSERT(junctionError == IoError::Success);
 
         bool readPermission = false;

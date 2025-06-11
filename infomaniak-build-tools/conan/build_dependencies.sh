@@ -20,15 +20,16 @@
 # This script is used to build the dependencies of the kDrive client.
 # It will use conan to install the dependencies.
 
+
 if [[ "${1:-}" =~ ^-h|--help$ ]]; then
-  cat << EOF >&2
+    cat << EOF >&2
 Usage: $0 [Debug|Release] [--output-dir=<output_dir>]
   There are three ways to set the output directory (in descending order of priority):
     1. --output-dir=<output_dir> argument
     2. KDRIVE_OUTPUT_DIR environment variable
     3. Default directory based on the system (macOS: build-macos/client, Linux: build-linux/build)
 EOF
-  exit 0
+    exit 0
 fi
 
 
@@ -38,63 +39,100 @@ set -euox pipefail
 log(){ echo "[INFO] $*"; }
 error(){ echo "[ERROR] $*" >&2; exit 1; }
 
-platform=$(uname | tr '[:upper:]' '[:lower:]')
-if [ "$platform" != "darwin" ] && [ "$platform" != "linux" ]; then
-  error "Unsupported platform: $platform. Supported platforms: Linux, macOS"
+function get_platform {
+    platform=$(uname | tr '[:upper:]' '[:lower:]')
+    
+    echo $platform
+}
+
+function get_architecture {
+    platform=$1
+
+    architecture="" # Left empty for Linux systems.
+    if [[ "$platform" = "darwin" ]]; then
+       architecture="-s:a=arch=armv8|x86_64" # Making universal binary. See https://docs.conan.io/2/reference/tools/cmake/cmaketoolchain.html#conan-tools-cmaketoolchain-universal-binaries
+    fi
+
+    echo $architecture
+}
+
+function get_output_dir {
+    args=$1
+
+    output_dir="${KDRIVE_OUTPUT_DIR:-}"
+    for arg in $args; do
+        if [[ "$arg" =~ ^--output-dir= ]]; then
+            output_dir="${arg#--output-dir=}"
+            break
+        fi
+    done
+
+    if [ -z "$output_dir" ]; then
+        platform=$(get_platform)
+        if [ "$platform" = "darwin" ]; then
+            output_dir="./build-macos/client"
+        else
+            output_dir="./build-linux/build"
+        fi
+    fi
+
+    echo $output_dir
+}
+
+args="$@"
+build_type="${1:-Debug}"
+output_dir=$(get_output_dir "$args")
+
+if [[ -n "${KDRIVE_OUTPUT_DIR:-}" && "$output_dir" == "$KDRIVE_OUTPUT_DIR" ]]; then
+    log "Using environment variable 'KDRIVE_OUTPUT_DIR' as conan output_dir : '$KDRIVE_OUTPUT_DIR'"
 fi
 
 # check if we launched this in the right folder.
 if [ ! -d "infomaniak-build-tools/conan" ]; then
-  error "Please run this script from the root of the repository."
+    error "Please run this script from the root of the repository."
 fi
 
 if ! command -v conan >/dev/null 2>&1; then
-  error "Conan is not installed. Please install it first."
+    error "Conan is not installed. Please install it first."
 fi
 
 conan_remote_base_folder="$PWD/infomaniak-build-tools/conan"
-conan_recipes_folder="$conan_remote_base_folder/recipes"
-
 local_recipe_remote_name="localrecipes"
 if ! conan remote list | grep -qE "^$local_recipe_remote_name.*\[.*Enabled: True.*\]"; then
-  log "Adding Conan remote '$local_recipe_remote_name' at '$conan_remote_base_folder'. "
-  conan remote add "$local_recipe_remote_name" "$conan_remote_base_folder"
+    log "Adding Conan remote '$local_recipe_remote_name' at '$conan_remote_base_folder'. "
+    conan remote add "$local_recipe_remote_name" "$conan_remote_base_folder"
 else
-  log "Conan remote '$local_recipe_remote_name' already exists and is enabled."
+    log "Conan remote '$local_recipe_remote_name' already exists and is enabled."
 fi
 
 # Build conan recipe for the platforms x86_64 & arm64
-macos_arch=""
-if [ "$platform" = "darwin" ]; then
-  log "Building universal binary for macOS."
-  macos_arch="-s:a=arch=armv8|x86_64" # Making universal binary. See https://docs.conan.io/2/reference/tools/cmake/cmaketoolchain.html#conan-tools-cmaketoolchain-universal-binaries
+platform=$(get_platform)
+
+if [ "$platform" != "darwin" ] && [ "$platform" != "linux" ]; then
+    error "Unsupported platform: $platform. Supported platforms: Linux, macOS."
 fi
 
-build_type="${1:-Debug}"
-output_dir="${KDRIVE_OUTPUT_DIR:-}"
-if [ -n "${output_dir}" ]; then
-  log "Using environment variable 'KDRIVE_OUTPUT_DIR' as conan output_dir : '$KDRIVE_OUTPUT_DIR'"
+if [[ "$platform" == "darwin" ]]; then
+    log "Building universal binary for macOS."
 fi
-for arg in "$@"; do
-  if [[ "$arg" =~ ^--output-dir= ]]; then
-    output_dir="${arg#--output-dir=}"
-    break
-  fi
-done
 
-if [ -z "$output_dir" ]; then
-  if [ "$platform" = "darwin" ]; then
-    output_dir="./build-macos/client"
-  else
-    output_dir="./build-linux/build"
-  fi
-fi
+architecture=$(get_architecture $platform)
+
 mkdir -p "$output_dir"
 
+echo 
+log "Configuration:"
+log "--------------"
+log "- Platform: '$platform'"
+log "- Architecture option: '$architecture'"
+log "- Build type: '$build_type'"
+log "- Output directory: '$output_dir'"
+echo
 
-# Create the conan package for xxHash
+# Create the conan package for xxHash.
+conan_recipes_folder="$conan_remote_base_folder/recipes"
 log "Creating package xxHash..."
-conan create "$conan_recipes_folder/xxhash/all/" --build=missing $macos_arch -s:a=build_type="$build_type" -r=$local_recipe_remote_name
+conan create "$conan_recipes_folder/xxhash/all/" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name
 
 if [ "$platform" = "darwin" ]; then
   log "Creating openssl package..."
@@ -103,9 +141,9 @@ fi
 
 log "Installing dependencies..."
 # Install this packet in the build folder.
-conan install . --output-folder="$output_dir" --build=missing $macos_arch -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter
+conan install . --output-folder="$output_dir" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter
 
 if [ $? -ne 0 ]; then
   error "Failed to install Conan dependencies."
 fi
-log "Conan dependencies installed successfully."
+log "Conan dependencies installed successfully for platform $platform ($build_type) in '$output_dir'."
