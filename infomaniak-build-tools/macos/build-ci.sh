@@ -30,34 +30,34 @@ export QTDIR="$HOME/Qt/6.2.3/macos"
 
 export MACOSX_DEPLOYMENT_TARGET="10.15"
 export CODE_SIGN_INJECT_BASE_ENTITLEMENTS="NO"
-SRCDIR="${1-$PWD}"
-APPNAME="kDrive"
+src_dir="${1-$PWD}"
+app_name="kDrive"
 
 # define Qt6 directory
 QTDIR="${QTDIR-$HOME/Qt/6.2.3/macos}"
 export PATH=$QTDIR/bin:$PATH
 
 # Set Infomaniak Theme
-KDRIVE_DIR="$SRCDIR/infomaniak"
+kdrive_dir="$src_dir/infomaniak"
 
 # Set build dir
-BUILDDIR="$PWD/build-macos/client"
+build_dir="$PWD/build-macos/client"
 
 # Set conan dir
-conan_folder="$BUILDDIR/conan"
+conan_folder="$build_dir/conan"
 mkdir -p "$conan_folder"
 
 # Set install dir
-INSTALLDIR="$PWD/build-macos/client/install"
-mkdir -p "$INSTALLDIR"
+install_dir="$PWD/build-macos/client/install"
+mkdir -p "$install_dir"
 
 # Backup the existing .app if there is one
-if [ -d "$INSTALLDIR/$APPNAME-old.app" ]; then
-	rm -rf "$INSTALLDIR/$APPNAME-old.app"
+if [ -d "$install_dir/$app_name-old.app" ]; then
+	rm -rf "$install_dir/$app_name-old.app"
 fi
 
-if [ -d "$INSTALLDIR/$APPNAME.app" ]; then
-	cp -a "$INSTALLDIR/$APPNAME.app" "$INSTALLDIR/$APPNAME-old.app"
+if [ -d "$install_dir/$app_name.app" ]; then
+	cp -a "$install_dir/$app_name.app" "$install_dir/$app_name-old.app"
 fi
 
 # Prepare additional cmake arguments
@@ -71,7 +71,9 @@ if [ -n "$TEAM_IDENTIFIER" ] && [ -n "$SIGN_IDENTITY" ]; then
 	CMAKE_PARAMS+=(-DSOCKETAPI_TEAM_IDENTIFIER_PREFIX="$TEAM_IDENTIFIER.")
 fi
 
-bash infomaniak-build-tools/conan/build_dependencies.sh Release "--output-dir=$conan_folder"
+build_type="Release"
+
+bash infomaniak-build-tools/conan/build_dependencies.sh "$build_type" "--output-dir=$conan_folder"
 
 conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
 
@@ -81,18 +83,18 @@ if [ ! -f "$conan_toolchain_file" ]; then
 fi
 
 # Configure
-pushd "$BUILDDIR"
+pushd "$build_dir"
 
 # Configure infomaniakdrive
 cmake \
 	-DCMAKE_OSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" \
-	-DCMAKE_INSTALL_PREFIX="$INSTALLDIR" \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DKDRIVE_THEME_DIR="$KDRIVE_DIR" \
+	-DCMAKE_INSTALL_PREFIX="$install_dir" \
+	-DCMAKE_BUILD_TYPE="$build_type" \
+	-DKDRIVE_THEME_DIR="$kdrive_dir" \
 	-DBUILD_UNIT_TESTS=1 \
-	"-DCMAKE_TOOLCHAIN_FILE=$conan_toolchain_file" \
+	-DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
 	"${CMAKE_PARAMS[@]}" \
-	"$SRCDIR"
+	"$src_dir"
 
 # Build kDrive sources
 make -j6 all install

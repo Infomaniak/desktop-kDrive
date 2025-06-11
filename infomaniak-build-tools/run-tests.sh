@@ -32,8 +32,8 @@ failures=()
 for tester in ${testers[@]}; do
     echo -e "${YELLOW}---------- Running $(basename $tester) ----------${NC}"
     chmod +x $tester
-    pushd $(dirname "$tester") 1>/dev/null
-    ./$(basename "$tester")
+    pushd "$(dirname "$tester")" 1>/dev/null
+    "./$(basename "$tester")"
 
     if [ $? -ne 0 ]; then
         (( errors+=1 ))
@@ -49,7 +49,7 @@ if [ $errors -eq 0 ]; then
     echo -e "${GREEN}Success: All Tests passed !${NC}"
 else
     echo -e "${RED}Failures :\n"
-    for failure in ${failures[@]}; do
+    for failure in "${failures[@]}"; do
         echo -e "$failure"
     done
     echo -e "${NC}"
