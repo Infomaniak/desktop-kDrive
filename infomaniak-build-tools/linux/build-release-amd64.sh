@@ -117,7 +117,9 @@ build_release() {
     exit 1
   fi
 
-  source "$conan_generator_folder/conanrun.sh"
+
+
+  source "$conan_generator_folder/conanbuild.sh"
 
   # Set defaults
   export SUFFIX=""
@@ -131,10 +133,6 @@ build_release() {
   export KDRIVE_DEBUG=0
 
   cmake -B$build_dir/client -H$src_dir \
-      -DOPENSSL_ROOT_DIR=/usr/local \
-      -DOPENSSL_INCLUDE_DIR=/usr/local/include \
-      -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib64/libcrypto.so \
-      -DOPENSSL_SSL_LIBRARY=/usr/local/lib64/libssl.so \
       -DQT_FEATURE_neon=OFF \
       -DCMAKE_BUILD_TYPE=$build_type \
       -DCMAKE_INSTALL_PREFIX=/usr \
@@ -142,7 +140,7 @@ build_release() {
       -DKDRIVE_VERSION_SUFFIX=$SUFFIX \
       -DKDRIVE_THEME_DIR="$src_dir/infomaniak" \
       -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
-      -DCONAN_DEP_DIR="$conan_dependencies_folder"
+      -DCONAN_DEP_DIR="$conan_dependencies_folder" \
       -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
       "${CMAKE_PARAMS[@]}" \
 
@@ -174,9 +172,6 @@ package_release() {
 
   mv $app_dir/usr/lib/x86_64-linux-gnu/* $app_dir/usr/lib/ || echo "The folder $app_dir/usr/lib/x86_64-linux-gnu/ might not exist." >&2
   cp -P "$conan_dependencies_folder/*" "$app_dir/usr/lib"
-
-  cp -P /usr/local/lib64/libssl.so* $app_dir/usr/lib/
-  cp -P /usr/local/lib64/libcrypto.so* $app_dir/usr/lib/
 
   cp -P -r /usr/lib/x86_64-linux-gnu/nss/ $app_dir/usr/lib/
 

@@ -51,7 +51,6 @@ if(UNIX AND NOT APPLE)
 elseif(WIN32)
     # TODO Remove lines once lib is managed by conan: add directories to search for libraries in .cmake files.
     set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
-        "C:/Program Files/OpenSSL"
         "C:/Program Files (x86)/Poco"
         "C:/Program Files (x86)/Sentry-Native"
         "C:/Program Files (x86)/libzip"
