@@ -392,7 +392,90 @@ void TestSyncDb::testCorrespondingNodeIdWithCacheFaillure() {
     LogIfFailSettings::assertEnabled = false;
     testCorrespondingNodeIdTemplate<SyncDbReadOnlyCache>(*_testObj, externalCache);
 }
+void TestSyncDb::testTryToFixDbNodeIdsAfterSyncDirChange() {
+    _testObj->enablePrepare(true);
+    _testObj->prepare();
+    LocalTemporaryDirectory localTmpDir("testCorrespondingNodeIdWithCacheFaillure");
+    SyncPath localSyncDirPath = localTmpDir.path() / "sync_dir";
+    std::error_code ec;
+    std::filesystem::create_directories(localSyncDirPath, ec);
+    CPPUNIT_ASSERT_MESSAGE(ec.message(), !ec);
 
+    // Create a test directory with two subdirectories
+    for (int i = 0; i < 2; ++i) {
+        const SyncPath path = localSyncDirPath / ("test_dir_" + std::to_string(i));
+        std::filesystem::create_directory(path, ec);
+        CPPUNIT_ASSERT_MESSAGE(ec.message(), !ec);
+        NodeId dirNodeId;
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, dirNodeId));
+        DbNode dirNode;
+        dirNode.setNodeIdLocal(dirNodeId);
+        dirNode.setNodeIdRemote(("dummyDirId" + std::to_string(i)));
+        dirNode.setParentNodeId(_testObj->rootNode().nodeId());
+        dirNode.setNameLocal(path.filename());
+        bool constraintError = false;
+        DbNodeId dirNodeDbId;
+        CPPUNIT_ASSERT(_testObj->insertNode(dirNode, dirNodeDbId, constraintError));
+        CPPUNIT_ASSERT(!constraintError);
+
+        const SyncPath filePath = path / "test_file.txt";
+        std::ofstream(filePath).close();
+        NodeId fileNodeId;
+        CPPUNIT_ASSERT(IoHelper::getNodeId(filePath, fileNodeId));
+        DbNode fileNode;
+        fileNode.setNodeIdLocal(fileNodeId);
+        fileNode.setNodeIdRemote(("dummyFileId" + std::to_string(i)));
+        fileNode.setParentNodeId(dirNodeDbId);
+        fileNode.setNameLocal(filePath.filename());
+        CPPUNIT_ASSERT(_testObj->insertNode(fileNode));
+    }
+
+    std::function<bool(const SyncPath &)> verifyDbAndFSNodeIds = [&](const SyncPath &rootPath) {
+        for (const auto &dirEntry: std::filesystem::directory_iterator(rootPath)) {
+            NodeId nodeId;
+            CPPUNIT_ASSERT(IoHelper::getNodeId(dirEntry.path(), nodeId));
+            bool found = false;
+            std::optional<NodeId> dbNodeId;
+            SyncPath relativePath = dirEntry.path().lexically_relative(rootPath);
+            CPPUNIT_ASSERT(_testObj->id(ReplicaSide::Local, relativePath, dbNodeId, found));
+            CPPUNIT_ASSERT(found);
+            CPPUNIT_ASSERT(dbNodeId.has_value());
+            if (nodeId != *dbNodeId) return false;
+        }
+        return true;
+    };
+
+    // Check that the database and file system node IDs match
+    CPPUNIT_ASSERT(verifyDbAndFSNodeIds(localSyncDirPath));
+
+    // Copy past the sync directory will lead to a mismatch between the database and the file system node IDs.
+    IoError ioError = IoError::Success;
+    CPPUNIT_ASSERT(IoHelper::copyFileOrDirectory(localSyncDirPath, localSyncDirPath.string() + "_copy", ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+    CPPUNIT_ASSERT(IoHelper::deleteItem(localSyncDirPath, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+    CPPUNIT_ASSERT(IoHelper::renameItem(localSyncDirPath.string() + "_copy", localSyncDirPath, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+    // Check that the database and file system node IDs do not match anymore
+    CPPUNIT_ASSERT(!verifyDbAndFSNodeIds(localSyncDirPath));
+
+    // Now try to fix the database node IDs after the sync directory change
+    CPPUNIT_ASSERT(_testObj->tryToFixDbNodeIdsAfterSyncDirChange(localSyncDirPath));
+
+    // Check that the database and file system node IDs match again
+    CPPUNIT_ASSERT(verifyDbAndFSNodeIds(localSyncDirPath));
+
+    // Remove a file and ensure that tryToFixDbNodeIdsAfterSyncDirChange fail
+    auto dirIt = std::filesystem::directory_iterator(localSyncDirPath);
+    CPPUNIT_ASSERT(IoHelper::deleteItem(dirIt->path(), ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+    CPPUNIT_ASSERT(!_testObj->tryToFixDbNodeIdsAfterSyncDirChange(localSyncDirPath));
+
+}
 void TestSyncDb::testDummyUpgrade() {
     CPPUNIT_ASSERT(_testObj->upgrade("3.6.4 (build 20240112)", "3.6.4 (build 20240112)"));
 }
