@@ -2892,6 +2892,13 @@ void AppServer::logUsefulInformation() const {
     LOG_INFO(_logger, "locale: " << QLocale::system().name().toStdString());
     LOG_INFO(_logger, "# of logical CPU core: " << std::thread::hardware_concurrency());
 
+    // Log cache path
+    SyncPath cachePath;
+    if (!IoHelper::cacheDirectoryPath(cachePath)) {
+        LOGW_WARN(_logger, L"Error getting cache directory");
+    }
+    LOGW_INFO(_logger, L"cache " << Utility::formatSyncPath(cachePath));
+
     // Log app ID
     AppStateValue appStateValue = "";
 
