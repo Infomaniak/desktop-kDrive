@@ -27,7 +27,7 @@ NC='\033[0m'
 
 pwd
 source ./build-macos/client/conan/build/Release/generators/conanrun.sh 
-export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/lib
+export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH
 echo $DYLD_LIBRARY_PATH
 
 testers=$(find . -type f -name "kDrive_test_*")
