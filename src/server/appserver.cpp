@@ -3367,7 +3367,7 @@ ExitCode AppServer::updateAllUsersInfo() {
             LOG_INFO(_logger,
                      "User: " << user.email() << " (id:" << user.userId() << ") is not used anymore. It will be removed.");
             ServerRequests::deleteUser(user.dbId());
-            sendUserRemoved(user.userId());
+            sendUserRemoved(user.dbId());
             continue;
         }
         if (user.keychainKey().empty()) {
