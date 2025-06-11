@@ -307,8 +307,6 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             _syncPal->refreshTmpBlacklist();
             _syncPal->freeSnapshotsCopies();
             _syncPal->syncDb()->cache().clear();
-            _syncCounter++;
-            LOG_SYNCPAL_DEBUG(_logger, "Sync " << _syncCounter << " started");
             break;
         case SyncStep::UpdateDetection1:
             workers[0] = _syncPal->computeFSOperationsWorker();
@@ -364,6 +362,8 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             _syncPal->syncDb()->cache().clear(); // Cache is not needed anymore, free resources
             break;
         case SyncStep::Done:
+            LOG_SYNCPAL_DEBUG(_logger, "Sync " << _syncCounter << " finished")
+            _syncCounter++;
             workers[0] = nullptr;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;

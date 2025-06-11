@@ -73,13 +73,6 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testMoveMoveDestConflict();
         void testMoveMoveCycleConflict();
 
-        // // TODO : other tests
-        // // - many sync ops (ex: upload 100 files)
-        // // - create dir + subdir + file in same sync
-        // // Conflicts
-        // void testMoveMoveDestConflict();
-        // void testMoveMoveCycleConflict();
-
         class MockIoHelperFileStat : public IoHelper {
             public:
                 MockIoHelperFileStat() {
@@ -104,9 +97,9 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testNodeIdReuseFile2DirAndDir2File();
         void testNodeIdReuseFile2File();
 #endif
-        uint64_t waitForSyncToBeIdle(const SourceLocation &srcLoc,
-                                     std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
-        void waitForCurrentSyncToFinish(uint64_t syncCount) const;
+        void waitForSyncToBeIdle(const SourceLocation &srcLoc,
+                                 std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
+        void waitForCurrentSyncToFinish() const;
         void logStep(const std::string &str);
 
         struct RemoteFileInfo {
