@@ -36,7 +36,7 @@
 namespace KDC {
 
 AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const SyncName &filename,
-                                             const uint64_t nbParallelThread /*= 1*/) :
+                                             const uint64_t nbParallelThread) :
     _logger(Log::instance()->getLogger()),
     _filePath(filepath),
     _filename(filename),
@@ -333,7 +333,8 @@ bool AbstractUploadSession::sendChunks() {
 
                 const std::scoped_lock lock(_mutex);
                 _threadCounter++;
-                JobManager::instance()->queueAsyncJob(chunkJob, Poco::Thread::PRIO_NORMAL, callback);
+                chunkJob->setAdditionalCallback(callback);
+                JobManager::instance()->queueAsyncJob(chunkJob, Poco::Thread::PRIO_NORMAL);
                 const auto &[_, inserted] = _ongoingChunkJobs.try_emplace(chunkJob->jobId(), chunkJob);
                 if (!inserted) {
                     LOG_ERROR(_logger, "Session " << _sessionToken << ", job " << chunkJob->jobId()
