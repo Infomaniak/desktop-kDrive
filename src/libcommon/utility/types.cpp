@@ -819,6 +819,8 @@ std::string toString(const AppType e) {
             return "Server";
         case AppType::Client:
             return "Client";
+        case AppType::Test:
+            return "Test";
         default:
             return noConversionStr;
     }
