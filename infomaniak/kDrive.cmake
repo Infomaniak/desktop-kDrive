@@ -69,7 +69,6 @@ set( SENTRY_TEST_DSN "https://cf9d36c1d2a50218b1a41c486fa7ab60@sentry-desktop.in
 set( SENTRY_SERVER_DB_PATH ".sentry-native_server" )
 set( SENTRY_CLIENT_DB_PATH ".sentry-native_client" )
 set( SENTRY_TEST_DB_PATH ".sentry-native_test" )
-
 if( APPLE )
     set( SENTRY_CRASHPAD_HANDLER_NAME "crashpad_handler" )
 elseif( WIN32 )

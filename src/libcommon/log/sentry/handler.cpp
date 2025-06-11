@@ -561,7 +561,7 @@ Handler::SentryEvent::SentryEvent(const std::string &title, const std::string &m
     userId(user.userId()) {}
 
 void Handler::stopPTrace(const pTraceId &id, PTraceStatus status) {
-    if (!_isSentryActivated || id == 0 || !arePtracesEnabled()) return;
+    if (!_isSentryActivated || !arePtracesEnabled() || id == 0) return;
 
     std::scoped_lock lock(_mutex);
     auto performanceTraceIt = _pTraces.find(id);
