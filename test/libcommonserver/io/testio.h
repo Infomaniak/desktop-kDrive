@@ -20,7 +20,7 @@
 
 #include "testincludes.h"
 #include "test_utility/localtemporarydirectory.h"
-#include "test_utility/iohelpertests.h"
+#include "test_utility/iohelpertestutilities.h"
 #include "libcommonserver/io/iohelper.h"
 
 #include <algorithm>
@@ -137,7 +137,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testSetFileDates();
 
     private:
-        IoHelperTests *_testObj;
+        IoHelperTestUtilities *_testObj;
         const SyncPath _localTestDirPath;
 };
 

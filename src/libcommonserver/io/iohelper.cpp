@@ -617,25 +617,28 @@ bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noex
 namespace details {
 class CacheDirectoryHanlder {
     public:
-        CacheDirectoryHanlder() {
-            if (directoryPath.empty()) initDirectoryPath();
-            // It is a best effort, we cannot log/sentry anything here as the logger/sentry may not be initialized yet.
-            if (!directoryPath.empty()) {
-                IoError ioError = IoError::Success;
-                if (!IoHelper::createDirectory(directoryPath, true, ioError) && ioError != IoError::DirectoryExists) {
-                    directoryPath.clear(); // Clear the path if the directory could not be created.
-                    return;
-                }
-            }
+        static CacheDirectoryHanlder &instance() noexcept { return _instance; }
+        const SyncPath &directoryPath() noexcept { return _directoryPath; }
+        void setDirectoryPath(const SyncPath &newPath) {
+            deleteDirectoryPath();
+            _directoryPath = newPath;
+            createDirectoryPath();
         }
-        ~CacheDirectoryHanlder() {
-            // It is a best effort, we cannot log/sentry anything here as the logger/sentry may have been destroyed already.
-            IoError ioError = IoError::Success;
-            (void) IoHelper::deleteItem(directoryPath, ioError);
+        void resetDirectoryPath() noexcept {
+            deleteDirectoryPath();
+            if (!_directoryPath.empty()) createDirectoryPath();
         }
-        inline static SyncPath directoryPath;
+        ~CacheDirectoryHanlder() { deleteDirectoryPath(); }
 
     private:
+        static CacheDirectoryHanlder _instance;
+        inline static SyncPath _directoryPath;
+
+        CacheDirectoryHanlder() {
+            if (_directoryPath.empty()) initDirectoryPath();
+            if (!_directoryPath.empty()) createDirectoryPath();
+        }
+
         void initDirectoryPath() noexcept {
             static const SyncName cacheDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName("-cache"));
             if (initDirectoryPathFromEnv("KDRIVE_CACHE_PATH", cacheDirName)) return;
@@ -645,10 +648,10 @@ class CacheDirectoryHanlder {
             if (initDirectoryPathFromEnv("HOME", cacheDirName, ".cache")) return;
 #endif
             IoError ioError = IoError::Success;
-            if (!IoHelper::tempDirectoryPath(directoryPath, ioError)) {
+            if (!IoHelper::tempDirectoryPath(_directoryPath, ioError)) {
                 return;
             }
-            directoryPath /= cacheDirName;
+            _directoryPath /= cacheDirName;
             return;
         }
 
@@ -657,24 +660,46 @@ class CacheDirectoryHanlder {
             bool isSet = false;
             if (const auto value = CommonUtility::envVarValue(envVar, isSet); isSet && !value.empty()) {
                 if (subDir.empty()) {
-                    directoryPath = SyncPath(value) / cacheDirName;
+                    _directoryPath = SyncPath(value) / cacheDirName;
                 } else {
-                    directoryPath = SyncPath(value) / subDir / cacheDirName;
+                    _directoryPath = SyncPath(value) / subDir / cacheDirName;
                 }
                 return true;
             }
             return false;
         };
+
+        void createDirectoryPath() noexcept {
+            if (!_directoryPath.empty()) {
+                IoError ioError = IoError::Success;
+                // It is a best effort, we cannot log/sentry anything here as the logger/sentry may not be initialized yet.
+                if (!IoHelper::createDirectory(_directoryPath, true, ioError) && ioError != IoError::DirectoryExists) {
+                    _directoryPath.clear(); // Clear the path if the directory could not be created.
+                    return;
+                }
+            }
+        }
+
+        void deleteDirectoryPath() noexcept {
+            // It is a best effort, we cannot log/sentry anything here as the logger/sentry may have been destroyed already.
+            IoError ioError = IoError::Success;
+            (void) IoHelper::deleteItem(_directoryPath, ioError);
+        }
 };
+
+CacheDirectoryHanlder CacheDirectoryHanlder::_instance;
 } // namespace details
 
 void IoHelper::setCacheDirectoryPath(const SyncPath &newPath) {
-    details::CacheDirectoryHanlder::directoryPath = newPath;
+    if (!newPath.empty()) {
+        details::CacheDirectoryHanlder::instance().setDirectoryPath(newPath);
+    } else {
+        details::CacheDirectoryHanlder::instance().resetDirectoryPath();
+    }
 }
 
 bool IoHelper::cacheDirectoryPath(SyncPath &directoryPath) noexcept {
-    static const details::CacheDirectoryHanlder cacheDirectoryHandler;
-    directoryPath = details::CacheDirectoryHanlder::directoryPath;
+    directoryPath = details::CacheDirectoryHanlder::instance().directoryPath();
     return !directoryPath.empty();
 }
 

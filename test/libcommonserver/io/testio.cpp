@@ -47,7 +47,7 @@ TestIo::TestIo() :
 
 void TestIo::setUp() {
     TestBase::start();
-    _testObj = new IoHelperTests();
+    _testObj = new IoHelperTestUtilities();
 }
 
 void TestIo::tearDown() {

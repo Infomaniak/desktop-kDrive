@@ -20,7 +20,7 @@
 #include "libcommon/utility/types.h"
 #include "libcommonserver/io/iohelper.h"
 namespace KDC {
-struct IoHelperTests : public IoHelper {
+struct IoHelperTestUtilities : public IoHelper {
         static void setRename(std::function<void(const SyncPath &, const SyncPath &, std::error_code &)> f);
         static void setIsDirectoryFunction(std::function<bool(const SyncPath &path, std::error_code &ec)> f);
         static void setIsSymlinkFunction(std::function<bool(const SyncPath &path, std::error_code &ec)> f);
@@ -34,8 +34,5 @@ struct IoHelperTests : public IoHelper {
 #endif
 
         static void resetFunctions();
-
-    private:
-        inline static SyncPath _previousCacheDirectoryPath;
 };
 } // namespace KDC
