@@ -62,7 +62,7 @@ void LocalCreateDirJob::runJob() {
     }
 
     IoError ioError = IoError::Success;
-    if (IoHelper::createDirectory(_destFilePath, ioError) && ioError == IoError::Success) {
+    if (IoHelper::createDirectory(_destFilePath, false, ioError) && ioError == IoError::Success) {
         if (isExtendedLog()) {
             LOGW_DEBUG(_logger, L"Directory: " << Utility::formatSyncPath(_destFilePath) << L" created");
         }
