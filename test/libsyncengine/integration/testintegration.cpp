@@ -272,7 +272,7 @@ void TestIntegration::testLocalChanges() {
 
     // Generate a move operation.
     waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
-    const auto newName = "testFileLocal_renamed";
+    const SyncName newName = Str("testFileLocal_renamed");
     const std::filesystem::path destinationPath = subDirPath / newName;
     {
         LocalMoveJob job(filePath, destinationPath);
@@ -388,9 +388,9 @@ void TestIntegration::testSimultaneousChanges() {
 void TestIntegration::inconsistencyTests() {
     // Duplicate remote files to set up the tests.
     waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
-    const auto testForbiddenCharsRemoteId = duplicateRemoteFile(_driveDbId, _testFileRemoteId, "testForbiddenChar");
-    const auto testNameClashRemoteId1 = duplicateRemoteFile(_driveDbId, _testFileRemoteId, "testNameClash");
-    const auto testNameClashRemoteId2 = duplicateRemoteFile(_driveDbId, _testFileRemoteId, "testnameclash1");
+    const auto testForbiddenCharsRemoteId = duplicateRemoteFile(_driveDbId, _testFileRemoteId, Str("testForbiddenChar"));
+    const auto testNameClashRemoteId1 = duplicateRemoteFile(_driveDbId, _testFileRemoteId, Str("testNameClash"));
+    const auto testNameClashRemoteId2 = duplicateRemoteFile(_driveDbId, _testFileRemoteId, Str("testnameclash1"));
 
     waitForCurrentSyncToFinish();
 
@@ -420,7 +420,7 @@ void TestIntegration::inconsistencyTests() {
 
     waitForCurrentSyncToFinish();
 
-    auto remoteFileInfo = getRemoteFileInfo(_driveDbId, _remoteSyncDir.id(), "testnameclash");
+    auto remoteFileInfo = getRemoteFileInfo(_driveDbId, _remoteSyncDir.id(), Str("testnameclash"));
     CPPUNIT_ASSERT(remoteFileInfo.isValid());
     CPPUNIT_ASSERT_LESS(filestat.size, remoteFileInfo.size); // The local edit is not propagated.
 
@@ -437,7 +437,7 @@ void TestIntegration::inconsistencyTests() {
     /************************************/
 
     (void) IoHelper::getFileStat(_syncPal->localPath() / "testnameclash2", &filestat, ioError);
-    remoteFileInfo = getRemoteFileInfo(_driveDbId, _remoteSyncDir.id(), "testnameclash2");
+    remoteFileInfo = getRemoteFileInfo(_driveDbId, _remoteSyncDir.id(), Str("testnameclash2"));
 
     CPPUNIT_ASSERT(remoteFileInfo.isValid());
     CPPUNIT_ASSERT_EQUAL(filestat.size, remoteFileInfo.size); // The local edit has been propagated.
@@ -490,7 +490,7 @@ void TestIntegration::testCreateCreateConflict() {
     waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
 
     // Create a file on remote replica.
-    const auto remoteId = duplicateRemoteFile(_driveDbId, _testFileRemoteId, "testCreateCreatePseudoConflict");
+    const auto remoteId = duplicateRemoteFile(_driveDbId, _testFileRemoteId, Str("testCreateCreatePseudoConflict"));
 
     // Create a file on local replica.
     const SyncPath localFilePath = _syncPal->localPath() / "testCreateCreatePseudoConflict";
@@ -499,7 +499,7 @@ void TestIntegration::testCreateCreateConflict() {
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForCurrentSyncToFinish();
 
-    const auto conflictedFilePath = findLocalFileByNamePrefix(_localSyncDir.path(), "testCreateCreatePseudoConflict_conflict_");
+    const auto conflictedFilePath = findLocalFileByNamePrefix(_localSyncDir.path(), Str("testCreateCreatePseudoConflict_conflict_"));
     CPPUNIT_ASSERT(std::filesystem::exists(conflictedFilePath));
     CPPUNIT_ASSERT(!std::filesystem::exists(localFilePath));
 
@@ -607,7 +607,7 @@ void TestIntegration::testMoveCreateConflict() {
         waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
 
         // Rename a file on local replica.
-        const SyncName newFilename = "testMoveCreateConflict2";
+        const SyncName newFilename = Str("testMoveCreateConflict2");
         const SyncPath newLocalFilePath = _syncPal->localPath() / newFilename;
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::renameItem(localFilePath, newLocalFilePath, ioError) && ioError == IoError::Success);
@@ -637,7 +637,7 @@ void TestIntegration::testEditDeleteConflict() {
         waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
 
         // Generate the test file
-        const SyncName filename = "testEditDeleteConflict1";
+        const SyncName filename = Str("testEditDeleteConflict1");
         const auto tmpNodeId = duplicateRemoteFile(_driveDbId, _testFileRemoteId, filename);
         waitForCurrentSyncToFinish();
 
@@ -713,21 +713,21 @@ void generateInitialTestSituation(const int driveDbId, const NodeId &parentId, R
     //     |   `-- AAA
     //     `-- AB
     {
-        CreateDirJob jobA(nullptr, driveDbId, parentId, "A");
+        CreateDirJob jobA(nullptr, driveDbId, parentId, Str("A"));
         (void) jobA.runSynchronously();
         info.remoteNodeIdA = jobA.nodeId();
     }
     {
-        CreateDirJob jobAA(nullptr, driveDbId, info.remoteNodeIdA, "AA");
+        CreateDirJob jobAA(nullptr, driveDbId, info.remoteNodeIdA, Str("AA"));
         (void) jobAA.runSynchronously();
         info.remoteNodeIdAA = jobAA.nodeId();
     }
     {
-        CreateDirJob jobAB(nullptr, driveDbId, info.remoteNodeIdA, "AB");
+        CreateDirJob jobAB(nullptr, driveDbId, info.remoteNodeIdA, Str("AB"));
         (void) jobAB.runSynchronously();
         info.remoteNodeIdAB = jobAB.nodeId();
     }
-    (void) createRemoteFile(driveDbId, "AAA", info.remoteNodeIdAA);
+    (void) createRemoteFile(driveDbId, Str("AAA"), info.remoteNodeIdAA);
 }
 } // namespace
 
@@ -957,8 +957,8 @@ void TestIntegration::testMoveParentDeleteConflict() {
         const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
         RemoteNodeInfo info;
         generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
-        (void) CreateDirJob(nullptr, _driveDbId, info.remoteNodeIdAB, "ABA").runSynchronously();
-        (void) createRemoteFile(_driveDbId, "ABB", info.remoteNodeIdAB);
+        (void) CreateDirJob(nullptr, _driveDbId, info.remoteNodeIdAB, Str("ABA")).runSynchronously();
+        (void) createRemoteFile(_driveDbId, Str("ABB"), info.remoteNodeIdAB);
         waitForCurrentSyncToFinish();
 
         // Edit A/AB/ABB on local replica
@@ -1070,8 +1070,8 @@ void TestIntegration::testMoveMoveSourceConflict() {
 
 void TestIntegration::testMoveMoveDestConflict() {
     waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
-    const auto remoteId1 = duplicateRemoteFile(_driveDbId, _testFileRemoteId, "testMoveMoveDestConflict1");
-    const auto remoteId2 = duplicateRemoteFile(_driveDbId, _testFileRemoteId, "testMoveMoveDestConflict2");
+    const auto remoteId1 = duplicateRemoteFile(_driveDbId, _testFileRemoteId, Str("testMoveMoveDestConflict1"));
+    const auto remoteId2 = duplicateRemoteFile(_driveDbId, _testFileRemoteId, Str("testMoveMoveDestConflict2"));
     waitForCurrentSyncToFinish();
 
     // Rename test file 1 on local replica
@@ -1338,7 +1338,7 @@ TestIntegration::RemoteFileInfo TestIntegration::getRemoteFileInfo(const int dri
 
     for (auto it = dataArray->begin(); it != dataArray->end(); ++it) {
         const auto obj = it->extract<Poco::JSON::Object::Ptr>();
-        if (name == obj->get(nameKey).toString()) {
+        if (SyncName2Str(name) == obj->get(nameKey).toString()) {
             fileInfo.id = obj->get(idKey).toString();
             fileInfo.parentId = obj->get(parentIdKey).toString();
             fileInfo.modificationTime = toInt(obj->get(lastModifiedAtKey));
