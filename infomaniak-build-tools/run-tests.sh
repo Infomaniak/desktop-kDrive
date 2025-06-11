@@ -25,6 +25,8 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
+pwd
+source ./conanrun.sh 
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/lib
 echo $DYLD_LIBRARY_PATH
 
