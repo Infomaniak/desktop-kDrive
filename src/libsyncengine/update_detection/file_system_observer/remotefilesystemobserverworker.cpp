@@ -58,7 +58,7 @@ RemoteFileSystemObserverWorker::~RemoteFileSystemObserverWorker() {
 }
 
 void RemoteFileSystemObserverWorker::execute() {
-    ExitInfo exitInfo;
+    ExitInfo exitInfo = ExitCode::Ok;
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
 
     // Sync loop
@@ -90,7 +90,7 @@ void RemoteFileSystemObserverWorker::execute() {
 }
 
 ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
-    ExitInfo exitInfo;
+    ExitInfo exitInfo = ExitCode::Ok;
 
     LOG_SYNCPAL_INFO(_logger, "Starting remote snapshot generation");
     auto start = std::chrono::steady_clock::now();
@@ -509,6 +509,7 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
 #endif
 
         if (const auto exitInfo = processAction(actionInfo, movedItems); exitInfo.code() != ExitCode::Ok) {
+            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::processAction: " << exitInfo);
             return exitInfo;
         }
     }

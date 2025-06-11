@@ -36,10 +36,15 @@ void FolderWatcher_win::changesLost() {
     _parent->invalidateSnapshot();
 }
 
-void FolderWatcher_win::changeDetected(const SyncPath &path, OperationType opType) {
+ExitInfo FolderWatcher_win::changeDetected(const SyncPath &path, OperationType opType) {
     std::list<std::pair<SyncPath, OperationType>> list;
     list.push_back({path, opType});
-    _parent->changesDetected(list);
+    if (const auto exitInfo = _parent->changesDetected(list); exitInfo != ExitCode::Ok) {
+        LOGW_WARN(_logger, L"Error in LocalFileSystemObserverWorker::changesDetected: " << exitInfo);
+        return exitInfo;
+    }
+
+    return ExitCode::Ok;
 }
 
 void FolderWatcher_win::startWatching() {
@@ -169,7 +174,11 @@ void FolderWatcher_win::watchChanges() {
 
             if (opType == OperationType::MoveOut) opType = OperationType::Move; // "MoveOut" is considered as Move from now on
 
-            changeDetected(longfilepath, opType);
+            if (const auto exitInfo = changeDetected(longfilepath, opType); exitInfo.code() != ExitCode::Ok) {
+                LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in FolderWatcher_win::changeDetected for "
+                                                                     << Utility::formatSyncPath(longfilepath) << L" "
+                                                                     << exitInfo);
+            }
 
             if (notifInfo->NextEntryOffset == 0) {
                 break;

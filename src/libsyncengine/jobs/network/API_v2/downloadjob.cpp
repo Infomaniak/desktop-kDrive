@@ -319,27 +319,22 @@ bool DownloadJob::handleResponse(std::istream &is) {
     _localNodeId = std::to_string(filestat.inode);
     _creationTimeOut = filestat.creationTime;
     _modificationTimeOut = filestat.modificationTime;
+
 #if defined(__APPLE__) || defined(_WIN32)
-#if defined(__APPLE__)
-    // /!\ macOS: If creation date > modification date, creation date is set to modification date
-    if ((_creationTimeIn <= _modificationTimeIn && _creationTimeIn != _creationTimeOut) ||
-        _modificationTimeIn != _modificationTimeOut) {
-#else
     if (_creationTimeIn != _creationTimeOut || _modificationTimeIn != _modificationTimeOut) {
-#endif
-        LOGW_WARN(_logger, L"Impossible to set creation/modification times on local file."
+        LOGW_WARN(_logger, L"Impossible to set creation and/or modification time(s) on local file."
                                    << L" Desired values: " << _creationTimeIn << L"/" << _modificationTimeIn << L" Set values: "
                                    << _creationTimeOut << L"/" << _modificationTimeOut << L" for "
                                    << Utility::formatSyncPath(_localpath));
     }
 #else
-    // /!\ Linux: The creation date cannot be set
     if (_modificationTimeIn != _modificationTimeOut) {
         LOGW_WARN(_logger, L"Impossible to set modification time on local file."
                                    << L" Desired value: " << _modificationTimeIn << L" Set value: " << _modificationTimeOut
                                    << L" for " << Utility::formatSyncPath(_localpath));
     }
 #endif
+
     _exitInfo = ExitCode::Ok;
 
     return true;

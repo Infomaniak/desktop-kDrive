@@ -85,7 +85,13 @@ static void callback([[maybe_unused]] ConstFSEventStreamRef streamRef, void *cli
         }
     }
 
-    fw->doNotifyParent(paths);
+    if (paths.size()) {
+        if (const auto exitInfo = fw->doNotifyParent(paths); exitInfo.code() != ExitCode::Ok) {
+            LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in FolderWatcher_mac::doNotifyParent for "
+                                                                 << Utility::formatSyncPath(paths.front().first) << L"... "
+                                                                 << exitInfo);
+        }
+    }
 }
 
 void FolderWatcher_mac::startWatching() {
@@ -117,10 +123,15 @@ void FolderWatcher_mac::startWatching() {
     LOGW_DEBUG(_logger, L"Folder watching stopped: " << Utility::formatSyncPath(_folder));
 }
 
-void FolderWatcher_mac::doNotifyParent(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) {
+ExitInfo FolderWatcher_mac::doNotifyParent(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) {
     if (!_stop && _parent) {
-        _parent->changesDetected(changes);
+        if (const auto exitInfo = _parent->changesDetected(changes); exitInfo.code() != ExitCode::Ok) {
+            LOGW_WARN(_logger, L"Error in LocalFileSystemObserverWorker::changesDetected: " << exitInfo);
+            return exitInfo;
+        }
     }
+
+    return ExitCode::Ok;
 }
 
 OperationType FolderWatcher_mac::getOpType(const FSEventStreamEventFlags eventFlags) {

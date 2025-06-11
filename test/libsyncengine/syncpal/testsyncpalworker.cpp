@@ -401,7 +401,7 @@ ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::generateInitialS
         _liveSnapshot.init();
         invalidateSnapshot();
         _updating = false;
-        return {ExitCode::NetworkError, ExitCause::Unknown};
+        return ExitCode::NetworkError;
     }
 }
 } // namespace KDC
