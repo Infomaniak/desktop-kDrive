@@ -626,6 +626,7 @@ class CacheDirectoryHanlder {
         }
         void resetDirectoryPath() noexcept {
             deleteDirectoryPath();
+            initDirectoryPath();
             if (!_directoryPath.empty()) createDirectoryPath();
         }
         ~CacheDirectoryHanlder() { deleteDirectoryPath(); }
