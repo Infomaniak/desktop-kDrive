@@ -105,14 +105,10 @@ class PARMS_EXPORT Parameters {
             _uploadSessionParallelJobs = uploadSessionParallelJobs;
         }
 
-        inline int jobPoolCapacityFactor() const { return _jobPoolCapacityFactor; }
-        inline void setJobPoolCapacityFactor(const int jobPoolCapacityFactor) { _jobPoolCapacityFactor = jobPoolCapacityFactor; }
-
         [[nodiscard]] VersionChannel distributionChannel() const { return _distributionChannel; }
         void setDistributionChannel(const VersionChannel channel) { _distributionChannel = channel; }
 
         static int _uploadSessionParallelJobsDefault;
-        static int _jobPoolCapacityFactorDefault;
 
     private:
         Language _language;
@@ -137,7 +133,6 @@ class PARMS_EXPORT Parameters {
         std::shared_ptr<std::vector<char>> _dialogGeometry;
         int _maxAllowedCpu;
         int _uploadSessionParallelJobs;
-        int _jobPoolCapacityFactor;
         VersionChannel _distributionChannel{VersionChannel::Prod};
 };
 
