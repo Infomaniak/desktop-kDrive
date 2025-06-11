@@ -199,9 +199,8 @@ void TestIntegration::tearDown() {
 
     ParmsDb::instance()->close();
     ParmsDb::reset();
-    JobManager::stop();
-    JobManager::clear();
-    JobManager::reset();
+    JobManager::instance()->stop();
+    JobManager::instance()->clear();
     TestBase::stop();
 }
 
@@ -215,8 +214,8 @@ void TestIntegration::testAll() {
     logStep("initialization");
 
     // Run test cases
-    // basicTests();
-    // inconsistencyTests();
+    basicTests();
+    inconsistencyTests();
     conflictTests();
 
     // &TestIntegration::testMoveDeleteConflict1,
@@ -464,13 +463,14 @@ void TestIntegration::inconsistencyTests() {
 }
 
 void TestIntegration::conflictTests() {
-    // testCreateCreatePseudoConflict();
-    // testCreateCreateConflict();
-    // testEditEditPseudoConflict();
-    // testEditEditConflict();
-    // testMoveCreateConflict();
-    // testEditDeleteConflict();
+    testCreateCreatePseudoConflict();
+    testCreateCreateConflict();
+    testEditEditPseudoConflict();
+    testEditEditConflict();
+    testMoveCreateConflict();
+    testEditDeleteConflict();
     testMoveDeleteConflict();
+    testMoveParentDeleteConflict();
 }
 
 void TestIntegration::testCreateCreatePseudoConflict() {
@@ -927,6 +927,8 @@ void TestIntegration::testMoveDeleteConflict() {
         CPPUNIT_ASSERT(!std::filesystem::exists(localPathX));
     }
 }
+
+void TestIntegration::testMoveParentDeleteConflict() {}
 
 // void TestIntegration::testMoveParentDeleteConflict() {
 //     LOGW_DEBUG(_logger, L"$$$$$ test MoveParent-Delete conflict");
