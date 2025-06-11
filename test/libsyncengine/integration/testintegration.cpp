@@ -225,9 +225,6 @@ void TestIntegration::testAll() {
     // basicTests();
     // inconsistencyTests();
     conflictTests();
-    // &TestIntegration::testMoveMoveSourcePseudoConflict,
-    // &TestIntegration::testMoveMoveSourceConflict,
-    // &TestIntegration::testMoveMoveDestConflict,
     // &TestIntegration::testMoveMoveCycleConflict,
 }
 
@@ -460,8 +457,9 @@ void TestIntegration::conflictTests() {
     // testMoveDeleteConflict();
     // testMoveParentDeleteConflict();
     // testCreateParentDeleteConflict();
-    testMoveMoveSourcePseudoConflict();
-    testMoveMoveSourceConflict();
+    // testMoveMoveSourcePseudoConflict();
+    // testMoveMoveSourceConflict();
+    testMoveMoveDestConflict();
 }
 
 void TestIntegration::testCreateCreatePseudoConflict() {
@@ -1086,6 +1084,7 @@ void TestIntegration::testMoveMoveSourcePseudoConflict() {
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForCurrentSyncToFinish(syncCount);
 
+    // No conflict, change only propagated in DB.
     CPPUNIT_ASSERT(std::filesystem::exists(destinationLocalPath));
     logStep("testMoveMoveSourcePseudoConflict");
 }
@@ -1113,96 +1112,41 @@ void TestIntegration::testMoveMoveSourceConflict() {
     syncCount++; // Previous sync only fixed the conflicts.
     waitForCurrentSyncToFinish(syncCount);
 
+    // Move operation has been undo on local replica then remote operation has been propagated.
     CPPUNIT_ASSERT(!std::filesystem::exists(destinationLocalPath));
     const SyncPath destinationRemotePath = _syncPal->localPath() / tmpRemoteDir2.name() / originLocalPath.filename();
     CPPUNIT_ASSERT(std::filesystem::exists(destinationRemotePath));
     logStep("testMoveMoveSourceConflict");
 }
 
-// void TestIntegration::testMoveMoveDestConflict() {
-//     LOGW_DEBUG(_logger, L"$$$$$ test Move-MoveDest conflict");
-//     std::cout << "test Move-MoveDest conflict : ";
-//
-//     // Init phase
-//     LOGW_DEBUG(_logger, L"----- test Move-MoveDest conflict : Init phase");
-//     SyncName testFileName =
-//             Str("testMoveMoveDestConflict_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) + Str(".txt");
-//
-//     // Duplicate the remote test file
-//     DuplicateJob initDuplicateJob(_syncPal->vfs(), _driveDbId, testExecutorFileRemoteId, testFileName);
-//     initDuplicateJob.runSynchronously();
-//     NodeId testFileRemoteId = initDuplicateJob.nodeId();
-//
-//     // Duplicate the local test file
-//     SyncPath sourcePath = _localPath / testExecutorFolderRelativePath / "test_executor_copy.txt";
-//     SyncPath destPath = _localPath / testExecutorFolderRelativePath / "test_executor_copy_tmp.txt";
-//     LocalCopyJob initLocalCopyJob(sourcePath, destPath);
-//     initLocalCopyJob.runSynchronously();
-//
-//     waitForSyncToFinish(SourceLocation::currentLoc());
-//     _syncPal->pause();
-//
-//     // Setup phase
-//     LOGW_DEBUG(_logger, L"----- test Move-MoveDest conflict : Setup phase");
-//
-//     // On remote replica
-//     // Move the remote test file under folder "test_executor_sub"
-//     MoveJob setupMoveJob(_syncPal->vfs(), _driveDbId, "", testFileRemoteId, testExecutorSubFolderRemoteId);
-//     setupMoveJob.runSynchronously();
-//
-//     // On local replica
-//     // Move the local test file under folder "test_executor_sub"
-//     sourcePath = destPath;
-//     destPath = _localPath / testExecutorFolderRelativePath / testExecutorSubFolderName / testFileName;
-//     LocalMoveJob setupLocalMoveJob(sourcePath, destPath);
-//     setupLocalMoveJob.runSynchronously();
-//
-//     waitForSyncToFinish(SourceLocation::currentLoc());
-//
-//     Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
-//                             // request is implemented)
-//
-//     LOGW_DEBUG(_logger, L"----- test Move-MoveDest conflict : Resolution phase");
-//     _syncPal->unpause();
-//     waitForSyncToFinish(SourceLocation::currentLoc());
-//
-//     // Test phase
-//     LOGW_DEBUG(_logger, L"----- test Move-MoveDest conflict : Test phase");
-//
-//     // Remote should win
-//     // On local
-//     bool found = false;
-//     std::filesystem::path localExcludedPath;
-//     for (auto const &dir_entry:
-//          std::filesystem::directory_iterator{_localPath / testExecutorFolderRelativePath / testExecutorSubFolderName}) {
-//         if (Utility::startsWith(dir_entry.path().filename().native(), destPath.stem().native() + Str("_conflict_"))) {
-//             found = true;
-//             localExcludedPath = dir_entry.path();
-//             break;
-//         }
-//     }
-//     CPPUNIT_ASSERT(found);
-//
-//     // On remote
-//     GetFileInfoJob testJob(_driveDbId, testFileRemoteId);
-//     testJob.runSynchronously();
-//     CPPUNIT_ASSERT(testJob.parentNodeId() == testExecutorSubFolderRemoteId);
-//
-//     // Clean phase
-//     LOGW_DEBUG(_logger, L"----- test Move-MoveDest conflict : Clean phase");
-//
-//     // Remove the test files
-//     DeleteJob finalDeleteJob(_driveDbId, testFileRemoteId, "", "",
-//                              NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
-//     finalDeleteJob.runSynchronously();
-//
-//     std::filesystem::remove(localExcludedPath);
-//
-//     waitForSyncToFinish(SourceLocation::currentLoc());
-//
-//     std::cout << "OK" << std::endl;
-// }
-//
+void TestIntegration::testMoveMoveDestConflict() {
+    auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
+    const auto remoteId1 = duplicateRemoteFile(_driveDbId, _testFileRemoteId, "testMoveMoveDestConflict1");
+    const auto remoteId2 = duplicateRemoteFile(_driveDbId, _testFileRemoteId, "testMoveMoveDestConflict2");
+    waitForCurrentSyncToFinish(syncCount);
+
+    // Rename test file 1 on local replica
+    const SyncPath originLocalPath = _syncPal->localPath() / "testMoveMoveDestConflict1";
+    const SyncPath destinationLocalPath = _syncPal->localPath() / "testMoveMoveDestConflict";
+    IoError ioError = IoError::Unknown;
+    (void) IoHelper::renameItem(originLocalPath, destinationLocalPath, ioError);
+
+    // Rename test file 2 on remote replica
+    (void) RenameJob(nullptr, _driveDbId, remoteId2, "testMoveMoveDestConflict").runSynchronously();
+
+    syncCount = _syncPal->syncCount();
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+    waitForCurrentSyncToFinish(syncCount);
+
+    syncCount++; // Previous sync only fixed the conflicts.
+    waitForCurrentSyncToFinish(syncCount);
+
+    // Move operation has been undo on local replica then remote operation has been propagated.
+    CPPUNIT_ASSERT(std::filesystem::exists(originLocalPath));
+    CPPUNIT_ASSERT(std::filesystem::exists(destinationLocalPath));
+    logStep("testMoveMoveDestConflict");
+}
+
 // void TestIntegration::testMoveMoveCycleConflict() {
 //     LOGW_DEBUG(_logger, L"$$$$$ test Move-MoveCycle conflict");
 //     std::cout << "test Move-MoveCycle conflict : ";

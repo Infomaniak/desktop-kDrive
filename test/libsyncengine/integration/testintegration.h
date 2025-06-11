@@ -70,12 +70,12 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testCreateParentDeleteConflict();
         void testMoveMoveSourcePseudoConflict();
         void testMoveMoveSourceConflict();
+        void testMoveMoveDestConflict();
 
         // // TODO : other tests
         // // - many sync ops (ex: upload 100 files)
         // // - create dir + subdir + file in same sync
         // // Conflicts
-        // void testMoveMoveSourceConflict();
         // void testMoveMoveDestConflict();
         // void testMoveMoveCycleConflict();
 
