@@ -1,0 +1,242 @@
+import glob
+import os
+import subprocess
+from _typeshed import _T_co
+
+from conan import ConanFile
+from conan.errors import ConanInvalidConfiguration, ConanException
+from conan.tools.files import get
+from conan.tools.system.package_manager import Apt
+
+class QtConan(ConanFile):
+    name = "qt"
+    version = "6.2.3"
+    settings = "os", "arch", "compiler", "build_type"
+
+    options = {
+        "qt_login_type": ["envvars", "ini"],
+    }
+
+    default_options = {
+        "qt_login_type": "ini",  # Default to using the qtaccount.ini file for login
+    }
+
+
+    @staticmethod
+    def _get_real_arch():
+        """
+        Get the real architecture of the system, not the one reported by Conan.
+        This is useful for macOS where the architecture can be arm64 but the profile might be set to 'armv8|x86_64' for the multi arch build.
+        :return: the real architecture as reported by the system
+        """
+        return subprocess.check_output(["uname", "-m"]).decode("utf-8").strip()
+
+    def _get_distant_name(self):
+        """
+        Get the name of the installer to download based on the OS and architecture.
+        See 'https://download.qt.io/official_releases/online_installers/' for available installers.
+        :return: 'qt-online-installer-{os}-{architecture}-online.{ext}' where os is 'mac', 'linux' or 'windows, architecture is 'arm64' or 'x64' on Linux or Windows and 'x64' on macOS, and ext is 'dmg','run' or 'exe.
+        """
+        os_map = {"Macos": "mac", "Linux": "linux", "Windows": "windows"}
+        ext_map = {"Macos": "dmg", "Linux": "run", "Windows": "exe"}
+        os_key = str(self.settings.os)
+        os_name = os_map.get(os_key, "windows")
+        ext = ext_map.get(os_key, "exe")
+
+        # For macOS, we always use x64 arch because the installer is universal and supports both arm64 and x64.
+        if os_name == "mac":
+            architecture = "x64"
+        else:
+            architecture = "arm64" if self._get_real_arch() == "arm64" else "x64"
+
+        return f"qt-online-installer-{os_name}-{architecture}-online.{ext}"
+
+    def _get_compiler(self):
+        if self.settings.os == "Macos":
+            return "clang_64"
+        elif self.settings.os == "Linux":
+            return "gcc_64"
+        elif self.settings.os == "Windows":
+            return "win64_msvc2019_64"
+        else:
+            raise ConanInvalidConfiguration("Unsupported OS for Qt installation")
+
+    def _get_qt_submodules(self, version):
+        """
+        Get the list of Qt submodules to install based on the version and compiler.
+        :param version: The version of Qt to install, e.g. '6.2.3'.
+        :return: The list of Qt submodules to install, adapted to the Qt version, the OS, and the compiler
+        """
+        major = version.split(".")[0]
+        compact = version.replace(".", "")
+        compiler = self._get_compiler()
+
+        # TODO : Add support for compilers (currently installing all of them, android, ...)
+        modules = [
+            f"qt.qt{major}.{compact}",
+            "qt.tools",
+                "qt.tools.maintenance",
+                "qt.tools.cmake",
+            
+            f"qt.qt{major}.{compact}.qt5compat",
+            f"qt.qt{major}.{compact}.src",
+            
+            f"qt.qt{major}.{compact}.addons",
+                f"qt.qt{major}.{compact}.addons.qtpositioning",
+                f"qt.qt{major}.{compact}.addons.qtwebchannel",
+                f"qt.qt{major}.{compact}.addons.qtwebengine",
+                f"qt.qt{major}.{compact}.addons.qtwebview",
+        ]
+
+        if self.settings.os == "Windows":
+            modules.append("qt.tools.ninja")
+            modules.extend([
+                "qt.tools.vcredist",
+                "qt.tools.vcredist_64",
+                "qt.tools.vcredist_msvc2019_x64",
+                "qt.tools.vcredist_msvc2019_x86"
+            ])
+
+        return modules
+
+    def _check_login(self):
+        """
+        Check if the user can be logged in to the Qt installer.
+        There is two ways to log in,
+        either by setting the environment variables QT_INSTALLER_EMAIL and QT_INSTALLER_PASSWORD,
+        or by having a valid Qt account in the file qtaccount.ini in the default location for the current OS.
+            This file is usually located in:
+            - Windows: C:/Users/{current_user}/AppData/Roaming/Qt/qtaccount.ini
+            - macOS: /Users/{current_user}/Library/Application Support/Qt/qtaccount.ini
+            - Linux: /home/{current_user}/.local/share/Qt/qtaccount.ini
+
+        :return:
+        """
+        if self.options.qt_login_type == "envvars":
+            if not os.getenv("QT_INSTALLER_EMAIL") or not os.getenv("QT_INSTALLER_PASSWORD"):
+                raise ConanInvalidConfiguration(
+                    "You must set the environment variables QT_INSTALLER_EMAIL and QT_INSTALLER_PASSWORD to install Qt."
+                )
+            return
+        if self.options.qt_login_type == "ini":
+        # Check if the qtaccount.ini file exists in the default location for the current OS.
+            default_user = os.getenv("USER")
+            qt_account_init_location = {
+                "Windows": f"C:/Users/{default_user}/AppData/Roaming/Qt/qtaccount.ini",
+                "Macos": f"/Users/{default_user}/Library/Application Support/Qt/qtaccount.ini",
+                "Linux": f"/home/{default_user}/.local/share/Qt/qtaccount.ini"
+            }
+            qt_account_file = qt_account_init_location.get(str(self.settings.os))
+            if not qt_account_file or not os.path.exists(qt_account_file):
+                raise ConanInvalidConfiguration(
+                    f"You must set the environment variables QT_INSTALLER_EMAIL and QT_INSTALLER_PASSWORD or have a valid Qt account in the file {qt_account_file} to install Qt."
+                )
+            return
+        if self.options.qt_login_type not in ["envvars", "ini"]:
+            raise ConanInvalidConfiguration(
+                f"Unsupported login type: {self.options.qt_login_type}. Supported login types are: envvars, ini."
+            )
+
+
+    def system_requirements(self):
+        Apt(self).install(["libxcb-cursor0"], update=True, check=True, recommends=False) # Only executed on Linux Debian based systems, required for Qt installation
+
+    def validate(self):
+        if self.settings.os not in ["Macos", "Linux", "Windows"]:
+            raise ConanInvalidConfiguration("Unsupported OS for Qt installation. Supported OS are: Macos, Linux, Windows.")
+
+        self._check_login()
+
+    def _get_executable_path(self, downloaded_file_name: str) -> tuple[str, None] | tuple[str, str]:
+        """
+        On macOS, the downloaded file is a DMG, a disk image. We have to mount it and then find the executable inside.
+        Here, we mount the DMG file, and then find the path to the executable inside the mounted DMG.
+
+        On Linux, the downloaded file is a `.run` file. We `chmod +x` it and can run it directly.
+
+        On Windows, the downloaded file is an `.exe` file, which is an executable. We can run it directly.
+
+        :param downloaded_file_name: The name of the downloaded file.
+        :return: For Linux & Windows, the absolute path to the executable. For macOS, a tuple containing the mount point and the absolute path to the executable inside the mounted DMG.
+        """
+        if self.settings.os == "Linux":
+            exec_path = os.path.abspath(downloaded_file_name)
+            os.chmod(exec_path, 0o755)
+            return exec_path, None
+        if self.settings.os == "Windows":
+            return os.path.abspath(downloaded_file_name), None # On Windows, we can run the installer directly
+        if self.settings.os != "Macos":
+            raise ConanInvalidConfiguration("Unsupported OS for Qt installation")
+        # We mount here the DMG file with the options -nobrowse (do not show the mounted volume in Finder), -readonly (mount as read-only), -noautoopen (do not open the mounted volume automatically) and -plist (output in plist format).
+        hdiutil_output = subprocess.check_output(["hdiutil", "attach", downloaded_file_name, "-nobrowse", "-readonly", "-noautoopen", "-plist"], universal_newlines=True)
+
+        # We parse the output of hdiutil to find the mount point of the DMG file.
+        import plistlib # Standard library module to parse property list files
+        plist = plistlib.loads(hdiutil_output.encode("utf-8"))
+        mount_point = next(
+            (item["mount-point"]
+             for item in plist.get("system-entities", [])
+             if "mount-point" in item)
+        )
+        if mount_point is None:
+            raise ConanException("Failed to find mount point for the DMG file")
+
+        app_bundles = glob.glob(os.path.join(mount_point, "*.app"))
+        if not app_bundles:
+            raise ConanException("Failed to find app folder for DMG file")
+        app_bundle = app_bundles[0]
+
+        exec_folder = os.path.join(app_bundle, "Contents", "MacOS")
+        exec_files = glob.glob(os.path.join(exec_folder, "qt-online-installer-macOS*"))
+        if not exec_files:
+            raise ConanException("Failed to find executable for Qt installation")
+
+        return exec_files[0], mount_point
+
+    @staticmethod
+    def _detach_on_macos(mount_point: str | None) -> None:
+        """
+        Detach the mounted DMG file on macOS.
+        :param mount_point: The mount point of the DMG file.
+        :return: None
+        """
+        if mount_point is None:
+            return
+        try:
+            subprocess.run(["hdiutil", "detach", mount_point], check=True)
+        except subprocess.CalledProcessError as e:
+            raise ConanException(f"Failed to detach DMG file: {e}") from e
+
+    def build(self):
+        self.run(f"wget https://download.qt.io/official_releases/online_installers/{self._get_distant_name()}")
+        downloaded_file_name = self._get_distant_name()
+        installer_path, mount_point = self._get_executable_path(downloaded_file_name)
+
+        if not os.path.exists(installer_path):
+            raise ConanException("Failed to find installer for Qt installation")
+        if not os.access(installer_path, os.X_OK):
+            raise ConanException(f"The installer ({installer_path}) is not executable.")
+
+        # Run the installer
+        # --confirm-command: Confirms starting of installation
+        # --accept-obligations: Accepts Qt Open Source usage obligations without user input
+        # --accept-licenses: Accepts all licenses without user input.
+        # --default-answer: Automatically answers to message queries with their default values.
+        process_args =      ["--accept-obligations", "--accept-licenses", "--default-answer"]
+        install_directory = ["--root", f"'{self.package_folder}'"]
+        if self.options.qt_login_type == "envvars":
+            qt_email = os.getenv("QT_INSTALLER_EMAIL")
+            qt_password = os.getenv("QT_INSTALLER_PASSWORD")
+            if qt_email is None or qt_password is None:
+                raise ConanInvalidConfiguration("You must set the environment variables QT_INSTALLER_EMAIL and QT_INSTALLER_PASSWORD to install Qt when using 'envvars' login type.")
+            email =             ["--email", f"'{qt_email}'"]
+            password =          ["--password", f"'{qt_password}'"] # Here we add quotes to avoid issues with special characters in the password
+            process_args += email + password
+
+        process_args = install_directory + process_args
+        process_args += ["install"] + self._get_qt_submodules(self.version)
+
+        self.run(f"'{installer_path}' {' '.join(process_args)}")
+
+        # Detach the mounted DMG file if we are on macOS
+        self._detach_on_macos(mount_point)
