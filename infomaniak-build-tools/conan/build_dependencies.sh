@@ -72,7 +72,7 @@ fi
 
 build_type="${1:-Debug}"
 output_dir="${KDRIVE_OUTPUT_DIR:-}"
-if [ -n "${KDRIVE_OUTPUT_DIR:-}" ]; then
+if [ -n "${output_dir}" ]; then
   log "Using environment variable 'KDRIVE_OUTPUT_DIR' as conan output_dir : '$KDRIVE_OUTPUT_DIR'"
 fi
 for arg in "$@"; do
