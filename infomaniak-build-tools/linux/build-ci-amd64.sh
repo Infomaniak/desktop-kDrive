@@ -67,9 +67,9 @@ do
 done
 
 
-if [[ $build_type == "release" ]]; then
+if [[ "$build_type" == "release" ]]; then
     build_type="RelWithDebInfo"
-elif [[ $build_type == "debug" ]]; then
+elif [[ "$build_type" == "debug" ]]; then
     build_type="Debug"
 fi
 

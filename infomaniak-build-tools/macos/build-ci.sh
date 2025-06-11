@@ -35,7 +35,7 @@ app_name="kDrive"
 
 # define Qt6 directory
 QTDIR="${QTDIR-$HOME/Qt/6.2.3/macos}"
-export PATH=$QTDIR/bin:$PATH
+export PATH="$QTDIR/bin:$PATH"
 
 # Set Infomaniak Theme
 kdrive_dir="$src_dir/infomaniak"

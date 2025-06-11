@@ -35,8 +35,8 @@ if [ -z "$2" ]; then
     exit 1
 fi
 
-dir=$1
-tester=$2
+dir="$1"
+tester="$2"
 
 echo "${YELLOW}---------- Running $($tester) ----------${NC}"
 pushd "$dir" 1>/dev/null

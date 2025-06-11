@@ -25,7 +25,7 @@ program_name="$(basename "$0")"
 
 
 function get_default_src_dir() {
-  if [[ -n $KDRIVE_SRC_DIR ]]; then
+  if [[ -n "$KDRIVE_SRC_DIR" ]]; then
      echo "$KDRIVE_SRC_DIR"
   elif [[ -d "$HOME/Projects/desktop-kDrive" ]]; then
      echo "$HOME/Projects/desktop-kDrive"
@@ -34,7 +34,7 @@ function get_default_src_dir() {
     fi
 }
 
-src_dir=$(get_default_src_dir)
+src_dir="$(get_default_src_dir)"
 
 function display_help {
   echo "$program_name [-h] [-d git-directory]"

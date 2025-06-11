@@ -25,13 +25,13 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
-testers=$(find . -type f -name "kDrive_test_*")
+testers="$(find . -type f -name "kDrive_test_*")"
 errors=0
 failures=()
 
-for tester in ${testers[@]}; do
-    echo -e "${YELLOW}---------- Running $(basename $tester) ----------${NC}"
-    chmod +x $tester
+for tester in "${testers[@]}"; do
+    echo -e "${YELLOW}---------- Running $(basename "$tester") ----------${NC}"
+    chmod +x "$tester"
     pushd "$(dirname "$tester")" 1>/dev/null
     "./$(basename "$tester")"
 
