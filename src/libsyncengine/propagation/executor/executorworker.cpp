@@ -62,12 +62,8 @@ void ExecutorWorker::execute() {
     _snapshotToInvalidate = false;
 
     _jobToSyncOpMap.clear();
-    _syncOpToJobMap.clear();
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
-
-    LOG_SYNCPAL_DEBUG(_logger, "JobManager::instance()->countManagedJobs(): " << JobManager::instance()->countManagedJobs());
-    LOG_SYNCPAL_DEBUG(_logger, "JobManager::instance()->maxNbThreads() * 2: " << JobManager::instance()->maxNbThreads() * 2);
 
     // Keep a copy of the sorted list
     _opList = _syncPal->_syncOps->opSortedList();
@@ -88,14 +84,6 @@ void ExecutorWorker::execute() {
             if (stopAsked()) {
                 cancelAllOngoingJobs();
                 break;
-            }
-
-            if (JobManager::instance()->countManagedJobs() > static_cast<size_t>(JobManager::instance()->maxNbThreads()) * 2) {
-                if (ParametersCache::isExtendedLogEnabled()) {
-                    LOG_SYNCPAL_DEBUG(_logger, "Maximum number of jobs reached");
-                }
-                Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-                continue;
             }
 
             UniqueId opId = 0;
@@ -166,10 +154,10 @@ void ExecutorWorker::execute() {
             }
 
             if (job) {
-                manageJobDependencies(syncOp, job);
                 std::function<void(UniqueId)> callback =
                         std::bind(&ExecutorWorker::executorCallback, this, std::placeholders::_1);
-                JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL, callback);
+                job->setAdditionalCallback(callback);
+                JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
                 _ongoingJobs.insert({job->jobId(), job});
                 _jobToSyncOpMap.insert({job->jobId(), syncOp});
             } else {
@@ -642,7 +630,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                 return exitInfo;
             }
 
-            if (filesize > useUploadSessionThreshold) {
+            if (filesize > bigFileThreshold) {
                 try {
                     const int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
                     job = std::make_shared<DriveUploadSession>(
@@ -856,7 +844,7 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
             return ExitCode::DataError;
         }
 
-        if (filesize > useUploadSessionThreshold) {
+        if (filesize > bigFileThreshold) {
             try {
                 int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
                 job = std::make_shared<DriveUploadSession>(_syncPal->vfs(), _syncPal->driveDbId(), _syncPal->syncDb(),
@@ -2132,19 +2120,6 @@ void ExecutorWorker::cancelAllOngoingJobs() {
     _ongoingJobs.clear();
     _opList.clear();
     LOG_SYNCPAL_DEBUG(_logger, "All queued executor jobs cancelled.");
-}
-
-void ExecutorWorker::manageJobDependencies(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job) {
-    _syncOpToJobMap.insert({syncOp->id(), job->jobId()});
-    // Check for job dependencies on other job
-    if (syncOp->hasParentOp()) {
-        auto parentOpId = syncOp->parentId();
-        if (_syncOpToJobMap.find(parentOpId) != _syncOpToJobMap.end()) {
-            // The job ID associated with the parent sync operation
-            auto parentJobId = _syncOpToJobMap.find(parentOpId)->second;
-            job->setParentJobId(parentJobId);
-        }
-    }
 }
 
 void ExecutorWorker::increaseErrorCount(const SyncOpPtr syncOp, const ExitInfo exitInfo /*= ExitInfo()*/) {
