@@ -42,19 +42,18 @@ class TestJobManager : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testWithCallbackMediumFiles);
         CPPUNIT_TEST(testWithCallbackBigFiles);
         CPPUNIT_TEST(testCancelJobs);
-        CPPUNIT_TEST(testJobDependencies);
         CPPUNIT_TEST(testJobPriority);
         CPPUNIT_TEST(testJobPriority2);
-        CPPUNIT_TEST(testJobPriority3);
-        // CPPUNIT_TEST(testReuseSocket);
+        CPPUNIT_TEST(testCanRunjob);
+        CPPUNIT_TEST(testReuseSocket);
         CPPUNIT_TEST_SUITE_END();
 
     public:
         void setUp() override;
         void tearDown() override;
 
-        bool _jobErrorSocketsDefuncted;
-        bool _jobErrorOther;
+        bool _jobErrorSocketsDefuncted{false};
+        bool _jobErrorOther{false};
 
     protected:
         void testWithoutCallback();
@@ -62,26 +61,25 @@ class TestJobManager : public CppUnit::TestFixture, public TestBase {
         void testWithCallbackMediumFiles();
         void testWithCallbackBigFiles();
         void testCancelJobs();
-        void testJobDependencies();
         void testJobPriority(); // Test execution order of jobs with different priority. Jobs with higher priority must be
                                 // executed first.
         void testJobPriority2(); // Test execution order of jobs with same priority. Jobs created first must be executed first.
         void testJobPriority3(); // Test execution order of jobs. Jobs are created with priority alternating between Normal and
                                  // Highest. It checks that jobs are dequed correctly in JobManager (issue #320:
                                  // https://gitlab.infomaniak.ch/infomaniak/desktop-app/multi/kdrive/-/issues/320)
-
+        void testCanRunjob();
         void testReuseSocket();
 
     private:
         const testhelpers::TestVariables _testVariables;
         SyncPath _localDirPath;
 
-        std::unordered_map<uint64_t, std::shared_ptr<AbstractJob>> _ongoingJobs;
+        std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _ongoingJobs;
         std::recursive_mutex _mutex;
 
-        void callback(uint64_t jobId);
+        void callback(UniqueId jobId);
         size_t ongoingJobsCount();
-        void testWithCallbackBigFiles(const SyncPath &dirPath, int size, int count);
+        void testWithCallbackBigFiles(const SyncPath &dirPath, uint16_t size, uint16_t count);
         void cancelAllOngoingJobs();
 };
 

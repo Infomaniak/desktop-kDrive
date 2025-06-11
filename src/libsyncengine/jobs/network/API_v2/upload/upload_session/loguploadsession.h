@@ -25,7 +25,7 @@ namespace KDC {
 
 class LogUploadSession : public AbstractUploadSession {
     public:
-        explicit LogUploadSession(const SyncPath &filepath, uint64_t nbParallelThread = 1);
+        explicit LogUploadSession(const SyncPath &filepath, uint64_t nbParallelThread);
 
     protected:
         bool runJobInit() override;
