@@ -71,6 +71,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testMoveMoveSourcePseudoConflict();
         void testMoveMoveSourceConflict();
         void testMoveMoveDestConflict();
+        void testMoveMoveCycleConflict();
 
         // // TODO : other tests
         // // - many sync ops (ex: upload 100 files)
