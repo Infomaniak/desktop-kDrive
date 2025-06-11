@@ -25,15 +25,15 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
-testers="$(find . -type f -name "kDrive_test_*")"
+testers=$(find . -type f -name "kDrive_test_*")
 errors=0
 failures=()
 
-for tester in "${testers[@]}"; do
-    echo -e "${YELLOW}---------- Running $(basename "$tester") ----------${NC}"
-    chmod +x "$tester"
-    pushd "$(dirname "$tester")" 1>/dev/null
-    "./$(basename "$tester")"
+for tester in ${testers[@]}; do
+    echo -e "${YELLOW}---------- Running $(basename $tester) ----------${NC}"
+    chmod +x $tester
+    pushd $(dirname "$tester") 1>/dev/null
+    ./$(basename "$tester")
 
     if [ $? -ne 0 ]; then
         (( errors+=1 ))
@@ -49,7 +49,7 @@ if [ $errors -eq 0 ]; then
     echo -e "${GREEN}Success: All Tests passed !${NC}"
 else
     echo -e "${RED}Failures :\n"
-    for failure in "${failures[@]}"; do
+    for failure in ${failures[@]}; do
         echo -e "$failure"
     done
     echo -e "${NC}"
