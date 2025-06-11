@@ -755,7 +755,7 @@ bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
         return false;
     }
 
-    std::list<std::string> dbUserExclusionStringsOutput;
+    std::vector<ExclusionTemplate> dbUserExclusionTemplatesOutput;
     StrSet dbUserExclusionUniqueStrings;
     for (const auto &userTemplate: dbUserExclusionTemplates) {
         const SyncName &templateName = Str2SyncName(userTemplate.templ());
@@ -768,15 +768,10 @@ bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
         for (const auto &normalizedName: normalizedTemplateNames) {
             const std::string &normalizedStr = SyncName2Str(normalizedName);
             if (const auto &[_, successfulInsertion] = dbUserExclusionUniqueStrings.emplace(normalizedStr); successfulInsertion) {
-                dbUserExclusionStringsOutput.push_back(normalizedStr);
+                (void) dbUserExclusionTemplatesOutput.emplace_back(normalizedStr);
             }
         }
     }
-
-    std::vector<ExclusionTemplate> dbUserExclusionTemplatesOutput;
-    (void) std::transform(dbUserExclusionStringsOutput.cbegin(), dbUserExclusionStringsOutput.cend(),
-                          std::back_inserter(dbUserExclusionTemplatesOutput),
-                          [](const auto &str) { return ExclusionTemplate(str); });
 
     LOG_INFO(_logger, "Normalizations prepared for updates.");
 
