@@ -217,14 +217,6 @@ void TestIntegration::testAll() {
     // basicTests();
     // inconsistencyTests();
     conflictTests();
-
-    // &TestIntegration::testMoveDeleteConflict1,
-    // &TestIntegration::testMoveDeleteConflict2,
-    // &TestIntegration::testMoveDeleteConflict3,
-    // &TestIntegration::testMoveDeleteConflict4,
-    // &TestIntegration::testMoveDeleteConflict5,
-    // &TestIntegration::testMoveParentDeleteConflict,
-    // &TestIntegration::testCreateParentDeleteConflict,
     // &TestIntegration::testMoveMoveSourcePseudoConflict,
     // &TestIntegration::testMoveMoveSourceConflict,
     // &TestIntegration::testMoveMoveDestConflict,
@@ -462,7 +454,8 @@ void TestIntegration::conflictTests() {
     // testMoveCreateConflict();
     // testEditDeleteConflict();
     // testMoveDeleteConflict();
-    testMoveParentDeleteConflict();
+    // testMoveParentDeleteConflict();
+    testCreateParentDeleteConflict();
 }
 
 void TestIntegration::testCreateCreatePseudoConflict() {
@@ -716,13 +709,13 @@ void TestIntegration::testEditDeleteConflict() {
 }
 
 namespace {
-struct TestMoveDeleteInfo {
+struct RemoteNodeInfo {
         NodeId remoteNodeIdA;
         NodeId remoteNodeIdAA;
         NodeId remoteNodeIdAB;
 };
 
-void generateInitialTestSituation(const int driveDbId, const NodeId &parentId, TestMoveDeleteInfo &info) {
+void generateInitialTestSituation(const int driveDbId, const NodeId &parentId, RemoteNodeInfo &info) {
     // .
     // `-- A
     //     |-- AA
@@ -751,7 +744,7 @@ void TestIntegration::testMoveDeleteConflict() {
     {
         auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
         const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
-        TestMoveDeleteInfo info;
+        RemoteNodeInfo info;
         generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
         waitForCurrentSyncToFinish(syncCount);
 
@@ -784,7 +777,7 @@ void TestIntegration::testMoveDeleteConflict() {
     {
         auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
         const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
-        TestMoveDeleteInfo info;
+        RemoteNodeInfo info;
         generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
         waitForCurrentSyncToFinish(syncCount);
 
@@ -823,7 +816,7 @@ void TestIntegration::testMoveDeleteConflict() {
     {
         auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
         const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
-        TestMoveDeleteInfo info;
+        RemoteNodeInfo info;
         generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
         waitForCurrentSyncToFinish(syncCount);
 
@@ -864,7 +857,7 @@ void TestIntegration::testMoveDeleteConflict() {
     {
         auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
         const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
-        TestMoveDeleteInfo info;
+        RemoteNodeInfo info;
         generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
         waitForCurrentSyncToFinish(syncCount);
 
@@ -901,7 +894,7 @@ void TestIntegration::testMoveDeleteConflict() {
     {
         auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
         const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
-        TestMoveDeleteInfo info;
+        RemoteNodeInfo info;
         generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
         waitForCurrentSyncToFinish(syncCount);
 
@@ -934,7 +927,7 @@ void TestIntegration::testMoveParentDeleteConflict() {
     {
         auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
         const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
-        TestMoveDeleteInfo info;
+        RemoteNodeInfo info;
         generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
         waitForCurrentSyncToFinish(syncCount);
 
@@ -962,7 +955,7 @@ void TestIntegration::testMoveParentDeleteConflict() {
     {
         auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
         const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
-        TestMoveDeleteInfo info;
+        RemoteNodeInfo info;
         generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
         waitForCurrentSyncToFinish(syncCount);
 
@@ -1003,7 +996,7 @@ void TestIntegration::testMoveParentDeleteConflict() {
         //         └── ABB
         auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
         const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
-        TestMoveDeleteInfo info;
+        RemoteNodeInfo info;
         generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
         (void) CreateDirJob(nullptr, _driveDbId, info.remoteNodeIdAB, "ABA").runSynchronously();
         createRemoteFile(_driveDbId, "ABB", info.remoteNodeIdAB);
@@ -1041,6 +1034,35 @@ void TestIntegration::testMoveParentDeleteConflict() {
         CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / FileRescuer::rescueFolderName() / "ABB"));
         logStep("testMoveParentDeleteConflict3");
     }
+}
+
+void TestIntegration::testCreateParentDeleteConflict() {
+    auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
+    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+    RemoteNodeInfo info;
+    generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
+    waitForCurrentSyncToFinish(syncCount);
+
+    // Create A/AB/ABA on local replica
+    const SyncPath localPathA = _syncPal->localPath() / tmpRemoteDir.name() / "A";
+    const SyncPath localPathABA = localPathA / "AB" / "ABA";
+    testhelpers::generateOrEditTestFile(localPathABA);
+
+    // Delete AB on remote replica
+    deleteRemoteFile(_driveDbId, info.remoteNodeIdAB);
+
+    syncCount = _syncPal->syncCount();
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+    waitForCurrentSyncToFinish(syncCount);
+
+    syncCount++; // Previous sync only fixed the conflicts.
+    waitForCurrentSyncToFinish(syncCount);
+
+    // Delete operation wins...
+    CPPUNIT_ASSERT(!std::filesystem::exists(localPathA / "AB"));
+    // ...but created files should be rescued
+    CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / FileRescuer::rescueFolderName() / "ABA"));
+    logStep("testCreateParentDeleteConflict");
 }
 
 // void TestIntegration::testCreateParentDeleteConflict() {

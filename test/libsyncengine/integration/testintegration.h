@@ -67,6 +67,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testEditDeleteConflict();
         void testMoveDeleteConflict();
         void testMoveParentDeleteConflict();
+        void testCreateParentDeleteConflict();
 
         // // TODO : other tests
         // // - many sync ops (ex: upload 100 files)
