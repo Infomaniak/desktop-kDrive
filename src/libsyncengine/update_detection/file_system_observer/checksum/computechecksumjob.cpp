@@ -28,7 +28,8 @@
 
 namespace KDC {
 
-ComputeChecksumJob::ComputeChecksumJob(const NodeId &nodeId, const SyncPath &filepath, std::shared_ptr<Snapshot> localSnapshot) :
+ComputeChecksumJob::ComputeChecksumJob(const NodeId &nodeId, const SyncPath &filepath,
+                                       const std::shared_ptr<LiveSnapshot> localSnapshot) :
     _logger(Log::instance()->getLogger()),
     _nodeId(nodeId),
     _filePath(filepath),
@@ -82,8 +83,8 @@ void ComputeChecksumJob::runJob() {
                 LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" aborted for file " << Path2WStr(_filePath));
             } else {
                 if (isExtendedLog()) {
-                    LOGW_DEBUG(_logger, L"Checksum computation " << jobId() << L" for file " << Path2WStr(_filePath).c_str()
-                                                                 << L" took " << timer.elapsed<DoubleSeconds>().count() << L"s");
+                    LOGW_DEBUG(_logger, L"Checksum computation " << jobId() << L" for file " << Path2WStr(_filePath) << L" took "
+                                                                 << timer.elapsed<DoubleSeconds>().count() << L"s");
                 }
             }
         } else {

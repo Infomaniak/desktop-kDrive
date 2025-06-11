@@ -101,8 +101,8 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
                     if (!std::filesystem::remove(dirIt->path(), ec)) {
                         if (ec.value() != 0) {
                             LOGW_WARN(_logger, L"Failed to remove all " << Utility::formatSyncPath(absolutePath) << L": "
-                                                                        << Utility::s2ws(ec.message()) << L" ("
-                                                                        << ec.value() << L")");
+                                                                        << Utility::s2ws(ec.message()) << L" (" << ec.value()
+                                                                        << L")");
                             _exitCode = ExitCode::SystemError;
                             _exitCause = ExitCause::FileAccessError;
                             return false;
@@ -175,8 +175,7 @@ bool VirtualFilesCleaner::folderCanBeProcessed(std::filesystem::recursive_direct
 #endif
 
     if (dirIt->path().native().length() > CommonUtility::maxPathLength()) {
-        LOGW_WARN(_logger,
-                  L"Ignore path=" << Path2WStr(dirIt->path()) << L" because size > " << CommonUtility::maxPathLength());
+        LOGW_WARN(_logger, L"Ignore path=" << Path2WStr(dirIt->path()) << L" because size > " << CommonUtility::maxPathLength());
         return false;
     }
 
@@ -215,8 +214,8 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
                 IoError ioError = IoError::Success;
                 const bool success = IoHelper::checkIfFileIsDehydrated(dirIt->path(), isDehydrated, ioError);
                 if (!success || ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
-                    LOGW_WARN(_logger, L"Error in IoHelper::checkIfFileIsDehydrated: "
-                                               << Utility::formatIoError(dirIt->path(), ioError));
+                    LOGW_WARN(_logger,
+                              L"Error in IoHelper::checkIfFileIsDehydrated: " << Utility::formatIoError(dirIt->path(), ioError));
                     continue;
                 }
 
@@ -241,8 +240,7 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
                     }
 
                     if (ParametersCache::isExtendedLogEnabled()) {
-                        LOGW_DEBUG(_logger,
-                                   L"VFC removeDehydratedPlaceholders: removing item " << SyncName2WStr(filePathStr));
+                        LOGW_DEBUG(_logger, L"VFC removeDehydratedPlaceholders: removing item " << SyncName2WStr(filePathStr));
                     }
                 }
             }

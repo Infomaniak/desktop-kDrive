@@ -20,6 +20,7 @@ env:
   KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
   KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
+  KDRIVE_SENTRY_ENVIRONMENT: "macos_ci_runner"
 
 jobs:
   build-kDrive:
@@ -50,8 +51,11 @@ jobs:
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-tests.sh
+
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-tests.sh
+        run : |
+            env | grep KDRIVE | sed 's/^/export /' > /tmp/export 
+            env -i bash -l -c 'source /tmp/export; ./infomaniak-build-tools/run-tests.sh; rm /tmp/export'  
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV

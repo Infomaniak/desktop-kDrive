@@ -6,11 +6,8 @@
 	- [Xcode](#xcode)
 	- [Qt 6.2.3](#qt-623)
 	- [Sentry](#sentry)
-	- [log4cplus](#log4cplus)
 	- [cppunit](#cppunit)
-	- [OpenSSL](#openssl)
 	- [Poco](#poco)
-	- [xxHash](#xxhash)
 	- [libzip](#libzip)
 	- [Sparkle](#sparkle)
 	- [Packages](#packages)
@@ -93,28 +90,6 @@ cmake --build build --parallel
 sudo cmake --install build
 ```
 
-## log4cplus
-
-Download and build `log4cplus`:
-
-```bash
-cd ~/Projects
-git clone --recurse-submodules https://github.com/log4cplus/log4cplus.git
-cd log4cplus
-git checkout 2.1.x
-mkdir build
-cd build
-cmake .. -DUNICODE=1 -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15"
-sudo cmake --build . --target install
-```
-
-If an error occurs with the the include of `catch.hpp`, you need to change branch inside the `catch` directory:
-
-```bash
-cd ../catch
-git checkout v2.x
-```
-
 ## CPPUnit
 
 Download and build `CPPUnit`:
@@ -138,61 +113,23 @@ sudo make install
 
 If the server does not reply to the `git clone` command, you can download the source from https://www.freedesktop.org/wiki/Software/cppunit/.
 
-## OpenSSL
-
-Download and build `OpenSSL`:
-
-The configuration for the `x86_64` architecture is as follows:
-
-```bash
-cd ~/Projects
-git clone https://github.com/openssl/openssl.git
-cd openssl
-git checkout tags/openssl-3.2.1
-cd ..
-mv openssl openssl.x86_64
-cp -Rf openssl.x86_64 openssl.arm64
-mkdir openssl.multi
-cd openssl.x86_64
-./Configure darwin64-x86_64-cc shared -mmacosx-version-min=10.15
-make
-```
-
-If you have an `AMD` architecture, run `sudo make install` then continue.
-
-The configuration for the `ARM` architecture goes as follows:
-
-```bash
-cd ~/Projects/openssl.arm64
-./Configure darwin64-arm64-cc shared enable-rc5 zlib no-asm -mmacosx-version-min=10.15 
-make
-```
-
-If you have an `ARM` architecture, run `sudo make install` then continue.
-
-```bash
-cd ~/Projects
-lipo -arch arm64 openssl.arm64/libcrypto.3.dylib -arch x86_64 openssl.x86_64/libcrypto.3.dylib -output openssl.multi/libcrypto.3.dylib -create
-lipo -arch arm64 openssl.arm64/libssl.3.dylib -arch x86_64 openssl.x86_64/libssl.3.dylib -output openssl.multi/libssl.3.dylib -create
-lipo -arch arm64 openssl.arm64/libcrypto.a -arch x86_64 openssl.x86_64/libcrypto.a -output openssl.multi/libcrypto.a -create
-lipo -arch arm64 openssl.arm64/libssl.a -arch x86_64 openssl.x86_64/libssl.a -output openssl.multi/libssl.a -create
-sudo cp openssl.multi/* /usr/local/lib/
-```
-
 ## Poco
 
-> :warning: **`Poco` requires [OpenSSL](#openssl) to be installed.**
+> :warning: **`Poco` requires OpenSSL to be installed.**
+>
+> You **must follow** the [Conan](#conan) section first to install `OpenSSL`.
 
 Download and build `Poco`:
 
 ```bash
 cd ~/Projects
+source "$(find ./desktop-kdrive/ -name "conanrun.sh")" || exit 1 # This will prepend the path to the conan-managed dependencies to the 'DYLD_LIBRARY_PATH' environment variable
 git clone https://github.com/pocoproject/poco.git
 cd poco
 git checkout tags/poco-1.13.3-release
 mkdir build
 cd build
-cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -DOPENSSL_ROOT_DIR=/usr/local/ -DOPENSSL_INCLUDE_DIR=/usr/local/include/ -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib/libcrypto.dylib -DOPENSSL_SSL_LIBRARY=/usr/local/lib/libssl.dylib -DENABLE_DATA_ODBC=OFF 
+cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -DENABLE_DATA_ODBC=OFF 
 sudo cmake --build . --target install
 ```
 
@@ -331,7 +268,7 @@ The project requires additional CMake variables for a correct build. To inject t
 ./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release] [--output-dir=<output_dir>]
 ```
 
-> **Note:** Currently only **xxHash** is managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** Currently only **xxHash**, **log4cplus**, **OpenSSL** and **libzip** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
 
 ---
 # Build in Debug
@@ -340,9 +277,9 @@ The project requires additional CMake variables for a correct build. To inject t
 
 Dependencies are deployed using utilitary tool `macdeployqt` provided with the Qt binaries:
 
-`/Users/<user_name>/Qt/6.2.3/macos/bin/macdeployqt /Users/<user_name>/Projects/CLion-build-debug/install/kDrive.app -libpath=/usr/local/lib -no-strip -executable=/Users/<user_name>/Projects/CLion-build-debug/install/kDrive.app/Contents/MacOS/kDrive`.
+`/Users/<user_name>/Qt/6.2.3/macos/bin/macdeployqt /Users/<user_name>/Projects/CLion-build-debug/install/kDrive.app -libpath=$DYLD_LIBRARY_PATH -no-strip -executable=/Users/<user_name>/Projects/CLion-build-debug/install/kDrive.app/Contents/MacOS/kDrive`.
 
-This command is run each time we build in release mode. However, since it takes some time to find all dependencies, this program is run manually in debug mode every time we need to rebuild the binary directory.
+This command is run each time we build. However, since it takes some time to find all dependencies, it is possible to disable it by setting the variable DEPLOY_LIBS_MANUALLY.
 
 ## Using CLion
 

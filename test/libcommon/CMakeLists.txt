@@ -24,13 +24,12 @@ set(testcommon_SRCS
         log/sentry/testsentryhandler.h log/sentry/testsentryhandler.cpp
 )
 
-if (WIN32)
-    include_directories("F:/Projects/log4cplus/include")
+if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
     include_directories("C:/Program Files (x86)/Sentry-Native/include")
-else ()
+else()
     include_directories("/usr/local/include")
-endif ()
+endif()
 
 add_executable(${testcommon_NAME} ${testcommon_SRCS})
 
@@ -52,16 +51,16 @@ target_link_libraries(${testcommon_NAME}
         ${libcommonserver_NAME}
 )
 
-if (WIN32)
+if(WIN32)
     target_link_libraries(${testcommon_NAME}
             debug
             "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"
             optimized
             "C:/Program Files (x86)/cppunit/lib/cppunit_dll.lib")
-elseif (APPLE)
+elseif(APPLE)
     target_link_libraries(${testcommon_NAME}
             "/usr/local/lib/libcppunit.dylib")
-else ()
+else()
     target_link_libraries(${testcommon_NAME}
             "/usr/local/lib/libcppunit.so")
 endif ()

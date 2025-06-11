@@ -2,12 +2,9 @@
 - [Installation Requirements](#installation-requirements)
     - [Packages](#packages)
     - [Qt 6.2.3](#qt-623)
-    - [log4cplus](#log4cplus)
-    - [OpenSSL](#openssl)
     - [Poco](#poco)
     - [CPPUnit](#cppunit)
     - [Sentry](#sentry)
-    - [xxHash](#xxhash)
     - [libzip](#libzip)
     - [Conan](#conan)
 - [Build in Debug](#build-in-debug)
@@ -41,7 +38,6 @@ You will need cmake and clang to compile the libraries and the kDrive project
 This documentation was made for Ubuntu 22.04 LTS
 
 We are migrating the dependency management from manual to using conan.
-Currently, only the dependency `xxHash` is managed by conan. 
 
 ## Packages
 
@@ -70,10 +66,6 @@ sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/lib/llvm-18/bin
 
 Check the version again with `clang --version` to ensure that the version is now 18 or higher.
 
-## xxHash
-
-See [Conan](#conan) part.
-
 ## Qt 6.2.3
 
 From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4), 
@@ -93,68 +85,21 @@ If, following the installation, you cannot load the Qt platform plugin xcb, you 
 sudo apt install libxcb-cursor0
 ```
 
-## log4cplus
-
-```bash
-cd ~/Projects
-git clone --recurse-submodules https://github.com/log4cplus/log4cplus.git
-cd log4cplus
-git checkout 2.1.x
-cd catch
-git checkout v2.x
-cd ..
-mkdir cmake-build
-cd cmake-build
-cmake .. -DUNICODE=1
-sudo cmake --build . --target install
-```
-
-If an error occurs with the the include of `catch.hpp`, you need to change branch inside the `catch` directory:
-
-```bash
-cd ../catch
-git checkout v2.x
-```
-
-## OpenSSL
-
-The OpenSSL Configure will require Perl to be installed first
-
-```bash
-cd ~/Projects
-git clone git@github.com:openssl/openssl.git
-cd openssl
-git checkout tags/openssl-3.2.1
-./Configure shared
-make
-sudo make install
-```
-
 ## Poco
 
-> :warning: **`Poco` requires [OpenSSL](#openssl) to be installed.**
+> :warning: **`Poco` requires OpenSSL to be installed.**
+>
+> You **must follow** the [Conan](#conan) section first to install `OpenSSL`.
 
-For ARM64:
 ```bash
 cd ~/Projects
+source "$(find ./desktop-kdrive/ -name "conanrun.sh")" || exit 1 # This will prepend the path to the conan-managed dependencies to the 'LD_LIBRARY_PATH' environment variable
 git clone https://github.com/pocoproject/poco.git
 cd poco
 git checkout tags/poco-1.13.3-release
 mkdir cmake-build
 cd cmake-build
-cmake .. -DOPENSSL_ROOT_DIR=/usr/local -DOPENSSL_INCLUDE_DIR=/usr/local/include -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib/libcrypto.so -DOPENSSL_SSL_LIBRARY=/usr/local/lib/libssl.so
-sudo cmake --build . --target install
-```
-
-For AMD64:
-```bash
-cd ~/Projects
-git clone https://github.com/pocoproject/poco.git
-cd poco
-git checkout tags/poco-1.13.3-release
-mkdir cmake-build
-cd cmake-build
-cmake .. -DOPENSSL_ROOT_DIR=/usr/local -DOPENSSL_INCLUDE_DIR=/usr/local/include -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib64/libcrypto.so -DOPENSSL_SSL_LIBRARY=/usr/local/lib64/libssl.so
+cmake ..
 sudo cmake --build . --target install
 ```
 
@@ -309,7 +254,7 @@ The project requires additional CMake variables for a correct build. To inject t
 ./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release] [--output-dir=<output_dir>]
 ```
 
-> **Note:** Currently only **xxHash** is managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** Currently only **xxHash**, **log4cplus**, **OpenSSL** and **zlib** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
 
 ---
 # Build in Debug

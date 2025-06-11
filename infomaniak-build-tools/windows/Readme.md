@@ -4,17 +4,14 @@
 - [Installation Requirements](#installation-requirements)
     - [Qt 6.2.3](#qt-623)
     - [Sentry](#sentry)
-    - [xxHash](#xxhash)
-    - [OpenSSL](#openssl)
     - [Poco](#poco)
-    - [log4cplus](#log4cplus)
     - [CPPUnit](#cppunit)
     - [Zlib](#zlib)
     - [libzip](#libzip)
     - [C++ Redistributable](#redistributable)
     - [NSIS](#nsis)
     - [7za](#7za)
-    - [IcoTool](#icotool)
+    - [Conan](#conan)
 - [Certificate Configuration](#certificate-configuration)
 - [Build in Debug](#build-in-debug)
     - [Using CLion](#using-clion)
@@ -99,27 +96,9 @@ cmake --build build --config RelWithDebInfo
 cmake --install build --config RelWithDebInfo
 ```
 
-## xxHash
-
-See [Conan](#conan) for installation instructions.
-
-## OpenSSL
-
-Clone `OpenSSL` sources:
-
-```powershell
-cd F:\Projects
-git clone git@github.com:openssl/openssl.git
-cd openssl
-git checkout tags/openssl-3.2.1
-```
-
-Then follow their [installation instructions](https://github.com/openssl/openssl/blob/master/NOTES-WINDOWS.md) for Windows. 
-Note that installing `NASM` is not required.
-
 ## Poco
 
-> :warning: **`Poco` requires [OpenSSL](#openssl) to be installed.**
+> :warning: **`Poco` requires OpenSSL to be installed.**
 
 Clone and build `Poco`:
 
@@ -145,29 +124,6 @@ cmake --build . --target install --config Debug
 cmake --build . --target install --config Release
 ```
 
-## log4cplus
-
-Clone and build `log4cplus`:
-
-```powershell
-cd F:\Projects
-git clone --recurse-submodules https://github.com/log4cplus/log4cplus.git
-cd log4cplus
-git checkout 2.1.x
-mkdir cmake-build
-cd cmake-build
-cmake -G "Visual Studio 16 2019" .. -DLOG4CPLUS_ENABLE_THREAD_POOL=OFF
-cmake --build . --target install --config Debug
-cmake --build . --target install --config Release
-```
-
-If an error occurs with the the include of `catch.hpp`, you need to change branch inside the `catch` directory:
-
-```bash
-cd ../catch
-git checkout v2.x
-```
-
 ## CPPUnit
 
 Clone `CPPUnit`:
@@ -189,10 +145,13 @@ Copy `lib` and `include` folders from F:\Projects\cppunit\` to `C:\Program Files
 
 ## Zlib
 
+> :warning: `zlib` is currently managed by [Conan](#conan) for OpenSSL, but it is also needed for libzip. Since libzip is not managed by Conan, you must install zlib manually using the instructions below.
+
 Download [Zlib](https://zlib.net/fossils/zlib-1.2.11.tar.gz) then run the following:
 ```cmd
-tar -xvzf C:\Users\%username%\Downloads\zlib-1.2.11.tar.gz -C "C:\Program Files (x86)\"
-cd "C:/Program Files (x86)/zlib-1.2.11"
+F:
+tar -xvzf %USERPROFILE%\Downloads\zlib-1.2.11.tar.gz -C F:\Projects
+cd F:\Projects\zlib-1.2.11
 nmake /f win32/Makefile.msc
 mkdir include
 copy zconf.h include\
@@ -204,6 +163,10 @@ copy zlib.pdb lib\
 mkdir bin
 copy zlib1.dll bin\
 copy zlib1.pdb bin\
+mkdir "C:\Program Files (x86)\zlib-1.2.11\include"
+copy include\* "C:\Program Files (x86)\zlib-1.2.11\include\"
+mkdir "C:\Program Files (x86)\zlib-1.2.11\lib"
+copy lib\* "C:\Program Files (x86)\zlib-1.2.11\lib\"
 ```
 
 ## libzip
@@ -336,8 +299,8 @@ The project requires additional CMake variables for a correct build. To inject t
    set(SOCKETAPI_TEAM_IDENTIFIER_PREFIX "864VDCS2QY")
    set(CMAKE_PREFIX_PATH "C:/Qt/6.2.3/msvc2019_64")
    set(CMAKE_INSTALL_PREFIX "F:/Projects/cmake-build-release_CLion")
-   set(ZLIB_INCLUDE_DIR "F:/Projects/zlib-1.2.11/include")
-   set(ZLIB_LIBRARY_RELEASE "F:/Projects/zlib-1.2.11/lib/zlib.lib")
+   set(ZLIB_INCLUDE_DIR "C:/Program Files (x86)/zlib-1.2.11/include")
+   set(ZLIB_LIBRARY_RELEASE "C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib")
    set(VFS_STATIC_LIBRARY "F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug/Vfs.lib")
    set(VFS_DIRECTORY "F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug")
    ```
@@ -357,7 +320,7 @@ The project requires additional CMake variables for a correct build. To inject t
 powershell ./infomaniak-build-tools/conan/build_dependencies.ps1 [Debug|Release] [-OutputDir <output_dir>]
 ```
 
-> **Note:** Currently only **xxHash** is managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** Currently only **xxHash**, **log4cplus**, **OpenSSL** and **zlib** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
 
 ---
 # Build in Debug
@@ -370,12 +333,11 @@ In order for CMake to be able to find all dependencies, add all libraries instal
 ```
 C:\Program Files (x86)\Poco\bin
 C:\Program Files (x86)\libzip\bin
-C:\Program Files (x86)\zlib-1.2.11\bin
 C:\Program Files (x86)\Sentry-Native\bin
-C:\Program Files (x86)\log4cplus\bin
 C:\Program Files (x86)\cppunit\bin
-C:\Program Files\OpenSSL\bin
 ```
+
+Since some dependencies are now managed by Conan, you may also need to run the `conanrun.bat` script to append the paths of the Conan-installed dependencies to the `PATH` environment variable.
 
 ## Using CLion
 
@@ -392,7 +354,7 @@ You can disable QML debugger from the settings to avoid some error pop-ups.
 
 ### Additionnal Requirements
 
-To be able to properly debug, you will need to install the `Qt Debug Information Files` from the [`Qt 6.2.3` Section](#qt-6.2.3).
+To be able to properly debug, you will need to install the `Qt Debug Information Files` from the [`Qt 6.2.3` Section](#qt-623).
 If you cannot see it, you need to tick the **Archive** box and filter again.
 
 ### CMake Parameters
@@ -497,7 +459,6 @@ Once done, right-click on the `kDrive_client` executable and then on `Install`.
 
 During the next step, you may encounter missing DLL errors. If so, copy the required DLLs into the `bin` folder of your output directory. The DLLs are located in:
 - `C:\Program Files (x86)\Poco\bin`
-- `C:\Program Files (x86)\log4cplus\bin`
 - `C:\Program Files (x86)\NSIS\Bin`
 - `C:\Program Files (x86)\zlib-1.2.11`
 - `C:\Program Files\OpenSSL\bin`

@@ -38,7 +38,7 @@ for tester in ${testers[@]}; do
     ./$(basename "$tester")
 
     if [ $? -ne 0 ]; then
-        errors+=1
+        (( errors+=1 ))
         failures+=($(basename $tester))
         echo -e "${RED}---------- Failure: $(basename $tester) ----------${NC}";
     else

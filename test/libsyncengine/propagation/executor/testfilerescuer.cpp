@@ -59,7 +59,7 @@ void TestFileRescuer::setUp() {
     Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
-    const auto sync = Sync(1, drive.dbId(), localPathStr, testVariables.remotePath);
+    const auto sync = Sync(1, drive.dbId(), localPathStr, "", testVariables.remotePath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Setup proxy
@@ -72,6 +72,7 @@ void TestFileRescuer::setUp() {
                                          KDRIVE_VERSION_STRING);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
+    _syncPal->createWorkers();
 }
 
 void TestFileRescuer::tearDown() {

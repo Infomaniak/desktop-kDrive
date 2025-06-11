@@ -146,28 +146,32 @@
 #define SELECT_NODE_BY_NODEID_SYNCING 12
 
 #define SELECT_NODE_BY_NODEIDLOCAL_ID "select_node3"
-#define SELECT_NODE_BY_NODEIDLOCAL                                                                                               \
-    "SELECT nodeId, parentNodeId, nameLocal, nameDrive, created, lastModifiedLocal, type, size, checksum, status, syncing FROM " \
-    "node "                                                                                                                      \
+#define SELECT_NODE_BY_NODEIDLOCAL                                                                                          \
+    "SELECT nodeId, parentNodeId, nameLocal, nameDrive, nodeIdLocal, nodeIdDrive, created, lastModifiedLocal, type, size, " \
+    "checksum, status, syncing FROM "                                                                                       \
+    "node "                                                                                                                 \
     "WHERE nodeIdLocal=?1;"
 
 #define SELECT_NODE_BY_NODEIDDRIVE_ID "select_node4"
-#define SELECT_NODE_BY_NODEIDDRIVE                                                                                               \
-    "SELECT nodeId, parentNodeId, nameLocal, nameDrive, created, lastModifiedDrive, type, size, checksum, status, syncing FROM " \
-    "node "                                                                                                                      \
+#define SELECT_NODE_BY_NODEIDDRIVE                                                                                          \
+    "SELECT nodeId, parentNodeId, nameLocal, nameDrive, nodeIdLocal, nodeIdDrive, created, lastModifiedDrive, type, size, " \
+    "checksum, status, syncing FROM "                                                                                       \
+    "node "                                                                                                                 \
     "WHERE nodeIdDrive=?1;"
 
 #define SELECT_NODE_BY_REPLICAID_DBID 0
 #define SELECT_NODE_BY_REPLICAID_PARENTID 1
 #define SELECT_NODE_BY_REPLICAID_NAMELOCAL 2
 #define SELECT_NODE_BY_REPLICAID_NAMEDRIVE 3
-#define SELECT_NODE_BY_REPLICAID_CREATED 4
-#define SELECT_NODE_BY_REPLICAID_LASTMOD 5
-#define SELECT_NODE_BY_REPLICAID_TYPE 6
-#define SELECT_NODE_BY_REPLICAID_SIZE 7
-#define SELECT_NODE_BY_REPLICAID_CHECKSUM 8
-#define SELECT_NODE_BY_REPLICAID_STATUS 9
-#define SELECT_NODE_BY_REPLICAID_SYNCING 10
+#define SELECT_NODE_BY_REPLICAID_IDLOCAL 4
+#define SELECT_NODE_BY_REPLICAID_IDDRIVE 5
+#define SELECT_NODE_BY_REPLICAID_CREATED 6
+#define SELECT_NODE_BY_REPLICAID_LASTMOD 7
+#define SELECT_NODE_BY_REPLICAID_TYPE 8
+#define SELECT_NODE_BY_REPLICAID_SIZE 9
+#define SELECT_NODE_BY_REPLICAID_CHECKSUM 10
+#define SELECT_NODE_BY_REPLICAID_STATUS 11
+#define SELECT_NODE_BY_REPLICAID_SYNCING 12
 
 #define SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST_ID "select_node5"
 #define SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST    \
@@ -908,12 +912,17 @@ bool SyncDb::node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &
     SyncName nameDrive;
     LOG_IF_FAIL(querySyncNameValue(id, SELECT_NODE_BY_REPLICAID_NAMEDRIVE, nameDrive));
 
+    NodeId idLocal;
+    LOG_IF_FAIL(queryStringValue(id, SELECT_NODE_BY_REPLICAID_IDLOCAL, idLocal));
+    NodeId idDrive;
+    LOG_IF_FAIL(queryStringValue(id, SELECT_NODE_BY_REPLICAID_IDDRIVE, idDrive));
+
     std::optional<SyncTime> created;
     LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_REPLICAID_CREATED, isNull));
     if (isNull) {
         created = std::nullopt;
     } else {
-        SyncTime timeTmp;
+        SyncTime timeTmp = 0;
         LOG_IF_FAIL(queryInt64Value(id, SELECT_NODE_BY_REPLICAID_CREATED, timeTmp));
         created = std::make_optional(timeTmp);
     }
@@ -923,16 +932,16 @@ bool SyncDb::node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &
     if (isNull) {
         lastModified = std::nullopt;
     } else {
-        SyncTime timeTmp;
+        SyncTime timeTmp = 0;
         LOG_IF_FAIL(queryInt64Value(id, SELECT_NODE_BY_REPLICAID_LASTMOD, timeTmp));
         lastModified = std::make_optional(timeTmp);
     }
 
-    int intResult;
+    int intResult = 0;
     LOG_IF_FAIL(queryIntValue(id, SELECT_NODE_BY_REPLICAID_TYPE, intResult));
     auto type = static_cast<NodeType>(intResult);
 
-    int64_t size;
+    int64_t size = 0;
     LOG_IF_FAIL(queryInt64Value(id, SELECT_NODE_BY_REPLICAID_SIZE, size));
 
     std::optional<std::string> checksum;
@@ -957,7 +966,11 @@ bool SyncDb::node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &
     dbNode.setParentNodeId(parentNodeId);
     dbNode.setNameLocal(nameLocal);
     dbNode.setNameRemote(nameDrive);
+    dbNode.setNodeIdLocal(idLocal);
+    dbNode.setNodeIdRemote(idDrive);
     dbNode.setCreated(created);
+    dbNode.setLastModifiedLocal(lastModified);
+    dbNode.setLastModifiedRemote(lastModified);
     dbNode.setType(type);
     dbNode.setSize(size);
     if (side == ReplicaSide::Local) {
@@ -1752,8 +1765,6 @@ bool SyncDb::correspondingNodeId(ReplicaSide side, const NodeId &nodeIdIn, NodeI
 
 bool SyncDb::updateAllSyncNodes(SyncNodeType type, const NodeSet &nodeIdSet) {
     const std::scoped_lock lock(_mutex);
-    invalidateCache();
-
     int errId;
     std::string error;
 

@@ -108,8 +108,7 @@ bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, I
             if (ioError != IoError::Unknown) {
                 return true;
             } else {
-                LOGW_WARN(logger(),
-                          L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatIoError(aliasPath, ioError));
+                LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatIoError(aliasPath, ioError));
                 return false;
             }
         }
@@ -140,8 +139,7 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
             if (ioError != IoError::Unknown) {
                 return true;
             } else {
-                LOGW_WARN(logger(),
-                          L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError));
+                LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError));
                 return false;
             }
         }
@@ -244,19 +242,10 @@ bool isLocked(const SyncPath &path) {
     return isLocked;
 }
 
-// If creation date > modification date, creation date is set to modification date.
 IoError IoHelper::setFileDates(const SyncPath &filePath, SyncTime creationDate, SyncTime modificationDate,
                                bool symlink) noexcept {
-    NSDate *cDate = nil;
-    if (creationDate) {
-        cDate = [[NSDate alloc] initWithTimeIntervalSince1970:creationDate];
-    }
-
-    NSDate *mDate = nil;
-    if (modificationDate) {
-        mDate = [[NSDate alloc] initWithTimeIntervalSince1970:modificationDate];
-    }
-
+    NSDate *cDate = [[NSDate alloc] initWithTimeIntervalSince1970:creationDate];
+    NSDate *mDate = [[NSDate alloc] initWithTimeIntervalSince1970:modificationDate];
     NSString *filePathStr = [NSString stringWithUTF8String:filePath.native().c_str()];
     NSError *error = nil;
     bool ret = false;

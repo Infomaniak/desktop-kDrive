@@ -17,6 +17,7 @@
 #include "uploadjob.h"
 
 #include "uploadjobreplyhandler.h"
+#include "io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/jsonparserutility.h"
@@ -28,8 +29,9 @@
 
 namespace KDC {
 
-UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &absoluteFilePath, const SyncName &filename,
-                     const NodeId &remoteParentDirId, SyncTime creationTime, SyncTime modificationTime) :
+UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const SyncPath &absoluteFilePath,
+                     const SyncName &filename, const NodeId &remoteParentDirId, const SyncTime creationTime,
+                     const SyncTime modificationTime) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _absoluteFilePath(absoluteFilePath),
     _filename(filename),
@@ -43,10 +45,18 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncP
     setProgress(0);
 }
 
-UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &absoluteFilePath, const NodeId &fileId,
-                     SyncTime modificationTime) :
+UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const SyncPath &absoluteFilePath, const NodeId &fileId,
+                     const SyncTime modificationTime) :
     UploadJob(vfs, driveDbId, absoluteFilePath, SyncName(), "", 0, modificationTime) {
     _fileId = fileId;
+
+    // Retrieve creation date from the local file
+    FileStat fileStat;
+    auto ioError = IoError::Unknown;
+    if (!IoHelper::getFileStat(_absoluteFilePath, &fileStat, ioError) || ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Failed to get FileStat for " << Utility::formatSyncPath(_absoluteFilePath) << L": " << ioError);
+    }
+    _creationTimeIn = fileStat.creationTime;
 }
 
 UploadJob::~UploadJob() {
@@ -100,6 +110,7 @@ bool UploadJob::handleResponse(std::istream &is) {
     _nodeIdOut = replyHandler.nodeId();
     _creationTimeOut = replyHandler.creationTime();
     _modificationTimeOut = replyHandler.modificationTime();
+    _sizeOut = replyHandler.size();
 
     return true;
 }

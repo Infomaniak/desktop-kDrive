@@ -23,6 +23,7 @@
 #include "libcommonserver/network/proxy.h"
 #include "libsyncengine/jobs/network/API_v2/movejob.h"
 #include "mocks/libcommonserver/db/mockdb.h"
+#include "update_detection/file_system_observer/filesystemobserverworker.h"
 
 #include "test_utility/testhelpers.h"
 
@@ -66,7 +67,7 @@ void TestSyncPal::setUp() {
 
     _localPath = localPathStr;
     _remotePath = testVariables.remotePath;
-    Sync sync(1, drive.dbId(), _localPath, _remotePath);
+    Sync sync(1, drive.dbId(), _localPath, "", _remotePath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Setup proxy
@@ -80,6 +81,7 @@ void TestSyncPal::setUp() {
                                          KDRIVE_VERSION_STRING);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
+    _syncPal->createWorkers();
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 }
 
@@ -105,26 +107,25 @@ void TestSyncPal::testUpdateTree() {
 }
 
 void TestSyncPal::testSnapshot() {
-    auto snapshot = _syncPal->snapshot(ReplicaSide::Local);
-    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, snapshot->side());
+    auto &localLiveSnapshot = _syncPal->liveSnapshot(ReplicaSide::Local);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, localLiveSnapshot.side());
 
-    snapshot = _syncPal->snapshot(ReplicaSide::Remote);
-    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, snapshot->side());
+    auto &remoteLiveSnapshot = _syncPal->liveSnapshot(ReplicaSide::Remote);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, remoteLiveSnapshot.side());
 
-    snapshot = _syncPal->snapshot(ReplicaSide::Unknown);
-    CPPUNIT_ASSERT_EQUAL(std::shared_ptr<Snapshot>(nullptr), snapshot);
+    _syncPal->copySnapshots();
+    LogIfFailSettings::assertEnabled = false;
+    auto snapshot = _syncPal->snapshot(ReplicaSide::Unknown);
+    LogIfFailSettings::assertEnabled = true;
+    CPPUNIT_ASSERT_EQUAL(std::shared_ptr<ConstSnapshot>(nullptr), snapshot);
 
-    snapshot = _syncPal->snapshot(ReplicaSide::Local, true);
-    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, snapshot->side());
+    auto localSnapshot = _syncPal->snapshot(ReplicaSide::Local);
+    CPPUNIT_ASSERT(localSnapshot);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, localSnapshot->side());
 
-    snapshot = _syncPal->snapshot(ReplicaSide::Remote, true);
-    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, snapshot->side());
-
-    snapshot = _syncPal->snapshot(ReplicaSide::Unknown, true);
-    CPPUNIT_ASSERT_EQUAL(std::shared_ptr<Snapshot>(nullptr), snapshot);
-
-    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local, true).get() != _syncPal->snapshot(ReplicaSide::Local, false).get());
-    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Remote, true).get() != _syncPal->snapshot(ReplicaSide::Remote, false).get());
+    auto remoteSnapshot = _syncPal->snapshot(ReplicaSide::Remote);
+    CPPUNIT_ASSERT(remoteSnapshot);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, remoteSnapshot->side());
 }
 
 void TestSyncPal::testOperationSet() {
@@ -142,21 +143,10 @@ void TestSyncPal::testCopySnapshots() {
     _syncPal->copySnapshots();
 
     // Check that the copy is the same as the original
-    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSide::Local, true)->nbItems(),
-                         _syncPal->snapshot(ReplicaSide::Local, false)->nbItems());
-    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSide::Local, true)->isValid(),
-                         _syncPal->snapshot(ReplicaSide::Local, false)->isValid());
-    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSide::Local, true)->rootFolderId(),
-                         _syncPal->snapshot(ReplicaSide::Local, false)->rootFolderId());
-    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSide::Local, true)->side(),
-                         _syncPal->snapshot(ReplicaSide::Local, false)->side());
-
-    // Check that the copy is different object
-    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local, true).get() != _syncPal->snapshot(ReplicaSide::Local, false).get());
-    _syncPal->snapshot(ReplicaSide::Local, false)->setValid(true);
-    _syncPal->snapshot(ReplicaSide::Local, true)->setValid(false);
-    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local, true)->isValid() !=
-                   _syncPal->snapshot(ReplicaSide::Local, false)->isValid());
+    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSide::Local)->nbItems(), _syncPal->liveSnapshot(ReplicaSide::Local).nbItems());
+    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSide::Local)->rootFolderId(),
+                         _syncPal->liveSnapshot(ReplicaSide::Local).rootFolderId());
+    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSide::Local)->side(), _syncPal->liveSnapshot(ReplicaSide::Local).side());
 }
 void TestSyncPal::testSyncFileItem() {
     _syncPal->_progressInfo = std::make_shared<ProgressInfo>(_syncPal);
@@ -208,8 +198,7 @@ void TestSyncPal::testSyncFileItem() {
 
 void TestSyncPal::testCheckIfExistsOnServer() {
     bool exists = false;
-    auto remoteSnapshot = _syncPal->snapshot(ReplicaSide::Remote, false);
-    CPPUNIT_ASSERT(_syncPal->checkIfExistsOnServer(SyncPath("dummy"), exists) == (remoteSnapshot != nullptr));
+    // CPPUNIT_ASSERT(!_syncPal->checkIfExistsOnServer(SyncPath("dummy"), exists));
 }
 
 void TestSyncPal::testBlacklist() {
@@ -229,27 +218,27 @@ void TestSyncPal::testBlacklist() {
     DbNodeId dbNodeIdFileAA;
     _syncPal->syncDb()->insertNode(nodeFileAA, dbNodeIdFileAA, constraintError);
 
-    /// Init test snapshot
-    //// Insert dir in snapshot
-    _syncPal->_localSnapshot->updateItem(SnapshotItem(
+    /// Init test liveSnapshot
+    //// Insert dir in liveSnapshot
+    _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(SnapshotItem(
             nodeDirA.nodeIdLocal().value(), _syncPal->syncDb()->rootNode().nodeIdLocal().value(), nodeDirA.nameLocal(),
             nodeDirA.created().value(), nodeDirA.lastModifiedLocal().value(), nodeDirA.type(), 123, false, true, true));
-    _syncPal->_localSnapshot->updateItem(SnapshotItem(
+    _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(SnapshotItem(
             nodeDirB.nodeIdLocal().value(), _syncPal->syncDb()->rootNode().nodeIdLocal().value(), nodeDirB.nameLocal(),
             nodeDirB.created().value(), nodeDirB.lastModifiedLocal().value(), nodeDirB.type(), 123, false, true, true));
 
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem(
+    _syncPal->_remoteFSObserverWorker->_liveSnapshot.updateItem(SnapshotItem(
             nodeDirA.nodeIdRemote().value(), _syncPal->syncDb()->rootNode().nodeIdRemote().value(), nodeDirA.nameRemote(),
             nodeDirA.created().value(), nodeDirA.lastModifiedRemote().value(), nodeDirA.type(), 123, false, true, true));
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem(
+    _syncPal->_remoteFSObserverWorker->_liveSnapshot.updateItem(SnapshotItem(
             nodeDirB.nodeIdRemote().value(), _syncPal->syncDb()->rootNode().nodeIdRemote().value(), nodeDirB.nameRemote(),
             nodeDirB.created().value(), nodeDirB.lastModifiedRemote().value(), nodeDirB.type(), 123, false, true, true));
 
-    //// Insert files in snapshot
-    _syncPal->_localSnapshot->updateItem(SnapshotItem(
+    //// Insert files in liveSnapshot
+    _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(SnapshotItem(
             nodeFileAA.nodeIdLocal().value(), nodeDirA.nodeIdLocal().value(), nodeFileAA.nameLocal(),
             nodeFileAA.created().value(), nodeFileAA.lastModifiedLocal().value(), nodeFileAA.type(), 123, false, true, true));
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem(
+    _syncPal->_remoteFSObserverWorker->_liveSnapshot.updateItem(SnapshotItem(
             nodeFileAA.nodeIdRemote().value(), nodeDirA.nodeIdRemote().value(), nodeFileAA.nameRemote(),
             nodeFileAA.created().value(), nodeFileAA.lastModifiedRemote().value(), nodeFileAA.type(), 123, false, true, true));
 

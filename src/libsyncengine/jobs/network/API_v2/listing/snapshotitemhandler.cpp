@@ -159,8 +159,7 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
         } else if (c == '"') {
             if (state.index != CsvIndexName) {
                 // Double quotes are only allowed within file and directory names.
-                LOG_WARN(_logger,
-                         "Item '" << line << "' ignored because the '\"' character is only allowed in the name field");
+                LOG_WARN(_logger, "Item '" << line << "' ignored because the '\"' character is only allowed in the name field");
                 return;
             }
 
