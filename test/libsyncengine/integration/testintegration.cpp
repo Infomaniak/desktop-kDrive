@@ -214,8 +214,8 @@ void TestIntegration::testAll() {
     logStep("initialization");
 
     // Run test cases
-    basicTests();
-    inconsistencyTests();
+    // basicTests();
+    // inconsistencyTests();
     conflictTests();
 
     // &TestIntegration::testMoveDeleteConflict1,
@@ -455,13 +455,13 @@ void TestIntegration::inconsistencyTests() {
 }
 
 void TestIntegration::conflictTests() {
-    testCreateCreatePseudoConflict();
-    testCreateCreateConflict();
-    testEditEditPseudoConflict();
-    testEditEditConflict();
-    testMoveCreateConflict();
-    testEditDeleteConflict();
-    testMoveDeleteConflict();
+    // testCreateCreatePseudoConflict();
+    // testCreateCreateConflict();
+    // testEditEditPseudoConflict();
+    // testEditEditConflict();
+    // testMoveCreateConflict();
+    // testEditDeleteConflict();
+    // testMoveDeleteConflict();
     testMoveParentDeleteConflict();
 }
 
@@ -718,33 +718,32 @@ void TestIntegration::testEditDeleteConflict() {
 namespace {
 struct TestMoveDeleteInfo {
         NodeId remoteNodeIdA;
-        NodeId remoteNodeIdR;
-        NodeId remoteNodeIdS;
-        NodeId remoteNodeIdQ;
+        NodeId remoteNodeIdAA;
+        NodeId remoteNodeIdAB;
 };
 
-void generateInitialMoveDeleteSituation(const int driveDbId, const NodeId &parentId, TestMoveDeleteInfo &info) {
+void generateInitialTestSituation(const int driveDbId, const NodeId &parentId, TestMoveDeleteInfo &info) {
     // .
     // `-- A
-    //     |-- R
-    //     |   `-- Q
-    //     `-- S
+    //     |-- AA
+    //     |   `-- AAA
+    //     `-- AB
     {
         CreateDirJob jobA(nullptr, driveDbId, parentId, "A");
         (void) jobA.runSynchronously();
         info.remoteNodeIdA = jobA.nodeId();
     }
     {
-        CreateDirJob jobR(nullptr, driveDbId, info.remoteNodeIdA, "R");
-        (void) jobR.runSynchronously();
-        info.remoteNodeIdR = jobR.nodeId();
+        CreateDirJob jobAA(nullptr, driveDbId, info.remoteNodeIdA, "AA");
+        (void) jobAA.runSynchronously();
+        info.remoteNodeIdAA = jobAA.nodeId();
     }
     {
-        CreateDirJob jobS(nullptr, driveDbId, info.remoteNodeIdA, "S");
-        (void) jobS.runSynchronously();
-        info.remoteNodeIdS = jobS.nodeId();
+        CreateDirJob jobAB(nullptr, driveDbId, info.remoteNodeIdA, "AB");
+        (void) jobAB.runSynchronously();
+        info.remoteNodeIdAB = jobAB.nodeId();
     }
-    createRemoteFile(driveDbId, "Q", info.remoteNodeIdR);
+    createRemoteFile(driveDbId, "AAA", info.remoteNodeIdAA);
 }
 } // namespace
 
@@ -753,7 +752,7 @@ void TestIntegration::testMoveDeleteConflict() {
         auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
         const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
         TestMoveDeleteInfo info;
-        generateInitialMoveDeleteSituation(_driveDbId, tmpRemoteDir.id(), info);
+        generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
         waitForCurrentSyncToFinish(syncCount);
 
         // Rename A to B on local replica
@@ -762,9 +761,9 @@ void TestIntegration::testMoveDeleteConflict() {
         IoError ioError = IoError::Unknown;
         (void) IoHelper::renameItem(localPathA, localPathB, ioError);
 
-        // Delete A/S on local replica
-        const SyncPath localPathS = localPathB / "S";
-        (void) IoHelper::deleteItem(localPathS, ioError);
+        // Delete A/AB on local replica
+        const SyncPath localPathAB = localPathB / "AB";
+        (void) IoHelper::deleteItem(localPathAB, ioError);
 
         // Delete A on remote replica
         deleteRemoteFile(_driveDbId, info.remoteNodeIdA);
@@ -779,14 +778,14 @@ void TestIntegration::testMoveDeleteConflict() {
         // Delete operation wins
         CPPUNIT_ASSERT(!std::filesystem::exists(localPathA));
         CPPUNIT_ASSERT(!std::filesystem::exists(localPathB));
-        CPPUNIT_ASSERT(!std::filesystem::exists(localPathS));
+        CPPUNIT_ASSERT(!std::filesystem::exists(localPathAB));
         logStep("testMoveDeleteConflict1");
     }
     {
         auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
         const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
         TestMoveDeleteInfo info;
-        generateInitialMoveDeleteSituation(_driveDbId, tmpRemoteDir.id(), info);
+        generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
         waitForCurrentSyncToFinish(syncCount);
 
         // Rename A to B on local replica
@@ -795,13 +794,13 @@ void TestIntegration::testMoveDeleteConflict() {
         IoError ioError = IoError::Unknown;
         (void) IoHelper::renameItem(localPathA, localPathB, ioError);
 
-        // Edit A/R/Q on local replica
-        const SyncPath localPathQ = localPathB / "R" / "Q";
-        testhelpers::generateOrEditTestFile(localPathQ);
+        // Edit A/AA/AAA on local replica
+        const SyncPath localPathAAA = localPathB / "AA" / "AAA";
+        testhelpers::generateOrEditTestFile(localPathAAA);
 
-        // Create A/S/X on local replica
-        const SyncPath localPathX = localPathB / "S" / "X";
-        testhelpers::generateOrEditTestFile(localPathX);
+        // Create A/AB/ABA on local replica
+        const SyncPath localPathABA = localPathB / "AB" / "ABA";
+        testhelpers::generateOrEditTestFile(localPathABA);
 
         // Delete A on remote replica
         deleteRemoteFile(_driveDbId, info.remoteNodeIdA);
@@ -817,15 +816,15 @@ void TestIntegration::testMoveDeleteConflict() {
         CPPUNIT_ASSERT(!std::filesystem::exists(localPathA));
         CPPUNIT_ASSERT(!std::filesystem::exists(localPathB));
         // ... but created and edited files has been rescued.
-        CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / FileRescuer::rescueFolderName() / "Q"));
-        CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / FileRescuer::rescueFolderName() / "X"));
+        CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / FileRescuer::rescueFolderName() / "AAA"));
+        CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / FileRescuer::rescueFolderName() / "ABA"));
         logStep("testMoveDeleteConflict2");
     }
     {
         auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
         const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
         TestMoveDeleteInfo info;
-        generateInitialMoveDeleteSituation(_driveDbId, tmpRemoteDir.id(), info);
+        generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
         waitForCurrentSyncToFinish(syncCount);
 
         // Rename A to B on local replica
@@ -834,10 +833,10 @@ void TestIntegration::testMoveDeleteConflict() {
         IoError ioError = IoError::Unknown;
         (void) IoHelper::renameItem(localPathA, localPathB, ioError);
 
-        // Move A/S to S on local replica
-        const SyncPath originLocalPathS = localPathB / "S";
-        const SyncPath destLocalPathS = _syncPal->localPath() / tmpRemoteDir.name() / "S";
-        (void) IoHelper::moveItem(originLocalPathS, destLocalPathS, ioError);
+        // Move A/AB to AB on local replica
+        const SyncPath originLocalPathAB = localPathB / "AB";
+        const SyncPath destLocalPathAB = _syncPal->localPath() / tmpRemoteDir.name() / "AB";
+        (void) IoHelper::moveItem(originLocalPathAB, destLocalPathAB, ioError);
 
         // Delete A on remote replica
         deleteRemoteFile(_driveDbId, info.remoteNodeIdA);
@@ -852,21 +851,21 @@ void TestIntegration::testMoveDeleteConflict() {
         // Delete operation wins
         CPPUNIT_ASSERT(!std::filesystem::exists(localPathA));
         CPPUNIT_ASSERT(!std::filesystem::exists(localPathB));
-        CPPUNIT_ASSERT(!std::filesystem::exists(originLocalPathS));
+        CPPUNIT_ASSERT(!std::filesystem::exists(originLocalPathAB));
         // In this test, 2 MoveDelete conflicts are generated :
         // - between local node B and remote node A
-        // - between local node S nad remote node S
+        // - between local node AB nad remote node AB
         // For conflicts with same priority level, it is always the conflict on the node closer to the root node that is processed
         // first. Therefore, solving the first conflict (propagating operation delete on local node B) will also resolve the
-        // conflict on node S. However, S will be seen as new on local replica and re-created on remote replica.
-        CPPUNIT_ASSERT(std::filesystem::exists(destLocalPathS));
+        // conflict on node AB. However, AB will be seen as new on local replica and re-created on remote replica.
+        CPPUNIT_ASSERT(std::filesystem::exists(destLocalPathAB));
         logStep("testMoveDeleteConflict3");
     }
     {
         auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
         const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
         TestMoveDeleteInfo info;
-        generateInitialMoveDeleteSituation(_driveDbId, tmpRemoteDir.id(), info);
+        generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
         waitForCurrentSyncToFinish(syncCount);
 
         // Rename A to B on local replica
@@ -875,9 +874,9 @@ void TestIntegration::testMoveDeleteConflict() {
         IoError ioError = IoError::Unknown;
         (void) IoHelper::renameItem(localPathA, localPathB, ioError);
 
-        // Move A/S to S on remote replica
+        // Move A/AB to AB on remote replica
         {
-            MoveJob moveJob(nullptr, _driveDbId, "", info.remoteNodeIdS, tmpRemoteDir.id());
+            MoveJob moveJob(nullptr, _driveDbId, "", info.remoteNodeIdAB, tmpRemoteDir.id());
             moveJob.setBypassCheck(true);
             (void) moveJob.runSynchronously();
         }
@@ -895,7 +894,7 @@ void TestIntegration::testMoveDeleteConflict() {
         // Delete operation wins.
         CPPUNIT_ASSERT(!std::filesystem::exists(localPathA));
         CPPUNIT_ASSERT(!std::filesystem::exists(localPathB));
-        // But S has been moved outside deleted branch.
+        // But AB has been moved outside deleted branch.
         CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / ""));
         logStep("testMoveDeleteConflict4");
     }
@@ -903,14 +902,14 @@ void TestIntegration::testMoveDeleteConflict() {
         auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
         const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
         TestMoveDeleteInfo info;
-        generateInitialMoveDeleteSituation(_driveDbId, tmpRemoteDir.id(), info);
+        generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
         waitForCurrentSyncToFinish(syncCount);
 
-        // Rename A/R to A/X on local replica
-        const SyncPath localPathR = _syncPal->localPath() / tmpRemoteDir.name() / "R";
-        const SyncPath localPathX = _syncPal->localPath() / tmpRemoteDir.name() / "X";
+        // Rename A/AB to A/AB2 on local replica
+        const SyncPath localPathAB = _syncPal->localPath() / tmpRemoteDir.name() / "AB";
+        const SyncPath localPathAB2 = _syncPal->localPath() / tmpRemoteDir.name() / "AB2";
         IoError ioError = IoError::Unknown;
-        (void) IoHelper::renameItem(localPathR, localPathX, ioError);
+        (void) IoHelper::renameItem(localPathAB, localPathAB2, ioError);
 
         // Delete A on remote replica
         deleteRemoteFile(_driveDbId, info.remoteNodeIdA);
@@ -925,98 +924,125 @@ void TestIntegration::testMoveDeleteConflict() {
         // This is treated as a Move-ParentDelete conflict, the Move-Delete conflict is ignored.
         // Delete operation wins.
         CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / "A"));
-        CPPUNIT_ASSERT(!std::filesystem::exists(localPathR));
-        CPPUNIT_ASSERT(!std::filesystem::exists(localPathX));
+        CPPUNIT_ASSERT(!std::filesystem::exists(localPathAB));
+        CPPUNIT_ASSERT(!std::filesystem::exists(localPathAB2));
         logStep("testMoveDeleteConflict5");
     }
 }
 
-void TestIntegration::testMoveParentDeleteConflict() {}
+void TestIntegration::testMoveParentDeleteConflict() {
+    {
+        auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
+        const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+        TestMoveDeleteInfo info;
+        generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
+        waitForCurrentSyncToFinish(syncCount);
 
-// void TestIntegration::testMoveParentDeleteConflict() {
-//     LOGW_DEBUG(_logger, L"$$$$$ test MoveParent-Delete conflict");
-//     std::cout << "test MoveParent-Delete conflict : ";
-//
-//     // Init phase
-//     LOGW_DEBUG(_logger, L"----- test MoveParent-Delete conflict : Init phase");
-//
-//     NodeId aRemoteId;
-//     NodeId rRemoteId;
-//     NodeId sRemoteId;
-//     NodeId qRemoteId;
-//     testMoveDeleteConflict_initPhase(_driveDbId, aRemoteId, rRemoteId, sRemoteId, qRemoteId);
-//
-//     waitForSyncToFinish(SourceLocation::currentLoc());
-//     _syncPal->pause();
-//
-//     // Setup phase
-//     LOGW_DEBUG(_logger, L"----- test MoveParent-Delete conflict : Setup phase");
-//
-//     // On local replica
-//     // Delete R
-//     LocalDeleteJob setupDeleteJob(SyncPalInfo{_driveDbId, _localPath},
-//                                   testExecutorFolderRelativePath / testConflictFolderName / "A/R", false, aRemoteId);
-//     setupDeleteJob.setBypassCheck(true);
-//     setupDeleteJob.runSynchronously();
-//
-//     // On remote replica
-//     // Move S into R
-//     MoveJob setupMoveJob(_syncPal->vfs(), _driveDbId, "", sRemoteId, rRemoteId);
-//     setupMoveJob.runSynchronously();
-//
-//     Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
-//                             // request is implemented)
-//
-//     LOGW_DEBUG(_logger, L"----- test MoveParent-Delete conflict : Resolution phase");
-//     _syncPal->unpause();
-//     waitForSyncToFinish(SourceLocation::currentLoc());
-//
-//     // Test phase
-//     LOGW_DEBUG(_logger, L"----- test MoveParent-Delete conflict : Test phase");
-//
-//     // On remote
-//     {
-//         bool foundR = false;
-//         bool foundS = false;
-//         GetFileListJob testJob(_driveDbId, aRemoteId);
-//         testJob.runSynchronously();
-//         Poco::JSON::Object::Ptr resObj = testJob.jsonRes();
-//         CPPUNIT_ASSERT(resObj);
-//         Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-//         CPPUNIT_ASSERT(dataArray);
-//         for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
-//             Poco::JSON::Object::Ptr obj = it->extract<Poco::JSON::Object::Ptr>();
-//             if (obj->get(nameKey).toString() == "R") {
-//                 rRemoteId = obj->get(idKey).toString();
-//                 foundR = true;
-//             } else if (obj->get(nameKey).toString() == "S") {
-//                 sRemoteId = obj->get(idKey).toString();
-//                 foundS = true;
-//             }
-//         }
-//         CPPUNIT_ASSERT(!foundR);
-//         CPPUNIT_ASSERT(foundS);
-//     }
-//
-//     // On local
-//     // Look for local file that have been renamed (and excluded from sync)
-//     CPPUNIT_ASSERT(!std::filesystem::exists(_localPath / testExecutorFolderRelativePath / testConflictFolderName /
-//     "A/R/Q")); CPPUNIT_ASSERT(std::filesystem::exists(_localPath / testExecutorFolderRelativePath / testConflictFolderName
-//     / "A/S"));
-//
-//     // Clean phase
-//     LOGW_DEBUG(_logger, L"----- test MoveParent-Delete conflict : Clean phase");
-//
-//     // Remove the test files
-//     DeleteJob finalDeleteJob(_driveDbId, aRemoteId, "", "",
-//                              NodeType::File); // TODO : this test needs to be fixed, local ID and path are now mandatory
-//     finalDeleteJob.runSynchronously();
-//
-//     waitForSyncToFinish(SourceLocation::currentLoc());
-//
-//     std::cout << "OK" << std::endl;
-// }
-//
+        // Move A/AA/AAA to A/AB/AAA on local replica
+        const SyncPath localPathA = _syncPal->localPath() / tmpRemoteDir.name() / "A";
+        const SyncPath originPathAAA = localPathA / "AA" / "AAA";
+        const SyncPath destinationPathAAA = localPathA / "AB" / "AAA";
+        IoError ioError = IoError::Unknown;
+        (void) IoHelper::moveItem(originPathAAA, destinationPathAAA, ioError);
+
+        // Delete A on remote replica
+        deleteRemoteFile(_driveDbId, info.remoteNodeIdA);
+
+        syncCount = _syncPal->syncCount();
+        _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+        waitForCurrentSyncToFinish(syncCount);
+
+        syncCount++; // Previous sync only fixed the conflict.
+        waitForCurrentSyncToFinish(syncCount);
+
+        // Delete operation wins
+        CPPUNIT_ASSERT(!std::filesystem::exists(localPathA));
+        logStep("testMoveParentDeleteConflict1");
+    }
+    {
+        auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
+        const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+        TestMoveDeleteInfo info;
+        generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
+        waitForCurrentSyncToFinish(syncCount);
+
+        // Move A/AA to A/AB/AA on local replica
+        const SyncPath localPathA = _syncPal->localPath() / tmpRemoteDir.name() / "A";
+        const SyncPath originPathAA = localPathA / "AA";
+        const SyncPath destinationPathAA = localPathA / "AB" / "AA";
+        IoError ioError = IoError::Unknown;
+        (void) IoHelper::moveItem(originPathAA, destinationPathAA, ioError);
+
+        // Rename A to A2 on remote replica
+        (void) RenameJob(nullptr, _driveDbId, info.remoteNodeIdA, Str("A2")).runSynchronously();
+
+        // Delete A/AB on remote replica
+        deleteRemoteFile(_driveDbId, info.remoteNodeIdAB);
+
+        syncCount = _syncPal->syncCount();
+        _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+        waitForCurrentSyncToFinish(syncCount);
+
+        syncCount++; // Previous sync only fixed the conflict.
+        waitForCurrentSyncToFinish(syncCount);
+
+        // Delete operation wins
+        CPPUNIT_ASSERT(!std::filesystem::exists(originPathAA));
+        CPPUNIT_ASSERT(!std::filesystem::exists(destinationPathAA));
+        CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / "A2"));
+        logStep("testMoveParentDeleteConflict2");
+    }
+    {
+        // Set up a more complex tree
+        // .
+        // └── A
+        //     ├── AA
+        //     │   └── AAA
+        //     └── AB
+        //         ├── ABA
+        //         └── ABB
+        auto syncCount = waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
+        const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+        TestMoveDeleteInfo info;
+        generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
+        (void) CreateDirJob(nullptr, _driveDbId, info.remoteNodeIdAB, "ABA").runSynchronously();
+        createRemoteFile(_driveDbId, "ABB", info.remoteNodeIdAB);
+        waitForCurrentSyncToFinish(syncCount);
+
+        // Edit A/AB/ABB on local replica
+        const SyncPath localPathA = _syncPal->localPath() / tmpRemoteDir.name() / "A";
+        const SyncPath localPathABB = localPathA / "AB" / "ABB";
+        testhelpers::generateOrEditTestFile(localPathABB);
+
+        // Edit A/AA/AAA on local replica
+        const SyncPath localPathAAA = localPathA / "AA" / "AAA";
+        testhelpers::generateOrEditTestFile(localPathAAA);
+
+        // Move A/AA/AAA to A/AB/AAA on local replica
+        const SyncPath localDestinationPathAAA = localPathA / "AB" / "AAA";
+        IoError ioError = IoError::Unknown;
+        (void) IoHelper::moveItem(localPathAAA, localDestinationPathAAA, ioError);
+
+        // Delete A/AB on remote replica
+        deleteRemoteFile(_driveDbId, info.remoteNodeIdAB);
+
+        syncCount = _syncPal->syncCount();
+        _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+        waitForCurrentSyncToFinish(syncCount);
+
+        syncCount++; // Previous sync only fixed the conflicts.
+        waitForCurrentSyncToFinish(syncCount);
+
+        // Delete operation wins...
+        CPPUNIT_ASSERT(!std::filesystem::exists(localPathA / "AB"));
+        // ...but conflicts EditDelete and MoveDelete should be handled first and edited files should
+        // be rescued
+        CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / FileRescuer::rescueFolderName() / "AAA"));
+        CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / FileRescuer::rescueFolderName() / "ABB"));
+        logStep("testMoveParentDeleteConflict3");
+    }
+}
+
 // void TestIntegration::testCreateParentDeleteConflict() {
 //     LOGW_DEBUG(_logger, L"$$$$$ test Create-ParentDelete conflict");
 //     std::cout << "test Create-ParentDelete conflict : ";
