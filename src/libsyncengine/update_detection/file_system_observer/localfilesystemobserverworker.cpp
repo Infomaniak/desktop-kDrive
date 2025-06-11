@@ -463,7 +463,7 @@ void LocalFileSystemObserverWorker::execute() {
 }
 
 ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
-    ExitInfo exitInfo = ExitCode::Ok;
+    ExitInfo mainExitInfo = ExitCode::Ok;
 
     LOG_SYNCPAL_INFO(_logger, "Starting local snapshot generation");
     const TimerUtility timer;
@@ -472,7 +472,7 @@ ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
     _liveSnapshot.init();
     _updating = true;
 
-    if (exitInfo = exploreDir(_rootFolder); exitInfo.code() == ExitCode::Ok && !stopAsked()) {
+    if (const auto exitInfo = exploreDir(_rootFolder); exitInfo.code() == ExitCode::Ok && !stopAsked()) {
         _liveSnapshot.setValid(true);
         LOG_SYNCPAL_INFO(_logger, "Local snapshot generated in: " << timer.elapsed<DoubleSeconds>().count() << "s for "
                                                                   << _liveSnapshot.nbItems() << " items");
@@ -480,15 +480,17 @@ ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
     } else if (stopAsked()) {
         LOG_SYNCPAL_INFO(_logger, "Local snapshot generation stopped after: " << timer.elapsed<DoubleSeconds>().count() << "s");
     } else {
-        LOG_SYNCPAL_WARN(_logger, "Local snapshot generation failed after: " << timer.elapsed<DoubleSeconds>().count() << "s "
-                                                                             << exitInfo);
+        LOG_SYNCPAL_WARN(_logger, "Local snapshot generation failed after: " << timer.elapsed<DoubleSeconds>().count()
+                                                                             << "s: " << exitInfo);
+        mainExitInfo = exitInfo;
     }
 
     const std::lock_guard<std::recursive_mutex> lock(_recursiveMutex);
     if (!_pendingFileEvents.empty()) {
         LOG_SYNCPAL_DEBUG(_logger, "Processing pending file events");
-        if (exitInfo = changesDetected(_pendingFileEvents); exitInfo.code() != ExitCode::Ok) {
+        if (const auto exitInfo = changesDetected(_pendingFileEvents); exitInfo.code() != ExitCode::Ok) {
             LOG_SYNCPAL_WARN(_logger, "Error in LocalFileSystemObserverWorker::changesDetected: " << exitInfo);
+            mainExitInfo.merge(exitInfo, {ExitCode::SystemError, ExitCode::DataError});
         }
         _pendingFileEvents.clear();
         LOG_SYNCPAL_DEBUG(_logger, "Pending file events processed");
@@ -496,7 +498,7 @@ ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
 
     _updating = false;
 
-    return exitInfo;
+    return mainExitInfo;
 }
 
 bool LocalFileSystemObserverWorker::canComputeChecksum(const SyncPath &absolutePath) {

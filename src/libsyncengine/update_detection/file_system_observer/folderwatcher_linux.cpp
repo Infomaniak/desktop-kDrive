@@ -279,7 +279,7 @@ void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {
 ExitInfo FolderWatcher_linux::changeDetected(const SyncPath &path, OperationType opType) const {
     std::list<std::pair<SyncPath, OperationType>> list;
     (void) list.emplace_back(path, opType);
-    if (const auto exitInfo = _parent->changesDetected(list); exitInfo != ExitCode::Ok) {
+    if (const auto exitInfo = _parent->changesDetected(list); exitInfo.code() != ExitCode::Ok) {
         LOGW_WARN(_logger, L"Error in LocalFileSystemObserverWorker::changesDetected: " << exitInfo);
         return exitInfo;
     }

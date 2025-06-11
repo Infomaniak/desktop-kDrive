@@ -39,7 +39,7 @@ void FolderWatcher_win::changesLost() {
 ExitInfo FolderWatcher_win::changeDetected(const SyncPath &path, OperationType opType) {
     std::list<std::pair<SyncPath, OperationType>> list;
     list.push_back({path, opType});
-    if (const auto exitInfo = _parent->changesDetected(list); exitInfo != ExitCode::Ok) {
+    if (const auto exitInfo = _parent->changesDetected(list); exitInfo.code() != ExitCode::Ok) {
         LOGW_WARN(_logger, L"Error in LocalFileSystemObserverWorker::changesDetected: " << exitInfo);
         return exitInfo;
     }
