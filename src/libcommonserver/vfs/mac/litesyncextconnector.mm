@@ -370,8 +370,7 @@
     [doneCondition lock];
     NSDate *timeoutDate = [NSDate dateWithTimeIntervalSinceNow:1];
     BOOL success = FALSE;
-    while (!done && (success = [doneCondition waitUntilDate:timeoutDate])) {
-    }
+    while (!done && (success = [doneCondition waitUntilDate:timeoutDate])) {}
     [doneCondition unlock];
 
     if (!success) {
