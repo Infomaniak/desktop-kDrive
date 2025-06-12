@@ -27,6 +27,7 @@ class TestFolderWatcherLinux final : public CppUnit::TestFixture, public TestBas
         CPPUNIT_TEST_SUITE(TestFolderWatcherLinux);
         CPPUNIT_TEST(testMakeSyncPath);
         CPPUNIT_TEST(testRemoveFoldersBelow);
+        CPPUNIT_TEST(testInotifyRegisterPath);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -37,6 +38,7 @@ class TestFolderWatcherLinux final : public CppUnit::TestFixture, public TestBas
         void testMakeSyncPath();
         void testAddFolderRecursive();
         void testRemoveFoldersBelow();
+        void testInotifyRegisterPath();
 };
 
 } // namespace KDC
