@@ -269,7 +269,7 @@ ExitInfo LogUploadJob::getTmpJobWorkingDir(SyncPath &tmpJobWorkingDir) const {
 
     // Create tmp folder
     if (IoError ioError = IoError::Unknown;
-        !IoHelper::createDirectory(tmpJobWorkingDir, ioError) && ioError != IoError::DirectoryExists) {
+        !IoHelper::createDirectory(tmpJobWorkingDir, false, ioError) && ioError != IoError::DirectoryExists) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::createDirectory: " << Utility::formatIoError(tmpJobWorkingDir, ioError));
         switch (ioError) {
