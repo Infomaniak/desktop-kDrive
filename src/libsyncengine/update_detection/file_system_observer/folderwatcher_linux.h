@@ -39,8 +39,8 @@ class FolderWatcher_linux final : public FolderWatcher {
         int _fileDescriptor = -1;
 
         bool findSubFolders(const SyncPath &dir, std::list<SyncPath> &fullList);
-        bool inotifyRegisterPath(const SyncPath &path);
-        bool addFolderRecursive(const SyncPath &path);
+        ExitInfo inotifyRegisterPath(const SyncPath &path);
+        ExitInfo addFolderRecursive(const SyncPath &path);
         void removeFoldersBelow(const SyncPath &dirPath);
 
         void changeDetected(const SyncPath &path, OperationType opType) const;

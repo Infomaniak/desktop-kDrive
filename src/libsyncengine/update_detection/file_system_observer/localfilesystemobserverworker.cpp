@@ -419,44 +419,34 @@ void LocalFileSystemObserverWorker::execute() {
         }
         // We never pause this thread
 
-        if (!isFolderWatcherReliable() &&
-            (std::chrono::steady_clock::now() - timerStart).count() * 1000 > defaultDiscoveryInterval) {
-            // The folder watcher became unreliable so fallback to static synchronization
-            timerStart = std::chrono::steady_clock::now();
-            tryToInvalidateSnapshot();
+
+        if (!_liveSnapshot.isValid()) {
             exitCode = generateInitialSnapshot();
             if (exitCode != ExitCode::Ok) {
                 LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot: code=" << exitCode);
                 break;
             }
-        } else {
-            if (!_liveSnapshot.isValid()) {
-                exitCode = generateInitialSnapshot();
-                if (exitCode != ExitCode::Ok) {
-                    LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot: code=" << exitCode);
+        }
+
+        // Wait 1 sec after the last update
+        if (_updating) {
+            auto diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
+                                                                                 _needUpdateTimerStart);
+            if (diff_ms.count() > waitForUpdateDelay) {
+                // Check if root folder is still valid
+                if (const ExitInfo exitInfo = _syncPal->isRootFolderValid(); !exitInfo) {
+                    LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
+                    exitCode = exitInfo.code();
+                    setExitCause(exitInfo.cause());
+                    invalidateSnapshot();
                     break;
                 }
-            }
 
-            // Wait 1 sec after the last update
-            if (_updating) {
-                auto diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
-                                                                                     _needUpdateTimerStart);
-                if (diff_ms.count() > waitForUpdateDelay) {
-                    // Check if root folder is still valid
-                    if (const ExitInfo exitInfo = _syncPal->isRootFolderValid(); !exitInfo) {
-                        LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
-                        exitCode = exitInfo.code();
-                        setExitCause(exitInfo.cause());
-                        invalidateSnapshot();
-                        break;
-                    }
-
-                    const std::lock_guard<std::recursive_mutex> lk(_recursiveMutex);
-                    _updating = false;
-                }
+                const std::lock_guard<std::recursive_mutex> lk(_recursiveMutex);
+                _updating = false;
             }
         }
+
         if (_initializing) _initializing = false;
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }

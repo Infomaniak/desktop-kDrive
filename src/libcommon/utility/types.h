@@ -304,6 +304,7 @@ enum class ExitCause {
     DriveAsleep,
     DriveWakingUp,
     ServiceUnavailable,
+    NotEnoughINotifyWatches,
     EnumEnd
 };
 std::string toString(ExitCause e);
