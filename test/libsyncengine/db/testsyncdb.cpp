@@ -449,37 +449,27 @@ void TestSyncDb::testTryToFixDbNodeIdsAfterSyncDirChange() {
     CPPUNIT_ASSERT(verifyDbAndFSNodeIds(localSyncDirPath));
 
     // Copy past the sync directory will lead to a mismatch between the database and the file system node IDs.
+    const SyncPath localSyncDirCopyPath = localSyncDirPath.parent_path() / (localSyncDirPath.filename().string() + "_copy");
     IoError ioError = IoError::Success;
     CPPUNIT_ASSERT_MESSAGE(("IoError is " + toString(ioError)),
-                           IoHelper::copyFileOrDirectory(
-                                   localSyncDirPath,
-                                   (localSyncDirPath.parent_path() / (localSyncDirPath.filename().string() + "_copy")), ioError));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-
-    CPPUNIT_ASSERT_MESSAGE(("IoError is " + toString(ioError)), IoHelper::deleteItem(localSyncDirPath, ioError));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-
-    CPPUNIT_ASSERT_MESSAGE(
-            ("IoError is " + toString(ioError)),
-            IoHelper::renameItem((localSyncDirPath.parent_path() / (localSyncDirPath.filename().string() + "_copy")),
-                                 localSyncDirPath, ioError));
+                           IoHelper::copyFileOrDirectory(localSyncDirPath, localSyncDirCopyPath, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     // Check that the database and file system node IDs do not match anymore
-    CPPUNIT_ASSERT(!verifyDbAndFSNodeIds(localSyncDirPath));
+    CPPUNIT_ASSERT(!verifyDbAndFSNodeIds(localSyncDirCopyPath));
 
     // Now try to fix the database node IDs after the sync directory change
-    CPPUNIT_ASSERT(_testObj->tryToFixDbNodeIdsAfterSyncDirChange(localSyncDirPath));
+    CPPUNIT_ASSERT(_testObj->tryToFixDbNodeIdsAfterSyncDirChange(localSyncDirCopyPath));
 
     // Check that the database and file system node IDs match again
-    CPPUNIT_ASSERT(verifyDbAndFSNodeIds(localSyncDirPath));
+    CPPUNIT_ASSERT(verifyDbAndFSNodeIds(localSyncDirCopyPath));
 
     // Remove a file and ensure that tryToFixDbNodeIdsAfterSyncDirChange fail
-    auto dirIt = std::filesystem::directory_iterator(localSyncDirPath);
+    auto dirIt = std::filesystem::directory_iterator(localSyncDirCopyPath);
     CPPUNIT_ASSERT(IoHelper::deleteItem(dirIt->path(), ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-    CPPUNIT_ASSERT(!_testObj->tryToFixDbNodeIdsAfterSyncDirChange(localSyncDirPath));
+    CPPUNIT_ASSERT(!_testObj->tryToFixDbNodeIdsAfterSyncDirChange(localSyncDirCopyPath));
 }
 void TestSyncDb::testDummyUpgrade() {
     CPPUNIT_ASSERT(_testObj->upgrade("3.6.4 (build 20240112)", "3.6.4 (build 20240112)"));
