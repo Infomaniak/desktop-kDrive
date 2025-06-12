@@ -220,7 +220,7 @@ void SyncPalWorker::execute() {
                      (stepWorkers[0]->exitCause() == ExitCause::NotEnoughDiskSpace ||
                       stepWorkers[0]->exitCause() == ExitCause::FileAccessError ||
                       stepWorkers[0]->exitCause() == ExitCause::SyncDirAccessError)) ||
-                    (stepWorkers[1] && workersExitCode[1] == ExitCode::SystemError &&
+                    (stepWorkers[1] && stepWorkers[1]->exitCode() == ExitCode::SystemError &&
                      (stepWorkers[1]->exitCause() == ExitCause::NotEnoughDiskSpace ||
                       stepWorkers[1]->exitCause() == ExitCause::FileAccessError ||
                       stepWorkers[1]->exitCause() == ExitCause::SyncDirAccessError))) {
