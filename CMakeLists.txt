@@ -49,10 +49,9 @@ IF (WIN32)
         "C:/Program Files (x86)/Sentry-Native"
         "C:/Program Files (x86)/libzip"
     )
-ELSE ()
-    SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
-        "/usr/local/lib"
-    )
+ENDIF ()
+
+if (UNIX)
     set(CONAN_DEP_DIR "${CMAKE_BINARY_DIR}/conan_dependencies" CACHE PATH "Conan dependencies directory. Used to copy the .so files for the appimage builder.")
 ENDIF ()
 
