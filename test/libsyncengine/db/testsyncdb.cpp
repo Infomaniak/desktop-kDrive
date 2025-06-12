@@ -457,8 +457,9 @@ void TestSyncDb::testTryToFixDbNodeIdsAfterSyncDirChange() {
     CPPUNIT_ASSERT_MESSAGE(("IoError is " + toString(ioError)), IoHelper::deleteItem(localSyncDirPath, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
+    std::cout << "Renaming " << (localSyncDirPath.string() + "_copy") << " to " << localSyncDirPath << std::endl;
     CPPUNIT_ASSERT_MESSAGE(("IoError is " + toString(ioError)),
-                           IoHelper::renameItem(localSyncDirPath.string() + "_copy", localSyncDirPath, ioError));
+                           IoHelper::renameItem((localSyncDirPath.string() + "_copy"), localSyncDirPath, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     // Check that the database and file system node IDs do not match anymore
