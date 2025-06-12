@@ -52,6 +52,7 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
 #include "test_utility/testhelpers.h"
+#include "test_utility/iohelpertestutilities.h"
 #include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
 using namespace CppUnit;
@@ -141,7 +142,8 @@ void TestNetworkJobs::tearDown() {
     ParametersCache::reset();
     JobManager::instance()->stop();
     JobManager::instance()->clear();
-    MockIoHelperTestNetworkJobs::resetStdFunctions();
+    JobManager::instance().reset();
+    IoHelperTestUtilities::resetFunctions();
     TestBase::stop();
 }
 
@@ -408,8 +410,8 @@ void TestNetworkJobs::testDownload() {
                     ec = std::make_error_code(std::errc::cross_device_link);
 #endif
                 };
-        MockIoHelperTestNetworkJobs::setStdRename(MockRename);
-        MockIoHelperTestNetworkJobs::setStdTempDirectoryPath(MockTempDirectoryPath);
+        IoHelperTestUtilities::setRename(MockRename);
+        IoHelperTestUtilities::setTempDirectoryPathFunction(MockTempDirectoryPath);
 
         // CREATE
         {
@@ -448,7 +450,7 @@ void TestNetworkJobs::testDownload() {
             CPPUNIT_ASSERT(content == "test");
         }
 
-        MockIoHelperTestNetworkJobs::resetStdFunctions();
+        IoHelperTestUtilities::resetFunctions();
     }
 
   if (testhelpers::isRunningOnCI() && testhelpers::isExtendedTest(false)) {
@@ -484,13 +486,10 @@ void TestNetworkJobs::testDownload() {
             const SyncPath localDestFilePath = temporaryDirectory.path() / "9Mo.txt";
             DownloadJob downloadJob(nullptr, _driveDbId, remoteTmpDir.id(), localDestFilePath, 0, 0, 0, false);
 
-            MockIoHelperTestNetworkJobs::setStdTempDirectoryPath([&smallPartitionPath](std::error_code &ec) {
-                ec.clear();
-                return smallPartitionPath;
-            });
+            IoHelperTestUtilities::setCacheDirectoryPath(smallPartitionPath);
 
             downloadJob.runSynchronously();
-            MockIoHelperTestNetworkJobs::resetStdFunctions();
+            IoHelperTestUtilities::resetFunctions();
             CPPUNIT_ASSERT_EQUAL_MESSAGE(std::string("Space available at " + smallPartitionPath.string() + " -> " +
                                                      std::to_string(Utility::getFreeDiskSpace(smallPartitionPath))),
                                          ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace), downloadJob.exitInfo());

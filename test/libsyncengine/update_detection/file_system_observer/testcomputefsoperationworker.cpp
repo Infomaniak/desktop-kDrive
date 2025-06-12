@@ -111,6 +111,7 @@ void TestComputeFSOperationWorker::tearDown() {
     }
     ParmsDb::reset();
     ParametersCache::reset();
+    ExclusionTemplateCache::reset();
     TestBase::stop();
 }
 

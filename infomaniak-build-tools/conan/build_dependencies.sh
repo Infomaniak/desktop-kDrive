@@ -40,9 +40,9 @@ log(){ echo "[INFO] $*"; }
 error(){ echo "[ERROR] $*" >&2; exit 1; }
 
 function get_platform {
-    platform=$(uname | tr '[:upper:]' '[:lower:]')
+    platform="$(uname | tr '[:upper:]' '[:lower:]')"
     
-    echo $platform
+    echo "$platform"
 }
 
 function get_architecture {
