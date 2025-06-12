@@ -42,6 +42,7 @@ class ISyncWorker {
         void waitForExit();
 
         inline std::string name() const { return _name; }
+        inline std::string shortName() const { return _shortName; }
 
         inline bool isRunning() const { return _isRunning; }
         inline bool stopAsked() const { return _stopAsked; }

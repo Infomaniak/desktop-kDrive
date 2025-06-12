@@ -34,7 +34,7 @@ class FolderWatcher_win : public FolderWatcher {
         FolderWatcher_win(LocalFileSystemObserverWorker *parent, const SyncPath &path);
 
         void changesLost();
-        void changeDetected(const SyncPath &path, OperationType opType);
+        ExitInfo changeDetected(const SyncPath &path, OperationType opType);
 
     protected:
         void startWatching() override;

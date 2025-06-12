@@ -28,7 +28,7 @@
 #include <chrono>
 
 namespace KDC::testhelpers {
-std::string loadEnvVariable(const std::string& key, bool mandatory);
+std::string loadEnvVariable(const std::string &key, bool mandatory);
 
 inline const SyncPath localTestDirPath() {
     static SyncPath localTestDirPath;
@@ -62,6 +62,7 @@ inline bool isExtendedTest(bool print = true) {
     }
     return isExtended;
 }
+
 struct TestVariables {
         std::string userId;
         std::string accountId;
@@ -82,16 +83,16 @@ struct TestVariables {
         }
 };
 
-void generateOrEditTestFile(const SyncPath& path);
+void generateOrEditTestFile(const SyncPath &path);
 /**
  * @brief Generate test files.
  * @param dirPath Directory in which the files will be created.
  * @param size The size of each file in MB.
  * @param count The number of file to generate.
  */
-void generateBigFiles(const SyncPath& dirPath, uint16_t size, uint16_t count);
-SyncPath generateBigFile(const SyncPath& dirPath, uint16_t size);
+void generateBigFiles(const SyncPath &dirPath, uint16_t size, uint16_t count);
+SyncPath generateBigFile(const SyncPath &dirPath, uint16_t size);
 
-void setModificationDate(const SyncPath& path, const std::chrono::time_point<std::chrono::system_clock>& timePoint);
+void setModificationDate(const SyncPath &path, const std::chrono::time_point<std::chrono::system_clock> &timePoint);
 
 } // namespace KDC::testhelpers
