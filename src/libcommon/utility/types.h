@@ -79,6 +79,7 @@ struct SyncNameHashFunction {
 
 using NodeSet = std::unordered_set<NodeId, StringHashFunction, std::equal_to<>>;
 using SyncNameSet = std::unordered_set<SyncName, SyncNameHashFunction, std::equal_to<>>;
+using StrSet = std::unordered_set<std::string, StringHashFunction, std::equal_to<>>;
 
 using SigValueType = std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring>;
 
@@ -262,17 +263,16 @@ enum class ExitCause {
     DbAccessError,
     DbEntryNotFound,
     InvalidSnapshot,
-    SyncDirDoesntExist,
-    SyncDirAccesError,
+    SyncDirAccessError,
+    SyncDirChanged,
     HttpErr,
     HttpErrForbidden,
     RedirectionError,
     ApiErr,
     InvalidSize,
-    FileAlreadyExists,
+    FileExists,
     FileAccessError,
     FileLocked,
-    UnexpectedFileSystemEvent,
     NotEnoughDiskSpace,
     DriveAccessError,
     LoginError,
@@ -284,7 +284,7 @@ enum class ExitCause {
     FileSizeMismatch,
     UploadNotTerminated,
     UnableToCreateVfs,
-    NotEnoughtMemory,
+    NotEnoughMemory,
     FileTooBig,
     MoveToTrashFailed,
     InvalidName,

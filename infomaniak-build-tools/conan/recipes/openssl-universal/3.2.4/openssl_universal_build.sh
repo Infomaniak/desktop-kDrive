@@ -12,7 +12,6 @@ minimum_macos_version="10.15"
 log() { echo -e "[INFO] $*"; }
 error() { echo -e "[ERROR] $*" >&2; exit 1; }
 
-# local_recipe_remote_name is the name of the local conan 'remote' given by the build_dependencies.sh script
 build_folder=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -38,7 +37,7 @@ pushd "$build_folder"
 log "Cloning OpenSSL sources..."
 git clone --depth 1 --branch "$openssl_git_tag" "$src_url" openssl
 
-# Creating two version of openssl, one for each architecture
+# Creating two versions of openssl, one for each architecture
 log "Preparing source trees for architectures..."
 mv openssl openssl.x86_64
 cp -R openssl.x86_64 openssl.arm64

@@ -112,7 +112,9 @@ void TestIntegration::setUp() {
 
     _localPath = _localTmpDir.path();
     _remotePath = testVariables.remotePath;
-    Sync sync(1, drive.dbId(), _localPath, _remotePath);
+    NodeId localNodeId;
+    CPPUNIT_ASSERT(IoHelper::getNodeId(_localPath, localNodeId));
+    Sync sync(1, drive.dbId(), _localPath, localNodeId, _remotePath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Setup proxy
@@ -179,9 +181,8 @@ void TestIntegration::tearDown() {
     _syncPal->stop(false, true, false);
     ParmsDb::instance()->close();
     ParmsDb::reset();
-    JobManager::stop();
-    JobManager::clear();
-    JobManager::reset();
+    JobManager::instance()->stop();
+    JobManager::instance()->clear();
     TestBase::stop();
 }
 
@@ -2207,7 +2208,7 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseFile", ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseDir", 3);
-    IoHelper::createDirectory(absoluteLocalWorkingDir / "testNodeIdReuseDir", ioError);
+    IoHelper::createDirectory(absoluteLocalWorkingDir / "testNodeIdReuseDir", false, ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     _syncPal->unpause();

@@ -62,12 +62,8 @@ void ExecutorWorker::execute() {
     _snapshotToInvalidate = false;
 
     _jobToSyncOpMap.clear();
-    _syncOpToJobMap.clear();
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
-
-    LOG_SYNCPAL_DEBUG(_logger, "JobManager::instance()->countManagedJobs(): " << JobManager::instance()->countManagedJobs());
-    LOG_SYNCPAL_DEBUG(_logger, "JobManager::instance()->maxNbThreads() * 2: " << JobManager::instance()->maxNbThreads() * 2);
 
     // Keep a copy of the sorted list
     _opList = _syncPal->_syncOps->opSortedList();
@@ -88,14 +84,6 @@ void ExecutorWorker::execute() {
             if (stopAsked()) {
                 cancelAllOngoingJobs();
                 break;
-            }
-
-            if (JobManager::instance()->countManagedJobs() > static_cast<size_t>(JobManager::instance()->maxNbThreads()) * 2) {
-                if (ParametersCache::isExtendedLogEnabled()) {
-                    LOG_SYNCPAL_DEBUG(_logger, "Maximum number of jobs reached");
-                }
-                Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-                continue;
             }
 
             UniqueId opId = 0;
@@ -155,7 +143,7 @@ void ExecutorWorker::execute() {
             if (!executorExitInfo) {
                 executorExitInfo = handleExecutorError(syncOp, executorExitInfo);
                 if (!executorExitInfo) { // If the error is not handled, stop the execution
-                    increaseErrorCount(syncOp);
+                    increaseErrorCount(syncOp, executorExitInfo);
                     cancelAllOngoingJobs();
                     break;
                 } else { // If the error is handled, continue the execution
@@ -166,10 +154,10 @@ void ExecutorWorker::execute() {
             }
 
             if (job) {
-                manageJobDependencies(syncOp, job);
                 std::function<void(UniqueId)> callback =
                         std::bind(&ExecutorWorker::executorCallback, this, std::placeholders::_1);
-                JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL, callback);
+                job->setAdditionalCallback(callback);
+                JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
                 _ongoingJobs.insert({job->jobId(), job});
                 _jobToSyncOpMap.insert({job->jobId(), syncOp});
             } else {
@@ -206,17 +194,11 @@ void ExecutorWorker::execute() {
     _syncPal->_syncOps->clear();
     _syncPal->_remoteFSObserverWorker->forceUpdate();
 
-    if (changesCounter > SNAPSHOT_INVALIDATION_THRESHOLD) {
+    if (changesCounter > SNAPSHOT_INVALIDATION_THRESHOLD || _snapshotToInvalidate) {
         // If there are too many changes on the local filesystem, the OS stops sending events at some point.
-        LOG_SYNCPAL_INFO(_logger,
-                         "Local snapshot is potentially invalid because of too many file system events. Forcing invalidation.");
-
-        _snapshotToInvalidate = true;
-        LOG_SYNCPAL_INFO(_logger, "Invalidate local snapshot.");
+        // Also, on some specific errors, we want to force the snapshot reconstruction.
+        LOG_SYNCPAL_INFO(_logger, "Forcing local snapshot invalidation.");
         _syncPal->_localFSObserverWorker->invalidateSnapshot();
-    } else if (_snapshotToInvalidate) {
-        LOG_SYNCPAL_INFO(_logger, "Try to invalidate local snapshot.");
-        _syncPal->_localFSObserverWorker->tryToInvalidateSnapshot();
     }
 
     _syncPal->vfs()->cleanUpStatuses();
@@ -359,7 +341,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
                               L"Error in Utility::checkIfPathExists: " << Utility::formatSyncPath(absoluteLocalFilePath));
                     return ExitCode::SystemError;
                 }
-                if (!exists) return {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent};
+                if (!exists) return {ExitCode::DataError, ExitCause::NotFound};
 
                 // Ignore operation
                 if (SyncFileItem syncItem; _syncPal->getSyncFileItem(relativeLocalFilePath, syncItem)) {
@@ -480,7 +462,7 @@ ExitInfo ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, cons
     if (!alreadyExist) {
         return ExitCode::Ok;
     }
-    return {ExitCode::DataError, ExitCause::FileAlreadyExists};
+    return {ExitCode::DataError, ExitCause::FileExists};
 }
 
 ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hydrating) noexcept {
@@ -642,13 +624,14 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                 return exitInfo;
             }
 
-            if (filesize > useUploadSessionThreshold) {
+            if (filesize > bigFileThreshold) {
                 try {
-                    int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
+                    const int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
                     job = std::make_shared<DriveUploadSession>(
                             _syncPal->vfs(), _syncPal->driveDbId(), _syncPal->syncDb(), absoluteLocalFilePath,
                             syncOp->affectedNode()->name(), newCorrespondingParentNode->id().value_or(""),
-                            syncOp->affectedNode()->lastmodified().value_or(0), isLiteSyncActivated(), uploadSessionParallelJobs);
+                            syncOp->affectedNode()->createdAt().value_or(0), syncOp->affectedNode()->lastmodified().value_or(0),
+                            isLiteSyncActivated(), uploadSessionParallelJobs);
                 } catch (std::exception const &e) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in DriveUploadSession::DriveUploadSession: " << Utility::s2ws(e.what()));
                     return ExitCode::DataError;
@@ -855,7 +838,7 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
             return ExitCode::DataError;
         }
 
-        if (filesize > useUploadSessionThreshold) {
+        if (filesize > bigFileThreshold) {
             try {
                 int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
                 job = std::make_shared<DriveUploadSession>(_syncPal->vfs(), _syncPal->driveDbId(), _syncPal->syncDb(),
@@ -1347,7 +1330,7 @@ ExitInfo ExecutorWorker::deleteFinishedAsyncJobs() {
                     }
                 }
             } else {
-                increaseErrorCount(syncOp);
+                increaseErrorCount(syncOp, exitInfo);
             }
 
             // Delete job
@@ -1430,12 +1413,11 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, Syn
                                                    << Utility::formatSyncPath(relativeLocalPath) << L" " << exitInfo);
                 return exitInfo;
             }
-        } else if (!handleExecutorError(syncOp, job->exitInfo())) {
+        } else if (const auto exitInfo = handleExecutorError(syncOp, job->exitInfo()); !exitInfo) {
             // Cancel all queued jobs
             LOGW_SYNCPAL_WARN(_logger, L"Cancelling jobs. " << job->exitInfo());
             cancelAllOngoingJobs();
-            return job->exitInfo();
-
+            return exitInfo;
         } else { // The error is managed and the execution can continue.
             LOGW_DEBUG(_logger, L"Error successfully managed: " << job->exitInfo() << L" on " << syncOp->type()
                                                                 << L" operation for "
@@ -1796,7 +1778,7 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
         if (node == nullptr) {
             std::cout << "Failed to allocate memory" << std::endl;
             LOG_SYNCPAL_ERROR(_logger, "Failed to allocate memory");
-            return {ExitCode::SystemError, ExitCause::NotEnoughtMemory};
+            return {ExitCode::SystemError, ExitCause::NotEnoughMemory};
         }
 
         std::shared_ptr<UpdateTree> updateTree = targetUpdateTree(syncOp);
@@ -2133,20 +2115,11 @@ void ExecutorWorker::cancelAllOngoingJobs() {
     LOG_SYNCPAL_DEBUG(_logger, "All queued executor jobs cancelled.");
 }
 
-void ExecutorWorker::manageJobDependencies(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job) {
-    _syncOpToJobMap.insert({syncOp->id(), job->jobId()});
-    // Check for job dependencies on other job
-    if (syncOp->hasParentOp()) {
-        auto parentOpId = syncOp->parentId();
-        if (_syncOpToJobMap.find(parentOpId) != _syncOpToJobMap.end()) {
-            // The job ID associated with the parent sync operation
-            auto parentJobId = _syncOpToJobMap.find(parentOpId)->second;
-            job->setParentJobId(parentJobId);
-        }
-    }
-}
-
 void ExecutorWorker::increaseErrorCount(const SyncOpPtr syncOp, const ExitInfo exitInfo /*= ExitInfo()*/) {
+    if (exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccessError)) {
+        return; // Ignore error if sync folder is not accessible.
+    }
+
     if (syncOp->affectedNode() && syncOp->affectedNode()->id().has_value()) {
         _syncPal->increaseErrorCount(*syncOp->affectedNode()->id(), syncOp->affectedNode()->type(),
                                      syncOp->affectedNode()->getPath(), otherSide(syncOp->targetSide()), exitInfo);
@@ -2213,6 +2186,21 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
 
     LOG_SYNCPAL_WARN(_logger, "Handling " << opsExitInfo << " in ExecutorWorker::handleExecutorError");
 
+    if (opsExitInfo.cause() == ExitCause::NotFound || opsExitInfo.cause() == ExitCause::FileAccessError) {
+        // Check that the root of the sync folder is still accessible
+        bool exists = false;
+        if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(_syncPal->localPath(), exists, ioError)) {
+            LOGW_WARN(_logger,
+                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_syncPal->localPath(), ioError));
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        }
+        if (!exists) {
+            LOGW_DEBUG(_logger, L"Sync dir " << Utility::formatSyncPath(_syncPal->localPath()) << L" not accessible anymore");
+            _snapshotToInvalidate = true; // The snapshot must be invalidated before the next sync
+            return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
+        }
+    }
+
     // Handle specific errors
     switch (static_cast<int>(opsExitInfo)) {
         case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileLocked)): {
@@ -2224,9 +2212,9 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
         case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::NotFound)): {
             return handleOpsFileNotFound(syncOp, opsExitInfo);
         }
-        case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExists)):
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAlreadyExists)):
-        case static_cast<int>(ExitInfo(ExitCode::DataError, ExitCause::FileAlreadyExists)): {
+        case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileExists)):
+        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileExists)):
+        case static_cast<int>(ExitInfo(ExitCode::DataError, ExitCause::FileExists)): {
             return handleOpsAlreadyExistError(syncOp, opsExitInfo);
         }
         default: {
@@ -2366,7 +2354,7 @@ ExitInfo ExecutorWorker::removeDependentOps(const std::shared_ptr<Node> localNod
         if (localNode && localNode2 && (localNode->isParentOf(localNode2))) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Removing " << syncOp2->type() << L" operation on " << Utility::formatSyncName(nodeName)
                                                      << L" because it depends on " << opType << L" operation on "
-                                                     << Utility::formatSyncName(localNode->name()) << L" wich failed.");
+                                                     << Utility::formatSyncName(localNode->name()) << L" which failed.");
 
             dependentOps.push_back(opId);
             continue;
