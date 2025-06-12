@@ -39,9 +39,6 @@ class FolderWatcher {
         void start();
         void stop();
         [[nodiscard]] bool isReady() const { return _ready; }
-
-        // The FolderWatcher can only become unreliable on Linux
-        [[nodiscard]] bool isReliable() const { return _isReliable; }
         [[nodiscard]] ExitInfo exitInfo() const { return _exitInfo; }
 
     protected:
@@ -52,7 +49,6 @@ class FolderWatcher {
         log4cplus::Logger _logger;
         LocalFileSystemObserverWorker *_parent;
         SyncPath _folder;
-        bool _isReliable = true;
         bool _stop = false;
         bool _ready{false};
 
