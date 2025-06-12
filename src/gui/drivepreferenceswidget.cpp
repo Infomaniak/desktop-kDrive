@@ -399,7 +399,7 @@ void DrivePreferencesWidget::askEnableLiteSync(const std::function<void(bool)> &
         virtualFileMode == VirtualFileMode::Suffix) {
         CustomMessageBox msgBox(QMessageBox::Question, tr("Do you really want to turn on Lite Sync?"),
                                 tr("This operation may take from a few seconds to a few minutes depending on the size of the "
-                                   "folder to be converted."),
+                                   "folder."),
                                 false, QMessageBox::NoButton, this);
         msgBox.addButton(tr("CONFIRM"), QMessageBox::Yes);
         msgBox.addButton(tr("CANCEL"), QMessageBox::No);
@@ -431,7 +431,7 @@ void DrivePreferencesWidget::askDisableLiteSync(const std::function<void(bool, b
                                          " If you turn off Lite Sync, you need to select which folders to sync on your computer."
                                          " In the meantime, the synchronization of your kDrive will be paused.")
                                               .arg(KDC::CommonGuiUtility::octetsToString(diskSpaceMissing))
-                                    : tr("If you turn off Lite Sync, all files will sync locally on your computer."),
+                                    : tr("If you turn off Lite Sync, all files will downloaded on your computer."),
                             diskSpaceWarning, QMessageBox::NoButton, this);
     msgBox.addButton(tr("CONFIRM"), QMessageBox::Yes);
     msgBox.addButton(tr("CANCEL"), QMessageBox::No);
@@ -975,13 +975,12 @@ void DrivePreferencesWidget::onLiteSyncSwitchSyncChanged(int syncDbId, bool acti
                 auto syncInfoMapIt = _gui->syncInfoMap().find(syncDbId);
                 if (syncInfoMapIt != _gui->syncInfoMap().end()) {
                     if (switchVfsOn(syncInfoMapIt->first)) {
-                        CustomMessageBox msgBox(QMessageBox::Information, tr("The conversion of the folder has succeeded."),
-                                                QMessageBox::Ok, this);
+                        CustomMessageBox msgBox(QMessageBox::Information, tr("Lite Sync activated."), QMessageBox::Ok, this);
                         msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
                     } else {
                         qCWarning(lcDrivePreferencesWidget()) << "Error when switching vfs on";
-                        CustomMessageBox msgBox(QMessageBox::Information, tr("The conversion of the folder has failed."),
-                                                QMessageBox::Ok, this);
+                        CustomMessageBox msgBox(QMessageBox::Information, tr("Lite Sync activation failed."), QMessageBox::Ok,
+                                                this);
                         msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
                     }
                 }
@@ -994,15 +993,13 @@ void DrivePreferencesWidget::onLiteSyncSwitchSyncChanged(int syncDbId, bool acti
                         auto syncInfoMapIt = _gui->syncInfoMap().find(syncDbId);
                         if (syncInfoMapIt != _gui->syncInfoMap().end()) {
                             if (switchVfsOff(syncInfoMapIt->first, diskSpaceWarning)) {
-                                CustomMessageBox msgBox(
-                                        QMessageBox::Information,
-                                        tr("The conversion of the folder has succeeded, it will now be synchronized"),
-                                        QMessageBox::Ok, this);
-                                msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
+                                CustomMessageBox msgBox(QMessageBox::Information, tr("Lite Sync deactivated."), QMessageBox::Ok,
+                                                        this);
+                                (void) msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
                             } else {
-                                CustomMessageBox msgBox(QMessageBox::Information, tr("The conversion of the folder has failed."),
+                                CustomMessageBox msgBox(QMessageBox::Information, tr("Lite Sync deactivation failed."),
                                                         QMessageBox::Ok, this);
-                                msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
+                                (void) msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
                             }
                         }
                     }
