@@ -134,9 +134,7 @@ std::string toString(const ExitCause e) {
             return "DbEntryNotFound";
         case ExitCause::InvalidSnapshot:
             return "InvalidSnapshot";
-        case ExitCause::SyncDirDoesntExist:
-            return "SyncDirDoesntExist";
-        case ExitCause::SyncDirAccesError:
+        case ExitCause::SyncDirAccessError:
             return "SyncDirAccesError";
         case ExitCause::SyncDirChanged:
             return "SyncDirChanged";
@@ -150,14 +148,12 @@ std::string toString(const ExitCause e) {
             return "ApiErr";
         case ExitCause::InvalidSize:
             return "InvalidSize";
-        case ExitCause::FileAlreadyExists:
-            return "FileAlreadyExist";
+        case ExitCause::FileExists:
+            return "FileExists";
         case ExitCause::FileAccessError:
             return "FileAccessError";
         case ExitCause::FileLocked:
             return "FileLocked";
-        case ExitCause::UnexpectedFileSystemEvent:
-            return "UnexpectedFileSystemEvent";
         case ExitCause::NotEnoughDiskSpace:
             return "NotEnoughDiskSpace";
         case ExitCause::DriveAccessError:
@@ -180,8 +176,8 @@ std::string toString(const ExitCause e) {
             return "UploadNotTerminated";
         case ExitCause::UnableToCreateVfs:
             return "UnableToCreateVfs";
-        case ExitCause::NotEnoughtMemory:
-            return "NotEnoughtMemory";
+        case ExitCause::NotEnoughMemory:
+            return "NotEnoughMemory";
         case ExitCause::FileTooBig:
             return "FileTooBig";
         case ExitCause::MoveToTrashFailed:
