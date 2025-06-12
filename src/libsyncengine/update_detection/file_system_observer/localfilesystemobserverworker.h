@@ -46,7 +46,7 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
     private:
         virtual ExitInfo generateInitialSnapshot() override;
         virtual ReplicaSide getSnapshotType() const override { return ReplicaSide::Local; }
-        
+
         bool canComputeChecksum(const SyncPath &absolutePath);
 
 #ifdef __APPLE__

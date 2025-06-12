@@ -579,7 +579,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
 
     if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_SYNCPAL_WARN(_logger, L"Local " << Utility::formatSyncPath(absoluteParentDirPath) << L" doesn't exist");
-        return {ExitCode::SystemError, ExitCause::SyncDirDoesntExist};
+        return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
     }
 
     if (itemType.ioError == IoError::AccessDenied) {
@@ -602,7 +602,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_SYNCPAL_WARN(_logger, L"Local " << Utility::formatIoError(absoluteParentDirPath, ioError));
-            return {ExitCode::SystemError, ExitCause::SyncDirDoesntExist};
+            return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
         }
 
         if (ioError == IoError::AccessDenied) {

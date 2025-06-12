@@ -152,14 +152,12 @@ std::string toString(const ExitCause e) {
             return "ApiErr";
         case ExitCause::InvalidSize:
             return "InvalidSize";
-        case ExitCause::FileAlreadyExists:
-            return "FileAlreadyExist";
+        case ExitCause::FileExists:
+            return "FileExists";
         case ExitCause::FileAccessError:
             return "FileAccessError";
         case ExitCause::FileLocked:
             return "FileLocked";
-        case ExitCause::UnexpectedFileSystemEvent:
-            return "UnexpectedFileSystemEvent";
         case ExitCause::NotEnoughDiskSpace:
             return "NotEnoughDiskSpace";
         case ExitCause::DriveAccessError:
@@ -182,8 +180,8 @@ std::string toString(const ExitCause e) {
             return "UploadNotTerminated";
         case ExitCause::UnableToCreateVfs:
             return "UnableToCreateVfs";
-        case ExitCause::NotEnoughtMemory:
-            return "NotEnoughtMemory";
+        case ExitCause::NotEnoughMemory:
+            return "NotEnoughMemory";
         case ExitCause::FileTooBig:
             return "FileTooBig";
         case ExitCause::MoveToTrashFailed:
@@ -823,6 +821,8 @@ std::string toString(const AppType e) {
             return "Server";
         case AppType::Client:
             return "Client";
+        case AppType::Test:
+            return "Test";
         default:
             return noConversionStr;
     }
