@@ -95,6 +95,8 @@ bool AbstractNetworkJob::isManagedError(const ExitInfo exitInfo) noexcept {
             return managedExitCauses.contains(exitInfo.cause());
         case ExitCode::NetworkError:
             return exitInfo.cause() == ExitCause::NetworkTimeout;
+        case ExitCode::InvalidSync:
+            return exitInfo.cause() == ExitCause::SyncDirAccessError;
         case ExitCode::UpdateRequired:
             return true;
         default:

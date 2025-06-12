@@ -349,8 +349,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         bool createOrOpenDb(const SyncPath &syncDbPath, const std::string &version,
                             const std::string &targetNodeId = std::string());
         void setSyncHasFullyCompletedInParms(bool syncHasFullyCompleted);
-        ExitCode setListingCursor(const std::string &value, int64_t timestamp);
-        ExitCode listingCursor(std::string &value, int64_t &timestamp);
+        ExitInfo setListingCursor(const std::string &value, int64_t timestamp);
+        ExitInfo listingCursor(std::string &value, int64_t &timestamp);
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
         ExitCode updateSyncNode();
         std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side) const;
