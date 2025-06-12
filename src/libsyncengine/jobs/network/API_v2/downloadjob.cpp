@@ -322,12 +322,16 @@ bool DownloadJob::handleResponse(std::istream &is) {
 
 #if defined(__APPLE__) || defined(_WIN32)
     if (_creationTimeIn != _creationTimeOut || _modificationTimeIn != _modificationTimeOut) {
+        // In the following cases, it is not an issue:
+        // - Windows: if creation/modification date = 0, it is set to current date
+        // - macOS: if creation date > modification date, creation date is set to modification date
         LOGW_WARN(_logger, L"Impossible to set creation and/or modification time(s) on local file."
                                    << L" Desired values: " << _creationTimeIn << L"/" << _modificationTimeIn << L" Set values: "
                                    << _creationTimeOut << L"/" << _modificationTimeOut << L" for "
                                    << Utility::formatSyncPath(_localpath));
     }
 #else
+    // On Linux, the creation date cannot be set
     if (_modificationTimeIn != _modificationTimeOut) {
         LOGW_WARN(_logger, L"Impossible to set modification time on local file."
                                    << L" Desired value: " << _modificationTimeIn << L" Set value: " << _modificationTimeOut
