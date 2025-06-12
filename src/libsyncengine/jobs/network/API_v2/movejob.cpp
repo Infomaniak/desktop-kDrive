@@ -73,9 +73,8 @@ bool MoveJob::canRun() {
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"File " << Path2WStr(_destFilepath).c_str()
-
                                      << L" is not in its destination folder. Aborting current sync and restart.");
-        _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent}; // Data error so the snapshots will be re-created
+        _exitInfo = {ExitCode::DataError, ExitCause::InvalidDestination};
         return false;
     }
 

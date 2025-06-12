@@ -370,8 +370,7 @@
     [doneCondition lock];
     NSDate *timeoutDate = [NSDate dateWithTimeIntervalSinceNow:1];
     BOOL success = FALSE;
-    while (!done && (success = [doneCondition waitUntilDate:timeoutDate])) {
-    }
+    while (!done && (success = [doneCondition waitUntilDate:timeoutDate])) {}
     [doneCondition unlock];
 
     if (!success) {
@@ -1050,7 +1049,7 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
     if (fileStat->st_mode == S_IFDIR) {
         SyncPath dirPath{QStr2Path(path)};
         IoError ioError = IoError::Success;
-        if (!IoHelper::createDirectory(dirPath, ioError)) {
+        if (!IoHelper::createDirectory(dirPath, false, ioError)) {
             LOGW_WARN(_logger, L"Call to IoHelper::createDirectory failed: " << Utility::formatSyncPath(dirPath));
             return false;
         }

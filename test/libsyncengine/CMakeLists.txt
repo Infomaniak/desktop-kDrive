@@ -16,6 +16,7 @@ set(testsyncengine_SRCS
         ../test.cpp
         test.cpp
         ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
+        ../test_utility/iohelpertestutilities.h ../test_utility/iohelpertestutilities.cpp
         ../test_utility/timeouthelper.h ../test_utility/timeouthelper.cpp
         ../test_utility/testbase.h
         ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
@@ -118,19 +119,4 @@ elseif(APPLE)
 else()
     target_link_libraries(${testsyncengine_NAME}
             "/usr/local/lib/libcppunit.so")
-endif()
-
-if(APPLE)
-    include(ConanGetLibDirs)
-    get_library_dirs("OpenSSL" "openssl-universal")
-    install(CODE "
-        message(STATUS \"Fixing library paths for ${testsyncengine_NAME}...\")
-        execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.8.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testsyncengine_NAME})
-        execute_process(COMMAND \"install_name_tool\" -change /usr/local/lib/libcppunit-1.15.2.dylib @rpath/libcppunit-1.15.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testsyncengine_NAME})
-        execute_process(COMMAND \"install_name_tool\" -change ${_OpenSSL_LIB_DIRS}/libssl.3.dylib @rpath/libssl.3.dylib ${BIN_OUTPUT_DIRECTORY}/${testsyncengine_NAME})
-        execute_process(COMMAND \"install_name_tool\" -change ${_OpenSSL_LIB_DIRS}/libcrypto.3.dylib @rpath/libcrypto.3.dylib ${BIN_OUTPUT_DIRECTORY}/${testsyncengine_NAME})
-        execute_process(COMMAND \"install_name_tool\" -add_rpath /usr/local/lib ${BIN_OUTPUT_DIRECTORY}/${testsyncengine_NAME})
-        execute_process(COMMAND \"install_name_tool\" -add_rpath @executable_path ${BIN_OUTPUT_DIRECTORY}/${testsyncengine_NAME})
-        execute_process(COMMAND \"install_name_tool\" -add_rpath ${_OpenSSL_LIB_DIRS} ${BIN_OUTPUT_DIRECTORY}/${testsyncengine_NAME})
-        " COMPONENT RUNTIME)
-endif()
+endif ()

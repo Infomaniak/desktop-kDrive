@@ -498,7 +498,7 @@ void SyncPal::freeWorkers() {
 }
 
 ExitCode SyncPal::setSyncPaused(bool value) {
-    bool found;
+    bool found = false;
     if (!ParmsDb::instance()->setSyncPaused(syncDbId(), value, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::setSyncPaused");
         return ExitCode::DbError;
@@ -791,41 +791,41 @@ ExitInfo SyncPal::setLocalNodeId(const NodeId &localNodeId) {
     return ExitCode::Ok;
 }
 
-ExitCode SyncPal::setListingCursor(const std::string &value, int64_t timestamp) {
+ExitInfo SyncPal::setListingCursor(const std::string &value, int64_t timestamp) {
     Sync sync;
     bool found;
     if (!ParmsDb::instance()->selectSync(syncDbId(), sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
-        return ExitCode::DbError;
+        return {ExitCode::DbError, ExitCause::DbAccessError};
     }
     if (!found) {
         LOG_SYNCPAL_WARN(_logger, "Sync not found");
-        return ExitCode::DataError;
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
     sync.setListingCursor(value, timestamp);
     if (!ParmsDb::instance()->updateSync(sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::updateSync");
-        return ExitCode::DbError;
+        return {ExitCode::DbError, ExitCause::DbAccessError};
     }
     if (!found) {
         LOG_SYNCPAL_WARN(_logger, "Sync not found");
-        return ExitCode::DataError;
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
     return ExitCode::Ok;
 }
 
-ExitCode SyncPal::listingCursor(std::string &value, int64_t &timestamp) {
+ExitInfo SyncPal::listingCursor(std::string &value, int64_t &timestamp) {
     Sync sync;
     bool found;
     if (!ParmsDb::instance()->selectSync(syncDbId(), sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
-        return ExitCode::DbError;
+        return {ExitCode::DbError, ExitCause::DbAccessError};
     }
     if (!found) {
         LOG_SYNCPAL_WARN(_logger, "Sync not found");
-        return ExitCode::DataError;
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
     sync.listingCursor(value, timestamp);
@@ -1319,7 +1319,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
                                          std::shared_ptr<Node> &remoteBlacklistedNode, ExitCause cause) {
     if (relativeLocalPath.empty()) {
         LOG_SYNCPAL_WARN(_logger, "Access error on root folder");
-        return ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccesError);
+        return ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccessError);
     }
     Error error(syncDbId(), "", "", relativeLocalPath.extension() == SyncPath() ? NodeType::Directory : NodeType::File,
                 relativeLocalPath, ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::SystemError,

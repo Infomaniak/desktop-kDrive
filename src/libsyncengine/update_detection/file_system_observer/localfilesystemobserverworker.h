@@ -31,7 +31,7 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
         void start() override;
         void stop() override;
 
-        virtual void changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes);
+        virtual ExitInfo changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes);
         virtual void forceUpdate() override;
 
     protected:
@@ -44,9 +44,9 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
         std::unique_ptr<FolderWatcher> _folderWatcher = nullptr;
 
     private:
-        virtual ExitCode generateInitialSnapshot() override;
+        virtual ExitInfo generateInitialSnapshot() override;
         virtual ReplicaSide getSnapshotType() const override { return ReplicaSide::Local; }
-        
+
         bool canComputeChecksum(const SyncPath &absolutePath);
 
 #ifdef __APPLE__
