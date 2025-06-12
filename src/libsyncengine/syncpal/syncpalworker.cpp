@@ -124,6 +124,11 @@ void SyncPalWorker::execute() {
                     if (syncDirChanged) {
                         break;
                     }
+
+                    const bool shouldStop = fsoWorkers[index]->exitCode() == ExitCode::InvalidSync;
+                    if (shouldStop && !stopAsked()) {
+                        stop();
+                    }
                 } else if (!pauseAsked()) {
                     LOG_SYNCPAL_DEBUG(_logger, "Start FSO worker " << index);
                     isFSOInProgress[index] = true;
@@ -213,10 +218,12 @@ void SyncPalWorker::execute() {
                 stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
                 if ((stepWorkers[0] && stepWorkers[0]->exitCode() == ExitCode::SystemError &&
                      (stepWorkers[0]->exitCause() == ExitCause::NotEnoughDiskSpace ||
-                      stepWorkers[0]->exitCause() == ExitCause::FileAccessError)) ||
+                      stepWorkers[0]->exitCause() == ExitCause::FileAccessError ||
+                      stepWorkers[0]->exitCause() == ExitCause::SyncDirAccessError)) ||
                     (stepWorkers[1] && stepWorkers[1]->exitCode() == ExitCode::SystemError &&
                      (stepWorkers[1]->exitCause() == ExitCause::NotEnoughDiskSpace ||
-                      stepWorkers[1]->exitCause() == ExitCause::FileAccessError))) {
+                      stepWorkers[1]->exitCause() == ExitCause::FileAccessError ||
+                      stepWorkers[1]->exitCause() == ExitCause::SyncDirAccessError))) {
                     // Exit without error
                     exitCode = ExitCode::Ok;
                 } else if ((stepWorkers[0] && stepWorkers[0]->exitCode() == ExitCode::UpdateRequired) ||
