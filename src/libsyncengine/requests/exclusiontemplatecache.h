@@ -31,6 +31,7 @@ namespace KDC {
 class SYNCENGINE_EXPORT ExclusionTemplateCache {
     public:
         static std::shared_ptr<ExclusionTemplateCache> instance();
+        static void reset();
 
         ExclusionTemplateCache(ExclusionTemplateCache const &) = delete;
 

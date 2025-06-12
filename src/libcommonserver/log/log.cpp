@@ -36,6 +36,7 @@ const int Log::rfMaxBackupIdx = 4; // Max number of backup files
 std::shared_ptr<Log> Log::_instance = nullptr;
 
 Log::~Log() {
+    _instance = nullptr;
     log4cplus::Logger::shutdown();
 }
 
