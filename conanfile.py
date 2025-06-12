@@ -61,6 +61,7 @@ class KDriveDesktop(ConanFile):
             self.requires("openssl-universal/3.2.4")
         else:
             self.requires("openssl/3.2.4", options={ "shared": True }) # From https://conan.io/center/recipes/openssl
+        self.requires("qt/6.2.3") # From local recipe, using the qt online installer.
 
 class OverrideVSRuntimeBlock(VSRuntimeBlock):
     template = textwrap.dedent("""\
