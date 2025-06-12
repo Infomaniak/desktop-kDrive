@@ -22,6 +22,7 @@ env:
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
   KDRIVE_SENTRY_ENVIRONMENT: "linux_ci_runner"
   QT_QPA_PLATFORM: offscreen
+  XDG_RUNTIME_DIR: /tmp/runtime-runner
 
 jobs:
   build-kDrive:
