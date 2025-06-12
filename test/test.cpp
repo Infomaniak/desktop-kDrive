@@ -32,7 +32,7 @@ int runTestSuite(const std::string &logFileName) {
     bool isSentryEnvSet = false;
     (void) KDC::CommonUtility::envVarValue("KDRIVE_SENTRY_ENVIRONMENT", isSentryEnvSet);
     if (isSentryEnvSet) {
-        KDC::sentry::Handler::init(KDC::AppType::Server);
+        KDC::sentry::Handler::init(KDC::AppType::Test);
     } else {
         KDC::sentry::Handler::init(KDC::AppType::None); // Disable Sentry.
     }
