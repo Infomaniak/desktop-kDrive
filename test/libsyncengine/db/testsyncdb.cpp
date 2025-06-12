@@ -451,18 +451,18 @@ void TestSyncDb::testTryToFixDbNodeIdsAfterSyncDirChange() {
     // Copy past the sync directory will lead to a mismatch between the database and the file system node IDs.
     IoError ioError = IoError::Success;
     CPPUNIT_ASSERT_MESSAGE(("IoError is " + toString(ioError)),
-                           IoHelper::copyFileOrDirectory(localSyncDirPath, localSyncDirPath.string() + "_copy", ioError));
+                           IoHelper::copyFileOrDirectory(
+                                   localSyncDirPath,
+                                   (localSyncDirPath.parent_path() / (localSyncDirPath.filename().string() + "_copy")), ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     CPPUNIT_ASSERT_MESSAGE(("IoError is " + toString(ioError)), IoHelper::deleteItem(localSyncDirPath, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-    std::cout << "Renaming " << (localSyncDirPath.parent_path() / (localSyncDirPath.filename().string() + "_copy")) << " to "
-              << localSyncDirPath
-              << std::endl;
-
-    CPPUNIT_ASSERT_MESSAGE(("IoError is " + toString(ioError)),
-                           IoHelper::renameItem((localSyncDirPath.parent_path() / (localSyncDirPath.filename().string() + "_copy")), localSyncDirPath, ioError));
+    CPPUNIT_ASSERT_MESSAGE(
+            ("IoError is " + toString(ioError)),
+            IoHelper::renameItem((localSyncDirPath.parent_path() / (localSyncDirPath.filename().string() + "_copy")),
+                                 localSyncDirPath, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     // Check that the database and file system node IDs do not match anymore
