@@ -183,6 +183,12 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
     return ok;
 }
 
+int FolderWatcher_linux::inotifyAddWatch(const SyncPath &path) {
+    return inotify_add_watch(_fileDescriptor, path.string().c_str(),
+                             IN_CLOSE_WRITE | IN_ATTRIB | IN_MOVE | IN_CREATE | IN_DELETE | IN_MODIFY | IN_DELETE_SELF |
+                                     IN_MOVE_SELF | IN_UNMOUNT | IN_ONLYDIR | IN_DONT_FOLLOW);
+}
+
 ExitInfo FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
     if (std::error_code ec; !std::filesystem::exists(path, ec)) {
         if (ec) {
@@ -191,9 +197,7 @@ ExitInfo FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
         return ExitInfo{ExitCode::SystemError, ExitCause::Unknown};
     }
 
-    const auto wd = inotify_add_watch(_fileDescriptor, path.string().c_str(),
-                                      IN_CLOSE_WRITE | IN_ATTRIB | IN_MOVE | IN_CREATE | IN_DELETE | IN_MODIFY | IN_DELETE_SELF |
-                                              IN_MOVE_SELF | IN_UNMOUNT | IN_ONLYDIR | IN_DONT_FOLLOW);
+    const auto wd = inotifyAddWatch(path);
 
     // Besides running out of memory, an insufficient number of inotify watches is most likely the error cause.
     // This needs to be fixed by the user, see e.g.,
@@ -203,13 +207,13 @@ ExitInfo FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
     _watchToPath.insert({wd, path});
     _pathToWatch.insert({path, wd});
 
-    return {};
+    return ExitCode::Ok;
 }
 
 ExitInfo FolderWatcher_linux::addFolderRecursive(const SyncPath &path) {
     if (_pathToWatch.contains(path)) {
         // This path is already watched
-        return {};
+        return ExitCode::Ok;
     }
 
     int subdirs = 0;
@@ -242,7 +246,7 @@ ExitInfo FolderWatcher_linux::addFolderRecursive(const SyncPath &path) {
         LOG_DEBUG(_logger, "    `-> and " << subdirs << " subdirectories");
     }
 
-    return {};
+    return ExitCode::Ok;
 }
 
 void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {

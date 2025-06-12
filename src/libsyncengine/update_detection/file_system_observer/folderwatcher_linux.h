@@ -28,7 +28,7 @@ namespace KDC {
 
 class LocalFileSystemObserverWorker;
 
-class FolderWatcher_linux final : public FolderWatcher {
+class FolderWatcher_linux : public FolderWatcher {
     public:
         FolderWatcher_linux(LocalFileSystemObserverWorker *parent, const SyncPath &path);
 
@@ -42,6 +42,7 @@ class FolderWatcher_linux final : public FolderWatcher {
         ExitInfo inotifyRegisterPath(const SyncPath &path);
         ExitInfo addFolderRecursive(const SyncPath &path);
         void removeFoldersBelow(const SyncPath &dirPath);
+        virtual int inotifyAddWatch(const SyncPath &path);
 
         ExitInfo changeDetected(const SyncPath &path, OperationType opType) const;
 
