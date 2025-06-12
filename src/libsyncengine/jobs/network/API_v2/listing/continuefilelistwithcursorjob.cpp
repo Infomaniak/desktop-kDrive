@@ -37,14 +37,4 @@ void ContinueFileListWithCursorJob::setSpecificQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("limit", nbItemPerPage);
 }
 
-bool ContinueFileListWithCursorJob::handleError(std::istream &is, const Poco::URI &uri) {
-    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN) {
-        // Access to the directory is forbidden or it doesn't exist
-        _exitInfo = {ExitCode::InvalidSync, ExitCause::SyncDirAccessError};
-        return true;
-    } else {
-        return AbstractTokenNetworkJob::handleError(is, uri);
-    }
-}
-
 } // namespace KDC

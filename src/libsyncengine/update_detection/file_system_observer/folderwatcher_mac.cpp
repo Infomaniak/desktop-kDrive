@@ -85,7 +85,7 @@ static void callback([[maybe_unused]] ConstFSEventStreamRef streamRef, void *cli
         }
     }
 
-    if (paths.size()) {
+    if (!paths.empty()) {
         if (const auto exitInfo = fw->doNotifyParent(paths); exitInfo.code() != ExitCode::Ok) {
             LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in FolderWatcher_mac::doNotifyParent for "
                                                                  << Utility::formatSyncPath(paths.front().first) << L"... "

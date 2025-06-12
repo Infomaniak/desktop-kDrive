@@ -44,7 +44,6 @@ class CsvFullFileListWithCursorJob final : public AbstractListingJob {
         ExitInfo setData() override { return ExitCode::Ok; }
 
         bool handleResponse(std::istream &is) override;
-        bool handleError(std::istream &is, const Poco::URI &uri) override;
 
         NodeId _dirId;
         bool _zip = true;

@@ -40,15 +40,11 @@ void LongPollJob::setSpecificQueryParameters(Poco::URI &uri) {
 }
 
 bool LongPollJob::handleError(std::istream &is, const Poco::URI &uri) {
-    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN) {
-        // Access to the directory is forbidden or it doesn't exist
-        _exitInfo = {ExitCode::InvalidSync, ExitCause::SyncDirAccessError};
-        return true;
-    } else if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_BAD_GATEWAY) {
+    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_BAD_GATEWAY) {
         _exitInfo = {ExitCode::NetworkError, ExitCause::BadGateway};
         return true;
     } else {
-        return AbstractTokenNetworkJob::handleError(is, uri);
+        return AbstractListingJob::handleError(is, uri);
     }
 }
 
