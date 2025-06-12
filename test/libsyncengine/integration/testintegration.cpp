@@ -499,7 +499,8 @@ void TestIntegration::testCreateCreateConflict() {
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForCurrentSyncToFinish();
 
-    const auto conflictedFilePath = findLocalFileByNamePrefix(_localSyncDir.path(), Str("testCreateCreatePseudoConflict_conflict_"));
+    const auto conflictedFilePath =
+            findLocalFileByNamePrefix(_localSyncDir.path(), Str("testCreateCreatePseudoConflict_conflict_"));
     CPPUNIT_ASSERT(std::filesystem::exists(conflictedFilePath));
     CPPUNIT_ASSERT(!std::filesystem::exists(localFilePath));
 
@@ -670,7 +671,7 @@ void TestIntegration::testEditDeleteConflict() {
         // Generate the test file
         const SyncPath dirpath = _syncPal->localPath() / "testEditDeleteConflict2_dir";
         IoError ioError = IoError::Unknown;
-        (void) IoHelper::createDirectory(dirpath, ioError);
+        (void) IoHelper::createDirectory(dirpath, false, ioError);
         const SyncPath filepath = dirpath / "testEditDeleteConflict2_file";
         testhelpers::generateOrEditTestFile(filepath);
         waitForCurrentSyncToFinish();
