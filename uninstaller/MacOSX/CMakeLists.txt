@@ -6,7 +6,8 @@ add_custom_target(kdrive_uninstaller ALL
         COMMENT building Uninstaller
         VERBATIM)
 set_property(TARGET kdrive_uninstaller APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
-add_dependencies(kdrive_uninstaller ${APPLICATION_EXECUTABLE})
+# mac_litesyncext is only set as a dependency to avoir parallel build issues between xcode projects
+add_dependencies(kdrive_uninstaller mac_litesyncext ${APPLICATION_EXECUTABLE}) 
 
 install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/kDrive Uninstaller.app"
         DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/

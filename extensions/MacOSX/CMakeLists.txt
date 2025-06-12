@@ -29,7 +29,7 @@ add_custom_target(mac_findersyncext ALL
     COMMENT building FinderSync Extension
     VERBATIM)
 set_property(TARGET mac_findersyncext APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
-add_dependencies(mac_findersyncext ${APPLICATION_EXECUTABLE})
+add_dependencies(mac_findersyncext mac_loginitemagent ${APPLICATION_EXECUTABLE})
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/Extension.appex
     DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/PlugIns
@@ -45,7 +45,7 @@ add_custom_target(mac_litesyncext ALL
     COMMENT building LiteSync Extension
     VERBATIM)
 set_property(TARGET mac_litesyncext APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
-add_dependencies(mac_litesyncext ${APPLICATION_EXECUTABLE})
+add_dependencies(mac_litesyncext mac_findersyncext ${APPLICATION_EXECUTABLE})
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${APPLICATION_REV_DOMAIN}.LiteSyncExt.systemextension
     DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Library/SystemExtensions
