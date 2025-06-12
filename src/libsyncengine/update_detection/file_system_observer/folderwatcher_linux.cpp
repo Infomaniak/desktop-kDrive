@@ -52,7 +52,8 @@ void FolderWatcher_linux::startWatching() {
         return;
     }
 
-    if (!addFolderRecursive(_folder)) {
+    if (const auto &exitInfo = addFolderRecursive(_folder); !exitInfo) {
+        setExitInfo(exitInfo);
         return;
     }
 
@@ -109,8 +110,7 @@ void FolderWatcher_linux::startWatching() {
 
                         bool isDirectory = false;
                         auto ioError = IoError::Success;
-                        const bool isDirSuccess = IoHelper::checkIfIsDirectory(path, isDirectory, ioError);
-                        if (!isDirSuccess) {
+                        if (const bool isDirSuccess = IoHelper::checkIfIsDirectory(path, isDirectory, ioError); !isDirSuccess) {
                             LOGW_WARN(_logger,
                                       L"Error in IoHelper::checkIfIsDirectory: " << Utility::formatIoError(path, ioError));
                             continue;
@@ -121,7 +121,10 @@ void FolderWatcher_linux::startWatching() {
                         }
 
                         if ((event->mask & (IN_MOVED_TO | IN_CREATE)) && isDirectory) {
-                            addFolderRecursive(path);
+                            if (auto exitInfo = addFolderRecursive(path); !exitInfo) {
+                                setExitInfo(exitInfo);
+                                return;
+                            };
                         }
 
                         if (event->mask & (IN_MOVED_FROM | IN_DELETE)) {
@@ -180,57 +183,51 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
     return ok;
 }
 
-bool FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
+ExitInfo FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
     if (std::error_code ec; !std::filesystem::exists(path, ec)) {
-        if (ec.value() != 0) {
-            LOGW_WARN(_logger, L"Failed to check if path exists " << Utility::formatSyncPath(path) << L": "
-                                                                  << Utility::s2ws(ec.message()) << L" (" << ec.value() << L")");
+        if (ec) {
+            LOGW_WARN(_logger, L"Failed to check if path exists for " << Utility::formatStdError(path, ec));
         }
-        return false;
+        return ExitInfo{ExitCode::SystemError, ExitCause::Unknown};
     }
 
     const auto wd = inotify_add_watch(_fileDescriptor, path.string().c_str(),
                                       IN_CLOSE_WRITE | IN_ATTRIB | IN_MOVE | IN_CREATE | IN_DELETE | IN_MODIFY | IN_DELETE_SELF |
                                               IN_MOVE_SELF | IN_UNMOUNT | IN_ONLYDIR | IN_DONT_FOLLOW);
 
-    if (wd > -1) {
-        _watchToPath.insert({wd, path});
-        _pathToWatch.insert({path, wd});
-    } else {
-        // If we're running out of memory or inotify watches, become
-        // unreliable.
-        if (_isReliable && (errno == ENOMEM || errno == ENOSPC)) {
-            _isReliable = false;
-            LOG_ERROR(_logger, "Out of memory or limit number of inotify watches reached!"); // TODO : notify the user?
-            return false;
-        }
-    }
+    // Besides running out of memory, an insufficient number of inotify watches is most likely the error cause.
+    // This needs to be fixed by the user, see e.g.,
+    // https://stackoverflow.com/questions/47075661/error-user-limit-of-inotify-watches-reached-extreact-build
+    if (wd <= -1) return ExitInfo{ExitCode::SystemError, ExitCause::NotEnoughINotifyWatches};
 
-    return true;
+    _watchToPath.insert({wd, path});
+    _pathToWatch.insert({path, wd});
+
+    return {};
 }
 
-bool FolderWatcher_linux::addFolderRecursive(const SyncPath &path) {
+ExitInfo FolderWatcher_linux::addFolderRecursive(const SyncPath &path) {
     if (_pathToWatch.contains(path)) {
         // This path is already watched
-        return true;
+        return {};
     }
 
     int subdirs = 0;
     LOGW_DEBUG(_logger, L"(+) Watcher:" << Utility::formatSyncPath(path));
 
-    inotifyRegisterPath(path);
+    if (auto exitInfo = inotifyRegisterPath(path); !exitInfo) return exitInfo;
 
     std::list<SyncPath> allSubFolders;
     if (!findSubFolders(path, allSubFolders)) {
         LOG_ERROR(_logger, "Could not traverse all sub folders");
-        return false;
+        return ExitInfo{ExitCode::SystemError, ExitCause::Unknown};
     }
 
     for (const auto &subDirPath: allSubFolders) {
         if (std::error_code ec; std::filesystem::exists(subDirPath, ec) && !_pathToWatch.contains(subDirPath)) {
             subdirs++;
 
-            inotifyRegisterPath(subDirPath);
+            if (auto exitInfo = inotifyRegisterPath(path); !exitInfo) return exitInfo;
         } else {
             if (ec.value() != 0) {
                 LOGW_WARN(_logger, L"Failed to check if path exists " << Utility::formatSyncPath(path) << L": "
@@ -245,7 +242,7 @@ bool FolderWatcher_linux::addFolderRecursive(const SyncPath &path) {
         LOG_DEBUG(_logger, "    `-> and " << subdirs << " subdirectories");
     }
 
-    return true;
+    return {};
 }
 
 void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {
