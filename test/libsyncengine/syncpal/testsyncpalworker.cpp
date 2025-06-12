@@ -165,7 +165,7 @@ void TestSyncPalWorker::testInternalPause1() {
             [&syncpalWorker]() { CPPUNIT_ASSERT_EQUAL(SyncStep::Idle, syncpalWorker->step()); }, testTimeout, loopWait));
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the automatic re-pause
-            [&syncpalWorker]() { return syncpalWorker->isPaused(); },
+            [&syncpalWorker]() { return syncpalWorker->pauseAsked() || syncpalWorker->isPaused(); },
             [&syncpalWorker]() { CPPUNIT_ASSERT_EQUAL(SyncStep::Idle, syncpalWorker->step()); }, testTimeout, loopWait));
 
     CPPUNIT_ASSERT(mockLfso->liveSnapshot().updated()); // Ensure the event is still pending
@@ -173,7 +173,8 @@ void TestSyncPalWorker::testInternalPause1() {
     // Restore network and check that SyncPal resumes and propagates the event
     mockRfso->setNetworkAvailability(true);
 
-    CPPUNIT_ASSERT(TimeoutHelper::waitFor([&syncpalWorker]() { return !syncpalWorker->isPaused(); }, testTimeout, loopWait));
+    CPPUNIT_ASSERT(TimeoutHelper::waitFor(
+            [&syncpalWorker]() { return syncpalWorker->_unpauseAsked || !syncpalWorker->isPaused(); }, testTimeout, loopWait));
     // Wait for a new sync to start
     CPPUNIT_ASSERT(TimeoutHelper::waitFor([this]() { return _syncPal->step() != SyncStep::Idle; }, testTimeout, loopWait));
     // Wait for the sync to finish
@@ -256,7 +257,7 @@ void TestSyncPalWorker::testInternalPause2() {
 
     // Ensure the sync is paused when the propagation2 step is reached
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the sync to finish
-            [&syncpalWorker]() { return syncpalWorker->isPaused(); },
+            [&syncpalWorker]() { return syncpalWorker->pauseAsked() || syncpalWorker->isPaused(); },
             [&syncpalWorker]() { CPPUNIT_ASSERT_EQUAL(SyncStep::Propagation2, syncpalWorker->step()); }, testTimeout, loopWait));
 
     mockRfso->setNetworkAvailability(true);
@@ -312,7 +313,7 @@ void TestSyncPalWorker::testInternalPause3() {
     mockExecutorWorkerWaiting = false; // Unlock the executor worker
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor(
-            [&syncpalWorker]() { return syncpalWorker->isPaused(); },
+            [&syncpalWorker]() { return syncpalWorker->pauseAsked() || syncpalWorker->isPaused(); },
             [&syncpalWorker]() { CPPUNIT_ASSERT_EQUAL(SyncStep::Propagation2, syncpalWorker->step()); }, testTimeout, loopWait));
 
     CPPUNIT_ASSERT_EQUAL(SyncStatus::Paused, _syncPal->status());
