@@ -138,7 +138,7 @@ class ExecutorWorker : public OperationProcessor {
             return _syncPal->updateTree(syncOp->targetSide());
         }
 
-        void increaseErrorCount(SyncOpPtr syncOp, ExitInfo exitInfo = ExitInfo());
+        void increaseErrorCount(SyncOpPtr syncOp, ExitInfo exitInfo);
 
         ExitInfo getFileSize(const SyncPath &path, uint64_t &size);
 

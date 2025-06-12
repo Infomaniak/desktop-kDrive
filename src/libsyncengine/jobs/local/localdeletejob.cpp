@@ -116,9 +116,8 @@ bool LocalDeleteJob::canRun() {
     }
 
     if (!exists) {
-        LOGW_DEBUG(_logger,
-                   L"Item does not exist anymore. Aborting current sync and restart: " << Utility::formatSyncPath(_absolutePath));
-        _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent};
+        LOGW_DEBUG(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_absolutePath));
+        _exitInfo = {ExitCode::DataError, ExitCause::NotFound};
         return false;
     }
 
@@ -131,9 +130,8 @@ bool LocalDeleteJob::canRun() {
     // Check if the item we want to delete locally has a remote counterpart.
 
     SyncPath remoteRelativePath;
-    const bool remotItemIsFound = findRemoteItem(remoteRelativePath);
-
-    if (!remotItemIsFound) return true; // Safe deletion.
+    const bool remoteItemIsFound = findRemoteItem(remoteRelativePath);
+    if (!remoteItemIsFound) return true; // Safe deletion.
 
     // Check whether the remote item has been moved.
     // If the remote item has been moved into a blacklisted folder, then this Delete job is created and
