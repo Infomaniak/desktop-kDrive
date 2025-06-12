@@ -18,9 +18,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-VERSION=$(grep "KDRIVE_VERSION_FULL" "build-macos/client/version.h" | awk '{print $3}')
-APP_NAME=kDrive-${VERSION}.pkg
-mv build-macos/client/install/$APP_NAME build-macos
+version=$(grep "KDRIVE_VERSION_FULL" "build-macos/client/version.h" | awk '{print $3}')
+app_name="kDrive-$version.pkg"
+mv "build-macos/client/install/$app_name" build-macos
 cd build-macos
 
 tar -cvf kDrive-debug-macos.tar kDrive.dSYM kDrive_client.dSYM
@@ -29,10 +29,10 @@ if [ -z ${KDRIVE_TOKEN+x} ]; then
 	echo "No kDrive token found, Package will not be uploaded."
 else
 
-	FILES=($APP_NAME "kDrive-debug-macos.tar")
+	FILES=("$app_name" "kDrive-debug-macos.tar")
 	source "../infomaniak-build-tools/upload_version.sh"
 
 	for FILE in ${FILES[@]}; do
-		upload_file $FILE "macos"
+		upload_file "$FILE" "macos"
 	done
 fi

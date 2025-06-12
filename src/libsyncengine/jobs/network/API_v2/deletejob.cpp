@@ -88,15 +88,14 @@ bool DeleteJob::canRun() {
         }
 
         if (filestat.nodeType != _nodeType && filestat.nodeType != NodeType::Unknown && _nodeType != NodeType::Unknown) {
-            // The nodeId has been reused by a new item: we remove the old one from sync.
-            LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath)
-                                          << L" has been reused by a new item. Removing the old item from sync.");
+            // The nodeId has been reused by a new item.
+            LOGW_DEBUG(_logger,
+                       L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath) << L" has been reused by a new item.");
             return true;
         }
 
-        LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath)
-                                      << L" still exist on local replica. Aborting current sync and restart.");
-        _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent}; // Data error so the snapshots will be re-created
+        LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath) << L" still exists on local replica.");
+        _exitInfo = {ExitCode::DataError, ExitCause::FileExists};
         return false;
     } else if (!otherNodeId.empty() && _localItemId != otherNodeId) {
         LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath)

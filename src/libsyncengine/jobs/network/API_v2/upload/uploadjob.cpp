@@ -93,7 +93,7 @@ bool UploadJob::canRun() {
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore. Aborting current sync and restart "
                                     << Utility::formatSyncPath(_absoluteFilePath));
-        _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent};
+        _exitInfo = {ExitCode::DataError, ExitCause::NotFound};
         return false;
     }
 
@@ -156,7 +156,7 @@ ExitInfo UploadJob::setData() {
 
     if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore - " << Utility::formatSyncPath(_absoluteFilePath));
-        return {ExitCode::SystemError, ExitCause::UnexpectedFileSystemEvent};
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
     if (itemType.ioError == IoError::AccessDenied) {
@@ -232,7 +232,7 @@ ExitInfo UploadJob::readFile() {
         _data = ostrm.str();
     } catch (const std::bad_alloc &) {
         LOGW_WARN(_logger, L"Memory allocation error when setting data content - path=" << Path2WStr(_absoluteFilePath));
-        return {ExitCode::SystemError, ExitCause::NotEnoughtMemory};
+        return {ExitCode::SystemError, ExitCause::NotEnoughMemory};
     }
 
     return ExitCode::Ok;
