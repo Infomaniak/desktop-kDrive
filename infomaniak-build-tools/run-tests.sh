@@ -25,10 +25,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
-pwd
 source ./build-macos/client/conan/build/Release/generators/conanrun.sh 
-export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH
-echo $DYLD_LIBRARY_PATH
 
 testers=$(find . -type f -name "kDrive_test_*")
 errors=0
