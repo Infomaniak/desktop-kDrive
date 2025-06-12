@@ -89,10 +89,12 @@ void TestLog::testLargeLogRolling(void) {
 }
 
 void TestLog::testExpiredLogFiles(void) {
+    using namespace std::chrono;
     // This test checks that old archived log files are deleted after a certain time
     clearLogDirectory();
 
     // Generate a fake old log file
+    const auto start = system_clock::now();
     std::ofstream fakeLogFile(_logDir / APPLICATION_NAME "_fake.log.gz");
     fakeLogFile << "Fake old log file" << std::endl;
     fakeLogFile.close();
@@ -107,19 +109,16 @@ void TestLog::testExpiredLogFiles(void) {
     auto *appender = static_cast<CustomRollingFileAppender *>(_logger.getAppender(Log::rfName).get());
     appender->setExpire(2); // 2 seconds
 
-    const auto start = std::chrono::system_clock::now();
-    auto now = std::chrono::system_clock::now();
-    while (now - start < std::chrono::seconds(3)) {
-        now = std::chrono::system_clock::now();
+    while (system_clock::now() - start <= seconds(3)) {
         KDC::testhelpers::setModificationDate(Log::instance()->getLogFilePath(),
-                                              now); // Prevent the current log file from being deleted.
+                                              system_clock::now()); // Prevent the current log file from being deleted.
         appender->checkForExpiredFiles();
-        if (now - start < std::chrono::milliseconds(1500)) { // The fake log file should not be deleted yet.
+        if (system_clock::now() - start < seconds(2)) { // The fake log file should not be deleted yet.
             CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));
         } else if (countFilesInDirectory(_logDir) == 1) { // The fake log file MIGHT be deleted now.
             break;
         }
-        Utility::msleep(500);
+        Utility::msleep(100);
     }
 
     CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir)); // The fake log file SHOULD be deleted now.
