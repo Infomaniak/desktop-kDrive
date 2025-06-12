@@ -107,18 +107,20 @@ void TestLog::testExpiredLogFiles(void) {
 
     // Set the expiration time to 2 seconds
     auto *appender = static_cast<CustomRollingFileAppender *>(_logger.getAppender(Log::rfName).get());
-    appender->setExpire(2); // 2 seconds
+    appender->setExpire(2); // 2 seconds (+- 1 second as the time is truncated to seconds)
 
     while (system_clock::now() - start <= seconds(3)) {
         KDC::testhelpers::setModificationDate(Log::instance()->getLogFilePath(),
                                               system_clock::now()); // Prevent the current log file from being deleted.
         appender->checkForExpiredFiles();
-        if (system_clock::now() - start < seconds(2)) { // The fake log file should not be deleted yet.
-            CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));
+        if (system_clock::now() - start < seconds(1)) { // The fake log file should not be deleted yet.
+            CPPUNIT_ASSERT_EQUAL_MESSAGE(("File unexpectedly deleted after " +
+                                          std::to_string(duration_cast<milliseconds>(system_clock::now() - start).count()) + " seconds"),
+                                         2, countFilesInDirectory(_logDir));
         } else if (countFilesInDirectory(_logDir) == 1) { // The fake log file MIGHT be deleted now.
             break;
         }
-        Utility::msleep(100);
+        Utility::msleep(10);
     }
 
     CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir)); // The fake log file SHOULD be deleted now.
