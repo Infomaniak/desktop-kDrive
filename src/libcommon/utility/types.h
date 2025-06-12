@@ -268,7 +268,9 @@ enum class ExitCause {
     DbAccessError,
     DbEntryNotFound,
     InvalidSnapshot,
+    SyncDirDoesntExist,
     SyncDirAccessError,
+    SyncDirNestingError,
     SyncDirChanged,
     HttpErr,
     HttpErrForbidden,
@@ -307,6 +309,7 @@ enum class ExitCause {
     DriveAsleep,
     DriveWakingUp,
     ServiceUnavailable,
+    BadGateway,
     EnumEnd
 };
 std::string toString(ExitCause e);
