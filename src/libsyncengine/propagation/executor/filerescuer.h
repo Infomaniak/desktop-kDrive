@@ -17,6 +17,7 @@
  */
 
 #pragma once
+#include "libsyncengine/syncpal/syncpal.h"
 
 namespace KDC {
 
