@@ -35,7 +35,7 @@ class FolderWatcher_mac : public FolderWatcher {
         void startWatching() override;
         void stopWatching() override;
 
-        void doNotifyParent(const std::list<std::pair<SyncPath, OperationType>> &changes);
+        ExitInfo doNotifyParent(const std::list<std::pair<SyncPath, OperationType>> &changes);
 
         static OperationType getOpType(FSEventStreamEventFlags eventFlags);
 

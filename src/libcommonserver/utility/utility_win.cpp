@@ -66,7 +66,7 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
                                                         << Utility::s2ws(std::system_category().message(hr)));
 
         std::wstringstream errorStream;
-        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath) << L" - CoCreateInstance failed with error: "
+        errorStream << L"Move to trash failed for item with " << Utility::formatSyncPath(itemPath) << L" - CoCreateInstance failed with error: "
                     << Utility::s2ws(std::system_category().message(hr));
         std::wstring errorStr = errorStream.str();
         LOGW_WARN(Log::instance()->getLogger(), errorStr);

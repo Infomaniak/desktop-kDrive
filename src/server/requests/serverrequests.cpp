@@ -911,7 +911,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
             switch (error.exitCause()) {
                 case ExitCause::MigrationError:
                 case ExitCause::MigrationProxyNotImplemented:
-                case ExitCause::FileAlreadyExists:
+                case ExitCause::FileExists:
                     return true;
                 default:
                     return false;
@@ -933,6 +933,14 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                     return true;
                 default:
                     return false;
+            }
+        }
+        case ExitCode::SystemError: {
+            switch (error.exitCause()) {
+                case ExitCause::SyncDirAccessError:
+                    return false;
+                default:
+                    return true;
             }
         }
         case ExitCode::Unknown: {

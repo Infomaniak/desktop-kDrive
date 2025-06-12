@@ -27,7 +27,8 @@
 
 namespace KDC {
 RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& parentId,
-                                                   const std::string& testType /*= "undef"*/) : _driveDbId(driveDbId) {
+                                                   const std::string& testType /*= "undef"*/) :
+    _driveDbId(driveDbId) {
     int retry = 5;
     do {
         const std::string suffix = CommonUtility::generateRandomStringAlphaNum(5);
@@ -41,7 +42,7 @@ RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& 
         // Create remote test dir
         CreateDirJob job(nullptr, _driveDbId, parentId, _dirName);
         job.runSynchronously();
-        if (job.exitInfo() == ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExists) && retry > 0) {
+        if (job.exitInfo() == ExitInfo(ExitCode::BackError, ExitCause::FileExists) && retry > 0) {
             retry--;
             continue;
         }
