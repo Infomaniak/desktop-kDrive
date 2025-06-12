@@ -395,9 +395,7 @@ void LocalFileSystemObserverWorker::forceUpdate() {
 
 void LocalFileSystemObserverWorker::execute() {
     ExitInfo exitInfo = ExitCode::Ok;
-
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
-    auto timerStart = std::chrono::steady_clock::now();
 
     // Sync loop
     for (;;) {
