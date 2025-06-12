@@ -389,6 +389,12 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, const Ex
             return tr(
                     "There is not enough memory left on your machine.<br>"
                     "The synchronization has been stopped.");
+        case ExitCause::NotEnoughINotifyWatches:
+            return tr("Either there is not enough memory left on your machine or the number of inotify watches is insufficient "
+                      "(error %1).<br>"
+                      "You can raise the number of inotify watches in editing /etc/sysctl.conf.")
+                    .arg(err);
+
         case ExitCause::LiteSyncNotAllowed: {
             if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS &&
                 QOperatingSystemVersion::current().majorVersion() >= 15) {
