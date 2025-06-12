@@ -25,6 +25,8 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
+source ./build-macos/client/conan/build/Release/generators/conanrun.sh 
+
 testers=$(find . -type f -name "kDrive_test_*")
 errors=0
 failures=()
