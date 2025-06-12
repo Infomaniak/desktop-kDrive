@@ -44,7 +44,7 @@ void TestFolderWatcherLinux::testAddFolderRecursive() {
     }
 
     FolderWatcher_linux testObj(nullptr, "");
-    testObj.addFolderRecursive(tempDir.path());
+    CPPUNIT_ASSERT_EQUAL(ExitInfo{ExitCode::Ok}, testObj.addFolderRecursive(tempDir.path()));
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(7), testObj._pathToWatch.size());
 }
 
@@ -57,17 +57,30 @@ void TestFolderWatcherLinux::testRemoveFoldersBelow() {
     for (const auto &path: {SyncPath("A"), SyncPath("A/AA"), SyncPath("A/AA/AAA")}) {
         const auto absolutePath = tempDir.path() / path;
         std::filesystem::create_directory(absolutePath);
-        const auto wd = inotify_add_watch(testObj._fileDescriptor, absolutePath.c_str(),
-                                          IN_CLOSE_WRITE | IN_ATTRIB | IN_MOVE | IN_CREATE | IN_DELETE | IN_MODIFY |
-                                                  IN_DELETE_SELF | IN_MOVE_SELF | IN_UNMOUNT | IN_ONLYDIR | IN_DONT_FOLLOW);
-        testObj._pathToWatch.insert({absolutePath, wd});
-        testObj._watchToPath.insert({wd, absolutePath});
+        CPPUNIT_ASSERT_EQUAL(ExitInfo{ExitCode::Ok}, testObj.inotifyRegisterPath(absolutePath));
     }
 
     testObj.removeFoldersBelow(tempDir.path() / "B");
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(3), testObj._pathToWatch.size());
     testObj.removeFoldersBelow(tempDir.path() / "A/AA");
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), testObj._pathToWatch.size());
+}
+
+void TestFolderWatcherLinux::testInotifyRegisterPath() {
+    class FolderWatcherLinuxMock : public FolderWatcher_linux {
+        public:
+            FolderWatcherLinuxMock(LocalFileSystemObserverWorker *parent, const SyncPath &path) :
+                FolderWatcher_linux(parent, path) {}
+
+        private:
+            int inotifyAddWatch(const SyncPath &) override { return -1; }
+    };
+
+    FolderWatcherLinuxMock testObj(nullptr, "");
+    const auto tempDir = LocalTemporaryDirectory("testInotifyRegisterPath");
+
+    const auto expectedExitInfo = ExitInfo{ExitCode::SystemError, ExitCause::NotEnoughINotifyWatches};
+    CPPUNIT_ASSERT_EQUAL(expectedExitInfo, testObj.inotifyRegisterPath(tempDir.path()));
 }
 
 } // namespace KDC
