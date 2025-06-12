@@ -498,7 +498,7 @@ void SyncPal::freeWorkers() {
 }
 
 ExitCode SyncPal::setSyncPaused(bool value) {
-    bool found;
+    bool found = false;
     if (!ParmsDb::instance()->setSyncPaused(syncDbId(), value, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::setSyncPaused");
         return ExitCode::DbError;
@@ -682,7 +682,8 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
 
     // Queue job
     std::function<void(UniqueId)> callback = std::bind(&SyncPal::directDownloadCallback, this, std::placeholders::_1);
-    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGH, callback);
+    job->setAdditionalCallback(callback);
+    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGH);
 
     _directDownloadJobsMapMutex.lock();
     _directDownloadJobsMap.insert({job->jobId(), job});
@@ -963,7 +964,8 @@ ExitCode SyncPal::syncListUpdated(bool restartSync) {
     _blacklistPropagator.reset(new BlacklistPropagator(shared_from_this()));
     _blacklistPropagator->setRestartSyncPal(restartSync);
     std::function<void(UniqueId)> callback = std::bind(&SyncPal::syncPalStartCallback, this, std::placeholders::_1);
-    JobManager::instance()->queueAsyncJob(_blacklistPropagator, Poco::Thread::PRIO_HIGHEST, callback);
+    _blacklistPropagator->setAdditionalCallback(callback);
+    JobManager::instance()->queueAsyncJob(_blacklistPropagator, Poco::Thread::PRIO_HIGHEST);
 
     return ExitCode::Ok;
 }
@@ -983,7 +985,8 @@ ExitCode SyncPal::excludeListUpdated() {
     _excludeListPropagator.reset(new ExcludeListPropagator(shared_from_this()));
     _excludeListPropagator->setRestartSyncPal(restartSync);
     std::function<void(UniqueId)> callback = std::bind(&SyncPal::syncPalStartCallback, this, std::placeholders::_1);
-    JobManager::instance()->queueAsyncJob(_excludeListPropagator, Poco::Thread::PRIO_HIGHEST, callback);
+    _excludeListPropagator->setAdditionalCallback(callback);
+    JobManager::instance()->queueAsyncJob(_excludeListPropagator, Poco::Thread::PRIO_HIGHEST);
 
     return ExitCode::Ok;
 }
@@ -1003,7 +1006,8 @@ ExitCode SyncPal::fixConflictingFiles(bool keepLocalVersion, std::vector<Error> 
     _conflictingFilesCorrector.reset(new ConflictingFilesCorrector(shared_from_this(), keepLocalVersion, errorList));
     _conflictingFilesCorrector->setRestartSyncPal(restartSync);
     std::function<void(UniqueId)> callback = std::bind(&SyncPal::syncPalStartCallback, this, std::placeholders::_1);
-    JobManager::instance()->queueAsyncJob(_conflictingFilesCorrector, Poco::Thread::PRIO_HIGHEST, callback);
+    _conflictingFilesCorrector->setAdditionalCallback(callback);
+    JobManager::instance()->queueAsyncJob(_conflictingFilesCorrector, Poco::Thread::PRIO_HIGHEST);
 
     return ExitCode::Ok;
 }
@@ -1315,7 +1319,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
                                          std::shared_ptr<Node> &remoteBlacklistedNode, ExitCause cause) {
     if (relativeLocalPath.empty()) {
         LOG_SYNCPAL_WARN(_logger, "Access error on root folder");
-        return ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccesError);
+        return ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccessError);
     }
     Error error(syncDbId(), "", "", relativeLocalPath.extension() == SyncPath() ? NodeType::Directory : NodeType::File,
                 relativeLocalPath, ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::SystemError,

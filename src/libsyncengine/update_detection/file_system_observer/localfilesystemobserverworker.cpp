@@ -269,7 +269,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 // afterward. Typically, editors of the MS suite (xlsx, docx) or Adobe suite (pdf) perform a
                 // Delete-followed-by-Create operation during a single edit.
                 NodeId itemId = _liveSnapshot.itemId(relativePath);
-                if (_liveSnapshot.removeItem(itemId)) {
+                if (!itemId.empty() && _liveSnapshot.removeItem(itemId)) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath)
                                                                                       << L" (" << Utility::s2ws(itemId) << L")");
                 } else {
@@ -286,7 +286,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 // If an item with the same path already exists, remove it from snapshot because its ID might have changed (i.e.
                 // the file has been downloaded in the tmp folder then moved to override the existing one). The item will be
                 // inserted below anyway.
-                if (_liveSnapshot.removeItem(previousItemId)) {
+                if (!previousItemId.empty() && _liveSnapshot.removeItem(previousItemId)) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath)
                                                                                       << L" (" << Utility::s2ws(previousItemId)
                                                                                       << L")");
@@ -577,14 +577,14 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
 
     if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_SYNCPAL_WARN(_logger, L"Local " << Utility::formatSyncPath(absoluteParentDirPath) << L" doesn't exist");
-        setExitCause(ExitCause::SyncDirDoesntExist);
-        return {ExitCode::SystemError, ExitCause::SyncDirDoesntExist};
+        setExitCause(ExitCause::SyncDirAccessError);
+        return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
     }
 
     if (itemType.ioError == IoError::AccessDenied) {
         LOGW_SYNCPAL_WARN(_logger, L"Local " << Utility::formatSyncPath(absoluteParentDirPath) << L" misses read permission");
-        setExitCause(ExitCause::SyncDirAccesError);
-        return {ExitCode::SystemError, ExitCause::SyncDirAccesError};
+        setExitCause(ExitCause::SyncDirAccessError);
+        return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
     }
 
     if (itemType.linkType != LinkType::None) {
@@ -603,14 +603,14 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_SYNCPAL_WARN(_logger, L"Local " << Utility::formatIoError(absoluteParentDirPath, ioError));
-            setExitCause(ExitCause::SyncDirDoesntExist);
-            return {ExitCode::SystemError, ExitCause::SyncDirDoesntExist};
+            setExitCause(ExitCause::SyncDirAccessError);
+            return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
         }
 
         if (ioError == IoError::AccessDenied) {
             LOGW_SYNCPAL_WARN(_logger, L"Local " << Utility::formatIoError(absoluteParentDirPath, ioError));
-            setExitCause(ExitCause::SyncDirAccesError);
-            return {ExitCode::SystemError, ExitCause::SyncDirAccesError};
+            setExitCause(ExitCause::SyncDirAccessError);
+            return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
         }
         DirectoryEntry entry;
         bool endOfDirectory = false;

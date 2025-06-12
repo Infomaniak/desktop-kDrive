@@ -178,7 +178,7 @@ void TestAppServer::testStartAndStopSync() {
     // Start syncs
     exitInfo = _appPtr->startSyncs();
     CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
-    CPPUNIT_ASSERT_EQUAL(ExitCause::SyncDirDoesntExist, exitInfo.cause());
+    CPPUNIT_ASSERT_EQUAL(ExitCause::SyncDirAccessError, exitInfo.cause());
 
     // Update sync local folder with the good value
     CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync, found) && found);
@@ -218,7 +218,7 @@ void MockAppServer::cleanup() {
 
     // Reset static variables
     AppServer::reset();
-    JobManager::reset();
+    JobManager::instance()->clear();
     ParmsDb::reset();
     ParametersCache::reset();
 }

@@ -16,43 +16,41 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "iohelpertests.h"
+#include "iohelpertestutilities.h"
 
 namespace KDC {
 
-void IoHelperTests::setRename(std::function<void(const SyncPath &, const SyncPath &, std::error_code &)> f) {
+void IoHelperTestUtilities::setRename(std::function<void(const SyncPath &, const SyncPath &, std::error_code &)> f) {
     _rename = f;
 }
-void IoHelperTests::setIsDirectoryFunction(std::function<bool(const SyncPath &path, std::error_code &ec)> f) {
+void IoHelperTestUtilities::setIsDirectoryFunction(std::function<bool(const SyncPath &path, std::error_code &ec)> f) {
     _isDirectory = f;
 };
-void IoHelperTests::setIsSymlinkFunction(std::function<bool(const SyncPath &path, std::error_code &ec)> f) {
+void IoHelperTestUtilities::setIsSymlinkFunction(std::function<bool(const SyncPath &path, std::error_code &ec)> f) {
     _isSymlink = f;
 };
-void IoHelperTests::setReadSymlinkFunction(std::function<SyncPath(const SyncPath &path, std::error_code &ec)> f) {
+void IoHelperTestUtilities::setReadSymlinkFunction(std::function<SyncPath(const SyncPath &path, std::error_code &ec)> f) {
     _readSymlink = f;
 };
-void IoHelperTests::setFileSizeFunction(std::function<std::uintmax_t(const SyncPath &path, std::error_code &ec)> f) {
+void IoHelperTestUtilities::setFileSizeFunction(std::function<std::uintmax_t(const SyncPath &path, std::error_code &ec)> f) {
     _fileSize = f;
 }
 
-void IoHelperTests::setTempDirectoryPathFunction(std::function<SyncPath(std::error_code &ec)> f) {
+void IoHelperTestUtilities::setTempDirectoryPathFunction(std::function<SyncPath(std::error_code &ec)> f) {
     _tempDirectoryPath = f;
 }
 
-void IoHelperTests::setCacheDirectoryPath(const SyncPath &newPath) {
-    if (_previousCacheDirectoryPath.empty())
-        (void) IoHelper::cacheDirectoryPath(_previousCacheDirectoryPath); // Save the previous cache directory path
+void IoHelperTestUtilities::setCacheDirectoryPath(const SyncPath &newPath) {
     IoHelper::setCacheDirectoryPath(newPath);
 }
 
 #ifdef __APPLE__
-void IoHelperTests::setReadAliasFunction(std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> f) {
+void IoHelperTestUtilities::setReadAliasFunction(std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> f) {
     _readAlias = f;
 };
 #endif
 
-void IoHelperTests::resetFunctions() {
+void IoHelperTestUtilities::resetFunctions() {
     // Reset to default std::filesytem implementation.
     setIsDirectoryFunction(static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_directory));
     setIsSymlinkFunction(static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_symlink));
@@ -67,6 +65,6 @@ void IoHelperTests::resetFunctions() {
         return readAlias(path, data, targetPath, ioError);
     });
 #endif
-    if (!_previousCacheDirectoryPath.empty()) IoHelper::setCacheDirectoryPath(_previousCacheDirectoryPath);
+    IoHelper::setCacheDirectoryPath("");
 }
 } // namespace KDC
