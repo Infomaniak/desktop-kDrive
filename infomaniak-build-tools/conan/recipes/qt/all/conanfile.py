@@ -208,7 +208,7 @@ class QtConan(ConanFile):
 
         return exec_files[0]
 
-    def _detach_on_macos(self, mount_point: str | None) -> None:
+    def _detach_on_macos(self, mount_point) -> None:
         """
         Detach the mounted DMG file on macOS.
         :param mount_point: The mount point of the DMG file.
