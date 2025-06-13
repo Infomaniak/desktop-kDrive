@@ -545,7 +545,7 @@ void TestUtility::testSplitSyncPath() {
 
     SyncName noSegment = Str("*_blacklisted_*_*_*");
     splitting = CommonUtility::splitSyncPath(SyncPath{noSegment});
-    CPPUNIT_ASSERT_EQUAL(size_t(1), splitting.size());
+    CPPUNIT_ASSERT_EQUAL(size_t{1}, splitting.size());
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(noSegment), SyncName2Str(splitting.front()));
 
     SyncName oneSeparator = Str("A/B");
