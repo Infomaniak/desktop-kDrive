@@ -65,7 +65,7 @@ void ExclusionTemplateCache::populateUndeletedExclusionTemplates() {
     for (const auto &exclusionTemplate: _defExclusionTemplates) {
         if (!exclusionTemplate.deleted()) {
             _undeletedExclusionTemplates.push_back(exclusionTemplate);
-        } 
+        }
     }
 
     for (const auto &exclusionTemplate: _userExclusionTemplates) {

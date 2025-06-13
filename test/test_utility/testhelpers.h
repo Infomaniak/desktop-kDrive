@@ -22,6 +22,7 @@
 #include "libcommon/utility/types.h"
 #include "libcommonserver/utility/utility.h"
 #include "version.h"
+#include "io/filestat.h"
 
 #include <config.h>
 
@@ -68,8 +69,6 @@ void generateOrEditTestFile(const SyncPath &path);
 void generateBigFiles(const SyncPath &dirPath, uint16_t size, uint16_t count);
 SyncPath generateBigFile(const SyncPath &dirPath, uint16_t size);
 
-void setModificationDate(const SyncPath &path, const std::chrono::time_point<std::chrono::system_clock> &timePoint);
-
 inline bool isRunningOnCI(bool print = true) {
     static const bool isRunningOnCI = !loadEnvVariable("KDRIVE_TEST_CI_RUNNING_ON_CI", false).empty();
     if (print && !isRunningOnCI) {
@@ -87,4 +86,5 @@ inline bool isExtendedTest(bool print = true) {
     }
     return isExtended;
 }
+
 } // namespace KDC::testhelpers

@@ -274,8 +274,8 @@ void TestIo::testCreateDirectory() {
         const SyncPath path = temporaryDirectory.path();
 
         IoError ioError = IoError::Success;
-      
-        CPPUNIT_ASSERT(!IoHelper::createDirectory(path,  false, ioError));
+
+        CPPUNIT_ASSERT(!IoHelper::createDirectory(path, false, ioError));
         CPPUNIT_ASSERT(ioError == IoError::DirectoryExists);
     }
 

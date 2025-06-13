@@ -37,6 +37,9 @@ DeleteJob::DeleteJob(const int driveDbId, const NodeId &remoteItemId, const Node
     _httpMethod = Poco::Net::HTTPRequest::HTTP_DELETE;
 }
 
+DeleteJob::DeleteJob(const int driveDbId, const NodeId &remoteItemId) :
+    DeleteJob(driveDbId, remoteItemId, {}, {}, NodeType::Unknown) {}
+
 bool DeleteJob::canRun() {
     if (bypassCheck()) {
         return true;

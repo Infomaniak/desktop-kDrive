@@ -40,6 +40,7 @@ class SyncPalWorker : public ISyncWorker {
         inline SyncStep step() const { return _step; }
         inline std::chrono::time_point<std::chrono::steady_clock> pauseTime() const { return _pauseTime; }
         static std::string stepName(SyncStep step);
+        uint64_t syncCounter() const { return _syncCounter; }
 
     private:
         SyncStep _step{SyncStep::Idle};
@@ -61,11 +62,12 @@ class SyncPalWorker : public ISyncWorker {
                                             std::shared_ptr<ISyncWorker> stepWorkers[2]);
         void resetVfsFilesStatus();
 
+        uint64_t _syncCounter{0};
         /**
          * @brief Attempts to repair local node IDs in the SyncDb after the sync directory has changed its node ID.
          *
-         * This method is used when the sync directory has been moved between two filesystems or recreated (Apple migration assistant), causing its inode
-         * to change.
+         * This method is used when the sync directory has been moved between two filesystems or recreated (Apple migration
+         * assistant), causing its inode to change.
          *
          * - It first loads the SyncDb cache if needed and retrieves all known nodes (in db).
          * - For each nodes, it verifies whether the file still exists, retrieves and save its new node ID.

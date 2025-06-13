@@ -45,7 +45,8 @@ void IoHelperTestUtilities::setCacheDirectoryPath(const SyncPath &newPath) {
 }
 
 #ifdef __APPLE__
-void IoHelperTestUtilities::setReadAliasFunction(std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> f) {
+void IoHelperTestUtilities::setReadAliasFunction(
+        std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> f) {
     _readAlias = f;
 };
 #endif
