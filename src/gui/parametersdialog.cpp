@@ -392,7 +392,7 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, const Ex
         case ExitCause::NotEnoughINotifyWatches:
             return tr("Either there is not enough memory left on your machine or the number of inotify watches is insufficient "
                       "(error %1).<br>"
-                      "You can raise the number of inotify watches in editing /etc/sysctl.conf.")
+                      "You can raise the number of inotify watches by editing /etc/sysctl.conf.")
                     .arg(err);
 
         case ExitCause::LiteSyncNotAllowed: {
