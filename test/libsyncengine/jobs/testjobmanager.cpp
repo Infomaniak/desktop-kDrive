@@ -44,8 +44,6 @@ using namespace CppUnit;
 
 namespace KDC {
 
-static const SyncPath localTestDirPath_manyFiles(std::wstring(L"" TEST_DIR) + L"/test_ci/many_files_dir");
-static const SyncPath localTestDirPath_pictures(std::wstring(L"" TEST_DIR) + L"/test_ci/test_pictures");
 static const int driveDbId = 1;
 void TestJobManager::setUp() {
     TestBase::start();
@@ -150,7 +148,7 @@ void TestJobManager::testWithCallback() {
 
     // Upload all files in testDir
     ulong counter = 0;
-    for (auto &dirEntry: std::filesystem::directory_iterator(localTestDirPath_manyFiles)) {
+    for (auto &dirEntry: std::filesystem::directory_iterator(_localTestDirPath_manyFiles)) {
         if (dirEntry.path().filename() == ".DS_Store") {
             continue;
         }
@@ -258,11 +256,11 @@ void callbackJobDependency(const int64_t jobId) {
 }
 
 void TestJobManager::testJobPriority() {
-    SyncPath pict1Path = localTestDirPath_pictures / "picture-1.jpg";
-    SyncPath pict2Path = localTestDirPath_pictures / "picture-2.jpg";
-    SyncPath pict3Path = localTestDirPath_pictures / "picture-3.jpg";
-    SyncPath pict4Path = localTestDirPath_pictures / "picture-4.jpg";
-    SyncPath pict5Path = localTestDirPath_pictures / "picture-5.jpg";
+    SyncPath pict1Path = _localTestDirPath_pictures / "picture-1.jpg";
+    SyncPath pict2Path = _localTestDirPath_pictures / "picture-2.jpg";
+    SyncPath pict3Path = _localTestDirPath_pictures / "picture-3.jpg";
+    SyncPath pict4Path = _localTestDirPath_pictures / "picture-4.jpg";
+    SyncPath pict5Path = _localTestDirPath_pictures / "picture-5.jpg";
 
     // Create temp remote directory
     const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "TestJobManager testJobPriority");
@@ -292,11 +290,11 @@ void TestJobManager::testJobPriority() {
 }
 
 void TestJobManager::testJobPriority2() {
-    SyncPath pict1Path = localTestDirPath_pictures / "picture-1.jpg";
-    SyncPath pict2Path = localTestDirPath_pictures / "picture-2.jpg";
-    SyncPath pict3Path = localTestDirPath_pictures / "picture-3.jpg";
-    SyncPath pict4Path = localTestDirPath_pictures / "picture-4.jpg";
-    SyncPath pict5Path = localTestDirPath_pictures / "picture-5.jpg";
+    SyncPath pict1Path = _localTestDirPath_pictures / "picture-1.jpg";
+    SyncPath pict2Path = _localTestDirPath_pictures / "picture-2.jpg";
+    SyncPath pict3Path = _localTestDirPath_pictures / "picture-3.jpg";
+    SyncPath pict4Path = _localTestDirPath_pictures / "picture-4.jpg";
+    SyncPath pict5Path = _localTestDirPath_pictures / "picture-5.jpg";
 
     // Create temp remote directory
     const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "TestJobManager testJobPriority2");

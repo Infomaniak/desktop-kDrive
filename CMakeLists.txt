@@ -250,9 +250,9 @@ elseif(BUILD_CLIENT)
         configure_file(cmake/modules/NSIS.template.nsi.in ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.nsi @ONLY)
 
         # Default sync exclude list
-        message(STATUS "sync-exclude-win.lst copied to ${CMAKE_BINARY_DIR}/bin")
-        file(COPY sync-exclude-win.lst DESTINATION ${CMAKE_BINARY_DIR}/bin)
-        file(RENAME ${CMAKE_BINARY_DIR}/bin/sync-exclude-win.lst ${CMAKE_BINARY_DIR}/bin/sync-exclude.lst)
+        message(STATUS "sync-exclude-win.lst copied to ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}")
+        file(COPY sync-exclude-win.lst DESTINATION ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE})
+        file(RENAME ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/sync-exclude-win.lst ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/sync-exclude.lst)
 
         # Vfs
         set(CMAKE_FIND_LIBRARY_SUFFIXES .dll)
