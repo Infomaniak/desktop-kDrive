@@ -46,6 +46,7 @@ class KDriveDesktop(ConanFile):
         - `log4cplus/2.1.2`: A C++ logging library.
         :return: None
         """
+        self.requires("qt/6.2.3") # From local recipe, using the qt online installer.
         self.requires("xxhash/0.8.2") # From local recipe
         # log4cplus
         log4cplus_options = { "shared": True, "unicode": True }
@@ -61,7 +62,6 @@ class KDriveDesktop(ConanFile):
             self.requires("openssl-universal/3.2.4")
         else:
             self.requires("openssl/3.2.4", options={ "shared": True }) # From https://conan.io/center/recipes/openssl
-        self.requires("qt/6.2.3") # From local recipe, using the qt online installer.
 
 class OverrideVSRuntimeBlock(VSRuntimeBlock):
     template = textwrap.dedent("""\
