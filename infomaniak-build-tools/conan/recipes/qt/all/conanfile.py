@@ -230,7 +230,11 @@ class QtConan(ConanFile):
     def build(self):
         self.output.highlight("Downloading Qt installer...")
         downloaded_file_name = self._get_distant_name()
-        self.run(f"wget https://download.qt.io/official_releases/online_installers/{downloaded_file_name}")
+        import urllib.request
+        self.output.highlight("Downloading Qt installer via Python urllib...")
+        url = f"https://download.qt.io/official_releases/online_installers/{downloaded_file_name}"
+        self.output.info(f"Downloading from: {url}")
+        urllib.request.urlretrieve(url, downloaded_file_name)
         installer_path = self._get_executable_path(downloaded_file_name)
 
         if not os.path.exists(installer_path):
