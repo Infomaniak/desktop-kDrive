@@ -573,8 +573,9 @@ void TestParmsDb::testUpgradeOfShortPathNames() {
         sync.setDbId(i + 1);
         ParmsDb::instance()->insertSync(sync);
     }
-
-    CPPUNIT_ASSERT(ParmsDb::instance()->upgrade("3.6.1", "3.7.0"));
+    const std::filesystem::path parmsDbPath = ParmsDb::instance()->dbPath();
+    ParmsDb::reset();
+    (void) ParmsDb::instance(parmsDbPath, "3.7.2", true, true);
 
     ParmsDb::instance()->selectAllSyncs(syncList);
     CPPUNIT_ASSERT_EQUAL(size_t(3), syncList.size());
