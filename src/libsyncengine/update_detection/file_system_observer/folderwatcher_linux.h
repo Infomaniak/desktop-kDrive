@@ -36,13 +36,13 @@ class FolderWatcher_linux : public FolderWatcher {
         void stopWatching() override;
 
     private:
-        int _fileDescriptor = -1;
+        std::int64_t _fileDescriptor = -1;
 
         bool findSubFolders(const SyncPath &dir, std::list<SyncPath> &fullList);
         ExitInfo inotifyRegisterPath(const SyncPath &path);
         ExitInfo addFolderRecursive(const SyncPath &path);
         void removeFoldersBelow(const SyncPath &dirPath);
-        virtual int inotifyAddWatch(const SyncPath &path);
+        virtual std::int64_t inotifyAddWatch(const SyncPath &path);
 
         ExitInfo changeDetected(const SyncPath &path, OperationType opType) const;
 

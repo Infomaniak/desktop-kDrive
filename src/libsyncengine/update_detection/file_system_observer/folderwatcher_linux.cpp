@@ -60,11 +60,11 @@ void FolderWatcher_linux::startWatching() {
     while (!_stop) {
         _ready = true;
         unsigned int avail;
-        ioctl(_fileDescriptor, FIONREAD,
+        ioctl(static_cast<int>(_fileDescriptor), FIONREAD,
               &avail); // Since read() is blocking until something has changed, we use ioctl to check if there is changes
         if (avail > 0) {
             char buffer[BUF_LEN];
-            ssize_t len = read(_fileDescriptor, buffer, BUF_LEN);
+            ssize_t len = read(static_cast<int>(_fileDescriptor), buffer, BUF_LEN);
             if (len == -1) {
                 LOG_WARN(_logger, "Error reading file descriptor " << errno);
                 continue;
@@ -183,8 +183,8 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
     return ok;
 }
 
-int FolderWatcher_linux::inotifyAddWatch(const SyncPath &path) {
-    return inotify_add_watch(_fileDescriptor, path.string().c_str(),
+std::int64_t FolderWatcher_linux::inotifyAddWatch(const SyncPath &path) {
+    return inotify_add_watch(static_cast<int>(_fileDescriptor), path.string().c_str(),
                              IN_CLOSE_WRITE | IN_ATTRIB | IN_MOVE | IN_CREATE | IN_DELETE | IN_MODIFY | IN_DELETE_SELF |
                                      IN_MOVE_SELF | IN_UNMOUNT | IN_ONLYDIR | IN_DONT_FOLLOW);
 }
@@ -202,7 +202,7 @@ ExitInfo FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
     // Besides running out of memory, an insufficient number of inotify watches is most likely the error cause.
     // This needs to be fixed by the user, see e.g.,
     // https://stackoverflow.com/questions/47075661/error-user-limit-of-inotify-watches-reached-extreact-build
-    if (wd <= -1) return {ExitCode::SystemError, ExitCause::NotEnoughINotifyWatches};
+    if (wd == -1) return {ExitCode::SystemError, ExitCause::NotEnoughINotifyWatches};
 
     _watchToPath.insert({wd, path});
     _pathToWatch.insert({path, wd});
@@ -263,7 +263,7 @@ void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {
         }
 
         auto wid = it->second;
-        if (const auto wd = inotify_rm_watch(_fileDescriptor, wid); wd > -1) {
+        if (const auto wd = inotify_rm_watch(static_cast<int>(_fileDescriptor), wid); wd > -1) {
             _watchToPath.erase(wid);
             it = _pathToWatch.erase(it);
             LOG_DEBUG(_logger, "Removed watch on" << itPath);
@@ -291,7 +291,7 @@ ExitInfo FolderWatcher_linux::changeDetected(const SyncPath &path, OperationType
 void FolderWatcher_linux::stopWatching() {
     LOGW_DEBUG(_logger, L"Stop watching folder: " << Utility::formatSyncPath(_folder));
 
-    close(_fileDescriptor);
+    close(static_cast<int>(_fileDescriptor));
 }
 
 } // namespace KDC
