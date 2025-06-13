@@ -128,6 +128,15 @@ class QtConan(ConanFile):
             raise ConanException(f"Environment variable '{qt_email_env_var_key}' is not set. Please set it to your Qt account email.")
         return qt_email_env_var_key, email
 
+    def _check_envvars_login_type(self):
+        if self.options.qt_login_type != "envvars":
+            return
+        key, _ = self._get_email_from_envvars()
+        if os.getenv(key) is None:
+            raise ConanInvalidConfiguration(f"To be able to use the 'envvars' login type, you must set the environment variable '{key}' with your Qt account email.")
+        if os.getenv("QT_INSTALLER_JWT_TOKEN") is None:
+            raise ConanInvalidConfiguration("To be able to use the 'envvars' login type, you must set the environment variable 'QT_INSTALLER_JWT_TOKEN' with your Qt account JWT token. See https://doc.qt.io/qt-6/get-and-install-qt-cli.html#providing-login-information")
+
     def system_requirements(self):
         Apt(self).install(["libxcb-cursor0"], update=True, check=True, recommends=False) # Only executed on Linux Debian based systems, required for Qt installation
 
@@ -138,16 +147,15 @@ class QtConan(ConanFile):
         if self.options.qt_login_type == "default":
             return
 
-        if self.options.qt_login_type == "ini" and self._get_default_login_ini_location() is None:
-            self.options.qt_login_type = "envvars"
-            self.output.warning("The file 'qtaccount.ini' was not found in the default location. Falling back to 'envvars' login type.")
+        self._check_envvars_login_type()
 
-        if self.options.qt_login_type == "envvars":
-            key, _ = self._get_email_from_envvars()
-            if os.getenv(key) is None:
-                raise ConanInvalidConfiguration(f"To be able to use the 'envvars' login type, you must set the environment variable '{key}' with your Qt account email.")
-            if os.getenv("QT_INSTALLER_JWT_TOKEN") is None:
-                raise ConanInvalidConfiguration("To be able to use the 'envvars' login type, you must set the environment variable 'QT_INSTALLER_JWT_TOKEN' with your Qt account JWT token. See https://doc.qt.io/qt-6/get-and-install-qt-cli.html#providing-login-information")
+
+    def configure(self):
+        if self.options.qt_login_type == "ini" and self._get_default_login_ini_location() is None:
+            self.output.warning("The file 'qtaccount.ini' was not found in the default location. Falling back to 'envvars' login type")
+            self.options.qt_login_type = "envvars"
+            self._check_envvars_login_type()
+
 
     def _get_executable_path(self, downloaded_file_name: str) -> str:
         """
