@@ -546,6 +546,7 @@ QString ParametersDialog::getSyncPalErrorText(const QString &fctCode, const Exit
                           "You need to restore it or give it back access rights or delete/recreate the synchronization.")
                         .arg(err);
             }
+            break;
         case ExitCode::LogicError:
             if (exitCause == ExitCause::FullListParsingError) {
                 return tr("File name parsing error (error %1).<br>"
