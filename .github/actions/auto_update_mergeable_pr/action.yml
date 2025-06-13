@@ -1,0 +1,9 @@
+name: 'Auto update mergeable PR'
+description: 'Update a PR that has `auto-merge` enabled'
+inputs:
+  bearer-token:  # id of input
+    description: 'Token required for Github authentification'
+    required: true
+runs:
+  using: 'node20'
+  main: 'index.js'
