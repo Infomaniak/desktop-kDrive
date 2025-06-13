@@ -193,6 +193,8 @@ ExitCode ConflictResolverWorker::generateMoveCreateConflictOperation(const Confl
     if (conflict.localNode()->hasChangeEvent(OperationType::Move)) {
         res = generateUndoMoveOperation(conflict, conflict.localNode());
     } else {
+        // If the move operation is on remote side, it won over the local Create operation in order to avoid propagating the "undo
+        // move" operation to all devices synchronizing the drive.
         res = generateLocalRenameOperation(conflict, continueSolving);
     }
 
