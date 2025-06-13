@@ -59,7 +59,12 @@ class SyncPalWorker : public ISyncWorker {
         void stopAndWaitForExitOfWorkers(std::shared_ptr<ISyncWorker> workers[2]);
         void stopAndWaitForExitOfAllWorkers(std::shared_ptr<ISyncWorker> fsoWorkers[2],
                                             std::shared_ptr<ISyncWorker> stepWorkers[2]);
-        void resetVfsFilesStatus();
+        bool resetVfsFilesStatus();
+#ifdef _WIN32
+        bool unindexProblematicFiles();
+        //! Determines whether indexing a given file is problematic
+        bool indexingIsProblematic(const SyncPath &filePath) const { return filePath.extension() == "eml"; }
+#endif
 
         /**
          * @brief Attempts to repair local node IDs in the SyncDb after the sync directory has changed its node ID.
