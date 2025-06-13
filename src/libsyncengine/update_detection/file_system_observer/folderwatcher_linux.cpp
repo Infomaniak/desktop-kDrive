@@ -224,7 +224,7 @@ ExitInfo FolderWatcher_linux::addFolderRecursive(const SyncPath &path) {
     std::list<SyncPath> allSubFolders;
     if (!findSubFolders(path, allSubFolders)) {
         LOG_ERROR(_logger, "Could not traverse all sub folders");
-        return ExitInfo{ExitCode::SystemError, ExitCause::Unknown};
+        return {ExitCode::SystemError, ExitCause::Unknown};
     }
 
     for (const auto &subDirPath: allSubFolders) {
