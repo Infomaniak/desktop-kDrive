@@ -383,8 +383,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             _syncPal->syncDb()->cache().clear(); // Cache is not needed anymore, free resources
             break;
         case SyncStep::Done:
-            LOG_SYNCPAL_DEBUG(_logger, "Sync " << _syncCounter << " finished")
-            _syncCounter++;
+            LOG_SYNCPAL_DEBUG(_logger, "Sync " << _syncCounter++ << " finished")
             workers[0] = nullptr;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
