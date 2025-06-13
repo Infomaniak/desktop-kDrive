@@ -436,7 +436,7 @@ void LocalFileSystemObserverWorker::execute() {
                     break;
                 }
 
-                const std::lock_guard<std::recursive_mutex> lk(_recursiveMutex);
+                const std::scoped_lock lock(_recursiveMutex);
                 _updating = false;
             }
         }
