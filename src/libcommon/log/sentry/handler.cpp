@@ -223,7 +223,20 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
 
     // Sentry init
     sentry_options_t *options = sentry_options_new();
-    sentry_options_set_dsn(options, ((appType == AppType::Server) ? SENTRY_SERVER_DSN : SENTRY_CLIENT_DSN));
+    switch (_appType) {
+        case AppType::Server:
+            sentry_options_set_dsn(options, SENTRY_SERVER_DSN);
+            break;
+        case AppType::Client:
+            sentry_options_set_dsn(options, SENTRY_CLIENT_DSN);
+            break;
+        case AppType::Test:
+            sentry_options_set_dsn(options, SENTRY_TEST_DSN);
+            break;
+        default:
+            assert(false && "Invalid app type for sentry initialization");
+            return;
+    }
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(__x86_64__)
     // TODO: On Linux arm64, Sentry is built with breakpad instead of crashpad_handler until support of Ubuntu 20.04 is
     // discontinued
@@ -231,7 +244,20 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
 #endif
 
     SyncPath appSupportPath = CommonUtility::getAppSupportDir();
-    appSupportPath /= (_appType == AppType::Server) ? SENTRY_SERVER_DB_PATH : SENTRY_CLIENT_DB_PATH;
+    switch (_appType) {
+        case AppType::Server:
+            appSupportPath /= SENTRY_SERVER_DB_PATH;
+            break;
+        case AppType::Client:
+            appSupportPath /= SENTRY_CLIENT_DB_PATH;
+            break;
+        case AppType::Test:
+            appSupportPath /= SENTRY_TEST_DB_PATH;
+            break;
+        default:
+            assert(false && "Invalid app type for sentry initialization");
+            return;
+    }
 #if defined(Q_OS_WIN)
     sentry_options_set_handler_pathw(options, appWorkingPath.c_str());
     sentry_options_set_database_pathw(options, appSupportPath.c_str());
@@ -455,6 +481,9 @@ SyncPath Handler::getEventFilePath(const AppType appType, const bool crash) {
         case AppType::Client:
             fileName = crash ? clientCrashEventFileName : clientSendEventFileName;
             break;
+        case AppType::Test:
+            fileName = crash ? testCrashEventFileName : testSendEventFileName;
+            break;
         default:
             assert(false && "Invalid enum value in switch statement.");
             fileName = crash ? clientCrashEventFileName : clientSendEventFileName;
@@ -532,7 +561,7 @@ Handler::SentryEvent::SentryEvent(const std::string &title, const std::string &m
     userId(user.userId()) {}
 
 void Handler::stopPTrace(const pTraceId &id, PTraceStatus status) {
-    if (id == 0) return;
+    if (!_isSentryActivated || !arePtracesEnabled() || id == 0) return;
 
     std::scoped_lock lock(_mutex);
     auto performanceTraceIt = _pTraces.find(id);
@@ -643,8 +672,12 @@ bool Handler::checkCustomSampleRate(const PTraceDescriptor &pTraceInfo) const {
     return dis(gen) < pTraceInfo.customSampleRate();
 }
 
+bool Handler::arePtracesEnabled() const {
+    return _isSentryActivated && _appType != AppType::Test;
+}
+
 pTraceId Handler::startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId) {
-    if (!_isSentryActivated || pTraceInfo.pTraceName() == PTraceName::None) return 0;
+    if (!_isSentryActivated || !arePtracesEnabled() || pTraceInfo.pTraceName() == PTraceName::None) return 0;
 
     std::scoped_lock lock(_mutex);
     pTraceId newPTraceId = 0;
@@ -684,7 +717,7 @@ pTraceId Handler::startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId) 
 }
 
 void Handler::stopPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId, PTraceStatus status) {
-    if (!_isSentryActivated || pTraceInfo.pTraceName() == PTraceName::None) return;
+    if (!_isSentryActivated || !arePtracesEnabled() || pTraceInfo.pTraceName() == PTraceName::None) return;
 
     std::scoped_lock lock(_mutex);
     auto pTraceMapIt = _pTraceNameToPTraceIdMap.find(syncDbId);

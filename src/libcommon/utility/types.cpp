@@ -134,8 +134,12 @@ std::string toString(const ExitCause e) {
             return "DbEntryNotFound";
         case ExitCause::InvalidSnapshot:
             return "InvalidSnapshot";
+        case ExitCause::SyncDirDoesntExist:
+            return "SyncDirDoesntExist";
         case ExitCause::SyncDirAccessError:
-            return "SyncDirAccesError";
+            return "SyncDirAccessError";
+        case ExitCause::SyncDirNestingError:
+            return "SyncDirNestingError";
         case ExitCause::SyncDirChanged:
             return "SyncDirChanged";
         case ExitCause::HttpErr:
@@ -212,6 +216,8 @@ std::string toString(const ExitCause e) {
             return "DriveWakingUp";
         case ExitCause::ServiceUnavailable:
             return "ServiceUnavailable";
+        case ExitCause::BadGateway:
+            return "BadGateway";
         default:
             return noConversionStr;
     }
@@ -815,6 +821,8 @@ std::string toString(const AppType e) {
             return "Server";
         case AppType::Client:
             return "Client";
+        case AppType::Test:
+            return "Test";
         default:
             return noConversionStr;
     }

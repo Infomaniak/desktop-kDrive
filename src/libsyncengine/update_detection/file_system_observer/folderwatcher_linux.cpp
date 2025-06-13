@@ -101,7 +101,12 @@ void FolderWatcher_linux::startWatching() {
                                        L"Operation " << opType << L" detected on item with " << Utility::formatSyncPath(path));
                         }
 
-                        changeDetected(path, opType);
+                        if (const auto exitInfo = changeDetected(path, opType); exitInfo.code() != ExitCode::Ok) {
+                            LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in FolderWatcher_linux::changeDetected for "
+                                                                                 << Utility::formatSyncPath(path) << L" "
+                                                                                 << exitInfo);
+                        }
+
                         bool isDirectory = false;
                         auto ioError = IoError::Success;
                         const bool isDirSuccess = IoHelper::checkIfIsDirectory(path, isDirectory, ioError);
@@ -271,10 +276,15 @@ void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {
     }
 }
 
-void FolderWatcher_linux::changeDetected(const SyncPath &path, OperationType opType) const {
+ExitInfo FolderWatcher_linux::changeDetected(const SyncPath &path, OperationType opType) const {
     std::list<std::pair<SyncPath, OperationType>> list;
     (void) list.emplace_back(path, opType);
-    _parent->changesDetected(list);
+    if (const auto exitInfo = _parent->changesDetected(list); exitInfo.code() != ExitCode::Ok) {
+        LOGW_WARN(_logger, L"Error in LocalFileSystemObserverWorker::changesDetected: " << exitInfo);
+        return exitInfo;
+    }
+
+    return ExitCode::Ok;
 }
 
 void FolderWatcher_linux::stopWatching() {
