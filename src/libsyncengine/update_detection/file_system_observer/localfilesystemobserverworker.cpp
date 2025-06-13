@@ -331,7 +331,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
                     continue;
                 }
 
-                if (const auto exitInfo = exploreDir(absolutePath, true); exitInfo.code() != ExitCode::Ok) {
+                if (const auto exitInfo = exploreDir(absolutePath, true); !exitInfo) {
                     // Error while exploring directory, we need to invalidate the liveSnapshot
                     LOGW_SYNCPAL_WARN(_logger, L"Error in LocalFileSystemObserverWorker::exploreDir for "
                                                        << Utility::formatSyncPath(absolutePath) << L" " << exitInfo);
@@ -418,7 +418,7 @@ void LocalFileSystemObserverWorker::execute() {
         }
         // We never pause this thread
         if (!_liveSnapshot.isValid()) {
-            if (exitInfo = generateInitialSnapshot(); exitInfo.code() != ExitCode::Ok) {
+            if (exitInfo = generateInitialSnapshot(); !exitInfo) {
                 LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot: " << exitInfo);
                 break;
             }
@@ -475,7 +475,7 @@ ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
     const std::lock_guard<std::recursive_mutex> lock(_recursiveMutex);
     if (!_pendingFileEvents.empty()) {
         LOG_SYNCPAL_DEBUG(_logger, "Processing pending file events");
-        if (const auto exitInfo = changesDetected(_pendingFileEvents); exitInfo.code() != ExitCode::Ok) {
+        if (const auto exitInfo = changesDetected(_pendingFileEvents); !exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error in LocalFileSystemObserverWorker::changesDetected: " << exitInfo);
             mainExitInfo.merge(exitInfo, {ExitCode::SystemError, ExitCode::DataError});
         }
