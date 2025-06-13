@@ -431,7 +431,7 @@ void DrivePreferencesWidget::askDisableLiteSync(const std::function<void(bool, b
                                          " If you turn off Lite Sync, you need to select which folders to sync on your computer."
                                          " In the meantime, the synchronization of your kDrive will be paused.")
                                               .arg(KDC::CommonGuiUtility::octetsToString(diskSpaceMissing))
-                                    : tr("If you turn off Lite Sync, all files will downloaded on your computer."),
+                                    : tr("If you turn off Lite Sync, all files will be downloaded to your computer."),
                             diskSpaceWarning, QMessageBox::NoButton, this);
     msgBox.addButton(tr("CONFIRM"), QMessageBox::Yes);
     msgBox.addButton(tr("CANCEL"), QMessageBox::No);
