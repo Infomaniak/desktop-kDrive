@@ -108,6 +108,13 @@ class SyncDb : public Db {
         SyncDbRevision revision() const;
         SyncDbReadOnlyCache &cache() { return _cache; }
 
+        // Fix the local node IDs after a sync directory nodeId change.
+        // This can happen when the sync directory is moved between two disks, after a migration from an other device (Apple
+        // migration assistant, etc.).
+        // This is a best effort, if at least one of the items inside the sync directory has been deleted or moved, the process
+        // will fail and the user should be prompted to create a new sync directory.
+        bool tryToFixDbNodeIdsAfterSyncDirChange(const SyncPath &syncDirPath);
+
     protected:
         virtual bool updateNames(const char *requestId, const SyncName &localName, const SyncName &remoteName);
 

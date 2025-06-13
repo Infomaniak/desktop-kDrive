@@ -138,8 +138,9 @@ void SyncPalWorker::execute() {
         }
 
         // Manage SyncDir change (might happen if the sync folder is deleted and recreated e.g migration from an other device)
-        if (syncDirChanged) {
-            LOG_SYNCPAL_INFO(_logger, "Sync dir changed, stopping all workers and exiting");
+        if (syncDirChanged && !tryToFixDbNodeIdsAfterSyncDirChange()) {
+            LOG_SYNCPAL_INFO(_logger,
+                             "Sync dir changed and we are unable to automaticaly fix syncDb, stopping all workers and exiting");
             stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
             exitCode = ExitCode::FatalError;
             setExitCause(ExitCause::WorkerExited);
@@ -524,6 +525,38 @@ void SyncPalWorker::stopAndWaitForExitOfAllWorkers(std::shared_ptr<ISyncWorker> 
     waitForExitOfWorkers(stepWorkers);
 
     LOG_SYNCPAL_INFO(_logger, "***** Stop done");
+}
+bool SyncPalWorker::tryToFixDbNodeIdsAfterSyncDirChange() {
+    LOG_SYNCPAL_INFO(_logger, "Trying to fix SyncDb node IDs after sync dir nodeId change...");
+
+    NodeId newLocalRootNodeId;
+    if (!IoHelper::getNodeId(_syncPal->localPath(), newLocalRootNodeId)) {
+        LOGW_SYNCPAL_WARN(_logger,
+                          L"Unable to get new local node ID for " << Utility::formatSyncPath(_syncPal->localPath()) << L".");
+        sentry::Handler::instance()->captureMessage(KDC::sentry::Level::Warning, "Failed to get new local node ID for sync dir",
+                                                    "Sync Dir migration faillure");
+        return false;
+    }
+
+    if (!_syncPal->syncDb()->tryToFixDbNodeIdsAfterSyncDirChange(_syncPal->localPath())) {
+        LOGW_SYNCPAL_WARN(_logger, L"SyncDb could not be fixed after sync dir change.");
+        sentry::Handler::instance()->captureMessage(KDC::sentry::Level::Warning,
+                                                    "Failed to fix SyncDb node IDs after sync dir change",
+                                                    "Sync Dir migration faillure");
+        return false;
+    }
+
+    if (const ExitInfo exitInfo = _syncPal->setLocalNodeId(newLocalRootNodeId); !exitInfo) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in setLocalNodeId: " << exitInfo);
+        sentry::Handler::instance()->captureMessage(KDC::sentry::Level::Warning,
+                                                    "Failed to set new local node ID after sync dir change",
+                                                    "Sync Dir migration faillure");
+        return false;
+    }
+    LOG_SYNCPAL_INFO(_logger, "SyncDb successfully fixed after sync dir change, new local node ID is " << newLocalRootNodeId);
+    sentry::Handler::instance()->captureMessage(KDC::sentry::Level::Info, "SyncDb successfully fixed after sync dir change",
+                                                "Sync Dir migration success");
+    return true;
 }
 
 void SyncPalWorker::resetVfsFilesStatus() {
