@@ -383,7 +383,7 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, const Ex
 
         case ExitCause::NotEnoughDiskSpace:
             return tr(
-                    "There is not enough space left on your disk.<br>"
+                    "There is not enough space left on your computer.<br>"
                     "The synchronization has been stopped.");
         case ExitCause::NotEnoughMemory:
             return tr(
@@ -796,7 +796,7 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
                         "Please fix the read and write permissions.");
             } else if (errorInfo.exitCause() == ExitCause::NotEnoughDiskSpace) {
                 return tr(
-                        "There is not enough space left on your disk.<br>"
+                        "There is not enough space left on your computer.<br>"
                         "The download has been canceled.");
             }
             return tr("System error.");
