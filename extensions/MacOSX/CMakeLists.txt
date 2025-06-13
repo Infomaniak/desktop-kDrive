@@ -29,6 +29,10 @@ add_custom_target(mac_findersyncext ALL
     COMMENT building FinderSync Extension
     VERBATIM)
 set_property(TARGET mac_findersyncext APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+# mac_loginitemagent is only set as a dependency to avoid parallel build issues between xcode projects
+#   -> error: unable to attach DB: error: accessing build database "{...}/build-macos/client/extensions/MacOSX/XCBuildData/build.db": 
+#      database is locked Possibly there are two concurrent builds running in the same filesystem location.
+#      ** BUILD FAILED *
 add_dependencies(mac_findersyncext mac_loginitemagent ${APPLICATION_EXECUTABLE})
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/Extension.appex
@@ -45,6 +49,10 @@ add_custom_target(mac_litesyncext ALL
     COMMENT building LiteSync Extension
     VERBATIM)
 set_property(TARGET mac_litesyncext APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+# mac_findersyncext is only set as a dependency to avoid parallel build issues between xcode projects
+#   -> error: unable to attach DB: error: accessing build database "{...}/build-macos/client/extensions/MacOSX/XCBuildData/build.db": 
+#      database is locked Possibly there are two concurrent builds running in the same filesystem location.
+#      ** BUILD FAILED *
 add_dependencies(mac_litesyncext mac_findersyncext ${APPLICATION_EXECUTABLE})
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${APPLICATION_REV_DOMAIN}.LiteSyncExt.systemextension
