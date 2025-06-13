@@ -73,7 +73,7 @@ void TestFolderWatcherLinux::testInotifyRegisterPath() {
                 FolderWatcher_linux(parent, path) {}
 
         private:
-            int inotifyAddWatch(const SyncPath &) override { return -1; }
+            std::int64_t inotifyAddWatch(const SyncPath &) override { return -1; }
     };
 
     FolderWatcherLinuxMock testObj(nullptr, "");
