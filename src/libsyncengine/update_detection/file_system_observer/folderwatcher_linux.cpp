@@ -194,7 +194,7 @@ ExitInfo FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
         if (ec) {
             LOGW_WARN(_logger, L"Failed to check if path exists for " << Utility::formatStdError(path, ec));
         }
-        return ExitInfo{ExitCode::SystemError, ExitCause::Unknown};
+        return {ExitCode::SystemError, ExitCause::Unknown};
     }
 
     const auto wd = inotifyAddWatch(path);
