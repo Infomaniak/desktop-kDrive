@@ -994,11 +994,6 @@ Selecciona los que quieras sincronizar:</translation>
         <translation>CANCELAR</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="434"/>
-        <source>If you turn off Lite Sync, all files will downloaded on your computer.</source>
-        <translation>Si desactivas Lite Sync, todos los archivos se descargarán en tu ordenador.</translation>
-    </message>
-    <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="805"/>
         <source>New local folder synchronization failed!</source>
         <translation>¡Error al sincronizar las nuevas carpetas locales!</translation>
@@ -1060,6 +1055,11 @@ Selecciona los que quieras sincronizar:</translation>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="430"/>
         <source>You don&apos;t have enough space to sync all the files on your kDrive (%1 missing). If you turn off Lite Sync, you need to select which folders to sync on your computer. In the meantime, the synchronization of your kDrive will be paused.</source>
         <translation>No tienes suficiente espacio para sincronizar todos los archivos en el kDrive (falta %1). Si se desactiva Lite Sync, habrá que elegir qué carpetas se sincronizan en el ordenador. Mientras tanto, se detendrá la sincronización de tu kDrive.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="434"/>
+        <source>If you turn off Lite Sync, all files will be downloaded to your computer.</source>
+        <translation>Si desactivas Lite Sync, todos los archivos se descargarán en tu ordenador.</translation>
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="668"/>
