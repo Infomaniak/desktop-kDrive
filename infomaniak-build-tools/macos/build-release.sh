@@ -26,7 +26,7 @@ export TEAM_IDENTIFIER="864VDCS2QY"
 export APP_DOMAIN="com.infomaniak.drive.desktopclient"
 export SIGN_IDENTITY="Developer ID Application: Infomaniak Network SA (864VDCS2QY)"
 export INSTALLER_SIGN_IDENTITY="Developer ID Installer: Infomaniak Network SA (864VDCS2QY)"
-export qt_dir="$HOME/Qt/6.2.3/macos"
+export QT_DIR="$HOME/Qt/6.2.3/macos"
 
 # Uncomment to build for testing
 # export KDRIVE_DEBUG=1
@@ -37,8 +37,8 @@ src_dir="${1-$PWD}"
 app_name="kDrive"
 
 # define Qt6 directory
-qt_dir="${qt_dir-$HOME/Qt/6.2.3/macos}"
-export PATH="$qt_dir/bin:$PATH"
+QT_DIR="${QT_DIR-$HOME/Qt/6.2.3/macos}"
+export PATH="$QT_DIR/bin:$PATH"
 
 # Set Infomaniak Theme
 kdrive_dir="$src_dir/infomaniak"
@@ -47,11 +47,11 @@ kdrive_dir="$src_dir/infomaniak"
 sparkle_dir="$HOME/Library/Frameworks"
 
 # Set build dir
-sparkle_dir="$PWD/build-macos/client"
+build_dir="$PWD/build-macos/client"
 
 
 # Set conan dir
-conan_folder="$sparkle_dir/conan"
+conan_folder="$build_dir/conan"
 mkdir -p "$conan_folder"
 
 # Set install dir
@@ -88,7 +88,7 @@ if [ ! -f "$conan_toolchain_file" ]; then
 fi
 
 # Configure
-pushd "$sparkle_dir"
+pushd "$build_dir"
 
 cmake \
 	-DCMAKE_OSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" \
@@ -120,11 +120,11 @@ fi
 
 if [ -n "$INSTALLER_SIGN_IDENTITY" ]; then
 	# xcrun stapler staple $package_file
-	"$sparkle_dir/admin/osx/create_mac.sh" "$install_dir" "$sparkle_dir" "$INSTALLER_SIGN_IDENTITY"
-	package_file=$(grep "installer=" "$sparkle_dir/admin/osx/create_mac.sh" | sed -E 's/installer="([^"]+)"/\1/')
+	"$build_dir/admin/osx/create_mac.sh" "$install_dir" "$build_dir" "$INSTALLER_SIGN_IDENTITY"
+	package_file=$(grep "installer=" "$build_dir/admin/osx/create_mac.sh" | sed -E 's/installer="([^"]+)"/\1/')
 	sign_files+=("$install_dir/$package_file.pkg")
 else
-	"$sparkle_dir/admin/osx/create_mac.sh" "$install_dir" "$sparkle_dir"
+	"$build_dir/admin/osx/create_mac.sh" "$install_dir" "$build_dir"
 fi
 
 # Notarise
@@ -132,7 +132,7 @@ if [ -n "$sign_files" ]; then
 	rm -rf "$install_dir/notorization" "$install_dir/notarization/"
 	mkdir -p "$install_dir/notarization"
 
-	for file in "{sign_files[@]}; do
+	for file in sign_files[@]; do
 		cp -a "$file" "$install_dir/notarization"
 	done
 
