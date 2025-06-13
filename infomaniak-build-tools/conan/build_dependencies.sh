@@ -139,6 +139,9 @@ if [ "$platform" = "darwin" ]; then
   conan create "$conan_recipes_folder/openssl-universal/3.2.4/" --build=missing -s:a=build_type="$build_type" -r="$local_recipe_remote_name" -r=conancenter
 fi
 
+log "Creating package Qt..."
+conan create "$conan_recipes_folder/qt/all/" --build=missing -r=$local_recipe_remote_name
+
 log "Installing dependencies..."
 # Install this packet in the build folder.
 conan install . --output-folder="$output_dir" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter
