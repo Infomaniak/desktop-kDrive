@@ -254,7 +254,7 @@ void CommServer::onSendReply(int id, const QByteArray &result) {
     try {
         LOG_DEBUG(Log::instance()->getLogger(), "Snd rpl " << id);
 
-        _tcpSocket->write(KDC::CommonUtility::toQByteArray(static_cast<int>(reply.count())));
+        _tcpSocket->write(KDC::CommonUtility::toQByteArray(static_cast<int>(reply.size())));
         _tcpSocket->write(reply);
 #ifdef Q_OS_WIN
         _tcpSocket->flush();
@@ -288,7 +288,7 @@ void CommServer::onSendSignal(int id, SignalNum num, const QByteArray &params) {
     try {
         LOG_DEBUG(Log::instance()->getLogger(), "Snd sgnl " << id << " " << num);
 
-        _tcpSocket->write(KDC::CommonUtility::toQByteArray(static_cast<int>(signal.count())));
+        _tcpSocket->write(KDC::CommonUtility::toQByteArray(static_cast<int>(signal.size())));
         _tcpSocket->write(signal);
 #ifdef Q_OS_WIN
         _tcpSocket->flush();
