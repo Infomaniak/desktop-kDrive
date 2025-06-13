@@ -74,14 +74,13 @@ bool SqliteDb::openOrCreateReadWrite(const std::filesystem::path &dbPath) {
             }
         }
 
-        LOGW_FATAL(_logger, L"Consistency check failed, removing broken db " << Path2WStr(dbPath).c_str());
+        LOGW_FATAL(_logger, L"Consistency check failed, removing broken db " << Path2WStr(dbPath));
         close();
         std::error_code ec;
         if (!std::filesystem::remove(dbPath, ec)) {
             if (ec.value() != 0) {
-                LOGW_WARN(_logger, L"Failed to remove db file " << Path2WStr(dbPath).c_str() << L": "
-                                                                << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value()
-                                                                << L")");
+                LOGW_WARN(_logger, L"Failed to remove db file " << Utility::formatSyncPath(dbPath) << L": " << Utility::s2ws(ec.message())
+                                                                << L" (" << ec.value() << L")");
                 close();
                 return false;
             }
@@ -107,7 +106,7 @@ bool SqliteDb::openReadOnly(const std::filesystem::path &dbPath) {
     }
 
     if (checkDb() != CheckDbResult::Ok) {
-        LOGW_WARN(_logger, L"Consistency check failed in readonly mode, giving up " << Path2WStr(dbPath).c_str());
+        LOGW_WARN(_logger, L"Consistency check failed in readonly mode, giving up " << Path2WStr(dbPath));
         close();
         return false;
     }
@@ -154,8 +153,8 @@ void SqliteDb::close() {
         std::error_code ec;
         if (!std::filesystem::remove(_dbPath, ec)) {
             if (ec) {
-                LOGW_WARN(_logger, L"Failed to check if  " << Utility::formatSyncPath(_dbPath).c_str() << L" exists: "
-                                                           << Utility::formatStdError(ec).c_str());
+                LOGW_WARN(_logger, L"Failed to check if  " << Utility::formatSyncPath(_dbPath) << L" exists: "
+                                                           << Utility::formatStdError(ec));
             }
 
             LOG_WARN(_logger, "Failed to remove db file.");
@@ -165,7 +164,7 @@ void SqliteDb::close() {
 
 bool SqliteDb::queryCreate(const std::string &id) {
     if (_queries.find(id) != _queries.end()) {
-        LOG_WARN(_logger, "Query ID " << id.c_str() << " already exist.");
+        LOG_WARN(_logger, "Query ID " << id << " already exist.");
         return false;
     }
 
@@ -363,8 +362,8 @@ bool SqliteDb::openHelper(const std::filesystem::path &dbPath, int sqliteFlags) 
     _sqlite3Db.reset(db, sqlite3_close);
 
     if (_errId != SQLITE_OK) {
-        LOGW_WARN(_logger, L"Opening database failed: " << _errId << L" " << Utility::s2ws(_error).c_str() << L" for "
-                                                        << Path2WStr(dbPath).c_str());
+        LOGW_WARN(_logger,
+                  L"Opening database failed: " << _errId << L" " << Utility::s2ws(_error) << L" for " << Path2WStr(dbPath));
         if (_errId == SQLITE_CANTOPEN) {
             LOG_WARN(_logger, "CANTOPEN extended errcode: " << sqlite3_extended_errcode(_sqlite3Db.get()));
 #if SQLITE_VERSION_NUMBER >= 3012000
@@ -376,7 +375,7 @@ bool SqliteDb::openHelper(const std::filesystem::path &dbPath, int sqliteFlags) 
     }
 
     if (!_sqlite3Db) {
-        LOGW_WARN(_logger, L"Error: no database for " << Path2WStr(dbPath).c_str());
+        LOGW_WARN(_logger, L"Error: no database for " << Path2WStr(dbPath));
         return false;
     }
 
@@ -402,7 +401,7 @@ SqliteDb::CheckDbResult SqliteDb::checkDb() {
     std::string result;
     LOG_IF_FAIL(queryStringValue(PRAGMA_QUICK_CHECK_ID, 0, result));
     if (result != "ok") {
-        LOG_WARN(_logger, "Bad query result: " << PRAGMA_QUICK_CHECK_ID << " - " << result.c_str());
+        LOG_WARN(_logger, "Bad query result: " << PRAGMA_QUICK_CHECK_ID << " - " << result);
         queryFree(PRAGMA_QUICK_CHECK_ID);
         return CheckDbResult::NotOk;
     }

@@ -36,15 +36,20 @@ void FolderWatcher_win::changesLost() {
     _parent->invalidateSnapshot();
 }
 
-void FolderWatcher_win::changeDetected(const SyncPath &path, OperationType opType) {
+ExitInfo FolderWatcher_win::changeDetected(const SyncPath &path, OperationType opType) {
     std::list<std::pair<SyncPath, OperationType>> list;
     list.push_back({path, opType});
-    _parent->changesDetected(list);
+    if (const auto exitInfo = _parent->changesDetected(list); exitInfo.code() != ExitCode::Ok) {
+        LOGW_WARN(_logger, L"Error in LocalFileSystemObserverWorker::changesDetected: " << exitInfo);
+        return exitInfo;
+    }
+
+    return ExitCode::Ok;
 }
 
 void FolderWatcher_win::startWatching() {
-    LOGW_DEBUG(_logger, L"Start watching folder: " << _folder.wstring().c_str());
-    LOG_DEBUG(_logger, "File system format: " << Utility::fileSystemName(_folder).c_str());
+    LOGW_DEBUG(_logger, L"Start watching folder: " << _folder.wstring());
+    LOG_DEBUG(_logger, "File system format: " << Utility::fileSystemName(_folder));
 
     _resultEventHandle = CreateEvent(nullptr, true, false, nullptr);
     _stopEventHandle = CreateEvent(nullptr, true, false, nullptr);
@@ -60,11 +65,11 @@ void FolderWatcher_win::startWatching() {
         }
     }
 
-    LOGW_DEBUG(_logger, L"Folder watching stopped: " << _folder.wstring().c_str());
+    LOGW_DEBUG(_logger, L"Folder watching stopped: " << _folder.wstring());
 }
 
 void FolderWatcher_win::stopWatching() {
-    LOGW_DEBUG(_logger, L"Stop watching folder: " << Path2WStr(_folder).c_str());
+    LOGW_DEBUG(_logger, L"Stop watching folder: " << Path2WStr(_folder));
     SetEvent(_stopEventHandle);
 }
 
@@ -77,9 +82,9 @@ void FolderWatcher_win::watchChanges() {
 
     if (_directoryHandle == INVALID_HANDLE_VALUE) {
         DWORD errorCode = GetLastError();
-        LOGW_WARN(_logger, L"Failed to create handle for " << _folder.wstring().c_str() << L" - error:" << errorCode);
+        LOGW_WARN(_logger, L"Failed to create handle for " << _folder.wstring() << L" - error:" << errorCode);
         _directoryHandle = nullptr;
-        setExitInfo({ExitCode::SystemError, ExitCause::SyncDirAccesError});
+        setExitInfo({ExitCode::SystemError, ExitCause::SyncDirAccessError});
         return;
     }
 
@@ -169,7 +174,11 @@ void FolderWatcher_win::watchChanges() {
 
             if (opType == OperationType::MoveOut) opType = OperationType::Move; // "MoveOut" is considered as Move from now on
 
-            changeDetected(longfilepath, opType);
+            if (const auto exitInfo = changeDetected(longfilepath, opType); exitInfo.code() != ExitCode::Ok) {
+                LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in FolderWatcher_win::changeDetected for "
+                                                                     << Utility::formatSyncPath(longfilepath) << L" "
+                                                                     << exitInfo);
+            }
 
             if (notifInfo->NextEntryOffset == 0) {
                 break;

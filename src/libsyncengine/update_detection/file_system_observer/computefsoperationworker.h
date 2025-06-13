@@ -84,14 +84,18 @@ class ComputeFSOperationWorker : public ISyncWorker {
         bool isWhitelisted(const std::shared_ptr<const Snapshot> snapshot, const NodeId &nodeId) const;
         bool isTooBig(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId, int64_t size);
         bool isPathTooLong(const SyncPath &path, const NodeId &nodeId, NodeType type) const;
-        ExitInfo isReusedNodeId(const NodeId &localNodeId, const DbNode &dbNode, const std::shared_ptr<const Snapshot> &snapshot,
-                                bool &isReused) const;
+#ifdef __unix__
+        void isReusedNodeId(const NodeId &localNodeId, const DbNode &dbNode, const std::shared_ptr<const Snapshot> &snapshot,
+                            bool &isReused) const;
+#endif // __unix__
         ExitInfo checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId, bool &isExcluded);
 
         void deleteChildOpRecursively(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId,
                                       NodeSet &tmpTooBigList);
 
         void updateUnsyncedList();
+        ExitCode updateSyncNode(SyncNodeType syncNodeType);
+        ExitCode updateSyncNode();
         void logOperationGeneration(const ReplicaSide side, const FSOpPtr fsOp);
         void notifyIgnoredItem(const NodeId &nodeId, const SyncPath &relativePath, NodeType nodeType);
         ExitInfo blacklistItem(const SyncPath &relativeLocalPath);
@@ -106,7 +110,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
         std::unordered_set<SyncPath, PathHashFunction> _dirPathToDeleteSet;
         std::unordered_map<NodeId, SyncPath> _fileSizeMismatchMap; // File size mismatch checks are only enabled when env var:
                                                                    // KDRIVE_ENABLE_FILE_SIZE_MISMATCH_DETECTION is set
-        std::unordered_set<SyncName> _ignoredDirectoryNames;
+        SyncNameSet _ignoredDirectoryNames;
 
         bool addFolderToDelete(const SyncPath &path);
         bool checkIfPathIsInDeletedFolder(const SyncPath &path, bool &isInDeletedFolder);

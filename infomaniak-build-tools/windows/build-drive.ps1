@@ -201,8 +201,29 @@ function CMake-Build-And-Install {
         [string] $installPath,
         [string] $vfsDir
     )
+    Write-Host "1) Installing Conan dependencies…"
+    $conanFolder = Join-Path $buildPath "conan"
+    # mkdir -p this folder
+    if (-not (Test-Path $conanFolder)) {
+        New-Item -Path $conanFolder -ItemType Directory
+    }
+    Write-Host "Conan folder: $conanFolder"
+    if ($ci) {
+        & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder -Ci
+    } else {
+        & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder
+    }
 
-    Write-Host "Building the application with CMake ..."
+    $conanToolchainFile = Get-ChildItem -Path $conanFolder -Filter "conan_toolchain.cmake" -Recurse -File |
+            Select-Object -ExpandProperty FullName -First 1
+
+    if (-not (Test-Path $conanToolchainFile)) {
+        Write-Error "Conan toolchain file not found. Abort."
+        exit 1
+    }
+    Write-Host "Conan toolchain file used: $conanToolchainFile"
+
+    Write-Host "2) Configuring and building with CMake ..."
 
     $compiler = "cl.exe"
 
@@ -215,9 +236,11 @@ function CMake-Build-And-Install {
         $args += ("'-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'")
     }
 
+
     $buildVersion = Get-Date -Format "yyyyMMdd"
 
     $flags = @(
+        "'-DCMAKE_TOOLCHAIN_FILE=$conanToolchainFile'",
         "'-DCMAKE_EXPORT_COMPILE_COMMANDS=1'",
         "'-DCMAKE_MAKE_PROGRAM=C:\Qt\Tools\Ninja\ninja.exe'",
         "'-DQT_QMAKE_EXECUTABLE:STRING=C:\Qt\Tools\CMake_64\bin\cmake.exe'",
@@ -333,9 +356,6 @@ function Prepare-Archive {
     $dependencies = @(
         "${env:ProgramFiles(x86)}/zlib-1.2.11/bin/zlib1",
         "${env:ProgramFiles(x86)}/libzip/bin/zip",
-        "${env:ProgramFiles(x86)}/log4cplus/bin/log4cplusU",
-        "${env:ProgramFiles}/OpenSSL/bin/libcrypto-3-x64",
-        "${env:ProgramFiles}/OpenSSL/bin/libssl-3-x64",
         "${env:ProgramFiles(x86)}/Poco/bin/PocoCrypto",
         "${env:ProgramFiles(x86)}/Poco/bin/PocoFoundation",
         "${env:ProgramFiles(x86)}/Poco/bin/PocoJSON",
@@ -344,7 +364,6 @@ function Prepare-Archive {
         "${env:ProgramFiles(x86)}/Poco/bin/PocoUtil",
         "${env:ProgramFiles(x86)}/Poco/bin/PocoXML",
         "${env:ProgramFiles(x86)}/Sentry-Native/bin/sentry",
-        "${env:ProgramFiles(x86)}/xxHash/bin/xxhash",
         "$vfsDir/Vfs",
         "$buildPath/bin/kDrivecommonserver_vfs_win"
     )
@@ -358,6 +377,33 @@ function Prepare-Archive {
             Copy-Item -Path $file".dll" -Destination "$archivePath"
         }
     }
+    $find_dep_script = "$path/infomaniak-build-tools/conan/find_conan_dep.ps1"
+
+    $xxhash_args = @{
+        Package = "xxhash"
+        Version = "0.8.2"
+    }
+    $log4cplus_args = @{
+        Package = "log4cplus"
+        Version = "2.1.2"
+    }
+    $openssl_args = @{
+        Package = "openssl"
+        Version = "3.2.4"
+    }
+    if ($ci) {
+        $xxhash_args["Ci"]       = $true
+        $log4cplus_args["Ci"]    = $true
+        $openssl_args["Ci"]      = $true
+    }
+    $xxhash_folder = & $find_dep_script @xxhash_args
+    $log4cplus_folder = & $find_dep_script @log4cplus_args
+    $openssl_folder = & $find_dep_script @openssl_args
+    
+    Copy-Item -Path "$xxhash_folder/bin/xxhash.dll" -Destination "$archivePath"
+    Copy-Item -Path "$log4cplus_folder/bin/log4cplus.dll" -Destination "$archivePath"
+    Copy-Item -Path "$openssl_folder/bin/libcrypto-3-x64.dll" -Destination "$archivePath"
+    Copy-Item -Path "$openssl_folder/bin/libssl-3-x64.dll" -Destination "$archivePath"
 
     Copy-Item -Path "$path/sync-exclude-win.lst" -Destination "$archivePath/sync-exclude.lst"
 

@@ -147,7 +147,7 @@ ExitInfo Vfs::checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist, con
             return {ExitCode::SystemError, ExitCause::NotFound, location};
         } else {
             LOGW_DEBUG(logger(), L"File already exists: " << Utility::formatSyncPath(itemPath));
-            return {ExitCode::SystemError, ExitCause::FileAlreadyExists, location};
+            return {ExitCode::SystemError, ExitCause::FileExists, location};
         }
     }
     return ExitCode::Ok;
@@ -212,7 +212,7 @@ ExitInfo VfsOff::forceStatus(const SyncPath &pathStd, const VfsStatus &vfsStatus
         return exitInfo;
     }
     // Update Finder
-    LOGW_DEBUG(logger(), L"Send status to the Finder extension for file/directory " << Path2WStr(fullPath).c_str());
+    LOGW_DEBUG(logger(), L"Send status to the Finder extension for file/directory " << Path2WStr(fullPath));
     QString status = vfsStatus.isSyncing ? "SYNC" : "OK";
     QString path = SyncName2QStr(pathStd.native());
     if (_vfsSetupParams.executeCommand)

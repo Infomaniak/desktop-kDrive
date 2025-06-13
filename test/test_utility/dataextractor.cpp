@@ -25,22 +25,22 @@ namespace KDC {
 DataExtractor::DataExtractor() :
     DataExtractor("") {}
 
-DataExtractor::DataExtractor(const SyncPath& absolutePath) :
+DataExtractor::DataExtractor(const SyncPath &absolutePath) :
     _absolutePath(absolutePath) {
     _data.reserve(20);
 }
 
-void DataExtractor::addColumHeader(const std::string& columnName) {
+void DataExtractor::addColumHeader(const std::string &columnName) {
     _columnHeaders.push_back(columnName);
 }
 
-void DataExtractor::addRow(const std::string& rowName /*= {}*/) {
+void DataExtractor::addRow(const std::string &rowName /*= {}*/) {
     _rowHeaders.push_back(rowName);
     (void) _data.emplace_back();
     _data[_data.size() - 1].reserve(20);
 }
 
-void DataExtractor::push(const std::string& data) {
+void DataExtractor::push(const std::string &data) {
     (void) _data[_data.size() - 1].emplace_back(data);
 }
 
@@ -52,7 +52,7 @@ void DataExtractor::print() {
 
     std::ofstream file(_absolutePath);
 
-    for (const auto& columnName: _columnHeaders) {
+    for (const auto &columnName: _columnHeaders) {
         file << ";" << columnName;
     }
 

@@ -42,7 +42,7 @@ void OperationSorterWorker::execute() {
     _filter.filterOperations();
     sortOperations();
 
-    LOG_SYNCPAL_INFO(_logger, "Operation sorting finished in: " << timer.elapsed().count() << "s");
+    LOG_SYNCPAL_INFO(_logger, "Operation sorting finished in: " << timer.elapsed<DoubleSeconds>().count() << "s");
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
     setDone(ExitCode::Ok);
@@ -496,9 +496,6 @@ void OperationSorterWorker::moveFirstAfterSecond(const SyncOpPtr &opFirst, const
             firstIt = it;
         }
     }
-
-    // Make sure that opFirst is finished before starting opSecond, even if they are in the correct order
-    opFirst->setParentId(opSecond->id());
 
     if (firstFound) {
         // make sure opSecond is executed after opFirst

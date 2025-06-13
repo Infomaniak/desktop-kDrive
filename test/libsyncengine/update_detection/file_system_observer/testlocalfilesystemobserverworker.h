@@ -40,9 +40,9 @@ class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_w
                                           const std::string &shortName) :
             LocalFileSystemObserverWorker_win(syncPal, name, shortName) {}
 
-        void changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) final {
+        ExitInfo changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) final {
             Utility::msleep(200);
-            LocalFileSystemObserverWorker_win::changesDetected(changes);
+            return LocalFileSystemObserverWorker_win::changesDetected(changes);
         }
 
         void waitForUpdate(SnapshotRevision previousRevision,
@@ -55,9 +55,9 @@ class MockLocalFileSystemObserverWorker final : public LocalFileSystemObserverWo
                                           const std::string &shortName) :
             LocalFileSystemObserverWorker_unix(syncPal, name, shortName) {}
 
-        void changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) override {
+        ExitInfo changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) override {
             Utility::msleep(200);
-            LocalFileSystemObserverWorker_unix::changesDetected(changes);
+            return LocalFileSystemObserverWorker_unix::changesDetected(changes);
         }
         void waitForUpdate(SnapshotRevision previousRevision,
                            std::chrono::milliseconds timeoutMs = std::chrono::milliseconds(10000)) const;
@@ -103,7 +103,7 @@ class TestLocalFileSystemObserverWorker final : public CppUnit::TestFixture, pub
         void testLFSOWithSpecialCases2();
         void testInvalidateCounter();
         void testInvalidateSnapshot();
-
+        void testSyncDirChange();
         static bool vfsStatus(int, const SyncPath &, bool &, bool &, bool &, int &) { return true; };
         static bool vfsPinState(int, const SyncPath &, PinState &) { return true; };
         static bool vfsFileStatusChanged(int, const SyncPath &, SyncFileStatus) { return true; };

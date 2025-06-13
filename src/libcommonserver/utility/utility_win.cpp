@@ -62,14 +62,14 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
     if (FAILED(hr)) {
         // Couldn't CoCreateInstance - clean up and return
         LOGW_WARN(Log::instance()->getLogger(), L"Error in CoCreateInstance - path="
-                                                        << Path2WStr(itemPath).c_str() << L" err="
-                                                        << Utility::s2ws(std::system_category().message(hr)).c_str());
+                                                        << Path2WStr(itemPath) << L" err="
+                                                        << Utility::s2ws(std::system_category().message(hr)));
 
         std::wstringstream errorStream;
-        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath).c_str()
-                    << L" - CoCreateInstance failed with error: " << Utility::s2ws(std::system_category().message(hr)).c_str();
+        errorStream << L"Move to trash failed for item with " << Utility::formatSyncPath(itemPath) << L" - CoCreateInstance failed with error: "
+                    << Utility::s2ws(std::system_category().message(hr));
         std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
+        LOGW_WARN(Log::instance()->getLogger(), errorStr);
         sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "CoCreateInstance failed");
         CoUninitialize();
         return false;
@@ -79,14 +79,14 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
     if (FAILED(hr)) {
         // Couldn't add flags - clean up and return
         LOGW_WARN(Log::instance()->getLogger(), L"Error in SetOperationFlags path="
-                                                        << Path2WStr(itemPath).c_str() << L" err="
-                                                        << Utility::s2ws(std::system_category().message(hr)).c_str());
+                                                        << Path2WStr(itemPath) << L" err="
+                                                        << Utility::s2ws(std::system_category().message(hr)));
 
         std::wstringstream errorStream;
-        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath).c_str()
-                    << L" - SetOperationFlags failed with error: " << Utility::s2ws(std::system_category().message(hr)).c_str();
+        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath) << L" - SetOperationFlags failed with error: "
+                    << Utility::s2ws(std::system_category().message(hr));
         std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
+        LOGW_WARN(Log::instance()->getLogger(), errorStr);
 
         sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "SetOperationFlags failed");
         fileOperation->Release();
@@ -100,15 +100,14 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
     if (FAILED(hr)) {
         // Couldn't get file into an item - clean up and return (maybe the file doesn't exist?)
         LOGW_WARN(Log::instance()->getLogger(), L"Error in SHCreateItemFromParsingName - path="
-                                                        << Path2WStr(itemPath).c_str() << L" err="
-                                                        << Utility::s2ws(std::system_category().message(hr)).c_str());
+                                                        << Path2WStr(itemPath) << L" err="
+                                                        << Utility::s2ws(std::system_category().message(hr)));
 
         std::wstringstream errorStream;
-        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath).c_str()
-                    << L" - SHCreateItemFromParsingName failed with error: "
-                    << Utility::s2ws(std::system_category().message(hr)).c_str();
+        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath)
+                    << L" - SHCreateItemFromParsingName failed with error: " << Utility::s2ws(std::system_category().message(hr));
         std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
+        LOGW_WARN(Log::instance()->getLogger(), errorStr);
 
         sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "SHCreateItemFromParsingName failed");
         fileOperation->Release();
@@ -120,14 +119,14 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
     if (FAILED(hr)) {
         // Failed to mark file/folder item for deletion - clean up and return
         LOGW_WARN(Log::instance()->getLogger(), L"Error in DeleteItem - path="
-                                                        << Path2WStr(itemPath).c_str() << L" err="
-                                                        << Utility::s2ws(std::system_category().message(hr)).c_str());
+                                                        << Path2WStr(itemPath) << L" err="
+                                                        << Utility::s2ws(std::system_category().message(hr)));
 
         std::wstringstream errorStream;
-        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath).c_str() << L" - DeleteItem failed with error: "
-                    << Utility::s2ws(std::system_category().message(hr)).c_str();
+        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath) << L" - DeleteItem failed with error: "
+                    << Utility::s2ws(std::system_category().message(hr));
         std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
+        LOGW_WARN(Log::instance()->getLogger(), errorStr);
         sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "DeleteItem failed");
 
         fileOrFolderItem->Release();
@@ -140,14 +139,14 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
     if (FAILED(hr)) {
         // failed to carry out delete - return
         LOGW_WARN(Log::instance()->getLogger(), L"Error in PerformOperations - path="
-                                                        << Path2WStr(itemPath).c_str() << L" err="
-                                                        << Utility::s2ws(std::system_category().message(hr)).c_str());
+                                                        << Path2WStr(itemPath) << L" err="
+                                                        << Utility::s2ws(std::system_category().message(hr)));
 
         std::wstringstream errorStream;
-        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath).c_str()
-                    << L" - PerformOperations failed with error: " << Utility::s2ws(std::system_category().message(hr)).c_str();
+        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath) << L" - PerformOperations failed with error: "
+                    << Utility::s2ws(std::system_category().message(hr));
         std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
+        LOGW_WARN(Log::instance()->getLogger(), errorStr);
 
         sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "PerformOperations failed");
         fileOrFolderItem->Release();
@@ -161,13 +160,13 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
     if (!FAILED(hr) && aborted) {
         // failed to carry out delete - return
         LOGW_WARN(Log::instance()->getLogger(), L"Error in GetAnyOperationsAborted - path="
-                                                        << Path2WStr(itemPath).c_str() << L" err="
-                                                        << Utility::s2ws(std::system_category().message(hr)).c_str());
+                                                        << Path2WStr(itemPath) << L" err="
+                                                        << Utility::s2ws(std::system_category().message(hr)));
 
         std::wstringstream errorStream;
-        errorStream << L"Move to trash aborted for item " << Path2WStr(itemPath).c_str();
+        errorStream << L"Move to trash aborted for item " << Path2WStr(itemPath);
         std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
+        LOGW_WARN(Log::instance()->getLogger(), errorStr);
 
         sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "Move to trash aborted");
 

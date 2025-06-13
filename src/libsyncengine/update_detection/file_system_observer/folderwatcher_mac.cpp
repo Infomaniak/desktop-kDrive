@@ -68,7 +68,7 @@ static void callback([[maybe_unused]] ConstFSEventStreamRef streamRef, void *cli
 
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_DEBUG(fw->logger(),
-                       L"Operation " << opType << L" detected on item " << Utility::s2ws(pathPtr ? pathPtr : pathBuf).c_str());
+                       L"Operation " << opType << L" detected on item " << Utility::s2ws(pathPtr ? pathPtr : pathBuf));
         }
 
         // TODO : to be tested to get inode (https://github.com/fsevents/fsevents/pull/360/files)
@@ -85,13 +85,18 @@ static void callback([[maybe_unused]] ConstFSEventStreamRef streamRef, void *cli
         }
     }
 
-    fw->doNotifyParent(paths);
+    if (!paths.empty()) {
+        if (const auto exitInfo = fw->doNotifyParent(paths); exitInfo.code() != ExitCode::Ok) {
+            LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in FolderWatcher_mac::doNotifyParent for "
+                                                                 << Utility::formatSyncPath(paths.front().first) << L"... "
+                                                                 << exitInfo);
+        }
+    }
 }
 
 void FolderWatcher_mac::startWatching() {
     LOGW_DEBUG(_logger, L"Start watching folder: " << Utility::formatSyncPath(_folder));
-    LOG_DEBUG(_logger, "File system format: " << Utility::fileSystemName(_folder).c_str());
-    _ready = true;
+    LOG_DEBUG(_logger, "File system format: " << Utility::fileSystemName(_folder));
 
     CFStringRef path = CFStringCreateWithCString(nullptr, _folder.c_str(), kCFStringEncodingUTF8);
     CFArrayRef pathsToWatch = CFArrayCreate(nullptr, (const void **) &path, 1, nullptr);
@@ -107,8 +112,10 @@ void FolderWatcher_mac::startWatching() {
         // TODO : try kFSEventStreamCreateFlagUseExtendedData to get inode directly from event
 
         CFRelease(pathsToWatch);
-        FSEventStreamScheduleWithRunLoop(_stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+        _ref = CFRunLoopGetCurrent();
+        FSEventStreamScheduleWithRunLoop(_stream, _ref, kCFRunLoopDefaultMode);
         FSEventStreamStart(_stream);
+        _ready = true;
     }
 
     CFRunLoopRun();
@@ -116,10 +123,15 @@ void FolderWatcher_mac::startWatching() {
     LOGW_DEBUG(_logger, L"Folder watching stopped: " << Utility::formatSyncPath(_folder));
 }
 
-void FolderWatcher_mac::doNotifyParent(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) {
+ExitInfo FolderWatcher_mac::doNotifyParent(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) {
     if (!_stop && _parent) {
-        _parent->changesDetected(changes);
+        if (const auto exitInfo = _parent->changesDetected(changes); exitInfo.code() != ExitCode::Ok) {
+            LOGW_WARN(_logger, L"Error in LocalFileSystemObserverWorker::changesDetected: " << exitInfo);
+            return exitInfo;
+        }
     }
+
+    return ExitCode::Ok;
 }
 
 OperationType FolderWatcher_mac::getOpType(const FSEventStreamEventFlags eventFlags) {
@@ -141,10 +153,10 @@ void KDC::FolderWatcher_mac::stopWatching() {
     const std::scoped_lock lock(_streamMutex);
     if (_stream) {
         LOGW_DEBUG(_logger, L"Stop watching folder: " << Utility::formatSyncPath(_folder));
+        CFRunLoopStop(_ref);
         FSEventStreamStop(_stream);
         FSEventStreamInvalidate(_stream);
         FSEventStreamRelease(_stream);
-
         _stream = nullptr;
     }
 }

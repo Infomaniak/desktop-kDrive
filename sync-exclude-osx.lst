@@ -8,6 +8,8 @@
 .sentry-native_server
 *_conflict_*_*_*
 *_blacklisted_*_*_*
+kDrive Rescue Folder
+kDrive-cache
 *~
 ~$*
 *.~*
@@ -40,4 +42,3 @@
 Icon\r*
 .Spotlight-V100
 *.lnk
-kDrive Rescue Folder

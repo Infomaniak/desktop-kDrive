@@ -24,25 +24,6 @@
 using namespace CppUnit;
 
 namespace KDC {
-class MockIoHelperTestNetworkJobs : public IoHelper {
-    public:
-        static void setStdRename(std::function<void(const SyncPath &, const SyncPath &, std::error_code &)> rename) {
-            IoHelper::_rename = rename;
-        }
-        static void setStdTempDirectoryPath(std::function<SyncPath(std::error_code &)> tempDirectoryPath) {
-            IoHelper::_tempDirectoryPath = tempDirectoryPath;
-        }
-        static void resetStdFunctions() {
-            _isDirectory = static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_directory);
-            _isSymlink = static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_symlink);
-            _rename = static_cast<void (*)(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ecc)>(
-                    std::filesystem::rename);
-            _readSymlink = static_cast<SyncPath (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::read_symlink);
-            _fileSize = static_cast<std::uintmax_t (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::file_size);
-            _tempDirectoryPath = static_cast<SyncPath (*)(std::error_code &ec)>(&std::filesystem::temp_directory_path);
-        }
-};
-
 class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
     public:
         CPPUNIT_TEST_SUITE(TestNetworkJobs);
@@ -70,6 +51,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDriveUploadSessionConstructorException);
         CPPUNIT_TEST(testDriveUploadSessionSynchronous);
         CPPUNIT_TEST(testDriveUploadSessionAsynchronous);
+        CPPUNIT_TEST(testDefuncted);
         CPPUNIT_TEST(testDriveUploadSessionSynchronousAborted);
         CPPUNIT_TEST(testDriveUploadSessionAsynchronousAborted);
         CPPUNIT_TEST(testGetAppVersionInfo);
@@ -105,6 +87,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testDriveUploadSessionConstructorException();
         void testDriveUploadSessionSynchronous();
         void testDriveUploadSessionAsynchronous();
+        void testDefuncted();
         void testDriveUploadSessionSynchronousAborted();
         void testDriveUploadSessionAsynchronousAborted();
         void testGetAppVersionInfo();
@@ -113,7 +96,8 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
     private:
         bool createTestFiles();
 
-        void testUpload(SyncTime timeInput, SyncTime &timeOutput);
+        void testUpload(SyncTime creationTimeIn, SyncTime modificationTimeIn, SyncTime &creationTimeOut,
+                        SyncTime &modificationTimeOut);
 
         int _driveDbId = 0;
         int _userDbId = 0;
@@ -124,6 +108,6 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         NodeId _dummyLocalFileId;
         NodeId _dummyRemoteFileId;
 
-        static uint64_t _nbParalleleThreads;
+        static uint64_t _nbParallelThreads;
 };
 } // namespace KDC
