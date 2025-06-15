@@ -5,7 +5,6 @@
 	- [SIP](#sip)
 	- [Xcode](#xcode)
 	- [Qt 6.2.3](#qt-623)
-	- [Sentry](#sentry)
 	- [cppunit](#cppunit)
 	- [Poco](#poco)
 	- [libzip](#libzip)
@@ -77,17 +76,6 @@ Add `CMake` in `PATH` by appending the following lines to your `.zshrc`:
 export PATH=$PATH:~/Qt/Tools/CMake/CMake.app/Contents/bin
 export ALTOOL_USERNAME=<email address>
 export QTDIR=~/Qt/6.2.3/macos
-```
-
-## Sentry
-
-Download [Sentry Sources](https://github.com/getsentry/sentry-native/releases) (you can download the released zip and extract it to `~/Projects`):
-
-```bash
-cd ~/Projects/sentry-native
-cmake -B build -DSENTRY_BACKEND=crashpad -DSENTRY_INTEGRATION_QT=YES -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -DCMAKE_PREFIX_PATH=$QTDIR/lib/cmake
-cmake --build build --parallel
-sudo cmake --install build
 ```
 
 ## CPPUnit
