@@ -2199,7 +2199,7 @@ ExitInfo AppServer::checkIfSyncIsValid(const Sync &sync) {
             LOGW_WARN(_logger, L"Nested syncs - (1) dbId=" << sync.dbId() << L", " << Utility::formatSyncPath(sync.localPath())
                                                            << L"; (2) dbId=" << sync_.dbId() << L", "
                                                            << Utility::formatSyncPath(sync_.localPath()));
-            return ExitCode::InvalidSync;
+            return {ExitCode::InvalidSync, ExitCause::SyncDirNestingError};
         }
     }
 

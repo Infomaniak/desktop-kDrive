@@ -791,41 +791,41 @@ ExitInfo SyncPal::setLocalNodeId(const NodeId &localNodeId) {
     return ExitCode::Ok;
 }
 
-ExitCode SyncPal::setListingCursor(const std::string &value, int64_t timestamp) {
+ExitInfo SyncPal::setListingCursor(const std::string &value, int64_t timestamp) {
     Sync sync;
     bool found;
     if (!ParmsDb::instance()->selectSync(syncDbId(), sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
-        return ExitCode::DbError;
+        return {ExitCode::DbError, ExitCause::DbAccessError};
     }
     if (!found) {
         LOG_SYNCPAL_WARN(_logger, "Sync not found");
-        return ExitCode::DataError;
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
     sync.setListingCursor(value, timestamp);
     if (!ParmsDb::instance()->updateSync(sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::updateSync");
-        return ExitCode::DbError;
+        return {ExitCode::DbError, ExitCause::DbAccessError};
     }
     if (!found) {
         LOG_SYNCPAL_WARN(_logger, "Sync not found");
-        return ExitCode::DataError;
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
     return ExitCode::Ok;
 }
 
-ExitCode SyncPal::listingCursor(std::string &value, int64_t &timestamp) {
+ExitInfo SyncPal::listingCursor(std::string &value, int64_t &timestamp) {
     Sync sync;
     bool found;
     if (!ParmsDb::instance()->selectSync(syncDbId(), sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
-        return ExitCode::DbError;
+        return {ExitCode::DbError, ExitCause::DbAccessError};
     }
     if (!found) {
         LOG_SYNCPAL_WARN(_logger, "Sync not found");
-        return ExitCode::DataError;
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
     sync.listingCursor(value, timestamp);
@@ -1400,7 +1400,7 @@ void SyncPal::freeSnapshotsCopies() {
     _remoteSnapshot.reset();
 }
 
-void SyncPal::invalidateSnapshots() {
+void SyncPal::tryToInvalidateSnapshots() {
     _localFSObserverWorker->tryToInvalidateSnapshot();
     _remoteFSObserverWorker->forceUpdate();
     _remoteFSObserverWorker->tryToInvalidateSnapshot();

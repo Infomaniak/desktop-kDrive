@@ -34,15 +34,15 @@ RemoteTemporaryDirectory::RemoteTemporaryDirectory(const std::string &testType) 
 RemoteTemporaryDirectory::RemoteTemporaryDirectory(const int driveDbId, const NodeId &parentId,
                                                    const std::string &testType /*= "undef"*/) :
     RemoteTemporaryDirectory(testType) {
-    generate(driveDbId, parentId);
+    createDirectory(driveDbId, parentId);
 }
 
 RemoteTemporaryDirectory::~RemoteTemporaryDirectory() {
     if (_isDeleted) return;
-    deleteNow();
+    deleteDirectory();
 }
 
-void RemoteTemporaryDirectory::generate(const int driveDbId, const NodeId &parentId) {
+void RemoteTemporaryDirectory::createDirectory(const int driveDbId, const NodeId &parentId) {
     assert(_driveDbId == 0 && _parentId.empty()); // Do not allow to generate several temporary directories.
 
     _driveDbId = driveDbId;
@@ -80,7 +80,7 @@ void RemoteTemporaryDirectory::generate(const int driveDbId, const NodeId &paren
     } while (true);
 }
 
-void RemoteTemporaryDirectory::deleteNow() {
+void RemoteTemporaryDirectory::deleteDirectory() {
     DeleteJob job(_driveDbId, _dirId, "", "", NodeType::Directory);
     job.setBypassCheck(true);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("~RemoteTemporaryDirectory() failed to delete the directory on remote side.",

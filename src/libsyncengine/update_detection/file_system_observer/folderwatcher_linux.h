@@ -43,7 +43,7 @@ class FolderWatcher_linux final : public FolderWatcher {
         bool addFolderRecursive(const SyncPath &path);
         void removeFoldersBelow(const SyncPath &dirPath);
 
-        void changeDetected(const SyncPath &path, OperationType opType) const;
+        ExitInfo changeDetected(const SyncPath &path, OperationType opType) const;
 
         std::unordered_map<int, SyncPath> _watchToPath;
         std::map<std::string, int> _pathToWatch;

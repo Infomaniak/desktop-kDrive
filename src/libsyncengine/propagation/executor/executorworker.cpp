@@ -329,7 +329,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
         }
     } else {
         if (!isLiteSyncActivated() && !enoughLocalSpace(syncOp)) {
-            _syncPal->addError(Error(_syncPal->syncDbId(), name(), ExitCode::SystemError, ExitCause::NotEnoughDiskSpace));
+            _syncPal->addError(Error(_syncPal->syncDbId(), shortName(), ExitCode::SystemError, ExitCause::NotEnoughDiskSpace));
             return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
         }
 
@@ -788,7 +788,7 @@ ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<Abstract
     }
 
     if (!enoughLocalSpace(syncOp)) {
-        _syncPal->addError(Error(_syncPal->syncDbId(), name(), ExitCode::SystemError, ExitCause::NotEnoughDiskSpace));
+        _syncPal->addError(Error(_syncPal->syncDbId(), shortName(), ExitCode::SystemError, ExitCause::NotEnoughDiskSpace));
         return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
     }
 
@@ -2254,7 +2254,7 @@ ExitInfo ExecutorWorker::handleOpsLocalFileAccessError(const SyncOpPtr syncOp, c
 
 ExitInfo ExecutorWorker::handleOpsFileNotFound(const SyncOpPtr syncOp, [[maybe_unused]] const ExitInfo &opsExitInfo) {
     _syncPal->setRestart(true);
-    _syncPal->invalidateSnapshots(); // There is a file/dir missing; we need to recompute the snapshot.
+    _syncPal->tryToInvalidateSnapshots(); // There is a file/dir missing; we need to recompute the snapshot.
     return removeDependentOps(syncOp);
 }
 

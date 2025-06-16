@@ -36,6 +36,7 @@ class SyncPalWorker : public ISyncWorker {
         void pause(); // The ongoing sync will be completed before pausing
         inline bool isPaused() const { return _isPaused; }
         inline bool pauseAsked() const { return _pauseAsked; }
+        inline bool unpauseAsked() const { return _unpauseAsked; }
         void unpause();
         inline SyncStep step() const { return _step; }
         inline std::chrono::time_point<std::chrono::steady_clock> pauseTime() const { return _pauseTime; }
@@ -63,6 +64,25 @@ class SyncPalWorker : public ISyncWorker {
         void resetVfsFilesStatus();
 
         uint64_t _syncCounter{0};
+        /**
+         * @brief Attempts to repair local node IDs in the SyncDb after the sync directory has changed its node ID.
+         *
+         * This method is used when the sync directory has been moved between two filesystems or recreated (Apple migration
+         * assistant), causing its inode to change.
+         *
+         * - It first loads the SyncDb cache if needed and retrieves all known nodes (in db).
+         * - For each nodes, it verifies whether the file still exists, retrieves and save its new node ID.
+         * - If all the nodes in db are present under the syncroot with the same path, the node IDs are updated in the SyncDb.
+         *   Else the process is aborted and false is returned.
+         * - After all updates, the new local root node ID is saved.
+         *
+         * @note This is a best-effort operation and will return false at the first unrecoverable error (e.g., file deleted/moved,
+         *       missing entry in the SyncDb cache, unexpected ioError, etc.).
+         *
+         * @return true if the SyncDb was successfully updated to reflect the new node IDs,
+         *         false otherwise.
+         */
+        bool tryToFixDbNodeIdsAfterSyncDirChange();
 
         friend class TestSyncPalWorker;
 };

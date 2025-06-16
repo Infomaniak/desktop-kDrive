@@ -167,7 +167,7 @@ void TestIntegration::setUp() {
 
     // Create remote sync folder (so that synchronization only takes place in a subdirectory, not taking into account the whole
     // drive items)
-    _remoteSyncDir.generate(_driveDbId, testCiFolderId);
+    _remoteSyncDir.createDirectory(_driveDbId, testCiFolderId);
     // Add initial test file
     {
         // Generate a temporary file.
@@ -203,7 +203,7 @@ void TestIntegration::setUp() {
 
 void TestIntegration::tearDown() {
     _syncPal->stop(false, true, false);
-    _remoteSyncDir.deleteNow();
+    _remoteSyncDir.deleteDirectory();
 
     ParmsDb::instance()->close();
     ParmsDb::reset();

@@ -161,11 +161,11 @@ void TestSyncPalWorker::testInternalPause1() {
     CPPUNIT_ASSERT(mockLfso->liveSnapshot().updated()); // Ensure the event is pending
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // wait for automatic restart
-            [&syncpalWorker]() { return (syncpalWorker->_unpauseAsked || !syncpalWorker->isPaused()); },
+            [&syncpalWorker]() { return (syncpalWorker->unpauseAsked() || !syncpalWorker->isPaused()); },
             [&syncpalWorker]() { CPPUNIT_ASSERT_EQUAL(SyncStep::Idle, syncpalWorker->step()); }, testTimeout, loopWait));
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the automatic re-pause
-            [&syncpalWorker]() { return syncpalWorker->isPaused(); },
+            [&syncpalWorker]() { return syncpalWorker->pauseAsked() || syncpalWorker->isPaused(); },
             [&syncpalWorker]() { CPPUNIT_ASSERT_EQUAL(SyncStep::Idle, syncpalWorker->step()); }, testTimeout, loopWait));
 
     CPPUNIT_ASSERT(mockLfso->liveSnapshot().updated()); // Ensure the event is still pending
@@ -173,7 +173,8 @@ void TestSyncPalWorker::testInternalPause1() {
     // Restore network and check that SyncPal resumes and propagates the event
     mockRfso->setNetworkAvailability(true);
 
-    CPPUNIT_ASSERT(TimeoutHelper::waitFor([&syncpalWorker]() { return !syncpalWorker->isPaused(); }, testTimeout, loopWait));
+    CPPUNIT_ASSERT(TimeoutHelper::waitFor(
+            [&syncpalWorker]() { return syncpalWorker->unpauseAsked() || !syncpalWorker->isPaused(); }, testTimeout, loopWait));
     // Wait for a new sync to start
     CPPUNIT_ASSERT(TimeoutHelper::waitFor([this]() { return _syncPal->step() != SyncStep::Idle; }, testTimeout, loopWait));
     // Wait for the sync to finish
@@ -228,7 +229,7 @@ void TestSyncPalWorker::testInternalPause2() {
 
     // Ensure automatic restart & re-(ask)pausing while the current worker is still running
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the automatic restart
-            [&syncpalWorker]() { return syncpalWorker->_unpauseAsked || !syncpalWorker->isPaused(); },
+            [&syncpalWorker]() { return syncpalWorker->unpauseAsked() || !syncpalWorker->isPaused(); },
             [&syncpalWorker, this]() {
                 CPPUNIT_ASSERT_EQUAL(SyncStep::Reconciliation1, syncpalWorker->step());
                 CPPUNIT_ASSERT_EQUAL(SyncStatus::Running, _syncPal->status());
@@ -256,7 +257,7 @@ void TestSyncPalWorker::testInternalPause2() {
 
     // Ensure the sync is paused when the propagation2 step is reached
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the sync to finish
-            [&syncpalWorker]() { return syncpalWorker->isPaused(); },
+            [&syncpalWorker]() { return syncpalWorker->pauseAsked() || syncpalWorker->isPaused(); },
             [&syncpalWorker]() { CPPUNIT_ASSERT_EQUAL(SyncStep::Propagation2, syncpalWorker->step()); }, testTimeout, loopWait));
 
     mockRfso->setNetworkAvailability(true);
@@ -312,7 +313,7 @@ void TestSyncPalWorker::testInternalPause3() {
     mockExecutorWorkerWaiting = false; // Unlock the executor worker
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor(
-            [&syncpalWorker]() { return syncpalWorker->isPaused(); },
+            [&syncpalWorker]() { return syncpalWorker->pauseAsked() || syncpalWorker->isPaused(); },
             [&syncpalWorker]() { CPPUNIT_ASSERT_EQUAL(SyncStep::Propagation2, syncpalWorker->step()); }, testTimeout, loopWait));
 
     CPPUNIT_ASSERT_EQUAL(SyncStatus::Paused, _syncPal->status());
@@ -377,7 +378,7 @@ void TestSyncPalWorker::MockSyncPal::createWorkers(const std::chrono::seconds &s
     _tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(shared_from_this());
 }
 
-ExitCode TestSyncPalWorker::MockRemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
+ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
     using namespace std::chrono;
     changes = false;
     if (!_networkAvailable) {
@@ -394,7 +395,7 @@ ExitCode TestSyncPalWorker::MockRemoteFileSystemObserverWorker::sendLongPoll(boo
     return ExitCode::Ok;
 }
 
-ExitCode TestSyncPalWorker::MockRemoteFileSystemObserverWorker::generateInitialSnapshot() {
+ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::generateInitialSnapshot() {
     if (_networkAvailable) {
         return RemoteFileSystemObserverWorker::generateInitialSnapshot();
     } else {
