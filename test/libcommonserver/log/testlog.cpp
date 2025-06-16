@@ -23,6 +23,7 @@
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommon/utility/utility.h"
+#include "utility/timerutility.h"
 
 #include <config.h>
 #include <log/customrollingfileappender.h>
@@ -94,7 +95,7 @@ void TestLog::testExpiredLogFiles(void) {
     clearLogDirectory();
 
     // Generate a fake old log file
-    const auto start = system_clock::now();
+    TimerUtility timer;
     std::ofstream fakeLogFile(_logDir / APPLICATION_NAME "_fake.log.gz");
     fakeLogFile << "Fake old log file" << std::endl;
     fakeLogFile.close();
@@ -109,18 +110,15 @@ void TestLog::testExpiredLogFiles(void) {
     auto *appender = static_cast<CustomRollingFileAppender *>(_logger.getAppender(Log::rfName).get());
     appender->setExpire(2); // 2 seconds (+- 1 second as the time is truncated to seconds)
 
-    const auto start = std::chrono::system_clock::now();
-    auto now = std::chrono::system_clock::now();
-    while (now - start < std::chrono::seconds(3)) {
-        now = std::chrono::system_clock::now();
-        (void) IoHelper::setFileDates(Log::instance()->getLogFilePath(), now.time_since_epoch().count(),
-                                      now.time_since_epoch().count(), false); // Prevent the current log file from being deleted.
+    while (timer.elapsed<std::chrono::seconds>() < std::chrono::seconds(3)) {
+        (void) IoHelper::setFileDates(Log::instance()->getLogFilePath(), timer.elapsed<std::chrono::seconds>().count(),
+                                      timer.elapsed<std::chrono::seconds>().count(),
+                                      false); // Prevent the current log file from being deleted.
         appender->checkForExpiredFiles();
-        if (system_clock::now() - start < seconds(1)) { // The fake log file should not be deleted yet.
-            CPPUNIT_ASSERT_EQUAL_MESSAGE(
-                    ("File unexpectedly deleted after " +
-                     std::to_string(duration_cast<milliseconds>(system_clock::now() - start).count()) + " seconds"),
-                    2, countFilesInDirectory(_logDir));
+        if (timer.elapsed<std::chrono::seconds>() < seconds(1)) { // The fake log file should not be deleted yet.
+            CPPUNIT_ASSERT_EQUAL_MESSAGE(("File unexpectedly deleted after " +
+                                          std::to_string(timer.elapsed<std::chrono::seconds>().count()) + " seconds"),
+                                         2, countFilesInDirectory(_logDir));
         } else if (countFilesInDirectory(_logDir) == 1) { // The fake log file MIGHT be deleted now.
             break;
         }
