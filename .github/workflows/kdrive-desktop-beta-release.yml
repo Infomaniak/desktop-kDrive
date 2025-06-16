@@ -36,7 +36,7 @@ jobs:
     needs: check-translations
     runs-on: [self-hosted]
     steps:
-      - name: Check translations
+      - name: Check release notes
         run: echo "TODO Check release notes..."
 
 # Build apps
@@ -162,30 +162,34 @@ jobs:
 
 # Upload the installer to kDrive
   upload-intaller-to-kDrive:
+    needs: Unit-Tests
     runs-on: [self-hosted]
     steps:
-      - name: Check translations
+      - name: Upload installer to kDrive
         run: echo "TODO Upload the installer to kDrive..."
 
  
 # Upload the artifacts to sentry
   upload-artifacts-to-sentry:
+    needs: Unit-Tests
     runs-on: [self-hosted]
     steps:
-      - name: Check translations
+      - name: Upload artifacts to Sentry
         run: echo "TODO Upload the artifacts to sentry..."
 
 # Upload to the storage server
   upload-app-to-storage-server:
+    needs: [upload-intaller-to-kDrive, upload-artifacts-to-sentry]
     runs-on: [self-hosted]
     steps:
-      - name: Check translations
+      - name: Upload app to storage server
         run: echo "TODO Upload the app to the storage server..."
 
 # Update kStore
   update-kStore:
+    needs: upload-app-to-storage-server
     runs-on: [self-hosted]
     steps:
-      - name: Check translations
+      - name: Update kStore
         run: echo "TODO Update kStore..."
 
