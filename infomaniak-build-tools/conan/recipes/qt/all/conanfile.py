@@ -16,23 +16,13 @@ class QtConan(ConanFile):
     options = {
         # ini:       Read the qtaccount.ini file from the user's home directory to get the email and JWT token (default option; if the file does not exist, fallback to envvars)
         # envvars:   Use the environment variable QT_INSTALLER_LOGIN_EMAIL to provide the email to the installer with the --email parameter. The JWT token must be set in the environment variable QT_INSTALLER_JWT_TOKEN.
-        # default:   If the qtaccount.ini file exists, the online installer will use it; otherwise, it will prompt the user for their Qt account email and password. This cannot be used in CI/CD pipelines.
-        "qt_login_type": ["ini", "envvars", "default"],
+        # cli:   If the qtaccount.ini file exists, the online installer will use it; otherwise, it will prompt the user for their Qt account email and password. This cannot be used in CI/CD pipelines.
+        "qt_login_type": ["ini", "envvars", "cli"],
     }
 
     default_options = {
         "qt_login_type": "ini",
     }
-
-
-    @staticmethod
-    def _get_real_arch():
-        """
-        Get the real architecture of the system, not the one reported by Conan.
-        This is useful for macOS where the architecture can be arm64 but the profile might be set to 'armv8|x86_64' for the multi arch build.
-        :return: the real architecture as reported by the system
-        """
-        return subprocess.check_output(["uname", "-m"]).decode("utf-8").strip()
 
     def _get_distant_name(self):
         """
@@ -47,10 +37,10 @@ class QtConan(ConanFile):
         ext = ext_map.get(os_key, "exe")
 
         # For macOS, we always use x64 arch because the installer is universal and supports both arm64 and x64.
-        if os_name == "mac":
+        if os_name in [ "mac", "windows" ]:
             architecture = "x64"
         else:
-            architecture = "arm64" if self._get_real_arch() == "arm64" else "x64"
+            architecture = "arm64" if str(self.settings.arch).startswith("arm") else "x64"
 
         return f"qt-online-installer-{os_name}-{architecture}-online.{ext}"
 
@@ -144,7 +134,7 @@ class QtConan(ConanFile):
         if self.settings.os not in ["Macos", "Linux", "Windows"]:
             raise ConanInvalidConfiguration("Unsupported OS for Qt installation. Supported OS are: Macos, Linux, Windows.")
 
-        if self.options.qt_login_type == "default":
+        if self.options.qt_login_type == "cli":
             return
 
         self._check_envvars_login_type()
@@ -230,11 +220,12 @@ class QtConan(ConanFile):
     def build(self):
         self.output.highlight("Downloading Qt installer...")
         downloaded_file_name = self._get_distant_name()
-        import urllib.request
         self.output.highlight("Downloading Qt installer via Python urllib...")
         url = f"https://download.qt.io/official_releases/online_installers/{downloaded_file_name}"
         self.output.info(f"Downloading from: {url}")
-        urllib.request.urlretrieve(url, downloaded_file_name)
+        # Si vous avez une erreur de certificat, sur macOS, vous devrez peut-être installer le paquet 'certifi' pour éviter les erreurs SSL via `pip install certifi`
+        from urllib.request import urlretrieve
+        urlretrieve(url, downloaded_file_name)
         installer_path = self._get_executable_path(downloaded_file_name)
 
         if not os.path.exists(installer_path):
