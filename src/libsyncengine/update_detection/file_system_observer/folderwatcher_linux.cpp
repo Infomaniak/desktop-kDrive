@@ -60,8 +60,8 @@ void FolderWatcher_linux::startWatching() {
     while (!_stop) {
         _ready = true;
         unsigned int avail = 0;
-        ioctl(static_cast<int>(_fileDescriptor), FIONREAD,
-              &avail); // Since read() is blocking until something has changed, we use ioctl to check if there is changes
+        (void) ioctl(static_cast<int>(_fileDescriptor), FIONREAD,
+                     &avail); // Since read() is blocking until something has changed, we use ioctl to check if there is changes
         if (avail > 0) {
             char buffer[BUF_LEN];
             ssize_t len = read(static_cast<int>(_fileDescriptor), buffer, BUF_LEN);
@@ -214,8 +214,8 @@ ExitInfo FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
         return {ExitCode::SystemError, ExitCause::Unknown};
     }
 
-    _watchToPath.insert({outcome.returnValue, path});
-    _pathToWatch.insert({path, outcome.returnValue});
+    (void) _watchToPath.insert({outcome.returnValue, path});
+    (void) _pathToWatch.insert({path, outcome.returnValue});
 
     return ExitCode::Ok;
 }
@@ -301,7 +301,7 @@ ExitInfo FolderWatcher_linux::changeDetected(const SyncPath &path, OperationType
 void FolderWatcher_linux::stopWatching() {
     LOGW_DEBUG(_logger, L"Stop watching folder: " << Utility::formatSyncPath(_folder));
 
-    close(static_cast<int>(_fileDescriptor));
+    (void) close(static_cast<int>(_fileDescriptor));
 }
 
 } // namespace KDC

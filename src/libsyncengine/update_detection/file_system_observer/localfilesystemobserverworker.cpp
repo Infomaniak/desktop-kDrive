@@ -33,7 +33,6 @@
 
 namespace KDC {
 
-static const int defaultDiscoveryInterval = 60000; // 60sec
 static const int waitForUpdateDelay = 1000; // 1sec
 
 LocalFileSystemObserverWorker::LocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
@@ -418,7 +417,8 @@ void LocalFileSystemObserverWorker::execute() {
         }
         // We never pause this thread
         if (!_liveSnapshot.isValid()) {
-            if (exitInfo = generateInitialSnapshot(); !exitInfo) {
+            exitInfo = generateInitialSnapshot();
+            if (!exitInfo) {
                 LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot: " << exitInfo);
                 break;
             }
