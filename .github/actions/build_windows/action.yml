@@ -8,6 +8,10 @@ inputs:
   virtual_cert_pass:
     description: 'Password of the virtual certificate'
     required: true
+  release_build:
+    description: 'If true, run the release build script'
+    required: false
+    default: 'false'
 
 runs:
     using: "composite"
@@ -137,6 +141,15 @@ runs:
           retention-days: 1
           compression-level: 0
         if: steps.build.outcome == 'success'
+
+      - name: Upload kDrive installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: win-kDrive_installer
+          path: ${{ github.workspace }}/build-windows/build/bin/kDrive*(*).exe
+          retention-days: 5
+          compression-level: 0
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
 
       - name: Clean-up generated code
         run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all
