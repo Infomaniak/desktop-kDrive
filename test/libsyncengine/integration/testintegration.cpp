@@ -1157,7 +1157,7 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseFile", ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseDir", 2);
-    IoHelper::createDirectory(absoluteLocalWorkingDir / "testNodeIdReuseDir", ioError);
+    IoHelper::createDirectory(absoluteLocalWorkingDir / "testNodeIdReuseDir", false, ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     _syncPal->unpause();
