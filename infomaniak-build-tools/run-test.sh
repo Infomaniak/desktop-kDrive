@@ -38,6 +38,7 @@ fi
 dir="$1"
 tester="$2"
 
+source ./infomaniak-build-tools/export-path.sh 
 echo "${YELLOW}---------- Running $($tester) ----------${NC}"
 pushd "$dir" 1>/dev/null
 
