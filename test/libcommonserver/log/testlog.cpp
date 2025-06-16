@@ -95,10 +95,7 @@ void TestLog::testExpiredLogFiles(void) {
     clearLogDirectory();
 
     // Generate a fake old log file
-    TimerUtility timer;
-    std::ofstream fakeLogFile(_logDir / APPLICATION_NAME "_fake.log.gz");
-    fakeLogFile << "Fake old log file" << std::endl;
-    fakeLogFile.close();
+    testhelpers::generateOrEditTestFile(_logDir / APPLICATION_NAME "_fake.log.gz");
 
     // Ensure that a new log file is created
     LOG_INFO(_logger, "Test log file expiration");
@@ -110,9 +107,11 @@ void TestLog::testExpiredLogFiles(void) {
     auto *appender = static_cast<CustomRollingFileAppender *>(_logger.getAppender(Log::rfName).get());
     appender->setExpire(2); // 2 seconds (+- 1 second as the time is truncated to seconds)
 
+    const TimerUtility timer;
     while (timer.elapsed<std::chrono::seconds>() < std::chrono::seconds(3)) {
-        (void) IoHelper::setFileDates(Log::instance()->getLogFilePath(), timer.elapsed<std::chrono::seconds>().count(),
-                                      timer.elapsed<std::chrono::seconds>().count(),
+        (void) IoHelper::setFileDates(Log::instance()->getLogFilePath(),
+                                      std::chrono::steady_clock::now().time_since_epoch().count(),
+                                      std::chrono::steady_clock::now().time_since_epoch().count(),
                                       false); // Prevent the current log file from being deleted.
         appender->checkForExpiredFiles();
         if (timer.elapsed<std::chrono::seconds>() < seconds(1)) { // The fake log file should not be deleted yet.
