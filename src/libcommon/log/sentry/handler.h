@@ -88,6 +88,7 @@ class Handler {
 
 
         // Performances monitoring
+        bool arePtracesEnabled() const;
         pTraceId startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId = -1);
         void stopPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId = -1, PTraceStatus status = PTraceStatus::Ok);
         void stopPTrace(const pTraceId &pTraceId, PTraceStatus status = PTraceStatus::Ok);
@@ -109,7 +110,6 @@ class Handler {
         static SyncPath getEventFilePath(const AppType appType) { return getEventFilePath(appType, false); };
         // Returns the file path where crash events of type `appType` are written locally.
         static SyncPath getCrashEventFilePath(const AppType appType) { return getEventFilePath(appType, true); };
-
 
     protected:
         Handler() = default;

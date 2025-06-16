@@ -133,7 +133,7 @@ void TestSentryHandler::testWriteEvent() {
 
     // Test send event
     {
-        const auto eventFilePath = sentry::Handler::getEventFilePath(AppType::Server);
+        const auto eventFilePath = sentry::Handler::getEventFilePath(AppType::Test);
         std::error_code ec;
         std::filesystem::remove(eventFilePath, ec);
 
@@ -153,7 +153,7 @@ void TestSentryHandler::testWriteEvent() {
 
     // Test crash event
     {
-        const auto eventFilePath = sentry::Handler::getCrashEventFilePath(AppType::Server);
+        const auto eventFilePath = sentry::Handler::getCrashEventFilePath(AppType::Test);
         std::error_code ec;
         std::filesystem::remove(eventFilePath, ec);
 
