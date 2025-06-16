@@ -375,7 +375,7 @@ std::string Utility::fileSystemName(const SyncPath &targetPath) {
 #elif defined(__unix__)
     struct statfs stat;
     if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
-        std::function<std::string(std::string prettyName, int fsCode)> formatFsName = [](std::string prettyName, int fsCode) {
+        const auto formatFsName = [](const std::string &prettyName, long fsCode) {
             std::stringstream stream;
             stream << std::hex << fsCode;
             return prettyName + " | 0x" + stream.str();
