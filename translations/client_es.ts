@@ -1928,7 +1928,7 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="763"/>
         <source>This item is currently locked by another user online.&lt;br&gt;We will retry uploading your changes later.</source>
-        <translation type="unfinished"></translation>
+        <translation>Este artículo está actualmente bloqueado por otro usuario en línea.&lt;br&gt;Volveremos a intentar subir tus cambios más tarde.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="768"/>

@@ -1929,7 +1929,7 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="763"/>
         <source>This item is currently locked by another user online.&lt;br&gt;We will retry uploading your changes later.</source>
-        <translation type="unfinished"></translation>
+        <translation>Questo articolo è attualmente bloccato da un altro utente online.&lt;br&gt;Riproviamo a caricare le modifiche più tardi.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="768"/>
