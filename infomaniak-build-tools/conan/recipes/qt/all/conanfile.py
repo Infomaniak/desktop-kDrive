@@ -1,10 +1,9 @@
 import glob
 import os
-import subprocess
 
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration, ConanException
-from conan.tools.files import copy, rm, rmdir
+from conan.tools.files import copy
 from conan.tools.system.package_manager import Apt
 
 
@@ -67,13 +66,11 @@ class QtConan(ConanFile):
         # TODO : Add support for compilers (currently installing all of them, android, ...)
         modules = [
             f"qt.qt{major}.{compact}.{compiler}",
-            "qt.tools",
-                "qt.tools.maintenance",
-                "qt.tools.cmake",
+            "qt.tools", "qt.tools.maintenance", # TODO delete this line when the recipe is done
 
             f"qt.qt{major}.{compact}.qt5compat",
             f"qt.qt{major}.{compact}.src",
-            
+
             f"qt.qt{major}.{compact}.addons",
                 f"qt.qt{major}.{compact}.addons.qtpositioning",
                 f"qt.qt{major}.{compact}.addons.qtwebchannel",
@@ -254,6 +251,6 @@ class QtConan(ConanFile):
 
     def package(self):
         self.output.highlight("This step can take a while, please be patient...")
-        copy(self, "6.2.3/", src=self.source_folder, dst=self.package_folder)
+        copy(self, f"{self.version}/", src=self.source_folder, dst=self.package_folder)
         copy(self, "Licenses/", src=self.source_folder, dst=self.package_folder)
         copy(self, "Tools/", src=self.source_folder, dst=self.package_folder)
