@@ -1400,7 +1400,7 @@ void SyncPal::freeSnapshotsCopies() {
     _remoteSnapshot.reset();
 }
 
-void SyncPal::invalidateSnapshots() {
+void SyncPal::tryToInvalidateSnapshots() {
     _localFSObserverWorker->tryToInvalidateSnapshot();
     _remoteFSObserverWorker->forceUpdate();
     _remoteFSObserverWorker->tryToInvalidateSnapshot();

@@ -209,7 +209,7 @@ void SyncPalWorker::execute() {
 
                 // Stop the step workers and restart a full sync
                 stopAndWaitForExitOfWorkers(stepWorkers);
-                _syncPal->invalidateSnapshots();
+                _syncPal->tryToInvalidateSnapshots();
                 initStepFirst(stepWorkers, inputSharedObject, true);
                 continue;
             } else if (shouldBeStopped(stepWorkers[0], stepWorkers[1])) {

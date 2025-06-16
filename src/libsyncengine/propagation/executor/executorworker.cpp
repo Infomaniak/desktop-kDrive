@@ -2254,7 +2254,7 @@ ExitInfo ExecutorWorker::handleOpsLocalFileAccessError(const SyncOpPtr syncOp, c
 
 ExitInfo ExecutorWorker::handleOpsFileNotFound(const SyncOpPtr syncOp, [[maybe_unused]] const ExitInfo &opsExitInfo) {
     _syncPal->setRestart(true);
-    _syncPal->invalidateSnapshots(); // There is a file/dir missing; we need to recompute the snapshot.
+    _syncPal->tryToInvalidateSnapshots(); // There is a file/dir missing; we need to recompute the snapshot.
     return removeDependentOps(syncOp);
 }
 
