@@ -36,6 +36,7 @@ class SyncPalWorker : public ISyncWorker {
         void pause(); // The ongoing sync will be completed before pausing
         inline bool isPaused() const { return _isPaused; }
         inline bool pauseAsked() const { return _pauseAsked; }
+        inline bool unpauseAsked() const { return _unpauseAsked; }
         void unpause();
         inline SyncStep step() const { return _step; }
         inline std::chrono::time_point<std::chrono::steady_clock> pauseTime() const { return _pauseTime; }
