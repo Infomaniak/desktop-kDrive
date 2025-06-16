@@ -116,7 +116,7 @@ if [[ "$platform" == "darwin" ]]; then
     log "Building universal binary for macOS."
 fi
 
-architecture=$(get_architecture $platform)
+architecture=$(get_architecture "$platform")
 
 mkdir -p "$output_dir"
 
@@ -132,7 +132,7 @@ echo
 # Create the conan package for xxHash.
 conan_recipes_folder="$conan_remote_base_folder/recipes"
 log "Creating package xxHash..."
-conan create "$conan_recipes_folder/xxhash/all/" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name
+conan create "$conan_recipes_folder/xxhash/all/" --build=missing "$architecture" -s:a=build_type="$build_type" -r=$local_recipe_remote_name
 
 if [ "$platform" = "darwin" ]; then
   log "Creating openssl package..."
@@ -144,7 +144,7 @@ conan create "$conan_recipes_folder/qt/all/" --build=missing -r=$local_recipe_re
 
 log "Installing dependencies..."
 # Install this packet in the build folder.
-conan install . --output-folder="$output_dir" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter
+conan install . --output-folder="$output_dir" --build=missing "$architecture" -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter
 
 if [ $? -ne 0 ]; then
   error "Failed to install Conan dependencies."
