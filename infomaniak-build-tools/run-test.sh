@@ -38,8 +38,6 @@ fi
 dir="$1"
 tester="$2"
 
-source ./infomaniak-build-tools/export-path.sh 
-echo $DYLD_LIBRARY_PATH
 echo "${YELLOW}---------- Running $($tester) ----------${NC}"
 pushd "$dir" 1>/dev/null
 
@@ -49,6 +47,8 @@ if [ ! -f "$tester" ]; then
 fi
 
 chmod +x "$tester"
+export DYLD_LIBRARY_PATH="/usr/local/bin:/usr/bin:$PWD/build-macos/client/bin/:$DYLD_LIBRARY_PATH"
+echo $DYLD_LIBRARY_PATH
 "./$tester"
 
 if [ $? -ne 0 ]; then
