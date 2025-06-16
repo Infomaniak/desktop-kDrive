@@ -73,7 +73,7 @@ void TestFolderWatcherLinux::testInotifyRegisterPath() {
                 FolderWatcher_linux(parent, path) {}
 
         private:
-            FolderWatcher_linux::AddWatchOutCome inotifyAddWatch(const SyncPath &) override {
+            FolderWatcher_linux::AddWatchOutcome inotifyAddWatch(const SyncPath &) override {
                 switch (_branchCounter++) {
                     case 0:
                         return {-1, ENOSPC};

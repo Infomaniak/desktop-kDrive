@@ -42,11 +42,11 @@ class FolderWatcher_linux : public FolderWatcher {
         ExitInfo inotifyRegisterPath(const SyncPath &path);
         ExitInfo addFolderRecursive(const SyncPath &path);
         void removeFoldersBelow(const SyncPath &dirPath);
-        struct AddWatchOutCome {
+        struct AddWatchOutcome {
                 std::int64_t returnValue{0};
                 std::int64_t errorNumber{0};
         };
-        virtual AddWatchOutCome inotifyAddWatch(const SyncPath &path);
+        virtual AddWatchOutcome inotifyAddWatch(const SyncPath &path);
 
         ExitInfo changeDetected(const SyncPath &path, OperationType opType) const;
 

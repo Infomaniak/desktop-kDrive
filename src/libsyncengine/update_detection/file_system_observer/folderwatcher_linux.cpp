@@ -183,8 +183,8 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
     return ok;
 }
 
-FolderWatcher_linux::AddWatchOutCome FolderWatcher_linux::inotifyAddWatch(const SyncPath &path) {
-    AddWatchOutCome result;
+FolderWatcher_linux::AddWatchOutcome FolderWatcher_linux::inotifyAddWatch(const SyncPath &path) {
+    AddWatchOutcome result;
     result.returnValue = inotify_add_watch(static_cast<int>(_fileDescriptor), path.string().c_str(),
                                            IN_CLOSE_WRITE | IN_ATTRIB | IN_MOVE | IN_CREATE | IN_DELETE | IN_MODIFY |
                                                    IN_DELETE_SELF | IN_MOVE_SELF | IN_UNMOUNT | IN_ONLYDIR | IN_DONT_FOLLOW);
