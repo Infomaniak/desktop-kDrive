@@ -12,11 +12,6 @@ inputs:
     description: 'If true, run the release build script'
     required: false
     default: 'false'
-  kchat_webhook_url:
-    description: 'Webhook URL for kChat notifications (used to ask for approval of the virtual certificate)'
-    required: false # Required only if 'release_build' is set to true
-    default: ''
-
 
 runs:
     using: "composite"
@@ -154,47 +149,14 @@ runs:
           compression-level: 0
         if: steps.build.outcome == 'success'
 
-      - name: Download sentry-cli for Windows
-        run: |
-          Invoke-WebRequest -Uri https://github.com/getsentry/sentry-cli/releases/download/2.46.0/sentry-cli-Windows-x86_64.exe -OutFile sentry-cli.exe
-        shell: powershell
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
-
-      - name : Create sentry server artifacts
-        run: |
-          .\sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-windows/build/bin/kDrive.exe
-          mkdir ${{ github.workspace }}/build-windows/sentry-server-artifacts
-          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/sentry-artifacts/* -Destination ${{ github.workspace }}/build-windows/sentry-server-artifacts
-          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive.pdb -Destination ${{ github.workspace }}/build-windows/sentry-server-artifacts
-        shell: powershell
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
-
-      - name : Create sentry client artifacts
-        run: |
-          .\sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-windows/build/bin/kDriveClient.exe
-          mkdir ${{ github.workspace }}/build-windows/sentry-client-artifacts
-          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/sentry-artifacts/* -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts
-          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive-client.pdb -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts
-        shell: powershell
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
-
-      - name: Upload sentry server artifacts
+      - name: Upload kDrive installer
         uses: actions/upload-artifact@v4
         with:
-          name: sentry-server-artifacts
-          path: ${{ github.workspace }}/build-windows/sentry-client-artifacts
-          retention-days: 1
+          name: win-kDrive_installer
+          path: ${{ github.workspace }}/build-windows/build/bin/kDrive*(*).exe
+          retention-days: 5
           compression-level: 0
-        if: steps.build.outcome == 'success'
-
-      - name: Upload sentry client artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: sentry-server-artifacts
-          path: ${{ github.workspace }}/build-windows/sentry-client-artifacts
-          retention-days: 1
-          compression-level: 0
-        if: steps.build.outcome == 'success'
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
 
       - name: Clean-up generated code
         run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all
