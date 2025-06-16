@@ -8,7 +8,7 @@ on:
     types: [synchronize, opened]
 
 concurrency:
-  group: kDrive-desktop-ci-${{ github.head_ref }}
+  group: kDrive-desktop-release-${{ github.head_ref }}
   cancel-in-progress: true
 
 env:
@@ -33,7 +33,6 @@ jobs:
 
 # Check Release Notes
   check-release-notes:
-    needs: check-translations
     runs-on: [self-hosted]
     steps:
       - name: Check release notes
@@ -41,7 +40,7 @@ jobs:
 
 # Build apps
   build-Windows:
-    needs: check-release-notes
+    needs: [check-release-notes, check-translations]
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
     steps:
       - name: Checkout the PR
@@ -152,17 +151,9 @@ jobs:
             test_name: ${{ matrix.test_name }}
             test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
-  Unit-Tests:
-    runs-on: [self-hosted, Windows]
-    needs: [Test-Windows, Test-Linux, Test-macOS]
-    steps:
-     - name: Check if all tests passed
-       shell: powershell
-       run: exit 0
-
 # Upload the installer to kDrive
   upload-intaller-to-kDrive:
-    needs: Unit-Tests
+    needs: [Test-Windows, Test-Linux, Test-macOS]
     runs-on: [self-hosted]
     steps:
       - name: Upload installer to kDrive
@@ -171,7 +162,7 @@ jobs:
  
 # Upload the artifacts to sentry
   upload-artifacts-to-sentry:
-    needs: Unit-Tests
+    needs: [Test-Windows, Test-Linux, Test-macOS]
     runs-on: [self-hosted]
     steps:
       - name: Upload artifacts to Sentry
