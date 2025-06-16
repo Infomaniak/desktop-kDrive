@@ -73,13 +73,28 @@ void TestFolderWatcherLinux::testInotifyRegisterPath() {
                 FolderWatcher_linux(parent, path) {}
 
         private:
-            std::int64_t inotifyAddWatch(const SyncPath &) override { return -1; }
+            FolderWatcher_linux::AddWatchOutCome inotifyAddWatch(const SyncPath &) override {
+                switch (_branchCounter++) {
+                    case 0:
+                        return {-1, ENOSPC};
+                    case 1:
+                        return {-1, ENOMEM};
+                    default:
+                        return {-1, EINVAL};
+                }
+            }
+            std::int32_t _branchCounter = 0;
     };
 
     FolderWatcherLinuxMock testObj(nullptr, "");
     const auto tempDir = LocalTemporaryDirectory("testInotifyRegisterPath");
 
-    const auto expectedExitInfo = ExitInfo{ExitCode::SystemError, ExitCause::NotEnoughINotifyWatches};
+    auto expectedExitInfo = ExitInfo{ExitCode::SystemError, ExitCause::NotEnoughINotifyWatches};
+    CPPUNIT_ASSERT_EQUAL(expectedExitInfo, testObj.inotifyRegisterPath(tempDir.path()));
+
+    CPPUNIT_ASSERT_EQUAL(expectedExitInfo, testObj.inotifyRegisterPath(tempDir.path()));
+
+    expectedExitInfo = ExitInfo{ExitCode::SystemError, ExitCause::Unknown};
     CPPUNIT_ASSERT_EQUAL(expectedExitInfo, testObj.inotifyRegisterPath(tempDir.path()));
 }
 

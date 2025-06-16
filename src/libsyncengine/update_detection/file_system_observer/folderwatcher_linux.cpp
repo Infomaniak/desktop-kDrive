@@ -59,7 +59,7 @@ void FolderWatcher_linux::startWatching() {
 
     while (!_stop) {
         _ready = true;
-        unsigned int avail;
+        unsigned int avail = 0;
         ioctl(static_cast<int>(_fileDescriptor), FIONREAD,
               &avail); // Since read() is blocking until something has changed, we use ioctl to check if there is changes
         if (avail > 0) {
@@ -183,10 +183,14 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
     return ok;
 }
 
-std::int64_t FolderWatcher_linux::inotifyAddWatch(const SyncPath &path) {
-    return inotify_add_watch(static_cast<int>(_fileDescriptor), path.string().c_str(),
-                             IN_CLOSE_WRITE | IN_ATTRIB | IN_MOVE | IN_CREATE | IN_DELETE | IN_MODIFY | IN_DELETE_SELF |
-                                     IN_MOVE_SELF | IN_UNMOUNT | IN_ONLYDIR | IN_DONT_FOLLOW);
+FolderWatcher_linux::AddWatchOutCome FolderWatcher_linux::inotifyAddWatch(const SyncPath &path) {
+    AddWatchOutCome result;
+    result.returnValue = inotify_add_watch(static_cast<int>(_fileDescriptor), path.string().c_str(),
+                                           IN_CLOSE_WRITE | IN_ATTRIB | IN_MOVE | IN_CREATE | IN_DELETE | IN_MODIFY |
+                                                   IN_DELETE_SELF | IN_MOVE_SELF | IN_UNMOUNT | IN_ONLYDIR | IN_DONT_FOLLOW);
+    result.errorNumber = errno;
+
+    return result;
 }
 
 ExitInfo FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
@@ -197,20 +201,21 @@ ExitInfo FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
         return {ExitCode::SystemError, ExitCause::Unknown};
     }
 
-    const auto wd = inotifyAddWatch(path);
-
-    if (wd == -1) {
-        if (errno == ENOMEM || errno == ENOSPC) {
+    const auto outcome = inotifyAddWatch(path);
+    if (outcome.returnValue == -1) {
+        if (outcome.errorNumber == ENOMEM || outcome.errorNumber == ENOSPC) {
             // Besides running out of memory, an insufficient number of inotify watches is a common error cause.
             // It needs to be fixed by the user, see e.g.,
             // https://stackoverflow.com/questions/47075661/error-user-limit-of-inotify-watches-reached-extreact-build
             LOG_ERROR(_logger, "Out of memory or limit number of inotify watches reached. The latter can be raised by the user.");
             return {ExitCode::SystemError, ExitCause::NotEnoughINotifyWatches};
         }
+        LOGW_ERROR(_logger, L"Failed to register " << Utility::formatSyncPath(path));
+        return {ExitCode::SystemError, ExitCause::Unknown};
     }
 
-    _watchToPath.insert({wd, path});
-    _pathToWatch.insert({path, wd});
+    _watchToPath.insert({outcome.returnValue, path});
+    _pathToWatch.insert({path, outcome.returnValue});
 
     return ExitCode::Ok;
 }
@@ -236,9 +241,9 @@ ExitInfo FolderWatcher_linux::addFolderRecursive(const SyncPath &path) {
         if (std::error_code ec; std::filesystem::exists(subDirPath, ec) && !_pathToWatch.contains(subDirPath)) {
             subdirs++;
 
-            if (auto exitInfo = inotifyRegisterPath(path); !exitInfo) return exitInfo;
+            if (auto exitInfo = inotifyRegisterPath(subDirPath); !exitInfo) return exitInfo;
         } else {
-            if (ec.value() != 0) {
+            if (ec) {
                 LOGW_WARN(_logger, L"Failed to check if path exists " << Utility::formatSyncPath(path) << L": "
                                                                       << Utility::s2ws(ec.message()) << L" (" << ec.value()
                                                                       << L")");
