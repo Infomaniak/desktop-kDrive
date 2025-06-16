@@ -1,6 +1,8 @@
 name: Update branch marked auto merge
 
 on:
+  # Allows manual execution
+  workflow_dispatch:
   # Runs every 15 minutes
   schedule:
     - cron: '*/15 7-19 * * 1-5'
@@ -11,9 +13,8 @@ concurrency:
 
 jobs:
   update-branch:
-    if: ${{ (github.event.pull_request.auto_merge) && (github.event.pull_request.mergeable) }}
     runs-on: [ macOS ]
     steps:
-      - uses: lcdsmao/update-branch@v3
+      - uses: ClementKunz/auto-update-branch-action@v1.0
         with:
-          requiredApprovals: 1
+          bearer-token: ${{ secrets.AUTO_UPDATE_BRANCH_TOKEN }}
