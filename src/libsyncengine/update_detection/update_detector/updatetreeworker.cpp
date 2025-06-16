@@ -1116,7 +1116,7 @@ bool UpdateTreeWorker::integrityCheck() {
 }
 
 ExitCode UpdateTreeWorker::getNewPathAfterMove(const SyncPath &path, SyncPath &newPath) {
-    const std::list<SyncName> &itemNames = CommonUtility::splitSyncPath(path);
+    const auto &itemNames = CommonUtility::splitSyncPath(path);
     std::list<NodeId> nodeIds;
 
     // Vector ID
