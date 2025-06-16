@@ -92,6 +92,7 @@ void TestFolderWatcherLinux::testInotifyRegisterPath() {
     auto expectedExitInfo = ExitInfo{ExitCode::SystemError, ExitCause::NotEnoughINotifyWatches};
     CPPUNIT_ASSERT_EQUAL(expectedExitInfo, testObj.inotifyRegisterPath(tempDir.path()));
 
+    expectedExitInfo = ExitInfo{ExitCode::SystemError, ExitCause::NotEnoughMemory};
     CPPUNIT_ASSERT_EQUAL(expectedExitInfo, testObj.inotifyRegisterPath(tempDir.path()));
 
     expectedExitInfo = ExitInfo{ExitCode::SystemError, ExitCause::Unknown};

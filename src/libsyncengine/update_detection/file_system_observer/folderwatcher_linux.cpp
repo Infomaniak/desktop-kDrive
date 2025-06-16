@@ -203,15 +203,20 @@ ExitInfo FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
 
     const auto outcome = inotifyAddWatch(path);
     if (outcome.returnValue == -1) {
-        if (outcome.errorNumber == ENOMEM || outcome.errorNumber == ENOSPC) {
-            // Besides running out of memory, an insufficient number of inotify watches is a common error cause.
-            // It needs to be fixed by the user, see e.g.,
-            // https://stackoverflow.com/questions/47075661/error-user-limit-of-inotify-watches-reached-extreact-build
-            LOG_ERROR(_logger, "Out of memory or limit number of inotify watches reached. The latter can be raised by the user.");
-            return {ExitCode::SystemError, ExitCause::NotEnoughINotifyWatches};
+        switch (outcome.errorNumber) {
+            case ENOMEM:
+                LOG_ERROR(_logger, "Error in FolderWatcher_linux::inotifyAddWatch: Out of memory.");
+                return {ExitCode::SystemError, ExitCause::NotEnoughMemory};
+            case ENOSPC:
+                // An insufficient number of inotify watches is a common error cause.
+                // It needs to be fixed by the user, see e.g.,
+                // https://stackoverflow.com/questions/47075661/error-user-limit-of-inotify-watches-reached-extreact-build
+                LOG_ERROR(_logger, "Limit number of inotify watches reached. The latter can be raised by the user.");
+                return {ExitCode::SystemError, ExitCause::NotEnoughINotifyWatches};
+            default:
+                LOGW_ERROR(_logger, L"Failed to register " << Utility::formatSyncPath(path));
+                return {ExitCode::SystemError, ExitCause::Unknown};
         }
-        LOGW_ERROR(_logger, L"Failed to register " << Utility::formatSyncPath(path));
-        return {ExitCode::SystemError, ExitCause::Unknown};
     }
 
     (void) _watchToPath.insert({outcome.returnValue, path});
