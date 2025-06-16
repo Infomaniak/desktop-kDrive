@@ -39,6 +39,7 @@ dir="$1"
 tester="$2"
 
 source ./infomaniak-build-tools/export-path.sh 
+echo $DYLD_LIBRARY_PATH
 echo "${YELLOW}---------- Running $($tester) ----------${NC}"
 pushd "$dir" 1>/dev/null
 
