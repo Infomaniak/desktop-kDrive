@@ -199,10 +199,15 @@ ExitInfo FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
 
     const auto wd = inotifyAddWatch(path);
 
-    // Besides running out of memory, an insufficient number of inotify watches is most likely the error cause.
-    // This needs to be fixed by the user, see e.g.,
-    // https://stackoverflow.com/questions/47075661/error-user-limit-of-inotify-watches-reached-extreact-build
-    if (wd == -1) return {ExitCode::SystemError, ExitCause::NotEnoughINotifyWatches};
+    if (wd == -1) {
+        if (errno == ENOMEM || errno == ENOSPC) {
+            // Besides running out of memory, an insufficient number of inotify watches is a common error cause.
+            // It needs to be fixed by the user, see e.g.,
+            // https://stackoverflow.com/questions/47075661/error-user-limit-of-inotify-watches-reached-extreact-build
+            LOG_ERROR(_logger, "Out of memory or limit number of inotify watches reached. The latter can be raised by the user.");
+            return {ExitCode::SystemError, ExitCause::NotEnoughINotifyWatches};
+        }
+    }
 
     _watchToPath.insert({wd, path});
     _pathToWatch.insert({path, wd});
