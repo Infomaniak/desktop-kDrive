@@ -39,7 +39,7 @@ class KDriveDesktop(ConanFile):
         cmake_layout(self)
 
     def build_requirements(self):
-        self.tool_requires("cmake/[>=3.20 <4]")
+        self.tool_requires("cmake/[>=3.20 <4]", force_host_context=True)
 
     def requirements(self):
         """
