@@ -94,7 +94,7 @@ std::shared_ptr<AbstractJob> JobManager::getJob(const UniqueId jobId) const {
 void JobManager::setPoolCapacity(const int nbThread) {
     // Poco::ThreadPool throws an exception if the capacity is set to a
     // value less than then minimum capacity (2 by default).
-    assert(threadPoolMinCapacity >= 2 && "Thread pool min capacity is too low.");
+    static_assert(threadPoolMinCapacity >= 2 && "Thread pool min capacity is too low.");
 
     _maxNbThread = std::max(nbThread, threadPoolMinCapacity);
     Poco::ThreadPool::defaultPool().addCapacity(_maxNbThread - Poco::ThreadPool::defaultPool().capacity());
