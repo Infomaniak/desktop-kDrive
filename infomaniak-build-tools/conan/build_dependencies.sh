@@ -50,7 +50,7 @@ function get_architecture {
 
     architecture="" # Left empty for Linux systems.
     if [[ "$platform" = "darwin" ]]; then
-       architecture="-s:b=arch=armv8|x86_64" # Making universal binary. See https://docs.conan.io/2/reference/tools/cmake/cmaketoolchain.html#conan-tools-cmaketoolchain-universal-binaries
+       architecture="-s:b=arch=armv8|x86_64 -s:h=arch=armv8" # Making universal binary. See https://docs.conan.io/2/reference/tools/cmake/cmaketoolchain.html#conan-tools-cmaketoolchain-universal-binaries
     fi
 
     echo $architecture
