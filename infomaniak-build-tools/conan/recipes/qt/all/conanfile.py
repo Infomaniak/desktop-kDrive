@@ -235,7 +235,7 @@ class QtConan(ConanFile):
         # --accept-licenses: Accepts all licenses without user input.
         # --default-answer: Automatically answers to message queries with their default values.
         process_args =      [ "--confirm-command", "--accept-obligations", "--accept-licenses", "--default-answer" ]
-        install_directory = [ "--root", f"'{self.package_folder}'" ]
+        install_directory = [ "--root", f"'{self.source_folder}'" ]
         process_args = install_directory + process_args
 
         if self.options.qt_login_type == "envvars":
@@ -245,7 +245,7 @@ class QtConan(ConanFile):
         process_args += [ "install" ] + self._get_qt_submodules(self.version)
 
         #
-        self.run(f"'{installer_path}' {' '.join(process_args)}")
+        self.run(f"./'{installer_path}' {' '.join(process_args)}")
 
     def package(self):
         self.output.highlight("This step can take a while, please be patient...")
