@@ -90,8 +90,9 @@ class QtConan(ConanFile):
         return modules
 
     def _get_default_login_ini_location(self):
+        from getpass import getuser
         try:
-            user = os.getlogin()
+            user = getuser()
         except OSError:
             return None
 
