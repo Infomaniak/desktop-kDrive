@@ -218,7 +218,7 @@ class QtConan(ConanFile):
         self.output.highlight("Downloading Qt installer via Python urllib...")
         url = f"https://download.qt.io/official_releases/online_installers/{downloaded_file_name}"
         self.output.info(f"Downloading from: {url}")
-        # Si vous avez une erreur de certificat, sur macOS, vous devrez peut-être installer le paquet 'certifi' pour éviter les erreurs SSL via `pip install certifi`
+        # If you encounter a certificate error on macOS, you may need to install the 'certifi' package to avoid SSL errors using `pip install certifi`.
         from urllib.request import urlretrieve
         urlretrieve(url, downloaded_file_name)
         installer_path = self._get_executable_path(downloaded_file_name)
@@ -247,7 +247,7 @@ class QtConan(ConanFile):
 
         process_args += [ "install" ] + self._get_qt_submodules(self.version)
 
-        self.run(f"./'{installer_path}' {' '.join(process_args)}")
+        self.run(f"{installer_path} {' '.join(process_args)}")
 
     def package(self):
         self.output.highlight("This step can take a while, please be patient...")
