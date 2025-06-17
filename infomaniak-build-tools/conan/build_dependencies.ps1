@@ -169,7 +169,7 @@ if ($LASTEXITCODE -ne 0) {
     Err "Failed to create xxHash Conan package."
 }
 
-& $ConanExe create "$RecipesFolder/qt/all/" --build=never -r $LocalRemoteName
+& $ConanExe create "$RecipesFolder/qt/all/"
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to create qt Conan package."
 }
