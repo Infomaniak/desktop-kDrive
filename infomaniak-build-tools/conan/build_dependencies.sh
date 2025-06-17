@@ -145,6 +145,12 @@ if $ci_mode; then
     log "CI mode enabled"
 fi
 
+qt_login_type_param="ini" # By default, use ini file for QT installer login type
+if [[ $ci_mode == true ]]; then
+    log "CI mode is enabled."
+    qt_login_type_param="envvars" # Use environment variables for CI mode
+fi
+
 # Create the conan package for xxHash.
 conan_recipes_folder="$conan_remote_base_folder/recipes"
 log "Creating package xxHash..."
@@ -156,13 +162,7 @@ if [ "$platform" = "darwin" ]; then
 fi
 
 log "Creating package Qt..."
-conan create "$conan_recipes_folder/qt/all/" -r=$local_recipe_remote_name
-
-qt_login_type_param="ini" # By default, use ini file for QT installer login type
-if [[ $ci_mode == true ]]; then
-    log "CI mode is enabled."
-    qt_login_type_param="envvars" # Use environment variables for CI mode
-fi
+conan create "$conan_recipes_folder/qt/all/" -r=$local_recipe_remote_name -o "qt_login_type=$qt_login_type_param"
 
 log "Installing dependencies..."
 # Install this packet in the build folder.
