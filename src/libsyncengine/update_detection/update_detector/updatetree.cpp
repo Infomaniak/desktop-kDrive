@@ -215,6 +215,7 @@ bool UpdateTree::updateNodeId(std::shared_ptr<Node> node, const NodeId &newId) {
 }
 
 void UpdateTree::clear() {
+    _rootNode->children().clear();
     _nodes.clear();
     _previousIdSet.clear();
     init();
