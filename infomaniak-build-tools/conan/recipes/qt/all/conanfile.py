@@ -223,13 +223,14 @@ class QtConan(ConanFile):
         urlretrieve(url, downloaded_file_name)
         installer_path = self._get_executable_path(downloaded_file_name)
 
-        if self.settings.os != "Windows":
-            installer_path = f"'{installer_path}'" # On Windows, we can't use quotes around the path of the executable.
 
         if not os.path.exists(installer_path):
             raise ConanException("Failed to find installer for Qt installation")
         if not os.access(installer_path, os.X_OK):
             raise ConanException(f"The installer ({installer_path}) is not executable.")
+
+        if self.settings.os != "Windows":
+            installer_path = f"'{installer_path}'" # On Windows, we can't use quotes around the path of the executable.
 
         self.output.highlight("Launching Qt installer...")
         # Run the installer
