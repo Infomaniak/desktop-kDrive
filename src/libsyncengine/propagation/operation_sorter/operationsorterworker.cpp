@@ -326,14 +326,17 @@ bool OperationSorterWorker::hasParentWithHigherIndex(const std::unordered_map<Un
 void OperationSorterWorker::fixEditBeforeMove() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixEditBeforeMove");
     for (const auto &[_, opList]: _filter.fixEditBeforeMoveCandidates()) {
-        if (opList.size() != 2) {
+        if (opList.size() < 2) {
             continue; // We are looking for nodes affected by both EDIT and MOVE operations
         }
-        const auto [editOp, moveOp] = extractOpsByType(OperationType::Edit, OperationType::Move, opList.front(), opList.back());
+        auto moveOpIt =
+                std::find_if(opList.begin(), opList.end(), [](const SyncOpPtr &op) { return op->type() == OperationType::Move; });
 
-        // Since in case of move op, the node already contains the new name
-        // we always want to execute move operation first
-        moveFirstAfterSecond(editOp, moveOp);
+        for (auto &op: opList) {
+            if (op->type() == OperationType::Edit) {
+                moveFirstAfterSecond(op, *moveOpIt);
+            }
+        }
     }
     LOG_SYNCPAL_DEBUG(_logger, "End fixEditBeforeMove");
 }

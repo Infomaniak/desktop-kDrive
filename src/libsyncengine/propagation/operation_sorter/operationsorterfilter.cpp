@@ -234,11 +234,25 @@ void OperationSorterFilter::filterMoveBeforeMoveOccupiedCandidates(const SyncOpP
 }
 
 void OperationSorterFilter::filterEditBeforeMoveCandidates(const SyncOpPtr &op) {
-    // We keep only operations on nodes that have both EDIT and MOVE operations.
-    if (op->affectedNode()->hasChangeEvent(OperationType::Edit) && op->affectedNode()->hasChangeEvent(OperationType::Move) ||
-        op->affectedNode()->hasChangeEvent(OperationType::Edit) && op->correspondingNode()->hasChangeEvent(OperationType::Move) ||
-        op->correspondingNode()->hasChangeEvent(OperationType::Edit) && op->affectedNode()->hasChangeEvent(OperationType::Move)) {
+    if (op->affectedNode()->hasChangeEvent(OperationType::Edit) && op->affectedNode()->hasChangeEvent(OperationType::Move)) {
         (void) _fixEditBeforeMoveCandidates[op->affectedNode()->idb().value()].emplace_back(op);
+    }
+
+    if (op->affectedNode()->hasChangeEvent(OperationType::Move)) {
+        (void) _fixEditBeforeMoveCandidates[op->affectedNode()->idb().value()].emplace_back(op);
+    }
+
+    if (op->affectedNode()->hasChangeEvent(OperationType::Edit)) {
+        // If the node has an edit event, we need to check if it or any of its ancestors has a move event on the corresponding
+        // side.
+        auto correspondingNode = op->correspondingNode();
+        while (correspondingNode) {
+            if (correspondingNode->hasChangeEvent(OperationType::Move)) {
+                (void) _fixEditBeforeMoveCandidates[correspondingNode->idb().value()].emplace_back(op);
+                break;
+            }
+            correspondingNode = correspondingNode->parentNode();
+        }
     }
 }
 
