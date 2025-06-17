@@ -127,6 +127,8 @@ if ($CI) {
     # Call vcvarsall.bat to set up the environment for MSVC
     & "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
     Log "CI mode enabled."
+    $env:SSL_CERT_FILE = (& python -m certifi).Trim() # Since the CI User is the system user (NT AUTHORITY\SYSTEM), we need to set the SSL_CERT_FILE environment variable to the certifi bundle.
+    Log "SSL_CERT_FILE set to $($env:SSL_CERT_FILE)"
 }
 
 # Locate Conan executable
