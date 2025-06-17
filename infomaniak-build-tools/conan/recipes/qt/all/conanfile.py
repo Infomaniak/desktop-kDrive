@@ -125,9 +125,6 @@ class QtConan(ConanFile):
         if os.getenv("QT_INSTALLER_JWT_TOKEN") is None:
             raise ConanInvalidConfiguration("To be able to use the 'envvars' login type, you must set the environment variable 'QT_INSTALLER_JWT_TOKEN' with your Qt account JWT token. See https://doc.qt.io/qt-6/get-and-install-qt-cli.html#providing-login-information")
 
-    def system_requirements(self):
-        Apt(self).install(["libxcb-cursor0"], update=True, check=True, recommends=False) # Only executed on Linux Debian based systems, required for Qt installation
-
     def validate(self):
         if self.settings.os not in ["Macos", "Linux", "Windows"]:
             raise ConanInvalidConfiguration("Unsupported OS for Qt installation. Supported OS are: Macos, Linux, Windows.")
