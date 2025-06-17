@@ -103,6 +103,15 @@ struct IoHelper {
          */
         static bool tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
 
+
+        //! Returns the directory location suitable for temporary files.
+        /*! This directory is deleted at the end of the application run.
+          ! The location of this folder can be enforce with the env variable: KDRIVE_CACHE_PATH
+         \param directoryPath is a path to a directory suitable for temporary files. Empty if there is a an error.
+         \return true if no unexpected error occurred, false otherwise.
+         */
+        static bool cacheDirectoryPath(SyncPath &directoryPath) noexcept;
+
         //! Returns the log directory path of the application.
         /*!
          \param directoryPath is set with the path of to the log directory of the application. Empty if there is a an error.
@@ -268,11 +277,12 @@ struct IoHelper {
         //! Create a directory located under the specified path.
         /*!
          \param path is the file system path of the directory to create.
+         \param recursive is a boolean indicating whether the missing parent directories should be created as well.
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise. If path indicates an existing directory, then the function
          returns false and sets ioError with IoError::DirectoryExists.
          */
-        static bool createDirectory(const SyncPath &path, IoError &ioError) noexcept;
+        static bool createDirectory(const SyncPath &path, bool recursive, IoError &ioError) noexcept;
 
         /** Move an item located under the specified path.
          *
@@ -432,6 +442,9 @@ struct IoHelper {
 
         /**
          * @brief Set the dates using native API.
+         * - Windows: If creation/modification date = 0, it is set to current date
+         * - macOS: If creation date > modification date, creation date is set to modification date
+         * - Linux: The creation date cannot be set
          * @param filePath The absolute path to the file to be modified.
          * @param creationDate The creation date to be set.
          * @param modificationDate The modification date to be set.
@@ -480,6 +493,7 @@ struct IoHelper {
         static std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> _getFileStat;
         static bool _getFileStatFn(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept;
         static bool _unsuportedFSLogged;
+        static void setCacheDirectoryPath(const SyncPath &newPath);
 
     private:
         static log4cplus::Logger _logger;

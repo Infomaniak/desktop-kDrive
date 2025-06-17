@@ -49,6 +49,8 @@ class TestSyncDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testUpgradeTo3_6_5);
         CPPUNIT_TEST(testInit3_6_4);
         CPPUNIT_TEST(testDummyUpgrade);
+        CPPUNIT_TEST(testDbNode);
+        CPPUNIT_TEST(testTryToFixDbNodeIdsAfterSyncDirChange);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -77,6 +79,8 @@ class TestSyncDb : public CppUnit::TestFixture, public TestBase {
         void testUpgradeTo3_6_5CheckNodeMap();
         void testInit3_6_4();
         void testDummyUpgrade();
+        void testDbNode();
+        void testTryToFixDbNodeIdsAfterSyncDirChange();
 
     private:
         SyncDbMock *_testObj;

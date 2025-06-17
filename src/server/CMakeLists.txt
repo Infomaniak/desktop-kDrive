@@ -51,9 +51,9 @@ set(server_SRCS
 )
 
 set(updater_SRCS
-        updater/abstractupdater.h updater/abstractupdater.cpp
-        updater/updatemanager.h updater/updatemanager.cpp
-        updater/updatechecker.h updater/updatechecker.cpp
+    updater/abstractupdater.h updater/abstractupdater.cpp
+    updater/updatemanager.h updater/updatemanager.cpp
+    updater/updatechecker.h updater/updatechecker.cpp
 )
 
 if(APPLE)
@@ -106,7 +106,7 @@ if(WIN32)
     set(server_version ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
 endif()
 
-set( final_src
+set(final_src
     ${KDRIVE_RC_SRC}
     ${server_SRCS}
     ${server_version}
@@ -256,25 +256,23 @@ if(NOT BUILD_KDRIVE_OSX_BUNDLE AND NOT WIN32)
 endif()
 
 if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
-    get_target_property(QT_QMAKE_EXECUTABLE Qt6::qmake IMPORTED_LOCATION)
+    set(ENV_DEPLOY_LIBS_MANUALLY $ENV{DEPLOY_LIBS_MANUALLY})
+    if (NOT ENV_DEPLOY_LIBS_MANUALLY)
+        set(ENV_QTDIR $ENV{QTDIR})
+        set(ENV_DESTDIR $ENV{DESTDIR})
+        set(ENV_DYLD_LIBRARY_PATH $ENV{DYLD_LIBRARY_PATH})
 
-    set(ENV_QTDIR $ENV{QTDIR})
-    set(ENV_DESTDIR $ENV{DESTDIR})
-
-    cmake_path(GET SPARKLE_LIBRARY PARENT_PATH USER_FRAMEWORK_PATH)
-
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        message(STATUS "Build type is Debug, you might need to run \"macdeployqt\" manually to deploy the dependencies.")
-    else()
         install(CODE "
             message(STATUS \"Deploying (Qt) dependencies for kDrive...\")
-            execute_process(COMMAND ${ENV_QTDIR}/bin/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -libpath=/usr/local/lib -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
+            execute_process(COMMAND ${ENV_QTDIR}/bin/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -libpath=${ENV_DYLD_LIBRARY_PATH} -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
+            " COMPONENT RUNTIME)
+
+        cmake_path(GET SPARKLE_LIBRARY PARENT_PATH USER_FRAMEWORK_PATH)
+
+        install(CODE "
+            message(STATUS \"Fixing library paths for kDrive...\")
+            execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.dylib ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
+            execute_process(COMMAND \"install_name_tool\" -delete_rpath ${USER_FRAMEWORK_PATH} ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
             " COMPONENT RUNTIME)
     endif()
-
-    install(CODE "
-        message(STATUS \"Fixing library paths for kDrive...\")
-        execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.dylib ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
-        execute_process(COMMAND \"install_name_tool\" -delete_rpath ${USER_FRAMEWORK_PATH} ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
-        " COMPONENT RUNTIME)
 endif()

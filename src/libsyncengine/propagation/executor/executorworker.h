@@ -128,7 +128,6 @@ class ExecutorWorker : public OperationProcessor {
 
         ExitInfo runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
         void cancelAllOngoingJobs();
-        void manageJobDependencies(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
 
         [[nodiscard]] bool isLiteSyncActivated() const { return _syncPal->vfsMode() != VirtualFileMode::Off; }
 
@@ -139,7 +138,7 @@ class ExecutorWorker : public OperationProcessor {
             return _syncPal->updateTree(syncOp->targetSide());
         }
 
-        void increaseErrorCount(SyncOpPtr syncOp, ExitInfo exitInfo = ExitInfo());
+        void increaseErrorCount(SyncOpPtr syncOp, ExitInfo exitInfo);
 
         ExitInfo getFileSize(const SyncPath &path, uint64_t &size);
 
@@ -163,7 +162,6 @@ class ExecutorWorker : public OperationProcessor {
         std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _ongoingJobs;
         TerminatedJobsQueue _terminatedJobs;
         std::unordered_map<UniqueId, SyncOpPtr> _jobToSyncOpMap;
-        std::unordered_map<UniqueId, UniqueId> _syncOpToJobMap;
 
         std::list<UniqueId> _opList;
         std::recursive_mutex _opListMutex;

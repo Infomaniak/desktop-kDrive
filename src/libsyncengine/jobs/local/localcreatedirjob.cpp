@@ -49,7 +49,7 @@ bool LocalCreateDirJob::canRun() {
 
     if (exists) {
         LOGW_DEBUG(_logger, L"Directory: " << Utility::formatSyncPath(_destFilePath) << L" already exist.");
-        _exitInfo = {ExitCode::DataError, ExitCause::FileAlreadyExists};
+        _exitInfo = {ExitCode::DataError, ExitCause::FileExists};
         return false;
     }
 
@@ -62,7 +62,7 @@ void LocalCreateDirJob::runJob() {
     }
 
     IoError ioError = IoError::Success;
-    if (IoHelper::createDirectory(_destFilePath, ioError) && ioError == IoError::Success) {
+    if (IoHelper::createDirectory(_destFilePath, false, ioError) && ioError == IoError::Success) {
         if (isExtendedLog()) {
             LOGW_DEBUG(_logger, L"Directory: " << Utility::formatSyncPath(_destFilePath) << L" created");
         }

@@ -43,20 +43,17 @@ include("${CMAKE_CURRENT_LIST_DIR}/THEME.cmake")
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
-if(UNIX AND NOT APPLE)
-    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
-            "/usr/local/lib"
-    )
-    set(CONAN_DEP_DIR "${CMAKE_BINARY_DIR}/conan_dependencies" CACHE PATH "Conan dependencies directory. Used to copy the .so files for the appimage builder.")
-elseif(WIN32)
-    # TODO Remove lines once lib is managed by conan: add directories to search for libraries in .cmake files.
-    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
-        "C:/Program Files/OpenSSL"
+IF (WIN32)
+    SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
         "C:/Program Files (x86)/Poco"
         "C:/Program Files (x86)/Sentry-Native"
         "C:/Program Files (x86)/libzip"
     )
-endif()
+ENDIF ()
+
+if (UNIX)
+    set(CONAN_DEP_DIR "${CMAKE_BINARY_DIR}/conan_dependencies" CACHE PATH "Conan dependencies directory. Used to copy the .so files for the appimage builder.")
+ENDIF ()
 
 set(libcommon_NAME "${APPLICATION_NAME}common")
 set(libcommonserver_NAME "${APPLICATION_NAME}commonserver")

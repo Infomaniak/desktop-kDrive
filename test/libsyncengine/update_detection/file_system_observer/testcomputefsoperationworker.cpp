@@ -76,7 +76,7 @@ void TestComputeFSOperationWorker::setUp() {
     Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
-    Sync sync(1, drive.dbId(), localPathStr, testVariables.remotePath);
+    Sync sync(1, drive.dbId(), localPathStr, "", testVariables.remotePath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
@@ -111,6 +111,7 @@ void TestComputeFSOperationWorker::tearDown() {
     }
     ParmsDb::reset();
     ParametersCache::reset();
+    ExclusionTemplateCache::reset();
     TestBase::stop();
 }
 

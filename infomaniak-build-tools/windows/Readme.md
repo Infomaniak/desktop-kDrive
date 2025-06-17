@@ -136,8 +136,9 @@ Copy `lib` and `include` folders from F:\Projects\cppunit\` to `C:\Program Files
 
 Download [Zlib](https://zlib.net/fossils/zlib-1.2.11.tar.gz) then run the following:
 ```cmd
-tar -xvzf C:\Users\%username%\Downloads\zlib-1.2.11.tar.gz -C "C:\Program Files (x86)\"
-cd "C:/Program Files (x86)/zlib-1.2.11"
+F:
+tar -xvzf %USERPROFILE%\Downloads\zlib-1.2.11.tar.gz -C F:\Projects
+cd F:\Projects\zlib-1.2.11
 nmake /f win32/Makefile.msc
 mkdir include
 copy zconf.h include\
@@ -149,6 +150,10 @@ copy zlib.pdb lib\
 mkdir bin
 copy zlib1.dll bin\
 copy zlib1.pdb bin\
+mkdir "C:\Program Files (x86)\zlib-1.2.11\include"
+copy include\* "C:\Program Files (x86)\zlib-1.2.11\include\"
+mkdir "C:\Program Files (x86)\zlib-1.2.11\lib"
+copy lib\* "C:\Program Files (x86)\zlib-1.2.11\lib\"
 ```
 
 ## libzip
@@ -280,8 +285,8 @@ The project requires additional CMake variables for a correct build. To inject t
    set(BUILD_UNIT_TESTS "ON")      # Set to "OFF" to skip tests
    set(CMAKE_PREFIX_PATH "C:/Qt/6.2.3/msvc2019_64")
    set(CMAKE_INSTALL_PREFIX "F:/Projects/cmake-build-release_CLion")
-   set(ZLIB_INCLUDE_DIR "F:/Projects/zlib-1.2.11/include")
-   set(ZLIB_LIBRARY_RELEASE "F:/Projects/zlib-1.2.11/lib/zlib.lib")
+   set(ZLIB_INCLUDE_DIR "C:/Program Files (x86)/zlib-1.2.11/include")
+   set(ZLIB_LIBRARY_RELEASE "C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib")
    set(VFS_STATIC_LIBRARY "F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug/Vfs.lib")
    set(VFS_DIRECTORY "F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug")
    ```

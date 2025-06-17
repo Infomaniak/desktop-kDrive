@@ -27,49 +27,6 @@ using namespace CppUnit;
 
 namespace KDC {
 
-IoHelperTests::IoHelperTests() :
-    IoHelper() {}
-
-void IoHelperTests::setIsDirectoryFunction(std::function<bool(const SyncPath &path, std::error_code &ec)> f) {
-    _isDirectory = f;
-};
-void IoHelperTests::setIsSymlinkFunction(std::function<bool(const SyncPath &path, std::error_code &ec)> f) {
-    _isSymlink = f;
-};
-void IoHelperTests::setReadSymlinkFunction(std::function<SyncPath(const SyncPath &path, std::error_code &ec)> f) {
-    _readSymlink = f;
-};
-void IoHelperTests::setFileSizeFunction(std::function<std::uintmax_t(const SyncPath &path, std::error_code &ec)> f) {
-    _fileSize = f;
-}
-
-void IoHelperTests::setTempDirectoryPathFunction(std::function<SyncPath(std::error_code &ec)> f) {
-    _tempDirectoryPath = f;
-}
-
-#ifdef __APPLE__
-void IoHelperTests::setReadAliasFunction(std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> f) {
-    _readAlias = f;
-};
-#endif
-
-void IoHelperTests::resetFunctions() {
-    // Reset to default std::filesytem implementation.
-    setIsDirectoryFunction(static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_directory));
-    setIsSymlinkFunction(static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_symlink));
-    setReadSymlinkFunction(static_cast<SyncPath (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::read_symlink));
-    setFileSizeFunction(static_cast<std::uintmax_t (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::file_size));
-    setTempDirectoryPathFunction(static_cast<SyncPath (*)(std::error_code &ec)>(&std::filesystem::temp_directory_path));
-
-#ifdef __APPLE__
-    // Default Utility::readAlias implementation
-    setReadAliasFunction([](const SyncPath &path, SyncPath &targetPath, IoError &ioError) -> bool {
-        std::string data;
-        return readAlias(path, data, targetPath, ioError);
-    });
-#endif
-}
-
 SyncPath makeVeryLonPath(const SyncPath &rootPath) {
     const std::string pathSegment(50, 'a');
     SyncPath path = rootPath;
@@ -90,7 +47,7 @@ TestIo::TestIo() :
 
 void TestIo::setUp() {
     TestBase::start();
-    _testObj = new IoHelperTests();
+    _testObj = new IoHelperTestUtilities();
 }
 
 void TestIo::tearDown() {
@@ -122,6 +79,12 @@ void TestIo::testTempDirectoryPath() {
 
         _testObj->resetFunctions();
     }
+}
+
+void TestIo::testCacheDirectoryPath() {
+    SyncPath cachePath;
+    CPPUNIT_ASSERT(_testObj->cacheDirectoryPath(cachePath));
+    CPPUNIT_ASSERT(!cachePath.empty());
 }
 
 void TestIo::testLogDirectoryPath() {
@@ -184,9 +147,6 @@ void TestIo::testSetFileDates() {
     const auto timestamp = testhelpers::defaultTime;
 
     {
-        // /!\ Linux: The creation date cannot be set
-        // /!\ macOS: If creation date > modification date, creation date is set to modification date
-
         const LocalTemporaryDirectory tempDir("testSetFileDates");
         filepath = tempDir.path() / "test.txt";
         testhelpers::generateOrEditTestFile(filepath);
@@ -339,16 +299,54 @@ void TestIo::testSetFileDates() {
 #endif
 
         // Test with creation date > modification date.
+        filepath = tempDir.path() / "test2.txt";
+        testhelpers::generateOrEditTestFile(filepath);
+
         ioError = IoHelper::setFileDates(filepath, timestamp + 10, timestamp, false);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         (void) IoHelper::getFileStat(filepath, &filestat, ioError);
 #if defined(__APPLE__)
+        // Creation date is set to modification date
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
 #elif defined(_WIN32)
         CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.creationTime);
 #endif
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modificationTime);
+
+        // Test with creation date = 0.
+        filepath = tempDir.path() / "test3.txt";
+        testhelpers::generateOrEditTestFile(filepath);
+
+        ioError = IoHelper::setFileDates(filepath, 0, timestamp, false);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError);
+#if defined(__APPLE__)
+        CPPUNIT_ASSERT(filestat.creationTime == 0);
+#elif defined(_WIN32)
+        CPPUNIT_ASSERT_GREATER(timestamp, filestat.creationTime);
+#endif
+        CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modificationTime);
+
+        // Test with modification date = 0.
+        filepath = tempDir.path() / "test4.txt";
+        testhelpers::generateOrEditTestFile(filepath);
+
+        ioError = IoHelper::setFileDates(filepath, timestamp, 0, false);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError);
+#if defined(__APPLE__)
+        // Creation date is set to modification date = 0
+        CPPUNIT_ASSERT(filestat.creationTime == 0);
+        CPPUNIT_ASSERT(filestat.modificationTime == 0);
+#elif defined(_WIN32)
+        CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
+        CPPUNIT_ASSERT_GREATER(timestamp, filestat.modificationTime);
+#else
+        CPPUNIT_ASSERT(filestat.modificationTime == 0);
+#endif
     }
 
     // Test on a non-existing file.

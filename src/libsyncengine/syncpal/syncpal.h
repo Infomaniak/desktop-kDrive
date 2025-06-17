@@ -92,6 +92,7 @@ struct SyncPalInfo {
         int userId{0};
         std::string driveName;
         SyncPath localPath;
+        NodeId localNodeId;
         SyncPath targetPath;
         VirtualFileMode vfsMode{VirtualFileMode::Off};
         bool restart{false};
@@ -147,10 +148,13 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         inline const std::string &driveName() const { return _syncInfo.driveName; }
         inline VirtualFileMode vfsMode() const { return _syncInfo.vfsMode; }
         inline SyncPath localPath() const { return _syncInfo.localPath; }
+        inline const NodeId &localNodeId() const { return _syncInfo.localNodeId; }
         inline bool restart() const { return _syncInfo.restart; }
         inline bool isAdvancedSync() const { return _syncInfo.isAdvancedSync(); }
 
         void setLocalPath(const SyncPath &path) { _syncInfo.localPath = path; }
+        ExitInfo isRootFolderValid();
+        ExitInfo setLocalNodeId(const NodeId &localNodeId);
         void setSyncHasFullyCompleted(bool completed) { _syncInfo.syncHasFullyCompleted = completed; }
         void setRestart(bool shouldRestart) { _syncInfo.restart = shouldRestart; }
         void setVfsMode(const VirtualFileMode mode) { _syncInfo.vfsMode = mode; }
@@ -342,8 +346,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         bool createOrOpenDb(const SyncPath &syncDbPath, const std::string &version,
                             const std::string &targetNodeId = std::string());
         void setSyncHasFullyCompletedInParms(bool syncHasFullyCompleted);
-        ExitCode setListingCursor(const std::string &value, int64_t timestamp);
-        ExitCode listingCursor(std::string &value, int64_t &timestamp);
+        ExitInfo setListingCursor(const std::string &value, int64_t timestamp);
+        ExitInfo listingCursor(std::string &value, int64_t &timestamp);
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
         ExitCode updateSyncNode();
         std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side) const;

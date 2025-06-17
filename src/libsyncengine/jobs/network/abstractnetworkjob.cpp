@@ -85,17 +85,18 @@ AbstractNetworkJob::~AbstractNetworkJob() {
 }
 
 bool AbstractNetworkJob::isManagedError(const ExitInfo exitInfo) noexcept {
-    static const std::set managedExitCauses = {ExitCause::InvalidName,       ExitCause::ApiErr,
-                                               ExitCause::FileTooBig,        ExitCause::NotFound,
-                                               ExitCause::FileLocked,        ExitCause::QuotaExceeded,
-                                               ExitCause::FileAlreadyExists, ExitCause::ShareLinkAlreadyExists,
-                                               ExitCause::ServiceUnavailable};
+    static const std::set managedExitCauses = {
+            ExitCause::InvalidName,       ExitCause::ApiErr,        ExitCause::FileTooBig, ExitCause::NotFound,
+            ExitCause::FileLocked,        ExitCause::QuotaExceeded, ExitCause::FileExists, ExitCause::ShareLinkAlreadyExists,
+            ExitCause::ServiceUnavailable};
 
     switch (exitInfo.code()) {
         case ExitCode::BackError:
             return managedExitCauses.contains(exitInfo.cause());
         case ExitCode::NetworkError:
             return exitInfo.cause() == ExitCause::NetworkTimeout;
+        case ExitCode::InvalidSync:
+            return exitInfo.cause() == ExitCause::SyncDirAccessError;
         case ExitCode::UpdateRequired:
             return true;
         default:

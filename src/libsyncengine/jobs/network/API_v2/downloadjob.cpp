@@ -133,7 +133,7 @@ bool DownloadJob::canRun() {
     if (_isCreate && exists) {
         LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_localpath)
                                           << L" already exists. Aborting current sync and restarting.");
-        _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent};
+        _exitInfo = {ExitCode::DataError, ExitCause::FileExists};
         return false;
     }
 
@@ -228,7 +228,6 @@ bool DownloadJob::handleResponse(std::istream &is) {
 
         _responseHandlingCanceled = isAborted() || readError || writeError || fetchCanceled || fetchError;
 
-        bool restartSync = false;
         if (!_responseHandlingCanceled) {
             if (_vfs && !_isHydrated && !fetchFinished) { // updateFetchStatus is used only for hydration.
                 // Update fetch status
@@ -247,12 +246,12 @@ bool DownloadJob::handleResponse(std::istream &is) {
                 _responseHandlingCanceled = fetchCanceled || fetchError || (!fetchFinished);
             } else if (_isHydrated) {
                 // Replace file by tmp one
-                if (!moveTmpFile(restartSync)) {
+                if (!moveTmpFile()) {
                     LOGW_WARN(_logger, L"Failed to replace file by tmp one: " << Utility::formatSyncPath(_tmpPath));
                     writeError = true;
                 }
 
-                _responseHandlingCanceled = writeError || restartSync;
+                _responseHandlingCanceled = writeError;
             }
         }
 
@@ -319,13 +318,26 @@ bool DownloadJob::handleResponse(std::istream &is) {
     _localNodeId = std::to_string(filestat.inode);
     _creationTimeOut = filestat.creationTime;
     _modificationTimeOut = filestat.modificationTime;
-    if (_modificationTimeIn != _modificationTimeOut) {
-        std::wstringstream ss;
-        ss << "Impossible to set modification date " << _modificationTimeIn << " to local file "
-           << Utility::formatSyncPath(_localpath);
-        sentry::Handler::captureMessage(sentry::Level::Warning, "Failed tl o set modification date on local file ",
-                                        Utility::ws2s(ss.str()));
+
+#if defined(__APPLE__) || defined(_WIN32)
+    if (_creationTimeIn != _creationTimeOut || _modificationTimeIn != _modificationTimeOut) {
+        // In the following cases, it is not an issue:
+        // - Windows: if creation/modification date = 0, it is set to current date
+        // - macOS: if creation date > modification date, creation date is set to modification date
+        LOGW_WARN(_logger, L"Impossible to set creation and/or modification time(s) on local file."
+                                   << L" Desired values: " << _creationTimeIn << L"/" << _modificationTimeIn << L" Set values: "
+                                   << _creationTimeOut << L"/" << _modificationTimeOut << L" for "
+                                   << Utility::formatSyncPath(_localpath));
     }
+#else
+    // On Linux, the creation date cannot be set
+    if (_modificationTimeIn != _modificationTimeOut) {
+        LOGW_WARN(_logger, L"Impossible to set modification time on local file."
+                                   << L" Desired value: " << _modificationTimeIn << L" Set value: " << _modificationTimeOut
+                                   << L" for " << Utility::formatSyncPath(_localpath));
+    }
+#endif
+
     _exitInfo = ExitCode::Ok;
 
     return true;
@@ -452,9 +464,7 @@ bool DownloadJob::removeTmpFile() {
     return true;
 }
 
-bool DownloadJob::moveTmpFile(bool &restartSync) {
-    restartSync = false;
-
+bool DownloadJob::moveTmpFile() {
     // Move downloaded file from tmp directory to sync directory
 #ifdef _WIN32
     bool retry = true;
@@ -536,8 +546,7 @@ bool DownloadJob::moveTmpFile(bool &restartSync) {
 
                 if (!exists) {
                     LOGW_INFO(_logger, L"Parent of item does not exist anymore " << Utility::formatSyncPath(_localpath));
-                    restartSync = true;
-                    return true;
+                    disableRetry();
                 }
 
                 return false;
@@ -576,10 +585,9 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
     fetchFinished = false;
     fetchError = false;
 
-    SyncPath tmpDirectoryPath;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::tempDirectoryPath(tmpDirectoryPath, ioError)) {
-        LOGW_WARN(_logger, L"Failed to get temporary directory path: " << Utility::formatIoError(tmpDirectoryPath, ioError));
+    SyncPath cacheDirectoryPath;
+    if (!IoHelper::cacheDirectoryPath(cacheDirectoryPath)) {
+        LOGW_WARN(_logger, L"Failed to get cache directory");
         _exitInfo = ExitCode::SystemError;
         return false;
     }
@@ -587,7 +595,7 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
     std::ofstream output;
     do {
         const std::string tmpFileName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
-        _tmpPath = tmpDirectoryPath / tmpFileName;
+        _tmpPath = cacheDirectoryPath / tmpFileName;
 
         output.open(_tmpPath.native().c_str(), std::ofstream::out | std::ofstream::binary);
         if (!output.is_open()) {

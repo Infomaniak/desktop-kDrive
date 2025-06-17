@@ -29,9 +29,9 @@ namespace KDC {
 class PARMS_EXPORT Sync {
     public:
         Sync();
-        Sync(int dbId, int driveDbId, const std::filesystem::path &localPath, const std::filesystem::path &targetPath,
-             const NodeId &targetNodeId = NodeId(), bool paused = false, bool supportVfs = false,
-             VirtualFileMode virtualFileMode = VirtualFileMode::Off, bool notificationsDisabled = false,
+        Sync(int dbId, int driveDbId, const std::filesystem::path &localPath, const NodeId &localNodeId,
+             const std::filesystem::path &targetPath, const NodeId &targetNodeId = NodeId(), bool paused = false,
+             bool supportVfs = false, VirtualFileMode virtualFileMode = VirtualFileMode::Off, bool notificationsDisabled = false,
              const std::filesystem::path &dbPath = std::filesystem::path(), bool hasFullyCompleted = false,
              const std::string &navigationPaneClsid = std::string(), const std::string &listingCursor = std::string(),
              int64_t listingCursorTimestamp = 0);
@@ -42,6 +42,8 @@ class PARMS_EXPORT Sync {
         inline int driveDbId() const { return _driveDbId; }
         inline void setLocalPath(const std::filesystem::path &localPath) { _localPath = localPath; }
         inline const std::filesystem::path &localPath() const { return _localPath; }
+        inline void setLocalNodeId(const NodeId &localNodeId) { _localNodeId = localNodeId; }
+        inline const NodeId &localNodeId() const { return _localNodeId; }
         inline void setTargetPath(const std::filesystem::path &targetPath) { _targetPath = targetPath; }
         inline const std::filesystem::path &targetPath() const { return _targetPath; }
         inline void setTargetNodeId(const NodeId &targetNodeId) { _targetNodeId = targetNodeId; }
@@ -73,6 +75,7 @@ class PARMS_EXPORT Sync {
         int _dbId{0};
         int _driveDbId{0};
         std::filesystem::path _localPath;
+        NodeId _localNodeId;
         std::filesystem::path _targetPath;
         NodeId _targetNodeId;
         bool _paused{false};

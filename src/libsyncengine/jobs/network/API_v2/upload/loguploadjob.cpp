@@ -269,7 +269,7 @@ ExitInfo LogUploadJob::getTmpJobWorkingDir(SyncPath &tmpJobWorkingDir) const {
 
     // Create tmp folder
     if (IoError ioError = IoError::Unknown;
-        !IoHelper::createDirectory(tmpJobWorkingDir, ioError) && ioError != IoError::DirectoryExists) {
+        !IoHelper::createDirectory(tmpJobWorkingDir, false, ioError) && ioError != IoError::DirectoryExists) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::createDirectory: " << Utility::formatIoError(tmpJobWorkingDir, ioError));
         switch (ioError) {
@@ -501,7 +501,7 @@ ExitInfo LogUploadJob::upload(const SyncPath &archivePath) {
 
     std::shared_ptr<LogUploadSession> uploadSessionLog = nullptr;
     try {
-        uploadSessionLog = std::make_shared<LogUploadSession>(archivePath);
+        uploadSessionLog = std::make_shared<LogUploadSession>(archivePath, 1);
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadSession::LogUploadSession: error=" << e.what());
         return AbstractTokenNetworkJob::exception2ExitCode(e);

@@ -87,6 +87,7 @@ SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId_, const std::strin
     _syncInfo.driveDbId = sync.driveDbId();
     _syncInfo.localPath = sync.localPath();
     _syncInfo.localPath.make_preferred();
+    _syncInfo.localNodeId = sync.localNodeId();
     _syncInfo.targetPath = sync.targetPath();
     _syncInfo.targetPath.make_preferred();
 
@@ -497,7 +498,7 @@ void SyncPal::freeWorkers() {
 }
 
 ExitCode SyncPal::setSyncPaused(bool value) {
-    bool found;
+    bool found = false;
     if (!ParmsDb::instance()->setSyncPaused(syncDbId(), value, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::setSyncPaused");
         return ExitCode::DbError;
@@ -681,7 +682,8 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
 
     // Queue job
     std::function<void(UniqueId)> callback = std::bind(&SyncPal::directDownloadCallback, this, std::placeholders::_1);
-    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGH, callback);
+    job->setAdditionalCallback(callback);
+    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGH);
 
     _directDownloadJobsMapMutex.lock();
     _directDownloadJobsMap.insert({job->jobId(), job});
@@ -741,9 +743,32 @@ void SyncPal::setSyncHasFullyCompletedInParms(bool syncHasFullyCompleted) {
     }
 }
 
-ExitCode SyncPal::setListingCursor(const std::string &value, int64_t timestamp) {
+ExitInfo SyncPal::isRootFolderValid() {
+    if (NodeId rootNodeId; IoHelper::getNodeId(localPath(), rootNodeId)) {
+        if (rootNodeId.empty()) {
+            LOGW_SYNCPAL_WARN(_logger, L"Unable to get root folder nodeId: " << Utility::formatSyncPath(localPath()));
+            return ExitCode::SystemError;
+        }
+
+        if (localNodeId().empty()) {
+            if (ExitInfo exitInfo = setLocalNodeId(rootNodeId); !exitInfo) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setLocalNodeId: " << exitInfo);
+                return exitInfo;
+            }
+            return ExitCode::Ok;
+        }
+
+        return localNodeId() == rootNodeId ? ExitInfo(ExitCode::Ok) : ExitInfo(ExitCode::DataError, ExitCause::SyncDirChanged);
+    } else {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getNodeId for root folder: " << Utility::formatSyncPath(localPath()));
+        return ExitCode::SystemError;
+    }
+}
+
+ExitInfo SyncPal::setLocalNodeId(const NodeId &localNodeId) {
+    _syncInfo.localNodeId = localNodeId;
     Sync sync;
-    bool found;
+    bool found = false;
     if (!ParmsDb::instance()->selectSync(syncDbId(), sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
         return ExitCode::DbError;
@@ -753,7 +778,7 @@ ExitCode SyncPal::setListingCursor(const std::string &value, int64_t timestamp) 
         return ExitCode::DataError;
     }
 
-    sync.setListingCursor(value, timestamp);
+    sync.setLocalNodeId(localNodeId);
     if (!ParmsDb::instance()->updateSync(sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::updateSync");
         return ExitCode::DbError;
@@ -766,16 +791,41 @@ ExitCode SyncPal::setListingCursor(const std::string &value, int64_t timestamp) 
     return ExitCode::Ok;
 }
 
-ExitCode SyncPal::listingCursor(std::string &value, int64_t &timestamp) {
+ExitInfo SyncPal::setListingCursor(const std::string &value, int64_t timestamp) {
     Sync sync;
     bool found;
     if (!ParmsDb::instance()->selectSync(syncDbId(), sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
-        return ExitCode::DbError;
+        return {ExitCode::DbError, ExitCause::DbAccessError};
     }
     if (!found) {
         LOG_SYNCPAL_WARN(_logger, "Sync not found");
-        return ExitCode::DataError;
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
+    }
+
+    sync.setListingCursor(value, timestamp);
+    if (!ParmsDb::instance()->updateSync(sync, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::updateSync");
+        return {ExitCode::DbError, ExitCause::DbAccessError};
+    }
+    if (!found) {
+        LOG_SYNCPAL_WARN(_logger, "Sync not found");
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo SyncPal::listingCursor(std::string &value, int64_t &timestamp) {
+    Sync sync;
+    bool found;
+    if (!ParmsDb::instance()->selectSync(syncDbId(), sync, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
+        return {ExitCode::DbError, ExitCause::DbAccessError};
+    }
+    if (!found) {
+        LOG_SYNCPAL_WARN(_logger, "Sync not found");
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
     sync.listingCursor(value, timestamp);
@@ -914,7 +964,8 @@ ExitCode SyncPal::syncListUpdated(bool restartSync) {
     _blacklistPropagator.reset(new BlacklistPropagator(shared_from_this()));
     _blacklistPropagator->setRestartSyncPal(restartSync);
     std::function<void(UniqueId)> callback = std::bind(&SyncPal::syncPalStartCallback, this, std::placeholders::_1);
-    JobManager::instance()->queueAsyncJob(_blacklistPropagator, Poco::Thread::PRIO_HIGHEST, callback);
+    _blacklistPropagator->setAdditionalCallback(callback);
+    JobManager::instance()->queueAsyncJob(_blacklistPropagator, Poco::Thread::PRIO_HIGHEST);
 
     return ExitCode::Ok;
 }
@@ -934,7 +985,8 @@ ExitCode SyncPal::excludeListUpdated() {
     _excludeListPropagator.reset(new ExcludeListPropagator(shared_from_this()));
     _excludeListPropagator->setRestartSyncPal(restartSync);
     std::function<void(UniqueId)> callback = std::bind(&SyncPal::syncPalStartCallback, this, std::placeholders::_1);
-    JobManager::instance()->queueAsyncJob(_excludeListPropagator, Poco::Thread::PRIO_HIGHEST, callback);
+    _excludeListPropagator->setAdditionalCallback(callback);
+    JobManager::instance()->queueAsyncJob(_excludeListPropagator, Poco::Thread::PRIO_HIGHEST);
 
     return ExitCode::Ok;
 }
@@ -954,7 +1006,8 @@ ExitCode SyncPal::fixConflictingFiles(bool keepLocalVersion, std::vector<Error> 
     _conflictingFilesCorrector.reset(new ConflictingFilesCorrector(shared_from_this(), keepLocalVersion, errorList));
     _conflictingFilesCorrector->setRestartSyncPal(restartSync);
     std::function<void(UniqueId)> callback = std::bind(&SyncPal::syncPalStartCallback, this, std::placeholders::_1);
-    JobManager::instance()->queueAsyncJob(_conflictingFilesCorrector, Poco::Thread::PRIO_HIGHEST, callback);
+    _conflictingFilesCorrector->setAdditionalCallback(callback);
+    JobManager::instance()->queueAsyncJob(_conflictingFilesCorrector, Poco::Thread::PRIO_HIGHEST);
 
     return ExitCode::Ok;
 }
@@ -1266,7 +1319,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
                                          std::shared_ptr<Node> &remoteBlacklistedNode, ExitCause cause) {
     if (relativeLocalPath.empty()) {
         LOG_SYNCPAL_WARN(_logger, "Access error on root folder");
-        return ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccesError);
+        return ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccessError);
     }
     Error error(syncDbId(), "", "", relativeLocalPath.extension() == SyncPath() ? NodeType::Directory : NodeType::File,
                 relativeLocalPath, ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::SystemError,

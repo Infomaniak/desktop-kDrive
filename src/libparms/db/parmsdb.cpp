@@ -258,6 +258,7 @@
     "dbId INTEGER PRIMARY KEY,"                                                              \
     "driveDbId INTEGER,"                                                                     \
     "localPath TEXT,"                                                                        \
+    "localNodeId TEXT,"                                                                      \
     "targetPath TEXT,"                                                                       \
     "targetNodeId TEXT,"                                                                     \
     "paused INTEGER,"                                                                        \
@@ -273,17 +274,19 @@
     "WITHOUT ROWID;"
 
 #define INSERT_SYNC_REQUEST_ID "insert_sync"
-#define INSERT_SYNC_REQUEST                                                                                                 \
-    "INSERT INTO sync (dbId, driveDbId, localPath, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
-    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp) "                \
-    "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14);"
+#define INSERT_SYNC_REQUEST                                                                                             \
+    "INSERT INTO sync (dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, " \
+    "virtualFileMode, "                                                                                                 \
+    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp) "            \
+    "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15);"
 
 #define UPDATE_SYNC_REQUEST_ID "update_sync"
-#define UPDATE_SYNC_REQUEST                                                                                             \
-    "UPDATE sync SET driveDbId=?1, localPath=?2, targetPath=?3, targetNodeId=?4, dbPath=?5, paused=?6, supportVfs=?7, " \
-    "virtualFileMode=?8, notificationsDisabled=?9, hasFullyCompleted=?10, navigationPaneClsid=?11, listingCursor=?12, " \
-    "listingCursorTimestamp=?13 "                                                                                       \
-    "WHERE dbId=?14;"
+#define UPDATE_SYNC_REQUEST                                                                                                \
+    "UPDATE sync SET driveDbId=?1, localPath=?2, localNodeId = ?3, targetPath=?4, targetNodeId=?5, dbPath=?6, paused=?7, " \
+    "supportVfs=?8, "                                                                                                      \
+    "virtualFileMode=?9, notificationsDisabled=?10, hasFullyCompleted=?11, navigationPaneClsid=?12, listingCursor=?13, "   \
+    "listingCursorTimestamp=?14 "                                                                                          \
+    "WHERE dbId=?15;"
 
 #define UPDATE_SYNC_PAUSED_REQUEST_ID "update_sync_paused"
 #define UPDATE_SYNC_PAUSED_REQUEST \
@@ -301,29 +304,30 @@
     "WHERE dbId=?1;"
 
 #define SELECT_SYNC_REQUEST_ID "select_sync"
-#define SELECT_SYNC_REQUEST                                                                                           \
-    "SELECT dbId, driveDbId, localPath, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "      \
-    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp FROM sync " \
+#define SELECT_SYNC_REQUEST                                                                                                   \
+    "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
+    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp FROM sync "         \
     "WHERE dbId=?1;"
 
 #define SELECT_SYNC_BY_PATH_REQUEST_ID "select_sync_by_path"
-#define SELECT_SYNC_BY_PATH_REQUEST                                                                                   \
-    "SELECT dbId, driveDbId, localPath, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "      \
-    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp FROM sync " \
+#define SELECT_SYNC_BY_PATH_REQUEST                                                                                           \
+    "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
+    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp FROM sync "         \
     "WHERE dbPath=?1;"
 
 
 #define SELECT_ALL_SYNCS_REQUEST_ID "select_syncs"
-#define SELECT_ALL_SYNCS_REQUEST                                                                                      \
-    "SELECT dbId, driveDbId, localPath, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "      \
-    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp FROM sync " \
+#define SELECT_ALL_SYNCS_REQUEST                                                                                              \
+    "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
+    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp FROM sync "         \
     "ORDER BY dbId;"
 
 #define SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID "select_syncs_by_drive"
-#define SELECT_ALL_SYNCS_BY_DRIVE_REQUEST                                                                                    \
-    "SELECT dbId, localPath, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, notificationsDisabled, " \
-    "hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp FROM sync "                               \
-    "WHERE driveDbId=?1 "                                                                                                    \
+#define SELECT_ALL_SYNCS_BY_DRIVE_REQUEST                                                                          \
+    "SELECT dbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
+    "notificationsDisabled, "                                                                                      \
+    "hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp FROM sync "                     \
+    "WHERE driveDbId=?1 "                                                                                          \
     "ORDER BY dbId;"
 
 //
@@ -606,7 +610,7 @@ bool ParmsDb::insertDefaultParameters() {
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 26, static_cast<int>(_test ? true : parameters.extendedLog())));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 27, parameters.maxAllowedCpu()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 28, parameters.uploadSessionParallelJobs()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 29, parameters.jobPoolCapacityFactor()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 29, 0));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 30, static_cast<int>(parameters.distributionChannel())));
 
     if (!queryExec(INSERT_PARAMETERS_REQUEST_ID, errId, error)) {
@@ -617,89 +621,171 @@ bool ParmsDb::insertDefaultParameters() {
     return true;
 }
 
+
+bool ParmsDb::getDefaultExclusionTemplatesFromFile(const SyncPath &syncExcludeListPath,
+                                                   std::vector<std::string> &fileDefaultExclusionTemplates) {
+    fileDefaultExclusionTemplates.clear();
+
+    if (std::ifstream exclusionFile(syncExcludeListPath); exclusionFile.is_open()) {
+        std::string line;
+        while (std::getline(exclusionFile, line)) {
+            // Remove end of line
+            if (!line.empty() && line.back() == '\n') {
+                line.pop_back();
+            }
+            if (!line.empty() && line.back() == '\r') {
+                line.pop_back();
+            }
+
+            (void) fileDefaultExclusionTemplates.emplace_back(line);
+        }
+        return true;
+    }
+    return false;
+}
+
+namespace {
+std::vector<ExclusionTemplate>::const_iterator findTemplateString(const std::vector<ExclusionTemplate> &templates,
+                                                                  const std::string &templateString) {
+    return std::find_if(templates.cbegin(), templates.cend(),
+                        [&templateString](const ExclusionTemplate &t) { return t.templ() == templateString; });
+}
+} // namespace
+
 bool ParmsDb::updateExclusionTemplates() {
-    // Load default exclusion templates in DB
-    std::vector<ExclusionTemplate> exclusionTemplateDbList;
-    if (!selectAllExclusionTemplates(true, exclusionTemplateDbList)) {
+    // Load default exclusion templates from DB
+    std::vector<ExclusionTemplate> dbDefaultExclusionTemplates;
+    if (!selectDefaultExclusionTemplates(dbDefaultExclusionTemplates)) {
         LOG_WARN(_logger, "Error in selectAllExclusionTemplates");
         return false;
     }
 
-    // Load default exclusion templates in configuration file
-    std::vector<std::string> exclusionTemplateFileList;
-    SyncName t = Utility::getExcludedTemplateFilePath(_test);
-    std::ifstream exclusionFile(Utility::getExcludedTemplateFilePath(_test));
-    if (exclusionFile.is_open()) {
-        std::string line;
-        while (std::getline(exclusionFile, line)) {
-            // Remove end of line
-            if (line.size() > 0 && line[line.size() - 1] == '\n') {
-                line.pop_back();
-            }
-            if (line.size() > 0 && line[line.size() - 1] == '\r') {
-                line.pop_back();
-            }
-
-            exclusionTemplateFileList.push_back(line);
-        }
-    } else {
-        LOGW_WARN(_logger,
-                  L"Cannot open exclusion templates file " << SyncName2WStr(Utility::getExcludedTemplateFilePath(_test)));
+    // Load default exclusion templates from the template configuration file
+    std::vector<std::string> fileDefaultExclusionTemplates;
+    if (const auto &excludeListFileName = Utility::getExcludedTemplateFilePath(_test);
+        !getDefaultExclusionTemplatesFromFile(excludeListFileName, fileDefaultExclusionTemplates)) {
+        LOGW_WARN(_logger, L"Cannot open exclusion templates file " << Utility::formatSyncName(excludeListFileName));
         return false;
     }
 
-    for (const auto &templDb: exclusionTemplateDbList) {
-        bool exists = false;
-        for (const auto &templFile: exclusionTemplateFileList) {
-            if (templFile == templDb.templ()) {
-                exists = true;
-                break;
-            }
-        }
-        if (!exists) {
+    for (const auto &defaultTemplateFromDb: dbDefaultExclusionTemplates) {
+        if (const auto it = std::find(fileDefaultExclusionTemplates.cbegin(), fileDefaultExclusionTemplates.cend(),
+                                      defaultTemplateFromDb.templ());
+            it == fileDefaultExclusionTemplates.cend()) {
             // Remove DB template
-            bool found;
-            if (!deleteExclusionTemplate(templDb.templ(), found)) {
+            bool found = false;
+            if (!deleteExclusionTemplate(defaultTemplateFromDb.templ(), found)) {
                 LOG_WARN(_logger, "Error in deleteExclusionTemplate");
                 return false;
             }
         }
     }
 
-    std::vector<ExclusionTemplate> exclusionTemplateUserDbList;
-    if (!selectAllExclusionTemplates(false, exclusionTemplateUserDbList)) {
+    std::vector<ExclusionTemplate> dbUserExclusionTemplates;
+    if (!selectUserExclusionTemplates(dbUserExclusionTemplates)) {
         LOG_WARN(_logger, "Error in selectAllExclusionTemplates");
         return false;
     }
 
-    for (const auto &templFile: exclusionTemplateFileList) {
-        bool exists = false;
-        for (const auto &templDb: exclusionTemplateDbList) {
-            if (templDb.templ() == templFile) {
-                exists = true;
-                break;
-            }
-        }
-        if (!exists) {
-            for (const auto &userTempDb: exclusionTemplateUserDbList) {
-                if (templFile == userTempDb.templ()) {
-                    bool found = false;
-                    if (!deleteExclusionTemplate(userTempDb.templ(), found)) {
-                        LOG_WARN(_logger, "Error in deleteExclusionTemplate");
-                        return false;
-                    }
-                    break;
-                }
-            }
-            // Add template in DB
-            bool constraintError;
-            if (!insertExclusionTemplate(ExclusionTemplate(templFile, false, true, false), constraintError)) {
-                LOG_WARN(_logger, "Error in insertExclusionTemplate");
+    for (const auto &templateFromFile: fileDefaultExclusionTemplates) {
+        if (const auto it = findTemplateString(dbDefaultExclusionTemplates, templateFromFile);
+            it != dbDefaultExclusionTemplates.cend())
+            continue;
+
+        if (const auto it = findTemplateString(dbUserExclusionTemplates, templateFromFile);
+            it != dbUserExclusionTemplates.cend()) {
+            if (bool found = false; !deleteExclusionTemplate(it->templ(), found)) {
+                LOG_WARN(_logger, "Error in deleteExclusionTemplate");
                 return false;
             }
         }
+
+        // Add template as a DB default template.
+        if (bool constraintError = false;
+            !insertExclusionTemplate(ExclusionTemplate(templateFromFile, false, true, false), constraintError)) {
+            LOG_WARN(_logger, "Error in insertExclusionTemplate");
+            return false;
+        }
     }
+
     return true;
+}
+
+namespace {
+void logIfTemplateNormalizationFails(log4cplus::Logger &logger, const SyncName &template_, bool &normalizationHasFailed) {
+    normalizationHasFailed = false;
+
+    SyncName nfcNormalizedName;
+    const bool nfcSuccess = CommonUtility::normalizedSyncName(template_, nfcNormalizedName, UnicodeNormalization::NFC);
+    if (!nfcSuccess) {
+        LOGW_WARN(logger, L"Error in CommonUtility::normalizedSyncName. Failed to NFC-normalize the template '"
+                                  << SyncName2WStr(template_) << L"'.");
+    }
+
+    SyncName nfdNormalizedName;
+    const bool nfdSuccess = CommonUtility::normalizedSyncName(template_, nfdNormalizedName, UnicodeNormalization::NFD);
+    if (!nfdSuccess) {
+        LOGW_WARN(logger, L"Error in CommonUtility::normalizedSyncName. Failed to NFD-normalize the template '"
+                                  << SyncName2WStr(template_) << L"'.");
+    }
+
+    if (!nfcSuccess || !nfdSuccess) {
+        normalizationHasFailed = true;
+        LOG_WARN(logger,
+                 "File exclusion based on user templates may fail to exclude file names depending on their normalizations.");
+    }
+}
+} // namespace
+
+bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
+    if (!CommonUtility::isVersionLower(fromVersion, "3.7.2")) {
+        return true;
+    }
+
+    LOG_INFO(_logger, "Inserting the normalizations of user exclusion file patterns.");
+
+    if (!createAndPrepareRequest(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST))
+        return false;
+
+    std::vector<ExclusionTemplate> dbUserExclusionTemplates;
+    const bool successfulSelection = selectUserExclusionTemplates(dbUserExclusionTemplates);
+    queryFree(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID);
+    if (!successfulSelection) {
+        LOG_WARN(_logger, "Error in selectAllExclusionTemplates");
+        return false;
+    }
+
+    std::vector<ExclusionTemplate> dbUserExclusionTemplatesOutput;
+    StrSet dbUserExclusionUniqueStrings;
+    for (const auto &userTemplate: dbUserExclusionTemplates) {
+        const SyncName &templateName = Str2SyncName(userTemplate.templ());
+        bool normalizationHasFailed = false;
+        logIfTemplateNormalizationFails(_logger, templateName, normalizationHasFailed);
+
+        if (normalizationHasFailed) continue;
+
+        const auto normalizedTemplateNames = CommonUtility::computePathNormalizations(templateName);
+        for (const auto &normalizedName: normalizedTemplateNames) {
+            const std::string &normalizedStr = SyncName2Str(normalizedName);
+            if (const auto &[_, successfulInsertion] = dbUserExclusionUniqueStrings.emplace(normalizedStr); successfulInsertion) {
+                (void) dbUserExclusionTemplatesOutput.emplace_back(normalizedStr);
+            }
+        }
+    }
+
+    LOG_INFO(_logger, "Normalizations prepared for updates.");
+
+    if (!createAndPrepareRequest(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST))
+        return false;
+
+    if (!createAndPrepareRequest(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, INSERT_EXCLUSION_TEMPLATE_REQUEST)) return false;
+
+    const bool result = updateUserExclusionTemplates(dbUserExclusionTemplatesOutput);
+
+    queryFree(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID);
+    queryFree(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID);
+
+    return result;
 }
 
 #ifdef __APPLE__
@@ -978,6 +1064,10 @@ bool ParmsDb::prepare() {
 bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersion) {
     if (CommonUtility::isVersionLower(fromVersion, toVersion)) {
         LOG_INFO(_logger, "Upgrade " << dbType() << " DB from " << fromVersion << " to " << toVersion);
+        if (!insertUserTemplateNormalizations(fromVersion)) {
+            LOG_WARN(_logger, "Insertion of the normalizations of user exclusion file patterns has failed.");
+            return false;
+        }
 #ifdef _WIN32
         if (!replaceShortDbPathsWithLongPaths()) {
             LOG_WARN(_logger, "Failed to replace short DB paths with long ones.");
@@ -1011,7 +1101,7 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersi
         if (!createAndPrepareRequest(UPDATE_PARAMETERS_JOB_REQUEST_ID, UPDATE_PARAMETERS_JOB_REQUEST)) return false;
         LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_PARAMETERS_JOB_REQUEST_ID));
         LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 1, Parameters::_uploadSessionParallelJobsDefault));
-        LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 2, Parameters::_jobPoolCapacityFactorDefault));
+        LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 2, 0));
         if (!queryExec(UPDATE_PARAMETERS_JOB_REQUEST_ID, errId, error)) {
             queryFree(UPDATE_PARAMETERS_JOB_REQUEST_ID);
             return sqlFail(UPDATE_PARAMETERS_JOB_REQUEST_ID, error);
@@ -1036,6 +1126,13 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersi
             return false;
         }
     }
+
+    // Add localNodeId to sync table
+    if (!addTextColumnIfMissing("sync", "localNodeId")) {
+        return false;
+    }
+
+    LOG_INFO(_logger, "Upgrade " << dbType() << " successfully completed.");
 
     return true;
 }
@@ -1115,7 +1212,7 @@ bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 26, static_cast<int>(parameters.extendedLog())));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 27, parameters.maxAllowedCpu()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 28, parameters.uploadSessionParallelJobs()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 29, parameters.jobPoolCapacityFactor()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 29, 0));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 30, static_cast<int>(parameters.distributionChannel())));
 
     if (!queryExec(UPDATE_PARAMETERS_REQUEST_ID, errId, error)) {
@@ -1169,8 +1266,7 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 7, intResult));
     parameters.setPurgeOldLogs(intResult);
 
-    // Sync hidden files : not used anymore
-    // LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 8, intResult));
+    // Sync hidden files (8): not used anymore
 
     auto proxyType = ProxyType::Undefined;
     std::string hostName;
@@ -1232,8 +1328,7 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 27, intResult));
     parameters.setUploadSessionParallelJobs(intResult);
 
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 28, intResult));
-    parameters.setJobPoolCapacityFactor(intResult);
+    // Job pool capacity factor (28): not used anymore
 
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 29, intResult));
     parameters.setDistributionChannel(static_cast<VersionChannel>(intResult));
@@ -1957,8 +2052,8 @@ bool ParmsDb::selectAllDrives(int accountDbId, std::vector<Drive> &driveList) {
         int admin;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 6, admin));
 
-        driveList.push_back(Drive(id, driveId, accountDbId, driveName, size, color, static_cast<bool>(notifications),
-                                  static_cast<bool>(admin)));
+        (void) driveList.emplace_back(Drive(id, driveId, accountDbId, driveName, size, color, static_cast<bool>(notifications),
+                                            static_cast<bool>(admin)));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID));
 
@@ -2016,17 +2111,18 @@ bool ParmsDb::insertSync(const Sync &sync) {
     LOG_IF_FAIL(queryBindValue(requestId, 1, sync.dbId()));
     LOG_IF_FAIL(queryBindValue(requestId, 2, sync.driveDbId()));
     LOG_IF_FAIL(queryBindValue(requestId, 3, sync.localPath().native()));
-    LOG_IF_FAIL(queryBindValue(requestId, 4, sync.targetPath().native()));
-    LOG_IF_FAIL(queryBindValue(requestId, 5, sync.targetNodeId()));
-    LOG_IF_FAIL(queryBindValue(requestId, 6, sync.dbPath().native()));
-    LOG_IF_FAIL(queryBindValue(requestId, 7, static_cast<int>(sync.paused())));
-    LOG_IF_FAIL(queryBindValue(requestId, 8, static_cast<int>(sync.supportVfs())));
-    LOG_IF_FAIL(queryBindValue(requestId, 9, static_cast<int>(sync.virtualFileMode())));
-    LOG_IF_FAIL(queryBindValue(requestId, 10, static_cast<int>(sync.notificationsDisabled())));
-    LOG_IF_FAIL(queryBindValue(requestId, 11, static_cast<int>(sync.hasFullyCompleted())));
-    LOG_IF_FAIL(queryBindValue(requestId, 12, sync.navigationPaneClsid()));
-    LOG_IF_FAIL(queryBindValue(requestId, 13, listingCursor));
-    LOG_IF_FAIL(queryBindValue(requestId, 14, listingCursorTimestamp));
+    LOG_IF_FAIL(queryBindValue(requestId, 4, sync.localNodeId()));
+    LOG_IF_FAIL(queryBindValue(requestId, 5, sync.targetPath().native()));
+    LOG_IF_FAIL(queryBindValue(requestId, 6, sync.targetNodeId()));
+    LOG_IF_FAIL(queryBindValue(requestId, 7, sync.dbPath().native()));
+    LOG_IF_FAIL(queryBindValue(requestId, 8, static_cast<int>(sync.paused())));
+    LOG_IF_FAIL(queryBindValue(requestId, 9, static_cast<int>(sync.supportVfs())));
+    LOG_IF_FAIL(queryBindValue(requestId, 10, static_cast<int>(sync.virtualFileMode())));
+    LOG_IF_FAIL(queryBindValue(requestId, 11, static_cast<int>(sync.notificationsDisabled())));
+    LOG_IF_FAIL(queryBindValue(requestId, 12, static_cast<int>(sync.hasFullyCompleted())));
+    LOG_IF_FAIL(queryBindValue(requestId, 13, sync.navigationPaneClsid()));
+    LOG_IF_FAIL(queryBindValue(requestId, 14, listingCursor));
+    LOG_IF_FAIL(queryBindValue(requestId, 15, listingCursorTimestamp));
 
     int errId = -1;
     std::string error;
@@ -2051,18 +2147,19 @@ bool ParmsDb::updateSync(const Sync &sync, bool &found) {
     LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_SYNC_REQUEST_ID));
     LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 1, sync.driveDbId()));
     LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 2, sync.localPath().native()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 3, sync.targetPath().native()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 4, sync.targetNodeId()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 5, sync.dbPath().native()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 6, static_cast<int>(sync.paused())));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 7, static_cast<int>(sync.supportVfs())));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 8, static_cast<int>(sync.virtualFileMode())));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 9, static_cast<int>(sync.notificationsDisabled())));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 10, static_cast<int>(sync.hasFullyCompleted())));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 11, sync.navigationPaneClsid()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 12, listingCursor));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 13, listingCursorTimestamp));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 14, sync.dbId()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 3, sync.localNodeId()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 4, sync.targetPath().native()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 5, sync.targetNodeId()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 6, sync.dbPath().native()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 7, static_cast<int>(sync.paused())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 8, static_cast<int>(sync.supportVfs())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 9, static_cast<int>(sync.virtualFileMode())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 10, static_cast<int>(sync.notificationsDisabled())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 11, static_cast<int>(sync.hasFullyCompleted())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 12, sync.navigationPaneClsid()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 13, listingCursor));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 14, listingCursorTimestamp));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 15, sync.dbId()));
     if (!queryExec(UPDATE_SYNC_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_SYNC_REQUEST_ID);
         return false;
@@ -2160,38 +2257,41 @@ void ParmsDb::fillSyncWithQueryResult(Sync &sync, const char *requestId) {
     LOG_IF_FAIL(querySyncNameValue(requestId, 2, syncNameResult));
     sync.setLocalPath(SyncPath(syncNameResult));
 
-    LOG_IF_FAIL(querySyncNameValue(requestId, 3, syncNameResult));
+    std::string strResult;
+    LOG_IF_FAIL(queryStringValue(requestId, 3, strResult));
+    sync.setLocalNodeId(strResult);
+
+    LOG_IF_FAIL(querySyncNameValue(requestId, 4, syncNameResult));
     sync.setTargetPath(SyncPath(syncNameResult));
 
-    std::string strResult;
-    LOG_IF_FAIL(queryStringValue(requestId, 4, strResult));
+    LOG_IF_FAIL(queryStringValue(requestId, 5, strResult));
     sync.setTargetNodeId(strResult);
 
-    LOG_IF_FAIL(querySyncNameValue(requestId, 5, syncNameResult));
+    LOG_IF_FAIL(querySyncNameValue(requestId, 6, syncNameResult));
     sync.setDbPath(SyncPath(syncNameResult));
 
-    LOG_IF_FAIL(queryIntValue(requestId, 6, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, 7, intResult));
     sync.setPaused(static_cast<bool>(intResult));
 
-    LOG_IF_FAIL(queryIntValue(requestId, 7, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, 8, intResult));
     sync.setSupportVfs(static_cast<bool>(intResult));
 
-    LOG_IF_FAIL(queryIntValue(requestId, 8, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, 9, intResult));
     sync.setVirtualFileMode(static_cast<VirtualFileMode>(intResult));
 
-    LOG_IF_FAIL(queryIntValue(requestId, 9, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, 10, intResult));
     sync.setNotificationsDisabled(static_cast<bool>(intResult));
 
-    LOG_IF_FAIL(queryIntValue(requestId, 10, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, 11, intResult));
     sync.setHasFullyCompleted(static_cast<bool>(intResult));
 
-    LOG_IF_FAIL(queryStringValue(requestId, 11, strResult));
+    LOG_IF_FAIL(queryStringValue(requestId, 12, strResult));
     sync.setNavigationPaneClsid(strResult);
 
-    LOG_IF_FAIL(queryStringValue(requestId, 12, strResult));
+    LOG_IF_FAIL(queryStringValue(requestId, 13, strResult));
 
     int64_t int64Result;
-    LOG_IF_FAIL(queryInt64Value(requestId, 13, int64Result));
+    LOG_IF_FAIL(queryInt64Value(requestId, 14, int64Result));
     sync.setListingCursor(strResult, int64Result);
 }
 
@@ -2261,33 +2361,36 @@ bool ParmsDb::selectAllSyncs(std::vector<Sync> &syncList) {
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 1, driveDbId));
         SyncName localPath;
         LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_REQUEST_ID, 2, localPath));
+        std::string localNodeId;
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 3, localNodeId));
         SyncName targetPath;
-        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_REQUEST_ID, 3, targetPath));
+        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_REQUEST_ID, 4, targetPath));
         std::string targetNodeId;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 4, targetNodeId));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 5, targetNodeId));
         SyncName dbPath;
-        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_REQUEST_ID, 5, dbPath));
+        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_REQUEST_ID, 6, dbPath));
         int paused;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 6, paused));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 7, paused));
         int supportVfs;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 7, supportVfs));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 8, supportVfs));
         int virtualFileMode;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 8, virtualFileMode));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 9, virtualFileMode));
         int notificationsDisabled;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 9, notificationsDisabled));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 10, notificationsDisabled));
         int hasFullyCompleted;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 10, hasFullyCompleted));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 11, hasFullyCompleted));
         std::string navigationPaneClsid;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 11, navigationPaneClsid));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 12, navigationPaneClsid));
         std::string listingCursor;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 12, listingCursor));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 13, listingCursor));
         int64_t listingCursorTimestamp;
-        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_REQUEST_ID, 13, listingCursorTimestamp));
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_REQUEST_ID, 14, listingCursorTimestamp));
 
-        syncList.push_back(Sync(id, driveDbId, SyncPath(localPath), SyncPath(targetPath), targetNodeId, static_cast<bool>(paused),
-                                static_cast<bool>(supportVfs), static_cast<VirtualFileMode>(virtualFileMode),
-                                static_cast<bool>(notificationsDisabled), SyncPath(dbPath), static_cast<bool>(hasFullyCompleted),
-                                navigationPaneClsid, listingCursor, listingCursorTimestamp));
+        syncList.push_back(Sync(id, driveDbId, SyncPath(localPath), localNodeId, SyncPath(targetPath), targetNodeId,
+                                static_cast<bool>(paused), static_cast<bool>(supportVfs),
+                                static_cast<VirtualFileMode>(virtualFileMode), static_cast<bool>(notificationsDisabled),
+                                SyncPath(dbPath), static_cast<bool>(hasFullyCompleted), navigationPaneClsid, listingCursor,
+                                listingCursorTimestamp));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNCS_REQUEST_ID));
 
@@ -2315,33 +2418,36 @@ bool ParmsDb::selectAllSyncs(int driveDbId, std::vector<Sync> &syncList) {
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 0, id));
         SyncName localPath;
         LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 1, localPath));
+        std::string localNodeId;
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 2, localNodeId));
         SyncName targetPath;
-        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 2, targetPath));
+        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 3, targetPath));
         std::string targetNodeId;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 3, targetNodeId));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 4, targetNodeId));
         SyncName dbPath;
-        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 4, dbPath));
+        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 5, dbPath));
         int paused;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 5, paused));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 6, paused));
         int supportVfs;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 6, supportVfs));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 7, supportVfs));
         int virtualFileMode;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 7, virtualFileMode));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 8, virtualFileMode));
         int notificationsDisabled;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 8, notificationsDisabled));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 9, notificationsDisabled));
         int hasFullyCompleted;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 9, hasFullyCompleted));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 10, hasFullyCompleted));
         std::string navigationPaneClsid;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 10, navigationPaneClsid));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 11, navigationPaneClsid));
         std::string listingCursor;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 11, listingCursor));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 12, listingCursor));
         int64_t listingCursorTimestamp;
-        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 12, listingCursorTimestamp));
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 13, listingCursorTimestamp));
 
-        syncList.push_back(Sync(id, driveDbId, SyncPath(localPath), SyncPath(targetPath), targetNodeId, static_cast<bool>(paused),
-                                static_cast<bool>(supportVfs), static_cast<VirtualFileMode>(virtualFileMode),
-                                static_cast<bool>(notificationsDisabled), SyncPath(dbPath), static_cast<bool>(hasFullyCompleted),
-                                navigationPaneClsid, listingCursor, listingCursorTimestamp));
+        syncList.push_back(Sync(id, driveDbId, SyncPath(localPath), localNodeId, SyncPath(targetPath), targetNodeId,
+                                static_cast<bool>(paused), static_cast<bool>(supportVfs),
+                                static_cast<VirtualFileMode>(virtualFileMode), static_cast<bool>(notificationsDisabled),
+                                SyncPath(dbPath), static_cast<bool>(hasFullyCompleted), navigationPaneClsid, listingCursor,
+                                listingCursorTimestamp));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID));
 
@@ -2451,8 +2557,8 @@ bool ParmsDb::selectAllExclusionTemplates(std::vector<ExclusionTemplate> &exclus
             break;
         }
 
-        std::string templ;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 0, templ));
+        std::string template_;
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 0, template_));
         int warning;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 1, warning));
         int def;
@@ -2460,21 +2566,21 @@ bool ParmsDb::selectAllExclusionTemplates(std::vector<ExclusionTemplate> &exclus
         int deleted;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 3, deleted));
 
-        exclusionTemplateList.push_back(
-                ExclusionTemplate(templ, static_cast<bool>(warning), static_cast<bool>(def), static_cast<bool>(deleted)));
+        (void) exclusionTemplateList.emplace_back(template_, static_cast<bool>(warning), static_cast<bool>(def),
+                                                  static_cast<bool>(deleted));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID));
 
     return true;
 }
 
-bool ParmsDb::selectAllExclusionTemplates(bool def, std::vector<ExclusionTemplate> &exclusionTemplateList) {
+bool ParmsDb::selectAllExclusionTemplates(bool defaultTemplates, std::vector<ExclusionTemplate> &exclusionTemplateList) {
     const std::scoped_lock lock(_mutex);
 
     exclusionTemplateList.clear();
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID));
-    LOG_IF_FAIL(queryBindValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 1, def));
+    LOG_IF_FAIL(queryBindValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 1, defaultTemplates));
     bool found;
     for (;;) {
         if (!queryNext(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, found)) {
@@ -2492,14 +2598,15 @@ bool ParmsDb::selectAllExclusionTemplates(bool def, std::vector<ExclusionTemplat
         int deleted;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 2, deleted));
 
-        exclusionTemplateList.push_back(ExclusionTemplate(templ, static_cast<bool>(warning), def, static_cast<bool>(deleted)));
+        (void) exclusionTemplateList.emplace_back(templ, static_cast<bool>(warning), defaultTemplates,
+                                                  static_cast<bool>(deleted));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID));
 
     return true;
 }
 
-bool ParmsDb::updateAllExclusionTemplates(bool def, const std::vector<ExclusionTemplate> &exclusionTemplateList) {
+bool ParmsDb::updateAllExclusionTemplates(bool defaultTemplates, const std::vector<ExclusionTemplate> &exclusionTemplateList) {
     const std::scoped_lock lock(_mutex);
 
     int errId;
@@ -2509,7 +2616,7 @@ bool ParmsDb::updateAllExclusionTemplates(bool def, const std::vector<ExclusionT
 
     // Delete existing ExclusionTemplates
     LOG_IF_FAIL(queryResetAndClearBindings(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID));
-    LOG_IF_FAIL(queryBindValue(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 1, def));
+    LOG_IF_FAIL(queryBindValue(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 1, defaultTemplates));
     if (!queryExec(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID);
         rollbackTransaction();
@@ -2996,9 +3103,12 @@ bool ParmsDb::selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync
 bool ParmsDb::replaceShortDbPathsWithLongPaths() {
     LOG_INFO(_logger, "Replacing short DB path names wiht long ones in sync table.")
 
+    if (!createAndPrepareRequest(SELECT_ALL_SYNCS_REQUEST_ID, SELECT_ALL_SYNCS_REQUEST)) return false;
     std::vector<Sync> syncList;
     selectAllSyncs(syncList);
+    queryFree(SELECT_ALL_SYNCS_REQUEST_ID);
 
+    if (!createAndPrepareRequest(UPDATE_SYNC_REQUEST_ID, UPDATE_SYNC_REQUEST)) return false;
     for (auto &sync: syncList) {
         SyncPath longPathName;
         auto ioError = IoError::Success;
@@ -3019,6 +3129,7 @@ bool ParmsDb::replaceShortDbPathsWithLongPaths() {
         bool found = false;
         if (!updateSync(sync, found)) return false;
     }
+    queryFree(UPDATE_SYNC_REQUEST_ID);
 
     return true;
 }

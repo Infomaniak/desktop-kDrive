@@ -146,28 +146,32 @@
 #define SELECT_NODE_BY_NODEID_SYNCING 12
 
 #define SELECT_NODE_BY_NODEIDLOCAL_ID "select_node3"
-#define SELECT_NODE_BY_NODEIDLOCAL                                                                                               \
-    "SELECT nodeId, parentNodeId, nameLocal, nameDrive, created, lastModifiedLocal, type, size, checksum, status, syncing FROM " \
-    "node "                                                                                                                      \
+#define SELECT_NODE_BY_NODEIDLOCAL                                                                                          \
+    "SELECT nodeId, parentNodeId, nameLocal, nameDrive, nodeIdLocal, nodeIdDrive, created, lastModifiedLocal, type, size, " \
+    "checksum, status, syncing FROM "                                                                                       \
+    "node "                                                                                                                 \
     "WHERE nodeIdLocal=?1;"
 
 #define SELECT_NODE_BY_NODEIDDRIVE_ID "select_node4"
-#define SELECT_NODE_BY_NODEIDDRIVE                                                                                               \
-    "SELECT nodeId, parentNodeId, nameLocal, nameDrive, created, lastModifiedDrive, type, size, checksum, status, syncing FROM " \
-    "node "                                                                                                                      \
+#define SELECT_NODE_BY_NODEIDDRIVE                                                                                          \
+    "SELECT nodeId, parentNodeId, nameLocal, nameDrive, nodeIdLocal, nodeIdDrive, created, lastModifiedDrive, type, size, " \
+    "checksum, status, syncing FROM "                                                                                       \
+    "node "                                                                                                                 \
     "WHERE nodeIdDrive=?1;"
 
 #define SELECT_NODE_BY_REPLICAID_DBID 0
 #define SELECT_NODE_BY_REPLICAID_PARENTID 1
 #define SELECT_NODE_BY_REPLICAID_NAMELOCAL 2
 #define SELECT_NODE_BY_REPLICAID_NAMEDRIVE 3
-#define SELECT_NODE_BY_REPLICAID_CREATED 4
-#define SELECT_NODE_BY_REPLICAID_LASTMOD 5
-#define SELECT_NODE_BY_REPLICAID_TYPE 6
-#define SELECT_NODE_BY_REPLICAID_SIZE 7
-#define SELECT_NODE_BY_REPLICAID_CHECKSUM 8
-#define SELECT_NODE_BY_REPLICAID_STATUS 9
-#define SELECT_NODE_BY_REPLICAID_SYNCING 10
+#define SELECT_NODE_BY_REPLICAID_IDLOCAL 4
+#define SELECT_NODE_BY_REPLICAID_IDDRIVE 5
+#define SELECT_NODE_BY_REPLICAID_CREATED 6
+#define SELECT_NODE_BY_REPLICAID_LASTMOD 7
+#define SELECT_NODE_BY_REPLICAID_TYPE 8
+#define SELECT_NODE_BY_REPLICAID_SIZE 9
+#define SELECT_NODE_BY_REPLICAID_CHECKSUM 10
+#define SELECT_NODE_BY_REPLICAID_STATUS 11
+#define SELECT_NODE_BY_REPLICAID_SYNCING 12
 
 #define SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST_ID "select_node5"
 #define SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST    \
@@ -908,12 +912,17 @@ bool SyncDb::node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &
     SyncName nameDrive;
     LOG_IF_FAIL(querySyncNameValue(id, SELECT_NODE_BY_REPLICAID_NAMEDRIVE, nameDrive));
 
+    NodeId idLocal;
+    LOG_IF_FAIL(queryStringValue(id, SELECT_NODE_BY_REPLICAID_IDLOCAL, idLocal));
+    NodeId idDrive;
+    LOG_IF_FAIL(queryStringValue(id, SELECT_NODE_BY_REPLICAID_IDDRIVE, idDrive));
+
     std::optional<SyncTime> created;
     LOG_IF_FAIL(queryIsNullValue(id, SELECT_NODE_BY_REPLICAID_CREATED, isNull));
     if (isNull) {
         created = std::nullopt;
     } else {
-        SyncTime timeTmp;
+        SyncTime timeTmp = 0;
         LOG_IF_FAIL(queryInt64Value(id, SELECT_NODE_BY_REPLICAID_CREATED, timeTmp));
         created = std::make_optional(timeTmp);
     }
@@ -923,16 +932,16 @@ bool SyncDb::node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &
     if (isNull) {
         lastModified = std::nullopt;
     } else {
-        SyncTime timeTmp;
+        SyncTime timeTmp = 0;
         LOG_IF_FAIL(queryInt64Value(id, SELECT_NODE_BY_REPLICAID_LASTMOD, timeTmp));
         lastModified = std::make_optional(timeTmp);
     }
 
-    int intResult;
+    int intResult = 0;
     LOG_IF_FAIL(queryIntValue(id, SELECT_NODE_BY_REPLICAID_TYPE, intResult));
     auto type = static_cast<NodeType>(intResult);
 
-    int64_t size;
+    int64_t size = 0;
     LOG_IF_FAIL(queryInt64Value(id, SELECT_NODE_BY_REPLICAID_SIZE, size));
 
     std::optional<std::string> checksum;
@@ -957,7 +966,11 @@ bool SyncDb::node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &
     dbNode.setParentNodeId(parentNodeId);
     dbNode.setNameLocal(nameLocal);
     dbNode.setNameRemote(nameDrive);
+    dbNode.setNodeIdLocal(idLocal);
+    dbNode.setNodeIdRemote(idDrive);
     dbNode.setCreated(created);
+    dbNode.setLastModifiedLocal(lastModified);
+    dbNode.setLastModifiedRemote(lastModified);
     dbNode.setType(type);
     dbNode.setSize(size);
     if (side == ReplicaSide::Local) {
@@ -1196,8 +1209,6 @@ bool SyncDb::node(DbNodeId dbNodeId, DbNode &dbNode, bool &found) {
 bool SyncDb::dbId(ReplicaSide side, const SyncPath &path, DbNodeId &dbNodeId, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    const std::vector<SyncName> names = CommonUtility::splitSyncPath(path);
-
     // Find root node
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
     if (!queryNext(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, found)) {
@@ -1212,18 +1223,19 @@ bool SyncDb::dbId(ReplicaSide side, const SyncPath &path, DbNodeId &dbNodeId, bo
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
 
+    const auto &names = CommonUtility::splitSyncPath(path);
     if (!names.empty()) {
         // Find file node
         std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST_ID
                                                      : SELECT_NODE_BY_PARENTNODEID_AND_NAMEDRIVE_REQUEST_ID);
-        for (auto nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
+        for (const auto &name: names) {
             LOG_IF_FAIL(queryResetAndClearBindings(id));
             LOG_IF_FAIL(queryBindValue(id, 1, dbNodeId));
-            LOG_IF_FAIL(queryBindValue(id, 2, *nameIt));
+            LOG_IF_FAIL(queryBindValue(id, 2, name));
             if (!queryNext(id, found)) {
                 LOGW_WARN(_logger, L"Error getting query result: " << Utility::s2ws(id) << L" - parentNodeId="
                                                                    << std::to_wstring(dbNodeId) << L" and name="
-                                                                   << (SyncName2WStr(*nameIt)));
+                                                                   << Utility::formatSyncName(name));
                 return false;
             }
             if (!found) {
@@ -1261,8 +1273,6 @@ bool SyncDb::clearNodes() {
 bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &nodeId, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    const std::vector<SyncName> itemNames = CommonUtility::splitSyncPath(path);
-
     // Find root node
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
     if (!queryNext(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, found)) {
@@ -1275,19 +1285,20 @@ bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &n
     DbNodeId nodeDbId;
     LOG_IF_FAIL(queryInt64Value(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, 0, nodeDbId));
 
+    const auto &itemNames = CommonUtility::splitSyncPath(path);
     if (!itemNames.empty()) {
         LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
 
         std::string queryId = (side == ReplicaSide::Local ? SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST_ID
                                                           : SELECT_NODE_BY_PARENTNODEID_AND_NAMEDRIVE_REQUEST_ID);
         // Find file node
-        for (auto nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
+        for (const auto &name: itemNames) {
             LOG_IF_FAIL(queryResetAndClearBindings(queryId));
             LOG_IF_FAIL(queryBindValue(queryId, 1, nodeDbId));
-            LOG_IF_FAIL(queryBindValue(queryId, 2, *nameIt));
+            LOG_IF_FAIL(queryBindValue(queryId, 2, name));
             if (!queryNext(queryId, found)) {
                 LOGW_WARN(_logger, L"Error getting query result: " << Utility::s2ws(queryId) << L" - parentNodeId=" << nodeDbId
-                                                                   << L" and name=" << Utility::formatSyncName(*nameIt));
+                                                                   << L" and name=" << Utility::formatSyncName(name));
                 return false;
             }
             if (!found) {
@@ -2515,6 +2526,87 @@ bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumbe
 
     if (!updateNamesWithDistinctEncodings(localNames)) return false;
 
+    return true;
+}
+
+bool SyncDb::tryToFixDbNodeIdsAfterSyncDirChange(const SyncPath &syncDirPath) {
+    SyncDbReadOnlyCache &dbCache = cache();
+    if (!dbCache.reloadIfNeeded()) {
+        LOGW_WARN(_logger, L"Unable to reload SyncDb cache.");
+        return false;
+    }
+
+    std::unordered_set<NodeIds, NodeIds::HashFunction> nodeIdsFromDb;
+    bool found = false;
+    if (!dbCache.ids(nodeIdsFromDb, found)) {
+        LOGW_WARN(_logger, L"Unable to get node IDs from SyncDb cache.");
+        dbCache.clear();
+        return false;
+    }
+    if (!found) {
+        LOGW_WARN(_logger, L"No node IDs found in SyncDb cache.");
+        dbCache.clear();
+        return false;
+    }
+
+    std::list<std::pair<DbNodeId, NodeId>> updatedNodeIds;
+    const auto rootDbNodeId = dbCache.rootNode().nodeId();
+    for (const auto &nodeIds: nodeIdsFromDb) {
+        const DbNodeId dbNodeId = nodeIds.dbNodeId;
+        if (dbNodeId == rootDbNodeId) continue; // Skip root node
+        SyncPath relativelocalPath;
+        SyncPath remotePath;
+        if (!dbCache.path(dbNodeId, relativelocalPath, remotePath, found)) {
+            LOGW_WARN(_logger, L"Unable to get paths for DbNode ID " << dbNodeId);
+            dbCache.clear();
+            return false;
+        }
+        if (!found) {
+            LOGW_WARN(_logger, L"DbNode with ID " << dbNodeId << L" not found in cache.");
+            dbCache.clear();
+            return false;
+        }
+        SyncPath absoluteLocalPath = syncDirPath / relativelocalPath;
+        NodeId newLocalNodeId;
+
+        if (!IoHelper::getNodeId(absoluteLocalPath, newLocalNodeId)) {
+            LOGW_WARN(_logger, L"Unable to get new local node ID for "
+                                               << Utility::formatSyncPath(absoluteLocalPath)
+                                               << L". It might have been deleted or moved, the syncDb cannot be fixed.");
+            dbCache.clear();
+            return false;
+        }
+        (void) updatedNodeIds.emplace_back(dbNodeId, newLocalNodeId);
+    }
+
+    for (const auto &[dbNodeId, newLocalNodeId]: updatedNodeIds) {
+        DbNode dbNode;
+        if (!dbCache.node(dbNodeId, dbNode, found)) {
+            LOGW_WARN(_logger, L"Unable to get DbNode with ID " << dbNodeId);
+            dbCache.clear();
+            return false;
+        }
+        if (!found) {
+            LOGW_WARN(_logger, L"DbNode with ID " << dbNodeId << L" not found in cache.");
+            dbCache.clear();
+            return false;
+        }
+        dbNode.setNodeIdLocal(newLocalNodeId);
+
+        if (!updateNode(dbNode, found)) {
+            LOGW_WARN(_logger, L"Unable to update local node ID for DbNode ID " << dbNodeId);
+            dbCache.clear();
+            return false;
+        }
+        if (!found) {
+            LOGW_WARN(_logger, L"DbNode with ID " << dbNodeId << L" not found in SyncDb.");
+            dbCache.clear();
+            return false;
+        }
+
+        LOG_INFO(_logger, "Updated DbNode ID " << dbNodeId << " with new local node ID " << newLocalNodeId);
+    }
+    dbCache.clear();
     return true;
 }
 

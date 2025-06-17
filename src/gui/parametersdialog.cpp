@@ -369,25 +369,31 @@ QString ParametersDialog::getAppErrorText(const QString &fctCode, const ExitCode
 
 QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, const ExitCause exitCause) const {
     switch (exitCause) {
-        case ExitCause::SyncDirDoesntExist:
+        case ExitCause::SyncDirAccessError:
             return tr("The synchronization folder is no longer accessible (error %1).<br>"
                       "Synchronization will resume as soon as the folder is accessible.")
                     .arg(err);
-
-        case ExitCause::SyncDirAccesError:
-            return tr("The synchronization folder is inaccessible (error %1).<br>"
-                      "Please check that you have read and write access to this folder.")
+        case ExitCause::SyncDirChanged:
+            return tr("The synchronization folder has been replaced or moved in a way that prevents syncing (error %1).<br>"
+                      "This can happen after copying, moving, or restoring the folder.<br>"
+                      "To fix this, please create a new synchronization with a new folder.<br>"
+                      "Note: if you have unsynced changes in the old folder, you will need to copy them manually into the new "
+                      "one.")
                     .arg(err);
 
         case ExitCause::NotEnoughDiskSpace:
             return tr(
-                    "There is not enough space left on your disk.<br>"
+                    "There is not enough space left on your computer.<br>"
                     "The synchronization has been stopped.");
-
-        case ExitCause::NotEnoughtMemory:
+        case ExitCause::NotEnoughMemory:
             return tr(
                     "There is not enough memory left on your machine.<br>"
                     "The synchronization has been stopped.");
+        case ExitCause::NotEnoughINotifyWatches:
+            return tr("The number of inotify watches is insufficient (error %1).<br>"
+                      "You can raise this number by editing '/etc/sysctl.conf'.")
+                    .arg(err);
+
         case ExitCause::LiteSyncNotAllowed: {
             if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS &&
                 QOperatingSystemVersion::current().majorVersion() >= 15) {
@@ -536,9 +542,16 @@ QString ParametersDialog::getSyncPalErrorText(const QString &fctCode, const Exit
                       "Token invalid or revoked.")
                     .arg(err);
         case ExitCode::InvalidSync:
-            return tr("Nested synchronizations are prohibited (error %1).<br>"
-                      "You should only keep synchronizations whose folders are not nested.")
-                    .arg(err);
+            if (exitCause == ExitCause::SyncDirNestingError) {
+                return tr("Nested synchronizations are prohibited (error %1).<br>"
+                          "You should only keep synchronizations whose folders are not nested.")
+                        .arg(err);
+            } else if (exitCause == ExitCause::SyncDirAccessError) {
+                return tr("The sync folder on the remote kDrive no longer exists or is no longer accessible (error %1).<br>"
+                          "You need to restore it or give it back access rights or delete/recreate the synchronization.")
+                        .arg(err);
+            }
+            break;
         case ExitCode::LogicError:
             if (exitCause == ExitCause::FullListParsingError) {
                 return tr("File name parsing error (error %1).<br>"
@@ -789,7 +802,7 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
                         "Please fix the read and write permissions.");
             } else if (errorInfo.exitCause() == ExitCause::NotEnoughDiskSpace) {
                 return tr(
-                        "There is not enough space left on your disk.<br>"
+                        "There is not enough space left on your computer.<br>"
                         "The download has been canceled.");
             }
             return tr("System error.");
@@ -798,7 +811,7 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
             return getBackErrorText(errorInfo);
         }
         case ExitCode::DataError: {
-            if (errorInfo.exitCause() == ExitCause::FileAlreadyExists) {
+            if (errorInfo.exitCause() == ExitCause::FileExists) {
                 return tr(
                         "Item already exists on other side.<br>"
                         "It has been temporarily blacklisted.");

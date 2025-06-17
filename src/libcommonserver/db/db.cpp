@@ -155,7 +155,7 @@ std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int
     }
 
     if (!exists) {
-        if (!IoHelper::createDirectory(dbPath, ioError)) {
+        if (!IoHelper::createDirectory(dbPath, false, ioError)) {
             LOGW_WARN(Log::instance()->getLogger(), L"Failed to create directory: " << Utility::formatIoError(dbPath, ioError));
             return std::filesystem::path();
         }
@@ -572,6 +572,12 @@ bool Db::checkConnect(const std::string &version) {
 bool Db::addIntegerColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded /*= nullptr*/) {
     const auto requestId = tableName + "add_column_" + columnName;
     const auto request = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " INTEGER;";
+    return addColumnIfMissing(tableName, columnName, requestId, request, columnAdded);
+}
+
+bool Db::addTextColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded /*= nullptr*/) {
+    const auto requestId = tableName + "add_column_" + columnName;
+    const auto request = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " TEXT;";
     return addColumnIfMissing(tableName, columnName, requestId, request, columnAdded);
 }
 
