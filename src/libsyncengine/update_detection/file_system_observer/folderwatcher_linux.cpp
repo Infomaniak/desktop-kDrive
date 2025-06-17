@@ -52,18 +52,19 @@ void FolderWatcher_linux::startWatching() {
         return;
     }
 
-    if (!addFolderRecursive(_folder)) {
+    if (const auto &exitInfo = addFolderRecursive(_folder); !exitInfo) {
+        setExitInfo(exitInfo);
         return;
     }
 
     while (!_stop) {
         _ready = true;
-        unsigned int avail;
-        ioctl(_fileDescriptor, FIONREAD,
-              &avail); // Since read() is blocking until something has changed, we use ioctl to check if there is changes
+        unsigned int avail = 0;
+        (void) ioctl(static_cast<int>(_fileDescriptor), FIONREAD,
+                     &avail); // Since read() is blocking until something has changed, we use ioctl to check if there is changes
         if (avail > 0) {
             char buffer[BUF_LEN];
-            ssize_t len = read(_fileDescriptor, buffer, BUF_LEN);
+            ssize_t len = read(static_cast<int>(_fileDescriptor), buffer, BUF_LEN);
             if (len == -1) {
                 LOG_WARN(_logger, "Error reading file descriptor " << errno);
                 continue;
@@ -101,7 +102,7 @@ void FolderWatcher_linux::startWatching() {
                                        L"Operation " << opType << L" detected on item with " << Utility::formatSyncPath(path));
                         }
 
-                        if (const auto exitInfo = changeDetected(path, opType); exitInfo.code() != ExitCode::Ok) {
+                        if (const auto exitInfo = changeDetected(path, opType); !exitInfo) {
                             LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in FolderWatcher_linux::changeDetected for "
                                                                                  << Utility::formatSyncPath(path) << L" "
                                                                                  << exitInfo);
@@ -109,8 +110,7 @@ void FolderWatcher_linux::startWatching() {
 
                         bool isDirectory = false;
                         auto ioError = IoError::Success;
-                        const bool isDirSuccess = IoHelper::checkIfIsDirectory(path, isDirectory, ioError);
-                        if (!isDirSuccess) {
+                        if (const bool isDirSuccess = IoHelper::checkIfIsDirectory(path, isDirectory, ioError); !isDirSuccess) {
                             LOGW_WARN(_logger,
                                       L"Error in IoHelper::checkIfIsDirectory: " << Utility::formatIoError(path, ioError));
                             continue;
@@ -121,7 +121,10 @@ void FolderWatcher_linux::startWatching() {
                         }
 
                         if ((event->mask & (IN_MOVED_TO | IN_CREATE)) && isDirectory) {
-                            addFolderRecursive(path);
+                            if (auto exitInfo = addFolderRecursive(path); !exitInfo) {
+                                setExitInfo(exitInfo);
+                                return;
+                            };
                         }
 
                         if (event->mask & (IN_MOVED_FROM | IN_DELETE)) {
@@ -180,59 +183,72 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
     return ok;
 }
 
-bool FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
-    if (std::error_code ec; !std::filesystem::exists(path, ec)) {
-        if (ec.value() != 0) {
-            LOGW_WARN(_logger, L"Failed to check if path exists " << Utility::formatSyncPath(path) << L": "
-                                                                  << Utility::s2ws(ec.message()) << L" (" << ec.value() << L")");
-        }
-        return false;
-    }
+FolderWatcher_linux::AddWatchOutcome FolderWatcher_linux::inotifyAddWatch(const SyncPath &path) {
+    AddWatchOutcome result;
+    result.returnValue = inotify_add_watch(static_cast<int>(_fileDescriptor), path.string().c_str(),
+                                           IN_CLOSE_WRITE | IN_ATTRIB | IN_MOVE | IN_CREATE | IN_DELETE | IN_MODIFY |
+                                                   IN_DELETE_SELF | IN_MOVE_SELF | IN_UNMOUNT | IN_ONLYDIR | IN_DONT_FOLLOW);
+    result.errorNumber = errno;
 
-    const auto wd = inotify_add_watch(_fileDescriptor, path.string().c_str(),
-                                      IN_CLOSE_WRITE | IN_ATTRIB | IN_MOVE | IN_CREATE | IN_DELETE | IN_MODIFY | IN_DELETE_SELF |
-                                              IN_MOVE_SELF | IN_UNMOUNT | IN_ONLYDIR | IN_DONT_FOLLOW);
-
-    if (wd > -1) {
-        _watchToPath.insert({wd, path});
-        _pathToWatch.insert({path, wd});
-    } else {
-        // If we're running out of memory or inotify watches, become
-        // unreliable.
-        if (_isReliable && (errno == ENOMEM || errno == ENOSPC)) {
-            _isReliable = false;
-            LOG_ERROR(_logger, "Out of memory or limit number of inotify watches reached!"); // TODO : notify the user?
-            return false;
-        }
-    }
-
-    return true;
+    return result;
 }
 
-bool FolderWatcher_linux::addFolderRecursive(const SyncPath &path) {
+ExitInfo FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
+    if (std::error_code ec; !std::filesystem::exists(path, ec)) {
+        if (ec) {
+            LOGW_WARN(_logger, L"Failed to check if path exists for " << Utility::formatStdError(path, ec));
+        }
+        return {ExitCode::SystemError, ExitCause::Unknown};
+    }
+
+    const auto outcome = inotifyAddWatch(path);
+    if (outcome.returnValue == -1) {
+        switch (outcome.errorNumber) {
+            case ENOMEM:
+                LOG_ERROR(_logger, "Error in FolderWatcher_linux::inotifyAddWatch: Out of memory.");
+                return {ExitCode::SystemError, ExitCause::NotEnoughMemory};
+            case ENOSPC:
+                // An insufficient number of inotify watches is a common error cause.
+                // It needs to be fixed by the user, see e.g.,
+                // https://stackoverflow.com/questions/47075661/error-user-limit-of-inotify-watches-reached-extreact-build
+                LOG_ERROR(_logger, "Limit number of inotify watches reached. The latter can be raised by the user.");
+                return {ExitCode::SystemError, ExitCause::NotEnoughINotifyWatches};
+            default:
+                LOGW_ERROR(_logger, L"Failed to register " << Utility::formatSyncPath(path));
+                return {ExitCode::SystemError, ExitCause::Unknown};
+        }
+    }
+
+    (void) _watchToPath.insert({outcome.returnValue, path});
+    (void) _pathToWatch.insert({path, outcome.returnValue});
+
+    return ExitCode::Ok;
+}
+
+ExitInfo FolderWatcher_linux::addFolderRecursive(const SyncPath &path) {
     if (_pathToWatch.contains(path)) {
         // This path is already watched
-        return true;
+        return ExitCode::Ok;
     }
 
     int subdirs = 0;
     LOGW_DEBUG(_logger, L"(+) Watcher:" << Utility::formatSyncPath(path));
 
-    inotifyRegisterPath(path);
+    if (auto exitInfo = inotifyRegisterPath(path); !exitInfo) return exitInfo;
 
     std::list<SyncPath> allSubFolders;
     if (!findSubFolders(path, allSubFolders)) {
         LOG_ERROR(_logger, "Could not traverse all sub folders");
-        return false;
+        return {ExitCode::SystemError, ExitCause::Unknown};
     }
 
     for (const auto &subDirPath: allSubFolders) {
         if (std::error_code ec; std::filesystem::exists(subDirPath, ec) && !_pathToWatch.contains(subDirPath)) {
             subdirs++;
 
-            inotifyRegisterPath(subDirPath);
+            if (auto exitInfo = inotifyRegisterPath(subDirPath); !exitInfo) return exitInfo;
         } else {
-            if (ec.value() != 0) {
+            if (ec) {
                 LOGW_WARN(_logger, L"Failed to check if path exists " << Utility::formatSyncPath(path) << L": "
                                                                       << Utility::s2ws(ec.message()) << L" (" << ec.value()
                                                                       << L")");
@@ -245,7 +261,7 @@ bool FolderWatcher_linux::addFolderRecursive(const SyncPath &path) {
         LOG_DEBUG(_logger, "    `-> and " << subdirs << " subdirectories");
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {
@@ -262,7 +278,7 @@ void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {
         }
 
         auto wid = it->second;
-        if (const auto wd = inotify_rm_watch(_fileDescriptor, wid); wd > -1) {
+        if (const auto wd = inotify_rm_watch(static_cast<int>(_fileDescriptor), wid); wd > -1) {
             _watchToPath.erase(wid);
             it = _pathToWatch.erase(it);
             LOG_DEBUG(_logger, "Removed watch on" << itPath);
@@ -279,7 +295,7 @@ void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {
 ExitInfo FolderWatcher_linux::changeDetected(const SyncPath &path, OperationType opType) const {
     std::list<std::pair<SyncPath, OperationType>> list;
     (void) list.emplace_back(path, opType);
-    if (const auto exitInfo = _parent->changesDetected(list); exitInfo.code() != ExitCode::Ok) {
+    if (const auto exitInfo = _parent->changesDetected(list); !exitInfo) {
         LOGW_WARN(_logger, L"Error in LocalFileSystemObserverWorker::changesDetected: " << exitInfo);
         return exitInfo;
     }
@@ -290,7 +306,7 @@ ExitInfo FolderWatcher_linux::changeDetected(const SyncPath &path, OperationType
 void FolderWatcher_linux::stopWatching() {
     LOGW_DEBUG(_logger, L"Stop watching folder: " << Utility::formatSyncPath(_folder));
 
-    close(_fileDescriptor);
+    (void) close(static_cast<int>(_fileDescriptor));
 }
 
 } // namespace KDC
