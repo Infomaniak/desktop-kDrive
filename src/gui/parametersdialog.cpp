@@ -389,6 +389,11 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, const Ex
             return tr(
                     "There is not enough memory left on your machine.<br>"
                     "The synchronization has been stopped.");
+        case ExitCause::NotEnoughINotifyWatches:
+            return tr("The number of inotify watches is insufficient (error %1).<br>"
+                      "You can raise this number by editing '/etc/sysctl.conf'.")
+                    .arg(err);
+
         case ExitCause::LiteSyncNotAllowed: {
             if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS &&
                 QOperatingSystemVersion::current().majorVersion() >= 15) {
@@ -546,6 +551,7 @@ QString ParametersDialog::getSyncPalErrorText(const QString &fctCode, const Exit
                           "You need to restore it or give it back access rights or delete/recreate the synchronization.")
                         .arg(err);
             }
+            break;
         case ExitCode::LogicError:
             if (exitCause == ExitCause::FullListParsingError) {
                 return tr("File name parsing error (error %1).<br>"

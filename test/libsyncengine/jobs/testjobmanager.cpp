@@ -397,12 +397,10 @@ void TestJobManager::testCanRunjob() {
 
 static const Poco::URI testUri("https://api.kdrive.infomaniak.com/2/drive/102489/files/56850/directory");
 void sendTestRequest(Poco::Net::HTTPSClientSession &session, const bool resetSession) {
-    bool connected = session.socket().impl()->initialized();
     Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, testUri.toString(), Poco::Net::HTTPMessage::HTTP_1_1);
     request.setContentLength(0);
     (void) session.sendRequest(request);
 
-    connected = session.socket().impl()->initialized();
     Poco::Net::HTTPResponse response;
     (void) session.receiveResponse(response);
     if (resetSession) {

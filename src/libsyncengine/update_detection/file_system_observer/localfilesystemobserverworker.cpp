@@ -33,7 +33,6 @@
 
 namespace KDC {
 
-static const int defaultDiscoveryInterval = 60000; // 60sec
 static const int waitForUpdateDelay = 1000; // 1sec
 
 LocalFileSystemObserverWorker::LocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
@@ -331,7 +330,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
                     continue;
                 }
 
-                if (const auto exitInfo = exploreDir(absolutePath, true); exitInfo.code() != ExitCode::Ok) {
+                if (const auto exitInfo = exploreDir(absolutePath, true); !exitInfo) {
                     // Error while exploring directory, we need to invalidate the liveSnapshot
                     LOGW_SYNCPAL_WARN(_logger, L"Error in LocalFileSystemObserverWorker::exploreDir for "
                                                        << Utility::formatSyncPath(absolutePath) << L" " << exitInfo);
@@ -395,9 +394,7 @@ void LocalFileSystemObserverWorker::forceUpdate() {
 
 void LocalFileSystemObserverWorker::execute() {
     ExitInfo exitInfo = ExitCode::Ok;
-
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
-    auto timerStart = std::chrono::steady_clock::now();
 
     // Sync loop
     for (;;) {
@@ -419,41 +416,31 @@ void LocalFileSystemObserverWorker::execute() {
             break;
         }
         // We never pause this thread
-
-        if (!isFolderWatcherReliable() &&
-            (std::chrono::steady_clock::now() - timerStart).count() * 1000 > defaultDiscoveryInterval) {
-            // The folder watcher became unreliable so fallback to static synchronization
-            timerStart = std::chrono::steady_clock::now();
-            tryToInvalidateSnapshot();
-            if (exitInfo = generateInitialSnapshot(); exitInfo.code() != ExitCode::Ok) {
+        if (!_liveSnapshot.isValid()) {
+            exitInfo = generateInitialSnapshot();
+            if (!exitInfo) {
                 LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot: " << exitInfo);
                 break;
             }
-        } else {
-            if (!_liveSnapshot.isValid()) {
-                if (exitInfo = generateInitialSnapshot(); exitInfo.code() != ExitCode::Ok) {
-                    LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot: " << exitInfo);
+        }
+
+        // Wait 1 sec after the last update
+        if (_updating) {
+            auto diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
+                                                                                 _needUpdateTimerStart);
+            if (diff_ms.count() > waitForUpdateDelay) {
+                // Check if root folder is still valid
+                if (exitInfo = _syncPal->isRootFolderValid(); !exitInfo) {
+                    LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
+                    invalidateSnapshot();
                     break;
                 }
-            }
 
-            // Wait 1 sec after the last update
-            if (_updating) {
-                auto diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
-                                                                                     _needUpdateTimerStart);
-                if (diff_ms.count() > waitForUpdateDelay) {
-                    // Check if root folder is still valid
-                    if (exitInfo = _syncPal->isRootFolderValid(); !exitInfo) {
-                        LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
-                        invalidateSnapshot();
-                        break;
-                    }
-
-                    const std::lock_guard<std::recursive_mutex> lk(_recursiveMutex);
-                    _updating = false;
-                }
+                const std::scoped_lock lock(_recursiveMutex);
+                _updating = false;
             }
         }
+
         if (_initializing) _initializing = false;
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
@@ -488,7 +475,7 @@ ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
     const std::lock_guard<std::recursive_mutex> lock(_recursiveMutex);
     if (!_pendingFileEvents.empty()) {
         LOG_SYNCPAL_DEBUG(_logger, "Processing pending file events");
-        if (const auto exitInfo = changesDetected(_pendingFileEvents); exitInfo.code() != ExitCode::Ok) {
+        if (const auto exitInfo = changesDetected(_pendingFileEvents); !exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error in LocalFileSystemObserverWorker::changesDetected: " << exitInfo);
             mainExitInfo.merge(exitInfo, {ExitCode::SystemError, ExitCode::DataError});
         }
