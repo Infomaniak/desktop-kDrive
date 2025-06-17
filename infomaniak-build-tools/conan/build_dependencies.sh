@@ -162,11 +162,11 @@ if [ "$platform" = "darwin" ]; then
 fi
 
 log "Creating package Qt..."
-conan create "$conan_recipes_folder/qt/all/" -r=$local_recipe_remote_name -o "&:qt_login_type=$qt_login_type_param"
+conan create "$conan_recipes_folder/qt/all/" -r=$local_recipe_remote_name # -o "&:qt_login_type=$qt_login_type_param"
 
 log "Installing dependencies..."
 # Install this packet in the build folder.
-conan install . --output-folder="$output_dir" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter -o 'qt/*:qt_login_type='$qt_login_type_param
+conan install . --output-folder="$output_dir" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter #-o 'qt/*:qt_login_type='$qt_login_type_param
 
 if [ $? -ne 0 ]; then
   error "Failed to install Conan dependencies."
