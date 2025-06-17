@@ -430,11 +430,10 @@ void TestIntegration::inconsistencyTests() {
 
     waitForCurrentSyncToFinish();
 
-    /************************************/
-    // Temporary, needed because of a bug if an item has remote move and local edit operations:
-    // https://infomaniak.atlassian.net/browse/KDESKTOP-1752
+    // Needed because when an item has remote move and local edit operations at the same time, the move operation is processed
+    // first. Then, the edit operation could not be propagated since the item path has changed. The sync is therefore restarted
+    // and a new edit operation, with the new path, is generated.
     waitForCurrentSyncToFinish();
-    /************************************/
 
     (void) IoHelper::getFileStat(_syncPal->localPath() / "testnameclash2", &filestat, ioError);
     remoteFileInfo = getRemoteFileInfo(_driveDbId, _remoteSyncDir.id(), Str("testnameclash2"));
