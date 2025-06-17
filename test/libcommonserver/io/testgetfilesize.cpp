@@ -231,9 +231,7 @@ void TestIo::testGetFileSizeAllBranches() {
         const SyncPath subdir = temporaryDirectory.path() / "permission_less_subdirectory";
         std::filesystem::create_directory(subdir);
         const SyncPath path = subdir / "file.txt";
-        {
-            std::ofstream ofs(path);
-        }
+        { std::ofstream ofs(path); }
 
         _testObj->setFileSizeFunction([&subdir](const SyncPath &path, std::error_code &ec) -> std::uintmax_t {
             std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::remove);
