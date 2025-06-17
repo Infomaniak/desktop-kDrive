@@ -239,7 +239,7 @@ class QtConan(ConanFile):
         # --accept-licenses: Accepts all licenses without user input.
         # --default-answer: Automatically answers to message queries with their default values.
         process_args =      [ "--confirm-command", "--accept-obligations", "--accept-licenses", "--default-answer" ]
-        install_directory = [ "--root", f"'{self.source_folder}'" ]
+        install_directory = [ "--root", f"{self.package_folder}" ]
         process_args = install_directory + process_args
 
         if self.options.qt_login_type == "envvars":
