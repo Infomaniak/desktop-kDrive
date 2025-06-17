@@ -1209,8 +1209,6 @@ bool SyncDb::node(DbNodeId dbNodeId, DbNode &dbNode, bool &found) {
 bool SyncDb::dbId(ReplicaSide side, const SyncPath &path, DbNodeId &dbNodeId, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    const std::vector<SyncName> names = CommonUtility::splitSyncPath(path);
-
     // Find root node
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
     if (!queryNext(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, found)) {
@@ -1225,18 +1223,19 @@ bool SyncDb::dbId(ReplicaSide side, const SyncPath &path, DbNodeId &dbNodeId, bo
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
 
+    const auto &names = CommonUtility::splitSyncPath(path);
     if (!names.empty()) {
         // Find file node
         std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST_ID
                                                      : SELECT_NODE_BY_PARENTNODEID_AND_NAMEDRIVE_REQUEST_ID);
-        for (auto nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
+        for (const auto &name: names) {
             LOG_IF_FAIL(queryResetAndClearBindings(id));
             LOG_IF_FAIL(queryBindValue(id, 1, dbNodeId));
-            LOG_IF_FAIL(queryBindValue(id, 2, *nameIt));
+            LOG_IF_FAIL(queryBindValue(id, 2, name));
             if (!queryNext(id, found)) {
                 LOGW_WARN(_logger, L"Error getting query result: " << Utility::s2ws(id) << L" - parentNodeId="
                                                                    << std::to_wstring(dbNodeId) << L" and name="
-                                                                   << (SyncName2WStr(*nameIt)));
+                                                                   << Utility::formatSyncName(name));
                 return false;
             }
             if (!found) {
@@ -1274,8 +1273,6 @@ bool SyncDb::clearNodes() {
 bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &nodeId, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    const std::vector<SyncName> itemNames = CommonUtility::splitSyncPath(path);
-
     // Find root node
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
     if (!queryNext(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, found)) {
@@ -1288,19 +1285,20 @@ bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &n
     DbNodeId nodeDbId;
     LOG_IF_FAIL(queryInt64Value(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, 0, nodeDbId));
 
+    const auto &itemNames = CommonUtility::splitSyncPath(path);
     if (!itemNames.empty()) {
         LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
 
         std::string queryId = (side == ReplicaSide::Local ? SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST_ID
                                                           : SELECT_NODE_BY_PARENTNODEID_AND_NAMEDRIVE_REQUEST_ID);
         // Find file node
-        for (auto nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
+        for (const auto &name: itemNames) {
             LOG_IF_FAIL(queryResetAndClearBindings(queryId));
             LOG_IF_FAIL(queryBindValue(queryId, 1, nodeDbId));
-            LOG_IF_FAIL(queryBindValue(queryId, 2, *nameIt));
+            LOG_IF_FAIL(queryBindValue(queryId, 2, name));
             if (!queryNext(queryId, found)) {
                 LOGW_WARN(_logger, L"Error getting query result: " << Utility::s2ws(queryId) << L" - parentNodeId=" << nodeDbId
-                                                                   << L" and name=" << Utility::formatSyncName(*nameIt));
+                                                                   << L" and name=" << Utility::formatSyncName(name));
                 return false;
             }
             if (!found) {
