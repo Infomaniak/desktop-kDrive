@@ -235,8 +235,10 @@ void OperationSorterFilter::filterMoveBeforeMoveOccupiedCandidates(const SyncOpP
 
 void OperationSorterFilter::filterEditBeforeMoveCandidates(const SyncOpPtr &op) {
     // We keep only operations on nodes that have both EDIT and MOVE operations.
-    if (op->affectedNode()->hasChangeEvent(OperationType::Edit) && op->affectedNode()->hasChangeEvent(OperationType::Move)) {
-        (void) _fixEditBeforeMoveCandidates[op->affectedNode()->id().value()].emplace_back(op);
+    if (op->affectedNode()->hasChangeEvent(OperationType::Edit) && op->affectedNode()->hasChangeEvent(OperationType::Move) ||
+        op->affectedNode()->hasChangeEvent(OperationType::Edit) && op->correspondingNode()->hasChangeEvent(OperationType::Move) ||
+        op->correspondingNode()->hasChangeEvent(OperationType::Edit) && op->affectedNode()->hasChangeEvent(OperationType::Move)) {
+        (void) _fixEditBeforeMoveCandidates[op->affectedNode()->idb().value()].emplace_back(op);
     }
 }
 
