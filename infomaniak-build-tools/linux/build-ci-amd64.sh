@@ -106,7 +106,7 @@ mkdir -p "$build_dir/client"
 conan_build_folder="$build_dir/conan"
 conan_dependencies_folder="$build_dir/conan/dependencies"
 
-bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" --output-dir="$conan_build_folder"
+bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" --output-dir="$conan_build_folder" --ci
 
 conan_toolchain_file="$(find "$conan_build_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
 conan_generator_folder="$(dirname "$conan_toolchain_file")"
