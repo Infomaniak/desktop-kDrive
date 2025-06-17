@@ -60,13 +60,5 @@ if(APPLE)
 
     # Default Lite Sync app exclude list
     install(FILES ${CMAKE_SOURCE_DIR}/litesync-exclude.lst DESTINATION ${BIN_OUTPUT_DIRECTORY})
-
-
-#    install(CODE "
-#        message(STATUS \"Fixing library paths for ${testparms_NAME}...\")
-#        execute_process(COMMAND \"install_name_tool\" -change /usr/local/lib/libcppunit-1.15.2.dylib @rpath/libcppunit-1.15.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testparms_NAME})
-#        execute_process(COMMAND \"install_name_tool\" -add_rpath @executable_path ${BIN_OUTPUT_DIRECTORY}/${testparms_NAME})
-#        execute_process(COMMAND \"install_name_tool\" -add_rpath /usr/lib ${BIN_OUTPUT_DIRECTORY}/${testparms_NAME})
-#        " COMPONENT RUNTIME)
 endif()
 

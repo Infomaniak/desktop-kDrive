@@ -120,13 +120,3 @@ else()
     target_link_libraries(${testsyncengine_NAME}
             "/usr/local/lib/libcppunit.so")
 endif ()
-
-# Install
-#if(APPLE)
-#    install(CODE "
-#        message(STATUS \"Fixing library paths for ${testsyncengine_NAME}...\")
-#        execute_process(COMMAND \"install_name_tool\" -change /usr/local/lib/libcppunit-1.15.2.dylib @rpath/libcppunit-1.15.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testsyncengine_NAME})
-#        execute_process(COMMAND \"install_name_tool\" -add_rpath @executable_path ${BIN_OUTPUT_DIRECTORY}/${testsyncengine_NAME})
-#        execute_process(COMMAND \"install_name_tool\" -add_rpath /usr/lib ${BIN_OUTPUT_DIRECTORY}/${testsyncengine_NAME})
-#        " COMPONENT RUNTIME)
-#endif()
