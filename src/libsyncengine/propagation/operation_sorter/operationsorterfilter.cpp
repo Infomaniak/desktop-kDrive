@@ -236,10 +236,12 @@ void OperationSorterFilter::filterMoveBeforeMoveOccupiedCandidates(const SyncOpP
 void OperationSorterFilter::filterEditBeforeMoveCandidates(const SyncOpPtr &op) {
     if (op->affectedNode()->hasChangeEvent(OperationType::Edit) && op->affectedNode()->hasChangeEvent(OperationType::Move)) {
         (void) _fixEditBeforeMoveCandidates[op->affectedNode()->idb().value()].emplace_back(op);
+        return;
     }
 
     if (op->affectedNode()->hasChangeEvent(OperationType::Move)) {
         (void) _fixEditBeforeMoveCandidates[op->affectedNode()->idb().value()].emplace_back(op);
+        return;
     }
 
     if (op->affectedNode()->hasChangeEvent(OperationType::Edit)) {
