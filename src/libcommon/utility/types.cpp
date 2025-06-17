@@ -218,6 +218,8 @@ std::string toString(const ExitCause e) {
             return "ServiceUnavailable";
         case ExitCause::BadGateway:
             return "BadGateway";
+        case ExitCause::NotEnoughINotifyWatches:
+            return "NotEnoughINotifyWatches";
         default:
             return noConversionStr;
     }
