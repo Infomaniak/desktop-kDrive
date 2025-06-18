@@ -232,7 +232,7 @@ class QtConan(ConanFile):
         # --accept-licenses: Accepts all licenses without user input.
         # --default-answer: Automatically answers to message queries with their default values.
         process_args =      [ "--confirm-command", "--accept-obligations", "--accept-licenses", "--default-answer" ]
-        install_directory = [ "--root", f"{self.package_folder}" ]
+        install_directory = [ "--root", f"{self.build_folder}/install" ]
         process_args = install_directory + process_args
 
         if self.options.qt_login_type == "envvars":
@@ -245,10 +245,7 @@ class QtConan(ConanFile):
 
     def package(self):
         self.output.highlight("This step can take a while, please be patient...")
-        copy(self, "bin/", src=os.path.join(self.source_folder, f"{self.version}/macos"), dst=self.package_folder)
-        copy(self, "lib/", src=os.path.join(self.source_folder, f"{self.version}/macos"), dst=self.package_folder)
-        copy(self, "include/", src=os.path.join(self.source_folder, f"{self.version}/macos"), dst=self.package_folder)
-        copy(self, "*LICENCE*", src=self.source_folder, dst=os.path.join(self.package_folder, "licenses"))
+        copy(self, "*", src=os.path.join(self.build_folder, f"install/{self.version}/macos/"), dst=self.package_folder)
         # copy(self, "Tools/", src=self.source_folder, dst=self.package_folder)
 
     def package_info(self):
