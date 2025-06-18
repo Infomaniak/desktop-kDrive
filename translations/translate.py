@@ -20,13 +20,8 @@
 #
 
 import argparse
-import datetime
 import deepl
-import errno
 import os
-import re
-import shutil
-import subprocess
 import sys
 
 parser = argparse.ArgumentParser(
