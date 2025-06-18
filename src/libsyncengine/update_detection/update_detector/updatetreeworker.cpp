@@ -1012,14 +1012,14 @@ ExitCode UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &path, bool is
         return ExitCode::Ok;
     }
 
-    std::vector<SyncName> names = CommonUtility::splitSyncPath(path);
+    const auto names = CommonUtility::splitSyncPath(path);
 
     // create intermediate nodes if needed
     std::shared_ptr<Node> tmpNode = _updateTree->rootNode();
-    for (auto nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
+    for (const auto &name: names) {
         std::shared_ptr<Node> tmpChildNode = nullptr;
         for (auto &[_, childNode]: tmpNode->children()) {
-            if (childNode->type() == NodeType::Directory && *nameIt == childNode->name()) {
+            if (childNode->type() == NodeType::Directory && name == childNode->name()) {
                 if (!isDeleted && childNode->hasChangeEvent(OperationType::Delete)) {
                     // An item on a deleted branch can only have a DELETE change event. If it has any other
                     // change event, it means its parent is on a different branch.
@@ -1032,7 +1032,7 @@ ExitCode UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &path, bool is
 
         if (tmpChildNode == nullptr) {
             // create tmp Node
-            tmpChildNode = std::make_shared<Node>(_side, *nameIt, NodeType::Directory, tmpNode);
+            tmpChildNode = std::make_shared<Node>(_side, name, NodeType::Directory, tmpNode);
             if (tmpChildNode == nullptr) {
                 std::cout << "Failed to allocate memory" << std::endl;
                 LOG_SYNCPAL_ERROR(_logger, "Failed to allocate memory");
@@ -1040,9 +1040,9 @@ ExitCode UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &path, bool is
             }
 
             if (!tmpNode->insertChildren(tmpChildNode)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name=" << SyncName2WStr(tmpChildNode->name())
-                                                                                        << L" parent node name="
-                                                                                        << SyncName2WStr(tmpNode->name()));
+                LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
+                                                   << Utility::formatSyncName(tmpChildNode->name()) << L" parent node name="
+                                                   << Utility::formatSyncName(tmpNode->name()));
                 return ExitCode::DataError;
             }
         }
@@ -1116,16 +1116,14 @@ bool UpdateTreeWorker::integrityCheck() {
 }
 
 ExitCode UpdateTreeWorker::getNewPathAfterMove(const SyncPath &path, SyncPath &newPath) {
-    const std::vector<SyncName> itemNames = CommonUtility::splitSyncPath(path);
-    std::vector<NodeId> nodeIds(itemNames.size());
+    const auto &itemNames = CommonUtility::splitSyncPath(path);
+    std::list<NodeId> nodeIds;
 
     // Vector ID
     SyncPath tmpPath;
-    auto nameIt = itemNames.rbegin();
-    auto nodeIdIt = nodeIds.rbegin();
 
-    for (; nameIt != itemNames.rend() && nodeIdIt != nodeIds.rend(); ++nameIt, ++nodeIdIt) {
-        tmpPath /= *nameIt;
+    for (const auto &name: itemNames) {
+        tmpPath /= name;
         bool found = false;
         std::optional<NodeId> tmpNodeId{std::nullopt};
         if (!_syncDbReadOnlyCache.id(_side, tmpPath, tmpNodeId, found)) {
@@ -1136,13 +1134,13 @@ ExitCode UpdateTreeWorker::getNewPathAfterMove(const SyncPath &path, SyncPath &n
             LOGW_SYNCPAL_WARN(_logger, L"Node not found for " << Utility::formatSyncPath(tmpPath));
             return ExitCode::DataError;
         }
-        *nodeIdIt = *tmpNodeId;
+        (void) nodeIds.emplace_back(*tmpNodeId);
     }
 
-    nameIt = itemNames.rbegin();
-    nodeIdIt = nodeIds.rbegin();
+    auto nameIt = itemNames.begin();
+    auto nodeIdIt = nodeIds.begin();
 
-    for (; nameIt != itemNames.rend() && nodeIdIt != nodeIds.rend(); ++nameIt, ++nodeIdIt) {
+    for (; nameIt != itemNames.end() && nodeIdIt != nodeIds.end(); ++nameIt, ++nodeIdIt) {
         if (FSOpPtr op = nullptr; _operationSet->findOp(*nodeIdIt, OperationType::Move, op)) {
             newPath = op->destinationPath();
         } else {

@@ -2790,27 +2790,27 @@ ExitInfo AppServer::processMigratedSyncOnceConnected(int userDbId, int driveId, 
 
     // Set sync target nodeId for advanced sync
     if (!sync.targetPath().empty()) {
-        std::vector<SyncName> itemNames = CommonUtility::splitSyncPath(sync.targetPath());
-
         // Get root subfolders
-        QList<NodeInfo> list;
-        if (const ExitInfo exitInfo = ServerRequests::getSubFolders(sync.driveDbId(), "", list); !exitInfo) {
+        QList<NodeInfo> nodeInfoList;
+        if (const ExitInfo exitInfo = ServerRequests::getSubFolders(sync.driveDbId(), "", nodeInfoList); !exitInfo) {
             LOG_WARN(_logger, "Error in Requests::getSubFolders with driveDbId =" << sync.driveDbId() << " : " << exitInfo);
             return exitInfo;
         }
 
         NodeId nodeId;
-        while (!list.empty() && !itemNames.empty()) {
-            NodeInfo info = list.back();
-            list.pop_back();
-            if (QStr2SyncName(info.name()) == itemNames.back()) {
-                itemNames.pop_back();
+        auto itemNames = CommonUtility::splitSyncPath(sync.targetPath());
+        while (!nodeInfoList.empty() && !itemNames.empty()) {
+            NodeInfo info = nodeInfoList.back();
+            nodeInfoList.pop_back();
+            if (QStr2SyncName(info.name()) == itemNames.front()) {
+                itemNames.pop_front();
                 if (itemNames.empty()) {
                     nodeId = info.nodeId().toStdString();
                     break;
                 }
 
-                if (const ExitInfo exitInfo = ServerRequests::getSubFolders(sync.driveDbId(), info.nodeId(), list); !exitInfo) {
+                if (const ExitInfo exitInfo = ServerRequests::getSubFolders(sync.driveDbId(), info.nodeId(), nodeInfoList);
+                    !exitInfo) {
                     LOG_WARN(_logger, "Error in Requests::getSubFolders with driveDbId =" << sync.driveDbId() << " nodeId = "
                                                                                           << info.nodeId().toStdString() << " : "
                                                                                           << exitInfo);
