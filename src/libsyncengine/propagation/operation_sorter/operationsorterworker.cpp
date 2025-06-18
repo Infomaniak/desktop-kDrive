@@ -329,9 +329,19 @@ void OperationSorterWorker::fixEditBeforeMove() {
         if (opList.size() < 2) {
             continue; // We are looking for nodes affected by both EDIT and MOVE operations
         }
+        // opList contains one MOVE operation and all the EDIT operations that are under the node affected by the MOVE
+        
         auto moveOpIt =
                 std::find_if(opList.begin(), opList.end(), [](const SyncOpPtr &op) { return op->type() == OperationType::Move; });
+        std::find_if(opList.begin(), opList.end(), [](const SyncOpPtr &op) { return op->type() == OperationType::Move; });
+        if (moveOpIt == opList.end()) {
+            LOG_IF_FAIL("fixEditBeforeMove: No MOVE operation found in the list of operations. This should not happen." && false)
+            continue;
+        }
 
+        // Ensure that all EDIT operations under the node affected by the MOVE operation are executed after the MOVE operation
+        // Otherwise, this may cause issues with path changes between the edit job generation and its execution (due to the MOVE)
+        // in the executor step.
         for (auto &op: opList) {
             if (op->type() == OperationType::Edit) {
                 moveFirstAfterSecond(op, *moveOpIt);
