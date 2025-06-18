@@ -56,12 +56,7 @@ function get_architecture {
 
     architecture="" # Left empty for Linux systems.
     if [[ "$platform" = "darwin" ]]; then
-       if [[ "$(uname -m)" == "arm64" ]]; then
-         architecture="-s:h=arch=armv8"
-       else
-         architecture="-s:h=arch=x86_64"
-       fi
-       architecture="$architecture -s:b=arch=armv8|x86_64"
+       architecture="-s:a=arch=armv8|x86_64"
     fi
 
     echo "$architecture"

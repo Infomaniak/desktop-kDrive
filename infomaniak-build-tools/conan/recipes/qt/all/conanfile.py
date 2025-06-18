@@ -74,10 +74,10 @@ class QtConan(ConanFile):
             f"qt.qt{major}.{compact}.qt5compat",
             f"qt.qt{major}.{compact}.src",
 
-                f"qt.qt{major}.{compact}.addons.qtpositioning",
-                f"qt.qt{major}.{compact}.addons.qtwebchannel",
-                f"qt.qt{major}.{compact}.addons.qtwebengine",
-                f"qt.qt{major}.{compact}.addons.qtwebview",
+            f"qt.qt{major}.{compact}.addons.qtpositioning",
+            f"qt.qt{major}.{compact}.addons.qtwebchannel",
+            f"qt.qt{major}.{compact}.addons.qtwebengine",
+            f"qt.qt{major}.{compact}.addons.qtwebview",
         ]
 
         if self.settings.os == "Windows":
@@ -268,6 +268,8 @@ class QtConan(ConanFile):
         return frameworks_paths, frameworks_names
 
     def package_info(self):
+        from conan.tools.microsoft import is_msvc
+        from conan.tools.apple import is_apple_os
         self.cpp_info.set_property("cmake_file_name", "Qt6")
         self.cpp_info.set_property("pkg_config_name", "qt6")
 
@@ -308,8 +310,7 @@ class QtConan(ConanFile):
             componentname = f"qt{pluginname}"
             assert componentname not in self.cpp_info.components, f"Plugin {pluginname} already present in self.cpp_info.components"
             self.cpp_info.components[componentname].set_property("cmake_target_name", f"Qt6::{pluginname}")
-            if not self.options.shared:
-                self.cpp_info.components[componentname].libs = [libname]
+            self.cpp_info.components[componentname].libs = [libname]
             self.cpp_info.components[componentname].libdirs = [os.path.join("plugins", plugintype)]
             self.cpp_info.components[componentname].includedirs = []
             if "Core" not in requires:
@@ -317,6 +318,13 @@ class QtConan(ConanFile):
             self.cpp_info.components[componentname].requires = _get_corrected_reqs(requires)
 
         _create_module("Core", [ "zlib::zlib" ])
+        if self.settings.os == "Windows":
+            self.cpp_info.components["qtCore"].system_libs.append("authz")
+        if is_msvc(self):
+            self.cpp_info.components["qtCore"].cxxflags.append("-permissive-")
+            self.cpp_info.components["qtCore"].cxxflags.append("-Zc:__cplusplus")
+            self.cpp_info.components["qtCore"].system_libs.append("synchronization")
+            self.cpp_info.components["qtCore"].system_libs.append("runtimeobject")
 
         # Frameworks
         fw_paths, fw_names = self._find_qt_frameworks()
@@ -328,15 +336,40 @@ class QtConan(ConanFile):
         self.cpp_info.bin = [ "bin" ]
         self.cpp_info.include = [ "include" ]
 
-        _create_module("Gui", [])
+
+        _create_module("DBus", [])
+        gui_reqs = []
+        if self.settings.os == "Linux":
+            gui_reqs = [ "DBus", "xkbcommon::xkbcommon" ]
+        _create_module("Gui", gui_reqs)
         _create_module("Widgets", [])
         _create_module("Network", [])
         _create_module("Sql", [])
         _create_module("Svg", [])
         _create_module("SvgWidgets", [])
         _create_module("WebEngineWidgets", [])
-        _create_module("DBus", [])
-    def package_id(self):
-        self.info.settings.clear()
+        if self.settings.os == "Windows":
+            # https://github.com/qt/qtbase/blob/v6.6.1/src/dbus/CMakeLists.txt#L71-L77
+            self.cpp_info.components["qtDBus"].system_libs.append("advapi32")
+            self.cpp_info.components["qtDBus"].system_libs.append("netapi32")
+            self.cpp_info.components["qtDBus"].system_libs.append("user32")
+            self.cpp_info.components["qtDBus"].system_libs.append("ws2_32")
+
+            self.cpp_info.components["qtGui"].system_libs += [
+                "advapi32", "gdi32", "ole32", "shell32", "user32", "d3d11", "dxgi", "dxguid"
+            ] # https://github.com/qt/qtbase/blob/v6.2.3/src/gui/CMakeLists.txt#L393-L402
+            self.cpp_info.components["qtGui"].system_libs.append("d2d1")
+            self.cpp_info.components["qtGui"].system_libs.append("dwrite")
+        if is_apple_os(self):
+            self.cpp_info.components["qtGui"].frameworks = ["CoreFoundation", "CoreGraphics", "CoreText", "Foundation", "ImageIO"]
+            if self.settings.os == "Macos":
+                _create_plugin("QCocoaIntegrationPlugin", "qcocoa", "platforms", ["Core", "Gui"])
+                self.cpp_info.components["QCocoaIntegrationPlugin"].frameworks = [
+                    "AppKit", "Carbon", "CoreServices", "CoreVideo", "IOKit", "IOSurface", "Metal", "QuartzCore"
+                ]
+
+
+def package_id(self):
+    self.info.settings.clear()
 
 
