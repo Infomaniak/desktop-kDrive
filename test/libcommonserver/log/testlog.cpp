@@ -114,9 +114,10 @@ void TestLog::testExpiredLogFiles(void) {
                                               system_clock::now()); // Prevent the current log file from being deleted.
         appender->checkForExpiredFiles();
         if (system_clock::now() - start < seconds(1)) { // The fake log file should not be deleted yet.
-            CPPUNIT_ASSERT_EQUAL_MESSAGE(("File unexpectedly deleted after " +
-                                          std::to_string(duration_cast<milliseconds>(system_clock::now() - start).count()) + " seconds"),
-                                         2, countFilesInDirectory(_logDir));
+            CPPUNIT_ASSERT_EQUAL_MESSAGE(
+                    ("File unexpectedly deleted after " +
+                     std::to_string(duration_cast<milliseconds>(system_clock::now() - start).count()) + " seconds"),
+                    2, countFilesInDirectory(_logDir));
         } else if (countFilesInDirectory(_logDir) == 1) { // The fake log file MIGHT be deleted now.
             break;
         }
