@@ -53,7 +53,9 @@ runs:
         shell: bash
 
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ ${{ inputs.test_name }}
+        run : |
+              install_name_tool -add_rpath @executable_path ./build-macos/client/bin/ ${{ inputs.test_name }}        
+              ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ ${{ inputs.test_name }}
         shell: bash
 
       - name: Get the path to kDrive-logdir
