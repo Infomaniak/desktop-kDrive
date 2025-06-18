@@ -47,7 +47,7 @@ if [ ! -f "$tester" ]; then
 fi
 
 chmod +x "$tester"
-export DYLD_LIBRARY_PATH="/usr/local/lib:/usr/lib:$PWD/build-macos/client/bin:$DYLD_LIBRARY_PATH"
+export DYLD_LIBRARY_PATH="/usr/local/lib:/usr/lib:$PWD:$DYLD_LIBRARY_PATH"
 echo $DYLD_LIBRARY_PATH
 "./$tester"
 
