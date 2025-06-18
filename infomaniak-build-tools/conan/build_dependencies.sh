@@ -61,9 +61,10 @@ function get_architecture {
        else
          architecture="-s:h=arch=x86_64"
        fi
+       architecture="$architecture -s:b=arch=armv8|x86_64"
     fi
 
-    echo "$architecture -s:b=arch=armv8|x86_64"
+    echo "$architecture"
 }
 
 function get_output_dir {
