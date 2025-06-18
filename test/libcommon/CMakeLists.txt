@@ -6,7 +6,7 @@ else()
 endif()
 
 find_package(Poco REQUIRED Foundation)
-find_package(log4cplus 2.1.2 REQUIRED)
+find_package(log4cplus 2.1.0 REQUIRED)
 
 set(testcommon_NAME ${APPLICATION_NAME}_test_common)
 
