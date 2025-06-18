@@ -245,7 +245,10 @@ class QtConan(ConanFile):
 
     def package(self):
         self.output.highlight("This step can take a while, please be patient...")
-        copy(self, "*", src=os.path.join(self.build_folder, f"install/{self.version}/macos/"), dst=self.package_folder)
+
+        subfolder = "macos" if self.settings.os == "Macos" else ("gcc_64" if self.settings.os == "Linux" else "msvc2019_64")
+
+        copy(self, "*", src=os.path.join(self.build_folder, f"install/{self.version}/{subfolder}/"), dst=self.package_folder)
         # copy(self, "Tools/", src=self.source_folder, dst=self.package_folder)
 
     def _find_qt_frameworks(self):
@@ -265,13 +268,68 @@ class QtConan(ConanFile):
         self.cpp_info.set_property("cmake_file_name", "Qt6")
         self.cpp_info.set_property("pkg_config_name", "qt6")
 
+        self.runenv_info.define("QT_PLUGIN_PATH", os.path.join(self.package_folder, "plugins"))
+        self.buildenv_info.define("QT_PLUGIN_PATH", os.path.join(self.package_folder, "plugins"))
+        self.buildenv_info.define("QT_HOST_PATH", self.package_folder)
+
+
+        def _get_corrected_reqs(requires):
+            reqs = []
+            for r in requires:
+                if "::" in r:
+                    corrected_req = r
+                else:
+                    corrected_req = f"qt{r}"
+                    assert corrected_req in self.cpp_info.components, f"{corrected_req} required but not yet present in self.cpp_info.components"
+                reqs.append(corrected_req)
+            return reqs
+
+        def _create_module(module, requires, has_include_dir=True):
+            componentname = f"qt{module}"
+            assert componentname not in self.cpp_info.components, f"Module {module} already present in self.cpp_info.components"
+            self.cpp_info.components[componentname].set_property("cmake_target_name", f"Qt6::{module}")
+            self.cpp_info.components[componentname].set_property("pkg_config_name", f"Qt6{module}")
+            if module.endswith("Private"):
+                libname = module[:-7]
+            else:
+                libname = module
+            self.cpp_info.components[componentname].libs = [f"Qt6{libname}"]
+            if has_include_dir:
+                self.cpp_info.components[componentname].includedirs = ["include", os.path.join("include", f"Qt{module}")]
+            self.cpp_info.components[componentname].defines = [f"QT_{module.upper()}_LIB"]
+            if module != "Core" and "Core" not in requires:
+                requires.append("Core")
+            self.cpp_info.components[componentname].requires = _get_corrected_reqs(requires)
+
+        def _create_plugin(pluginname, libname, plugintype, requires):
+            componentname = f"qt{pluginname}"
+            assert componentname not in self.cpp_info.components, f"Plugin {pluginname} already present in self.cpp_info.components"
+            self.cpp_info.components[componentname].set_property("cmake_target_name", f"Qt6::{pluginname}")
+            if not self.options.shared:
+                self.cpp_info.components[componentname].libs = [libname]
+            self.cpp_info.components[componentname].libdirs = [os.path.join("plugins", plugintype)]
+            self.cpp_info.components[componentname].includedirs = []
+            if "Core" not in requires:
+                requires.append("Core")
+            self.cpp_info.components[componentname].requires = _get_corrected_reqs(requires)
+
+        _create_module("Core", [ "zlib::zlib" ])
+
         # Frameworks
         fw_paths, fw_names = self._find_qt_frameworks()
         self.cpp_info.frameworks = fw_names
         self.cpp_info.frameworkdirs = fw_paths
 
         # Libraries
-        self.cpp_info.libs = [ "lib" ]
+        self.cpp_info.libs = [ "lib", "libexec" ]
+        self.cpp_info.bin = [ "bin" ]
+        self.cpp_info.include = [ "include" ]
+
+        _create_module("Core5Compat", [])
+        _create_module("Concurrent", [])
+        _create_module("Xml", [])
 
     def package_id(self):
         self.info.settings.clear()
+
+
