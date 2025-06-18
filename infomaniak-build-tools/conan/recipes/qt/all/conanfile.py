@@ -68,15 +68,12 @@ class QtConan(ConanFile):
         compact = version.replace(".", "")
         compiler = self._get_compiler()
 
-        # TODO : Add support for compilers (currently installing all of them, android, ...)
         modules = [
-            f"qt.qt{major}.{compact}",
             f"qt.qt{major}.{compact}.{compiler}",
 
             f"qt.qt{major}.{compact}.qt5compat",
             f"qt.qt{major}.{compact}.src",
 
-            f"qt.qt{major}.{compact}.addons",
                 f"qt.qt{major}.{compact}.addons.qtpositioning",
                 f"qt.qt{major}.{compact}.addons.qtwebchannel",
                 f"qt.qt{major}.{compact}.addons.qtwebengine",
