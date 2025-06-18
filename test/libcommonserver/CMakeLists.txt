@@ -7,6 +7,7 @@ endif()
 
 find_package(Poco REQUIRED Foundation)
 find_package(log4cplus 2.1.2 REQUIRED)
+find_package(CPPUnit 1.15.1 REQUIRED)
 
 set(testcommonserver_NAME ${APPLICATION_NAME}_test_common_server)
 
@@ -38,7 +39,6 @@ if(WIN32)
 endif()
 
 if(WIN32)
-    include_directories("C:/Program Files (x86)/cppunit/include")
     include_directories("C:/Program Files (x86)/Sentry-Native/include")
 else()
     include_directories("/usr/local/include")
@@ -68,8 +68,7 @@ if(WIN32)
             optimized
             "C:/Program Files (x86)/cppunit/lib/cppunit_dll.lib")
 elseif(APPLE)
-    target_link_libraries(${testcommonserver_NAME}
-            "/usr/local/lib/libcppunit.dylib")
+    target_link_libraries(${testcommonserver_NAME} cppunit::cppunit)
 else()
     target_link_libraries(${testcommonserver_NAME}
             "/usr/local/lib/libcppunit.so")

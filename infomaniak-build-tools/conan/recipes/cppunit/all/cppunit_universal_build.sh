@@ -83,9 +83,9 @@ log "Merging libraries with lipo..."
 lipo -create \
   cppunit.x86_64/src/cppunit/.libs/libcppunit-1.15.1.dylib \
   cppunit.arm64/src/cppunit/.libs/libcppunit-1.15.1.dylib \
-  -output "${multi_dir}/lib/libcppunit.1.dylib" || error "lipo failed"
+  -output "${multi_dir}/lib/libcppunit.dylib" || error "lipo failed"
 
-install_name_tool -id "@rpath/libcppunit.1.dylib" "${multi_dir}/lib/libcppunit.1.dylib"
+install_name_tool -id "@rpath/libcppunit.dylib" "${multi_dir}/lib/libcppunit.dylib"
 
 log "Copying headers..."
 cp -R cppunit.x86_64/include/cppunit "${multi_dir}/include/"

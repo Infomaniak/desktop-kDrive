@@ -8,6 +8,7 @@ endif()
 find_package(SQLite3 3.8.0 REQUIRED)
 find_package(Poco REQUIRED Foundation)
 find_package(log4cplus 2.1.2 REQUIRED)
+find_package(CPPUnit 1.15.1 REQUIRED)
 
 set(testsyncengine_NAME ${APPLICATION_NAME}_test_syncengine)
 
@@ -84,7 +85,6 @@ if(USE_OUR_OWN_SQLITE3)
 endif()
 
 if(WIN32)
-    include_directories("C:/Program Files (x86)/cppunit/include")
 else()
     include_directories("/usr/local/include")
 endif()
@@ -114,8 +114,7 @@ if(WIN32)
         optimized
         "C:/Program Files (x86)/cppunit/lib/cppunit_dll.lib")
 elseif(APPLE)
-    target_link_libraries(${testsyncengine_NAME}
-            "/usr/local/lib/libcppunit.dylib")
+    target_link_libraries(${testsyncengine_NAME} cppunit::cppunit)
 else()
     target_link_libraries(${testsyncengine_NAME}
             "/usr/local/lib/libcppunit.so")

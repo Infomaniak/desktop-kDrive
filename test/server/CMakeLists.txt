@@ -7,6 +7,7 @@ endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Svg)
 find_package(Poco 1.13.3 REQUIRED XML Net)
+find_package(CPPUnit 1.15.1 REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 
@@ -93,7 +94,6 @@ if(APPLE)
 endif()
 
 if(WIN32)
-    include_directories("C:/Program Files (x86)/cppunit/include")
     include_directories("C:/Program Files (x86)/Sentry-Native/include")
     include_directories("C:/Program Files (x86)/libzip/include")
 else()
@@ -133,8 +133,7 @@ if(WIN32)
             optimized
             "C:/Program Files (x86)/cppunit/lib/cppunit_dll.lib")
 elseif(APPLE)
-    target_link_libraries(${testserver_NAME}
-            "/usr/local/lib/libcppunit.dylib")
+    target_link_libraries(${testserver_NAME} cppunit::cppunit)
 else()
     target_link_libraries(${testserver_NAME}
             "/usr/local/lib/libcppunit.so")
