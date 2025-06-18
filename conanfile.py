@@ -59,8 +59,10 @@ class KDriveDesktop(ConanFile):
         if self.settings.os == "Macos":
             # On macOS, we need to use the universal version of OpenSSL
             self.requires("openssl-universal/3.2.4")
+            self.requires("cppunit-universal/1.15.1")
         else:
             self.requires("openssl/3.2.4", options={ "shared": True }) # From https://conan.io/center/recipes/openssl
+            self.requires("cppunit/1.15.1", options={ "shared": True })
 
 class OverrideVSRuntimeBlock(VSRuntimeBlock):
     template = textwrap.dedent("""\
