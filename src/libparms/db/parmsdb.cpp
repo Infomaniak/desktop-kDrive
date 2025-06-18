@@ -3103,9 +3103,12 @@ bool ParmsDb::selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync
 bool ParmsDb::replaceShortDbPathsWithLongPaths() {
     LOG_INFO(_logger, "Replacing short DB path names wiht long ones in sync table.")
 
+    if (!createAndPrepareRequest(SELECT_ALL_SYNCS_REQUEST_ID, SELECT_ALL_SYNCS_REQUEST)) return false;
     std::vector<Sync> syncList;
     selectAllSyncs(syncList);
+    queryFree(SELECT_ALL_SYNCS_REQUEST_ID);
 
+    if (!createAndPrepareRequest(UPDATE_SYNC_REQUEST_ID, UPDATE_SYNC_REQUEST)) return false;
     for (auto &sync: syncList) {
         SyncPath longPathName;
         auto ioError = IoError::Success;
@@ -3126,6 +3129,7 @@ bool ParmsDb::replaceShortDbPathsWithLongPaths() {
         bool found = false;
         if (!updateSync(sync, found)) return false;
     }
+    queryFree(UPDATE_SYNC_REQUEST_ID);
 
     return true;
 }

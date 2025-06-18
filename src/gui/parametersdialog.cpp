@@ -383,12 +383,17 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, const Ex
 
         case ExitCause::NotEnoughDiskSpace:
             return tr(
-                    "There is not enough space left on your disk.<br>"
+                    "There is not enough space left on your computer.<br>"
                     "The synchronization has been stopped.");
         case ExitCause::NotEnoughMemory:
             return tr(
                     "There is not enough memory left on your machine.<br>"
                     "The synchronization has been stopped.");
+        case ExitCause::NotEnoughINotifyWatches:
+            return tr("The number of inotify watches is insufficient (error %1).<br>"
+                      "You can raise this number by editing '/etc/sysctl.conf'.")
+                    .arg(err);
+
         case ExitCause::LiteSyncNotAllowed: {
             if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS &&
                 QOperatingSystemVersion::current().majorVersion() >= 15) {
@@ -546,6 +551,7 @@ QString ParametersDialog::getSyncPalErrorText(const QString &fctCode, const Exit
                           "You need to restore it or give it back access rights or delete/recreate the synchronization.")
                         .arg(err);
             }
+            break;
         case ExitCode::LogicError:
             if (exitCause == ExitCause::FullListParsingError) {
                 return tr("File name parsing error (error %1).<br>"
@@ -796,7 +802,7 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
                         "Please fix the read and write permissions.");
             } else if (errorInfo.exitCause() == ExitCause::NotEnoughDiskSpace) {
                 return tr(
-                        "There is not enough space left on your disk.<br>"
+                        "There is not enough space left on your computer.<br>"
                         "The download has been canceled.");
             }
             return tr("System error.");
