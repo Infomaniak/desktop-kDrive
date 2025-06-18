@@ -51,14 +51,19 @@ function get_platform {
 }
 
 function get_architecture {
+    # b: target machine architecture, h: host machine architecture (h is used to get macOS architecture)
     platform=$1
 
     architecture="" # Left empty for Linux systems.
     if [[ "$platform" = "darwin" ]]; then
-       architecture="-s:b=arch=armv8|x86_64 -s:h=arch=armv8" # Making universal binary. See https://docs.conan.io/2/reference/tools/cmake/cmaketoolchain.html#conan-tools-cmaketoolchain-universal-binaries
+       if [[ "$(uname -m)" == "arm64" ]]; then
+         architecture="-s:h=arch=armv8"
+       else
+         architecture="-s:h=arch=x86_64"
+       fi
     fi
 
-    echo $architecture
+    echo "$architecture -s:b=arch=armv8|x86_64"
 }
 
 function get_output_dir {
@@ -139,15 +144,12 @@ log "- Platform: '$platform'"
 log "- Architecture option: '$architecture'"
 log "- Build type: '$build_type'"
 log "- Output directory: '$output_dir'"
+log "- CI Mode: '$($ci_mode && echo "enabled" || echo "disabled")'"
 echo
 
-if $ci_mode; then
-    log "CI mode enabled"
-fi
 
 qt_login_type_param="ini" # By default, use ini file for QT installer login type
 if [[ $ci_mode == true ]]; then
-    log "CI mode is enabled."
     qt_login_type_param="envvars" # Use environment variables for CI mode
 fi
 
@@ -166,7 +168,13 @@ conan create "$conan_recipes_folder/qt/all/" -r=$local_recipe_remote_name # -o "
 
 log "Installing dependencies..."
 # Install this packet in the build folder.
-conan install . --output-folder="$output_dir" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter #-o 'qt/*:qt_login_type='$qt_login_type_param
+# The '$architecture' value is "" on Linux systems, and "-s:b=arch=armv8|x86_64 -s:h=arch=armv8" on macOS systems.
+conan install . \
+  --output-folder="$output_dir" \
+  --build=missing \
+  $architecture \
+  -s:a=build_type="$build_type" \
+  -r=$local_recipe_remote_name -r=conancenter
 
 if [ $? -ne 0 ]; then
   error "Failed to install Conan dependencies."
