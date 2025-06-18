@@ -49,7 +49,7 @@ build_arch() {
 
   export CFLAGS="-arch ${arch} -mmacosx-version-min=${minimum_macos_version}"
   export CXXFLAGS="${CFLAGS} -std=c++11"
-  export LDFLAGS="${CFLAGS}"
+  export LDFLAGS="-arch ${arch} -mmacosx-version-min=${minimum_macos_version}"
 
   [[ "${arch}" == "x86_64" ]] && host_arg="--host=x86_64-apple-darwin"
 
@@ -58,7 +58,7 @@ build_arch() {
   ./configure ${host_arg} || error "configure failed for ${arch}"
 
   log "Building for ${arch}..."
-  make -j"$(sysctl -n hw.logicalcpu)" || error "make failed for ${arch}"
+  make -C src/cppunit -j"$(sysctl -n hw.logicalcpu)" || error "make failed for ${arch}"
 
   popd >/dev/null
 }
