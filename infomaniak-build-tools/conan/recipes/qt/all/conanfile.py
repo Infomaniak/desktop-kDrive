@@ -103,6 +103,9 @@ class QtConan(ConanFile):
             "Linux": f"/home/{user}/.local/share/Qt/qtaccount.ini"
         }.get(str(self.settings.os), None)
 
+    def requirements(self):
+        self.requires("zlib/[>=1.2.11 <2]", options={ "shared": True }) # From https://conan.io/center/recipes/zlib
+
     def _get_email_from_envvars(self):
         """
         Get the key and email from the environment variables.
@@ -259,9 +262,9 @@ class QtConan(ConanFile):
         frameworks_paths = glob.glob(os.path.join(self.package_folder, "lib", "Qt*.framework"))
         if not frameworks_paths:
             raise ConanException("No Qt frameworks found in the package folder.")
-        self.output.info(f"Found Qt frameworks: {', '.join(frameworks_paths)}")
         # Get only the name of the frameworks, not the full path
         frameworks_names = [os.path.basename(path) for path in frameworks_paths]
+        self.output.info(f"Found Qt frameworks: {', '.join(frameworks_names)}")
         return frameworks_paths, frameworks_names
 
     def package_info(self):
