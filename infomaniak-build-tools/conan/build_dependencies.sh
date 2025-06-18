@@ -137,6 +137,9 @@ conan create "$conan_recipes_folder/xxhash/all/" --build=missing $architecture -
 if [ "$platform" = "darwin" ]; then
   log "Creating openssl package..."
   conan create "$conan_recipes_folder/openssl-universal/3.2.4/" --build=missing -s:a=build_type="$build_type" -r="$local_recipe_remote_name" -r=conancenter
+
+  log "Creating CPPUnit package..."
+  conan create "$conan_recipes_folder/cppunit/all/" --build=missing -s:a=build_type="$build_type" -r="$local_recipe_remote_name" -r=conancenter
 fi
 
 log "Installing dependencies..."
