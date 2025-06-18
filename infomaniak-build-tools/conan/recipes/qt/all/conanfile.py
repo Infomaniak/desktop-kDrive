@@ -4,7 +4,6 @@ import os
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration, ConanException
 from conan.tools.files import copy
-from conan.tools.system.package_manager import Apt
 
 
 class QtConan(ConanFile):
@@ -71,6 +70,7 @@ class QtConan(ConanFile):
 
         # TODO : Add support for compilers (currently installing all of them, android, ...)
         modules = [
+            f"qt.qt{major}.{compact}",
             f"qt.qt{major}.{compact}.{compiler}",
 
             f"qt.qt{major}.{compact}.qt5compat",
@@ -84,7 +84,6 @@ class QtConan(ConanFile):
         ]
 
         if self.settings.os == "Windows":
-            modules.append("qt.tools.ninja")
             modules.extend([
                 "qt.tools.vcredist",
                 "qt.tools.vcredist_64",
@@ -259,3 +258,5 @@ class QtConan(ConanFile):
         self.cpp_info.set_property("cmake_file_name", "Qt6")
         self.cpp_info.set_property("pkg_config_name", "qt6")
 
+    def package_id(self):
+        self.info.settings.clear()
