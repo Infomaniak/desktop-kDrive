@@ -49,13 +49,13 @@ build_arch() {
 
   export CFLAGS="-arch ${arch} -mmacosx-version-min=${minimum_macos_version}"
   export CXXFLAGS="${CFLAGS} -std=c++11"
-  export LDFLAGS="-arch ${arch} -mmacosx-version-min=${minimum_macos_version}"
+  export LDFLAGS="${CFLAGS}"
 
   [[ "${arch}" == "x86_64" ]] && host_arg="--host=x86_64-apple-darwin"
 
   log "Configuring for ${arch}..."
   ./autogen.sh
-  ./configure ${host_arg} --enable-shared --enable-static || error "configure failed for ${arch}"
+  ./configure ${host_arg} || error "configure failed for ${arch}"
 
   log "Building for ${arch}..."
   make -j"$(sysctl -n hw.logicalcpu)" || error "make failed for ${arch}"
