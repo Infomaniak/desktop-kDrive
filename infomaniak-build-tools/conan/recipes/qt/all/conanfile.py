@@ -328,10 +328,14 @@ class QtConan(ConanFile):
         self.cpp_info.bin = [ "bin" ]
         self.cpp_info.include = [ "include" ]
 
-        _create_module("Core5Compat", [])
-        _create_module("Concurrent", [])
-        _create_module("Xml", [])
-
+        _create_module("Gui", [])
+        _create_module("Widgets", [])
+        _create_module("Network", [])
+        _create_module("Sql", [])
+        _create_module("Svg", [])
+        _create_module("SvgWidgets", [])
+        _create_module("WebEngineWidgets", [])
+        _create_module("DBus", [])
     def package_id(self):
         self.info.settings.clear()
 
