@@ -23,23 +23,29 @@ class QtConan(ConanFile):
         "qt_login_type": "ini",
     }
 
-    def _get_distant_name(self):
+    @staticmethod
+    def _get_distant_name(os_key=None):
         """
         Get the name of the installer to download based on the OS and architecture.
         See 'https://download.qt.io/official_releases/online_installers/' for available installers.
         :return: 'qt-online-installer-{os}-{architecture}-online.{ext}' where os is 'mac', 'linux' or 'windows, architecture is 'arm64' or 'x64' on Linux or Windows and 'x64' on macOS, and ext is 'dmg','run' or 'exe.
         """
-        os_map = {"Macos": "mac", "Linux": "linux", "Windows": "windows"}
-        ext_map = {"Macos": "dmg", "Linux": "run", "Windows": "exe"}
-        os_key = str(self.settings.os)
-        os_name = os_map.get(os_key, "windows")
-        ext = ext_map.get(os_key, "exe")
+        import platform # Here we don't use self.settings.os or self.settings.arch because the settings are not available yet inside the source() method.
+        if os_key is None:
+            os_key = platform.system().lower()
+        data_map = {
+            "darwin": [ "mac", "dmg"],
+            "linux": [ "linux", "run"],
+            "windows": [ "windows", "exe"]
+        }
+        os_name = data_map.get(os_key, "windows")[0]
+        ext = data_map.get(os_key, "exe")[1]
 
         # For macOS, we always use x64 arch because the installer is universal and supports both arm64 and x64.
         if os_name in [ "mac", "windows" ]:
             architecture = "x64"
         else:
-            architecture = "arm64" if str(self.settings.arch).startswith("arm") else "x64"
+            architecture = "arm64" if str(platform.machine().lower()) in [ "arm64", "aarch64" ] else "x64"
 
         return f"qt-online-installer-{os_name}-{architecture}-online.{ext}"
 
@@ -66,7 +72,6 @@ class QtConan(ConanFile):
         # TODO : Add support for compilers (currently installing all of them, android, ...)
         modules = [
             f"qt.qt{major}.{compact}.{compiler}",
-            "qt.tools", "qt.tools.maintenance", # TODO delete this line when the recipe is done
 
             f"qt.qt{major}.{compact}.qt5compat",
             f"qt.qt{major}.{compact}.src",
@@ -212,17 +217,16 @@ class QtConan(ConanFile):
         self.output.highlight("Unounting Qt installer DMG...")
         self.run(f"hdiutil detach '{mount_point}'")
 
-    def build(self):
-        self.output.highlight("Downloading Qt installer...")
-        downloaded_file_name = self._get_distant_name()
+    def source(self):
         self.output.highlight("Downloading Qt installer via Python urllib...")
+        downloaded_file_name = self._get_distant_name()
         url = f"https://download.qt.io/official_releases/online_installers/{downloaded_file_name}"
         self.output.info(f"Downloading from: {url}")
-        # If you encounter a certificate error on macOS, you may need to install the 'certifi' package to avoid SSL errors using `pip install certifi`.
         from urllib.request import urlretrieve
         urlretrieve(url, downloaded_file_name)
-        installer_path = self._get_executable_path(downloaded_file_name)
 
+    def build(self):
+        installer_path = self._get_executable_path(self._get_distant_name())
 
         if not os.path.exists(installer_path):
             raise ConanException("Failed to find installer for Qt installation")
@@ -253,5 +257,5 @@ class QtConan(ConanFile):
     def package(self):
         self.output.highlight("This step can take a while, please be patient...")
         copy(self, f"{self.version}/", src=self.source_folder, dst=self.package_folder)
-        copy(self, "Licenses/", src=self.source_folder, dst=self.package_folder)
-        copy(self, "Tools/", src=self.source_folder, dst=self.package_folder)
+        copy(self, "*LICENCE*", src=self.source_folder, dst=os.path.join(self.package_folder, "licenses"))
+        # copy(self, "Tools/", src=self.source_folder, dst=self.package_folder)
