@@ -169,24 +169,17 @@ class QtConan(ConanFile):
         if self.settings.os != "Macos":
             raise ConanInvalidConfiguration("Unsupported OS for Qt installation")
 
-        # We mount here the DMG file with the options -nobrowse (do not show the mounted volume in Finder), -readonly (mount as read-only), -noautoopen (do not open the mounted volume automatically) and -plist (output in plist format).
+        # We mount here the DMG file with the options -nobrowse (do not show the mounted volume in Finder), -readonly (mount as read-only), -noautoopen (do not open the mounted volume automatically).
         import io
-        import plistlib
         output = io.StringIO()
         self.output.highlight("Mounting Qt installer DMG...")
+        mount_target = os.path.join(self.source_folder, "mnt")
+        os.makedirs(mount_target, exist_ok=True)
         self.run(
-            f"hdiutil attach '{downloaded_file_name}' -nobrowse -readonly -noautoopen -plist",
+            f"hdiutil attach '{downloaded_file_name}' -mountpoint '{mount_target}' -nobrowse -readonly -noautoopen",
             stdout=output
         )
-        plist = plistlib.loads(output.getvalue().encode("utf-8"))
-        mount_point = next(
-            (item["mount-point"]
-             for item in plist.get("system-entities", [])
-             if "mount-point" in item),
-            None
-        )
-        if mount_point is None:
-            raise ConanException("Failed to find mount point for the DMG file")
+        mount_point = mount_target
 
         self.output.highlight("Qt installer DMG mounted at: " + mount_point)
         app_bundles = glob.glob(os.path.join(mount_point, "*.app"))
@@ -198,6 +191,7 @@ class QtConan(ConanFile):
         from shutil import copytree
         copytree(src=mounted_bundle, dst=app_bundle)
         self._detach_on_macos(mount_point)
+        os.rmdir(mount_point)
 
         exec_folder = os.path.join(app_bundle, "Contents", "MacOS")
         exec_files = glob.glob(os.path.join(exec_folder, "qt-online-installer-macOS*"))
@@ -223,11 +217,10 @@ class QtConan(ConanFile):
         url = f"https://download.qt.io/official_releases/online_installers/{downloaded_file_name}"
         self.output.info(f"Downloading from: {url}")
         from urllib.request import urlretrieve
-        urlretrieve(url, downloaded_file_name)
+        urlretrieve(url, os.path.join(self.source_folder, downloaded_file_name))
 
     def build(self):
-        installer_path = self._get_executable_path(self._get_distant_name())
-
+        installer_path = self._get_executable_path(os.path.join(self.source_folder, self._get_distant_name()))
         if not os.path.exists(installer_path):
             raise ConanException("Failed to find installer for Qt installation")
         if not os.access(installer_path, os.X_OK):
@@ -256,6 +249,13 @@ class QtConan(ConanFile):
 
     def package(self):
         self.output.highlight("This step can take a while, please be patient...")
-        copy(self, f"{self.version}/", src=self.source_folder, dst=self.package_folder)
+        copy(self, "bin/", src=os.path.join(self.source_folder, f"{self.version}/macos"), dst=self.package_folder)
+        copy(self, "lib/", src=os.path.join(self.source_folder, f"{self.version}/macos"), dst=self.package_folder)
+        copy(self, "include/", src=os.path.join(self.source_folder, f"{self.version}/macos"), dst=self.package_folder)
         copy(self, "*LICENCE*", src=self.source_folder, dst=os.path.join(self.package_folder, "licenses"))
         # copy(self, "Tools/", src=self.source_folder, dst=self.package_folder)
+
+    def package_info(self):
+        self.cpp_info.set_property("cmake_file_name", "Qt6")
+        self.cpp_info.set_property("pkg_config_name", "qt6")
+
