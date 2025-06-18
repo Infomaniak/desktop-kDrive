@@ -248,9 +248,30 @@ class QtConan(ConanFile):
         copy(self, "*", src=os.path.join(self.build_folder, f"install/{self.version}/macos/"), dst=self.package_folder)
         # copy(self, "Tools/", src=self.source_folder, dst=self.package_folder)
 
+    def _find_qt_frameworks(self):
+        """
+        Find the Qt frameworks in the package folder.
+        :return: A list of Qt frameworks found in the package folder.
+        """
+        frameworks_paths = glob.glob(os.path.join(self.package_folder, "lib", "Qt*.framework"))
+        if not frameworks_paths:
+            raise ConanException("No Qt frameworks found in the package folder.")
+        self.output.info(f"Found Qt frameworks: {', '.join(frameworks_paths)}")
+        # Get only the name of the frameworks, not the full path
+        frameworks_names = [os.path.basename(path) for path in frameworks_paths]
+        return frameworks_paths, frameworks_names
+
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "Qt6")
         self.cpp_info.set_property("pkg_config_name", "qt6")
+
+        # Frameworks
+        fw_paths, fw_names = self._find_qt_frameworks()
+        self.cpp_info.frameworks = fw_names
+        self.cpp_info.frameworkdirs = fw_paths
+
+        # Libraries
+        self.cpp_info.libs = [ "lib" ]
 
     def package_id(self):
         self.info.settings.clear()
