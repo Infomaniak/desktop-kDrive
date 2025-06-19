@@ -20,7 +20,7 @@
 
 #include "test_utility/testbase.h"
 
-#include <cppunit/testfixture.h>
+#include <cppunit/TestFixture.h>
 
 namespace KDC {
 
