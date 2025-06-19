@@ -115,8 +115,13 @@ struct COMMON_EXPORT CommonUtility {
         static size_t maxPathLength();
 
         static bool isSubDir(const SyncPath &path1, const SyncPath &path2);
-        static bool isDiskRootFolder(const SyncPath &absolutePath);
-
+        /**
+         * @brief Determines if the given path is the root folder of a disk and optionally suggests a corrected path.
+         * @param absolutePath The absolute path to check for being a disk root folder.
+         * @param suggestedPath Reference to a path variable where a suggested corrected path may be stored if the input is not a disk root.
+         * @return True if the given path is a disk root folder; otherwise, false.
+         */
+        static bool isDiskRootFolder(const SyncPath &absolutePath, SyncPath &suggestedPath);
         static const std::string dbVersionNumber(const std::string &dbVersion);
         static bool isVersionLower(const std::string &currentVersion, const std::string &targetVersion);
 
