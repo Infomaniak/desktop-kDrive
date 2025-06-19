@@ -1646,13 +1646,6 @@ ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::share
             if (syncOp->type() == OperationType::Create) {
                 return propagateCreateToDbAndTree(syncOp, nodeId, newCreationTime, newModificationTime, node, newSize);
             } else {
-                if (syncOp->targetSide() == ReplicaSide::Local) {
-                    // Upload job will try to update the local file creation time if it differs from the remote one.
-                    // However, it might not succeed (e.g. Linux does not support setting creation time). As the creation time in
-                    // the DB refers to the local file, we do not update it in this case. It will be updated on the next sync if
-                    // needed (omitted local edit operation).
-                    newCreationTime = syncOp->correspondingNode()->createdAt().value_or(0);
-                };
                 return propagateEditToDbAndTree(syncOp, nodeId, newCreationTime, newModificationTime, node, newSize);
             }
         }
