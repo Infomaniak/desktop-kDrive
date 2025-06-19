@@ -9,7 +9,7 @@ from conan.tools.files import copy
 
 class CPPUnitMacOSConan(ConanFile):
     name = "cppunit"
-    version = "1.15.1"
+    version = "1.15.2"
     package_type = "library"
     settings = "os", "arch", "compiler", "build_type"
     options = {
