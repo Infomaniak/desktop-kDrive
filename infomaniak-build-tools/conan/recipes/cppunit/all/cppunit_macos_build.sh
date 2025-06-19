@@ -49,6 +49,7 @@ done
 git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
 
 pushd "cppunit" >/dev/null
+#git checkout 2b72f2b3ef94452ae649fc6a44bec049f1acb173
 
 export CFLAGS="-mmacosx-version-min=${minimum_macos_version}"
 export CXXFLAGS="${CFLAGS} -std=c++11"

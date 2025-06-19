@@ -18,9 +18,9 @@
 
 #pragma once
 
+#include "testincludes.h"
 #include "test_utility/testbase.h"
 
-#include <cppunit/TestFixture.h>
 
 namespace KDC {
 
