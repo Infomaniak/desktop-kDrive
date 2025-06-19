@@ -40,10 +40,10 @@
 #include "libcommonserver/utility/utility.h"
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
+#include "libsyncengine/jobs/abstractjob.h"
 #include "libsyncengine/jobs/jobmanager.h"
 
 #include <iostream>
-#include <fstream>
 #include <filesystem>
 #ifdef Q_OS_UNIX
 #include <sys/resource.h>
@@ -70,7 +70,6 @@
 
 #define QUIT_DELAY 1000 // ms
 #define LOAD_PROGRESS_INTERVAL 1000 // ms
-#define LOAD_PROGRESS_MAXITEMS 100 // ms
 #define SEND_NOTIFICATIONS_INTERVAL 15000 // ms
 #define RESTART_SYNCS_INTERVAL 15000 // ms
 #define START_SYNCPALS_RETRY_INTERVAL 60000 // ms
@@ -287,7 +286,7 @@ void AppServer::init() {
     }
 
     // Init JobManager
-    if (!JobManager::instance()) {
+    if (!JobManager<AbstractJob>::instance()) {
         LOG_WARN(_logger, "Error in JobManager::instance");
         throw std::runtime_error("Unable to initialize job manager.");
     }
@@ -408,7 +407,7 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "AppServer::cleanup");
 
     // Stop JobManager
-    JobManager::instance()->stop();
+    JobManager<AbstractJob>::instance()->stop();
     LOG_DEBUG(_logger, "JobManager stopped");
 
     // Stop SyncPals
@@ -428,7 +427,7 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "Vfs(s) stopped");
 
     // Clear JobManager
-    JobManager::instance()->clear();
+    JobManager<AbstractJob>::instance()->clear();
     LOG_DEBUG(_logger, "JobManager::clear() done");
 
     // Clear maps
@@ -2186,7 +2185,7 @@ void AppServer::uploadLog(const bool includeArchivedLogs) {
         }
     };
     logUploadJob->setAdditionalCallback(jobResultCallback);
-    JobManager::instance()->queueAsyncJob(logUploadJob, Poco::Thread::PRIO_HIGH);
+    JobManager<AbstractJob>::instance()->queueAsyncJob(logUploadJob, Poco::Thread::PRIO_HIGH);
 }
 
 ExitInfo AppServer::checkIfSyncIsValid(const Sync &sync) {
@@ -3899,7 +3898,7 @@ void AppServer::addError(const Error &error) {
         ParametersCache::instance()->decreaseUploadSessionParallelThreads();
 
         // Decrease JobManager pool capacity
-        JobManager::instance()->decreasePoolCapacity();
+        JobManager<AbstractJob>::instance()->decreasePoolCapacity();
     } else if (error.exitCode() == ExitCode::SystemError && error.exitCause() == ExitCause::FileAccessError) {
         // Remove child errors
         std::unordered_set<int64_t> toBeRemovedErrorIds;
