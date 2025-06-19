@@ -169,8 +169,10 @@ void JobManager<Job>::decreasePoolCapacity() {
         _maxNbThread -= static_cast<int>(std::ceil((_maxNbThread - threadPoolMinCapacity) / 2.0));
         setPoolCapacity(_maxNbThread);
     } else {
-        sentry::Handler::captureMessage(sentry::Level::Warning, "JobManager<Job>::defaultCallback",
-                                        "JobManager<Job> capacity cannot be decreased");
+        const std::string jobManagerClassName = CommonUtility::getTypeName(*this);
+        const std::string methodName = jobManagerClassName + "::defaultCallback";
+        const std::string message = jobManagerClassName + " capacity cannot be decreased";
+        sentry::Handler::captureMessage(sentry::Level::Warning, methodName, message);
     }
 }
 
@@ -178,7 +180,7 @@ template<class Job>
 JobManager<Job>::JobManager() {
     setPoolCapacity(std::min(static_cast<int>(std::thread::hardware_concurrency()), threadPoolMaxCapacity));
 
-    LOG_DEBUG(_logger, "Network Job Manager started with max " << _maxNbThread << " threads");
+    LOG_DEBUG(_logger, "Job Manager started with max " << _maxNbThread << " threads");
 }
 
 template<class Job>

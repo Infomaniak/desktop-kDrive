@@ -45,6 +45,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSplitPathFromSyncName);
         CPPUNIT_TEST(testComputeSyncNameNormalizations);
         CPPUNIT_TEST(testComputePathNormalizations);
+        CPPUNIT_TEST(testGetTypeName);
 #ifdef _WIN32
         CPPUNIT_TEST(testGetLastErrorMessage);
 #endif
@@ -73,6 +74,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testSplitPathFromSyncName();
         void testComputeSyncNameNormalizations();
         void testComputePathNormalizations();
+        void testGetTypeName();
 
 #ifdef _WIN32
         void testGetLastErrorMessage();
@@ -93,6 +95,9 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
          */
         void generatePaths(const std::vector<std::string> &itemsNames, const std::vector<char> &separators,
                            bool startWithSeparator, std::vector<SyncPath> &result, const std::string &start = "", size_t pos = 0);
+
+        template<class T>
+        class TestClassWithTemplate {};
 };
 
 

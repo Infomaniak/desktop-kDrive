@@ -748,4 +748,17 @@ void TestUtility::testComputePathNormalizations() {
 #endif
 }
 
+void TestUtility::testGetTypeName() {
+    {
+        const std::string name = CommonUtility::getTypeName(*this);
+        CPPUNIT_ASSERT(name.find("TestUtility"));
+    }
+
+    {
+        TestClassWithTemplate<int> object;
+        const std::string name = CommonUtility::getTypeName(object);
+        CPPUNIT_ASSERT(name.find("TestClassWithTemplate<int>"));
+    }
+}
+
 } // namespace KDC

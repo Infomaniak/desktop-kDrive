@@ -38,6 +38,8 @@
 
 #include <log4cplus/log4cplus.h>
 
+#include <cxxabi.h>
+
 namespace KDC {
 struct COMMON_EXPORT CommonUtility {
         enum IconType {
@@ -144,6 +146,16 @@ struct COMMON_EXPORT CommonUtility {
 
         static bool isLikeFileNotFoundError(const std::error_code &ec) noexcept {
             return utility_base::isLikeFileNotFoundError(ec);
+        };
+
+        // Inspired by https://stackoverflow.com/a/3649351/4675396
+        template<class Type>
+        static std::string getTypeName(const Type &object) {
+            int status = 0;
+            char *demangled = abi::__cxa_demangle(typeid(object).name(), 0, 0, &status);
+            std::string result{std::move(demangled)};
+
+            return result;
         };
 
 
