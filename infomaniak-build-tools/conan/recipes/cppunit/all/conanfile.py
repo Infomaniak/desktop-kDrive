@@ -18,7 +18,9 @@ class CPPUnitUniversalConan(ConanFile):
     default_options = {
         "shared": True,
     }
-    exports_sources = "cppunit_universal_build.sh"
+    _script_name = "cppunit_universal_build.sh"
+
+    exports_sources = _script_name
 
 
     def validate(self):
@@ -26,7 +28,7 @@ class CPPUnitUniversalConan(ConanFile):
             raise ConanInvalidConfiguration("cppunit-universal is only supported on Apple platforms (macOS, iOS, etc.)")
 
     def build(self):
-        script = os.path.join(self.build_folder, "cppunit_universal_build.sh")
+        script = os.path.join(self.build_folder, self._script_name)
 
         self.run(f"chmod +x {script}")
         self.run(f"bash {script} --build-folder {self.build_folder} {'--shared' if self.options.shared else ''}")
