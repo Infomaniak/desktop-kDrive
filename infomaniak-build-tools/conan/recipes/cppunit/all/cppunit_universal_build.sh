@@ -47,10 +47,19 @@ done
 build_arch() {
   local arch="$1"
   local src_dir="cppunit.${arch}"
-  local host_arg=""
+
+  # Host and build triplets
+  local host_arch="${arch}"
+  [[ "${arch}" == "arm64" ]] && host_arch="aarch64"
+
+  local build_arch="$(uname -m)"
+  [[ "${build_arch}" == "arm64" ]] && build_arch="aarch64"
+
+  local host_triplet="${host_arch}-apple-darwin"
+  local build_triplet="${build_arch}-apple-darwin"
 
   log "Preparing source for ${arch}..."
-  cp -R cppunit-1.15.1 "${src_dir}" || error "mv failed for ${arch}"
+  cp -R cppunit-1.15.1 "${src_dir}" || error "cp failed for ${arch}"
 
   pushd "${src_dir}" >/dev/null
 
@@ -58,22 +67,17 @@ build_arch() {
   export CXXFLAGS="${CFLAGS} -std=c++11"
   export LDFLAGS="-arch ${arch} -mmacosx-version-min=${minimum_macos_version}"
 
-  [[ "${arch}" == "x86_64" ]] && host_arg="--host=x86_64-apple-darwin"
-
-  log "Configuring for ${arch}..."
-  ./autogen.sh
+  local configure_args="--build=${build_triplet} --host=${host_triplet}"
   if [[ ${shared} -eq 1 ]]; then
-    log "CPPUnit: shared"
-    host_arg="${host_arg} --enable-shared --disable-static"
+    configure_args+=" --enable-shared --disable-static"
   else
-    log "CPPUnit: static"
-    host_arg="${host_arg} --disable-shared --enable-static"
+    configure_args+=" --disable-shared --enable-static"
   fi
 
-  ./configure ${host_arg} || error "configure failed for ${arch}"
-
-  log "Building for ${arch}..."
-  make -C src/cppunit -j"$(sysctl -n hw.logicalcpu)" || error "make failed for ${arch}"
+  log "Configuring and building for ${arch}..."
+  ./autogen.sh                                        || error "autogen.sh failed for ${arch}"
+  ./configure ${configure_args}                       || error "configure failed for ${arch}"
+  make -C src/cppunit -j"$(sysctl -n hw.logicalcpu)"  || error "make failed for ${arch}"
 
   popd >/dev/null
 }
@@ -95,16 +99,19 @@ multi_dir="cppunit.multi"
 mkdir -p "${multi_dir}/lib" "${multi_dir}/include"
 
 log "Merging libraries with lipo..."
-if [[ ${shared} -eq 1 ]]; then
-  lipo -create \
-    cppunit.x86_64/src/cppunit/.libs/libcppunit-1.15.1.dylib \
-    cppunit.arm64/src/cppunit/.libs/libcppunit-1.15.1.dylib \
-    -output "${multi_dir}/lib/libcppunit.dylib" || error "lipo failed"
-else
-  lipo -create \
-    cppunit.x86_64/src/cppunit/.libs/libcppunit.a \
-    cppunit.arm64/src/cppunit/.libs/libcppunit.a \
-    -output "${multi_dir}/lib/libcppunit.a" || error "lipo failed"
+
+# Set the library extension based on whether shared libraries are requested
+lib_ext=$([[ ${shared} -eq 1 ]] && echo "dylib" || echo "a")
+
+lib_x86="cppunit.x86_64/src/cppunit/.libs/libcppunit-1.15.1.${lib_ext}"
+lib_arm="cppunit.arm64/src/cppunit/.libs/libcppunit-1.15.1.${lib_ext}"
+lib_out="${multi_dir}/lib/libcppunit.${lib_ext}"
+
+lipo -create "${lib_x86}" "${lib_arm}" -output "${lib_out}" || error "lipo failed"
+lib_path="${lib_out}"
+
+if ! lipo -info "${lib_path}" | grep -q 'x86_64.*arm64'; then # Check if the fat binary was created successfully
+  error "lipo failed to create a fat binary for ${lib_ext} library"
 fi
 
 log "Copying headers..."
