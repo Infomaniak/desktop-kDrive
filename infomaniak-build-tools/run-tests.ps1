@@ -20,6 +20,21 @@ $testers = Get-ChildItem build-windows -Recurse -Name -Filter 'kDrive_test_*.exe
 $errors = 0
 $failures = @()
 
+$find_dep_script = "infomaniak-build-tools\conan\find_conan_dep.ps1"
+if (-not (Test-Path $find_dep_script)) {
+    Write-Host "Error: Cannot find $find_dep_script" -f Red
+    exit 1
+}
+$cppunit_args = @{
+    Package = "cppunit"
+    Version = "1.15.1"
+    Ci = $true
+}
+$cppunit_folder = & $find_dep_script @cppunit_args
+$oldPath = $env:PATH
+$env:PATH = "$($cppunit_folder)\bin;$env:PATH"
+
+
 pushd build-windows\install\bin
 
 foreach ($file in $testers)
@@ -38,6 +53,7 @@ foreach ($file in $testers)
 }
 
 popd
+$env:PATH = $oldPath # Restore original PATH
 
 if ($errors -eq 0) {
     Write-Host "Success: All Tests passed !" -f Green
