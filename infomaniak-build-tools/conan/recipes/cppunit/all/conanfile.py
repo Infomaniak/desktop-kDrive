@@ -7,8 +7,8 @@ from conan.tools.build import stdcpp_library
 from conan.tools.files import copy
 
 
-class CPPUnitUniversalConan(ConanFile):
-    name = "cppunit-universal"
+class CPPUnitMacOSConan(ConanFile):
+    name = "cppunit-macos"
     version = "1.15.1"
     package_type = "library"
     settings = "os", "arch", "compiler", "build_type"
@@ -18,14 +18,13 @@ class CPPUnitUniversalConan(ConanFile):
     default_options = {
         "shared": True,
     }
-    _script_name = "cppunit_universal_build.sh"
+    _script_name = "cppunit_macos_build.sh"
 
     exports_sources = _script_name
 
-
     def validate(self):
         if not is_apple_os(self):
-            raise ConanInvalidConfiguration("cppunit-universal is only supported on Apple platforms (macOS, iOS, etc.)")
+            raise ConanInvalidConfiguration("cppunit-macos is only supported on Apple platforms (macOS, iOS, etc.)")
 
     def build(self):
         script = os.path.join(self.build_folder, self._script_name)
@@ -35,10 +34,10 @@ class CPPUnitUniversalConan(ConanFile):
 
     def package(self):
         copy(self, "COPYING", src=self.build_folder, dst=os.path.join(self.package_folder, "licenses"))
-        copy(self, "*.h", src=os.path.join(self.build_folder, "cppunit.multi", "include"), dst=os.path.join(self.package_folder, "include"))
+        copy(self, "*.h", src=os.path.join(self.build_folder, "include"), dst=os.path.join(self.package_folder, "include"))
 
         lib_pattern = "*.dylib" if self.options.shared else "*.a" # Use .dylib for shared lib and .a for static lib
-        copy(self, lib_pattern, src=os.path.join(self.build_folder, "cppunit.multi", "lib"), dst=os.path.join(self.package_folder, "lib"))
+        copy(self, lib_pattern, src=os.path.join(self.build_folder, "lib"), dst=os.path.join(self.package_folder, "lib"))
 
         fix_apple_shared_install_name(self)
 
