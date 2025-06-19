@@ -28,12 +28,15 @@ class CPPUnitUniversalConan(ConanFile):
         script = os.path.join(self.build_folder, "cppunit_universal_build.sh")
 
         self.run(f"chmod +x {script}")
-        self.run(f"bash {script} --build-folder {self.build_folder}")
+        self.run(f"bash {script} --build-folder {self.build_folder} {'--shared' if self.options.shared else ''}")
 
     def package(self):
-        copy(self, "*.h", src=os.path.join(self.build_folder, "cppunit.multi", "include"), dst=os.path.join(self.package_folder, "include"))
-        copy(self, "*.dylib", src=os.path.join(self.build_folder, "cppunit.multi", "lib"), dst=os.path.join(self.package_folder, "lib"))
         copy(self, "COPYING", src=self.build_folder, dst=os.path.join(self.package_folder, "licenses"))
+        copy(self, "*.h", src=os.path.join(self.build_folder, "cppunit.multi", "include"), dst=os.path.join(self.package_folder, "include"))
+
+        lib_pattern = "*.dylib" if self.options.shared else "*.a" # Use .dylib for shared lib and .a for static lib
+        copy(self, lib_pattern, src=os.path.join(self.build_folder, "cppunit.multi", "lib"), dst=os.path.join(self.package_folder, "lib"))
+
         fix_apple_shared_install_name(self)
 
     def package_info(self):

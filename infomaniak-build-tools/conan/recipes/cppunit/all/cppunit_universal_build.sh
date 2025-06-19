@@ -12,11 +12,14 @@ error() { echo -e "[ERROR] $*" >&2; exit 1; }
 
 usage() {
   cat <<EOF
-Usage: $0 --build-folder <path>
+Usage: $0 --build-folder <path> [--shared]
   --build-folder   Directory where cppunit will be cloned and built
+  --shared         Build shared libraries (default is static)
 EOF
   exit 1
 }
+
+shared=0
 
 # Argument parsing
 while [[ $# -gt 0 ]]; do
@@ -24,6 +27,10 @@ while [[ $# -gt 0 ]]; do
     --build-folder)
       build_folder="$2"
       shift 2
+      ;;
+    --shared)
+      shared=1
+      shift 1
       ;;
     -h|--help)
       usage
@@ -55,6 +62,14 @@ build_arch() {
 
   log "Configuring for ${arch}..."
   ./autogen.sh
+  if [[ ${shared} -eq 1 ]]; then
+    log "CPPUnit: shared"
+    host_arg="${host_arg} --enable-shared --disable-static"
+  else
+    log "Dep: static"
+    host_arg="${host_arg} --disable-shared --enable-static"
+  fi
+
   ./configure ${host_arg} || error "configure failed for ${arch}"
 
   log "Building for ${arch}..."
@@ -84,8 +99,10 @@ lipo -create \
   cppunit.x86_64/src/cppunit/.libs/libcppunit-1.15.1.dylib \
   cppunit.arm64/src/cppunit/.libs/libcppunit-1.15.1.dylib \
   -output "${multi_dir}/lib/libcppunit.dylib" || error "lipo failed"
-
-install_name_tool -id "@rpath/libcppunit.dylib" "${multi_dir}/lib/libcppunit.dylib"
+lipo -create \
+  cppunit.x86_64/src/cppunit/.libs/libcppunit.a \
+  cppunit.arm64/src/cppunit/.libs/libcppunit.a \
+  -output "${multi_dir}/lib/libcppunit.a" || error "lipo failed"
 
 log "Copying headers..."
 cp -R cppunit.x86_64/include/cppunit "${multi_dir}/include/"
