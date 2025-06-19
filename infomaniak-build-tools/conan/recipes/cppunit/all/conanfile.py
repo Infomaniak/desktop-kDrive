@@ -8,7 +8,7 @@ from conan.tools.files import copy
 
 
 class CPPUnitMacOSConan(ConanFile):
-    name = "cppunit-macos"
+    name = "cppunit"
     version = "1.15.1"
     package_type = "library"
     settings = "os", "arch", "compiler", "build_type"
