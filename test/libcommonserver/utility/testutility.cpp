@@ -326,28 +326,31 @@ void TestUtility::testIsDiskRootFolder() {
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("/Users", suggestedPath));
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("/home", suggestedPath));
 
-    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("/", suggestedPath));
-    CPPUNIT_ASSERT(suggestedPath.empty() || !CommonUtility::isDiskRootFolder(suggestedPath, suggestedPath));
+    SyncPath dummyPath;
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(suggestedPath.string(), true, CommonUtility::isDiskRootFolder("/", suggestedPath));
+    CPPUNIT_ASSERT(suggestedPath.empty() || !CommonUtility::isDiskRootFolder(suggestedPath, dummyPath));
 
 #if defined(_WIN32)
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("C:\\Users", suggestedPath));
 
-    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("C:\\", suggestedPath));
-    CPPUNIT_ASSERT(suggestedPath.empty() || !CommonUtility::isDiskRootFolder(suggestedPath, suggestedPath));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(suggestedPath.string(), true, CommonUtility::isDiskRootFolder("C:\\", suggestedPath));
+    CPPUNIT_ASSERT(suggestedPath.empty() || !CommonUtility::isDiskRootFolder(suggestedPath, dummyPath));
 #elif defined(__APPLE__)
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("/Volumes/drivename/kDrive", suggestedPath));
 
-    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("/Volumes/drivename", suggestedPath));
-    CPPUNIT_ASSERT(suggestedPath.empty() || !CommonUtility::isDiskRootFolder(suggestedPath, suggestedPath));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(suggestedPath.string(), true,
+                                 CommonUtility::isDiskRootFolder("/Volumes/drivename", suggestedPath));
+    CPPUNIT_ASSERT(suggestedPath.empty() || !CommonUtility::isDiskRootFolder(suggestedPath, dummyPath));
 #else
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("/media/username/drivename/kDrive", suggestedPath));
 
-    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("/media", suggestedPath));
-    CPPUNIT_ASSERT(suggestedPath.empty() || !CommonUtility::isDiskRootFolder(suggestedPath, suggestedPath));
-    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("/media/username", suggestedPath));
-    CPPUNIT_ASSERT(suggestedPath.empty() || !CommonUtility::isDiskRootFolder(suggestedPath, suggestedPath));
-    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isDiskRootFolder("/media/username/drivename", suggestedPath));
-    CPPUNIT_ASSERT(suggestedPath.empty() || !CommonUtility::isDiskRootFolder(suggestedPath, suggestedPath));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(suggestedPath.string(), true, CommonUtility::isDiskRootFolder("/media", suggestedPath));
+    CPPUNIT_ASSERT(suggestedPath.empty() || !CommonUtility::isDiskRootFolder(suggestedPath, dummyPath));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(suggestedPath.string(), true, CommonUtility::isDiskRootFolder("/media/username", suggestedPath));
+    CPPUNIT_ASSERT(suggestedPath.empty() || !CommonUtility::isDiskRootFolder(suggestedPath, dummyPath));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(suggestedPath.string(), true,
+                                 CommonUtility::isDiskRootFolder("/media/username/drivename", suggestedPath));
+    CPPUNIT_ASSERT(suggestedPath.empty() || !CommonUtility::isDiskRootFolder(suggestedPath, dummyPath));
 #endif
 }
 
