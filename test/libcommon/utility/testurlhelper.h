@@ -20,6 +20,8 @@
 
 #include "test_utility/testbase.h"
 
+#include <cppunit/testfixture.h>
+
 namespace KDC {
 
 class TestUrlHelper final : public CppUnit::TestFixture, public TestBase {
