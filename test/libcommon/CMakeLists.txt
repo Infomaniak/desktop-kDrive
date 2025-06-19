@@ -37,9 +37,6 @@ add_executable(${testcommon_NAME} ${testcommon_SRCS})
 set(PC_HEADER_FILES
     # std c++
     "$<$<COMPILE_LANGUAGE:CXX>:<filesystem$<ANGLE-R>>"
-    # cppunit
-    "$<$<COMPILE_LANGUAGE:CXX>:<cppunit/TestFixture.h$<ANGLE-R>>"
-    "$<$<COMPILE_LANGUAGE:CXX>:<cppunit/extensions/HelperMacros.h$<ANGLE-R>>"
 )
 
 target_precompile_headers(${testcommon_NAME} PRIVATE ${PC_HEADER_FILES})
@@ -49,17 +46,5 @@ set_target_properties(${testcommon_NAME} PROPERTIES
 
 target_link_libraries(${testcommon_NAME}
         ${libcommonserver_NAME}
+        cppunit::cppunit
 )
-
-if(WIN32)
-    target_link_libraries(${testcommon_NAME}
-            debug
-            "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"
-            optimized
-            "C:/Program Files (x86)/cppunit/lib/cppunit_dll.lib")
-elseif(APPLE)
-    target_link_libraries(${testcommon_NAME} cppunit::cppunit)
-else()
-    target_link_libraries(${testcommon_NAME}
-            "/usr/local/lib/libcppunit.so")
-endif ()

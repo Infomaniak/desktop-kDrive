@@ -36,22 +36,10 @@ set_target_properties(${testparms_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY} )
 
 target_link_libraries(${testparms_NAME}
-    ${libparms_NAME}
-    ${SQLITE3_LIBRARIES}
+        ${libparms_NAME}
+        ${SQLITE3_LIBRARIES}
+        cppunit::cppunit
 )
-
-if(WIN32)
-    target_link_libraries(${testparms_NAME}
-        debug
-        "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"
-        optimized
-        "C:/Program Files (x86)/cppunit/lib/cppunit_dll.lib")
-elseif(APPLE)
-    target_link_libraries(${testparms_NAME} cppunit::cppunit)
-else()
-    target_link_libraries(${testparms_NAME}
-        "/usr/local/lib/libcppunit.so")
-endif()
 
 if(APPLE)
     # Default sync exclude list

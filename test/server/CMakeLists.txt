@@ -119,24 +119,12 @@ target_include_directories(${testserver_NAME} PRIVATE
 target_link_libraries(${testserver_NAME}
     Qt6::Svg
     updater
+        cppunit::cppunit
 )
 
 if(APPLE)
     find_library(SERVICE_MANAGEMENT_LIBRARY NAMES ServiceManagement)
     target_link_libraries(${testserver_NAME} ${SERVICE_MANAGEMENT_LIBRARY})
-endif()
-
-if(WIN32)
-    target_link_libraries(${testserver_NAME}
-            debug
-            "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"
-            optimized
-            "C:/Program Files (x86)/cppunit/lib/cppunit_dll.lib")
-elseif(APPLE)
-    target_link_libraries(${testserver_NAME} cppunit::cppunit)
-else()
-    target_link_libraries(${testserver_NAME}
-            "/usr/local/lib/libcppunit.so")
 endif()
 
 if(APPLE)

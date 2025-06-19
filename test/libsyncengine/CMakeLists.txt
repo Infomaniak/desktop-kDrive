@@ -105,17 +105,5 @@ set_target_properties(${testsyncengine_NAME} PROPERTIES
 target_link_libraries(${testsyncengine_NAME}
         ${libsyncengine_NAME}
         ${SQLITE3_LIBRARIES}
+        cppunit::cppunit
 )
-
-if(WIN32)
-    target_link_libraries(${testsyncengine_NAME}
-        debug
-        "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"
-        optimized
-        "C:/Program Files (x86)/cppunit/lib/cppunit_dll.lib")
-elseif(APPLE)
-    target_link_libraries(${testsyncengine_NAME} cppunit::cppunit)
-else()
-    target_link_libraries(${testsyncengine_NAME}
-            "/usr/local/lib/libcppunit.so")
-endif ()
