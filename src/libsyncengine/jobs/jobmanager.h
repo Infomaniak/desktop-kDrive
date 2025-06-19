@@ -82,7 +82,7 @@ class JobManager {
         log4cplus::Logger _logger{Log::instance()->getLogger()};
         std::unique_ptr<std::thread> _mainThread;
 
-        JobManagerData _data;
+        JobManagerData<Job> _data;
 
         friend class TestJobManager;
 };
