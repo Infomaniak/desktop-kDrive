@@ -7,7 +7,7 @@ endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Svg)
 find_package(Poco 1.13.3 REQUIRED XML Net)
-find_package(CPPUnit 1.15.1 REQUIRED)
+find_package(cppunit REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 

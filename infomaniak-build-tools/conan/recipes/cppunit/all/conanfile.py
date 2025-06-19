@@ -43,7 +43,7 @@ class CPPUnitMacOSConan(ConanFile):
 
     def package_info(self):
         self.cpp_info.set_property("cmake_target_name", "cppunit::cppunit")
-        self.cpp_info.set_property("cmake_file_name", "CPPUnit")
+        self.cpp_info.set_property("cmake_file_name", "cppunit")
         self.cpp_info.set_property("pkg_config_name", "cppunit")
         self.cpp_info.libs = ["cppunit"]
         self.cpp_info.includedirs = ["include"]
