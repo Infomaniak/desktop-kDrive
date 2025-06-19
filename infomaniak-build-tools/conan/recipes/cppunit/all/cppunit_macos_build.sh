@@ -53,7 +53,7 @@ pushd "cppunit" >/dev/null
 
 export CFLAGS="-mmacosx-version-min=${minimum_macos_version}"
 export CXXFLAGS="${CFLAGS} -std=c++11"
-export LDFLAGS="-mmacosx-version-min=${minimum_macos_version}"
+export LDFLAGS="-mmacosx-version-min=${minimum_macos_version} -headerpad_max_install_names"
 
 configure_args="" # "--build=${build_triplet} --host=${host_triplet}"
 if [[ ${shared} -eq 1 ]]; then

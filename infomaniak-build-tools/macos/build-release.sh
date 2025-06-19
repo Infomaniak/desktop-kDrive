@@ -91,18 +91,19 @@ fi
 pushd "$build_dir"
 
 cmake \
+  --log-level=VERBOSE \
 	-DCMAKE_OSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" \
 	-DCMAKE_INSTALL_PREFIX="$install_dir" \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DSPARKLE_LIBRARY="$sparkle_dir/Sparkle.framework" \
 	-DKDRIVE_THEME_DIR="$kdrive_dir" \
-	-DBUILD_UNIT_TESTS=0 \
+	-DBUILD_UNIT_TESTS=1 \
 	-DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
 	"${CMAKE_PARAMS[@]}" \
 	"$src_dir"
 
 # Build
-make -j6 all install
+make -j6 all install VERBOSE=1
 
 # Generate Debug Symbol files
 dsymutil ./install/kDrive.app/Contents/MacOS/kDrive -o ./install/kDrive.dSYM
