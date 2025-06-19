@@ -63,21 +63,24 @@ build_arch() {
 
   pushd "${src_dir}" >/dev/null
 
-  export CFLAGS="-arch ${arch} -mmacosx-version-min=${minimum_macos_version}"
+  export CFLAGS="-mmacosx-version-min=${minimum_macos_version}"
   export CXXFLAGS="${CFLAGS} -std=c++11"
-  export LDFLAGS="-arch ${arch} -mmacosx-version-min=${minimum_macos_version}"
+  export LDFLAGS="-mmacosx-version-min=${minimum_macos_version}"
 
-  local configure_args="--build=${build_triplet} --host=${host_triplet}"
+  local configure_args="" # "--build=${build_triplet} --host=${host_triplet}"
   if [[ ${shared} -eq 1 ]]; then
     configure_args+=" --enable-shared --disable-static"
   else
     configure_args+=" --disable-shared --enable-static"
   fi
 
+  local prefix=""
+  [[ "$arch" == "x86_64" && "$build_arch" == "aarch64" ]] && prefix="arch -${arch}"
+
   log "Configuring and building for ${arch}..."
-  ./autogen.sh                                        || error "autogen.sh failed for ${arch}"
-  ./configure ${configure_args}                       || error "configure failed for ${arch}"
-  make -C src/cppunit -j"$(sysctl -n hw.logicalcpu)"  || error "make failed for ${arch}"
+  eval "$prefix ./autogen.sh || error \"autogen.sh failed for ${arch}\""
+  eval "$prefix ./configure ${configure_args} || error \"configure failed for ${arch}\""
+  eval "$prefix make -C src/cppunit -j\"$(sysctl -n hw.logicalcpu)\"  || error \"make failed for ${arch}\""
 
   popd >/dev/null
 }
@@ -102,9 +105,10 @@ log "Merging libraries with lipo..."
 
 # Set the library extension based on whether shared libraries are requested
 lib_ext=$([[ ${shared} -eq 1 ]] && echo "dylib" || echo "a")
+name_suffix=$([[ ${shared} -eq 1 ]] && echo "-1.15.1" || echo "")
 
-lib_x86="cppunit.x86_64/src/cppunit/.libs/libcppunit-1.15.1.${lib_ext}"
-lib_arm="cppunit.arm64/src/cppunit/.libs/libcppunit-1.15.1.${lib_ext}"
+lib_x86="cppunit.x86_64/src/cppunit/.libs/libcppunit${name_suffix}.${lib_ext}"
+lib_arm="cppunit.arm64/src/cppunit/.libs/libcppunit${name_suffix}.${lib_ext}"
 lib_out="${multi_dir}/lib/libcppunit.${lib_ext}"
 
 lipo -create "${lib_x86}" "${lib_arm}" -output "${lib_out}" || error "lipo failed"
