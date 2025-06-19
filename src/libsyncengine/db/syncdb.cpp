@@ -2571,8 +2571,8 @@ bool SyncDb::tryToFixDbNodeIdsAfterSyncDirChange(const SyncPath &syncDirPath) {
 
         if (!IoHelper::getNodeId(absoluteLocalPath, newLocalNodeId)) {
             LOGW_WARN(_logger, L"Unable to get new local node ID for "
-                                               << Utility::formatSyncPath(absoluteLocalPath)
-                                               << L". It might have been deleted or moved, the syncDb cannot be fixed.");
+                                       << Utility::formatSyncPath(absoluteLocalPath)
+                                       << L". It might have been deleted or moved, the syncDb cannot be fixed.");
             dbCache.clear();
             return false;
         }
