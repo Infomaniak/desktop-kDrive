@@ -84,7 +84,7 @@ void JobManager::queueAsyncJob(const std::shared_ptr<AbstractJob> job,
 }
 
 bool JobManager::isJobFinished(const UniqueId jobId) const {
-    return _data.isManaged(jobId);
+    return !_data.isManaged(jobId);
 }
 
 std::shared_ptr<AbstractJob> JobManager::getJob(const UniqueId jobId) const {
