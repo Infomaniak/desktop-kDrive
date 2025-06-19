@@ -95,7 +95,7 @@ multi_dir="cppunit.multi"
 mkdir -p "${multi_dir}/lib" "${multi_dir}/include"
 
 log "Merging libraries with lipo..."
-if [[ ${shared} -eq 0 ]]; then
+if [[ ${shared} -eq 1 ]]; then
   lipo -create \
     cppunit.x86_64/src/cppunit/.libs/libcppunit-1.15.1.dylib \
     cppunit.arm64/src/cppunit/.libs/libcppunit-1.15.1.dylib \
