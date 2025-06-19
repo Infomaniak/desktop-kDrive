@@ -66,7 +66,7 @@ build_arch() {
     log "CPPUnit: shared"
     host_arg="${host_arg} --enable-shared --disable-static"
   else
-    log "Dep: static"
+    log "CPPUnit: static"
     host_arg="${host_arg} --disable-shared --enable-static"
   fi
 
@@ -95,14 +95,17 @@ multi_dir="cppunit.multi"
 mkdir -p "${multi_dir}/lib" "${multi_dir}/include"
 
 log "Merging libraries with lipo..."
-lipo -create \
-  cppunit.x86_64/src/cppunit/.libs/libcppunit-1.15.1.dylib \
-  cppunit.arm64/src/cppunit/.libs/libcppunit-1.15.1.dylib \
-  -output "${multi_dir}/lib/libcppunit.dylib" || error "lipo failed"
-lipo -create \
-  cppunit.x86_64/src/cppunit/.libs/libcppunit.a \
-  cppunit.arm64/src/cppunit/.libs/libcppunit.a \
-  -output "${multi_dir}/lib/libcppunit.a" || error "lipo failed"
+if [[ ${shared} -eq 0 ]]; then
+  lipo -create \
+    cppunit.x86_64/src/cppunit/.libs/libcppunit-1.15.1.dylib \
+    cppunit.arm64/src/cppunit/.libs/libcppunit-1.15.1.dylib \
+    -output "${multi_dir}/lib/libcppunit.dylib" || error "lipo failed"
+else
+  lipo -create \
+    cppunit.x86_64/src/cppunit/.libs/libcppunit.a \
+    cppunit.arm64/src/cppunit/.libs/libcppunit.a \
+    -output "${multi_dir}/lib/libcppunit.a" || error "lipo failed"
+fi
 
 log "Copying headers..."
 cp -R cppunit.x86_64/include/cppunit "${multi_dir}/include/"
