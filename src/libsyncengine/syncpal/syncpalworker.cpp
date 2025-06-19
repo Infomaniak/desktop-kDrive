@@ -70,7 +70,10 @@ bool shouldBeStopped(const std::shared_ptr<ISyncWorker> w1, const std::shared_pt
     const auto systemError = (w1 && w1->exitCode() == ExitCode::SystemError) || (w2 && w2->exitCode() == ExitCode::SystemError);
     const auto updateRequired =
             (w1 && w1->exitCode() == ExitCode::UpdateRequired) || (w2 && w2->exitCode() == ExitCode::UpdateRequired);
-    return dbError || systemError || updateRequired;
+    const auto invalidSyncError =
+            (w1 && w1->exitCode() == ExitCode::InvalidSync) || (w2 && w2->exitCode() == ExitCode::InvalidSync);
+
+    return dbError || systemError || updateRequired || invalidSyncError;
 }
 
 } // namespace
@@ -125,8 +128,7 @@ void SyncPalWorker::execute() {
                         break;
                     }
 
-                    const bool shouldStop = fsoWorkers[index]->exitCode() == ExitCode::InvalidSync;
-                    if (shouldStop && !stopAsked()) {
+                    if (shouldBeStopped(fsoWorkers[index], nullptr) && !stopAsked()) {
                         stop();
                     }
                 } else if (!pauseAsked()) {
