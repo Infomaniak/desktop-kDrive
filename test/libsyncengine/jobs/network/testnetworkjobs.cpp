@@ -142,7 +142,7 @@ void TestNetworkJobs::tearDown() {
     ParametersCache::reset();
     JobManager<AbstractJob>::instance()->stop();
     JobManager<AbstractJob>::instance()->clear();
-    JobManager::instance().reset();
+    JobManager<AbstractJob>::instance().reset();
     IoHelperTestUtilities::resetFunctions();
     TestBase::stop();
 }
