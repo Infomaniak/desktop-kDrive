@@ -1,0 +1,22 @@
+name: Update branch marked auto merge
+
+on:
+  # Allows manual execution
+  workflow_dispatch:
+  # 
+  pull_request: 
+    branches-ignore:
+        - 'release/**'
+    types: [closed]
+
+concurrency:
+  group: auto-update
+  cancel-in-progress: true
+
+jobs:
+  update-branch:
+    runs-on: [ macOS ]
+    steps:
+      - uses: ClementKunz/auto-update-branch-action@v1.0
+        with:
+          bearer-token: ${{ secrets.AUTO_UPDATE_BRANCH_TOKEN }}
