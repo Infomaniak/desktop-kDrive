@@ -120,7 +120,7 @@ void UpdateDialog::initUi(const VersionInfo &versionInfo) {
 
     subLayout->addLayout(hLayout);
 #ifdef Q_OS_WIN
-    MatomoClient::sendVisit(MatomoNameField::PG_Preferences_UpdateDialog)
+    MatomoClient::sendVisit(MatomoNameField::PG_Preferences_UpdateDialog);
 #endif
 }
 
