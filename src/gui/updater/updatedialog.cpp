@@ -119,6 +119,9 @@ void UpdateDialog::initUi(const VersionInfo &versionInfo) {
     connect(this, &CustomDialog::exit, this, &UpdateDialog::reject);
 
     subLayout->addLayout(hLayout);
+#ifdef Q_OS_WIN
+    MatomoClient::sendVisit(MatomoNameField::PG_Preferences_UpdateDialog)
+#endif
 }
 
 void UpdateDialog::reject() {
