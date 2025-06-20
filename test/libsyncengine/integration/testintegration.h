@@ -114,7 +114,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
 
                 bool isValid() const { return !id.empty(); }
         };
-        RemoteFileInfo getRemoteFileInfo(int _driveDbId, const NodeId &parentId, const SyncName &name) const;
+        RemoteFileInfo getRemoteFileInfoByName(int _driveDbId, const NodeId &parentId, const SyncName &name) const;
         log4cplus::Logger _logger;
         std::shared_ptr<SyncPal> _syncPal = nullptr;
         std::shared_ptr<ParmsDb> _parmsDb = nullptr;
