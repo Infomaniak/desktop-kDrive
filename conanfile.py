@@ -62,7 +62,7 @@ class KDriveDesktop(ConanFile):
             self.requires("cppunit/1.15.2", options={ "shared": True })
         else:
             self.requires("openssl/3.2.4", options={ "shared": True }) # From https://conan.io/center/recipes/openssl
-            self.requires("cppunit/1.15.1", options={ "shared": True })
+            self.requires("cppunit/1.15.2 ", options={ "shared": True })
 
 class OverrideVSRuntimeBlock(VSRuntimeBlock):
     template = textwrap.dedent("""\
