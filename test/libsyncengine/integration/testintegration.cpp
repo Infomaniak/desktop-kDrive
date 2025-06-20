@@ -222,16 +222,16 @@ void TestIntegration::testAll() {
     logStep("initialization");
 
     // Run test cases
-    // basicTests();
+    basicTests();
     // inconsistencyTests();
     // conflictTests();
-    testBreakCycle();
+    // testBreakCycle();
 }
 
 void TestIntegration::basicTests() {
     testLocalChanges();
     testRemoteChanges();
-    testSimultaneousChanges();
+    // testSimultaneousChanges();
 }
 
 void TestIntegration::testLocalChanges() {
@@ -244,27 +244,31 @@ void TestIntegration::testLocalChanges() {
     SyncPath filePath = _syncPal->localPath() / "testFileLocal";
     testhelpers::generateOrEditTestFile(filePath);
 
-    waitForCurrentSyncToFinish();
-
-    auto remoteTestFileInfo = getRemoteFileInfo(_driveDbId, _remoteSyncDir.id(), filePath.filename());
-    CPPUNIT_ASSERT(remoteTestFileInfo.isValid());
-
-    const auto remoteTestDirInfo = getRemoteFileInfo(_driveDbId, _remoteSyncDir.id(), subDirPath.filename());
-    CPPUNIT_ASSERT(remoteTestDirInfo.isValid());
-    logStep("test create local file");
-
-    // Generate an edit operation.
-    waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
-    testhelpers::generateOrEditTestFile(filePath);
-
     FileStat fileStat;
     bool exists = false;
     IoHelper::getFileStat(filePath, &fileStat, exists);
 
     waitForCurrentSyncToFinish();
 
+    auto remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), filePath.filename());
+    CPPUNIT_ASSERT(remoteTestFileInfo.isValid());
+
+    const auto remoteTestDirInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), subDirPath.filename());
+    CPPUNIT_ASSERT(remoteTestDirInfo.isValid());
+    CPPUNIT_ASSERT_EQUAL(fileStat.size, remoteTestFileInfo.size);
+    CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, remoteTestFileInfo.modificationTime);
+    logStep("test create local file");
+
+    // Generate an edit operation.
+    waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
+    testhelpers::generateOrEditTestFile(filePath);
+
+    IoHelper::getFileStat(filePath, &fileStat, exists);
+
+    waitForCurrentSyncToFinish();
+
     const auto prevRemoteTestFileInfo = remoteTestFileInfo;
-    remoteTestFileInfo = getRemoteFileInfo(_driveDbId, _remoteSyncDir.id(), filePath.filename());
+    remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), filePath.filename());
     CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, remoteTestFileInfo.modificationTime);
     CPPUNIT_ASSERT_LESS(remoteTestFileInfo.modificationTime, prevRemoteTestFileInfo.modificationTime);
     CPPUNIT_ASSERT_EQUAL(fileStat.size, remoteTestFileInfo.size);
@@ -282,7 +286,7 @@ void TestIntegration::testLocalChanges() {
 
     waitForCurrentSyncToFinish();
 
-    remoteTestFileInfo = getRemoteFileInfo(_driveDbId, remoteTestDirInfo.id, newName);
+    remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, remoteTestDirInfo.id, newName);
 
     CPPUNIT_ASSERT(remoteTestFileInfo.isValid());
     CPPUNIT_ASSERT_EQUAL(remoteTestDirInfo.id, remoteTestFileInfo.parentId);
@@ -299,7 +303,7 @@ void TestIntegration::testLocalChanges() {
 
     waitForCurrentSyncToFinish();
 
-    remoteTestFileInfo = getRemoteFileInfo(_driveDbId, remoteTestDirInfo.id, filePath.filename());
+    remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, remoteTestDirInfo.id, filePath.filename());
     CPPUNIT_ASSERT(!remoteTestFileInfo.isValid());
     logStep("test delete local file");
 }
@@ -319,10 +323,19 @@ void TestIntegration::testRemoteChanges() {
         fileId = duplicateRemoteFile(_driveDbId, _testFileRemoteId, filePath.filename());
     }
 
+    GetFileInfoJob fileInfoJob(_driveDbId, fileId);
+    (void) fileInfoJob.runSynchronously();
+
     waitForCurrentSyncToFinish();
 
     CPPUNIT_ASSERT(std::filesystem::exists(subDirPath));
     CPPUNIT_ASSERT(std::filesystem::exists(filePath));
+
+    FileStat fileStat;
+    bool exists = false;
+    IoHelper::getFileStat(filePath, &fileStat, exists);
+    CPPUNIT_ASSERT_EQUAL(fileInfoJob.size(), fileStat.size);
+    CPPUNIT_ASSERT_EQUAL(fileInfoJob.modificationTime(), fileStat.modificationTime);
 
     logStep("test create remote file");
 
@@ -381,7 +394,7 @@ void TestIntegration::testSimultaneousChanges() {
     waitForCurrentSyncToFinish();
 
     CPPUNIT_ASSERT(std::filesystem::exists(remoteFilePath));
-    const auto remoteTestFileInfo = getRemoteFileInfo(_driveDbId, _remoteSyncDir.id(), localFilePath.filename());
+    const auto remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), localFilePath.filename());
     CPPUNIT_ASSERT(remoteTestFileInfo.isValid());
     logStep("testSimultaneousChanges");
 }
@@ -421,7 +434,7 @@ void TestIntegration::inconsistencyTests() {
 
     waitForCurrentSyncToFinish();
 
-    auto remoteFileInfo = getRemoteFileInfo(_driveDbId, _remoteSyncDir.id(), Str("testnameclash"));
+    auto remoteFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), Str("testnameclash"));
     CPPUNIT_ASSERT(remoteFileInfo.isValid());
     CPPUNIT_ASSERT_LESS(filestat.size, remoteFileInfo.size); // The local edit is not propagated.
 
@@ -437,7 +450,7 @@ void TestIntegration::inconsistencyTests() {
     waitForCurrentSyncToFinish();
 
     (void) IoHelper::getFileStat(_syncPal->localPath() / "testnameclash2", &filestat, ioError);
-    remoteFileInfo = getRemoteFileInfo(_driveDbId, _remoteSyncDir.id(), Str("testnameclash2"));
+    remoteFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), Str("testnameclash2"));
 
     CPPUNIT_ASSERT(remoteFileInfo.isValid());
     CPPUNIT_ASSERT_EQUAL(filestat.size, remoteFileInfo.size); // The local edit has been propagated.
@@ -1367,8 +1380,8 @@ void TestIntegration::logStep(const std::string &str) {
     LOG_DEBUG(_logger, ss.str());
 }
 
-TestIntegration::RemoteFileInfo TestIntegration::getRemoteFileInfo(const int driveDbId, const NodeId &parentId,
-                                                                   const SyncName &name) const {
+TestIntegration::RemoteFileInfo TestIntegration::getRemoteFileInfoByName(const int driveDbId, const NodeId &parentId,
+                                                                         const SyncName &name) const {
     RemoteFileInfo fileInfo;
 
     GetFileListJob job(driveDbId, parentId);

@@ -729,7 +729,7 @@ ExitInfo RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
     }
 
     snapshotItem.setCreatedAt(job->creationTime());
-    snapshotItem.setLastModified(job->modtime());
+    snapshotItem.setLastModified(job->modificationTime());
     snapshotItem.setSize(job->size());
     snapshotItem.setIsLink(job->isLink());
 
