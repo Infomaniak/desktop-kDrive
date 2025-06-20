@@ -890,26 +890,18 @@ static void UnixTimevalToFileTime(timeval t, LPFILETIME pft) {
 IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime creationDate, const SyncTime modificationDate,
                                const bool) noexcept {
     FILETIME creationTime;
-    if (creationDate) {
-        // Set creation time
-        timeval times[1];
-        times[0].tv_sec = creationDate;
-        times[0].tv_usec = 0;
-        UnixTimevalToFileTime(times[0], &creationTime);
-    } else {
-        GetSystemTimeAsFileTime(&creationTime);
-    }
+
+    // Set creation time
+    timeval times[1];
+    times[0].tv_sec = creationDate;
+    times[0].tv_usec = 0;
+    UnixTimevalToFileTime(times[0], &creationTime);
 
     FILETIME modificationTime;
-    if (modificationDate) {
-        // Set creation time
-        timeval times[1];
-        times[0].tv_sec = modificationDate;
-        times[0].tv_usec = 0;
-        UnixTimevalToFileTime(times[0], &modificationTime);
-    } else {
-        GetSystemTimeAsFileTime(&modificationTime);
-    }
+    // Set modification time
+    times[0].tv_sec = modificationDate;
+    times[0].tv_usec = 0;
+    UnixTimevalToFileTime(times[0], &modificationTime);
 
     HANDLE hFile = INVALID_HANDLE_VALUE;
     for (bool isDirectory: {false, true}) {
