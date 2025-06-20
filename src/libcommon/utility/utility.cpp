@@ -664,17 +664,35 @@ bool CommonUtility::isSubDir(const SyncPath &path1, const SyncPath &path2) {
     return (it1 == it1End);
 }
 
-bool CommonUtility::isDiskRootFolder(const SyncPath &absolutePath) {
-    bool isRoot = absolutePath == absolutePath.root_path();
+bool CommonUtility::isDiskRootFolder(const SyncPath &absolutePath, SyncPath &suggestedPath) {
+    suggestedPath = SyncPath();
+    if (absolutePath == absolutePath.root_path()) {
+        // We cannot suggest a path if the absolutePath is "/" or "C:/", etc.
+        return true;
+    }
 #if defined(__APPLE__)
-    // on macOS, external drive appears under "/Volumes/<drivename>"
-    isRoot |= absolutePath.parent_path() == "/Volumes";
+    // On macOS, external drives appears under "/Volumes/<drivename>"
+    if (absolutePath.parent_path() == "/Volumes") {
+        suggestedPath = absolutePath / "kDrive"; // i.e., /Volumes/<drivename>/kDrive
+        return true;
+    }
 #elif defined(__unix__)
-    // on Linux, external drive appears under "/media/<username>/<drivename>"
-    isRoot |= absolutePath == "/media" || absolutePath.parent_path() == "/media" ||
-              absolutePath.parent_path().parent_path() == "/media";
+    // On Linux, external drives usually appears under  "/media/<username>/<drivename>" or "/media/<drivename>"
+    if(absolutePath == "/media") {
+        // If the absolutePath is "/media", we cannot suggest a path
+        return true;
+    }
+
+    if (absolutePath.parent_path() == "/media") {
+        suggestedPath = absolutePath / "myDocuments" / "kDrive"; // i.e., /media/<drivename>/myDocuments/kDrive
+        return true;
+    }
+    if (absolutePath.parent_path().parent_path() == "/media") {
+        suggestedPath = absolutePath / "kDrive"; // i.e., /media/<username>/<drivename>/kDrive
+        return true;
+    }
 #endif
-    return isRoot;
+    return false;
 }
 
 const std::string CommonUtility::dbVersionNumber(const std::string &dbVersion) {
