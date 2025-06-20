@@ -890,8 +890,8 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
         if (currentNodeIt != _updateTree->nodes().end()) {
             // verify if the same node exist
             const std::shared_ptr<Node> currentNode = currentNodeIt->second;
-            const std::shared_ptr<Node> alreadyExistNode = _updateTree->getNodeByPath(moveOp->destinationPath());
-            if (alreadyExistNode && alreadyExistNode->isTmp()) {
+            if (const std::shared_ptr<Node> alreadyExistNode = _updateTree->getNodeByPath(moveOp->destinationPath());
+                alreadyExistNode && alreadyExistNode->isTmp()) {
                 // merging nodes we keep currentNode
                 if (!mergingTempNodeToRealNode(alreadyExistNode, currentNode)) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::mergingTempNodeToRealNode");
@@ -899,20 +899,21 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
                 }
             }
 
-            // create node if not exist
+            currentNode->setMoveOriginInfos({moveOp->path(), moveOriginParentId.value()});
+            currentNode->insertChangeEvent(OperationType::Move);
+            currentNode->setCreatedAt(moveOp->createdAt());
+            currentNode->setLastModified(moveOp->lastModified());
+            currentNode->setSize(moveOp->size());
+            currentNode->setName(moveOp->destinationPath().filename().native());
+            currentNode->setIsTmp(false);
+
+            // create parent node if not exist
             std::shared_ptr<Node> parentNode;
             if (const auto exitCode = getOrCreateNodeFromExistingPath(moveOp->destinationPath().parent_path(), parentNode);
                 exitCode != ExitCode::Ok) {
                 LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getOrCreateNodeFromExistingPath");
                 return exitCode;
             }
-
-            currentNode->setMoveOriginInfos({moveOp->path(), moveOriginParentId.value()});
-            currentNode->insertChangeEvent(OperationType::Move);
-            currentNode->setCreatedAt(moveOp->createdAt());
-            currentNode->setLastModified(moveOp->lastModified());
-            currentNode->setSize(moveOp->size());
-            currentNode->setIsTmp(false);
 
             // delete the current Node from children list of old parent
             if (!currentNode->parentNode()->deleteChildren(currentNode)) {
@@ -923,7 +924,6 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
                 return ExitCode::DataError;
             }
 
-            currentNode->setName(moveOp->destinationPath().filename().native());
 
             // set new parent
             if (!currentNode->setParentNode(parentNode)) {
