@@ -1,6 +1,6 @@
 set( KDRIVE_VERSION_MAJOR 3 )
-set( KDRIVE_VERSION_MINOR 6 ) # TODO
-set( KDRIVE_VERSION_PATCH 10 ) # TODO changed to generate a new version alert to show the release notes.
+set( KDRIVE_VERSION_MINOR 7 )
+set( KDRIVE_VERSION_PATCH 1 )
 set( KDRIVE_VERSION_YEAR  2025 )
 set( KDRIVE_SOVERSION 0 )
 
