@@ -52,7 +52,9 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-tests.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-tests.sh
+        run : |
+          source ./build-macos/client/conan/build/Release/generators/conanrun.sh
+          ./infomaniak-build-tools/run-tests.sh
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
