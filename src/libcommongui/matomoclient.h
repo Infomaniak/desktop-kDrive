@@ -29,9 +29,7 @@ inline Q_LOGGING_CATEGORY(lcMatomoClient, "gui.matomo", QtInfoMsg)
     enum class MatomoNameField : matomo_enum_t {
         /* WebView names*/
         VW_LoginPage, // Login
-#ifdef Q_OS_WIN
-        WV_ReleaseNotes, // Release Notes Webview (only rendered on windows)
-#endif
+
         /* Pages */
         PG_SynthesisPopover,
         PG_SynthesisPopover_KebabMenu,
