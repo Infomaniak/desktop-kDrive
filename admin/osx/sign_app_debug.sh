@@ -39,7 +39,7 @@ codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents
 
 codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitlements $(dirname $0)/QtWebEngineProcess.entitlements "$src_app/Contents/Frameworks/QtWebEngineCore.framework/Helpers/QtWebEngineProcess.app/Contents/MacOS/QtWebEngineProcess"
 codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitlements $(dirname $0)/FinderSyncLoginItemAgent.entitlements "$src_app/Contents/Library/LoginItems/$team_identifier.$app_domain.LoginItemAgent.app"
-codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitlements $(dirname $0)/FinderSyncExtension.entitlements "$src_app/Contents/PlugIns/Extension.appex"
+codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitlements $(dirname $0)/FinderSyncExtension.entitlements "$src_app/Contents/PlugIns/com.infomaniak.drive.desktopclient.Extension.appex"
 codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitlements $(dirname $0)/kDriveUninstaller.entitlements "$src_app/Contents/Frameworks/kDrive Uninstaller.app"
 
 codesign -s "$identity" --force --verbose=4 --deep --options=runtime --preserve-metadata=entitlements "$src_app"

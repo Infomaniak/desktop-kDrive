@@ -24,9 +24,9 @@ set -x
 
 export TEAM_IDENTIFIER="864VDCS2QY"
 export APP_DOMAIN="com.infomaniak.drive.desktopclient"
-export SIGN_IDENTITY="Developer ID Application: Infomaniak Network SA (864VDCS2QY)"
-export INSTALLER_SIGN_IDENTITY="Developer ID Installer: Infomaniak Network SA (864VDCS2QY)"
-export QT_DIR="$HOME/Qt/6.2.3/macos"
+export SIGN_IDENTITY="3rd Party Mac Developer Application: Infomaniak Network SA (864VDCS2QY)"
+export INSTALLER_SIGN_IDENTITY="3rd Party Mac Developer Installer: Infomaniak Network SA (864VDCS2QY)"
+export QTDIR="$HOME/Qt/6.2.3/macos"
 
 # Uncomment to build for testing
 # export KDRIVE_DEBUG=1
@@ -37,8 +37,8 @@ src_dir="${1-$PWD}"
 app_name="kDrive"
 
 # define Qt6 directory
-QT_DIR="${QT_DIR-$HOME/Qt/6.2.3/macos}"
-export PATH="$QT_DIR/bin:$PATH"
+QTDIR="${QTDIR-$HOME/Qt/6.2.3/macos}"
+export PATH=$QTDIR/bin:$PATH
 
 # Set Infomaniak Theme
 kdrive_dir="$src_dir/infomaniak"
@@ -48,7 +48,6 @@ sparkle_dir="$HOME/Library/Frameworks"
 
 # Set build dir
 build_dir="$PWD/build-macos/client"
-
 
 # Set conan dir
 conan_folder="$build_dir/conan"
@@ -113,33 +112,14 @@ popd
 # Sign
 sign_files=()
 
-if [ -n "$TEAM_IDENTIFIER" ] && [ -n "$APP_DOMAIN" ] && [ -n "$SIGN_IDENTITY" ]; then
-	"$src_dir/admin/osx/sign_app.sh" "$install_dir/$app_name.app" "$SIGN_IDENTITY" "$TEAM_IDENTIFIER" "$APP_DOMAIN"
+if [ -n "$TEAM_IDENTIFIER" -a -n "$APP_DOMAIN" -a -n "$SIGN_IDENTITY" ]; then
+	$src_dir/admin/osx/sign_app.sh "$install_dir/$app_name.app" "$SIGN_IDENTITY" "$TEAM_IDENTIFIER" "$APP_DOMAIN"
 	sign_files+=("$install_dir/$app_name.app")
 fi
 
 if [ -n "$INSTALLER_SIGN_IDENTITY" ]; then
-	# xcrun stapler staple $package_file
-	"$build_dir/admin/osx/create_mac.sh" "$install_dir" "$build_dir" "$INSTALLER_SIGN_IDENTITY"
-	package_file=$(grep "installer=" "$build_dir/admin/osx/create_mac.sh" | sed -E 's/installer="([^"]+)"/\1/')
+	# xcrun stapler staple $PACKAGE_FILE
+	$build_dir/admin/osx/create_mac_appstore.sh "$install_dir" "$INSTALLER_SIGN_IDENTITY"
+	package_file=$(grep "installer=" $build_dir/admin/osx/create_mac_appstore.sh | sed -E 's/installer="([^"]+)"/\1/')
 	sign_files+=("$install_dir/$package_file.pkg")
-else
-	"$build_dir/admin/osx/create_mac.sh" "$install_dir" "$build_dir"
-fi
-
-# Notarise
-if [ -n "$sign_files" ]; then
-	rm -rf "$install_dir/notorization" "$install_dir/notarization/"
-	mkdir -p "$install_dir/notarization"
-
-        for $file in $sign_files[@]; do
-		cp -a "$file" "$install_dir/notarization"
-	done
-
-	# Prepare for notarization
-	echo "Preparing for notarization"
-	/usr/bin/ditto -c -k --keepParent "$install_dir/notarization" "$install_dir/InfomaniakDrive.zip"
-	# Send to notarization
-	echo "Sending notarization request"
-	xcrun notarytool submit --apple-id "$ALTOOL_USERNAME" --keychain-profile "notarytool" "$install_dir/InfomaniakDrive.zip" --progress --wait
 fi

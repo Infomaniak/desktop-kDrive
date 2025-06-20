@@ -35,7 +35,7 @@ set_property(TARGET mac_findersyncext APPEND_STRING PROPERTY COMPILE_FLAGS "-fob
 #      ** BUILD FAILED *
 add_dependencies(mac_findersyncext mac_loginitemagent ${APPLICATION_EXECUTABLE})
 
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/Extension.appex
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/com.infomaniak.drive.desktopclient.Extension.appex
     DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/PlugIns
     USE_SOURCE_PERMISSIONS)
 

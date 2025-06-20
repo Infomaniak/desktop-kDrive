@@ -10,7 +10,7 @@
 		46123DE426497F6D002C8123 /* online.iconset in Resources */ = {isa = PBXBuildFile; fileRef = 46123DE326497F6D002C8123 /* online.iconset */; };
 		4617C2C326218D1800EC19A1 /* 864VDCS2QY.com.infomaniak.drive.desktopclient.LoginItemAgent.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4679572F26218B0900080183 /* 864VDCS2QY.com.infomaniak.drive.desktopclient.LoginItemAgent.app */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		4617C2ED26219ED400EC19A1 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4617C2EC26219ED400EC19A1 /* Cocoa.framework */; };
-		4617C2F126219FAD00EC19A1 /* Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = C2B573D71B1CD9CE00303B36 /* Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4617C2F126219FAD00EC19A1 /* com.infomaniak.drive.desktopclient.Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = C2B573D71B1CD9CE00303B36 /* com.infomaniak.drive.desktopclient.Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4617C3092621B14B00EC19A1 /* NSXPCConnection+LoginItem.h in Sources */ = {isa = PBXBuildFile; fileRef = 462607DF2620A00E00C29FBA /* NSXPCConnection+LoginItem.h */; };
 		4617C30A2621B14B00EC19A1 /* NSXPCConnection+LoginItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 462607E02620A03D00C29FBA /* NSXPCConnection+LoginItem.m */; };
 		467956CC26217FB000080183 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 467956CB26217FB000080183 /* AppDelegate.m */; };
@@ -18,7 +18,7 @@
 		467956D126217FB100080183 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 467956CF26217FB100080183 /* MainMenu.xib */; };
 		467956D426217FB100080183 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 467956D326217FB100080183 /* main.m */; };
 		467956EF2621802A00080183 /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4679566C262164FB00080183 /* ServiceManagement.framework */; };
-		467956FF2621816200080183 /* Extension.appex in Resources */ = {isa = PBXBuildFile; fileRef = C2B573D71B1CD9CE00303B36 /* Extension.appex */; };
+		467956FF2621816200080183 /* com.infomaniak.drive.desktopclient.Extension.appex in Resources */ = {isa = PBXBuildFile; fileRef = C2B573D71B1CD9CE00303B36 /* com.infomaniak.drive.desktopclient.Extension.appex */; };
 		4679573926218B8200080183 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4626075D262061F000C29FBA /* Foundation.framework */; };
 		4679574826218C6400080183 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 462607882620791400C29FBA /* main.m */; };
 		4679574A26218C6400080183 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 462607802620791300C29FBA /* AppDelegate.m */; };
@@ -85,7 +85,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				4617C2F126219FAD00EC19A1 /* Extension.appex in Embed App Extensions */,
+				4617C2F126219FAD00EC19A1 /* com.infomaniak.drive.desktopclient.Extension.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -137,7 +137,7 @@
 		46FCF8F72678760E001A8B27 /* sync_55.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; name = sync_55.iconset; path = ../../../icons/nopadding/sync_55.iconset; sourceTree = "<group>"; };
 		46FCF8F82678760E001A8B27 /* sync_60.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; name = sync_60.iconset; path = ../../../icons/nopadding/sync_60.iconset; sourceTree = "<group>"; };
 		46FCF8F92678760E001A8B27 /* sync_25.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; name = sync_25.iconset; path = ../../../icons/nopadding/sync_25.iconset; sourceTree = "<group>"; };
-		C2B573D71B1CD9CE00303B36 /* Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = Extension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		C2B573D71B1CD9CE00303B36 /* com.infomaniak.drive.desktopclient.Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = com.infomaniak.drive.desktopclient.Extension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		C2B573DA1B1CD9CE00303B36 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C2B573DB1B1CD9CE00303B36 /* Extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Extension.entitlements; sourceTree = "<group>"; };
 		C2B573DC1B1CD9CE00303B36 /* xpcClient.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xpcClient.h; sourceTree = "<group>"; };
@@ -232,7 +232,7 @@
 		C2B573B21B1CD91E00303B36 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C2B573D71B1CD9CE00303B36 /* Extension.appex */,
+				C2B573D71B1CD9CE00303B36 /* com.infomaniak.drive.desktopclient.Extension.appex */,
 				467956C826217FB000080183 /* kDrive.app */,
 				4679572F26218B0900080183 /* 864VDCS2QY.com.infomaniak.drive.desktopclient.LoginItemAgent.app */,
 			);
@@ -343,7 +343,7 @@
 			);
 			name = Extension;
 			productName = FinderSyncExt;
-			productReference = C2B573D71B1CD9CE00303B36 /* Extension.appex */;
+			productReference = C2B573D71B1CD9CE00303B36 /* com.infomaniak.drive.desktopclient.Extension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
@@ -401,7 +401,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				467956FF2621816200080183 /* Extension.appex in Resources */,
+				467956FF2621816200080183 /* com.infomaniak.drive.desktopclient.Extension.appex in Resources */,
 				467956CE26217FB100080183 /* Assets.xcassets in Resources */,
 				467956D126217FB100080183 /* MainMenu.xib in Resources */,
 			);
@@ -461,7 +461,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [[ ${KD_APPLICATION_ICON_PATH} ]]; then\n  cp ${KD_APPLICATION_ICON_PATH} ${BUILT_PRODUCTS_DIR}/Extension.appex/Contents/Resources/app.icns\nfi\n";
+			shellScript = "if [[ ${KD_APPLICATION_ICON_PATH} ]]; then\n  cp ${KD_APPLICATION_ICON_PATH} ${BUILT_PRODUCTS_DIR}/com.infomaniak.drive.desktopclient.Extension.appex/Contents/Resources/app.icns\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -665,6 +665,7 @@
 				MARKETING_VERSION = "$(KD_APPLICATION_VERSION)";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = 864VDCS2QY.com.infomaniak.drive.desktopclient.LoginItemAgent;
 				PRODUCT_MODULE_NAME = 864VDCS2QY.com.infomaniak.drive.desktopclient.LoginItemAgent;
 				PRODUCT_NAME = 864VDCS2QY.com.infomaniak.drive.desktopclient.LoginItemAgent;
@@ -842,9 +843,10 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MARKETING_VERSION = "$(KD_APPLICATION_VERSION)";
 				MTL_ENABLE_DEBUG_INFO = YES;
-				ONLY_ACTIVE_ARCH = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.drive.desktopclient.Extension;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_MODULE_NAME = com.infomaniak.drive.desktopclient.Extension;
+				PRODUCT_NAME = com.infomaniak.drive.desktopclient.Extension;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = kDriveFinderSync;
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = kDriveFinderSyncExt;
@@ -872,7 +874,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_ENTITLEMENTS = Extension/Extension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "3rd Party Mac Developer Application";
 				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = YES;
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -902,10 +904,11 @@
 				MARKETING_VERSION = "$(KD_APPLICATION_VERSION)";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.drive.desktopclient.Extension;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_MODULE_NAME = com.infomaniak.drive.desktopclient.Extension;
+				PRODUCT_NAME = com.infomaniak.drive.desktopclient.Extension;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = kDriveFinderSync;
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "kDriveFinderSyncExt dist";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "kDriveFinderSyncExt AppStore";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 			};

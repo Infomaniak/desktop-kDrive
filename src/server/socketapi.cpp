@@ -109,7 +109,7 @@ SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>
         // Add it again. This was needed for Mojave to trigger a load.
         // TODO: Still needed?
         CFURLRef url = (CFURLRef) CFAutorelease((CFURLRef) CFBundleCopyBundleURL(CFBundleGetMainBundle()));
-        QString appexPath = QUrl::fromCFURL(url).path() + "Contents/PlugIns/Extension.appex/";
+        QString appexPath = QUrl::fromCFURL(url).path() + "Contents/PlugIns/com.infomaniak.drive.desktopclient.Extension.appex/";
         if (std::filesystem::exists(QStr2Path(appexPath))) {
             // Bundled app (i.e. not test executable)
             cmd = QString("pluginkit -v -a ") + appexPath;

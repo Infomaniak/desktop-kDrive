@@ -16,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "C2B573D61B1CD9CE00303B36"
-               BuildableName = "Extension.appex"
+               BuildableName = "com.infomaniak.drive.desktopclient.Extension.appex"
                BlueprintName = "Extension"
                ReferencedContainer = "container:kDriveFinderSync.xcodeproj">
             </BuildableReference>
@@ -50,12 +50,13 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES"
+      askForAppToLaunch = "Yes"
       launchAutomaticallySubstyle = "2">
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C2B573D61B1CD9CE00303B36"
-            BuildableName = "Extension.appex"
+            BuildableName = "com.infomaniak.drive.desktopclient.Extension.appex"
             BlueprintName = "Extension"
             ReferencedContainer = "container:kDriveFinderSync.xcodeproj">
          </BuildableReference>

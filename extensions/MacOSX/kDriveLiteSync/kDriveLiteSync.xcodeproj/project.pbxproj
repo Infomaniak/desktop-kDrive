@@ -384,6 +384,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MARKETING_VERSION = "$(KD_APPLICATION_VERSION)";
+				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.drive.desktopclient.LiteSyncExt;
 				PRODUCT_NAME = "$(inherited)";
 				PROVISIONING_PROFILE_SPECIFIER = kDriveLiteSyncExtension;
@@ -397,6 +398,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Extension/Extension.entitlements;
 				CODE_SIGN_IDENTITY = "Developer ID Application";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "3rd Party Mac Developer Application";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 864VDCS2QY;
@@ -416,7 +418,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.drive.desktopclient.LiteSyncExt;
 				PRODUCT_NAME = "$(inherited)";
 				PROVISIONING_PROFILE_SPECIFIER = "kDriveLiteSyncExtension dist";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "kDriveLiteSyncExtension dist";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "kDriveLiteSyncExtension AppStore";
 				SKIP_INSTALL = YES;
 			};
 			name = Release;
@@ -455,6 +457,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = kDrive/kDriveLiteSync.entitlements;
 				CODE_SIGN_IDENTITY = "Developer ID Application";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 864VDCS2QY;
