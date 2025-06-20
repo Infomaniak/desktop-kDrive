@@ -51,6 +51,7 @@
 #include "test_utility/testhelpers.h"
 #include "requests/parameterscache.h"
 #include "test_utility/remotetemporarydirectory.h"
+#include "update_detection/blacklist_changes_propagator/blacklistpropagator.h"
 
 using namespace CppUnit;
 using namespace std::chrono;
@@ -222,16 +223,17 @@ void TestIntegration::testAll() {
     logStep("initialization");
 
     // Run test cases
-    basicTests();
+    // basicTests();
     // inconsistencyTests();
     // conflictTests();
     // testBreakCycle();
+    testBlacklist();
 }
 
 void TestIntegration::basicTests() {
     testLocalChanges();
     testRemoteChanges();
-    // testSimultaneousChanges();
+    testSimultaneousChanges();
 }
 
 void TestIntegration::testLocalChanges() {
@@ -1150,12 +1152,12 @@ void TestIntegration::testBreakCycle() {
     waitForCurrentSyncToFinish();
 
     const auto pathAA = _syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA";
-    // Rename A/AA/AAA to A/AA/AAA* on remote replica
+    // Rename A/AA/AAA to A/AA/AAA* on remote replica.
     (void) RenameJob(nullptr, _driveDbId, nodeIdAAA, Str("AAA*")).runSynchronously();
-    // Create A/AA/AAA on remote replica
+    // Create A/AA/AAA on remote replica.
     CreateDirJob dirJob(nullptr, _driveDbId, nodeIdAA, Str("AAA"));
     (void) dirJob.runSynchronously();
-    // Move A/AA/AAA* to A/AA/AAA/AAA* on remote replica
+    // Move A/AA/AAA* to A/AA/AAA/AAA* on remote replica.
     moveRemoteFile(_driveDbId, nodeIdAAA, dirJob.nodeId());
 
     waitForCurrentSyncToFinish();
@@ -1163,6 +1165,53 @@ void TestIntegration::testBreakCycle() {
 
     CPPUNIT_ASSERT(std::filesystem::exists(pathAA / "AAA" / "AAA*"));
     logStep("testBreakCycle");
+}
+
+void TestIntegration::testBlacklist() {
+    waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
+    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+    const auto filename = "testBlacklist";
+    const auto fileId = duplicateRemoteFile(_driveDbId, _testFileRemoteId, filename);
+    waitForCurrentSyncToFinish();
+
+    const auto dirpath = _syncPal->localPath() / tmpRemoteDir.name();
+    CPPUNIT_ASSERT(std::filesystem::exists(dirpath));
+
+    // Add directory to blacklist.
+    (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {tmpRemoteDir.id()});
+    // Apply new blacklist.
+    _syncPal->stop();
+    (void) BlacklistPropagator(_syncPal).runSynchronously();
+    _syncPal->start();
+
+    waitForCurrentSyncToFinish();
+
+    CPPUNIT_ASSERT(!std::filesystem::exists(dirpath));
+
+    // Move a file inside a blacklisted directory.
+    moveRemoteFile(_driveDbId, fileId, tmpRemoteDir.id());
+
+    waitForCurrentSyncToFinish();
+
+    CPPUNIT_ASSERT(!std::filesystem::exists(dirpath / filename));
+
+    // Move a file from inside a blacklisted directory to a synchronized directory.
+    moveRemoteFile(_driveDbId, fileId, _remoteSyncDir.id());
+
+    waitForCurrentSyncToFinish();
+
+    CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / filename));
+
+    // Remove directory from blacklist.
+    (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {});
+    // Apply new blacklist.
+    _syncPal->stop();
+    (void) BlacklistPropagator(_syncPal).runSynchronously();
+    _syncPal->start();
+
+    waitForCurrentSyncToFinish();
+
+    CPPUNIT_ASSERT(std::filesystem::exists(dirpath));
 }
 
 #ifdef __unix__
