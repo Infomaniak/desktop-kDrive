@@ -29,6 +29,7 @@
 #include <QLabel>
 #include <QNetworkReply>
 #include <QPushButton>
+#include <QTextBrowser>
 #include <QTextEdit>
 
 namespace KDC {
@@ -77,15 +78,33 @@ void UpdateDialog::initUi(const VersionInfo &versionInfo) {
     releaseNoteLabel->setWordWrap(true);
     subLayout->addWidget(releaseNoteLabel);
 
-    auto *webview = new WebView(this);
-    webview->setFixedHeight(webviewHeight);
+
+
+    auto *releaseNoteContent = new QTextBrowser(this);
+    releaseNoteContent->setFixedHeight(webviewHeight);
+    subLayout->addWidget(releaseNoteContent);
+
+    auto *manager = new QNetworkAccessManager(this);
     const Language language = ParametersCache::instance()->parametersInfo().language();
     QString languageCode = CommonUtility::languageCode(language);
     if (languageCode.isEmpty()) languageCode = "en";
-    webview->setUrl(QUrl(
-            QString("%1-%2-win-%3.html").arg(APPLICATION_STORAGE_URL, versionInfo.fullVersion().c_str(), languageCode.left(2))));
-    subLayout->addWidget(webview);
-    subLayout->addStretch();
+    const QUrl notesUrl(
+        QString("%1-%2-win-%3.html")
+        .arg(APPLICATION_STORAGE_URL, versionInfo.fullVersion().c_str(), languageCode.left(2))
+    );
+
+    connect(manager, &QNetworkAccessManager::finished, this,
+        [releaseNoteContent](QNetworkReply *reply) {
+            if (reply->error() == QNetworkReply::NoError) {
+                const QByteArray html = reply->readAll();
+                releaseNoteContent->setHtml(QString::fromUtf8(html));
+            } else {
+                // TODO handle errors
+            }
+            reply->deleteLater();
+        });
+    manager->get(QNetworkRequest(notesUrl));
+
 
     auto *hLayout = new QHBoxLayout();
 
