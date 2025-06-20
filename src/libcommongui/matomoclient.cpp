@@ -102,9 +102,6 @@ void MatomoClient::sendEvent(const QString &category, const MatomoEventAction ac
  */
 void MatomoClient::initNameFieldMap() {
     _nameFieldMap = {
-#ifdef Q_OS_WIN
-            {MatomoNameField::WV_ReleaseNotes, {"webview", "release-notes"}},
-#endif
 #ifdef Q_OS_MAC
             {MatomoNameField::PG_Preferences_LiteSync, {"preferences/litesync", "litesync"}},
 #endif
