@@ -89,8 +89,6 @@ void UpdateDialog::initUi(const VersionInfo &versionInfo) {
             if (reply->error() == QNetworkReply::NoError) {
                 const QByteArray html = reply->readAll();
                 releaseNoteContent->setHtml(QString::fromUtf8(html));
-            } else {
-                // TODO handle errors
             }
             reply->deleteLater();
         });
