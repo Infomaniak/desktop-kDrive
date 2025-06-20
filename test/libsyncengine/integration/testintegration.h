@@ -73,6 +73,8 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testMoveMoveDestConflict();
         void testMoveMoveCycleConflict();
 
+        void testBreakCycle();
+
         class MockIoHelperFileStat : public IoHelper {
             public:
                 MockIoHelperFileStat() {

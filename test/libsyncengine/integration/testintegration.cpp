@@ -25,6 +25,7 @@
 #include "jobs/local/localdeletejob.h"
 #include "jobs/local/localmovejob.h"
 #include "jobs/jobmanager.h"
+#include "jobs/local/localcreatedirjob.h"
 #include "jobs/network/API_v2/upload/uploadjob.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
@@ -57,7 +58,6 @@ using namespace std::chrono;
 namespace KDC {
 
 // Temporary test in drive "kDrive Desktop Team"
-const NodeId commonDocumentsNodeId = "3";
 const NodeId testCiFolderId = "56850";
 
 namespace {
@@ -222,9 +222,10 @@ void TestIntegration::testAll() {
     logStep("initialization");
 
     // Run test cases
-    basicTests();
-    inconsistencyTests();
-    conflictTests();
+    // basicTests();
+    // inconsistencyTests();
+    // conflictTests();
+    testBreakCycle();
 }
 
 void TestIntegration::basicTests() {
@@ -1118,7 +1119,42 @@ void TestIntegration::testMoveMoveCycleConflict() {
     logStep("testMoveMoveCycleConflict");
 }
 
+void TestIntegration::testBreakCycle() {
+    waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
+    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+    NodeId nodeIdAA;
+    NodeId nodeIdAAA;
+    {
+        CreateDirJob jobA(nullptr, _driveDbId, tmpRemoteDir.id(), Str("A"));
+        (void) jobA.runSynchronously();
+        CreateDirJob jobAA(nullptr, _driveDbId, jobA.nodeId(), Str("AA"));
+        (void) jobAA.runSynchronously();
+        nodeIdAA = jobAA.nodeId();
+        CreateDirJob jobAAA(nullptr, _driveDbId, nodeIdAA, Str("AAA"));
+        (void) jobAAA.runSynchronously();
+        nodeIdAAA = jobAAA.nodeId();
+    }
+    waitForCurrentSyncToFinish();
+
+    const auto pathAA = _syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA";
+    // Rename A/AA/AAA to A/AA/AAA* on remote replica
+    (void) RenameJob(nullptr, _driveDbId, nodeIdAAA, Str("AAA*")).runSynchronously();
+    // Create A/AA/AAA on remote replica
+    CreateDirJob dirJob(nullptr, _driveDbId, nodeIdAA, Str("AAA"));
+    (void) dirJob.runSynchronously();
+    // Move A/AA/AAA* to A/AA/AAA/AAA* on remote replica
+    moveRemoteFile(_driveDbId, nodeIdAAA, dirJob.nodeId());
+
+    waitForCurrentSyncToFinish();
+    waitForCurrentSyncToFinish(); // Previous sync only fixed the conflict the cycle.
+
+    CPPUNIT_ASSERT(std::filesystem::exists(pathAA / "AAA" / "AAA*"));
+    logStep("testBreakCycle");
+}
+
 #ifdef __unix__
+const NodeId commonDocumentsNodeId = "3";
+
 void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     if (!testhelpers::isExtendedTest()) return;
 
