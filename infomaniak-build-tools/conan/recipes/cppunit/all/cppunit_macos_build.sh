@@ -21,6 +21,7 @@ EOF
 
 shared=0
 
+version="1.15.1"
 # Argument parsing
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -31,6 +32,10 @@ while [[ $# -gt 0 ]]; do
     --shared)
       shared=1
       shift 1
+      ;;
+    --version | -v)
+      version=$2
+      shift 2
       ;;
     -h|--help)
       usage
@@ -49,7 +54,7 @@ done
 git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
 
 pushd "cppunit" >/dev/null
-#git checkout 2b72f2b3ef94452ae649fc6a44bec049f1acb173
+git checkout "cppunit-$version"
 
 export CFLAGS="-mmacosx-version-min=${minimum_macos_version}"
 export CXXFLAGS="${CFLAGS} -std=c++11"
@@ -73,7 +78,7 @@ mkdir -p lib include
 cp -R cppunit/include/cppunit "include/"
 
 lib_ext=$([[ ${shared} -eq 1 ]] && echo "dylib" || echo "a")
-name_suffix=$([[ ${shared} -eq 1 ]] && echo "-1.15.2" || echo "")
+name_suffix=$([[ ${shared} -eq 1 ]] && echo "-$version" || echo "")
 
 
 lib_file="cppunit/src/cppunit/.libs/libcppunit${name_suffix}.${lib_ext}"

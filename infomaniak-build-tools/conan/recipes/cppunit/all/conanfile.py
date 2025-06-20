@@ -9,7 +9,7 @@ from conan.tools.files import copy
 
 class CPPUnitMacOSConan(ConanFile):
     name = "cppunit"
-    version = "1.15.2"
+    version = "1.15.1"
     package_type = "library"
     settings = "os", "arch", "compiler", "build_type"
     options = {
@@ -30,7 +30,7 @@ class CPPUnitMacOSConan(ConanFile):
         script = os.path.join(self.build_folder, self._script_name)
 
         self.run(f"chmod +x {script}")
-        self.run(f"bash {script} --build-folder {self.build_folder} {'--shared' if self.options.shared else ''}")
+        self.run(f"bash {script} --build-folder {self.build_folder} {'--shared' if self.options.shared else ''} --version {self.version}")
 
     def package(self):
         copy(self, "COPYING", src=self.build_folder, dst=os.path.join(self.package_folder, "licenses"))
