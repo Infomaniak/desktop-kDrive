@@ -30,9 +30,11 @@ HRESULT KDOverlayRegistrationHandler::GetRegistryEntriesPrefix(PWSTR suffix, PDW
         return E_INVALIDARG;
     }
     // Reset the prefix to an empty string
-    wcsncpy_s(suffix, MAX_PATH, L"", 0);
+    if (wcsncpy_s(suffix, MAX_PATH, L"", 0) != 0) {
+        return E_FAIL;
+    }
     *size = 0;
-    HRESULT hResult;
+    HRESULT hResult = S_OK;
     HKEY shellOverlayKey = nullptr;
     // the key may not exist yet
     hResult = HRESULT_FROM_WIN32(RegOpenKeyEx(HKEY_LOCAL_MACHINE, REGISTRY_OVERLAY_KEY, 0, KEY_READ, &shellOverlayKey));
@@ -41,13 +43,16 @@ HRESULT KDOverlayRegistrationHandler::GetRegistryEntriesPrefix(PWSTR suffix, PDW
             // If the key does not exist, we return S_OK with an empty prefix
             return S_OK;
         }
+        return hResult;
     }
 
     // Get the name of the first subkey
     wchar_t subKeyName[MAX_PATH];
-    wcsncpy_s(subKeyName, MAX_PATH, L"", 0);
+    if (wcsncpy_s(subKeyName, MAX_PATH, L"", 0) != 0) {
+        return E_FAIL;
+    }
     DWORD index = 0;
-    DWORD dwSize = sizeof(subKeyName);
+    DWORD dwSize = sizeof(subKeyName) / sizeof(wchar_t);
     hResult = HRESULT_FROM_WIN32(RegEnumKeyEx(shellOverlayKey, index, subKeyName, &dwSize, nullptr, nullptr, nullptr, nullptr));
     if (hResult != ERROR_SUCCESS) {
         // If there are no subkeys, we return S_OK with an empty prefix
@@ -70,7 +75,10 @@ HRESULT KDOverlayRegistrationHandler::GetRegistryEntriesPrefix(PWSTR suffix, PDW
         ++pos;
     }
 
-    wcsncpy_s(suffix, MAX_PATH, spaces.c_str(), pos);
+    if (wcsncpy_s(suffix, MAX_PATH, spaces.c_str(), pos) != 0) {
+        return E_FAIL;
+    }
+
     *size = static_cast<DWORD>(pos);
     return hResult;
 }
@@ -134,8 +142,7 @@ HRESULT KDOverlayRegistrationHandler::RemoveRegistryEntries(PCWSTR friendlyName)
     while (RegEnumKeyEx(shellOverlayKey, index, subKeyName, &dwSize, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS) {
         std::wstring friendlyNameW = std::wstring(OVERLAY_APP_NAME) + std::wstring(friendlyName);
         std::wstring subKeyNameW(subKeyName);
-        if (subKeyNameW.size() >= friendlyNameW.size() &&
-            subKeyNameW.substr(subKeyNameW.size() - friendlyNameW.size()) == friendlyNameW) {
+        if (subKeyNameW.ends_with(friendlyNameW)) {
             HKEY syncExOverlayKey = nullptr;
             hResult = HRESULT_FROM_WIN32(RegDeleteKey(shellOverlayKey, subKeyName));
         }
