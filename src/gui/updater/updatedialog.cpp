@@ -19,7 +19,6 @@
 #include "updatedialog.h"
 
 #include "../guiutility.h"
-#include "../wizard/webview.h"
 #include "../parameterscache.h"
 #include "libcommongui/matomoclient.h"
 #include "libcommon/utility/utility.h"
