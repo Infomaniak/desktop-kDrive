@@ -71,15 +71,6 @@ void UpdateDialog::initUi(const VersionInfo &versionInfo) {
     lbl->setWordWrap(true);
     subLayout->addWidget(lbl);
 
-    auto *releaseNoteLabel = new QLabel;
-    releaseNoteLabel->setText(tr("Release Notes:"));
-    releaseNoteLabel->setObjectName("largeMediumTextLabel");
-    releaseNoteLabel->setContextMenuPolicy(Qt::PreventContextMenu);
-    releaseNoteLabel->setWordWrap(true);
-    subLayout->addWidget(releaseNoteLabel);
-
-
-
     auto *releaseNoteContent = new QTextBrowser(this);
     releaseNoteContent->setFixedHeight(webviewHeight);
     subLayout->addWidget(releaseNoteContent);
