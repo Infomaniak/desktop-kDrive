@@ -71,8 +71,8 @@ void UpdateDialog::initUi(const VersionInfo &versionInfo) {
     subLayout->addWidget(lbl);
 
     auto *releaseNoteContentWidget = new QTextBrowser(this);
-    releaseNoteContent->setFixedHeight(webviewHeight);
-    subLayout->addWidget(releaseNoteContent);
+    releaseNoteContentWidget->setFixedHeight(webviewHeight);
+    subLayout->addWidget(releaseNoteContentWidget);
 
     auto *manager = new QNetworkAccessManager(this);
     const Language language = ParametersCache::instance()->parametersInfo().language();
@@ -84,10 +84,10 @@ void UpdateDialog::initUi(const VersionInfo &versionInfo) {
     );
 
     connect(manager, &QNetworkAccessManager::finished, this,
-        [releaseNoteContent](QNetworkReply *reply) {
+        [releaseNoteContentWidget](QNetworkReply *reply) {
             if (reply->error() == QNetworkReply::NoError) {
                 const QByteArray html = reply->readAll();
-                releaseNoteContent->setHtml(QString::fromUtf8(html));
+                releaseNoteContentWidget->setHtml(QString::fromUtf8(html));
             }
             reply->deleteLater();
         });
