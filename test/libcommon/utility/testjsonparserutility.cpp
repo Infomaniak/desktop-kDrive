@@ -50,7 +50,7 @@ void TestJsonParserUtility::testExtractValue() {
     }
 
     {
-        // The json object has a "created_at" key with an associated "null" value.
+        // The json object has a "created_at" key with an associated empty string value..
         auto object = getObjectFromJSonString("{\"created_at\": \"\"}");
 
         // If "created_at" is not mandatory and has an empty string value, the resulting parsed value is 0.
@@ -62,6 +62,22 @@ void TestJsonParserUtility::testExtractValue() {
         // Otherwise, the function `extractValue` returns `false` (error).
         mandatory = true;
         CPPUNIT_ASSERT(!JsonParserUtility::extractValue(object, KDC::createdAtKey, creationTimeOut, mandatory));
+    }
+
+    {
+        // The json object has a "created_at" key with an associated `null` value.
+        // This value can be returned by the backend
+        auto object = getObjectFromJSonString("{\"created_at\": null}");
+
+        // If "created_at" is not mandatory and has an empty string value, the resulting parsed value is 0.
+        bool mandatory = false;
+        SyncTime creationTimeOut{100};
+        CPPUNIT_ASSERT(JsonParserUtility::extractValue(object, KDC::createdAtKey, creationTimeOut, mandatory));
+        CPPUNIT_ASSERT_EQUAL(SyncTime{0}, creationTimeOut);
+
+        // Otherwise, the function `extractValue` returns `false` (error).
+        mandatory = true;
+        CPPUNIT_ASSERT(JsonParserUtility::extractValue(object, KDC::createdAtKey, creationTimeOut, mandatory));
     }
 }
 
