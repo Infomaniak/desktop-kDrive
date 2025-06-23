@@ -70,7 +70,7 @@ void UpdateDialog::initUi(const VersionInfo &versionInfo) {
     lbl->setWordWrap(true);
     subLayout->addWidget(lbl);
 
-    auto *releaseNoteContent = new QTextBrowser(this);
+    auto *releaseNoteContentWidget = new QTextBrowser(this);
     releaseNoteContent->setFixedHeight(webviewHeight);
     subLayout->addWidget(releaseNoteContent);
 
