@@ -66,6 +66,20 @@ git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
 pushd "cppunit" >/dev/null
 git checkout "cppunit-$version"
 
+# Explicit instantiations for CppUnit assertions to avoid linker errors for compatibility
+cat <<EOF > src/cppunit/explicit_instantiations.cpp
+#include <cppunit/TestAssert.h>
+
+// Explicit instantiations for CppUnit assertions to avoid linker errors for compatibility
+template void CppUnit::assertEquals<int>(const int&, const int&, CppUnit::SourceLine, const std::string&);
+template void CppUnit::assertEquals<char>(const char&, const char&, CppUnit::SourceLine, const std::string&);
+template void CppUnit::assertEquals<long long>(const long long&, const long long&, CppUnit::SourceLine, const std::string&);
+template void CppUnit::assertEquals<double>(const double&, const double&, CppUnit::SourceLine, const std::string&);
+template void CppUnit::assertEquals<float>(const float&, const float&, CppUnit::SourceLine, const std::string&);
+template void CppUnit::assertEquals<std::string>(const std::string&, const std::string&, CppUnit::SourceLine, const std::string&);
+EOF
+echo 'libcppunit_la_SOURCES += explicit_instantiations.cpp' >> src/cppunit/Makefile.am
+
 export CFLAGS="-mmacosx-version-min=${minimum_macos_version}"
 export CXXFLAGS="${CFLAGS} -std=c++11"
 export LDFLAGS="-mmacosx-version-min=${minimum_macos_version} -headerpad_max_install_names"
