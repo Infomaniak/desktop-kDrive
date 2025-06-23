@@ -330,10 +330,9 @@ void OperationSorterWorker::fixEditBeforeMove() {
             continue; // We are looking for nodes affected by both EDIT and MOVE operations
         }
         // opList contains one MOVE operation and all the EDIT operations that are under the node affected by the MOVE
-        
+
         auto moveOpIt =
                 std::find_if(opList.begin(), opList.end(), [](const SyncOpPtr &op) { return op->type() == OperationType::Move; });
-        std::find_if(opList.begin(), opList.end(), [](const SyncOpPtr &op) { return op->type() == OperationType::Move; });
         if (moveOpIt == opList.end()) {
             LOG_IF_FAIL("fixEditBeforeMove: No MOVE operation found in the list of operations. This should not happen." && false)
             continue;
