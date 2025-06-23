@@ -79,12 +79,11 @@ template void CppUnit::assertEquals<double>(const double&, const double&, CppUni
 template void CppUnit::assertEquals<float>(const float&, const float&, CppUnit::SourceLine, const std::string&);
 template void CppUnit::assertEquals<std::string>(const std::string&, const std::string&, CppUnit::SourceLine, const std::string&);
 
-template void CppUnit::Asserter::failNotEqual(const std::string&, const std::string&, const CppUnit::SourceLine&, const CppUnit::AdditionalMessage&, const std::string&);
 EOF
 echo 'libcppunit_la_SOURCES += explicit_instantiations.cpp' >> src/cppunit/Makefile.am
 
-export CFLAGS="-mmacosx-version-min=${minimum_macos_version}"
-export CXXFLAGS="${CFLAGS} -std=c++11"
+export CFLAGS="-mmacosx-version-min=${minimum_macos_version} -O0 -g"
+export CXXFLAGS="${CFLAGS} -std=c++20"
 export LDFLAGS="-mmacosx-version-min=${minimum_macos_version} -headerpad_max_install_names"
 
 configure_args=""
