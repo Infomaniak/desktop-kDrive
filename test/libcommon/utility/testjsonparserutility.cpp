@@ -25,38 +25,43 @@
 
 namespace KDC {
 
+namespace {
+Poco::JSON::Object::Ptr getObjectFromJSonString(const std::string &json) {
+    Poco::JSON::Parser parser;
+    Poco::Dynamic::Var result = parser.parse(json);
+
+    return result.extract<Poco::JSON::Object::Ptr>();
+}
+} // namespace
 
 void TestJsonParserUtility::testExtractValue() {
     {
         // The json object has not "created_at" key
-        std::string json = "{ \"no_created_at_key\" : { \"added_at\" : \"null\" } }";
-        Poco::JSON::Parser parser;
-        Poco::Dynamic::Var result = parser.parse(json);
+        auto object = getObjectFromJSonString("{ \"no_created_at_key\": { \"added_at\" : \"null\" } }");
+        // If missing but not mandatory, the parsed date value defaults to zero.
 
         SyncTime creationTimeOut{100};
-        Poco::JSON::Object::Ptr object = result.extract<Poco::JSON::Object::Ptr>();
-        // If missing but not mandatory, the parsed date value defaults to zero.
-        CPPUNIT_ASSERT(JsonParserUtility::extractValue(object, KDC::createdAtKey, creationTimeOut, false));
+        bool mandatory = false;
+        CPPUNIT_ASSERT(JsonParserUtility::extractValue(object, KDC::createdAtKey, creationTimeOut, mandatory));
         CPPUNIT_ASSERT_EQUAL(SyncTime{0}, creationTimeOut);
         // If the key is missing and mandatory, the `extractValue` function returns `false` (error).
-        CPPUNIT_ASSERT(!JsonParserUtility::extractValue(object, KDC::createdAtKey, creationTimeOut));
+        mandatory = true;
+        CPPUNIT_ASSERT(!JsonParserUtility::extractValue(object, KDC::createdAtKey, creationTimeOut, mandatory));
     }
 
     {
         // The json object has a "created_at" key with an associated "null" value.
-        std::string json = "{ \"created_at\" : \"\" }";
-        Poco::JSON::Parser parser;
-        Poco::Dynamic::Var result = parser.parse(json);
-
-        SyncTime creationTimeOut{100};
-        Poco::JSON::Object::Ptr object = result.extract<Poco::JSON::Object::Ptr>();
+        auto object = getObjectFromJSonString("{\"created_at\": \"\"}");
 
         // If "created_at" is not mandatory and has an empty string value, the resulting parsed value is 0.
-        CPPUNIT_ASSERT(JsonParserUtility::extractValue(object, KDC::createdAtKey, creationTimeOut, false));
+        bool mandatory = false;
+        SyncTime creationTimeOut{100};
+        CPPUNIT_ASSERT(JsonParserUtility::extractValue(object, KDC::createdAtKey, creationTimeOut, mandatory));
         CPPUNIT_ASSERT_EQUAL(SyncTime{0}, creationTimeOut);
 
         // Otherwise, the function `extractValue` returns `false` (error).
-        CPPUNIT_ASSERT(!JsonParserUtility::extractValue(object, KDC::createdAtKey, creationTimeOut));
+        mandatory = true;
+        CPPUNIT_ASSERT(!JsonParserUtility::extractValue(object, KDC::createdAtKey, creationTimeOut, mandatory));
     }
 }
 
