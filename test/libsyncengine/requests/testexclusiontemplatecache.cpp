@@ -86,6 +86,7 @@ void TestExclusionTemplateCache::tearDown() {
     ParmsDb::reset();
     ParametersCache::reset();
     TestBase::stop();
+    ExclusionTemplateCache::reset();
 }
 
 void TestExclusionTemplateCache::testIsExcluded() {
