@@ -48,6 +48,7 @@ AbstractJob::~AbstractJob() {
 }
 
 ExitInfo AbstractJob::runSynchronously() {
+    int test = 1;
     run();
     return _exitInfo;
 }
