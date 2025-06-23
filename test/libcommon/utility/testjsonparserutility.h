@@ -16,24 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testincludes.h"
+#pragma once
 
-#include "api_token/testapitoken.h"
-#include "utility/testutility.h"
-#include "utility/testtypes.h"
-#include "log/sentry/testsentryhandler.h"
-#include "utility/testurlhelper.h"
-#include "utility/testjsonparserutility.h"
+#include "test_utility/testbase.h"
 
 namespace KDC {
-CPPUNIT_TEST_SUITE_REGISTRATION(TestApiToken);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestUtility);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestTypes);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestSentryHandler);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestUrlHelper);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestJsonParserUtility);
-} // namespace KDC
 
-int main(int, char **) {
-    return runTestSuite("_kDriveTestCommon.log");
-}
+class TestJsonParserUtility final : public CppUnit::TestFixture, public TestBase {
+        CPPUNIT_TEST_SUITE(TestJsonParserUtility);
+        CPPUNIT_TEST(testExtractValue);
+        CPPUNIT_TEST_SUITE_END();
+
+    public:
+        void setUp() override { TestBase::start(); }
+        void tearDown() override { TestBase::stop(); }
+
+    protected:
+        void testExtractValue();
+};
+
+} // namespace KDC
