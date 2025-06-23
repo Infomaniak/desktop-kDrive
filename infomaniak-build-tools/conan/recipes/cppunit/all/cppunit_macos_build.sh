@@ -21,7 +21,7 @@ EOF
 
 shared=0
 
-version="1.15.1"
+version="1.15.1" # Default version, should be overridden by the version given by the recipe.
 # Argument parsing
 while [[ $# -gt 0 ]]; do
   case "$1" in
