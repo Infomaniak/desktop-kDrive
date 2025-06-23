@@ -86,10 +86,10 @@ make install || error "make install failed"
 
 popd >/dev/null
 mkdir -p lib include
-cp -R cppunit/_install/include/cppunit "include/"
+cp -R cppunit/_install/include/ "include/"
 
 lib_ext=$([[ ${shared} -eq 1 ]] && echo "dylib" || echo "a")
-lib_file="cppunit/_install/lib/libcppunit.${lib_ext}"
+lib_file="cppunit/_install/lib/libcppunit$([[ $shared -eq 1 ]] && echo "-$version").${lib_ext}"
 mv "$lib_file" "lib/libcppunit.${lib_ext}"
 if [[ ${shared} -eq 1 ]]; then # Correct the install name of the shared library
   install_name_tool -id "@rpath/libcppunit.dylib" "lib/libcppunit.dylib"
