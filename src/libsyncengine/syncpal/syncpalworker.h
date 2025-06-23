@@ -63,7 +63,7 @@ class SyncPalWorker : public ISyncWorker {
                                             std::shared_ptr<ISyncWorker> stepWorkers[2]);
         void resetVfsFilesStatus();
 
-        uint64_t _syncCounter{0};
+        mutable uint64_t _syncCounter{0};
         /**
          * @brief Attempts to repair local node IDs in the SyncDb after the sync directory has changed its node ID.
          *

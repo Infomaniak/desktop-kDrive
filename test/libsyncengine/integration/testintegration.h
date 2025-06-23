@@ -75,6 +75,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
 
         void testBreakCycle();
         void testBlacklist();
+        void testExclusionTemplates();
 
         class MockIoHelperFileStat : public IoHelper {
             public:
