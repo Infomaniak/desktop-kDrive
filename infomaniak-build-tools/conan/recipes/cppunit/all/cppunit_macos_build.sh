@@ -60,28 +60,26 @@ export CFLAGS="-mmacosx-version-min=${minimum_macos_version}"
 export CXXFLAGS="${CFLAGS} -std=c++11"
 export LDFLAGS="-mmacosx-version-min=${minimum_macos_version} -headerpad_max_install_names"
 
-configure_args="" # "--build=${build_triplet} --host=${host_triplet}"
+configure_args=""
 if [[ ${shared} -eq 1 ]]; then
   configure_args+=" --enable-shared --disable-static"
 else
   configure_args+=" --disable-shared --enable-static"
 fi
 
-configure_args+=" --enable-doxygen=no --enable-dot=no--enable-werror=no --enable-html-docs=no"
+configure_args+=" --enable-doxygen=no --enable-dot=no --enable-werror=no --enable-html-docs=no --prefix=$(pwd)/_install"
 
 ./autogen.sh || error "autogen.sh failed"
 ./configure ${configure_args} || error "configure failed"
 make -j"$(sysctl -n hw.ncpu)" || error "make failed"
+make install || error "make install failed"
 
 popd >/dev/null
 mkdir -p lib include
-cp -R cppunit/include/cppunit "include/"
+cp -R cppunit/_install/include/cppunit "include/"
 
 lib_ext=$([[ ${shared} -eq 1 ]] && echo "dylib" || echo "a")
-name_suffix=$([[ ${shared} -eq 1 ]] && echo "-$version" || echo "")
-
-
-lib_file="cppunit/src/cppunit/.libs/libcppunit${name_suffix}.${lib_ext}"
+lib_file="cppunit/_install/lib/libcppunit.${lib_ext}"
 mv "$lib_file" "lib/libcppunit.${lib_ext}"
 if [[ ${shared} -eq 1 ]]; then # Correct the install name of the shared library
   install_name_tool -id "@rpath/libcppunit.dylib" "lib/libcppunit.dylib"
