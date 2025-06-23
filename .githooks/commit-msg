@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 // A hook script to check that the commit message respect the conventional commit standards.
+// Based on https://dev.to/mbarzeev/a-git-hook-for-commit-messages-validation-no-husky-just-js-1hni
 
 const fs = require('fs');
 
