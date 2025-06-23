@@ -138,5 +138,49 @@ void TestExclusionTemplateCache::testRescueFolderIsExcluded() {
     CPPUNIT_ASSERT(!isWarning);
 }
 
+void TestExclusionTemplateCache::testNFCNFDExclusion() {
+    // None of the name should be excluded by default
+    CPPUNIT_ASSERT(!ExclusionTemplateCache::instance()->isExcluded(testhelpers::makeNfcSyncName()));
+    CPPUNIT_ASSERT(!ExclusionTemplateCache::instance()->isExcluded(testhelpers::makeNfdSyncName()));
+
+    // Generate all the exclusion templates
+    const ExclusionTemplate nfcDefExclTemplate(SyncName2Str(testhelpers::makeNfcSyncName()), false, true);
+    const ExclusionTemplate nfdDefExclTemplate(SyncName2Str(testhelpers::makeNfdSyncName()), false, true);
+    const ExclusionTemplate nfcUsrExclTemplate(SyncName2Str(testhelpers::makeNfcSyncName()), false, false);
+    const ExclusionTemplate nfdUsrExclTemplate(SyncName2Str(testhelpers::makeNfdSyncName()), false, false);
+
+    // Test with only NFC version in def exclusion list
+    auto exclusionCacheDef = ExclusionTemplateCache::instance()->exclusionTemplates(true);
+    exclusionCacheDef.push_back(nfcDefExclTemplate);
+    ExclusionTemplateCache::instance()->update(true, exclusionCacheDef);
+    CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded(testhelpers::makeNfcSyncName()));
+    CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded(testhelpers::makeNfdSyncName()));
+
+    // Test with only NFD version in def exclusion list
+    exclusionCacheDef.pop_back();
+    exclusionCacheDef.push_back(nfdDefExclTemplate);
+    ExclusionTemplateCache::instance()->update(true, exclusionCacheDef);
+    CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded(testhelpers::makeNfcSyncName()));
+    CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded(testhelpers::makeNfdSyncName()));
+
+    // Reset def exclusion list
+    exclusionCacheDef.pop_back();
+    ExclusionTemplateCache::instance()->update(true, exclusionCacheDef);
+
+    // Test with only NFC version in def exclusion list
+    auto exclusionCacheUsr = ExclusionTemplateCache::instance()->exclusionTemplates(false);
+    exclusionCacheUsr.push_back(nfcUsrExclTemplate);
+    ExclusionTemplateCache::instance()->update(false, exclusionCacheUsr);
+    CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded(testhelpers::makeNfcSyncName()));
+    CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded(testhelpers::makeNfdSyncName()));
+
+    // Test with only NFD version in def exclusion list
+    exclusionCacheUsr.pop_back();
+    exclusionCacheUsr.push_back(nfdUsrExclTemplate);
+    ExclusionTemplateCache::instance()->update(false, exclusionCacheUsr);
+    CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded(testhelpers::makeNfcSyncName()));
+    CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded(testhelpers::makeNfdSyncName()));
+}
+
 
 } // namespace KDC
