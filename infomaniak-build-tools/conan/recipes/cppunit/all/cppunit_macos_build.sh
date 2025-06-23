@@ -12,14 +12,16 @@ error() { echo -e "[ERROR] $*" >&2; exit 1; }
 
 usage() {
   cat <<EOF
-Usage: $0 --build-folder <path> [--shared]
+Usage: $0 --build-folder <path> [--shared|--static] [--version <version>]
   --build-folder   Directory where cppunit will be cloned and built
-  --shared         Build shared libraries (default is static)
+  --shared         Build shared libraries
+  --static         Build static libraries
 EOF
   exit 1
 }
 
-shared=0
+shared=-1
+static=-1
 
 version="1.15.1" # Default version, should be overridden by the version given by the recipe.
 # Argument parsing
@@ -31,6 +33,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --shared)
       shared=1
+      shift 1
+      ;;
+    --static)
+      static=1
       shift 1
       ;;
     --version | -v)
@@ -45,6 +51,14 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+if [[ $static -eq 1 && $shared -eq 1 ]]; then
+  error "You cannot specify both --shared and --static options."
+fi
+
+if [[ $shared -eq -1 && $static -eq -1 ]]; then
+  error "You must specify either --shared or --static option."
+fi
 
 [[ -n "$build_folder" ]] || { usage; }
 
