@@ -2,7 +2,6 @@
 set -eo pipefail
 
 # Variables
-#src_url="http://dev-www.libreoffice.org/src/cppunit-1.15.2.tar.gz"
 minimum_macos_version="10.15"
 build_folder=""
 
@@ -61,9 +60,6 @@ if [[ $shared -eq -1 && $static -eq -1 ]]; then
 fi
 
 [[ -n "$build_folder" ]] || { usage; }
-
-#wget -q "$src_url" -O cppunit.tar.gz || error "Failed to download"
-#tar -xzf cppunit.tar.gz || error "Failed to extract"
 
 git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
 
