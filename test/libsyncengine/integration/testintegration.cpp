@@ -50,6 +50,7 @@
 #include "propagation/executor/filerescuer.h"
 #include "test_utility/testhelpers.h"
 #include "requests/parameterscache.h"
+#include "syncpal/excludelistpropagator.h"
 #include "test_utility/remotetemporarydirectory.h"
 #include "update_detection/blacklist_changes_propagator/blacklistpropagator.h"
 
@@ -227,7 +228,8 @@ void TestIntegration::testAll() {
     // inconsistencyTests();
     // conflictTests();
     // testBreakCycle();
-    testBlacklist();
+    // testBlacklist();
+    testExclusionTemplates();
 }
 
 void TestIntegration::basicTests() {
@@ -1212,6 +1214,110 @@ void TestIntegration::testBlacklist() {
     waitForCurrentSyncToFinish();
 
     CPPUNIT_ASSERT(std::filesystem::exists(dirpath));
+    logStep("testBlacklist");
+}
+
+void TestIntegration::testExclusionTemplates() {
+    waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
+    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+    FileStat filestat;
+    bool found = false;
+    IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name(), &filestat, found);
+    const auto dirLocalId = std::to_string(filestat.inode);
+
+    const auto filename = "testExclusionTemplates";
+    const SyncPath testName = "to_be_excluded";
+    const auto fileRemoteId = duplicateRemoteFile(_driveDbId, _testFileRemoteId, testName);
+    waitForCurrentSyncToFinish();
+
+    const auto excludedFilePath = _syncPal->localPath() / testName;
+    IoHelper::getFileStat(excludedFilePath, &filestat, found);
+    auto fileLocalId = std::to_string(filestat.inode);
+    CPPUNIT_ASSERT(std::filesystem::exists(excludedFilePath));
+
+    // Add the exclusion template.
+    auto templateList = ExclusionTemplateCache::instance()->exclusionTemplates(false);
+    (void) templateList.emplace_back("*" + testName.filename().string() + "*");
+    (void) ExclusionTemplateCache::instance()->update(false, templateList);
+    _syncPal->stop();
+    (void) ExcludeListPropagator(_syncPal).runSynchronously();
+    _syncPal->start();
+    waitForCurrentSyncToFinish();
+
+    CPPUNIT_ASSERT(std::filesystem::exists(excludedFilePath)); // We do not remove the local file.
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
+
+    // Rename remote file so the exclusion templates does not apply anymore.
+    (void) RenameJob(nullptr, _driveDbId, fileRemoteId, filename).runSynchronously();
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+    waitForCurrentSyncToFinish();
+    // The remote file is synchronized again...
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
+    // ... but the local file is still excluded. A new file is therefore downloaded.
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
+    IoHelper::getFileStat(_syncPal->localPath() / filename, &filestat, found);
+    fileLocalId = std::to_string(filestat.inode);
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
+
+    // Rename remote directory so the exclusion templates applies.
+    (void) RenameJob(nullptr, _driveDbId, tmpRemoteDir.id(), testName).runSynchronously();
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+    waitForCurrentSyncToFinish();
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(dirLocalId));
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(tmpRemoteDir.id()));
+    CPPUNIT_ASSERT(
+            !std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name())); // The local directory has been deleted.
+
+    // Move a file inside an excluded directory from remote replica.
+    moveRemoteFile(_driveDbId, fileRemoteId, tmpRemoteDir.id());
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+    waitForCurrentSyncToFinish();
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
+
+    // Move a file away from an excluded directory from remote replica.
+    moveRemoteFile(_driveDbId, fileRemoteId, _remoteSyncDir.id());
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+    waitForCurrentSyncToFinish();
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
+    CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / filename));
+    // Local file ID has changed again.
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
+    IoHelper::getFileStat(_syncPal->localPath() / filename, &filestat, found);
+    fileLocalId = std::to_string(filestat.inode);
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
+
+    // Rename remote directory so the exclusion templates does not apply anymore.
+    (void) RenameJob(nullptr, _driveDbId, tmpRemoteDir.id(), tmpRemoteDir.name()).runSynchronously();
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+    waitForCurrentSyncToFinish();
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(tmpRemoteDir.id()));
+    // Local dir ID has changed.
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(dirLocalId));
+
+    // Rename remote file so the exclusion templates applies.
+    (void) RenameJob(nullptr, _driveDbId, fileRemoteId, testName).runSynchronously();
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+    waitForCurrentSyncToFinish();
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
+    CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / filename)); // The local file has been deleted.
+
+    // Remove the exclusion template.
+    (void) templateList.pop_back();
+    (void) ExclusionTemplateCache::instance()->update(false, templateList);
+    _syncPal->stop();
+    (void) ExcludeListPropagator(_syncPal).runSynchronously();
+    _syncPal->start();
+    waitForCurrentSyncToFinish();
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
+    // Local file ID has changed again.
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
+    IoHelper::getFileStat(_syncPal->localPath() / testName, &filestat, found);
+    fileLocalId = std::to_string(filestat.inode);
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
+    logStep("testExclusionTemplates");
 }
 
 #ifdef __unix__
