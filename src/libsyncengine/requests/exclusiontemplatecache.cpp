@@ -117,8 +117,8 @@ void ExclusionTemplateCache::updateRegexPatterns() {
         SyncName nfcRegexPattern;
         SyncName nfdRegexPattern;
         bool normalizationSucceed =
-                !CommonUtility::normalizedSyncName(Str2SyncName(regexPattern), nfcRegexPattern, UnicodeNormalization::NFC) ||
-                !CommonUtility::normalizedSyncName(Str2SyncName(regexPattern), nfdRegexPattern, UnicodeNormalization::NFD);
+                CommonUtility::normalizedSyncName(Str2SyncName(regexPattern), nfcRegexPattern, UnicodeNormalization::NFC) &&
+                CommonUtility::normalizedSyncName(Str2SyncName(regexPattern), nfdRegexPattern, UnicodeNormalization::NFD);
 
         if (!normalizationSucceed || nfcRegexPattern == nfdRegexPattern) {
             (void) _regexPatterns.emplace_back(std::regex(regexPattern), exclPattern);
