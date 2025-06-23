@@ -69,6 +69,7 @@ git checkout "cppunit-$version"
 # Explicit instantiations for CppUnit assertions to avoid linker errors for compatibility
 cat <<EOF > src/cppunit/explicit_instantiations.cpp
 #include <cppunit/TestAssert.h>
+#include <string>
 
 // Explicit instantiations for CppUnit assertions to avoid linker errors for compatibility
 template void CppUnit::assertEquals<int>(const int&, const int&, CppUnit::SourceLine, const std::string&);
@@ -77,6 +78,8 @@ template void CppUnit::assertEquals<long long>(const long long&, const long long
 template void CppUnit::assertEquals<double>(const double&, const double&, CppUnit::SourceLine, const std::string&);
 template void CppUnit::assertEquals<float>(const float&, const float&, CppUnit::SourceLine, const std::string&);
 template void CppUnit::assertEquals<std::string>(const std::string&, const std::string&, CppUnit::SourceLine, const std::string&);
+
+template void CppUnit::Asserter::failNotEqual(const std::string&, const std::string&, const CppUnit::SourceLine&, const CppUnit::AdditionalMessage&, const std::string&);
 EOF
 echo 'libcppunit_la_SOURCES += explicit_instantiations.cpp' >> src/cppunit/Makefile.am
 
