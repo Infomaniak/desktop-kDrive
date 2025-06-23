@@ -85,6 +85,7 @@ lib_file="cppunit/src/cppunit/.libs/libcppunit${name_suffix}.${lib_ext}"
 mv "$lib_file" "lib/libcppunit.${lib_ext}"
 if [[ ${shared} -eq 1 ]]; then # Correct the install name of the shared library
   install_name_tool -id "@rpath/libcppunit.dylib" "lib/libcppunit.dylib"
+  log "Fixing install name of the shared library to @rpath/libcppunit.dylib"
 fi
 
 log "Done."
