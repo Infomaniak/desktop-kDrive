@@ -48,6 +48,28 @@ MatomoClient &MatomoClient::instance(const QString &clientId) {
 MatomoClient::MatomoClient(QCoreApplication *app, const QString &clientId) :
     PiwikTracker(app, QUrl(MATOMO_URL), MATOMO_SITE_ID, clientId) {
     initNameFieldMap();
+
+    const auto qt_piwik_tracker_object = this->findChildren<QObject*>(); // We need to find the QNetworkAccessManager object created by PiwikTracker, so we gets all children of the PiwikTracker instance.
+    for (auto* obj : qt_piwik_tracker_object) {
+        auto* network_access_manager = qobject_cast<QNetworkAccessManager*>(obj);
+        if (network_access_manager && network_access_manager->objectName().contains("Piwik", Qt::CaseInsensitive)) {
+            network_access_manager->setTransferTimeout(_matomoTimeout);
+            // Here, we found the QNetworkAccessManager object associated with PiwikTracker.
+            connect(network_access_manager, &QNetworkAccessManager::finished, this, [this](QNetworkReply* reply) {
+                if (reply->error() == QNetworkReply::TimeoutError) {
+                    _matomoTimeoutCounter++;
+                    qWarning(lcMatomoClient) << "Timeout #" << _matomoTimeoutCounter;
+
+                    if (_matomoTimeoutCounter >= _matomoTimeoutMax && !_matomoDisabled) {
+                        _matomoDisabled = true;
+                        qWarning(lcMatomoClient) << "Disabled after " << _matomoTimeoutMax << " timeouts.";
+                    }
+                }
+            });
+            break;
+        }
+    }
+
 }
 
 /**
@@ -56,6 +78,12 @@ MatomoClient::MatomoClient(QCoreApplication *app, const QString &clientId) :
  * @param page the page to track
  */
 void MatomoClient::sendVisit(const MatomoNameField page) {
+    if (instance()._matomoDisabled) {
+        if (ParametersCache::instance()->parametersInfo().extendedLog()) {
+            qInfo(lcMatomoClient) << "Tracking disabled, sendVisit ignored.";
+        }
+        return;
+    }
     QString path;
     QString action;
     instance().getPathAndAction(page, path, action);
@@ -75,6 +103,12 @@ void MatomoClient::sendVisit(const MatomoNameField page) {
  * @param value the value of the event
  */
 void MatomoClient::sendEvent(const QString &category, const MatomoEventAction action, const QString &name, const int value) {
+    if (instance()._matomoDisabled) {
+        if (ParametersCache::instance()->parametersInfo().extendedLog()) {
+            qInfo(lcMatomoClient) << "Tracking disabled, sendEvent ignored.";
+        }
+        return;
+    }
     QString actionStr;
     switch (action) {
         case MatomoEventAction::Click:
