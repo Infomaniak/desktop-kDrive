@@ -83,7 +83,7 @@ void Node::setName(const SyncName &name) {
     _normalizedName.clear();
 }
 
-bool Node::setParentNode(const std::shared_ptr<Node> &parentNode) {
+bool Node::setParentNode(std::shared_ptr<Node> parentNode) {
     if (!parentNode) return true;
 
     // Check that the parent is not a descendant
@@ -187,6 +187,11 @@ bool Node::isEditFromDeleteCreate() const {
         return true;
     }
     return false;
+}
+
+void Node::clear() {
+    _parentNode.reset();
+    _childrenById.clear();
 }
 
 bool Node::isRoot() const {
