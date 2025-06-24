@@ -127,13 +127,19 @@ void ExclusionTemplateCache::updateRegexPatterns() {
             SyncName nfcTempl;
             CommonUtility::normalizedSyncName(Str2SyncName(exclPattern.templ()), nfcTempl, UnicodeNormalization::NFC);
             exclusionTemplateNfc.setTempl(SyncName2Str(nfcTempl));
-            (void) _regexPatterns.emplace_back(std::regex(SyncName2Str(nfcRegexPattern)), exclusionTemplateNfc);
+            if (std::find(_regexPatterns.begin(), _regexPatterns.end(), std::regex(SyncName2Str(nfcRegexPattern))) ==
+                _regexPatterns.end()) {
+                (void) _regexPatterns.emplace_back(std::regex(SyncName2Str(nfcRegexPattern)), exclusionTemplateNfc);
+            }
 
             ExclusionTemplate exclusionTemplateNfd = exclPattern;
             SyncName nfdTempl;
             CommonUtility::normalizedSyncName(Str2SyncName(exclPattern.templ()), nfdTempl, UnicodeNormalization::NFD);
             exclusionTemplateNfd.setTempl(SyncName2Str(nfdTempl));
-            (void) _regexPatterns.emplace_back(std::regex(SyncName2Str(nfdRegexPattern)), exclusionTemplateNfd);
+            if (std::find(_regexPatterns.begin(), _regexPatterns.end(), std::regex(SyncName2Str(nfdRegexPattern))) ==
+                _regexPatterns.end()) {
+                (void) _regexPatterns.emplace_back(std::regex(SyncName2Str(nfdRegexPattern)), exclusionTemplateNfd);
+            }
         }
     }
 }
