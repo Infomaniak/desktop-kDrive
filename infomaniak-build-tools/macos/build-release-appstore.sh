@@ -103,6 +103,9 @@ cmake \
 # Build
 make -j6 all install
 
+# Remove extended attributes
+xattr -rc ./install/kDrive.app
+
 # Generate Debug Symbol files
 dsymutil ./install/kDrive.app/Contents/MacOS/kDrive -o ./install/kDrive.dSYM
 dsymutil ./bin/kDrive_client -o ./install/kDrive_client.dSYM
