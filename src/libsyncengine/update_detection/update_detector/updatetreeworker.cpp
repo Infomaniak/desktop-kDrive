@@ -907,7 +907,7 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
             currentNode->setName(moveOp->destinationPath().filename().native());
             currentNode->setIsTmp(false);
 
-            // create parent node if not exist
+            // Create the parent node if it does not exist
             std::shared_ptr<Node> parentNode;
             if (const auto exitCode = getOrCreateNodeFromExistingPath(moveOp->destinationPath().parent_path(), parentNode);
                 exitCode != ExitCode::Ok) {
