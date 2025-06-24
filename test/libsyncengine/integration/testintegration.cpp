@@ -224,14 +224,14 @@ void TestIntegration::testAll() {
     logStep("initialization");
 
     // Run test cases
-    // basicTests();
-    // inconsistencyTests();
-    // conflictTests();
-    // testBreakCycle();
-    // testBlacklist();
-    // testExclusionTemplates();
-    // testEncoding();
-    // testParentRename();
+    basicTests();
+    inconsistencyTests();
+    conflictTests();
+    testBreakCycle();
+    testBlacklist();
+    testExclusionTemplates();
+    testEncoding();
+    testParentRename();
     testNegativeModificationTime();
 }
 
