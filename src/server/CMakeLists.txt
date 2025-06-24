@@ -42,6 +42,7 @@ endif()
 set(server_SRCS
     commserver.h commserver.cpp
     navigationpanehelper.h navigationpanehelper.cpp
+    overlayiconsehelper.h overlayiconsehelper.cpp
     socketapi.h socketapi.cpp
     socketlistener.h socketlistener.cpp
     appserver.h appserver.cpp
