@@ -134,7 +134,11 @@ void ExclusionTemplateCache::addRegexForAllNormalizationForms(std::string regexP
             LOG_WARN(Log::instance()->getLogger(), "Unable to normalize an exclusion template: [regex] "
                                                            << regexPattern << " | [template] " << exclusionTemplate.templ());
         }
-        (void) _regexPatterns.emplace_back(std::regex(regexPattern), exclusionTemplate);
+        if (std::find_if(_regexPatterns.begin(), _regexPatterns.end(), [&exclusionTemplate](const auto &value) {
+                return Str2SyncName(value.second.templ()) == Str2SyncName(exclusionTemplate.templ());
+            }) == _regexPatterns.end()) {
+            (void) _regexPatterns.emplace_back(std::regex(regexPattern), exclusionTemplate);
+        }
     } else {
         if (std::find_if(_regexPatterns.begin(), _regexPatterns.end(), [&nfcTemplate](const auto &value) {
                 return Str2SyncName(value.second.templ()) == nfcTemplate;
