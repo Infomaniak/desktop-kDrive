@@ -361,6 +361,16 @@ void TestNetworkJobs::testDownload() {
         CPPUNIT_ASSERT(nodeId == nodeId2);
 
         // Download again but as an EDIT to be propagated on a hydrated placeholder
+#ifdef __APPLE__
+        {
+            // Set file status
+            IoError ioError = IoError::Success;
+            CPPUNIT_ASSERT(
+                    IoHelper::setXAttrValue(localDestFilePath, litesync_attrs::status, litesync_attrs::statusOffline, ioError));
+            CPPUNIT_ASSERT(ioError == IoError::Success);
+        }
+#endif
+
         {
             auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
             vfs->setMockForceStatus([]([[maybe_unused]] const SyncPath & /*path*/,
@@ -397,6 +407,17 @@ void TestNetworkJobs::testDownload() {
         // Check that the node id has not changed
         CPPUNIT_ASSERT(IoHelper::getNodeId(localDestFilePath, nodeId2));
         CPPUNIT_ASSERT(nodeId == nodeId2);
+
+#ifdef __APPLE__
+        {
+            // Check that the file is still hydrated
+            IoError ioError = IoError::Success;
+            std::string value;
+            CPPUNIT_ASSERT(IoHelper::getXAttrValue(localDestFilePath, litesync_attrs::status, value, ioError));
+            CPPUNIT_ASSERT(ioError == IoError::Success);
+            CPPUNIT_ASSERT(value == litesync_attrs::statusOffline);
+        }
+#endif
     }
 
     // Cross Device Link
