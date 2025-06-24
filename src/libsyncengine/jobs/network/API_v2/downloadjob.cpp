@@ -318,7 +318,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
     _localNodeId = std::to_string(filestat.inode);
     _creationTimeOut = filestat.creationTime;
     _modificationTimeOut = filestat.modificationTime;
-
+    _sizeOut = filestat.size;
 #if defined(__APPLE__) || defined(_WIN32)
     if (_creationTimeIn != _creationTimeOut || _modificationTimeIn != _modificationTimeOut) {
         // In the following cases, it is not an issue:
