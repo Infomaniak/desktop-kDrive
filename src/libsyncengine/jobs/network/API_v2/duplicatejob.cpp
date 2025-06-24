@@ -24,7 +24,7 @@
 
 namespace KDC {
 
-DuplicateJob::DuplicateJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId,
+DuplicateJob::DuplicateJob(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const NodeId &remoteFileId,
                            const SyncPath &absoluteFinalPath) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _remoteFileId(remoteFileId),
@@ -70,8 +70,8 @@ std::string DuplicateJob::getSpecificUrl() {
 
 ExitInfo DuplicateJob::setData() {
     Poco::JSON::Object json;
-    SyncName name = _absoluteFinalPath.filename().native();
-    json.set("name", name);
+    const SyncName name = _absoluteFinalPath.filename().native();
+    (void) json.set("name", name);
 
     std::stringstream ss;
     json.stringify(ss);

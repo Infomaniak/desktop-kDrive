@@ -510,7 +510,7 @@ void TestConflictResolverWorker::testMoveParentDelete2() {
 
     _syncPal->_conflictResolverWorker->execute();
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ExitInfo(_syncPal->_conflictResolverWorker->exitCode()));
-    // We should only undo the move operation on the move replica
+    // Delete operation wins
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
     const UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     const SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
