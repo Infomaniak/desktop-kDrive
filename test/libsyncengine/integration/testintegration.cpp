@@ -230,7 +230,9 @@ void TestIntegration::testAll() {
     // testBreakCycle();
     // testBlacklist();
     // testExclusionTemplates();
-    testEncoding();
+    // testEncoding();
+    // testParentRename();
+    testNegativeModificationTime();
 }
 
 void TestIntegration::basicTests() {
@@ -1336,6 +1338,110 @@ void TestIntegration::testEncoding() {
     CPPUNIT_ASSERT(remoteTestFileInfo.isValid());
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(1), countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
     logStep("testEncoding");
+}
+
+void TestIntegration::testParentRename() {
+    waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
+    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+    // .
+    // └── A
+    //     └── AA
+    //         └── AAA
+    NodeId nodeIdA;
+    NodeId nodeIdAA;
+    NodeId nodeIdAAA;
+    {
+        CreateDirJob jobA(nullptr, _driveDbId, tmpRemoteDir.id(), Str("A"));
+        (void) jobA.runSynchronously();
+        nodeIdA = jobA.nodeId();
+        CreateDirJob jobAA(nullptr, _driveDbId, jobA.nodeId(), Str("AA"));
+        (void) jobAA.runSynchronously();
+        nodeIdAA = jobAA.nodeId();
+        CreateDirJob jobAAA(nullptr, _driveDbId, nodeIdAA, Str("AAA"));
+        (void) jobAAA.runSynchronously();
+        nodeIdAAA = jobAAA.nodeId();
+    }
+    waitForCurrentSyncToFinish();
+
+    _syncPal->pause();
+    // Rename A to A*
+    (void) RenameJob(nullptr, _driveDbId, nodeIdA, "A*").runSynchronously();
+    // Delete A/AA/AAA
+    (void) DeleteJob(_driveDbId, nodeIdAAA).runSynchronously();
+    // Create A/AA/AAA*
+    (void) CreateDirJob(nullptr, _driveDbId, nodeIdAA, Str("AAA*")).runSynchronously();
+    _syncPal->unpause();
+    waitForCurrentSyncToFinish();
+
+    CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / "A*" / "AA" / "AAA*"));
+    logStep("testParentRename");
+}
+
+void TestIntegration::testNegativeModificationTime() {
+    waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
+    const SyncPath filename = Str("testNegativeModificationTime");
+    const SyncTime timeInput = -10000;
+    {
+        // Test with only negative modification time.
+        const LocalTemporaryDirectory localTmpDir(filename, _syncPal->localPath());
+        const auto filepath = localTmpDir.path() / filename;
+        testhelpers::generateOrEditTestFile(filepath);
+        FileStat fileStat;
+        bool found = false;
+        IoHelper::getFileStat(filepath, &fileStat, found);
+        (void) IoHelper::setFileDates(filepath, fileStat.creationTime, timeInput, false);
+        waitForCurrentSyncToFinish();
+
+        DbNode dbNode;
+        CPPUNIT_ASSERT(_syncPal->syncDb()->node(ReplicaSide::Local, std::to_string(fileStat.inode), dbNode, found) && found);
+
+        GetFileInfoJob fileInfoJob(_driveDbId, *dbNode.nodeIdRemote());
+        (void) fileInfoJob.runSynchronously();
+        CPPUNIT_ASSERT_EQUAL(timeInput, fileInfoJob.modificationTime());
+    }
+    waitForCurrentSyncToFinish();
+    {
+        // Test with only negative creation time.
+        const LocalTemporaryDirectory localTmpDir(filename, _syncPal->localPath());
+        const auto filepath = localTmpDir.path() / filename;
+        testhelpers::generateOrEditTestFile(filepath);
+        FileStat fileStat;
+        bool found = false;
+        IoHelper::getFileStat(filepath, &fileStat, found);
+        (void) IoHelper::setFileDates(filepath, timeInput, fileStat.modificationTime, false);
+        waitForCurrentSyncToFinish();
+
+        DbNode dbNode;
+        CPPUNIT_ASSERT(_syncPal->syncDb()->node(ReplicaSide::Local, std::to_string(fileStat.inode), dbNode, found) && found);
+
+        GetFileInfoJob fileInfoJob(_driveDbId, *dbNode.nodeIdRemote());
+        (void) fileInfoJob.runSynchronously();
+        // Setting a negative creation date when modification date is positive is not accepted on macOS.
+        CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, fileInfoJob.creationTime());
+    }
+    waitForCurrentSyncToFinish();
+    {
+        // Test with both negative creation and modification time.
+        const LocalTemporaryDirectory localTmpDir(filename, _syncPal->localPath());
+        const auto filepath = localTmpDir.path() / filename;
+        testhelpers::generateOrEditTestFile(filepath);
+        FileStat fileStat;
+        bool found = false;
+        IoHelper::getFileStat(filepath, &fileStat, found);
+        (void) IoHelper::setFileDates(filepath, timeInput, timeInput, false);
+        waitForCurrentSyncToFinish();
+
+        DbNode dbNode;
+        CPPUNIT_ASSERT(_syncPal->syncDb()->node(ReplicaSide::Local, std::to_string(fileStat.inode), dbNode, found) && found);
+
+        GetFileInfoJob fileInfoJob(_driveDbId, *dbNode.nodeIdRemote());
+        (void) fileInfoJob.runSynchronously();
+        // Setting both a negative creation and modification date is accepted on macOS.
+        CPPUNIT_ASSERT_EQUAL(timeInput, fileInfoJob.creationTime());
+        CPPUNIT_ASSERT_EQUAL(timeInput, fileInfoJob.modificationTime());
+    }
+
+    logStep("testNegativeModificationTime");
 }
 
 #ifdef __unix__

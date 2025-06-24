@@ -77,6 +77,8 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testBlacklist();
         void testExclusionTemplates();
         void testEncoding();
+        void testParentRename();
+        void testNegativeModificationTime();
 
         class MockIoHelperFileStat : public IoHelper {
             public:
