@@ -211,7 +211,7 @@ void SyncPalWorker::execute() {
 
                 // Stop the step workers and restart a full sync
                 stopAndWaitForExitOfWorkers(stepWorkers);
-                _syncPal->invalideSnapshots();
+                _syncPal->tryToInvalidateSnapshots();
                 initStepFirst(stepWorkers, inputSharedObject, true);
                 continue;
             } else if (shouldBeStopped(stepWorkers[0], stepWorkers[1])) {
@@ -385,13 +385,14 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             _syncPal->syncDb()->cache().clear(); // Cache is not needed anymore, free resources
             break;
         case SyncStep::Done:
+            LOG_SYNCPAL_DEBUG(_logger, "Sync " << _syncCounter++ << " finished")
             workers[0] = nullptr;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             _syncPal->stopEstimateUpdates();
-            _syncPal->resetSnapshotInvalidationCounters();
             if (!_syncPal->restart()) {
+                _syncPal->resetSnapshotInvalidationCounters();
                 _syncPal->setSyncHasFullyCompletedInParms(true);
             }
             sentry::pTraces::basic::Sync(syncDbId()).stop();

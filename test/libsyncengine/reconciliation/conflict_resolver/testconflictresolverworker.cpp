@@ -223,43 +223,65 @@ void TestConflictResolverWorker::testOmitEditDelete() {
 
 
 void TestConflictResolverWorker::testEditDelete1() {
-    // Simulate edit of file A/AA/AAA on local replica
-    const auto lNodeAAA = _testSituationGenerator.editNode(ReplicaSide::Local, "aaa");
+    std::function<SyncOpPtr(ReplicaSide editSide)> generateAndResolveConflict = [&](ReplicaSide editSide) {
+        _syncPal->_syncOps->clear();
 
-    // and delete of file A/AA/AAA on remote replica
-    const auto rNodeAAA = _testSituationGenerator.getNode(ReplicaSide::Remote, "aaa");
-    rNodeAAA->setChangeEvents(OperationType::Delete);
+        // Simulate edit of file A/AA/AAA on local replica
+        const auto editNodeAAA = _testSituationGenerator.editNode(editSide, "aaa");
+        editNodeAAA->setChangeEvents(OperationType::Edit);
 
-    const Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::EditDelete);
-    _syncPal->_conflictQueue->push(conflict);
-    _syncPal->_conflictResolverWorker->execute();
+        // and delete of file A/AA/AAA on remote replica
+        const auto deleteNodeAAA = _testSituationGenerator.getNode(otherSide(editSide), "aaa");
+        deleteNodeAAA->setChangeEvents(OperationType::Delete);
 
-    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
-    const auto opId = _syncPal->_syncOps->opSortedList().front();
-    const auto op = _syncPal->_syncOps->getOp(opId);
-    CPPUNIT_ASSERT(op->newName().empty());
-    CPPUNIT_ASSERT(op->omit());
-    CPPUNIT_ASSERT_EQUAL(OperationType::Delete, op->type());
+        const Conflict conflict(editNodeAAA, deleteNodeAAA, ConflictType::EditDelete);
+        _syncPal->_conflictQueue->push(conflict);
+        _syncPal->_conflictResolverWorker->execute();
+        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
+        const auto opId = _syncPal->_syncOps->opSortedList().front();
+        return _syncPal->_syncOps->getOp(opId);
+    };
+
+    for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote}) {
+        auto resolveOperation = generateAndResolveConflict(side);
+        CPPUNIT_ASSERT(resolveOperation);
+        CPPUNIT_ASSERT(resolveOperation->newName().empty());
+        CPPUNIT_ASSERT(resolveOperation->omit());
+        CPPUNIT_ASSERT_EQUAL(OperationType::Delete, resolveOperation->type());
+    }
 }
 
 void TestConflictResolverWorker::testEditDelete2() {
-    // Simulate edit of file A/AA/AAA on local replica
-    const auto lNodeAAA = _testSituationGenerator.editNode(ReplicaSide::Local, "aaa");
+    std::function<SyncOpPtr(ReplicaSide editSide)> generateAndResolveConflict = [&](ReplicaSide editSide) {
+        _syncPal->_syncOps->clear();
 
-    // and delete of dir A/AA (and all children) on remote replica
-    const auto rNodeAA = _testSituationGenerator.deleteNode(ReplicaSide::Remote, "aa");
-    const auto rNodeAAA = _testSituationGenerator.getNode(ReplicaSide::Remote, "aaa");
+        // Simulate edit of file A/AA/AAA on editSide replica
+        const auto editNodeAAA = _testSituationGenerator.editNode(editSide, "aaa");
+        editNodeAAA->setChangeEvents(OperationType::Edit);
 
-    const Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::EditDelete);
-    _syncPal->_conflictQueue->push(conflict);
-    _syncPal->_conflictResolverWorker->execute();
+        // and delete of dir A/AA (and all children) on otherSide(editSide) replica
+        const auto deleteNodeAA = _testSituationGenerator.deleteNode(otherSide(editSide), "aa");
+        const auto deleteNodeAAA = _testSituationGenerator.getNode(otherSide(editSide), "aaa");
 
-    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
-    const auto opId = _syncPal->_syncOps->opSortedList().front();
-    const auto op = _syncPal->_syncOps->getOp(opId);
-    CPPUNIT_ASSERT(!op->omit());
-    CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
-    CPPUNIT_ASSERT_EQUAL(true, op->isRescueOperation());
+        const Conflict conflict(deleteNodeAAA, editNodeAAA, ConflictType::EditDelete);
+        _syncPal->_conflictQueue->push(conflict);
+        _syncPal->_conflictResolverWorker->execute();
+        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
+        const auto opId = _syncPal->_syncOps->opSortedList().front();
+        return _syncPal->_syncOps->getOp(opId);
+    };
+
+    const auto resolveOperationLocal = generateAndResolveConflict(ReplicaSide::Local);
+    CPPUNIT_ASSERT(!resolveOperationLocal->omit());
+    CPPUNIT_ASSERT_EQUAL(OperationType::Move, resolveOperationLocal->type());
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, resolveOperationLocal->targetSide());
+    CPPUNIT_ASSERT_EQUAL(true, resolveOperationLocal->isRescueOperation());
+
+    const auto resolveOperationRemote = generateAndResolveConflict(ReplicaSide::Remote);
+    CPPUNIT_ASSERT(!resolveOperationLocal->omit());
+    CPPUNIT_ASSERT_EQUAL(OperationType::Delete, resolveOperationRemote->type());
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, resolveOperationRemote->targetSide());
+    CPPUNIT_ASSERT_EQUAL(true, resolveOperationLocal->isRescueOperation());
 }
 
 void TestConflictResolverWorker::testMoveDelete1() {
@@ -488,7 +510,7 @@ void TestConflictResolverWorker::testMoveParentDelete2() {
 
     _syncPal->_conflictResolverWorker->execute();
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ExitInfo(_syncPal->_conflictResolverWorker->exitCode()));
-    // We should only undo the move operation on the move replica
+    // Delete operation wins
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
     const UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     const SyncOpPtr op = _syncPal->_syncOps->getOp(opId);

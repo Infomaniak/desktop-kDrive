@@ -20,7 +20,7 @@
 
 namespace KDC {
 using NameToOpMap = std::unordered_map<SyncName, SyncOpPtr, SyncNameHashFunction, std::equal_to<>>;
-using NodeIdToOpListMap = std::unordered_map<NodeId, std::list<SyncOpPtr>, StringHashFunction, std::equal_to<>>;
+using NodeIdToOpListMap = std::unordered_map<DbNodeId, std::list<SyncOpPtr>>;
 using SyncPathToSyncOpMap = std::unordered_map<SyncPath, SyncOpPtr, PathHashFunction>;
 
 class OperationSorterFilter {
