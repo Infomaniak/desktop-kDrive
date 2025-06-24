@@ -372,11 +372,7 @@ void TestNetworkJobs::testDownload() {
 #endif
 
         {
-#ifdef __APPLE__
             auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
-#else
-            auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
-#endif
             vfs->setMockForceStatus([]([[maybe_unused]] const SyncPath & /*path*/,
                                        [[maybe_unused]] const VfsStatus & /*vfsStatus*/) -> ExitInfo { return ExitCode::Ok; });
 
