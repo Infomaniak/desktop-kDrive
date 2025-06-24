@@ -76,6 +76,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testBreakCycle();
         void testBlacklist();
         void testExclusionTemplates();
+        void testEncoding();
 
         class MockIoHelperFileStat : public IoHelper {
             public:
@@ -116,7 +117,8 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
 
                 bool isValid() const { return !id.empty(); }
         };
-        RemoteFileInfo getRemoteFileInfoByName(int _driveDbId, const NodeId &parentId, const SyncName &name) const;
+        RemoteFileInfo getRemoteFileInfoByName(int driveDbId, const NodeId &parentId, const SyncName &name) const;
+        int64_t countItemsInRemoteDir(int driveDbId, const NodeId &parentId) const;
         log4cplus::Logger _logger;
         std::shared_ptr<SyncPal> _syncPal = nullptr;
         std::shared_ptr<ParmsDb> _parmsDb = nullptr;
