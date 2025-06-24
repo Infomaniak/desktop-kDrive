@@ -190,3 +190,30 @@ STDAPI DllUnregisterServer(void) {
 
     return hResult;
 }
+
+// If the index of our icons is higher than 14, our icons won't be visible in the file explorer.
+BOOL AreIconsVisible() {
+    HRESULT hResult;
+    HKEY shellOverlayKey = nullptr;
+    hResult = HRESULT_FROM_WIN32(RegOpenKeyEx(HKEY_LOCAL_MACHINE, REGISTRY_OVERLAY_KEY, 0, KEY_READ, &shellOverlayKey));
+
+    if (!SUCCEEDED(hResult)) {
+        return hResult;
+    }
+
+    wchar_t subKeyName[MAX_PATH];
+    DWORD index = 0;
+    DWORD foundIcons = 0;
+    DWORD maxkDriveKeyIndex = 0;
+    DWORD dwSize = sizeof(subKeyName);
+    while (RegEnumKeyEx(shellOverlayKey, index, subKeyName, &dwSize, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS) {
+        std::wstring subKeyNameW(subKeyName);
+        if (subKeyNameW.find(std::wstring(OVERLAY_APP_NAME)) != std::string::npos){
+            ++foundIcons;
+            maxkDriveKeyIndex = index;
+        }
+        index++;
+        dwSize = sizeof(subKeyName);
+    }
+    return foundIcons >= 4 && maxkDriveKeyIndex < 15;
+}

@@ -51,6 +51,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include "overlayiconsehelper.h"
 #endif
 
 #include "jobs/network/API_v2/upload/loguploadjob.h"
@@ -268,6 +269,23 @@ void AppServer::init() {
     if (ParametersCache::instance()->parameters().showShortcuts()) {
         _navigationPaneHelper->setShowInExplorerNavigationPane(true);
     }
+
+    // Fix kDrive overlay icons
+    if (!OverlayIconsHelper::areOverlayIconsVisible()) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle(tr("kDrive Overlay Icons"));
+        msgBox.setText(
+                tr("kDrive icons have been suppressed by another file provider.\n"
+                   "Do you want to fix it automatically? (requires admin rights)"));
+
+        QPushButton *fixNowButton = msgBox.addButton(tr("Fix now"), QMessageBox::AcceptRole);
+        QPushButton *remindLaterButton = msgBox.addButton(tr("Remind me later"), QMessageBox::RejectRole);
+        QPushButton *doNotRemindButton = msgBox.addButton(tr("Do not remind me"), QMessageBox::DestructiveRole);
+        connect(&msgBox,& QMessageBox::accepted, []() { OverlayIconsHelper::fixOverlaysIcons(); });
+        msgBox.exec();
+    }
+
+
 #endif
 
     // Setup proxy
