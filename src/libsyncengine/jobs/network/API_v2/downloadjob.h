@@ -37,7 +37,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
         inline const NodeId &localNodeId() const { return _localNodeId; }
         inline SyncTime creationTime() const { return _creationTimeOut; }
         inline SyncTime modificationTime() const { return _modificationTimeOut; }
-        inline [[nodiscard]] int64_t size() const { return _sizeOut; }
+        [[nodiscard]] inline int64_t size() const { return _sizeOut; }
 
         [[nodiscard]] int64_t expectedSize() const { return _expectedSize; }
     private:
