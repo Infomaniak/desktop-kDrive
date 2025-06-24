@@ -1052,7 +1052,7 @@ void TestNetworkJobs::testUpload(const SyncTime creationTimeIn, const SyncTime m
     UploadJob job(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), creationTimeIn,
                   modificationTimeIn);
     ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ExitInfo(exitCode));
     CPPUNIT_ASSERT_EQUAL(fileStat.size, job.size());
 
     GetFileInfoJob fileInfoJob(_driveDbId, job.nodeId());
