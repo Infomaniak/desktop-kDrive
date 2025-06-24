@@ -254,8 +254,8 @@ void TestIntegration::testLocalChanges() {
     FileStat fileStat;
     bool exists = false;
     IoHelper::getFileStat(filePath, &fileStat, exists);
-
     waitForCurrentSyncToFinish();
+    waitForCurrentSyncToFinish(); // ComputeFSOperation is restarted anyway after each successful synchronization.
 
     auto remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), filePath.filename());
     CPPUNIT_ASSERT(remoteTestFileInfo.isValid());
@@ -267,12 +267,10 @@ void TestIntegration::testLocalChanges() {
     logStep("test create local file");
 
     // Generate an edit operation.
-    waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
     testhelpers::generateOrEditTestFile(filePath);
-
     IoHelper::getFileStat(filePath, &fileStat, exists);
-
     waitForCurrentSyncToFinish();
+    waitForCurrentSyncToFinish(); // ComputeFSOperation is restarted anyway after each successful synchronization.
 
     const auto prevRemoteTestFileInfo = remoteTestFileInfo;
     remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), filePath.filename());
@@ -283,18 +281,16 @@ void TestIntegration::testLocalChanges() {
     logStep("test edit local file");
 
     // Generate a move operation.
-    waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
     const SyncName newName = Str("testFileLocal_renamed");
     const std::filesystem::path destinationPath = subDirPath / newName;
     {
         LocalMoveJob job(filePath, destinationPath);
         (void) job.runSynchronously();
     }
-
     waitForCurrentSyncToFinish();
+    waitForCurrentSyncToFinish(); // ComputeFSOperation is restarted anyway after each successful synchronization.
 
     remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, remoteTestDirInfo.id, newName);
-
     CPPUNIT_ASSERT(remoteTestFileInfo.isValid());
     CPPUNIT_ASSERT_EQUAL(remoteTestDirInfo.id, remoteTestFileInfo.parentId);
 
@@ -302,13 +298,12 @@ void TestIntegration::testLocalChanges() {
     logStep("test move local file");
 
     // Generate a delete operation.
-    waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
     {
         LocalDeleteJob deleteJob(subDirPath);
         (void) deleteJob.runSynchronously();
     }
-
     waitForCurrentSyncToFinish();
+    waitForCurrentSyncToFinish(); // ComputeFSOperation is restarted anyway after each successful synchronization.
 
     remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, remoteTestDirInfo.id, filePath.filename());
     CPPUNIT_ASSERT(!remoteTestFileInfo.isValid());
@@ -329,11 +324,10 @@ void TestIntegration::testRemoteChanges() {
 
         fileId = duplicateRemoteFile(_driveDbId, _testFileRemoteId, filePath.filename());
     }
-
     GetFileInfoJob fileInfoJob(_driveDbId, fileId);
     (void) fileInfoJob.runSynchronously();
-
     waitForCurrentSyncToFinish();
+    waitForCurrentSyncToFinish(); // ComputeFSOperation is restarted anyway after each successful synchronization.
 
     CPPUNIT_ASSERT(std::filesystem::exists(subDirPath));
     CPPUNIT_ASSERT(std::filesystem::exists(filePath));
@@ -347,12 +341,11 @@ void TestIntegration::testRemoteChanges() {
     logStep("test create remote file");
 
     // Generate an edit operation.
-    waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
     SyncTime modificationTime = 0;
     int64_t size = 0;
     editRemoteFile(_driveDbId, fileId, nullptr, &modificationTime, &size);
-
     waitForCurrentSyncToFinish();
+    waitForCurrentSyncToFinish(); // ComputeFSOperation is restarted anyway after each successful synchronization.
 
     FileStat filestat;
     IoError ioError = IoError::Unknown;
@@ -362,24 +355,22 @@ void TestIntegration::testRemoteChanges() {
     logStep("test edit remote file");
 
     // Generate a move operation.
-    waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
     filePath = subDirPath / "testFileRemote_renamed";
     moveRemoteFile(_driveDbId, fileId, subDirId, filePath.filename());
-
     waitForCurrentSyncToFinish();
+    waitForCurrentSyncToFinish(); // ComputeFSOperation is restarted anyway after each successful synchronization.
 
     CPPUNIT_ASSERT(std::filesystem::exists(filePath));
     logStep("test move remote file");
 
     // Generate a delete operation.
-    waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
     {
         DeleteJob job(_driveDbId, subDirId);
         job.setBypassCheck(true);
         (void) job.runSynchronously();
     }
-
     waitForCurrentSyncToFinish();
+    waitForCurrentSyncToFinish(); // ComputeFSOperation is restarted anyway after each successful synchronization.
 
     CPPUNIT_ASSERT(!std::filesystem::exists(subDirPath));
     CPPUNIT_ASSERT(!std::filesystem::exists(filePath));
@@ -398,6 +389,7 @@ void TestIntegration::testSimultaneousChanges() {
     (void) RenameJob(nullptr, _driveDbId, _testFileRemoteId, remoteFilePath).runSynchronously();
 
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+    waitForCurrentSyncToFinish();
     waitForCurrentSyncToFinish();
 
     CPPUNIT_ASSERT(std::filesystem::exists(remoteFilePath));
@@ -1361,6 +1353,7 @@ void TestIntegration::testParentRename() {
         (void) jobAAA.runSynchronously();
         nodeIdAAA = jobAAA.nodeId();
     }
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForCurrentSyncToFinish();
 
     _syncPal->pause();
