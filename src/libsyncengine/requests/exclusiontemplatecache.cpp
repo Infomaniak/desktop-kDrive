@@ -113,33 +113,43 @@ void ExclusionTemplateCache::updateRegexPatterns() {
             regexPattern += "$"; // End of string
         }
 
-        // If the NFC and NFD forms of the template are different, both should be excluded.
-        SyncName nfcRegexPattern;
-        SyncName nfdRegexPattern;
-        bool normalizationSucceed =
-                CommonUtility::normalizedSyncName(Str2SyncName(regexPattern), nfcRegexPattern, UnicodeNormalization::NFC) &&
-                CommonUtility::normalizedSyncName(Str2SyncName(regexPattern), nfdRegexPattern, UnicodeNormalization::NFD);
+        addRegexForAllNormalizationForms(regexPattern, exclPattern);
+    }
+}
 
-        if (!normalizationSucceed || nfcRegexPattern == nfdRegexPattern) {
-            (void) _regexPatterns.emplace_back(std::regex(regexPattern), exclPattern);
-        } else {
-            ExclusionTemplate exclusionTemplateNfc = exclPattern;
-            SyncName nfcTempl;
-            CommonUtility::normalizedSyncName(Str2SyncName(exclPattern.templ()), nfcTempl, UnicodeNormalization::NFC);
-            exclusionTemplateNfc.setTempl(SyncName2Str(nfcTempl));
-            if (std::find(_regexPatterns.begin(), _regexPatterns.end(), std::regex(SyncName2Str(nfcRegexPattern))) ==
-                _regexPatterns.end()) {
-                (void) _regexPatterns.emplace_back(std::regex(SyncName2Str(nfcRegexPattern)), exclusionTemplateNfc);
-            }
+void ExclusionTemplateCache::addRegexForAllNormalizationForms(std::string regexPattern, ExclusionTemplate exclusionTemplate) {
+    // If the NFC and NFD forms of the template are different, both should be excluded.
+    SyncName nfcRegexPattern;
+    SyncName nfdRegexPattern;
+    SyncName nfcTemplate;
+    SyncName nfdTemplate;
+    bool normalizationSuccess =
+            CommonUtility::normalizedSyncName(Str2SyncName(regexPattern), nfcRegexPattern, UnicodeNormalization::NFC) &&
+            CommonUtility::normalizedSyncName(Str2SyncName(regexPattern), nfdRegexPattern, UnicodeNormalization::NFD) &&
+            CommonUtility::normalizedSyncName(Str2SyncName(exclusionTemplate.templ()), nfcTemplate, UnicodeNormalization::NFC) &&
+            CommonUtility::normalizedSyncName(Str2SyncName(exclusionTemplate.templ()), nfdTemplate, UnicodeNormalization::NFD);
 
-            ExclusionTemplate exclusionTemplateNfd = exclPattern;
-            SyncName nfdTempl;
-            CommonUtility::normalizedSyncName(Str2SyncName(exclPattern.templ()), nfdTempl, UnicodeNormalization::NFD);
-            exclusionTemplateNfd.setTempl(SyncName2Str(nfdTempl));
-            if (std::find(_regexPatterns.begin(), _regexPatterns.end(), std::regex(SyncName2Str(nfdRegexPattern))) ==
-                _regexPatterns.end()) {
-                (void) _regexPatterns.emplace_back(std::regex(SyncName2Str(nfdRegexPattern)), exclusionTemplateNfd);
-            }
+    if (!normalizationSuccess || nfcRegexPattern == nfdRegexPattern) {
+        if (!normalizationSuccess) {
+            LOG_WARN(Log::instance()->getLogger(), "Unable to normalize an exclusion template: [regex] "
+                                                           << regexPattern << " | [template] " << exclusionTemplate.templ());
+        }
+        (void) _regexPatterns.emplace_back(std::regex(regexPattern), exclusionTemplate);
+    } else {
+        if (std::find_if(_regexPatterns.begin(), _regexPatterns.end(), [&nfcTemplate](const auto &value) {
+                return Str2SyncName(value.second.templ()) == nfcTemplate;
+            }) == _regexPatterns.end()) {
+            ExclusionTemplate exclusionTemplateNfc = exclusionTemplate;
+            exclusionTemplateNfc.setTempl(SyncName2Str(nfcTemplate));
+            (void) _regexPatterns.emplace_back(std::regex(SyncName2Str(nfcRegexPattern)), exclusionTemplateNfc);
+        }
+
+        if (std::find_if(_regexPatterns.begin(), _regexPatterns.end(), [&nfdTemplate](const auto &value) {
+                return Str2SyncName(value.second.templ()) == nfdTemplate;
+            }) == _regexPatterns.end()) {
+            ExclusionTemplate exclusionTemplateNfd = exclusionTemplate;
+            exclusionTemplateNfd.setTempl(SyncName2Str(nfdTemplate));
+            (void) _regexPatterns.emplace_back(std::regex(SyncName2Str(nfdRegexPattern)), exclusionTemplateNfd);
         }
     }
 }

@@ -141,14 +141,14 @@ void TestExclusionTemplateCache::testRescueFolderIsExcluded() {
 
 void TestExclusionTemplateCache::testNFCNFDExclusion() {
     // Ensure that all the values in the default sync exclusion list can be normalized to both NFC and NFD forms
-    { 
+    {
         auto exclusionCacheDef = ExclusionTemplateCache::instance()->exclusionTemplates(true);
-        for (const auto &exclusionTemplate : exclusionCacheDef) {
+        for (const auto &exclusionTemplate: exclusionCacheDef) {
             SyncName result;
             CPPUNIT_ASSERT(CommonUtility::normalizedSyncName(Str2SyncName(exclusionTemplate.templ()), result,
                                                              UnicodeNormalization::NFC));
             CPPUNIT_ASSERT(CommonUtility::normalizedSyncName(Str2SyncName(exclusionTemplate.templ()), result,
-                                                            UnicodeNormalization::NFD));
+                                                             UnicodeNormalization::NFD));
         }
     }
 
@@ -196,6 +196,32 @@ void TestExclusionTemplateCache::testNFCNFDExclusion() {
         CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded(testhelpers::makeNfcSyncName()));
         CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded(testhelpers::makeNfdSyncName()));
     }
+}
+
+void TestExclusionTemplateCache::testaddRegexForAllNormalizationForms() {
+    ExclusionTemplateCache::instance()->_regexPatterns.clear();
+
+    ExclusionTemplate nfcTemplate(SyncName2Str(testhelpers::makeNfcSyncName()));
+    std::string nfcRegex = SyncName2Str(testhelpers::makeNfcSyncName()); // Don't need to be a valid regex for this test.
+    ExclusionTemplate nfdTemplate(SyncName2Str(testhelpers::makeNfdSyncName()));
+    std::string nfdRegex = SyncName2Str(testhelpers::makeNfdSyncName()); // Don't need to be a valid regex for this test.
+
+    // Ensure that both encoding are inserted
+    ExclusionTemplateCache::instance()->addRegexForAllNormalizationForms(nfcRegex, nfcTemplate);
+    CPPUNIT_ASSERT_EQUAL(size_t(2), ExclusionTemplateCache::instance()->_regexPatterns.size());
+
+    ExclusionTemplateCache::instance()->_regexPatterns.clear();
+    ExclusionTemplateCache::instance()->addRegexForAllNormalizationForms(nfdRegex, nfdTemplate);
+    CPPUNIT_ASSERT_EQUAL(size_t(2), ExclusionTemplateCache::instance()->_regexPatterns.size());
+
+    // Ensure that we cannot have a duplicated regex
+    ExclusionTemplateCache::instance()->_regexPatterns.clear();
+    ExclusionTemplateCache::instance()->addRegexForAllNormalizationForms(nfdRegex, nfdTemplate);
+    CPPUNIT_ASSERT_EQUAL(size_t(2), ExclusionTemplateCache::instance()->_regexPatterns.size());
+    ExclusionTemplateCache::instance()->addRegexForAllNormalizationForms(nfdRegex, nfdTemplate);
+    CPPUNIT_ASSERT_EQUAL(size_t(2), ExclusionTemplateCache::instance()->_regexPatterns.size());
+    ExclusionTemplateCache::instance()->addRegexForAllNormalizationForms(nfcRegex, nfdTemplate);
+    CPPUNIT_ASSERT_EQUAL(size_t(2), ExclusionTemplateCache::instance()->_regexPatterns.size());
 }
 
 
