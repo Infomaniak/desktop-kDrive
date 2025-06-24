@@ -235,7 +235,7 @@ void UpdateTree::drawUpdateTree() {
 
 void UpdateTree::drawUpdateTreeRow(const std::shared_ptr<Node> node, SyncName &treeStr, uint64_t depth /*= 0*/) {
     for (uint64_t i = 0; i < depth; i++) {
-        treeStr += Str(" ");
+        treeStr += Str("\t");
     }
     treeStr += Str("'") + node->name() + Str("'");
     treeStr += Str("[");

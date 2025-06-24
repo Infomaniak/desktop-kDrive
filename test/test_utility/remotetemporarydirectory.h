@@ -24,16 +24,24 @@ namespace KDC {
 
 class RemoteTemporaryDirectory {
     public:
-        RemoteTemporaryDirectory(int driveDbId, const NodeId& parentId, const std::string& testType = "undef");
+        explicit RemoteTemporaryDirectory(const std::string &testType = "undef");
+        RemoteTemporaryDirectory(int driveDbId, const NodeId &parentId, const std::string &testType = "undef");
         ~RemoteTemporaryDirectory();
+
+        void createDirectory(int driveDbId, const NodeId &parentId);
+        void deleteDirectory();
+
         void setDeleted() { _isDeleted = true; }
         [[nodiscard]] bool isDeleted() const { return _isDeleted; }
 
-        [[nodiscard]] const NodeId& id() const { return _dirId; }
-        [[nodiscard]] const SyncName& name() const { return _dirName; }
+        [[nodiscard]] const NodeId &id() const { return _dirId; }
+        [[nodiscard]] const SyncName &name() const { return _dirName; }
 
     private:
         int _driveDbId{0};
+        NodeId _parentId;
+        std::string _testType;
+
         NodeId _dirId;
         SyncName _dirName;
         bool _isDeleted{false};
