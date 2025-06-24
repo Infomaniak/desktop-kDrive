@@ -229,7 +229,8 @@ void TestIntegration::testAll() {
     // conflictTests();
     // testBreakCycle();
     // testBlacklist();
-    testExclusionTemplates();
+    // testExclusionTemplates();
+    testEncoding();
 }
 
 void TestIntegration::basicTests() {
@@ -1320,6 +1321,23 @@ void TestIntegration::testExclusionTemplates() {
     logStep("testExclusionTemplates");
 }
 
+void TestIntegration::testEncoding() {
+    waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
+    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+    waitForCurrentSyncToFinish();
+
+    const auto nfcPath = _syncPal->localPath() / tmpRemoteDir.name() / testhelpers::makeNfcSyncName();
+    testhelpers::generateOrEditTestFile(nfcPath);
+    const auto nfdPath = _syncPal->localPath() / tmpRemoteDir.name() / testhelpers::makeNfdSyncName();
+    testhelpers::generateOrEditTestFile(nfdPath);
+    waitForCurrentSyncToFinish();
+
+    const auto remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), nfcPath.filename().native());
+    CPPUNIT_ASSERT(remoteTestFileInfo.isValid());
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(1), countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+    logStep("testEncoding");
+}
+
 #ifdef __unix__
 const NodeId commonDocumentsNodeId = "3";
 
@@ -1559,10 +1577,24 @@ TestIntegration::RemoteFileInfo TestIntegration::getRemoteFileInfoByName(const i
             if (fileInfo.type == NodeType::File) {
                 fileInfo.size = toInt(obj->get(sizeKey));
             }
+            break;
         }
     }
 
     return fileInfo;
+}
+
+int64_t TestIntegration::countItemsInRemoteDir(int driveDbId, const NodeId &parentId) const {
+    GetFileListJob job(driveDbId, parentId);
+    (void) job.runSynchronously();
+
+    const auto resObj = job.jsonRes();
+    if (!resObj) return -1;
+
+    const auto dataArray = resObj->getArray(dataKey);
+    if (!dataArray) return -1;
+
+    return dataArray->size();
 }
 
 } // namespace KDC
