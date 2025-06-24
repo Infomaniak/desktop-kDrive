@@ -220,6 +220,7 @@ void UpdateTree::clear() {
         it++;
     }
     _nodes.clear();
+    _previousIdSet.clear();
     init();
 }
 
