@@ -21,7 +21,6 @@
 #include "testincludes.h"
 #include "utility/types.h"
 #include "libcommonserver/vfs/vfs.h"
-#include "libcommonserver/vfs/mac/vfs_mac.h"
 
 namespace KDC {
 
