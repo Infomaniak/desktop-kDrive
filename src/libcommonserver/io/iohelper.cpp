@@ -967,6 +967,7 @@ IoHelper::DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, bo
 bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDirectory, IoError &ioError) {
     std::error_code ec;
     endOfDirectory = false;
+    ioError = IoError::Success;
 
     if (_invalid) {
         ioError = IoError::InvalidDirectoryIterator;
@@ -980,7 +981,6 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
     const auto dirIteratorEnd = std::filesystem::end(_dirIterator);
     if (_dirIterator == dirIteratorEnd) {
         endOfDirectory = true;
-        ioError = IoError::Success;
         return true;
     }
 
@@ -1019,7 +1019,6 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
         nextEntry = *_dirIterator;
         return true;
     } else {
-        ioError = IoError::Success;
         endOfDirectory = true;
         return true;
     }
