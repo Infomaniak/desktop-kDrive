@@ -1462,16 +1462,12 @@ void TestIntegration::testNegativeModificationTime() {
 }
 
 #ifdef __unix__
-const NodeId commonDocumentsNodeId = "3";
-
 void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     if (!testhelpers::isExtendedTest()) return;
 
     LOGW_DEBUG(_logger, L"$$$$$ testNodeIdReuseFile2DirAndDir2File");
 
-    SyncNodeCache::instance()->update(_driveDbId, SyncNodeType::BlackList,
-                                      {commonDocumentsNodeId}); // Exclude common documents folder
-    const RemoteTemporaryDirectory remoteTempDir(_driveDbId, "1", "testNodeIdReuseFile2DirAndDir2File");
+    const RemoteTemporaryDirectory remoteTempDir(_driveDbId, _remoteSyncDir.id(), "testNodeIdReuseFile2DirAndDir2File");
     const SyncPath relativeWorkingDirPath = remoteTempDir.name();
     const SyncPath absoluteLocalWorkingDir = _syncPal->localPath() / relativeWorkingDirPath;
     _syncPal->start();
@@ -1540,9 +1536,7 @@ void TestIntegration::testNodeIdReuseFile2File() {
 
     LOGW_DEBUG(_logger, L"$$$$$ testNodeIdReuseFile2File");
 
-    SyncNodeCache::instance()->update(_driveDbId, SyncNodeType::BlackList,
-                                      {commonDocumentsNodeId}); // Exclude common documents folder
-    const RemoteTemporaryDirectory remoteTempDir(_driveDbId, "1", "testNodeIdReuseFile2File");
+    const RemoteTemporaryDirectory remoteTempDir(_driveDbId, _remoteSyncDir.id(), "testNodeIdReuseFile2File");
     const SyncPath relativeWorkingDirPath = remoteTempDir.name();
     const SyncPath absoluteLocalWorkingDir = _syncPal->localPath() / relativeWorkingDirPath;
     _syncPal->start();
@@ -1713,7 +1707,7 @@ int64_t TestIntegration::countItemsInRemoteDir(int driveDbId, const NodeId &pare
     const auto dataArray = resObj->getArray(dataKey);
     if (!dataArray) return -1;
 
-    return dataArray->size();
+    return static_cast<int64_t>(dataArray->size());
 }
 
 } // namespace KDC
