@@ -398,13 +398,13 @@ void TestIntegration::testSimultaneousChanges() {
 }
 
 void TestIntegration::inconsistencyTests() {
+    TimerUtility timer;
     // Duplicate remote files to set up the tests.
     waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
     const auto testForbiddenCharsRemoteId = duplicateRemoteFile(_driveDbId, _testFileRemoteId, Str("testForbiddenChar"));
     const auto testNameClashRemoteId1 = duplicateRemoteFile(_driveDbId, _testFileRemoteId, Str("testNameClash"));
     const auto testNameClashRemoteId2 = duplicateRemoteFile(_driveDbId, _testFileRemoteId, Str("testnameclash1"));
     waitForCurrentSyncToFinish();
-    waitForCurrentSyncToFinish(); // ComputeFSOperation is restarted anyway after each successful synchronization.
 
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "testForbiddenChar"));
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "testNameClash"));
@@ -415,10 +415,10 @@ void TestIntegration::inconsistencyTests() {
     (void) RenameJob(nullptr, _driveDbId, testForbiddenCharsRemoteId, "test:*ForbiddenChar").runSynchronously();
     (void) RenameJob(nullptr, _driveDbId, testNameClashRemoteId2, "testnameclash").runSynchronously();
     waitForCurrentSyncToFinish();
-    waitForCurrentSyncToFinish(); // ComputeFSOperation is restarted anyway after each successful synchronization.
 
 #ifdef _WIN32
-
+    CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "testForbiddenChar"));
+    CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / "test:*ForbiddenChar"));
 #else
     CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / "testForbiddenChar"));
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "test:*ForbiddenChar"));
@@ -439,18 +439,16 @@ void TestIntegration::inconsistencyTests() {
     IoError ioError = IoError::Unknown;
     (void) IoHelper::getFileStat(nameClashLocalPath, &filestat, ioError);
     waitForCurrentSyncToFinish();
-    waitForCurrentSyncToFinish(); // ComputeFSOperation is restarted anyway after each successful synchronization.
 
     auto remoteFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), Str("testnameclash"));
     CPPUNIT_ASSERT(remoteFileInfo.isValid());
     CPPUNIT_ASSERT_LESS(filestat.size, remoteFileInfo.size); // The local edit is not propagated.
 
     // Rename again the remote file to avoid the name clash.
-    waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
     (void) RenameJob(nullptr, _driveDbId, testNameClashRemoteId2, "testnameclash2").runSynchronously();
     waitForCurrentSyncToFinish();
     // Needed because when an item has remote move and local edit operations at the same time, the move operation is processed
-    // first. Then, the edit operation could not be propagated since the item path has changed. The sync is therefore restarted
+    // first. Then, the edit operation could not be propagated since the item path has changed. The sync is therefore restarted,
     // and a new edit operation, with the new path, is generated.
     waitForCurrentSyncToFinish();
 
@@ -660,6 +658,7 @@ void TestIntegration::testEditDeleteConflict() {
         const SyncName filename = Str("testEditDeleteConflict1");
         const auto tmpNodeId = duplicateRemoteFile(_driveDbId, _testFileRemoteId, filename);
         waitForCurrentSyncToFinish();
+        waitForCurrentSyncToFinish(); // ComputeFSOperation is restarted anyway after each successful synchronization.
 
         // Edit the file on remote replica.
         SyncTime modificationTime = 0;
@@ -682,11 +681,9 @@ void TestIntegration::testEditDeleteConflict() {
         CPPUNIT_ASSERT_EQUAL(size, fileStat.size);
         logStep("testEditDeleteConflict1");
     }
-
+    waitForCurrentSyncToFinish();
     // Delete happen on a parent of the edited files.
     {
-        waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
-
         // Generate the test file
         const SyncPath dirpath = _syncPal->localPath() / "testEditDeleteConflict2_dir";
         IoError ioError = IoError::Unknown;
@@ -694,6 +691,7 @@ void TestIntegration::testEditDeleteConflict() {
         const SyncPath filepath = dirpath / "testEditDeleteConflict2_file";
         testhelpers::generateOrEditTestFile(filepath);
         waitForCurrentSyncToFinish();
+        waitForCurrentSyncToFinish(); // ComputeFSOperation is restarted anyway after each successful synchronization.
 
         std::optional<NodeId> remoteDirNodeId = std::nullopt;
         bool found = false;
@@ -713,7 +711,7 @@ void TestIntegration::testEditDeleteConflict() {
 
         // Delete operation has won...
         CPPUNIT_ASSERT(!std::filesystem::exists(filepath));
-        // ... but edited file has been rescued.
+        // ... but the edited file has been rescued.
         CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / FileRescuer::rescueFolderName() / filepath.filename()));
         logStep("testEditDeleteConflict2");
     }
@@ -1168,26 +1166,28 @@ void TestIntegration::testBreakCycle() {
     _syncPal->unpause();
     waitForCurrentSyncToFinish();
 
+    // _syncPal->pause(); // We need to pause the sync because the back might take some time to notify all the events.
     const auto pathAA = _syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA";
-    // Rename A/AA/AAA to A/AA/AAA* on remote replica.
-    (void) RenameJob(nullptr, _driveDbId, nodeIdAAA, Str("AAA*")).runSynchronously();
+    // Rename A/AA/AAA to A/AA/AAA2 on remote replica.
+    (void) RenameJob(nullptr, _driveDbId, nodeIdAAA, Str("AAA2")).runSynchronously();
     // Create A/AA/AAA on remote replica.
     CreateDirJob dirJob(nullptr, _driveDbId, nodeIdAA, Str("AAA"));
     (void) dirJob.runSynchronously();
-    // Move A/AA/AAA* to A/AA/AAA/AAA* on remote replica.
+    // Move A/AA/AAA2 to A/AA/AAA/AAA2 on remote replica.
     moveRemoteFile(_driveDbId, nodeIdAAA, dirJob.nodeId());
-
+    // _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+    // _syncPal->unpause();
     waitForCurrentSyncToFinish();
-    waitForCurrentSyncToFinish(); // Previous sync only fixed the conflict the cycle.
+    waitForCurrentSyncToFinish(); // Previous sync only breaks the cycle.
 
-    CPPUNIT_ASSERT(std::filesystem::exists(pathAA / "AAA" / "AAA*"));
+    CPPUNIT_ASSERT(std::filesystem::exists(pathAA / "AAA" / "AAA2"));
     logStep("testBreakCycle");
 }
 
 void TestIntegration::testBlacklist() {
     waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
     const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
-    const auto filename = "testBlacklist";
+    const auto filename = Str("testBlacklist");
     const auto fileId = duplicateRemoteFile(_driveDbId, _testFileRemoteId, filename);
     waitForCurrentSyncToFinish();
 
@@ -1200,21 +1200,20 @@ void TestIntegration::testBlacklist() {
     _syncPal->stop();
     (void) BlacklistPropagator(_syncPal).runSynchronously();
     _syncPal->start();
-
     waitForCurrentSyncToFinish();
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath));
 
     // Move a file inside a blacklisted directory.
     moveRemoteFile(_driveDbId, fileId, tmpRemoteDir.id());
-
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForCurrentSyncToFinish();
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath / filename));
 
     // Move a file from inside a blacklisted directory to a synchronized directory.
     moveRemoteFile(_driveDbId, fileId, _remoteSyncDir.id());
-
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForCurrentSyncToFinish();
 
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / filename));
@@ -1227,7 +1226,6 @@ void TestIntegration::testBlacklist() {
     _syncPal->start();
 
     waitForCurrentSyncToFinish();
-
     CPPUNIT_ASSERT(std::filesystem::exists(dirpath));
     logStep("testBlacklist");
 }
@@ -1380,26 +1378,26 @@ void TestIntegration::testParentRename() {
     waitForCurrentSyncToFinish();
 
     _syncPal->pause();
-    // Rename A to A*
-    (void) RenameJob(nullptr, _driveDbId, nodeIdA, "A*").runSynchronously();
+    // Rename A to A2
+    (void) RenameJob(nullptr, _driveDbId, nodeIdA, "A2").runSynchronously();
     // Delete A/AA/AAA
     (void) DeleteJob(_driveDbId, nodeIdAAA).runSynchronously();
-    // Create A/AA/AAA*
-    (void) CreateDirJob(nullptr, _driveDbId, nodeIdAA, Str("AAA*")).runSynchronously();
+    // Create A/AA/AAA2
+    (void) CreateDirJob(nullptr, _driveDbId, nodeIdAA, Str("AAA2")).runSynchronously();
     _syncPal->unpause();
     waitForCurrentSyncToFinish();
 
-    CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / "A*" / "AA" / "AAA*"));
+    CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / "A2" / "AA" / "AAA2"));
     logStep("testParentRename");
 }
 
 void TestIntegration::testNegativeModificationTime() {
     waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
-    const SyncPath filename = Str("testNegativeModificationTime");
+    const SyncName filename = Str("testNegativeModificationTime");
     const SyncTime timeInput = -10000;
     {
         // Test with only negative modification time.
-        const LocalTemporaryDirectory localTmpDir(filename, _syncPal->localPath());
+        const LocalTemporaryDirectory localTmpDir(SyncName2Str(filename), _syncPal->localPath());
         const auto filepath = localTmpDir.path() / filename;
         testhelpers::generateOrEditTestFile(filepath);
         FileStat fileStat;
@@ -1418,7 +1416,7 @@ void TestIntegration::testNegativeModificationTime() {
     waitForCurrentSyncToFinish();
     {
         // Test with only negative creation time.
-        const LocalTemporaryDirectory localTmpDir(filename, _syncPal->localPath());
+        const LocalTemporaryDirectory localTmpDir(SyncName2Str(filename), _syncPal->localPath());
         const auto filepath = localTmpDir.path() / filename;
         testhelpers::generateOrEditTestFile(filepath);
         FileStat fileStat;
@@ -1432,14 +1430,19 @@ void TestIntegration::testNegativeModificationTime() {
 
         GetFileInfoJob fileInfoJob(_driveDbId, *dbNode.nodeIdRemote());
         (void) fileInfoJob.runSynchronously();
+#ifdef _WIN32
+        // Windows: negative creation dates are accepted.
+        CPPUNIT_ASSERT_EQUAL(timeInput, fileInfoJob.creationTime());
+#else
         // macOS: Setting a negative creation date when modification date is positive is not accepted.
-        // Linux: we cannot change the creation date.
+        // Linux: Creation date cannot be changed.
         CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, fileInfoJob.creationTime());
+#endif
     }
     waitForCurrentSyncToFinish();
     {
         // Test with both negative creation and modification time.
-        const LocalTemporaryDirectory localTmpDir(filename, _syncPal->localPath());
+        const LocalTemporaryDirectory localTmpDir(SyncName2Str(filename), _syncPal->localPath());
         const auto filepath = localTmpDir.path() / filename;
         testhelpers::generateOrEditTestFile(filepath);
         FileStat fileStat;
@@ -1454,10 +1457,10 @@ void TestIntegration::testNegativeModificationTime() {
         GetFileInfoJob fileInfoJob(_driveDbId, *dbNode.nodeIdRemote());
         (void) fileInfoJob.runSynchronously();
 #ifdef __unix__
-        // Linux: we cannot change the creation date.
+        // Linux: Creation date cannot be changed.
         CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, fileInfoJob.creationTime());
 #else
-        // Setting both a negative creation and modification date is accepted on macOS.
+        // Setting both a negative creation and modification date is accepted.
         CPPUNIT_ASSERT_EQUAL(timeInput, fileInfoJob.creationTime());
 #endif
         CPPUNIT_ASSERT_EQUAL(timeInput, fileInfoJob.modificationTime());
