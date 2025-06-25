@@ -1481,8 +1481,10 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile", 2);
     { const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string()); }
     waitForSyncToBeIdle(SourceLocation::currentLoc());
-    CPPUNIT_ASSERT_EQUAL(NodeId("2"), _syncPal->liveSnapshot(ReplicaSide::Local).itemId(relativeWorkingDirPath / "testNodeIdReuseFile"));
-    const NodeId remoteFileId = _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
+    CPPUNIT_ASSERT_EQUAL(NodeId("2"),
+                         _syncPal->liveSnapshot(ReplicaSide::Local).itemId(relativeWorkingDirPath / "testNodeIdReuseFile"));
+    const NodeId remoteFileId =
+            _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
     CPPUNIT_ASSERT(!remoteFileId.empty());
     CPPUNIT_ASSERT_EQUAL(NodeType::File, _syncPal->liveSnapshot(ReplicaSide::Remote).type(remoteFileId));
 
@@ -1502,7 +1504,8 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     // Check that the file has been replaced by a directory on the remote with a different ID
-    const NodeId newRemoteDirId = _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseDir");
+    const NodeId newRemoteDirId =
+            _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseDir");
     CPPUNIT_ASSERT(!newRemoteDirId.empty());
     CPPUNIT_ASSERT(newRemoteDirId != remoteFileId);
     CPPUNIT_ASSERT_EQUAL(NodeType::Directory, _syncPal->liveSnapshot(ReplicaSide::Remote).type(newRemoteDirId));
@@ -1522,7 +1525,8 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     // Check that the directory has been replaced by a file on the remote with a different ID
-    const NodeId newRemoteFileId = _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
+    const NodeId newRemoteFileId =
+            _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
     CPPUNIT_ASSERT(newRemoteFileId != "");
     CPPUNIT_ASSERT(newRemoteFileId != newRemoteDirId);
     CPPUNIT_ASSERT(newRemoteFileId != remoteFileId);
@@ -1549,8 +1553,10 @@ void TestIntegration::testNodeIdReuseFile2File() {
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile", 2);
     { const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string()); }
     waitForSyncToBeIdle(SourceLocation::currentLoc());
-    CPPUNIT_ASSERT_EQUAL(NodeId("2"), _syncPal->liveSnapshot(ReplicaSide::Local).itemId(relativeWorkingDirPath / "testNodeIdReuseFile"));
-    const NodeId remoteFileId = _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
+    CPPUNIT_ASSERT_EQUAL(NodeId("2"),
+                         _syncPal->liveSnapshot(ReplicaSide::Local).itemId(relativeWorkingDirPath / "testNodeIdReuseFile"));
+    const NodeId remoteFileId =
+            _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
     CPPUNIT_ASSERT(!remoteFileId.empty());
     CPPUNIT_ASSERT_EQUAL(NodeType::File, _syncPal->liveSnapshot(ReplicaSide::Remote).type(remoteFileId));
 
@@ -1581,7 +1587,8 @@ void TestIntegration::testNodeIdReuseFile2File() {
     _syncPal->unpause();
     waitForSyncToBeIdle(SourceLocation::currentLoc());
     _syncPal->pause();
-    const NodeId newRemoteFileId = _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseFile2");
+    const NodeId newRemoteFileId =
+            _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseFile2");
     CPPUNIT_ASSERT(!newRemoteFileId.empty());
     CPPUNIT_ASSERT(remoteFileId != newRemoteFileId);
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(remoteFileId));
@@ -1601,10 +1608,12 @@ void TestIntegration::testNodeIdReuseFile2File() {
     _syncPal->unpause();
     waitForSyncToBeIdle(SourceLocation::currentLoc());
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseFile2").empty());
-    const NodeId newRemoteFileId2 = _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseFile3");
+    const NodeId newRemoteFileId2 =
+            _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseFile3");
     CPPUNIT_ASSERT(!newRemoteFileId2.empty());
     CPPUNIT_ASSERT_EQUAL(newRemoteFileId, newRemoteFileId2);
-    CPPUNIT_ASSERT_EQUAL(_syncPal->liveSnapshot(ReplicaSide::Remote).size(newRemoteFileId2), _syncPal->liveSnapshot(ReplicaSide::Local).size("2"));
+    CPPUNIT_ASSERT_EQUAL(_syncPal->liveSnapshot(ReplicaSide::Remote).size(newRemoteFileId2),
+                         _syncPal->liveSnapshot(ReplicaSide::Local).size("2"));
 }
 #endif
 
