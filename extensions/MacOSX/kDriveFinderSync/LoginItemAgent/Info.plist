@@ -15,8 +15,8 @@
 	<key>CFBundlePackageType</key>
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
-	<string>$(MARKETING_VERSION)</string>
-	<key>CFBundleVersion</key>
 	<string>$(KD_APPLICATION_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(KD_APPLICATION_BUILD)</string>
 </dict>
 </plist>
