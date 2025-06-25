@@ -904,11 +904,14 @@ void TestIntegration::testMoveDeleteConflict() {
 }
 
 void TestIntegration::testMoveParentDeleteConflict() {
+    waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
     {
-        waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
+        _syncPal->pause();  // We need to pause the sync because the back might take some time to notify all the events.
         const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
         RemoteNodeInfo info;
         generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
+        _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+        _syncPal->unpause();
         waitForCurrentSyncToFinish();
 
         // Delete A on remote replica
@@ -931,9 +934,12 @@ void TestIntegration::testMoveParentDeleteConflict() {
     }
     waitForCurrentSyncToFinish();
     {
+        _syncPal->pause();  // We need to pause the sync because the back might take some time to notify all the events.
         const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
         RemoteNodeInfo info;
         generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
+        _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+        _syncPal->unpause();
         waitForCurrentSyncToFinish();
 
         // Rename A to A2 on remote replica
@@ -969,11 +975,14 @@ void TestIntegration::testMoveParentDeleteConflict() {
         //     └── AB
         //         ├── ABA
         //         └── ABB
+        _syncPal->pause();  // We need to pause the sync because the back might take some time to notify all the events.
         const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
         RemoteNodeInfo info;
         generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
         (void) CreateDirJob(nullptr, _driveDbId, info.remoteNodeIdAB, Str("ABA")).runSynchronously();
         (void) createRemoteFile(_driveDbId, Str("ABB"), info.remoteNodeIdAB);
+        _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+        _syncPal->unpause();
         waitForCurrentSyncToFinish();
 
         // Delete A/AB on remote replica
@@ -1135,6 +1144,8 @@ void TestIntegration::testMoveMoveCycleConflict() {
 
 void TestIntegration::testBreakCycle() {
     waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
+
+    _syncPal->pause();  // We need to pause the sync because the back might take some time to notify all the events.
     const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
     NodeId nodeIdAA;
     NodeId nodeIdAAA;
@@ -1148,6 +1159,8 @@ void TestIntegration::testBreakCycle() {
         (void) jobAAA.runSynchronously();
         nodeIdAAA = jobAAA.nodeId();
     }
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+    _syncPal->unpause();
     waitForCurrentSyncToFinish();
 
     const auto pathAA = _syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA";
@@ -1336,6 +1349,8 @@ void TestIntegration::testEncoding() {
 
 void TestIntegration::testParentRename() {
     waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
+
+    _syncPal->pause();  // We need to pause the sync because the back might take some time to notify all the events.
     const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
     // .
     // └── A
@@ -1356,6 +1371,7 @@ void TestIntegration::testParentRename() {
         nodeIdAAA = jobAAA.nodeId();
     }
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+    _syncPal->unpause();  // We need to pause the sync because the back might take some time to notify all the events.
     waitForCurrentSyncToFinish();
 
     _syncPal->pause();
@@ -1411,7 +1427,8 @@ void TestIntegration::testNegativeModificationTime() {
 
         GetFileInfoJob fileInfoJob(_driveDbId, *dbNode.nodeIdRemote());
         (void) fileInfoJob.runSynchronously();
-        // Setting a negative creation date when modification date is positive is not accepted on macOS.
+        // macOS: Setting a negative creation date when modification date is positive is not accepted.
+        // Linux: we cannot change the creation date.
         CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, fileInfoJob.creationTime());
     }
     waitForCurrentSyncToFinish();
@@ -1431,8 +1448,13 @@ void TestIntegration::testNegativeModificationTime() {
 
         GetFileInfoJob fileInfoJob(_driveDbId, *dbNode.nodeIdRemote());
         (void) fileInfoJob.runSynchronously();
+#ifdef __unix__
+        // Linux: we cannot change the creation date.
+        CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, fileInfoJob.creationTime());
+#else
         // Setting both a negative creation and modification date is accepted on macOS.
         CPPUNIT_ASSERT_EQUAL(timeInput, fileInfoJob.creationTime());
+#endif
         CPPUNIT_ASSERT_EQUAL(timeInput, fileInfoJob.modificationTime());
     }
 
@@ -1455,20 +1477,18 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     _syncPal->start();
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
-    const auto localSnapshot = _syncPal->snapshot(ReplicaSide::Local);
-    const auto remoteSnapshot = _syncPal->snapshot(ReplicaSide::Remote);
-    CPPUNIT_ASSERT(!localSnapshot->itemId(relativeWorkingDirPath).empty());
-    CPPUNIT_ASSERT(!remoteSnapshot->itemId(relativeWorkingDirPath).empty());
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).itemId(relativeWorkingDirPath).empty());
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath).empty());
 
     MockIoHelperFileStat mockIoHelper;
     // Create a file with a custom inode on the local side
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile", 2);
     { const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string()); }
     waitForSyncToBeIdle(SourceLocation::currentLoc());
-    CPPUNIT_ASSERT_EQUAL(NodeId("2"), localSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile"));
-    const NodeId remoteFileId = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
+    CPPUNIT_ASSERT_EQUAL(NodeId("2"), _syncPal->liveSnapshot(ReplicaSide::Local).itemId(relativeWorkingDirPath / "testNodeIdReuseFile"));
+    const NodeId remoteFileId = _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
     CPPUNIT_ASSERT(!remoteFileId.empty());
-    CPPUNIT_ASSERT_EQUAL(NodeType::File, remoteSnapshot->type(remoteFileId));
+    CPPUNIT_ASSERT_EQUAL(NodeType::File, _syncPal->liveSnapshot(ReplicaSide::Remote).type(remoteFileId));
 
     // Replace the file with a directory on the local side (with the same id)
     _syncPal->pause();
@@ -1486,11 +1506,11 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     // Check that the file has been replaced by a directory on the remote with a different ID
-    const NodeId newRemoteDirId = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseDir");
+    const NodeId newRemoteDirId = _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseDir");
     CPPUNIT_ASSERT(!newRemoteDirId.empty());
     CPPUNIT_ASSERT(newRemoteDirId != remoteFileId);
-    CPPUNIT_ASSERT_EQUAL(NodeType::Directory, remoteSnapshot->type(newRemoteDirId));
-    CPPUNIT_ASSERT(!remoteSnapshot->exists(remoteFileId));
+    CPPUNIT_ASSERT_EQUAL(NodeType::Directory, _syncPal->liveSnapshot(ReplicaSide::Remote).type(newRemoteDirId));
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(remoteFileId));
 
     // Replace the directory with a file on the local side with the same id
     _syncPal->pause();
@@ -1506,13 +1526,13 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     // Check that the directory has been replaced by a file on the remote with a different ID
-    const NodeId newRemoteFileId = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
+    const NodeId newRemoteFileId = _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
     CPPUNIT_ASSERT(newRemoteFileId != "");
     CPPUNIT_ASSERT(newRemoteFileId != newRemoteDirId);
     CPPUNIT_ASSERT(newRemoteFileId != remoteFileId);
-    CPPUNIT_ASSERT(!remoteSnapshot->exists(remoteFileId));
-    CPPUNIT_ASSERT(!remoteSnapshot->exists(newRemoteDirId));
-    CPPUNIT_ASSERT_EQUAL(NodeType::File, remoteSnapshot->type(newRemoteFileId));
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(remoteFileId));
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(newRemoteDirId));
+    CPPUNIT_ASSERT_EQUAL(NodeType::File, _syncPal->liveSnapshot(ReplicaSide::Remote).type(newRemoteFileId));
 }
 
 void TestIntegration::testNodeIdReuseFile2File() {
@@ -1528,19 +1548,17 @@ void TestIntegration::testNodeIdReuseFile2File() {
     _syncPal->start();
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
-    const auto localSnapshot = _syncPal->snapshot(ReplicaSide::Local);
-    const auto remoteSnapshot = _syncPal->snapshot(ReplicaSide::Remote);
-    CPPUNIT_ASSERT(!localSnapshot->itemId(relativeWorkingDirPath).empty());
-    CPPUNIT_ASSERT(!remoteSnapshot->itemId(relativeWorkingDirPath).empty());
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).itemId(relativeWorkingDirPath).empty());
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath).empty());
 
     MockIoHelperFileStat mockIoHelper;
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile", 2);
     { const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string()); }
     waitForSyncToBeIdle(SourceLocation::currentLoc());
-    CPPUNIT_ASSERT_EQUAL(NodeId("2"), localSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile"));
-    const NodeId remoteFileId = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
+    CPPUNIT_ASSERT_EQUAL(NodeId("2"), _syncPal->liveSnapshot(ReplicaSide::Local).itemId(relativeWorkingDirPath / "testNodeIdReuseFile"));
+    const NodeId remoteFileId = _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
     CPPUNIT_ASSERT(!remoteFileId.empty());
-    CPPUNIT_ASSERT_EQUAL(NodeType::File, remoteSnapshot->type(remoteFileId));
+    CPPUNIT_ASSERT_EQUAL(NodeType::File, _syncPal->liveSnapshot(ReplicaSide::Remote).type(remoteFileId));
 
     // Expected behavior:
     // - changed: ctime, mtime/size/content, path (chmod or + edit + move)
@@ -1569,10 +1587,10 @@ void TestIntegration::testNodeIdReuseFile2File() {
     _syncPal->unpause();
     waitForSyncToBeIdle(SourceLocation::currentLoc());
     _syncPal->pause();
-    const NodeId newRemoteFileId = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile2");
+    const NodeId newRemoteFileId = _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseFile2");
     CPPUNIT_ASSERT(!newRemoteFileId.empty());
     CPPUNIT_ASSERT(remoteFileId != newRemoteFileId);
-    CPPUNIT_ASSERT(!remoteSnapshot->exists(remoteFileId));
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(remoteFileId));
 
     // Edit a file and move it to a different path.
     // Expected behavior: Edit + Move on remote side
@@ -1588,11 +1606,11 @@ void TestIntegration::testNodeIdReuseFile2File() {
 
     _syncPal->unpause();
     waitForSyncToBeIdle(SourceLocation::currentLoc());
-    CPPUNIT_ASSERT(remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile2").empty());
-    const NodeId newRemoteFileId2 = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile3");
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseFile2").empty());
+    const NodeId newRemoteFileId2 = _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseFile3");
     CPPUNIT_ASSERT(!newRemoteFileId2.empty());
     CPPUNIT_ASSERT_EQUAL(newRemoteFileId, newRemoteFileId2);
-    CPPUNIT_ASSERT_EQUAL(remoteSnapshot->size(newRemoteFileId2), localSnapshot->size("2"));
+    CPPUNIT_ASSERT_EQUAL(_syncPal->liveSnapshot(ReplicaSide::Remote).size(newRemoteFileId2), _syncPal->liveSnapshot(ReplicaSide::Local).size("2"));
 }
 #endif
 
