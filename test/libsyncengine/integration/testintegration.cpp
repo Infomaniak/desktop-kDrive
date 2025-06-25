@@ -398,12 +398,14 @@ void TestIntegration::testSimultaneousChanges() {
 }
 
 void TestIntegration::inconsistencyTests() {
-    TimerUtility timer;
     // Duplicate remote files to set up the tests.
     waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
+    _syncPal->pause();
     const auto testForbiddenCharsRemoteId = duplicateRemoteFile(_driveDbId, _testFileRemoteId, Str("testForbiddenChar"));
     const auto testNameClashRemoteId1 = duplicateRemoteFile(_driveDbId, _testFileRemoteId, Str("testNameClash"));
     const auto testNameClashRemoteId2 = duplicateRemoteFile(_driveDbId, _testFileRemoteId, Str("testnameclash1"));
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+    _syncPal->unpause();
     waitForCurrentSyncToFinish();
 
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "testForbiddenChar"));
@@ -412,8 +414,11 @@ void TestIntegration::inconsistencyTests() {
     CPPUNIT_ASSERT(std::filesystem::exists(nameClashLocalPath));
 
     // Rename files on remote side.
+    _syncPal->pause();
     (void) RenameJob(nullptr, _driveDbId, testForbiddenCharsRemoteId, "test:*ForbiddenChar").runSynchronously();
     (void) RenameJob(nullptr, _driveDbId, testNameClashRemoteId2, "testnameclash").runSynchronously();
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+    _syncPal->unpause();
     waitForCurrentSyncToFinish();
 
 #ifdef _WIN32
@@ -446,6 +451,7 @@ void TestIntegration::inconsistencyTests() {
 
     // Rename again the remote file to avoid the name clash.
     (void) RenameJob(nullptr, _driveDbId, testNameClashRemoteId2, "testnameclash2").runSynchronously();
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForCurrentSyncToFinish();
     // Needed because when an item has remote move and local edit operations at the same time, the move operation is processed
     // first. Then, the edit operation could not be propagated since the item path has changed. The sync is therefore restarted,
@@ -1166,7 +1172,7 @@ void TestIntegration::testBreakCycle() {
     _syncPal->unpause();
     waitForCurrentSyncToFinish();
 
-    // _syncPal->pause(); // We need to pause the sync because the back might take some time to notify all the events.
+    _syncPal->pause(); // We need to pause the sync because the back might take some time to notify all the events.
     const auto pathAA = _syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA";
     // Rename A/AA/AAA to A/AA/AAA2 on remote replica.
     (void) RenameJob(nullptr, _driveDbId, nodeIdAAA, Str("AAA2")).runSynchronously();
@@ -1175,8 +1181,8 @@ void TestIntegration::testBreakCycle() {
     (void) dirJob.runSynchronously();
     // Move A/AA/AAA2 to A/AA/AAA/AAA2 on remote replica.
     moveRemoteFile(_driveDbId, nodeIdAAA, dirJob.nodeId());
-    // _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
-    // _syncPal->unpause();
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+    _syncPal->unpause();
     waitForCurrentSyncToFinish();
     waitForCurrentSyncToFinish(); // Previous sync only breaks the cycle.
 
