@@ -22,6 +22,7 @@
 #include "libcommon/utility/types.h"
 #include "libcommonserver/utility/utility.h"
 #include "version.h"
+#include "io/filestat.h"
 
 #include <config.h>
 
@@ -48,8 +49,8 @@ SyncName makeNfcSyncName();
 inline bool isRunningOnCI(bool print = true) {
     static const bool isRunningOnCI = !loadEnvVariable("KDRIVE_TEST_CI_RUNNING_ON_CI", false).empty();
     if (print && !isRunningOnCI) {
-        std::cout << " (Skipped, CI only test)"; // This will show up in the test output -> KDC::TestXXX::testxxx
-                                                 // (Skipped, CI only test) :  OK
+        std::cout << " (Skipped, CI only test)"; // This will show up in the test output -> KDC::TestXXX::testxxx (Skipped, CI
+                                                 // only test) :  OK
     }
     return isRunningOnCI;
 }
@@ -57,8 +58,8 @@ inline bool isRunningOnCI(bool print = true) {
 inline bool isExtendedTest(bool print = true) {
     static const bool isExtended = !loadEnvVariable("KDRIVE_TEST_CI_EXTENDED_TEST", false).empty();
     if (print && !isExtended) {
-        std::cout << " (Skipped, extended test)"; // This will show up in the test output -> KDC::TestXXX::testxxx
-                                                  // (Skipped, extended test) :  OK
+        std::cout << " (Skipped, extended test)"; // This will show up in the test output -> KDC::TestXXX::testxxx (Skipped,
+                                                  // extended test) :  OK
     }
     return isExtended;
 }

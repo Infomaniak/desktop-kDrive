@@ -58,6 +58,10 @@ bool UploadJobReplyHandler::extractData(const Poco::JSON::Object::Ptr jsonRes) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in IoHelper::setFileDates: " << Utility::formatIoError(_absoluteFilePath, ioError));
         }
+#ifdef __unix__
+        _creationTimeOut = _creationTimeIn; // Unix systems do not support setting creation time, so we keep the original value.
+#endif // __unix__
+
     }
     return true;
 }

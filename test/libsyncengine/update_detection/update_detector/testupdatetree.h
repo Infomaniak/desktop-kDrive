@@ -32,6 +32,7 @@ class TestUpdateTree : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testAll);
         CPPUNIT_TEST(testChangeEvents);
         CPPUNIT_TEST(testInsertionOfFileNamesWithDifferentEncodings);
+        CPPUNIT_TEST(testClear);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -43,6 +44,7 @@ class TestUpdateTree : public CppUnit::TestFixture, public TestBase {
         void testAll();
         void testChangeEvents();
         void testInsertionOfFileNamesWithDifferentEncodings();
+        void testClear();
 
     private:
         UpdateTree *_myTree;

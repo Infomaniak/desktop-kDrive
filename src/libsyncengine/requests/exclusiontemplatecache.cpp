@@ -65,7 +65,7 @@ void ExclusionTemplateCache::populateUndeletedExclusionTemplates() {
     for (const auto &exclusionTemplate: _defExclusionTemplates) {
         if (!exclusionTemplate.deleted()) {
             _undeletedExclusionTemplates.push_back(exclusionTemplate);
-        } 
+        }
     }
 
     for (const auto &exclusionTemplate: _userExclusionTemplates) {
@@ -113,7 +113,48 @@ void ExclusionTemplateCache::updateRegexPatterns() {
             regexPattern += "$"; // End of string
         }
 
-        (void) _regexPatterns.emplace_back(std::regex(regexPattern), exclPattern);
+        addRegexForAllNormalizationForms(regexPattern, exclPattern);
+    }
+}
+
+void ExclusionTemplateCache::addRegexForAllNormalizationForms(std::string regexPattern, ExclusionTemplate exclusionTemplate) {
+    // If the NFC and NFD forms of the template are different, both should be excluded.
+    SyncName nfcRegexPattern;
+    SyncName nfdRegexPattern;
+    SyncName nfcTemplate;
+    SyncName nfdTemplate;
+    bool normalizationSuccess =
+            CommonUtility::normalizedSyncName(Str2SyncName(regexPattern), nfcRegexPattern, UnicodeNormalization::NFC) &&
+            CommonUtility::normalizedSyncName(Str2SyncName(regexPattern), nfdRegexPattern, UnicodeNormalization::NFD) &&
+            CommonUtility::normalizedSyncName(Str2SyncName(exclusionTemplate.templ()), nfcTemplate, UnicodeNormalization::NFC) &&
+            CommonUtility::normalizedSyncName(Str2SyncName(exclusionTemplate.templ()), nfdTemplate, UnicodeNormalization::NFD);
+
+    if (!normalizationSuccess || nfcRegexPattern == nfdRegexPattern) {
+        if (!normalizationSuccess) {
+            LOG_WARN(Log::instance()->getLogger(), "Unable to normalize an exclusion template: [regex] "
+                                                           << regexPattern << " | [template] " << exclusionTemplate.templ());
+        }
+        if (std::find_if(_regexPatterns.begin(), _regexPatterns.end(), [&exclusionTemplate](const auto &value) {
+                return Str2SyncName(value.second.templ()) == Str2SyncName(exclusionTemplate.templ());
+            }) == _regexPatterns.end()) {
+            (void) _regexPatterns.emplace_back(std::regex(regexPattern), exclusionTemplate);
+        }
+    } else {
+        if (std::find_if(_regexPatterns.begin(), _regexPatterns.end(), [&nfcTemplate](const auto &value) {
+                return Str2SyncName(value.second.templ()) == nfcTemplate;
+            }) == _regexPatterns.end()) {
+            ExclusionTemplate exclusionTemplateNfc = exclusionTemplate;
+            exclusionTemplateNfc.setTempl(SyncName2Str(nfcTemplate));
+            (void) _regexPatterns.emplace_back(std::regex(SyncName2Str(nfcRegexPattern)), exclusionTemplateNfc);
+        }
+
+        if (std::find_if(_regexPatterns.begin(), _regexPatterns.end(), [&nfdTemplate](const auto &value) {
+                return Str2SyncName(value.second.templ()) == nfdTemplate;
+            }) == _regexPatterns.end()) {
+            ExclusionTemplate exclusionTemplateNfd = exclusionTemplate;
+            exclusionTemplateNfd.setTempl(SyncName2Str(nfdTemplate));
+            (void) _regexPatterns.emplace_back(std::regex(SyncName2Str(nfdRegexPattern)), exclusionTemplateNfd);
+        }
     }
 }
 

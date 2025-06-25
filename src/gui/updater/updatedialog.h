@@ -21,6 +21,13 @@
 #include "../customdialog.h"
 #include "utility/types.h"
 
+/**
+ * This update dialog is only used on Windows.
+ *
+ * - MacOS: the update dialog is fully managed by Sparkle.
+ * - Linux: there is no update dialog (this `UpdateDialog` could be used in the future).
+ **/
+
 namespace KDC {
 
 class UpdateDialog : public CustomDialog {
