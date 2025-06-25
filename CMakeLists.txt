@@ -232,7 +232,7 @@ set(QTDIR $ENV{QTDIR})
 
 if(BUILD_KDRIVE_OSX_BUNDLE)
     # Provision profile
-    install(FILES embedded.provisionprofile DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/)
+    install(FILES embedded.provisionprofile.appstore DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/ RENAME embedded.provisionprofile)
 
     # Default sync exclude list
     install(FILES sync-exclude-osx.lst DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Resources/ RENAME sync-exclude.lst)
