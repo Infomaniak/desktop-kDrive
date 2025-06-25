@@ -215,7 +215,7 @@ void TestIntegration::tearDown() {
 }
 
 void TestIntegration::testAll() {
-    if (!testhelpers::isExtendedTest()) return;
+    //if (!testhelpers::isExtendedTest()) return;
 
     // Start sync
     _syncPal->start();
@@ -224,15 +224,15 @@ void TestIntegration::testAll() {
     logStep("initialization");
 
     // Run test cases
-    // basicTests();
+    basicTests();
     inconsistencyTests();
-    // conflictTests();
-    // testBreakCycle();
-    // testBlacklist();
-    // testExclusionTemplates();
-    // testEncoding();
-    // testParentRename();
-    // testNegativeModificationTime();
+    conflictTests();
+    testBreakCycle();
+    testBlacklist();
+    testExclusionTemplates();
+    testEncoding();
+    testParentRename();
+    testNegativeModificationTime();
 }
 
 void TestIntegration::basicTests() {
