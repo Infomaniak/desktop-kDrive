@@ -132,7 +132,7 @@ if [ -n "$sign_files" ]; then
 	rm -rf "$install_dir/notorization" "$install_dir/notarization/"
 	mkdir -p "$install_dir/notarization"
 
-	for file in sign_files[@]; do
+	for file in "${sign_files[@]}"; do
 		cp -a "$file" "$install_dir/notarization"
 	done
 
