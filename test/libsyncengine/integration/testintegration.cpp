@@ -215,7 +215,7 @@ void TestIntegration::tearDown() {
 }
 
 void TestIntegration::testAll() {
-    //if (!testhelpers::isExtendedTest()) return;
+    // if (!testhelpers::isExtendedTest()) return;
 
     // Start sync
     _syncPal->start();
@@ -1413,7 +1413,7 @@ void TestIntegration::testNegativeModificationTime() {
         (void) fileInfoJob.runSynchronously();
         CPPUNIT_ASSERT_EQUAL(timeInput, fileInfoJob.modificationTime());
     }
-    waitForCurrentSyncToFinish();
+    waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
     {
         // Test with only negative creation time.
         const LocalTemporaryDirectory localTmpDir(SyncName2Str(filename), _syncPal->localPath());
@@ -1439,7 +1439,7 @@ void TestIntegration::testNegativeModificationTime() {
         CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, fileInfoJob.creationTime());
 #endif
     }
-    waitForCurrentSyncToFinish();
+    waitForSyncToBeIdle(SourceLocation::currentLoc(), milliseconds(500));
     {
         // Test with both negative creation and modification time.
         const LocalTemporaryDirectory localTmpDir(SyncName2Str(filename), _syncPal->localPath());
@@ -1663,6 +1663,10 @@ void TestIntegration::waitForCurrentSyncToFinish() const {
         }
         Utility::msleep(10);
     }
+
+    // If sync is restarted immediately, it stays in Idle state for ~100ms. Therefore, we wait 200ms to make sure that this
+    // "unnecessary" sync is finished.
+    Utility::msleep(200);
 
     std::stringstream ss;
 #if defined(__APPLE__) || defined(WIN32)
