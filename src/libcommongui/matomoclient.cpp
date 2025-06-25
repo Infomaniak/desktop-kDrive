@@ -102,9 +102,6 @@ void MatomoClient::sendEvent(const QString &category, const MatomoEventAction ac
  */
 void MatomoClient::initNameFieldMap() {
     _nameFieldMap = {
-#ifdef Q_OS_WIN
-            {MatomoNameField::WV_ReleaseNotes, {"webview", "release-notes"}},
-#endif
 #ifdef Q_OS_MAC
             {MatomoNameField::PG_Preferences_LiteSync, {"preferences/litesync", "litesync"}},
 #endif
@@ -117,6 +114,9 @@ void MatomoClient::initNameFieldMap() {
             {MatomoNameField::PG_Preferences_Proxy, {"preferences/proxy", "proxy"}},
             {MatomoNameField::PG_Preferences_About, {"preferences/about", "about"}},
             {MatomoNameField::PG_Preferences_Beta, {"preferences/beta", "beta"}},
+#ifdef Q_OS_WIN
+            {MatomoNameField::PG_Preferences_UpdateDialog, {"preferences/update_dialog", "update_dialog"}},
+#endif
             {MatomoNameField::PG_Parameters, {"parameters", "parameters"}},
             {MatomoNameField::PG_Parameters_NewSync_LocalFolder, {"parameters/newsync", "local_folder"}},
             {MatomoNameField::PG_Parameters_NewSync_RemoteFolder, {"parameters/newsync", "remote_folder"}},

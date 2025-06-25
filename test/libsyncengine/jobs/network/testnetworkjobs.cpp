@@ -284,12 +284,13 @@ void TestNetworkJobs::testDownload() {
         const auto epochNow = std::chrono::system_clock::now().time_since_epoch();
         auto creationTimeIn = std::chrono::duration_cast<std::chrono::seconds>(epochNow);
         auto modificationTimeIn = creationTimeIn + std::chrono::minutes(1);
-
+        int64_t sizeOut = 0;
         // Download (CREATE propagation)
         {
             DownloadJob job(nullptr, _driveDbId, testFileRemoteId, localDestFilePath, 0, creationTimeIn.count(),
                             modificationTimeIn.count(), false);
             const ExitCode exitCode = job.runSynchronously();
+            sizeOut = job.size();
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
         }
 
@@ -306,7 +307,7 @@ void TestNetworkJobs::testDownload() {
             CPPUNIT_ASSERT(content == "test");
         }
 
-        // Check file dates
+        // Check file dates and size
         {
             FileStat fileStat;
             IoError ioError = IoError::Success;
@@ -316,6 +317,8 @@ void TestNetworkJobs::testDownload() {
             CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, creationTimeIn.count());
 #endif
             CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, modificationTimeIn.count());
+            CPPUNIT_ASSERT_EQUAL(fileStat.size, sizeOut);
+
         }
 
         // Get nodeid
@@ -328,6 +331,7 @@ void TestNetworkJobs::testDownload() {
             DownloadJob job(nullptr, _driveDbId, testFileRemoteId, localDestFilePath, 0, creationTimeIn.count(),
                             modificationTimeIn.count(), false);
             const ExitCode exitCode = job.runSynchronously();
+            sizeOut = job.size();
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
         }
 
@@ -338,7 +342,7 @@ void TestNetworkJobs::testDownload() {
             CPPUNIT_ASSERT(content == "test");
         }
 
-        // Check file dates
+        // Check file dates and size
         {
             FileStat fileStat;
             IoError ioError = IoError::Success;
@@ -348,6 +352,7 @@ void TestNetworkJobs::testDownload() {
             CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, creationTimeIn.count());
 #endif
             CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, modificationTimeIn.count());
+            CPPUNIT_ASSERT_EQUAL(fileStat.size, sizeOut);
         }
 
         // Check that the node id has not changed
@@ -356,6 +361,16 @@ void TestNetworkJobs::testDownload() {
         CPPUNIT_ASSERT(nodeId == nodeId2);
 
         // Download again but as an EDIT to be propagated on a hydrated placeholder
+#ifdef __APPLE__
+        {
+            // Set file status
+            IoError ioError = IoError::Success;
+            CPPUNIT_ASSERT(
+                    IoHelper::setXAttrValue(localDestFilePath, litesync_attrs::status, litesync_attrs::statusOffline, ioError));
+            CPPUNIT_ASSERT(ioError == IoError::Success);
+        }
+#endif
+
         {
             auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
             vfs->setMockForceStatus([]([[maybe_unused]] const SyncPath & /*path*/,
@@ -366,6 +381,7 @@ void TestNetworkJobs::testDownload() {
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
             CPPUNIT_ASSERT_EQUAL(true, job._isHydrated);
+            sizeOut = job.size();
         }
 
         // Check file content
@@ -385,11 +401,23 @@ void TestNetworkJobs::testDownload() {
             CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, creationTimeIn.count());
 #endif
             CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, modificationTimeIn.count());
+            CPPUNIT_ASSERT_EQUAL(fileStat.size, sizeOut);
         }
 
         // Check that the node id has not changed
         CPPUNIT_ASSERT(IoHelper::getNodeId(localDestFilePath, nodeId2));
         CPPUNIT_ASSERT(nodeId == nodeId2);
+
+#ifdef __APPLE__
+        {
+            // Check that the file is still hydrated
+            IoError ioError = IoError::Success;
+            std::string value;
+            CPPUNIT_ASSERT(IoHelper::getXAttrValue(localDestFilePath, litesync_attrs::status, value, ioError));
+            CPPUNIT_ASSERT(ioError == IoError::Success);
+            CPPUNIT_ASSERT(value == litesync_attrs::statusOffline);
+        }
+#endif
     }
 
     // Cross Device Link
@@ -412,11 +440,12 @@ void TestNetworkJobs::testDownload() {
                 };
         IoHelperTestUtilities::setRename(MockRename);
         IoHelperTestUtilities::setTempDirectoryPathFunction(MockTempDirectoryPath);
-
+        int64_t sizeOut = 0;
         // CREATE
         {
             DownloadJob job(nullptr, _driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, true);
             const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT_GREATER(int64_t{-1}, job.size());
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
         }
 
@@ -437,6 +466,7 @@ void TestNetworkJobs::testDownload() {
         {
             DownloadJob job(nullptr, _driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
             const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT_GREATER(int64_t{-1}, job.size());
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
         }
 
@@ -489,6 +519,7 @@ void TestNetworkJobs::testDownload() {
             IoHelperTestUtilities::setCacheDirectoryPath(smallPartitionPath);
 
             downloadJob.runSynchronously();
+            CPPUNIT_ASSERT_EQUAL(int64_t{-1}, downloadJob.size());
             IoHelperTestUtilities::resetFunctions();
             CPPUNIT_ASSERT_EQUAL_MESSAGE(std::string("Space available at " + smallPartitionPath.string() + " -> " +
                                                      std::to_string(Utility::getFreeDiskSpace(smallPartitionPath))),
@@ -503,6 +534,7 @@ void TestNetworkJobs::testDownload() {
             DownloadJob downloadJob(nullptr, _driveDbId, remoteTmpDir.id(), localDestFilePath, 0, 0, 0, false);
 
             downloadJob.runSynchronously();
+            CPPUNIT_ASSERT_EQUAL(int64_t{-1}, downloadJob.size());
             CPPUNIT_ASSERT_EQUAL_MESSAGE(std::string("Space available at " + smallPartitionPath.string() + " -> " +
                                                      std::to_string(Utility::getFreeDiskSpace(smallPartitionPath))),
                                          ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace), downloadJob.exitInfo());
@@ -527,6 +559,7 @@ void TestNetworkJobs::testDownload() {
         {
             DownloadJob job(nullptr, _driveDbId, remote0bytesFileId, localDestFilePath, 0, 0, 0, false);
             (void) job.runSynchronously();
+            CPPUNIT_ASSERT_EQUAL(int64_t{0}, job.size());
             CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.exitInfo().code());
         }
         // Check that the file has been copied
@@ -548,6 +581,7 @@ void TestNetworkJobs::testDownload() {
             DownloadJob job(nullptr, _driveDbId, testFileSymlinkRemoteId, localDestFilePath, 0, creationTimeIn.count(),
                             modificationTimeIn.count(), false);
             const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT_GREATER(int64_t{-1}, job.size());
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
         }
 
@@ -587,6 +621,7 @@ void TestNetworkJobs::testDownload() {
             DownloadJob job(nullptr, _driveDbId, testFolderSymlinkRemoteId, localDestFilePath, 0, creationTimeIn.count(),
                             modificationTimeIn.count(), false);
             const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT_GREATER(int64_t{-1}, job.size());
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
         }
 
@@ -626,6 +661,7 @@ void TestNetworkJobs::testDownload() {
             DownloadJob job(nullptr, _driveDbId, testAliasGoodRemoteId, localDestFilePath, 0, creationTimeIn.count(),
                             modificationTimeIn.count(), false);
             const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT_GREATER(int64_t{-1}, job.size());
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
         }
 
@@ -1016,7 +1052,7 @@ void TestNetworkJobs::testUpload(const SyncTime creationTimeIn, const SyncTime m
     UploadJob job(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), creationTimeIn,
                   modificationTimeIn);
     ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ExitInfo(exitCode));
     CPPUNIT_ASSERT_EQUAL(fileStat.size, job.size());
 
     GetFileInfoJob fileInfoJob(_driveDbId, job.nodeId());

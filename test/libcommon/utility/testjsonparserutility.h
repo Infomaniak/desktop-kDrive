@@ -16,33 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testincludes.h"
+#pragma once
 
-#include "libsyncengine/requests/exclusiontemplatecache.h"
-
-using namespace CppUnit;
+#include "test_utility/testbase.h"
 
 namespace KDC {
 
-class TestExclusionTemplateCache : public CppUnit::TestFixture, public TestBase {
-        CPPUNIT_TEST_SUITE(TestExclusionTemplateCache);
-        CPPUNIT_TEST(testIsExcluded);
-        CPPUNIT_TEST(testCacheFolderIsExcluded);
-        CPPUNIT_TEST(testRescueFolderIsExcluded);
-        CPPUNIT_TEST(testNFCNFDExclusion);
-        CPPUNIT_TEST(testaddRegexForAllNormalizationForms);
+class TestJsonParserUtility final : public CppUnit::TestFixture, public TestBase {
+        CPPUNIT_TEST_SUITE(TestJsonParserUtility);
+        CPPUNIT_TEST(testExtractValue);
         CPPUNIT_TEST_SUITE_END();
 
     public:
-        void setUp() override;
-        void tearDown() override;
+        void setUp() override { TestBase::start(); }
+        void tearDown() override { TestBase::stop(); }
 
     protected:
-        void testIsExcluded();
-        void testCacheFolderIsExcluded();
-        void testRescueFolderIsExcluded();
-        void testNFCNFDExclusion();
-        void testaddRegexForAllNormalizationForms();
+        void testExtractValue();
 };
 
 } // namespace KDC

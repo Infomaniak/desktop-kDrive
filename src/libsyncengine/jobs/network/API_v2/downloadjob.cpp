@@ -142,6 +142,11 @@ bool DownloadJob::canRun() {
 
 void DownloadJob::runJob() noexcept {
     if (!_isCreate && _vfs) {
+        // Get hydration status
+        VfsStatus vfsStatus;
+        _vfs->status(_localpath, vfsStatus);
+        _isHydrated = vfsStatus.isHydrated;
+
         // Update size on file system
         FileStat filestat;
         IoError ioError = IoError::Success;
@@ -196,14 +201,6 @@ bool DownloadJob::handleResponse(std::istream &is) {
         // Read link data
         getStringFromStream(is, linkData);
         isLink = true;
-    }
-
-    if (_vfs) {
-        VfsStatus vfsStatus;
-        _vfs->status(_localpath, vfsStatus);
-        _isHydrated = vfsStatus.isHydrated;
-    } else {
-        _isHydrated = true;
     }
 
     // Process download
@@ -318,7 +315,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
     _localNodeId = std::to_string(filestat.inode);
     _creationTimeOut = filestat.creationTime;
     _modificationTimeOut = filestat.modificationTime;
-
+    _sizeOut = filestat.size;
 #if defined(__APPLE__) || defined(_WIN32)
     if (_creationTimeIn != _creationTimeOut || _modificationTimeIn != _modificationTimeOut) {
         // In the following cases, it is not an issue:

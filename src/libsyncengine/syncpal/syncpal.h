@@ -251,7 +251,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
         void freeSnapshotsCopies();
-        void invalideSnapshots();
+        void tryToInvalidateSnapshots();
+        void forceInvalidateSnapshots();
 
         // Workers
         std::shared_ptr<ComputeFSOperationWorker> computeFSOperationsWorker() const { return _computeFSOperationsWorker; }
@@ -278,7 +279,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
          * as the underlying data may not be initialized or may have already been released.
          *
          * The live snapshot is intended to be modified only by the FSO workers.
-         * Workers should always retreive information from a ConstSnapshot (see SyncPal::snapshot(ReplicaSide side))
+         * Workers should always retrieve information from a ConstSnapshot (see SyncPal::snapshot(ReplicaSide side))
          * There are a few exceptions where reading directly from the liveSnapshot is necessary:
          * - To check if the filesystem has changed (liveSnapshot().updated()).
          * - To create a ConstSnapshot (ConstSnapshot(liveSnapshot())).
@@ -288,6 +289,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
          *      behind the actual state of the filesystem.
          */
         const LiveSnapshot &liveSnapshot(ReplicaSide side) const;
+
+        uint64_t syncCount() const;
 
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));

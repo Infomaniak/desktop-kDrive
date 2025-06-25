@@ -83,6 +83,38 @@ void TestUpdateTree::testInsertionOfFileNamesWithDifferentEncodings() {
     CPPUNIT_ASSERT_EQUAL(SyncPath("Dir 1") / testhelpers::makeNfdSyncName(), node3->getPath());
 }
 
+void TestUpdateTree::testClear() {
+    CPPUNIT_ASSERT(_myTree->_nodes.empty());
+
+    _myTree->init();
+    auto node1 = std::make_shared<Node>(_myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None, "l1", 0, 0,
+                                        12345, _myTree->rootNode());
+    CPPUNIT_ASSERT(_myTree->rootNode()->insertChildren(node1));
+    _myTree->insertNode(node1);
+
+    auto node11 = std::make_shared<Node>(_myTree->side(), Str("Dir 1.1"), NodeType::Directory, OperationType::None, "l11", 0, 0,
+                                         12345, node1);
+    CPPUNIT_ASSERT(node1->insertChildren(node11));
+    _myTree->insertNode(node11);
+
+    auto node111 = std::make_shared<Node>(_myTree->side(), Str("File 1.1.1"), NodeType::File, OperationType::None, "l111", 0, 0,
+                                          12345, node11);
+    CPPUNIT_ASSERT(node11->insertChildren(node111));
+    _myTree->insertNode(node111);
+
+    CPPUNIT_ASSERT(node1.use_count() == 4); // Referenced by node1, root, node11, _myTree->_nodes
+    CPPUNIT_ASSERT(node11.use_count() == 4); // Referenced by node11, node1, node111, _myTree->_nodes
+    CPPUNIT_ASSERT(node111.use_count() == 3); // Referenced by node111, node11, _myTree->_nodes
+
+    CPPUNIT_ASSERT(_myTree->_nodes.size() == 4); // root, node1, node11, node111
+    _myTree->clear();
+    CPPUNIT_ASSERT(_myTree->_nodes.size() == 1); // root
+
+    CPPUNIT_ASSERT(node1.use_count() == 1); // Referenced by node1
+    CPPUNIT_ASSERT(node11.use_count() == 1); // Referenced by node11
+    CPPUNIT_ASSERT(node111.use_count() == 1); // Referenced by node111
+}
+
 void TestUpdateTree::testAll() {
     CPPUNIT_ASSERT(_myTree->_nodes.empty());
     auto node1 = std::make_shared<Node>(_myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None, "l1", 0, 0,
