@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 #
 # Infomaniak kDrive - Desktop
 # Copyright (C) 2023-2025 Infomaniak Network SA
@@ -21,27 +21,51 @@
 # It will use conan to install the dependencies.
 
 
-if [[ "${1:-}" =~ ^-h|--help$ ]]; then
-    cat << EOF >&2
-Usage: $0 [Debug|Release] [--output-dir=<output_dir>]
-  There are three ways to set the output directory (in descending order of priority):
-    1. --output-dir=<output_dir> argument
-    2. KDRIVE_OUTPUT_DIR environment variable
-    3. Default directory based on the system (macOS: build-macos/client, Linux: build-linux/build)
+
+# Default values
+build_type="Debug"
+output_dir=""
+use_release_profile=false
+# Preserve original arguments for output_dir resolution
+all_args=("$@")
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    Debug|Release|RelWithDebInfo)
+      build_type="$1"
+      shift
+      ;;
+    --make-release)
+      use_release_profile=true
+      shift
+      ;;
+    -h|--help)
+      cat << EOF >&2
+Usage: $0 [Debug|Release] [--output-dir=<output_dir>] [--make-release] [--help]
+  --help               Display this help message.
+  --output-dir=<dir>   Set the output directory for the Conan packages.
+  --make-release       Use the 'infomaniak_release' Conan profile.
+
+There are three ways to set the output directory (in descending order of priority):
+    1. By passing the --output-dir=<dir> parameter.
+    2. By setting the KDRIVE_OUTPUT_DIR environment variable.
+    3. By default, the output directory is set to:
+       - ./build-macos/client for macOS
+       - ./build-linux/build for Linux
 EOF
-    exit 0
-fi
-
-
-
-set -euox pipefail
-
-log(){ echo "[INFO] $*"; }
-error(){ echo "[ERROR] $*" >&2; exit 1; }
+      exit 0
+      ;;
+    --output-dir=*)
+      shift
+      ;;
+    *)
+      error "Unknown option: $1"
+      ;;
+  esac
+done
 
 function get_platform {
     platform="$(uname | tr '[:upper:]' '[:lower:]')"
-    
     echo "$platform"
 }
 
@@ -57,31 +81,37 @@ function get_architecture {
 }
 
 function get_output_dir {
-    args=$1
+  # 1. Parameter override
+  for arg in "$@"; do
+    case "$arg" in
+      --output-dir=*)
+        echo "${arg#--output-dir=}"
+        return
+        ;;
+    esac
+  done
 
-    output_dir="${KDRIVE_OUTPUT_DIR:-}"
-    for arg in $args; do
-        if [[ "$arg" =~ ^--output-dir= ]]; then
-            output_dir="${arg#--output-dir=}"
-            break
-        fi
-    done
+  # 2. Environment variable
+  if [[ -n "${KDRIVE_OUTPUT_DIR:-}" ]]; then
+    echo "${KDRIVE_OUTPUT_DIR}"
+    return
+  fi
 
-    if [ -z "$output_dir" ]; then
-        platform=$(get_platform)
-        if [ "$platform" = "darwin" ]; then
-            output_dir="./build-macos/client"
-        else
-            output_dir="./build-linux/build"
-        fi
-    fi
-
-    echo $output_dir
+  # 3. Default based on OS
+  platform=$(get_platform)
+  if [[ "$platform" = "darwin" ]]; then
+    echo "./build-macos/client"
+  else
+    echo "./build-linux/build"
+  fi
 }
 
-args="$@"
-build_type="${1:-Debug}"
-output_dir=$(get_output_dir "$args")
+
+# Determine output directory based on parameter, environment variable, or default
+output_dir=$(get_output_dir "${all_args[@]}")
+
+log(){ echo "[INFO] $*"; }
+error(){ echo "[ERROR] $*" >&2; exit 1; }
 
 if [[ -n "${KDRIVE_OUTPUT_DIR:-}" && "$output_dir" == "$KDRIVE_OUTPUT_DIR" ]]; then
     log "Using environment variable 'KDRIVE_OUTPUT_DIR' as conan output_dir : '$KDRIVE_OUTPUT_DIR'"
@@ -96,6 +126,36 @@ if ! command -v conan >/dev/null 2>&1; then
     error "Conan is not installed. Please install it first."
 fi
 
+# Check if a conan profile exists
+has_profile() {
+  conan profile list 2>/dev/null | grep -v '\.cmake$' | grep -qx "$1"
+}
+
+if [[ $use_release_profile == true ]]; then
+  release_profile="infomaniak_release"
+  if has_profile "$release_profile"; then
+    profile_path=$(conan profile path "$release_profile")
+    if ! grep -qE 'build_type=(Release|RelWithDebInfo)' "$profile_path"; then
+      error "Profile '$release_profile' must set build_type to Release or RelWithDebInfo"
+    fi
+    if grep -q 'tools.cmake.cmaketoolchain:user_toolchain' "$profile_path"; then
+      error "Profile '$release_profile' must not set tools.cmake.cmaketoolchain:user_toolchain"
+    fi
+    if grep -q 'os=Macos' "$profile_path" && ! grep -q 'arch=armv8|x86_64' "$profile_path"; then
+      error "Profile '$release_profile' must set arch=armv8|x86_64 for MacOS"
+    fi
+
+    log "Using '$release_profile' profile for Conan."
+    conan_profile="$release_profile"
+  else
+    error "Profile '$release_profile' does not exist. Please create it."
+  fi
+else
+  log "Using default 'default' profile for Conan."
+  conan_profile="default"
+fi
+
+set -euox pipefail
 conan_remote_base_folder="$PWD/infomaniak-build-tools/conan"
 local_recipe_remote_name="localrecipes"
 if ! conan remote list | grep -qE "^$local_recipe_remote_name.*\[.*Enabled: True.*\]"; then
@@ -120,7 +180,7 @@ architecture=$(get_architecture $platform)
 
 mkdir -p "$output_dir"
 
-echo 
+echo
 log "Configuration:"
 log "--------------"
 log "- Platform: '$platform'"
@@ -132,16 +192,16 @@ echo
 # Create the conan package for xxHash.
 conan_recipes_folder="$conan_remote_base_folder/recipes"
 log "Creating package xxHash..."
-conan create "$conan_recipes_folder/xxhash/all/" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name
+conan create "$conan_recipes_folder/xxhash/all/" --build=missing $architecture -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=$local_recipe_remote_name
 
 if [ "$platform" = "darwin" ]; then
   log "Creating openssl package..."
-  conan create "$conan_recipes_folder/openssl-universal/3.2.4/" --build=missing -s:a=build_type="$build_type" -r="$local_recipe_remote_name" -r=conancenter
+  conan create "$conan_recipes_folder/openssl-universal/3.2.4/" --build=missing -s:a=build_type="$build_type" --profile:all="$conan_profile" -r="$local_recipe_remote_name" -r=conancenter
 fi
 
 log "Installing dependencies..."
 # Install this packet in the build folder.
-conan install . --output-folder="$output_dir" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter
+conan install . --output-folder="$output_dir" --build=missing $architecture -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter
 
 if [ $? -ne 0 ]; then
   error "Failed to install Conan dependencies."
