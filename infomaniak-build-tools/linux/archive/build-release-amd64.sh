@@ -140,7 +140,7 @@ build_release() {
       -DKDRIVE_THEME_DIR="$src_dir/infomaniak" \
       -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
       -DCONAN_DEP_DIR="$conan_dependencies_folder" \
-      -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
+      -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file"
 
   make -j"$(nproc)"
 
