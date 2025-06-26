@@ -47,7 +47,7 @@ if [ ! -f "$tester" ]; then
 fi
 
 chmod +x "$tester"
-export DYLD_LIBRARY_PATH="/usr/local/lib:/usr/lib:$PWD:$DYLD_LIBRARY_PATH"
+export DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH/usr/local/lib:/usr/lib:$PWD:"
 export DYLD_PRINT_LIBRARIES=1
 export DYLD_PRINT_APIS=1
 export DYLD_PRINT_BINDINGS=1
