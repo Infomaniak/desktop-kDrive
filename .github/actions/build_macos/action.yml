@@ -57,6 +57,7 @@ runs:
           cp /usr/local/lib/libcppunit-1.15.2.dylib ./dependencies/
           cp /usr/local/lib/libsentry.dylib ./dependencies/
           cp /usr/local/lib/libzstd.1.dylib ./dependencies/
+          cp /usr/local/lib/libzip.5.dylib ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/crashpad_handler ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/*.lst ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/*.dylib ./dependencies/
@@ -66,7 +67,7 @@ runs:
       - name: Fetch Conan dependencies
         run: |
           echo "Fetching Conan dependencies in $HOME/.conan2/p/"
-          find "$HOME/.conan2/p/" '(' -iname 'libxxhash.0.dylib' -o -iname 'liblog4cplus*.dylib'  -o -iname 'libzip*.dylib' -o -iname 'libssl*.dylib'  -o -iname 'libcrypto*.dylib' ')' \
+          find "$HOME/.conan2/p/" '(' -iname 'libxxhash.0.dylib' -o -iname 'liblog4cplus*.dylib'  -o -iname 'libssl*.dylib'  -o -iname 'libcrypto*.dylib' ')' \
             -exec cp {} ./dependencies/ \; \
             -exec echo "Conan dependency found -> " {} \; 
         shell: bash

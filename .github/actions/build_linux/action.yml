@@ -54,7 +54,7 @@ runs:
       - name: Fetch Conan dependencies
         run: |
           echo "Fetching Conan dependencies in $HOME/.conan2/p/"
-          find "$HOME/.conan2/p/" '(' -iname 'libxxhash*.so*' -o -iname 'liblog4cplus*.so.*' -o -iname 'libzip*.so*' -o -iname 'libssl*.so*'  -o -iname 'libcrypto*.so*'')' \
+          find "$HOME/.conan2/p/" '(' -iname 'libxxhash*.so*' -o -iname 'liblog4cplus*.so.*' -o -iname 'libssl*.so*'  -o -iname 'libcrypto*.so*'')' \
             -exec cp {} ./dependencies/ \; \
             -exec echo "Conan dependency found -> " {} \; 
         shell: bash
