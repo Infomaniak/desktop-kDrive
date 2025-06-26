@@ -147,7 +147,7 @@ if(UNIX)
         # Copy .so files to the conan dependency directory
         include(ConanGetLibDirs)
         get_library_dirs("log4cplus" "log4cplus")
-        file(COPY
+        file(INSTALL
                 "${_log4cplus_LIB_DIRS}/liblog4cplus.so"
                 "${_log4cplus_LIB_DIRS}/liblog4cplus.so.9"
                 DESTINATION "${CONAN_DEP_DIR}"
