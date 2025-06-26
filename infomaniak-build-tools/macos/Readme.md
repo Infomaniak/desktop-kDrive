@@ -229,13 +229,13 @@ Conan version 2.x.x
 2. Open `~/.conan2/profiles/default` and customize the settings under the `[settings]` section. For example, to target macOS with C++20:
    ```ini
    [settings]
-   os = Macos
-   arch = armv8
-   compiler = apple-clang
-   compiler.version = 16
-   compiler.cppstd = 20
-   compiler.libcxx = libc++
-   build_type = Debug
+   os=Macos
+   arch=armv8
+   compiler=apple-clang
+   compiler.version=16
+   compiler.cppstd=20
+   compiler.libcxx=libc++
+   build_type=Debug
    ```
 
 ---
@@ -259,13 +259,33 @@ The project requires additional CMake variables for a correct build. To inject t
    tools.cmake.cmaketoolchain:user_toolchain+={{profile_dir}}/debug_vars.cmake
    ```
 
+
+### 5. Configure the Release Profile (Optional)
+
+1. To build a release version using the script `./infomaniak-build-tools/macos/build-release.sh`, you must create a profile named `infomaniak_release`.
+   This profile must not contain a `tools.cmake.cmaketoolchain:user_toolchain` section, must use `armv8|x86_64` as `arch`, and set `build_type` to `Release`.
+2. Create the profile by running:
+    ```bash
+    cat << EOF > ~/.conan2/profiles/infomaniak_release
+    [settings]
+    os=Macos
+    arch=armv8|x86_64
+    compiler=apple-clang
+    compiler.cppstd=gnu20
+    compiler.libcxx=libc++
+    compiler.version=16
+    build_type=Release
+   EOF
+    ```
+   You can adjust the `compiler` settings if needed.
+
 ---
 
 ### 5. Install Project Dependencies
 
 **From the repository root**, run the provided build script, specifying the desired configuration (`Debug` or `Release`) and the folder where the app will be builded.
 ```bash
-./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release] [--output-dir=<output_dir>]
+./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release] [--output-dir=<output_dir>] [--make-release] [--help] 
 ```
 
 > **Note:** Currently only **xxHash**, **log4cplus**, **OpenSSL** and **libzip** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
