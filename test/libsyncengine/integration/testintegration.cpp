@@ -323,6 +323,7 @@ void TestIntegration::testRemoteChanges() {
     }
     GetFileInfoJob fileInfoJob(_driveDbId, fileId);
     (void) fileInfoJob.runSynchronously();
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(std::filesystem::exists(subDirPath));
@@ -340,6 +341,7 @@ void TestIntegration::testRemoteChanges() {
     SyncTime modificationTime = 0;
     int64_t size = 0;
     editRemoteFile(_driveDbId, fileId, nullptr, &modificationTime, &size);
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     FileStat filestat;
@@ -352,6 +354,7 @@ void TestIntegration::testRemoteChanges() {
     // Generate a move operation.
     filePath = subDirPath / "testFileRemote_renamed";
     moveRemoteFile(_driveDbId, fileId, subDirId, filePath.filename());
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(std::filesystem::exists(filePath));
@@ -363,6 +366,7 @@ void TestIntegration::testRemoteChanges() {
         job.setBypassCheck(true);
         (void) job.runSynchronously();
     }
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(!std::filesystem::exists(subDirPath));
