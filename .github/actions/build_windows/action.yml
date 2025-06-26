@@ -65,7 +65,7 @@ runs:
         run: |
             $conanPath = "$env:USERPROFILE\.conan2\p"
             Write-Host "Fetching Conan dependencies in $conanPath"
-            $patterns = @("libxxhash*.dll", "liblog4cplus*.dll")
+            $patterns = @("libxxhash*.dll", "liblog4cplus*.dll","libzip*.dll" , "libssl*.dll", "libcrypto*.dll")
             foreach ($pattern in $patterns) {
             Get-ChildItem -Path $conanPath -Recurse -Filter $pattern | ForEach-Object {
                 Copy-Item -Path $_.FullName -Destination ./dependencies/ -Force
