@@ -25,15 +25,14 @@
 
 using namespace std;
 
-HRESULT KDOverlayRegistrationHandler::GetRegistryEntriesPrefix(PWSTR suffix, PDWORD size) {
-    if (suffix == nullptr || size == nullptr) {
+HRESULT KDOverlayRegistrationHandler::GetRegistryEntriesPrefix(PWSTR prefix) {
+    if (prefix == nullptr) {
         return E_INVALIDARG;
     }
     // Reset the prefix to an empty string
-    if (wcsncpy_s(suffix, MAX_PATH, L"", 0) != 0) {
+    if (wcsncpy_s(prefix, MAX_PATH, L"", 0) != 0) {
         return E_FAIL;
     }
-    *size = 0;
     HRESULT hResult = S_OK;
     HKEY shellOverlayKey = nullptr;
     // the key may not exist yet
@@ -75,11 +74,10 @@ HRESULT KDOverlayRegistrationHandler::GetRegistryEntriesPrefix(PWSTR suffix, PDW
         ++pos;
     }
 
-    if (wcsncpy_s(suffix, MAX_PATH, spaces.c_str(), pos) != 0) {
+    if (wcsncpy_s(prefix, MAX_PATH, spaces.c_str(), pos) != 0) {
         return E_FAIL;
     }
 
-    *size = static_cast<DWORD>(pos);
     return hResult;
 }
 
@@ -99,8 +97,7 @@ HRESULT KDOverlayRegistrationHandler::MakeRegistryEntries(const CLSID &clsid, PC
     HKEY syncExOverlayKey = nullptr;
 
     wchar_t prefix[MAX_PATH];
-    DWORD pefixSize = 0;
-    hResult = GetRegistryEntriesPrefix(prefix, &pefixSize);
+    hResult = GetRegistryEntriesPrefix(prefix);
     if (!SUCCEEDED(hResult)) {
         return hResult;
     }

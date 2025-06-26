@@ -26,5 +26,5 @@ class __declspec(dllexport) KDOverlayRegistrationHandler {
         static HRESULT UnregisterCOMObject(const CLSID &clsid);
 
     private:
-        static HRESULT GetRegistryEntriesPrefix(PWSTR fileType, PDWORD size);
+        static HRESULT GetRegistryEntriesPrefix(PWSTR fileType);
 };
