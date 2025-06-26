@@ -80,7 +80,7 @@ build_dir="$src_dir/build-linux-amd64"
 app_dir="$build_dir/install"
 build_type="RelWithDebInfo"
 
-conan_dependencies_folder="$build_dir/conan_dependencies"
+conan_dependencies_folder="$build_dir/conan/dependencies"
 
 echo
 echo "Build type: $build_type"
