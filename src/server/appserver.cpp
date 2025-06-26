@@ -233,6 +233,12 @@ void AppServer::init() {
     // For access to keyring in order to promt authentication popup
     KeyChainManager::instance()->writeDummyTest();
     KeyChainManager::instance()->clearDummyTest();
+
+    // Update the auto startup file
+    Theme *theme = Theme::instance();
+    if (OldUtility::hasLaunchOnStartup(theme->appName(), _logger)) {
+        OldUtility::setLaunchOnStartup(theme->appName(), theme->appNameGUI(), true, _logger);
+    }
 #endif
 
     // Init ParametersCache instance
