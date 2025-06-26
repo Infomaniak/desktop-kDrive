@@ -56,8 +56,8 @@ runs:
           cp /usr/local/lib/libPocoCrypto.103.dylib ./dependencies/
           cp /usr/local/lib/libcppunit-1.15.2.dylib ./dependencies/
           cp /usr/local/lib/libsentry.dylib ./dependencies/
-          cp /usr/local/lib/libzstd.1.dylib ./dependencies/
           cp /usr/local/lib/libzip.5.dylib ./dependencies/
+          cp /usr/local/lib/libzstd.1.dylib ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/crashpad_handler ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/*.lst ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/*.dylib ./dependencies/

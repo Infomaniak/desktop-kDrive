@@ -64,15 +64,6 @@ runs:
         shell: bash
         if: steps.build.outcome == 'success'
 
-      - name: Fetch Conan dependencies
-        run: |
-          echo "Fetching Conan dependencies in $HOME/.conan2/p/"
-          find "$HOME/.conan2/p/" '(' -iname 'libxxhash.so' -o -iname 'liblog4cplus.so.9' ')' \
-            -exec cp {} ./dependencies/ \; \
-            -exec echo "Conan dependency found -> " {} \; 
-        shell: bash
-        if: steps.build.outcome == 'success'
-
       - name: Upload build common files
         uses: actions/upload-artifact@v4
         with:
