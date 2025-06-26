@@ -242,9 +242,9 @@ void TestIntegration::basicTests() {
 }
 
 void TestIntegration::testLocalChanges() {
-    // Generate create operations.
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
+    // Generate create operations.
     const SyncPath subDirPath = _syncPal->localPath() / "testSubDirLocal";
     (void) std::filesystem::create_directories(subDirPath);
 
@@ -254,8 +254,7 @@ void TestIntegration::testLocalChanges() {
     FileStat fileStat;
     bool exists = false;
     IoHelper::getFileStat(filePath, &fileStat, exists);
-    waitForCurrentSyncToFinish();
-    waitForCurrentSyncToFinish(); // ComputeFSOperation is restarted anyway after each successful synchronization.
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     auto remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), filePath.filename());
     CPPUNIT_ASSERT(remoteTestFileInfo.isValid());
@@ -269,8 +268,7 @@ void TestIntegration::testLocalChanges() {
     // Generate an edit operation.
     testhelpers::generateOrEditTestFile(filePath);
     IoHelper::getFileStat(filePath, &fileStat, exists);
-    waitForCurrentSyncToFinish();
-    waitForCurrentSyncToFinish(); // ComputeFSOperation is restarted anyway after each successful synchronization.
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     const auto prevRemoteTestFileInfo = remoteTestFileInfo;
     remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), filePath.filename());
@@ -287,8 +285,7 @@ void TestIntegration::testLocalChanges() {
         LocalMoveJob job(filePath, destinationPath);
         (void) job.runSynchronously();
     }
-    waitForCurrentSyncToFinish();
-    waitForCurrentSyncToFinish(); // ComputeFSOperation is restarted anyway after each successful synchronization.
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, remoteTestDirInfo.id, newName);
     CPPUNIT_ASSERT(remoteTestFileInfo.isValid());
@@ -302,8 +299,7 @@ void TestIntegration::testLocalChanges() {
         LocalDeleteJob deleteJob(subDirPath);
         (void) deleteJob.runSynchronously();
     }
-    waitForCurrentSyncToFinish();
-    waitForCurrentSyncToFinish(); // ComputeFSOperation is restarted anyway after each successful synchronization.
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, remoteTestDirInfo.id, filePath.filename());
     CPPUNIT_ASSERT(!remoteTestFileInfo.isValid());
@@ -311,8 +307,9 @@ void TestIntegration::testLocalChanges() {
 }
 
 void TestIntegration::testRemoteChanges() {
-    // Generate create operations.
     waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    // Generate create operations.
     const SyncPath subDirPath = _syncPal->localPath() / "testSubDirRemote";
     NodeId subDirId;
     SyncPath filePath = _syncPal->localPath() / "testFileRemote";
@@ -326,8 +323,7 @@ void TestIntegration::testRemoteChanges() {
     }
     GetFileInfoJob fileInfoJob(_driveDbId, fileId);
     (void) fileInfoJob.runSynchronously();
-    waitForCurrentSyncToFinish();
-    waitForCurrentSyncToFinish(); // ComputeFSOperation is restarted anyway after each successful synchronization.
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(std::filesystem::exists(subDirPath));
     CPPUNIT_ASSERT(std::filesystem::exists(filePath));
@@ -344,8 +340,7 @@ void TestIntegration::testRemoteChanges() {
     SyncTime modificationTime = 0;
     int64_t size = 0;
     editRemoteFile(_driveDbId, fileId, nullptr, &modificationTime, &size);
-    waitForCurrentSyncToFinish();
-    waitForCurrentSyncToFinish(); // ComputeFSOperation is restarted anyway after each successful synchronization.
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     FileStat filestat;
     IoError ioError = IoError::Unknown;
@@ -357,8 +352,7 @@ void TestIntegration::testRemoteChanges() {
     // Generate a move operation.
     filePath = subDirPath / "testFileRemote_renamed";
     moveRemoteFile(_driveDbId, fileId, subDirId, filePath.filename());
-    waitForCurrentSyncToFinish();
-    waitForCurrentSyncToFinish(); // ComputeFSOperation is restarted anyway after each successful synchronization.
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(std::filesystem::exists(filePath));
     logStep("test move remote file");
@@ -369,8 +363,7 @@ void TestIntegration::testRemoteChanges() {
         job.setBypassCheck(true);
         (void) job.runSynchronously();
     }
-    waitForCurrentSyncToFinish();
-    waitForCurrentSyncToFinish(); // ComputeFSOperation is restarted anyway after each successful synchronization.
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(!std::filesystem::exists(subDirPath));
     CPPUNIT_ASSERT(!std::filesystem::exists(filePath));
@@ -1223,18 +1216,20 @@ void TestIntegration::testBlacklist() {
 
 void TestIntegration::testExclusionTemplates() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
-    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id(), "testExclusionTemplates");
+    const RemoteTemporaryDirectory exclusionTemplatesTestDir(_driveDbId, tmpRemoteDir.id(), "testDir");
     FileStat filestat;
     bool found = false;
-    IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name(), &filestat, found);
+    IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / exclusionTemplatesTestDir.name(), &filestat, found);
     const auto dirLocalId = std::to_string(filestat.inode);
 
     const auto filename = "testExclusionTemplates";
     const SyncPath testName = "to_be_excluded";
     const auto fileRemoteId = duplicateRemoteFile(_driveDbId, _testFileRemoteId, testName);
+    moveRemoteFile(_driveDbId, fileRemoteId, tmpRemoteDir.id());
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
-    const auto excludedFilePath = _syncPal->localPath() / testName;
+    const auto excludedFilePath = _syncPal->localPath() / tmpRemoteDir.name() / testName;
     IoHelper::getFileStat(excludedFilePath, &filestat, found);
     auto fileLocalId = std::to_string(filestat.inode);
     CPPUNIT_ASSERT(std::filesystem::exists(excludedFilePath));
@@ -1246,13 +1241,13 @@ void TestIntegration::testExclusionTemplates() {
     _syncPal->stop();
     (void) ExcludeListPropagator(_syncPal).runSynchronously();
     _syncPal->start();
-    waitForCurrentSyncToFinish();
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(std::filesystem::exists(excludedFilePath)); // We do not remove the local file.
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
 
-    // Rename remote file so the exclusion templates does not apply anymore.
+    // Rename the remote file so the exclusion template does not apply anymore.
     (void) RenameJob(nullptr, _driveDbId, fileRemoteId, filename).runSynchronously();
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForCurrentSyncToFinish();
@@ -1260,53 +1255,54 @@ void TestIntegration::testExclusionTemplates() {
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
     // ... but the local file is still excluded. A new file is therefore downloaded.
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
-    IoHelper::getFileStat(_syncPal->localPath() / filename, &filestat, found);
+    IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / filename, &filestat, found);
     fileLocalId = std::to_string(filestat.inode);
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
 
-    // Rename remote directory so the exclusion templates applies.
-    (void) RenameJob(nullptr, _driveDbId, tmpRemoteDir.id(), testName).runSynchronously();
+    // Rename remote directory so the exclusion template applies.
+    (void) RenameJob(nullptr, _driveDbId, exclusionTemplatesTestDir.id(), testName).runSynchronously();
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
-    waitForCurrentSyncToFinish();
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(dirLocalId));
-    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(tmpRemoteDir.id()));
-    CPPUNIT_ASSERT(
-            !std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name())); // The local directory has been deleted.
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(exclusionTemplatesTestDir.id()));
+    CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() /
+                                            exclusionTemplatesTestDir.name())); // The local directory has been deleted.
 
     // Move a file inside an excluded directory from remote replica.
-    moveRemoteFile(_driveDbId, fileRemoteId, tmpRemoteDir.id());
+    moveRemoteFile(_driveDbId, fileRemoteId, exclusionTemplatesTestDir.id());
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
-    waitForCurrentSyncToFinish();
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
 
     // Move a file away from an excluded directory from remote replica.
-    moveRemoteFile(_driveDbId, fileRemoteId, _remoteSyncDir.id());
+    moveRemoteFile(_driveDbId, fileRemoteId, tmpRemoteDir.id());
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
-    waitForCurrentSyncToFinish();
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
-    CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / filename));
+    CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / filename));
     // Local file ID has changed again.
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
-    IoHelper::getFileStat(_syncPal->localPath() / filename, &filestat, found);
+    IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / filename, &filestat, found);
     fileLocalId = std::to_string(filestat.inode);
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
 
-    // Rename remote directory so the exclusion templates does not apply anymore.
-    (void) RenameJob(nullptr, _driveDbId, tmpRemoteDir.id(), tmpRemoteDir.name()).runSynchronously();
+    // Rename remote directory so the exclusion template does not apply anymore.
+    (void) RenameJob(nullptr, _driveDbId, exclusionTemplatesTestDir.id(), exclusionTemplatesTestDir.name()).runSynchronously();
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
-    waitForCurrentSyncToFinish();
-    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(tmpRemoteDir.id()));
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(exclusionTemplatesTestDir.id()));
     // Local dir ID has changed.
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(dirLocalId));
 
-    // Rename remote file so the exclusion templates applies.
+    // Rename the remote file so the exclusion template applies.
     (void) RenameJob(nullptr, _driveDbId, fileRemoteId, testName).runSynchronously();
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
-    waitForCurrentSyncToFinish();
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
-    CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / filename)); // The local file has been deleted.
+    CPPUNIT_ASSERT(
+            !std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / filename)); // The local file has been deleted.
 
     // Remove the exclusion template.
     (void) templateList.pop_back();
@@ -1314,11 +1310,11 @@ void TestIntegration::testExclusionTemplates() {
     _syncPal->stop();
     (void) ExcludeListPropagator(_syncPal).runSynchronously();
     _syncPal->start();
-    waitForCurrentSyncToFinish();
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
     // Local file ID has changed again.
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
-    IoHelper::getFileStat(_syncPal->localPath() / testName, &filestat, found);
+    IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / testName, &filestat, found);
     fileLocalId = std::to_string(filestat.inode);
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
     logStep("testExclusionTemplates");
@@ -1623,7 +1619,7 @@ void TestIntegration::waitForSyncToBeIdle(
     const auto timeOutDuration = minutes(2);
     const TimerUtility timeoutTimer;
 
-    // Wait for end of sync (A sync is considered ended when it stay in Idle for more than 3s
+    // Wait for end of sync (A sync is considered ended when it stay in Idle for more than 3s)
     bool ended = false;
     while (!ended) {
         CPPUNIT_ASSERT_MESSAGE(srcLoc.toString(), timeoutTimer.elapsed<minutes>() < timeOutDuration);
