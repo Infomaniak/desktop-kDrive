@@ -108,6 +108,7 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
                      const QString &serverFolderNodeId, QSet<QString> blackSet, QSet<QString> whiteSet);
         bool updateSelectiveSyncList(const QHash<int, QHash<const QString, bool>> &mapUndefinedFolders);
         void updateGuardedFoldersBlocs();
+        bool checkBlacklistSize(const size_t blacklistSize);
 
     private slots:
         void onErrorsWidgetClicked();

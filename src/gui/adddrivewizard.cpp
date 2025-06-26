@@ -295,6 +295,13 @@ void AddDriveWizard::onStepTerminated(bool next) {
         if (next) {
             _selectionSize = _addDriveServerFoldersWidget->selectionSize();
             _blackList = _addDriveServerFoldersWidget->createBlackList();
+            if (_blackList.size() > 50) {
+                CustomMessageBox msgBox(QMessageBox::Warning,
+                                        tr("You cannot blacklist more than 50 folders. Please uncheck a higher-level folder."),
+                                        QMessageBox::Ok, this);
+                (void) msgBox.exec();
+                return;
+            }
             _whiteList = _addDriveServerFoldersWidget->createWhiteList();
         }
         startNextStep(!next);

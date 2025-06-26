@@ -592,6 +592,17 @@ void DrivePreferencesWidget::updateGuardedFoldersBlocs() {
     }
 }
 
+bool DrivePreferencesWidget::checkBlacklistSize(const size_t blacklistSize) {
+    if (blacklistSize > 50) {
+        CustomMessageBox msgBox(QMessageBox::Warning,
+                                tr("You cannot blacklist more than 50 folders. Please uncheck higher-level folders."),
+                                QMessageBox::Ok, this);
+        (void) msgBox.exec();
+        return false;
+    }
+    return true;
+}
+
 void DrivePreferencesWidget::updateFoldersBlocs() {
     if (_updatingFoldersBlocs) {
         return;
@@ -901,6 +912,7 @@ void DrivePreferencesWidget::onAddLocalFolder(bool checked) {
 
                     serverFolderSize = serverFoldersDialog.selectionSize();
                     blackList = serverFoldersDialog.createBlackList();
+                    if (!checkBlacklistSize(blackList.size())) continue;
                     whiteList = serverFoldersDialog.createWhiteList();
                     qCDebug(lcDrivePreferencesWidget) << "Server subfolders selected";
                 }
@@ -1214,15 +1226,16 @@ void DrivePreferencesWidget::onValidateUpdate(int syncDbId) {
             return;
         }
 
-        // Update the black list
-        QSet<QString> blackSet = treeItemWidget->createBlackSet();
+        // Update the blacklist
+        const QSet<QString> blackSet = treeItemWidget->createBlackSet();
+        if (!checkBlacklistSize(blackSet.size())) return;
         exitCode = GuiRequests::setSyncIdSet(syncDbId, SyncNodeType::BlackList, blackSet);
         if (exitCode != ExitCode::Ok) {
             qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::setSyncIdSet";
             return;
         }
 
-        // Update the white list
+        // Update the whitelist
         QSet<QString> whiteSet = (oldUndecidedSet + oldBlackSet) - blackSet;
         exitCode = GuiRequests::setSyncIdSet(syncDbId, SyncNodeType::WhiteList, whiteSet);
         if (exitCode != ExitCode::Ok) {
