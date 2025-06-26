@@ -1,5 +1,5 @@
-name: Build macOS
-description: 'Build macOS app'
+name: Build Linux
+description: 'Build Linux app'
 
 runs:
     using: "composite"
@@ -58,7 +58,7 @@ runs:
             \( -iname 'libxxhash*.so*' \
             -o -iname 'liblog4cplus*.so.*' \
             -o -iname 'libssl*.so*' \
-            -o -iname 'libcrypto*.so*' \)
+            -o -iname 'libcrypto*.so*' \) \
             -exec cp {} ./dependencies/ \; \
             -exec echo "Conan dependency found -> " {} \; 
         shell: bash
