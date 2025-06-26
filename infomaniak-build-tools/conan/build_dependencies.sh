@@ -55,7 +55,7 @@ There are three ways to set the output directory (in descending order of priorit
 EOF
       exit 0
       ;;
-    --output-dir=*)
+    --output-dir=*) # Managed into get_output_dir function
       shift
       ;;
     *)
@@ -94,6 +94,7 @@ function get_output_dir {
   # 2. Environment variable
   if [[ -n "${KDRIVE_OUTPUT_DIR:-}" ]]; then
     echo "${KDRIVE_OUTPUT_DIR}"
+    log "Using environment variable 'KDRIVE_OUTPUT_DIR' as conan output_dir : '$KDRIVE_OUTPUT_DIR'" >&2
     return
   fi
 
@@ -106,16 +107,11 @@ function get_output_dir {
   fi
 }
 
-
 # Determine output directory based on parameter, environment variable, or default
 output_dir=$(get_output_dir "${all_args[@]}")
 
 log(){ echo "[INFO] $*"; }
 error(){ echo "[ERROR] $*" >&2; exit 1; }
-
-if [[ -n "${KDRIVE_OUTPUT_DIR:-}" && "$output_dir" == "$KDRIVE_OUTPUT_DIR" ]]; then
-    log "Using environment variable 'KDRIVE_OUTPUT_DIR' as conan output_dir : '$KDRIVE_OUTPUT_DIR'"
-fi
 
 # check if we launched this in the right folder.
 if [ ! -d "infomaniak-build-tools/conan" ]; then
