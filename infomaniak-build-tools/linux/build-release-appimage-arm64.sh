@@ -57,7 +57,7 @@ conan_folder=/build/conan
 
 build_type="RelWithDebInfo"
 
-bash /src/infomaniak-build-tools/conan/build_dependencies.sh $build_type --output-dir="$conan_folder"
+bash /src/infomaniak-build-tools/conan/build_dependencies.sh $build_type --output-dir="$conan_folder" --make-release
 
 conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
 
