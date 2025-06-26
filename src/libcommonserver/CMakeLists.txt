@@ -49,12 +49,12 @@ if(APPLE)
     list(APPEND libcommonserver_SRCS io/iohelper_mac.mm io/iohelper_mac.cpp)
     set_property(SOURCE io/iohelper_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
-    list(APPEND libcommonserver_SRCS utility/utility_mac.cpp utility/utility_mac.mm)
+    list(APPEND libcommonserver_SRCS utility/utility_mac.mm)
     set_property(SOURCE utility/utility_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 elseif(WIN32)
-    list(APPEND libcommonserver_SRCS io/iohelper_win.h io/iohelper_win.cpp utility/utility_win.cpp)
+    list(APPEND libcommonserver_SRCS io/iohelper_win.h io/iohelper_win.cpp ../common/utility_win.cpp)
 else()
-    list(APPEND libcommonserver_SRCS io/iohelper_linux.cpp utility/utility_linux.cpp)
+    list(APPEND libcommonserver_SRCS io/iohelper_linux.cpp)
 endif()
 
 if(USE_OUR_OWN_SQLITE3)
@@ -156,4 +156,25 @@ elseif(APPLE)
         ${FOUNDATION_LIBRARY}
         ${CORESERVICES_LIBRARY}
         ${APPKIT_LIBRARY})
+else()
+    target_link_libraries(${libcommonserver_NAME}
+        utf8proc
+    )
+    include(ConanGetLibDirs)
+    get_library_dirs("OpenSSL" "openssl")
+    get_library_dirs("xxHash" "xxhash")
+    file(COPY
+            # xxHash
+            "${_xxHash_LIB_DIRS}/libxxhash.so"
+            "${_xxHash_LIB_DIRS}/libxxhash.so.0"
+            "${_xxHash_LIB_DIRS}/libxxhash.so.0.8.2"
+
+            # OpenSSL
+            "${_OpenSSL_LIB_DIRS}/libcrypto.so"
+            "${_OpenSSL_LIB_DIRS}/libcrypto.so.3"
+            "${_OpenSSL_LIB_DIRS}/libssl.so"
+            "${_OpenSSL_LIB_DIRS}/libssl.so.3"
+            DESTINATION "${CONAN_DEP_DIR}"
+            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+    )
 endif()
