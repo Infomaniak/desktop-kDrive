@@ -215,7 +215,7 @@ void TestIntegration::tearDown() {
 }
 
 void TestIntegration::testAll() {
-    // if (!testhelpers::isExtendedTest()) return;
+    if (!testhelpers::isExtendedTest()) return;
 
     // Start sync
     _syncPal->start();
@@ -1617,35 +1617,6 @@ void TestIntegration::waitForSyncToBeIdle(
         }
         Utility::msleep(100);
     }
-}
-
-void TestIntegration::waitForCurrentSyncToFinish() const {
-    const auto currentSyncCount = _syncPal->syncCount();
-    const TimerUtility timer;
-    LOG_DEBUG(_logger, "Start waiting for sync to finish: " << currentSyncCount);
-
-    static const auto timeOutDuration = seconds(30);
-    const TimerUtility timeoutTimer;
-
-    while (currentSyncCount == _syncPal->syncCount()) {
-        if (timeoutTimer.elapsed<seconds>() > timeOutDuration) {
-            LOG_WARN(_logger, "waitForSyncToFinish timed out");
-            break;
-        }
-        Utility::msleep(10);
-    }
-
-    // If sync is restarted immediately, it stays in Idle state for ~100ms. Therefore, we wait 200ms to make sure that this
-    // "unnecessary" sync is finished.
-    Utility::msleep(200);
-
-    std::stringstream ss;
-#if defined(__APPLE__) || defined(WIN32)
-    ss << "Stop waiting: " << timer.elapsed<std::chrono::milliseconds>();
-#else
-    ss << "Stop waiting: " << timer.elapsed<std::chrono::milliseconds>().count();
-#endif
-    LOG_DEBUG(_logger, ss.str());
 }
 
 void TestIntegration::logStep(const std::string &str) {

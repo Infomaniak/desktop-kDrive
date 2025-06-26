@@ -106,7 +106,6 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
 #endif
         void waitForSyncToBeIdle(const SourceLocation &srcLoc,
                                  std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
-        void waitForCurrentSyncToFinish() const;
         void logStep(const std::string &str);
 
         struct RemoteFileInfo {

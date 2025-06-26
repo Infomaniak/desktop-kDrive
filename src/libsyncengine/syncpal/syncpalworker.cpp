@@ -481,7 +481,6 @@ SyncStep SyncPalWorker::nextStep() const {
         case SyncStep::Propagation2:
             return SyncStep::Done;
         case SyncStep::Done:
-            LOG_SYNCPAL_DEBUG(_logger, "Sync " << _syncCounter++ << " finished")
             return SyncStep::Idle;
         default:
             LOG_SYNCPAL_WARN(_logger, "Invalid status")
