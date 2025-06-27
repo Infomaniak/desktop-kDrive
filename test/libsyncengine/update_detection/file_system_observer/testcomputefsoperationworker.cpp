@@ -232,7 +232,7 @@ void TestComputeFSOperationWorker::testAccessDenied() {
 
 void TestComputeFSOperationWorker::testCreateDuplicateNamesWithDistinctEncodings() {
     // TODO: Use the default tmp directory
-    _syncPal->setLocalPath(testhelpers::localTestDirPath);
+    _syncPal->setLocalPath(testhelpers::localTestDirPath()) ;
 
     _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision =
             _syncPal->_localFSObserverWorker->_liveSnapshot.revision();
@@ -259,7 +259,7 @@ void TestComputeFSOperationWorker::testCreateDuplicateNamesWithDistinctEncodings
 
 void TestComputeFSOperationWorker::testMultipleOps() {
     // TODO: Use the default tmp directory
-    _syncPal->setLocalPath(testhelpers::localTestDirPath);
+    _syncPal->setLocalPath(testhelpers::localTestDirPath()) ;
 
     _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision =
             _syncPal->_localFSObserverWorker->_liveSnapshot.revision();
@@ -314,7 +314,7 @@ void TestComputeFSOperationWorker::testMultipleOps() {
 
 void TestComputeFSOperationWorker::testLnkFileAlreadySynchronized() {
     // TODO: Use the default tmp directory
-    _syncPal->setLocalPath(testhelpers::localTestDirPath);
+    _syncPal->setLocalPath(testhelpers::localTestDirPath()) ;
 
     // Add file in DB
     DbNode nodeTest(0, _syncPal->syncDb()->rootNode().nodeId(), Str("test.lnk"), Str("test.lnk"), "l_test", "r_test",
