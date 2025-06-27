@@ -476,7 +476,8 @@ bool DownloadJob::moveTmpFile() {
 #ifdef _WIN32
         bool sharingViolationError = false;
 #endif
-        if (_isCreate) {
+        static const bool forceCopy = CommonUtility::envVarValue("KDRIVE_PRESERVE_PERMISSIONS_ON_CREATE") == "1";
+        if (_isCreate && !forceCopy) {
             // Move file
             IoError ioError = IoError::Success;
             IoHelper::moveItem(_tmpPath, _localpath, ioError);
@@ -491,7 +492,7 @@ bool DownloadJob::moveTmpFile() {
             }
         }
 
-        if (!_isCreate || crossDeviceLinkError) {
+        if (!_isCreate || crossDeviceLinkError || forceCopy) {
             // Copy file content (i.e. when the target exists, do not change its node id).
             std::error_code ec;
             std::filesystem::copy(_tmpPath, _localpath, std::filesystem::copy_options::overwrite_existing, ec);
