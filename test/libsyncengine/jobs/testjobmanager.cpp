@@ -124,8 +124,8 @@ void TestJobManager::testWithoutCallback() {
     const auto start = std::chrono::steady_clock::now();
     while (!jobIds.empty()) {
         const auto now = std::chrono::steady_clock::now();
-        CPPUNIT_ASSERT_MESSAGE("All uploads have not finished in 30 seconds",
-                               std::chrono::duration_cast<std::chrono::seconds>(now - start).count() < 30);
+        CPPUNIT_ASSERT_MESSAGE("All uploads have not finished in 2 minutes",
+                               std::chrono::duration_cast<std::chrono::minutes>(now - start).count() < 2);
 
         Utility::msleep(100); // Wait 100ms
         while (!jobIds.empty() && JobManager::instance()->isJobFinished(jobIds.front())) {
@@ -165,7 +165,7 @@ void TestJobManager::testWithCallback() {
         (void) _ongoingJobs.try_emplace(job->jobId(), job);
     }
 
-    int waitCountMax = 300; // Wait max 30sec
+    int waitCountMax = 1200; // Wait max 2min (Can happen if one of the upload encounters a timeout error)
     while (ongoingJobsCount() > 0 && waitCountMax > 0 && !_jobErrorSocketsDefuncted && !_jobErrorOther) {
         waitCountMax--;
         Utility::msleep(100); // Wait 100ms
