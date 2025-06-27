@@ -93,11 +93,12 @@
             void initNameFieldMap();
             void getPathAndAction(MatomoNameField name, QString &path, QString &action) const;
 
-            const int _matomoTimeout = 10000; // Timeout for Matomo requests in milliseconds
-            int _matomoTimeoutCounter = 0;   // Counter to avoid sending too many Matomo requests in a short time
-            const int _matomoTimeoutMax = 2; // Maximum number of Matomo requests allowed
             QNetworkAccessManager* _piwikNAM = nullptr;
-            bool _matomoDisabled = false;    // if true, Matomo is disabled and no events / page visit will be sent.
+
+            static constexpr int _matomoTimeout = 10000;  // Timeout for Matomo requests in milliseconds
+            int _matomoTimeoutCounter = 0;              // Counter to avoid sending too many Matomo requests in a short time
+            static constexpr int _matomoTimeoutMax = 2; // Maximum number of Matomo requests allowed
+            bool _matomoDisabled = false;               // if true, Matomo is disabled and no events / page visit will be sent.
     };
 
 } // namespace KDC
