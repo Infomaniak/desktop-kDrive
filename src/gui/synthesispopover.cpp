@@ -1107,7 +1107,9 @@ void SynthesisPopover::onOpenFolderItem(const SynchronizedItem &item) {
 #elif defined(Q_OS_MACX)
     std::vector<std::string> arguments;
     arguments.push_back("-e");
-    arguments.push_back(std::format("tell application \"Finder\" to reveal POSIX file \"{}\"", QStr2Str(fullFilePath)));
+    std::stringstream ss;
+    ss << "tell application \"Finder\" to reveal POSIX file \"" << QStr2Str(fullFilePath) << "\"";
+    arguments.push_back(ss.str());
 
     std::string output;
     if (!CommonUtility::runExe("/usr/bin/osascript", arguments, true, output)) {
@@ -1129,7 +1131,9 @@ void SynthesisPopover::onOpenFolderItem(const SynchronizedItem &item) {
     arguments.push_back("--type=method_call");
     arguments.push_back("/org/freedesktop/FileManager1");
     arguments.push_back("org.freedesktop.FileManager1.ShowItems");
-    arguments.push_back(std::format("array:string:file://{}", QStr2Str(fullFilePath)));
+    std::stringstream ss;
+    ss << "array:string:file://" << QStr2Str(fullFilePath);
+    arguments.push_back(ss.str());
     arguments.push_back("string:");
 
     std::string output;

@@ -950,7 +950,9 @@ std::string CommonUtility::toUnsafeStr(const SyncName &name) {
 bool CommonUtility::isLiteSyncExtEnabled() {
     std::vector<std::string> arguments;
     arguments.push_back("-c");
-    arguments.push_back(std::format("systemextensionsctl list | grep {} | grep enabled | wc -l", liteSyncExtBundleIdStr));
+    std::stringstream ss;
+    ss << "systemextensionsctl list | grep " << liteSyncExtBundleIdStr << " | grep enabled | wc -l";
+    arguments.push_back(ss.str());
 
     std::string output;
     if (!CommonUtility::runExe("bash", arguments, false, output)) {
