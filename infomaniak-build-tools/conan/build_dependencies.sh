@@ -84,14 +84,12 @@ function get_architecture {
 }
 
 function get_arg_value {
-  local arg_name="$1"
+  local prefix="$1="
   for arg in "${all_args[@]}"; do
-    case "$arg" in
-      "$arg_name=*")
-      echo "${arg#$arg_name=}"
-      return
-      ;;
-    esac
+    if [[ $arg == $prefix* ]]; then
+      echo "${arg#"$prefix"}"
+      return 0
+    fi
   done
   echo ""
 }
