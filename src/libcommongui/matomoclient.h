@@ -27,9 +27,7 @@ namespace KDC {
     enum class MatomoNameField : matomo_enum_t {
         /* WebView names*/
         VW_LoginPage, // Login
-#ifdef Q_OS_WIN
-        WV_ReleaseNotes, // Release Notes Webview (only rendered on windows)
-#endif
+
         /* Pages */
         PG_SynthesisPopover,
         PG_SynthesisPopover_KebabMenu,
@@ -43,7 +41,9 @@ namespace KDC {
 #endif
         PG_Preferences_About,
         PG_Preferences_Beta,
-
+#ifdef Q_OS_WIN
+        PG_Preferences_UpdateDialog,
+#endif
         PG_Parameters,
         PG_Parameters_NewSync_LocalFolder,
         PG_Parameters_NewSync_RemoteFolder,
