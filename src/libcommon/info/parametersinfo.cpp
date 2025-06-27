@@ -23,7 +23,8 @@ namespace KDC {
 ParametersInfo::ParametersInfo(Language language, bool monoIcons, bool autoStart, bool moveToTrash,
                                NotificationsDisabled notificationsDisabled, bool useLog, LogLevel logLevel, bool extendedLog,
                                bool purgeOldLogs, bool useBigFolderSizeLimit, qint64 bigFolderSizeLimit, bool darkTheme,
-                               bool showShortcuts, QMap<QString, QByteArray> dialogGeometry, int maxAllowedCpu) :
+                               bool showShortcuts, QMap<QString, QByteArray> dialogGeometry, int maxAllowedCpu,
+                               bool emlIndexation) :
     _language(language),
     _monoIcons(monoIcons),
     _autoStart(autoStart),
@@ -38,7 +39,8 @@ ParametersInfo::ParametersInfo(Language language, bool monoIcons, bool autoStart
     _darkTheme(darkTheme),
     _showShortcuts(showShortcuts),
     _dialogGeometry(dialogGeometry),
-    _maxAllowedCpu(maxAllowedCpu) {}
+    _maxAllowedCpu(maxAllowedCpu),
+    _emlIndexation(emlIndexation) {}
 
 ParametersInfo::ParametersInfo() :
     _language(Language::Default),
@@ -55,7 +57,8 @@ ParametersInfo::ParametersInfo() :
     _darkTheme(false),
     _showShortcuts(true),
     _dialogGeometry(QMap<QString, QByteArray>()),
-    _maxAllowedCpu(50) {}
+    _maxAllowedCpu(50),
+    _emlIndexation(true) {}
 
 QDataStream &operator>>(QDataStream &in, ParametersInfo &parametersInfo) {
     in >> parametersInfo._language >> parametersInfo._monoIcons >> parametersInfo._autoStart >> parametersInfo._moveToTrash >>
@@ -63,7 +66,7 @@ QDataStream &operator>>(QDataStream &in, ParametersInfo &parametersInfo) {
             parametersInfo._extendedLog >> parametersInfo._purgeOldLogs >> parametersInfo._useBigFolderSizeLimit >>
             parametersInfo._bigFolderSizeLimit >> parametersInfo._darkTheme >> parametersInfo._showShortcuts >>
             parametersInfo._dialogGeometry >> parametersInfo._maxAllowedCpu >> parametersInfo._proxyConfigInfo >>
-            parametersInfo._distributionChannel;
+            parametersInfo._distributionChannel >> parametersInfo._emlIndexation;
     return in;
 }
 
@@ -73,7 +76,7 @@ QDataStream &operator<<(QDataStream &out, const ParametersInfo &parametersInfo) 
         << parametersInfo._extendedLog << parametersInfo._purgeOldLogs << parametersInfo._useBigFolderSizeLimit
         << parametersInfo._bigFolderSizeLimit << parametersInfo._darkTheme << parametersInfo._showShortcuts
         << parametersInfo._dialogGeometry << parametersInfo._maxAllowedCpu << parametersInfo._proxyConfigInfo
-        << parametersInfo._distributionChannel;
+        << parametersInfo._distributionChannel << parametersInfo._emlIndexation;
     return out;
 }
 

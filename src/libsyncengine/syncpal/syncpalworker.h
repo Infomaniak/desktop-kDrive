@@ -61,7 +61,7 @@ class SyncPalWorker : public ISyncWorker {
         void stopAndWaitForExitOfWorkers(std::shared_ptr<ISyncWorker> workers[2]);
         void stopAndWaitForExitOfAllWorkers(std::shared_ptr<ISyncWorker> fsoWorkers[2],
                                             std::shared_ptr<ISyncWorker> stepWorkers[2]);
-        bool resetVfsFilesStatus();
+        void resetVfsFilesStatus();
 #ifdef _WIN32
         bool unindexProblematicFiles();
         //! Determines whether indexing a given file is problematic

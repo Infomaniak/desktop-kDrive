@@ -108,6 +108,9 @@ class PARMS_EXPORT Parameters {
         [[nodiscard]] VersionChannel distributionChannel() const { return _distributionChannel; }
         void setDistributionChannel(const VersionChannel channel) { _distributionChannel = channel; }
 
+        bool emlIndexation() const { return _emlIndexation; }
+        void setEmlIndexation(bool emlIndexation) { _emlIndexation = emlIndexation; }
+
         static int _uploadSessionParallelJobsDefault;
 
     private:
@@ -134,6 +137,7 @@ class PARMS_EXPORT Parameters {
         int _maxAllowedCpu;
         int _uploadSessionParallelJobs;
         VersionChannel _distributionChannel{VersionChannel::Prod};
+        bool _emlIndexation = false;
 };
 
 } // namespace KDC
