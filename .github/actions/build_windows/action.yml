@@ -53,7 +53,7 @@ runs:
               ./infomaniak-build-tools/windows/build-drive.ps1 -ci
             }
           }
-        shell: cmd
+        shell: powershell
 
       - name: Fetch dependencies
         run: |
