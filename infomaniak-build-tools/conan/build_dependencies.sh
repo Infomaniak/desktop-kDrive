@@ -55,7 +55,7 @@ There are three ways to set the output directory (in descending order of priorit
 EOF
       exit 0
       ;;
-    --output-dir=*) # Managed into get_output_dir function
+    --output-dir=*) # Used by get_output_dir function
       shift
       ;;
     *)
