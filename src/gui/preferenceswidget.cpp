@@ -215,7 +215,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
 
     // Dark theme activation
     CustomSwitch *darkThemeSwitch = nullptr;
-    if (!OldUtility::isMac()) {
+    if (!CommonUtility::isMac()) {
         QBoxLayout *darkThemeBox = generalBloc->addLayout(QBoxLayout::Direction::LeftToRight);
 
         _darkThemeLabel = new QLabel();

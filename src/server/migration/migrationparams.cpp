@@ -159,8 +159,8 @@ ProxyType intToProxyType(int pTypeInt) {
 }
 
 QDir MigrationParams::configDir() {
-    return QStandardPaths::writableLocation(OldUtility::isWindows() ? QStandardPaths::AppDataLocation
-                                                                    : QStandardPaths::AppConfigLocation);
+    return QStandardPaths::writableLocation(CommonUtility::isWindows() ? QStandardPaths::AppDataLocation
+                                                                       : QStandardPaths::AppConfigLocation);
 }
 
 QString MigrationParams::configFileName() {

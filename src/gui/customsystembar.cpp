@@ -63,7 +63,7 @@ CustomSystemBar::CustomSystemBar(bool popup, QWidget *parent) :
 
         connect(exitButton, &CustomToolButton::clicked, this, &CustomSystemBar::onExit);
     } else {
-        if (OldUtility::isMac()) {
+        if (CommonUtility::isMac()) {
             setMinimumHeight(macDialogBarHeight);
             setMaximumHeight(macDialogBarHeight);
             hBox->setContentsMargins(macDialogBoxHMargin, macDialogBoxVMargin, macDialogBoxHMargin, macDialogBoxVMargin);

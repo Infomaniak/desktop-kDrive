@@ -97,9 +97,9 @@ SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>
     _vfsMap(vfsMap) {
     QString socketPath;
 
-    if (OldUtility::isWindows()) {
+    if (CommonUtility::isWindows()) {
         socketPath = QString(R"(\\.\pipe\%1-%2)").arg(APPLICATION_SHORTNAME, Utility::userName().c_str());
-    } else if (OldUtility::isMac()) {
+    } else if (CommonUtility::isMac()) {
         socketPath = SOCKETAPI_TEAM_IDENTIFIER_PREFIX APPLICATION_REV_DOMAIN ".socketApi";
 #ifdef Q_OS_MAC
         // Tell Finder to use the Extension (checking it from System Preferences -> Extensions)
@@ -116,7 +116,7 @@ SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>
             system(cmd.toLocal8Bit());
         }
 #endif
-    } else if (OldUtility::isLinux()) {
+    } else if (CommonUtility::isLinux()) {
         const QString runtimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
         socketPath = runtimeDir + "/" + KDC::Theme::instance()->appName() + "/socket";
     } else {

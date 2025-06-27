@@ -678,7 +678,7 @@ bool CommonUtility::isDiskRootFolder(const SyncPath &absolutePath, SyncPath &sug
     }
 #elif defined(__unix__)
     // On Linux, external drives usually appears under  "/media/<username>/<drivename>" or "/media/<drivename>"
-    if(absolutePath == "/media") {
+    if (absolutePath == "/media") {
         // If the absolutePath is "/media", we cannot suggest a path
         return true;
     }
@@ -1150,4 +1150,29 @@ ReplicaSide CommonUtility::syncNodeTypeSide(SyncNodeType type) {
             return ReplicaSide::Unknown;
     }
 }
+
+bool CommonUtility::isWindows() {
+#ifdef _WIN32
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool CommonUtility::isMac() {
+#ifdef __APPLE__
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool CommonUtility::isLinux() {
+#if defined(__unix__)
+    return true;
+#else
+    return false;
+#endif
+}
+
 } // namespace KDC
