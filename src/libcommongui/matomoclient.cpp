@@ -90,19 +90,15 @@ MatomoClient::MatomoClient(QCoreApplication *app, const QString &clientId) :
  * @param page the page to track
  */
 void MatomoClient::sendVisit(const MatomoNameField page) {
-    if (instance()._matomoDisabled) {
-        if (ParametersCache::instance()->parametersInfo().extendedLog()) {
-            qInfo(lcMatomoClient) << "Tracking disabled, sendVisit ignored.";
-        }
-        return;
-    }
     QString path;
     QString action;
     instance().getPathAndAction(page, path, action);
 
     if (ParametersCache::instance()->parametersInfo().extendedLog()) {
-        qCDebug(lcMatomoClient()) << "MatomoClient::sendVisit(page=" << static_cast<matomo_enum_t>(page) << ")";
+        qCDebug(lcMatomoClient()) << "MatomoClient::sendVisit(path=" << path << ", action=" << action << ")" << (instance()._matomoDisabled ? " => Trigger but not sent, tracking disabled" : "");
     }
+    if (instance()._matomoDisabled) return; // If Matomo is disabled, do not send the visit.
+
     instance().PiwikTracker::sendVisit(path, action);
 }
 
@@ -115,12 +111,6 @@ void MatomoClient::sendVisit(const MatomoNameField page) {
  * @param value the value of the event
  */
 void MatomoClient::sendEvent(const QString &category, const MatomoEventAction action, const QString &name, const int value) {
-    if (instance()._matomoDisabled) {
-        if (ParametersCache::instance()->parametersInfo().extendedLog()) {
-            qInfo(lcMatomoClient) << "Tracking disabled, sendEvent ignored.";
-        }
-        return;
-    }
     QString actionStr;
     switch (action) {
         case MatomoEventAction::Click:
@@ -133,10 +123,13 @@ void MatomoClient::sendEvent(const QString &category, const MatomoEventAction ac
             actionStr = "unknown";
             break;
     }
+
     if (ParametersCache::instance()->parametersInfo().extendedLog()) {
         qCDebug(lcMatomoClient()) << "MatomoClient::sendEvent(category=" << category << ", action=" << actionStr
-                                  << ", name=" << name << ", value=" << value << ")";
+                                  << ", name=" << name << ", value=" << value << ")" << (instance()._matomoDisabled ? " => Trigger but not sent, tracking disabled" : "");
     }
+    if (instance()._matomoDisabled) return; // If Matomo is disabled, do not send the event.
+
     instance().PiwikTracker::sendEvent(category, category, actionStr, name, value);
 }
 
