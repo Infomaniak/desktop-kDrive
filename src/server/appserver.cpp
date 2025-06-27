@@ -294,9 +294,16 @@ void AppServer::init() {
 
     // Setup auto start
 #ifdef NDEBUG
+#if defined(__unix__) && !defined(__APPLE__)
+    // On Linux, override the auto startup file on every app launch to make sure it points to the correct executable.
+    if (ParametersCache::instance()->parameters().autoStart()) {
+        OldUtility::setLaunchOnStartup(_theme->appName(), _theme->appNameGUI(), true, _logger);
+    }
+#else
     if (ParametersCache::instance()->parameters().autoStart() && !OldUtility::hasLaunchOnStartup(_theme->appName(), _logger)) {
         OldUtility::setLaunchOnStartup(_theme->appName(), _theme->appClientName(), true, _logger);
     }
+#endif
 #endif
 
 #ifdef PLUGINDIR
