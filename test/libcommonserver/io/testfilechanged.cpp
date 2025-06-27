@@ -137,7 +137,7 @@ void TestIo::testFileChanged() {
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
-#if defined(__APPLE__) || defined(WIN32)
+#if defined(KD_MACOS) || defined(WIN32)
     // A file that is set to "hidden" on MacOSX or Windows: no change detected
     {
         const LocalTemporaryDirectory temporaryDirectory;
@@ -182,7 +182,7 @@ void TestIo::testCheckIfIsHiddenFile() {
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
-#if defined(__APPLE__) || defined(WIN32)
+#if defined(KD_MACOS) || defined(WIN32)
     // A hidden file on MacOSX and Windows
     {
         const LocalTemporaryDirectory temporaryDirectory;
@@ -230,7 +230,7 @@ void TestIo::testCheckIfIsHiddenFile() {
     }
 #endif
 
-#if defined(__APPLE__) || defined(WIN32)
+#if defined(KD_MACOS) || defined(WIN32)
     // A non-hidden file within a hidden directory
     {
         const LocalTemporaryDirectory temporaryDirectory;
@@ -322,7 +322,7 @@ void TestIo::testCheckIfIsHiddenFile() {
 
         CPPUNIT_ASSERT(IoHelper::checkIfIsHiddenFile(path, false, isHidden, ioError));
         CPPUNIT_ASSERT(!isHidden);
-#if defined(__unix__)
+#if defined(KD_LINUX)
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 #else
         CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
@@ -353,13 +353,13 @@ void TestIo::testCheckIfIsHiddenFile() {
 
         bool isHidden = true;
         IoError ioError = IoError::Success;
-#ifdef _WIN32
+#ifdef KD_WINDOWS
         CPPUNIT_ASSERT(IoHelper::checkIfIsHiddenFile(path, false, isHidden, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
-#elif defined(__APPLE__)
+#elif defined(KD_MACOS)
         CPPUNIT_ASSERT(!IoHelper::checkIfIsHiddenFile(path, false, isHidden, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::FileNameTooLong, ioError);
-#elif defined(__unix__)
+#elif defined(KD_LINUX)
         CPPUNIT_ASSERT(IoHelper::checkIfIsHiddenFile(path, false, isHidden, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 #endif
@@ -383,7 +383,7 @@ void TestIo::testCheckIfIsHiddenFile() {
     }
 #endif
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     // On MacOSX /Volumes is hidden by the Finder whereas kDrive considers it visible
     {
         bool isHidden = true;

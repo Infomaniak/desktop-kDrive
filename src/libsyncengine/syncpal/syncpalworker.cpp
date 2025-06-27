@@ -82,7 +82,7 @@ void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
     LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " started");
     if (_syncPal->vfsMode() != VirtualFileMode::Off) {
-#ifdef _WIN32
+#ifdef KD_WINDOWS
         auto resetFunc = std::function<void()>([this]() { resetVfsFilesStatus(); });
         _resetVfsFilesStatusThread = StdLoggingThread(resetFunc);
 #else
@@ -632,7 +632,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
             if (!vfsStatus.isPlaceholder) continue;
 
             const PinState pinState = _syncPal->vfs()->pinState(dirIt->path());
-#ifndef _WIN32 // Handle by the API on windows.
+#ifndef KD_WINDOWS // Handle by the API on windows.
             if (vfsStatus.isSyncing) {
                 // Force status to dehydrate
                 if (const ExitInfo exitInfo = _syncPal->vfs()->forceStatus(dirIt->path(), VfsStatus()); !exitInfo) {
