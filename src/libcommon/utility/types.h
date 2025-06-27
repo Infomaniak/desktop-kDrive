@@ -41,23 +41,6 @@
 
 namespace KDC {
 
-/**
- * @brief Redefine compiler predefined macros to uniformize their format.
- * Source:
- * https://web.archive.org/web/20140625123925/http://nadeausoftware.com/articles/2012/01/c_c_tip_how_use_compiler_predefined_macros_detect_operating_system
- */
-#ifdef _WIN32
-#define KD_WINDOWS _WIN32
-#endif
-
-#ifdef __APPLE__
-#define KD_MACOS __APPLE__
-#endif
-
-#ifdef __linux__
-#define KD_LINUX __linux__
-#endif
-
 using SyncTime = int64_t;
 using DbNodeId = int64_t;
 using UniqueId = int64_t;
