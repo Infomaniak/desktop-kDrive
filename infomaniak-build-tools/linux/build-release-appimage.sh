@@ -42,7 +42,10 @@ function get_arch() {
     fi
 }
 
-function build_client() {
+function build_client_via_cmake() {
+  build_type=$1
+  conan_dependencies_folder=$2
+
   cd /build
   mkdir -p client
   cd client
@@ -63,9 +66,6 @@ function build_client() {
   cd /src
 
   conan_folder=/build/conan
-
-  build_type="RelWithDebInfo"
-
   bash /src/infomaniak-build-tools/conan/build_dependencies.sh $build_type --output-dir="$conan_folder"
 
   conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
@@ -83,6 +83,7 @@ function build_client() {
       -DCMAKE_BUILD_TYPE=$build_type \
       -DKDRIVE_THEME_DIR="/src/infomaniak" \
       -DBUILD_UNIT_TESTS=0 \
+      -DCONAN_DEP_DIR="$conan_dependencies_folder" \
       -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
       "${CMAKE_PARAMS[@]}" \
       /src
@@ -101,6 +102,7 @@ function build_client() {
 
 function move_dependencies() {
   arch="$(get_arch $1)"
+  conan_dependencies_folder=$2
 
   cd /app
 
@@ -121,7 +123,7 @@ function move_dependencies() {
   cp -P /opt/qt6.2.3/lib/libQt6WaylandClient.so* ./usr/lib
   cp -P /opt/qt6.2.3/lib/libQt6WaylandEglClientHwIntegration.so* ./usr/lib
 
-  cp -P ./build/client/conan_dependencies/* ./usr/lib
+  cp -P "$conan_dependencies_folder"/* ./usr/lib
 
   mkdir -p ./usr/qml
 
@@ -150,7 +152,7 @@ function build_app_image() {
 }
 
 
-function setup() {
+function setup_build() {
   mkdir -p /app
   mkdir -p /build
 
@@ -201,19 +203,21 @@ ulimit -n 4000000
 
 set -e
 
-setup
+setup_build
 
 echo
-echo "Building desktop-kDrive application via CMake for architecture ${architecture} ..."
-build_client
+build_type="RelWithDebInfo"
+conan_dependencies_folder="/build/conan/dependencies"
+echo "Building desktop-kDrive application with type ${build_type} via CMake for architecture ${architecture} ..."
+build_client_via_cmake "$build_type" "$conan_dependencies_folder"
 
 echo
 
 echo "Moving dependencies ..."
-move_dependencies $architecture
+move_dependencies "$architecture" "$conan_dependencies_folder"
 
 echo "Building AppImage ..."
-build_app_image $architecture
+build_app_image "$architecture"
 
 echo "Build of AppImage successfully completed for architecture ${architecture}."
 
