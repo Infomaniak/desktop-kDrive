@@ -180,7 +180,7 @@ bool ProgressInfo::setSyncFileItemRemoteId(const SyncPath &path, const NodeId &r
     const auto it = _currentItems.find(normalizedPath);
     if (it == _currentItems.end() || it->second.empty()) {
         LOGW_INFO(Log::instance()->getLogger(),
-                  L"Item not found in ProgressInfo list (normal for ommited operation): " << Utility::formatSyncPath(path));
+                  L"Item not found in ProgressInfo list (normal for omitted operation): " << Utility::formatSyncPath(path));
         return true;
     }
 
