@@ -56,6 +56,8 @@ cd /src
 conan_folder=/build/conan
 conan_dependencies_folder=/app/build/client/conan_dependencies/
 
+conan_dependencies_folder=/build/conan/dependencies
+
 build_type="RelWithDebInfo"
 
 bash /src/infomaniak-build-tools/conan/build_dependencies.sh $build_type --output-dir="$conan_folder"
@@ -75,6 +77,7 @@ cmake -DCMAKE_PREFIX_PATH="$QT_BASE_DIR" \
     -DCMAKE_BUILD_TYPE=$build_type \
     -DKDRIVE_THEME_DIR="/src/infomaniak" \
     -DBUILD_UNIT_TESTS=0 \
+    -DCONAN_DEP_DIR="$conan_dependencies_folder" \
     -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
     -DCONAN_DEP_DIR="$conan_dependencies_folder" \
     "${CMAKE_PARAMS[@]}" \
@@ -111,7 +114,9 @@ cp -P -r /usr/lib/aarch64-linux-gnu/nss ./usr/lib/
 cp -P /opt/qt6.2.3/lib/libQt6WaylandClient.so* ./usr/lib
 cp -P /opt/qt6.2.3/lib/libQt6WaylandEglClientHwIntegration.so* ./usr/lib
 
-cp -P ./build/client/conan_dependencies/* ./usr/lib
+bash
+
+cp -P $conan_dependencies_folder/* ./usr/lib
 
 mkdir -p ./usr/qml
 
