@@ -54,7 +54,6 @@ inline bool isWindows();
 inline bool isMac();
 inline bool isUnix();
 inline bool isLinux(); // use with care
-inline bool isBSD(); // use with care, does not match OS X
 
 #ifdef Q_OS_WIN
 bool registryExistKeyTree(HKEY hRootKey, const QString &subKey);
@@ -102,14 +101,6 @@ inline bool OldUtility::isUnix() {
 
 inline bool OldUtility::isLinux() {
 #if defined(Q_OS_LINUX)
-    return true;
-#else
-    return false;
-#endif
-}
-
-inline bool OldUtility::isBSD() {
-#if defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD)
     return true;
 #else
     return false;

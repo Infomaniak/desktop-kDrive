@@ -21,7 +21,6 @@
 #include "enablestateholder.h"
 #include "clientgui.h"
 #include "guirequests.h"
-#include "common/filesystembase.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
@@ -220,11 +219,9 @@ bool AddDriveWizard::addSync(int userDbId, int accountId, int driveId, const QSt
 
     const QDir localFolderDir(localFolderPathNormalized);
     if (localFolderDir.exists()) {
-        FileSystem::setFolderMinimumPermissions(localFolderPathNormalized);
         KDC::CommonGuiUtility::setupFavLink(localFolderPathNormalized);
     } else {
         if (localFolderDir.mkpath(localFolderPathNormalized)) {
-            FileSystem::setFolderMinimumPermissions(localFolderPathNormalized);
             KDC::CommonGuiUtility::setupFavLink(localFolderPathNormalized);
         } else {
             qCWarning(lcAddDriveWizard()) << "Failed to create local folder" << localFolderDir.path();
