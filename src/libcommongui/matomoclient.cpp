@@ -149,7 +149,7 @@ void MatomoClient::initNameFieldMap() {
 #endif
             {MatomoNameField::WV_LoginPage, {"webview", "login"}},
             {MatomoNameField::PG_SynthesisPopover, {"popover", "popover"}},
-            {MatomoNameField::PG_SynthesisPopover, {"popover", "kebab_menu"}},
+            {MatomoNameField::PG_SynthesisPopover_KebabMenu, {"popover", "kebab_menu"}},
             {MatomoNameField::PG_Preferences, {"preferences", "preferences"}},
             {MatomoNameField::PG_Preferences_Debugging, {"preferences/debugging", "debugging"}},
             {MatomoNameField::PG_Preferences_FilesToExclude, {"preferences/files_to_exclude", "files_to_exclude"}},
