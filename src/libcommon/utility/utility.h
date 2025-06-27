@@ -221,6 +221,11 @@ struct COMMON_EXPORT CommonUtility {
 
         static ReplicaSide syncNodeTypeSide(SyncNodeType type);
 
+        // Convenience OS detection methods
+        static bool isWindows();
+        static bool isMac();
+        static bool isLinux();
+
     private:
         static std::mutex _generateRandomStringMutex;
 

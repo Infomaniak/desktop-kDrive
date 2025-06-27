@@ -43,13 +43,6 @@ namespace OldUtility {
 void setFolderPinState(const QUuid &clsid, bool show);
 #endif
 
-
-// convenience OS detection methods
-inline bool isWindows();
-inline bool isMac();
-inline bool isUnix();
-inline bool isLinux(); // use with care
-
 #ifdef Q_OS_WIN
 bool registryExistKeyTree(HKEY hRootKey, const QString &subKey);
 bool registryExistKeyValue(HKEY hRootKey, const QString &subKey, const QString &valueName);
@@ -70,36 +63,5 @@ void UnixTimeToFiletime(time_t t, FILETIME *filetime);
 
 } // namespace OldUtility
 
-inline bool OldUtility::isWindows() {
-#ifdef Q_OS_WIN
-    return true;
-#else
-    return false;
-#endif
-}
-
-inline bool OldUtility::isMac() {
-#ifdef Q_OS_MAC
-    return true;
-#else
-    return false;
-#endif
-}
-
-inline bool OldUtility::isUnix() {
-#ifdef Q_OS_UNIX
-    return true;
-#else
-    return false;
-#endif
-}
-
-inline bool OldUtility::isLinux() {
-#if defined(Q_OS_LINUX)
-    return true;
-#else
-    return false;
-#endif
-}
 
 } // namespace KDC

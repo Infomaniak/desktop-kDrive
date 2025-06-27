@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include "common/utility.h"
 #include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/log/log.h"
 
 #ifdef _WIN32
@@ -455,8 +455,8 @@ struct IoHelper {
 
         static inline bool isLink(LinkType linkType) {
             return linkType == LinkType::Symlink || linkType == LinkType::Hardlink ||
-                   (linkType == LinkType::FinderAlias && OldUtility::isMac()) ||
-                   (linkType == LinkType::Junction && OldUtility::isWindows());
+                   (linkType == LinkType::FinderAlias && CommonUtility::isMac()) ||
+                   (linkType == LinkType::Junction && CommonUtility::isWindows());
         }
 
         static inline bool isLinkFollowedByDefault(LinkType linkType) {
