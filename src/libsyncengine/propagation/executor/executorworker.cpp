@@ -269,7 +269,7 @@ void ExecutorWorker::initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem) 
     }
 }
 
-void ExecutorWorker::setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus status) {
+void ExecutorWorker::setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus status, const NodeId &newRemoteNodeId) {
     SyncPath relativeLocalFilePath;
     if (syncOp->type() == OperationType::Create || syncOp->type() == OperationType::Edit) {
         relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
@@ -277,7 +277,7 @@ void ExecutorWorker::setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus 
         relativeLocalFilePath = syncOp->affectedNode()->getPath();
     }
 
-    if (!_syncPal->setProgressComplete(relativeLocalFilePath, status)) {
+    if (!_syncPal->setProgressComplete(relativeLocalFilePath, status, newRemoteNodeId)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgressComplete: " << Utility::formatSyncPath(relativeLocalFilePath));
     }
 }
@@ -1315,7 +1315,14 @@ ExitInfo ExecutorWorker::deleteFinishedAsyncJobs() {
                     if (ignored) {
                         setProgressComplete(syncOp, SyncFileStatus::Ignored);
                     } else {
-                        setProgressComplete(syncOp, SyncFileStatus::Success);
+                        if (syncOp->type() == OperationType::Create && syncOp->targetSide() == ReplicaSide::Remote) {
+                            std::shared_ptr<UploadJob> uploadJob = std::dynamic_pointer_cast<UploadJob>(job);
+                            NodeId newRemoteNodeId;
+                            if (uploadJob) newRemoteNodeId = uploadJob->nodeId();
+                            setProgressComplete(syncOp, SyncFileStatus::Success, newRemoteNodeId);
+                        } else {
+                            setProgressComplete(syncOp, SyncFileStatus::Success);
+                        }
                     }
 
                     if (syncOp->affectedNode()->id().has_value()) {
