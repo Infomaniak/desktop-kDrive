@@ -22,6 +22,8 @@
 
 #include <QCoreApplication>
 
+inline Q_LOGGING_CATEGORY(lcMatomoClient, "gui.matomo", QtInfoMsg)
+
 namespace KDC {
 
 /**
