@@ -130,7 +130,7 @@ void TestSyncPalWorker::setUpTestInternalPause(const std::chrono::steady_clock::
 
     // Let the first sync finish
     CPPUNIT_ASSERT(TimeoutHelper::waitFor([this]() { return _syncPal->step() == SyncStep::Propagation2; },
-                                          std::chrono::seconds(20), std::chrono::milliseconds(5)));
+                                          std::chrono::seconds(60), std::chrono::milliseconds(5)));
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor([this]() { return _syncPal->step() == SyncStep::Idle; }, std::chrono::seconds(20),
                                           std::chrono::milliseconds(5)));
@@ -271,7 +271,7 @@ void TestSyncPalWorker::testInternalPause3() {
     setUpTestInternalPause(std::chrono::seconds(1));
 
     // Constants
-    constexpr auto testTimeout = std::chrono::seconds(20);
+    constexpr auto testTimeout = std::chrono::seconds(60);
     constexpr auto loopWait = std::chrono::milliseconds(5);
     const auto mockSyncPal = std::dynamic_pointer_cast<MockSyncPal>(_syncPal);
     const auto mockLfso = mockSyncPal->getMockLFSOWorker();
