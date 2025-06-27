@@ -254,16 +254,16 @@ bool CommonUtility::runExe(const SyncPath &path, const std::vector<std::string> 
     for (size_t i = 0; i < args.size(); i++) {
         arguments << QString::fromStdString(args[i]);
     }
-    QProcess *clientProcess = new QProcess(this);
+    QProcess *clientProcess = new QProcess();
     clientProcess->setProgram(path);
     clientProcess->setArguments(arguments);
     if (detached) {
         clientProcess->startDetached();
     } else {
-        clientProcess.waitForStarted();
-        clientProcess.waitForFinished();
-        QByteArray result = clientProcess.readAll();
-        output = toStdString();
+        clientProcess->waitForStarted();
+        clientProcess->waitForFinished();
+        QByteArray result = clientProcess->readAll();
+        output = result.toStdString();
     }
     return true;
 #endif
