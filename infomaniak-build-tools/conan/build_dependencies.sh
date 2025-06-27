@@ -64,6 +64,10 @@ EOF
   esac
 done
 
+
+log(){ echo "[INFO] $*"; }
+error(){ echo "[ERROR] $*" >&2; exit 1; }
+
 function get_platform {
     platform="$(uname | tr '[:upper:]' '[:lower:]')"
     echo "$platform"
@@ -71,7 +75,6 @@ function get_platform {
 
 function get_architecture {
     platform=$1
-
     architecture="" # Left empty for Linux systems.
     if [[ "$platform" = "darwin" ]]; then
        architecture="-s:a=arch=armv8|x86_64" # Making universal binary. See https://docs.conan.io/2/reference/tools/cmake/cmaketoolchain.html#conan-tools-cmaketoolchain-universal-binaries
@@ -80,38 +83,45 @@ function get_architecture {
     echo $architecture
 }
 
-function get_output_dir {
-  # 1. Parameter override
-  for arg in "$@"; do
+function get_arg_value {
+  local arg_name="$1"
+  for arg in "${all_args[@]}"; do
     case "$arg" in
-      --output-dir=*)
-        echo "${arg#--output-dir=}"
-        return
-        ;;
+      "$arg_name=*")
+      echo "${arg#$arg_name=}"
+      return
+      ;;
     esac
   done
+  echo ""
+}
 
-  # 2. Environment variable
-  if [[ -n "${KDRIVE_OUTPUT_DIR:-}" ]]; then
-    echo "${KDRIVE_OUTPUT_DIR}"
-    log "Using environment variable 'KDRIVE_OUTPUT_DIR' as conan output_dir : '$KDRIVE_OUTPUT_DIR'" >&2
-    return
+function get_env_var_value {
+  local var_name="$1"
+  if [[ -n "${!var_name:-}" ]]; then
+    echo "${!var_name}"
+  else
+    echo ""
   fi
+}
 
-  # 3. Default based on OS
-  platform=$(get_platform)
-  if [[ "$platform" = "darwin" ]]; then
+function get_default_output_dir {
+  if [[ "$(get_platform)" = "darwin" ]]; then
     echo "./build-macos/client"
   else
     echo "./build-linux/build"
   fi
 }
 
-# Determine output directory based on parameter, environment variable, or default
-output_dir=$(get_output_dir "${all_args[@]}")
+output_dir="$(get_arg_value '--output-dir')"
+if [[ -z "$output_dir" ]]; then
+  output_dir="$(get_env_var_value 'KDRIVE_OUTPUT_DIR')"
+  log "Using environment variable 'KDRIVE_OUTPUT_DIR' as conan output_dir : '$KDRIVE_OUTPUT_DIR'" >&2
+fi
+if [[ -z "$output_dir" ]]; then
+  output_dir="$(get_default_output_dir)"
+fi
 
-log(){ echo "[INFO] $*"; }
-error(){ echo "[ERROR] $*" >&2; exit 1; }
 
 # check if we launched this in the right folder.
 if [ ! -d "infomaniak-build-tools/conan" ]; then
@@ -172,7 +182,7 @@ if [[ "$platform" == "darwin" ]]; then
     log "Building universal binary for macOS."
 fi
 
-architecture=$(get_architecture $platform)
+architecture=$(get_architecture "$platform")
 
 mkdir -p "$output_dir"
 
