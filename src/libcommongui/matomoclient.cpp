@@ -76,8 +76,6 @@ MatomoClient::MatomoClient(QCoreApplication *app, const QString &clientId) :
                     _matomoDisabled = true;
                     qWarning(lcMatomoClient) << "Disabled after" << _matomoTimeoutMax << "timeouts.";
                 }
-            } else if (reply->error() != QNetworkReply::NoError && ParametersCache::instance()->parametersInfo().extendedLog()) {
-                qDebug(lcMatomoClient) << "Reply error:" << reply->errorString() << "/ code:" << reply->error() << "/ URL:" << reply->url();
             }
         });
         if (ParametersCache::instance()->parametersInfo().extendedLog()) {
