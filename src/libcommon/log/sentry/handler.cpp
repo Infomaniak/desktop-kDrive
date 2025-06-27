@@ -158,7 +158,7 @@ static sentry_value_t crashCallback(const sentry_ucontext_t *uctx, sentry_value_
     if (Handler::debugCrashCallback()) {
         std::stringstream ss;
         readObject(event, ss);
-        Handler::writeEvent(ss.str(), true);
+        Handler::writeCrashEvent(ss.str());
     }
 
     return event;
@@ -173,7 +173,7 @@ sentry_value_t beforeSendCallback(sentry_value_t event, void *hint, void *closur
     if (Handler::debugBeforeSendCallback()) {
         std::stringstream ss;
         readObject(event, ss);
-        Handler::writeEvent(ss.str(), false);
+        Handler::writeEvent(ss.str());
     }
 
     return event;
@@ -214,7 +214,7 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
         _debugCrashCallback = true;
     }
 
-    // For debbuging: if the following environment variable is set, the send events will be printed into a debug file
+    // For debuging: if the following environment variable is set, the send events will be printed into a debug file
     // If this variable is set, the previous one is inoperative
     isSet = false;
     if (CommonUtility::envVarValue("KDRIVE_DEBUG_SENTRY_BEFORE_SEND_CB", isSet); isSet) {
@@ -223,7 +223,20 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
 
     // Sentry init
     sentry_options_t *options = sentry_options_new();
-    sentry_options_set_dsn(options, ((appType == AppType::Server) ? SENTRY_SERVER_DSN : SENTRY_CLIENT_DSN));
+    switch (_appType) {
+        case AppType::Server:
+            sentry_options_set_dsn(options, SENTRY_SERVER_DSN);
+            break;
+        case AppType::Client:
+            sentry_options_set_dsn(options, SENTRY_CLIENT_DSN);
+            break;
+        case AppType::Test:
+            sentry_options_set_dsn(options, SENTRY_TEST_DSN);
+            break;
+        default:
+            assert(false && "Invalid app type for sentry initialization");
+            return;
+    }
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(__x86_64__)
     // TODO: On Linux arm64, Sentry is built with breakpad instead of crashpad_handler until support of Ubuntu 20.04 is
     // discontinued
@@ -231,7 +244,20 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
 #endif
 
     SyncPath appSupportPath = CommonUtility::getAppSupportDir();
-    appSupportPath /= (_appType == AppType::Server) ? SENTRY_SERVER_DB_PATH : SENTRY_CLIENT_DB_PATH;
+    switch (_appType) {
+        case AppType::Server:
+            appSupportPath /= SENTRY_SERVER_DB_PATH;
+            break;
+        case AppType::Client:
+            appSupportPath /= SENTRY_CLIENT_DB_PATH;
+            break;
+        case AppType::Test:
+            appSupportPath /= SENTRY_TEST_DB_PATH;
+            break;
+        default:
+            assert(false && "Invalid app type for sentry initialization");
+            return;
+    }
 #if defined(Q_OS_WIN)
     sentry_options_set_handler_pathw(options, appWorkingPath.c_str());
     sentry_options_set_database_pathw(options, appSupportPath.c_str());
@@ -295,7 +321,7 @@ void Handler::setGlobalConfidentialityLevel(sentry::ConfidentialityLevel level) 
 }
 
 void Handler::privateCaptureMessage(Level level, const std::string &title, std::string message /*Copy needed*/,
-                                    const SentryUser &user /*Apply only if confidentiallity level is Authenticated*/) {
+                                    const SentryUser &user /*Apply only if confidentiality level is Authenticated*/) {
     if (!_isSentryActivated) return;
 
     std::scoped_lock lock(_mutex);
@@ -430,11 +456,44 @@ void Handler::updateEffectiveSentryUser(const SentryUser &user) {
     sentry_set_user(userValue);
 }
 
-void Handler::writeEvent(const std::string &eventStr, bool crash) noexcept {
+SyncPath Handler::getSentryTemporaryDir() {
+    std::time_t now = std::time(nullptr);
+    const std::tm tm = *std::localtime(&now);
+    std::ostringstream oss;
+    oss << std::put_time(&tm, "%Y%m");
+
+    const auto sentryDirectory = std::filesystem::temp_directory_path() / "sentry" / oss.str();
+    std::error_code ec;
+    (void) std::filesystem::create_directories(sentryDirectory, ec);
+
+    assert(!ec && "Sentry temporary directory failed to be created.");
+
+    return sentryDirectory;
+}
+
+SyncPath Handler::getEventFilePath(const AppType appType, const bool crash) {
     using namespace KDC::event_dump_files;
-    auto eventFilePath = std::filesystem::temp_directory_path() /
-                         (Handler::appType() == AppType::Server ? (crash ? serverCrashEventFileName : serverSendEventFileName)
-                                                                : (crash ? clientCrashEventFileName : clientSendEventFileName));
+    SyncPath fileName;
+    switch (appType) {
+        case AppType::Server:
+            fileName = crash ? serverCrashEventFileName : serverSendEventFileName;
+            break;
+        case AppType::Client:
+            fileName = crash ? clientCrashEventFileName : clientSendEventFileName;
+            break;
+        case AppType::Test:
+            fileName = crash ? testCrashEventFileName : testSendEventFileName;
+            break;
+        default:
+            assert(false && "Invalid enum value in switch statement.");
+            fileName = crash ? clientCrashEventFileName : clientSendEventFileName;
+    }
+
+    return getSentryTemporaryDir() / fileName;
+}
+
+void Handler::writeEvent(const std::string &eventStr, bool crash) noexcept {
+    const auto eventFilePath = getEventFilePath(Handler::appType(), crash);
 
     std::ofstream eventFile(eventFilePath, std::ios::app);
     if (eventFile) {
@@ -502,7 +561,7 @@ Handler::SentryEvent::SentryEvent(const std::string &title, const std::string &m
     userId(user.userId()) {}
 
 void Handler::stopPTrace(const pTraceId &id, PTraceStatus status) {
-    if (id == 0) return;
+    if (!_isSentryActivated || !arePtracesEnabled() || id == 0) return;
 
     std::scoped_lock lock(_mutex);
     auto performanceTraceIt = _pTraces.find(id);
@@ -613,8 +672,12 @@ bool Handler::checkCustomSampleRate(const PTraceDescriptor &pTraceInfo) const {
     return dis(gen) < pTraceInfo.customSampleRate();
 }
 
+bool Handler::arePtracesEnabled() const {
+    return _isSentryActivated && _appType != AppType::Test;
+}
+
 pTraceId Handler::startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId) {
-    if (!_isSentryActivated || pTraceInfo.pTraceName() == PTraceName::None) return 0;
+    if (!_isSentryActivated || !arePtracesEnabled() || pTraceInfo.pTraceName() == PTraceName::None) return 0;
 
     std::scoped_lock lock(_mutex);
     pTraceId newPTraceId = 0;
@@ -654,7 +717,7 @@ pTraceId Handler::startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId) 
 }
 
 void Handler::stopPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId, PTraceStatus status) {
-    if (!_isSentryActivated || pTraceInfo.pTraceName() == PTraceName::None) return;
+    if (!_isSentryActivated || !arePtracesEnabled() || pTraceInfo.pTraceName() == PTraceName::None) return;
 
     std::scoped_lock lock(_mutex);
     auto pTraceMapIt = _pTraceNameToPTraceIdMap.find(syncDbId);

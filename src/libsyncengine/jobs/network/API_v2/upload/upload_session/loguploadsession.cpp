@@ -22,7 +22,7 @@
 
 namespace KDC {
 
-LogUploadSession::LogUploadSession(const SyncPath &filepath, const uint64_t nbParallelThread /*= 1*/) :
+LogUploadSession::LogUploadSession(const SyncPath &filepath, const uint64_t nbParallelThread) :
     AbstractUploadSession(filepath, filepath.filename(), nbParallelThread) {
     _uploadSessionType = UploadSessionType::Log;
 }
@@ -46,7 +46,7 @@ std::shared_ptr<UploadSessionFinishJob> LogUploadSession::createFinishJob() {
             std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
     return std::make_shared<UploadSessionFinishJob>(UploadSessionType::Log, getFilePath(), getSessionToken(), getTotalChunkHash(),
-                                                    getTotalChunks(), modtimeIn);
+                                                    getTotalChunks(), modtimeIn, modtimeIn);
 }
 
 std::shared_ptr<UploadSessionCancelJob> LogUploadSession::createCancelJob() {

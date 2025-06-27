@@ -31,8 +31,15 @@ namespace KDC {
 
 class DebugReporter : public QProgressDialog {
         Q_OBJECT
+
     public:
-        enum MapKeyType { DriveId = 0, DriveName, UserId, UserName, LogName };
+        enum MapKeyType {
+            DriveId = 0,
+            DriveName,
+            UserId,
+            UserName,
+            LogName
+        };
 
         DebugReporter(const QUrl &url, QWidget *parent = nullptr);
         ~DebugReporter();
@@ -44,7 +51,9 @@ class DebugReporter : public QProgressDialog {
     private:
         class MapKey {
             public:
-                inline explicit MapKey(MapKeyType keyType, int keyIndex) : _keyType(keyType), _keyIndex(keyIndex) {}
+                inline explicit MapKey(MapKeyType keyType, int keyIndex) :
+                    _keyType(keyType),
+                    _keyIndex(keyIndex) {}
                 inline bool operator<(const MapKey &mapKey) const {
                     return (_keyType == mapKey._keyType ? _keyIndex < mapKey._keyIndex : _keyType < mapKey._keyType);
                 }

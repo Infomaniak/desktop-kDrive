@@ -136,8 +136,12 @@ std::string toString(const ExitCause e) {
             return "InvalidSnapshot";
         case ExitCause::SyncDirDoesntExist:
             return "SyncDirDoesntExist";
-        case ExitCause::SyncDirAccesError:
-            return "SyncDirAccesError";
+        case ExitCause::SyncDirAccessError:
+            return "SyncDirAccessError";
+        case ExitCause::SyncDirNestingError:
+            return "SyncDirNestingError";
+        case ExitCause::SyncDirChanged:
+            return "SyncDirChanged";
         case ExitCause::HttpErr:
             return "HttpErr";
         case ExitCause::HttpErrForbidden:
@@ -148,12 +152,12 @@ std::string toString(const ExitCause e) {
             return "ApiErr";
         case ExitCause::InvalidSize:
             return "InvalidSize";
-        case ExitCause::FileAlreadyExists:
-            return "FileAlreadyExist";
+        case ExitCause::FileExists:
+            return "FileExists";
         case ExitCause::FileAccessError:
             return "FileAccessError";
-        case ExitCause::UnexpectedFileSystemEvent:
-            return "UnexpectedFileSystemEvent";
+        case ExitCause::FileLocked:
+            return "FileLocked";
         case ExitCause::NotEnoughDiskSpace:
             return "NotEnoughDiskSpace";
         case ExitCause::DriveAccessError:
@@ -176,8 +180,8 @@ std::string toString(const ExitCause e) {
             return "UploadNotTerminated";
         case ExitCause::UnableToCreateVfs:
             return "UnableToCreateVfs";
-        case ExitCause::NotEnoughtMemory:
-            return "NotEnoughtMemory";
+        case ExitCause::NotEnoughMemory:
+            return "NotEnoughMemory";
         case ExitCause::FileTooBig:
             return "FileTooBig";
         case ExitCause::MoveToTrashFailed:
@@ -212,6 +216,10 @@ std::string toString(const ExitCause e) {
             return "DriveWakingUp";
         case ExitCause::ServiceUnavailable:
             return "ServiceUnavailable";
+        case ExitCause::BadGateway:
+            return "BadGateway";
+        case ExitCause::NotEnoughINotifyWatches:
+            return "NotEnoughINotifyWatches";
         default:
             return noConversionStr;
     }
@@ -551,8 +559,8 @@ std::string toString(const NotificationsDisabled e) {
             return "OneHour";
         case NotificationsDisabled::UntilTomorrow:
             return "UntilTomorrow";
-        case NotificationsDisabled::TreeDays:
-            return "TreeDays";
+        case NotificationsDisabled::ThreeDays:
+            return "ThreeDays";
         case NotificationsDisabled::OneWeek:
             return "OneWeek";
         case NotificationsDisabled::Always:
@@ -815,6 +823,8 @@ std::string toString(const AppType e) {
             return "Server";
         case AppType::Client:
             return "Client";
+        case AppType::Test:
+            return "Test";
         default:
             return noConversionStr;
     }

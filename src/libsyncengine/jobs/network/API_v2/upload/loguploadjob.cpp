@@ -39,7 +39,9 @@ std::shared_ptr<LogUploadJob> LogUploadJob::_runningJob = nullptr;
 
 LogUploadJob::LogUploadJob(const bool includeArchivedLog, const std::function<void(LogUploadState, int)> &progressCallback,
                            const std::function<void(const Error &error)> &addErrorCallback) :
-    _includeArchivedLog(includeArchivedLog), _progressCallback(progressCallback), _addErrorCallback(addErrorCallback) {
+    _includeArchivedLog(includeArchivedLog),
+    _progressCallback(progressCallback),
+    _addErrorCallback(addErrorCallback) {
     if (!_progressCallback) {
         assert(_progressCallback && "progressCallback must be set");
         _progressCallback = [](LogUploadState, int) { return true; };
@@ -267,7 +269,7 @@ ExitInfo LogUploadJob::getTmpJobWorkingDir(SyncPath &tmpJobWorkingDir) const {
 
     // Create tmp folder
     if (IoError ioError = IoError::Unknown;
-        !IoHelper::createDirectory(tmpJobWorkingDir, ioError) && ioError != IoError::DirectoryExists) {
+        !IoHelper::createDirectory(tmpJobWorkingDir, false, ioError) && ioError != IoError::DirectoryExists) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::createDirectory: " << Utility::formatIoError(tmpJobWorkingDir, ioError));
         switch (ioError) {
@@ -499,7 +501,7 @@ ExitInfo LogUploadJob::upload(const SyncPath &archivePath) {
 
     std::shared_ptr<LogUploadSession> uploadSessionLog = nullptr;
     try {
-        uploadSessionLog = std::make_shared<LogUploadSession>(archivePath);
+        uploadSessionLog = std::make_shared<LogUploadSession>(archivePath, 1);
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadSession::LogUploadSession: error=" << e.what());
         return AbstractTokenNetworkJob::exception2ExitCode(e);

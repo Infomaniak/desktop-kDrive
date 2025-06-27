@@ -30,7 +30,8 @@
 
 namespace KDC {
 
-SynthesisItemDelegate::SynthesisItemDelegate(QObject *parent) : QStyledItemDelegate(parent) {}
+SynthesisItemDelegate::SynthesisItemDelegate(QObject *parent) :
+    QStyledItemDelegate(parent) {}
 
 void SynthesisItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const {
     QVariant data = index.data();

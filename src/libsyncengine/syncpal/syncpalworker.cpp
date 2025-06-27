@@ -40,9 +40,47 @@ SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string
                              const std::chrono::seconds &startDelay) :
     ISyncWorker(syncPal, name, shortName, startDelay) {}
 
+namespace {
+
+bool hasSuccessfullyFinished(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
+    return (!w1 || w1->exitCode() == ExitCode::Ok) && (!w2 || w2->exitCode() == ExitCode::Ok);
+}
+
+bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
+    const auto networkIssue =
+            (w1 && w1->exitCode() == ExitCode::NetworkError) || (w2 && w2->exitCode() == ExitCode::NetworkError);
+    const auto serviceUnavailable =
+            (w1 && w1->exitCode() == ExitCode::BackError && w1->exitCause() == ExitCause::ServiceUnavailable) ||
+            (w2 && w2->exitCode() == ExitCode::BackError && w2->exitCause() == ExitCause::ServiceUnavailable);
+    const auto syncDirNotAccessible =
+            (w1 && w1->exitCode() == ExitCode::SystemError && w1->exitCause() == ExitCause::SyncDirAccessError) ||
+            (w2 && w2->exitCode() == ExitCode::SystemError && w2->exitCause() == ExitCause::SyncDirAccessError);
+    return networkIssue || serviceUnavailable || syncDirNotAccessible;
+}
+
+bool shouldBeStoppedAndRestarted(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
+    const auto dataError = (w1 && w1->exitCode() == ExitCode::DataError) || (w2 && w2->exitCode() == ExitCode::DataError);
+    const auto backError = (w1 && w1->exitCode() == ExitCode::BackError) || (w2 && w2->exitCode() == ExitCode::BackError);
+    const auto logicError = (w1 && w1->exitCode() == ExitCode::LogicError) || (w2 && w2->exitCode() == ExitCode::LogicError);
+    return dataError || backError || logicError;
+}
+
+bool shouldBeStopped(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
+    const auto dbError = (w1 && w1->exitCode() == ExitCode::DbError) || (w2 && w2->exitCode() == ExitCode::DbError);
+    const auto systemError = (w1 && w1->exitCode() == ExitCode::SystemError) || (w2 && w2->exitCode() == ExitCode::SystemError);
+    const auto updateRequired =
+            (w1 && w1->exitCode() == ExitCode::UpdateRequired) || (w2 && w2->exitCode() == ExitCode::UpdateRequired);
+    const auto invalidSyncError =
+            (w1 && w1->exitCode() == ExitCode::InvalidSync) || (w2 && w2->exitCode() == ExitCode::InvalidSync);
+
+    return dbError || systemError || updateRequired || invalidSyncError;
+}
+
+} // namespace
+
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
-    LOG_SYNCPAL_INFO(_logger, "Worker " << name().c_str() << " started");
+    LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " started");
     if (_syncPal->vfsMode() != VirtualFileMode::Off) {
 #ifdef _WIN32
         auto resetFunc = std::function<void()>([this]() { resetVfsFilesStatus(); });
@@ -77,6 +115,7 @@ void SyncPalWorker::execute() {
     std::shared_ptr<SharedObject> inputSharedObject[2] = {nullptr, nullptr};
     time_t lastEstimateUpdate = 0;
     for (;;) {
+        bool syncDirChanged = false;
         // Check File System Observer workers status
         for (int index = 0; index < 2; index++) {
             if (fsoWorkers[index] && !fsoWorkers[index]->isRunning()) {
@@ -84,11 +123,19 @@ void SyncPalWorker::execute() {
                     LOG_SYNCPAL_DEBUG(_logger, "Stop FSO worker " << index);
                     isFSOInProgress[index] = false;
                     stopAndWaitForExitOfWorker(fsoWorkers[index]);
-                    bool shouldPause = fsoWorkers[index]->exitCode() == ExitCode::NetworkError ||
-                                       (fsoWorkers[index]->exitCode() == ExitCode::BackError &&
-                                        fsoWorkers[index]->exitCause() == ExitCause::ServiceUnavailable);
-                    if (shouldPause && !pauseAsked()) {
+                    if (shouldBePaused(fsoWorkers[index], nullptr) && !pauseAsked()) {
                         pause();
+                        continue;
+                    }
+
+                    syncDirChanged = fsoWorkers[index]->exitCode() == ExitCode::SystemError &&
+                                     fsoWorkers[index]->exitCause() == ExitCause::SyncDirChanged;
+                    if (syncDirChanged) {
+                        break;
+                    }
+
+                    if (shouldBeStopped(fsoWorkers[index], nullptr) && !stopAsked()) {
+                        stop();
                     }
                 } else if (!pauseAsked()) {
                     LOG_SYNCPAL_DEBUG(_logger, "Start FSO worker " << index);
@@ -96,6 +143,16 @@ void SyncPalWorker::execute() {
                     fsoWorkers[index]->start();
                 }
             }
+        }
+
+        // Manage SyncDir change (might happen if the sync folder is deleted and recreated e.g migration from an other device)
+        if (syncDirChanged && !tryToFixDbNodeIdsAfterSyncDirChange()) {
+            LOG_SYNCPAL_INFO(_logger,
+                             "Sync dir changed and we are unable to automaticaly fix syncDb, stopping all workers and exiting");
+            stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
+            exitCode = ExitCode::FatalError;
+            setExitCause(ExitCause::WorkerExited);
+            break;
         }
 
         // Manage stop
@@ -138,66 +195,48 @@ void SyncPalWorker::execute() {
 
         if (isStepInProgress) {
             // Check workers status
-            ExitCode workersExitCode[2];
-            for (int index = 0; index < 2; index++) {
-                workersExitCode[index] = (stepWorkers[index] && !stepWorkers[index]->isRunning() ? stepWorkers[index]->exitCode()
-                                                                                                 : ExitCode::Unknown);
-            }
-
-            if ((!stepWorkers[0] || workersExitCode[0] == ExitCode::Ok) &&
-                (!stepWorkers[1] || workersExitCode[1] == ExitCode::Ok)) {
+            if (hasSuccessfullyFinished(stepWorkers[0], stepWorkers[1])) {
                 // Next step
-                SyncStep step = nextStep();
+                const SyncStep step = nextStep();
                 if (step != _step) {
-                    LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has finished");
+                    LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " has finished");
                     waitForExitOfWorkers(stepWorkers);
                     initStep(step, stepWorkers, inputSharedObject);
                     isStepInProgress = false;
                 }
-            } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::NetworkError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCode::NetworkError)) {
-                LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has aborted");
+            } else if (shouldBePaused(stepWorkers[0], stepWorkers[1])) {
+                LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " has aborted");
 
                 // Stop the step workers and pause sync
                 stopAndWaitForExitOfWorkers(stepWorkers);
                 isStepInProgress = false;
                 pause();
                 continue;
-            } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::DataError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCode::DataError) ||
-                       (stepWorkers[0] && workersExitCode[0] == ExitCode::BackError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCode::BackError) ||
-                       (stepWorkers[0] && workersExitCode[0] == ExitCode::LogicError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCode::LogicError)) {
-                LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has aborted");
+            } else if (shouldBeStoppedAndRestarted(stepWorkers[0], stepWorkers[1])) {
+                LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " has aborted");
 
                 // Stop the step workers and restart a full sync
                 stopAndWaitForExitOfWorkers(stepWorkers);
-                _syncPal->invalideSnapshots();
+                _syncPal->tryToInvalidateSnapshots();
                 initStepFirst(stepWorkers, inputSharedObject, true);
                 continue;
-            } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::DbError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCode::DbError) ||
-                       (stepWorkers[0] && workersExitCode[0] == ExitCode::SystemError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCode::SystemError) ||
-                       (stepWorkers[0] && workersExitCode[0] == ExitCode::UpdateRequired) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCode::UpdateRequired)) {
-                LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has aborted");
+            } else if (shouldBeStopped(stepWorkers[0], stepWorkers[1])) {
+                LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " has aborted");
 
                 // Stop all workers and exit
                 stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
-                if ((stepWorkers[0] && workersExitCode[0] == ExitCode::SystemError &&
+                if ((stepWorkers[0] && stepWorkers[0]->exitCode() == ExitCode::SystemError &&
                      (stepWorkers[0]->exitCause() == ExitCause::NotEnoughDiskSpace ||
                       stepWorkers[0]->exitCause() == ExitCause::FileAccessError ||
-                      stepWorkers[0]->exitCause() == ExitCause::SyncDirAccesError)) ||
-                    (stepWorkers[1] && workersExitCode[1] == ExitCode::SystemError &&
+                      stepWorkers[0]->exitCause() == ExitCause::SyncDirAccessError)) ||
+                    (stepWorkers[1] && stepWorkers[1]->exitCode() == ExitCode::SystemError &&
                      (stepWorkers[1]->exitCause() == ExitCause::NotEnoughDiskSpace ||
                       stepWorkers[1]->exitCause() == ExitCause::FileAccessError ||
-                      stepWorkers[1]->exitCause() == ExitCause::SyncDirAccesError))) {
+                      stepWorkers[1]->exitCause() == ExitCause::SyncDirAccessError))) {
                     // Exit without error
                     exitCode = ExitCode::Ok;
-                } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::UpdateRequired) ||
-                           (stepWorkers[1] && workersExitCode[1] == ExitCode::UpdateRequired)) {
+                } else if ((stepWorkers[0] && stepWorkers[0]->exitCode() == ExitCode::UpdateRequired) ||
+                           (stepWorkers[1] && stepWorkers[1]->exitCode() == ExitCode::UpdateRequired)) {
                     exitCode = ExitCode::UpdateRequired;
                 } else {
                     exitCode = ExitCode::FatalError;
@@ -207,7 +246,7 @@ void SyncPalWorker::execute() {
             }
         } else {
             // Start workers
-            LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " start");
+            LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " start");
             isStepInProgress = true;
             for (int index = 0; index < 2; index++) {
                 if (inputSharedObject[index]) {
@@ -226,9 +265,10 @@ void SyncPalWorker::execute() {
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
 
-    LOG_SYNCPAL_INFO(_logger, "Worker " << name().c_str() << " stoped");
+    LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " stoped");
     setDone(exitCode);
 }
+
 void SyncPalWorker::stop() {
     _pauseAsked = false;
     _unpauseAsked = true;
@@ -302,10 +342,6 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             workers[1] = nullptr;
             _syncPal->copySnapshots();
             LOG_IF_FAIL(_syncPal->syncDb()->cache().reloadIfNeeded());
-            assert(_syncPal->snapshotCopy(ReplicaSide::Local)->checkIntegrityRecursively() &&
-                   "Local snapshot is corrupted, see logs for details");
-            assert(_syncPal->snapshotCopy(ReplicaSide::Remote)->checkIntegrityRecursively() &&
-                   "Remote snapshot is corrupted, see logs for details");
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             _syncPal->setRestart(false);
@@ -355,13 +391,14 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             _syncPal->syncDb()->cache().clear(); // Cache is not needed anymore, free resources
             break;
         case SyncStep::Done:
+            LOG_SYNCPAL_DEBUG(_logger, "Sync " << _syncCounter++ << " finished")
             workers[0] = nullptr;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             _syncPal->stopEstimateUpdates();
-            _syncPal->resetSnapshotInvalidationCounters();
             if (!_syncPal->restart()) {
+                _syncPal->resetSnapshotInvalidationCounters();
                 _syncPal->setSyncHasFullyCompletedInParms(true);
             }
             sentry::pTraces::basic::Sync(syncDbId()).stop();
@@ -390,20 +427,20 @@ void SyncPalWorker::initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2],
 SyncStep SyncPalWorker::nextStep() const {
     switch (_step) {
         case SyncStep::Idle: {
-            const bool areSnapshotsValid =
-                    _syncPal->isSnapshotValid(ReplicaSide::Local) && _syncPal->isSnapshotValid(ReplicaSide::Remote);
+            const bool areLiveSnapshotsValid =
+                    _syncPal->liveSnapshot(ReplicaSide::Local).isValid() && _syncPal->liveSnapshot(ReplicaSide::Remote).isValid();
             const bool areFSOWorkersRunning =
                     _syncPal->_localFSObserverWorker->isRunning() && _syncPal->_remoteFSObserverWorker->isRunning();
             const bool areFSOWorkersInitializing =
                     _syncPal->_localFSObserverWorker->initializing() || _syncPal->_remoteFSObserverWorker->initializing();
             const bool areFSOWorkersUpdating =
                     _syncPal->_localFSObserverWorker->updating() || _syncPal->_remoteFSObserverWorker->updating();
-            const bool areSnapshotsUpdated =
-                    _syncPal->snapshot(ReplicaSide::Local)->updated() || _syncPal->snapshot(ReplicaSide::Remote)->updated();
+            const bool areLiveSnapshotsUpdated =
+                    _syncPal->liveSnapshot(ReplicaSide::Local).updated() || _syncPal->liveSnapshot(ReplicaSide::Remote).updated();
 
 
-            return areSnapshotsValid && areFSOWorkersRunning && !areFSOWorkersInitializing && !areFSOWorkersUpdating &&
-                                   (areSnapshotsUpdated || _syncPal->restart())
+            return areLiveSnapshotsValid && areFSOWorkersRunning && !areFSOWorkersInitializing && !areFSOWorkersUpdating &&
+                                   (areLiveSnapshotsUpdated || _syncPal->restart())
                            ? SyncStep::UpdateDetection1
                            : SyncStep::Idle;
         }
@@ -498,6 +535,38 @@ void SyncPalWorker::stopAndWaitForExitOfAllWorkers(std::shared_ptr<ISyncWorker> 
 
     LOG_SYNCPAL_INFO(_logger, "***** Stop done");
 }
+bool SyncPalWorker::tryToFixDbNodeIdsAfterSyncDirChange() {
+    LOG_SYNCPAL_INFO(_logger, "Trying to fix SyncDb node IDs after sync dir nodeId change...");
+
+    NodeId newLocalRootNodeId;
+    if (!IoHelper::getNodeId(_syncPal->localPath(), newLocalRootNodeId)) {
+        LOGW_SYNCPAL_WARN(_logger,
+                          L"Unable to get new local node ID for " << Utility::formatSyncPath(_syncPal->localPath()) << L".");
+        sentry::Handler::instance()->captureMessage(KDC::sentry::Level::Warning, "Failed to get new local node ID for sync dir",
+                                                    "Sync Dir migration faillure");
+        return false;
+    }
+
+    if (!_syncPal->syncDb()->tryToFixDbNodeIdsAfterSyncDirChange(_syncPal->localPath())) {
+        LOGW_SYNCPAL_WARN(_logger, L"SyncDb could not be fixed after sync dir change.");
+        sentry::Handler::instance()->captureMessage(KDC::sentry::Level::Warning,
+                                                    "Failed to fix SyncDb node IDs after sync dir change",
+                                                    "Sync Dir migration faillure");
+        return false;
+    }
+
+    if (const ExitInfo exitInfo = _syncPal->setLocalNodeId(newLocalRootNodeId); !exitInfo) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in setLocalNodeId: " << exitInfo);
+        sentry::Handler::instance()->captureMessage(KDC::sentry::Level::Warning,
+                                                    "Failed to set new local node ID after sync dir change",
+                                                    "Sync Dir migration faillure");
+        return false;
+    }
+    LOG_SYNCPAL_INFO(_logger, "SyncDb successfully fixed after sync dir change, new local node ID is " << newLocalRootNodeId);
+    sentry::Handler::instance()->captureMessage(KDC::sentry::Level::Info, "SyncDb successfully fixed after sync dir change",
+                                                "Sync Dir migration success");
+    return true;
+}
 
 void SyncPalWorker::resetVfsFilesStatus() {
     if (_syncPal->vfsMode() == VirtualFileMode::Off) return;
@@ -509,7 +578,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
         auto dirIt = std::filesystem::recursive_directory_iterator(
                 _syncPal->localPath(), std::filesystem::directory_options::skip_permission_denied, ec);
         if (ec) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in resetVfsFilesStatus: " << Utility::formatStdError(ec).c_str());
+            LOGW_SYNCPAL_WARN(_logger, L"Error in resetVfsFilesStatus: " << Utility::formatStdError(ec));
             return;
         }
         for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
@@ -532,8 +601,8 @@ void SyncPalWorker::resetVfsFilesStatus() {
             bool isManaged = true;
             IoError ioError = IoError::Success;
             if (!Utility::checkIfDirEntryIsManaged(*dirIt, isManaged, ioError)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged : "
-                                                   << Utility::formatSyncPath(absolutePath).c_str());
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Error in Utility::checkIfDirEntryIsManaged : " << Utility::formatSyncPath(absolutePath));
                 ok = false;
                 dirIt.disable_recursion_pending();
                 continue;
@@ -541,21 +610,19 @@ void SyncPalWorker::resetVfsFilesStatus() {
 
             if (ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Directory entry does not exist anymore : " << Utility::formatSyncPath(absolutePath).c_str());
+                                   L"Directory entry does not exist anymore : " << Utility::formatSyncPath(absolutePath));
                 dirIt.disable_recursion_pending();
                 continue;
             }
 
             if (ioError == IoError::AccessDenied) {
-                LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Directory misses search permission : " << Utility::formatSyncPath(absolutePath).c_str());
+                LOGW_SYNCPAL_DEBUG(_logger, L"Directory misses search permission : " << Utility::formatSyncPath(absolutePath));
                 dirIt.disable_recursion_pending();
                 continue;
             }
 
             if (!isManaged) {
-                LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Directory entry is not managed : " << Utility::formatSyncPath(absolutePath).c_str());
+                LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry is not managed : " << Utility::formatSyncPath(absolutePath));
                 dirIt.disable_recursion_pending();
                 continue;
             }
@@ -598,7 +665,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
             if ((vfsStatus.isHydrated && pinState == PinState::OnlineOnly) ||
                 (!vfsStatus.isHydrated && pinState == PinState::AlwaysLocal)) {
                 if (!_syncPal->vfs()->fileStatusChanged(dirIt->path(), SyncFileStatus::Syncing)) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()));
                     ok = false;
                     dirIt.disable_recursion_pending();
                     continue;

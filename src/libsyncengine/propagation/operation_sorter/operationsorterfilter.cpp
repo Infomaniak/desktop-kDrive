@@ -22,6 +22,8 @@ OperationSorterFilter::OperationSorterFilter(const std::unordered_map<UniqueId, 
     _ops(ops) {}
 
 void OperationSorterFilter::filterOperations() {
+    clear();
+
     NameToOpMap deleteBeforeMoveCandidates;
     NameToOpMap moveBeforeCreateCandidates;
     SyncPathToSyncOpMap deletedDirectoryPaths;
@@ -44,6 +46,18 @@ void OperationSorterFilter::filterOperations() {
         filterMoveBeforeMoveHierarchyFlipCandidates(op, moveBeforeMoveHierarchyFlipCandidates);
     }
 }
+
+void OperationSorterFilter::clear() {
+    _fixDeleteBeforeMoveCandidates.clear();
+    _fixMoveBeforeCreateCandidates.clear();
+    _fixMoveBeforeDeleteCandidates.clear();
+    _fixCreateBeforeMoveCandidates.clear();
+    _fixDeleteBeforeCreateCandidates.clear();
+    _fixMoveBeforeMoveOccupiedCandidates.clear();
+    _fixEditBeforeMoveCandidates.clear();
+    _fixMoveBeforeMoveHierarchyFlipCandidates.clear();
+}
+
 // delete before move, e.g. user deletes an object at path "x" and moves another object "a" to "x".
 void OperationSorterFilter::filterDeleteBeforeMoveCandidates(const SyncOpPtr &op, NameToOpMap &deleteBeforeMoveCandidates) {
     if (op->type() == OperationType::Delete || op->type() == OperationType::Move) {
@@ -220,9 +234,27 @@ void OperationSorterFilter::filterMoveBeforeMoveOccupiedCandidates(const SyncOpP
 }
 
 void OperationSorterFilter::filterEditBeforeMoveCandidates(const SyncOpPtr &op) {
-    // We keep only operations on nodes that have both EDIT and MOVE operations.
     if (op->affectedNode()->hasChangeEvent(OperationType::Edit) && op->affectedNode()->hasChangeEvent(OperationType::Move)) {
-        (void) _fixEditBeforeMoveCandidates[op->affectedNode()->id().value()].emplace_back(op);
+        (void) _fixEditBeforeMoveCandidates[op->affectedNode()->idb().value()].emplace_back(op);
+        return;
+    }
+
+    if (op->affectedNode()->hasChangeEvent(OperationType::Move)) {
+        (void) _fixEditBeforeMoveCandidates[op->affectedNode()->idb().value()].emplace_back(op);
+        return;
+    }
+
+    if (op->affectedNode()->hasChangeEvent(OperationType::Edit)) {
+        // If the node has an edit event, we need to check if it or any of its ancestors has a move event on the corresponding
+        // side.
+        auto correspondingNode = op->correspondingNode();
+        while (correspondingNode) {
+            if (correspondingNode->hasChangeEvent(OperationType::Move)) {
+                (void) _fixEditBeforeMoveCandidates[correspondingNode->idb().value()].emplace_back(op);
+                break;
+            }
+            correspondingNode = correspondingNode->parentNode();
+        }
     }
 }
 

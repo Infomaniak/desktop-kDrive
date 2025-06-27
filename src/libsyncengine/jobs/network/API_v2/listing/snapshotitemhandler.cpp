@@ -16,22 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "csvfullfilelistwithcursorjob.h"
-#include "libcommonserver/utility/utility.h"
+#include "snapshotitemhandler.h"
 
-#ifdef _WIN32
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
-#endif
-
-#include <Poco/Net/HTTPRequest.h>
-
-#define API_TIMEOUT 900
-
-static const std::string endOfFileDelimiter("#EOF");
 
 namespace KDC {
 
-SnapshotItemHandler::SnapshotItemHandler(const log4cplus::Logger &logger) : _logger(logger) {}
+static const std::string endOfFileDelimiter("#EOF");
+
+SnapshotItemHandler::SnapshotItemHandler(const log4cplus::Logger &logger) :
+    _logger(logger) {}
 
 void SnapshotItemHandler::logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
                                    const std::exception &exc) {
@@ -41,10 +35,10 @@ void SnapshotItemHandler::logError(const std::wstring &methodName, const std::ws
 
     const std::wstring msg = header + strStr + excStr;
 
-    LOGW_WARN(_logger, msg.c_str());
+    LOGW_WARN(_logger, msg);
 }
 
-bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, CsvIndex index, SnapshotItem &item) {
+bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, const CsvIndex index, SnapshotItem &item) {
     switch (index) {
         case CsvIndexId: {
             item.setId(str);
@@ -85,7 +79,7 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, CsvIndex in
             }
 
             if (item.size() < 0) {
-                LOGW_WARN(_logger, L"Error in setSize, got a negative value - str='" << Utility::s2ws(str).c_str() << L"'");
+                LOGW_WARN(_logger, L"Error in setSize, got a negative value - str='" << Utility::s2ws(str) << L"'");
                 return false;
             }
 
@@ -103,7 +97,7 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, CsvIndex in
             }
 
             if (item.createdAt() < 0) {
-                LOGW_WARN(_logger, L"Error in setCreatedAt, got a negative value - str='" << Utility::s2ws(str).c_str() << L"'");
+                LOGW_WARN(_logger, L"Error in setCreatedAt, got a negative value - str='" << Utility::s2ws(str) << L"'");
                 return false;
             }
 
@@ -130,7 +124,7 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, CsvIndex in
             break;
         }
         default: {
-            // Ignore additionnal columns
+            // Ignore additional columns
             break;
         }
     }
@@ -138,7 +132,7 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, CsvIndex in
 }
 
 void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::string &line, bool &error, ParsingState &state) {
-    for (char c: line) {
+    for (const char c: line) {
         if (state.readingDoubleQuotedValue && state.prevCharDoubleQuotes) {
             if (c != ',' && c != '"') {
                 // After a closing double quote, we must have a comma or another double quote. Otherwise, ignore the line.
@@ -156,7 +150,7 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
             state.readingDoubleQuotedValue = false;
             state.prevCharDoubleQuotes = false;
             if (!updateSnapshotItem(state.tmp, state.index, item)) {
-                LOGW_WARN(_logger, L"Error in readSnapshotItemFields - line='" << Utility::s2ws(line).c_str() << L"'.");
+                LOGW_WARN(_logger, L"Error in readSnapshotItemFields - line='" << Utility::s2ws(line) << L"'.");
                 error = true;
                 return;
             }
@@ -165,8 +159,7 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
         } else if (c == '"') {
             if (state.index != CsvIndexName) {
                 // Double quotes are only allowed within file and directory names.
-                LOG_WARN(_logger,
-                         "Item '" << line.c_str() << "' ignored because the '\"' character is only allowed in the name field");
+                LOG_WARN(_logger, "Item '" << line << "' ignored because the '\"' character is only allowed in the name field");
                 return;
             }
 
@@ -221,7 +214,7 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
 
         // Ignore the lines containing escaped double quotes
         if (line.find(R"(\")") != std::string::npos) {
-            LOGW_WARN(_logger, L"Line containing an escaped double quotes, ignored it - line=" << Utility::s2ws(line).c_str());
+            LOGW_WARN(_logger, L"Line containing an escaped double quotes, ignored it - line=" << Utility::s2ws(line));
             ignore = true;
             return true;
         }
@@ -251,78 +244,11 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
 
     // Update last value
     if (!updateSnapshotItem(state.tmp, state.index, item)) {
-        LOGW_WARN(_logger, L"Error in updateSnapshotItem - line=" << Utility::s2ws(line).c_str());
+        LOGW_WARN(_logger, L"Error in updateSnapshotItem - line=" << Utility::s2ws(line));
         error = true;
         return true;
     }
 
-    return true;
-}
-
-CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(int driveDbId, const NodeId &dirId, NodeSet blacklist /*= {}*/,
-                                                           bool zip /*= true*/) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _dirId(dirId), _blacklist(blacklist), _zip(zip),
-    _snapshotItemHandler(_logger) {
-    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    _customTimeout = API_TIMEOUT + 15;
-
-    if (_zip) {
-        addRawHeader("Accept-Encoding", "gzip");
-    }
-}
-
-bool CsvFullFileListWithCursorJob::getItem(SnapshotItem &item, bool &error, bool &ignore, bool &eof) {
-    error = false;
-    ignore = false;
-
-    return _snapshotItemHandler.getItem(item, _ss, error, ignore, eof);
-}
-
-std::string CsvFullFileListWithCursorJob::getCursor() {
-    return _resHttp.get("X-kDrive-Cursor", "");
-}
-
-std::string CsvFullFileListWithCursorJob::getSpecificUrl() {
-    std::string str = AbstractTokenNetworkJob::getSpecificUrl();
-    str += "/files/listing/full";
-    return str;
-}
-
-void CsvFullFileListWithCursorJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
-    uri.addQueryParameter("directory_id", _dirId);
-    uri.addQueryParameter("recursive", "true");
-    uri.addQueryParameter("format", "safe_csv");
-    if (!_blacklist.empty()) {
-        std::string str = Utility::nodeSet2str(_blacklist);
-        if (!str.empty()) {
-            uri.addQueryParameter("without_ids", str);
-        }
-    }
-    uri.addQueryParameter("with", "files.is_link");
-
-    canceled = false;
-}
-
-bool CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
-    if (_zip) {
-        unzip(is, _ss);
-    } else {
-        _ss << is.rdbuf();
-    }
-
-    // Check that the stringstream is not empty (network issues)
-    _ss.seekg(0, std::ios_base::end);
-    const auto length = _ss.tellg();
-    if (length == 0) {
-        LOG_ERROR(_logger, "Reply " << jobId() << " received with empty content.");
-        return false;
-    }
-
-    _ss.seekg(0, std::ios_base::beg);
-    if (isExtendedLog()) {
-        LOGW_DEBUG(_logger,
-                   L"Reply " << jobId() << L" received - length=" << length << L" value=" << Utility::s2ws(_ss.str()).c_str());
-    }
     return true;
 }
 

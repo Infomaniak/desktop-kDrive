@@ -46,26 +46,26 @@ void TestSnapshot::setUp() {
     _rootNodeId = SyncDb::driveRootNode().nodeIdLocal().value();
     _dummyRootNode = DbNode(0, std::nullopt, SyncName(), SyncName(), "1", "1", std::nullopt, std::nullopt, std::nullopt,
                             NodeType::Directory, 0, std::nullopt);
-    _snapshot = std::make_unique<Snapshot>(ReplicaSide::Local, _dummyRootNode);
+    _liveSnapshot = std::make_unique<LiveSnapshot>(ReplicaSide::Local, _dummyRootNode);
 
     // Insert node A
     const SnapshotItem itemA("a", _rootNodeId, Str("A"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                              testhelpers::defaultFileSize, false, true, true);
-    _snapshot->updateItem(itemA);
+    _liveSnapshot->updateItem(itemA);
 
     // Insert node B
     const SnapshotItem itemB("b", _rootNodeId, Str("B"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                              testhelpers::defaultFileSize, false, true, true);
-    _snapshot->updateItem(itemB);
+    _liveSnapshot->updateItem(itemB);
 
     // Insert child nodes
     const SnapshotItem itemAA("aa", "a", Str("AA"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                               testhelpers::defaultFileSize, false, true, true);
-    _snapshot->updateItem(itemAA);
+    _liveSnapshot->updateItem(itemAA);
 
     const SnapshotItem itemAAA("aaa", "aa", Str("AAA"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
                                testhelpers::defaultFileSize, false, true, true);
-    _snapshot->updateItem(itemAAA);
+    _liveSnapshot->updateItem(itemAAA);
 }
 
 void TestSnapshot::tearDown() {
@@ -78,86 +78,89 @@ void TestSnapshot::testItemId() {
 
     const DbNode dummyRootNode(0, std::nullopt, SyncName(), SyncName(), "1", "1", std::nullopt, std::nullopt, std::nullopt,
                                NodeType::Directory, 0, std::nullopt);
-    Snapshot snapshot(ReplicaSide::Local, dummyRootNode);
+    LiveSnapshot liveSnapshot(ReplicaSide::Local, dummyRootNode);
 
-    snapshot.updateItem(
+    liveSnapshot.updateItem(
             SnapshotItem("2", rootNodeId, Str("a"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
-    snapshot.updateItem(SnapshotItem("3", "2", Str("aa"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
-    snapshot.updateItem(SnapshotItem("4", "2", Str("ab"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
-    snapshot.updateItem(SnapshotItem("5", "2", Str("ac"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
-    snapshot.updateItem(SnapshotItem("6", "4", Str("aba"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
-    snapshot.updateItem(SnapshotItem("7", "6", Str("abaa"), 1640995202, 1640995202, NodeType::File, 10, false, true, true));
-    CPPUNIT_ASSERT_EQUAL(NodeId("7"), snapshot.itemId(SyncPath("a/ab/aba/abaa")));
+    liveSnapshot.updateItem(SnapshotItem("3", "2", Str("aa"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
+    liveSnapshot.updateItem(SnapshotItem("4", "2", Str("ab"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
+    liveSnapshot.updateItem(SnapshotItem("5", "2", Str("ac"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
+    liveSnapshot.updateItem(
+            SnapshotItem("6", "4", Str("aba"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
+    liveSnapshot.updateItem(SnapshotItem("7", "6", Str("abaa"), 1640995202, 1640995202, NodeType::File, 10, false, true, true));
+    CPPUNIT_ASSERT_EQUAL(NodeId("7"), liveSnapshot.itemId(SyncPath("a/ab/aba/abaa")));
 
     SyncName nfcNormalized;
     Utility::normalizedSyncName(Str("abà"), nfcNormalized);
 
     SyncName nfdNormalized;
-    Utility::normalizedSyncName(Str("abà"), nfdNormalized, Utility::UnicodeNormalization::NFD);
+    Utility::normalizedSyncName(Str("abà"), nfdNormalized, UnicodeNormalization::NFD);
 
-    snapshot.updateItem(SnapshotItem("6", "4", nfcNormalized, 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
-    CPPUNIT_ASSERT_EQUAL(NodeId("7"), snapshot.itemId(SyncPath("a/ab") / nfcNormalized / Str("abaa")));
-    CPPUNIT_ASSERT_EQUAL(NodeId(""), snapshot.itemId(SyncPath("a/ab") / nfdNormalized / Str("abaa")));
+    liveSnapshot.updateItem(
+            SnapshotItem("6", "4", nfcNormalized, 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
+    CPPUNIT_ASSERT_EQUAL(NodeId("7"), liveSnapshot.itemId(SyncPath("a/ab") / nfcNormalized / Str("abaa")));
+    CPPUNIT_ASSERT_EQUAL(NodeId(""), liveSnapshot.itemId(SyncPath("a/ab") / nfdNormalized / Str("abaa")));
 
-    snapshot.updateItem(SnapshotItem("6", "4", nfdNormalized, 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
-    CPPUNIT_ASSERT_EQUAL(NodeId("7"), snapshot.itemId(SyncPath("a/ab") / nfdNormalized / Str("abaa")));
-    CPPUNIT_ASSERT_EQUAL(NodeId(""), snapshot.itemId(SyncPath("a/ab") / nfcNormalized / Str("abaa")));
+    liveSnapshot.updateItem(
+            SnapshotItem("6", "4", nfdNormalized, 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
+    CPPUNIT_ASSERT_EQUAL(NodeId("7"), liveSnapshot.itemId(SyncPath("a/ab") / nfdNormalized / Str("abaa")));
+    CPPUNIT_ASSERT_EQUAL(NodeId(""), liveSnapshot.itemId(SyncPath("a/ab") / nfcNormalized / Str("abaa")));
 }
 
 void TestSnapshot::testSnapshot() {
-    CPPUNIT_ASSERT(_snapshot->exists("a"));
-    CPPUNIT_ASSERT_EQUAL(std::string("A"), SyncName2Str(_snapshot->name("a")));
-    CPPUNIT_ASSERT_EQUAL(NodeType::Directory, _snapshot->type("a"));
+    CPPUNIT_ASSERT(_liveSnapshot->exists("a"));
+    CPPUNIT_ASSERT_EQUAL(std::string("A"), SyncName2Str(_liveSnapshot->name("a")));
+    CPPUNIT_ASSERT_EQUAL(NodeType::Directory, _liveSnapshot->type("a"));
     NodeSet childrenIds;
-    _snapshot->getChildrenIds(_rootNodeId, childrenIds);
+    _liveSnapshot->getChildrenIds(_rootNodeId, childrenIds);
     CPPUNIT_ASSERT(childrenIds.contains("a"));
 
-    CPPUNIT_ASSERT(_snapshot->exists("b"));
-    _snapshot->getChildrenIds(_rootNodeId, childrenIds);
+    CPPUNIT_ASSERT(_liveSnapshot->exists("b"));
+    _liveSnapshot->getChildrenIds(_rootNodeId, childrenIds);
     CPPUNIT_ASSERT(childrenIds.contains("b"));
 
-    CPPUNIT_ASSERT(_snapshot->exists("aa"));
-    _snapshot->getChildrenIds("a", childrenIds);
+    CPPUNIT_ASSERT(_liveSnapshot->exists("aa"));
+    _liveSnapshot->getChildrenIds("a", childrenIds);
     CPPUNIT_ASSERT(childrenIds.contains("aa"));
 
-    CPPUNIT_ASSERT(_snapshot->exists("aaa"));
-    _snapshot->getChildrenIds("aa", childrenIds);
+    CPPUNIT_ASSERT(_liveSnapshot->exists("aaa"));
+    _liveSnapshot->getChildrenIds("aa", childrenIds);
     CPPUNIT_ASSERT(childrenIds.contains("aaa"));
 
     // Update node A
-    _snapshot->updateItem(SnapshotItem("a", _rootNodeId, Str("A*"), testhelpers::defaultTime, testhelpers::defaultTime + 1,
-                                       NodeType::Directory, testhelpers::defaultFileSize, false, true, true));
-    CPPUNIT_ASSERT_EQUAL(std::string("A*"), SyncName2Str(_snapshot->name("a")));
+    _liveSnapshot->updateItem(SnapshotItem("a", _rootNodeId, Str("A*"), testhelpers::defaultTime, testhelpers::defaultTime + 1,
+                                           NodeType::Directory, testhelpers::defaultFileSize, false, true, true));
+    CPPUNIT_ASSERT_EQUAL(std::string("A*"), SyncName2Str(_liveSnapshot->name("a")));
     SyncPath path;
     bool ignore = false;
-    _snapshot->path("aaa", path, ignore);
+    _liveSnapshot->path("aaa", path, ignore);
     CPPUNIT_ASSERT_EQUAL(SyncPath("A*/AA/AAA"), path);
-    CPPUNIT_ASSERT_EQUAL(std::string("AAA"), SyncName2Str(_snapshot->name("aaa")));
-    CPPUNIT_ASSERT_EQUAL(static_cast<SyncTime>(testhelpers::defaultTime), _snapshot->lastModified("aaa"));
-    CPPUNIT_ASSERT_EQUAL(NodeType::File, _snapshot->type("aaa"));
-    CPPUNIT_ASSERT(_snapshot->contentChecksum("aaa").empty()); // Checksum never computed for now
-    CPPUNIT_ASSERT_EQUAL(NodeId("aaa"), _snapshot->itemId(std::filesystem::path("A*/AA/AAA")));
+    CPPUNIT_ASSERT_EQUAL(std::string("AAA"), SyncName2Str(_liveSnapshot->name("aaa")));
+    CPPUNIT_ASSERT_EQUAL(static_cast<SyncTime>(testhelpers::defaultTime), _liveSnapshot->lastModified("aaa"));
+    CPPUNIT_ASSERT_EQUAL(NodeType::File, _liveSnapshot->type("aaa"));
+    CPPUNIT_ASSERT(_liveSnapshot->contentChecksum("aaa").empty()); // Checksum never computed for now
+    CPPUNIT_ASSERT_EQUAL(NodeId("aaa"), _liveSnapshot->itemId(std::filesystem::path("A*/AA/AAA")));
 
     // Move node AA under B
-    _snapshot->updateItem(SnapshotItem("aa", "b", Str("AA"), testhelpers::defaultTime, testhelpers::defaultTime,
-                                       NodeType::Directory, testhelpers::defaultFileSize, false, true, true));
-    CPPUNIT_ASSERT(_snapshot->parentId("aa") == "b");
-    _snapshot->getChildrenIds("b", childrenIds);
+    _liveSnapshot->updateItem(SnapshotItem("aa", "b", Str("AA"), testhelpers::defaultTime, testhelpers::defaultTime,
+                                           NodeType::Directory, testhelpers::defaultFileSize, false, true, true));
+    CPPUNIT_ASSERT(_liveSnapshot->parentId("aa") == "b");
+    _liveSnapshot->getChildrenIds("b", childrenIds);
     CPPUNIT_ASSERT(childrenIds.contains("aa"));
-    _snapshot->getChildrenIds("a", childrenIds);
+    _liveSnapshot->getChildrenIds("a", childrenIds);
     CPPUNIT_ASSERT(childrenIds.empty());
 
     // Remove node B
-    _snapshot->removeItem("b");
-    _snapshot->getChildrenIds(_rootNodeId, childrenIds);
-    CPPUNIT_ASSERT(!_snapshot->exists("aaa"));
-    CPPUNIT_ASSERT(!_snapshot->exists("aa"));
-    CPPUNIT_ASSERT(!_snapshot->exists("b"));
+    _liveSnapshot->removeItem("b");
+    _liveSnapshot->getChildrenIds(_rootNodeId, childrenIds);
+    CPPUNIT_ASSERT(!_liveSnapshot->exists("aaa"));
+    CPPUNIT_ASSERT(!_liveSnapshot->exists("aa"));
+    CPPUNIT_ASSERT(!_liveSnapshot->exists("b"));
     CPPUNIT_ASSERT(!childrenIds.contains("b"));
 
-    // Reset snapshot
-    _snapshot->init();
-    CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(1), _snapshot->nbItems());
+    // Reset liveSnapshot
+    _liveSnapshot->init();
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(1), _liveSnapshot->nbItems());
 }
 
 void TestSnapshot::testSize() {
@@ -165,7 +168,7 @@ void TestSnapshot::testSize() {
 
     const DbNode dummyRootNode(0, std::nullopt, Str("Local Drive"), SyncName(), "1", "1", std::nullopt, std::nullopt,
                                std::nullopt, NodeType::Directory, 0, std::nullopt);
-    Snapshot snapshot(ReplicaSide::Local, dummyRootNode);
+    LiveSnapshot liveSnapshot(ReplicaSide::Local, dummyRootNode);
 
     const int64_t file11Size = 10;
     const int64_t file12Size = 20;
@@ -187,22 +190,22 @@ void TestSnapshot::testSize() {
                                NodeType::File, file111Size, false, true, true);
     const SnapshotItem file112("file1.1.2", "dir1.1", Str("file1.1.2"), testhelpers::defaultTime, testhelpers::defaultTime,
                                NodeType::File, file112Size, false, true, true);
-    snapshot.updateItem(dir1);
-    snapshot.updateItem(dir11);
-    snapshot.updateItem(file11);
-    snapshot.updateItem(file12);
-    snapshot.updateItem(file111);
-    snapshot.updateItem(file112);
-    snapshot.updateItem(file112);
-    snapshot.updateItem(file112);
+    liveSnapshot.updateItem(dir1);
+    liveSnapshot.updateItem(dir11);
+    liveSnapshot.updateItem(file11);
+    liveSnapshot.updateItem(file12);
+    liveSnapshot.updateItem(file111);
+    liveSnapshot.updateItem(file112);
+    liveSnapshot.updateItem(file112);
+    liveSnapshot.updateItem(file112);
 
-    CPPUNIT_ASSERT_EQUAL(file11Size, snapshot.size("file1.1"));
-    CPPUNIT_ASSERT_EQUAL(file12Size, snapshot.size("file1.2"));
-    CPPUNIT_ASSERT_EQUAL(file111Size, snapshot.size("file1.1.1"));
-    CPPUNIT_ASSERT_EQUAL(file112Size, snapshot.size("file1.1.2"));
-    CPPUNIT_ASSERT_EQUAL(expectedDir1Size, snapshot.size("dir1"));
-    CPPUNIT_ASSERT_EQUAL(expectedDir11Size, snapshot.size("dir1.1"));
-    CPPUNIT_ASSERT_EQUAL(expectedRootDirSize, snapshot.size("1" /*root node id*/));
+    CPPUNIT_ASSERT_EQUAL(file11Size, liveSnapshot.size("file1.1"));
+    CPPUNIT_ASSERT_EQUAL(file12Size, liveSnapshot.size("file1.2"));
+    CPPUNIT_ASSERT_EQUAL(file111Size, liveSnapshot.size("file1.1.1"));
+    CPPUNIT_ASSERT_EQUAL(file112Size, liveSnapshot.size("file1.1.2"));
+    CPPUNIT_ASSERT_EQUAL(expectedDir1Size, liveSnapshot.size("dir1"));
+    CPPUNIT_ASSERT_EQUAL(expectedDir11Size, liveSnapshot.size("dir1.1"));
+    CPPUNIT_ASSERT_EQUAL(expectedRootDirSize, liveSnapshot.size("1" /*root node id*/));
 }
 
 void TestSnapshot::testDuplicatedItem() {
@@ -210,16 +213,16 @@ void TestSnapshot::testDuplicatedItem() {
 
     const DbNode dummyRootNode(0, std::nullopt, Str("Local Drive"), SyncName(), "1", "1", std::nullopt, std::nullopt,
                                std::nullopt, NodeType::Directory, 0, std::nullopt);
-    Snapshot snapshot(ReplicaSide::Local, dummyRootNode);
+    LiveSnapshot liveSnapshot(ReplicaSide::Local, dummyRootNode);
 
     const SnapshotItem file1("A", rootNodeId, Str("file1"), 1640995201, -1640995201, NodeType::File, 123, false, true, true);
     const SnapshotItem file2("B", rootNodeId, Str("file1"), 1640995201, -1640995201, NodeType::File, 123, false, true, true);
 
-    snapshot.updateItem(file1);
-    snapshot.updateItem(file2);
+    liveSnapshot.updateItem(file1);
+    liveSnapshot.updateItem(file2);
 
-    CPPUNIT_ASSERT(!snapshot.exists("A"));
-    CPPUNIT_ASSERT(snapshot.exists("B"));
+    CPPUNIT_ASSERT(!liveSnapshot.exists("A"));
+    CPPUNIT_ASSERT(liveSnapshot.exists("B"));
 }
 
 void TestSnapshot::testSnapshotInsertionWithDifferentEncodings() {
@@ -228,17 +231,17 @@ void TestSnapshot::testSnapshotInsertionWithDifferentEncodings() {
     const SnapshotItem nfdItem("B", _rootNodeId, testhelpers::makeNfdSyncName(), testhelpers::defaultTime,
                                -testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize, false, true, true);
     {
-        _snapshot->updateItem(nfcItem);
+        _liveSnapshot->updateItem(nfcItem);
         SyncPath syncPath;
         bool ignore = false;
-        _snapshot->path("A", syncPath, ignore);
+        _liveSnapshot->path("A", syncPath, ignore);
         CPPUNIT_ASSERT_EQUAL(SyncPath(testhelpers::makeNfcSyncName()), syncPath);
     }
     {
-        _snapshot->updateItem(nfdItem);
+        _liveSnapshot->updateItem(nfdItem);
         SyncPath syncPath;
         bool ignore = false;
-        _snapshot->path("B", syncPath, ignore);
+        _liveSnapshot->path("B", syncPath, ignore);
         CPPUNIT_ASSERT_EQUAL(SyncPath(testhelpers::makeNfdSyncName()), syncPath);
     }
 }
@@ -250,10 +253,10 @@ void TestSnapshot::testPath() {
         const auto name = Str("test");
         const SnapshotItem item(id, "a", name, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                                 testhelpers::defaultFileSize, false, true, true);
-        _snapshot->updateItem(item);
+        _liveSnapshot->updateItem(item);
         SyncPath path;
         bool ignore = false;
-        CPPUNIT_ASSERT(_snapshot->path(id, path, ignore));
+        CPPUNIT_ASSERT(_liveSnapshot->path(id, path, ignore));
         CPPUNIT_ASSERT_EQUAL(SyncPath("A") / name, path);
         CPPUNIT_ASSERT(!ignore);
     }
@@ -263,16 +266,16 @@ void TestSnapshot::testPath() {
         const auto name = Str("E:S");
         const SnapshotItem item(id, "a", name, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                                 testhelpers::defaultFileSize, false, true, true);
-        _snapshot->updateItem(item);
+        _liveSnapshot->updateItem(item);
         SyncPath path;
         bool ignore = false;
         // On Windows, if the file name starts with "X:" pattern, the previous element of the path are overrode
         // (https://en.cppreference.com/w/cpp/filesystem/path/append)
 #ifdef _WIN32
-        CPPUNIT_ASSERT(!_snapshot->path(id, path, ignore));
+        CPPUNIT_ASSERT(!_liveSnapshot->path(id, path, ignore));
         CPPUNIT_ASSERT(ignore);
 #else
-        CPPUNIT_ASSERT(_snapshot->path(id, path, ignore));
+        CPPUNIT_ASSERT(_liveSnapshot->path(id, path, ignore));
         CPPUNIT_ASSERT_EQUAL(SyncPath("A") / name, path);
         CPPUNIT_ASSERT(!ignore);
 #endif
@@ -281,12 +284,12 @@ void TestSnapshot::testPath() {
         const auto childName = Str("test");
         const SnapshotItem childItem(childId, id, childName, testhelpers::defaultTime, testhelpers::defaultTime,
                                      NodeType::Directory, testhelpers::defaultFileSize, false, true, true);
-        _snapshot->updateItem(childItem);
+        _liveSnapshot->updateItem(childItem);
 #ifdef _WIN32
-        CPPUNIT_ASSERT(!_snapshot->path(childId, path, ignore));
+        CPPUNIT_ASSERT(!_liveSnapshot->path(childId, path, ignore));
         CPPUNIT_ASSERT(ignore);
 #else
-        CPPUNIT_ASSERT(_snapshot->path(childId, path, ignore));
+        CPPUNIT_ASSERT(_liveSnapshot->path(childId, path, ignore));
         CPPUNIT_ASSERT_EQUAL(SyncPath("A") / name / childName, path);
         CPPUNIT_ASSERT(!ignore);
 #endif
@@ -294,35 +297,36 @@ void TestSnapshot::testPath() {
     // Same test but on the snapshot copy (meaning using paths stored in cache)
     std::vector<SyncName> names = {Str("E:S"), Str("E:/S")};
     for (const auto &name: names) {
-        Snapshot snapshotCopy(ReplicaSide::Local, _dummyRootNode);
-        snapshotCopy = *_snapshot;
         const auto id = CommonUtility::generateRandomStringAlphaNum();
         const SnapshotItem item(id, "a", name, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                                 testhelpers::defaultFileSize, false, true, true);
-        snapshotCopy.updateItem(item);
-        SyncPath path;
-        bool ignore = false;
-        // On Windows, if the file name starts with the "X:" pattern, the previous elements of the path are overrode
-        // (https://en.cppreference.com/w/cpp/filesystem/path/append)
-#ifdef _WIN32
-        CPPUNIT_ASSERT(!snapshotCopy.path(id, path, ignore));
-        CPPUNIT_ASSERT(ignore);
-#else
-        CPPUNIT_ASSERT(snapshotCopy.path(id, path, ignore));
-        CPPUNIT_ASSERT_EQUAL(SyncPath("A") / name, path);
-        CPPUNIT_ASSERT(!ignore);
-#endif
+        _liveSnapshot->updateItem(item);
 
         const auto childId = CommonUtility::generateRandomStringAlphaNum();
         const auto childName = Str("test");
         const SnapshotItem childItem(childId, id, childName, testhelpers::defaultTime, testhelpers::defaultTime,
                                      NodeType::Directory, testhelpers::defaultFileSize, false, true, true);
-        snapshotCopy.updateItem(childItem);
+        _liveSnapshot->updateItem(childItem);
+
+        Snapshot snapshot(*_liveSnapshot);
+        SyncPath path;
+        bool ignore = false;
+        // On Windows, if the file name starts with the "X:" pattern, the previous elements of the path are overrode
+        // (https://en.cppreference.com/w/cpp/filesystem/path/append)
 #ifdef _WIN32
-        CPPUNIT_ASSERT(!snapshotCopy.path(childId, path, ignore));
+        CPPUNIT_ASSERT(!snapshot.path(id, path, ignore));
         CPPUNIT_ASSERT(ignore);
 #else
-        CPPUNIT_ASSERT(snapshotCopy.path(childId, path, ignore));
+        CPPUNIT_ASSERT(_liveSnapshot->path(id, path, ignore));
+        CPPUNIT_ASSERT_EQUAL(SyncPath("A") / name, path);
+        CPPUNIT_ASSERT(!ignore);
+#endif
+
+#ifdef _WIN32
+        CPPUNIT_ASSERT(!snapshot.path(childId, path, ignore));
+        CPPUNIT_ASSERT(ignore);
+#else
+        CPPUNIT_ASSERT(_liveSnapshot->path(childId, path, ignore));
         CPPUNIT_ASSERT_EQUAL(SyncPath("A") / name / childName, path);
         CPPUNIT_ASSERT(!ignore);
 #endif
@@ -333,16 +337,16 @@ void TestSnapshot::testPath() {
         const auto name = Str("a:b");
         const SnapshotItem item(id, "a", name, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                                 testhelpers::defaultFileSize, false, true, true);
-        _snapshot->updateItem(item);
+        _liveSnapshot->updateItem(item);
         SyncPath path;
         bool ignore = false;
         // On Windows, if the file name starts with "X:" pattern, the previous element of the path are overrode
         // (https://en.cppreference.com/w/cpp/filesystem/path/append)
 #ifdef _WIN32
-        CPPUNIT_ASSERT(!_snapshot->path(id, path, ignore));
+        CPPUNIT_ASSERT(!_liveSnapshot->path(id, path, ignore));
         CPPUNIT_ASSERT(ignore);
 #else
-        CPPUNIT_ASSERT(_snapshot->path(id, path, ignore));
+        CPPUNIT_ASSERT(_liveSnapshot->path(id, path, ignore));
         CPPUNIT_ASSERT_EQUAL(SyncPath("A") / name, path);
         CPPUNIT_ASSERT(!ignore);
 #endif
@@ -353,17 +357,17 @@ void TestSnapshot::testPath() {
         const auto name = Str("C:");
         const SnapshotItem item(id, "a", name, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                                 testhelpers::defaultFileSize, false, true, true);
-        _snapshot->updateItem(item);
+        _liveSnapshot->updateItem(item);
 
         SyncPath path;
         bool ignore = false;
         // On Windows, if the file name starts with "X:" pattern, the previous element of the path are overrode
         // (https://en.cppreference.com/w/cpp/filesystem/path/append)
 #ifdef _WIN32
-        CPPUNIT_ASSERT(!_snapshot->path(id, path, ignore));
+        CPPUNIT_ASSERT(!_liveSnapshot->path(id, path, ignore));
         CPPUNIT_ASSERT(ignore);
 #else
-        CPPUNIT_ASSERT(_snapshot->path(id, path, ignore));
+        CPPUNIT_ASSERT(_liveSnapshot->path(id, path, ignore));
         CPPUNIT_ASSERT_EQUAL(SyncPath("A") / name, path);
         CPPUNIT_ASSERT(!ignore);
 #endif
@@ -374,10 +378,10 @@ void TestSnapshot::testPath() {
         const auto name = Str("aa:b");
         const SnapshotItem item(id, "a", name, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                                 testhelpers::defaultFileSize, false, true, true);
-        _snapshot->updateItem(item);
+        _liveSnapshot->updateItem(item);
         SyncPath path;
         bool ignore = false;
-        CPPUNIT_ASSERT(_snapshot->path(id, path, ignore));
+        CPPUNIT_ASSERT(_liveSnapshot->path(id, path, ignore));
         CPPUNIT_ASSERT_EQUAL(SyncPath("A") / name, path);
         CPPUNIT_ASSERT(!ignore);
     }
@@ -388,56 +392,54 @@ void TestSnapshot::testCopySnapshot() {
 
     const DbNode dummyRootNode(0, std::nullopt, Str("Local Drive"), SyncName(), "1", "1", std::nullopt, std::nullopt,
                                std::nullopt, NodeType::Directory, 0, std::nullopt);
-    Snapshot snapshot(ReplicaSide::Local, dummyRootNode);
+    LiveSnapshot liveSnapshot(ReplicaSide::Local, dummyRootNode);
 
     const SnapshotItem dir1("dir1", rootNodeId, Str("dir1"), testhelpers::defaultTime, testhelpers::defaultTime,
                             NodeType::Directory, testhelpers::defaultDirSize, false, true, true);
     const SnapshotItem file11("file1.1", "dir1", Str("file1.1"), testhelpers::defaultTime, testhelpers::defaultTime,
                               NodeType::File, testhelpers::defaultFileSize, false, true, true);
 
-    snapshot.updateItem(dir1);
-    snapshot.updateItem(file11);
+    liveSnapshot.updateItem(dir1);
+    liveSnapshot.updateItem(file11);
 
-    Snapshot snapShotCopy(ReplicaSide::Local, dummyRootNode);
-    snapShotCopy = snapshot;
+    Snapshot snapshot(liveSnapshot);
+    CPPUNIT_ASSERT_EQUAL(liveSnapshot.nbItems(), snapshot.nbItems());
 
-    CPPUNIT_ASSERT_EQUAL(snapshot.nbItems(), snapShotCopy.nbItems());
-
+    NodeSet liveSnapshotIds;
     NodeSet snapshotIds;
-    NodeSet snapshotCopyIds;
+    liveSnapshot.ids(liveSnapshotIds);
     snapshot.ids(snapshotIds);
-    snapShotCopy.ids(snapshotCopyIds);
-    CPPUNIT_ASSERT(snapshotIds == snapshotCopyIds);
+    CPPUNIT_ASSERT(liveSnapshotIds == snapshotIds);
 
     // Ensure _items elements are copied, not just the pointer
-    snapshot.setName("file1.1", Str("newFile1.1"));
-    CPPUNIT_ASSERT(Str2SyncName("newFile1.1") == snapshot.name("file1.1"));
-    CPPUNIT_ASSERT(Str2SyncName("file1.1") == snapShotCopy.name("file1.1"));
+    liveSnapshot.setName("file1.1", Str("newFile1.1"));
+    CPPUNIT_ASSERT(Str2SyncName("newFile1.1") == liveSnapshot.name("file1.1"));
+    CPPUNIT_ASSERT(Str2SyncName("file1.1") == snapshot.name("file1.1"));
 
     // Ensure the snapshot revision is correctly handled
-    snapshot.setName("file1.1", Str("File1.1")); // Ensure the live snapshot revision increase
-    CPPUNIT_ASSERT_GREATER(snapShotCopy.revision(), snapshot.revision());
-    CPPUNIT_ASSERT_GREATER(snapShotCopy.lastChangeRevision("file1.1"), snapshot.lastChangeRevision("file1.1"));
+    liveSnapshot.setName("file1.1", Str("File1.1")); // Ensure the live snapshot revision increase
+    CPPUNIT_ASSERT_GREATER(snapshot.revision(), liveSnapshot.revision());
+    CPPUNIT_ASSERT_GREATER(snapshot.lastChangeRevision("file1.1"), liveSnapshot.lastChangeRevision("file1.1"));
 
     // Ensure SnapshotItems::_children elements are copied, not just the pointer
+    const auto liveSnapshotDir1 = liveSnapshot.findItem("dir1");
     const auto snapshotDir1 = snapshot.findItem("dir1");
-    const auto snapshotCopyDir1 = snapShotCopy.findItem("dir1");
+    CPPUNIT_ASSERT(liveSnapshotDir1);
     CPPUNIT_ASSERT(snapshotDir1);
-    CPPUNIT_ASSERT(snapshotCopyDir1);
 
+    const auto liveSnapshotDir1Children = liveSnapshotDir1->children();
     const auto snapshotDir1Children = snapshotDir1->children();
-    const auto snapshotCopyDir1Children = snapshotCopyDir1->children();
+    CPPUNIT_ASSERT_EQUAL(size_t(1), liveSnapshotDir1Children.size());
     CPPUNIT_ASSERT_EQUAL(size_t(1), snapshotDir1Children.size());
-    CPPUNIT_ASSERT_EQUAL(size_t(1), snapshotCopyDir1Children.size());
 
+    const auto liveSnapshotDir1ChildPtr = liveSnapshotDir1Children.begin()->get();
     const auto snapshotDir1ChildPtr = snapshotDir1Children.begin()->get();
-    const auto snapshotCopyDir1ChildPtr = snapshotCopyDir1Children.begin()->get();
+    CPPUNIT_ASSERT_EQUAL(NodeId("file1.1"), liveSnapshotDir1ChildPtr->id());
     CPPUNIT_ASSERT_EQUAL(NodeId("file1.1"), snapshotDir1ChildPtr->id());
-    CPPUNIT_ASSERT_EQUAL(NodeId("file1.1"), snapshotCopyDir1ChildPtr->id());
 
-    CPPUNIT_ASSERT(snapshotDir1ChildPtr != snapshotCopyDir1ChildPtr);
+    CPPUNIT_ASSERT(liveSnapshotDir1ChildPtr != snapshotDir1ChildPtr);
+    CPPUNIT_ASSERT_EQUAL(liveSnapshot.findItem("file1.1").get(), liveSnapshotDir1ChildPtr);
     CPPUNIT_ASSERT_EQUAL(snapshot.findItem("file1.1").get(), snapshotDir1ChildPtr);
-    CPPUNIT_ASSERT_EQUAL(snapShotCopy.findItem("file1.1").get(), snapshotCopyDir1ChildPtr);
 }
 
 void TestSnapshot::testSnapshotRevision() {
@@ -445,44 +447,44 @@ void TestSnapshot::testSnapshotRevision() {
     const DbNode dummyRootNode(0, std::nullopt, Str("Local Drive"), SyncName(), "1", "1", std::nullopt, std::nullopt,
                                std::nullopt, NodeType::Directory, 0, std::nullopt);
 
-    Snapshot snapshot(ReplicaSide::Local, dummyRootNode);
-    SnapshotRevision lastRevision = snapshot.revision();
+    LiveSnapshot liveSnapshot(ReplicaSide::Local, dummyRootNode);
+    SnapshotRevision lastRevision = liveSnapshot.revision();
     const SnapshotItem dir1("dir1", rootNodeId, Str("dir1"), testhelpers::defaultTime, testhelpers::defaultTime,
                             NodeType::Directory, testhelpers::defaultDirSize, false, true, true);
     const SnapshotItem file11("file1.1", "dir1", Str("file1.1"), testhelpers::defaultTime, testhelpers::defaultTime,
                               NodeType::File, testhelpers::defaultFileSize, false, true, true);
 
-    snapshot.updateItem(dir1);
-    CPPUNIT_ASSERT_GREATER(lastRevision, snapshot.revision());
-    lastRevision = snapshot.revision();
+    liveSnapshot.updateItem(dir1);
+    CPPUNIT_ASSERT_GREATER(lastRevision, liveSnapshot.revision());
+    lastRevision = liveSnapshot.revision();
 
-    snapshot.updateItem(file11);
-    CPPUNIT_ASSERT_GREATER(lastRevision, snapshot.revision());
-    lastRevision = snapshot.revision();
+    liveSnapshot.updateItem(file11);
+    CPPUNIT_ASSERT_GREATER(lastRevision, liveSnapshot.revision());
+    lastRevision = liveSnapshot.revision();
 
-    snapshot.setCreatedAt("dir1", 123);
-    CPPUNIT_ASSERT_GREATER(lastRevision, snapshot.revision());
-    lastRevision = snapshot.revision();
+    liveSnapshot.setCreatedAt("dir1", 123);
+    CPPUNIT_ASSERT_GREATER(lastRevision, liveSnapshot.revision());
+    lastRevision = liveSnapshot.revision();
 
-    snapshot.setLastModified("dir1", 123);
-    CPPUNIT_ASSERT_GREATER(lastRevision, snapshot.revision());
-    lastRevision = snapshot.revision();
+    liveSnapshot.setLastModified("dir1", 123);
+    CPPUNIT_ASSERT_GREATER(lastRevision, liveSnapshot.revision());
+    lastRevision = liveSnapshot.revision();
 
-    snapshot.setName("dir1", Str2SyncName("dir1b"));
-    CPPUNIT_ASSERT_GREATER(lastRevision, snapshot.revision());
-    lastRevision = snapshot.revision();
+    liveSnapshot.setName("dir1", Str2SyncName("dir1b"));
+    CPPUNIT_ASSERT_GREATER(lastRevision, liveSnapshot.revision());
+    lastRevision = liveSnapshot.revision();
 
-    snapshot.setContentChecksum("file1.1", "abcd");
-    CPPUNIT_ASSERT_GREATER(lastRevision, snapshot.revision());
-    lastRevision = snapshot.revision();
+    liveSnapshot.setContentChecksum("file1.1", "abcd");
+    CPPUNIT_ASSERT_GREATER(lastRevision, liveSnapshot.revision());
+    lastRevision = liveSnapshot.revision();
 
-    snapshot.updateItem(dir1);
-    CPPUNIT_ASSERT_GREATER(lastRevision, snapshot.revision());
-    lastRevision = snapshot.revision();
+    liveSnapshot.updateItem(dir1);
+    CPPUNIT_ASSERT_GREATER(lastRevision, liveSnapshot.revision());
+    lastRevision = liveSnapshot.revision();
 
-    snapshot.updateItem(dir1);
-    CPPUNIT_ASSERT_GREATER(lastRevision, snapshot.revision());
-    lastRevision = snapshot.revision();
+    liveSnapshot.updateItem(dir1);
+    CPPUNIT_ASSERT_GREATER(lastRevision, liveSnapshot.revision());
+    lastRevision = liveSnapshot.revision();
 }
 
 } // namespace KDC

@@ -79,7 +79,12 @@ Logger *Logger::instance() {
     return &log;
 }
 
-Logger::Logger(QObject *parent) : QObject(parent), _showTime(true), _doFileFlush(false), _logExpire(0), _logDebug(false) {
+Logger::Logger(QObject *parent) :
+    QObject(parent),
+    _showTime(true),
+    _doFileFlush(false),
+    _logExpire(0),
+    _logDebug(false) {
     qSetMessagePattern(
             "%{time yyyy-MM-dd hh:mm:ss:zzz} "
             "[%{if-debug}D%{endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] "

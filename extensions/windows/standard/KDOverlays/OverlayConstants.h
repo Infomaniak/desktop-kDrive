@@ -31,10 +31,11 @@
     This could be done either each start of the kDrive App, or during installation
     source : https://devblogs.microsoft.com/oldnewthing/20190313-00/?p=101094
 */
-#define OVERLAY_NAME_ERROR L"   KDError"
-#define OVERLAY_NAME_OK L"   KDOK"
-#define OVERLAY_NAME_SYNC L"   KDSync"
-#define OVERLAY_NAME_WARNING L"   KDWarning"
+#define OVERLAY_APP_NAME L"kDrive"
+#define OVERLAY_NAME_ERROR L"Error"
+#define OVERLAY_NAME_OK L"OK"
+#define OVERLAY_NAME_SYNC L"Sync"
+#define OVERLAY_NAME_WARNING L"Warning"
 
 #define REGISTRY_OVERLAY_KEY L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ShellIconOverlayIdentifiers"
 #define REGISTRY_CLSID L"CLSID"

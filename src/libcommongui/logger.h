@@ -42,6 +42,7 @@ struct Log {
  */
 class Logger : public QObject {
         Q_OBJECT
+
     public:
         bool isNoop() const;
         bool isLoggingToFile() const;

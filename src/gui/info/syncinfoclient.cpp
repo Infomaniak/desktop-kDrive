@@ -22,9 +22,11 @@
 
 namespace KDC {
 
-SyncInfoClient::SyncInfoClient() : SyncInfo() {}
+SyncInfoClient::SyncInfoClient() :
+    SyncInfo() {}
 
-SyncInfoClient::SyncInfoClient(const SyncInfo &syncInfo) : SyncInfo(syncInfo) {}
+SyncInfoClient::SyncInfoClient(const SyncInfo &syncInfo) :
+    SyncInfo(syncInfo) {}
 
 QString SyncInfoClient::name() const {
     return CommonUtility::getRelativePathFromHome(_localPath);

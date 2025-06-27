@@ -22,7 +22,8 @@
 namespace KDC {
 
 ConflictFinderWorker::ConflictFinderWorker(const std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                           const std::string &shortName) : OperationProcessor(syncPal, name, shortName) {}
+                                           const std::string &shortName) :
+    OperationProcessor(syncPal, name, shortName) {}
 
 void ConflictFinderWorker::execute() {
     auto exitCode(ExitCode::Unknown);

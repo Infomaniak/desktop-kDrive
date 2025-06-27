@@ -30,15 +30,15 @@
 #endif
 
 #include "guiutility.h"
-#include "libcommon/utility/utility.h"
-#include "libcommongui/utility/utility.h"
-#include "libcommon/utility/qlogiffail.h"
 #include "languagechangefilter.h"
 #include "enablestateholder.h"
 #include "guirequests.h"
 #include "clientgui.h"
 #include "common/filesystembase.h"
-#include "guiutility.h"
+#include "libcommongui/matomoclient.h"
+#include "libcommon/utility/utility.h"
+#include "libcommongui/utility/utility.h"
+#include "libcommon/utility/qlogiffail.h"
 
 #include <QDesktopServices>
 #include <QDir>
@@ -62,7 +62,8 @@ static const QString folderBlocName("folderBloc");
 Q_LOGGING_CATEGORY(lcDrivePreferencesWidget, "gui.drivepreferenceswidget", QtInfoMsg)
 
 DrivePreferencesWidget::DrivePreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
-    LargeWidgetWithCustomToolTip(parent), _gui(gui) {
+    LargeWidgetWithCustomToolTip(parent),
+    _gui(gui) {
     setContentsMargins(0, 0, 0, 0);
 
     /*
@@ -398,7 +399,7 @@ void DrivePreferencesWidget::askEnableLiteSync(const std::function<void(bool)> &
         virtualFileMode == VirtualFileMode::Suffix) {
         CustomMessageBox msgBox(QMessageBox::Question, tr("Do you really want to turn on Lite Sync?"),
                                 tr("This operation may take from a few seconds to a few minutes depending on the size of the "
-                                   "folder to be converted."),
+                                   "folder."),
                                 false, QMessageBox::NoButton, this);
         msgBox.addButton(tr("CONFIRM"), QMessageBox::Yes);
         msgBox.addButton(tr("CANCEL"), QMessageBox::No);
@@ -430,7 +431,7 @@ void DrivePreferencesWidget::askDisableLiteSync(const std::function<void(bool, b
                                          " If you turn off Lite Sync, you need to select which folders to sync on your computer."
                                          " In the meantime, the synchronization of your kDrive will be paused.")
                                               .arg(KDC::CommonGuiUtility::octetsToString(diskSpaceMissing))
-                                    : tr("If you turn off Lite Sync, all files will sync locally on your computer."),
+                                    : tr("If you turn off Lite Sync, all files will be downloaded to your computer."),
                             diskSpaceWarning, QMessageBox::NoButton, this);
     msgBox.addButton(tr("CONFIRM"), QMessageBox::Yes);
     msgBox.addButton(tr("CANCEL"), QMessageBox::No);
@@ -798,6 +799,7 @@ void DrivePreferencesWidget::onBigFoldersWarningWidgetClicked() {
 void DrivePreferencesWidget::onAddLocalFolder(bool checked) {
     Q_UNUSED(checked)
 
+    MatomoClient::sendEvent("drivePreferences", MatomoEventAction::Click, "synchronizeALocalFolder");
     EnableStateHolder _(this);
 
     const QString addFolderError = tr("New local folder synchronization failed!");
@@ -832,6 +834,7 @@ void DrivePreferencesWidget::onAddLocalFolder(bool checked) {
             localFolderSize = KDC::GuiUtility::folderSize(localFolderPath);
             liteSync = localFolderDialog.folderCompatibleWithLiteSync();
             qCDebug(lcDrivePreferencesWidget) << "Local folder selected: " << localFolderPath;
+            MatomoClient::sendVisit(MatomoNameField::PG_Parameters_NewSync_LocalFolder);
             nextStep = SelectServerBaseFolder;
         }
 
@@ -867,6 +870,7 @@ void DrivePreferencesWidget::onAddLocalFolder(bool checked) {
                 serverFolderName = driveInfoIt->second.name();
             }
             qCDebug(lcDrivePreferencesWidget) << "Server folder selected: " << serverFolderName;
+            MatomoClient::sendVisit(MatomoNameField::PG_Parameters_NewSync_RemoteFolder);
             nextStep = SelectServerFolders;
         }
 
@@ -905,6 +909,7 @@ void DrivePreferencesWidget::onAddLocalFolder(bool checked) {
         }
 
         if (nextStep == Confirm) {
+            MatomoClient::sendVisit(MatomoNameField::PG_Parameters_NewSync_Summary);
             int driveId;
             ExitCode exitCode = GuiRequests::getDriveIdFromDriveDbId(_driveDbId, driveId);
             if (exitCode != ExitCode::Ok) {
@@ -970,13 +975,12 @@ void DrivePreferencesWidget::onLiteSyncSwitchSyncChanged(int syncDbId, bool acti
                 auto syncInfoMapIt = _gui->syncInfoMap().find(syncDbId);
                 if (syncInfoMapIt != _gui->syncInfoMap().end()) {
                     if (switchVfsOn(syncInfoMapIt->first)) {
-                        CustomMessageBox msgBox(QMessageBox::Information, tr("The conversion of the folder has succeeded."),
-                                                QMessageBox::Ok, this);
+                        CustomMessageBox msgBox(QMessageBox::Information, tr("Lite Sync activated."), QMessageBox::Ok, this);
                         msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
                     } else {
                         qCWarning(lcDrivePreferencesWidget()) << "Error when switching vfs on";
-                        CustomMessageBox msgBox(QMessageBox::Information, tr("The conversion of the folder has failed."),
-                                                QMessageBox::Ok, this);
+                        CustomMessageBox msgBox(QMessageBox::Information, tr("Lite Sync activation failed."), QMessageBox::Ok,
+                                                this);
                         msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
                     }
                 }
@@ -989,15 +993,13 @@ void DrivePreferencesWidget::onLiteSyncSwitchSyncChanged(int syncDbId, bool acti
                         auto syncInfoMapIt = _gui->syncInfoMap().find(syncDbId);
                         if (syncInfoMapIt != _gui->syncInfoMap().end()) {
                             if (switchVfsOff(syncInfoMapIt->first, diskSpaceWarning)) {
-                                CustomMessageBox msgBox(
-                                        QMessageBox::Information,
-                                        tr("The conversion of the folder has succeeded, it will now be synchronized"),
-                                        QMessageBox::Ok, this);
-                                msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
+                                CustomMessageBox msgBox(QMessageBox::Information, tr("Lite Sync deactivated."), QMessageBox::Ok,
+                                                        this);
+                                (void) msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
                             } else {
-                                CustomMessageBox msgBox(QMessageBox::Information, tr("The conversion of the folder has failed."),
+                                CustomMessageBox msgBox(QMessageBox::Information, tr("Lite Sync deactivation failed."),
                                                         QMessageBox::Ok, this);
-                                msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
+                                (void) msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
                             }
                         }
                     }
@@ -1007,6 +1009,7 @@ void DrivePreferencesWidget::onLiteSyncSwitchSyncChanged(int syncDbId, bool acti
 }
 
 void DrivePreferencesWidget::onNotificationsSwitchClicked(bool checked) {
+    MatomoClient::sendEvent("drivePreferences", MatomoEventAction::Click, "notificationSwitch", checked ? 1 : 0);
     const auto driveInfoMapIt = _gui->driveInfoMap().find(_driveDbId);
     if (driveInfoMapIt == _gui->driveInfoMap().end()) {
         qCWarning(lcDrivePreferencesWidget()) << "Drive not found in drive map for driveDbId=" << _driveDbId;
@@ -1028,6 +1031,7 @@ void DrivePreferencesWidget::onErrorAdded() {
 void DrivePreferencesWidget::onRemoveDrive(bool checked) {
     Q_UNUSED(checked)
 
+    MatomoClient::sendEvent("drivePreferences", MatomoEventAction::Click, "removeDrive");
     const auto driveInfoIt = _gui->driveInfoMap().find(_driveDbId);
     if (driveInfoIt == _gui->driveInfoMap().end()) {
         qCWarning(lcDrivePreferencesWidget()) << "Drive not found in drive map for driveDbId=" << _driveDbId;

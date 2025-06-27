@@ -32,7 +32,8 @@
 
 namespace KDC {
 
-UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
+UpdateManager::UpdateManager(QObject *parent) :
+    QObject(parent) {
     _currentChannel = ParametersCache::instance()->parameters().distributionChannel();
 
     initUpdater();

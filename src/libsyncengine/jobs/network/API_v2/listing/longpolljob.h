@@ -16,30 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "timerutility.h"
+#pragma once
 
-#include <iostream>
+#include "abstractlistingjob.h"
 
 namespace KDC {
 
-TimerUtility::TimerUtility() : _startTime(std::chrono::steady_clock::now()) {}
+class LongPollJob final : public AbstractListingJob {
+    public:
+        LongPollJob(int driveDbId, const std::string &cursor, const NodeSet &blacklist = {});
 
-void TimerUtility::restart() {
-    _startTime = std::chrono::steady_clock::now();
-}
+    private:
+        std::string getSpecificUrl() override;
+        void setSpecificQueryParameters(Poco::URI &uri) override;
+        ExitInfo setData() override { return ExitCode::Ok; }
+        bool handleError(std::istream &is, const Poco::URI &uri) override;
 
-SecondsDuration TimerUtility::elapsed(const std::string_view consoleMsg /*= {}*/) const {
-    const SecondsDuration elapsedSeconds = std::chrono::steady_clock::now() - _startTime;
-    if (!consoleMsg.empty()) {
-        std::cout << consoleMsg << " : " << elapsedSeconds.count() << std::endl;
-    }
-    return elapsedSeconds;
-}
-
-SecondsDuration TimerUtility::lap(const std::string_view consoleMsg /*= {}*/) {
-    const auto elapsedSeconds = elapsed(consoleMsg);
-    restart();
-    return elapsedSeconds;
-}
+        std::string _cursor;
+};
 
 } // namespace KDC

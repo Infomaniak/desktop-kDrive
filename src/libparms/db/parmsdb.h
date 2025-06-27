@@ -32,6 +32,7 @@
 #include "migrationselectivesync.h"
 #include "libcommonserver/db/db.h"
 
+#include <set>
 
 namespace KDC {
 
@@ -100,10 +101,18 @@ class PARMS_EXPORT ParmsDb : public Db {
 
         bool insertExclusionTemplate(const ExclusionTemplate &exclusionTemplate, bool &constraintError);
         bool updateExclusionTemplate(const ExclusionTemplate &exclusionTemplate, bool &found);
-        bool deleteExclusionTemplate(const std::string &templ, bool &found);
+        bool deleteExclusionTemplate(const std::string &template_, bool &found);
         bool selectAllExclusionTemplates(std::vector<ExclusionTemplate> &exclusionTemplateList);
-        bool selectAllExclusionTemplates(bool def, std::vector<ExclusionTemplate> &exclusionTemplateList);
-        bool updateAllExclusionTemplates(bool def, const std::vector<ExclusionTemplate> &exclusionTemplateList);
+        bool selectDefaultExclusionTemplates(std::vector<ExclusionTemplate> &exclusionTemplateList) {
+            return selectAllExclusionTemplates(true, exclusionTemplateList);
+        };
+        bool selectUserExclusionTemplates(std::vector<ExclusionTemplate> &exclusionTemplateList) {
+            return selectAllExclusionTemplates(false, exclusionTemplateList);
+        };
+        bool updateAllExclusionTemplates(bool defaultTemplate, const std::vector<ExclusionTemplate> &exclusionTemplateList);
+        bool updateUserExclusionTemplates(const std::vector<ExclusionTemplate> &exclusionTemplateList) {
+            return updateAllExclusionTemplates(false, exclusionTemplateList);
+        };
 
 #ifdef __APPLE__
         bool insertExclusionApp(const ExclusionApp &exclusionApp, bool &constraintError);
@@ -147,8 +156,20 @@ class PARMS_EXPORT ParmsDb : public Db {
 
         void fillSyncWithQueryResult(Sync &sync, const char *requestId);
 
+        bool selectAllExclusionTemplates(bool defaultTemplate, std::vector<ExclusionTemplate> &exclusionTemplateList);
+
+        bool getDefaultExclusionTemplatesFromFile(const SyncPath &syncExcludeListPath,
+                                                  std::vector<std::string> &fileDefaultExclusionTemplates);
+        bool insertUserTemplateNormalizations(const std::string &fromVersion);
+
 #ifdef __APPLE__
         bool updateExclusionApps();
 #endif
+
+#ifdef _WIN32
+        bool replaceShortDbPathsWithLongPaths();
+#endif
+#
+#
 };
 } // namespace KDC

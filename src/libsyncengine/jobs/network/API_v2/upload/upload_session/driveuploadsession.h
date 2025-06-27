@@ -26,19 +26,20 @@ namespace KDC {
 
 class DriveUploadSession : public AbstractUploadSession {
     public:
-        // Using file ID, for file edition only.
-        DriveUploadSession(const std::shared_ptr<Vfs> &vfs, int driveDbId, std::shared_ptr<SyncDb> syncDb,
-                           const SyncPath &filepath, const NodeId &fileId, SyncTime modtime, bool liteSyncActivated,
-                           uint64_t nbParallelThread = 1);
-
         // Using file name and parent ID, for file creation only.
         DriveUploadSession(const std::shared_ptr<Vfs> &vfs, int driveDbId, std::shared_ptr<SyncDb> syncDb,
-                           const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId, SyncTime modtime,
-                           bool liteSyncActivated, uint64_t nbParallelThread = 1);
+                           const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId,
+                           SyncTime creationTime, SyncTime modificationTime, bool liteSyncActivated, uint64_t nbParallelThread);
+        // Using file ID, for file edition only.
+        DriveUploadSession(const std::shared_ptr<Vfs> &vfs, int driveDbId, std::shared_ptr<SyncDb> syncDb,
+                           const SyncPath &filepath, const NodeId &fileId, SyncTime modificationTime, bool liteSyncActivated,
+                           uint64_t nbParallelThread);
         ~DriveUploadSession() override;
 
         const NodeId &nodeId() const { return _nodeId; }
-        SyncTime modtime() const { return _modtimeOut; }
+        SyncTime creationTime() const { return _creationTimeOut; }
+        SyncTime modificationTime() const { return _modificationTimeOut; }
+        int64_t size() const { return _sizeOut; }
 
     protected:
         bool handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob,
@@ -58,13 +59,16 @@ class DriveUploadSession : public AbstractUploadSession {
         std::shared_ptr<SyncDb> _syncDb;
 
         NodeId _fileId;
-        SyncTime _modtimeIn = 0;
+        SyncTime _creationTimeIn = 0;
+        const SyncTime _modificationTimeIn = 0;
 
         int64_t _uploadSessionTokenDbId = 0;
         NodeId _remoteParentDirId;
 
         NodeId _nodeId;
-        SyncTime _modtimeOut = 0;
+        SyncTime _creationTimeOut = 0;
+        SyncTime _modificationTimeOut = 0;
+        int64_t _sizeOut = 0;
         const std::shared_ptr<Vfs> _vfs;
 };
 } // namespace KDC

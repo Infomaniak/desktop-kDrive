@@ -30,8 +30,10 @@ std::mutex ContentChecksumWorker::_checksumMutex;
 std::unordered_map<UniqueId, std::shared_ptr<ComputeChecksumJob>> ContentChecksumWorker::_runningJobs;
 
 ContentChecksumWorker::ContentChecksumWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                             const std::string &shortName, std::shared_ptr<Snapshot> localSnapshot) :
-    ISyncWorker(syncPal, name, shortName), _localSnapshot(localSnapshot), _threadPool(1, 5) // Min 1 thread, max 5
+                                             const std::string &shortName, std::shared_ptr<LiveSnapshot> localSnapshot) :
+    ISyncWorker(syncPal, name, shortName),
+    _localSnapshot(localSnapshot),
+    _threadPool(1, 5) // Min 1 thread, max 5
 {}
 
 ContentChecksumWorker::~ContentChecksumWorker() {
@@ -55,7 +57,7 @@ void ContentChecksumWorker::callback(UniqueId jobId) {
 void ContentChecksumWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
 
-    LOG_DEBUG(_logger, "Worker started: name=" << name().c_str());
+    LOG_DEBUG(_logger, "Worker started: name=" << name());
 
     // Sync loop
     for (;;) {
@@ -101,7 +103,7 @@ void ContentChecksumWorker::execute() {
         Utility::msleep(10);
     }
 
-    LOG_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    LOG_DEBUG(_logger, "Worker stopped: name=" << name());
     setDone(exitCode);
 }
 

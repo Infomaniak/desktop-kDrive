@@ -23,6 +23,7 @@ set(syncengine_SRCS
     login/login.h login/login.cpp
     # Jobs
     jobs/jobmanager.h jobs/jobmanager.cpp
+    jobs/jobmanagerdata.h jobs/jobmanagerdata.cpp
     jobs/abstractjob.h jobs/abstractjob.cpp
     jobs/abstractpropagatorjob.h
     ## Network jobs
@@ -40,10 +41,11 @@ set(syncengine_SRCS
     jobs/network/API_v2/getrootfilelistjob.h jobs/network/API_v2/getrootfilelistjob.cpp
     jobs/network/API_v2/getfilelistjob.h jobs/network/API_v2/getfilelistjob.cpp
     jobs/network/API_v2/initfilelistwithcursorjob.h jobs/network/API_v2/initfilelistwithcursorjob.cpp
-    jobs/network/API_v2/csvfullfilelistwithcursorjob.h jobs/network/API_v2/csvfullfilelistwithcursorjob.cpp
-    jobs/network/API_v2/jsonfullfilelistwithcursorjob.h jobs/network/API_v2/jsonfullfilelistwithcursorjob.cpp
-    jobs/network/API_v2/continuefilelistwithcursorjob.h jobs/network/API_v2/continuefilelistwithcursorjob.cpp
-    jobs/network/API_v2/longpolljob.h jobs/network/API_v2/longpolljob.cpp
+    jobs/network/API_v2/listing/abstractlistingjob.h jobs/network/API_v2/listing/abstractlistingjob.cpp
+    jobs/network/API_v2/listing/csvfullfilelistwithcursorjob.h jobs/network/API_v2/listing/csvfullfilelistwithcursorjob.cpp
+    jobs/network/API_v2/listing/snapshotitemhandler.h jobs/network/API_v2/listing/snapshotitemhandler.cpp
+    jobs/network/API_v2/listing/continuefilelistwithcursorjob.h jobs/network/API_v2/listing/continuefilelistwithcursorjob.cpp
+    jobs/network/API_v2/listing/longpolljob.h jobs/network/API_v2/listing/longpolljob.cpp
     jobs/network/API_v2/getfileinfojob.h jobs/network/API_v2/getfileinfojob.cpp
     jobs/network/API_v2/deletejob.h jobs/network/API_v2/deletejob.cpp
     jobs/network/API_v2/createdirjob.h jobs/network/API_v2/createdirjob.cpp
@@ -82,6 +84,7 @@ set(syncengine_SRCS
     update_detection/file_system_observer/remotefilesystemobserverworker.h update_detection/file_system_observer/remotefilesystemobserverworker.cpp
     update_detection/file_system_observer/localfilesystemobserverworker.h update_detection/file_system_observer/localfilesystemobserverworker.cpp
     update_detection/file_system_observer/snapshot/snapshot.h update_detection/file_system_observer/snapshot/snapshot.cpp
+    update_detection/file_system_observer/snapshot/livesnapshot.h update_detection/file_system_observer/snapshot/livesnapshot.cpp
     update_detection/file_system_observer/snapshot/snapshotitem.h update_detection/file_system_observer/snapshot/snapshotitem.cpp
     update_detection/file_system_observer/snapshot/snapshotrevisionhandler.h
     update_detection/file_system_observer/computefsoperationworker.h update_detection/file_system_observer/computefsoperationworker.cpp
@@ -140,17 +143,17 @@ set(syncengine_SRCS
     performance_watcher/performancewatcher.h performance_watcher/performancewatcher.cpp
 )
 
-if (WIN32)
+if(WIN32)
     list(APPEND syncengine_SRCS update_detection/file_system_observer/localfilesystemobserverworker_win.h update_detection/file_system_observer/localfilesystemobserverworker_win.cpp)
     list(APPEND syncengine_SRCS update_detection/file_system_observer/folderwatcher_win.h update_detection/file_system_observer/folderwatcher_win.cpp)
-elseif (UNIX)
+elseif(UNIX)
     list(APPEND syncengine_SRCS update_detection/file_system_observer/localfilesystemobserverworker_unix.h update_detection/file_system_observer/localfilesystemobserverworker_unix.cpp)
-    if (APPLE)
+    if(APPLE)
         list(APPEND syncengine_SRCS update_detection/file_system_observer/folderwatcher_mac.h update_detection/file_system_observer/folderwatcher_mac.cpp)
-    else ()
+    else()
         list(APPEND syncengine_SRCS update_detection/file_system_observer/folderwatcher_linux.h update_detection/file_system_observer/folderwatcher_linux.cpp)
-    endif ()
-endif ()
+    endif()
+endif()
 
 # Target
 add_library(${libsyncengine_NAME} STATIC ${syncengine_SRCS})
@@ -198,24 +201,23 @@ set_target_properties(${libsyncengine_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY}
 )
 
-GENERATE_EXPORT_HEADER(${libsyncengine_NAME}
+generate_export_header(${libsyncengine_NAME}
         BASE_NAME ${libsyncengine_NAME}
         EXPORT_MACRO_NAME SYNCENGINE_EXPORT
         EXPORT_FILE_NAME syncenginelib.h
 )
 
 # Includes
-if (WIN32)
+if(WIN32)
     target_include_directories(${libsyncengine_NAME} PUBLIC
             ${CMAKE_CURRENT_SOURCE_DIR}
-            ${CMAKE_CURRENT_BINARY_DIR}
-            "C:/Program Files (x86)/log4cplus/include")
-else ()
+            ${CMAKE_CURRENT_BINARY_DIR})
+else()
     target_include_directories(${libsyncengine_NAME} PUBLIC
             ${CMAKE_CURRENT_SOURCE_DIR}
             ${CMAKE_CURRENT_BINARY_DIR}
             "/usr/local/include")
-endif ()
+endif()
 
 # Link
 target_link_libraries(${libsyncengine_NAME}

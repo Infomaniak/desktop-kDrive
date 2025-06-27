@@ -18,20 +18,21 @@
 
 #pragma once
 
-#include "abstracttokennetworkjob.h"
+#include "test_utility/testbase.h"
 
 namespace KDC {
 
-class LongPollJob : public AbstractTokenNetworkJob {
+class TestJsonParserUtility final : public CppUnit::TestFixture, public TestBase {
+        CPPUNIT_TEST_SUITE(TestJsonParserUtility);
+        CPPUNIT_TEST(testExtractValue);
+        CPPUNIT_TEST_SUITE_END();
+
     public:
-        LongPollJob(int driveDbId, const std::string &cursor);
+        void setUp() override { TestBase::start(); }
+        void tearDown() override { TestBase::stop(); }
 
-    private:
-        virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &uri, bool &canceled) override;
-        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
-
-        std::string _cursor;
+    protected:
+        void testExtractValue();
 };
 
 } // namespace KDC

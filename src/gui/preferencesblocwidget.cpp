@@ -41,7 +41,8 @@ static const int shadowBlurRadius = 20;
 
 Q_LOGGING_CATEGORY(lcPreferencesBlocWidget, "gui.preferencesblocwidget", QtInfoMsg)
 
-PreferencesBlocWidget::PreferencesBlocWidget(QWidget *parent) : LargeWidgetWithCustomToolTip(parent) {
+PreferencesBlocWidget::PreferencesBlocWidget(QWidget *parent) :
+    LargeWidgetWithCustomToolTip(parent) {
     setContentsMargins(0, 0, 0, 0);
 
     _layout = new QVBoxLayout();

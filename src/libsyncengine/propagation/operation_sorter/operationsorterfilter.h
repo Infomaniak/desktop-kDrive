@@ -19,13 +19,8 @@
 #include "libsyncengine/reconciliation/syncoperation.h"
 
 namespace KDC {
-
-struct SyncNameHashFunction {
-        using is_transparent = void; // Enables heterogeneous operations.
-        std::size_t operator()(const SyncName &name) const { return XXH3_64bits(name.data(), name.size()); }
-};
 using NameToOpMap = std::unordered_map<SyncName, SyncOpPtr, SyncNameHashFunction, std::equal_to<>>;
-using NodeIdToOpListMap = std::unordered_map<NodeId, std::list<SyncOpPtr>, StringHashFunction, std::equal_to<>>;
+using NodeIdToOpListMap = std::unordered_map<DbNodeId, std::list<SyncOpPtr>>;
 using SyncPathToSyncOpMap = std::unordered_map<SyncPath, SyncOpPtr, PathHashFunction>;
 
 class OperationSorterFilter {
@@ -33,6 +28,7 @@ class OperationSorterFilter {
         explicit OperationSorterFilter(const std::unordered_map<UniqueId, SyncOpPtr> &ops);
 
         void filterOperations();
+        void clear();
 
         [[nodiscard]] const std::list<std::pair<SyncOpPtr, SyncOpPtr>> &fixDeleteBeforeMoveCandidates() const {
             return _fixDeleteBeforeMoveCandidates;

@@ -23,6 +23,7 @@
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommon/utility/utility.h"
+#include "utility/timerutility.h"
 
 #include <config.h>
 #include <log/customrollingfileappender.h>
@@ -75,7 +76,7 @@ void TestLog::testLargeLogRolling(void) {
 
     // Generate a log larger than the max log file size. (log header is 50bytes)
     const auto testLog = std::string(maxSize, 'a');
-    LOG_DEBUG(_logger, testLog.c_str());
+    LOG_DEBUG(_logger, testLog);
 
     CPPUNIT_ASSERT_GREATER(2, countFilesInDirectory(_logDir));
 
@@ -89,37 +90,40 @@ void TestLog::testLargeLogRolling(void) {
 }
 
 void TestLog::testExpiredLogFiles(void) {
+    using namespace std::chrono;
     // This test checks that old archived log files are deleted after a certain time
     clearLogDirectory();
 
     // Generate a fake old log file
-    std::ofstream fakeLogFile(_logDir / APPLICATION_NAME "_fake.log.gz");
-    fakeLogFile << "Fake old log file" << std::endl;
-    fakeLogFile.close();
+    testhelpers::generateOrEditTestFile(_logDir / APPLICATION_NAME "_fake.log.gz");
 
     // Ensure that a new log file is created
-    LOG_INFO(_logger, "Test log file expiration"); 
+    LOG_INFO(_logger, "Test log file expiration");
 
     // Check that we got 2 log files (the current one and the fake old one)
-    CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir)); 
+    CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));
 
     // Set the expiration time to 2 seconds
     auto *appender = static_cast<CustomRollingFileAppender *>(_logger.getAppender(Log::rfName).get());
-    appender->setExpire(2); // 2 seconds
+    appender->setExpire(2); // 2 seconds (+- 1 second as the time is truncated to seconds)
 
-    const auto start = std::chrono::system_clock::now();
-    auto now = std::chrono::system_clock::now();
-    while (now - start < std::chrono::seconds(3)) {
-        now = std::chrono::system_clock::now();
-        KDC::testhelpers::setModificationDate(Log::instance()->getLogFilePath(),
-                                              now); // Prevent the current log file from being deleted.
+    const TimerUtility timer;
+    while (timer.elapsed<std::chrono::seconds>() < std::chrono::seconds(3)) {
+        const auto epochNow = std::chrono::system_clock::now().time_since_epoch();
+        const auto now = std::chrono::duration_cast<std::chrono::seconds>(epochNow);
+        (void) IoHelper::setFileDates(Log::instance()->getLogFilePath(),
+                                      now.count(),
+                                      now.count(),
+                                      false); // Prevent the current log file from being deleted.
         appender->checkForExpiredFiles();
-        if (now - start < std::chrono::milliseconds(1500)) { // The fake log file should not be deleted yet.
-            CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));
+        if (timer.elapsed<std::chrono::seconds>() < seconds(1)) { // The fake log file should not be deleted yet.
+            CPPUNIT_ASSERT_EQUAL_MESSAGE(("File unexpectedly deleted after " +
+                                          std::to_string(timer.elapsed<std::chrono::seconds>().count()) + " seconds"),
+                                         2, countFilesInDirectory(_logDir));
         } else if (countFilesInDirectory(_logDir) == 1) { // The fake log file MIGHT be deleted now.
-            break;        
+            break;
         }
-        Utility::msleep(500);
+        Utility::msleep(10);
     }
 
     CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir)); // The fake log file SHOULD be deleted now.
@@ -156,7 +160,6 @@ void TestLog::clearLogDirectory(void) const {
         }
         IoHelper::deleteItem(entry.path(), ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-
     }
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(endOfDirectory);

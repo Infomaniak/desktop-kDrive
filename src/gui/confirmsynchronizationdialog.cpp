@@ -20,8 +20,7 @@
 #include "guiutility.h"
 #include "clientgui.h"
 #include "guirequests.h"
-#include "common/utility.h"
-#include "libcommon/utility/utility.h"
+#include "libcommongui/matomoclient.h"
 #include "libcommongui/utility/utility.h"
 
 #include <QBoxLayout>
@@ -47,9 +46,17 @@ ConfirmSynchronizationDialog::ConfirmSynchronizationDialog(std::shared_ptr<Clien
                                                            const QString &serverFolderNodeId, const QString &localFolderName,
                                                            qint64 localFolderSize, const QString &serverFolderName,
                                                            qint64 serverFolderSize, QWidget *parent) :
-    CustomDialog(true, parent), _gui(gui), _localFolderName(localFolderName), _localFolderSize(localFolderSize),
-    _serverFolderName(serverFolderName), _serverFolderSize(serverFolderSize), _leftArrowIconLabel(nullptr),
-    _rightArrowIconLabel(nullptr), _serverSizeLabel(nullptr), _backButton(nullptr), _continueButton(nullptr) {
+    CustomDialog(true, parent),
+    _gui(gui),
+    _localFolderName(localFolderName),
+    _localFolderSize(localFolderSize),
+    _serverFolderName(serverFolderName),
+    _serverFolderSize(serverFolderSize),
+    _leftArrowIconLabel(nullptr),
+    _rightArrowIconLabel(nullptr),
+    _serverSizeLabel(nullptr),
+    _backButton(nullptr),
+    _continueButton(nullptr) {
     initUI();
 
     connect(_gui.get(), &ClientGui::folderSizeCompleted, this, &ConfirmSynchronizationDialog::onFolderSizeCompleted);
@@ -201,17 +208,20 @@ void ConfirmSynchronizationDialog::setArrowIcon() {
 }
 
 void ConfirmSynchronizationDialog::onExit() {
+    MatomoClient::sendEvent("confirmSynchronizationDialog", MatomoEventAction::Click, "cancelButton");
     reject();
 }
 
 void ConfirmSynchronizationDialog::onBackButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("confirmSynchronizationDialog", MatomoEventAction::Click, "backButton");
 
     done(-1);
 }
 
 void ConfirmSynchronizationDialog::onContinueButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("confirmSynchronizationDialog", MatomoEventAction::Click, "continueButton");
 
     accept();
 }

@@ -30,7 +30,12 @@ static const int boxVMargin = 5;
 static const int boxSpacing = 10;
 
 CustomPushButton::CustomPushButton(const QString &path, const QString &text, QWidget *parent) :
-    QPushButton(parent), _iconPath(path), _text(text), _iconSize(QSize()), _iconColor(QColor()), _iconLabel(nullptr),
+    QPushButton(parent),
+    _iconPath(path),
+    _text(text),
+    _iconSize(QSize()),
+    _iconColor(QColor()),
+    _iconLabel(nullptr),
     _textLabel(nullptr) {
     setContentsMargins(0, 0, 0, 0);
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -54,9 +59,11 @@ CustomPushButton::CustomPushButton(const QString &path, const QString &text, QWi
     connect(this, &CustomPushButton::iconColorChanged, this, &CustomPushButton::onIconColorChanged);
 }
 
-CustomPushButton::CustomPushButton(const QString &text, QWidget *parent) : CustomPushButton("", text, parent) {}
+CustomPushButton::CustomPushButton(const QString &text, QWidget *parent) :
+    CustomPushButton("", text, parent) {}
 
-CustomPushButton::CustomPushButton(QWidget *parent) : CustomPushButton("", "", parent) {}
+CustomPushButton::CustomPushButton(QWidget *parent) :
+    CustomPushButton("", "", parent) {}
 
 QSize CustomPushButton::sizeHint() const {
     if (_iconPath.isEmpty()) {

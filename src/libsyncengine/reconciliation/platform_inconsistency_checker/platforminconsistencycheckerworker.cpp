@@ -33,7 +33,7 @@ PlatformInconsistencyCheckerWorker::PlatformInconsistencyCheckerWorker(std::shar
     OperationProcessor(syncPal, name, shortName) {}
 
 void PlatformInconsistencyCheckerWorker::execute() {
-    LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
+    LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
     const TimerUtility timer;
 
     _idsToBeRemoved.clear();
@@ -50,9 +50,9 @@ void PlatformInconsistencyCheckerWorker::execute() {
         }
     }
 
-    LOG_SYNCPAL_DEBUG(_logger, "Platform Inconsistency checked tree in: " << timer.elapsed().count() << "s");
+    LOG_SYNCPAL_DEBUG(_logger, "Platform Inconsistency checked tree in: " << timer.elapsed<DoubleSeconds>().count() << "s");
 
-    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
     setDone(ExitCode::Ok);
 }
 

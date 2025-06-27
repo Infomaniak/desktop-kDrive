@@ -3,8 +3,10 @@ AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 AlignOperands: true
 AlignTrailingComments: false
+AllowShortBlocksOnASingleLine: Empty
 AllowShortEnumsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: WithoutElse
 BraceWrapping:
   AfterCaseLabel: false
   AfterClass: false
@@ -28,6 +30,7 @@ BreakConstructorInitializersBeforeComma: false
 ColumnLimit: 130
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
 ContinuationIndentWidth: 8
+DerivePointerAlignment: false
 EmptyLineBeforeAccessModifier: Always
 IncludeBlocks: Regroup
 IncludeCategories:
@@ -47,6 +50,7 @@ MacroBlockEnd: ''
 MaxEmptyLinesToKeep: 2
 PackConstructorInitializers: Never
 PointerAlignment: Right
+ReferenceAlignment: Pointer
 SortIncludes: Never
 SpaceAfterCStyleCast: true
 SpaceAfterTemplateKeyword: false

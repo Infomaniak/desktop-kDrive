@@ -16,23 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
-#include "abstracttokennetworkjob.h"
-#include "../networkjobsparams.h"
+#include "continuefilelistwithcursorjob.h"
 
 namespace KDC {
 
-class ContinueFileListWithCursorJob : public AbstractTokenNetworkJob {
-    public:
-        ContinueFileListWithCursorJob(int driveDbId, const std::string &cursor);
+ContinueFileListWithCursorJob::ContinueFileListWithCursorJob(const int driveDbId, const std::string &cursor,
+                                                             NodeSet blacklist /*= {}*/) :
+    AbstractListingJob(driveDbId, blacklist),
+    _cursor(cursor) {}
 
-    private:
-        virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &, bool &) override;
-        virtual ExitInfo setData() override { return ExitCode::Ok; }
+std::string ContinueFileListWithCursorJob::getSpecificUrl() {
+    std::string str = AbstractTokenNetworkJob::getSpecificUrl();
+    str += "/files/listing/continue";
+    return str;
+}
 
-        std::string _cursor;
-};
+void ContinueFileListWithCursorJob::setSpecificQueryParameters(Poco::URI &uri) {
+    uri.addQueryParameter("cursor", _cursor);
+    uri.addQueryParameter("with", "files.capabilities");
+    uri.addQueryParameter("limit", nbItemPerPage);
+}
 
 } // namespace KDC

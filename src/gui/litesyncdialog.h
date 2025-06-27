@@ -38,7 +38,11 @@ class LiteSyncDialog : public CustomDialog {
         explicit LiteSyncDialog(std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
 
     private:
-        enum tableColumn { AppId = 0, AppName, Action };
+        enum tableColumn {
+            AppId = 0,
+            AppName,
+            Action
+        };
 
         std::shared_ptr<ClientGui> _gui;
 

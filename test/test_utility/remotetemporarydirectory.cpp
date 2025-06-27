@@ -19,15 +19,35 @@
 #include "testincludes.h"
 #include "remotetemporarydirectory.h"
 
-#include "../../src/libsyncengine/jobs/network/API_v2/createdirjob.h"
-#include "../../src/libsyncengine/jobs/network/API_v2/deletejob.h"
+#include "jobs/network/API_v2/createdirjob.h"
+#include "jobs/network/API_v2/deletejob.h"
 #include "libsyncengine/jobs/network/networkjobsparams.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/utility.h"
+#include "utility/logiffail.h"
 
 namespace KDC {
-RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& parentId,
-                                                   const std::string& testType /*= "undef"*/) : _driveDbId(driveDbId) {
+
+RemoteTemporaryDirectory::RemoteTemporaryDirectory(const std::string &testType) :
+    _testType(testType) {}
+
+RemoteTemporaryDirectory::RemoteTemporaryDirectory(const int driveDbId, const NodeId &parentId,
+                                                   const std::string &testType /*= "undef"*/) :
+    RemoteTemporaryDirectory(testType) {
+    createDirectory(driveDbId, parentId);
+}
+
+RemoteTemporaryDirectory::~RemoteTemporaryDirectory() {
+    if (_isDeleted) return;
+    deleteDirectory();
+}
+
+void RemoteTemporaryDirectory::createDirectory(const int driveDbId, const NodeId &parentId) {
+    assert(_driveDbId == 0 && _parentId.empty()); // Do not allow to generate several temporary directories.
+
+    _driveDbId = driveDbId;
+    _parentId = parentId;
+
     int retry = 5;
     do {
         const std::string suffix = CommonUtility::generateRandomStringAlphaNum(5);
@@ -36,12 +56,12 @@ RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& 
         const std::tm tm = *std::localtime(&now);
         std::ostringstream woss;
         woss << std::put_time(&tm, "%Y%m%d_%H%M");
-        _dirName = Str("kdrive_") + Str2SyncName(testType) + Str("_unit_tests_") + Str2SyncName(woss.str() + "___" + suffix);
+        _dirName = Str("kdrive_") + Str2SyncName(_testType) + Str("_unit_tests_") + Str2SyncName(woss.str() + "___" + suffix);
 
         // Create remote test dir
         CreateDirJob job(nullptr, _driveDbId, parentId, _dirName);
-        job.runSynchronously();
-        if (job.exitInfo() == ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExists) && retry > 0) {
+        (void) job.runSynchronously();
+        if (job.exitInfo() == ExitInfo(ExitCode::BackError, ExitCause::FileExists) && retry > 0) {
             retry--;
             continue;
         }
@@ -60,12 +80,12 @@ RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& 
     } while (true);
 }
 
-RemoteTemporaryDirectory::~RemoteTemporaryDirectory() {
-    if (_isDeleted) return;
-
+void RemoteTemporaryDirectory::deleteDirectory() {
     DeleteJob job(_driveDbId, _dirId, "", "", NodeType::Directory);
     job.setBypassCheck(true);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("~RemoteTemporaryDirectory() failed to delete the directory on remote side.",
                                  ExitInfo(ExitCode::Ok), job.runSynchronously());
+    _isDeleted = true;
 }
+
 } // namespace KDC

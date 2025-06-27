@@ -22,6 +22,7 @@
 #include "db/syncdb.h"
 #include "progress/progressinfo.h"
 #include "syncpal/conflictingfilescorrector.h"
+#include "update_detection/file_system_observer/snapshot/livesnapshot.h"
 #include "update_detection/file_system_observer/snapshot/snapshot.h"
 #include "update_detection/file_system_observer/fsoperationset.h"
 #include "update_detection/update_detector/updatetree.h"
@@ -59,7 +60,7 @@ class GetSizeJob;
 
 #define SYNCDBID this->syncDbId()
 
-#define LOG_SYNCDBID std::string("*" + std::to_string(SYNCDBID) + "*").c_str()
+#define LOG_SYNCDBID std::string("*" + std::to_string(SYNCDBID) + "*")
 
 #define LOG_SYNCPAL_DEBUG(logger, logEvent) LOG_DEBUG(logger, LOG_SYNCDBID << " " << logEvent)
 #define LOGW_SYNCPAL_DEBUG(logger, logEvent) LOGW_DEBUG(logger, Utility::s2ws(LOG_SYNCDBID) << L" " << logEvent)
@@ -79,7 +80,9 @@ class GetSizeJob;
 struct SyncPalInfo {
         SyncPalInfo() = default;
         SyncPalInfo(const int driveDbId_, const SyncPath &localPath_, const SyncPath targetPath_ = {}) :
-            driveDbId(driveDbId_), localPath(localPath_), targetPath(targetPath_) {}
+            driveDbId(driveDbId_),
+            localPath(localPath_),
+            targetPath(targetPath_) {}
 
         int syncDbId{0};
         int driveDbId{0};
@@ -89,6 +92,7 @@ struct SyncPalInfo {
         int userId{0};
         std::string driveName;
         SyncPath localPath;
+        NodeId localNodeId;
         SyncPath targetPath;
         VirtualFileMode vfsMode{VirtualFileMode::Off};
         bool restart{false};
@@ -106,7 +110,11 @@ struct SyncProgress {
         int64_t _totalSize{0};
         int64_t _estimatedRemainingTime{0};
 
-        bool operator==(const SyncProgress &) const = default;
+        bool operator==(const SyncProgress &other) const {
+            return _currentFile == other._currentFile && _totalFiles == other._totalFiles &&
+                   _completedSize == other._completedSize && _totalSize == other._totalSize &&
+                   _estimatedRemainingTime == other._estimatedRemainingTime;
+        }
 };
 
 
@@ -116,7 +124,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId, const std::string &version);
         virtual ~SyncPal();
 
-        ExitCode setTargetNodeId(const std::string &targetNodeId);
         inline void setAddErrorCallback(const std::function<void(const Error &)> &addError) { _addError = addError; }
         inline void setAddCompletedItemCallback(const std::function<void(int, const SyncFileItem &, bool)> &addCompletedItem) {
             _addCompletedItem = addCompletedItem;
@@ -141,10 +148,13 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         inline const std::string &driveName() const { return _syncInfo.driveName; }
         inline VirtualFileMode vfsMode() const { return _syncInfo.vfsMode; }
         inline SyncPath localPath() const { return _syncInfo.localPath; }
+        inline const NodeId &localNodeId() const { return _syncInfo.localNodeId; }
         inline bool restart() const { return _syncInfo.restart; }
         inline bool isAdvancedSync() const { return _syncInfo.isAdvancedSync(); }
 
         void setLocalPath(const SyncPath &path) { _syncInfo.localPath = path; }
+        ExitInfo isRootFolderValid();
+        ExitInfo setLocalNodeId(const NodeId &localNodeId);
         void setSyncHasFullyCompleted(bool completed) { _syncInfo.syncHasFullyCompleted = completed; }
         void setRestart(bool shouldRestart) { _syncInfo.restart = shouldRestart; }
         void setVfsMode(const VirtualFileMode mode) { _syncInfo.vfsMode = mode; }
@@ -206,7 +216,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void loadProgress(SyncProgress &syncProgress) const;
         [[nodiscard]] bool getSyncFileItem(const SyncPath &path, SyncFileItem &item);
 
-        bool isSnapshotValid(ReplicaSide side);
         void resetSnapshotInvalidationCounters();
 
         ExitCode addDlDirectJob(const SyncPath &relativePath, const SyncPath &localPath);
@@ -242,7 +251,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
         void freeSnapshotsCopies();
-        void invalideSnapshots();
+        void tryToInvalidateSnapshots();
+        void forceInvalidateSnapshots();
 
         // Workers
         std::shared_ptr<ComputeFSOperationWorker> computeFSOperationsWorker() const { return _computeFSOperationsWorker; }
@@ -256,7 +266,31 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void resetSharedObjects();
 
         std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const;
-        std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false) const;
+
+        // Returns a snapshot of the filesystem state at the start of the ongoing sync.
+        // This snapshot is immutable and remains consistent throughout the sync.
+        // Returns nullptr if no sync is currently in progress.
+        std::shared_ptr<ConstSnapshot> snapshot(ReplicaSide side) const;
+
+        /* Returns a reference to the live snapshot, which reflects the real-time state of the filesystem.
+         * Unlike the immutable snapshot(), this one is continuously updated as changes occur.
+         *
+         * /!\ Must not be called before SyncPal::createWorkers() or after SyncPal::freeWorkers(),
+         * as the underlying data may not be initialized or may have already been released.
+         *
+         * The live snapshot is intended to be modified only by the FSO workers.
+         * Workers should always retrieve information from a ConstSnapshot (see SyncPal::snapshot(ReplicaSide side))
+         * There are a few exceptions where reading directly from the liveSnapshot is necessary:
+         * - To check if the filesystem has changed (liveSnapshot().updated()).
+         * - To create a ConstSnapshot (ConstSnapshot(liveSnapshot())).
+         * - When outside of a sync process (i.e., not in a worker), since no ConstSnapshot is available.
+         *      Ideally, we would query the filesystem directly in these situations. However, for optimization purposes,
+         *      it may be preferable to read from the live snapshot, accepting the trade-off that it might lag slightly
+         *      behind the actual state of the filesystem.
+         */
+        const LiveSnapshot &liveSnapshot(ReplicaSide side) const;
+
+        uint64_t syncCount() const;
 
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
@@ -281,12 +315,10 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<SyncDb> _syncDb{nullptr};
 
         // Shared objects
-        std::shared_ptr<Snapshot> _localSnapshot{nullptr}; // Real time local snapshot
-        std::shared_ptr<Snapshot> _remoteSnapshot{nullptr}; // Real time remote snapshot
-        std::shared_ptr<Snapshot> _localSnapshotCopy{
-                nullptr}; // Copy of the real time local snapshot that is used by synchronization workers
-        std::shared_ptr<Snapshot> _remoteSnapshotCopy{
-                nullptr}; // Copy of the real time remote snapshot that is used by synchronization workers
+        std::shared_ptr<ConstSnapshot> _localSnapshot{nullptr}; // A copy of the real-time local snapshot taken at the start
+                                                                // of each sync, used by synchronization workers
+        std::shared_ptr<ConstSnapshot> _remoteSnapshot{nullptr}; // A copy of the real-time remote snapshot taken at the start
+                                                                 // of each sync, used by synchronization workers
         std::shared_ptr<FSOperationSet> _localOperationSet{nullptr};
         std::shared_ptr<FSOperationSet> _remoteOperationSet{nullptr};
         std::shared_ptr<UpdateTree> _localUpdateTree{nullptr};
@@ -317,11 +349,10 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         bool createOrOpenDb(const SyncPath &syncDbPath, const std::string &version,
                             const std::string &targetNodeId = std::string());
         void setSyncHasFullyCompletedInParms(bool syncHasFullyCompleted);
-        ExitCode setListingCursor(const std::string &value, int64_t timestamp);
-        ExitCode listingCursor(std::string &value, int64_t &timestamp);
+        ExitInfo setListingCursor(const std::string &value, int64_t timestamp);
+        ExitInfo listingCursor(std::string &value, int64_t &timestamp);
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
         ExitCode updateSyncNode();
-        const std::shared_ptr<const Snapshot> snapshotCopy(ReplicaSide side) { return snapshot(side, true); }
         std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side) const;
 
         // Progress info management
@@ -379,6 +410,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class TestWorkers;
         friend class TestAppServer;
         friend class MockSyncPal;
+        friend class TestSituationGenerator;
+        friend class TestFileRescuer;
 };
 
 } // namespace KDC

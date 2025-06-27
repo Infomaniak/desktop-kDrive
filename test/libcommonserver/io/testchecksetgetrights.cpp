@@ -45,7 +45,7 @@ void TestIo::testCheckSetAndGetRights() {
         const SyncPath path = temporaryDirectory.path() / "changePerm";
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(path, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(path, false, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         bool isReadable = false;
@@ -267,10 +267,10 @@ void TestIo::testCheckSetAndGetRights() {
 
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(path, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(path, false, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(subFolderPath, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(subFolderPath, false, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         std::ofstream file(subFilePath);
@@ -288,7 +288,7 @@ void TestIo::testCheckSetAndGetRights() {
         result = IoHelper::setRights(subFilePath, true, true, true, ioError);
         CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError));
         CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
-
+ 
         CPPUNIT_ASSERT_MESSAGE(toString(ioError),
                                IoHelper::getRights(subFolderPath, isReadable, isWritable, isExecutable, ioError));
         CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
@@ -328,10 +328,10 @@ void TestIo::testCheckSetAndGetRights() {
         const SyncPath subFolderPath = path / "subFolder";
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(path, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(path, false, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(subFolderPath, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(subFolderPath, false, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         bool isReadable = false;
@@ -423,7 +423,7 @@ void TestIo::testCheckSetAndGetRights() {
         const SyncPath filePath = path / "file.txt";
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(path, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(path, false, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         std::ofstream file(filePath);

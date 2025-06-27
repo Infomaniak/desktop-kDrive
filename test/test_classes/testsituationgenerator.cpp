@@ -1,21 +1,23 @@
-// Infomaniak kDrive - Desktop
-// Copyright (C) 2023-2025 Infomaniak Network SA
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2025 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "testsituationgenerator.h"
-
+#include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "db/dbnode.h"
 #include "syncpal/syncpal.h"
 #include "test_utility/testhelpers.h"
@@ -29,7 +31,8 @@ static const std::string remoteIdSuffix = "r_";
 
 class TestSituationGeneratorException final : public std::runtime_error {
     public:
-        explicit TestSituationGeneratorException(const std::string &what) : std::runtime_error(what) {}
+        explicit TestSituationGeneratorException(const std::string &what) :
+            std::runtime_error(what) {}
 };
 
 TestSituationGenerator::TestSituationGenerator() :
@@ -39,33 +42,25 @@ TestSituationGenerator::TestSituationGenerator() :
 
     _localUpdateTree = std::make_shared<UpdateTree>(ReplicaSide::Local, SyncDb::driveRootNode());
     _remoteUpdateTree = std::make_shared<UpdateTree>(ReplicaSide::Remote, SyncDb::driveRootNode());
-    _localSnapshot = std::make_shared<Snapshot>(ReplicaSide::Local, SyncDb::driveRootNode());
-    _remoteSnapshot = std::make_shared<Snapshot>(ReplicaSide::Remote, SyncDb::driveRootNode());
 }
 
 TestSituationGenerator::TestSituationGenerator(const std::shared_ptr<SyncPal> syncpal) :
-    _syncDb(syncpal->syncDb()), _localSnapshot(syncpal->snapshot(ReplicaSide::Local)),
-    _remoteSnapshot(syncpal->snapshot(ReplicaSide::Remote)), _localUpdateTree(syncpal->updateTree(ReplicaSide::Local)),
+    _syncDb(syncpal->syncDb()),
+    _localLiveSnapshot(syncpal->_localFSObserverWorker->_liveSnapshot),
+    _remoteLiveSnapshot(syncpal->_remoteFSObserverWorker->_liveSnapshot),
+    _localUpdateTree(syncpal->updateTree(ReplicaSide::Local)),
     _remoteUpdateTree(syncpal->updateTree(ReplicaSide::Remote)) {}
-
-TestSituationGenerator::TestSituationGenerator(const std::shared_ptr<SyncDb> syncDb,
-                                               const std::shared_ptr<Snapshot> localSnapshot,
-                                               const std::shared_ptr<Snapshot> remoteSnapshot,
-                                               const std::shared_ptr<UpdateTree> localUpdateTree,
-                                               const std::shared_ptr<UpdateTree> remoteUpdateTree) :
-    _syncDb(syncDb), _localSnapshot(localSnapshot), _remoteSnapshot(remoteSnapshot), _localUpdateTree(localUpdateTree),
-    _remoteUpdateTree(remoteUpdateTree) {}
 
 void TestSituationGenerator::setSyncpal(const std::shared_ptr<SyncPal> syncpal) {
     _syncDb = syncpal->syncDb();
-    _localSnapshot = syncpal->snapshot(ReplicaSide::Local);
-    _remoteSnapshot = syncpal->snapshot(ReplicaSide::Remote);
+    _localLiveSnapshot = syncpal->_localFSObserverWorker->_liveSnapshot;
+    _remoteLiveSnapshot = syncpal->_remoteFSObserverWorker->_liveSnapshot;
     _localUpdateTree = syncpal->updateTree(ReplicaSide::Local);
     _remoteUpdateTree = syncpal->updateTree(ReplicaSide::Remote);
 }
 
 void TestSituationGenerator::generateInitialSituation(const std::string &jsonInputStr) {
-    if (!_syncDb || !_localSnapshot || !_remoteSnapshot || !_localUpdateTree || !_remoteUpdateTree)
+    if (!_syncDb || !_localLiveSnapshot || !_remoteLiveSnapshot || !_localUpdateTree || !_remoteUpdateTree)
         throw std::runtime_error("Invalid parameters!");
 
     Poco::JSON::Object::Ptr obj;
@@ -79,7 +74,7 @@ void TestSituationGenerator::generateInitialSituation(const std::string &jsonInp
     addItem(obj);
 
     _localUpdateTree->drawUpdateTree();
-    _syncDb->cache().reloadIfNeeded();
+    (void) _syncDb->cache().reloadIfNeeded();
 }
 
 std::shared_ptr<Node> TestSituationGenerator::getNode(const ReplicaSide side, const NodeId &id) const {
@@ -137,8 +132,15 @@ std::shared_ptr<Node> TestSituationGenerator::deleteNode(const ReplicaSide side,
 }
 
 NodeId TestSituationGenerator::generateId(const ReplicaSide side, const NodeId &id) const {
-    if (id.starts_with(localIdSuffix) || id.starts_with(remoteIdSuffix)) return id;
-    return side == ReplicaSide::Local ? localIdSuffix + id : remoteIdSuffix + id;
+    NodeId rawId;
+    if (id.starts_with(localIdSuffix)) {
+        rawId = id.substr(localIdSuffix.size());
+    } else if (id.starts_with(remoteIdSuffix)) {
+        rawId = id.substr(remoteIdSuffix.size());
+    } else {
+        rawId = id;
+    }
+    return (side == ReplicaSide::Local ? localIdSuffix : remoteIdSuffix) + rawId;
 }
 
 void TestSituationGenerator::addItem(Poco::JSON::Object::Ptr obj, const NodeId &parentId /*= {}*/) {
@@ -168,11 +170,12 @@ size_t TestSituationGenerator::size() const {
 void TestSituationGenerator::insertInAllSnapshot(const NodeType itemType, const NodeId &id, const NodeId &parentId) const {
     if (id.empty()) return;
     for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote}) {
+        if (!(side == ReplicaSide::Local ? _localLiveSnapshot : _remoteLiveSnapshot).has_value()) continue;
         const auto size = itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
         const auto parentFinalId = parentId.empty() ? "1" : generateId(side, parentId);
         const SnapshotItem item(generateId(side, id), parentFinalId, Str2SyncName(Utility::toUpper(id)), testhelpers::defaultTime,
                                 testhelpers::defaultTime, itemType, size, false, true, true);
-        (void) snapshot(side)->updateItem(item);
+        (void) liveSnapshot(side).updateItem(item);
     }
 }
 

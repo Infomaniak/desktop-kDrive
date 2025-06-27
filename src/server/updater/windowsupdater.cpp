@@ -63,7 +63,8 @@ void WindowsUpdater::downloadUpdate() noexcept {
 
     auto job = std::make_shared<DirectDownloadJob>(filepath, versionInfo(_currentChannel).downloadUrl);
     const std::function<void(UniqueId)> callback = std::bind_front(&WindowsUpdater::downloadFinished, this);
-    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL, callback);
+    job->setAdditionalCallback(callback);
+    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
     setState(UpdateState::Downloading);
 }
 
@@ -85,7 +86,7 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
         std::stringstream ss;
         ss << errorCode << " - " << errorDescr;
         sentry::Handler::captureMessage(sentry::Level::Warning, "WindowsUpdater::downloadFinished", ss.str());
-        LOG_ERROR(Log::instance()->getLogger(), ss.str().c_str());
+        LOG_ERROR(Log::instance()->getLogger(), ss.str());
         setState(UpdateState::DownloadError);
         return;
     }

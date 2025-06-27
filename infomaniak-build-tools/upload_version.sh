@@ -24,14 +24,14 @@ if [ "${BASH_SOURCE[0]}" -ef "$0" ]; then
 fi
 
 upload_file () {
-    FILE="$1"
-    SYSTEM="$2"
+    file="$1"
+    system="$2"
 
-    SIZE=$(ls -l $FILE | awk '{print $5}')
+    size=$(ls -l "$file" | awk '{print $5}')
 
     curl -X POST \
         -H "Authorization: Bearer $KDRIVE_TOKEN" \
         -H "Content-Type: application/octet-stream" \
-        --data-binary @$FILE \
-        "https://api.infomaniak.com/3/drive/$KDRIVE_ID/upload?directory_id=$KDRIVE_DIR_ID&total_size=$SIZE&file_name=$FILE&directory_path=${VERSION:0:3}/${VERSION:0:5}/${VERSION:6}/${SYSTEM}&conflict=version"
+        --data-binary @"$file" \
+        "https://api.infomaniak.com/3/drive/$KDRIVE_ID/upload?directory_id=$KDRIVE_DIR_ID&total_size=$size&file_name=$file&directory_path=${VERSION:0:3}/${VERSION:0:5}/${VERSION:6}/${system}&conflict=version"
 }

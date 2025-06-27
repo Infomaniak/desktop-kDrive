@@ -18,16 +18,17 @@
 
 #include "updatedialog.h"
 
-#include "../wizard/webview.h"
-#include "libcommon/utility/utility.h"
 #include "../guiutility.h"
-#include "config.h"
 #include "../parameterscache.h"
+#include "libcommongui/matomoclient.h"
+#include "libcommon/utility/utility.h"
 #include "libcommon/theme/theme.h"
+#include "config.h"
 
 #include <QLabel>
 #include <QNetworkReply>
 #include <QPushButton>
+#include <QTextBrowser>
 #include <QTextEdit>
 
 namespace KDC {
@@ -35,9 +36,10 @@ namespace KDC {
 static const int mainBoxHMargin = 40;
 static const int mainBoxVBMargin = 40;
 static const int boxHSpacing = 10;
-static const int webviewHeight = 300;
+static const int releaseNoteContentWidgetHeight = 300;
 
-UpdateDialog::UpdateDialog(const VersionInfo &versionInfo, QWidget *parent /*= nullptr*/) : CustomDialog(false, parent) {
+UpdateDialog::UpdateDialog(const VersionInfo &versionInfo, QWidget *parent /*= nullptr*/) :
+    CustomDialog(false, parent) {
     KDC::GuiUtility::setStyle(qApp, false);
     initUi(versionInfo);
 }
@@ -68,22 +70,29 @@ void UpdateDialog::initUi(const VersionInfo &versionInfo) {
     lbl->setWordWrap(true);
     subLayout->addWidget(lbl);
 
-    auto *releaseNoteLabel = new QLabel;
-    releaseNoteLabel->setText(tr("Release Notes:"));
-    releaseNoteLabel->setObjectName("largeMediumTextLabel");
-    releaseNoteLabel->setContextMenuPolicy(Qt::PreventContextMenu);
-    releaseNoteLabel->setWordWrap(true);
-    subLayout->addWidget(releaseNoteLabel);
+    auto *releaseNoteContentWidget = new QTextBrowser(this);
+    releaseNoteContentWidget->setFixedHeight(releaseNoteContentWidgetHeight);
+    subLayout->addWidget(releaseNoteContentWidget);
 
-    auto *webview = new WebView(this);
-    webview->setFixedHeight(webviewHeight);
+    auto *manager = new QNetworkAccessManager(this);
     const Language language = ParametersCache::instance()->parametersInfo().language();
     QString languageCode = CommonUtility::languageCode(language);
     if (languageCode.isEmpty()) languageCode = "en";
-    webview->setUrl(QUrl(
-            QString("%1-%2-win-%3.html").arg(APPLICATION_STORAGE_URL, versionInfo.fullVersion().c_str(), languageCode.left(2))));
-    subLayout->addWidget(webview);
-    subLayout->addStretch();
+    const QUrl notesUrl(
+        QString("%1-%2-win-%3.html")
+        .arg(APPLICATION_STORAGE_URL, versionInfo.fullVersion().c_str(), languageCode.left(2))
+    );
+
+    connect(manager, &QNetworkAccessManager::finished, this,
+        [releaseNoteContentWidget](QNetworkReply *reply) {
+            if (reply->error() == QNetworkReply::NoError) {
+                const QByteArray html = reply->readAll();
+                releaseNoteContentWidget->setHtml(QString::fromUtf8(html));
+            }
+            reply->deleteLater();
+        });
+    manager->get(QNetworkRequest(notesUrl));
+
 
     auto *hLayout = new QHBoxLayout();
 
@@ -110,11 +119,20 @@ void UpdateDialog::initUi(const VersionInfo &versionInfo) {
     connect(this, &CustomDialog::exit, this, &UpdateDialog::reject);
 
     subLayout->addLayout(hLayout);
+#ifdef Q_OS_WIN
+    MatomoClient::sendVisit(MatomoNameField::PG_Preferences_UpdateDialog);
+#endif
 }
 
 void UpdateDialog::reject() {
     if (sender() == _skipButton) _skip = true;
+    MatomoClient::sendEvent("updateDialog", MatomoEventAction::Click, "rejectButton", _skip ? 1 : 0);
     QDialog::reject();
+}
+
+void UpdateDialog::accept() {
+    MatomoClient::sendEvent("updateDialog", MatomoEventAction::Click, "acceptButton");
+    QDialog::accept();
 }
 
 } // namespace KDC

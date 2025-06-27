@@ -42,7 +42,7 @@ void OperationSorterWorker::execute() {
     _filter.filterOperations();
     sortOperations();
 
-    LOG_SYNCPAL_INFO(_logger, "Operation sorting finished in: " << timer.elapsed().count() << "s");
+    LOG_SYNCPAL_INFO(_logger, "Operation sorting finished in: " << timer.elapsed<DoubleSeconds>().count() << "s");
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
     setDone(ExitCode::Ok);
@@ -326,14 +326,26 @@ bool OperationSorterWorker::hasParentWithHigherIndex(const std::unordered_map<Un
 void OperationSorterWorker::fixEditBeforeMove() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixEditBeforeMove");
     for (const auto &[_, opList]: _filter.fixEditBeforeMoveCandidates()) {
-        if (opList.size() != 2) {
+        if (opList.size() < 2) {
             continue; // We are looking for nodes affected by both EDIT and MOVE operations
         }
-        const auto [editOp, moveOp] = extractOpsByType(OperationType::Edit, OperationType::Move, opList.front(), opList.back());
+        // opList contains one MOVE operation and all the EDIT operations that are under the node affected by the MOVE
 
-        // Since in case of move op, the node already contains the new name
-        // we always want to execute move operation first
-        moveFirstAfterSecond(editOp, moveOp);
+        auto moveOpIt =
+                std::find_if(opList.begin(), opList.end(), [](const SyncOpPtr &op) { return op->type() == OperationType::Move; });
+        if (moveOpIt == opList.end()) {
+            LOG_IF_FAIL("fixEditBeforeMove: No MOVE operation found in the list of operations. This should not happen." && false)
+            continue;
+        }
+
+        // Ensure that all EDIT operations under the node affected by the MOVE operation are executed after the MOVE operation
+        // Otherwise, this may cause issues with path changes between the edit job generation and its execution (due to the MOVE)
+        // in the executor step.
+        for (auto &op: opList) {
+            if (op->type() == OperationType::Edit) {
+                moveFirstAfterSecond(op, *moveOpIt);
+            }
+        }
     }
     LOG_SYNCPAL_DEBUG(_logger, "End fixEditBeforeMove");
 }
@@ -496,9 +508,6 @@ void OperationSorterWorker::moveFirstAfterSecond(const SyncOpPtr &opFirst, const
             firstIt = it;
         }
     }
-
-    // Make sure that opFirst is finished before starting opSecond, even if they are in the correct order
-    opFirst->setParentId(opSecond->id());
 
     if (firstFound) {
         // make sure opSecond is executed after opFirst

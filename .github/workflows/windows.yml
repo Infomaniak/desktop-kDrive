@@ -1,10 +1,12 @@
 name: Windows kDrive desktop CI
 
 on:
-  pull_request:
-    branches-ignore:
-        - 'release/**'
-    types: [synchronize, review_requested]
+  workflow_dispatch: 
+  # Legacy CI
+  #pull_request:
+  #  branches-ignore:
+  #    - 'release/**'
+  #  types: [ synchronize, review_requested ]	
 
 concurrency:
   group: windows-${{ github.head_ref }}
@@ -16,14 +18,16 @@ env:
   KDRIVE_TEST_CI_USER_ID: ${{ vars.KDRIVE_TEST_CI_USER_ID }}
   KDRIVE_TEST_CI_DRIVE_ID: ${{ vars.KDRIVE_TEST_CI_DRIVE_ID }}
   KDRIVE_TEST_CI_REMOTE_DIR_ID: ${{ vars.KDRIVE_TEST_CI_REMOTE_DIR_ID }}
-  KDRIVE_TEST_CI_LOCAL_PATH: ${{ vars.KDRIVE_TEST_CI_LOCAL_PATH }}
   KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
   KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
+  KDRIVE_SENTRY_ENVIRONMENT: "windows_ci_runner"
 
 jobs:
   build-kDrive:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    env:
+      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
     steps:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
@@ -59,13 +63,12 @@ jobs:
       - name: Build kDrive desktop
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
-
-          set PATH=%ProgramFiles%\BullseyeCoverage\bin;%ProgramFiles%\Microsoft Visual Studio\VC\bin;%PATH%
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
         shell: cmd
 
       - name: Execute tests
         run: |
+          & ".\build-windows\build\conan\build\Release\generators\conanrunenv-release-x86_64.bat"
           ./infomaniak-build-tools/run-tests.ps1
 
       - name: Upload tests logs artifacts

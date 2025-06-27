@@ -1,16 +1,12 @@
-sudo apt-get install libgl1-mesa-dev# kDrive Desktop Configuration - Linux
-
 - [kDrive files](#kdrive-files)
 - [Installation Requirements](#installation-requirements)
-    - [aPckages](#packages)
+    - [Packages](#packages)
     - [Qt 6.2.3](#qt-623)
-    - [log4cplus](#log4cplus)
-    - [OpenSSL](#openssl)
     - [Poco](#poco)
     - [CPPUnit](#cppunit)
     - [Sentry](#sentry)
-    - [xxHash](#xxhash)
     - [libzip](#libzip)
+    - [Conan](#conan)
 - [Build in Debug](#build-in-debug)
     - [Using CLion](#using-clion)
         - [Prerequisites](#prerequisites)
@@ -41,14 +37,14 @@ Currently, the build for Linux release is created from a podman container
 You will need cmake and clang to compile the libraries and the kDrive project  
 This documentation was made for Ubuntu 22.04 LTS
 
-## Packages :
+We are migrating the dependency management from manual to using conan.
+
+## Packages
 
 If not already installed, you will need **git**, **cmake** and **clang** (clang-18 or higher) packages.
 
 ```bash
-sudo apt install -y git
-sudo apt install -y cmake
-sudo apt install -y clang
+sudo apt update && sudo apt install -y git cmake clang
 ```
 
 Ensure that CLANG is installed with at least version 18 by running the following command :
@@ -89,68 +85,21 @@ If, following the installation, you cannot load the Qt platform plugin xcb, you 
 sudo apt install libxcb-cursor0
 ```
 
-## log4cplus
-
-```bash
-cd ~/Projects
-git clone --recurse-submodules https://github.com/log4cplus/log4cplus.git
-cd log4cplus
-git checkout 2.1.x
-cd catch
-git checkout v2.x
-cd ..
-mkdir cmake-build
-cd cmake-build
-cmake .. -DUNICODE=1
-sudo cmake --build . --target install
-```
-
-If an error occurs with the the include of `catch.hpp`, you need to change branch inside the `catch` directory:
-
-```bash
-cd ../catch
-git checkout v2.x
-```
-
-## OpenSSL
-
-The OpenSSL Configure will require Perl to be installed first
-
-```bash
-cd ~/Projects
-git clone git@github.com:openssl/openssl.git
-cd openssl
-git checkout tags/openssl-3.2.1
-./Configure shared
-make
-sudo make install
-```
-
 ## Poco
 
-> :warning: **`Poco` requires [OpenSSL](#openssl) to be installed.**
+> :warning: **`Poco` requires OpenSSL to be installed.**
+>
+> You **must follow** the [Conan](#conan) section first to install `OpenSSL`.
 
-For ARM64:
 ```bash
 cd ~/Projects
+source "$(find ./desktop-kdrive/ -name "conanrun.sh")" || exit 1 # This will prepend the path to the conan-managed dependencies to the 'LD_LIBRARY_PATH' environment variable
 git clone https://github.com/pocoproject/poco.git
 cd poco
 git checkout tags/poco-1.13.3-release
 mkdir cmake-build
 cd cmake-build
-cmake .. -DOPENSSL_ROOT_DIR=/usr/local -DOPENSSL_INCLUDE_DIR=/usr/local/include -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib/libcrypto.so -DOPENSSL_SSL_LIBRARY=/usr/local/lib/libssl.so
-sudo cmake --build . --target install
-```
-
-For AMD64:
-```bash
-cd ~/Projects
-git clone https://github.com/pocoproject/poco.git
-cd poco
-git checkout tags/poco-1.13.3-release
-mkdir cmake-build
-cd cmake-build
-cmake .. -DOPENSSL_ROOT_DIR=/usr/local -DOPENSSL_INCLUDE_DIR=/usr/local/include -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib64/libcrypto.so -DOPENSSL_SSL_LIBRARY=/usr/local/lib64/libssl.so
+cmake ..
 sudo cmake --build . --target install
 ```
 
@@ -171,6 +120,8 @@ sudo make install
 
 If the server does not reply to the `git clone` command, you can download the source from https://www.freedesktop.org/wiki/Software/cppunit/.
 
+You can also download cppunit version 1.15.1 using the ["Wayback Machine"](https://web.archive.org/) here: https://web.archive.org/web/20231118010938/http://dev-www.libreoffice.org/src/cppunit-1.15.1.tar.gz
+
 ## Sentry
 
 You will need to install the dev libcurl package to build sentry-native
@@ -190,22 +141,6 @@ cd ../..
 cmake -B build -DSENTRY_INTEGRATION_QT=YES -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_PREFIX_PATH=~/Qt/6.2.3/gcc_64
 cmake --build build --parallel
 sudo cmake --install build
-
-
-```
-
-## xxHash
-
-```bash
-cd ~/Projects
-git clone https://github.com/Cyan4973/xxHash.git
-cd xxHash
-git checkout tags/v0.8.2
-cd cmake_unofficial
-mkdir build
-cd build
-cmake ..
-sudo cmake --build . --target install
 ```
 
 ## libzip
@@ -219,7 +154,6 @@ sudo apt-get install zlib1g-dev
 Clone and install libzip
 
 ```bash
-sudo apt install zlib1g-dev
 cd ~/Projects
 git clone https://github.com/nih-at/libzip.git
 cd libzip
@@ -230,14 +164,108 @@ make
 sudo make install
 ```
 
+---
+
+## Conan
+The recommended way to install Conan is via **pip** within a Python virtual environment (Python 3.6 or newer). This approach ensures isolation and compatibility with your project’s dependencies.
+
+> **Tip:** Other installation methods (system packages, pipx, installer scripts, etc.) are also supported. See [Conan Downloads](https://conan.io/downloads) for the full list of options.
+### Prerequisites
+- **Python 3.6+**
+- **pip** (upgrade to the latest version):
+  ```bash
+  pip install --upgrade pip
+  ```
+
+### 1. Create and Activate a Virtual Environment
+1. Create a virtual environment in `./.venv`:
+   ```bash
+   python3 -m venv .venv
+   ```
+2. Activate the virtual environment:
+   ```bash
+   source .venv/bin/activate
+   ```
+
+### 2. Install Conan
+
+With the virtual environment activated, install Conan:
+```bash
+pip install conan
+```
+
+Verify the installation:
+```bash
+conan --version
+```
+You should see an output similar to:
+```
+Conan version 2.x.x
+```
+
+---
+
+### 3. Configure a Conan Profile
+1. Auto-generate the default profile:
+   ```bash
+   conan profile detect
+   ```
+   This creates `~/.conan2/profiles/default`.
+
+2. Open `~/.conan2/profiles/default` and customize the settings under the `[settings]` section. For example, to target Linux with C++20:
+   ```ini
+    [settings]
+    arch=x86_64
+    build_type=Release
+    compiler=gcc
+    compiler.cppstd=20
+    compiler.libcxx=libstdc++11
+    compiler.version=11.4
+    os=Linux
+   ```
+
+---
+
+### 4. Configure CMake Toolchain Injection
+The project requires additional CMake variables for a correct build. To inject these, create a file named `debug_vars.cmake` in your profiles directory (`~/.conan2/profiles`), and then reference it in the profile under `[conf]`:
+
+1. Create or open `~/.conan2/profiles/debug_vars.cmake` and add the cache entries, for example:
+   ```cmake
+   set(APPLICATION_CLIENT_EXECUTABLE "kdrive_client")
+   set(KDRIVE_THEME_DIR "$ENV{HOME}/Projects/desktop-kDrive/infomaniak")
+   set(BUILD_UNIT_TESTS "ON")      # Set to "OFF" to skip tests
+   set(SOCKETAPI_TEAM_IDENTIFIER_PREFIX "864VDCS2QY")
+   set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.7.2/gcc_arm64")
+   set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/Projects/CLion-build-debug/bin")
+   ```
+
+2. In your profile (`~/.conan2/profiles/default`), add under a new `[conf]` section:
+   ```ini
+   [conf]
+   tools.cmake.cmaketoolchain:user_toolchain+={{profile_dir}}/debug_vars.cmake
+   ```
+
+---
+
+### 5. Install Project Dependencies
+
+**From the repository root**, run the provided build script, specifying the desired configuration (`Debug` or `Release`) and the folder where the app will be builded.
+```bash
+./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release] [--output-dir=<output_dir>]
+```
+
+> **Note:** Currently only **xxHash**, **log4cplus**, **OpenSSL** and **zlib** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+
+---
 # Build in Debug
 
 ## Linking dependencies
 
-sudo apt-get install libgl1-mesa-dev
-sudo apt-get install sqlite3 libsqlite3-dev
-sudo apt-get install libsecret-1-dev
-
+```bash
+sudo apt-get install -y libgl1-mesa-dev \
+   sqlite3 libsqlite3-dev \
+   libsecret-1-dev
+```
 In order for CMake to be able to find all dependencies, you might need to define `LD_LIBRARY_PATH=/usr/local/lib` in your environment variables.
 
 ## Using CLion
@@ -247,15 +275,24 @@ In order for CMake to be able to find all dependencies, you might need to define
 Install the following libraries:
 
 ```bash
-sudo apt-get install mesa-utils
-sudo apt-get install freeglut3-dev
-sudo apt-get install libsqlite3-dev
-sudo apt-get install -y pkg-config
-sudo apt-get install libglib2.0-dev
-sudo apt install libsecret-1-0 libsecret-1-dev libglib2.0-dev
+sudo apt update && sudo apt install -y mesa-utils freeglut3-dev \
+                    libsqlite3-dev pkg-config \
+                    libglib2.0-dev libsecret-1-0 \
+                    libsecret-1-dev libglib2.0-dev
 ```
 
-## CMake Parameters
+
+### Using Conan - CMakeUserPresets
+
+After you followed the [Conan](#conan) section, a file named `CMakeUserPresets.json` has been created at the root of the project.
+_Sometimes, CLion need to reload the CMake project to detect the presets. To do so, go, in the top bar, to `Tools` > `CMake`  and click `Reload CMake Project`._
+
+Now you can select the `conan-[debug|release]` profile in the CMake configuration.
+
+
+### Classical Way
+
+#### CMake Parameters
 
 CMake options:
 
@@ -268,9 +305,10 @@ CMake options:
 -DCMAKE_PREFIX_PATH:STRING=/home/<user>/Qt/6.7.2/gcc_arm64
 -DSOCKETAPI_TEAM_IDENTIFIER_PREFIX:STRING=864VDCS2QY
 -DQT_DEBUG_FIND_PACKAGE=ON
+-DCMAKE_TOOLCHAIN_FILE=/home/<user>/Projects/CLion-build-debug/conan_toolchain.cmake
 ```
 
-## Using Qt Creator 
+## Using Qt Creator
 
 ### Configuration
 

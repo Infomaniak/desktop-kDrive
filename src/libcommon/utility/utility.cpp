@@ -39,6 +39,10 @@
 #include <Poco/Util/WinRegistryKey.h>
 #endif
 
+#ifndef _WIN32
+#include <utf8proc.h>
+#endif
+
 #ifdef ZLIB_FOUND
 #include <zlib.h>
 #endif
@@ -660,16 +664,35 @@ bool CommonUtility::isSubDir(const SyncPath &path1, const SyncPath &path2) {
     return (it1 == it1End);
 }
 
-bool CommonUtility::isDiskRootFolder(const SyncPath &absolutePath) {
-    bool isRoot = absolutePath == absolutePath.root_path();
+bool CommonUtility::isDiskRootFolder(const SyncPath &absolutePath, SyncPath &suggestedPath) {
+    suggestedPath = SyncPath();
+    if (absolutePath == absolutePath.root_path()) {
+        // We cannot suggest a path if the absolutePath is "/" or "C:/", etc.
+        return true;
+    }
 #if defined(__APPLE__)
-    // on macOS, external drive appears under "/Volumes/<drivename>"
-    isRoot |= absolutePath.parent_path() == "/Volumes";
+    // On macOS, external drives appears under "/Volumes/<drivename>"
+    if (absolutePath.parent_path() == "/Volumes") {
+        suggestedPath = absolutePath / "kDrive"; // i.e., /Volumes/<drivename>/kDrive
+        return true;
+    }
 #elif defined(__unix__)
-    // on Linux, external drive appears under "/media/<username>/<drivename>"
-    isRoot |= absolutePath == "/media" || absolutePath.parent_path() == "/media" || absolutePath.parent_path().parent_path() == "/media";
+    // On Linux, external drives usually appears under  "/media/<username>/<drivename>" or "/media/<drivename>"
+    if(absolutePath == "/media") {
+        // If the absolutePath is "/media", we cannot suggest a path
+        return true;
+    }
+
+    if (absolutePath.parent_path() == "/media") {
+        suggestedPath = absolutePath / "myDocuments" / "kDrive"; // i.e., /media/<drivename>/myDocuments/kDrive
+        return true;
+    }
+    if (absolutePath.parent_path().parent_path() == "/media") {
+        suggestedPath = absolutePath / "kDrive"; // i.e., /media/<username>/<drivename>/kDrive
+        return true;
+    }
 #endif
-    return isRoot;
+    return false;
 }
 
 const std::string CommonUtility::dbVersionNumber(const std::string &dbVersion) {
@@ -993,5 +1016,138 @@ SyncPath CommonUtility::applicationFilePath() {
     return SyncPath(pathStr.data());
 }
 
+#if defined(__APPLE__) || defined(__unix__)
+// Be careful, some characters have 2 different encodings in Unicode
+// For example 'é' can be coded as 0x65 + 0xcc + 0x81  or 0xc3 + 0xa9
+bool CommonUtility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
+                                       const UnicodeNormalization normalization) noexcept {
+    if (name.empty()) {
+        normalizedName = name;
+        return true;
+    }
 
+
+    char *strResult = nullptr;
+    if (normalization == UnicodeNormalization::NFD) {
+        strResult = reinterpret_cast<char *>(utf8proc_NFD(reinterpret_cast<const uint8_t *>(name.c_str())));
+    } else {
+        strResult = reinterpret_cast<char *>(utf8proc_NFC(reinterpret_cast<const uint8_t *>(name.c_str())));
+    }
+
+    if (!strResult) { // Some special characters seem to be not supported, therefore a null pointer is returned if the
+        // conversion has failed. e.g.: Linux can sometimes send filesystem events with strange characters in
+        // the path
+        return false;
+    }
+
+    normalizedName = SyncName(strResult);
+    std::free((void *) strResult);
+    return true;
+}
+#endif
+
+SyncName CommonUtility::preferredPathSeparator() {
+    return SyncName{std::filesystem::path::preferred_separator};
+}
+
+std::list<SyncName> CommonUtility::splitSyncPath(const SyncPath &path) {
+    std::list<SyncName> itemNames;
+    SyncPath pathTmp(path);
+
+    while (pathTmp != pathTmp.root_path()) {
+        (void) itemNames.emplace_front(pathTmp.filename().native());
+        pathTmp = pathTmp.parent_path();
+    }
+
+    return itemNames;
+}
+
+std::vector<SyncName> CommonUtility::splitSyncName(SyncName name, const SyncName &separator) {
+    std::vector<SyncName> tokens;
+    size_t pos = 0;
+    SyncName token;
+
+    while ((pos = name.find(separator)) != std::string::npos) {
+        token = name.substr(0, pos);
+        tokens.push_back(token);
+        (void) name.erase(0, pos + separator.length());
+    }
+    tokens.push_back(name);
+
+    return tokens;
+}
+
+std::vector<SyncName> CommonUtility::splitPath(const SyncName &pathName) {
+    SyncPath path{pathName};
+
+    return splitSyncName(path.make_preferred().native(), preferredPathSeparator());
+}
+
+SyncNameSet CommonUtility::computeSyncNameNormalizations(const SyncName &name) {
+    SyncNameSet result;
+    (void) result.emplace(name);
+
+    SyncName nfcNormalizedName;
+    if (const bool nfcSuccess = CommonUtility::normalizedSyncName(name, nfcNormalizedName, UnicodeNormalization::NFC);
+        nfcSuccess) {
+        (void) result.emplace(nfcNormalizedName);
+    }
+
+    SyncName nfdNormalizedName;
+    if (const bool nfdSuccess = CommonUtility::normalizedSyncName(name, nfdNormalizedName, UnicodeNormalization::NFD);
+        nfdSuccess) {
+        (void) result.emplace(nfdNormalizedName);
+    }
+
+
+    return result;
+}
+
+SyncNameSet CommonUtility::computePathNormalizations(const std::vector<SyncName> &pathSegments, const int64_t lastIndex) {
+    if (lastIndex == -1 || pathSegments.empty()) return {};
+
+    const auto lastSegmentNormalizations = computeSyncNameNormalizations(pathSegments[static_cast<size_t>(lastIndex)]);
+    const auto headNormalizations = computePathNormalizations(pathSegments, lastIndex - 1);
+
+    SyncNameSet result;
+    for (const auto &lastSegmentNormalization: lastSegmentNormalizations) {
+        for (const auto &headNormalization: headNormalizations)
+            (void) result.emplace(headNormalization + CommonUtility::preferredPathSeparator() + lastSegmentNormalization);
+        if (headNormalizations.empty()) (void) result.emplace(lastSegmentNormalization);
+    }
+    return result;
+}
+
+SyncNameSet CommonUtility::computePathNormalizations(const std::vector<SyncName> &pathSegments) {
+    return computePathNormalizations(pathSegments, static_cast<int64_t>(pathSegments.size() - 1));
+}
+
+SyncNameSet CommonUtility::computePathNormalizations(const SyncName &path) {
+    const auto pathSegments = CommonUtility::splitPath(path);
+
+    return computePathNormalizations(pathSegments);
+}
+
+
+ReplicaSide CommonUtility::syncNodeTypeSide(SyncNodeType type) {
+    switch (type) {
+        case KDC::SyncNodeType::BlackList:
+            // List of remote directories excluded from sync.
+            return ReplicaSide::Remote;
+        case KDC::SyncNodeType::WhiteList:
+            // List of large remote directories explicitly approved by the user.
+            return ReplicaSide::Remote;
+        case KDC::SyncNodeType::UndecidedList:
+            // List of large remote directories not yet approved by the user.
+            return ReplicaSide::Remote;
+        case KDC::SyncNodeType::TmpRemoteBlacklist:
+            // List of remote items temporarily excluded from sync.
+            return ReplicaSide::Remote;
+        case KDC::SyncNodeType::TmpLocalBlacklist:
+            // List of local items temporarily excluded from sync.
+            return ReplicaSide::Local;
+        default:
+            return ReplicaSide::Unknown;
+    }
+}
 } // namespace KDC

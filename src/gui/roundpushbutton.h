@@ -22,6 +22,7 @@
 
 class RoundPushButton : public QPushButton {
         Q_OBJECT
+
     public:
         RoundPushButton();
 };

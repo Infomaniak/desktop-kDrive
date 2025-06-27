@@ -20,7 +20,8 @@
 
 namespace KDC {
 
-CustomSwitch::CustomSwitch(QWidget *parent) : CustomCheckBox(parent) {
+CustomSwitch::CustomSwitch(QWidget *parent) :
+    CustomCheckBox(parent) {
     setProperty("type", "switch");
 }
 

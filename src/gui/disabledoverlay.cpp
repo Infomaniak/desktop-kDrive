@@ -30,7 +30,8 @@ static const int cornerRadius = 5;
 static const int hMargin = 20;
 static const int vMargin = 20;
 
-DisabledOverlay::DisabledOverlay(QWidget *parent) : QWidget(parent) {
+DisabledOverlay::DisabledOverlay(QWidget *parent) :
+    QWidget(parent) {
     setAttribute(Qt::WA_NoSystemBackground);
     setAttribute(Qt::WA_TransparentForMouseEvents);
     setAttribute(Qt::WA_TranslucentBackground);

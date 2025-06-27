@@ -29,16 +29,23 @@ namespace KDC {
 UploadSessionFinishJob::UploadSessionFinishJob(const std::shared_ptr<Vfs> &vfs, const UploadSessionType uploadType,
                                                const int driveDbId, const SyncPath &absoluteFilePath,
                                                const std::string &sessionToken, const std::string &totalChunkHash,
-                                               const uint64_t totalChunks, const SyncTime modtime) :
-    AbstractUploadSessionJob(uploadType, driveDbId, absoluteFilePath, sessionToken), _totalChunkHash(totalChunkHash),
-    _totalChunks(totalChunks), _modtimeIn(modtime), _vfs(vfs) {
+                                               const uint64_t totalChunks, const SyncTime creationTime,
+                                               SyncTime modificationTime) :
+    AbstractUploadSessionJob(uploadType, driveDbId, absoluteFilePath, sessionToken),
+    _totalChunkHash(totalChunkHash),
+    _totalChunks(totalChunks),
+    _creationTimeIn(creationTime),
+    _modificationTimeIn(modificationTime),
+    _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
 UploadSessionFinishJob::UploadSessionFinishJob(const UploadSessionType uploadType, const SyncPath &absoluteFilePath,
                                                const std::string &sessionToken, const std::string &totalChunkHash,
-                                               const uint64_t totalChunks, const SyncTime modtime) :
-    UploadSessionFinishJob(nullptr, uploadType, 0, absoluteFilePath, sessionToken, totalChunkHash, totalChunks, modtime) {}
+                                               const uint64_t totalChunks, const SyncTime creationTime,
+                                               SyncTime modificationTime) :
+    UploadSessionFinishJob(nullptr, uploadType, 0, absoluteFilePath, sessionToken, totalChunkHash, totalChunks, creationTime,
+                           modificationTime) {}
 
 UploadSessionFinishJob::~UploadSessionFinishJob() {
     if (!_vfs) return;
@@ -53,10 +60,12 @@ bool UploadSessionFinishJob::handleResponse(std::istream &is) {
         return false;
     }
 
-    UploadJobReplyHandler replyHandler(_absoluteFilePath, _modtimeIn);
+    UploadJobReplyHandler replyHandler(_absoluteFilePath, false, _creationTimeIn, _modificationTimeIn);
     if (!replyHandler.extractData(jsonRes())) return false;
     _nodeId = replyHandler.nodeId();
-    _modtimeOut = replyHandler.modtime();
+    _creationTimeOut = replyHandler.creationTime();
+    _modificationTimeOut = replyHandler.modificationTime();
+    _sizeOut = replyHandler.size();
 
     return true;
 }
@@ -73,7 +82,8 @@ ExitInfo UploadSessionFinishJob::setData() {
     Poco::JSON::Object json;
     (void) json.set("total_chunk_hash", "xxh3:" + _totalChunkHash);
     (void) json.set("total_chunks", _totalChunks);
-    (void) json.set(lastModifiedAtKey, _modtimeIn);
+    (void) json.set(createdAtKey, _creationTimeIn);
+    (void) json.set(lastModifiedAtKey, _modificationTimeIn);
 
     std::stringstream ss;
     json.stringify(ss);

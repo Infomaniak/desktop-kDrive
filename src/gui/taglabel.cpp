@@ -35,7 +35,8 @@ static constexpr int offset = 2;
 #endif
 
 TagLabel::TagLabel(const QColor &color /*= Qt::transparent*/, QWidget *parent /*= nullptr*/) :
-    QLabel(parent), _backgroundColor(color) {
+    QLabel(parent),
+    _backgroundColor(color) {
     setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
     setAlignment(Qt::AlignCenter);
 }

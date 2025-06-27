@@ -16,28 +16,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "continuefilelistwithcursorjob.h"
-
-#include <Poco/Net/HTTPRequest.h>
+#include "longpolljob.h"
 
 namespace KDC {
 
-ContinueFileListWithCursorJob::ContinueFileListWithCursorJob(int driveDbId, const std::string &cursor) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _cursor(cursor) {
-    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+static const uint32_t apiTimout = 50;
+
+LongPollJob::LongPollJob(const int driveDbId, const std::string &cursor, const NodeSet &blacklist /*= {}*/) :
+    AbstractListingJob(ApiType::NotifyDrive, driveDbId, blacklist),
+    _cursor(cursor) {
+    _customTimeout = apiTimout + 5; // Must be < 1 min (VPNs' default timeout)
 }
 
-std::string ContinueFileListWithCursorJob::getSpecificUrl() {
+std::string LongPollJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
-    str += "/files/listing/continue";
+    str += "/files/listing/longpoll";
     return str;
 }
 
-void ContinueFileListWithCursorJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
+void LongPollJob::setSpecificQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("cursor", _cursor);
-    uri.addQueryParameter("with", "files.capabilities");
-    uri.addQueryParameter("limit", nbItemPerPage);
-    canceled = false;
+    uri.addQueryParameter("timeout", std::to_string(apiTimout) + "s");
+}
+
+bool LongPollJob::handleError(std::istream &is, const Poco::URI &uri) {
+    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_BAD_GATEWAY) {
+        _exitInfo = {ExitCode::NetworkError, ExitCause::BadGateway};
+        return true;
+    } else {
+        return AbstractListingJob::handleError(is, uri);
+    }
 }
 
 } // namespace KDC

@@ -26,6 +26,7 @@ namespace KDC {
 
 class SynthesisItemDelegate : public QStyledItemDelegate {
         Q_OBJECT
+
     public:
         SynthesisItemDelegate(QObject *parent = nullptr);
 

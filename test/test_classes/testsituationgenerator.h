@@ -1,23 +1,26 @@
-// Infomaniak kDrive - Desktop
-// Copyright (C) 2023-2025 Infomaniak Network SA
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2025 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #pragma once
 
 #include "db/dbnode.h"
 #include "update_detection/update_detector/node.h"
+#include "update_detection/file_system_observer/snapshot/livesnapshot.h"
 #include "utility/types.h"
 
 #include <Poco/JSON/Object.h>
@@ -58,14 +61,11 @@ class TestSituationGenerator {
     public:
         TestSituationGenerator();
         explicit TestSituationGenerator(std::shared_ptr<SyncPal> syncpal);
-        explicit TestSituationGenerator(std::shared_ptr<SyncDb> syncDb, std::shared_ptr<Snapshot> localSnapshot,
-                                        std::shared_ptr<Snapshot> remoteSnapshot, std::shared_ptr<UpdateTree> localUpdateTree,
-                                        std::shared_ptr<UpdateTree> remoteUpdateTree);
 
         void setSyncpal(std::shared_ptr<SyncPal> syncpal);
         void setSyncDb(const std::shared_ptr<SyncDb> syncDb) { _syncDb = syncDb; }
-        void setLocalSnapshot(const std::shared_ptr<Snapshot> localSnapshot) { _localSnapshot = localSnapshot; }
-        void setRemoteSnapshot(const std::shared_ptr<Snapshot> remoteSnapshot) { _remoteSnapshot = remoteSnapshot; }
+        void setLocalSnapshot(LiveSnapshot &localSnapshot) { _localLiveSnapshot = localSnapshot; }
+        void setRemoteSnapshot(LiveSnapshot &remoteSnapshot) { _remoteLiveSnapshot = remoteSnapshot; }
         void setLocalUpdateTree(const std::shared_ptr<UpdateTree> localUpdateTree) { _localUpdateTree = localUpdateTree; }
         void setRemoteUpdateTree(const std::shared_ptr<UpdateTree> remoteUpdateTree) { _remoteUpdateTree = remoteUpdateTree; }
 
@@ -114,16 +114,18 @@ class TestSituationGenerator {
                                                                const NodeId &parentId, std::optional<DbNodeId> dbNodeId) const;
         void insertInAllUpdateTrees(NodeType itemType, const NodeId &id, const NodeId &parentId, DbNodeId dbNodeId) const;
 
-        std::shared_ptr<Snapshot> snapshot(const ReplicaSide side) const {
-            return side == ReplicaSide::Local ? _localSnapshot : _remoteSnapshot;
+        LiveSnapshot &liveSnapshot(const ReplicaSide side) const {
+            return side == ReplicaSide::Local ? _localLiveSnapshot->get() : _remoteLiveSnapshot->get();
         }
+
         std::shared_ptr<UpdateTree> updateTree(const ReplicaSide side) const {
             return side == ReplicaSide::Local ? _localUpdateTree : _remoteUpdateTree;
         }
 
         std::shared_ptr<SyncDb> _syncDb;
-        std::shared_ptr<Snapshot> _localSnapshot;
-        std::shared_ptr<Snapshot> _remoteSnapshot;
+        std::optional<std::reference_wrapper<LiveSnapshot>> _localLiveSnapshot;
+        std::optional<std::reference_wrapper<LiveSnapshot>> _remoteLiveSnapshot;
+
         std::shared_ptr<UpdateTree> _localUpdateTree;
         std::shared_ptr<UpdateTree> _remoteUpdateTree;
 };

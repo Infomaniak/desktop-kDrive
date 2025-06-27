@@ -22,10 +22,11 @@
 #include <cstdint>
 
 namespace KDC {
+static const int threadPoolMaxCapacity = 10;
 static const int threadPoolMinCapacity = 3;
 static const uint64_t chunkMaxSize = 100 * 1024 * 1024; // 100MB
 static const uint64_t chunkMinSize = 10 * 1024 * 1024; // 10MB
-static const uint64_t useUploadSessionThreshold = 100 * 1024 * 1024; // if file size > 100MB -> start upload session
+static const int64_t bigFileThreshold = 100 * 1024 * 1024; // if file size > 100MB -> start upload session
 static const uint64_t optimalTotalChunks = 200;
 static const uint64_t maxTotalChunks = 10000; // Theoretical max. file size 10'000 * 100MB = 1TB
 
@@ -76,6 +77,7 @@ static const std::string fileTypeKey = "file_type";
 static const std::string timestampKey = "timestamp";
 static const std::string createdAtKey = "created_at";
 static const std::string lastModifiedAtKey = "last_modified_at";
+static const std::string addedAtKey = "added_at";
 static const std::string pathKey = "path";
 static const std::string destinationKey = "destination";
 
@@ -176,6 +178,7 @@ enum class NetworkErrorCode {
     DestinationAlreadyExists,
     ConflictError,
     AccessDenied,
+    LockError,
     FileTooBigError,
     QuotaExceededError,
     UnknownError, // None of the handled errors

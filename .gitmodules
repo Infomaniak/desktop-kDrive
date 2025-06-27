@@ -1,3 +1,6 @@
 [submodule "src/3rdparty/keychain"]
 	path = src/3rdparty/keychain
 	url = git@github.com:hrantzsch/keychain.git
+[submodule "src/3rdparty/qt-piwik-tracker"]
+	path = src/3rdparty/qt-piwik-tracker
+	url = git@github.com:pbek/qt-piwik-tracker.git

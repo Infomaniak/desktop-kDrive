@@ -27,6 +27,43 @@ OperationProcessor::OperationProcessor(const std::shared_ptr<SyncPal> syncPal, c
     ISyncWorker(syncPal, name, shortName),
     _useSyncDbCache(useSyncDbCache) {}
 
+bool OperationProcessor::editChangeShouldBePropagated(std::shared_ptr<Node> affectedNode) {
+    if (!affectedNode) {
+        LOG_SYNCPAL_WARN(_logger, "hasChangeToPropagate: provided node is null");
+        return true;
+    }
+
+    if (affectedNode->side() != ReplicaSide::Local) return true;
+
+    bool found = false;
+    DbNode affectedDbNode;
+    if (affectedNode->idb().has_value()) {
+        if (!(_useSyncDbCache ? _syncPal->syncDb()->cache().node(affectedNode->idb().value(), affectedDbNode, found)
+                              : _syncPal->syncDb()->node(affectedNode->idb().value(), affectedDbNode, found))) {
+            LOG_SYNCPAL_WARN(_logger, "hasChangeToPropagate: Failed to retrieve node from DB, id=" << *affectedNode->idb());
+            _syncPal->addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+            return true;
+        }
+    } else {
+        if (!(_useSyncDbCache ? _syncPal->syncDb()->cache().node(ReplicaSide::Local, *affectedNode->id(), affectedDbNode, found)
+                              : _syncPal->syncDb()->node(ReplicaSide::Local, *affectedNode->id(), affectedDbNode, found))) {
+            LOG_SYNCPAL_WARN(_logger, "hasChangeToPropagate: Failed to retrieve node from DB, id=" << *affectedNode->id());
+            _syncPal->addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+            return true;
+        }
+    }
+    if (!found) {
+        LOG_SYNCPAL_WARN(_logger, "hasChangeToPropagate: node not found in DB");
+        return true;
+    }
+
+    if (affectedNode->size() == affectedDbNode.size() && affectedNode->lastmodified() == affectedDbNode.lastModifiedLocal() &&
+        affectedNode->createdAt() != affectedDbNode.created()) {
+        return false;
+    }
+    return true;
+}
+
 bool OperationProcessor::isPseudoConflict(const std::shared_ptr<Node> node, const std::shared_ptr<Node> correspondingNode) {
     if (!node || !node->hasChangeEvent() || !correspondingNode || !correspondingNode->hasChangeEvent()) {
         // We can have a conflict only if the node on both replica has change events
@@ -64,12 +101,12 @@ bool OperationProcessor::isPseudoConflict(const std::shared_ptr<Node> node, cons
     }
 
     // Size can differ for links between remote and local replica, do not check it in that case
-    const auto snapshot = _syncPal->snapshotCopy(node->side());
+    const auto snapshot = _syncPal->snapshot(node->side());
     const bool sameSizeAndDate = node->lastmodified() == correspondingNode->lastmodified() &&
                                  (snapshot->isLink(*node->id()) || node->size() == correspondingNode->size());
 
     const auto nodeChecksum = snapshot->contentChecksum(*node->id());
-    const auto otherSnapshot = _syncPal->snapshotCopy(correspondingNode->side());
+    const auto otherSnapshot = _syncPal->snapshot(correspondingNode->side());
     const auto correspondingNodeChecksum = otherSnapshot->contentChecksum(*correspondingNode->id());
 
     const bool useContentChecksum = !nodeChecksum.empty() && !correspondingNodeChecksum.empty();
@@ -95,7 +132,7 @@ std::shared_ptr<Node> OperationProcessor::correspondingNodeInOtherTree(const std
         bool found = false;
         if (!(_useSyncDbCache ? _syncPal->syncDb()->cache().dbId(node->side(), *node->id(), tmpDbNodeId, found)
                               : _syncPal->syncDb()->dbId(node->side(), *node->id(), tmpDbNodeId, found))) {
-            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for nodeId=" << (*node->id()).c_str());
+            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for nodeId=" << (*node->id()));
             return nullptr;
         }
         if (found) {
@@ -150,7 +187,7 @@ std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(const st
     std::shared_ptr<UpdateTree> otherTree = _syncPal->updateTree(otherSide(node->side()));
     std::shared_ptr<Node> correspondingParentNode = otherTree->getNodeById(parentNodeId);
     if (correspondingParentNode == nullptr) {
-        LOG_SYNCPAL_WARN(_logger, "No corresponding node in the other tree for nodeId = " << parentNodeId.c_str());
+        LOG_SYNCPAL_WARN(_logger, "No corresponding node in the other tree for nodeId = " << parentNodeId);
         return nullptr;
     }
 
