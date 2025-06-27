@@ -48,7 +48,7 @@
 #include <QDesktopServices>
 #include <QStandardPaths>
 
-#ifdef __APPLE__
+#ifdef KD_MACOS
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
@@ -586,7 +586,7 @@ void SocketApi::command_MAKE_AVAILABLE_LOCALLY_DIRECT(const QString &filesArg) {
             continue;
         }
 
-#ifdef __APPLE__
+#ifdef KD_MACOS
         // Not done in Windows case: triggers a hydration
         // Set pin state
         if (!setPinState(fileData, KDC::PinState::AlwaysLocal)) {
@@ -1338,7 +1338,7 @@ FileData FileData::get(const QString &path) {
 }
 
 FileData FileData::get(const KDC::SyncPath &path) {
-#ifdef _WIN32
+#ifdef KD_WINDOWS
     KDC::SyncPath tmpPath;
     bool notFound = false;
     if (!KDC::Utility::longPath(path, tmpPath, notFound)) {

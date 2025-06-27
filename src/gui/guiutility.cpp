@@ -45,7 +45,7 @@
 #include <QScreen>
 #include <QUrlQuery>
 
-#ifdef _WIN32
+#ifdef KD_WINDOWS
 #include <fileapi.h>
 #endif
 
@@ -474,7 +474,7 @@ qint64 GuiUtility::folderSize(const QString &dirPath) {
 qint64 GuiUtility::folderDiskSize(const QString &dirPath) {
     qint64 total = 0;
 
-#ifdef _WIN32
+#ifdef KD_WINDOWS
     QDirIterator it(dirPath, QDirIterator::Subdirectories);
     DWORD fileSizeLow, fileSizeHigh;
     while (it.hasNext()) {

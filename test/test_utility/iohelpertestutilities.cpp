@@ -44,7 +44,7 @@ void IoHelperTestUtilities::setCacheDirectoryPath(const SyncPath &newPath) {
     IoHelper::setCacheDirectoryPath(newPath);
 }
 
-#ifdef __APPLE__
+#ifdef KD_MACOS
 void IoHelperTestUtilities::setReadAliasFunction(
         std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> f) {
     _readAlias = f;
@@ -59,7 +59,7 @@ void IoHelperTestUtilities::resetFunctions() {
     setFileSizeFunction(static_cast<std::uintmax_t (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::file_size));
     setTempDirectoryPathFunction(static_cast<SyncPath (*)(std::error_code &ec)>(&std::filesystem::temp_directory_path));
 
-#ifdef __APPLE__
+#ifdef KD_MACOS
     // Default Utility::readAlias implementation
     setReadAliasFunction([](const SyncPath &path, SyncPath &targetPath, IoError &ioError) -> bool {
         std::string data;

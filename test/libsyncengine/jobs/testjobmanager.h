@@ -18,7 +18,7 @@
 
 #pragma once
 
-#ifdef _WIN32
+#ifdef KD_WINDOWS
 #define _WINSOCKAPI_
 #endif
 
