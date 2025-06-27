@@ -610,10 +610,10 @@ Write-Host
 if ($upload) {
     Write-Host "You are about to build kDrive for an upload"
     Write-Host "Once the build is complete, you will need to call the upload script"
-    $confirm = Read-Host "Please make sure you set the correct certificate for the Windows extension. Continue ? (Y/n)"
-    if (!($confirm -match "^y(es)?$")) {
-        exit 1
-    }
+    #$confirm = Read-Host "Please make sure you set the correct certificate for the Windows extension. Continue ? (Y/n)"
+    #if (!($confirm -match "^y(es)?$")) {
+    #    exit 1
+    #}
 
     Write-Host "Preparing for full upload build." -f Green
     Clean $contentPath
