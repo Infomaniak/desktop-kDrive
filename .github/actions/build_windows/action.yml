@@ -17,9 +17,11 @@ inputs:
     required: false # Required only if 'release_build' is set to true
     default: ''
 
+
 runs:
     using: "composite"
     steps:
+      
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
@@ -38,11 +40,6 @@ runs:
           certutil -decode certificate/tempCert.txt certificate/certificate.pfx
           Remove-Item -path certificate -include tempCert.txt
           Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $env:WINDOWS_VIRTUAL_CERT_PASSWORD -Force -AsPlainText)
-        shell: powershell
-
-      - name: Send kChat notification to approve safenet certificate
-        run:
-          ./infomaniak-build-tools/notify_kchat.ps1 ""
         shell: powershell
 
       - name: Build kDrive desktop
