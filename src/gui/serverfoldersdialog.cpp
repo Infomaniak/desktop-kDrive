@@ -57,11 +57,11 @@ qint64 ServerFoldersDialog::selectionSize() const {
     return 0;
 }
 
-QSet<QString> ServerFoldersDialog::createBlackList() const {
-    return _folderTreeItemWidget->createBlackSet();
+void ServerFoldersDialog::createBlackList() {
+    _blacklist = _folderTreeItemWidget->createBlackSet();
 }
 
-QSet<QString> ServerFoldersDialog::createWhiteList() const {
+QSet<QString> ServerFoldersDialog::getWhiteList() const {
     return _folderTreeItemWidget->createWhiteSet();
 }
 
@@ -134,7 +134,8 @@ void ServerFoldersDialog::onBackButtonTriggered(bool checked) {
 
 void ServerFoldersDialog::onContinueButtonTriggered(bool checked) {
     Q_UNUSED(checked)
-
+    createBlackList();
+    if (!GuiUtility::checkBlacklistSize(_blacklist.size(), this)) return;
     accept();
 }
 
