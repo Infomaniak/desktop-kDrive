@@ -320,40 +320,32 @@ void SynchronizedItemWidget::onMenuButtonClicked() {
         connect(openAction, &QWidgetAction::triggered, this, &SynchronizedItemWidget::onOpenActionTriggered);
         menu->addAction(openAction);
 
-        QWidgetAction *favoritesAction = new QWidgetAction(this);
-        MenuItemWidget *favoritesMenuItemWidget = new MenuItemWidget(tr("Add to favorites"));
-        favoritesMenuItemWidget->hide();
-        favoritesMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/favorite.svg");
-        favoritesAction->setDefaultWidget(favoritesMenuItemWidget);
-        connect(favoritesAction, &QWidgetAction::triggered, this, &SynchronizedItemWidget::onFavoritesActionTriggered);
-        menu->addAction(favoritesAction);
+        if (!_item.fileId().isEmpty()) {
+            QWidgetAction *favoritesAction = new QWidgetAction(this);
+            MenuItemWidget *favoritesMenuItemWidget = new MenuItemWidget(tr("Add to favorites"));
+            favoritesMenuItemWidget->hide();
+            favoritesMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/favorite.svg");
+            favoritesAction->setDefaultWidget(favoritesMenuItemWidget);
+            connect(favoritesAction, &QWidgetAction::triggered, this, &SynchronizedItemWidget::onFavoritesActionTriggered);
+            menu->addAction(favoritesAction);
 
-        /*QWidgetAction *rightsAndSharingAction = new QWidgetAction(this);
-        MenuItemWidget *rightsAndSharingMenuItemWidget = new MenuItemWidget(tr("Rights and sharing"));
-        rightsAndSharingMenuItemWidget->hide();
-        rightsAndSharingMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/share.svg");
-        rightsAndSharingAction->setDefaultWidget(rightsAndSharingMenuItemWidget);
-        connect(rightsAndSharingAction, &QWidgetAction::triggered, this,
-        &SynchronizedItemWidget::onRightAndSharingActionTriggered); menu->addAction(rightsAndSharingAction);*/
+            QWidgetAction *copyLinkAction = new QWidgetAction(this);
+            MenuItemWidget *copyLinkMenuItemWidget = new MenuItemWidget(tr("Copy sharing link"));
+            copyLinkMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/link.svg");
+            copyLinkAction->setDefaultWidget(copyLinkMenuItemWidget);
+            connect(copyLinkAction, &QWidgetAction::triggered, this, &SynchronizedItemWidget::onCopyLinkActionTriggered);
+            menu->addAction(copyLinkAction);
 
-        QWidgetAction *copyLinkAction = new QWidgetAction(this);
-        MenuItemWidget *copyLinkMenuItemWidget = new MenuItemWidget(tr("Copy sharing link"));
-        copyLinkMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/link.svg");
-        copyLinkMenuItemWidget->setHidden(_item.fileId().isEmpty());
-        copyLinkAction->setDefaultWidget(copyLinkMenuItemWidget);
-        connect(copyLinkAction, &QWidgetAction::triggered, this, &SynchronizedItemWidget::onCopyLinkActionTriggered);
-        menu->addAction(copyLinkAction);
+            menu->addSeparator();
 
-        menu->addSeparator();
-
-        QWidgetAction *displayOnDriveAction = new QWidgetAction(this);
-        MenuItemWidget *displayOnDriveMenuItemWidget = new MenuItemWidget(tr("Display on kdrive.infomaniak.com"));
-        displayOnDriveMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/webview.svg");
-        displayOnDriveMenuItemWidget->setHidden(_item.fileId().isEmpty());
-        displayOnDriveAction->setDefaultWidget(displayOnDriveMenuItemWidget);
-        connect(displayOnDriveAction, &QWidgetAction::triggered, this, &SynchronizedItemWidget::onDisplayOnDriveActionTriggered);
-        menu->addAction(displayOnDriveAction);
-
+            QWidgetAction *displayOnDriveAction = new QWidgetAction(this);
+            MenuItemWidget *displayOnDriveMenuItemWidget = new MenuItemWidget(tr("Display on kdrive.infomaniak.com"));
+            displayOnDriveMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/webview.svg");
+            displayOnDriveAction->setDefaultWidget(displayOnDriveMenuItemWidget);
+            connect(displayOnDriveAction, &QWidgetAction::triggered, this,
+                    &SynchronizedItemWidget::onDisplayOnDriveActionTriggered);
+            menu->addAction(displayOnDriveAction);
+        }
         menu->exec(QWidget::mapToGlobal(_menuButton->geometry().center()));
         _isMenuOpened = false;
     }
