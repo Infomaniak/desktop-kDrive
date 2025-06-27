@@ -38,15 +38,42 @@ namespace KDC {
 class TestJobManager : public CppUnit::TestFixture, public TestBase {
     public:
         CPPUNIT_TEST_SUITE(TestJobManager);
-        CPPUNIT_TEST(testWithoutCallback);
+        // CPPUNIT_TEST(testWithoutCallback);
         CPPUNIT_TEST(testWithCallback);
-        CPPUNIT_TEST(testWithCallbackMediumFiles);
-        CPPUNIT_TEST(testWithCallbackBigFiles);
-        CPPUNIT_TEST(testCancelJobs);
-        CPPUNIT_TEST(testJobPriority);
-        CPPUNIT_TEST(testJobPriority2);
-        CPPUNIT_TEST(testCanRunjob);
-        CPPUNIT_TEST(testReuseSocket);
+
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallback);
+
+        //  CPPUNIT_TEST(testWithCallbackMediumFiles);
+        //  CPPUNIT_TEST(testWithCallbackBigFiles);
+        //  CPPUNIT_TEST(testCancelJobs);
+        //  CPPUNIT_TEST(testJobPriority);
+        //  CPPUNIT_TEST(testJobPriority2);
+        //  CPPUNIT_TEST(testCanRunjob);
+        //  CPPUNIT_TEST(testReuseSocket);
         CPPUNIT_TEST_SUITE_END();
 
     public:

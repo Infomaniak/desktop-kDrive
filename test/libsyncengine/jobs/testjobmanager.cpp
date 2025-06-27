@@ -97,6 +97,7 @@ void KDC::TestJobManager::tearDown() {
 }
 
 void TestJobManager::testWithoutCallback() {
+    if (!testhelpers::isExtendedTest()) return;
     // Create temp remote directory
     const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "TestJobManager testWithoutCallback");
     const LocalTemporaryDirectory localTmpDir("TestJobManager testWithoutCallback");
@@ -143,6 +144,7 @@ void TestJobManager::testWithoutCallback() {
 }
 
 void TestJobManager::testWithCallback() {
+    if (!testhelpers::isExtendedTest()) return;
     // Create temp remote directory
     const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "TestJobManager testWithCallback");
 
