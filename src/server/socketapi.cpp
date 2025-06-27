@@ -116,7 +116,7 @@ SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>
             system(cmd.toLocal8Bit());
         }
 #endif
-    } else if (OldUtility::isLinux() || OldUtility::isBSD()) {
+    } else if (OldUtility::isLinux()) {
         const QString runtimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
         socketPath = runtimeDir + "/" + KDC::Theme::instance()->appName() + "/socket";
     } else {
