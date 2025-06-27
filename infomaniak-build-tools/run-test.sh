@@ -47,6 +47,7 @@ if [ ! -f "$tester" ]; then
 fi
 
 chmod +x "$tester"
+export DYLD_LIBRARY_PATH="$PWD:/usr/local/lib:/usr/lib:$DYLD_LIBRARY_PATH"
 "./$tester"
 
 if [ $? -ne 0 ]; then
