@@ -59,10 +59,6 @@ void OldUtility::setFolderPinState(const QUuid &clsid, bool show) {
 }
 #endif
 
-qint64 OldUtility::qDateTimeToTime_t(const QDateTime &t) {
-    return t.toMSecsSinceEpoch() / 1000;
-}
-
 /* --------------------------------------------------------------------------- */
 
 #ifdef Q_OS_WIN

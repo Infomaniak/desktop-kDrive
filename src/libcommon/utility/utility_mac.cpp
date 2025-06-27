@@ -16,7 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "utility.h"
+
 #include "libcommon/utility/types.h"
+#include "libcommonserver/log/log.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -36,10 +39,6 @@ bool hasDarkSystray();
 std::string getAppSupportDir();
 std::string getAppDir();
 bool setFolderCustomIcon(const QString &folderPath, const QString &icon);
-
-} // namespace KDC
-
-namespace KDC {
 
 static bool hasDarkSystray_private() {
     return KDC::hasDarkSystray();

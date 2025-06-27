@@ -195,6 +195,10 @@ struct COMMONSERVER_EXPORT Utility {
         static SyncPath sharedFolderName();
         static std::string userName();
 
+        static bool hasSystemLaunchOnStartup(const QString &appName, log4cplus::Logger logger);
+        static bool hasLaunchOnStartup(const QString &appName, log4cplus::Logger logger);
+        static void setLaunchOnStartup(const QString &appName, const QString &guiName, bool enable, log4cplus::Logger logger);
+
     private:
         static log4cplus::Logger _logger;
 
