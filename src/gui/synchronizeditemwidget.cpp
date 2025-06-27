@@ -311,26 +311,26 @@ void SynchronizedItemWidget::onMenuButtonClicked() {
     if (_menuButton) {
         _isMenuOpened = true;
         MatomoClient::sendEvent("synchronizedItem", MatomoEventAction::Click, "openKebabMenu");
-        MenuWidget *menu = new MenuWidget(MenuWidget::Menu, this);
+        auto *menu = new MenuWidget(MenuWidget::Menu, this);
 
-        QWidgetAction *openAction = new QWidgetAction(this);
-        MenuItemWidget *openMenuItemWidget = new MenuItemWidget(tr("Open"));
+        auto *openAction = new QWidgetAction(this);
+        auto *openMenuItemWidget = new MenuItemWidget(tr("Open"));
         openMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/view.svg");
         openAction->setDefaultWidget(openMenuItemWidget);
         connect(openAction, &QWidgetAction::triggered, this, &SynchronizedItemWidget::onOpenActionTriggered);
         menu->addAction(openAction);
 
         if (!_item.fileId().isEmpty()) {
-            QWidgetAction *favoritesAction = new QWidgetAction(this);
-            MenuItemWidget *favoritesMenuItemWidget = new MenuItemWidget(tr("Add to favorites"));
+            auto *favoritesAction = new QWidgetAction(this);
+            auto *favoritesMenuItemWidget = new MenuItemWidget(tr("Add to favorites"));
             favoritesMenuItemWidget->hide();
             favoritesMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/favorite.svg");
             favoritesAction->setDefaultWidget(favoritesMenuItemWidget);
             connect(favoritesAction, &QWidgetAction::triggered, this, &SynchronizedItemWidget::onFavoritesActionTriggered);
             menu->addAction(favoritesAction);
 
-            QWidgetAction *copyLinkAction = new QWidgetAction(this);
-            MenuItemWidget *copyLinkMenuItemWidget = new MenuItemWidget(tr("Copy sharing link"));
+            auto *copyLinkAction = new QWidgetAction(this);
+            auto *copyLinkMenuItemWidget = new MenuItemWidget(tr("Copy sharing link"));
             copyLinkMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/link.svg");
             copyLinkAction->setDefaultWidget(copyLinkMenuItemWidget);
             connect(copyLinkAction, &QWidgetAction::triggered, this, &SynchronizedItemWidget::onCopyLinkActionTriggered);
@@ -338,8 +338,8 @@ void SynchronizedItemWidget::onMenuButtonClicked() {
 
             menu->addSeparator();
 
-            QWidgetAction *displayOnDriveAction = new QWidgetAction(this);
-            MenuItemWidget *displayOnDriveMenuItemWidget = new MenuItemWidget(tr("Display on kdrive.infomaniak.com"));
+            auto *displayOnDriveAction = new QWidgetAction(this);
+            auto *displayOnDriveMenuItemWidget = new MenuItemWidget(tr("Display on kdrive.infomaniak.com"));
             displayOnDriveMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/webview.svg");
             displayOnDriveAction->setDefaultWidget(displayOnDriveMenuItemWidget);
             connect(displayOnDriveAction, &QWidgetAction::triggered, this,
