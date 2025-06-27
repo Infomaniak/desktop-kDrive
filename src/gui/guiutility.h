@@ -122,7 +122,7 @@ QLocale languageToQLocale(Language language);
 QString getDateForCurrentLanguage(const QDateTime &dateTime, const QString &dateFormat);
 
 /**
- * @brief The number of blacklisted items is limited to 50 to avoid too long URI (HTTP 414 error). Display a popup message is the
+ * @brief The number of blacklisted items is limited to 50 to avoid too long URI (HTTP 414 error). Display a popup message if the
  * size is too high.
  * @param blacklistSize The number of selected folders to be blacklisted.
  * @param parent The parent widget for the `QMessageBox`.
