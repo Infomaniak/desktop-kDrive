@@ -44,7 +44,6 @@
 #include <QLoggingCategory>
 #include <QPainter>
 #include <QPainterPath>
-#include <QProcess>
 #include <QScreen>
 #include <QScrollBar>
 #include <QPushButton>
@@ -1096,20 +1095,48 @@ void SynthesisPopover::onOpenFolderItem(const SynchronizedItem &item) {
     QString fullFilePath = _gui->folderPath(item.syncDbId(), item.filePath());
     // TODO : Add safety net file presence check, return if not found
 #ifdef Q_OS_WIN
-    QProcess::startDetached("explorer.exe", {"/select,", QDir::toNativeSeparators(fullFilePath)});
+    std::vector<std::string> arguments;
+    arguments.push_back("/select,");
+    arguments.push_back(QStr2Path(fullFilePath));
+
+    std::string output;
+    if (!CommonUtility::runExe("explorer.exe", arguments, true, output)) {
+        qCWarning(lcSynthesisPopover()) << "Failed to start Explorer";
+        return;
+    }
 #elif defined(Q_OS_MACX)
-    QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to reveal POSIX file\"" + fullFilePath + "\""});
-    QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to activate"});
+    std::vector<std::string> arguments;
+    arguments.push_back("-e");
+    arguments.push_back(std::format("tell application \"Finder\" to reveal POSIX file \"{}\"", QStr2Str(fullFilePath)));
+
+    std::string output;
+    if (!CommonUtility::runExe("/usr/bin/osascript", arguments, true, output)) {
+        qCWarning(lcSynthesisPopover()) << "Failed to open Finder";
+        return;
+    }
+
+    arguments.push_back("-e");
+    arguments.push_back("tell application \"Finder\" to activate");
+
+    if (!CommonUtility::runExe("/usr/bin/osascript", arguments, true, output)) {
+        qCWarning(lcSynthesisPopover()) << "Failed to activate Finder";
+        return;
+    }
 #else
-    QStringList args;
-    args << "--session";
-    args << "--dest=org.freedesktop.FileManager1";
-    args << "--type=method_call";
-    args << "/org/freedesktop/FileManager1";
-    args << "org.freedesktop.FileManager1.ShowItems";
-    args << "array:string:file://" + fullFilePath;
-    args << "string:";
-    QProcess::execute("dbus-send", args);
+    std::vector<std::string> arguments;
+    arguments.push_back("--session");
+    arguments.push_back("--dest=org.freedesktop.FileManager1");
+    arguments.push_back("--type=method_call");
+    arguments.push_back("/org/freedesktop/FileManager1");
+    arguments.push_back("org.freedesktop.FileManager1.ShowItems");
+    arguments.push_back(std::format("array:string:file://{}", QStr2Str(fullFilePath)));
+    arguments.push_back("string:");
+
+    std::string output;
+    if (!CommonUtility::runExe("dbus-send", arguments, true, output)) {
+        qCWarning(lcSynthesisPopover()) << "Failed to open FileManager";
+        return;
+    }
 #endif
 }
 

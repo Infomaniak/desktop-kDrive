@@ -59,4 +59,53 @@ bool setFolderCustomIcon(const QString &folderPath, const QString &icon) {
     return [[NSWorkspace sharedWorkspace] setIcon:iconImage forFile:folderPath.toNSString() options:0];
 }
 
-}  // namespace KDC
+bool runExe(const SyncPath &path, const std::vector<std::string> &args, bool detached, std::string &output) {
+    NSString *pathStr = [NSString stringWithCString:path.c_str() encoding:NSUTF8StringEncoding];
+    if (pathStr == nil) {
+        NSLog(@"[KD] runExe called with invalid parameters");
+        return false;
+    }
+
+    if (detached) {
+        NSURL *pathURL = [NSURL fileURLWithPath:pathStr];
+
+        NSMutableArray *argsArray = [[NSMutableArray alloc] init];
+        for (size_t i = 0; i < args.size(); i++) {
+            NSString *argStr = [NSString stringWithCString:args[i].c_str() encoding:NSUTF8StringEncoding];
+            [argsArray addObject:argStr];
+        }
+
+        NSError *error;
+        BOOL ret = [NSTask
+                launchedTaskWithExecutableURL:pathURL
+                                    arguments:argsArray
+                                        error:&error
+                           terminationHandler:^(NSTask *terminationTask) { NSLog(@"[KD] runExe done: URL=%@", pathURL); }];
+        if (!ret) {
+            if (error) {
+                NSLog(@"[KD] runExe failed: URL=%@ err=%@", pathURL, error.code);
+            } else {
+                NSLog(@"[KD] runExe failed: URL=%@", pathURL);
+            }
+            return false;
+        }
+    } else {
+        NSTask *exe = [[NSTask alloc] init];
+        [exe setLaunchPath:pathStr];
+        [exe setCurrentDirectoryPath:@"/"];
+
+        NSPipe *out = [NSPipe pipe];
+        [exe setStandardOutput:out];
+
+        [exe launch];
+        [exe waitUntilExit];
+
+        NSFileHandle *read = [out fileHandleForReading];
+        NSData *dataRead = [read readDataToEndOfFile];
+        NSString *result = [[NSString alloc] initWithData:dataRead encoding:NSUTF8StringEncoding];
+    }
+
+    return true;
+}
+
+} // namespace KDC

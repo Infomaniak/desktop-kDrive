@@ -31,19 +31,23 @@ identity="$3"
 team_identifier="$4"
 app_domain="$5"
 
-codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Installer.xpc"
-codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Downloader.xpc"
-codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/Autoupdate"
-codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/Updater.app"
-codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/Frameworks/Sparkle.framework"
+codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/Sparkle.entitlements "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Installer.xpc"
+codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/Sparkle.entitlements "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Downloader.xpc"
+codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/Sparkle.entitlements "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/Autoupdate"
+codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/Sparkle.entitlements "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/Updater.app"
+codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/Sparkle.entitlements "$src_app/Contents/Frameworks/Sparkle.framework"
 
 codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitlements $(dirname $0)/QtWebEngineProcess.entitlements "$src_app/Contents/Frameworks/QtWebEngineCore.framework/Helpers/QtWebEngineProcess.app/Contents/MacOS/QtWebEngineProcess"
 codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitlements $(dirname $0)/FinderSyncLoginItemAgent.entitlements "$src_app/Contents/Library/LoginItems/$team_identifier.$app_domain.LoginItemAgent.app"
 codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitlements $(dirname $0)/FinderSyncExtension.entitlements "$src_app/Contents/PlugIns/com.infomaniak.drive.desktopclient.Extension.appex"
-codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitlements $(dirname $0)/kDriveUninstaller.entitlements "$src_app/Contents/Frameworks/kDrive Uninstaller.app"
+codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitlements $(dirname $0)/LiteSyncExtension.entitlements "$src_app/Contents/Library/SystemExtensions/$app_domain.LiteSyncExt.systemextension"
+
+codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/exe.entitlements "$src_app/Contents/MacOS/kDrive_client"
+codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/exe.entitlements "$src_app/Contents/MacOS/crashpad_handler"
 
 codesign -s "$identity" --force --verbose=4 --deep --options=runtime --preserve-metadata=entitlements "$src_app"
 codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/kDriveDebug.entitlements "$src_app"
+codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/kDriveUninstaller.entitlements "$src_app/Contents/Frameworks/kDrive Uninstaller.app"
 
 # Verify the signature
 codesign -dv $src_app

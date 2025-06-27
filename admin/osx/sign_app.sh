@@ -36,8 +36,8 @@ codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitleme
 codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitlements $(dirname $0)/FinderSyncExtension.entitlements "$src_app/Contents/PlugIns/com.infomaniak.drive.desktopclient.Extension.appex"
 codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitlements $(dirname $0)/LiteSyncExtension.entitlements "$src_app/Contents/Library/SystemExtensions/$app_domain.LiteSyncExt.systemextension"
 
-codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/default.entitlements "$src_app/Contents/MacOS/kDrive_client"
-codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/default.entitlements "$src_app/Contents/MacOS/crashpad_handler"
+codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/exe.entitlements "$src_app/Contents/MacOS/kDrive_client"
+codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/exe.entitlements "$src_app/Contents/MacOS/crashpad_handler"
 
 codesign -s "$identity" --force --verbose=4 --deep --options=runtime --preserve-metadata=entitlements "$src_app"
 codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/kDrive.entitlements "$src_app"

@@ -34,6 +34,7 @@
 #include <regex>
 #include <sstream>
 #include <signal.h>
+#include <vector>
 
 #ifdef _WIN32
 #include <Poco/Util/WinRegistryKey.h>
@@ -241,6 +242,29 @@ bool CommonUtility::setFolderCustomIcon(const QString &folderPath, IconType icon
     Q_UNUSED(folderPath)
     Q_UNUSED(iconType)
 
+    return true;
+#endif
+}
+
+bool CommonUtility::runExe(const SyncPath &path, const std::vector<std::string> &args, bool detached, std::string &output) {
+#ifdef Q_OS_MAC
+    return runExe_private(path, args, detached, output);
+#else
+    QStringList arguments;
+    for (size_t i = 0; i < args.size(); i++) {
+        arguments << QString::fromStdString(args[i]);
+    }
+    QProcess *clientProcess = new QProcess(this);
+    clientProcess->setProgram(path);
+    clientProcess->setArguments(arguments);
+    if (detached) {
+        clientProcess->startDetached();
+    } else {
+        clientProcess.waitForStarted();
+        clientProcess.waitForFinished();
+        QByteArray result = clientProcess.readAll();
+        output = toStdString();
+    }
     return true;
 #endif
 }
@@ -924,16 +948,16 @@ std::string CommonUtility::toUnsafeStr(const SyncName &name) {
 
 #ifdef __APPLE__
 bool CommonUtility::isLiteSyncExtEnabled() {
-    QProcess *process = new QProcess();
-    process->start(
-            "bash",
-            QStringList() << "-c"
-                          << QString("systemextensionsctl list | grep %1 | grep enabled | wc -l").arg(liteSyncExtBundleIdStr));
-    process->waitForStarted();
-    process->waitForFinished();
-    QByteArray result = process->readAll();
+    std::vector<std::string> arguments;
+    arguments.push_back("-c");
+    arguments.push_back(std::format("systemextensionsctl list | grep {} | grep enabled | wc -l", liteSyncExtBundleIdStr));
 
-    return result.trimmed().toInt() == 1;
+    std::string output;
+    if (!CommonUtility::runExe("bash", arguments, false, output)) {
+        return false;
+    }
+
+    return std::stoi(output) == 1;
 }
 
 bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {

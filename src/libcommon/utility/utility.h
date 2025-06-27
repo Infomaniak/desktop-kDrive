@@ -57,6 +57,7 @@ struct COMMON_EXPORT CommonUtility {
 
         static bool hasDarkSystray();
         static bool setFolderCustomIcon(const QString &folderPath, IconType iconType);
+        static bool runExe(const SyncPath &path, const std::vector<std::string> &args, bool detached, std::string &output);
 
         static std::string generateRandomStringAlphaNum(int length = 10);
         static std::string generateRandomStringPKCE(int length = 10);

@@ -38,7 +38,6 @@
 #include <QMessageBox>
 #include <QDesktopServices>
 #include <QFontDatabase>
-#include <QProcess>
 
 #include <iostream>
 #include <sstream>
@@ -610,7 +609,7 @@ bool AppClient::serverHasCrashed() {
 }
 
 void AppClient::startServerAndDie() {
-    // Start the client
+    // Start the server
     QString pathToExecutable = QCoreApplication::applicationDirPath();
 
 #if defined(Q_OS_WIN)
@@ -619,13 +618,13 @@ void AppClient::startServerAndDie() {
     pathToExecutable += QString("/%1").arg(APPLICATION_EXECUTABLE);
 #endif
 
-    auto serverProcess = new QProcess(this);
-    QStringList arguments;
-    arguments << QStringLiteral("--crashRecovered");
-    serverProcess->setProgram(pathToExecutable);
-    serverProcess->setArguments(arguments);
-    serverProcess->setProgram(pathToExecutable);
-    serverProcess->startDetached();
+    std::vector<std::string> arguments;
+    arguments.push_back("--crashRecovered");
+
+    std::string output;
+    if (!CommonUtility::runExe(pathToExecutable.toStdWString(), arguments, true, output)) {
+        qCWarning(lcAppClient) << "Failed to start kDrive client";
+    }
 
     QTimer::singleShot(0, qApp, SLOT(quit()));
 }

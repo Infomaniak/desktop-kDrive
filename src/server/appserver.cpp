@@ -63,7 +63,7 @@
 #include <QFileOpenEvent>
 #include <QIcon>
 #include <QMessageBox>
-#include <QProcess>
+#include <QProcessEnvironment>
 #include <QStandardPaths>
 #include <QTimer>
 #include <QUuid>
@@ -3333,17 +3333,14 @@ bool AppServer::startClient() {
         pathToExecutable += QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
 #endif
 
-        QStringList arguments;
-        arguments << QString::number(CommServer::instance()->commPort());
+        std::vector<std::string> arguments;
+        arguments.push_back(std::to_string(CommServer::instance()->commPort()));
 
         LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)) << L" args="
-                                                             << arguments[0].toStdWString());
+                                                             << Utility::s2ws(arguments[0]));
 
-        QProcess *clientProcess = new QProcess(this);
-        clientProcess->setProgram(pathToExecutable);
-        clientProcess->setArguments(arguments);
-        clientProcess->start();
-        if (!clientProcess->waitForStarted()) {
+        std::string output;
+        if (!CommonUtility::runExe(pathToExecutable.toStdWString(), arguments, true, output)) {
             LOG_WARN(_logger, "Failed to start kDrive client");
             return false;
         }

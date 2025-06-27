@@ -357,6 +357,10 @@ target_link_libraries(${APPLICATION_CLIENT_EXECUTABLE}
     Poco::Foundation Poco::Net
     ${libcommongui_NAME})
 
+if(APPLE)
+    target_link_options(${APPLICATION_CLIENT_EXECUTABLE} PRIVATE LINKER:-sectcreate,__TEXT,__info_plist,${CMAKE_SOURCE_DIR}/admin/osx/Info.plist)
+endif()
+
 ## handle DBUS for Fdo notifications
 if( UNIX AND NOT APPLE )
     find_package(Qt6 COMPONENTS DBus)
