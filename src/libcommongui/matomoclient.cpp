@@ -147,7 +147,7 @@ void MatomoClient::initNameFieldMap() {
 #ifdef Q_OS_MAC
             {MatomoNameField::PG_Preferences_LiteSync, {"preferences/litesync", "litesync"}},
 #endif
-            {MatomoNameField::VW_LoginPage, {"webview", "login"}},
+            {MatomoNameField::WV_LoginPage, {"webview", "login"}},
             {MatomoNameField::PG_SynthesisPopover, {"popover", "popover"}},
             {MatomoNameField::PG_SynthesisPopover, {"popover", "kebab_menu"}},
             {MatomoNameField::PG_Preferences, {"preferences", "preferences"}},

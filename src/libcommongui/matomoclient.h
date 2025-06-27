@@ -26,7 +26,7 @@ namespace KDC {
 
     enum class MatomoNameField : matomo_enum_t {
         /* WebView names*/
-        VW_LoginPage, // Login
+        WV_LoginPage, // Login
 
         /* Pages */
         PG_SynthesisPopover,
