@@ -1880,26 +1880,24 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP: {
-            bool enabled = OldUtility::hasSystemLaunchOnStartup(Theme::instance()->appName(), _logger);
-
+            bool enabled = Utility::hasSystemLaunchOnStartup(Theme::instance()->appName(), _logger);
             resultStream << ExitCode::Ok;
             resultStream << enabled;
             break;
         }
         case RequestNum::UTILITY_HASLAUNCHONSTARTUP: {
-            bool enabled = OldUtility::hasLaunchOnStartup(Theme::instance()->appName(), _logger);
-
+            bool enabled = Utility::hasLaunchOnStartup(Theme::instance()->appName(), _logger);
             resultStream << ExitCode::Ok;
             resultStream << enabled;
             break;
         }
         case RequestNum::UTILITY_SETLAUNCHONSTARTUP: {
-            bool enabled;
+            bool enabled = false;
             QDataStream paramsStream(params);
             paramsStream >> enabled;
 
             Theme *theme = Theme::instance();
-            OldUtility::setLaunchOnStartup(theme->appName(), theme->appNameGUI(), enabled, _logger);
+            Utility::setLaunchOnStartup(theme->appName(), theme->appNameGUI(), enabled, _logger);
 
             resultStream << ExitCode::Ok;
             break;

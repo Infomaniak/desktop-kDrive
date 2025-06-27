@@ -43,11 +43,6 @@ namespace OldUtility {
 void setFolderPinState(const QUuid &clsid, bool show);
 #endif
 
-bool hasSystemLaunchOnStartup(const QString &appName, log4cplus::Logger logger);
-bool hasLaunchOnStartup(const QString &appName, log4cplus::Logger logger);
-void setLaunchOnStartup(const QString &appName, const QString &guiName, bool enable, log4cplus::Logger logger);
-
-qint64 qDateTimeToTime_t(const QDateTime &t);
 
 // convenience OS detection methods
 inline bool isWindows();

@@ -118,7 +118,8 @@ struct COMMON_EXPORT CommonUtility {
         /**
          * @brief Determines if the given path is the root folder of a disk and optionally suggests a corrected path.
          * @param absolutePath The absolute path to check for being a disk root folder.
-         * @param suggestedPath Reference to a path variable where a suggested corrected path may be stored if the input is not a disk root.
+         * @param suggestedPath Reference to a path variable where a suggested corrected path may be stored if the input is not a
+         * disk root.
          * @return True if the given path is a disk root folder; otherwise, false.
          */
         static bool isDiskRootFolder(const SyncPath &absolutePath, SyncPath &suggestedPath);
@@ -145,7 +146,6 @@ struct COMMON_EXPORT CommonUtility {
         static bool isLikeFileNotFoundError(const std::error_code &ec) noexcept {
             return utility_base::isLikeFileNotFoundError(ec);
         };
-
 
 #ifdef _WIN32
         // Converts a std::wstring to std::string assuming that it contains only mono byte chars
@@ -203,7 +203,6 @@ struct COMMON_EXPORT CommonUtility {
         static SyncName preferredPathSeparator();
 
 
-        //
         //! Computes and returns the NFC and NFD normalizations of `name`.
         /*!
           \param name is the string the normalizations of which are queried.
@@ -211,14 +210,12 @@ struct COMMON_EXPORT CommonUtility {
           The returned set contains additionally the SyncName name in any case.
         */
         static SyncNameSet computeSyncNameNormalizations(const SyncName &name);
-
-        //
         //! Computes and returns all possible NFC and NFD normalizations of `path` segments
         //! interpreted as a file system path.
         /*!
           \param templateString is the path string the normalizations of which are queried.
           \return a set of SyncNames containing the NFC and NFD normalizations of path, when those are successful.
-          The returned set contains additionally the string path in any case.
+          The returned set additionally contains the string path in any case.
         */
         static SyncNameSet computePathNormalizations(const SyncName &path);
 
@@ -232,7 +229,6 @@ struct COMMON_EXPORT CommonUtility {
 
         static void extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion);
 
-        //
         //! Computes recursively and returns all possible NFC and NFD normalizations of `pathSegments` segments
         //! interpreted as a file system path.
         /*!
@@ -245,7 +241,6 @@ struct COMMON_EXPORT CommonUtility {
         */
         static SyncNameSet computePathNormalizations(const std::vector<SyncName> &pathSegments, const int64_t lastIndex);
 
-        //
         //! Computes recursively and returns all possible NFC and NFD normalizations of `pathSegments` segments
         //! interpreted as a file system path.
         /*!
