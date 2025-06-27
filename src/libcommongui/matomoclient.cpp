@@ -50,35 +50,38 @@ MatomoClient &MatomoClient::instance(const QString &clientId) {
 MatomoClient::MatomoClient(QCoreApplication *app, const QString &clientId) :
     PiwikTracker(app, QUrl(MATOMO_URL), MATOMO_SITE_ID, clientId) {
     initNameFieldMap();
+    qDebug(lcMatomoClient) << "MatomoClient initialized with URL:" << MATOMO_URL
+                      << "and site ID:" << MATOMO_SITE_ID;
 
-    const auto qt_piwik_tracker_object = this->findChildren<QObject*>(); // We need to find the QNetworkAccessManager object created by PiwikTracker, so we gets all children of the PiwikTracker instance.
-    for (auto* obj : qt_piwik_tracker_object) {
-        auto* network_access_manager = qobject_cast<QNetworkAccessManager*>(obj);
-        if (network_access_manager && network_access_manager->objectName().contains("Piwik", Qt::CaseInsensitive)) {
-            // Here, we found the QNetworkAccessManager object created by the instance of PiwikTracker.
-
-            /**
-             *
-             * A transfer timeout means that if no data is transferred between the client and the server
-             * for a certain amount of time, the request will be aborted.
-             * (This is not a global timeout: it resets every time data is sent or received.)
-             *
-             * Since Matomo requests are lightweight, this transfer timeout behaves approximately like a global timeout.
-             *
-             */
-            network_access_manager->setTransferTimeout(_matomoTimeout);
-            connect(network_access_manager, &QNetworkAccessManager::finished, this, [this](const QNetworkReply* reply) {
-                if (reply->error() == QNetworkReply::TimeoutError) {
-                    _matomoTimeoutCounter++;
-                    qWarning(lcMatomoClient) << "Timeout #" << _matomoTimeoutCounter;
-
-                    if (_matomoTimeoutCounter >= _matomoTimeoutMax && !_matomoDisabled) {
-                        _matomoDisabled = true;
-                        qWarning(lcMatomoClient) << "Disabled after " << _matomoTimeoutMax << " timeouts.";
-                    }
+    const auto children = this->findChildren<QNetworkAccessManager*>();
+    if (!children.isEmpty()) {
+        _piwikNAM = children.first();
+        /**
+         *
+         * A transfer timeout means that if no data is transferred between the client and the server
+         * for a certain amount of time, the request will be aborted.
+         * (This is not a global timeout: it resets every time data is sent or received.)
+         *
+         * Since Matomo requests are lightweight, this transfer timeout behaves approximately like a global timeout.
+         *
+         */
+        _piwikNAM->setTransferTimeout(_matomoTimeout);
+        connect(_piwikNAM, &QNetworkAccessManager::finished, this, [this](const QNetworkReply* reply) {
+            if (reply->error() == QNetworkReply::TimeoutError              // Error given by the TransferTimeout
+                || reply->error() == QNetworkReply::ConnectionRefusedError // Error given when MATOMO_URL is blocked and return :: in ipv6 or 0.0.0.0 in ipv4
+                ) {
+                _matomoTimeoutCounter++;
+                qWarning(lcMatomoClient) << "Timeout #" << _matomoTimeoutCounter;
+                if (_matomoTimeoutCounter >= _matomoTimeoutMax && !_matomoDisabled) {
+                    _matomoDisabled = true;
+                    qWarning(lcMatomoClient) << "Disabled after" << _matomoTimeoutMax << "timeouts.";
                 }
-            });
-            break;
+            } else if (reply->error() != QNetworkReply::NoError && ParametersCache::instance()->parametersInfo().extendedLog()) {
+                qDebug(lcMatomoClient) << "Reply error:" << reply->errorString() << "/ code:" << reply->error() << "/ URL:" << reply->url();
+            }
+        });
+        if (ParametersCache::instance()->parametersInfo().extendedLog()) {
+            qDebug(lcMatomoClient) << "Transfer timeout set to" << _matomoTimeout << "ms.";
         }
     }
 
