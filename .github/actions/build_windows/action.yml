@@ -44,14 +44,11 @@ runs:
 
       - name: Build kDrive desktop
         id: build
+        env :
+          BUILD_ARGS: ${{ inputs.release_build == 'true' && '-ci -ext -clean remake' || '-ci' }}'
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
-          powershell -NoProfile -Command ^
-            "if ('${{ inputs.release_build }}' -eq 'true') { ^
-                ./infomaniak-build-tools/windows/build-drive.ps1 -ci -ext -clean remake ^
-            } else { ^
-                ./infomaniak-build-tools/windows/build-drive.ps1 -ci ^
-            }"
+          powershell ./infomaniak-build-tools/windows/build-drive.ps1 $env:BUILD_ARGS
         shell: cmd
 
       - name: Fetch dependencies
