@@ -65,7 +65,7 @@ MatomoClient::MatomoClient(QCoreApplication *app, const QString &clientId) :
              *
              */
             network_access_manager->setTransferTimeout(_matomoTimeout);
-            connect(network_access_manager, &QNetworkAccessManager::finished, this, [this](QNetworkReply* reply) {
+            connect(network_access_manager, &QNetworkAccessManager::finished, this, [this](const QNetworkReply* reply) {
                 if (reply->error() == QNetworkReply::TimeoutError) {
                     _matomoTimeoutCounter++;
                     qWarning(lcMatomoClient) << "Timeout #" << _matomoTimeoutCounter;
