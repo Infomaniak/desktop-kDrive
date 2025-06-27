@@ -362,7 +362,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         [[nodiscard]] bool initProgress(const SyncFileItem &item);
         [[nodiscard]] bool setProgress(const SyncPath &relativePath, int64_t current);
         [[nodiscard]] bool setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status,
-                                               const NodeId &newRemoteNodeId = NodeId{});
+                                               const NodeId &newRemoteNodeId = {});
 
         // Direct download callback
         void directDownloadCallback(UniqueId jobId);
