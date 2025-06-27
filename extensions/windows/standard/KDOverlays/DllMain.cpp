@@ -128,7 +128,7 @@ HRESULT UnregisterCLSID(LPCOLESTR guidStr, PCWSTR overlayStr) {
 
     hResult = KDOverlayRegistrationHandler::UnregisterCOMObject(guid);
 
-    if (!SUCCEEDED(hResult)) {
+    if (!SUCCEEDED(hResult) && hResult != HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) {
         return hResult;
     }
 
