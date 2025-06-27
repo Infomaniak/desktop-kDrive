@@ -490,6 +490,7 @@ function Create-Archive {
     if (Test-Path -Path $installerPath) {
         & signtool sign /sha1 $thumbprint /fd SHA1 /t http://timestamp.digicert.com /v $installerPath
         & signtool sign /sha1 $thumbprint /fd sha256 /tr http://timestamp.digicert.com?td=sha256 /td sha256 /as /v $installerPath
+        Write-Host ("$installerPath signed successfully.") -f Green
     }
     else {
         Write-Host ("$installerPath not found. Unable to sign final installer.") -f Red
@@ -693,7 +694,7 @@ Prepare-Archive $buildType $buildPath $vfsDir $archivePath $upload
 #                                                                                               #
 #################################################################################################
 
-if (!$ci) {
+if ($upload) {
     Create-Archive $path $buildPath $contentPath $installPath $archiveName $archivePath $upload
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Archive creation failed. Aborting." -f Red

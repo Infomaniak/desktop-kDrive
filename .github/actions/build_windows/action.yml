@@ -49,8 +49,7 @@ runs:
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
           if "${{ inputs.release_build }}" == "true" (
-            pip install colorama dateutil
-            powershell ./infomaniak-build-tools/windows/build-release.ps1
+            powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ext -upload -clean remake -ci
             ) else (
             powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
             )
