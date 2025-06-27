@@ -162,18 +162,18 @@ runs:
 
       - name : Create sentry server artifacts
         run: |
-          .\sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-windows/build/bin/kDrive.exe
+          .\sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-windows/build/bin/kDrive.pdb
           mkdir ${{ github.workspace }}/build-windows/sentry-server-artifacts
-          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/sentry-artifacts/* -Destination ${{ github.workspace }}/build-windows/sentry-server-artifacts
+          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive.src.zip -Destination ${{ github.workspace }}/build-windows/sentry-server-artifacts
           Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive.pdb -Destination ${{ github.workspace }}/build-windows/sentry-server-artifacts
         shell: powershell
         if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
 
       - name : Create sentry client artifacts
         run: |
-          .\sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-windows/build/bin/kDriveClient.exe
+          .\sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-windows/build/bin/kDriveClient.pdb
           mkdir ${{ github.workspace }}/build-windows/sentry-client-artifacts
-          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/sentry-artifacts/* -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts
+          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive-client.src.zip -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts
           Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive-client.pdb -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts
         shell: powershell
         if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
