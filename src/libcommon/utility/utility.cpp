@@ -255,7 +255,7 @@ bool CommonUtility::runExe(const SyncPath &path, const std::vector<std::string> 
         arguments << QString::fromStdString(args[i]);
     }
     QProcess *clientProcess = new QProcess();
-    clientProcess->setProgram(path);
+    clientProcess->setProgram(Path2QStr(path));
     clientProcess->setArguments(arguments);
     if (detached) {
         clientProcess->startDetached();
