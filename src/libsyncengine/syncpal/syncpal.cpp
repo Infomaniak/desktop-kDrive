@@ -579,7 +579,14 @@ bool SyncPal::setProgress(const SyncPath &relativePath, int64_t current) {
     return true;
 }
 
-bool SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status) {
+bool SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status, const NodeId &newRemoteNodeId) {
+    if(!newRemoteNodeId.empty()) {
+        if (!_progressInfo->setSyncFileItemRemoteId(relativeLocalPath, newRemoteNodeId)) {
+            LOG_SYNCPAL_WARN(_logger, "Error in ProgressInfo::setSyncFileItemRemoteId");
+            // Continue anyway as this is not critical, the share menu on activities will not be available for this file
+        }
+    }
+
     if (!_progressInfo->setProgressComplete(relativeLocalPath, status)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ProgressInfo::setProgressComplete");
         return false;
