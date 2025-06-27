@@ -21,7 +21,7 @@
 
 #include "3rdparty/qt-piwik-tracker/piwiktracker.h"
 
-        namespace KDC {
+namespace KDC {
     using matomo_enum_t = uint8_t;
 
     enum class MatomoNameField : matomo_enum_t {
