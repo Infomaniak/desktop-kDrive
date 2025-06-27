@@ -645,7 +645,7 @@ bool GuiUtility::getLinuxDesktopType(QString &type, QString &version) {
         }
 
         if (output.starts_with("GNOME")) {
-            QList<QByteArray> resultList = result.split(' ');
+            QList<QByteArray> resultList = QString::fromStdString(output).split(' ');
             if (resultList.size() == 3) {
                 version = resultList[2];
             }

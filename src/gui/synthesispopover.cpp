@@ -1097,7 +1097,7 @@ void SynthesisPopover::onOpenFolderItem(const SynchronizedItem &item) {
 #ifdef Q_OS_WIN
     std::vector<std::string> arguments;
     arguments.push_back("/select,");
-    arguments.push_back(QStr2Path(fullFilePath));
+    arguments.push_back(QStr2Str(fullFilePath));
 
     std::string output;
     if (!CommonUtility::runExe("explorer.exe", arguments, true, output)) {
