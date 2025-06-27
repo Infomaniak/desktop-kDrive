@@ -120,6 +120,15 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         };
         RemoteFileInfo getRemoteFileInfoByName(int driveDbId, const NodeId &parentId, const SyncName &name) const;
         int64_t countItemsInRemoteDir(int driveDbId, const NodeId &parentId) const;
+
+        void editRemoteFile(const int driveDbId, const NodeId &remoteFileId, SyncTime *creationTime = nullptr,
+                            SyncTime *modificationTime = nullptr, int64_t *size = nullptr) const;
+        void moveRemoteFile(const int driveDbId, const NodeId &remoteFileId, const NodeId &destinationRemoteParentId,
+                            const SyncName &name = {}) const;
+        NodeId duplicateRemoteFile(const int driveDbId, const NodeId &id, const SyncName &newName) const;
+        void deleteRemoteFile(const int driveDbId, const NodeId &id) const;
+        SyncPath findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix) const;
+
         log4cplus::Logger _logger;
         std::shared_ptr<SyncPal> _syncPal = nullptr;
         std::shared_ptr<ParmsDb> _parmsDb = nullptr;
