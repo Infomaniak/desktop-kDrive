@@ -22,7 +22,7 @@
 #include "jobs/network/API_v2/listing/csvfullfilelistwithcursorjob.h"
 #include "jobs/network/API_v2/listing/longpolljob.h"
 #include "jobs/network/API_v2/getfileinfojob.h"
-#ifdef _WIN32
+#ifdef KD_WINDOWS
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #endif
 #include "libcommon/log/sentry/ptraces.h"
@@ -33,7 +33,7 @@
 #include "requests/exclusiontemplatecache.h"
 #include "utility/jsonparserutility.h"
 
-#ifdef __APPLE__
+#ifdef KD_MACOS
 #include "utility/utility.h"
 #endif
 
@@ -501,7 +501,7 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
             continue;
         }
 
-#ifdef _WIN32
+#ifdef KD_WINDOWS
         SyncName newName;
         if (PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(actionInfo.snapshotItem.name(), newName)) {
             actionInfo.snapshotItem.setName(newName);
@@ -738,7 +738,7 @@ ExitInfo RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
 }
 
 bool RemoteFileSystemObserverWorker::hasUnsupportedCharacters(const SyncName &name, const NodeId &nodeId, NodeType type) {
-#ifdef __APPLE__
+#ifdef KD_MACOS
     // Check that the name doesn't contain a character not yet supported by the filesystem (ex: U+1FA77 on pre macOS 13.4)
     bool valid = false;
     if (type == NodeType::File) {

@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
 
     // Working dir;
     KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
-#ifdef __unix__
+#ifdef KD_LINUX
     const std::string value = KDC::CommonUtility::envVarValue("APPIMAGE");
     if (!value.empty()) {
         KDC::CommonUtility::_workingDirPath /= "usr/bin";
