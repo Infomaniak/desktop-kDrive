@@ -1314,16 +1314,15 @@ ExitInfo ExecutorWorker::deleteFinishedAsyncJobs() {
                 } else {
                     if (ignored) {
                         setProgressComplete(syncOp, SyncFileStatus::Ignored);
+                    } else if (syncOp->type() == OperationType::Create && syncOp->targetSide() == ReplicaSide::Remote) {
+                        std::shared_ptr<UploadJob> uploadJob = std::dynamic_pointer_cast<UploadJob>(job);
+                        NodeId newRemoteNodeId;
+                        if (uploadJob) newRemoteNodeId = uploadJob->nodeId();
+                        setProgressComplete(syncOp, SyncFileStatus::Success, newRemoteNodeId);
                     } else {
-                        if (syncOp->type() == OperationType::Create && syncOp->targetSide() == ReplicaSide::Remote) {
-                            std::shared_ptr<UploadJob> uploadJob = std::dynamic_pointer_cast<UploadJob>(job);
-                            NodeId newRemoteNodeId;
-                            if (uploadJob) newRemoteNodeId = uploadJob->nodeId();
-                            setProgressComplete(syncOp, SyncFileStatus::Success, newRemoteNodeId);
-                        } else {
-                            setProgressComplete(syncOp, SyncFileStatus::Success);
-                        }
+                        setProgressComplete(syncOp, SyncFileStatus::Success);
                     }
+
 
                     if (syncOp->affectedNode()->id().has_value()) {
                         NodeSet whiteList;
