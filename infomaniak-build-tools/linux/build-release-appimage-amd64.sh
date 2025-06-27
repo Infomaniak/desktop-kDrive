@@ -114,7 +114,7 @@ cp -P -r /usr/lib/x86_64-linux-gnu/nss ./usr/lib/
 cp -P /opt/qt6.2.3/lib/libQt6WaylandClient.so* ./usr/lib
 cp -P /opt/qt6.2.3/lib/libQt6WaylandEglClientHwIntegration.so* ./usr/lib
 
-cp -P "$conan_dependencies_folder/*" ./usr/lib
+cp -P "$conan_dependencies_folder"/* ./usr/lib
 
 mkdir -p ./usr/qml
 
