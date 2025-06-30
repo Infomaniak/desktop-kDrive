@@ -409,7 +409,7 @@ function Prepare-Archive {
 
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    if ($ci) {
+    if (!upload) {
         Write-Host "Archive prepared for CI build."
         exit 0
     }
@@ -441,9 +441,9 @@ function Prepare-Archive {
             $thumbprint = Get-Thumbprint $upload
         }
 
-        & signtool sign /sha1 $thumbprint /fd SHA1 /t http://timestamp.digicert.com /v $archivePath/$filename
+        #& signtool sign /sha1 $thumbprint /fd SHA1 /t http://timestamp.digicert.com /v $archivePath/$filename
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-        & signtool sign /sha1 $thumbprint /fd sha256 /tr http://timestamp.digicert.com?td=sha256 /td sha256 /as /v $archivePath/$filename
+        #& signtool sign /sha1 $thumbprint /fd sha256 /tr http://timestamp.digicert.com?td=sha256 /td sha256 /as /v $archivePath/$filename
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     }
 
@@ -488,8 +488,8 @@ function Create-Archive {
     $installerPath = Get-Installer-Path $buildPath $contentPath
 
     if (Test-Path -Path $installerPath) {
-        & signtool sign /sha1 $thumbprint /fd SHA1 /t http://timestamp.digicert.com /v $installerPath
-        & signtool sign /sha1 $thumbprint /fd sha256 /tr http://timestamp.digicert.com?td=sha256 /td sha256 /as /v $installerPath
+        #& signtool sign /sha1 $thumbprint /fd SHA1 /t http://timestamp.digicert.com /v $installerPath
+        #& signtool sign /sha1 $thumbprint /fd sha256 /tr http://timestamp.digicert.com?td=sha256 /td sha256 /as /v $installerPath
         Write-Host ("$installerPath signed successfully.") -f Green
     }
     else {

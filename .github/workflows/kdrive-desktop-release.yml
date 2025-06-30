@@ -170,7 +170,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: build-windows
-          name: win-release-artifacts-*
+          pattern: win-release-artifacts-*
           merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
