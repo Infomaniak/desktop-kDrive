@@ -200,7 +200,7 @@ runs:
         uses: actions/upload-artifact@v4
         with:
           name: kDrive-windows-installer
-          path: ${{ github.workspace }}/build-windows/sentry-client-artifacts
+          path: ${{ github.workspace }}/build-windows/kDrive-* # kDrive-x.x.x.yyyymmdd.exe
           retention-days: 1
           compression-level: 0
         if: steps.build.outcome == 'success'
