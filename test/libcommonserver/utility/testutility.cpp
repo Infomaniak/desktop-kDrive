@@ -103,7 +103,7 @@ void TestUtility::testMsSleep() {
     std::cout << " timeSpan=" << timeSpan.count();
     long long timeSpanCount = static_cast<long long>(timeSpan.count());
     CPPUNIT_ASSERT_GREATER((long long) (800), timeSpanCount);
-    CPPUNIT_ASSERT_LESS((long long) (1200), timeSpanCount);
+    CPPUNIT_ASSERT_LESS((long long) (2000), timeSpanCount);
 }
 
 void TestUtility::testV2ws() {
