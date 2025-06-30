@@ -95,12 +95,6 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, const CsvIn
                 logError(L"setCreatedAt", L"out_of_range", str, exc);
                 return false;
             }
-
-            if (item.createdAt() < 0) {
-                LOGW_WARN(_logger, L"Error in setCreatedAt, got a negative value - str='" << Utility::s2ws(str) << L"'");
-                return false;
-            }
-
             break;
         }
         case CsvIndexModtime: {
