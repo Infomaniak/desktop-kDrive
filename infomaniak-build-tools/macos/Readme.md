@@ -281,7 +281,7 @@ The project requires additional CMake variables for a correct build. To inject t
 
 ---
 
-### 5. Install Project Dependencies
+### 6. Install Project Dependencies
 
 **From the repository root**, run the provided build script, specifying the desired configuration (`Debug` or `Release`) and the folder where the app will be builded.
 ```bash
