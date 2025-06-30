@@ -36,7 +36,7 @@ class TestParmsDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSync);
         CPPUNIT_TEST(testExclusionTemplate);
         CPPUNIT_TEST(testUpdateExclusionTemplates);
-        CPPUNIT_TEST(testUpgrade);
+        CPPUNIT_TEST(testUpgradeOfExclusionTemplates);
 #ifdef __APPLE__
         CPPUNIT_TEST(testExclusionApp);
 #endif
@@ -60,7 +60,7 @@ class TestParmsDb : public CppUnit::TestFixture, public TestBase {
         void testExclusionTemplate();
         void testAppState();
         void testUpdateExclusionTemplates();
-        void testUpgrade();
+        void testUpgradeOfExclusionTemplates();
 #ifdef __APPLE__
         void testExclusionApp();
 #endif
@@ -71,6 +71,7 @@ class TestParmsDb : public CppUnit::TestFixture, public TestBase {
 
     private:
         LocalTemporaryDirectory _parmsDbTemporarDirectory;
+        bool deleteColumns();
 };
 
 } // namespace KDC
