@@ -20,4 +20,4 @@
 
 
 script_directory_path="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-bash "$script_directory_path/build-release-arm64-via-podman.sh"
+bash "$script_directory_path/build-release-via-podman.sh" -a "arm64"
