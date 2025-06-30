@@ -27,8 +27,8 @@ inline Q_LOGGING_CATEGORY(lcMatomoClient, "gui.matomo", QtInfoMsg)
 namespace {
 
     constexpr int matomoTimeout = 10000;     // Timeout for Matomo requests in milliseconds
-    constexpr int matomoTimeoutMax = 2;      // Counter to avoid sending too many Matomo requests in a short time
-    int matomoTimeoutCounter = 0;            // Maximum number of Matomo requests allowed
+    constexpr int matomoTimeoutMax = 2;      // Max number of Matomo timeout request before disabling Matomo tracking
+    int matomoTimeoutCounter = 0;            // Number of Matomo timeout requests
     bool matomoDisabled = false;             // if true, Matomo is disabled and no events / page visit will be sent.
 
 }
