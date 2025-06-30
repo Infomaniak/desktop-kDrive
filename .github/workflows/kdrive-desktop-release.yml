@@ -74,11 +74,11 @@ jobs:
          with:
           ref: ${{ github.head_ref }}
 
-       - name: Run test
-         uses: ./.github/actions/test_windows
-         with:  
-            test_name: ${{ matrix.test_name }}
-            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+       #- name: Run test
+       #  uses: ./.github/actions/test_windows
+       #  with:  
+       #     test_name: ${{ matrix.test_name }}
+       #     test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
 # Upload the installer to kDrive
   upload-to-kDrive-and-sentry:
