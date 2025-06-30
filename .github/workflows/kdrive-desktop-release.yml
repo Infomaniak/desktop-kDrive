@@ -189,7 +189,7 @@ jobs:
 
 # Upload to the storage server
   upload-app-to-storage-server:
-    needs: [upload-intaller-to-kDrive, upload-artifacts-to-sentry]
+    needs: [upload-to-kDrive-and-sentry]
     runs-on: [self-hosted, Windows]
     steps:
       - name: Upload app to storage server
