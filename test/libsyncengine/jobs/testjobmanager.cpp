@@ -97,6 +97,7 @@ void KDC::TestJobManager::tearDown() {
 }
 
 void TestJobManager::testWithoutCallback() {
+    if (!testhelpers::isExtendedTest()) return;
     // Create temp remote directory
     const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "TestJobManager testWithoutCallback");
     const LocalTemporaryDirectory localTmpDir("TestJobManager testWithoutCallback");
@@ -123,8 +124,8 @@ void TestJobManager::testWithoutCallback() {
     const auto start = std::chrono::steady_clock::now();
     while (!jobIds.empty()) {
         const auto now = std::chrono::steady_clock::now();
-        CPPUNIT_ASSERT_MESSAGE("All uploads have not finished in 30 seconds",
-                               std::chrono::duration_cast<std::chrono::seconds>(now - start).count() < 30);
+        CPPUNIT_ASSERT_MESSAGE("All uploads have not finished in 2 minutes",
+                               std::chrono::duration_cast<std::chrono::minutes>(now - start).count() < 2);
 
         Utility::msleep(100); // Wait 100ms
         while (!jobIds.empty() && JobManager::instance()->isJobFinished(jobIds.front())) {
@@ -143,6 +144,7 @@ void TestJobManager::testWithoutCallback() {
 }
 
 void TestJobManager::testWithCallback() {
+    if (!testhelpers::isExtendedTest()) return;
     // Create temp remote directory
     const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "TestJobManager testWithCallback");
 
@@ -163,7 +165,7 @@ void TestJobManager::testWithCallback() {
         (void) _ongoingJobs.try_emplace(job->jobId(), job);
     }
 
-    int waitCountMax = 300; // Wait max 30sec
+    int waitCountMax = 1200; // Wait max 2min (Can happen if one of the upload encounters a timeout error)
     while (ongoingJobsCount() > 0 && waitCountMax > 0 && !_jobErrorSocketsDefuncted && !_jobErrorOther) {
         waitCountMax--;
         Utility::msleep(100); // Wait 100ms
@@ -173,7 +175,7 @@ void TestJobManager::testWithCallback() {
         cancelAllOngoingJobs();
     }
 
-    CPPUNIT_ASSERT(ongoingJobsCount() == 0);
+    CPPUNIT_ASSERT_EQUAL((size_t) 0, ongoingJobsCount());
     CPPUNIT_ASSERT(!_jobErrorSocketsDefuncted);
     CPPUNIT_ASSERT(!_jobErrorOther);
 

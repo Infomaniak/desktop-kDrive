@@ -24,14 +24,14 @@
 
 namespace KDC {
 
-GetFileInfoJob::GetFileInfoJob(int userDbId, int driveId, const NodeId &nodeId) :
+GetFileInfoJob::GetFileInfoJob(const int userDbId, const int driveId, const NodeId &nodeId) :
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId),
     _nodeId(nodeId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _trials = 1;
 }
 
-GetFileInfoJob::GetFileInfoJob(int driveDbId, const NodeId &nodeId) :
+GetFileInfoJob::GetFileInfoJob(const int driveDbId, const NodeId &nodeId) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _nodeId(nodeId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
@@ -43,7 +43,7 @@ bool GetFileInfoJob::handleResponse(std::istream &is) {
 
     if (!jsonRes()) return true;
 
-    Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
+    const auto dataObj = jsonRes()->getObject(dataKey);
     if (!dataObj) return true;
 
     if (!JsonParserUtility::extractValue(dataObj, parentIdKey, _parentNodeId)) {
@@ -52,22 +52,20 @@ bool GetFileInfoJob::handleResponse(std::istream &is) {
     if (!JsonParserUtility::extractValue(dataObj, createdAtKey, _creationTime)) {
         return false;
     }
-    if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtime)) {
+    if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modificationTime)) {
         return false;
     }
     std::string tmp;
     if (!JsonParserUtility::extractValue(dataObj, typeKey, tmp)) {
         return false;
     }
-    const bool isDir = tmp == dirKey;
-    if (!isDir) {
+    if (tmp != dirKey) {
         if (!JsonParserUtility::extractValue(dataObj, sizeKey, _size)) {
             return false;
         }
     }
 
-    std::string symbolicLink;
-    if (JsonParserUtility::extractValue(dataObj, symbolicLinkKey, symbolicLink, false)) {
+    if (std::string symbolicLink; JsonParserUtility::extractValue(dataObj, symbolicLinkKey, symbolicLink, false)) {
         _isLink = !symbolicLink.empty();
     }
 

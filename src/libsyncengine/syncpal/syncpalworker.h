@@ -41,7 +41,6 @@ class SyncPalWorker : public ISyncWorker {
         inline SyncStep step() const { return _step; }
         inline std::chrono::time_point<std::chrono::steady_clock> pauseTime() const { return _pauseTime; }
         static std::string stepName(SyncStep step);
-        uint64_t syncCounter() const { return _syncCounter; }
 
     private:
         SyncStep _step{SyncStep::Idle};
@@ -68,7 +67,6 @@ class SyncPalWorker : public ISyncWorker {
         bool indexingIsProblematic(const SyncPath &filePath) const { return filePath.extension() == "eml"; }
 #endif
 
-        uint64_t _syncCounter{0};
         /**
          * @brief Attempts to repair local node IDs in the SyncDb after the sync directory has changed its node ID.
          *
