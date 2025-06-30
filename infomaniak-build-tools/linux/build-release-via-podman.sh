@@ -21,7 +21,7 @@
 program_name="$(basename "$0")"
 
 function display_help {
-  echo "$program_name [-h] [-d architecture]"
+  echo "$program_name [-h] [-a architecture]"
   echo "  Build the Linux release AppImage for desktop-kDrive via Podman."
   echo "where:"
   echo "-h  Show this help text."
