@@ -1061,22 +1061,7 @@ bool ParmsDb::prepare() {
     return true;
 }
 
-bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersion) {
-    if (CommonUtility::isVersionLower(fromVersion, toVersion)) {
-        LOG_INFO(_logger, "Upgrade " << dbType() << " DB from " << fromVersion << " to " << toVersion);
-        if (!insertUserTemplateNormalizations(fromVersion)) {
-            LOG_WARN(_logger, "Insertion of the normalizations of user exclusion file patterns has failed.");
-            return false;
-        }
-#ifdef _WIN32
-        if (!replaceShortDbPathsWithLongPaths()) {
-            LOG_WARN(_logger, "Failed to replace short DB paths with long ones.");
-        }
-#endif
-    } else {
-        LOG_INFO(_logger, "Apply generic upgrade fixes to " << dbType() << " DB version " << fromVersion);
-    }
-
+bool ParmsDb::upgradeColumns() {
     const std::string tableName = "parameters";
     std::string columnName = "maxAllowedCpu";
     if (!addIntegerColumnIfMissing(tableName, columnName)) {
@@ -1132,6 +1117,27 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersi
         return false;
     }
 
+    LOG_INFO(_logger, "Columns upgrade in << dbType()  << successfully completed.");
+
+    return true;
+}
+
+bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersion) {
+    LOG_INFO(_logger, "Apply generic upgrade fixes to " << dbType() << " DB version " << fromVersion);
+    upgradeColumns();
+
+    if (CommonUtility::isVersionLower(fromVersion, toVersion)) {
+        LOG_INFO(_logger, "Upgrade " << dbType() << " DB from " << fromVersion << " to " << toVersion);
+        if (!insertUserTemplateNormalizations(fromVersion)) {
+            LOG_WARN(_logger, "Insertion of the normalizations of user exclusion file patterns has failed.");
+            return false;
+        }
+#ifdef _WIN32
+        if (!replaceShortDbPathsWithLongPaths()) {
+            LOG_WARN(_logger, "Failed to replace short DB paths with long ones.");
+        }
+#endif
+    }
     LOG_INFO(_logger, "Upgrade " << dbType() << " successfully completed.");
 
     return true;
