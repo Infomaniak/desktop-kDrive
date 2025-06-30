@@ -1396,10 +1396,16 @@ void SyncPal::freeSnapshotsCopies() {
     _remoteSnapshot.reset();
 }
 
-void SyncPal::invalideSnapshots() {
+void SyncPal::tryToInvalidateSnapshots() {
     _localFSObserverWorker->tryToInvalidateSnapshot();
     _remoteFSObserverWorker->forceUpdate();
     _remoteFSObserverWorker->tryToInvalidateSnapshot();
+}
+
+void SyncPal::forceInvalidateSnapshots() {
+    _localFSObserverWorker->invalidateSnapshot();
+    _remoteFSObserverWorker->forceUpdate();
+    _remoteFSObserverWorker->invalidateSnapshot();
 }
 
 } // namespace KDC

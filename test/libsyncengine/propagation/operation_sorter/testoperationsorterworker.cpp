@@ -420,6 +420,30 @@ void TestOperationSorterWorker::testFixEditBeforeMove() {
     CPPUNIT_ASSERT_LESS(mapIndex[editOp->id()], mapIndex[moveOp->id()]);
 }
 
+// edit before move, e.g. user moves an object "x" to "y" and edit "x/a" on the other side
+void TestOperationSorterWorker::testFixEditBeforeMove2() {
+    generateLotsOfDummySyncOperations(OperationType::Move, OperationType::Edit);
+
+    // Move A/AA to AA
+    const auto nodeAA = _testSituationGenerator.moveNode(ReplicaSide::Local, "aa", {});
+    const auto moveOp = generateSyncOperation(OperationType::Move, nodeAA);
+
+    // Edit A/AA/AAA
+    const auto nodeAAA = _testSituationGenerator.editNode(ReplicaSide::Remote, "aaa");
+    const auto editOp = generateSyncOperation(OperationType::Edit, nodeAAA);
+
+    (void) _syncPal->syncOps()->pushOp(editOp);
+    (void) _syncPal->syncOps()->pushOp(moveOp);
+
+    _syncPal->_operationsSorterWorker->_filter.filterOperations();
+    _syncPal->_operationsSorterWorker->fixEditBeforeMove();
+
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
+    std::unordered_map<UniqueId, uint32_t> mapIndex = {{editOp->id(), 0}, {moveOp->id(), 0}};
+    findIndexesInOpList(mapIndex);
+    CPPUNIT_ASSERT_LESS(mapIndex[editOp->id()], mapIndex[moveOp->id()]);
+}
+
 // move before move (parent-child flip), e.g. user moves directory "A/B" to "D", then moves directory "A" to "D/A" (parent-child
 // relationships are now flipped).
 void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFlip() {

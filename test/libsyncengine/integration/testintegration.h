@@ -24,6 +24,8 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommon/utility/sourcelocation.h"
+#include "test_utility/remotetemporarydirectory.h"
+#include "utility/timerutility.h"
 
 using namespace CppUnit;
 
@@ -35,7 +37,7 @@ typedef void (TestIntegration::*testFctPtr)();
 
 class TestIntegration : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestIntegration);
-        // CPPUNIT_TEST(testAll);
+        CPPUNIT_TEST(testAll);
 #ifdef __unix__
         CPPUNIT_TEST(testNodeIdReuseFile2DirAndDir2File);
         CPPUNIT_TEST(testNodeIdReuseFile2File);
@@ -46,42 +48,24 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void setUp() override;
         void tearDown() override;
 
-    protected:
+    private:
         void testAll();
 
-    private:
-        // Local changes
-        void testCreateLocal();
-        void testEditLocal();
-        void testMoveLocal();
-        void testRenameLocal();
-        void testDeleteLocal();
-        // Remote changes
-        void testCreateRemote();
-        void testEditRemote();
-        void testMoveRemote();
-        void testRenameRemote();
-        void testDeleteRemote();
-        // Other tests
+        void basicTests();
+        void testLocalChanges();
+        void testRemoteChanges();
         void testSimultaneousChanges();
-        // Inconsistency
-        void testInconsistency();
-        // TODO : other tests
-        // - many sync ops (ex: upload 100 files)
-        // - create dir + subdir + file in same sync
-        // Conflicts
+
+        void inconsistencyTests();
+
+        void conflictTests();
         void testCreateCreatePseudoConflict();
         void testCreateCreateConflict();
         void testEditEditPseudoConflict();
         void testEditEditConflict();
         void testMoveCreateConflict();
-        void testEditDeleteConflict1();
-        void testEditDeleteConflict2();
-        void testMoveDeleteConflict1();
-        void testMoveDeleteConflict2();
-        void testMoveDeleteConflict3();
-        void testMoveDeleteConflict4();
-        void testMoveDeleteConflict5();
+        void testEditDeleteConflict();
+        void testMoveDeleteConflict();
         void testMoveParentDeleteConflict();
         void testCreateParentDeleteConflict();
         void testMoveMoveSourcePseudoConflict();
@@ -89,6 +73,12 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testMoveMoveDestConflict();
         void testMoveMoveCycleConflict();
 
+        void testBreakCycle();
+        void testBlacklist();
+        void testExclusionTemplates();
+        void testEncoding();
+        void testParentRename();
+        void testNegativeModificationTime();
 
         class MockIoHelperFileStat : public IoHelper {
             public:
@@ -114,23 +104,40 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testNodeIdReuseFile2DirAndDir2File();
         void testNodeIdReuseFile2File();
 #endif
-        void waitForSyncToFinish(const SourceLocation &srcLoc);
+        void waitForSyncToBeIdle(const SourceLocation &srcLoc,
+                                 std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
+        void logStep(const std::string &str);
+
+        struct RemoteFileInfo {
+                NodeId id;
+                NodeId parentId;
+                SyncTime modificationTime{0};
+                SyncTime creationTime{0};
+                int64_t size{0};
+                NodeType type = NodeType::Unknown;
+
+                bool isValid() const { return !id.empty(); }
+        };
+        RemoteFileInfo getRemoteFileInfoByName(int driveDbId, const NodeId &parentId, const SyncName &name) const;
+        int64_t countItemsInRemoteDir(int driveDbId, const NodeId &parentId) const;
+
+        void editRemoteFile(const int driveDbId, const NodeId &remoteFileId, SyncTime *creationTime = nullptr,
+                            SyncTime *modificationTime = nullptr, int64_t *size = nullptr) const;
+        void moveRemoteFile(const int driveDbId, const NodeId &remoteFileId, const NodeId &destinationRemoteParentId,
+                            const SyncName &name = {}) const;
+        NodeId duplicateRemoteFile(const int driveDbId, const NodeId &id, const SyncName &newName) const;
+        void deleteRemoteFile(const int driveDbId, const NodeId &id) const;
+        SyncPath findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix) const;
 
         log4cplus::Logger _logger;
-
         std::shared_ptr<SyncPal> _syncPal = nullptr;
         std::shared_ptr<ParmsDb> _parmsDb = nullptr;
 
         int _driveDbId = 0;
-        SyncPath _localPath;
-        SyncPath _remotePath;
-
-        SyncPath _newTestFilePath;
-        NodeId _newTestFileLocalId;
-        NodeId _newTestFileRemoteId;
-
-        std::vector<testFctPtr> _testFctPtrVector;
-        LocalTemporaryDirectory _localTmpDir{"test_integration"};
+        LocalTemporaryDirectory _localSyncDir;
+        RemoteTemporaryDirectory _remoteSyncDir{"testIntegration"};
+        NodeId _testFileRemoteId;
+        TimerUtility _timer;
 };
 
 } // namespace KDC

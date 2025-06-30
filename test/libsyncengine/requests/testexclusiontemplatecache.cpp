@@ -86,6 +86,7 @@ void TestExclusionTemplateCache::tearDown() {
     ParmsDb::reset();
     ParametersCache::reset();
     TestBase::stop();
+    ExclusionTemplateCache::reset();
 }
 
 void TestExclusionTemplateCache::testIsExcluded() {
@@ -106,7 +107,7 @@ void TestExclusionTemplateCache::testIsExcluded() {
 #ifndef _WIN32
     {
         // Test hidden file
-        const SyncPath testPath = testhelpers::localTestDirPath / ".my_hidden_file.txt";
+        const SyncPath testPath = testhelpers::localTestDirPath() / ".my_hidden_file.txt";
         bool isWarning = true;
         CPPUNIT_ASSERT_MESSAGE(testPath.string() + " should not be excluded",
                                !ExclusionTemplateCache::instance()->isExcluded(testPath, isWarning));
@@ -114,7 +115,7 @@ void TestExclusionTemplateCache::testIsExcluded() {
 
     {
         // Test hidden folder
-        const SyncPath testPath = testhelpers::localTestDirPath / ".my_hidden_folder/AA/my_file.txt";
+        const SyncPath testPath = testhelpers::localTestDirPath() / ".my_hidden_folder/AA/my_file.txt";
         bool isWarning = true;
         CPPUNIT_ASSERT_MESSAGE(testPath.string() + " should not be excluded",
                                !ExclusionTemplateCache::instance()->isExcluded(testPath, isWarning));
@@ -136,6 +137,91 @@ void TestExclusionTemplateCache::testRescueFolderIsExcluded() {
     CPPUNIT_ASSERT_MESSAGE(FileRescuer::rescueFolderName().string() + " is not excluded",
                            ExclusionTemplateCache::instance()->isExcluded(FileRescuer::rescueFolderName(), isWarning));
     CPPUNIT_ASSERT(!isWarning);
+}
+
+void TestExclusionTemplateCache::testNFCNFDExclusion() {
+    // Ensure that all the values in the default sync exclusion list can be normalized to both NFC and NFD forms
+    {
+        auto exclusionCacheDef = ExclusionTemplateCache::instance()->exclusionTemplates(true);
+        for (const auto &exclusionTemplate: exclusionCacheDef) {
+            SyncName result;
+            CPPUNIT_ASSERT(CommonUtility::normalizedSyncName(Str2SyncName(exclusionTemplate.templ()), result,
+                                                             UnicodeNormalization::NFC));
+            CPPUNIT_ASSERT(CommonUtility::normalizedSyncName(Str2SyncName(exclusionTemplate.templ()), result,
+                                                             UnicodeNormalization::NFD));
+        }
+    }
+
+    // Ensure that ExclusionTemplateCache is cheking NFC and NFD names
+    {
+        // None of the name should be excluded by default
+        CPPUNIT_ASSERT(!ExclusionTemplateCache::instance()->isExcluded(testhelpers::makeNfcSyncName()));
+        CPPUNIT_ASSERT(!ExclusionTemplateCache::instance()->isExcluded(testhelpers::makeNfdSyncName()));
+
+        // Generate all the exclusion templates
+        const ExclusionTemplate nfcDefExclTemplate(SyncName2Str(testhelpers::makeNfcSyncName()), false, true);
+        const ExclusionTemplate nfdDefExclTemplate(SyncName2Str(testhelpers::makeNfdSyncName()), false, true);
+        const ExclusionTemplate nfcUsrExclTemplate(SyncName2Str(testhelpers::makeNfcSyncName()), false, false);
+        const ExclusionTemplate nfdUsrExclTemplate(SyncName2Str(testhelpers::makeNfdSyncName()), false, false);
+
+        // Test with only NFC version in def exclusion list
+        auto exclusionCacheDef = ExclusionTemplateCache::instance()->exclusionTemplates(true);
+        exclusionCacheDef.push_back(nfcDefExclTemplate);
+        ExclusionTemplateCache::instance()->update(true, exclusionCacheDef);
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded(testhelpers::makeNfcSyncName()));
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded(testhelpers::makeNfdSyncName()));
+
+        // Test with only NFD version in def exclusion list
+        exclusionCacheDef.pop_back();
+        exclusionCacheDef.push_back(nfdDefExclTemplate);
+        ExclusionTemplateCache::instance()->update(true, exclusionCacheDef);
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded(testhelpers::makeNfcSyncName()));
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded(testhelpers::makeNfdSyncName()));
+
+        // Reset def exclusion list
+        exclusionCacheDef.pop_back();
+        ExclusionTemplateCache::instance()->update(true, exclusionCacheDef);
+
+        // Test with only NFC version in def exclusion list
+        auto exclusionCacheUsr = ExclusionTemplateCache::instance()->exclusionTemplates(false);
+        exclusionCacheUsr.push_back(nfcUsrExclTemplate);
+        ExclusionTemplateCache::instance()->update(false, exclusionCacheUsr);
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded(testhelpers::makeNfcSyncName()));
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded(testhelpers::makeNfdSyncName()));
+
+        // Test with only NFD version in def exclusion list
+        exclusionCacheUsr.pop_back();
+        exclusionCacheUsr.push_back(nfdUsrExclTemplate);
+        ExclusionTemplateCache::instance()->update(false, exclusionCacheUsr);
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded(testhelpers::makeNfcSyncName()));
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded(testhelpers::makeNfdSyncName()));
+    }
+}
+
+void TestExclusionTemplateCache::testaddRegexForAllNormalizationForms() {
+    ExclusionTemplateCache::instance()->_regexPatterns.clear();
+
+    ExclusionTemplate nfcTemplate(SyncName2Str(testhelpers::makeNfcSyncName()));
+    std::string nfcRegex = SyncName2Str(testhelpers::makeNfcSyncName()); // Don't need to be a valid regex for this test.
+    ExclusionTemplate nfdTemplate(SyncName2Str(testhelpers::makeNfdSyncName()));
+    std::string nfdRegex = SyncName2Str(testhelpers::makeNfdSyncName()); // Don't need to be a valid regex for this test.
+
+    // Ensure that both encoding are inserted
+    ExclusionTemplateCache::instance()->addRegexForAllNormalizationForms(nfcRegex, nfcTemplate);
+    CPPUNIT_ASSERT_EQUAL(size_t(2), ExclusionTemplateCache::instance()->_regexPatterns.size());
+
+    ExclusionTemplateCache::instance()->_regexPatterns.clear();
+    ExclusionTemplateCache::instance()->addRegexForAllNormalizationForms(nfdRegex, nfdTemplate);
+    CPPUNIT_ASSERT_EQUAL(size_t(2), ExclusionTemplateCache::instance()->_regexPatterns.size());
+
+    // Ensure that we cannot have a duplicated regex
+    ExclusionTemplateCache::instance()->_regexPatterns.clear();
+    ExclusionTemplateCache::instance()->addRegexForAllNormalizationForms(nfdRegex, nfdTemplate);
+    CPPUNIT_ASSERT_EQUAL(size_t(2), ExclusionTemplateCache::instance()->_regexPatterns.size());
+    ExclusionTemplateCache::instance()->addRegexForAllNormalizationForms(nfdRegex, nfdTemplate);
+    CPPUNIT_ASSERT_EQUAL(size_t(2), ExclusionTemplateCache::instance()->_regexPatterns.size());
+    ExclusionTemplateCache::instance()->addRegexForAllNormalizationForms(nfcRegex, nfdTemplate);
+    CPPUNIT_ASSERT_EQUAL(size_t(2), ExclusionTemplateCache::instance()->_regexPatterns.size());
 }
 
 

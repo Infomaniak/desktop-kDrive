@@ -74,7 +74,7 @@ void TestSituationGenerator::generateInitialSituation(const std::string &jsonInp
     addItem(obj);
 
     _localUpdateTree->drawUpdateTree();
-    _syncDb->cache().reloadIfNeeded();
+    (void) _syncDb->cache().reloadIfNeeded();
 }
 
 std::shared_ptr<Node> TestSituationGenerator::getNode(const ReplicaSide side, const NodeId &id) const {
@@ -132,8 +132,15 @@ std::shared_ptr<Node> TestSituationGenerator::deleteNode(const ReplicaSide side,
 }
 
 NodeId TestSituationGenerator::generateId(const ReplicaSide side, const NodeId &id) const {
-    if (id.starts_with(localIdSuffix) || id.starts_with(remoteIdSuffix)) return id;
-    return side == ReplicaSide::Local ? localIdSuffix + id : remoteIdSuffix + id;
+    NodeId rawId;
+    if (id.starts_with(localIdSuffix)) {
+        rawId = id.substr(localIdSuffix.size());
+    } else if (id.starts_with(remoteIdSuffix)) {
+        rawId = id.substr(remoteIdSuffix.size());
+    } else {
+        rawId = id;
+    }
+    return (side == ReplicaSide::Local ? localIdSuffix : remoteIdSuffix) + rawId;
 }
 
 void TestSituationGenerator::addItem(Poco::JSON::Object::Ptr obj, const NodeId &parentId /*= {}*/) {

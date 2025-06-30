@@ -175,7 +175,8 @@ bool VirtualFilesCleaner::folderCanBeProcessed(std::filesystem::recursive_direct
 #endif
 
     if (dirIt->path().native().length() > CommonUtility::maxPathLength()) {
-        LOGW_WARN(_logger, L"Ignore " << Utility::formatSyncPath(dirIt->path()) << L" because size > " << CommonUtility::maxPathLength());
+        LOGW_WARN(_logger,
+                  L"Ignore " << Utility::formatSyncPath(dirIt->path()) << L" because size > " << CommonUtility::maxPathLength());
         return false;
     }
 

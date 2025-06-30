@@ -43,7 +43,7 @@ SyncPath makeFileNameWithEmojis() {
 
 TestIo::TestIo() :
     CppUnit::TestFixture(),
-    _localTestDirPath(std::wstring(L"" TEST_DIR) + L"/test_ci") {}
+    _localTestDirPath(testhelpers::localTestDirPath()) {}
 
 void TestIo::setUp() {
     TestBase::start();
@@ -322,10 +322,8 @@ void TestIo::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         (void) IoHelper::getFileStat(filepath, &filestat, ioError);
-#if defined(__APPLE__)
-        CPPUNIT_ASSERT(filestat.creationTime == 0);
-#elif defined(_WIN32)
-        CPPUNIT_ASSERT_GREATER(timestamp, filestat.creationTime);
+#if defined(__APPLE__) || defined(_WIN32)
+        CPPUNIT_ASSERT_EQUAL(SyncTime{0}, filestat.creationTime);
 #endif
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modificationTime);
 
@@ -343,9 +341,7 @@ void TestIo::testSetFileDates() {
         CPPUNIT_ASSERT(filestat.modificationTime == 0);
 #elif defined(_WIN32)
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
-        CPPUNIT_ASSERT_GREATER(timestamp, filestat.modificationTime);
-#else
-        CPPUNIT_ASSERT(filestat.modificationTime == 0);
+        CPPUNIT_ASSERT_EQUAL(SyncTime(0), filestat.modificationTime);
 #endif
     }
 
