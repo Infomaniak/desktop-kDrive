@@ -243,4 +243,63 @@ static std::string userName_private() {
     return CommonUtility::envVarValue("USER", isSet);
 }
 
+namespace {
+// Returns the autostart directory the linux way
+// and respects the XDG_CONFIG_HOME env variable
+SyncPath getUserAutostartDir() {
+    auto configPath = CommonUtility::getAppSupportDir();
+    configPath /= "autostart";
+    return configPath;
+}
+} // namespace
+
+bool Utility::hasLaunchOnStartup(const std::string &appName, log4cplus::Logger /*logger*/) {
+    const auto desktopFileLocation = getUserAutostartDir() / (appName + ".desktop");
+    return std::filesystem::exists(desktopFileLocation);
+}
+
+void Utility::setLaunchOnStartup(const std::string &appName, const std::string &guiName, bool enable, log4cplus::Logger logger) {
+    const auto userAutoStartDirPath = getUserAutostartDir();
+    const auto userAutoStartFilePath = userAutoStartDirPath / (appName + ".desktop");
+    if (enable) {
+        IoError ioError = IoError::Unknown;
+        if (!std::filesystem::exists(userAutoStartDirPath) && !IoHelper::createDirectory(userAutoStartDirPath, false, ioError)) {
+            LOGW_WARN(logger, L"Could not create autostart folder" << Utility::formatSyncPath(userAutoStartDirPath)
+                                                                   << Utility::formatIoError(ioError));
+            return;
+        }
+
+        std::wofstream testFile(userAutoStartFilePath, std::ios_base::in);
+        if (!testFile.is_open()) {
+            LOGW_WARN(logger, L"Could not write auto start entry." << Utility::formatSyncPath(userAutoStartFilePath));
+            return;
+        }
+        const auto appimageDir = CommonUtility::envVarValue("APPIMAGE");
+        LOG_DEBUG(logger, "APPIMAGE=" << appimageDir);
+        testFile << L"[Desktop Entry]" << std::endl;
+        testFile << L"Name=" << Utility::s2ws(guiName) << std::endl;
+        testFile << L"GenericName=File Synchronizer" << std::endl;
+        testFile << L"Exec=" << Utility::formatSyncPath(appimageDir) << std::endl;
+        testFile << L"Terminal=false" << std::endl;
+        testFile << L"Icon=" << Utility::s2ws(Utility::toLower(appName)) << std::endl;
+        testFile << L"Categories=Network" << std::endl;
+        testFile << L"Type=Application" << std::endl;
+        testFile << L"StartupNotify=false" << std::endl;
+        testFile << L"X-GNOME-Autostart-enabled=true" << std::endl;
+        testFile << L"X-GNOME-Autostart-Delay=10" << std::endl;
+        testFile.close();
+    } else {
+        IoError ioError = IoError::Unknown;
+        if (!IoHelper::deleteItem(userAutoStartFilePath, ioError)) {
+            LOGW_WARN(logger, L"Could not remove autostart desktop file." << Utility::formatIoError(ioError));
+        }
+    }
+}
+
+bool Utility::hasSystemLaunchOnStartup(const std::string &appName, log4cplus::Logger logger) {
+    Q_UNUSED(appName)
+    Q_UNUSED(logger)
+    return false;
+}
+
 } // namespace KDC

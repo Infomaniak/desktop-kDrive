@@ -119,7 +119,7 @@ static void displayHelpText(const QString &t) {
 #endif
 
 AppServer::AppServer(int &argc, char **argv) :
-    SharedTools::QtSingleApplication(Theme::instance()->appName(), argc, argv) {
+    SharedTools::QtSingleApplication(QString::fromStdString(Theme::instance()->appName()), argc, argv) {
     _arguments = arguments();
     _theme = Theme::instance();
 }
@@ -131,9 +131,9 @@ AppServer::~AppServer() {
 void AppServer::init() {
     _startedAt.start();
     setOrganizationDomain(QLatin1String(APPLICATION_REV_DOMAIN));
-    setApplicationName(_theme->appName());
+    setApplicationName(QString::fromStdString(_theme->appName()));
     setWindowIcon(_theme->applicationIcon());
-    setApplicationVersion(_theme->version());
+    setApplicationVersion(QString::fromStdString(_theme->version()));
 
     // Setup logging with default parameters
     if (!initLogging()) {
@@ -195,7 +195,7 @@ void AppServer::init() {
     LOGW_INFO(_logger, L"Old config exists : " << Path2WStr(pre334ConfigFilePath) << L" => " << oldConfigExists);
 
     // Init ParmsDb instance
-    if (!initParmsDB(parmsDbPath, _theme->version().toStdString())) {
+    if (!initParmsDB(parmsDbPath, _theme->version())) {
         LOG_WARN(_logger, "Error in AppServer::initParmsDB");
         throw std::runtime_error("Unable to initialize ParmsDb.");
     }
@@ -1897,7 +1897,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> enabled;
 
             Theme *theme = Theme::instance();
-            Utility::setLaunchOnStartup(theme->appName(), theme->appNameGUI(), enabled, _logger);
+            Utility::setLaunchOnStartup(theme->appName(), theme->appName(), enabled, _logger);
 
             resultStream << ExitCode::Ok;
             break;
@@ -2890,7 +2890,7 @@ bool AppServer::initLogging() noexcept {
 void AppServer::logUsefulInformation() const {
     LOG_INFO(_logger, "***** APP INFO *****");
 
-    LOG_INFO(_logger, "version: " << _theme->version().toStdString());
+    LOG_INFO(_logger, "version: " << _theme->version());
     LOG_INFO(_logger, "os: " << CommonUtility::platformName().toStdString());
     LOG_INFO(_logger, "kernel version : " << QSysInfo::kernelVersion().toStdString());
     LOG_INFO(_logger, "kernel type : " << QSysInfo::kernelType().toStdString());
@@ -3139,7 +3139,8 @@ void AppServer::parseOptions(const QStringList &options) {
 void AppServer::showHelp() {
     QString helpText;
     QTextStream stream(&helpText);
-    stream << _theme->appName() << QLatin1String(" version ") << _theme->version() << Qt::endl;
+    stream << QString::fromStdString(_theme->appName()) << QLatin1String(" version ") << QString::fromStdString(_theme->version())
+           << Qt::endl;
 
     stream << QLatin1String("File synchronisation desktop utility.") << Qt::endl << Qt::endl << QLatin1String(optionsC);
 
@@ -3161,7 +3162,7 @@ void AppServer::clearSyncNodes() {
         throw std::runtime_error("Unable to get ParmsDb path.");
     }
 
-    if (!ParmsDb::instance(parmsDbPath, _theme->version().toStdString())) {
+    if (!ParmsDb::instance(parmsDbPath, _theme->version())) {
         LOG_WARN(_logger, "Error in ParmsDb::instance");
         throw std::runtime_error("Unable to initialize ParmsDb.");
     }
@@ -3176,7 +3177,7 @@ void AppServer::clearSyncNodes() {
     // Clear node tables
     for (const auto &sync: syncList) {
         SyncPath dbPath = sync.dbPath();
-        auto syncDbPtr = std::make_shared<SyncDb>(dbPath.string(), _theme->version().toStdString());
+        auto syncDbPtr = std::make_shared<SyncDb>(dbPath.string(), _theme->version());
         syncDbPtr->clearNodes();
     }
 }
@@ -3211,7 +3212,7 @@ void AppServer::clearKeychainKeys() {
         throw std::runtime_error("Unable to get ParmsDb path.");
     }
 
-    if (!ParmsDb::instance(parmsDbPath, _theme->version().toStdString())) {
+    if (!ParmsDb::instance(parmsDbPath, _theme->version())) {
         LOG_WARN(_logger, "Error in ParmsDb::instance");
         throw std::runtime_error("Unable to initialize ParmsDb.");
     }
@@ -3404,7 +3405,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, cons
 
         // Create SyncPal
         try {
-            _syncPalMap[sync.dbId()] = std::make_shared<SyncPal>(vfsPtr, sync.dbId(), _theme->version().toStdString());
+            _syncPalMap[sync.dbId()] = std::make_shared<SyncPal>(vfsPtr, sync.dbId(), _theme->version());
         } catch (std::exception const &) {
             LOG_WARN(_logger, "Error in SyncPal::SyncPal for syncDbId=" << sync.dbId());
             return {ExitCode::DbError, ExitCause::Unknown};
@@ -4207,7 +4208,7 @@ void AppServer::onUpdateSyncsProgress() {
 
                     // Ask client to display notification
                     sendShowNotification(
-                            Theme::instance()->appNameGUI(),
+                            QString::fromStdString(Theme::instance()->appName()),
                             tr("A new folder larger than %1 MB has been added in the drive %2, you must validate its "
                                "synchronization: %3.\n")
                                     .arg(ParametersCache::instance()->parameters().bigFolderSizeLimit())

@@ -185,7 +185,7 @@ void AddDriveWizard::startNextStep(bool backward) {
         setBackgroundForcedColor(QColor());
         _addDriveLocalFolderWidget->setDrive(_driveInfo.name());
         _addDriveLocalFolderWidget->setLiteSync(_liteSync);
-        QString localFolderPath = Theme::instance()->defaultClientFolder();
+        QString localFolderPath = QString::fromStdString(Theme::instance()->appName());
         if (!QDir(localFolderPath).isAbsolute()) {
             localFolderPath = QDir::homePath() + dirSeparator + localFolderPath;
         }

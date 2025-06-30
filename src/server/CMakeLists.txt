@@ -79,7 +79,6 @@ elseif(WIN32)
     list(APPEND server_SRCS ../common/utility_win.cpp)
     list(APPEND updater_SRCS updater/windowsupdater.h updater/windowsupdater.cpp)
 else()
-    list(APPEND server_SRCS ../common/utility_linux.cpp)
     list(APPEND updater_SRCS updater/linuxupdater.h updater/linuxupdater.cpp)
 endif()
 

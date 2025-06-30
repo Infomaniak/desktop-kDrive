@@ -679,8 +679,29 @@ SyncName Utility::logFileNameWithTime() {
 std::string Utility::toUpper(const std::string &str) {
     std::string upperStr(str);
     // std::ranges::transform(str, upperStr.begin(), [](unsigned char c) { return std::toupper(c); });   // Needs gcc-11
-    std::transform(str.begin(), str.end(), upperStr.begin(), [](unsigned char c) { return std::toupper(c); });
+    std::transform(str.begin(), str.end(), upperStr.begin(), [](auto c) { return std::toupper(c); });
     return upperStr;
+}
+
+std::wstring Utility::toUpper(const std::wstring &str) {
+    std::wstring upperStr(str);
+    // std::ranges::transform(str, upperStr.begin(), [](unsigned auto c) { return std::towupper(c); });   // Needs gcc-11
+    std::transform(str.begin(), str.end(), upperStr.begin(), [](auto c) { return std::towupper(c); });
+    return upperStr;
+}
+
+std::string Utility::toLower(const std::string &str) {
+    std::string lowerStr(str);
+    // std::ranges::transform(str, lowerStr.begin(), [](unsigned char c) { return std::tolower(c); });   // Needs gcc-11
+    std::transform(str.begin(), str.end(), lowerStr.begin(), [](auto c) { return std::tolower(c); });
+    return lowerStr;
+}
+
+std::wstring Utility::toLower(const std::wstring &str) {
+    std::wstring lowerStr(str);
+    // std::ranges::transform(str, lowerStr.begin(), [](unsigned char c) { return std::tolower(c); });   // Needs gcc-11
+    std::transform(str.begin(), str.end(), lowerStr.begin(), [](auto c) { return std::towlower(c); });
+    return lowerStr;
 }
 
 std::string Utility::_errId(const char *file, int line) {

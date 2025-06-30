@@ -165,7 +165,7 @@ const std::string &CommonUtility::userAgentString() {
     static std::string str;
     if (str.empty()) {
         std::stringstream ss;
-        ss << APPLICATION_SHORTNAME << " / " << KDRIVE_VERSION_STRING << " (" << platformName().toStdString() << ")";
+        ss << APPLICATION_NAME << " / " << KDRIVE_VERSION_STRING << " (" << platformName().toStdString() << ")";
         str = ss.str();
     }
     return str;

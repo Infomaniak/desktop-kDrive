@@ -98,7 +98,7 @@ SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>
     QString socketPath;
 
     if (CommonUtility::isWindows()) {
-        socketPath = QString(R"(\\.\pipe\%1-%2)").arg(APPLICATION_SHORTNAME, Utility::userName().c_str());
+        socketPath = QString(R"(\\.\pipe\%1-%2)").arg(APPLICATION_NAME, Utility::userName().c_str());
     } else if (CommonUtility::isMac()) {
         socketPath = SOCKETAPI_TEAM_IDENTIFIER_PREFIX APPLICATION_REV_DOMAIN ".socketApi";
 #ifdef Q_OS_MAC
@@ -118,7 +118,7 @@ SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>
 #endif
     } else if (CommonUtility::isLinux()) {
         const QString runtimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
-        socketPath = runtimeDir + "/" + KDC::Theme::instance()->appName() + "/socket";
+        socketPath = runtimeDir + "/" + QString::fromStdString(KDC::Theme::instance()->appName()) + "/socket";
     } else {
         LOG_WARN(KDC::Log::instance()->getLogger(), "An unexpected system detected, this probably won't work.");
     }
@@ -760,7 +760,7 @@ void SocketApi::openPrivateLink(const QString &link) {
 
 void SocketApi::command_GET_STRINGS(const QString &argument, SocketListener *listener) {
     static std::array<std::pair<const char *, QString>, 2> strings{{
-            {"CONTEXT_MENU_TITLE", KDC::Theme::instance()->appNameGUI()},
+            {"CONTEXT_MENU_TITLE", QString::fromStdString(KDC::Theme::instance()->appName())},
             {"COPY_PRIVATE_LINK_MENU_TITLE", tr("Copy private share link")},
     }};
     listener->sendMessage(QString("GET_STRINGS%1BEGIN").arg(MSG_CDE_SEPARATOR));
