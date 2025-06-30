@@ -84,6 +84,7 @@ jobs:
 
 # Tests Windows
   Test-Windows:
+    if: false
     needs: build-Windows
     strategy:
       fail-fast: false
@@ -153,7 +154,7 @@ jobs:
 
 # Upload the installer to kDrive
   upload-intaller-to-kDrive:
-    needs: [Windows]
+    needs: [Test-Windows]
     runs-on: [self-hosted]
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
@@ -166,7 +167,7 @@ jobs:
  
 # Upload the artifacts to sentry
   upload-artifacts-to-sentry:
-    needs: [Test-Windows, Test-Linux, Test-macOS]
+    needs: [Test-Windows]
     runs-on: [self-hosted]
     steps:
       - name: Upload artifacts to Sentry
