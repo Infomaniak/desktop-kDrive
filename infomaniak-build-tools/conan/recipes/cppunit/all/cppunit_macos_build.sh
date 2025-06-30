@@ -83,7 +83,17 @@ template void CppUnit::assertEquals<long long>(const long long&, const long long
 template void CppUnit::assertEquals<double>(const double&, const double&, CppUnit::SourceLine, const std::string&);
 template void CppUnit::assertEquals<float>(const float&, const float&, CppUnit::SourceLine, const std::string&);
 template void CppUnit::assertEquals<std::string>(const std::string&, const std::string&, CppUnit::SourceLine, const std::string&);
+template void CppUnit::assertGreater<int>(const int&, const int&, CppUnit::SourceLine, const std::string&);
+template void CppUnit::assertGreater<long long>(const long long&, const long long&, CppUnit::SourceLine, const std::string&);
 
+template void CppUnit::assertLess<int>(const int&, const int&, CppUnit::SourceLine, const std::string&);
+template void CppUnit::assertLess<long long>(const long long&, const long long&, CppUnit::SourceLine, const std::string&);
+
+template void CppUnit::assertGreaterEqual<int>(const int&, const int&, CppUnit::SourceLine, const std::string&);
+template void CppUnit::assertGreaterEqual<long long>(const long long&, const long long&, CppUnit::SourceLine, const std::string&);
+
+template void CppUnit::assertEquals<unsigned long>(const unsigned long&, const unsigned long&, CppUnit::SourceLine, const std::string&);
+template void CppUnit::assertEquals<bool>(const bool&, const bool&, CppUnit::SourceLine, const std::string&);
 EOF
 echo 'libcppunit_la_SOURCES += explicit_instantiations.cpp' >> src/cppunit/Makefile.am
 
