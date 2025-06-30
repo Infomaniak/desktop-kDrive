@@ -118,14 +118,13 @@ function Get-Thumbprint {
     param (
         [bool] $upload
     )
-    $upload = false # TODO remove this line when the upload script is ready
-    $thumbprint = 
-    If ($upload) {
-        Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -match "EV" } | Select -ExpandProperty Thumbprint
-    } 
-    Else {
+    #$thumbprint = 
+    #If ($upload) {
+   #     Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -match "EV" } | Select -ExpandProperty Thumbprint
+    #} 
+    #Else {
         Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -notmatch "EV" } | Select -ExpandProperty Thumbprint
-    }
+    #}
     return $thumbprint
 }
 
@@ -133,8 +132,9 @@ function Get-Aumid {
     param (
         [bool] $upload
     )
-    $upload = false # TODO remove this line when the upload script is ready
-    $aumid = if ($upload) { $env:KDC_PHYSICAL_AUMID } else { $env:KDC_VIRTUAL_AUMID }
+    #$upload = false # TODO remove this line when the upload script is ready
+    # $aumid = if ($upload) { $env:KDC_PHYSICAL_AUMID } else { $env:KDC_VIRTUAL_AUMID }
+   $aumid = $env:KDC_VIRTUAL_AUMID 
 
     if (!$aumid) {
         Write-Host "The AUMID value could not be read from env.

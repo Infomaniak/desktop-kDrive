@@ -153,11 +153,15 @@ jobs:
 
 # Upload the installer to kDrive
   upload-intaller-to-kDrive:
-    needs: [Test-Windows, Test-Linux, Test-macOS]
+    needs: [Windows]
     runs-on: [self-hosted]
+    env:
+        KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
+        KDRIVE_ID: ${{ secrets.KDRIVE_ID }}
+        KDRIVE_DIR_ID: ${{ secrets.KDRIVE_DIR_ID }}
     steps:
-      - name: Upload installer to kDrive
-        run: echo "TODO Upload the installer to kDrive..."
+      - name: Upload to debug files and installers/appimage to kDrive
+        run: powershell ./infomaniak-build-tools/windows/upload-ci.ps1
 
  
 # Upload the artifacts to sentry
@@ -183,4 +187,3 @@ jobs:
     steps:
       - name: Update kStore
         run: echo "TODO Update kStore..."
-
