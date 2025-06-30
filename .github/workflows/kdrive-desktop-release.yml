@@ -154,7 +154,7 @@ jobs:
 
 # Upload the installer to kDrive
   upload-intaller-to-kDrive:
-    needs: [Test-Windows]
+    needs: [build-Windows]
     runs-on: [self-hosted]
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
