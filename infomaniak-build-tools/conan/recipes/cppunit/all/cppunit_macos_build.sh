@@ -4,6 +4,7 @@ set -eo pipefail
 # Variables
 minimum_macos_version="10.15"
 build_folder=""
+package_folder=""
 
 # Utility functions
 log()   { echo -e "[INFO]  $*"; }
@@ -28,6 +29,10 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --build-folder)
       build_folder="$2"
+      shift 2
+      ;;
+    --package-folder)
+      package_folder="$2"
       shift 2
       ;;
     --shared)
