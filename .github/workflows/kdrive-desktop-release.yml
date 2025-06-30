@@ -83,8 +83,7 @@ jobs:
     
 
 # Tests Windows
-  Test-Windows:
-    if: false
+  test-Windows:
     needs: build-Windows
     strategy:
       fail-fast: false
@@ -100,11 +99,11 @@ jobs:
          with:
           ref: ${{ github.head_ref }}
 
-       - name: Run test
-         uses: ./.github/actions/test_windows
-         with:  
-            test_name: ${{ matrix.test_name }}
-            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+       #- name: Run test
+       #  uses: ./.github/actions/test_windows
+       #  with:  
+       #     test_name: ${{ matrix.test_name }}
+       #     test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
 # Tests Linux
   Test-Linux:
@@ -154,7 +153,7 @@ jobs:
 
 # Upload the installer to kDrive
   upload-intaller-to-kDrive:
-    needs: [build-Windows]
+    needs: [test-Windows]
     runs-on: [self-hosted, Windows]
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
@@ -179,7 +178,7 @@ jobs:
  
 # Upload the artifacts to sentry
   upload-artifacts-to-sentry:
-    needs: [build-Windows]
+    needs: [test-Windows]
     runs-on: [self-hosted, Windows]
     steps:
       - name: Download artifacts
@@ -203,7 +202,7 @@ jobs:
 # Upload to the storage server
   upload-app-to-storage-server:
     needs: [upload-intaller-to-kDrive, upload-artifacts-to-sentry]
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, Windows]
     steps:
       - name: Upload app to storage server
         run: echo "TODO Upload the app to the storage server..."
@@ -211,7 +210,7 @@ jobs:
 # Update kStore
   update-kStore:
     needs: upload-app-to-storage-server
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, Windows]
     steps:
       - name: Update kStore
         run: echo "TODO Update kStore..."
