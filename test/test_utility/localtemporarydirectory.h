@@ -25,11 +25,11 @@ namespace KDC {
 
 class LocalTemporaryDirectory {
     public:
-        explicit LocalTemporaryDirectory(const std::string& testType = "undef");
+        explicit LocalTemporaryDirectory(const std::string &testType = "undef", const SyncPath &destinationPath = {});
         ~LocalTemporaryDirectory();
 
-        [[nodiscard]] const std::filesystem::path& path() const { return _path; }
-        [[nodiscard]] const NodeId& id() const { return _id; }
+        [[nodiscard]] const std::filesystem::path &path() const { return _path; }
+        [[nodiscard]] const NodeId &id() const { return _id; }
 
     private:
         std::filesystem::path _path;
