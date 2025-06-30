@@ -1,10 +1,12 @@
 name: Windows kDrive desktop CI
 
 on:
-  pull_request:
-    branches-ignore:
-        - 'release/**'
-    types: [synchronize, review_requested]
+  workflow_dispatch: 
+  # Legacy CI
+  #pull_request:
+  #  branches-ignore:
+  #    - 'release/**'
+  #  types: [ synchronize, review_requested ]	
 
 concurrency:
   group: windows-${{ github.head_ref }}
@@ -16,7 +18,6 @@ env:
   KDRIVE_TEST_CI_USER_ID: ${{ vars.KDRIVE_TEST_CI_USER_ID }}
   KDRIVE_TEST_CI_DRIVE_ID: ${{ vars.KDRIVE_TEST_CI_DRIVE_ID }}
   KDRIVE_TEST_CI_REMOTE_DIR_ID: ${{ vars.KDRIVE_TEST_CI_REMOTE_DIR_ID }}
-  KDRIVE_TEST_CI_LOCAL_PATH: ${{ vars.KDRIVE_TEST_CI_LOCAL_PATH }}
   KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
   KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
@@ -25,6 +26,8 @@ env:
 jobs:
   build-kDrive:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    env:
+      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
     steps:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%

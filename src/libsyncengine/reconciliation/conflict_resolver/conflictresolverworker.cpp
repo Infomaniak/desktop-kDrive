@@ -232,7 +232,7 @@ ExitCode ConflictResolverWorker::generateEditDeleteConflictOperation(const Confl
         deleteOp->setTargetSide(deleteNode->side()); // Target side does not matter when we remove only in DB
         deleteOp->setConflict(conflict);
 
-        LOGW_SYNCPAL_INFO(_logger, getLogString(deleteOp));
+        LOGW_SYNCPAL_INFO(_logger, getLogString(deleteOp, true));
 
         (void) _syncPal->syncOps()->pushOp(deleteOp);
     }
@@ -411,12 +411,19 @@ ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, 
     return ExitCode::Ok;
 }
 
-std::wstring ConflictResolverWorker::getLogString(SyncOpPtr op) {
+std::wstring ConflictResolverWorker::getLogString(SyncOpPtr op, bool omit /*= false*/) {
     if (!op->correspondingNode()) return {};
     std::wstringstream ss;
-    ss << L"Operation " << op->type() << L" to be propagated on " << op->targetSide() << L" replica for item "
+    if (omit) {
+        ss << L"Operation " << op->type() << L" to be propagated on DB only for item "
        << Utility::formatSyncName(op->correspondingNode()->name()) << L" (" << Utility::s2ws(*op->correspondingNode()->id())
        << L")";
+    }
+    else {
+        ss << L"Operation " << op->type() << L" to be propagated on " << op->targetSide() << L" replica for item "
+       << Utility::formatSyncName(op->correspondingNode()->name()) << L" (" << Utility::s2ws(*op->correspondingNode()->id())
+       << L")";
+    }
     return ss.str();
 }
 

@@ -290,8 +290,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
          */
         const LiveSnapshot &liveSnapshot(ReplicaSide side) const;
 
-        uint64_t syncCount() const;
-
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
 

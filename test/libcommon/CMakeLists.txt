@@ -22,6 +22,7 @@ set(testcommon_SRCS
         utility/testutility.cpp utility/testutility.h
         utility/testtypes.cpp utility/testtypes.h
         utility/testurlhelper.h utility/testurlhelper.cpp
+        utility/testjsonparserutility.h utility/testjsonparserutility.cpp
         log/sentry/testsentryhandler.h log/sentry/testsentryhandler.cpp
 )
 
@@ -48,3 +49,4 @@ target_link_libraries(${testcommon_NAME}
         ${libcommonserver_NAME}
         cppunit::cppunit
 )
+

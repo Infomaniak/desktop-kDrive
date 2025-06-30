@@ -1614,10 +1614,11 @@ ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::share
             SyncTime newModificationTime = 0;
             int64_t newSize = -1;
             if (syncOp->targetSide() == ReplicaSide::Local) {
-                auto castJob(std::dynamic_pointer_cast<DownloadJob>(job));
-                nodeId = castJob->localNodeId();
-                newCreationTime = castJob->creationTime();
-                newModificationTime = castJob->modificationTime();
+                auto downloadJob(std::dynamic_pointer_cast<DownloadJob>(job));
+                nodeId = downloadJob->localNodeId();
+                newCreationTime = downloadJob->creationTime();
+                newModificationTime = downloadJob->modificationTime();
+                newSize = downloadJob->size();
             } else {
                 bool jobOk = false;
                 auto uploadJob(std::dynamic_pointer_cast<UploadJob>(job));

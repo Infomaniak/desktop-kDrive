@@ -48,3 +48,4 @@ if(APPLE)
     # Default Lite Sync app exclude list
     install(FILES ${CMAKE_SOURCE_DIR}/litesync-exclude.lst DESTINATION ${BIN_OUTPUT_DIRECTORY})
 endif()
+

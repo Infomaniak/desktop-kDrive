@@ -732,7 +732,7 @@ QString ParametersDialog::getCancelText(const CancelType cancelType, const QStri
                     "You can disable this type of notification from the Preferences");
         }
         case CancelType::Hardlink: {
-            return tr("This item has been excluded from sync because it is an hard link");
+            return tr("This item has been excluded from sync because it is a hard link.");
         }
         case CancelType::FileRescued: {
             return tr(

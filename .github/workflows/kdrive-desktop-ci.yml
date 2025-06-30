@@ -1,0 +1,141 @@
+name: kDrive desktop CI
+
+on:
+  workflow_dispatch:  
+  pull_request:
+    branches-ignore:
+        - 'release/**'
+    types: [synchronize, review_requested, opened]
+
+concurrency:
+  group: kDrive-desktop-ci-${{ github.head_ref }}
+  cancel-in-progress: true
+
+env:
+  KDRIVE_TEST_CI_API_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
+  KDRIVE_TEST_CI_ACCOUNT_ID: ${{ vars.KDRIVE_TEST_CI_ACCOUNT_ID }}
+  KDRIVE_TEST_CI_USER_ID: ${{ vars.KDRIVE_TEST_CI_USER_ID }}
+  KDRIVE_TEST_CI_DRIVE_ID: ${{ vars.KDRIVE_TEST_CI_DRIVE_ID }}
+  KDRIVE_TEST_CI_REMOTE_DIR_ID: ${{ vars.KDRIVE_TEST_CI_REMOTE_DIR_ID }}
+  KDRIVE_TEST_CI_LOCAL_PATH: ${{ vars.KDRIVE_TEST_CI_LOCAL_PATH }}
+  KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
+  KDRIVE_TEST_CI_RUNNING_ON_CI: true
+  QT_QPA_PLATFORM: offscreen
+
+jobs:
+
+# Build apps
+  build-Windows:
+    runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build Windows
+        uses: ./.github/actions/build_windows
+        with:  
+          virtual_cert_id: ${{ secrets.WINDOWS_VIRTUAL_CERT }}
+          virtual_cert_pass: ${{ secrets.WINDOWS_VIRTUAL_CERT_PASSWORD }}
+    
+
+  build-Linux:
+    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build Linux
+        uses: ./.github/actions/build_linux
+
+  build-MacOS:
+    runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build macOS
+        uses: ./.github/actions/build_macos
+        with:  
+          keychain_password: ${{ secrets.KEYCHAIN_PASSWORD }}
+    
+
+# Tests Windows
+  Test-Windows:
+    needs: build-Windows
+    strategy:
+      fail-fast: false
+      matrix:
+        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
+    runs-on: [ self-hosted, Windows ]
+    env:
+      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
+      KDRIVE_SENTRY_ENVIRONMENT: "windows_ci_runner"
+    steps:
+       - name: Checkout the PR
+         uses: actions/checkout@v4.1.1
+         with:
+          ref: ${{ github.head_ref }}
+
+       - name: Run test
+         uses: ./.github/actions/test_windows
+         with:  
+            test_name: ${{ matrix.test_name }}
+            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+
+# Tests Linux
+  Test-Linux:
+    needs: build-Linux
+    strategy:
+      fail-fast: false
+      matrix:
+        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
+    runs-on: [ self-hosted,  Linux, X64  ]
+    env:
+      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
+      KDRIVE_SENTRY_ENVIRONMENT: "linux_ci_runner"
+    steps:
+       - name: Checkout the PR
+         uses: actions/checkout@v4.1.1
+         with:
+          ref: ${{ github.head_ref }}
+
+       - name: Run test
+         uses: ./.github/actions/test_linux
+         with:  
+            test_name: ${{ matrix.test_name }}
+            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+
+# Tests macOS
+  Test-macOS:
+    needs: build-MacOS
+    strategy:
+      fail-fast: false
+      matrix:
+        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
+    runs-on: [ self-hosted, macOS ]
+    env:
+      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
+      KDRIVE_SENTRY_ENVIRONMENT: "macos_ci_runner"
+    steps:
+       - name: Checkout the PR
+         uses: actions/checkout@v4.1.1
+         with:
+          ref: ${{ github.head_ref }}
+
+       - name: Run test
+         uses: ./.github/actions/test_macos
+         with:  
+            test_name: ${{ matrix.test_name }}
+            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+
+  Unit-Tests:
+    runs-on: [self-hosted, Windows]
+    needs: [Test-Windows, Test-Linux, Test-macOS]
+    steps:
+     - name: Check if all tests passed
+       shell: powershell
+       run: exit 0
+    
