@@ -380,7 +380,58 @@ void TestParmsDb::testUpdateExclusionTemplates() {
     CPPUNIT_ASSERT(dbDefaults == fileDefaults);
 }
 
-void TestParmsDb::testUpgrade() {
+// We simulate the absence of mandatory columns in a previous version of the database
+// by deleting them.
+bool TestParmsDb::deleteColumns() {
+    int errId;
+    std::string error;
+
+    auto db = ParmsDb::instance();
+
+    // Sync table
+
+    if (!db->createAndPrepareRequest("delete_sync_local_node_id", "ALTER TABLE sync DROP localNodeId;")) return false;
+    if (!db->queryExec("delete_sync_local_node_id", errId, error)) {
+        db->queryFree("delete_sync_local_node_id");
+        return db->sqlFail("delete_sync_local_node_id", error);
+    }
+    db->queryFree("delete_sync_local_node_id");
+
+
+    // Parameters table
+
+    if (!db->createAndPrepareRequest("delete_parameters_max_allowed_cpu", "ALTER TABLE parameters DROP maxAllowedCpu;"))
+        return false;
+    if (!db->queryExec("delete_parameters_max_allowed_cpu", errId, error)) {
+        db->queryFree("delete_parameters_max_allowed_cpu");
+        return db->sqlFail("delete_parameters_max_allowed_cpu", error);
+    }
+    db->queryFree("delete_parameters_upload_session_parallel_jobs");
+
+    if (!db->createAndPrepareRequest("delete_parameters_upload_session_parallel_jobs",
+                                     "ALTER TABLE parameters DROP uploadSessionParallelJobs;"))
+        return false;
+    if (!db->queryExec("delete_parameters_upload_session_parallel_jobs", errId, error)) {
+        db->queryFree("delete_parameters_upload_session_parallel_jobs");
+        return db->sqlFail("delete_parameters_upload_session_parallel_jobs", error);
+    }
+    db->queryFree("delete_parameters_upload_session_parallel_jobs");
+
+
+    if (!db->createAndPrepareRequest("delete_parameters_job_pool_capacity_factor",
+                                     "ALTER TABLE parameters DROP jobPoolCapacityFactor;"))
+        return false;
+    if (!db->queryExec("delete_parameters_job_pool_capacity_factor", errId, error)) {
+        db->queryFree("delete_parameters_job_pool_capacity_factor");
+        return db->sqlFail("delete_parameters_job_pool_capacity_factor", error);
+    }
+    db->queryFree("delete_parameters_job_pool_capacity_factor");
+
+
+    return true;
+}
+
+void TestParmsDb::testUpgradeOfExclusionTemplates() {
     const SyncName nfcEncodedName = testhelpers::makeNfcSyncName();
     ExclusionTemplate exclusionTemplate1(SyncName2Str(nfcEncodedName + Str("/A/") + nfcEncodedName)); // user template
     bool constraintError = false;
@@ -388,6 +439,8 @@ void TestParmsDb::testUpgrade() {
 
     ExclusionTemplate exclusionTemplate2("o"); // user template
     CPPUNIT_ASSERT(ParmsDb::instance()->insertExclusionTemplate(exclusionTemplate2, constraintError));
+
+    CPPUNIT_ASSERT(deleteColumns()); // Missing columns should be automatically restored before any SELECT request.
 
     const std::filesystem::path parmsDbPath = ParmsDb::instance()->dbPath();
     ParmsDb::reset();
@@ -573,6 +626,12 @@ void TestParmsDb::testUpgradeOfShortPathNames() {
         sync.setDbId(i + 1);
         ParmsDb::instance()->insertSync(sync);
     }
+
+    // We simulate the absence of mandatory columns in previous version of the database
+    // by deleting them.
+    // Missing columns should be automatically restored before any SELECT request.
+    CPPUNIT_ASSERT(deleteColumns());
+
     const std::filesystem::path parmsDbPath = ParmsDb::instance()->dbPath();
     ParmsDb::reset();
     (void) ParmsDb::instance(parmsDbPath, "3.7.2", true, true);
