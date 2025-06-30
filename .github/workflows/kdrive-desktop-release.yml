@@ -55,35 +55,7 @@ jobs:
         with:  
           virtual_cert_id: ${{ secrets.WINDOWS_VIRTUAL_CERT }}
           virtual_cert_pass: ${{ secrets.WINDOWS_VIRTUAL_CERT_PASSWORD }}
-          release_build: true
-    
-
-  build-Linux:
-    needs: check-release-notes
-    if: false
-    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
-    steps:
-      - name: Checkout the PR
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-      - name: Build Linux
-        uses: ./.github/actions/build_linux
-
-  build-MacOS:
-    needs: check-release-notes
-    if: false
-    runs-on: [ self-hosted, macOS, desktop-kdrive ]
-    steps:
-      - name: Checkout the PR
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-      - name: Build macOS
-        uses: ./.github/actions/build_macos
-        with:  
-          keychain_password: ${{ secrets.KEYCHAIN_PASSWORD }}
-    
+          release_build: true    
 
 # Tests Windows
   test-Windows:
@@ -102,54 +74,8 @@ jobs:
          with:
           ref: ${{ github.head_ref }}
 
-       #- name: Run test
-       #  uses: ./.github/actions/test_windows
-       #  with:  
-       #     test_name: ${{ matrix.test_name }}
-       #     test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
-
-# Tests Linux
-  Test-Linux:
-    needs: build-Linux
-    strategy:
-      fail-fast: false
-      matrix:
-        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
-    runs-on: [ self-hosted,  Linux, X64  ]
-    env:
-      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
-      KDRIVE_SENTRY_ENVIRONMENT: "linux_ci_runner"
-    steps:
-       - name: Checkout the PR
-         uses: actions/checkout@v4.1.1
-         with:
-          ref: ${{ github.head_ref }}
-
        - name: Run test
-         uses: ./.github/actions/test_linux
-         with:  
-            test_name: ${{ matrix.test_name }}
-            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
-
-# Tests macOS
-  Test-macOS:
-    needs: build-MacOS
-    strategy:
-      fail-fast: false
-      matrix:
-        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
-    runs-on: [ self-hosted, macOS ]
-    env:
-      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
-      KDRIVE_SENTRY_ENVIRONMENT: "macos_ci_runner"
-    steps:
-       - name: Checkout the PR
-         uses: actions/checkout@v4.1.1
-         with:
-          ref: ${{ github.head_ref }}
-
-       - name: Run test
-         uses: ./.github/actions/test_macos
+         uses: ./.github/actions/test_windows
          with:  
             test_name: ${{ matrix.test_name }}
             test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
@@ -176,15 +102,16 @@ jobs:
           merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
-        run: powershell ./infomaniak-build-tools/upload-ci.ps1 --version "${{ needs.build-Windows.outputs.kDrive-version }}"
+        run: powershell ./infomaniak-build-tools/upload-ci.ps1 --version ${{ needs.build-Windows.outputs.kDrive_version }}
 
       - name : Upload sentry artifacts
         run: |
           Invoke-WebRequest -Uri https://github.com/getsentry/sentry-cli/releases/download/2.46.0/sentry-cli-Windows-x86_64.exe -OutFile sentry-cli.exe
+          .\sentry-cli.exe login --auth-token=${{ secrets.SENTRY_AUTH_TOKEN }}
           .\sentry-cli.exe debug-files upload --project kdrive-server .\build-windows\kDrive.pdb
           .\sentry-cli.exe debug-files upload --project kdrive-client .\build-windows\kDrive_client.pdb
-          .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\kDrive_client.src.zip
-          .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\kDrive.src.zip
+          .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-windows\kDrive.src.zip
+          .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\build-windows\kDrive_client.src.zip
         shell: powershell
 
 # Upload to the storage server
