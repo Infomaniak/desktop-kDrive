@@ -48,6 +48,7 @@ jobs:
         with:
           submodules: recursive
       - name: Build Windows
+        id: build-windows-step
         uses: ./.github/actions/build_windows
         with:  
           virtual_cert_id: ${{ secrets.WINDOWS_VIRTUAL_CERT }}
@@ -173,7 +174,7 @@ jobs:
           merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
-        run: powershell ./infomaniak-build-tools/upload-ci.ps1
+        run: powershell ./infomaniak-build-tools/upload-ci.ps1 -version "${{ steps.build-windows-step.outputs.kDrive-version }}"
 
  
 # Upload the artifacts to sentry

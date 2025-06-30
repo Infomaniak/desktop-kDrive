@@ -15,13 +15,16 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #>
+param (
+    [Parameter(Mandatory = $true)]
+    [string]$version
+)
 
 if (-not $env:KDRIVE_TOKEN) {
     Write-Host "No token found to upload to kDrive." -f Red 
     exit 1
 }
 
-$version = (Select-String -Path .\build-windows\build\version.h KDRIVE_VERSION_FULL | foreach-object { $data = $_ -split " "; echo $data[3]})
 $app = "kDrive-$version"
 Set-Location build-windows
 
@@ -29,7 +32,6 @@ $headers = @{
     Authorization="Bearer $env:KDRIVE_TOKEN"
 }
 
-$mainVersion = $version.Substring(0, 3)
 $minorVersion = $version.Substring(0, 5)
 $date = $version.Substring(6)
 
@@ -39,7 +41,6 @@ $win_files = @(
     "kDrive.src.zip",
     "kDrive_client.pdb",
     "kDrive_client.src.zip",
-    "kDrivecommonserver_vfs_win.pdb"
 )
 foreach ($file in $win_files)
 {

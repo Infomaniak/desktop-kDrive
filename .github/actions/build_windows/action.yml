@@ -16,7 +16,11 @@ inputs:
     description: 'Webhook URL for kChat notifications (used to ask for approval of the virtual certificate)'
     required: false # Required only if 'release_build' is set to true
     default: ''
-
+    
+outputs:
+  kDrive_version:
+    description: 'The version of the kDrive app built'
+    value: ${{ steps.set_version.outputs.kDrive-version }}
 
 runs:
     using: "composite"
@@ -54,6 +58,14 @@ runs:
             powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
             )
         shell: cmd
+
+      - name: Set version output
+        id: set_version
+        run: |
+            $version = (Select-String -Path .\build-windows\build\version.h KDRIVE_VERSION_FULL | foreach-object { $data = $_ -split " "; echo $data[3]})
+            "kDrive-version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "kDrive version: $version built successfully :rocket:" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+        shell: powershell
 
       - name: Fetch dependencies
         run: |
