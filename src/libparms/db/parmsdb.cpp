@@ -1061,7 +1061,7 @@ bool ParmsDb::prepare() {
     return true;
 }
 
-bool ParmsDb::upgradeColumns() {
+bool ParmsDb::upgradeTables() {
     const std::string tableName = "parameters";
     std::string columnName = "maxAllowedCpu";
     if (!addIntegerColumnIfMissing(tableName, columnName)) {
@@ -1124,7 +1124,7 @@ bool ParmsDb::upgradeColumns() {
 
 bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersion) {
     LOG_INFO(_logger, "Apply generic upgrade fixes to " << dbType() << " DB version " << fromVersion);
-    if (!upgradeColumns()) {
+    if (!upgradeTables()) {
         LOG_WARN(_logger, "Failed to insert missing columns.");
         return false;
     }
