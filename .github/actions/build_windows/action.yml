@@ -196,6 +196,15 @@ runs:
           compression-level: 0
         if: steps.build.outcome == 'success'
 
+      - name: Upload app installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: kDrive-windows-installer
+          path: ${{ github.workspace }}/build-windows/sentry-client-artifacts
+          retention-days: 1
+          compression-level: 0
+        if: steps.build.outcome == 'success'
+
       - name: Clean-up generated code
         run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all
         shell: powershell
