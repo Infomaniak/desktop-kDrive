@@ -190,7 +190,7 @@ runs:
       - name: Upload sentry client artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: sentry-server-artifacts
+          name: sentry-client-artifacts
           path: ${{ github.workspace }}/build-windows/sentry-client-artifacts
           retention-days: 1
           compression-level: 0
