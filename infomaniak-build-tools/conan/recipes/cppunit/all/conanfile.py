@@ -2,7 +2,7 @@ import os
 
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
-from conan.tools.apple import is_apple_os, fix_apple_shared_install_name
+from conan.tools.apple import fix_apple_shared_install_name
 from conan.tools.build import stdcpp_library
 from conan.tools.files import copy
 
@@ -24,7 +24,7 @@ class CPPUnitMacOSConan(ConanFile):
 
     def validate(self):
         if not self.settings.os == "Macos":
-            raise ConanInvalidConfiguration("cppunit is only supported on macOS.")
+            raise ConanInvalidConfiguration("This custom cppunit recipe is only supported on macOS.")
 
     def build(self):
         script = os.path.join(self.build_folder, self._script_name)
