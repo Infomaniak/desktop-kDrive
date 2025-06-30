@@ -2,12 +2,21 @@ name: Build Windows
 description: 'Build windows app'
 
 inputs:
-  virtual_cert_id:
-    description: 'Id of the virtual certificate'
-    required: true
+  virtual_cert:
+    description: 'The virtual certificate, mandatory for non-release builds'
+    required: false
   virtual_cert_pass:
-    description: 'Password of the virtual certificate'
-    required: true
+    description: 'Password of the virtual certificate, mandatory for non-release builds'
+    required: false
+  physical_cert:
+    description: 'The physical certificate, mandatory for release builds'
+    required: false
+  physical_cert_csp:
+    description: 'CSP of the physical certificate, mandatory for release builds'
+    required: false
+  physical_cert_token:
+    description: 'Token of the physical certificate ([reader{{password}}]=name), mandatory for release builds'
+    required: false
   release_build:
     description: 'If true, run the release build script'
     required: false
@@ -34,16 +43,21 @@ runs:
         run : nuget restore extensions/windows/cfapi/kDriveExt.sln
         shell: powershell
 
-      - name: Import Windows virtual certificate
-        env:
-          WINDOWS_VIRTUAL_CERT:  ${{ inputs.virtual_cert_id }}
-          WINDOWS_VIRTUAL_CERT_PASSWORD: ${{ inputs.virtual_cert_pass }}
+      - name: Import Windows certificate
         run: |
-          New-Item -ItemType directory -Path certificate
-          Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_VIRTUAL_CERT
-          certutil -decode certificate/tempCert.txt certificate/certificate.pfx
-          Remove-Item -path certificate -include tempCert.txt
-          Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $env:WINDOWS_VIRTUAL_CERT_PASSWORD -Force -AsPlainText)
+          if "${{ inputs.release_build }}" == "true" (
+            New-Item -ItemType directory -Path certificate
+            Set-Content -Path certificate/tempCert.txt -Value ${{ inputs.physical_cert }}
+            certutil -decode certificate/tempCert.txt certificate/certificate.cer
+            Remove-Item -path certificate -include tempCert.txt
+            Import-Certificate -Filepath certificate/certificate.cer -CertStoreLocation Cert:\CurrentUser\My
+            ) else (
+            New-Item -ItemType directory -Path certificate
+            Set-Content -Path certificate/tempCert.txt -Value ${{ inputs.virtual_cert }}
+            certutil -decode certificate/tempCert.txt certificate/certificate.pfx
+            Remove-Item -path certificate -include tempCert.txt
+            Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String ${{ inputs.virtual_cert_pass }} -Force -AsPlainText)
+            )
         shell: powershell
 
       - name: Build kDrive desktop
