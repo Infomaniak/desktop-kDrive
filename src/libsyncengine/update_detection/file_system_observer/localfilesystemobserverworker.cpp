@@ -731,7 +731,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                                                         << Utility::formatSyncPath(absolutePath.filename()) << L" inode:"
                                                         << Utility::s2ws(nodeId) << L" parent inode:"
                                                         << Utility::s2ws(parentNodeId) << L" createdAt:" << fileStat.creationTime
-                                                        << L" modtime:" << fileStat.modificationTime << L" isDir:"
+                                                        << L" modificationTime:" << fileStat.modificationTime << L" isDir:"
                                                         << (itemType.nodeType == NodeType::Directory) << L" size:"
                                                         << fileStat.size << L" isLink:" << isLink);
                 }
