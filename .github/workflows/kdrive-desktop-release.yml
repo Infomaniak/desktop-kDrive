@@ -53,8 +53,9 @@ jobs:
         id: build-windows-step
         uses: ./.github/actions/build_windows
         with:  
-          virtual_cert_id: ${{ secrets.WINDOWS_VIRTUAL_CERT }}
-          virtual_cert_pass: ${{ secrets.WINDOWS_VIRTUAL_CERT_PASSWORD }}
+          physical_cert: ${{ secrets.WINDOWS_PHYSICAL_CERT }}
+          physical_cert_csp: ${{ secrets.WINDOWS_VIRTUAL_CERT_CSP }}
+          physical_cert_token: ${{ secrets.WINDOWS_VIRTUAL_CERT_TOKEN }}
           release_build: true    
 
 # Tests Windows

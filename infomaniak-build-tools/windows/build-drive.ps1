@@ -118,13 +118,13 @@ function Get-Thumbprint {
     param (
         [bool] $upload
     )
-    #$thumbprint = 
-    #If ($upload) {
-   #     Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -match "EV" } | Select -ExpandProperty Thumbprint
-    #} 
-    #Else {
+    $thumbprint = 
+    If ($upload) {
+         Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -match "EV" } | Select -ExpandProperty Thumbprint
+    } 
+    Else {
         Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -notmatch "EV" } | Select -ExpandProperty Thumbprint
-    #}
+    }
     return $thumbprint
 }
 
@@ -132,9 +132,7 @@ function Get-Aumid {
     param (
         [bool] $upload
     )
-    #$upload = false # TODO remove this line when the upload script is ready
-    # $aumid = if ($upload) { $env:KDC_PHYSICAL_AUMID } else { $env:KDC_VIRTUAL_AUMID }
-   $aumid = $env:KDC_VIRTUAL_AUMID 
+   $aumid = if ($upload) { $env:KDC_PHYSICAL_AUMID } else { $env:KDC_VIRTUAL_AUMID }
 
     if (!$aumid) {
         Write-Host "The AUMID value could not be read from env.
@@ -441,9 +439,9 @@ function Prepare-Archive {
             $thumbprint = Get-Thumbprint $upload
         }
 
-        #& signtool sign /sha1 $thumbprint /fd SHA1 /t http://timestamp.digicert.com /v $archivePath/$filename
+        & signtool sign /sha1 $thumbprint /t http://timestamp.digicert.com  /fd SHA1  /v $archivePath/$filename
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-        #& signtool sign /sha1 $thumbprint /fd sha256 /tr http://timestamp.digicert.com?td=sha256 /td sha256 /as /v $archivePath/$filename
+        & signtool sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256  /fd sha256 /td sha256 /as /v $archivePath/$filename
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     }
 
@@ -488,8 +486,8 @@ function Create-Archive {
     $installerPath = Get-Installer-Path $buildPath $contentPath
 
     if (Test-Path -Path $installerPath) {
-        #& signtool sign /sha1 $thumbprint /fd SHA1 /t http://timestamp.digicert.com /v $installerPath
-        #& signtool sign /sha1 $thumbprint /fd sha256 /tr http://timestamp.digicert.com?td=sha256 /td sha256 /as /v $installerPath
+        & signtool sign /sha1 $thumbprint /fd SHA1 /t http://timestamp.digicert.com /v $installerPath
+        & signtool sign /sha1 $thumbprint /fd sha256 /tr http://timestamp.digicert.com?td=sha256 /td sha256 /as /v $installerPath
         Write-Host ("$installerPath signed successfully.") -f Green
     }
     else {
