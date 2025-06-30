@@ -45,11 +45,11 @@ runs:
       - name: Build kDrive desktop
         id: build
         env :
-          BUILD_ARGS: ${{ inputs.release_build == 'true' && '-ci -ext -clean remake' || '-ci' }}
+          BUILD_ARGS: ${{ inputs.release_build == 'true' && 'clean' || '-ci' }}
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
           if "${{ inputs.release_build }}" == "true" (
-            powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ext -clean remake -ci
+            powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ext -clean remake -ci #TODO: add -upload to use the physical certificate
             ) else (
             powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
             )
@@ -164,17 +164,17 @@ runs:
         run: |
           .\sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-windows/build/bin/kDrive.pdb
           mkdir ${{ github.workspace }}/build-windows/sentry-server-artifacts
-          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive.src.zip -Destination ${{ github.workspace }}/build-windows/sentry-server-artifacts
-          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive.pdb -Destination ${{ github.workspace }}/build-windows/sentry-server-artifacts
+          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive.src.zip -Destination ${{ github.workspace }}/build-windows/sentry-server-artifacts/kDrive.src.zip
+          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive.pdb -Destination ${{ github.workspace }}/build-windows/sentry-server-artifacts/kDrive.pdb
         shell: powershell
         if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
 
       - name : Create sentry client artifacts
         run: |
-          .\sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-windows/build/bin/kDriveClient.pdb
+          .\sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-windows/build/bin/kDrive_client.pdb
           mkdir ${{ github.workspace }}/build-windows/sentry-client-artifacts
-          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive-client.src.zip -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts
-          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive-client.pdb -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts
+          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive_client.src.zip -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts/kDrive_client.src.zip
+          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive_client.pdb -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts/kDrive_client.pdb
         shell: powershell
         if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
 
