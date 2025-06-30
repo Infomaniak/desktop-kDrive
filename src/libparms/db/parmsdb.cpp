@@ -1117,14 +1117,17 @@ bool ParmsDb::upgradeColumns() {
         return false;
     }
 
-    LOG_INFO(_logger, "Columns upgrade in << dbType()  << successfully completed.");
+    LOG_INFO(_logger, "Columns upgrade in " << dbType() << " successfully completed.");
 
     return true;
 }
 
 bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersion) {
     LOG_INFO(_logger, "Apply generic upgrade fixes to " << dbType() << " DB version " << fromVersion);
-    upgradeColumns();
+    if (!upgradeColumns()) {
+        LOG_WARN(_logger, "Failed to insert missing columns.");
+        return false;
+    }
 
     if (CommonUtility::isVersionLower(fromVersion, toVersion)) {
         LOG_INFO(_logger, "Upgrade " << dbType() << " DB from " << fromVersion << " to " << toVersion);
@@ -3107,7 +3110,7 @@ bool ParmsDb::selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync
 
 #ifdef _WIN32
 bool ParmsDb::replaceShortDbPathsWithLongPaths() {
-    LOG_INFO(_logger, "Replacing short DB path names wiht long ones in sync table.")
+    LOG_INFO(_logger, "Replacing short DB path names with long ones in sync table.")
 
     if (!createAndPrepareRequest(SELECT_ALL_SYNCS_REQUEST_ID, SELECT_ALL_SYNCS_REQUEST)) return false;
     std::vector<Sync> syncList;
