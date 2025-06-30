@@ -35,7 +35,6 @@ set(server_SRCS
 )
 
 if(APPLE)
-    list(APPEND server_SRCS ${server_srcs_path}/../common/utility_mac.cpp)
     list(APPEND server_SRCS ${server_srcs_path}/socketapisocket_mac.mm)
     set_property(SOURCE ${server_srcs_path}/socketapisocket_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
