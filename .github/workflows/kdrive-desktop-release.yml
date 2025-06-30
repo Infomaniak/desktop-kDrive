@@ -161,7 +161,19 @@ jobs:
         KDRIVE_ID: ${{ secrets.KDRIVE_ID }}
         KDRIVE_DIR_ID: ${{ secrets.KDRIVE_DIR_ID }}
     steps:
-      - name: Upload to debug files and installers/appimage to kDrive
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+      
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: build-windows
+          name: win-release-artifacts-*
+          merge-multiple: true
+
+      - name: Upload debug files and installers/appimage to kDrive
         run: powershell ./infomaniak-build-tools/windows/upload-ci.ps1
 
  

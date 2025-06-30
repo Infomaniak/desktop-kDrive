@@ -181,7 +181,7 @@ runs:
       - name: Upload sentry server artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: sentry-server-artifacts
+          name: win-release-artifacts-server-debug
           path: ${{ github.workspace }}/build-windows/sentry-server-artifacts
           retention-days: 1
           compression-level: 0
@@ -190,7 +190,7 @@ runs:
       - name: Upload sentry client artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: sentry-client-artifacts
+          name: win-release-artifacts-client-debug
           path: ${{ github.workspace }}/build-windows/sentry-client-artifacts
           retention-days: 1
           compression-level: 0
@@ -199,7 +199,7 @@ runs:
       - name: Upload app installer
         uses: actions/upload-artifact@v4
         with:
-          name: kDrive-windows-installer
+          name: win-release-artifacts-installer
           path: ${{ github.workspace }}\build-windows\kDrive-* # kDrive-x.x.x.yyyymmdd.exe
           retention-days: 1
           compression-level: 0
