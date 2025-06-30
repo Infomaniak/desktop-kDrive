@@ -155,7 +155,7 @@ jobs:
             test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
 # Upload the installer to kDrive
-  upload-intaller-to-kDrive:
+  upload-to-kDrive-and-sentry:
     needs: [test-Windows]
     runs-on: [self-hosted, Windows]
     env:
@@ -183,31 +183,6 @@ jobs:
           Invoke-WebRequest -Uri https://github.com/getsentry/sentry-cli/releases/download/2.46.0/sentry-cli-Windows-x86_64.exe -OutFile sentry-cli.exe
           .\sentry-cli.exe debug-files upload --project kdrive-server .\build-windows\kDrive.pdb
           .\sentry-cli.exe debug-files upload --project kdrive-client .\build-windows\kDrive_client.pdb
-          .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\kDrive_client.src.zip
-          .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\kDrive.src.zip
-        shell: powershell
-
- 
-# Upload the artifacts to sentry
-  upload-artifacts-to-sentry:
-    needs: [test-Windows]
-    runs-on: [self-hosted, Windows]
-    env:
-       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: build-windows
-          pattern: win-release-artifacts-*
-          merge-multiple: true
-
-      - name : Upload sentry artifacts
-        run: |
-          Invoke-WebRequest -Uri https://github.com/getsentry/sentry-cli/releases/download/2.46.0/sentry-cli-Windows-x86_64.exe -OutFile sentry-cli.exe
-          .\sentry-cli.exe debug-files upload --project kdrive-server .\kDrive.pdb
-          .\sentry-cli.exe debug-files upload --project kdrive-client .\kDrive_client.pdb
-          .\sentry-cli.exe debug-files upload --project kdrive-server.\kDrivecommonserver_vfs_win.pdb
           .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\kDrive_client.src.zip
           .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\kDrive.src.zip
         shell: powershell
