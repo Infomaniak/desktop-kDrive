@@ -246,7 +246,7 @@ The project requires additional CMake variables for a correct build. To inject t
    ```
 ### 5. Configure the Release Profile
 
-To **build a release version** using the script `./infomaniak-build-tools/linux/build-amd64.sh`, you must create a profile named `infomaniak_release`.
+To **build a release version** using the script `./infomaniak-build-tools/linux/build-release-amd64.sh`, you must create a profile named `infomaniak_release`.
 This profile must not contain a `tools.cmake.cmaketoolchain:user_toolchain` entry and must have the `build_type` set to `Release` or `RelWithDebInfo`.
 
 > :information_source: This step is only required for the `build-release-amd64.sh` script, as the correct profile is already configured in the containers used by the `build-release-<arch>-via-podman.sh` scripts.
