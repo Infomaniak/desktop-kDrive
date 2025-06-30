@@ -23,8 +23,8 @@ class CPPUnitMacOSConan(ConanFile):
     exports_sources = _script_name
 
     def validate(self):
-        if not is_apple_os(self):
-            raise ConanInvalidConfiguration("cppunit-macos is only supported on Apple platforms (macOS, iOS, etc.)")
+        if not self.settings.os == "Macos":
+            raise ConanInvalidConfiguration("cppunit is only supported on macOS.")
 
     def build(self):
         script = os.path.join(self.build_folder, self._script_name)
