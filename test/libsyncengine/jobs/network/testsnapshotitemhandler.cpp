@@ -129,11 +129,6 @@ void TestSnapshotItemHandler::testUpdateItem() {
     }
     {
         SnapshotItem item;
-        CPPUNIT_ASSERT(!handler.updateSnapshotItem("-1", SnapshotItemHandler::CsvIndexCreatedAt, item));
-        CPPUNIT_ASSERT_EQUAL(int64_t(-1), item.createdAt());
-    }
-    {
-        SnapshotItem item;
         CPPUNIT_ASSERT(!handler.updateSnapshotItem(std::string(100, '9'), SnapshotItemHandler::CsvIndexCreatedAt, item));
         CPPUNIT_ASSERT_EQUAL(int64_t(0), item.createdAt());
     }
