@@ -155,7 +155,7 @@ jobs:
 # Upload the installer to kDrive
   upload-intaller-to-kDrive:
     needs: [build-Windows]
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, Windows]
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
         KDRIVE_ID: ${{ secrets.KDRIVE_ID }}
@@ -174,16 +174,31 @@ jobs:
           merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
-        run: powershell ./infomaniak-build-tools/windows/upload-ci.ps1
+        run: powershell ./infomaniak-build-tools/upload-ci.ps1
 
  
 # Upload the artifacts to sentry
   upload-artifacts-to-sentry:
-    needs: [Test-Windows]
-    runs-on: [self-hosted]
+    needs: [build-Windows]
+    runs-on: [self-hosted, Windows]
     steps:
-      - name: Upload artifacts to Sentry
-        run: echo "TODO Upload the artifacts to sentry..."
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: build-windows
+          pattern: win-release-artifacts-*
+          merge-multiple: true
+
+      - name : Upload sentry artifacts
+        run: |
+          Invoke-WebRequest -Uri https://github.com/getsentry/sentry-cli/releases/download/2.46.0/sentry-cli-Windows-x86_64.exe -OutFile sentry-cli.exe
+          .\sentry-cli.exe debug-files upload .\kDrive.pdb
+          .\sentry-cli.exe debug-files upload .\kDrive_client.pdb
+          .\sentry-cli.exe debug-files upload .\kDrivecommonserver_vfs_win.pdb
+          .\sentry-cli.exe debug-files upload --type sourcebundle .\kDrive_client.src.zip
+          .\sentry-cli.exe debug-files upload --type sourcebundle .\kDrive.src.zip
+        shell: powershell
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
 
 # Upload to the storage server
   upload-app-to-storage-server:
