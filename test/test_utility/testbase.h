@@ -19,6 +19,7 @@
 #pragma once
 #include <chrono>
 #include <iostream>
+#include <cppunit/extensions/HelperMacros.h>
 
 class TestBase {
     public:
