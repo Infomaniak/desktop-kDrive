@@ -34,13 +34,12 @@ $minorVersion = $version.Substring(0, 5)
 $date = $version.Substring(6)
 
 $win_files = @(
-    $app".exe",
+    "$app.exe",
     "kDrive.pdb",
     "kDrive.src.zip",
     "kDrive_client.pdb",
     "kDrive_client.src.zip",
-    "kDrivecommonserver_vfs_win.pdb",
-
+    "kDrivecommonserver_vfs_win.pdb"
 )
 foreach ($file in $win_files)
 {
