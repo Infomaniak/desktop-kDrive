@@ -40,7 +40,7 @@ $win_files = @(
     "kDrive.pdb",
     "kDrive.src.zip",
     "kDrive_client.pdb",
-    "kDrive_client.src.zip",
+    "kDrive_client.src.zip"
 )
 foreach ($file in $win_files)
 {
