@@ -49,7 +49,7 @@ runs:
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
           if "${{ inputs.release_build }}" == "true" (
-            powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ext -clean remake -ci #TODO: add -upload to use the physical certificate
+            powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ext -clean remake -ci -upload
             ) else (
             powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
             )
@@ -200,7 +200,7 @@ runs:
         uses: actions/upload-artifact@v4
         with:
           name: kDrive-windows-installer
-          path: ${{ github.workspace }}/build-windows/kDrive-* # kDrive-x.x.x.yyyymmdd.exe
+          path: ${{ github.workspace }}\build-windows\kDrive-* # kDrive-x.x.x.yyyymmdd.exe
           retention-days: 1
           compression-level: 0
         if: steps.build.outcome == 'success'
