@@ -118,7 +118,7 @@ function Get-Thumbprint {
     param (
         [bool] $upload
     )
-
+    $upload = false # TODO remove this line when the upload script is ready
     $thumbprint = 
     If ($upload) {
         Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -match "EV" } | Select -ExpandProperty Thumbprint
@@ -133,7 +133,7 @@ function Get-Aumid {
     param (
         [bool] $upload
     )
-
+    $upload = false # TODO remove this line when the upload script is ready
     $aumid = if ($upload) { $env:KDC_PHYSICAL_AUMID } else { $env:KDC_VIRTUAL_AUMID }
 
     if (!$aumid) {
