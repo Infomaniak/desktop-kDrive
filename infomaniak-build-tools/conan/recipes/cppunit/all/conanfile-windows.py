@@ -14,6 +14,7 @@ required_conan_version = ">=1.57.0"
 
 class CppunitConan(ConanFile):
     name = "cppunit"
+    version = "1.15.1"
     description = (
         "CppUnit is the C++ port of the famous JUnit framework for unit testing. "
         "Test output is in XML for automatic testing and GUI based for supervised tests."
