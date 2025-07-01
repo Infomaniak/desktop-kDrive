@@ -149,28 +149,78 @@ void TestNetworkJobs::tearDown() {
 
 
 void TestNetworkJobs::testCreateDir() {
-    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testCreateDir");
+    {
+        const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testCreateDir");
 
-    GetFileListJob fileListJob(_driveDbId, _remoteDirId);
-    const ExitCode exitCode = fileListJob.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        GetFileListJob fileListJob(_driveDbId, _remoteDirId);
+        const ExitCode exitCode = fileListJob.runSynchronously();
+        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
-    Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
-    CPPUNIT_ASSERT(resObj);
+        Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
+        CPPUNIT_ASSERT(resObj);
 
-    bool newDirFound = false;
-    for (const auto dataArray = resObj->getArray(dataKey); const auto &item: *dataArray) {
-        const auto &dirObj = item.extract<Poco::JSON::Object::Ptr>();
+        bool newDirFound = false;
+        for (const auto dataArray = resObj->getArray(dataKey); const auto &item: *dataArray) {
+            const auto &dirObj = item.extract<Poco::JSON::Object::Ptr>();
 
-        SyncName name;
-        CPPUNIT_ASSERT(JsonParserUtility::extractValue(dirObj, nameKey, name));
+            SyncName name;
+            CPPUNIT_ASSERT(JsonParserUtility::extractValue(dirObj, nameKey, name));
 
-        if (remoteTmpDir.name() == name) {
-            newDirFound = true;
-            break;
+            if (remoteTmpDir.name() == name) {
+                newDirFound = true;
+                break;
+            }
         }
+        CPPUNIT_ASSERT(newDirFound);
     }
-    CPPUNIT_ASSERT(newDirFound);
+    {
+        const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testCreateDir");
+
+        GetFileListJob fileListJob(_driveDbId, _remoteDirId);
+        const ExitCode exitCode = fileListJob.runSynchronously();
+        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+
+        Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
+        CPPUNIT_ASSERT(resObj);
+
+        bool newDirFound = false;
+        for (const auto dataArray = resObj->getArray(dataKey); const auto &item: *dataArray) {
+            const auto &dirObj = item.extract<Poco::JSON::Object::Ptr>();
+
+            SyncName name;
+            CPPUNIT_ASSERT(JsonParserUtility::extractValue(dirObj, nameKey, name));
+
+            if (remoteTmpDir.name() == name) {
+                newDirFound = true;
+                break;
+            }
+        }
+        CPPUNIT_ASSERT(newDirFound);
+    }
+    {
+        const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testCreateDir");
+
+        GetFileListJob fileListJob(_driveDbId, _remoteDirId);
+        const ExitCode exitCode = fileListJob.runSynchronously();
+        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+
+        Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
+        CPPUNIT_ASSERT(resObj);
+
+        bool newDirFound = false;
+        for (const auto dataArray = resObj->getArray(dataKey); const auto &item: *dataArray) {
+            const auto &dirObj = item.extract<Poco::JSON::Object::Ptr>();
+
+            SyncName name;
+            CPPUNIT_ASSERT(JsonParserUtility::extractValue(dirObj, nameKey, name));
+
+            if (remoteTmpDir.name() == name) {
+                newDirFound = true;
+                break;
+            }
+        }
+        CPPUNIT_ASSERT(newDirFound);
+    }
 }
 
 void TestNetworkJobs::testCopyToDir() {
@@ -318,7 +368,6 @@ void TestNetworkJobs::testDownload() {
 #endif
             CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, modificationTimeIn.count());
             CPPUNIT_ASSERT_EQUAL(fileStat.size, sizeOut);
-
         }
 
         // Get nodeid
@@ -483,7 +532,7 @@ void TestNetworkJobs::testDownload() {
         IoHelperTestUtilities::resetFunctions();
     }
 
-  if (testhelpers::isRunningOnCI() && testhelpers::isExtendedTest(false)) {
+    if (testhelpers::isRunningOnCI() && testhelpers::isExtendedTest(false)) {
         // Not Enough disk space (Only run on CI because it requires a small partition to be set up)
         const SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
         if (smallPartitionPath.empty()) return;
