@@ -25,7 +25,9 @@
 namespace KDC {
 
 FileItemWidget::FileItemWidget(const QString &fullFilePath, const NodeType nodeType, QWidget *parent) :
-    AbstractFileItemWidget(parent), _fullFilePath(fullFilePath), _nodeType(nodeType) {
+    AbstractFileItemWidget(parent),
+    _fullFilePath(fullFilePath),
+    _nodeType(nodeType) {
     init();
 }
 

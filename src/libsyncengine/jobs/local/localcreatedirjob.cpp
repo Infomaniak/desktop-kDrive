@@ -25,7 +25,8 @@
 
 namespace KDC {
 
-LocalCreateDirJob::LocalCreateDirJob(const SyncPath &destFilepath) : _destFilePath(destFilepath) {}
+LocalCreateDirJob::LocalCreateDirJob(const SyncPath &destFilepath) :
+    _destFilePath(destFilepath) {}
 
 bool LocalCreateDirJob::canRun() {
     if (bypassCheck()) {
@@ -36,19 +37,19 @@ bool LocalCreateDirJob::canRun() {
     bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_destFilePath, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_destFilePath, ioError).c_str());
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_destFilePath, ioError));
         _exitInfo = ExitCode::SystemError;
         return false;
     }
     if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_destFilePath).c_str());
+        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_destFilePath));
         _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         return false;
     }
 
     if (exists) {
-        LOGW_DEBUG(_logger, L"Directory: " << Utility::formatSyncPath(_destFilePath).c_str() << L" already exist.");
-        _exitInfo = {ExitCode::DataError, ExitCause::FileAlreadyExists};
+        LOGW_DEBUG(_logger, L"Directory: " << Utility::formatSyncPath(_destFilePath) << L" already exist.");
+        _exitInfo = {ExitCode::DataError, ExitCause::FileExists};
         return false;
     }
 
@@ -61,21 +62,21 @@ void LocalCreateDirJob::runJob() {
     }
 
     IoError ioError = IoError::Success;
-    if (IoHelper::createDirectory(_destFilePath, ioError) && ioError == IoError::Success) {
+    if (IoHelper::createDirectory(_destFilePath, false, ioError) && ioError == IoError::Success) {
         if (isExtendedLog()) {
-            LOGW_DEBUG(_logger, L"Directory: " << Utility::formatSyncPath(_destFilePath).c_str() << L" created");
+            LOGW_DEBUG(_logger, L"Directory: " << Utility::formatSyncPath(_destFilePath) << L" created");
         }
         _exitInfo = ExitCode::Ok;
     }
 
     if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Search permission missing: =" << Utility::formatSyncPath(_destFilePath).c_str());
+        LOGW_WARN(_logger, L"Search permission missing: =" << Utility::formatSyncPath(_destFilePath));
         _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         return;
     }
 
     if (ioError != IoError::Success) { // Unexpected error
-        LOGW_WARN(_logger, L"Failed to create directory: " << Utility::formatIoError(_destFilePath, ioError).c_str());
+        LOGW_WARN(_logger, L"Failed to create directory: " << Utility::formatIoError(_destFilePath, ioError));
         _exitInfo = ExitCode::SystemError;
         return;
     }
@@ -83,23 +84,24 @@ void LocalCreateDirJob::runJob() {
     if (_exitInfo.code() == ExitCode::Ok) {
         FileStat filestat;
         if (!IoHelper::getFileStat(_destFilePath, &filestat, ioError)) {
-            LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_destFilePath, ioError).c_str());
+            LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_destFilePath, ioError));
             _exitInfo = ExitCode::SystemError;
             return;
         }
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_destFilePath).c_str());
+            LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_destFilePath));
             _exitInfo = {ExitCode::DataError, ExitCause::InvalidSize};
             return;
         } else if (ioError == IoError::AccessDenied) {
-            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_destFilePath).c_str());
+            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_destFilePath));
             _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
             return;
         }
 
         _nodeId = std::to_string(filestat.inode);
-        _modtime = filestat.modtime;
+        _modtime = filestat.modificationTime;
+        _creationTime = filestat.creationTime;
     }
 }
 

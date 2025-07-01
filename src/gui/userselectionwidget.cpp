@@ -17,10 +17,11 @@
  */
 
 #include "userselectionwidget.h"
-#include "gui/menuitemuserwidget.h"
+#include "menuitemuserwidget.h"
 #include "menuitemwidget.h"
 #include "menuwidget.h"
 #include "guiutility.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QHBoxLayout>
 #include <QLabel>
@@ -38,8 +39,13 @@ static const char userDbIdProperty[] = "userDbId";
 static const int userIconSize = 32;
 
 UserSelectionWidget::UserSelectionWidget(QWidget *parent) :
-    QPushButton(parent), _downIconSize(QSize()), _downIconColor(QColor()), _menuRightIconSize(QSize()), _currentUserDbId(0),
-    _userIconLabel(nullptr), _downIconLabel(nullptr) {
+    QPushButton(parent),
+    _downIconSize(QSize()),
+    _downIconColor(QColor()),
+    _menuRightIconSize(QSize()),
+    _currentUserDbId(0),
+    _userIconLabel(nullptr),
+    _downIconLabel(nullptr) {
     setContentsMargins(hMargin, vMargin, hMargin, vMargin);
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
@@ -145,7 +151,7 @@ void UserSelectionWidget::addMenuItem(MenuWidget *menu, UserInfo &userInfo, bool
 
 void UserSelectionWidget::onAddUserActionTriggered(bool checked) {
     Q_UNUSED(checked)
-
+    MatomoClient::sendEvent("userSelectionWidget", MatomoEventAction::Click, "addUserButton");
     emit addUser();
 }
 

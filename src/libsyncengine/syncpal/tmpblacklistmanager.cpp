@@ -26,7 +26,8 @@ static constexpr int oneHour = 3600;
 
 namespace KDC {
 
-TmpBlacklistManager::TmpBlacklistManager(std::shared_ptr<SyncPal> syncPal) : _syncPal(syncPal) {
+TmpBlacklistManager::TmpBlacklistManager(std::shared_ptr<SyncPal> syncPal) :
+    _syncPal(syncPal) {
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "TmpBlacklistManager created");
 }
 
@@ -36,13 +37,12 @@ TmpBlacklistManager::~TmpBlacklistManager() {
 
 void TmpBlacklistManager::logMessage(const std::wstring &msg, const NodeId &id, const ReplicaSide side,
                                      const SyncPath &path) const {
-    LOGW_SYNCPAL_INFO(Log::instance()->getLogger(),
-                      msg.c_str() << L" - node ID='" << Utility::s2ws(id).c_str() << L"' - side='" << side
-                                  << (path.empty() ? L"'" : (L"' - " + Utility::formatSyncPath(path)).c_str()));
+    LOGW_SYNCPAL_INFO(Log::instance()->getLogger(), msg << L" - node ID='" << Utility::s2ws(id) << L"' - side='" << side
+                                                        << (path.empty() ? L"'" : (L"' - " + Utility::formatSyncPath(path))));
 }
 
 void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, const NodeType type, const SyncPath &relativePath,
-                                             const ReplicaSide side) {
+                                             const ReplicaSide side, ExitInfo exitInfo /*= ExitInfo()*/) {
     auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
 
     if (const auto errorItem = errors.find(nodeId); errorItem != errors.end()) {
@@ -52,7 +52,7 @@ void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, const NodeTyp
         sentry::Handler::captureMessage(sentry::Level::Warning, "TmpBlacklistManager::increaseErrorCount",
                                         "Blacklisting item temporarily to avoid infinite loop");
         const Error err(_syncPal->syncDbId(), "", nodeId, type, relativePath, ConflictType::None, InconsistencyType::None,
-                        CancelType::TmpBlacklisted);
+                        exitInfo ? CancelType::TmpBlacklisted : CancelType::None, "", exitInfo.code(), exitInfo.cause());
         _syncPal->addError(err);
     } else {
         TmpErrorInfo errorInfo;

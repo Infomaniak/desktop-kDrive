@@ -61,8 +61,6 @@ struct COMMONSERVER_EXPORT Utility {
         static int64_t freeDiskSpaceLimit();
         static bool enoughSpace(const SyncPath &path);
         static bool findNodeValue(const Poco::XML::Document &doc, const std::string &nodeName, std::string *outValue);
-        static bool setFileDates(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
-                                 std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists);
         static bool isCreationDateValid(int64_t creationDate);
 
         static std::wstring s2ws(const std::string &str);
@@ -119,6 +117,7 @@ struct COMMONSERVER_EXPORT Utility {
          */
         static bool checkIfEqualUpToCaseAndEncoding(const SyncPath &a, const SyncPath &b, bool &isEqual);
         static bool isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path);
+        static bool isStrictDescendant(const SyncPath &potentialDescendant, const SyncPath &path);
         /**
          * Normalize the SyncName parameters before comparing them.
          * @param a SyncName value to be compared.
@@ -135,15 +134,6 @@ struct COMMONSERVER_EXPORT Utility {
          * @return true if no normalization issue.
          */
         static bool checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame);
-        /**
-         * Split the input path into a vector of file and directory names.
-         * @param path SyncPath the path to split.
-         * @return A vector of the file and directory names composing the path, sorted
-         * in reverse order.
-         * Example: the return value associated to path = SyncPath("A / B / c.txt") is the vector
-         * ["c.txt", "B", "A"]
-         */
-        static std::vector<SyncName> splitPath(const SyncPath &path);
 
         static bool moveItemToTrash(const SyncPath &itemPath);
 #ifdef __APPLE__
@@ -181,8 +171,6 @@ struct COMMONSERVER_EXPORT Utility {
          */
         static std::string _errId(const char *file, int line);
 
-
-        enum class UnicodeNormalization { NFC, NFD };
         static bool normalizedSyncName(const SyncName &name, SyncName &normalizedName,
                                        UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
         static bool normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
@@ -192,11 +180,8 @@ struct COMMONSERVER_EXPORT Utility {
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);
         static bool runDetachedProcess(std::wstring cmd);
 #endif
-        static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, const ItemType &itemType, IoError &ioError);
-        static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, bool &isLink, IoError &ioError);
-        static bool checkIfDirEntryIsManaged(const std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged,
-                                             bool &isLink, IoError &ioError);
-
+        static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, IoError &ioError,
+                                             const ItemType &itemType = ItemType());
         /* Resources analyser */
         static bool totalRamAvailable(uint64_t &ram, int &errorCode);
         static bool ramCurrentlyUsed(uint64_t &ram, int &errorCode);
@@ -217,13 +202,14 @@ struct COMMONSERVER_EXPORT Utility {
 };
 
 struct TimeCounter {
-        explicit TimeCounter(const std::string &name) : _name(name) {}
+        explicit TimeCounter(const std::string &name) :
+            _name(name) {}
         void start() { _start = clock(); }
         void end() {
             _end = clock();
             _total += (double) (_end - _start) / CLOCKS_PER_SEC;
         }
-        void trace() { LOG_DEBUG(Log::instance()->getLogger(), "Time counter " << _name.c_str() << " value:" << _total); }
+        void trace() { LOG_DEBUG(Log::instance()->getLogger(), "Time counter " << _name << " value:" << _total); }
 
     private:
         std::string _name;

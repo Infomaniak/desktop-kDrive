@@ -20,7 +20,7 @@
 
 #include "syncpal/isyncworker.h"
 #include "syncpal/syncpal.h"
-#include "snapshot/snapshot.h"
+#include "snapshot/livesnapshot.h"
 #include "db/syncdb.h"
 #include "libcommon/utility/types.h"
 
@@ -40,11 +40,11 @@ class FileSystemObserverWorker : public ISyncWorker {
         [[nodiscard]] virtual bool updating() const { return _updating; }
         [[nodiscard]] bool initializing() const { return _initializing; }
 
-        [[nodiscard]] std::shared_ptr<Snapshot> snapshot() const { return _snapshot; }
+        [[nodiscard]] const LiveSnapshot &liveSnapshot() const { return _liveSnapshot; }
 
     protected:
         std::shared_ptr<SyncDb> _syncDb;
-        std::shared_ptr<Snapshot> _snapshot;
+        LiveSnapshot _liveSnapshot;
 
         std::list<std::pair<SyncPath, OperationType>> _pendingFileEvents;
 
@@ -52,8 +52,8 @@ class FileSystemObserverWorker : public ISyncWorker {
         bool _initializing{true};
         std::mutex _mutex;
 
-        virtual ExitCode generateInitialSnapshot() = 0;
-        virtual ExitCode processEvents() { return ExitCode::Ok; }
+        virtual ExitInfo generateInitialSnapshot() = 0;
+        virtual ExitInfo processEvents() { return ExitCode::Ok; }
 
         [[nodiscard]] virtual bool isFolderWatcherReliable() const { return true; }
 
@@ -66,6 +66,13 @@ class FileSystemObserverWorker : public ISyncWorker {
 
         friend class TestLocalFileSystemObserverWorker;
         friend class TestRemoteFileSystemObserverWorker;
+
+        // These test classes need to simulate changes in the snapshot and therefore require non-const access to the live
+        // snapshot.
+        friend class TestComputeFSOperationWorker;
+        friend class TestOperationProcessor;
+        friend class TestSituationGenerator;
+        friend class TestSyncPal;
 };
 
 } // namespace KDC

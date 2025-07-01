@@ -22,6 +22,7 @@
 #include "syncpal/syncpal.h"
 #include "reconciliation/syncoperation.h"
 #include "jobs/abstractjob.h"
+#include "utility/timerutility.h"
 
 #include <queue>
 #include <unordered_map>
@@ -105,7 +106,7 @@ class ExecutorWorker : public OperationProcessor {
 
         ExitInfo waitForAllJobsToFinish();
         ExitInfo deleteFinishedAsyncJobs();
-        ExitInfo handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool invalidName, bool downloadImpossible);
+        ExitInfo handleManagedBackError(const ExitInfo &jobExitInfo, SyncOpPtr syncOp, bool invalidName);
         ExitInfo handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath,
                                    bool &ignored, bool &bypassProgressComplete);
         ExitInfo handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath, bool &ignored);
@@ -115,17 +116,18 @@ class ExecutorWorker : public OperationProcessor {
 
         ExitInfo propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propagateChange);
         ExitInfo propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job, std::shared_ptr<Node> &node);
-        ExitInfo propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newLastModTime,
-                                            std::shared_ptr<Node> &node);
-        ExitInfo propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newLastModTime,
-                                          std::shared_ptr<Node> &node);
+        ExitInfo propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newCreationTime,
+                                            std::optional<SyncTime> newLastModificationTime, std::shared_ptr<Node> &node,
+                                            int64_t newSize = -1);
+        ExitInfo propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newCreationTime,
+                                          std::optional<SyncTime> newLastModificationTime, std::shared_ptr<Node> &node,
+                                          int64_t newSize = -1);
         ExitInfo propagateMoveToDbAndTree(SyncOpPtr syncOp);
         ExitInfo propagateDeleteToDbAndTree(SyncOpPtr syncOp);
         ExitInfo deleteFromDb(std::shared_ptr<Node> node);
 
         ExitInfo runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
         void cancelAllOngoingJobs();
-        void manageJobDependencies(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
 
         [[nodiscard]] bool isLiteSyncActivated() const { return _syncPal->vfsMode() != VirtualFileMode::Off; }
 
@@ -136,13 +138,13 @@ class ExecutorWorker : public OperationProcessor {
             return _syncPal->updateTree(syncOp->targetSide());
         }
 
-        void increaseErrorCount(SyncOpPtr syncOp);
+        void increaseErrorCount(SyncOpPtr syncOp, ExitInfo exitInfo);
 
         ExitInfo getFileSize(const SyncPath &path, uint64_t &size);
 
         bool deleteOpNodes(SyncOpPtr syncOp);
 
-        void setProgressComplete(SyncOpPtr syncOp, SyncFileStatus status);
+        void setProgressComplete(SyncOpPtr syncOp, SyncFileStatus status, const NodeId &newRemoteNodeId = "");
 
         static void getNodeIdsFromOp(SyncOpPtr syncOp, NodeId &localNodeId, NodeId &remoteNodeId);
 
@@ -151,6 +153,7 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo handleExecutorError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
         ExitInfo handleOpsLocalFileAccessError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
         ExitInfo handleOpsFileNotFound(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
+        ExitInfo handleOpsRemoteFileLocked(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
         ExitInfo handleOpsAlreadyExistError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
 
         ExitInfo removeDependentOps(SyncOpPtr syncOp);
@@ -159,12 +162,11 @@ class ExecutorWorker : public OperationProcessor {
         std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _ongoingJobs;
         TerminatedJobsQueue _terminatedJobs;
         std::unordered_map<UniqueId, SyncOpPtr> _jobToSyncOpMap;
-        std::unordered_map<UniqueId, UniqueId> _syncOpToJobMap;
 
         std::list<UniqueId> _opList;
         std::recursive_mutex _opListMutex;
 
-        std::chrono::steady_clock::time_point _fileProgressTimer = std::chrono::steady_clock::now();
+        TimerUtility _timer;
 
         bool _snapshotToInvalidate = false;
 

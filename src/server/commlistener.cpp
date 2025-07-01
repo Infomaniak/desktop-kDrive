@@ -25,7 +25,8 @@
 
 namespace KDC {
 
-BloomFilter::BloomFilter() : hashBits(NumBits) {}
+BloomFilter::BloomFilter() :
+    hashBits(NumBits) {}
 
 void BloomFilter::storeHash(uint hash) {
     hashBits.setBit((hash & 0xFFFF) % NumBits);
@@ -45,7 +46,7 @@ void CommListener::sendMessage(const QString &message, bool doWait) const {
     assert(_threadId == std::this_thread::get_id() && "CommListener::sendMessage should only be called from the main thread");
 
     if (!ioDevice) {
-        LOGW_INFO(KDC::Log::instance()->getLogger(), L"Not sending message to dead ioDevice: " << message.toStdWString().c_str());
+        LOGW_INFO(KDC::Log::instance()->getLogger(), L"Not sending message to dead ioDevice: " << message.toStdWString());
         return;
     }
 

@@ -35,7 +35,10 @@ class ErrorTabWidget : public QTabWidget {
         Q_OBJECT
 
     public:
-        enum ErrorTabIndex { ToResolveIndex = 0, AutoResolveIndex };
+        enum ErrorTabIndex {
+            ToResolveIndex = 0,
+            AutoResolveIndex
+        };
         explicit ErrorTabWidget(std::shared_ptr<ClientGui> gui, int driveDbId = 0, bool generic = false,
                                 QWidget *parent = nullptr);
 

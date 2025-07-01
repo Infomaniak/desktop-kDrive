@@ -32,19 +32,19 @@ void TestIo::testCreateJunction() {
         const SyncPath path = temporaryDirectory.path() / "regular_dir_junction";
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::createJunctionFromPath(targetPath, path, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         bool isJunction = false;
-        CPPUNIT_ASSERT(_testObj->checkIfIsJunction(path, isJunction, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfIsJunction(path, isJunction, ioError));
         CPPUNIT_ASSERT(isJunction);
 
         NodeId nodeId;
-        CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
         CPPUNIT_ASSERT(!nodeId.empty());
 
         ItemType itemType;
-        CPPUNIT_ASSERT(_testObj->getItemType(path, itemType));
+        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.linkType == LinkType::Junction);
     }
 
@@ -55,11 +55,11 @@ void TestIo::testCreateJunction() {
         const SyncPath path = temporaryDirectory.path() / "dir_junction";
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::createJunctionFromPath(targetPath, path, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         bool isJunction = false;
-        CPPUNIT_ASSERT(_testObj->checkIfIsJunction(path, isJunction, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfIsJunction(path, isJunction, ioError));
         CPPUNIT_ASSERT(isJunction);
     }
 
@@ -70,11 +70,11 @@ void TestIo::testCreateJunction() {
         const SyncPath path = temporaryDirectory.path() / "dir_junction";
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::createJunctionFromPath(targetPath, path, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         bool isJunction = false;
-        CPPUNIT_ASSERT(_testObj->checkIfIsJunction(path, isJunction, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfIsJunction(path, isJunction, ioError));
         CPPUNIT_ASSERT(isJunction);
     }
 
@@ -85,7 +85,7 @@ void TestIo::testCreateJunction() {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(!_testObj->createJunctionFromPath(targetPath, path, ioError));
+        CPPUNIT_ASSERT(!IoHelper::createJunctionFromPath(targetPath, path, ioError));
         CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
     }
 
@@ -99,7 +99,7 @@ void TestIo::testCreateJunction() {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         IoError ioError = IoError::Unknown;
 
-        CPPUNIT_ASSERT(!_testObj->createJunctionFromPath(targetPath, path, ioError));
+        CPPUNIT_ASSERT(!IoHelper::createJunctionFromPath(targetPath, path, ioError));
         CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
     }
 }

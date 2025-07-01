@@ -23,13 +23,13 @@ set -xe
 program_name="$(basename "$0")"
 
 function display_help {
-  echo "$program_name [-h] [-t build-type] [-u unit-tests]"
+  echo "$program_name [-h] [-t build-type] [-u]"
   echo "  Build the desktop-kDrive application for Linux Amd64 with the specified build type ."
   echo "where:"
   echo "-h  Show this help text."
   echo "-t <build-type>" 
   echo "  Set the type of the build. Defaults to 'debug'. The valid values are: 'debug' or 'release'. Defaults to 'debug'."
-  echo "-u <unit-tests>" 
+  echo "-u"
   echo "  Activate the build of unit tests. Without this flag, unit tests will not be built."
 }
 
@@ -41,11 +41,11 @@ while :
 do
     case "$1" in
       -t | --build-type)
-          build_type="$2"   
+          build_type="$2"
           shift 2
           ;;
       -u | --unit-tests)
-          unit_tests=1   
+          unit_tests=1
           shift 1
           ;;
       -h | --help)
@@ -67,9 +67,9 @@ do
 done
 
 
-if [[ $build_type == "release" ]]; then
+if [[ "$build_type" == "release" ]]; then
     build_type="RelWithDebInfo"
-elif [[ $build_type == "debug" ]]; then
+elif [[ "$build_type" == "debug" ]]; then
     build_type="Debug"
 fi
 
@@ -77,59 +77,70 @@ echo "Build type: $build_type"
 echo "Unit tests build flag: $unit_tests"
 
 
-export QT_BASE_DIR="~/Qt/6.2.3"
+export QT_BASE_DIR="$HOME/Qt/6.2.3"
 export QTDIR="$QT_BASE_DIR/gcc_64"
-export BASEPATH=$PWD
+export BASEPATH="$PWD"
 export CONTENTDIR="$BASEPATH/build-linux"
 export build_dir="$CONTENTDIR/build"
 export APPDIR="$CONTENTDIR/app"
 
 extract_debug () {
-    objcopy --only-keep-debug "$1/$2" $CONTENTDIR/$2-amd64.dbg
+    objcopy --only-keep-debug "$1/$2" "$CONTENTDIR/$2-amd64.dbg"
     objcopy --strip-debug "$1/$2"
-    objcopy --add-gnu-debuglink=$CONTENTDIR/kDrive-amd64.dbg "$1/$2"
+    objcopy "--add-gnu-debuglink=$CONTENTDIR/kDrive-amd64.dbg" "$1/$2"
 }
 
-mkdir -p $APPDIR
-mkdir -p $build_dir
+mkdir -p "$APPDIR"
+mkdir -p "$build_dir"
 
-export QMAKE=$QTDIR/bin/qmake
-export PATH=$QTDIR/bin:$QTDIR/libexec:$PATH
-export LD_LIBRARY_PATH=$QTDIR/lib:$LD_LIBRARY_PATH
-export PKG_CONFIG_PATH=$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH
+export QMAKE="$QTDIR/bin/qmake"
+export PATH="$QTDIR/bin:$QTDIR/libexec:/home/runner/.local/bin:$PATH"
+export LD_LIBRARY_PATH="$QTDIR/lib:$LD_LIBRARY_PATH"
+export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 # Set defaults
 export SUFFIX=""
 
-# Build client
-cd $build_dir
-mkdir -p $build_dir/client
+mkdir -p "$build_dir/client"
 
-CMAKE_PARAMS=()
+conan_build_folder="$build_dir/conan"
+conan_dependencies_folder="$build_dir/conan/dependencies"
+
+bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" --output-dir="$conan_build_folder"
+
+conan_toolchain_file="$(find "$conan_build_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
+conan_generator_folder="$(dirname "$conan_toolchain_file")"
+
+if [ ! -f "$conan_toolchain_file" ]; then
+  echo "Conan toolchain file not found: $conan_toolchain_file"
+  exit 1
+fi
+
+# Build client
+cd "$build_dir"
+
+source "$conan_generator_folder/conanbuild.sh"
 
 export KDRIVE_DEBUG=0
 
-cmake -B$build_dir -H$BASEPATH \
-    -DOPENSSL_ROOT_DIR=/usr/local \
-    -DOPENSSL_INCLUDE_DIR=/usr/local/include \
-    -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib64/libcrypto.so \
-    -DOPENSSL_SSL_LIBRARY=/usr/local/lib64/libssl.so \
+cmake -B"$build_dir" -H"$BASEPATH" \
     -DQT_FEATURE_neon=OFF \
-    -DCMAKE_BUILD_TYPE=$build_type \
-    -DCMAKE_PREFIX_PATH=$BASEPATH \
+    -DCMAKE_BUILD_TYPE="$build_type" \
+    -DCMAKE_PREFIX_PATH="$BASEPATH" \
     -DCMAKE_INSTALL_PREFIX=/usr \
-    -DBIN_INSTALL_DIR=$build_dir/client \
-    -DKDRIVE_VERSION_SUFFIX=$SUFFIX \
+    -DBIN_INSTALL_DIR="$build_dir/client" \
+    -DKDRIVE_VERSION_SUFFIX="$SUFFIX" \
     -DKDRIVE_THEME_DIR="$BASEPATH/infomaniak" \
     -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
     -DBUILD_UNIT_TESTS=$unit_tests \
-    "${CMAKE_PARAMS[@]}" \
+    -DCONAN_DEP_DIR="$conan_dependencies_folder" \
+    -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
 
-make -j$(nproc)
+make "-j$(nproc)"
 
 extract_debug ./bin kDrive
 extract_debug ./bin kDrive_client
 
-make DESTDIR=$APPDIR install
+make DESTDIR="$APPDIR" install
 
-cp $BASEPATH/sync-exclude-linux.lst $build_dir/bin/sync-exclude.lst
+cp "$BASEPATH/sync-exclude-linux.lst" "$build_dir/bin/sync-exclude.lst"

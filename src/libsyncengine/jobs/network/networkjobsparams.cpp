@@ -24,7 +24,7 @@
 namespace KDC {
 
 ActionCode getActionCode(const std::string &action) noexcept {
-    static const std::unordered_map<std::string, ActionCode, StringHash, std::equal_to<>> actionMap = {
+    static const std::unordered_map<std::string, ActionCode, StringHashFunction, std::equal_to<>> actionMap = {
             {"file_create", ActionCode::ActionCodeCreate},
             {"file_rename", ActionCode::ActionCodeRename},
             {"file_update", ActionCode::ActionCodeEdit},
@@ -72,7 +72,8 @@ NetworkErrorCode getNetworkErrorCode(const std::string &errorCode) noexcept {
             {"conflict_error", NetworkErrorCode::ConflictError},
             {"access_denied", NetworkErrorCode::AccessDenied},
             {"limit_exceeded_error", NetworkErrorCode::FileTooBigError},
-            {"quota_exceeded_error", NetworkErrorCode::QuotaExceededError}};
+            {"quota_exceeded_error", NetworkErrorCode::QuotaExceededError},
+            {"lock_error", NetworkErrorCode::LockError}};
 
     if (const auto it = errorCodeMap.find(errorCode); it != errorCodeMap.cend()) return it->second;
 

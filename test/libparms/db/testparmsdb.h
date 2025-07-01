@@ -17,6 +17,8 @@
  */
 
 #include "testincludes.h"
+#include "test_utility/localtemporarydirectory.h"
+
 #include "libparms/db/parmsdb.h"
 
 #include <filesystem>
@@ -33,29 +35,42 @@ class TestParmsDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDrive);
         CPPUNIT_TEST(testSync);
         CPPUNIT_TEST(testExclusionTemplate);
+        CPPUNIT_TEST(testUpdateExclusionTemplates);
+        CPPUNIT_TEST(testUpgrade);
 #ifdef __APPLE__
         CPPUNIT_TEST(testExclusionApp);
 #endif
         CPPUNIT_TEST(testError);
         CPPUNIT_TEST(testAppState);
+#ifdef _WIN32
+        CPPUNIT_TEST(testUpgradeOfShortPathNames);
+#endif
         CPPUNIT_TEST_SUITE_END();
 
     public:
-        void setUp(void);
-        void tearDown(void);
+        void setUp();
+        void tearDown();
 
     protected:
-        void testParameters(void);
-        void testUser(void);
-        void testAccount(void);
-        void testDrive(void);
-        void testSync(void);
-        void testExclusionTemplate(void);
-        void testAppState(void);
+        void testParameters();
+        void testUser();
+        void testAccount();
+        void testDrive();
+        void testSync();
+        void testExclusionTemplate();
+        void testAppState();
+        void testUpdateExclusionTemplates();
+        void testUpgrade();
 #ifdef __APPLE__
-        void testExclusionApp(void);
+        void testExclusionApp();
 #endif
-        void testError(void);
+        void testError();
+#ifdef _WIN32
+        void testUpgradeOfShortPathNames();
+#endif
+
+    private:
+        LocalTemporaryDirectory _parmsDbTemporarDirectory;
 };
 
 } // namespace KDC

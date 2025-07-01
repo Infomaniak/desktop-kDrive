@@ -168,10 +168,12 @@ static void rolloverFiles(const log4cplus::tstring &filename, int maxBackupIndex
 CustomRollingFileAppender::CustomRollingFileAppender(const log4cplus::tstring &filename, long maxFileSize, int maxBackupIndex,
                                                      bool immediateFlush, bool createDirs) :
     RollingFileAppender(filename, LONG_MAX /*Let us handle a custom rollover*/, maxBackupIndex, immediateFlush, createDirs),
-    _maxFileSize(maxFileSize), _lastExpireCheck() {}
+    _maxFileSize(maxFileSize),
+    _lastExpireCheck() {}
 
 CustomRollingFileAppender::CustomRollingFileAppender(const log4cplus::helpers::Properties &properties) :
-    RollingFileAppender(properties), _lastExpireCheck() {}
+    RollingFileAppender(properties),
+    _lastExpireCheck() {}
 
 void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEvent &event) {
     // Seek to the end of log file so that tellp() below returns the
@@ -297,7 +299,7 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
         // Delete expired files
         if (_expire > 0 && entry.path().string().find(APPLICATION_NAME) != std::string::npos) {
             const auto now = std::chrono::system_clock::now();
-            const auto lastModified = std::chrono::system_clock::from_time_t(fileStat.modtime); // Only 1s precision.
+            const auto lastModified = std::chrono::system_clock::from_time_t(fileStat.modificationTime); // Only 1s precision.
             const auto expireDateTime = lastModified + std::chrono::seconds(_expire);
             if (expireDateTime < now) {
                 log4cplus::file_remove(Utility::s2ws(entry.path().string()));

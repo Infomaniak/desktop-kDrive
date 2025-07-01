@@ -18,6 +18,8 @@
 
 #include "getinfodriveuserjob.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 GetInfoDriveUserJob::GetInfoDriveUserJob(int userDbId, int driveId) :
@@ -25,7 +27,8 @@ GetInfoDriveUserJob::GetInfoDriveUserJob(int userDbId, int driveId) :
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-GetInfoDriveUserJob::GetInfoDriveUserJob(int driveDbId) : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0) {
+GetInfoDriveUserJob::GetInfoDriveUserJob(int driveDbId) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 

@@ -33,7 +33,10 @@ static const QString dateFormat = "d MMM yyyy - HH:mm";
 
 GenericErrorItemWidget::GenericErrorItemWidget(std::shared_ptr<ClientGui> gui, const QString &errorMsg,
                                                const ErrorInfo &errorInfo, QWidget *parent) :
-    AbstractFileItemWidget(parent), _gui(gui), _errorInfo(errorInfo), _errorMsg(errorMsg) {
+    AbstractFileItemWidget(parent),
+    _gui(gui),
+    _errorInfo(errorInfo),
+    _errorMsg(errorMsg) {
     init();
 }
 
@@ -69,7 +72,9 @@ void GenericErrorItemWidget::init() {
     // Right layout
     auto fileDateLabel = new QLabel(this);
     fileDateLabel->setObjectName("fileDateLabel");
-    const QDateTime dateTime = QDateTime::fromSecsSinceEpoch(_errorInfo.getTime());
+    const auto errorTime = _errorInfo.getTime();
+    const QDateTime dateTime = errorTime ? QDateTime::fromSecsSinceEpoch(errorTime)
+                                         : QDateTime::currentDateTime(); // If error time is not set, use current time.
     fileDateLabel->setText(GuiUtility::getDateForCurrentLanguage(dateTime, dateFormat));
 
     addCustomWidget(fileDateLabel);
@@ -91,9 +96,10 @@ void GenericErrorItemWidget::openFolder(const QString &path) {
             return;
         }
     }
-
     // Open on local filesystem (open the parent folder for an item of file type).
-    const auto folderPath = GuiUtility::getFolderPath(syncInfoMapIt->second.localPath() + "/" + path, _errorInfo.nodeType());
+    const auto absolutePath =
+            SyncPath(path.toStdString()).is_absolute() ? path : (syncInfoMapIt->second.localPath() + "/" + path);
+    const auto folderPath = GuiUtility::getFolderPath(absolutePath, _errorInfo.nodeType());
     AbstractFileItemWidget::openFolder(folderPath);
 }
 
@@ -101,6 +107,7 @@ bool GenericErrorItemWidget::openInWebview() const {
     return _errorInfo.inconsistencyType() == InconsistencyType::PathLength ||
            _errorInfo.inconsistencyType() == InconsistencyType::Case ||
            _errorInfo.inconsistencyType() == InconsistencyType::ForbiddenChar ||
+           _errorInfo.inconsistencyType() == InconsistencyType::ForbiddenCharEndWithSpace ||
            _errorInfo.inconsistencyType() == InconsistencyType::ReservedName ||
            _errorInfo.inconsistencyType() == InconsistencyType::NameLength ||
            _errorInfo.inconsistencyType() == InconsistencyType::NotYetSupportedChar ||

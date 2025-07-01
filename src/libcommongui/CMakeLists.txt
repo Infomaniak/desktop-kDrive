@@ -1,19 +1,25 @@
 cmake_minimum_required(VERSION 3.16)
 project(libcommongui LANGUAGES C CXX)
 
-find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core Network)
+
+set(CMAKE_AUTOMOC TRUE)
 
 set(libcommongui_SRCS
     utility/utility.h utility/utility.cpp
     logger.h logger.cpp
     utility/widgetsignalblocker.h
+        ../3rdparty/qt-piwik-tracker/piwiktracker.h
+        ../3rdparty/qt-piwik-tracker/piwiktracker.cpp
+        matomoclient.cpp
+        matomoclient.h
 )
 
 if(APPLE)
     list(APPEND libcommongui_SRCS utility/utility_mac.cpp)
-elseif (WIN32)
+elseif(WIN32)
     list(APPEND libcommongui_SRCS utility/utility_win.cpp)
-else ()
+else()
     list(APPEND libcommongui_SRCS utility/utility_linux.cpp)
 endif()
 
@@ -30,13 +36,13 @@ set(PC_HEADER_FILES
 
 target_precompile_headers(${libcommongui_NAME} PRIVATE ${PC_HEADER_FILES})
 
-GENERATE_EXPORT_HEADER(${libcommongui_NAME}
+generate_export_header(${libcommongui_NAME}
     BASE_NAME ${libcommongui_NAME}
     EXPORT_MACRO_NAME COMMONGUI_EXPORT
     EXPORT_FILE_NAME libcommongui.h
 )
 
-target_include_directories(${libcommongui_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(${libcommongui_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ../3rdparty/qt-piwik-tracker/)
 
 set_target_properties(${libcommongui_NAME} PROPERTIES
     VERSION ${KDRIVE_VERSION}
@@ -47,4 +53,5 @@ set_target_properties(${libcommongui_NAME} PROPERTIES
 target_link_libraries(${libcommongui_NAME}
     ${libcommon_NAME}
     Qt6::Core
+    Qt6::Network
 )

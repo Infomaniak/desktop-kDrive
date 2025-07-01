@@ -20,14 +20,20 @@
 
 set -ex
 
-BUILDDIR="$PWD/build-linux"
-CLIENTDIR="$BUILDDIR/client"
-INSTALLDIR="$BUILDDIR/install"
+build_dir="$PWD/build-linux"
+client_dir="$build_dir/client"
+install_dir="$build_dir/install"
 
-rm -Rf "${BUILDDIR}"
-mkdir -p "${BUILDDIR}"
-mkdir -p "${CLIENTDIR}"
-mkdir -p "${INSTALLDIR}"
+conan_base_folder="$HOME/.conan2_linux"
+conan_cache_folder="$conan_base_folder/p"
+local_recipes_index="$conan_base_folder/.local_recipes_index"
+
+rm -Rf "$build_dir"
+mkdir -p "$build_dir"
+mkdir -p "$client_dir"
+mkdir -p "$install_dir"
+mkdir -p "$conan_cache_folder"
+mkdir -p "$local_recipes_index"
 
 podman machine stop build_kdrive
 ulimit -n unlimited
@@ -35,9 +41,11 @@ podman machine start build_kdrive
 podman run --rm -it \
 	--privileged \
 	--ulimit nofile=4000000:4000000 \
-	--volume $HOME/Projects/desktop-kDrive:/src \
-	--volume $HOME/Projects/desktop-kDrive/build-linux:/build \
-	--volume $HOME/Projects/desktop-kDrive/build-linux/install:/install \
+	--volume "$HOME/Projects/desktop-kDrive:/src" \
+	--volume "$build_dir:/build" \
+	--volume "$install_dir:/install" \
+	--volume "$conan_cache_folder:/root/.conan2/p" \
+	--volume "$local_recipes_index:/root/.conan2/.local_recipes_index/" \
 	--workdir "/src" \
 	--env APPLICATION_SERVER_URL="$APPLICATION_SERVER_URL" \
 	--env KDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
@@ -45,10 +53,9 @@ podman run --rm -it \
 	ghcr.io/infomaniak/kdrive-desktop-linux:arm64 /bin/bash -c "/src/infomaniak-build-tools/linux/build-release-appimage-arm64.sh"
 podman machine stop build_kdrive
 
-VERSION=$(grep "KDRIVE_VERSION_FULL" "$BUILDDIR/client/version.h" | awk '{print $3}')
+version=$(grep "KDRIVE_VERSION_FULL" "$build_dir/client/version.h" | awk '{print $3}')
 
-echo $SUFFIX
-mv "${INSTALLDIR}/kDrive-arm64.AppImage" $INSTALLDIR/kDrive-$VERSION-arm64.AppImage
+mv "$install_dir/kDrive-arm64.AppImage" "$install_dir/kDrive-$version-arm64.AppImage"
 
-rm -Rf "${BUILDDIR}-arm64"
-mv "${BUILDDIR}" "${BUILDDIR}-arm64"
+rm -Rf "$build_dir-arm64"
+mv "$build_dir" "$build_dir-arm64"

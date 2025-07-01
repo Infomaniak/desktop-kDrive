@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include "../abstractnetworkjob.h"
-#include "../networkjobsparams.h"
+#include "jobs/network/abstractnetworkjob.h"
+#include "jobs/network/networkjobsparams.h"
 #include "login/login.h"
 
 #include <unordered_map>
@@ -45,7 +45,13 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
                 using std::runtime_error::runtime_error;
         };
 
-        enum class ApiType { Drive, DriveByUser, Profile, NotifyDrive, Desktop };
+        enum class ApiType {
+            Drive,
+            DriveByUser,
+            Profile,
+            NotifyDrive,
+            Desktop
+        };
 
         /// @throw std::runtime_error
         /// @throw DbError

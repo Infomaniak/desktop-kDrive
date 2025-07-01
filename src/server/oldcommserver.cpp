@@ -209,7 +209,7 @@ void OldCommServer::onErrorOccurred(QAbstractSocket::SocketError socketError) {
 
     if (!_hasQuittedProperly) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Client connection was interrupted - err=" << (socket ? socket->errorString().toStdString().c_str() : "") << " ("
+                 "Client connection was interrupted - err=" << (socket ? socket->errorString().toStdString() : "") << " ("
                                                             << socketError << ")");
         // Restart comm server
         start();
@@ -250,7 +250,7 @@ void OldCommServer::onSendReply(int id, const QByteArray &result) {
     try {
         LOG_DEBUG(Log::instance()->getLogger(), "Snd rpl " << id);
 
-        _tcpSocket->write(KDC::CommonUtility::toQByteArray(static_cast<int>(reply.count())));
+        _tcpSocket->write(KDC::CommonUtility::toQByteArray(static_cast<int>(reply.size())));
         _tcpSocket->write(reply);
 #ifdef Q_OS_WIN
         _tcpSocket->flush();
@@ -284,7 +284,7 @@ void OldCommServer::onSendSignal(int id, SignalNum num, const QByteArray &params
     try {
         LOG_DEBUG(Log::instance()->getLogger(), "Snd sgnl " << id << " " << num);
 
-        _tcpSocket->write(KDC::CommonUtility::toQByteArray(static_cast<int>(signal.count())));
+        _tcpSocket->write(KDC::CommonUtility::toQByteArray(static_cast<int>(signal.size())));
         _tcpSocket->write(signal);
 #ifdef Q_OS_WIN
         _tcpSocket->flush();
@@ -295,7 +295,10 @@ void OldCommServer::onSendSignal(int id, SignalNum num, const QByteArray &params
     }
 }
 
-Worker::Worker(QObject *parent) : QObject(parent), _signalId(0), _stop(false) {}
+Worker::Worker(QObject *parent) :
+    QObject(parent),
+    _signalId(0),
+    _stop(false) {}
 
 Worker::~Worker() {}
 

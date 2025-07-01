@@ -17,7 +17,6 @@
  */
 
 #include "versionwidget.h"
-
 #include "aboutdialog.h"
 #include "enablestateholder.h"
 #include "guirequests.h"
@@ -26,12 +25,11 @@
 #include "parameterscache.h"
 #include "preferencesblocwidget.h"
 #include "taglabel.h"
+#include <config.h>
 #include "libcommon/utility/utility.h"
-#include "utility/utility.h"
+#include "libcommongui/matomoclient.h"
 
 #include <QDesktopServices>
-#include <config.h>
-
 #include <QLabel>
 #include <QPushButton>
 #include <QRadioButton>
@@ -50,7 +48,8 @@ static constexpr auto internalTagColor = QColor(120, 116, 176);
 
 Q_LOGGING_CATEGORY(lcVersionWidget, "gui.versionwidget", QtInfoMsg)
 
-VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) : QWidget(parent) {
+VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) :
+    QWidget(parent) {
     const auto mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(mainLayout);
@@ -84,6 +83,7 @@ void VersionWidget::showAboutDialog() {
     EnableStateHolder _(this);
     AboutDialog dialog(this);
     dialog.execAndMoveToCenter(GuiUtility::getTopLevelWidget(this));
+    MatomoClient::sendVisit(MatomoNameField::PG_Preferences_About);
 }
 
 void VersionWidget::showReleaseNotes() const {
@@ -116,13 +116,16 @@ void VersionWidget::onUpdateStateChanged(const UpdateState state) const {
 }
 
 void VersionWidget::onLinkActivated(const QString &link) {
-    if (link == versionLink)
+    if (link == versionLink) {
         showAboutDialog();
-    else if (link == releaseNoteLink)
+        MatomoClient::sendEvent("versionWidget", MatomoEventAction::Click, "versionLink");
+    } else if (link == releaseNoteLink) {
         showReleaseNotes();
-    else if (link == downloadPageLink)
+        MatomoClient::sendEvent("versionWidget", MatomoEventAction::Click, "releaseNotesLink");
+    } else if (link == downloadPageLink) {
         showDownloadPage();
-    else {
+        MatomoClient::sendEvent("versionWidget", MatomoEventAction::Click, "downloadPageLink");
+    } else {
         qCWarning(lcVersionWidget) << "Unknown link clicked: " << link;
         Q_ASSERT(false);
     }
@@ -139,6 +142,8 @@ void VersionWidget::onUpdateButtonClicked() {
 }
 
 void VersionWidget::onJoinBetaButtonClicked() {
+    MatomoClient::sendEvent("versionWidget", MatomoEventAction::Click, "joinBetaButton");
+    MatomoClient::sendVisit(MatomoNameField::PG_Preferences_Beta);
     if (auto dialog = BetaProgramDialog(
                 ParametersCache::instance()->parametersInfo().distributionChannel() != VersionChannel::Prod, _isStaff, this);
         dialog.exec() == QDialog::Accepted) {

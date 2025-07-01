@@ -19,6 +19,7 @@
 #pragma once
 
 #include "dbnode.h"
+#include "syncdbreadonlycache.h"
 #include "libcommon/utility/types.h"
 #include "libcommonserver/db/db.h"
 #include "db/uploadsessiontoken.h"
@@ -74,10 +75,13 @@ class SyncDb : public Db {
 
         // Getters with db IDs
         bool dbIds(std::unordered_set<DbNodeId> &ids, bool &found);
+        bool ids(std::unordered_set<NodeIds, NodeIds::HashFunction> &ids, bool &found);
+
         bool path(DbNodeId dbNodeId, SyncPath &localPath, SyncPath &remotePath, bool &found);
         bool node(DbNodeId dbNodeId, DbNode &dbNode, bool &found);
         bool pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<DbNodeId> &ids);
-
+        bool pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<NodeIds, NodeIds::HashFunction> &ids);
+        bool dbNodes(std::unordered_set<DbNode, DbNode::HashFunction> &nodes, SyncDbRevision &revision, bool &found);
         bool status(ReplicaSide side, const SyncPath &path, SyncFileStatus &status, bool &found);
         bool status(ReplicaSide side, const NodeId &nodeId, SyncFileStatus &status, bool &found);
         bool setStatus(ReplicaSide side, const SyncPath &path, SyncFileStatus status, bool &found);
@@ -101,13 +105,25 @@ class SyncDb : public Db {
 
         bool setTargetNodeId(const std::string &targetNodeId, bool &found);
 
+        SyncDbRevision revision() const;
+        SyncDbReadOnlyCache &cache() { return _cache; }
+
+        // Fix the local node IDs after a sync directory nodeId change.
+        // This can happen when the sync directory is moved between two disks, after a migration from an other device (Apple
+        // migration assistant, etc.).
+        // This is a best effort, if at least one of the items inside the sync directory has been deleted or moved, the process
+        // will fail and the user should be prompted to create a new sync directory.
+        bool tryToFixDbNodeIdsAfterSyncDirChange(const SyncPath &syncDirPath);
+
     protected:
         virtual bool updateNames(const char *requestId, const SyncName &localName, const SyncName &remoteName);
 
     private:
         static DbNode _driveRootNode;
-        DbNode _rootNode;
-
+        DbNode _rootNode = _driveRootNode;
+        SyncDbRevision _revision = 1;
+        SyncDbReadOnlyCache _cache;
+        void invalidateCache() { ++_revision; }
         bool pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, std::vector<NodeId> &ids);
         bool pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, NodeSet &ids);
 

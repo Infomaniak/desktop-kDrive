@@ -46,10 +46,10 @@ void TestUpdateTreeWorker::setUp() {
     _localUpdateTree = std::make_shared<UpdateTree>(ReplicaSide::Local, SyncDb::driveRootNode());
     _remoteUpdateTree = std::make_shared<UpdateTree>(ReplicaSide::Remote, SyncDb::driveRootNode());
 
-    _localUpdateTreeWorker = std::make_shared<UpdateTreeWorker>(_syncDb, _operationSet, _localUpdateTree, "Test Tree Updater",
-                                                                "LTRU", ReplicaSide::Local);
-    _remoteUpdateTreeWorker = std::make_shared<UpdateTreeWorker>(_syncDb, _operationSet, _remoteUpdateTree, "Test Tree Updater",
-                                                                 "RTRU", ReplicaSide::Remote);
+    _localUpdateTreeWorker = std::make_shared<UpdateTreeWorker>(_syncDb->cache(), _operationSet, _localUpdateTree,
+                                                                "Test Tree Updater", "LTRU", ReplicaSide::Local);
+    _remoteUpdateTreeWorker = std::make_shared<UpdateTreeWorker>(_syncDb->cache(), _operationSet, _remoteUpdateTree,
+                                                                 "Test Tree Updater", "RTRU", ReplicaSide::Remote);
 
     setUpDbTree();
 
@@ -181,6 +181,7 @@ void TestUpdateTreeWorker::setUpDbTree() {
                            "id7l", "id7r", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime,
                            NodeType::File, testhelpers::defaultFileSize, std::nullopt);
     _syncDb->insertNode(nodeFile7, dbnodeIdfile7, constraintError);
+    _syncDb->cache().reloadIfNeeded();
 }
 
 void TestUpdateTreeWorker::setUpUpdateTree(ReplicaSide side) {
@@ -333,11 +334,11 @@ void TestUpdateTreeWorker::testUtilsFunctions() {
     CPPUNIT_ASSERT(newPath == "Dir 4/Dir 4.2/Dir 4.1.1/File 4.1.1.1");
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath(newPath)->id() == "id4111");
 
-    CPPUNIT_ASSERT(_localUpdateTree->getNodeByNormalizedPath(newPath) == _localUpdateTree->getNodeByPath(newPath));
+    CPPUNIT_ASSERT(_localUpdateTree->getNodeByPathNormalized(newPath) == _localUpdateTree->getNodeByPath(newPath));
     _localUpdateTree->getNodeByPath("Dir 4/Dir 4.2")->setName(testhelpers::makeNfdSyncName());
 
     CPPUNIT_ASSERT(nullptr == _localUpdateTree->getNodeByPath(SyncPath("Dir 4") / testhelpers::makeNfcSyncName()));
-    CPPUNIT_ASSERT(nullptr != _localUpdateTree->getNodeByNormalizedPath(SyncPath("Dir 4") / testhelpers::makeNfcSyncName()));
+    CPPUNIT_ASSERT(nullptr != _localUpdateTree->getNodeByPathNormalized(SyncPath("Dir 4") / testhelpers::makeNfcSyncName()));
 }
 
 void TestUpdateTreeWorker::testUpdateTmpFileNode() {

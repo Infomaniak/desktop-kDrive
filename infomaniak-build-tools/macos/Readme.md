@@ -6,15 +6,13 @@
 	- [Xcode](#xcode)
 	- [Qt 6.2.3](#qt-623)
 	- [Sentry](#sentry)
-	- [log4cplus](#log4cplus)
 	- [cppunit](#cppunit)
-	- [OpenSSL](#openssl)
 	- [Poco](#poco)
-	- [xxHash](#xxhash)
 	- [libzip](#libzip)
 	- [Sparkle](#sparkle)
 	- [Packages](#packages)
 	- [Notarytool](#notarytool)
+	- [Conan](#conan)
 - [Build in Debug](#build-in-debug)
 	- [Using CLion](#using-clion)
         - [CMake Parameters](#cmake-parameters)
@@ -39,6 +37,9 @@ cd desktop-kDrive && git submodule update --init --recursive
 ```
 
 # Installation Requirements
+
+We are migrating the dependency management from manually to using conan.
+Currently, only the dependency `xxHash` is managed by conan. See [Conan](#conan) for more information.
 
 ## SIP
 
@@ -89,28 +90,6 @@ cmake --build build --parallel
 sudo cmake --install build
 ```
 
-## log4cplus
-
-Download and build `log4cplus`:
-
-```bash
-cd ~/Projects
-git clone --recurse-submodules https://github.com/log4cplus/log4cplus.git
-cd log4cplus
-git checkout 2.1.x
-mkdir build
-cd build
-cmake .. -DUNICODE=1 -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15"
-sudo cmake --build . --target install
-```
-
-If an error occurs with the the include of `catch.hpp`, you need to change branch inside the `catch` directory:
-
-```bash
-cd ../catch
-git checkout v2.x
-```
-
 ## CPPUnit
 
 Download and build `CPPUnit`:
@@ -134,81 +113,27 @@ sudo make install
 
 If the server does not reply to the `git clone` command, you can download the source from https://www.freedesktop.org/wiki/Software/cppunit/.
 
-## OpenSSL
-
-Download and build `OpenSSL`:
-
-The configuration for the `x86_64` architecture is as follows:
-
-```bash
-cd ~/Projects
-git clone https://github.com/openssl/openssl.git
-cd openssl
-git checkout tags/openssl-3.2.1
-cd ..
-mv openssl openssl.x86_64
-cp -Rf openssl.x86_64 openssl.arm64
-mkdir openssl.multi
-cd openssl.x86_64
-./Configure darwin64-x86_64-cc shared -mmacosx-version-min=10.15
-make
-```
-
-If you have an `AMD` architecture, run `sudo make install` then continue.
-
-The configuration for the `ARM` architecture goes as follows:
-
-```bash
-cd ~/Projects/openssl.arm64
-./Configure darwin64-arm64-cc shared enable-rc5 zlib no-asm -mmacosx-version-min=10.15 
-make
-```
-
-If you have an `ARM` architecture, run `sudo make install` then continue.
-
-```bash
-cd ~/Projects
-lipo -arch arm64 openssl.arm64/libcrypto.3.dylib -arch x86_64 openssl.x86_64/libcrypto.3.dylib -output openssl.multi/libcrypto.3.dylib -create
-lipo -arch arm64 openssl.arm64/libssl.3.dylib -arch x86_64 openssl.x86_64/libssl.3.dylib -output openssl.multi/libssl.3.dylib -create
-lipo -arch arm64 openssl.arm64/libcrypto.a -arch x86_64 openssl.x86_64/libcrypto.a -output openssl.multi/libcrypto.a -create
-lipo -arch arm64 openssl.arm64/libssl.a -arch x86_64 openssl.x86_64/libssl.a -output openssl.multi/libssl.a -create
-sudo cp openssl.multi/* /usr/local/lib/
-```
-
 ## Poco
 
-> :warning: **`Poco` requires [OpenSSL](#openssl) to be installed.**
+> :warning: **`Poco` requires OpenSSL to be installed.**
+>
+> You **must follow** the [Conan](#conan) section first to install `OpenSSL`.
 
 Download and build `Poco`:
 
 ```bash
 cd ~/Projects
+source "$(find ./desktop-kdrive/ -name "conanrun.sh")" || exit 1 # This will prepend the path to the conan-managed dependencies to the 'DYLD_LIBRARY_PATH' environment variable
 git clone https://github.com/pocoproject/poco.git
 cd poco
 git checkout tags/poco-1.13.3-release
 mkdir build
 cd build
-cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -DOPENSSL_ROOT_DIR=/usr/local/ -DOPENSSL_INCLUDE_DIR=/usr/local/include/ -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib/libcrypto.dylib -DOPENSSL_SSL_LIBRARY=/usr/local/lib/libssl.dylib -DENABLE_DATA_ODBC=OFF 
+cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -DENABLE_DATA_ODBC=OFF 
 sudo cmake --build . --target install
 ```
 
-## xxHash
-
-Download and build `xxHash`:
-
-```bash
-cd ~/Projects
-git clone https://github.com/Cyan4973/xxHash.git
-cd xxhash
-git checkout tags/v0.8.2
-cd cmake_unofficial
-mkdir build
-cd build
-cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15"
-sudo cmake --build . --target install
-```
-
-## libzip  
+## libzip
 
 > :warning: because the cmake builds in multi-architecture, `libzip` and its dependencies (in this case `zstd` must be installed in multi-architecture as well).
 
@@ -253,20 +178,121 @@ Copy the previously generated password to use in the command below:
 ```bash
 xcrun notarytool store-credentials "notarytool" --apple-id <email address> --team-id [team-id] --password <password>
 ```
+---
 
+## Conan
+The recommended way to install Conan is via **pip** within a Python virtual environment (Python 3.6 or newer). This approach ensures isolation and compatibility with your project’s dependencies.
+
+> **Tip:** Other installation methods (system packages, pipx, installer scripts, etc.) are also supported. See [Conan Downloads](https://conan.io/downloads) for the full list of options.
+### Prerequisites
+- **Python 3.6+**
+- **pip** (upgrade to the latest version):
+  ```bash
+  pip install --upgrade pip
+  ```
+
+### 1. Create and Activate a Virtual Environment
+1. Create a virtual environment in `./.venv`:
+   ```bash
+   python3 -m venv .venv
+   ```
+2. Activate the virtual environment:
+   ```bash
+   source .venv/bin/activate
+   ```
+
+### 2. Install Conan
+
+With the virtual environment active, install Conan:
+```bash
+pip install conan
+```
+
+Verify the installation:
+```bash
+conan --version
+```
+You should see an output similar to:
+```
+Conan version 2.x.x
+```
+
+---
+
+### 3. Configure a Conan Profile
+1. Auto-generate the default profile:
+   ```bash
+   conan profile detect
+   ```
+   This creates `~/.conan2/profiles/default`.
+
+2. Open `~/.conan2/profiles/default` and customize the settings under the `[settings]` section. For example, to target macOS with C++20:
+   ```ini
+   [settings]
+   os = Macos
+   arch = armv8
+   compiler = apple-clang
+   compiler.version = 16
+   compiler.cppstd = 20
+   compiler.libcxx = libc++
+   build_type = Debug
+   ```
+
+---
+
+### 4. Configure CMake Toolchain Injection
+The project requires additional CMake variables for a correct build. To inject these, create a file named `debug_vars.cmake` in your profiles directory (`~/.conan2/profiles`), and then reference it in the profile under `[conf]`:
+
+1. Create or open `~/.conan2/profiles/debug_vars.cmake` and add the cache entries, for example:
+   ```cmake
+   set(APPLICATION_CLIENT_EXECUTABLE "kdrive_client")
+   set(KDRIVE_THEME_DIR "$ENV{HOME}/Projects/desktop-kDrive/infomaniak")
+   set(BUILD_UNIT_TESTS "ON")      # Set to "OFF" to skip tests
+   set(SOCKETAPI_TEAM_IDENTIFIER_PREFIX "864VDCS2QY")
+   set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.2.3/macos")
+   set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/Projects/CLion-build-debug/install")
+   ```
+
+2. In your profile (`~/.conan2/profiles/default`), add under a new `[conf]` section:
+   ```ini
+   [conf]
+   tools.cmake.cmaketoolchain:user_toolchain+={{profile_dir}}/debug_vars.cmake
+   ```
+
+---
+
+### 5. Install Project Dependencies
+
+**From the repository root**, run the provided build script, specifying the desired configuration (`Debug` or `Release`) and the folder where the app will be builded.
+```bash
+./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release] [--output-dir=<output_dir>]
+```
+
+> **Note:** Currently only **xxHash**, **log4cplus**, **OpenSSL** and **libzip** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+
+---
 # Build in Debug
 
 ## Deploying dependencies
 
 Dependencies are deployed using utilitary tool `macdeployqt` provided with the Qt binaries:
 
-`/Users/<user_name>/Qt/6.2.3/macos/bin/macdeployqt /Users/<user_name>/Projects/CLion-build-debug/install/kDrive.app -libpath=/usr/local/lib -no-strip -executable=/Users/<user_name>/Projects/CLion-build-debug/install/kDrive.app/Contents/MacOS/kDrive`.
+`/Users/<user_name>/Qt/6.2.3/macos/bin/macdeployqt /Users/<user_name>/Projects/CLion-build-debug/install/kDrive.app -libpath=$DYLD_LIBRARY_PATH -no-strip -executable=/Users/<user_name>/Projects/CLion-build-debug/install/kDrive.app/Contents/MacOS/kDrive`.
 
-This command is run each time we build in release mode. However, since it takes some time to find all dependencies, this program is run manually in debug mode every time we need to rebuild the binary directory.
+This command is run each time we build. However, since it takes some time to find all dependencies, it is possible to disable it by setting the variable DEPLOY_LIBS_MANUALLY.
 
 ## Using CLion
 
-### CMake Parameters
+### Using Conan - CMakeUserPresets
+
+After following the [Conan](#conan) section, a file named `CMakeUserPresets.json` will have been created at the root of the project.
+*Sometimes, CLion needs to reload the CMake project to detect the presets. To do this, go to the top menu, select `Tools` > `CMake`, then click `Reload CMake Project`.*
+
+You can now select the `conan-[debug|release]` profile in the CMake configuration.
+
+### Classical way
+
+#### CMake Parameters
 
 CMake options:
 
@@ -274,37 +300,38 @@ CMake options:
 -DCMAKE_BUILD_TYPE:STRING=Debug
 -DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client
 -DKDRIVE_THEME_DIR=/Users/<user_name>/Projects/desktop-kDrive/infomaniak
--DCMAKE_INSTALL_PREFIX=/Users/clementkunz/Projects/CLion-build-debug/install
+-DCMAKE_INSTALL_PREFIX=/Users/<user_name>/Projects/CLion-build-debug/install
 -DBUILD_UNIT_TESTS:BOOL=ON
 -DCMAKE_PREFIX_PATH:STRING=/Users/<user_name>/Qt/6.2.3/macos
 -DSOCKETAPI_TEAM_IDENTIFIER_PREFIX:STRING=864VDCS2QY
+-DCMAKE_TOOLCHAIN_FILE=/Users/<user_name>/Projects/CLion-build-debug/conan_toolchain.cmake
 ```
 
-### Run CMake install
+#### Run CMake install
 
 Edit the `kDrive` profile:
 
-![alt text](edit_profile.png)
+![alt text](doc-images/edit_profile.png)
 
 Add `CMake install` in the `Before launch` steps:
 
-![alt text](cmake_install.png)
+![alt text](doc-images/cmake_install.png)
 
 `CMake install` also needs to be run only once in order to copy mandatory files into the package (e.g.: sync-exclude-osx.lst) and correct rpath. Once it has run once, you can remove it from the `Before launch` steps in order to start the app faster.
 
 However, link to library `xxHash` seems to brake from time to time and a correction of the rpath in sometime needed. To avoid that, you can either always do the `CMake install` step (~15sec) or create a new step just to correct the rpath for `xxHash`.
 
-![alt text](fix_rpath_step.png)
+![alt text](doc-images/fix_rpath_step.png)
 
 ### Sign package
 
 Add a `Run external tool` in the `Before launch` steps:
 
-![alt text](run_ext_tool.png)
+![alt text](doc-images/run_ext_tool.png)
 
 Create the external tool to run `sign_app_debug.sh`:
 
-![alt text](sign_package.png)
+![alt text](doc-images/sign_package.png)
 
 Signing package is mandatory only if you need to use the LiteSync in debug mode. Otherwise you can remove this step in order to start the app faster.
 
@@ -340,6 +367,12 @@ Build - Build Steps - Custom Process Step 1:
 `Working directory  : %{buildDir}`
 
 Run `CMake` again and start building the project.
+
+### Conan Plugin
+
+Add the Conan plugin to Qt Creator.
+According to the **[Setting up Conan](https://doc.qt.io/qtcreator/creator-project-conan.html)** page, within Qt Creator go to **Qt Creator > About Plugins...**, then under **Utilities** locate **Conan**. Tick **Load** and close Qt Creator, which will force a restart and enable the plugin.
+
 
 # Build in Release
 

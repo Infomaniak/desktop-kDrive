@@ -88,6 +88,7 @@ class Handler {
 
 
         // Performances monitoring
+        bool arePtracesEnabled() const;
         pTraceId startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId = -1);
         void stopPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId = -1, PTraceStatus status = PTraceStatus::Ok);
         void stopPTrace(const pTraceId &pTraceId, PTraceStatus status = PTraceStatus::Ok);
@@ -98,9 +99,17 @@ class Handler {
         inline static bool debugBeforeSendCallback() { return _debugBeforeSendCallback; }
 
         // Print an event description into a file (for debugging)
-        static void writeEvent(const std::string &eventStr, bool crash) noexcept;
+        static void writeEvent(const std::string &eventStr) noexcept { writeEvent(eventStr, false); };
+        // Print a crash event description into a file (for debugging)
+        static void writeCrashEvent(const std::string &eventStr) noexcept { writeEvent(eventStr, true); };
 
         void setDistributionChannel(VersionChannel channel);
+        void setAppUUID(std::string appUUID);
+
+        // Returns the file path where non-crash events of type `appType` are written locally.
+        static SyncPath getEventFilePath(const AppType appType) { return getEventFilePath(appType, false); };
+        // Returns the file path where crash events of type `appType` are written locally.
+        static SyncPath getCrashEventFilePath(const AppType appType) { return getEventFilePath(appType, true); };
 
     protected:
         Handler() = default;
@@ -133,7 +142,7 @@ class Handler {
         void removeTag(const std::string &key) { sentry_remove_tag(key.c_str()); }
         // Convert a `SentryUser` structure to a `sentry_value_t` that can safely be passed to
         // `sentry_set_user(sentry_value_t)`
-        sentry_value_t toSentryValue(const SentryUser &user) const;
+        [[nodiscard]] sentry_value_t toSentryValue(const SentryUser &user) const;
 
         // SentryEvent is a structure that represents an event that has been send to sentry. It allows us to keep track of
         // the sent event and block any sentry flood from a single user.
@@ -142,7 +151,7 @@ class Handler {
 
                 SentryEvent(const std::string &title, const std::string &message, Level level,
                             sentry::ConfidentialityLevel userType, const SentryUser &user);
-                std::string getStr() const { return title + message + static_cast<char>(level) + userId; }
+                [[nodiscard]] std::string getStr() const { return title + message + static_cast<char>(level) + userId; }
                 std::string title;
                 std::string message;
                 Level level;
@@ -172,13 +181,13 @@ class Handler {
         /* Update the effective sentry user.
          * - If authentication type is `anonymous`, the user parameter will be ignored and the
          * effective user will be set to Anonymous.
-         * - If `user` parmeter is not provided, the effective user will be set to `Anonymous`.
+         * - If `user` parameter is not provided, the effective user will be set to `Anonymous`.
          * - If authentication type is `authenticated` and `user` parameter is provided, the user parameter will be used.
          */
         void updateEffectiveSentryUser(const SentryUser &user = SentryUser());
 
         // The events that have been recently captured, used to prevent flood from a single user.
-        std::unordered_map<std::string, SentryEvent, StringHash, std::equal_to<>> _events;
+        std::unordered_map<std::string, SentryEvent, StringHashFunction, std::equal_to<>> _events;
 
         // Number of captures before rate limiting an event
         unsigned int _sentryMaxCaptureCountBeforeRateLimit = 10;
@@ -202,6 +211,14 @@ class Handler {
         std::map<int /*syncDbId*/, std::map<PTraceName, pTraceId>> _pTraceNameToPTraceIdMap;
 
         bool checkCustomSampleRate(const PTraceDescriptor &pTraceInfo) const;
+
+        static void writeEvent(const std::string &eventStr, bool crash) noexcept;
+
+        // The temporary directory where Sentry events are written.
+        static SyncPath getSentryTemporaryDir();
+
+        // Returns the file path where events of type `appType` are written locally.
+        static SyncPath getEventFilePath(AppType appType, bool crash);
 
         // Debug
         static AppType _appType;

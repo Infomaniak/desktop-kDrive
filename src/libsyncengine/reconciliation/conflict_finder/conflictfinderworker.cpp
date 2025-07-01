@@ -22,7 +22,8 @@
 namespace KDC {
 
 ConflictFinderWorker::ConflictFinderWorker(const std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                           const std::string &shortName) : OperationProcessor(syncPal, name, shortName) {}
+                                           const std::string &shortName) :
+    OperationProcessor(syncPal, name, shortName) {}
 
 void ConflictFinderWorker::execute() {
     auto exitCode(ExitCode::Unknown);
@@ -304,7 +305,7 @@ std::optional<std::vector<Conflict>> ConflictFinderWorker::checkMoveParentDelete
         const std::optional<std::vector<std::shared_ptr<Node>>> subMoveNodes =
                 findChangeEventInSubNodes(OperationType::Move, correspondingDirNode);
         if (subMoveNodes) {
-            for (const auto node: *subMoveNodes) {
+            for (const auto &node: *subMoveNodes) {
                 moveNodes->push_back(Conflict(deleteNode, node, ConflictType::MoveParentDelete));
             }
         }
@@ -325,7 +326,7 @@ std::optional<std::vector<Conflict>> ConflictFinderWorker::checkCreateParentDele
         std::optional<std::vector<std::shared_ptr<Node>>> subMoveNodes =
                 findChangeEventInSubNodes(OperationType::Create, correspondingDirNode);
         if (subMoveNodes) {
-            for (const auto node: *subMoveNodes) {
+            for (const auto &node: *subMoveNodes) {
                 createNodes->push_back(Conflict(deleteNode, node, ConflictType::CreateParentDelete));
             }
         }
@@ -374,15 +375,15 @@ std::optional<std::vector<Conflict>> ConflictFinderWorker::determineMoveMoveCycl
         const std::vector<std::shared_ptr<Node>> &remoteMoveDirNodes) {
     std::optional<std::vector<Conflict>> conflicts = std::vector<Conflict>();
 
-    for (const auto localNode: localMoveDirNodes) {
-        for (const auto remoteNode: remoteMoveDirNodes) {
+    for (const auto &localNode: localMoveDirNodes) {
+        for (const auto &remoteNode: remoteMoveDirNodes) {
             if (*localNode->idb() == *remoteNode->idb()) {
                 continue;
             }
             // get databases relative paths
             bool found = false;
             SyncPath localDbPath;
-            if (!_syncPal->_syncDb->path(localNode->side(), *localNode->id(), localDbPath, found)) {
+            if (!_syncPal->syncDb()->cache().path(localNode->side(), *localNode->id(), localDbPath, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
                 return std::nullopt;
             }
@@ -393,7 +394,7 @@ std::optional<std::vector<Conflict>> ConflictFinderWorker::determineMoveMoveCycl
                 break;
             }
             SyncPath remoteDbPath;
-            if (!_syncPal->_syncDb->path(remoteNode->side(), *remoteNode->id(), remoteDbPath, found)) {
+            if (!_syncPal->syncDb()->cache().path(remoteNode->side(), *remoteNode->id(), remoteDbPath, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
                 return std::nullopt;
             }
@@ -442,7 +443,7 @@ std::optional<std::vector<std::shared_ptr<Node>>> ConflictFinderWorker::findChan
         queue.pop_front();
 
         // visit children
-        for (const auto child: node->children()) {
+        for (const auto &child: node->children()) {
             if (!visited[child.second]) {
                 visited[child.second] = true;
                 queue.push_back(child.second);

@@ -86,6 +86,7 @@ class COMMONSERVER_EXPORT Db {
         bool checkConnect(const std::string &version);
 
         bool addIntegerColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded = nullptr);
+        bool addTextColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded = nullptr);
         bool addColumnIfMissing(const std::string &tableName, const std::string &columnName, const std::string &requestId,
                                 const std::string &request, bool *columnAdded = nullptr);
 
@@ -95,7 +96,7 @@ class COMMONSERVER_EXPORT Db {
         log4cplus::Logger _logger;
         std::shared_ptr<SqliteDb> _sqliteDb;
         std::filesystem::path _dbPath;
-        std::mutex _mutex;
+        mutable std::recursive_mutex _mutex;
         int _transaction;
         std::string _journalMode;
         std::string _fromVersion;

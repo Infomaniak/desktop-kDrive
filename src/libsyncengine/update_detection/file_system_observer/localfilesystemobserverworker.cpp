@@ -25,6 +25,7 @@
 #include "requests/parameterscache.h"
 #include "requests/exclusiontemplatecache.h"
 #include "snapshot/snapshotitem.h"
+#include "utility/timerutility.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -32,7 +33,6 @@
 
 namespace KDC {
 
-static const int defaultDiscoveryInterval = 60000; // 60sec
 static const int waitForUpdateDelay = 1000; // 1sec
 
 LocalFileSystemObserverWorker::LocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
@@ -46,7 +46,7 @@ LocalFileSystemObserverWorker::~LocalFileSystemObserverWorker() {
 
 void LocalFileSystemObserverWorker::start() {
     //    _checksumWorker = std::unique_ptr<ContentChecksumWorker>(new ContentChecksumWorker(_syncPal, "Content Checksum", "COCH",
-    //    _snapshot)); _checksumWorker->start();
+    //    _liveSnapshot)); _checksumWorker->start();
 
     FileSystemObserverWorker::start();
 
@@ -62,16 +62,17 @@ void LocalFileSystemObserverWorker::stop() {
     //    _checksumWorker->waitForExit();
 }
 
-void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) {
+ExitInfo LocalFileSystemObserverWorker::changesDetected(
+        const std::list<std::pair<std::filesystem::path, OperationType>> &changes) {
     const std::lock_guard lock(_recursiveMutex);
 
     // Warning: OperationType retrieved from FSEvent (macOS) seems to be unreliable in some cases. One event might contain
     // several operations. Only Delete event seems to be 100% reliable Move event from outside the synced dir to inside it will
     // be considered by the OS as move while must be considered by the synchronizer as Create.
-    if (!_snapshot->isValid()) {
+    if (!_liveSnapshot.isValid()) {
         // Snapshot generation is ongoing, queue the events and process them later
         _pendingFileEvents.insert(_pendingFileEvents.end(), changes.begin(), changes.end());
-        return;
+        return ExitCode::Ok;
     }
 
     for (const auto &[path, opTypeFromOS]: changes) {
@@ -88,11 +89,10 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
         _syncPal->removeItemFromTmpBlacklist(relativePath);
 
-        auto ioError = IoError::Success;
 
         if (opTypeFromOS == OperationType::Delete) {
             // Check if exists with same nodeId
-            NodeId prevNodeId = _snapshot->itemId(relativePath);
+            NodeId prevNodeId = _liveSnapshot.itemId(relativePath);
             if (!prevNodeId.empty()) {
                 bool existsWithSameId = false;
                 NodeId otherNodeId;
@@ -100,7 +100,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                     IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, prevNodeId, existsWithSameId, otherNodeId,
                                                               checkError) &&
                     !existsWithSameId) {
-                    if (_snapshot->removeItem(prevNodeId)) {
+                    if (_liveSnapshot.removeItem(prevNodeId)) {
                         LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath)
                                                                                           << L" (" << Utility::s2ws(prevNodeId)
                                                                                           << L")");
@@ -111,11 +111,11 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         }
 
         FileStat fileStat;
-        ioError = IoError::Success;
+        auto ioError = IoError::Success;
         if (!IoHelper::getFileStat(absolutePath, &fileStat, ioError)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, ioError));
             tryToInvalidateSnapshot();
-            return;
+            return ExitCode::SystemError;
         }
 
         bool exists = true;
@@ -137,7 +137,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 LOGW_SYNCPAL_WARN(_logger,
                                   L"Error in IoHelper::getItemType: " << Utility::formatIoError(absolutePath, itemType.ioError));
                 tryToInvalidateSnapshot();
-                return;
+                return ExitCode::SystemError;
             }
             if (itemType.ioError == IoError::AccessDenied) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"getItemType failed for item: "
@@ -151,28 +151,17 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             isLink = itemType.linkType != LinkType::None;
 
             // Check if excluded by a file exclusion rule
-            bool isWarning = false;
-            bool toExclude = false;
-            const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), relativePath,
-                                                                                       isWarning, toExclude, ioError);
-            if (!success) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in ExclusionTemplateCache::isExcluded: "
-                                                   << Utility::formatIoError(absolutePath, ioError));
-                tryToInvalidateSnapshot();
-                return;
-            }
-            if (toExclude) {
+            if (bool isWarning = false; ExclusionTemplateCache::instance()->isExcluded(relativePath, isWarning)) {
                 if (isWarning) {
-                    Error error(_syncPal->syncDbId(), "", nodeId, nodeType, relativePath, ConflictType::None,
-                                InconsistencyType::None, CancelType::ExcludedByTemplate);
+                    const Error error(_syncPal->syncDbId(), "", nodeId, nodeType, relativePath, ConflictType::None,
+                                      InconsistencyType::None, CancelType::ExcludedByTemplate);
                     _syncPal->addError(error);
                 }
 
-                // Check if item still exist in snapshot
-                NodeId itemId = _snapshot->itemId(relativePath);
-                if (!itemId.empty()) {
-                    // Remove it from snapshot
-                    _snapshot->removeItem(itemId);
+                // Check if item still exist in liveSnapshot
+                if (const auto itemId = _liveSnapshot.itemId(relativePath); !itemId.empty()) {
+                    // Remove it from liveSnapshot
+                    (void) _liveSnapshot.removeItem(itemId);
                     LOGW_SYNCPAL_DEBUG(_logger,
                                        L"Item removed from sync because it is hidden: " << Utility::formatSyncPath(absolutePath));
                 } else {
@@ -187,30 +176,30 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
         if (!exists) {
             // This is a delete operation
-            // Get the ID from the snapshot
-            NodeId itemId = _snapshot->itemId(relativePath);
+            // Get the ID from the liveSnapshot
+            const auto itemId = _liveSnapshot.itemId(relativePath);
             if (itemId.empty()) {
                 // The file does not exist anymore, ignore it
                 continue;
             }
 
-            if (_snapshot->removeItem(itemId)) {
+            if (_liveSnapshot.removeItem(itemId)) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath)
                                                                                   << L" (" << Utility::s2ws(itemId) << L")");
             } else {
                 LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << Utility::formatSyncPath(absolutePath) << L" ("
                                                                     << Utility::s2ws(itemId) << L")");
                 tryToInvalidateSnapshot();
-                return;
+                return ExitCode::DataError;
             }
 
             continue;
         }
 
-        SyncPath parentPath = absolutePath.parent_path();
+        const auto parentPath = absolutePath.parent_path();
         NodeId parentNodeId;
         if (parentPath == _rootFolder) {
-            parentNodeId = *_syncPal->_syncDb->rootNode().nodeIdLocal();
+            parentNodeId = *_syncPal->syncDb()->rootNode().nodeIdLocal();
         } else {
             if (!IoHelper::getNodeId(parentPath, parentNodeId)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getNodeId for " << Utility::formatSyncPath(parentPath));
@@ -222,8 +211,8 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             // Filter out hydration/dehydration
             bool changed = false;
             const bool success =
-                    IoHelper::checkIfFileChanged(absolutePath, _snapshot->size(nodeId), _snapshot->lastModified(nodeId),
-                                                 _snapshot->createdAt(nodeId), changed, ioError);
+                    IoHelper::checkIfFileChanged(absolutePath, _liveSnapshot.size(nodeId), _liveSnapshot.lastModified(nodeId),
+                                                 _liveSnapshot.createdAt(nodeId), changed, ioError);
             if (!success) {
                 LOGW_SYNCPAL_WARN(_logger,
                                   L"Error in IoHelper::checkIfFileChanged: " << Utility::formatIoError(absolutePath, ioError));
@@ -242,7 +231,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                     LOGW_SYNCPAL_WARN(_logger,
                                       L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
                     tryToInvalidateSnapshot();
-                    return;
+                    return ExitCode::DataError;
                 }
 
                 if (vfsStatus.isPlaceholder) {
@@ -255,7 +244,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::vfsFileStatusChanged: "
                                                                << Utility::formatSyncPath(absolutePath));
                             tryToInvalidateSnapshot();
-                            return;
+                            return ExitCode::DataError;
                         }
                     }
                 }
@@ -272,32 +261,32 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             }
         }
 
-        if (const bool itemExistsInSnapshot = _snapshot->exists(nodeId); !itemExistsInSnapshot) {
+        if (const bool itemExistsInSnapshot = _liveSnapshot.exists(nodeId); !itemExistsInSnapshot) {
             if (opTypeFromOS == OperationType::Delete) {
                 // The node ID of the deleted item is different from `nodeId`. The latter is the identifier of an item with the
                 // same path as the deleted item and that exists on the file system at the time of the last check. This situation
                 // happens for instance if a file is deleted while another file with the same path has is recreated shortly
                 // afterward. Typically, editors of the MS suite (xlsx, docx) or Adobe suite (pdf) perform a
                 // Delete-followed-by-Create operation during a single edit.
-                NodeId itemId = _snapshot->itemId(relativePath);
-                if (_snapshot->removeItem(itemId)) {
+                NodeId itemId = _liveSnapshot.itemId(relativePath);
+                if (!itemId.empty() && _liveSnapshot.removeItem(itemId)) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath)
                                                                                       << L" (" << Utility::s2ws(itemId) << L")");
                 } else {
                     LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item: " << Utility::formatSyncPath(absolutePath) << L" ("
                                                                           << Utility::s2ws(itemId) << L")");
                     tryToInvalidateSnapshot();
-                    return;
+                    return ExitCode::DataError;
                 }
                 continue;
             }
 
-            if (_snapshot->pathExists(relativePath)) {
-                NodeId previousItemId = _snapshot->itemId(relativePath);
+            if (_liveSnapshot.pathExists(relativePath)) {
+                NodeId previousItemId = _liveSnapshot.itemId(relativePath);
                 // If an item with the same path already exists, remove it from snapshot because its ID might have changed (i.e.
                 // the file has been downloaded in the tmp folder then moved to override the existing one). The item will be
                 // inserted below anyway.
-                if (_snapshot->removeItem(previousItemId)) {
+                if (!previousItemId.empty() && _liveSnapshot.removeItem(previousItemId)) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath)
                                                                                       << L" (" << Utility::s2ws(previousItemId)
                                                                                       << L")");
@@ -305,25 +294,25 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                     LOGW_SYNCPAL_WARN(_logger, L"Failed to delete item: " << Utility::formatSyncPath(absolutePath) << L" ("
                                                                           << Utility::s2ws(previousItemId) << L")");
                     tryToInvalidateSnapshot();
-                    return;
+                    return ExitCode::DataError;
                 }
             }
 
             // This can be either Create, Move or Edit operation
-            SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime, fileStat.modtime,
-                              nodeType, fileStat.size, isLink, true, true);
+            SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime,
+                              fileStat.modificationTime, nodeType, fileStat.size, isLink, true, true);
 
-            if (!_snapshot->updateItem(item)) {
+            if (!_liveSnapshot.updateItem(item)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to insert item: " << Utility::formatSyncPath(absolutePath) << L" ("
                                                                       << Utility::s2ws(nodeId) << L")");
                 tryToInvalidateSnapshot();
-                return;
+                return ExitCode::DataError;
             }
 
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: " << Utility::formatSyncPath(absolutePath) << L" ("
                                                                                  << Utility::s2ws(nodeId) << L") at "
-                                                                                 << fileStat.modtime);
+                                                                                 << fileStat.modificationTime);
 
                 //                if (nodeType == NodeType::File) {
                 //                    if (canComputeChecksum(absolutePath)) {
@@ -341,27 +330,29 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                     continue;
                 }
 
-                if (!exploreDir(absolutePath, true)) {
-                    // Error while exploring directory, we need to invalidate the snapshot
+                if (const auto exitInfo = exploreDir(absolutePath, true); !exitInfo) {
+                    // Error while exploring directory, we need to invalidate the liveSnapshot
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in LocalFileSystemObserverWorker::exploreDir for "
+                                                       << Utility::formatSyncPath(absolutePath) << L" " << exitInfo);
                     tryToInvalidateSnapshot();
-                    return;
+                    return exitInfo;
                 }
             }
 
             continue;
         }
 
-        if (fileStat.modtime > _snapshot->lastModified(nodeId)) {
+        if (fileStat.modificationTime > _liveSnapshot.lastModified(nodeId)) {
             // This is an edit operation
 #ifdef __APPLE__
             if (_syncPal->vfsMode() == VirtualFileMode::Mac) {
                 // Exclude spurious operations (for example setIcon)
                 bool valid = true;
-                ExitCode exitCode = isEditValid(nodeId, absolutePath, fileStat.modtime, valid);
-                if (exitCode != ExitCode::Ok) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in LocalFileSystemObserverWorker::isEditValid");
+                if (const auto exitCode = isEditValid(nodeId, absolutePath, fileStat.modificationTime, valid);
+                    exitCode != ExitCode::Ok) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in LocalFileSystemObserverWorker::isEditValid code=" << exitCode);
                     tryToInvalidateSnapshot();
-                    return;
+                    return exitCode;
                 }
 
                 if (!valid) {
@@ -371,12 +362,12 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 #endif
         }
 
-        // Update snapshot
-        if (_snapshot->updateItem(SnapshotItem(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime,
-                                               fileStat.modtime, nodeType, fileStat.size, isLink, true, true))) {
+        // Update liveSnapshot
+        if (_liveSnapshot.updateItem(SnapshotItem(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime,
+                                                  fileStat.modificationTime, nodeType, fileStat.size, isLink, true, true))) {
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absolutePath) << L" (" << Utility::s2ws(nodeId)
-                                                      << L") updated in local snapshot at " << fileStat.modtime);
+                                                      << L") updated in local snapshot at " << fileStat.modificationTime);
             }
 
             if (nodeType == NodeType::File) {
@@ -389,9 +380,11 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             LOGW_SYNCPAL_WARN(_logger, L"Failed to update item: " << Utility::formatSyncPath(absolutePath) << L" ("
                                                                   << Utility::s2ws(nodeId) << L")");
             tryToInvalidateSnapshot();
-            return;
+            return ExitCode::DataError;
         }
     }
+
+    return ExitCode::Ok;
 }
 
 void LocalFileSystemObserverWorker::forceUpdate() {
@@ -400,96 +393,99 @@ void LocalFileSystemObserverWorker::forceUpdate() {
 }
 
 void LocalFileSystemObserverWorker::execute() {
-    ExitCode exitCode(ExitCode::Unknown);
-
-    LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
-    auto timerStart = std::chrono::steady_clock::now();
+    ExitInfo exitInfo = ExitCode::Ok;
+    LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
 
     // Sync loop
     for (;;) {
         if (stopAsked()) {
-            exitCode = ExitCode::Ok;
+            exitInfo = ExitCode::Ok;
             tryToInvalidateSnapshot();
             break;
         }
-        if (!_folderWatcher->exitInfo()) {
+
+        if (exitInfo = _syncPal->isRootFolderValid(); !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
+            invalidateSnapshot();
+            break;
+        }
+
+        if (exitInfo = _folderWatcher->exitInfo(); !exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error in FolderWatcher: " << _folderWatcher->exitInfo());
-            exitCode = _folderWatcher->exitInfo().code();
-            setExitCause(_folderWatcher->exitInfo().cause());
             tryToInvalidateSnapshot();
             break;
         }
         // We never pause this thread
-
-        if (!isFolderWatcherReliable() &&
-            (std::chrono::steady_clock::now() - timerStart).count() * 1000 > defaultDiscoveryInterval) {
-            // The folder watcher became unreliable so fallback to static synchronization
-            timerStart = std::chrono::steady_clock::now();
-            tryToInvalidateSnapshot();
-            exitCode = generateInitialSnapshot();
-            if (exitCode != ExitCode::Ok) {
-                LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot: code=" << exitCode);
+        if (!_liveSnapshot.isValid()) {
+            exitInfo = generateInitialSnapshot();
+            if (!exitInfo) {
+                LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot: " << exitInfo);
                 break;
             }
-        } else {
-            if (!_snapshot->isValid()) {
-                exitCode = generateInitialSnapshot();
-                if (exitCode != ExitCode::Ok) {
-                    LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot: code=" << exitCode);
+        }
+
+        // Wait 1 sec after the last update
+        if (_updating) {
+            auto diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
+                                                                                 _needUpdateTimerStart);
+            if (diff_ms.count() > waitForUpdateDelay) {
+                // Check if root folder is still valid
+                if (exitInfo = _syncPal->isRootFolderValid(); !exitInfo) {
+                    LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
+                    invalidateSnapshot();
                     break;
                 }
-            }
 
-            // Wait 1 sec after the last update
-            if (_updating) {
-                auto diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
-                                                                                     _needUpdateTimerStart);
-                if (diff_ms.count() > waitForUpdateDelay) {
-                    const std::lock_guard<std::recursive_mutex> lk(_recursiveMutex);
-                    _updating = false;
-                }
+                const std::scoped_lock lock(_recursiveMutex);
+                _updating = false;
             }
         }
+
         if (_initializing) _initializing = false;
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
-    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
-    setDone(exitCode);
+    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
+    setExitCause(exitInfo.cause());
+    setDone(exitInfo.code());
 }
 
-ExitCode LocalFileSystemObserverWorker::generateInitialSnapshot() {
+ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
+    ExitInfo mainExitInfo = ExitCode::Ok;
+
     LOG_SYNCPAL_INFO(_logger, "Starting local snapshot generation");
-    auto start = std::chrono::steady_clock::now();
+    const TimerUtility timer;
     auto perfMonitor = sentry::pTraces::scoped::LFSOGenerateInitialSnapshot(syncDbId());
 
-    _snapshot->init();
+    _liveSnapshot.init();
     _updating = true;
 
-    ExitCode res = exploreDir(_rootFolder);
-
-    std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
-    if (res == ExitCode::Ok && !stopAsked()) {
-        _snapshot->setValid(true);
-        LOG_SYNCPAL_INFO(_logger, "Local snapshot generated in: " << elapsed_seconds.count() << "s for " << _snapshot->nbItems()
-                                                                  << " items");
+    if (const auto exitInfo = exploreDir(_rootFolder); exitInfo.code() == ExitCode::Ok && !stopAsked()) {
+        _liveSnapshot.setValid(true);
+        LOG_SYNCPAL_INFO(_logger, "Local snapshot generated in: " << timer.elapsed<DoubleSeconds>().count() << "s for "
+                                                                  << _liveSnapshot.nbItems() << " items");
         perfMonitor.stop();
     } else if (stopAsked()) {
-        LOG_SYNCPAL_INFO(_logger, "Local snapshot generation stopped after: " << elapsed_seconds.count() << "s");
+        LOG_SYNCPAL_INFO(_logger, "Local snapshot generation stopped after: " << timer.elapsed<DoubleSeconds>().count() << "s");
     } else {
-        LOG_SYNCPAL_WARN(_logger, "Local snapshot generation failed after: " << elapsed_seconds.count() << "s");
+        LOG_SYNCPAL_WARN(_logger, "Local snapshot generation failed after: " << timer.elapsed<DoubleSeconds>().count()
+                                                                             << "s: " << exitInfo);
+        mainExitInfo = exitInfo;
     }
 
     const std::lock_guard<std::recursive_mutex> lock(_recursiveMutex);
     if (!_pendingFileEvents.empty()) {
         LOG_SYNCPAL_DEBUG(_logger, "Processing pending file events");
-        changesDetected(_pendingFileEvents);
+        if (const auto exitInfo = changesDetected(_pendingFileEvents); !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error in LocalFileSystemObserverWorker::changesDetected: " << exitInfo);
+            mainExitInfo.merge(exitInfo, {ExitCode::SystemError, ExitCode::DataError});
+        }
         _pendingFileEvents.clear();
         LOG_SYNCPAL_DEBUG(_logger, "Pending file events processed");
     }
 
     _updating = false;
 
-    return res;
+    return mainExitInfo;
 }
 
 bool LocalFileSystemObserverWorker::canComputeChecksum(const SyncPath &absolutePath) {
@@ -517,7 +513,7 @@ ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const 
         // Check if it is a metadata update
         DbNodeId dbNodeId = 0;
         bool found = false;
-        if (!_syncPal->_syncDb->dbId(ReplicaSide::Local, nodeId, dbNodeId, found)) {
+        if (!_syncPal->syncDb()->dbId(ReplicaSide::Local, nodeId, dbNodeId, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
             return ExitCode::DbError;
         }
@@ -527,7 +523,7 @@ ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const 
         }
 
         DbNode dbNode;
-        if (!_syncPal->_syncDb->node(dbNodeId, dbNode, found)) {
+        if (!_syncPal->syncDb()->node(dbNodeId, dbNode, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
             return ExitCode::DbError;
         }
@@ -551,19 +547,10 @@ void LocalFileSystemObserverWorker::sendAccessDeniedError(const SyncPath &absolu
     LOGW_SYNCPAL_INFO(_logger, L"Access denied on item: " << Utility::formatSyncPath(absolutePath));
 
     const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
-    bool isWarning = false;
-    bool isExcluded = false;
-    IoError ioError = IoError::Success;
-    const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), relativePath, isWarning,
-                                                                               isExcluded, ioError);
-    if (!success) {
-        LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::isExcluded: " << Utility::formatIoError(absolutePath, ioError));
+    if (ExclusionTemplateCache::instance()->isExcluded(relativePath)) {
         return;
     }
-    if (isExcluded) {
-        return;
-    }
-    _syncPal->handleAccessDeniedItem(relativePath);
+    (void) _syncPal->handleAccessDeniedItem(relativePath);
 }
 
 ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParentDirPath, bool fromChangeDetected) {
@@ -574,20 +561,17 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     if (!IoHelper::getItemType(absoluteParentDirPath, itemType)) {
         LOGW_WARN(_logger,
                   L"Error in IoHelper::getItemType: " << Utility::formatIoError(absoluteParentDirPath, itemType.ioError));
-        setExitCause(ExitCause::Unknown);
         return ExitCode::SystemError;
     }
 
     if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_SYNCPAL_WARN(_logger, L"Local " << Utility::formatSyncPath(absoluteParentDirPath) << L" doesn't exist");
-        setExitCause(ExitCause::SyncDirDoesntExist);
-        return {ExitCode::SystemError, ExitCause::SyncDirDoesntExist};
+        return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
     }
 
     if (itemType.ioError == IoError::AccessDenied) {
         LOGW_SYNCPAL_WARN(_logger, L"Local " << Utility::formatSyncPath(absoluteParentDirPath) << L" misses read permission");
-        setExitCause(ExitCause::SyncDirAccesError);
-        return {ExitCode::SystemError, ExitCause::SyncDirAccesError};
+        return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
     }
 
     if (itemType.linkType != LinkType::None) {
@@ -600,20 +584,17 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
         if (!IoHelper::getDirectoryIterator(absoluteParentDirPath, true, ioError, dirIt)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getDirectoryIterator: "
                                                << Utility::formatIoError(absoluteParentDirPath, ioError));
-            setExitCause(ExitCause::Unknown);
             return ExitCode::SystemError;
         }
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_SYNCPAL_WARN(_logger, L"Local " << Utility::formatIoError(absoluteParentDirPath, ioError));
-            setExitCause(ExitCause::SyncDirDoesntExist);
-            return {ExitCode::SystemError, ExitCause::SyncDirDoesntExist};
+            return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
         }
 
         if (ioError == IoError::AccessDenied) {
             LOGW_SYNCPAL_WARN(_logger, L"Local " << Utility::formatIoError(absoluteParentDirPath, ioError));
-            setExitCause(ExitCause::SyncDirAccesError);
-            return {ExitCode::SystemError, ExitCause::SyncDirAccesError};
+            return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
         }
         DirectoryEntry entry;
         bool endOfDirectory = false;
@@ -639,9 +620,8 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 continue;
             }
             if (itemType.ioError == IoError::AccessDenied) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"getItemType failed for item: "
-                                                    << Utility::formatIoError(absoluteParentDirPath, ioError)
-                                                    << L". Blacklisting it temporarily");
+                LOGW_SYNCPAL_DEBUG(_logger, L"getItemType failed for item: " << Utility::formatIoError(absolutePath, ioError)
+                                                                             << L". Blacklisting it temporarily");
                 sendAccessDeniedError(absolutePath);
             }
 
@@ -650,7 +630,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
 
             // Check if the directory entry is managed
             bool isManaged = false;
-            if (!Utility::checkIfDirEntryIsManaged(entry, isManaged, itemType, ioError)) {
+            if (!Utility::checkIfDirEntryIsManaged(entry, isManaged, ioError, itemType)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged: "
                                                    << Utility::formatIoError(absoluteParentDirPath, ioError));
                 dirIt.disableRecursionPending();
@@ -677,17 +657,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
 
             if (!toExclude) {
                 // Check template exclusion
-                bool isWarning = false;
-                bool isExcluded = false;
-                const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), relativePath,
-                                                                                           isWarning, isExcluded, ioError);
-                if (!success) {
-                    LOGW_SYNCPAL_DEBUG(_logger, L"Error in ExclusionTemplateCache::isExcluded: "
-                                                        << Utility::formatIoError(absolutePath, ioError));
-                    dirIt.disableRecursionPending();
-                    continue;
-                }
-                if (isExcluded) {
+                if (ExclusionTemplateCache::instance()->isExcluded(relativePath)) {
                     LOGW_SYNCPAL_INFO(_logger,
                                       L"Item: " << Utility::formatSyncPath(absolutePath) << L" rejected because it is excluded");
                     toExclude = true;
@@ -726,16 +696,15 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             // Get parent folder id
             NodeId parentNodeId;
             if (absolutePath.parent_path() == _rootFolder) {
-                parentNodeId = *_syncPal->_syncDb->rootNode().nodeIdLocal();
+                parentNodeId = *_syncPal->syncDb()->rootNode().nodeIdLocal();
             } else {
-                parentNodeId = snapshot()->itemId(relativePath.parent_path());
+                parentNodeId = _liveSnapshot.itemId(relativePath.parent_path());
                 if (parentNodeId.empty()) {
                     FileStat parentFileStat;
                     if (!IoHelper::getFileStat(absolutePath.parent_path(), &parentFileStat, ioError)) {
                         LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: "
                                                    << Utility::formatIoError(absolutePath.parent_path(), ioError));
-                        setExitCause(ExitCause::FileAccessError);
-                        return ExitCode::SystemError;
+                        return {ExitCode::SystemError, ExitCause::FileAccessError};
                     }
 
                     if (ioError == IoError::NoSuchFileOrDirectory) {
@@ -755,14 +724,14 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             }
 
             const SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime,
-                                    fileStat.modtime, itemType.nodeType, fileStat.size, isLink, true, true);
-            if (_snapshot->updateItem(item)) {
+                                    fileStat.modificationTime, itemType.nodeType, fileStat.size, isLink, true, true);
+            if (_liveSnapshot.updateItem(item)) {
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: "
                                                         << Utility::formatSyncPath(absolutePath.filename()) << L" inode:"
                                                         << Utility::s2ws(nodeId) << L" parent inode:"
                                                         << Utility::s2ws(parentNodeId) << L" createdAt:" << fileStat.creationTime
-                                                        << L" modtime:" << fileStat.modtime << L" isDir:"
+                                                        << L" modificationTime:" << fileStat.modificationTime << L" isDir:"
                                                         << (itemType.nodeType == NodeType::Directory) << L" size:"
                                                         << fileStat.size << L" isLink:" << isLink);
                 }
@@ -774,7 +743,6 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     } catch (std::filesystem::filesystem_error &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
                          "Error caught in LocalFileSystemObserverWorker::exploreDir: code=" << e.code() << " error=" << e.what());
-        setExitCause(ExitCause::Unknown);
         return ExitCode::SystemError;
     } catch (...) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error caught in LocalFileSystemObserverWorker::exploreDir");

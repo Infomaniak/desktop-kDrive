@@ -20,7 +20,6 @@
 #include "gui/errortabwidget.h"
 #include "parametersdialog.h"
 #include "bottomwidget.h"
-#include "actionwidget.h"
 #include "custommessagebox.h"
 #include "debugreporter.h"
 #include "guiutility.h"
@@ -30,10 +29,9 @@
 #include "genericerroritemwidget.h"
 #include "guirequests.h"
 #include "parameterscache.h"
-#include "libcommongui/logger.h"
+#include "libcommongui/matomoclient.h"
 #include "libcommon/utility/qlogiffail.h"
 #include "libcommon/utility/utility.h"
-#include "libcommongui/utility/utility.h"
 
 #include <QDesktopServices>
 #include <QDir>
@@ -66,7 +64,9 @@ static const int defaultLogoIconSize = 50;
 
 Q_LOGGING_CATEGORY(lcParametersDialog, "gui.parametersdialog", QtInfoMsg)
 
-ParametersDialog::ParametersDialog(std::shared_ptr<ClientGui> gui, QWidget *parent) : CustomDialog(false, parent), _gui(gui) {
+ParametersDialog::ParametersDialog(std::shared_ptr<ClientGui> gui, QWidget *parent) :
+    CustomDialog(false, parent),
+    _gui(gui) {
     initUI();
 
     connect(this, &ParametersDialog::exit, this, &ParametersDialog::onExit);
@@ -369,25 +369,31 @@ QString ParametersDialog::getAppErrorText(const QString &fctCode, const ExitCode
 
 QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, const ExitCause exitCause) const {
     switch (exitCause) {
-        case ExitCause::SyncDirDoesntExist:
+        case ExitCause::SyncDirAccessError:
             return tr("The synchronization folder is no longer accessible (error %1).<br>"
                       "Synchronization will resume as soon as the folder is accessible.")
                     .arg(err);
-
-        case ExitCause::SyncDirAccesError:
-            return tr("The synchronization folder is inaccessible (error %1).<br>"
-                      "Please check that you have read and write access to this folder.")
+        case ExitCause::SyncDirChanged:
+            return tr("The synchronization folder has been replaced or moved in a way that prevents syncing (error %1).<br>"
+                      "This can happen after copying, moving, or restoring the folder.<br>"
+                      "To fix this, please create a new synchronization with a new folder.<br>"
+                      "Note: if you have unsynced changes in the old folder, you will need to copy them manually into the new "
+                      "one.")
                     .arg(err);
 
         case ExitCause::NotEnoughDiskSpace:
             return tr(
-                    "There is not enough space left on your disk.<br>"
+                    "There is not enough space left on your computer.<br>"
                     "The synchronization has been stopped.");
-
-        case ExitCause::NotEnoughtMemory:
+        case ExitCause::NotEnoughMemory:
             return tr(
                     "There is not enough memory left on your machine.<br>"
                     "The synchronization has been stopped.");
+        case ExitCause::NotEnoughINotifyWatches:
+            return tr("The number of inotify watches is insufficient (error %1).<br>"
+                      "You can raise this number by editing '/etc/sysctl.conf'.")
+                    .arg(err);
+
         case ExitCause::LiteSyncNotAllowed: {
             if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS &&
                 QOperatingSystemVersion::current().majorVersion() >= 15) {
@@ -536,9 +542,16 @@ QString ParametersDialog::getSyncPalErrorText(const QString &fctCode, const Exit
                       "Token invalid or revoked.")
                     .arg(err);
         case ExitCode::InvalidSync:
-            return tr("Nested synchronizations are prohibited (error %1).<br>"
-                      "You should only keep synchronizations whose folders are not nested.")
-                    .arg(err);
+            if (exitCause == ExitCause::SyncDirNestingError) {
+                return tr("Nested synchronizations are prohibited (error %1).<br>"
+                          "You should only keep synchronizations whose folders are not nested.")
+                        .arg(err);
+            } else if (exitCause == ExitCause::SyncDirAccessError) {
+                return tr("The sync folder on the remote kDrive no longer exists or is no longer accessible (error %1).<br>"
+                          "You need to restore it or give it back access rights or delete/recreate the synchronization.")
+                        .arg(err);
+            }
+            break;
         case ExitCode::LogicError:
             if (exitCause == ExitCause::FullListParsingError) {
                 return tr("File name parsing error (error %1).<br>"
@@ -619,6 +632,12 @@ QString ParametersDialog::getInconsistencyText(const InconsistencyType inconsist
         text += (text.isEmpty() ? "" : "\n");
         text +=
                 tr("The item name contains an unsupported character.<br>"
+                   "It has been temporarily blacklisted.");
+    }
+    if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::ForbiddenCharEndWithSpace)) {
+        text += (text.isEmpty() ? "" : "\n");
+        text +=
+                tr("The item name ends with a space, which is forbidden on your operating system.<br>"
                    "It has been temporarily blacklisted.");
     }
     if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::ReservedName)) {
@@ -713,7 +732,7 @@ QString ParametersDialog::getCancelText(const CancelType cancelType, const QStri
                     "You can disable this type of notification from the Preferences");
         }
         case CancelType::Hardlink: {
-            return tr("This item has been excluded from sync because it is an hard link");
+            return tr("This item has been excluded from sync because it is a hard link.");
         }
         case CancelType::FileRescued: {
             return tr(
@@ -752,6 +771,11 @@ QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const {
         case ExitCause::NotFound: {
             return tr("Impossible to download the file.");
         }
+        case ExitCause::FileLocked: {
+            return tr(
+                    "This item is currently locked by another user online.<br>"
+                    "We will retry uploading your changes later.");
+        }
         default:
             return tr("Synchronization error.");
     }
@@ -778,7 +802,7 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
                         "Please fix the read and write permissions.");
             } else if (errorInfo.exitCause() == ExitCause::NotEnoughDiskSpace) {
                 return tr(
-                        "There is not enough space left on your disk.<br>"
+                        "There is not enough space left on your computer.<br>"
                         "The download has been canceled.");
             }
             return tr("System error.");
@@ -787,7 +811,7 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
             return getBackErrorText(errorInfo);
         }
         case ExitCode::DataError: {
-            if (errorInfo.exitCause() == ExitCause::FileAlreadyExists) {
+            if (errorInfo.exitCause() == ExitCause::FileExists) {
                 return tr(
                         "Item already exists on other side.<br>"
                         "It has been temporarily blacklisted.");
@@ -949,10 +973,12 @@ void ParametersDialog::onItemCompleted(int syncDbId, const SyncFileItemInfo &ite
 }
 
 void ParametersDialog::onPreferencesButtonClicked() {
+    MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "preferencesButton");
     _pageStackedWidget->setCurrentIndex(Page::Preferences);
 }
 
 void ParametersDialog::onOpenHelp() {
+    MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "helpButton");
     QDesktopServices::openUrl(QUrl(Theme::instance()->helpUrl()));
 }
 
@@ -972,15 +998,18 @@ void ParametersDialog::onDriveSelected(int driveDbId) {
 }
 
 void ParametersDialog::onAddDrive() {
+    MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "addDriveButton");
     emit addDrive();
 }
 
 void ParametersDialog::onRemoveDrive(int driveDbId) {
+    MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "removeDriveButton", driveDbId);
     EnableStateHolder stateHolder(this);
     emit removeDrive(driveDbId);
 }
 
 void ParametersDialog::onDisplayDriveErrors(int driveDbId) {
+    MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "displayErrors", driveDbId);
     const auto driveInfoIt = _gui->driveInfoMap().find(driveDbId);
     if (driveInfoIt == _gui->driveInfoMap().end()) {
         qCDebug(lcParametersDialog()) << "Account id not found in account map!";
@@ -1008,23 +1037,28 @@ void ParametersDialog::onDisplayGeneralErrors() {
 
 void ParametersDialog::onDisplayDriveParameters() {
     _pageStackedWidget->setCurrentIndex(Page::Drive);
+    MatomoClient::sendVisit(MatomoNameField::PG_Parameters);
 }
 
 void ParametersDialog::onDisplayPreferences() {
     _pageStackedWidget->setCurrentIndex(Page::Preferences);
+    MatomoClient::sendVisit(MatomoNameField::PG_Preferences);
 }
 
 void ParametersDialog::onBackButtonClicked() {
     if (_pageStackedWidget->currentIndex() == Page::Preferences) {
         onDisplayDriveParameters();
+        MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "backButton", 0);
         return;
     }
 
     if (_pageStackedWidget->currentIndex() == Page::Errors) {
         if (_errorsStackedWidget->currentIndex() == toInt(DriveInfoClient::ParametersStackedWidget::General)) {
             onDisplayPreferences();
+            MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "backButton", 1);
         } else {
             onDisplayDriveParameters();
+            MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "backButton", 0);
         }
     }
 }
@@ -1201,7 +1235,8 @@ void ParametersDialog::refreshErrorList(int driveDbId) {
         if (isConflictsWithLocalRename(errorInfo.conflictType())) {
             errorTabWidget->showResolveConflicts(true);
         }
-        if (errorInfo.inconsistencyType() == InconsistencyType::ForbiddenChar) {
+        if (errorInfo.inconsistencyType() == InconsistencyType::ForbiddenChar ||
+            errorInfo.inconsistencyType() == InconsistencyType::ForbiddenCharEndWithSpace) {
             errorTabWidget->showResolveUnsupportedCharacters(true);
         }
 

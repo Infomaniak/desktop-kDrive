@@ -38,8 +38,13 @@ static const int statusIconSize = 24;
 Q_LOGGING_CATEGORY(lcStatusBarWidget, "gui.statusbarwidget", QtInfoMsg)
 
 StatusBarWidget::StatusBarWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
-    HalfRoundRectWidget(parent), _gui(gui), _driveDbId(0), _statusIconLabel(nullptr), _statusLabel(nullptr),
-    _pauseButton(nullptr), _resumeButton(nullptr) {
+    HalfRoundRectWidget(parent),
+    _gui(gui),
+    _driveDbId(0),
+    _statusIconLabel(nullptr),
+    _statusLabel(nullptr),
+    _pauseButton(nullptr),
+    _resumeButton(nullptr) {
     setContentsMargins(hMargin, vMargin, hMargin, vMargin);
 
     _statusIconLabel = new QLabel(this);
@@ -136,24 +141,23 @@ void StatusBarWidget::onLinkActivated(const QString &link) {
 }
 
 void StatusBarWidget::showStatusMenu(bool pauseClicked) {
-    bool resetButtons = false;
-
     if (_severalSyncs) {
         MenuWidget *menu = new MenuWidget(MenuWidget::Menu, this);
+        bool resetButtons = false;
         createStatusActionMenu(menu, resetButtons, pauseClicked);
+        if (resetButtons) {
+            _pauseButton->setVisible(false);
+            _resumeButton->setVisible(false);
+        }
     } else {
+        _pauseButton->setVisible(false);
+        _resumeButton->setVisible(false);
+
         if (pauseClicked) {
             emit pauseSync(ActionTarget::Drive);
         } else {
             emit resumeSync(ActionTarget::Drive);
         }
-        resetButtons = true;
-    }
-
-    // Status is updated after a sync resume
-    if (resetButtons) {
-        _pauseButton->setVisible(false);
-        _resumeButton->setVisible(false);
     }
 }
 

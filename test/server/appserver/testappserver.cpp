@@ -70,7 +70,7 @@ void TestAppServer::setUp() {
 
     _localPath = localPathStr;
     _remotePath = testVariables.remotePath;
-    Sync sync(1, drive.dbId(), _localPath, _remotePath);
+    Sync sync(1, drive.dbId(), _localPath, "", _remotePath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     ParmsDb::instance()->close();
@@ -108,23 +108,19 @@ void TestAppServer::testInitAndStopSyncPal() {
     // Check sync nesting
     ExitInfo exitInfo = _appPtr->checkIfSyncIsValid(sync);
     CPPUNIT_ASSERT(exitInfo);
-
     // Start Vfs
     exitInfo = _appPtr->createAndStartVfs(sync);
     CPPUNIT_ASSERT(exitInfo);
-
     // Start SyncPal
     const std::chrono::seconds startDelay{0};
     exitInfo = _appPtr->initSyncPal(sync, QSet<QString>(), QSet<QString>(), QSet<QString>(), /*start*/ true, startDelay,
                                     /*resumedByUser*/ false, /*firstInit*/ true);
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
-
     // Stop SyncPal (pause by user)
     exitInfo = _appPtr->stopSyncPal(syncDbId, /*pausedByUser*/ true);
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(waitForSyncStatus(syncDbId, SyncStatus::Stopped));
-
     // Resume SyncPal
     exitInfo = _appPtr->initSyncPal(sync, QSet<QString>(), QSet<QString>(), QSet<QString>(), /*start*/ true, startDelay,
                                     /*resumedByUser*/ true, /*firstInit*/ false);
@@ -182,7 +178,7 @@ void TestAppServer::testStartAndStopSync() {
     // Start syncs
     exitInfo = _appPtr->startSyncs();
     CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
-    CPPUNIT_ASSERT_EQUAL(ExitCause::SyncDirDoesntExist, exitInfo.cause());
+    CPPUNIT_ASSERT_EQUAL(ExitCause::SyncDirAccessError, exitInfo.cause());
 
     // Update sync local folder with the good value
     CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync, found) && found);
@@ -222,7 +218,7 @@ void MockAppServer::cleanup() {
 
     // Reset static variables
     AppServer::reset();
-    JobManager::reset();
+    JobManager::instance()->clear();
     ParmsDb::reset();
     ParametersCache::reset();
 }

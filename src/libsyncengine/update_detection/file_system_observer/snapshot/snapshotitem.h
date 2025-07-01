@@ -23,6 +23,7 @@
 
 #include <string>
 #include <unordered_set>
+#include "snapshotrevisionhandler.h"
 
 namespace KDC {
 
@@ -37,36 +38,36 @@ class SnapshotItem {
         SnapshotItem(const SnapshotItem &other);
 
         [[nodiscard]] const NodeId &id() const { return _id; }
-        void setId(const NodeId &id) { _id = id; }
+        void setId(const NodeId &id);
         [[nodiscard]] const NodeId &parentId() const { return _parentId; }
-        void setParentId(const NodeId &newParentId) { _parentId = newParentId; }
+        void setParentId(const NodeId &newParentId);
         [[nodiscard]] const std::unordered_set<std::shared_ptr<SnapshotItem>> &children() const { return _children; }
         [[nodiscard]] const SyncName &name() const { return _name; }
         [[nodiscard]] const SyncName &normalizedName() const { return _normalizedName; }
-        void setName(const SyncName &newName) {
-            _name = newName;
-            if (!Utility::normalizedSyncName(newName, _normalizedName)) {
-                _normalizedName = newName;
-                LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncName(newName));
-            }
-        }
+        void setName(const SyncName &newName);
         [[nodiscard]] SyncTime createdAt() const { return _createdAt; }
-        void setCreatedAt(const SyncTime newCreatedAt) { _createdAt = newCreatedAt; }
+        void setCreatedAt(const SyncTime newCreatedAt);
         [[nodiscard]] SyncTime lastModified() const { return _lastModified; }
-        void setLastModified(const SyncTime newLastModified) { _lastModified = newLastModified; }
+        void setLastModified(const SyncTime newLastModified);
         [[nodiscard]] NodeType type() const { return _type; }
-        void setType(const NodeType type) { _type = type; }
+        void setType(const NodeType type);
         [[nodiscard]] int64_t size() const;
-        void setSize(const int64_t newSize) { _size = newSize; }
+        void setSize(const int64_t newSize);
         [[nodiscard]] bool isLink() const { return _isLink; }
-        void setIsLink(const bool isLink) { _isLink = isLink; }
+        void setIsLink(const bool isLink);
         [[nodiscard]] const std::string &contentChecksum() const { return _contentChecksum; }
-        void setContentChecksum(const std::string &newChecksum) { _contentChecksum = newChecksum; }
+        void setContentChecksum(const std::string &newChecksum);
         [[nodiscard]] bool canWrite() const { return _canWrite; }
-        void setCanWrite(const bool canWrite) { _canWrite = canWrite; }
+        void setCanWrite(const bool canWrite);
         [[nodiscard]] bool canShare() const { return _canShare; }
-        void setCanShare(bool canShare) { _canShare = canShare; }
+        void setCanShare(bool canShare);
+        void setLastChangedSnapshotVersion(SnapshotRevision snapshotVersion);
+        SnapshotRevision lastChangeRevision() const { return _lastChangeRevision; }
 
+        void setSnapshotRevisionHandler(const std::shared_ptr<SnapshotRevisionHandler> &snapshotRevisionHandler) {
+            _snapshotRevisionHandler = snapshotRevisionHandler;
+            _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
+        }
         SnapshotItem &operator=(const SnapshotItem &other);
 
         void copyExceptChildren(const SnapshotItem &other);
@@ -89,7 +90,8 @@ class SnapshotItem {
         bool _canWrite = true;
         bool _canShare = true;
         std::unordered_set<std::shared_ptr<SnapshotItem>> _children;
-
+        SnapshotRevision _lastChangeRevision = 0; // The revision of the snapshot corresponding to the last change of this item.
+        std::shared_ptr<SnapshotRevisionHandler> _snapshotRevisionHandler;
         mutable SyncPath _path; // The item relative path. Cached value. To use only on a snapshot copy, not a real time one.
 
         [[nodiscard]] SyncPath path() const { return _path; }

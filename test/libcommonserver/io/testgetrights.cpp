@@ -36,17 +36,18 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(std::filesystem::exists(targetPath, ec) && ec.value() == 0);
 
         std::filesystem::create_symlink(targetPath, path, ec);
-        CPPUNIT_ASSERT(ec.value() == 0);
+        CPPUNIT_ASSERT_MESSAGE(ec.message(), ec.value() == 0);
 
         bool readPermission = false;
         bool writePermission = false;
         bool execPermission = false;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
         CPPUNIT_ASSERT(execPermission == true);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // Getting the rights of a dangling symbolic link on a file
@@ -59,17 +60,18 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(!std::filesystem::exists(targetPath, ec));
 
         std::filesystem::create_symlink(targetPath, path, ec);
-        CPPUNIT_ASSERT(ec.value() == 0);
+        CPPUNIT_ASSERT_MESSAGE(ec.message(), ec.value() == 0);
 
         bool readPermission = false;
         bool writePermission = false;
         bool execPermission = false;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
         CPPUNIT_ASSERT(execPermission == true);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // Getting the rights of a regular symbolic link on a folder
@@ -83,17 +85,18 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(std::filesystem::exists(targetPath, ec));
 
         std::filesystem::create_directory_symlink(targetPath, path, ec);
-        CPPUNIT_ASSERT(ec.value() == 0);
+        CPPUNIT_ASSERT_MESSAGE(ec.message(), ec.value() == 0);
 
         bool readPermission = false;
         bool writePermission = false;
         bool execPermission = false;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
         CPPUNIT_ASSERT(execPermission == true);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // Getting the rights of a dangling symbolic link on a folder
@@ -106,17 +109,18 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(!std::filesystem::exists(targetPath, ec));
 
         std::filesystem::create_directory_symlink(targetPath, path, ec);
-        CPPUNIT_ASSERT(ec.value() == 0);
+        CPPUNIT_ASSERT_MESSAGE(ec.message(), ec.value() == 0);
 
         bool readPermission = false;
         bool writePermission = false;
         bool execPermission = false;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
         CPPUNIT_ASSERT(execPermission == true);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
 #if defined(__APPLE__)
@@ -132,18 +136,19 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(std::filesystem::exists(targetPath, ec) && ec.value() == 0);
 
         IoError aliasError;
-        CPPUNIT_ASSERT(_testObj->createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
 
         bool readPermission = false;
         bool writePermission = false;
         bool execPermission = false;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
         CPPUNIT_ASSERT(execPermission == false);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // Getting the rights of a MacOSX Finder alias on a non existing file.
@@ -155,7 +160,7 @@ void TestIo::testGetRights() {
         { std::ofstream ofs(targetPath); }
 
         IoError aliasError;
-        CPPUNIT_ASSERT(_testObj->createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
 
         std::error_code ec;
@@ -166,11 +171,12 @@ void TestIo::testGetRights() {
         bool writePermission = false;
         bool execPermission = false;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
         CPPUNIT_ASSERT(execPermission == false);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // Getting the rights of a MacOSX Finder alias on a regular directory.
@@ -184,18 +190,19 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(std::filesystem::exists(targetPath, ec) && ec.value() == 0);
 
         IoError aliasError;
-        CPPUNIT_ASSERT(_testObj->createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
 
         bool readPermission = false;
         bool writePermission = false;
         bool execPermission = false;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
         CPPUNIT_ASSERT(execPermission == false);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // Getting the rights of a MacOSX Finder alias on a non existing directory.
@@ -208,7 +215,7 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == 0);
 
         IoError aliasError;
-        CPPUNIT_ASSERT(_testObj->createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
 
         CPPUNIT_ASSERT(std::filesystem::remove(targetPath, ec) && ec.value() == 0);
@@ -218,11 +225,12 @@ void TestIo::testGetRights() {
         bool writePermission = false;
         bool execPermission = false;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
         CPPUNIT_ASSERT(execPermission == false);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 #elif defined(_WIN32)
     // Getting the rights of a junction on a regular folder.
@@ -236,18 +244,19 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(std::filesystem::exists(targetPath, ec) && ec.value() == 0);
 
         IoError junctionError{IoError::Unknown};
-        CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, junctionError));
+        CPPUNIT_ASSERT(IoHelper::createJunctionFromPath(targetPath, path, junctionError));
         CPPUNIT_ASSERT(junctionError == IoError::Success);
 
         bool readPermission = false;
         bool writePermission = false;
         bool execPermission = false;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
         CPPUNIT_ASSERT(execPermission == true);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // Getting the rights of a junction on a non existing folder.
@@ -260,18 +269,19 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(!std::filesystem::exists(targetPath, ec));
 
         IoError junctionError{IoError::Unknown};
-        CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, junctionError));
+        CPPUNIT_ASSERT(IoHelper::createJunctionFromPath(targetPath, path, junctionError));
         CPPUNIT_ASSERT(junctionError == IoError::Success);
 
         bool readPermission = false;
         bool writePermission = false;
         bool execPermission = false;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
         CPPUNIT_ASSERT(execPermission == true);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 #endif
 }

@@ -60,7 +60,7 @@ void TestPlatformInconsistencyCheckerWorker::setUp() {
     const Drive drive(1, 1, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
-    const Sync sync(1, drive.dbId(), _tempDir.path(), "");
+    const Sync sync(1, drive.dbId(), _tempDir.path(), "", "", "");
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Create SyncPal
@@ -121,7 +121,8 @@ void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
     forbiddenName = Str("test\ntest");
     CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
     forbiddenName = Str("test ");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(!PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::nameEndWithForbiddenSpace(forbiddenName));
 #elif defined(__unix__) && !defined(__APPLE__)
     forbiddenName = std::string("test");
     forbiddenName.append(1, '\0');
@@ -179,18 +180,18 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
     }
 
     // Set up DB
-    const DbNode dbNodeLower(2, _syncPal->_syncDb->rootNode().nodeId(), Str("a1"), Str("a1"), "la", "ra",
+    const DbNode dbNodeLower(2, _syncPal->syncDb()->rootNode().nodeId(), Str("a1"), Str("a1"), "la", "ra",
                              testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                              testhelpers::defaultFileSize, std::nullopt);
-    const DbNode dbNodeUpper(3, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "lA", "rA", testhelpers::defaultTime,
+    const DbNode dbNodeUpper(3, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "lA", "rA", testhelpers::defaultTime,
                              testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                              testhelpers::defaultFileSize, std::nullopt);
     DbNodeId dbNodeIdLower;
     DbNodeId dbNodeIdUpper;
     bool constraintError = false;
-    _syncPal->_syncDb->insertNode(dbNodeLower, dbNodeIdLower, constraintError);
-    _syncPal->_syncDb->insertNode(dbNodeUpper, dbNodeIdUpper, constraintError);
-
+    _syncPal->syncDb()->insertNode(dbNodeLower, dbNodeIdLower, constraintError);
+    _syncPal->syncDb()->insertNode(dbNodeUpper, dbNodeIdUpper, constraintError);
+    _syncPal->syncDb()->cache().reloadIfNeeded();
     // Set up remote tree
     const auto remoteParentNode = _syncPal->updateTree(ReplicaSide::Remote)->rootNode();
     const auto remoteNodeLower = std::make_shared<Node>(

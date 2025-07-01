@@ -20,6 +20,7 @@
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
+#include "utility/timerutility.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -27,27 +28,31 @@
 
 namespace KDC {
 
-ComputeChecksumJob::ComputeChecksumJob(const NodeId &nodeId, const SyncPath &filepath, std::shared_ptr<Snapshot> localSnapshot) :
-    _logger(Log::instance()->getLogger()), _nodeId(nodeId), _filePath(filepath), _localSnapshot(localSnapshot) {}
+ComputeChecksumJob::ComputeChecksumJob(const NodeId &nodeId, const SyncPath &filepath,
+                                       const std::shared_ptr<LiveSnapshot> localSnapshot) :
+    _logger(Log::instance()->getLogger()),
+    _nodeId(nodeId),
+    _filePath(filepath),
+    _localSnapshot(localSnapshot) {}
 
 void ComputeChecksumJob::runJob() {
     if (isExtendedLog()) {
-        LOGW_DEBUG(_logger, L"Checksum job started: id: " << jobId() << L", path: " << Path2WStr(_filePath).c_str());
+        LOGW_DEBUG(_logger, L"Checksum job started: id: " << jobId() << L", path: " << Path2WStr(_filePath));
     }
 
-    auto start = std::chrono::steady_clock::now();
+    const TimerUtility timer;
     bool stopped = false;
 
     // Create a hash stat
     XXH3_state_t *const state = XXH3_createState();
     if (!state) {
-        LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath).c_str());
+        LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath));
         return;
     }
 
     // Initialize state with selected seed
     if (XXH3_64bits_reset(state) == XXH_ERROR) {
-        LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath).c_str());
+        LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath));
         return;
     }
 
@@ -59,8 +64,7 @@ void ComputeChecksumJob::runJob() {
             do {
                 len = fread(buf, 1, BUFSIZ, f);
                 if (XXH3_64bits_update(state, buf, len) == XXH_ERROR) {
-                    LOGW_WARN(_logger,
-                              L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath).c_str());
+                    LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath));
                     return;
                 }
             } while (len == BUFSIZ);
@@ -76,19 +80,18 @@ void ComputeChecksumJob::runJob() {
             fclose(f);
 
             if (stopped) {
-                LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" aborted for file " << Path2WStr(_filePath).c_str());
+                LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" aborted for file " << Path2WStr(_filePath));
             } else {
-                std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
                 if (isExtendedLog()) {
-                    LOGW_DEBUG(_logger, L"Checksum computation " << jobId() << L" for file " << Path2WStr(_filePath).c_str()
-                                                                 << L" took " << elapsed_seconds.count() << L"s");
+                    LOGW_DEBUG(_logger, L"Checksum computation " << jobId() << L" for file " << Path2WStr(_filePath) << L" took "
+                                                                 << timer.elapsed<DoubleSeconds>().count() << L"s");
                 }
             }
         } else {
-            LOGW_DEBUG(_logger, L"Item does not exist anymore - path=" << Path2WStr(_filePath).c_str());
+            LOGW_DEBUG(_logger, L"Item does not exist anymore - path=" << Path2WStr(_filePath));
         }
     } catch (...) {
-        LOGW_DEBUG(_logger, L"File " << Path2WStr(_filePath).c_str() << L" is not readable");
+        LOGW_DEBUG(_logger, L"File " << Path2WStr(_filePath) << L" is not readable");
     }
 
     if (isExtendedLog()) {

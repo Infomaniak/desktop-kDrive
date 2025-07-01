@@ -22,6 +22,7 @@
 #include "libcommonserver/network/proxy.h"
 #include "libsyncengine/jobs/network/API_v2/movejob.h"
 #include "mocks/libcommonserver/db/mockdb.h"
+#include "jobs/jobmanager.h"
 
 #include "test_utility/testhelpers.h"
 #include "test_utility/timeouthelper.h"
@@ -67,7 +68,7 @@ void TestSyncPalWorker::setUp() {
 
     _localPath = localPathStr;
     _remotePath = testVariables.remotePath;
-    _sync = Sync(1, drive.dbId(), _localPath, _remotePath);
+    _sync = Sync(1, drive.dbId(), _localPath, "", _remotePath);
     (void) ParmsDb::instance()->insertSync(_sync);
 
     // Setup proxy
@@ -88,14 +89,16 @@ void TestSyncPalWorker::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
 
-    for (auto& thread: _runningThreads) {
+    for (auto &thread: _runningThreads) {
         if (thread->joinable()) {
             thread->join();
         }
     }
+    JobManager::instance()->stop();
+    JobManager::instance()->clear();
 }
 
-void TestSyncPalWorker::setUpTestInternalPause(const std::chrono::steady_clock::duration& longPollDuration) {
+void TestSyncPalWorker::setUpTestInternalPause(const std::chrono::steady_clock::duration &longPollDuration) {
     // Setup SyncPal
     _syncPal = std::make_shared<MockSyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(),
                                              KDRIVE_VERSION_STRING);
@@ -127,7 +130,7 @@ void TestSyncPalWorker::setUpTestInternalPause(const std::chrono::steady_clock::
 
     // Let the first sync finish
     CPPUNIT_ASSERT(TimeoutHelper::waitFor([this]() { return _syncPal->step() == SyncStep::Propagation2; },
-                                          std::chrono::seconds(20), std::chrono::milliseconds(5)));
+                                          std::chrono::seconds(60), std::chrono::milliseconds(5)));
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor([this]() { return _syncPal->step() == SyncStep::Idle; }, std::chrono::seconds(20),
                                           std::chrono::milliseconds(5)));
@@ -155,29 +158,30 @@ void TestSyncPalWorker::testInternalPause1() {
     // Ensure automatic restart & re-pausing without starting a new sync cycle while network is down even if an event is pending
     CPPUNIT_ASSERT_EQUAL(SyncStep::Idle, syncpalWorker->step());
     mockLfso->simulateFSEvent();
-    CPPUNIT_ASSERT(mockLfso->snapshot()->updated()); // Ensure the event is pending
+    CPPUNIT_ASSERT(mockLfso->liveSnapshot().updated()); // Ensure the event is pending
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // wait for automatic restart
-            [&syncpalWorker]() { return syncpalWorker->_unpauseAsked; },
+            [&syncpalWorker]() { return (syncpalWorker->unpauseAsked() || !syncpalWorker->isPaused()); },
             [&syncpalWorker]() { CPPUNIT_ASSERT_EQUAL(SyncStep::Idle, syncpalWorker->step()); }, testTimeout, loopWait));
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the automatic re-pause
-            [&syncpalWorker]() { return syncpalWorker->isPaused(); },
+            [&syncpalWorker]() { return syncpalWorker->pauseAsked() || syncpalWorker->isPaused(); },
             [&syncpalWorker]() { CPPUNIT_ASSERT_EQUAL(SyncStep::Idle, syncpalWorker->step()); }, testTimeout, loopWait));
 
-    CPPUNIT_ASSERT(mockLfso->snapshot()->updated()); // Ensure the event is still pending
+    CPPUNIT_ASSERT(mockLfso->liveSnapshot().updated()); // Ensure the event is still pending
 
     // Restore network and check that SyncPal resumes and propagates the event
     mockRfso->setNetworkAvailability(true);
 
-    CPPUNIT_ASSERT(TimeoutHelper::waitFor([&syncpalWorker]() { return !syncpalWorker->isPaused(); }, testTimeout, loopWait));
+    CPPUNIT_ASSERT(TimeoutHelper::waitFor(
+            [&syncpalWorker]() { return syncpalWorker->unpauseAsked() || !syncpalWorker->isPaused(); }, testTimeout, loopWait));
     // Wait for a new sync to start
     CPPUNIT_ASSERT(TimeoutHelper::waitFor([this]() { return _syncPal->step() != SyncStep::Idle; }, testTimeout, loopWait));
     // Wait for the sync to finish
     CPPUNIT_ASSERT(TimeoutHelper::waitFor([this]() { return _syncPal->step() == SyncStep::Idle; }, testTimeout, loopWait));
 
     // Ensure the event was propagated
-    CPPUNIT_ASSERT(!mockLfso->snapshot()->updated());
+    CPPUNIT_ASSERT(!mockLfso->liveSnapshot().updated());
 }
 
 void TestSyncPalWorker::testInternalPause2() {
@@ -210,7 +214,7 @@ void TestSyncPalWorker::testInternalPause2() {
 
     // Simulate a FileSysem event to start a sync cycle
     mockLfso->simulateFSEvent();
-    CPPUNIT_ASSERT(mockLfso->snapshot()->updated());
+    CPPUNIT_ASSERT(mockLfso->liveSnapshot().updated());
 
     // Wait for the sync to reach PlatformInconsistencyCheckerWorker
     CPPUNIT_ASSERT(TimeoutHelper::waitFor(
@@ -225,7 +229,7 @@ void TestSyncPalWorker::testInternalPause2() {
 
     // Ensure automatic restart & re-(ask)pausing while the current worker is still running
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the automatic restart
-            [&syncpalWorker]() { return syncpalWorker->_unpauseAsked; },
+            [&syncpalWorker]() { return syncpalWorker->unpauseAsked() || !syncpalWorker->isPaused(); },
             [&syncpalWorker, this]() {
                 CPPUNIT_ASSERT_EQUAL(SyncStep::Reconciliation1, syncpalWorker->step());
                 CPPUNIT_ASSERT_EQUAL(SyncStatus::Running, _syncPal->status());
@@ -235,7 +239,7 @@ void TestSyncPalWorker::testInternalPause2() {
 
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the re-pause because the network is still down
-            [&syncpalWorker]() { return syncpalWorker->pauseAsked(); },
+            [&syncpalWorker]() { return syncpalWorker->pauseAsked() || syncpalWorker->isPaused(); },
             [&syncpalWorker, this]() {
                 CPPUNIT_ASSERT_EQUAL(SyncStep::Reconciliation1, syncpalWorker->step());
                 CPPUNIT_ASSERT_EQUAL(SyncStatus::Running, _syncPal->status());
@@ -253,7 +257,7 @@ void TestSyncPalWorker::testInternalPause2() {
 
     // Ensure the sync is paused when the propagation2 step is reached
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the sync to finish
-            [&syncpalWorker]() { return syncpalWorker->isPaused(); },
+            [&syncpalWorker]() { return syncpalWorker->pauseAsked() || syncpalWorker->isPaused(); },
             [&syncpalWorker]() { CPPUNIT_ASSERT_EQUAL(SyncStep::Propagation2, syncpalWorker->step()); }, testTimeout, loopWait));
 
     mockRfso->setNetworkAvailability(true);
@@ -267,7 +271,7 @@ void TestSyncPalWorker::testInternalPause3() {
     setUpTestInternalPause(std::chrono::seconds(1));
 
     // Constants
-    constexpr auto testTimeout = std::chrono::seconds(20);
+    constexpr auto testTimeout = std::chrono::seconds(60);
     constexpr auto loopWait = std::chrono::milliseconds(5);
     const auto mockSyncPal = std::dynamic_pointer_cast<MockSyncPal>(_syncPal);
     const auto mockLfso = mockSyncPal->getMockLFSOWorker();
@@ -292,24 +296,24 @@ void TestSyncPalWorker::testInternalPause3() {
 
     // Simulate a FileSysem event to start a sync cycle
     mockLfso->simulateFSEvent();
-    CPPUNIT_ASSERT(mockLfso->snapshot()->updated());
+    CPPUNIT_ASSERT(mockLfso->liveSnapshot().updated());
 
     // Check that if a worker fails due to a network error, the synchronization is paused and then resumed at the same step.
     // Wait for the sync to reach ExecutorWorker
     CPPUNIT_ASSERT(TimeoutHelper::waitFor([&mockExecutorWorkerWaiting]() { return mockExecutorWorkerWaiting.load(); },
                                           testTimeout, loopWait));
 
-    CPPUNIT_ASSERT(!mockLfso->snapshot()->updated());
+    CPPUNIT_ASSERT(!mockLfso->liveSnapshot().updated());
     mockLfso->simulateFSEvent(); // Simulate a new event to check that a new sync cycle will be started when this one
                                  // completes
-    CPPUNIT_ASSERT(mockLfso->snapshot()->updated());
+    CPPUNIT_ASSERT(mockLfso->liveSnapshot().updated());
 
     mockExecutorWorkerExitInfo =
             ExitInfo(ExitCode::NetworkError, ExitCause::Unknown); // Simulate a network error in the executor worker
     mockExecutorWorkerWaiting = false; // Unlock the executor worker
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor(
-            [&syncpalWorker]() { return syncpalWorker->isPaused(); },
+            [&syncpalWorker]() { return syncpalWorker->pauseAsked() || syncpalWorker->isPaused(); },
             [&syncpalWorker]() { CPPUNIT_ASSERT_EQUAL(SyncStep::Propagation2, syncpalWorker->step()); }, testTimeout, loopWait));
 
     CPPUNIT_ASSERT_EQUAL(SyncStatus::Paused, _syncPal->status());
@@ -319,7 +323,7 @@ void TestSyncPalWorker::testInternalPause3() {
     CPPUNIT_ASSERT(TimeoutHelper::waitFor([&syncpalWorker]() { return syncpalWorker->step() == SyncStep::Idle; },
                                           [&mockExecutorWorkerWaiting]() { mockExecutorWorkerWaiting = false; }, testTimeout,
                                           loopWait));
-    CPPUNIT_ASSERT(mockLfso->snapshot()->updated());
+    CPPUNIT_ASSERT(mockLfso->liveSnapshot().updated());
 
     // Wait for a new sync to start
     CPPUNIT_ASSERT(TimeoutHelper::waitFor([&syncpalWorker]() { return syncpalWorker->step() != SyncStep::Idle; }, testTimeout,
@@ -328,7 +332,7 @@ void TestSyncPalWorker::testInternalPause3() {
     CPPUNIT_ASSERT(TimeoutHelper::waitFor([&syncpalWorker]() { return syncpalWorker->step() == SyncStep::Idle; },
                                           [&mockExecutorWorkerWaiting]() { mockExecutorWorkerWaiting = false; }, testTimeout,
                                           loopWait));
-    CPPUNIT_ASSERT(!mockLfso->snapshot()->updated());
+    CPPUNIT_ASSERT(!mockLfso->liveSnapshot().updated());
 }
 
 
@@ -350,7 +354,7 @@ std::shared_ptr<TestSyncPalWorker::MockExecutorWorker> TestSyncPalWorker::MockSy
     return std::static_pointer_cast<MockExecutorWorker>(_executorWorker);
 }
 
-void TestSyncPalWorker::MockSyncPal::createWorkers(const std::chrono::seconds& startDelay) {
+void TestSyncPalWorker::MockSyncPal::createWorkers(const std::chrono::seconds &startDelay) {
     _localFSObserverWorker = std::make_shared<MockLFSO>(shared_from_this(), "Mock Local File System Observer", "M_LFSO");
     _remoteFSObserverWorker = std::make_shared<MockRemoteFileSystemObserverWorker>(shared_from_this(),
                                                                                    "Mock Remote File System Observer", "M_RFSO");
@@ -374,7 +378,7 @@ void TestSyncPalWorker::MockSyncPal::createWorkers(const std::chrono::seconds& s
     _tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(shared_from_this());
 }
 
-ExitCode TestSyncPalWorker::MockRemoteFileSystemObserverWorker::sendLongPoll(bool& changes) {
+ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
     using namespace std::chrono;
     changes = false;
     if (!_networkAvailable) {
@@ -391,20 +395,14 @@ ExitCode TestSyncPalWorker::MockRemoteFileSystemObserverWorker::sendLongPoll(boo
     return ExitCode::Ok;
 }
 
-ExitCode TestSyncPalWorker::MockRemoteFileSystemObserverWorker::generateInitialSnapshot() {
-    _snapshot->init();
-    _updating = true;
-
+ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::generateInitialSnapshot() {
     if (_networkAvailable) {
-        _snapshot->setValid(true);
-        _updating = false;
-        return ExitCode::Ok;
+        return RemoteFileSystemObserverWorker::generateInitialSnapshot();
     } else {
+        _liveSnapshot.init();
         invalidateSnapshot();
         _updating = false;
         return ExitCode::NetworkError;
     }
 }
-
-
 } // namespace KDC

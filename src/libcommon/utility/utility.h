@@ -40,7 +40,12 @@
 
 namespace KDC {
 struct COMMON_EXPORT CommonUtility {
-        enum IconType { MAIN_FOLDER_ICON, COMMON_DOCUMENT_ICON, DROP_BOX_ICON, NORMAL_FOLDER_ICON };
+        enum IconType {
+            MAIN_FOLDER_ICON,
+            COMMON_DOCUMENT_ICON,
+            DROP_BOX_ICON,
+            NORMAL_FOLDER_ICON
+        };
 
         static inline const QString linkStyle = QString("color:#0098FF; font-weight:450; text-decoration:none;");
 
@@ -110,7 +115,13 @@ struct COMMON_EXPORT CommonUtility {
         static size_t maxPathLength();
 
         static bool isSubDir(const SyncPath &path1, const SyncPath &path2);
-
+        /**
+         * @brief Determines if the given path is the root folder of a disk and optionally suggests a corrected path.
+         * @param absolutePath The absolute path to check for being a disk root folder.
+         * @param suggestedPath Reference to a path variable where a suggested corrected path may be stored if the input is not a disk root.
+         * @return True if the given path is a disk root folder; otherwise, false.
+         */
+        static bool isDiskRootFolder(const SyncPath &absolutePath, SyncPath &suggestedPath);
         static const std::string dbVersionNumber(const std::string &dbVersion);
         static bool isVersionLower(const std::string &currentVersion, const std::string &targetVersion);
 
@@ -151,6 +162,68 @@ struct COMMON_EXPORT CommonUtility {
 
         static void resetTranslations();
 
+        static bool normalizedSyncName(const SyncName &name, SyncName &normalizedName,
+                                       UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
+        /**
+         * Split the input path into a vector of file and directory names.
+         * @param path the path to split.
+         * @return A vector of the file and directory names composing the path, sorted
+         * in reverse order.
+         * Example: the return value associated to path = SyncPath("A / B / c.txt") is the vector
+         * ["c.txt", "B", "A"]
+         */
+        static std::list<SyncName> splitSyncPath(const SyncPath &path);
+
+        /**
+         * Split the input string wrt `separator` into a vector of strings.
+         * @param name the string to split.
+         * @return A vector of strings, sorted in the natural order.
+         * Example: the return value associated to Str("A / B / c.txt") is the vector
+         * ["A", "B", "c.txt"]
+         */
+        static std::vector<SyncName> splitSyncName(SyncName name, const SyncName &delimiter);
+
+        /**
+         * Split the input path string into a vector of file and directory names.
+         * @param name the path to split. This path can be a regular expression, e.g., 'A/file_*.txt'.
+         * @param separator string used as delimiter for the splitting, e.g. "/".
+         * @return A vector of the file and directory names composing the path, sorted
+         * in their natural order.
+         * Example: the return value associated to path = SyncName("A / B / c.txt") is the vector
+         * ["A", "B", "c.txt"]. The splitting is done wrt to the native filename separator.
+         * The output of splitPath(pathName) can be significantly different from
+         * splitPath(SyncPath{pathName}), see unit tests.
+         */
+        static std::vector<SyncName> splitPath(const SyncName &pathName);
+
+        /**
+         * Returns the preferred path separator.
+         * @return SyncName("/") on Unix-like systems and SyncName("\\") on Windows.
+         */
+        static SyncName preferredPathSeparator();
+
+
+        //
+        //! Computes and returns the NFC and NFD normalizations of `name`.
+        /*!
+          \param name is the string the normalizations of which are queried.
+          \return a set of SyncNames containing the NFC and NFD normalizations of name, when those are successful.
+          The returned set contains additionally the SyncName name in any case.
+        */
+        static SyncNameSet computeSyncNameNormalizations(const SyncName &name);
+
+        //
+        //! Computes and returns all possible NFC and NFD normalizations of `path` segments
+        //! interpreted as a file system path.
+        /*!
+          \param templateString is the path string the normalizations of which are queried.
+          \return a set of SyncNames containing the NFC and NFD normalizations of path, when those are successful.
+          The returned set contains additionally the string path in any case.
+        */
+        static SyncNameSet computePathNormalizations(const SyncName &path);
+
+        static ReplicaSide syncNodeTypeSide(SyncNodeType type);
+
     private:
         static std::mutex _generateRandomStringMutex;
 
@@ -158,11 +231,43 @@ struct COMMON_EXPORT CommonUtility {
                                                 const int length = 10);
 
         static void extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion);
+
+        //
+        //! Computes recursively and returns all possible NFC and NFD normalizations of `pathSegments` segments
+        //! interpreted as a file system path.
+        /*!
+          \param pathSegments is the split path string the normalizations of which are queried.
+          \param lastIndex is the index of the las segment that should be considered.
+          \return a set of SyncNames containing the NFC and NFD normalizations of the elements of pathSegments
+          from index 0 to lastIndex, when those are successful.
+          The returned set contains additionally the concatenated elements of pathSegments, from index 0 to index lastIndex,
+          in any case.
+        */
+        static SyncNameSet computePathNormalizations(const std::vector<SyncName> &pathSegments, const int64_t lastIndex);
+
+        //
+        //! Computes recursively and returns all possible NFC and NFD normalizations of `pathSegments` segments
+        //! interpreted as a file system path.
+        /*!
+          \param pathSegments is the split path strings the normalizations of which are queried.
+          \return a set of SyncNames containing the NFC and NFD normalizations of pathSegments, when those are successful.
+          The returned set contains additionally the concatenated pathSegments in any case.
+        */
+        static SyncNameSet computePathNormalizations(const std::vector<SyncName> &pathSegments);
 };
 
 struct COMMON_EXPORT StdLoggingThread : public std::thread {
         template<class... Args>
         explicit StdLoggingThread(void (*runFct)(Args...), Args &&...args) :
+            std::thread(
+                    [=]() {
+                        runFct(args...);
+                        log4cplus::threadCleanup();
+                    },
+                    args...) {}
+
+        template<class... Args>
+        explicit StdLoggingThread(std::function<void(Args...)> runFct, Args &&...args) :
             std::thread(
                     [=]() {
                         runFct(args...);
@@ -180,7 +285,8 @@ struct COMMON_EXPORT QtLoggingThread : public QThread {
 
 struct ArgsReader {
         template<class... Args>
-        explicit ArgsReader(Args... args) : stream(&params, QIODevice::WriteOnly) {
+        explicit ArgsReader(Args... args) :
+            stream(&params, QIODevice::WriteOnly) {
             read(args...);
         }
 
@@ -201,7 +307,8 @@ struct ArgsReader {
 };
 
 struct ArgsWriter {
-        explicit ArgsWriter(const QByteArray &results) : stream{QDataStream(results)} {};
+        explicit ArgsWriter(const QByteArray &results) :
+            stream{QDataStream(results)} {};
 
         template<class T>
         void write(T &r) {

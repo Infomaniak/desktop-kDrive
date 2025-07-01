@@ -17,14 +17,13 @@
  */
 
 #include "abstractloginjob.h"
-#include "config.h"
 #include "jobs/network/networkjobsparams.h"
 #include "libcommonserver/utility/utility.h"
-#include "requests/parameterscache.h"
 #include "utility/jsonparserutility.h"
 #include "utility/urlhelper.h"
 
 #include <Poco/JSON/Parser.h>
+#include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
 
@@ -72,7 +71,7 @@ bool AbstractLoginJob::handleError(std::istream &inputStream, const Poco::URI &u
     try {
         jsonError = jsonParser.parse(inputStream).extract<Poco::JSON::Object::Ptr>();
     } catch (Poco::Exception &exc) {
-        LOG_WARN(_logger, "Reply " << jobId() << " received doesn't contain a valid JSON error: " << exc.displayText().c_str());
+        LOG_WARN(_logger, "Reply " << jobId() << " received doesn't contain a valid JSON error: " << exc.displayText());
         Utility::logGenericServerError(_logger, "Login error", inputStream, _resHttp);
 
         _exitInfo = {ExitCode::BackError, ExitCause::ApiErr};
@@ -82,7 +81,7 @@ bool AbstractLoginJob::handleError(std::istream &inputStream, const Poco::URI &u
     if (isExtendedLog()) {
         std::ostringstream os;
         jsonError->stringify(os);
-        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << Utility::s2ws(os.str()).c_str());
+        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << Utility::s2ws(os.str()));
     }
 
     Poco::JSON::Object::Ptr errorObj = jsonError->getObject(errorKey);
@@ -93,8 +92,7 @@ bool AbstractLoginJob::handleError(std::istream &inputStream, const Poco::URI &u
         if (!JsonParserUtility::extractValue(errorObj, descriptionKey, _errorDescr)) {
             return false;
         }
-        LOG_WARN(_logger,
-                 "Error in request " << uri.toString().c_str() << " : " << _errorCode.c_str() << " - " << _errorDescr.c_str());
+        LOG_WARN(_logger, "Error in request " << uri.toString() << " : " << _errorCode << " - " << _errorDescr);
         _exitInfo = ExitCode::BackError;
     } else {
         JsonParserUtility::extractValue(jsonError, errorKey, _errorCode, false);
@@ -105,11 +103,11 @@ bool AbstractLoginJob::handleError(std::istream &inputStream, const Poco::URI &u
         if (getNetworkErrorCode(_errorCode) == NetworkErrorCode::InvalidGrant ||
             getNetworkErrorReason(errorReason) == NetworkErrorReason::RefreshTokenRevoked) {
             _errorDescr = errorReason;
-            LOG_WARN(_logger, "Error in request " << uri.toString().c_str() << " : refresh token has been revoked ");
-            noRetry();
+            LOG_WARN(_logger, "Error in request " << uri.toString() << " : refresh token has been revoked ");
+            disableRetry();
             _exitInfo = ExitCode::InvalidToken;
         } else {
-            LOG_WARN(_logger, "Error in request " << uri.toString().c_str() << " : " << errorReason.c_str());
+            LOG_WARN(_logger, "Error in request " << uri.toString() << " : " << errorReason);
             _exitInfo = ExitCode::BackError;
         }
     }

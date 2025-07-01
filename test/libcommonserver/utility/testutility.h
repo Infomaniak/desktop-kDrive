@@ -57,13 +57,13 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testXxHash);
         CPPUNIT_TEST(testToUpper);
         CPPUNIT_TEST(testErrId);
-        CPPUNIT_TEST(testcheckIfDirEntryIsManaged);
-        CPPUNIT_TEST(isSubDir);
+        CPPUNIT_TEST(testCheckIfDirEntryIsManaged);
+        CPPUNIT_TEST(testIsSubDir);
+        CPPUNIT_TEST(testIsDiskRootFolder);
         CPPUNIT_TEST(testNormalizedSyncName);
         CPPUNIT_TEST(testNormalizedSyncPath);
         CPPUNIT_TEST(testIsSameOrParentPath);
         CPPUNIT_TEST(testUserName);
-        CPPUNIT_TEST(testSplitPath);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -104,13 +104,13 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testXxHash();
         void testToUpper();
         void testErrId();
-        void isSubDir();
-        void testcheckIfDirEntryIsManaged();
+        void testIsSubDir();
+        void testIsDiskRootFolder();
+        void testCheckIfDirEntryIsManaged();
         void testNormalizedSyncName();
         void testNormalizedSyncPath();
         void testIsSameOrParentPath();
         void testUserName();
-        void testSplitPath();
 
     private:
         std::unique_ptr<Utility> _testObj;

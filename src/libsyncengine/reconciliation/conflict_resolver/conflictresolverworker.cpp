@@ -24,7 +24,8 @@
 namespace KDC {
 
 ConflictResolverWorker::ConflictResolverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                               const std::string &shortName) : OperationProcessor(syncPal, name, shortName) {}
+                                               const std::string &shortName) :
+    OperationProcessor(syncPal, name, shortName) {}
 
 void ConflictResolverWorker::execute() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
@@ -63,9 +64,16 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
     if (res != ExitCode::Ok) {
         return res;
     }
+
+    handleConflictOnOmittedEdit(conflict, continueSolving);
+
     if (continueSolving) return ExitCode::Ok;
 
     switch (conflict.type()) {
+        case ConflictType::MoveCreate: {
+            generateMoveCreateConflictOperation(conflict, continueSolving);
+            break;
+        }
         case ConflictType::CreateCreate:
         case ConflictType::EditEdit: {
             res = generateLocalRenameOperation(conflict, continueSolving);
@@ -86,9 +94,8 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
         }
         case ConflictType::MoveMoveSource:
         case ConflictType::MoveMoveDest:
-        case ConflictType::MoveMoveCycle:
-        case ConflictType::MoveCreate: {
-            res = generateUndoMoveOperation(conflict, getLoserNode(conflict));
+        case ConflictType::MoveMoveCycle: {
+            res = generateUndoMoveOperation(conflict, conflict.localNode());
             break;
         }
         default: {
@@ -99,6 +106,22 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
     }
 
     return res;
+}
+
+void ConflictResolverWorker::handleConflictOnOmittedEdit(const Conflict &conflict, bool &continueSolving) {
+    if (const auto localNode = conflict.localNode();
+        localNode->hasChangeEvent(OperationType::Edit) && !editChangeShouldBePropagated(localNode)) {
+        const auto editOp = std::make_shared<SyncOperation>();
+        editOp->setType(OperationType::Edit);
+        editOp->setAffectedNode(localNode);
+        editOp->setCorrespondingNode(conflict.remoteNode());
+        editOp->setOmit(true);
+        editOp->setTargetSide(ReplicaSide::Remote);
+        editOp->setConflict(conflict);
+        LOGW_SYNCPAL_INFO(_logger, getLogString(editOp));
+        (void) _syncPal->syncOps()->pushOp(editOp);
+        continueSolving = true;
+    }
 }
 
 ExitCode ConflictResolverWorker::handleConflictOnDehydratedPlaceholder(const Conflict &conflict, bool &continueSolving) {
@@ -165,15 +188,38 @@ ExitCode ConflictResolverWorker::generateLocalRenameOperation(const Conflict &co
     return ExitCode::Ok;
 }
 
+ExitCode ConflictResolverWorker::generateMoveCreateConflictOperation(const Conflict &conflict, bool &continueSolving) {
+    ExitInfo res = ExitCode::Ok;
+    if (conflict.localNode()->hasChangeEvent(OperationType::Move)) {
+        res = generateUndoMoveOperation(conflict, conflict.localNode());
+    } else {
+        res = generateLocalRenameOperation(conflict, continueSolving);
+    }
+
+    return res;
+}
+
 ExitCode ConflictResolverWorker::generateEditDeleteConflictOperation(const Conflict &conflict, bool &continueSolving) {
     const auto deleteNode = conflict.node()->hasChangeEvent(OperationType::Delete) ? conflict.node() : conflict.otherNode();
     const auto editNode = conflict.node()->hasChangeEvent(OperationType::Edit) ? conflict.node() : conflict.otherNode();
     if (deleteNode->parentNode()->hasChangeEvent(OperationType::Delete)) {
-        // The edit operation happen in a deleted directory.
-        // Move the items that have been modified locally (if any).
-        // Delete operations will be propagated on next sync.
-        rescueModifiedLocalNodes(conflict, editNode);
-        continueSolving = true;
+        if (editNode->side() == ReplicaSide::Local) {
+            // Move the items that have been modified locally to the rescue folder.
+            // Delete operations will be propagated on next sync.
+            rescueModifiedLocalNodes(conflict, editNode);
+            continueSolving = true;
+        } else {
+            // Delete operation wins.
+            const auto deleteOp = std::make_shared<SyncOperation>();
+            deleteOp->setType(OperationType::Delete);
+            deleteOp->setAffectedNode(deleteNode); 
+            deleteOp->setCorrespondingNode(editNode);
+            deleteOp->setTargetSide(ReplicaSide::Remote);
+            deleteOp->setConflict(conflict);
+            continueSolving = true;
+            LOGW_SYNCPAL_INFO(_logger, getLogString(deleteOp));
+            (void) _syncPal->syncOps()->pushOp(deleteOp);
+        }
     } else {
         // Edit operation wins.
         // Remove the edited node from DB.
@@ -186,7 +232,7 @@ ExitCode ConflictResolverWorker::generateEditDeleteConflictOperation(const Confl
         deleteOp->setTargetSide(deleteNode->side()); // Target side does not matter when we remove only in DB
         deleteOp->setConflict(conflict);
 
-        LOGW_SYNCPAL_INFO(_logger, getLogString(deleteOp));
+        LOGW_SYNCPAL_INFO(_logger, getLogString(deleteOp, true));
 
         (void) _syncPal->syncOps()->pushOp(deleteOp);
     }
@@ -297,15 +343,6 @@ void ConflictResolverWorker::generateRescueOperation(const Conflict &conflict, c
     (void) _syncPal->syncOps()->pushOp(moveOp);
 }
 
-std::shared_ptr<Node> ConflictResolverWorker::getLoserNode(const Conflict &conflict) {
-    auto loserNode = conflict.localNode();
-    if (!loserNode->hasChangeEvent(OperationType::Move)) {
-        loserNode = conflict.remoteNode();
-    }
-
-    return loserNode;
-}
-
 bool ConflictResolverWorker::generateConflictedName(const std::shared_ptr<Node> node, SyncName &newName,
                                                     const bool isOrphanNode /*= false*/) const {
     const auto absoluteLocalFilePath = _syncPal->localPath() / node->getPath();
@@ -363,6 +400,8 @@ ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, 
 
     moveOp->setType(OperationType::Move);
     const auto correspondingNode = correspondingNodeInOtherTree(moveNode);
+    correspondingNode->setMoveOriginInfos({moveNode->getPath(), moveNode->parentNode()->id().value_or("")});
+    correspondingNode->insertChangeEvent(OperationType::Move);
     moveOp->setAffectedNode(correspondingNode);
     moveOp->setCorrespondingNode(moveNode);
     moveOp->setTargetSide(moveNode->side());
@@ -372,12 +411,19 @@ ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, 
     return ExitCode::Ok;
 }
 
-std::wstring ConflictResolverWorker::getLogString(SyncOpPtr op) {
+std::wstring ConflictResolverWorker::getLogString(SyncOpPtr op, bool omit /*= false*/) {
     if (!op->correspondingNode()) return {};
     std::wstringstream ss;
-    ss << L"Operation " << op->type() << L" to be propagated on " << op->targetSide() << L" replica for item "
+    if (omit) {
+        ss << L"Operation " << op->type() << L" to be propagated on DB only for item "
        << Utility::formatSyncName(op->correspondingNode()->name()) << L" (" << Utility::s2ws(*op->correspondingNode()->id())
        << L")";
+    }
+    else {
+        ss << L"Operation " << op->type() << L" to be propagated on " << op->targetSide() << L" replica for item "
+       << Utility::formatSyncName(op->correspondingNode()->name()) << L" (" << Utility::s2ws(*op->correspondingNode()->id())
+       << L")";
+    }
     return ss.str();
 }
 

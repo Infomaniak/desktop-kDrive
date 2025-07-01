@@ -19,19 +19,21 @@
 <!DOCTYPE html>
 <html>
 <body>
-<h1>Release notes - kDrive 3.6.10</h1>
+<h1>Release notes - kDrive 3.7.0</h1>
+<h2><b>New features</b></h2>
+<ul>
+  <li>linux - Wayland support.</li>
+  <li>Synchronization of hidden folders/files can no longer be disabled.</li>
+</ul>
+<h2><b>Optimizations</b></h2>
+<ul>
+  <li>Various synchronization optimizations.</li>
+</ul>
 <h2><b>Bug fixes</b></h2>
-  <ul>
-    <li>Fixed a bug leading to file duplication in case of access error.</li>
-    <li>Fixed a crash that may occur during conflict resolution.</li>
-    <li>Fixed a bug allowing to free the space occupied a file although it is not yet synchronized.</li>
-    <li>Fixed a bug where the sync might remain stuck after pausing it.</li>
-    <li>Improved the management of access denied errors.</li>
-    <li>Improved user experience for sending logs.</li>
-    <li>macOS - Improved German translation in installer.</li>
-    <li>macOS - Fixed a bug which makes the synchronization loop when renaming a file or a directory while only changing the type case.</li>
-    <li>linux - Fixed a bug where new changes were not synchronized if a parent folder had been moved.</li>
-    <li>win - Fixed a bug which could cause some remotely created files to be blacklisted when LiteSync was enabled.</li>
-  </ul>
+<ul>
+  <li>win - Synchronizing .lnk files.</li>
+  <li>A synchronization starts automatically when its disk is mounted.</li>
+  <li>Various bug fixes and improvements.</li>
+</ul>
 </body>
 </html>

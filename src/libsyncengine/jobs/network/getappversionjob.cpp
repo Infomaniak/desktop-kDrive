@@ -20,6 +20,8 @@
 #include "utility/jsonparserutility.h"
 #include "utility/utility.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 static const std::string prodVersionKey = "prod_version";
@@ -38,10 +40,13 @@ static const std::string buildVersionKey = "build_version";
 static const std::string buildMinOsVersionKey = "build_min_os_version";
 static const std::string downloadUrlKey = "download_link";
 
-GetAppVersionJob::GetAppVersionJob(const Platform platform, const std::string &appID) : GetAppVersionJob(platform, appID, {}) {}
+GetAppVersionJob::GetAppVersionJob(const Platform platform, const std::string &appID) :
+    GetAppVersionJob(platform, appID, {}) {}
 
 GetAppVersionJob::GetAppVersionJob(const Platform platform, const std::string &appID, const std::vector<int> &userIdList) :
-    _platform(platform), _appId(appID), _userIdList(userIdList) {
+    _platform(platform),
+    _appId(appID),
+    _userIdList(userIdList) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
@@ -103,7 +108,7 @@ void GetAppVersionJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
 }
 
 bool GetAppVersionJob::handleError(std::istream &, const Poco::URI &uri) {
-    LOG_DEBUG(_logger, "Request failed: " << Utility::formatRequest(uri, _errorCode, _errorDescr).c_str());
+    LOG_DEBUG(_logger, "Request failed: " << Utility::formatRequest(uri, _errorCode, _errorDescr));
     return false;
 }
 

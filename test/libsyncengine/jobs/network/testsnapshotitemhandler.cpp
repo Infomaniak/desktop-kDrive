@@ -17,9 +17,10 @@
  */
 
 #include "testsnapshotitemhandler.h"
-#include "libsyncengine/jobs/network/API_v2/csvfullfilelistwithcursorjob.h"
-#include "libcommonserver/log/log.h"
 
+#include "jobs/network/API_v2/listing/snapshotitemhandler.h"
+#include "libcommonserver/log/log.h"
+#include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
 using namespace CppUnit;
 
@@ -491,6 +492,23 @@ void TestSnapshotItemHandler::testGetItem() {
             const auto [success, message] = snapshotitem_checker::compare(expectedItem, item);
             CPPUNIT_ASSERT_MESSAGE(message, !success);
         }
+    }
+
+    // The creation_at value is missing: should be interpreted as 0.
+    {
+        SnapshotItem item;
+        bool ignore = false;
+        bool error = false;
+        bool eof = false;
+        std::stringstream ss;
+        ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
+           << "0,1," << toCsvString("kDrive2") << ",dir,1000,,124,0,1";
+        SnapshotItemHandler handler(Log::instance()->getLogger());
+        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
+        CPPUNIT_ASSERT(!ignore);
+        CPPUNIT_ASSERT(!error);
+
+        CPPUNIT_ASSERT_EQUAL(SyncTime{0}, item.createdAt());
     }
 }
 

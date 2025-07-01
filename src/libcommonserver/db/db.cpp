@@ -99,8 +99,12 @@ static std::string defaultJournalMode(const std::string &dbPath) {
 }
 
 Db::Db(const std::filesystem::path &dbPath) :
-    _logger(Log::instance()->getLogger()), _sqliteDb(new SqliteDb()), _dbPath(dbPath), _transaction(false),
-    _journalMode(defaultJournalMode(dbPath.string())), _fromVersion(std::string()) {}
+    _logger(Log::instance()->getLogger()),
+    _sqliteDb(new SqliteDb()),
+    _dbPath(dbPath),
+    _transaction(false),
+    _journalMode(defaultJournalMode(dbPath.string())),
+    _fromVersion(std::string()) {}
 
 Db::~Db() {
     close();
@@ -146,14 +150,13 @@ std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int
 
     if (!IoHelper::checkIfPathExists(dbPath, exists, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dbPath, ioError).c_str());
+                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dbPath, ioError));
         return std::filesystem::path();
     }
 
     if (!exists) {
-        if (!IoHelper::createDirectory(dbPath, ioError)) {
-            LOGW_WARN(Log::instance()->getLogger(),
-                      L"Failed to create directory: " << Utility::formatIoError(dbPath, ioError).c_str());
+        if (!IoHelper::createDirectory(dbPath, false, ioError)) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Failed to create directory: " << Utility::formatIoError(dbPath, ioError));
             return std::filesystem::path();
         }
     }
@@ -168,7 +171,7 @@ std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int
     // If it exists already, the path is clearly usable
     if (!IoHelper::checkIfPathExists(dbPath, exists, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dbPath, ioError).c_str());
+                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dbPath, ioError));
         return std::filesystem::path();
     }
 
@@ -192,7 +195,7 @@ std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int
 }
 
 bool Db::exists() {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     if (_dbPath.empty()) {
         return false;
@@ -221,9 +224,9 @@ void Db::close() {
         return;
     }
 
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
-    LOGW_DEBUG(_logger, L"Closing DB " << Path2WStr(_dbPath).c_str());
+    LOGW_DEBUG(_logger, L"Closing DB " << Path2WStr(_dbPath));
 
     commitTransaction();
     _sqliteDb->close();
@@ -393,7 +396,7 @@ bool Db::init(const std::string &version) {
     }
 
     // Prepare DB
-    LOG_INFO(_logger, "Prepare " << dbType().c_str() << " DB");
+    LOG_INFO(_logger, "Prepare " << dbType() << " DB");
     if (!prepare()) {
         LOG_WARN(_logger, "Error in Db::prepare");
         return false;
@@ -417,7 +420,7 @@ void Db::startTransaction() {
 void Db::commitTransaction() {
     if (_transaction) {
         if (!_sqliteDb->commit()) {
-            LOG_WARN(_logger, "ERROR committing to the database: " << _sqliteDb->error().c_str());
+            LOG_WARN(_logger, "ERROR committing to the database: " << _sqliteDb->error());
             return;
         }
         _transaction = false;
@@ -429,7 +432,7 @@ void Db::commitTransaction() {
 void Db::rollbackTransaction() {
     if (_transaction) {
         if (!_sqliteDb->rollback()) {
-            LOG_WARN(_logger, "ERROR rollbacking to the database: " << _sqliteDb->error().c_str());
+            LOG_WARN(_logger, "ERROR rollbacking to the database: " << _sqliteDb->error());
             return;
         }
         _transaction = false;
@@ -440,7 +443,7 @@ void Db::rollbackTransaction() {
 
 bool Db::sqlFail(const std::string &log, const std::string &error) {
     commitTransaction();
-    LOG_WARN(_logger, "SQL Error - " << log.c_str() << " - " << error.c_str());
+    LOG_WARN(_logger, "SQL Error - " << log << " - " << error);
     _sqliteDb->close();
     LOG_IF_FAIL(false);
     return false;
@@ -455,13 +458,13 @@ bool Db::checkConnect(const std::string &version) {
         bool exists = false;
         IoError ioError = IoError::Success;
         if (!IoHelper::checkIfPathExists(_dbPath, exists, ioError)) {
-            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dbPath, ioError).c_str());
+            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dbPath, ioError));
             close();
             return false;
         }
 
         if (!exists) {
-            LOGW_WARN(_logger, L"Database is opened, but file " << Path2WStr(_dbPath).c_str() << L" does not exist");
+            LOGW_WARN(_logger, L"Database is opened, but file " << Path2WStr(_dbPath) << L" does not exist");
             close();
             return false;
         }
@@ -470,26 +473,26 @@ bool Db::checkConnect(const std::string &version) {
     }
 
     if (_dbPath.empty()) {
-        LOGW_WARN(_logger, L"Database filename" << Path2WStr(_dbPath).c_str() << L" is empty");
+        LOGW_WARN(_logger, L"Database filename" << Path2WStr(_dbPath) << L" is empty");
         return false;
     }
 
     // The database file is created by this call (SQLITE_OPEN_CREATE)
     if (!_sqliteDb->openOrCreateReadWrite(_dbPath)) {
         std::string error = _sqliteDb->error();
-        LOG_WARN(_logger, "Error opening the db: " << error.c_str());
+        LOG_WARN(_logger, "Error opening the db: " << error);
         return false;
     }
 
     bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_dbPath, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists for path=" << Utility::formatIoError(_dbPath, ioError).c_str());
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists for path=" << Utility::formatIoError(_dbPath, ioError));
         return false;
     }
 
     if (!exists) {
-        LOGW_WARN(_logger, L"Database file" << Path2WStr(_dbPath).c_str() << L" does not exist");
+        LOGW_WARN(_logger, L"Database file" << Path2WStr(_dbPath) << L" does not exist");
         return false;
     }
 
@@ -504,7 +507,7 @@ bool Db::checkConnect(const std::string &version) {
     std::string result;
     LOG_IF_FAIL(queryStringValue(SELECT_SQLITE_VERSION_ID, 0, result));
     queryFree(SELECT_SQLITE_VERSION_ID);
-    LOG_DEBUG(_logger, "sqlite3 version=" << result.c_str());
+    LOG_DEBUG(_logger, "sqlite3 version=" << result);
 
     // PRAGMA_LOCKING_MODE
     if (!createAndPrepareRequest(PRAGMA_LOCKING_MODE_ID, PRAGMA_LOCKING_MODE)) return false;
@@ -515,7 +518,7 @@ bool Db::checkConnect(const std::string &version) {
     }
     LOG_IF_FAIL(queryStringValue(PRAGMA_LOCKING_MODE_ID, 0, result));
     queryFree(PRAGMA_LOCKING_MODE_ID);
-    LOG_DEBUG(_logger, "sqlite3 locking_mode=" << result.c_str());
+    LOG_DEBUG(_logger, "sqlite3 locking_mode=" << result);
 
     // PRAGMA_JOURNAL_MODE
     std::string sql(PRAGMA_JOURNAL_MODE + _journalMode + ";");
@@ -527,7 +530,7 @@ bool Db::checkConnect(const std::string &version) {
     }
     LOG_IF_FAIL(queryStringValue(PRAGMA_JOURNAL_MODE_ID, 0, result));
     queryFree(PRAGMA_JOURNAL_MODE_ID);
-    LOG_DEBUG(_logger, "sqlite3 journal_mode=" << result.c_str());
+    LOG_DEBUG(_logger, "sqlite3 journal_mode=" << result);
 
     // PRAGMA_SYNCHRONOUS
     // With WAL journal the NORMAL sync mode is safe from corruption, otherwise use the standard FULL mode.
@@ -541,7 +544,7 @@ bool Db::checkConnect(const std::string &version) {
         return false;
     }
     queryFree(PRAGMA_SYNCHRONOUS_ID);
-    LOG_DEBUG(_logger, "sqlite3 synchronous=" << synchronousMode.c_str());
+    LOG_DEBUG(_logger, "sqlite3 synchronous=" << synchronousMode);
 
     // PRAGMA_CASE_SENSITIVE_LIKE
     if (!createAndPrepareRequest(PRAGMA_CASE_SENSITIVE_LIKE_ID, PRAGMA_CASE_SENSITIVE_LIKE)) return false;
@@ -572,12 +575,18 @@ bool Db::addIntegerColumnIfMissing(const std::string &tableName, const std::stri
     return addColumnIfMissing(tableName, columnName, requestId, request, columnAdded);
 }
 
+bool Db::addTextColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded /*= nullptr*/) {
+    const auto requestId = tableName + "add_column_" + columnName;
+    const auto request = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " TEXT;";
+    return addColumnIfMissing(tableName, columnName, requestId, request, columnAdded);
+}
+
 bool Db::addColumnIfMissing(const std::string &tableName, const std::string &columnName, const std::string &requestId,
                             const std::string &request, bool *columnAdded /*= nullptr*/) {
     bool exist = false;
     if (!columnExists(tableName, columnName, exist)) return false;
     if (!exist) {
-        LOG_INFO(_logger, "Adding column " << columnName.c_str() << " into table " << tableName.c_str());
+        LOG_INFO(_logger, "Adding column " << columnName << " into table " << tableName);
         if (!createAndPrepareRequest(requestId.c_str(), request.c_str())) return false;
         int errId = 0;
         std::string error;
@@ -614,7 +623,7 @@ bool Db::tableExists(const std::string &tableName, bool &exist) {
     LOG_IF_FAIL(queryResetAndClearBindings(id));
     LOG_IF_FAIL(queryBindValue(id, 1, tableName));
     if (!queryNext(id, exist)) {
-        LOG_WARN(_logger, "Error getting query result: " << id.c_str());
+        LOG_WARN(_logger, "Error getting query result: " << id);
         return false;
     }
 
@@ -633,7 +642,7 @@ bool Db::columnExists(const std::string &tableName, const std::string &columnNam
 
     bool found = false;
     if (!queryNext(id, found)) {
-        LOG_WARN(_logger, "Error getting query result: " << id.c_str());
+        LOG_WARN(_logger, "Error getting query result: " << id);
         return false;
     }
     if (!found) return false;
@@ -651,7 +660,7 @@ void Db::setAutoDelete(bool value) {
 }
 
 bool Db::insertVersion(const std::string &version) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     // Insert exclusion template record
     int errId;
@@ -668,7 +677,7 @@ bool Db::insertVersion(const std::string &version) {
 }
 
 bool Db::updateVersion(const std::string &version, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -690,7 +699,7 @@ bool Db::updateVersion(const std::string &version, bool &found) {
 }
 
 bool Db::selectVersion(std::string &version, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_VERSION_REQUEST_ID));
     if (!queryNext(SELECT_VERSION_REQUEST_ID, found)) {

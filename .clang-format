@@ -3,8 +3,11 @@ AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 AlignOperands: true
 AlignTrailingComments: false
+AllowShortBlocksOnASingleLine: Empty
+AllowShortEnumsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Inline
-BraceWrapping: 
+AllowShortIfStatementsOnASingleLine: WithoutElse
+BraceWrapping:
   AfterCaseLabel: false
   AfterClass: false
   AfterControlStatement: false
@@ -27,8 +30,10 @@ BreakConstructorInitializersBeforeComma: false
 ColumnLimit: 130
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
 ContinuationIndentWidth: 8
-IncludeBlocks: Preserve
-IncludeCategories: 
+DerivePointerAlignment: false
+EmptyLineBeforeAccessModifier: Always
+IncludeBlocks: Regroup
+IncludeCategories:
   - Regex: '^<.*'
     Priority: 1
   - Regex: '^".*'
@@ -36,12 +41,16 @@ IncludeCategories:
   - Regex: '.*'
     Priority: 3
 IncludeIsMainRegex: '([-_](test|unittest))?$'
-IndentAccessModifiers: True
+IndentAccessModifiers: true
+IndentCaseLabels: true
 IndentWidth: 4
 InsertNewlineAtEOF: true
 MacroBlockBegin: ''
 MacroBlockEnd: ''
 MaxEmptyLinesToKeep: 2
+PackConstructorInitializers: Never
+PointerAlignment: Right
+ReferenceAlignment: Pointer
 SortIncludes: Never
 SpaceAfterCStyleCast: true
 SpaceAfterTemplateKeyword: false
@@ -56,7 +65,7 @@ TabWidth: 4
 
 ---
 Language: Cpp
-ForEachMacros: 
+ForEachMacros:
   - foreach
   - Q_FOREACH
   - BOOST_FOREACH

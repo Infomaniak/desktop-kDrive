@@ -26,6 +26,7 @@ class CommChannelPrivate;
 
 class CommChannel : public QIODevice {
         Q_OBJECT
+
     public:
         CommChannel(QObject *parent, CommChannelPrivate *p);
         ~CommChannel();
@@ -49,6 +50,7 @@ class CommChannel : public QIODevice {
 
 class CommServer : public QObject {
         Q_OBJECT
+
     public:
         CommServer();
         ~CommServer();

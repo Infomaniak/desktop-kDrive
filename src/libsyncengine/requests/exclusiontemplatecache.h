@@ -22,10 +22,8 @@
 #include "libparms/db/exclusiontemplate.h"
 #include "libcommon/utility/types.h"
 
-#include <memory>
 #include <vector>
 #include <regex>
-#include <string>
 #include <mutex>
 
 namespace KDC {
@@ -33,28 +31,24 @@ namespace KDC {
 class SYNCENGINE_EXPORT ExclusionTemplateCache {
     public:
         static std::shared_ptr<ExclusionTemplateCache> instance();
+        static void reset();
 
         ExclusionTemplateCache(ExclusionTemplateCache const &) = delete;
 
         void operator=(ExclusionTemplateCache const &) = delete;
 
-        inline const std::vector<ExclusionTemplate> &exclusionTemplates() { return _undeletedExclusionTemplates; }
-
-        inline const std::vector<ExclusionTemplate> &exclusionTemplates(bool def) {
+        [[nodiscard]] const std::vector<ExclusionTemplate> &exclusionTemplates() const { return _undeletedExclusionTemplates; }
+        [[nodiscard]] const std::vector<ExclusionTemplate> &exclusionTemplates(const bool def) const {
             return def ? _defExclusionTemplates : _userExclusionTemplates;
         }
 
         ExitCode update(bool def, const std::vector<ExclusionTemplate> &exclusionTemplates);
 
-        bool checkIfIsExcluded(const SyncPath &basePath, const SyncPath &relativePath, bool &isWarning, bool &isExcluded,
-                               IoError &ioError) noexcept;
-
-        bool checkIfIsExcludedBecauseHidden(const SyncPath &basePath, const SyncPath &relativePath, bool &isExcluded,
-                                            IoError &ioError) noexcept;
-
-        bool isExcludedByTemplate(const SyncPath &relativePath, bool &isWarning) noexcept;
+        bool isExcluded(const SyncPath &relativePath) noexcept;
+        bool isExcluded(const SyncPath &relativePath, bool &isWarning) noexcept;
 
     private:
+        friend class TestExclusionTemplateCache;
         static std::shared_ptr<ExclusionTemplateCache> _instance;
         std::vector<ExclusionTemplate> _undeletedExclusionTemplates;
         std::vector<ExclusionTemplate> _defExclusionTemplates;
@@ -70,6 +64,8 @@ class SYNCENGINE_EXPORT ExclusionTemplateCache {
         void updateRegexPatterns();
 
         void escapeRegexSpecialChar(std::string &in);
+
+        void addRegexForAllNormalizationForms(std::string regexPattern, ExclusionTemplate exclusionTemplate);
 };
 
 } // namespace KDC

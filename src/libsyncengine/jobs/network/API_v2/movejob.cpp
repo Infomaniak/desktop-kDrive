@@ -21,12 +21,18 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 MoveJob::MoveJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &destFilepath, const NodeId &fileId,
                  const NodeId &destDirId, const SyncName &name /*= ""*/) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _destFilepath(destFilepath), _fileId(fileId),
-    _destDirId(destDirId), _name(name), _vfs(vfs) {
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+    _destFilepath(destFilepath),
+    _fileId(fileId),
+    _destDirId(destDirId),
+    _name(name),
+    _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
@@ -55,7 +61,7 @@ bool MoveJob::canRun() {
     bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_destFilepath, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_destFilepath, ioError).c_str());
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_destFilepath, ioError));
         _exitInfo = ExitCode::SystemError;
         return false;
     }
@@ -67,9 +73,8 @@ bool MoveJob::canRun() {
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"File " << Path2WStr(_destFilepath).c_str()
-
                                      << L" is not in its destination folder. Aborting current sync and restart.");
-        _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent}; // Data error so the snapshots will be re-created
+        _exitInfo = {ExitCode::DataError, ExitCause::InvalidDestination};
         return false;
     }
 

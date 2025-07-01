@@ -20,6 +20,7 @@
 #pragma once
 
 #include "abstractjob.h"
+#include "jobmanagerdata.h"
 #include "libcommon/utility/utility.h"
 
 #include <log4cplus/logger.h>
@@ -29,90 +30,57 @@
 #include <Poco/Net/HTTPSClientSession.h>
 #include <Poco/ThreadPool.h>
 
-#include <list>
-#include <queue>
-#include <thread>
-#include <unordered_map>
-#include <unordered_set>
-
 namespace KDC {
-
-class JobPriorityCmp {
-    public:
-        bool operator()(const std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority> &j1,
-                        const std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority> &j2) const {
-            if (j1.second == j2.second) {
-                // Same thread priority, use the job ID to define priority
-                return j1.first->jobId() > j2.first->jobId();
-            }
-            return j1.second < j2.second;
-        }
-};
 
 class JobManager {
     public:
         static std::shared_ptr<JobManager> instance() noexcept;
 
         JobManager(JobManager const &) = delete;
-        ~JobManager();
         void operator=(JobManager const &) = delete;
 
-        static void stop();
-        static void clear();
-        static void reset();
+        void stop();
+        void clear();
 
-        /*
-         * Queue a job to be executed as soon as a thread is available in the default thread pool
-         * If a callback is passed as argument: JobManager will NOT keep a reference to the job. The caller MUST keep a reference
-         * to this job otherwise it could be deleted before or during its execution. Otherwise: JobManager will keep a reference
-         * to the job until it is finished. The caller should not keep a reference to this job.
+        /**
+         * @brief Queue a job to be executed as soon as a thread is available in the default thread pool.
+         * @param job The job to be run asynchronously.
+         * @param priority Job's priority level.
+         * @param externalCallback Callback to be run once the job is done.
          */
-        void queueAsyncJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority = Poco::Thread::PRIO_NORMAL,
-                           std::function<void(UniqueId)> externalCallback = nullptr) noexcept;
+        void queueAsyncJob(std::shared_ptr<AbstractJob> job,
+                           Poco::Thread::Priority priority = Poco::Thread::PRIO_NORMAL) noexcept;
 
-        inline bool hasAvailableThread() { return Poco::ThreadPool::defaultPool().available() > 0; }
-        bool isJobFinished(const UniqueId &jobId);
+        bool isJobFinished(const UniqueId jobId) const;
+        std::shared_ptr<AbstractJob> getJob(const UniqueId jobId) const;
 
-        std::shared_ptr<AbstractJob> getJob(const UniqueId &jobId);
-        inline size_t countManagedJobs() { return _managedJobs.size(); }
-        inline int maxNbThreads() { return _maxNbThread; }
-
-        void setPoolCapacity(int count); // For testing purpose
+        void setPoolCapacity(int nbThread);
         void decreasePoolCapacity();
 
     private:
         JobManager();
+        void startMainThreadIfNeeded();
 
-        static void defaultCallback(UniqueId jobId);
+        void run() noexcept;
+        void startJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority);
+        void eraseJob(UniqueId jobId);
+        void addToPendingJobs(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority);
+        void adjustMaxNbThread();
+        void managePendingJobs();
 
-        static void run() noexcept;
-        static void startJob(std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority> nextJob);
-        static void adjustMaxNbThread();
-        static int countUploadSession();
-        static bool canRun(const std::shared_ptr<AbstractJob> job, int uploadSessionCount);
-        static void managePendingJobs(int uploadSessionCount);
-
-        static bool isParentPendingOrRunning(UniqueId jobIb);
-        static bool canStartJob(std::shared_ptr<AbstractJob> job, int uploadSessionCount);
+        int availableThreadsInPool() const;
+        bool canRunjob(const std::shared_ptr<AbstractJob> job) const;
+        bool isBigFileDownloadJob(const std::shared_ptr<AbstractJob> job) const;
+        bool isBigFileUploadJob(const std::shared_ptr<AbstractJob> job) const;
 
         static std::shared_ptr<JobManager> _instance;
-        static bool _stop;
-        static int _maxNbThread;
-        static double _cpuUsageThreshold;
-        static int _threadAdjustmentStep;
-        static std::chrono::time_point<std::chrono::steady_clock> _maxNbThreadChrono;
+        bool _stop{false};
+        int _maxNbThread{0};
 
         log4cplus::Logger _logger;
-        std::unique_ptr<StdLoggingThread> _thread;
+        std::unique_ptr<std::thread> _mainThread;
 
-        static std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _managedJobs; // queued + running + pending jobs
-        static std::priority_queue<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>,
-                                   std::vector<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>>, JobPriorityCmp>
-                _queuedJobs; // jobs waiting for an available thread
-        static std::unordered_set<UniqueId> _runningJobs; // jobs currently running in a dedicated thread
-        static std::unordered_map<UniqueId, std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>>
-                _pendingJobs; // jobs waiting for their parent job to be completed
-        static std::recursive_mutex _mutex;
+        JobManagerData _data;
 
         friend class TestJobManager;
 };

@@ -32,7 +32,8 @@
 
 namespace KDC {
 
-LocalDeleteJob::Path::Path(const SyncPath &path) : _path(path) {};
+LocalDeleteJob::Path::Path(const SyncPath &path) :
+    _path(path) {};
 
 bool LocalDeleteJob::Path::endsWith(SyncPath &&ending) const {
     if (!_path.empty() && ending.empty()) return false;
@@ -52,16 +53,21 @@ bool LocalDeleteJob::matchRelativePaths(const SyncPath &targetPath, const SyncPa
                                         const SyncPath &remoteRelativePath) {
     if (targetPath.empty()) return localRelativePath == remoteRelativePath;
 
-    // Case of an advanced synchronisation
+    // Case of an advanced synchronization
     return Path(remoteRelativePath).endsWith(SyncPath(targetPath.filename()) / localRelativePath);
 }
 
 LocalDeleteJob::LocalDeleteJob(const SyncPalInfo &syncPalInfo, const SyncPath &relativePath, bool isDehydratedPlaceholder,
                                NodeId remoteId, bool forceToTrash /* = false */) :
-    _absolutePath(syncPalInfo.localPath / relativePath), _syncInfo(syncPalInfo), _relativePath(relativePath),
-    _isDehydratedPlaceholder(isDehydratedPlaceholder), _remoteNodeId(remoteId), _forceToTrash(forceToTrash) {}
+    _absolutePath(syncPalInfo.localPath / relativePath),
+    _syncInfo(syncPalInfo),
+    _relativePath(relativePath),
+    _isDehydratedPlaceholder(isDehydratedPlaceholder),
+    _remoteNodeId(remoteId),
+    _forceToTrash(forceToTrash) {}
 
-LocalDeleteJob::LocalDeleteJob(const SyncPath &absolutePath) : _absolutePath(absolutePath) {
+LocalDeleteJob::LocalDeleteJob(const SyncPath &absolutePath) :
+    _absolutePath(absolutePath) {
     setBypassCheck(true);
 }
 
@@ -99,20 +105,19 @@ bool LocalDeleteJob::canRun() {
     bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_absolutePath, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absolutePath, ioError).c_str());
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absolutePath, ioError));
         _exitInfo = ExitCode::SystemError;
         return false;
     }
     if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_absolutePath).c_str());
+        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_absolutePath));
         _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         return false;
     }
 
     if (!exists) {
-        LOGW_DEBUG(_logger, L"Item does not exist anymore. Aborting current sync and restart: "
-                                    << Utility::formatSyncPath(_absolutePath).c_str());
-        _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent};
+        LOGW_DEBUG(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_absolutePath));
+        _exitInfo = {ExitCode::DataError, ExitCause::NotFound};
         return false;
     }
 
@@ -125,9 +130,8 @@ bool LocalDeleteJob::canRun() {
     // Check if the item we want to delete locally has a remote counterpart.
 
     SyncPath remoteRelativePath;
-    const bool remotItemIsFound = findRemoteItem(remoteRelativePath);
-
-    if (!remotItemIsFound) return true; // Safe deletion.
+    const bool remoteItemIsFound = findRemoteItem(remoteRelativePath);
+    if (!remoteItemIsFound) return true; // Safe deletion.
 
     // Check whether the remote item has been moved.
     // If the remote item has been moved into a blacklisted folder, then this Delete job is created and
@@ -157,7 +161,7 @@ void LocalDeleteJob::handleTrashMoveOutcome(bool success) {
         LOGW_WARN(_logger,
                   L"Failed to move item: " << Utility::formatSyncPath(_absolutePath) << L" to trash. Trying hard delete.");
     } else if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_absolutePath).c_str() << L" was moved to trash");
+        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_absolutePath) << L" was moved to trash");
     }
 }
 
@@ -176,11 +180,11 @@ void LocalDeleteJob::runJob() {
     _exitInfo = ExitCode::Ok;
     if (tryMoveToTrash && moveToTrash()) return;
 
-    LOGW_DEBUG(_logger, L"Delete item with " << Utility::formatSyncPath(_absolutePath).c_str());
+    LOGW_DEBUG(_logger, L"Delete item with " << Utility::formatSyncPath(_absolutePath));
     std::error_code ec;
     std::filesystem::remove_all(_absolutePath, ec);
     if (ec) {
-        LOGW_WARN(_logger, L"Failed to delete item with path " << Utility::formatStdError(_absolutePath, ec).c_str());
+        LOGW_WARN(_logger, L"Failed to delete item with path " << Utility::formatStdError(_absolutePath, ec));
         if (IoHelper::stdError2ioError(ec) == IoError::AccessDenied) {
             _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         } else {

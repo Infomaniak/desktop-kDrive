@@ -22,25 +22,28 @@ Param(
     [ValidateSet('Release', 'RelWithDebInfo', 'Debug')]
     [string] $buildType = "RelWithDebInfo",
 
-    # Path	: The path to the root CMakeLists.txt
+    # Path: The path to the root CMakeLists.txt
     [string] $path = $PWD.Path,
 
-    # Clean	: The files to clean on execution
+    # Clean: The files to clean on execution
     [string] $clean,
 
     # Thumbprint: Specifies which certificate will be used to sign the app
     [string] $thumbprint,
 
-    # Ext	: Rebuild the extension (automatically done if vfs.h is missing)
+    # Ext: Rebuild the extension (automatically done if vfs.h is missing)
     [switch] $ext,
 
-    # ci	: Build with CI testing (currently only checks the building stage)
+    # Ci: Build with CI testing (currently only checks the building stage)
     [switch] $ci,
 
-    # Upload :	flag to trigger the use of the USB-key signing certificate
+    # Upload: Flag to trigger the use of the USB-key signing certificate
     [switch] $upload,
 
-    # Help	: Displays the help message then exit if called
+    # Coverage: Flag to enable or disable the code coverage computation
+    [switch] $coverage,
+
+    # Help: Displays the help message and exits
     [switch] $help
 )
 
@@ -72,6 +75,35 @@ $archiveDataPath = ('{0}\build-windows\{1}' -f $path.Replace('/', '\'), $archive
 #                                                                                               #
 #################################################################################################
 
+function Set-Bullseye-Coverage {
+    param (
+        [bool] $enabled
+    )
+
+    $cov01Parameter ="-0"
+    if ($enabled) {
+        $cov01Parameter = "-1"
+        # Without the next line, CMake may not wrap the compiler.
+        $env:Path="$env:Programfiles\BullseyeCoverage\bin;$env:Path"
+    }
+
+    try {
+        $cmd = Get-Command cov01.exe -ErrorAction Stop
+        & $cmd $cov01Parameter
+     } catch {
+         Write-Host "BullseyeCoverage cov01.exe command not found."
+         if ($enable) {
+            exit 1
+         }
+     }
+     
+     $outputString = "disabled"
+     if ($enabled) {
+        $outputString = "enabled"
+    }
+
+     Write-Host "BullseyeCoverage is $outputString."
+} 
 function Clean {
     param (
         [string] $cleanPath
@@ -169,8 +201,29 @@ function CMake-Build-And-Install {
         [string] $installPath,
         [string] $vfsDir
     )
+    Write-Host "1) Installing Conan dependencies…"
+    $conanFolder = Join-Path $buildPath "conan"
+    # mkdir -p this folder
+    if (-not (Test-Path $conanFolder)) {
+        New-Item -Path $conanFolder -ItemType Directory
+    }
+    Write-Host "Conan folder: $conanFolder"
+    if ($ci) {
+        & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder -Ci
+    } else {
+        & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder
+    }
 
-    Write-Host "Building the application with CMake ..."
+    $conanToolchainFile = Get-ChildItem -Path $conanFolder -Filter "conan_toolchain.cmake" -Recurse -File |
+            Select-Object -ExpandProperty FullName -First 1
+
+    if (-not (Test-Path $conanToolchainFile)) {
+        Write-Error "Conan toolchain file not found. Abort."
+        exit 1
+    }
+    Write-Host "Conan toolchain file used: $conanToolchainFile"
+
+    Write-Host "2) Configuring and building with CMake ..."
 
     $compiler = "cl.exe"
 
@@ -183,9 +236,11 @@ function CMake-Build-And-Install {
         $args += ("'-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'")
     }
 
+
     $buildVersion = Get-Date -Format "yyyyMMdd"
 
     $flags = @(
+        "'-DCMAKE_TOOLCHAIN_FILE=$conanToolchainFile'",
         "'-DCMAKE_EXPORT_COMPILE_COMMANDS=1'",
         "'-DCMAKE_MAKE_PROGRAM=C:\Qt\Tools\Ninja\ninja.exe'",
         "'-DQT_QMAKE_EXECUTABLE:STRING=C:\Qt\Tools\CMake_64\bin\cmake.exe'",
@@ -204,6 +259,9 @@ function CMake-Build-And-Install {
 
     if ($ci) {
         $flags += ("'-DBUILD_UNIT_TESTS:BOOL=TRUE'")
+    }
+
+    if ($coverage) {
         $flags += ("'-DKD_COVERAGE:BOOL=TRUE'")
     }
 
@@ -298,9 +356,6 @@ function Prepare-Archive {
     $dependencies = @(
         "${env:ProgramFiles(x86)}/zlib-1.2.11/bin/zlib1",
         "${env:ProgramFiles(x86)}/libzip/bin/zip",
-        "${env:ProgramFiles(x86)}/log4cplus/bin/log4cplusU",
-        "${env:ProgramFiles}/OpenSSL/bin/libcrypto-3-x64",
-        "${env:ProgramFiles}/OpenSSL/bin/libssl-3-x64",
         "${env:ProgramFiles(x86)}/Poco/bin/PocoCrypto",
         "${env:ProgramFiles(x86)}/Poco/bin/PocoFoundation",
         "${env:ProgramFiles(x86)}/Poco/bin/PocoJSON",
@@ -309,7 +364,6 @@ function Prepare-Archive {
         "${env:ProgramFiles(x86)}/Poco/bin/PocoUtil",
         "${env:ProgramFiles(x86)}/Poco/bin/PocoXML",
         "${env:ProgramFiles(x86)}/Sentry-Native/bin/sentry",
-        "${env:ProgramFiles(x86)}/xxHash/bin/xxhash",
         "$vfsDir/Vfs",
         "$buildPath/bin/kDrivecommonserver_vfs_win"
     )
@@ -323,6 +377,33 @@ function Prepare-Archive {
             Copy-Item -Path $file".dll" -Destination "$archivePath"
         }
     }
+    $find_dep_script = "$path/infomaniak-build-tools/conan/find_conan_dep.ps1"
+
+    $xxhash_args = @{
+        Package = "xxhash"
+        Version = "0.8.2"
+    }
+    $log4cplus_args = @{
+        Package = "log4cplus"
+        Version = "2.1.2"
+    }
+    $openssl_args = @{
+        Package = "openssl"
+        Version = "3.2.4"
+    }
+    if ($ci) {
+        $xxhash_args["Ci"]       = $true
+        $log4cplus_args["Ci"]    = $true
+        $openssl_args["Ci"]      = $true
+    }
+    $xxhash_folder = & $find_dep_script @xxhash_args
+    $log4cplus_folder = & $find_dep_script @log4cplus_args
+    $openssl_folder = & $find_dep_script @openssl_args
+    
+    Copy-Item -Path "$xxhash_folder/bin/xxhash.dll" -Destination "$archivePath"
+    Copy-Item -Path "$log4cplus_folder/bin/log4cplus.dll" -Destination "$archivePath"
+    Copy-Item -Path "$openssl_folder/bin/libcrypto-3-x64.dll" -Destination "$archivePath"
+    Copy-Item -Path "$openssl_folder/bin/libssl-3-x64.dll" -Destination "$archivePath"
 
     Copy-Item -Path "$path/sync-exclude-win.lst" -Destination "$archivePath/sync-exclude.lst"
 
@@ -424,7 +505,7 @@ function Create-Archive {
 #                                                                                               #
 #################################################################################################
 
-$msbuildPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -version [16.0, 17.0] -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
+$msbuildPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" "-version" "[16.0, 17.0]" "-products" "*" "-requires" "Microsoft.Component.MSBuild" "-find" "MSBuild\**\Bin\MSBuild.exe"
 $7zaPath = "${env:ProgramFiles}\7-Zip\7za.exe"
 
 Set-Alias msbuild $msbuildPath
@@ -471,6 +552,7 @@ Parameters :
     `t`tremake`t`t: Remove all the files, then rebuild the project
     `t-ext`t`t`t: Rebuild and redeploy the windows extension
     `t-upload`t`t: Upload flag to switch between the virtual and physical certificates. Also rebuilds the project
+    `t-coverage`t`t: Coverage flag to enable or disable code coverage computation
     ") -f Cyan
 
     Write-Host ("It is mandatory that all dependencies are already built and installed before building.
@@ -521,6 +603,10 @@ if (!$thumbprint) {
     $thumbprint = Get-Thumbprint $upload
 }
 
+Write-Host
+Write-Host "Build of type $buildType."
+Write-Host
+
 if ($upload) {
     Write-Host "You are about to build kDrive for an upload"
     Write-Host "Once the build is complete, you will need to call the upload script"
@@ -532,6 +618,20 @@ if ($upload) {
     Write-Host "Preparing for full upload build." -f Green
     Clean $contentPath
     Clean $vfsDir
+}
+
+#################################################################################################
+#                                                                                               #
+#                                           COVERAGE                                            #
+#                                                                                               #
+#################################################################################################
+
+Set-Bullseye-Coverage $coverage
+Write-Host
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Failed to enable code coverage computation. Aborting." -f Red
+    exit $LASTEXITCODE
 }
 
 #################################################################################################

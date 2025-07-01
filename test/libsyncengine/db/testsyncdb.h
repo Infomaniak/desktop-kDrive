@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2025 Infomaniak Network SA
  *
@@ -37,14 +37,20 @@ class SyncDbMock : public SyncDb {
 class TestSyncDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestSyncDb);
         CPPUNIT_TEST(testNodes);
-        CPPUNIT_TEST(testSyncNodes);
+        CPPUNIT_TEST(testNodesWithCache);
+        CPPUNIT_TEST(testNodeWithCacheFaillure);
         CPPUNIT_TEST(testCorrespondingNodeId);
+        CPPUNIT_TEST(testCorrespondingNodeIdWithCache);
+        CPPUNIT_TEST(testCorrespondingNodeIdWithCacheFaillure);
+        CPPUNIT_TEST(testSyncNodes);
         CPPUNIT_TEST(testUpdateLocalName);
         CPPUNIT_TEST(testUpgradeTo3_6_7);
         CPPUNIT_TEST(testUpgradeTo3_6_5CheckNodeMap);
         CPPUNIT_TEST(testUpgradeTo3_6_5);
         CPPUNIT_TEST(testInit3_6_4);
         CPPUNIT_TEST(testDummyUpgrade);
+        CPPUNIT_TEST(testDbNode);
+        CPPUNIT_TEST(testTryToFixDbNodeIdsAfterSyncDirChange);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -52,20 +58,33 @@ class TestSyncDb : public CppUnit::TestFixture, public TestBase {
         void tearDown() override;
 
     protected:
+        template<typename T>
+        void testNodesTemplate(SyncDb &db, T &testObj);
         void testNodes();
-        void testSyncNodes();
+        void testNodesWithCache();
+        void testNodeWithCacheFaillure();
+
+        void testReloadIfNeeded();
+
+        template<typename T>
+        void testCorrespondingNodeIdTemplate(SyncDb &db, T &testObj);
         void testCorrespondingNodeId();
+        void testCorrespondingNodeIdWithCache();
+        void testCorrespondingNodeIdWithCacheFaillure();
+
+        void testSyncNodes();
         void testUpdateLocalName();
         void testUpgradeTo3_6_7();
         void testUpgradeTo3_6_5();
         void testUpgradeTo3_6_5CheckNodeMap();
         void testInit3_6_4();
         void testDummyUpgrade();
+        void testDbNode();
+        void testTryToFixDbNodeIdsAfterSyncDirChange();
 
     private:
         SyncDbMock *_testObj;
         // Note: the node ID value "1" is reserved for the root node of any synchronisation for both local and remote sides.
         std::vector<DbNode> setupSyncDb3_6_5(const std::vector<NodeId> &localNodeIds = {"2", "3", "4", "5", "6"});
 };
-
 } // namespace KDC

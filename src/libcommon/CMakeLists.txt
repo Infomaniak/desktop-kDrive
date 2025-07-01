@@ -7,13 +7,13 @@ endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Widgets Gui Sql)
 find_package(Poco 1.13.3 REQUIRED Foundation JSON Util)
-find_package(log4cplus 2.1.0 REQUIRED)
+find_package(log4cplus 2.1.2 REQUIRED)
 find_package(sentry REQUIRED)
 
-if (UNIX AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+if(UNIX AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     # Use fallback library types for imported dependencies
     set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO RelWithDebInfo NoConfig)
-endif ()
+endif()
 find_package(libzip 1.10.1 REQUIRED)
 
 set(CMAKE_AUTOMOC TRUE)
@@ -31,6 +31,7 @@ set(libcommon_SRCS
     utility/logiffail.h utility/qlogiffail.h
     utility/jsonparserutility.h
     utility/urlhelper.h utility/urlhelper.cpp
+    utility/timerutility.h
     keychainmanager/apitoken.h keychainmanager/apitoken.cpp
     keychainmanager/keychainmanager.h keychainmanager/keychainmanager.cpp
     info/userinfo.h info/userinfo.cpp
@@ -96,18 +97,17 @@ set_target_properties(${libcommon_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY}
 )
 
-GENERATE_EXPORT_HEADER(${libcommon_NAME}
+generate_export_header(${libcommon_NAME}
     BASE_NAME ${libcommon_NAME}
     EXPORT_MACRO_NAME COMMON_EXPORT
     EXPORT_FILE_NAME libcommon.h
 )
 
 # Includes
-if (WIN32)
+if(WIN32)
     target_include_directories(${libcommon_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
-        "C:/Program Files (x86)/log4cplus/include"
         "C:/Program Files (x86)/libzip/include"
         ${CMAKE_SOURCE_DIR}/src/3rdparty/keychain/include)
 else()
@@ -138,6 +138,22 @@ if(APPLE)
         ${FOUNDATION_LIBRARY}
         ${CORESERVICES_LIBRARY}
         ${APPKIT_LIBRARY})
+endif()
+
+if(UNIX)
+    target_link_libraries(${libcommon_NAME} utf8proc)
+
+    if(NOT APPLE)
+        # Copy .so files to the conan dependency directory
+        include(ConanGetLibDirs)
+        get_library_dirs("log4cplus" "log4cplus")
+        install(FILES
+                "${_log4cplus_LIB_DIRS}/liblog4cplus.so"
+                "${_log4cplus_LIB_DIRS}/liblog4cplus.so.9"
+                DESTINATION "${CONAN_DEP_DIR}"
+                PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+        )
+    endif()
 endif()
 
 if(ZLIB_FOUND)

@@ -1,29 +1,34 @@
-// Infomaniak kDrive - Desktop
-// Copyright (C) 2023-2025 Infomaniak Network SA
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2025 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #pragma once
 
 #include "db/dbnode.h"
 #include "update_detection/update_detector/node.h"
+#include "update_detection/file_system_observer/snapshot/livesnapshot.h"
 #include "utility/types.h"
 
 #include <Poco/JSON/Object.h>
 
 namespace KDC {
-
+class SyncDb;
+class Snapshot;
+class UpdateTree;
 class Node;
 class SyncPal;
 
@@ -54,11 +59,19 @@ class SyncPal;
  */
 class TestSituationGenerator {
     public:
-        TestSituationGenerator() = default;
-        explicit TestSituationGenerator(const std::shared_ptr<SyncPal> &syncpal) : _syncpal(syncpal) {}
+        TestSituationGenerator();
+        explicit TestSituationGenerator(std::shared_ptr<SyncPal> syncpal);
 
-        void setSyncpal(const std::shared_ptr<SyncPal> &syncpal) { _syncpal = syncpal; }
+        void setSyncpal(std::shared_ptr<SyncPal> syncpal);
+        void setSyncDb(const std::shared_ptr<SyncDb> syncDb) { _syncDb = syncDb; }
+        void setLocalSnapshot(LiveSnapshot &localSnapshot) { _localLiveSnapshot = localSnapshot; }
+        void setRemoteSnapshot(LiveSnapshot &remoteSnapshot) { _remoteLiveSnapshot = remoteSnapshot; }
+        void setLocalUpdateTree(const std::shared_ptr<UpdateTree> localUpdateTree) { _localUpdateTree = localUpdateTree; }
+        void setRemoteUpdateTree(const std::shared_ptr<UpdateTree> remoteUpdateTree) { _remoteUpdateTree = remoteUpdateTree; }
+
         void generateInitialSituation(const std::string &jsonInputStr);
+        void addItem(NodeType itemType, const std::string &id, const std::string &parentId) const;
+        [[nodiscard]] size_t size() const;
 
         [[nodiscard]] std::shared_ptr<Node> getNode(ReplicaSide side, const NodeId &id) const;
         bool getDbNode(const NodeId &id, DbNode &dbNode) const;
@@ -85,7 +98,6 @@ class TestSituationGenerator {
         [[nodiscard]] NodeId generateId(ReplicaSide side, const NodeId &id) const;
 
         void addItem(Poco::JSON::Object::Ptr obj, const std::string &parentId = {});
-        void addItem(NodeType itemType, const std::string &id, const std::string &parentId) const;
 
         void insertInAllSnapshot(NodeType itemType, const NodeId &id, const NodeId &parentId) const;
         [[nodiscard]] DbNodeId insertInDb(NodeType itemType, const NodeId &id, const NodeId &parentId) const;
@@ -102,7 +114,20 @@ class TestSituationGenerator {
                                                                const NodeId &parentId, std::optional<DbNodeId> dbNodeId) const;
         void insertInAllUpdateTrees(NodeType itemType, const NodeId &id, const NodeId &parentId, DbNodeId dbNodeId) const;
 
-        std::shared_ptr<SyncPal> _syncpal;
+        LiveSnapshot &liveSnapshot(const ReplicaSide side) const {
+            return side == ReplicaSide::Local ? _localLiveSnapshot->get() : _remoteLiveSnapshot->get();
+        }
+
+        std::shared_ptr<UpdateTree> updateTree(const ReplicaSide side) const {
+            return side == ReplicaSide::Local ? _localUpdateTree : _remoteUpdateTree;
+        }
+
+        std::shared_ptr<SyncDb> _syncDb;
+        std::optional<std::reference_wrapper<LiveSnapshot>> _localLiveSnapshot;
+        std::optional<std::reference_wrapper<LiveSnapshot>> _remoteLiveSnapshot;
+
+        std::shared_ptr<UpdateTree> _localUpdateTree;
+        std::shared_ptr<UpdateTree> _remoteUpdateTree;
 };
 
 } // namespace KDC

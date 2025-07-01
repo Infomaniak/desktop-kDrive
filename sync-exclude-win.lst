@@ -8,6 +8,8 @@
 .sentry-native_server
 *_conflict_*_*_*
 *_blacklisted_*_*_*
+kDrive Rescue Folder
+kDrive-cache
 *~
 ~$*
 *.~*
@@ -29,6 +31,7 @@
 System Volume Information
 Thumbs.db
 Desktop.ini
+desktop.ini
 *.filepart
 *.app
-kDrive Rescue Folder
+~BROMIUM

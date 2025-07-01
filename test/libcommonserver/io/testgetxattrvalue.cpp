@@ -35,7 +35,7 @@ void TestIo::testGetXAttrValue() {
         const SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg";
         IoError ioError = IoError::Success;
         std::string value;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, "status", value, ioError));
         CPPUNIT_ASSERT(ioError == IoError::AttrNotFound);
         CPPUNIT_ASSERT(value.empty());
     }
@@ -45,7 +45,7 @@ void TestIo::testGetXAttrValue() {
         const SyncPath path = _localTestDirPath / "test_pictures";
         IoError ioError = IoError::Success;
         std::string value;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, "status", value, ioError));
         CPPUNIT_ASSERT(ioError == IoError::AttrNotFound);
         CPPUNIT_ASSERT(value.empty());
     }
@@ -59,7 +59,7 @@ void TestIo::testGetXAttrValue() {
 
         IoError ioError = IoError::Success;
         std::string value;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, "status", value, ioError));
         CPPUNIT_ASSERT(ioError == IoError::AttrNotFound);
         CPPUNIT_ASSERT(value.empty());
     }
@@ -69,7 +69,7 @@ void TestIo::testGetXAttrValue() {
         const SyncPath path = _localTestDirPath / "non-existing.jpg"; // This file does not exist.
         IoError ioError = IoError::Success;
         std::string value;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, "status", value, ioError));
         CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
         CPPUNIT_ASSERT(value.empty());
     }
@@ -80,7 +80,7 @@ void TestIo::testGetXAttrValue() {
         const SyncPath path = _localTestDirPath / veryLongfileName; // This file doesn't exist.
         std::string value;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(!_testObj->getXAttrValue(path, "status", value, ioError));
+        CPPUNIT_ASSERT(!IoHelper::getXAttrValue(path, "status", value, ioError));
         CPPUNIT_ASSERT(ioError == IoError::FileNameTooLong);
         CPPUNIT_ASSERT(value.empty());
     }
@@ -97,7 +97,7 @@ void TestIo::testGetXAttrValue() {
 
         std::string value;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, "status", value, ioError));
 
         std::filesystem::permissions(path, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
         CPPUNIT_ASSERT(ioError == IoError::AccessDenied);
@@ -114,12 +114,12 @@ void TestIo::testGetXAttrValue() {
         }
 
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "sugar-free", ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::setXAttrValue(path, "status", "sugar-free", ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         std::string value;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, "status", value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(value == "sugar-free");
     }
 
@@ -129,12 +129,12 @@ void TestIo::testGetXAttrValue() {
         const SyncPath path = temporaryDirectory.path();
 
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "super-dry", ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::setXAttrValue(path, "status", "super-dry", ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         std::string value;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, "status", value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(value == "super-dry");
     }
 
@@ -146,15 +146,15 @@ void TestIo::testGetXAttrValue() {
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "regular-file-symlink", ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::setXAttrValue(path, "status", "regular-file-symlink", ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         std::string value;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, "status", value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(value == "regular-file-symlink");
 
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(targetPath, "status", value, ioError));
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(targetPath, "status", value, ioError));
         CPPUNIT_ASSERT(ioError == IoError::AttrNotFound);
         CPPUNIT_ASSERT(value.empty());
     }
@@ -167,15 +167,15 @@ void TestIo::testGetXAttrValue() {
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "regular-dir-symlink", ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::setXAttrValue(path, "status", "regular-dir-symlink", ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         std::string value;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, "status", value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(value == "regular-dir-symlink");
 
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(targetPath, "status", value, ioError));
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(targetPath, "status", value, ioError));
         CPPUNIT_ASSERT(ioError == IoError::AttrNotFound);
         CPPUNIT_ASSERT(value.empty());
     }
@@ -188,12 +188,12 @@ void TestIo::testGetXAttrValue() {
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "dangling-symbolic-link", ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::setXAttrValue(path, "status", "dangling-symbolic-link", ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         std::string value;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, "status", value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(value == "dangling-symbolic-link");
     }
 
@@ -204,18 +204,18 @@ void TestIo::testGetXAttrValue() {
         const SyncPath path = temporaryDirectory.path() / "regular_file_alias";
 
         IoError aliasError;
-        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
 
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "sane-alias", ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::setXAttrValue(path, "status", "sane-alias", ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         std::string value;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, "status", value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(value == "sane-alias");
 
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(targetPath, "status", value, ioError));
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(targetPath, "status", value, ioError));
         CPPUNIT_ASSERT(ioError == IoError::AttrNotFound);
         CPPUNIT_ASSERT(value.empty());
     }
@@ -230,12 +230,12 @@ void TestIo::testGetXAttrValue() {
         }
 
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "sugar-free", ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::setXAttrValue(path, "status", "sugar-free", ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         std::string value;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, "status", value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(value == "sugar-free");
     }
 
@@ -245,12 +245,12 @@ void TestIo::testGetXAttrValue() {
         const SyncPath path = temporaryDirectory.path();
 
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "super-dry", ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::setXAttrValue(path, "status", "super-dry", ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         std::string value;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, "status", value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(value == "super-dry");
     }
 
@@ -262,15 +262,15 @@ void TestIo::testGetXAttrValue() {
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "regular-file-symlink", ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::setXAttrValue(path, "status", "regular-file-symlink", ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         std::string value;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, "status", value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(value == "regular-file-symlink");
 
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(targetPath, "status", value, ioError));
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(targetPath, "status", value, ioError));
         CPPUNIT_ASSERT(ioError == IoError::AttrNotFound);
         CPPUNIT_ASSERT(value.empty());
     }
@@ -283,15 +283,15 @@ void TestIo::testGetXAttrValue() {
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "regular-dir-symlink", ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::setXAttrValue(path, "status", "regular-dir-symlink", ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         std::string value;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, "status", value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(value == "regular-dir-symlink");
 
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(targetPath, "status", value, ioError));
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(targetPath, "status", value, ioError));
         CPPUNIT_ASSERT(ioError == IoError::AttrNotFound);
         CPPUNIT_ASSERT(value.empty());
     }
@@ -304,12 +304,12 @@ void TestIo::testGetXAttrValue() {
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "dangling-symbolic-link", ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::setXAttrValue(path, "status", "dangling-symbolic-link", ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         std::string value;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, "status", value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(value == "dangling-symbolic-link");
     }
 
@@ -320,18 +320,18 @@ void TestIo::testGetXAttrValue() {
         const SyncPath path = temporaryDirectory.path() / "regular_file_alias";
 
         IoError aliasError;
-        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
 
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "sane-alias", ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::setXAttrValue(path, "status", "sane-alias", ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         std::string value;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, "status", value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(value == "sane-alias");
 
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(targetPath, "status", value, ioError));
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(targetPath, "status", value, ioError));
         CPPUNIT_ASSERT(ioError == IoError::AttrNotFound);
         CPPUNIT_ASSERT(value.empty());
     }
@@ -341,20 +341,20 @@ void TestIo::testGetXAttrValue() {
         const SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg";
         IoError ioError = IoError::Unknown;
         bool value = true;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(!value);
 
         ioError = IoError::Unknown;
         value = true;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, FILE_ATTRIBUTE_DIRECTORY, value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, FILE_ATTRIBUTE_DIRECTORY, value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(!value);
 
         ioError = IoError::Unknown;
         value = true;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, FILE_ATTRIBUTE_NORMAL, value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, FILE_ATTRIBUTE_NORMAL, value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(!value);
     }
 
@@ -363,14 +363,14 @@ void TestIo::testGetXAttrValue() {
         const SyncPath path = _localTestDirPath / "test_pictures";
         IoError ioError = IoError::Unknown;
         bool value = true;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(!value);
 
         ioError = IoError::Unknown;
         value = false;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, FILE_ATTRIBUTE_DIRECTORY, value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, FILE_ATTRIBUTE_DIRECTORY, value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(value);
     }
 
@@ -383,8 +383,8 @@ void TestIo::testGetXAttrValue() {
 
         IoError ioError = IoError::Success;
         bool value = true;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(!value);
     }
 
@@ -393,7 +393,7 @@ void TestIo::testGetXAttrValue() {
         const SyncPath path = _localTestDirPath / "non-existing.jpg"; // This file does not exist.
         IoError ioError = IoError::Success;
         bool value = true;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, value, ioError));
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, value, ioError));
         CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
         CPPUNIT_ASSERT(!value);
     }
@@ -404,7 +404,7 @@ void TestIo::testGetXAttrValue() {
         const SyncPath path = _localTestDirPath / veryLongfileName; // This file doesn't exist.
         bool value = true;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, value, ioError));
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, value, ioError));
         CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
         CPPUNIT_ASSERT(!value);
     }
@@ -418,10 +418,10 @@ void TestIo::testGetXAttrValue() {
 
         bool value = true;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, value, ioError));
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, value, ioError));
 
         std::filesystem::permissions(path, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(!value);
     }
 
@@ -432,13 +432,13 @@ void TestIo::testGetXAttrValue() {
         { std::ofstream ofs(path); }
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::setXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         bool value = false;
         ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(value);
     }
 
@@ -448,12 +448,12 @@ void TestIo::testGetXAttrValue() {
         const SyncPath path = temporaryDirectory.path();
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::setXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         bool value = false;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(value);
     }
 
@@ -465,21 +465,21 @@ void TestIo::testGetXAttrValue() {
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, FILE_ATTRIBUTE_READONLY, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::setXAttrValue(path, FILE_ATTRIBUTE_READONLY, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         bool value = false;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, FILE_ATTRIBUTE_READONLY, value, ioError));
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, FILE_ATTRIBUTE_READONLY, value, ioError));
 
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(value);
 
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(targetPath, FILE_ATTRIBUTE_READONLY, value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(targetPath, FILE_ATTRIBUTE_READONLY, value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(!value);
 
         // Restore permission to allow automatic removal of the temporary directory
-        _testObj->setXAttrValue(path, FILE_ATTRIBUTE_NORMAL, ioError);
+        IoHelper::setXAttrValue(path, FILE_ATTRIBUTE_NORMAL, ioError);
     }
 
     // A regular symbolic link on a folder, with an extended attribute for the link
@@ -490,22 +490,22 @@ void TestIo::testGetXAttrValue() {
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, FILE_ATTRIBUTE_HIDDEN, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::setXAttrValue(path, FILE_ATTRIBUTE_HIDDEN, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         bool value = false;
         ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, FILE_ATTRIBUTE_HIDDEN, value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, FILE_ATTRIBUTE_HIDDEN, value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(value);
 
         ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(targetPath, FILE_ATTRIBUTE_HIDDEN, value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(targetPath, FILE_ATTRIBUTE_HIDDEN, value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(!value);
 
         // Restore permission to allow automatic removal of the temporary directory
-        _testObj->setXAttrValue(path, FILE_ATTRIBUTE_NORMAL, ioError);
+        IoHelper::setXAttrValue(path, FILE_ATTRIBUTE_NORMAL, ioError);
     }
 
     // A dangling symbolic link on a file, with an extended attribute set for the link
@@ -516,13 +516,13 @@ void TestIo::testGetXAttrValue() {
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::setXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         bool value = false;
         ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::getXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, value, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(value);
     }
 #endif

@@ -21,10 +21,10 @@
 #include "customtoolbutton.h"
 #include "guiutility.h"
 #include "config.h"
-#include "common/utility.h"
 #include "enablestateholder.h"
 #include "guirequests.h"
 #include "clientgui.h"
+#include "libcommongui/matomoclient.h"
 #include "libcommon/utility/utility.h"
 
 #include <QBoxLayout>
@@ -55,7 +55,8 @@ static const int progressBarMax = 5;
 Q_LOGGING_CATEGORY(lcAddDriveLocalFolderWidget, "gui.adddrivelocalfolderwidget", QtInfoMsg)
 
 AddDriveLocalFolderWidget::AddDriveLocalFolderWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
-    QWidget(parent), _gui(gui) {
+    QWidget(parent),
+    _gui(gui) {
     initUI();
     updateUI();
 }
@@ -348,18 +349,21 @@ void AddDriveLocalFolderWidget::onNeedToSave() {
 
 void AddDriveLocalFolderWidget::onBackButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveLocalFolder", MatomoEventAction::Click, "backButton");
 
     emit terminated(false);
 }
 
 void AddDriveLocalFolderWidget::onContinueButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveLocalFolder", MatomoEventAction::Click, "continueButton");
 
     emit terminated();
 }
 
 void AddDriveLocalFolderWidget::onUpdateFolderButtonTriggered(bool checked) {
     Q_UNUSED(checked)
+    MatomoClient::sendEvent("addDriveLocalFolder", MatomoEventAction::Click, "editButton");
     EnableStateHolder _(this);
 
     selectFolder(_localFolderPath);

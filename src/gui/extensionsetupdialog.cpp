@@ -29,7 +29,9 @@ static const int boxHSpacing = 20;
 
 Q_LOGGING_CATEGORY(lcExtensionSetupDialog, "gui.extensionsetupdialog", QtInfoMsg)
 
-ExtensionSetupDialog::ExtensionSetupDialog(QWidget *parent) : CustomDialog(true, parent), _extensionSetupWidget(nullptr) {
+ExtensionSetupDialog::ExtensionSetupDialog(QWidget *parent) :
+    CustomDialog(true, parent),
+    _extensionSetupWidget(nullptr) {
     QVBoxLayout *mainLayout = this->mainLayout();
     mainLayout->setContentsMargins(boxHMargin, 0, boxHMargin, boxHSpacing);
     mainLayout->setSpacing(0);

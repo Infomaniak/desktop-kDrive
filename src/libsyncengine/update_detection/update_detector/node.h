@@ -29,30 +29,30 @@
 
 namespace KDC {
 
+static const SyncPath defaultInvalidPath = ":\0/:\0"; // Invalid path for increased safety
+static const NodeId defaultInvalidNodeId = "-1"; // Invalid node id for increased safety
+
 class Node {
     public:
         class MoveOriginInfos {
             public:
                 MoveOriginInfos() = default;
                 MoveOriginInfos(const MoveOriginInfos &) = default;
-                MoveOriginInfos(const SyncPath &path, const NodeId &parentNodeId) :
-                    _isValid(true), _path(path), _parentNodeId(parentNodeId) {}
+                MoveOriginInfos(const SyncPath &path, const NodeId &parentNodeId);
 
-                MoveOriginInfos &operator=(const MoveOriginInfos &newMoveOriginInfos) {
-                    LOG_IF_FAIL(Log::instance()->getLogger(), newMoveOriginInfos.isValid());
-                    _isValid = newMoveOriginInfos.isValid();
-                    _path = newMoveOriginInfos.path();
-                    _parentNodeId = newMoveOriginInfos.parentNodeId();
-                    return *this;
-                }
+                MoveOriginInfos &operator=(const MoveOriginInfos &newMoveOriginInfos);
                 const SyncPath &path() const;
+                const SyncPath &normalizedPath() const;
                 const NodeId &parentNodeId() const;
+
+                void clear();
 
             private:
                 bool isValid() const;
                 bool _isValid = false;
-                SyncPath _path = ":\0/:\0"; // Invalid path for increased safety
-                NodeId _parentNodeId = "-1"; // Invalid node id for increased safety
+                SyncPath _path = defaultInvalidPath;
+                SyncPath _normalizedPath = defaultInvalidPath;
+                NodeId _parentNodeId = defaultInvalidNodeId;
                 friend class Node;
                 friend class TestUpdateTreeWorker;
         };
@@ -91,6 +91,7 @@ class Node {
         inline std::optional<DbNodeId> idb() const { return _idb; }
         inline ReplicaSide side() const { return _side; }
         inline const SyncName &name() const { return _name; }
+        const SyncName &normalizedName();
         inline NodeType type() const { return _type; }
         inline InconsistencyType inconsistencyType() const { return _inconsistencyType; }
         inline OperationType changeEvents() const { return _changeEvents; }
@@ -108,15 +109,16 @@ class Node {
         }
 
         inline void setIdb(const std::optional<DbNodeId> &idb) { _idb = idb; }
-        void setName(const SyncName &name) { _name = name; }
+        void setName(const SyncName &name);
         inline void setInconsistencyType(InconsistencyType newInconsistencyType) { _inconsistencyType = newInconsistencyType; }
         inline void addInconsistencyType(InconsistencyType newInconsistencyType) { _inconsistencyType |= newInconsistencyType; }
         inline void setCreatedAt(const std::optional<SyncTime> &createdAt) { _createdAt = createdAt; }
         inline void setLastModified(const std::optional<SyncTime> &lastmodified) { _lastModified = lastmodified; }
         inline void setSize(int64_t size) { _size = size; }
         inline void setPreviousId(const std::optional<NodeId> &previousNodeId) { _previousId = previousNodeId; }
-        bool setParentNode(const std::shared_ptr<Node> &parentNode);
+        bool setParentNode(std::shared_ptr<Node> parentNode);
         inline void setMoveOriginInfos(const MoveOriginInfos &moveOriginInfos) { _moveOriginInfos = moveOriginInfos; }
+        inline void clearMoveOriginInfos() { _moveOriginInfos.clear(); }
         inline void setStatus(const NodeStatus &status) { _status = status; }
 
         inline std::unordered_map<NodeId, std::shared_ptr<Node>> &children() { return _childrenById; }
@@ -126,7 +128,8 @@ class Node {
         size_t deleteChildren(std::shared_ptr<Node> child);
         size_t deleteChildren(const NodeId &childId);
         /**
-         * @brief Retrieve the child node based on its name, which is assumed to be normalized. Filter out the nodes with change events of type `except`.
+         * @brief Retrieve the child node based on its name, which is assumed to be normalized. Filter out the nodes with change
+         * events of type `except`.
          * @param normalizedName Make sure to provide a normalized name.
          * @param except The event type to filter out.
          * @return A pointer to the node if found, `nullptr` otherwise.
@@ -145,6 +148,8 @@ class Node {
 
         bool isEditFromDeleteCreate() const;
 
+        void clear();
+
         [[nodiscard]] bool isRoot() const;
         [[nodiscard]] bool isCommonDocumentsFolder() const;
         [[nodiscard]] bool isSharedFolder() const;
@@ -160,10 +165,12 @@ class Node {
         // The node id should not be changed without also changing the map in the UpdateTree and the parent/child relationship in
         // other nodes
         inline void setId(const std::optional<NodeId> &nodeId) { _id = nodeId; }
+        [[nodiscard]] bool isParentValid(std::shared_ptr<const Node> parentNode) const;
 
         std::optional<DbNodeId> _idb = std::nullopt;
         ReplicaSide _side = ReplicaSide::Unknown;
-        SyncName _name; // This name is NFC-normalized by constructors and setters.
+        SyncName _name;
+        SyncName _normalizedName;
         InconsistencyType _inconsistencyType = InconsistencyType::None;
         NodeType _type = NodeType::Unknown;
         OperationType _changeEvents = OperationType::None;
@@ -182,7 +189,6 @@ class Node {
 
         bool _isTmp = false;
 
-        [[nodiscard]] bool isParentValid(std::shared_ptr<const Node> parentNode) const;
         friend class TestNode;
 };
 

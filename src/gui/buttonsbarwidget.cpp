@@ -31,7 +31,10 @@ static const int vMargin = 20;
 Q_LOGGING_CATEGORY(lcButtonsBarWidget, "gui.buttonsbarwidget", QtInfoMsg)
 
 ButtonsBarWidget::ButtonsBarWidget(QWidget *parent) :
-    QWidget(parent), _position(0), _backgroundColor(QColor()), _hboxLayout(nullptr) {
+    QWidget(parent),
+    _position(0),
+    _backgroundColor(QColor()),
+    _hboxLayout(nullptr) {
     _hboxLayout = new QHBoxLayout();
     _hboxLayout->setContentsMargins(hMargin, vMargin, hMargin, vMargin);
     setLayout(_hboxLayout);

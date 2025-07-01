@@ -28,15 +28,16 @@ namespace KDC {
 
 #define BUF_SIZE 4096 * 1000 // 4MB     // TODO : this should be defined in a common parent class
 
-DirectDownloadJob::DirectDownloadJob(const SyncPath& destinationFile, const std::string& url) :
-    _destinationFile(destinationFile), _url(url) {
+DirectDownloadJob::DirectDownloadJob(const SyncPath &destinationFile, const std::string &url) :
+    _destinationFile(destinationFile),
+    _url(url) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-bool DirectDownloadJob::handleResponse(std::istream& is) {
+bool DirectDownloadJob::handleResponse(std::istream &is) {
     std::ofstream output(_destinationFile.native().c_str(), std::ios::binary);
     if (!output) {
-        LOGW_WARN(_logger, L"Failed to create file: " << Utility::formatSyncPath(_destinationFile).c_str());
+        LOGW_WARN(_logger, L"Failed to create file: " << Utility::formatSyncPath(_destinationFile));
         _exitInfo = {ExitCode::SystemError,
                      Utility::enoughSpace(_destinationFile) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace};
         return false;
@@ -109,11 +110,11 @@ bool DirectDownloadJob::handleResponse(std::istream& is) {
     return true;
 }
 
-bool DirectDownloadJob::handleError(std::istream& inputStream, const Poco::URI& uri) {
+bool DirectDownloadJob::handleError(std::istream &inputStream, const Poco::URI &uri) {
     (void) inputStream;
     (void) uri;
     const auto errorCode = std::to_string(_resHttp.getStatus());
-    LOG_WARN(_logger, "Download failed with error: " << errorCode.c_str() << " - " << _resHttp.getReason().c_str());
+    LOG_WARN(_logger, "Download failed with error: " << errorCode << " - " << _resHttp.getReason());
     return false;
 }
 

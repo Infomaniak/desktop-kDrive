@@ -41,18 +41,21 @@ std::shared_ptr<ExclusionTemplateCache> ExclusionTemplateCache::instance() {
     return _instance;
 }
 
+void ExclusionTemplateCache::reset() {
+    _instance.reset();
+}
+
 ExclusionTemplateCache::ExclusionTemplateCache() {
     // Load exclusion templates
-    if (!ParmsDb::instance()->selectAllExclusionTemplates(true, _defExclusionTemplates)) {
+    if (!ParmsDb::instance()->selectDefaultExclusionTemplates(_defExclusionTemplates)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllExclusionTemplates");
         throw std::runtime_error("Failed to create ExclusionTemplateCache instance!");
     }
 
-    if (!ParmsDb::instance()->selectAllExclusionTemplates(false, _userExclusionTemplates)) {
+    if (!ParmsDb::instance()->selectUserExclusionTemplates(_userExclusionTemplates)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllExclusionTemplates");
         throw std::runtime_error("Failed to create ExclusionTemplateCache instance!");
     }
-
     populateUndeletedExclusionTemplates();
 }
 
@@ -93,12 +96,12 @@ void ExclusionTemplateCache::updateRegexPatterns() {
         std::vector<std::string> splitStr = Utility::splitStr(templateTest, '*');
         for (auto it = splitStr.begin(); it != splitStr.end();) {
             if (it->empty()) {
-                it++;
+                ++it;
                 continue;
             }
             regexPattern += *it;
 
-            it++;
+            ++it;
             if (it != splitStr.end()) {
                 regexPattern += ".*?";
             }
@@ -110,7 +113,48 @@ void ExclusionTemplateCache::updateRegexPatterns() {
             regexPattern += "$"; // End of string
         }
 
-        _regexPatterns.emplace_back(std::regex(regexPattern), exclPattern);
+        addRegexForAllNormalizationForms(regexPattern, exclPattern);
+    }
+}
+
+void ExclusionTemplateCache::addRegexForAllNormalizationForms(std::string regexPattern, ExclusionTemplate exclusionTemplate) {
+    // If the NFC and NFD forms of the template are different, both should be excluded.
+    SyncName nfcRegexPattern;
+    SyncName nfdRegexPattern;
+    SyncName nfcTemplate;
+    SyncName nfdTemplate;
+    bool normalizationSuccess =
+            CommonUtility::normalizedSyncName(Str2SyncName(regexPattern), nfcRegexPattern, UnicodeNormalization::NFC) &&
+            CommonUtility::normalizedSyncName(Str2SyncName(regexPattern), nfdRegexPattern, UnicodeNormalization::NFD) &&
+            CommonUtility::normalizedSyncName(Str2SyncName(exclusionTemplate.templ()), nfcTemplate, UnicodeNormalization::NFC) &&
+            CommonUtility::normalizedSyncName(Str2SyncName(exclusionTemplate.templ()), nfdTemplate, UnicodeNormalization::NFD);
+
+    if (!normalizationSuccess || nfcRegexPattern == nfdRegexPattern) {
+        if (!normalizationSuccess) {
+            LOG_WARN(Log::instance()->getLogger(), "Unable to normalize an exclusion template: [regex] "
+                                                           << regexPattern << " | [template] " << exclusionTemplate.templ());
+        }
+        if (std::find_if(_regexPatterns.begin(), _regexPatterns.end(), [&exclusionTemplate](const auto &value) {
+                return Str2SyncName(value.second.templ()) == Str2SyncName(exclusionTemplate.templ());
+            }) == _regexPatterns.end()) {
+            (void) _regexPatterns.emplace_back(std::regex(regexPattern), exclusionTemplate);
+        }
+    } else {
+        if (std::find_if(_regexPatterns.begin(), _regexPatterns.end(), [&nfcTemplate](const auto &value) {
+                return Str2SyncName(value.second.templ()) == nfcTemplate;
+            }) == _regexPatterns.end()) {
+            ExclusionTemplate exclusionTemplateNfc = exclusionTemplate;
+            exclusionTemplateNfc.setTempl(SyncName2Str(nfcTemplate));
+            (void) _regexPatterns.emplace_back(std::regex(SyncName2Str(nfcRegexPattern)), exclusionTemplateNfc);
+        }
+
+        if (std::find_if(_regexPatterns.begin(), _regexPatterns.end(), [&nfdTemplate](const auto &value) {
+                return Str2SyncName(value.second.templ()) == nfdTemplate;
+            }) == _regexPatterns.end()) {
+            ExclusionTemplate exclusionTemplateNfd = exclusionTemplate;
+            exclusionTemplateNfd.setTempl(SyncName2Str(nfdTemplate));
+            (void) _regexPatterns.emplace_back(std::regex(SyncName2Str(nfdRegexPattern)), exclusionTemplateNfd);
+        }
     }
 }
 
@@ -127,7 +171,7 @@ void ExclusionTemplateCache::escapeRegexSpecialChar(std::string &in) {
     in = out;
 }
 
-ExitCode ExclusionTemplateCache::update(bool def, const std::vector<ExclusionTemplate> &exclusionTemplates) {
+ExitCode ExclusionTemplateCache::update(const bool def, const std::vector<ExclusionTemplate> &exclusionTemplates) {
     if (def) {
         _defExclusionTemplates = exclusionTemplates;
     } else {
@@ -145,67 +189,25 @@ ExitCode ExclusionTemplateCache::update(bool def, const std::vector<ExclusionTem
     return ExitCode::Ok;
 }
 
-bool ExclusionTemplateCache::checkIfIsExcluded(const SyncPath &basePath, const SyncPath &relativePath, bool &isWarning,
-                                               bool &isExcluded, IoError &ioError) noexcept {
-    isExcluded = false;
-    ioError = IoError::Success;
-
-    if (!checkIfIsExcludedBecauseHidden(basePath, relativePath, isExcluded, ioError)) {
-        return false;
-    }
-
-    if (isExcluded) {
-        return true;
-    }
-
-    isExcluded = isExcludedByTemplate(relativePath, isWarning);
-
-    return true;
+bool ExclusionTemplateCache::isExcluded(const SyncPath &relativePath) noexcept {
+    bool dummy = false;
+    return isExcluded(relativePath, dummy);
 }
 
-bool ExclusionTemplateCache::checkIfIsExcludedBecauseHidden(const SyncPath &basePath, const SyncPath &relativePath,
-                                                            bool &isExcluded, IoError &ioError) noexcept {
-    isExcluded = false;
-    ioError = IoError::Success;
-
-    if (!basePath.empty() && !ParametersCache::instance()->parameters().syncHiddenFiles()) {
-        // Call from local FS observer
-        SyncPath absolutePath = basePath / relativePath;
-        bool isHidden = false;
-
-        const bool success = IoHelper::checkIfIsHiddenFile(absolutePath, isHidden, ioError);
-        if (!success) {
-            LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in IoHelper::checkIfIsHiddenFile: " << Utility::formatIoError(absolutePath, ioError).c_str());
-            return false;
-        }
-
-        if (isHidden) {
-            if (ParametersCache::isExtendedLogEnabled()) {
-                LOGW_INFO(Log::instance()->getLogger(),
-                          L"Item \"" << Path2WStr(absolutePath).c_str() << L"\" rejected because it is hidden");
-            }
-            isExcluded = true;
-        }
-    }
-
-    return true;
-}
-
-bool ExclusionTemplateCache::isExcludedByTemplate(const SyncPath &relativePath, bool &isWarning) noexcept {
-    const std::lock_guard<std::mutex> lock(_mutex);
+bool ExclusionTemplateCache::isExcluded(const SyncPath &relativePath, bool &isWarning) noexcept {
+    const std::scoped_lock lock(_mutex);
     const std::string fileName = SyncName2Str(relativePath.filename().native());
-    for (const auto &pattern: _regexPatterns) {
-        const std::string &patternStr = pattern.second.templ();
-        isWarning = pattern.second.warning();
+    for (const auto &[regex, exclusionTemplate]: _regexPatterns) {
+        const std::string &patternStr = exclusionTemplate.templ();
+        isWarning = exclusionTemplate.warning();
 
-        switch (pattern.second.complexity()) {
+        switch (exclusionTemplate.complexity()) {
             case ExclusionTemplateComplexity::Simplest: {
                 if (fileName == patternStr) {
                     if (ParametersCache::isExtendedLogEnabled()) {
-                        LOGW_INFO(Log::instance()->getLogger(),
-                                  L"Item \"" << Path2WStr(relativePath).c_str() << L"\" rejected because of rule \""
-                                             << Utility::s2ws(pattern.second.templ()).c_str() << L"\"");
+                        LOGW_INFO(Log::instance()->getLogger(), L"Item \"" << Utility::formatSyncPath(relativePath)
+                                                                           << L"\" rejected because of rule \""
+                                                                           << Utility::s2ws(exclusionTemplate.templ()) << L"\"");
                     }
                     return true; // Filename match exactly the pattern
                 }
@@ -213,7 +215,7 @@ bool ExclusionTemplateCache::isExcludedByTemplate(const SyncPath &relativePath, 
             }
             case ExclusionTemplateComplexity::Simple: {
                 std::string tmpStr = patternStr;
-                bool atBegining = tmpStr[0] == '*';
+                bool atBeginning = tmpStr[0] == '*';
                 bool atEnd = tmpStr[tmpStr.length() - 1] == '*';
                 std::string::size_type n = tmpStr.find('*');
                 while (n != std::string::npos) {
@@ -222,10 +224,10 @@ bool ExclusionTemplateCache::isExcludedByTemplate(const SyncPath &relativePath, 
                 }
 
                 bool exclude = false;
-                if (atBegining && atEnd) {
+                if (atBeginning && atEnd) {
                     // Template can be anywhere
                     exclude = fileName.find(tmpStr) != std::string::npos;
-                } else if (atBegining) {
+                } else if (atBeginning) {
                     // Must be at the end only
                     exclude = Utility::endsWith(fileName, tmpStr);
                 } else {
@@ -235,9 +237,9 @@ bool ExclusionTemplateCache::isExcludedByTemplate(const SyncPath &relativePath, 
 
                 if (exclude) {
                     if (ParametersCache::isExtendedLogEnabled()) {
-                        LOGW_INFO(Log::instance()->getLogger(),
-                                  L"Item \"" << Path2WStr(relativePath).c_str() << L"\" rejected because of rule \""
-                                             << Utility::s2ws(pattern.second.templ()).c_str() << L"\"");
+                        LOGW_INFO(Log::instance()->getLogger(), L"Item \"" << Utility::formatSyncPath(relativePath)
+                                                                           << L"\" rejected because of rule \""
+                                                                           << Utility::s2ws(exclusionTemplate.templ()) << L"\"");
                     }
                     return true; // Filename contains the pattern
                 }
@@ -245,11 +247,11 @@ bool ExclusionTemplateCache::isExcludedByTemplate(const SyncPath &relativePath, 
             }
             case ExclusionTemplateComplexity::Complex:
             default: {
-                if (std::regex_match(fileName, pattern.first)) {
+                if (std::regex_match(fileName, regex)) {
                     if (ParametersCache::isExtendedLogEnabled()) {
-                        LOGW_INFO(Log::instance()->getLogger(),
-                                  L"Item \"" << Path2WStr(relativePath).c_str() << L"\" rejected because of rule \""
-                                             << Utility::s2ws(pattern.second.templ()).c_str() << L"\"");
+                        LOGW_INFO(Log::instance()->getLogger(), L"Item \"" << Utility::formatSyncPath(relativePath)
+                                                                           << L"\" rejected because of rule \""
+                                                                           << Utility::s2ws(exclusionTemplate.templ()) << L"\"");
                     }
                     return true;
                 }

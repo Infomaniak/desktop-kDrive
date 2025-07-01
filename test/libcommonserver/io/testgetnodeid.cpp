@@ -29,7 +29,7 @@ void TestIo::testGetNodeId() {
     {
         const SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg";
         NodeId nodeId;
-        CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
         CPPUNIT_ASSERT(!nodeId.empty());
     }
 
@@ -37,7 +37,7 @@ void TestIo::testGetNodeId() {
     {
         const SyncPath path = _localTestDirPath / "test_pictures";
         NodeId nodeId;
-        CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
         CPPUNIT_ASSERT(!nodeId.empty());
     }
 
@@ -49,7 +49,7 @@ void TestIo::testGetNodeId() {
         std::filesystem::create_symlink(targetPath, path);
 
         NodeId nodeId;
-        CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
         CPPUNIT_ASSERT(!nodeId.empty());
     }
 
@@ -61,7 +61,7 @@ void TestIo::testGetNodeId() {
         std::filesystem::create_symlink(targetPath, path);
 
         NodeId nodeId;
-        CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
         CPPUNIT_ASSERT(!nodeId.empty());
     }
 
@@ -69,7 +69,7 @@ void TestIo::testGetNodeId() {
     {
         const SyncPath path = _localTestDirPath / "non-existing.jpg"; // This file does not exist.
         NodeId nodeId;
-        CPPUNIT_ASSERT(!_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(!IoHelper::getNodeId(path, nodeId));
         CPPUNIT_ASSERT(nodeId.empty());
     }
 
@@ -79,7 +79,7 @@ void TestIo::testGetNodeId() {
                                            'a'); // Exceeds the max allowed name length on every file system of interest.
         const SyncPath path = _localTestDirPath / veryLongfileName; // This file doesn't exist.
         NodeId nodeId;
-        CPPUNIT_ASSERT(!_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(!IoHelper::getNodeId(path, nodeId));
         CPPUNIT_ASSERT(nodeId.empty());
     }
 
@@ -91,7 +91,7 @@ void TestIo::testGetNodeId() {
             path /= pathSegment; // Eventually exceeds the max allowed path length on every file system of interest.
         }
         NodeId nodeId;
-        CPPUNIT_ASSERT(!_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(!IoHelper::getNodeId(path, nodeId));
         CPPUNIT_ASSERT(nodeId.empty());
     }
 
@@ -107,7 +107,7 @@ void TestIo::testGetNodeId() {
         }
 
         NodeId nodeId;
-        CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
         CPPUNIT_ASSERT(!nodeId.empty());
     }
 
@@ -122,7 +122,7 @@ void TestIo::testGetNodeId() {
         }
 
         NodeId nodeId;
-        CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
         CPPUNIT_ASSERT(!nodeId.empty());
     }
 #endif
@@ -138,7 +138,7 @@ void TestIo::testGetNodeId() {
         CPPUNIT_ASSERT(targetPath == targetPath_ && ec.value() == 0);
 
         NodeId nodeId;
-        CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
         CPPUNIT_ASSERT(!nodeId.empty());
     }
 
@@ -150,12 +150,12 @@ void TestIo::testGetNodeId() {
         const SyncPath path = temporaryDirectory.path() / "regular_file_alias";
 
         IoError aliasError;
-        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
         NodeId nodeId;
-        CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
         CPPUNIT_ASSERT(!nodeId.empty());
     }
 
@@ -166,12 +166,12 @@ void TestIo::testGetNodeId() {
         const SyncPath path = temporaryDirectory.path() / "regular_dir_alias";
 
         IoError aliasError;
-        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
         NodeId nodeId;
-        CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
         CPPUNIT_ASSERT(!nodeId.empty());
     }
 
@@ -187,7 +187,7 @@ void TestIo::testGetNodeId() {
         }
 
         IoError aliasError;
-        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
@@ -195,7 +195,7 @@ void TestIo::testGetNodeId() {
         CPPUNIT_ASSERT(!std::filesystem::exists(targetPath));
 
         NodeId nodeId;
-        CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
         CPPUNIT_ASSERT(!nodeId.empty());
     }
 
@@ -208,7 +208,7 @@ void TestIo::testGetNodeId() {
         const SyncPath path = temporaryDirectory.path() / "dangling_directory_alias";
 
         IoError aliasError;
-        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
+        CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
@@ -216,7 +216,7 @@ void TestIo::testGetNodeId() {
         CPPUNIT_ASSERT(!std::filesystem::exists(targetPath));
 
         NodeId nodeId;
-        CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
         CPPUNIT_ASSERT(!nodeId.empty());
     }
 
@@ -235,7 +235,7 @@ void TestIo::testGetNodeId() {
         std::filesystem::permissions(path, allPermissions, std::filesystem::perm_options::remove);
 
         NodeId nodeId;
-        CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
 
         std::filesystem::permissions(path, allPermissions, std::filesystem::perm_options::add);
 
@@ -253,7 +253,7 @@ void TestIo::testGetNodeId() {
         std::filesystem::permissions(path, allPermissions, std::filesystem::perm_options::remove);
 
         NodeId nodeId;
-        CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
 
         std::filesystem::permissions(path, allPermissions, std::filesystem::perm_options::add);
 
@@ -274,7 +274,7 @@ void TestIo::testGetNodeId() {
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_read, std::filesystem::perm_options::remove);
 
         NodeId nodeId;
-        CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
 
         // Restore permission to allow subdir removal
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
@@ -295,9 +295,9 @@ void TestIo::testGetNodeId() {
 
         NodeId nodeId;
 #ifdef _WIN32
-        CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
 #else
-        CPPUNIT_ASSERT(!_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(!IoHelper::getNodeId(path, nodeId));
 #endif
 
         // Restore permission to allow subdir removal

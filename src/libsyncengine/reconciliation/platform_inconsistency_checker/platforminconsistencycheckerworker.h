@@ -40,7 +40,6 @@ class PlatformInconsistencyCheckerWorker : public OperationProcessor {
         void checkNameClashAgainstSiblings(const std::shared_ptr<Node> &remoteParentNode);
 
         bool pathChanged(std::shared_ptr<Node> node) const;
-        void removeLocalNodeFromDb(std::shared_ptr<Node> localNode);
         struct NodeIdPair {
                 NodeId remoteId;
                 NodeId localId; // Optional, only required if the file is already synchronized.

@@ -24,7 +24,9 @@
 
 namespace KDC {
 
-LocalMoveJob::LocalMoveJob(const SyncPath &source, const SyncPath &dest) : _source(source), _dest(dest) {}
+LocalMoveJob::LocalMoveJob(const SyncPath &source, const SyncPath &dest) :
+    _source(source),
+    _dest(dest) {}
 
 bool LocalMoveJob::canRun() {
     if (bypassCheck()) {
@@ -58,7 +60,7 @@ bool LocalMoveJob::canRun() {
 
         if (exists) {
             LOGW_DEBUG(_logger, L"Item already exists: " << Utility::formatSyncPath(_dest));
-            _exitInfo = {ExitCode::DataError, ExitCause::FileAlreadyExists};
+            _exitInfo = {ExitCode::DataError, ExitCause::FileExists};
             return false;
         }
     }
@@ -89,13 +91,13 @@ void LocalMoveJob::runJob() {
     std::filesystem::rename(_source, _dest, ec);
 
     if (ec.value() != 0) { // We consider this as a permission denied error
-        LOGW_WARN(_logger, L"Failed to rename " << Path2WStr(_source).c_str() << L" to " << Path2WStr(_dest).c_str() << L": "
-                                                << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value() << L")");
+        LOGW_WARN(_logger, L"Failed to rename " << Path2WStr(_source) << L" to " << Path2WStr(_dest) << L": "
+                                                << Utility::s2ws(ec.message()) << L" (" << ec.value() << L")");
         _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         return;
     }
 
-    LOGW_INFO(_logger, L"Item " << Path2WStr(_source).c_str() << L" moved to " << Path2WStr(_dest).c_str());
+    LOGW_INFO(_logger, L"Item " << Path2WStr(_source) << L" moved to " << Path2WStr(_dest));
     _exitInfo = ExitCode::Ok;
 }
 

@@ -188,3 +188,10 @@ cmake-build-debug*
 /extensions/windows/cfapi/FileExplorerExtension/Generated Files
 /CMakeSettings.json
 /out/
+
+/src/libcommonserver/vfs/vfspluginmetadata.json
+
+# Conan / CMake generated file
+/CMakeUserPresets.json
+# Python virtual environment folder, used by the installation of conan.
+.venv/

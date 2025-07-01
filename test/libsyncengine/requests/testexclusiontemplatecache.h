@@ -27,6 +27,10 @@ namespace KDC {
 class TestExclusionTemplateCache : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestExclusionTemplateCache);
         CPPUNIT_TEST(testIsExcluded);
+        CPPUNIT_TEST(testCacheFolderIsExcluded);
+        CPPUNIT_TEST(testRescueFolderIsExcluded);
+        CPPUNIT_TEST(testNFCNFDExclusion);
+        CPPUNIT_TEST(testaddRegexForAllNormalizationForms);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -35,6 +39,10 @@ class TestExclusionTemplateCache : public CppUnit::TestFixture, public TestBase 
 
     protected:
         void testIsExcluded();
+        void testCacheFolderIsExcluded();
+        void testRescueFolderIsExcluded();
+        void testNFCNFDExclusion();
+        void testaddRegexForAllNormalizationForms();
 };
 
 } // namespace KDC

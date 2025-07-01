@@ -1,6 +1,6 @@
 find_package(Qt6 REQUIRED Core Concurrent WebEngineCore Core5Compat)
 
-get_target_property (QT_QMAKE_EXECUTABLE Qt6::qmake IMPORTED_LOCATION)
+get_target_property(QT_QMAKE_EXECUTABLE Qt6::qmake IMPORTED_LOCATION)
 message(STATUS "Using Qt ${Qt6Core_VERSION} (${QT_QMAKE_EXECUTABLE})")
 
 if(NOT MSVC)
@@ -32,8 +32,8 @@ add_subdirectory(libcommongui)
 add_subdirectory(libsyncengine)
 add_subdirectory(libparms)
 
-if (NOT BUILD_LIBRARIES_ONLY)
-    if (BUILD_GUI)
+if(NOT BUILD_LIBRARIES_ONLY)
+    if(BUILD_GUI)
         add_subdirectory(gui)
     endif()
     add_subdirectory(server)

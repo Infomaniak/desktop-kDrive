@@ -52,9 +52,7 @@ constexpr bool connectorsAreAlreadyInstalled = false;
 
 void TestWorkers::setUp() {
     TestBase::start();
-#ifdef _WIN32
     if (!testhelpers::isExtendedTest(false)) return;
-#endif
 
     _logger = Log::instance()->getLogger();
 
@@ -87,7 +85,7 @@ void TestWorkers::setUp() {
     Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
-    _sync = Sync(1, drive.dbId(), localPathStr, testVariables.remotePath);
+    _sync = Sync(1, drive.dbId(), localPathStr, "", testVariables.remotePath);
 #if defined(__APPLE__)
     _sync.setVirtualFileMode(VirtualFileMode::Mac);
 #elif defined(_WIN32)
@@ -161,9 +159,7 @@ void TestWorkers::setUp() {
 }
 
 void TestWorkers::tearDown() {
-#ifdef _WIN32
     if (!testhelpers::isExtendedTest(false)) return;
-#endif
     ParmsDb::instance()->close();
     ParmsDb::reset();
     if (_syncPal && _syncPal->syncDb()) {
@@ -178,9 +174,7 @@ void TestWorkers::tearDown() {
 }
 
 void TestWorkers::testStartVfs() {
-#ifdef _WIN32
     if (!testhelpers::isExtendedTest()) return;
-#endif
 #if defined(__APPLE__)
     if (connectorsAreAlreadyInstalled) {
         // Make sure that Vfs is installed/activated/connected
@@ -202,9 +196,7 @@ void TestWorkers::testStartVfs() {
 }
 
 void TestWorkers::testCreatePlaceholder() {
-#ifdef _WIN32
     if (!testhelpers::isExtendedTest()) return;
-#endif
     _syncPal->resetEstimateUpdates();
     ExitInfo exitInfo;
     // Progress not intialized
@@ -234,7 +226,7 @@ void TestWorkers::testCreatePlaceholder() {
 #if defined(__APPLE__) || defined(_WIN32)
         // Folder already exists
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFolderPath);
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAlreadyExists), exitInfo);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileExists), exitInfo);
 #endif
     }
 
@@ -254,8 +246,9 @@ void TestWorkers::testCreatePlaceholder() {
 #if defined(__APPLE__) || defined(_WIN32)
         // Folder access denied
         IoError ioError{IoError::Unknown};
-        CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, false, false, false, ioError) &&
-                       ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, false, false, false, ioError) &&
+                                       ioError == IoError::Success);
 
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFilePath);
 #ifdef __APPLE__
@@ -277,8 +270,9 @@ void TestWorkers::testCreatePlaceholder() {
 #endif
 
         ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, true, true, true, ioError) &&
-                       ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, true, true, true, ioError) &&
+                                       ioError == IoError::Success);
 #endif
 
         // File doesn't exist (normal case)
@@ -289,15 +283,13 @@ void TestWorkers::testCreatePlaceholder() {
 #if defined(__APPLE__) || defined(_WIN32)
         // File already exists
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFilePath);
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAlreadyExists), exitInfo);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileExists), exitInfo);
 #endif
     }
 }
 
 void TestWorkers::testConvertToPlaceholder() {
-#ifdef _WIN32
     if (!testhelpers::isExtendedTest()) return;
-#endif
     _syncPal->resetEstimateUpdates();
     ExitInfo exitInfo;
     // Progress not intialized
@@ -342,8 +334,9 @@ void TestWorkers::testConvertToPlaceholder() {
 #if defined(__APPLE__) || defined(_WIN32)
         // Folder access denied
         IoError ioError{IoError::Unknown};
-        CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, false, false, false, ioError) &&
-                       ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, false, false, false, ioError) &&
+                                       ioError == IoError::Success);
 
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFilePath);
 #if defined(__APPLE__)
@@ -352,13 +345,14 @@ void TestWorkers::testConvertToPlaceholder() {
         // Strangely (bug?), the Windows api is able to create a placeholder in a folder for which the user does not have
         // rights
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
-        CPPUNIT_ASSERT(IoHelper::deleteItem(_syncPal->localPath() / relativeFilePath, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::deleteItem(_syncPal->localPath() / relativeFilePath, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 #endif
 
         ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, true, true, true, ioError) &&
-                       ioError == IoError::Success);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                               IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, true, true, true, ioError) &&
+                                       ioError == IoError::Success);
 
         // File doesn't exist
         exitInfo = _syncPal->_executorWorker->convertToPlaceholder(relativeFilePath, true);
