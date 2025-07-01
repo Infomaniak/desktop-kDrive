@@ -22,7 +22,14 @@
 
 #include <QCoreApplication>
 
+inline Q_LOGGING_CATEGORY(lcMatomoClient, "gui.matomo", QtInfoMsg)
+
 namespace KDC {
+
+constexpr int matomoTimeout = 10000;     // Timeout for Matomo requests in milliseconds
+constexpr int matomoTimeoutMax = 2;      // Max number of Matomo timeout request before disabling Matomo tracking
+int matomoTimeoutCounter = 0;            // Number of Matomo timeout requests
+bool matomoDisabled = false;             // if true, Matomo is disabled and no events / page visit will be sent.
 
 /**
  * Singleton instance of MatomoClient.
@@ -48,6 +55,39 @@ MatomoClient &MatomoClient::instance(const QString &clientId) {
 MatomoClient::MatomoClient(QCoreApplication *app, const QString &clientId) :
     PiwikTracker(app, QUrl(MATOMO_URL), MATOMO_SITE_ID, clientId) {
     initNameFieldMap();
+    qDebug(lcMatomoClient) << "MatomoClient initialized with URL:" << MATOMO_URL
+                      << "and site ID:" << MATOMO_SITE_ID;
+
+    const auto children = this->findChildren<QNetworkAccessManager*>();
+    if (!children.isEmpty()) {
+        QNetworkAccessManager *piwikNAM = children.first();
+        /**
+         *
+         * A transfer timeout means that if no data is transferred between the client and the server
+         * for a certain amount of time, the request will be aborted.
+         * (This is not a global timeout: it resets every time data is sent or received.)
+         *
+         * Since Matomo requests are lightweight, this transfer timeout behaves approximately like a global timeout.
+         *
+         */
+        piwikNAM->setTransferTimeout(matomoTimeout);
+        connect(piwikNAM, &QNetworkAccessManager::finished, this, [this](const QNetworkReply* reply) {
+            if (reply->error() == QNetworkReply::TimeoutError              // Error given by the TransferTimeout
+                || reply->error() == QNetworkReply::ConnectionRefusedError // Error given when MATOMO_URL is blocked and return :: in ipv6 or 0.0.0.0 in ipv4
+                ) {
+                matomoTimeoutCounter++;
+                qWarning(lcMatomoClient) << "Timeout #" << matomoTimeoutCounter;
+                if (matomoTimeoutCounter >= matomoTimeoutMax && !matomoDisabled) {
+                    matomoDisabled = true;
+                    qWarning(lcMatomoClient) << "Disabled after" << matomoTimeoutMax << "timeouts.";
+                }
+            }
+        });
+        if (ParametersCache::instance()->parametersInfo().extendedLog()) {
+            qDebug(lcMatomoClient) << "Transfer timeout set to" << matomoTimeout << "ms.";
+        }
+    }
+
 }
 
 /**
@@ -61,8 +101,10 @@ void MatomoClient::sendVisit(const MatomoNameField page) {
     instance().getPathAndAction(page, path, action);
 
     if (ParametersCache::instance()->parametersInfo().extendedLog()) {
-        qCDebug(lcMatomoClient()) << "MatomoClient::sendVisit(page=" << static_cast<matomo_enum_t>(page) << ")";
+        qCDebug(lcMatomoClient()) << "MatomoClient::sendVisit(path=" << path << ", action=" << action << ")" << (matomoDisabled ? " => Trigger but not sent, tracking disabled" : "");
     }
+    if (matomoDisabled) return; // If Matomo is disabled, do not send the visit.
+
     instance().PiwikTracker::sendVisit(path, action);
 }
 
@@ -87,10 +129,13 @@ void MatomoClient::sendEvent(const QString &category, const MatomoEventAction ac
             actionStr = "unknown";
             break;
     }
+
     if (ParametersCache::instance()->parametersInfo().extendedLog()) {
         qCDebug(lcMatomoClient()) << "MatomoClient::sendEvent(category=" << category << ", action=" << actionStr
-                                  << ", name=" << name << ", value=" << value << ")";
+                                  << ", name=" << name << ", value=" << value << ")" << (matomoDisabled ? " => Trigger but not sent, tracking disabled" : "");
     }
+    if (matomoDisabled) return; // If Matomo is disabled, do not send the event.
+
     instance().PiwikTracker::sendEvent(category, category, actionStr, name, value);
 }
 
@@ -105,9 +150,9 @@ void MatomoClient::initNameFieldMap() {
 #ifdef Q_OS_MAC
             {MatomoNameField::PG_Preferences_LiteSync, {"preferences/litesync", "litesync"}},
 #endif
-            {MatomoNameField::VW_LoginPage, {"webview", "login"}},
+            {MatomoNameField::WV_LoginPage, {"webview", "login"}},
             {MatomoNameField::PG_SynthesisPopover, {"popover", "popover"}},
-            {MatomoNameField::PG_SynthesisPopover, {"popover", "kebab_menu"}},
+            {MatomoNameField::PG_SynthesisPopover_KebabMenu, {"popover", "kebab_menu"}},
             {MatomoNameField::PG_Preferences, {"preferences", "preferences"}},
             {MatomoNameField::PG_Preferences_Debugging, {"preferences/debugging", "debugging"}},
             {MatomoNameField::PG_Preferences_FilesToExclude, {"preferences/files_to_exclude", "files_to_exclude"}},
