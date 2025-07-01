@@ -63,7 +63,7 @@ runs:
         if: steps.build.outcome == 'success'
         shell: powershell
         run: |
-          $conanRunBat = Get-ChildItem -Path . -Recurse -Filter "conanrun.bat" | Select-Object -First 1
+          $conanRunBat = Get-ChildItem -Path "${{ github.workspace }}" -Recurse -Filter "conanrun.bat" | Select-Object -First 1
           
           if ($conanRunBat) {
             Write-Host "Sourcing $($conanRunBat.FullName)"
