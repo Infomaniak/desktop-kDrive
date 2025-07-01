@@ -169,6 +169,11 @@ void AppServer::init() {
         LOG_INFO(_logger, "Restarting after a " << SignalCategory::Kill << " with signal " << signalType);
     }
 
+    if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
+        LOG_INFO(_logger, "Command line options processed");
+        return;
+    }
+
     // Init parms DB
     std::filesystem::path parmsDbPath = makeDbName();
     if (parmsDbPath.empty()) {
@@ -181,6 +186,11 @@ void AppServer::init() {
     if (!IoHelper::checkIfPathExists(parmsDbPath, newDbExists, ioError) || ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(parmsDbPath, ioError));
         throw std::runtime_error("Unable to check if ParmsDb exists.");
+    }
+
+    if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
+        LOG_INFO(_logger, "Command line options processed");
+        return;
     }
 
     std::filesystem::path pre334ConfigFilePath =
@@ -198,6 +208,11 @@ void AppServer::init() {
     if (!initParmsDB(parmsDbPath, _theme->version().toStdString())) {
         LOG_WARN(_logger, "Error in AppServer::initParmsDB");
         throw std::runtime_error("Unable to initialize ParmsDb.");
+    }
+
+    if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
+        LOG_INFO(_logger, "Command line options processed");
+        return;
     }
 
     // Clear old server errors
@@ -223,6 +238,11 @@ void AppServer::init() {
         }
     }
 
+    if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
+        LOG_INFO(_logger, "Command line options processed");
+        return;
+    }
+
     // Init KeyChainManager instance
     if (!KeyChainManager::instance()) {
         LOG_WARN(_logger, "Error in KeyChainManager::instance");
@@ -241,6 +261,11 @@ void AppServer::init() {
         throw std::runtime_error("Unable to initialize parameters cache.");
     }
 
+    if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
+        LOG_INFO(_logger, "Command line options processed");
+        return;
+    }
+
     // Setup translations
     CommonUtility::setupTranslations(this, ParametersCache::instance()->parameters().language());
 
@@ -250,6 +275,11 @@ void AppServer::init() {
                                     ParametersCache::instance()->parameters().purgeOldLogs())) {
         LOG_WARN(_logger, "Error in Log::configure");
         addError(Error(errId(), ExitCode::SystemError, ExitCause::Unknown));
+    }
+
+    if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
+        LOG_INFO(_logger, "Command line options processed");
+        return;
     }
 
     // Log useful information
@@ -284,6 +314,11 @@ void AppServer::init() {
     if (!setupProxy()) {
         LOG_WARN(_logger, "Error in AppServer::setupProxy");
         throw std::runtime_error("Unable to initialize proxy.");
+    }
+
+    if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
+        LOG_INFO(_logger, "Command line options processed");
+        return;
     }
 
     // Init JobManager
