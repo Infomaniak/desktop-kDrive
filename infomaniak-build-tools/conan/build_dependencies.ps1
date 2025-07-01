@@ -167,7 +167,7 @@ if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null # mkdir
 
 Log "Creating xxHash Conan package..."
-& $ConanExe create "$RecipesFolder/xxhash/all/" --build=missing -s build_type=Release -r $LocalRemoteName -r conancenter -o xxhash:shared=True
+& $ConanExe create "$RecipesFolder/xxhash/all/" --build=missing -s build_type=Release -r $LocalRemoteName -r conancenter
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to create xxHash Conan package."
 }
@@ -182,7 +182,7 @@ if (Test-Path -Path "$RecipesFolder/cppunit/all/conanfile-macos.py") {
     Remove-Item -Path "$RecipesFolder/cppunit/all/conanfile-macos.py" -Force
 }
 Log "Creating CPPUnit Conan package..."
-& $ConanExe create "$RecipesFolder/cppunit/all/" --build=missing -s build_type=Release -r $LocalRemoteName -r conancenter -o cppunit:shared=True
+& $ConanExe create "$RecipesFolder/cppunit/all/" --build=missing -s build_type=Release -r $LocalRemoteName -r conancenter -o 'cppunit/*:shared=True'
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to create CPPUnit Conan package."
 }
