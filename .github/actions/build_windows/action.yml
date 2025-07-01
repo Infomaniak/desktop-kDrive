@@ -50,7 +50,9 @@ runs:
         run: |
           if("${{ inputs.release_build }}" -eq "true") {
             New-Item -ItemType directory -Path certificate
-            Set-Content -Path certificate/certificate.cert -Value $env:WINDOWS_PHYSICAL_CERT
+            Set-Content -Path certificate/certificate.txt -Value $env:WINDOWS_PHYSICAL_CERT
+            certutil -decode certificate/tempCert.txt certificate/certificate.cert
+            Remove-Item -path certificate -include tempCert.txt
             Import-Certificate -Filepath certificate/certificate.cert -CertStoreLocation Cert:\CurrentUser\My
             } else {
             New-Item -ItemType directory -Path certificate
