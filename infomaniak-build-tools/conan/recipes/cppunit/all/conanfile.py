@@ -4,7 +4,7 @@ from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
 from conan.tools.apple import fix_apple_shared_install_name
 from conan.tools.build import stdcpp_library
-from conan.tools.files import mkdir
+from conan.tools.files import rmdir, rm, copy
 
 
 class CPPUnitMacOSConan(ConanFile):
@@ -33,11 +33,11 @@ class CPPUnitMacOSConan(ConanFile):
         self.run(f"bash {script} --build-folder {self.build_folder} {'--shared' if self.options.shared else '--static'} --version {self.version} --package-folder {self.package_folder}")
 
     def package(self):
-        # copy(self, "COPYING", src=self.build_folder, dst=os.path.join(self.package_folder, "licenses"))
-        # copy(self, "*.h", src=os.path.join(self.build_folder, "include"), dst=os.path.join(self.package_folder, "include"))
-        #
-        # lib_pattern = "*.dylib" if self.options.shared else "*.a" # Use .dylib for shared lib and .a for static lib
-        # copy(self, lib_pattern, src=os.path.join(self.build_folder, "lib"), dst=os.path.join(self.package_folder, "lib"))
+        copy(self, "COPYING", src=self.build_folder, dst=os.path.join(self.package_folder, "licenses"))
+        rm(self, "*.la", os.path.join(self.package_folder, "lib"))
+        rmdir(self, os.path.join(self.package_folder, "lib", "pkgconfig"))
+        rmdir(self, os.path.join(self.package_folder, "share"))
+
         fix_apple_shared_install_name(self)
 
     def package_info(self):

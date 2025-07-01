@@ -105,8 +105,8 @@ git checkout "cppunit-$version"
 #EOF
 #echo 'libcppunit_la_SOURCES += explicit_instantiations.cpp' >> src/cppunit/Makefile.am
 
-export CFLAGS="-mmacosx-version-min=${minimum_macos_version} -O0 -g"
-export CXXFLAGS="${CFLAGS} -std=c++20"
+export CFLAGS="-mmacosx-version-min=${minimum_macos_version}"
+export CXXFLAGS="${CFLAGS}"
 export LDFLAGS="-mmacosx-version-min=${minimum_macos_version} -headerpad_max_install_names"
 
 configure_args=""
@@ -116,7 +116,7 @@ else
   configure_args+=" --disable-shared --enable-static"
 fi
 
-configure_args+=" --enable-debug --disable-doxygen --disable-dot --prefix=${package_folder}"
+configure_args+=" --enable-debug --enable-doxygen=no --enable-dot=no --enable-werror=no --enable-html-docs=no --prefix=${package_folder}"
 
 ./autogen.sh || error "autogen.sh failed"
 ./configure ${configure_args} || error "configure failed"
