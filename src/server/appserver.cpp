@@ -327,6 +327,11 @@ void AppServer::init() {
         throw std::runtime_error("Unable to initialize job manager.");
     }
 
+    if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
+        LOG_INFO(_logger, "Command line options processed");
+        return;
+    }
+
     // Setup auto start
 #ifdef NDEBUG
 #if defined(__unix__) && !defined(__APPLE__)
@@ -340,6 +345,11 @@ void AppServer::init() {
     }
 #endif
 #endif
+
+    if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
+        LOG_INFO(_logger, "Command line options processed");
+        return;
+    }
 
 #ifdef PLUGINDIR
     // Setup extra plugin search path
@@ -366,6 +376,11 @@ void AppServer::init() {
     _socketApi->setAddErrorCallback(&addError);
     _socketApi->setGetThumbnailCallback(&ServerRequests::getThumbnail);
     _socketApi->setGetPublicLinkUrlCallback(&ServerRequests::getPublicLinkUrl);
+
+    if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
+        LOG_INFO(_logger, "Command line options processed");
+        return;
+    }
 
     // Init CommServer instance
     if (!CommServer::instance()) {
@@ -399,6 +414,11 @@ void AppServer::init() {
     _updateManager.get()->setQuitCallback(quitCallback);
 #endif
 
+    if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
+        LOG_INFO(_logger, "Command line options processed");
+        return;
+    }
+
     connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
     connect(_updateManager.get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked);
     connect(_updateManager.get(), &UpdateManager::showUpdateDialog, this, &AppServer::onShowWindowsUpdateDialog);
@@ -412,10 +432,20 @@ void AppServer::init() {
         return;
     }
 
+    if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
+        LOG_INFO(_logger, "Command line options processed");
+        return;
+    }
+
     sentry::Handler::captureMessage(sentry::Level::Info, "kDrive started", "kDrive started");
 
     // Start syncs
     QTimer::singleShot(0, [=, this]() { startSyncsAndRetryOnError(); });
+
+    if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
+        LOG_INFO(_logger, "Command line options processed");
+        return;
+    }
 
     // Process possible interrupted logs upload
     processInterruptedLogsUpload();
@@ -430,9 +460,19 @@ void AppServer::init() {
     connect(&_loadSyncsProgressTimer, &QTimer::timeout, this, &AppServer::onUpdateSyncsProgress);
     _loadSyncsProgressTimer.start(LOAD_PROGRESS_INTERVAL);
 
+    if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
+        LOG_INFO(_logger, "Command line options processed");
+        return;
+    }
+
     // Send files notifications
     connect(&_sendFilesNotificationsTimer, &QTimer::timeout, this, &AppServer::onSendFilesNotifications);
     _sendFilesNotificationsTimer.start(SEND_NOTIFICATIONS_INTERVAL);
+
+    if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
+        LOG_INFO(_logger, "Command line options processed");
+        return;
+    }
 
     // Restart paused syncs
     connect(&_restartSyncsTimer, &QTimer::timeout, this, &AppServer::onRestartSyncs);
