@@ -48,6 +48,10 @@ foreach ($file in $win_files)
     $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$file&directory_path=$minorVersion/$date/windows&conflict=version"
 
     Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $file
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Failed to upload $file to kDrive" -f Red
+        exit 1
+    }
 }
 
 # TODO add Linux and macOS uploads
