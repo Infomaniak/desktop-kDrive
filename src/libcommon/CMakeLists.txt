@@ -122,7 +122,7 @@ endif()
 target_link_libraries(${libcommon_NAME}
     Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Sql
     Poco::Foundation Poco::JSON Poco::Util
-    log4cplus::log4cplusU
+    log4cplus::log4cplus
     sentry::sentry
     keychain
     libzip::zip
