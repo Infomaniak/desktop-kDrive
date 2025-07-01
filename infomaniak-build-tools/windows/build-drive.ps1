@@ -355,7 +355,7 @@ function Sign-File{
         [String] $signingKeyToken
     )
       Write-Host "Signing the file $filePath with thumbprint $thumbprint" -f Yellow
-      if (!upload -OR !$signingKeyToken -OR !$csp) {
+      if (!$upload -OR !$signingKeyToken -OR !$csp) {
             if ($upload) {
                 Write-Host "No CSP or signing key token provided, the USB-KEY will need to be unlocked manually" -f Yellow
             }
