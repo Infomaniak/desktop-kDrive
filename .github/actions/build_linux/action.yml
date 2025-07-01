@@ -51,16 +51,24 @@ runs:
         shell: bash
         if: steps.build.outcome == 'success'
 
-      - name: Fetch Conan dependencies
+      - name: Fetch Conan dependencies via conanrun.sh
         run: |
-          echo "Fetching Conan dependencies in $HOME/.conan2/p/"
-          find "$HOME/.conan2/p/" \
-            \( -iname 'libxxhash*.so*' \
-            -o -iname 'liblog4cplus*.so.*' \
-            -o -iname 'libssl*.so*' \
-            -o -iname 'libcrypto*.so*' \) \
-            -exec cp {} ./dependencies/ \; \
-            -exec echo "Conan dependency found -> " {} \; 
+          echo "Sourcing conanrun.sh to get LD_LIBRARY_PATH..."
+          source $(find ./build-linux -name conanrun.sh | head -n 1)
+          echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+          IFS=':' read -ra dirs <<< "$LD_LIBRARY_PATH"
+          for dir in "${dirs[@]}"; do
+            if [[ "$dir" == *".conan2/p"* ]]; then
+              echo "Looking in $dir"
+              find "$dir" \
+                \( -iname 'libxxhash*.so*' \
+                -o -iname 'liblog4cplus*.so.*' \
+                -o -iname 'libssl*.so*' \
+                -o -iname 'libcrypto*.so*' \) \
+                -exec cp {} ./dependencies/ \; \
+                -exec echo "Conan dependency found -> " {} \;
+            fi
+          done
         shell: bash
         if: steps.build.outcome == 'success'
 
