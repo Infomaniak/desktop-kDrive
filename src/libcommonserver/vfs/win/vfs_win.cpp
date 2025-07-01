@@ -45,7 +45,7 @@ VfsWin::VfsWin(const VfsSetupParams &vfsSetupParams, QObject *parent) :
     Utility::setLogger(logger());
     IoHelper::setLogger(logger());
 
-    if (vfsInit(debugCallback, QString(APPLICATION_SHORTNAME).toStdWString().c_str(), (DWORD) _getpid(),
+    if (vfsInit(debugCallback, QString(APPLICATION_NAME).toStdWString().c_str(), (DWORD) _getpid(),
                 KDC::CommonUtility::escape(KDRIVE_VERSION_STRING).toStdWString().c_str(),
                 QString(APPLICATION_TRASH_URL).toStdWString().c_str()) != S_OK) {
         LOG_WARN(logger(), "Error in vfsInit!");

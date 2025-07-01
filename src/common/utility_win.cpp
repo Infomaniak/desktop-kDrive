@@ -41,29 +41,6 @@ static const char lightThemeKeyC[] = "SystemUsesLightTheme";
 
 namespace KDC {
 
-bool OldUtility::hasSystemLaunchOnStartup(const QString &appName, log4cplus::Logger logger) {
-    QString runPath = QLatin1String(systemRunPathC);
-    QSettings settings(runPath, QSettings::NativeFormat);
-    return settings.contains(appName);
-}
-
-bool OldUtility::hasLaunchOnStartup(const QString &appName, log4cplus::Logger logger) {
-    QString runPath = QLatin1String(runPathC);
-    QSettings settings(runPath, QSettings::NativeFormat);
-    return settings.contains(appName);
-}
-
-void OldUtility::setLaunchOnStartup(const QString &appName, const QString &guiName, bool enable, log4cplus::Logger logger) {
-    Q_UNUSED(guiName);
-    QString runPath = QLatin1String(runPathC);
-    QSettings settings(runPath, QSettings::NativeFormat);
-    if (enable) {
-        QString serverFilePath = QCoreApplication::applicationDirPath().replace('/', '\\') + "\\" + appName + ".exe";
-        settings.setValue(appName, serverFilePath);
-    } else {
-        settings.remove(appName);
-    }
-}
 
 #include <errno.h>
 #include <wtypes.h>

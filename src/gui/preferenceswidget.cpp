@@ -329,7 +329,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
 #ifdef Q_OS_WIN
     // Drive shortcuts
     CustomSwitch *shortcutsSwitch = nullptr;
-    if (OldUtility::isWindows()) {
+    if (CommonUtility::isWindows()) {
         QBoxLayout *shortcutsBox = generalBloc->addLayout(QBoxLayout::Direction::LeftToRight);
 
         _shortcutsLabel = new QLabel(this);

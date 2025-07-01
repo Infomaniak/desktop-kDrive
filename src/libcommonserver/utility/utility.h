@@ -165,9 +165,11 @@ struct COMMONSERVER_EXPORT Utility {
         static SyncName logFileName();
         static SyncName logFileNameWithTime();
         static std::string toUpper(const std::string &str);
-        static std::wstring toUpper(const std::wstring &str);
         static std::string toLower(const std::string &str);
+#ifndef _WIN32
+        static std::wstring toUpper(const std::wstring &str);
         static std::wstring toLower(const std::wstring &str);
+#endif
 
         /* TODO : Replace with std::source_location when we will bump gcc version to 10 or higher
          *  static std::string errId(std::source_location location = std::source_location::current());
@@ -198,10 +200,9 @@ struct COMMONSERVER_EXPORT Utility {
         static SyncPath sharedFolderName();
         static std::string userName();
 
-        static bool hasSystemLaunchOnStartup(const std::string &appName, log4cplus::Logger logger);
-        static bool hasLaunchOnStartup(const std::string &appName, log4cplus::Logger logger);
-        static void setLaunchOnStartup(const std::string &appName, const std::string &guiName, bool enable,
-                                       log4cplus::Logger logger);
+        static bool hasSystemLaunchOnStartup(const std::string &appName);
+        static bool hasLaunchOnStartup(const std::string &appName);
+        static bool setLaunchOnStartup(const std::string &appName, const std::string &guiName, bool enable);
 
     private:
         static log4cplus::Logger _logger;

@@ -16,8 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "utility.h"
+
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/iohelper_win.h"
 #include "log/log.h"
@@ -27,7 +28,6 @@
 #include <iostream>
 #include <system_error>
 
-// TODO: check which includes are actually necessary
 #include <windows.h>
 #include <Shobjidl.h> //Required for IFileOperation Interface
 #include <shellapi.h> //Required for Flags set in "SetOperationFlags"
@@ -98,7 +98,7 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
     IShellItem *fileOrFolderItem = NULL;
     hr = SHCreateItemFromParsingName(itemPathPreferred.make_preferred().native().c_str(), NULL, IID_PPV_ARGS(&fileOrFolderItem));
     if (FAILED(hr)) {
-        // Couldn't get file into an item - clean up and return (maybe the file doesn't exist?)
+        // Couldn't get file into an item - cleanup and return (maybe the file doesn't exist?)
         LOGW_WARN(Log::instance()->getLogger(), L"Error in SHCreateItemFromParsingName - path="
                                                         << Path2WStr(itemPath) << L" err="
                                                         << Utility::s2ws(std::system_category().message(hr)));
@@ -117,7 +117,7 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
 
     hr = fileOperation->DeleteItem(fileOrFolderItem, NULL);
     if (FAILED(hr)) {
-        // Failed to mark file/folder item for deletion - clean up and return
+        // Failed to mark file/folder item for deletion - cleanup and return
         LOGW_WARN(Log::instance()->getLogger(), L"Error in DeleteItem - path="
                                                         << Path2WStr(itemPath) << L" err="
                                                         << Utility::s2ws(std::system_category().message(hr)));
@@ -207,6 +207,144 @@ static std::string userName_private() {
     wchar_t userName[userNameBufLen];
     GetUserName(userName, &len);
     return Utility::ws2s(std::wstring(userName));
+}
+
+namespace {
+
+LONG getMapFromRegistry(const HKEY &key, const std::wstring &subKey, std::unordered_map<std::wstring, std::wstring> &map) {
+    map.clear();
+
+    // Open the registry key
+    HKEY hKey;
+    LONG result = RegOpenKeyExW(key, subKey.c_str(), 0, KEY_READ, &hKey);
+    if (result != ERROR_SUCCESS) {
+        std::wcerr << L"Failed to open registry key, error: " << result << std::endl;
+        return result;
+    }
+
+    DWORD index = 0;
+    const DWORD maxValueNameSize = 16383; // max value name length
+    const DWORD maxValueDataSize = 16383; // max data size
+    wchar_t valueName[maxValueNameSize];
+    BYTE valueData[maxValueDataSize];
+    DWORD valueNameSize;
+    DWORD valueDataSize;
+    DWORD valueType;
+    LONG res = ERROR_SUCCESS;
+
+    while (true) {
+        valueNameSize = maxValueNameSize;
+        valueDataSize = maxValueDataSize;
+        result = RegEnumValueW(hKey, index, valueName, &valueNameSize, nullptr, &valueType, valueData, &valueDataSize);
+        if (result == ERROR_NO_MORE_ITEMS) {
+            break; // no more values
+        } else if (result != ERROR_SUCCESS) {
+            std::wcerr << L"Failed to enumerate registry values, error: " << result << std::endl;
+            res = result;
+            break;
+        }
+
+        if (valueType == REG_SZ || valueType == REG_EXPAND_SZ) {
+            // Data is a null-terminated string
+            std::wstring dataStr(reinterpret_cast<wchar_t *>(valueData), valueDataSize / sizeof(wchar_t));
+            // Remove trailing null characters
+            size_t nullPos = dataStr.find(L'\0');
+            if (nullPos != std::wstring::npos) {
+                dataStr.resize(nullPos);
+            }
+            map.emplace(valueName, dataStr);
+        } else {
+            std::wcout << L"Value data type: " << valueType << L" (not displayed)" << std::endl;
+        }
+        ++index;
+    }
+    RegCloseKey(hKey);
+
+    return res;
+}
+
+LONG setRegistryStringValue(const HKEY &key, const std::wstring &subKey, const std::wstring &valueName,
+                            const std::wstring &valueData) {
+    // Open or create the key with write access
+    HKEY hKey;
+
+    if (LONG result = RegCreateKeyExW(key, subKey.c_str(), 0, nullptr, 0, KEY_WRITE, nullptr, &hKey, nullptr);
+        result != ERROR_SUCCESS) {
+        return result;
+    }
+
+    // Set the value
+    if (LONG result = RegSetValueExW(hKey, valueName.c_str(), 0, REG_SZ, reinterpret_cast<const BYTE *>(valueData.c_str()),
+                                     static_cast<DWORD>((valueData.size() + 1) * sizeof(wchar_t)));
+        result != ERROR_SUCCESS) {
+        RegCloseKey(hKey);
+        return result;
+    }
+
+    RegCloseKey(hKey);
+    return ERROR_SUCCESS;
+}
+
+LONG deleteRegistryValue(const HKEY &key, const std::wstring &subKey, const std::wstring &valueName) {
+    // Open the key with write access
+    HKEY hKey;
+    if (LONG result = RegOpenKeyExW(key, subKey.c_str(), 0, KEY_SET_VALUE, &hKey); result != ERROR_SUCCESS) {
+        return result;
+    }
+
+    // Delete the value
+    if (LONG result = RegDeleteValueW(hKey, valueName.c_str()); result != ERROR_SUCCESS) {
+        RegCloseKey(hKey);
+        return result;
+    }
+
+    RegCloseKey(hKey);
+    return ERROR_SUCCESS;
+}
+
+} // namespace
+
+static const wchar_t systemRunPath[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+
+bool Utility::hasSystemLaunchOnStartup(const std::string &appName) {
+    std::unordered_map<std::wstring, std::wstring> map;
+    if (const auto result = getMapFromRegistry(HKEY_LOCAL_MACHINE, systemRunPath, map); result != ERROR_SUCCESS) {
+        LOGW_WARN(logger(), L"Failed to retrieve registry values for: " << systemRunPath << L", error: " << result);
+        return false;
+    }
+
+    return map.contains(Utility::s2ws(appName));
+}
+
+static const wchar_t runPath[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+
+bool Utility::hasLaunchOnStartup(const std::string &appName) {
+    std::unordered_map<std::wstring, std::wstring> map;
+    if (const auto result = getMapFromRegistry(HKEY_CURRENT_USER, runPath, map); result != ERROR_SUCCESS) {
+        LOGW_WARN(logger(), L"Failed to retrieve registry values for: " << runPath << L", error: " << result);
+        return false;
+    }
+
+    return map.contains(Utility::s2ws(appName));
+}
+
+bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &guiName, bool enable) {
+    if (enable) {
+        SyncPath serverFilePath = KDC::CommonUtility::getAppWorkingDir() / (appName + ".exe");
+        if (const auto result = setRegistryStringValue(HKEY_CURRENT_USER, runPath, Utility::s2ws(appName),
+                                                       serverFilePath.make_preferred().native());
+            result != ERROR_SUCCESS) {
+            LOGW_WARN(logger(), L"Failed to set registry value for: " << systemRunPath << L", error: " << result);
+            return false;
+        }
+    } else {
+        if (const auto result = deleteRegistryValue(HKEY_CURRENT_USER, runPath, Utility::s2ws(appName));
+            result != ERROR_SUCCESS) {
+            LOGW_WARN(logger(), L"Failed to remove registry value for: " << systemRunPath << L", error: " << result);
+            return false;
+        }
+    }
+    return true;
 }
 
 } // namespace KDC

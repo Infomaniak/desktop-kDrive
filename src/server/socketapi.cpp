@@ -1170,7 +1170,7 @@ void SocketApi::command_GET_ALL_MENU_ITEMS(const QString &argument, SocketListen
 
     QString responseStr;
     QTextStream response(&responseStr);
-    response << msgId << MSG_CDE_SEPARATOR << KDC::Theme::instance()->appNameGUI();
+    response << msgId << MSG_CDE_SEPARATOR << QString::fromStdString(Theme::instance()->appName());
 
     // Find the common sync
     KDC::Sync sync;

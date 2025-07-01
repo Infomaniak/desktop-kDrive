@@ -108,7 +108,7 @@ static void displayHelpText(const QString &t) // No console on Windows.
     QString spaces(80, ' '); // Add a line of non-wrapped space to make the messagebox wide enough.
     QString text = QLatin1String("<qt><pre style='white-space:pre-wrap'>") + t.toHtmlEscaped() + QLatin1String("</pre><pre>") +
                    spaces + QLatin1String("</pre></qt>");
-    QMessageBox::information(0, Theme::instance()->appNameGUI(), text);
+    QMessageBox::information(0, QString::fromStdString(Theme::instance()->appName()), text);
 }
 
 #else
@@ -1880,13 +1880,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP: {
-            bool enabled = Utility::hasSystemLaunchOnStartup(Theme::instance()->appName(), _logger);
+            const bool enabled = Utility::hasSystemLaunchOnStartup(Theme::instance()->appName());
             resultStream << ExitCode::Ok;
             resultStream << enabled;
             break;
         }
         case RequestNum::UTILITY_HASLAUNCHONSTARTUP: {
-            bool enabled = Utility::hasLaunchOnStartup(Theme::instance()->appName(), _logger);
+            const bool enabled = Utility::hasLaunchOnStartup(Theme::instance()->appName());
             resultStream << ExitCode::Ok;
             resultStream << enabled;
             break;
@@ -1897,7 +1897,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> enabled;
 
             Theme *theme = Theme::instance();
-            Utility::setLaunchOnStartup(theme->appName(), theme->appName(), enabled, _logger);
+            (void) Utility::setLaunchOnStartup(theme->appName(), theme->appName(), enabled);
 
             resultStream << ExitCode::Ok;
             break;

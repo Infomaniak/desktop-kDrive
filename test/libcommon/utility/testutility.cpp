@@ -24,6 +24,8 @@
 #include "libcommon/utility/sourcelocation.h"
 #include "libcommonserver/io/iohelper.h"
 #include "test_utility/localtemporarydirectory.h"
+
+#include <QLocale>
 #include <iostream>
 #include <regex>
 

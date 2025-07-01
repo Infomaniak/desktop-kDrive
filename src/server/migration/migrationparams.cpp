@@ -354,7 +354,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
 
         std::string keychainKeyAppPassword;
 #ifdef Q_OS_WIN
-        keychainKeyAppPassword += APPLICATION_SHORTNAME;
+        keychainKeyAppPassword += APPLICATION_NAME;
         keychainKeyAppPassword += "_";
 #endif
         keychainKeyAppPassword +=
