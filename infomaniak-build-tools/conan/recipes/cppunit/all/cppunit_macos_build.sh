@@ -12,8 +12,9 @@ error() { echo -e "[ERROR] $*" >&2; exit 1; }
 
 usage() {
   cat <<EOF
-Usage: $0 --build-folder <path> [--shared|--static] [--version <version>]
+Usage: $0 --build-folder <path> --package-folder <path> [--shared|--static] [--version <version>]
   --build-folder   Directory where cppunit will be cloned and built
+  --package-folder Directory where cppunit will be packaged
   --shared         Build shared libraries
   --static         Build static libraries
 EOF
@@ -64,6 +65,13 @@ if [[ $shared -eq -1 && $static -eq -1 ]]; then
   error "You must specify either --shared or --static option."
 fi
 
+if [[ -z "$build_folder" ]]; then
+  error "You must specify --build-folder."
+fi
+if [[ -z "$package_folder" ]]; then
+  error "You must specify --package-folder."
+fi
+
 [[ -n "$build_folder" ]] || { usage; }
 
 git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
@@ -71,31 +79,31 @@ git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
 pushd "cppunit" >/dev/null
 git checkout "cppunit-$version"
 
-# Explicit instantiations for CppUnit assertions to avoid linker errors for compatibility
-cat <<EOF > src/cppunit/explicit_instantiations.cpp
-#include <cppunit/TestAssert.h>
-#include <string>
-
-// Explicit instantiations for CppUnit assertions to avoid linker errors for compatibility
-template void CppUnit::assertEquals<int>(const int&, const int&, CppUnit::SourceLine, const std::string&);
-template void CppUnit::assertEquals<char>(const char&, const char&, CppUnit::SourceLine, const std::string&);
-template void CppUnit::assertEquals<long long>(const long long&, const long long&, CppUnit::SourceLine, const std::string&);
-template void CppUnit::assertEquals<double>(const double&, const double&, CppUnit::SourceLine, const std::string&);
-template void CppUnit::assertEquals<float>(const float&, const float&, CppUnit::SourceLine, const std::string&);
-template void CppUnit::assertEquals<std::string>(const std::string&, const std::string&, CppUnit::SourceLine, const std::string&);
-template void CppUnit::assertGreater<int>(const int&, const int&, CppUnit::SourceLine, const std::string&);
-template void CppUnit::assertGreater<long long>(const long long&, const long long&, CppUnit::SourceLine, const std::string&);
-
-template void CppUnit::assertLess<int>(const int&, const int&, CppUnit::SourceLine, const std::string&);
-template void CppUnit::assertLess<long long>(const long long&, const long long&, CppUnit::SourceLine, const std::string&);
-
-template void CppUnit::assertGreaterEqual<int>(const int&, const int&, CppUnit::SourceLine, const std::string&);
-template void CppUnit::assertGreaterEqual<long long>(const long long&, const long long&, CppUnit::SourceLine, const std::string&);
-
-template void CppUnit::assertEquals<unsigned long>(const unsigned long&, const unsigned long&, CppUnit::SourceLine, const std::string&);
-template void CppUnit::assertEquals<bool>(const bool&, const bool&, CppUnit::SourceLine, const std::string&);
-EOF
-echo 'libcppunit_la_SOURCES += explicit_instantiations.cpp' >> src/cppunit/Makefile.am
+## Explicit instantiations for CppUnit assertions to avoid linker errors for compatibility
+#cat <<EOF > src/cppunit/explicit_instantiations.cpp
+##include <cppunit/TestAssert.h>
+##include <string>
+#
+#// Explicit instantiations for CppUnit assertions to avoid linker errors for compatibility
+#template void CppUnit::assertEquals<int>(const int&, const int&, CppUnit::SourceLine, const std::string&);
+#template void CppUnit::assertEquals<char>(const char&, const char&, CppUnit::SourceLine, const std::string&);
+#template void CppUnit::assertEquals<long long>(const long long&, const long long&, CppUnit::SourceLine, const std::string&);
+#template void CppUnit::assertEquals<double>(const double&, const double&, CppUnit::SourceLine, const std::string&);
+#template void CppUnit::assertEquals<float>(const float&, const float&, CppUnit::SourceLine, const std::string&);
+#template void CppUnit::assertEquals<std::string>(const std::string&, const std::string&, CppUnit::SourceLine, const std::string&);
+#template void CppUnit::assertGreater<int>(const int&, const int&, CppUnit::SourceLine, const std::string&);
+#template void CppUnit::assertGreater<long long>(const long long&, const long long&, CppUnit::SourceLine, const std::string&);
+#
+#template void CppUnit::assertLess<int>(const int&, const int&, CppUnit::SourceLine, const std::string&);
+#template void CppUnit::assertLess<long long>(const long long&, const long long&, CppUnit::SourceLine, const std::string&);
+#
+#template void CppUnit::assertGreaterEqual<int>(const int&, const int&, CppUnit::SourceLine, const std::string&);
+#template void CppUnit::assertGreaterEqual<long long>(const long long&, const long long&, CppUnit::SourceLine, const std::string&);
+#
+#template void CppUnit::assertEquals<unsigned long>(const unsigned long&, const unsigned long&, CppUnit::SourceLine, const std::string&);
+#template void CppUnit::assertEquals<bool>(const bool&, const bool&, CppUnit::SourceLine, const std::string&);
+#EOF
+#echo 'libcppunit_la_SOURCES += explicit_instantiations.cpp' >> src/cppunit/Makefile.am
 
 export CFLAGS="-mmacosx-version-min=${minimum_macos_version} -O0 -g"
 export CXXFLAGS="${CFLAGS} -std=c++20"
@@ -108,7 +116,7 @@ else
   configure_args+=" --disable-shared --enable-static"
 fi
 
-configure_args+=" --enable-doxygen=no --enable-dot=no --enable-werror=no --enable-html-docs=no --prefix=$(pwd)/_install"
+configure_args+=" --enable-debug --disable-doxygen --disable-dot --prefix=${package_folder}"
 
 ./autogen.sh || error "autogen.sh failed"
 ./configure ${configure_args} || error "configure failed"
@@ -116,15 +124,5 @@ make -j"$(sysctl -n hw.ncpu)" || error "make failed"
 make install || error "make install failed"
 
 popd >/dev/null
-mkdir -p lib include
-cp -R cppunit/_install/include/ "include/"
-
-lib_ext=$([[ ${shared} -eq 1 ]] && echo "dylib" || echo "a")
-lib_file="cppunit/_install/lib/libcppunit$([[ $shared -eq 1 ]] && echo "-$version").${lib_ext}"
-mv "$lib_file" "lib/libcppunit.${lib_ext}"
-if [[ ${shared} -eq 1 ]]; then # Correct the install name of the shared library
-  install_name_tool -id "@rpath/libcppunit.dylib" "lib/libcppunit.dylib"
-  log "Fixing install name of the shared library to @rpath/libcppunit.dylib"
-fi
 
 log "Done."
