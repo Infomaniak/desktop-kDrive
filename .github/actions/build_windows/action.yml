@@ -53,10 +53,10 @@ runs:
             Import-Certificate -Filepath certificate/certificate.cert -CertStoreLocation Cert:\CurrentUser\My
             } else {
             New-Item -ItemType directory -Path certificate
-            Set-Content -Path certificate/tempCert.txt -Value ${{ inputs.virtual_cert }}
+            Set-Content -Path certificate/tempCert.txt -Value "${{ inputs.virtual_cert }}"
             certutil -decode certificate/tempCert.txt certificate/certificate.pfx
             Remove-Item -path certificate -include tempCert.txt
-            Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String ${{ inputs.virtual_cert_pass }} -Force -AsPlainText)
+            Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String "${{ inputs.virtual_cert_pass }}" -Force -AsPlainText)
             }
         shell: powershell
 
