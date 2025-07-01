@@ -30,7 +30,7 @@ class CppunitConan(ConanFile):
         "fPIC": [True, False],
     }
     default_options = {
-        "shared": True,
+        "shared": False,
         "fPIC": True,
     }
 
@@ -82,11 +82,12 @@ class CppunitConan(ConanFile):
         yes_no = lambda v: "yes" if v else "no"
         tc.configure_args.extend([
             "--enable-debug={}".format(yes_no(self.settings.build_type == "Debug")),
-            "--disable-doxygen",
-            "--disable-dot",
+            "--enable-doxygen=no",
+            "--enable-dot=no",
             "--disable-werror",
-            "--disable-html-docs",
+            "--enable-html-docs=no",
         ])
+        tc.extra_cxxflags.append("-Wno-error")
         env = tc.environment()
         if is_msvc(self):
             compile_wrapper = unix_path(self, self.conf.get("user.automake:compile-wrapper", check_type=str))
@@ -104,6 +105,7 @@ class CppunitConan(ConanFile):
     def build(self):
         autotools = Autotools(self)
         autotools.configure()
+
         autotools.make()
 
     def package(self):
