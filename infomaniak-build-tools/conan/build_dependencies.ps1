@@ -146,6 +146,15 @@ $RecipesFolder         = Join-Path $ConanRemoteBaseFolder "recipes"
 Log "Current conan home configuration:"
 & $ConanExe config home
 
+if (Test-Path -Path "$RecipesFolder/cppunit") {
+    Log "Removing existing cppunit recipe folder."
+    Remove-Item -Path "$RecipesFolder/cppunit" -Recurse -Force
+}
+if (Test-Path -Path "$RecipesFolder/openssl-universal") {
+    Log "Removing existing openssl-universal recipe folder."
+    Remove-Item -Path "$RecipesFolder/openssl-universal" -Recurse -Force
+}
+
 # Define a Conan "Remote" pointing at the on-disk recipe folder.
 $remotes = & $ConanExe remote list
 if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
