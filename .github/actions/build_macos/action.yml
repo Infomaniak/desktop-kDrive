@@ -64,7 +64,7 @@ runs:
         shell: bash
         if: steps.build.outcome == 'success'
 
-      - name: Fetch Conan dependencies via conanrun.sh
+      - name: Fetch Conan dependencies
         run: |
           echo "Sourcing conanrun.sh to get DYLD_LIBRARY_PATH..."
           source $(find ./build-macos -name conanrun.sh | head -n 1)
