@@ -104,6 +104,11 @@ class CppunitConan(ConanFile):
     def build(self):
         autotools = Autotools(self)
         autotools.configure()
+        for root, _, files in os.walk(self.build_folder):
+            for f in files:
+                if f.startswith("Makefile"):
+                    path = os.path.join(root, f)
+                    replace_in_file(self, path, "-Werror", "")
         autotools.make()
 
     def package(self):
