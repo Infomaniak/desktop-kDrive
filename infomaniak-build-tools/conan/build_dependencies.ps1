@@ -176,6 +176,21 @@ if ($LASTEXITCODE -ne 0) {
     Err "Failed to create xxHash Conan package."
 }
 
+# Configuring CPPUnit Conan package
+if (Test-Path -Path "$RecipesFolder/cppunit/all/conanfile-windows.py") {
+    Log "Renaming conanfile-windows.py to conanfile.py for cppunit."
+    Move-Item -Path "$RecipesFolder/cppunit/all/conanfile-windows.py" -Destination "$RecipesFolder/cppunit/all/conanfile.py" -Force
+}
+if (Test-Path -Path "$RecipesFolder/cppunit/all/conanfile-macos.py") {
+    Log "Removing conanfile-macos.py for cppunit."
+    Remove-Item -Path "$RecipesFolder/cppunit/all/conanfile-macos.py" -Force
+}
+Log "Creating CPPUnit Conan package..."
+& $ConanExe create "$RecipesFolder/cppunit/all/" --build=missing -s build_type=Release -r $LocalRemoteName -r conancenter
+if ($LASTEXITCODE -ne 0) {
+    Err "Failed to create CPPUnit Conan package."
+}
+
 Log "Installing Conan dependencies..."
 & $ConanExe install . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType -r $LocalRemoteName -r conancenter -c tools.env.virtualenv:powershell=powershell.exe
 if ($LASTEXITCODE -ne 0) {

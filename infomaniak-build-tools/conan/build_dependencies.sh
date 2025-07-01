@@ -138,6 +138,8 @@ if [ "$platform" = "darwin" ]; then
   log "Creating openssl package..."
   conan create "$conan_recipes_folder/openssl-universal/3.2.4/" --build=missing -s:a=build_type="$build_type" -r="$local_recipe_remote_name" -r=conancenter
 
+  [[ -f "$conan_recipes_folder/cppunit/all/conanfile-macos.py" ]]   && mv "$conan_recipes_folder/cppunit/all/conanfile-macos.py" "$conan_recipes_folder/cppunit/all/conanfile.py"
+  [[ -f "$conan_recipes_folder/cppunit/all/conanfile-windows.py" ]] && rm "$conan_recipes_folder/cppunit/all/conanfile-windows.py"
   log "Creating CPPUnit package..."
   conan create "$conan_recipes_folder/cppunit/all/" --build=missing -s:a=build_type="$build_type" -r="$local_recipe_remote_name" -r=conancenter
 fi

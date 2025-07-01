@@ -1,8 +1,9 @@
 from conan import ConanFile
+from conan.errors import ConanInvalidConfiguration
 from conan.tools.apple import is_apple_os, fix_apple_shared_install_name
 from conan.tools.build import stdcpp_library
 from conan.tools.env import VirtualBuildEnv
-from conan.tools.files import copy, get, rename, rm, rmdir
+from conan.tools.files import copy, get, rename, rm, rmdir, replace_in_file
 from conan.tools.gnu import Autotools, AutotoolsToolchain
 from conan.tools.layout import basic_layout
 from conan.tools.microsoft import check_min_vs, is_msvc, unix_path
@@ -31,6 +32,10 @@ class CppunitConan(ConanFile):
         "shared": False,
         "fPIC": True,
     }
+
+    def validate(self):
+        if not self.settings.os == "Windows":
+            raise ConanInvalidConfiguration("This custom cppunit recipe is only supported on Windows.")
 
     @property
     def _settings_build(self):
@@ -78,7 +83,7 @@ class CppunitConan(ConanFile):
             "--enable-debug={}".format(yes_no(self.settings.build_type == "Debug")),
             "--enable-doxygen=no",
             "--enable-dot=no",
-            "--enable-werror=no",
+            "--disable-werror",
             "--enable-html-docs=no",
         ])
         env = tc.environment()
