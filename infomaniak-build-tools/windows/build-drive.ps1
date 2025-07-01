@@ -41,7 +41,7 @@ Param(
     [switch] $upload,
 
     # csp: The CSP to use for unlocking the USB-key signing certificate (only used if upload is set)
-    [String] $csp = "eToken Base Cryptographic Provider"
+    [String] $csp = "eToken Base Cryptographic Provider",
 
     # csp: The signing key token ([reader{{password}}]=name) to use for unlocking the USB-key signing certificate (only used if upload is set)
     [String] $signingKeyToken,
@@ -349,10 +349,10 @@ function Set-Up-NSIS {
 function Sign-File{
     param (
         [string] $filePath,
-        [bool] $upload = $false
+        [bool] $upload = $false,
         [string] $thumbprint,
         [String] $csp,
-        [String] $signingKeyToken,
+        [String] $signingKeyToken
     )
       Write-Host "Signing the file $filePath with thumbprint $thumbprint" -f Yellow
       if (!upload -OR !$signingKeyToken -OR !$csp) {
