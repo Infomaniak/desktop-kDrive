@@ -44,6 +44,8 @@ jobs:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
     outputs:
       kDrive_version: ${{ steps.build-windows-step.kDrive_version }}
+    env:
+      KDC_PHYSICAL_AUMID: ${{ secrets.KDC_PHYSICAL_AUMID }}
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4
