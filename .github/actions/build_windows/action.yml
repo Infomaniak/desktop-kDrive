@@ -45,19 +45,19 @@ runs:
 
       - name: Import Windows certificate
         run: |
-          if "${{ inputs.release_build }}" == "true" (
+          if("${{ inputs.release_build }}" -eq "true") {
             New-Item -ItemType directory -Path certificate
-            Set-Content -Path certificate/tempCert.txt -Value ${{ inputs.physical_cert }}
+            Set-Content -Path certificate/tempCert.txt -Value "${{ inputs.physical_cert }}"
             certutil -decode certificate/tempCert.txt certificate/certificate.cert
             Remove-Item -path certificate -include tempCert.txt
             Import-Certificate -Filepath certificate/certificate.cert -CertStoreLocation Cert:\CurrentUser\My
-            ) else (
+            } else {
             New-Item -ItemType directory -Path certificate
             Set-Content -Path certificate/tempCert.txt -Value ${{ inputs.virtual_cert }}
             certutil -decode certificate/tempCert.txt certificate/certificate.pfx
             Remove-Item -path certificate -include tempCert.txt
             Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String ${{ inputs.virtual_cert_pass }} -Force -AsPlainText)
-            )
+            }
         shell: powershell
 
       - name: Build kDrive desktop
