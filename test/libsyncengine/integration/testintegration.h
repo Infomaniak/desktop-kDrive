@@ -73,6 +73,13 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testMoveMoveDestConflict();
         void testMoveMoveCycleConflict();
 
+        void testBreakCycle();
+        void testBlacklist();
+        void testExclusionTemplates();
+        void testEncoding();
+        void testParentRename();
+        void testNegativeModificationTime();
+
         class MockIoHelperFileStat : public IoHelper {
             public:
                 MockIoHelperFileStat() {
@@ -99,7 +106,6 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
 #endif
         void waitForSyncToBeIdle(const SourceLocation &srcLoc,
                                  std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
-        void waitForCurrentSyncToFinish() const;
         void logStep(const std::string &str);
 
         struct RemoteFileInfo {
@@ -112,7 +118,17 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
 
                 bool isValid() const { return !id.empty(); }
         };
-        RemoteFileInfo getRemoteFileInfo(int _driveDbId, const NodeId &parentId, const SyncName &name) const;
+        RemoteFileInfo getRemoteFileInfoByName(int driveDbId, const NodeId &parentId, const SyncName &name) const;
+        int64_t countItemsInRemoteDir(int driveDbId, const NodeId &parentId) const;
+
+        void editRemoteFile(const int driveDbId, const NodeId &remoteFileId, SyncTime *creationTime = nullptr,
+                            SyncTime *modificationTime = nullptr, int64_t *size = nullptr) const;
+        void moveRemoteFile(const int driveDbId, const NodeId &remoteFileId, const NodeId &destinationRemoteParentId,
+                            const SyncName &name = {}) const;
+        NodeId duplicateRemoteFile(const int driveDbId, const NodeId &id, const SyncName &newName) const;
+        void deleteRemoteFile(const int driveDbId, const NodeId &id) const;
+        SyncPath findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix) const;
+
         log4cplus::Logger _logger;
         std::shared_ptr<SyncPal> _syncPal = nullptr;
         std::shared_ptr<ParmsDb> _parmsDb = nullptr;
