@@ -48,9 +48,9 @@ runs:
           if "${{ inputs.release_build }}" == "true" (
             New-Item -ItemType directory -Path certificate
             Set-Content -Path certificate/tempCert.txt -Value ${{ inputs.physical_cert }}
-            certutil -decode certificate/tempCert.txt certificate/certificate.cer
+            certutil -decode certificate/tempCert.txt certificate/certificate.cert
             Remove-Item -path certificate -include tempCert.txt
-            Import-Certificate -Filepath certificate/certificate.cer -CertStoreLocation Cert:\CurrentUser\My
+            Import-Certificate -Filepath certificate/certificate.cert -CertStoreLocation Cert:\CurrentUser\My
             ) else (
             New-Item -ItemType directory -Path certificate
             Set-Content -Path certificate/tempCert.txt -Value ${{ inputs.virtual_cert }}
@@ -62,12 +62,10 @@ runs:
 
       - name: Build kDrive desktop
         id: build
-        env :
-          BUILD_ARGS: ${{ inputs.release_build == 'true' && 'clean' || '-ci' }}
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
           if "${{ inputs.release_build }}" == "true" (
-            powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ext -clean remake -ci -upload
+            powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ext -clean remake -ci -upload -csp ${{ inputs.physical_cert_csp }} -token ${{ inputs.physical_cert_token }}
             ) else (
             powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
             )

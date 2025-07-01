@@ -40,6 +40,12 @@ Param(
     # Upload: Flag to trigger the use of the USB-key signing certificate
     [switch] $upload,
 
+    # csp: The CSP to use for unlocking the USB-key signing certificate (only used if upload is set)
+    [String] $csp = "eToken Base Cryptographic Provider"
+
+    # csp: The signing key token ([reader{{password}}]=name) to use for unlocking the USB-key signing certificate (only used if upload is set)
+    [String] $signingKeyToken,
+
     # Coverage: Flag to enable or disable the code coverage computation
     [switch] $coverage,
 
@@ -340,6 +346,31 @@ function Set-Up-NSIS {
     Write-Host "NSIS is set up."
 }
 
+function Sign-File{
+    param (
+        [string] $filePath,
+        [bool] $upload = $false
+        [string] $thumbprint,
+        [String] $csp,
+        [String] $signingKeyToken,
+    )
+      Write-Host "Signing the file $filePath with thumbprint $thumbprint" -f Yellow
+      if (!upload -OR !$signingKeyToken -OR !$csp) {
+            if ($upload) {
+                Write-Host "No CSP or signing key token provided, the USB-KEY will need to be unlocked manually" -f Yellow
+            }
+          & signtool sign /sha1 $thumbprint /t http://timestamp.digicert.com  /fd SHA1  /v $filePath,
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & signtool sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256  /fd sha256 /td sha256 /as /v $filePath,
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      }else{
+          & signtool sign /sha1 $thumbprint /t http://timestamp.digicert.com /fd SHA1 /csp $csp /kc $signingKeyToken /v $filePath,
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & signtool sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256  /fd sha256 /td sha256 /csp $csp /kc $signingKeyToken /as /v $filePath,
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      }
+}
+
 function Prepare-Archive {
     param (
         [string] $buildType,
@@ -438,11 +469,7 @@ function Prepare-Archive {
         if (!$thumbprint) {
             $thumbprint = Get-Thumbprint $upload
         }
-
-        & signtool sign /sha1 $thumbprint /t http://timestamp.digicert.com  /fd SHA1  /v $archivePath/$filename
-        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-        & signtool sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256  /fd sha256 /td sha256 /as /v $archivePath/$filename
-        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -Csp $csp -SigningKeyToken $signingKeyToken
     }
 
     Write-Host "Archive prepared."
@@ -486,8 +513,7 @@ function Create-Archive {
     $installerPath = Get-Installer-Path $buildPath $contentPath
 
     if (Test-Path -Path $installerPath) {
-        & signtool sign /sha1 $thumbprint /fd SHA1 /t http://timestamp.digicert.com /v $installerPath
-        & signtool sign /sha1 $thumbprint /fd sha256 /tr http://timestamp.digicert.com?td=sha256 /td sha256 /as /v $installerPath
+        Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -Csp $csp -SigningKeyToken $signingKeyToken
         Write-Host ("$installerPath signed successfully.") -f Green
     }
     else {
