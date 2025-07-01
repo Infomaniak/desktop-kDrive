@@ -86,8 +86,7 @@ if(USE_OUR_OWN_SQLITE3)
     list(APPEND testsyncengine_SRCS ${SQLITE3_SOURCE})
 endif()
 
-if(WIN32)
-else()
+if(NOT WIN32)
     include_directories("/usr/local/include")
 endif()
 
@@ -107,5 +106,16 @@ set_target_properties(${testsyncengine_NAME} PROPERTIES
 target_link_libraries(${testsyncengine_NAME}
         ${libsyncengine_NAME}
         ${SQLITE3_LIBRARIES}
-        cppunit::cppunit
 )
+
+include(ConanGetLibDirs)
+get_include_and_library_dirs("cppunit" "cppunit")
+include_directories("${_cppunit_INCLUDE_DIRS}")
+if(APPLE)
+    set(lib_ext "dylib")
+elseif(WIN32)
+    set(lib_ext "dll")
+else()
+    set(lib_ext "so")
+endif()
+target_link_libraries(${testsyncengine_NAME} "${_cppunit_LIB_DIRS}/libcppunit.${lib_ext}")

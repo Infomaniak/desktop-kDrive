@@ -119,7 +119,6 @@ target_include_directories(${testserver_NAME} PRIVATE
 target_link_libraries(${testserver_NAME}
     Qt6::Svg
     updater
-        cppunit::cppunit
 )
 
 if(APPLE)
@@ -142,6 +141,18 @@ if(UNIX AND NOT APPLE)
     pkg_check_modules(LIBSECRET IMPORTED_TARGET libsecret-1)
     target_link_libraries(${testserver_NAME} PkgConfig::LIBSECRET)
 endif()
+
+include(ConanGetLibDirs)
+get_include_and_library_dirs("cppunit" "cppunit")
+include_directories("${_cppunit_INCLUDE_DIRS}")
+if(APPLE)
+    set(lib_ext "dylib")
+elseif(WIN32)
+    set(lib_ext "dll")
+else()
+    set(lib_ext "so")
+endif()
+target_link_libraries(${testserver_NAME} "${_cppunit_LIB_DIRS}/libcppunit.${lib_ext}")
 
 # Install
 if(APPLE)

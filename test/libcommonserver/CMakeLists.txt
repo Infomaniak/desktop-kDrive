@@ -59,5 +59,16 @@ set_target_properties(${testcommonserver_NAME} PROPERTIES
 
 target_link_libraries(${testcommonserver_NAME}
         ${libcommonserver_NAME}
-        cppunit::cppunit
 )
+
+include(ConanGetLibDirs)
+get_include_and_library_dirs("cppunit" "cppunit")
+include_directories("${_cppunit_INCLUDE_DIRS}")
+if(APPLE)
+    set(lib_ext "dylib")
+elseif(WIN32)
+    set(lib_ext "dll")
+else()
+    set(lib_ext "so")
+endif()
+target_link_libraries(${testcommonserver_NAME} "${_cppunit_LIB_DIRS}/libcppunit.${lib_ext}")
