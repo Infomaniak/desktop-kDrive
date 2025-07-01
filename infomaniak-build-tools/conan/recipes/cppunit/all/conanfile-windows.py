@@ -30,7 +30,7 @@ class CppunitConan(ConanFile):
         "fPIC": [True, False],
     }
     default_options = {
-        "shared": False,
+        "shared": True,
         "fPIC": True,
     }
 
@@ -82,10 +82,10 @@ class CppunitConan(ConanFile):
         yes_no = lambda v: "yes" if v else "no"
         tc.configure_args.extend([
             "--enable-debug={}".format(yes_no(self.settings.build_type == "Debug")),
-            "--enable-doxygen=no",
-            "--enable-dot=no",
+            "--disable-doxygen",
+            "--disable-dot",
             "--disable-werror",
-            "--enable-html-docs=no",
+            "--disable-html-docs",
         ])
         env = tc.environment()
         if is_msvc(self):
@@ -104,11 +104,6 @@ class CppunitConan(ConanFile):
     def build(self):
         autotools = Autotools(self)
         autotools.configure()
-        for root, _, files in os.walk(self.build_folder):
-            for f in files:
-                if f.startswith("Makefile"):
-                    path = os.path.join(root, f)
-                    replace_in_file(self, path, "-Werror", "")
         autotools.make()
 
     def package(self):
