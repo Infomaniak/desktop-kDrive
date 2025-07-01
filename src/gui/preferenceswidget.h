@@ -98,6 +98,7 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
 #endif
 #ifdef Q_OS_WIN
         QLabel *_emlIndexationLabel{nullptr};
+        QLabel *_emlIndexationDisclaimerLabel{nullptr};
 #endif
         ActionWidget *_displayErrorsWidget{nullptr};
 

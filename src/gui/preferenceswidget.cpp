@@ -133,6 +133,8 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     _debuggingFolderLabel{new QLabel()},
     _filesToExcludeLabel{new QLabel()},
     _proxyServerLabel{new QLabel()},
+    _emlIndexationLabel{new QLabel()},
+    _emlIndexationDisclaimerLabel{new QLabel()},
     _displayErrorsWidget{new ActionWidget(":/client/resources/icons/actions/warning.svg", "")} {
     setContentsMargins(0, 0, 0, 0);
 
@@ -282,6 +284,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     moveToTrashTitleBox->addWidget(_moveToTrashLabel);
     moveToTrashTitleBox->addWidget(_moveToTrashTipsLabel);
     moveToTrashBox->addLayout(moveToTrashTitleBox);
+    moveToTrashBox->setStretchFactor(moveToTrashTitleBox, 1);
 
     const auto moveToTrashSwitch = new CustomSwitch();
     moveToTrashSwitch->setLayoutDirection(Qt::RightToLeft);
@@ -392,11 +395,17 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
 
 #ifdef Q_OS_WIN
     // .eml files indexation
-    QBoxLayout *emlIndexationBox = advancedBloc->addLayout(QBoxLayout::Direction::LeftToRight);
+    const auto emlIndexationBox = advancedBloc->addLayout(QBoxLayout::Direction::LeftToRight);
+    const auto emlIndexationTitleBox = new QVBoxLayout();
+    emlIndexationTitleBox->setContentsMargins(0, 0, 0, 0);
 
-    _emlIndexationLabel = new QLabel();
-    emlIndexationBox->addWidget(_emlIndexationLabel);
-    emlIndexationBox->addStretch();
+    _emlIndexationLabel->setWordWrap(true);
+    emlIndexationTitleBox->addWidget(_emlIndexationLabel);
+    _emlIndexationDisclaimerLabel->setWordWrap(true);
+    _emlIndexationDisclaimerLabel->setObjectName("description");
+    emlIndexationTitleBox->addWidget(_emlIndexationDisclaimerLabel);
+    emlIndexationBox->addLayout(emlIndexationTitleBox);
+    emlIndexationBox->setStretchFactor(emlIndexationTitleBox, 1);
 
     const auto emlIndexationSwitch = new CustomSwitch();
     emlIndexationSwitch->setLayoutDirection(Qt::RightToLeft);
@@ -699,7 +708,10 @@ void PreferencesWidget::retranslateUi() const {
     _liteSyncLabel->setText(tr("Lite Sync"));
 #endif
 #ifdef Q_OS_WIN
-    _emlIndexationLabel->setText(tr(".eml files indexation"));
+    _emlIndexationLabel->setText(tr("Emails saved as plain text (.eml) indexation."));
+    _emlIndexationDisclaimerLabel->setText(
+            tr("Enabling this option is not recommended as it can lead to synchronization loops."));
+
 #endif
 }
 
