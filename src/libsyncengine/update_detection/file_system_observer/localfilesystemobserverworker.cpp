@@ -89,7 +89,6 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
         const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
         _syncPal->removeItemFromTmpBlacklist(relativePath);
 
-
         if (opTypeFromOS == OperationType::Delete) {
             // Check if exists with same nodeId
             NodeId prevNodeId = _liveSnapshot.itemId(relativePath);
@@ -361,6 +360,15 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
             }
 #endif
         }
+
+#ifdef _WIN32
+        if (nodeType == NodeType::File && IoHelper::isIndexingProblematic(absolutePath)) {
+            bool indexation = ParametersCache::instance()->parameters().emlIndexation();
+            if (IoError ioError = IoError::Success; !IoHelper::indexFile(absolutePath, indexation, ioError)) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::indexFile for " << Utility::formatIoError(absolutePath, ioError));
+            }
+        }
+#endif
 
         // Update liveSnapshot
         if (_liveSnapshot.updateItem(SnapshotItem(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime,

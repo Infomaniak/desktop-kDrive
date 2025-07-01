@@ -562,7 +562,7 @@ ExitCode GuiRequests::showInExplorerNavigationPane(bool &show) {
     return exitCode;
 }
 
-ExitCode GuiRequests::setShowInExplorerNavigationPane(const bool &show) {
+ExitCode GuiRequests::setShowInExplorerNavigationPane(bool show) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << show;

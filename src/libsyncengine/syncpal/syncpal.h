@@ -290,6 +290,10 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
          */
         const LiveSnapshot &liveSnapshot(ReplicaSide side) const;
 
+#ifdef _WIN32
+        void fixFilesIndexation();
+#endif
+
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
 
@@ -368,6 +372,11 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
     private:
         log4cplus::Logger _logger;
+
+#ifdef _WIN32
+        std::thread _fixFilesIndexationThread;
+        void _fixFilesIndexation();
+#endif
 
         // TODO : Refactor to not use friend classes (should be reserved for test purpose).
         friend class SyncPalWorker;

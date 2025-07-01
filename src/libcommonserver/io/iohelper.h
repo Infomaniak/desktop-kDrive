@@ -471,6 +471,11 @@ struct IoHelper {
 #ifdef _WIN32
         static bool getLongPathName(const SyncPath &path, SyncPath &longPathName, IoError &ioError);
         static bool getShortPathName(const SyncPath &path, SyncPath &shortPathName, IoError &ioError);
+
+        //! Determines whether indexing a given file is problematic
+        static bool isIndexingProblematic(const SyncPath &filePath) { return filePath.filename().extension() == ".eml"; }
+        //! Activate/deactivate file indexation
+        static bool indexFile(const SyncPath &filePath, bool indexation, IoError &ioError);
 #endif
 
     protected:
@@ -513,6 +518,7 @@ struct IoHelper {
         static TRUSTEE _trustee;
         static std::mutex _initRightsWindowsApiMutex;
         static void initRightsWindowsApi();
+        static bool _indexFile(const SyncPath &filePath, bool index, IoError &ioError);
 #endif
 };
 

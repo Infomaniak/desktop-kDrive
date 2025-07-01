@@ -401,8 +401,9 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     const auto emlIndexationSwitch = new CustomSwitch();
     emlIndexationSwitch->setLayoutDirection(Qt::RightToLeft);
     emlIndexationSwitch->setAttribute(Qt::WA_MacShowFocusRect, false);
-    emlIndexationSwitch->setCheckState(ParametersCache::instance()->parametersInfo().monoIcons() ? Qt::Checked : Qt::Unchecked);
-    emlIndexationSwitch->addWidget(monochromeSwitch);
+    emlIndexationSwitch->setCheckState(ParametersCache::instance()->parametersInfo().emlIndexation() ? Qt::Checked
+                                                                                                     : Qt::Unchecked);
+    emlIndexationBox->addWidget(emlIndexationSwitch);
 #endif
 
     // Version
@@ -622,7 +623,6 @@ void PreferencesWidget::onEmlIndexationSwitchClicked(bool checked) {
         return;
     }
 
-    // GuiRequests::setShowInExplorerNavigationPane(checked);
     MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "emlIndexationSwitch", checked ? 1 : 0);
 }
 #endif

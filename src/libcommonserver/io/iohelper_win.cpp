@@ -472,6 +472,30 @@ void IoHelper::initRightsWindowsApi() {
     }
 }
 
+bool IoHelper::_indexFile(const SyncPath &filePath, bool index, IoError &ioError) {
+    ioError = IoError::Success;
+
+    DWORD dwAttrs = GetFileAttributesW(filePath.c_str());
+    if (dwAttrs == INVALID_FILE_ATTRIBUTES) {
+        DWORD error = GetLastError();
+        LOGW_WARN(logger(), L"Error in GetFileAttributesW: " << Utility::formatSyncPath(filePath) << L" err=" << error);
+        ioError = dWordError2ioError(error, logger());
+        return isExpectedError(ioError);
+    }
+
+    if (index == static_cast<bool>(dwAttrs & FILE_ATTRIBUTE_NOT_CONTENT_INDEXED)) {
+        dwAttrs = index ? dwAttrs & ~FILE_ATTRIBUTE_NOT_CONTENT_INDEXED : dwAttrs | FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
+        if (!SetFileAttributesW(filePath.c_str(), dwAttrs)) {
+            DWORD error = GetLastError();
+            LOGW_WARN(logger(), L"Error in SetFileAttributesW: " << Utility::formatSyncPath(filePath) << L" err=" << error);
+            ioError = dWordError2ioError(error, logger());
+            return isExpectedError(ioError);
+        }
+    }
+
+    return true;
+}
+
 // Always return false if ioError != IoError::Success, caller should call _isExpectedError
 static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
                                 log4cplus::Logger logger, bool inherite = false) noexcept {

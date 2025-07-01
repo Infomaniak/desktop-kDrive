@@ -65,8 +65,8 @@
     "maxAllowedCpu INTEGER,"                 \
     "uploadSessionParallelJobs INTEGER,"     \
     "jobPoolCapacityFactor INTEGER,"         \
-    "distributionChannel INTEGER"            \
-    "emlIndexation INTEGER,"                 \
+    "distributionChannel INTEGER,"           \
+    "emlIndexation INTEGER"                  \
     ");"
 
 #define INSERT_PARAMETERS_REQUEST_ID "insert_parameters"

@@ -624,6 +624,34 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
     _directDownloadJobsMap.erase(directDownloadJobsMapIt);
 }
 
+#ifdef _WIN32
+void SyncPal::_fixFilesIndexation() {
+    LOG_INFO(_logger, "Fix files indexation");
+    bool indexation = ParametersCache::instance()->parameters().emlIndexation();
+
+    IoHelper::DirectoryIterator dir;
+    IoError ioError = IoError::Success;
+    IoHelper::getDirectoryIterator(localPath(), true, ioError, dir);
+    if (ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in DirectoryIterator: " << Utility::formatIoError(localPath(), ioError));
+        return;
+    }
+
+    DirectoryEntry entry;
+    bool endOfDirectory = false;
+    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoError::Success) {
+        if (entry.is_regular_file() && IoHelper::isIndexingProblematic(entry.path())) {
+            if (IoError ioError = IoError::Success; !IoHelper::indexFile(entry.path(), indexation, ioError)) {
+                LOGW_WARN(_logger, L"Error in IoHelper::indexFile for " << Utility::formatIoError(entry.path(), ioError));
+            }
+        }
+    }
+
+    LOG_INFO(_logger, "Fix files indexation done");
+    return;
+}
+#endif
+
 bool SyncPal::getSyncFileItem(const SyncPath &path, SyncFileItem &item) {
     return _progressInfo->getSyncFileItem(path, item);
 }
@@ -849,6 +877,14 @@ const LiveSnapshot &SyncPal::liveSnapshot(ReplicaSide side) const {
     LOG_IF_FAIL(_remoteFSObserverWorker);
     return (side == ReplicaSide::Local ? _localFSObserverWorker->liveSnapshot() : _remoteFSObserverWorker->liveSnapshot());
 }
+
+#ifdef _WIN32
+void SyncPal::fixFilesIndexation() {
+    auto fixFilesIndexationFunc = std::function<void()>([this]() { _fixFilesIndexation(); });
+    _fixFilesIndexationThread = StdLoggingThread(fixFilesIndexationFunc);
+    _fixFilesIndexationThread.detach();
+}
+#endif
 
 std::shared_ptr<FSOperationSet> SyncPal::operationSet(ReplicaSide side) const {
     if (side == ReplicaSide::Unknown) {

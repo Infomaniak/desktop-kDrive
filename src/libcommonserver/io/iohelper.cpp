@@ -699,6 +699,12 @@ void IoHelper::setCacheDirectoryPath(const SyncPath &newPath) {
     }
 }
 
+#ifdef _WIN32
+bool IoHelper::indexFile(const SyncPath &filePath, bool indexation, IoError &ioError) {
+    return _indexFile(filePath, indexation, ioError);
+}
+#endif
+
 bool IoHelper::cacheDirectoryPath(SyncPath &directoryPath) noexcept {
     directoryPath = details::CacheDirectoryHanlder::instance().directoryPath();
     return !directoryPath.empty();
