@@ -29,7 +29,7 @@ inputs:
 outputs:
   kDrive_version:
     description: 'The version of the kDrive app built'
-    value: ${{ steps.set_version.outputs.kDrive-version }}
+    value: ${{ steps.set_version.outputs.kDrive_version }}
 
 runs:
     using: "composite"
