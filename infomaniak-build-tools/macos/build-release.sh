@@ -103,7 +103,7 @@ cmake \
 	"$src_dir"
 
 # Build
-make -j6 all install VERBOSE=1
+make -j6 all install
 
 # Generate Debug Symbol files
 dsymutil ./install/kDrive.app/Contents/MacOS/kDrive -o ./install/kDrive.dSYM

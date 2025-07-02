@@ -3,12 +3,6 @@ cmake_minimum_required(VERSION 3.1)
 set(CMAKE_CXX_STANDARD 20)
 project(client)
 
-# Pour les exécutables
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -v")
-
-# (ou pour les bibliothèques partagées :)
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -v")
-
 if(APPLE)
     enable_language(OBJC)
     enable_language(OBJCXX)
