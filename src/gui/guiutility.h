@@ -121,6 +121,15 @@ void makePrintablePath(QString &path, const uint64_t maxSize = 50);
 QLocale languageToQLocale(Language language);
 QString getDateForCurrentLanguage(const QDateTime &dateTime, const QString &dateFormat);
 
+/**
+ * @brief The number of blacklisted items is limited to 50 to avoid too long URI (HTTP 414 error). Display a popup message if the
+ * size is too high.
+ * @param blacklistSize The number of selected folders to be blacklisted.
+ * @param parent The parent widget for the `QMessageBox`.
+ * @return `true` if the number of selected folders to be blacklisted is not too high.
+ */
+bool checkBlacklistSize(const size_t blacklistSize, QWidget *parent);
+
 #ifdef Q_OS_LINUX
 bool getLinuxDesktopType(QString &type, QString &version);
 #endif
