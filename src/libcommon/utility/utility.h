@@ -250,6 +250,8 @@ struct COMMON_EXPORT CommonUtility {
           The returned set contains additionally the concatenated pathSegments in any case.
         */
         static SyncNameSet computePathNormalizations(const std::vector<SyncName> &pathSegments);
+
+        static SyncPath getGenericAppSupportDir();
 };
 
 struct COMMON_EXPORT StdLoggingThread : public std::thread {

@@ -57,7 +57,7 @@ if(APPLE)
 elseif(WIN32)
     list(APPEND libcommonserver_SRCS io/iohelper_win.h io/iohelper_win.cpp)
 else()
-    list(APPEND libcommonserver_SRCS io/iohelper_linux.cpp)
+    list(APPEND libcommonserver_SRCS io/iohelper_linux.cpp utility/utility_linux.cpp)
 endif()
 
 if(USE_OUR_OWN_SQLITE3)

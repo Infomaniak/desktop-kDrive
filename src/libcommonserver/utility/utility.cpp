@@ -23,14 +23,6 @@
 #include "libcommonserver/io/iohelper.h"
 
 #if defined(__APPLE__)
-#include "utility_mac.cpp"
-#elif defined(__unix__)
-#include "utility_linux.cpp"
-#elif defined(_WIN32)
-#include "utility_win.cpp"
-#endif
-
-#if defined(__APPLE__)
 #include <sys/statvfs.h>
 #include <sys/mount.h>
 #elif defined(__unix__)
@@ -537,10 +529,6 @@ bool Utility::isStrictDescendant(const SyncPath &potentialDescendant, const Sync
     return isDescendantOrEqual(potentialDescendant, path);
 }
 
-bool Utility::moveItemToTrash(const SyncPath &itemPath) {
-    return moveItemToTrash_private(itemPath);
-}
-
 #ifdef __APPLE__
 bool Utility::preventSleeping(bool enable) {
     return preventSleeping_private(enable);
@@ -879,71 +867,12 @@ bool Utility::runDetachedProcess(std::wstring cmd) {
 
 #endif
 
-
-bool Utility::totalRamAvailable(uint64_t &ram, int &errorCode) {
-    if (totalRamAvailable_private(ram, errorCode)) {
-        return true;
-    }
-    // log errorCode;
-    return false;
-}
-
-bool Utility::ramCurrentlyUsed(uint64_t &ram, int &errorCode) {
-    if (ramCurrentlyUsed_private(ram, errorCode)) {
-        return true;
-    }
-    // log errorCode;
-    return false;
-}
-
-bool Utility::ramCurrentlyUsedByProcess(uint64_t &ram, int &errorCode) {
-    if (ramCurrentlyUsedByProcess_private(ram, errorCode)) {
-        return true;
-    }
-    // log errorCode;
-    return false;
-}
-
-
-bool Utility::cpuUsage(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint64_t &lastTotalSys, uint64_t &lastTotalIdle,
-                       double &percent) {
-#ifdef __unix__
-    return cpuUsage_private(lastTotalUser, lastTotalUserLow, lastTotalSys, lastTotalIdle, percent);
-#else
-    (void) (lastTotalUser);
-    (void) (lastTotalUserLow);
-    (void) (lastTotalSys);
-    (void) (lastTotalIdle);
-    (void) (percent);
-#endif
-    return false;
-}
-
-bool Utility::cpuUsage(uint64_t &previousTotalTicks, uint64_t &previousIdleTicks, double &percent) {
-#ifdef __APPLE__
-    return cpuUsage_private(previousTotalTicks, previousIdleTicks, percent);
-#else
-    (void) (previousTotalTicks);
-    (void) (previousIdleTicks);
-    (void) (percent);
-#endif
-    return false;
-}
-
-bool Utility::cpuUsageByProcess(double &percent) {
-    return cpuUsageByProcess_private(percent);
-}
-
 SyncPath Utility::commonDocumentsFolderName() {
     return Str2SyncName(COMMON_DOC_FOLDER);
 }
 
 SyncPath Utility::sharedFolderName() {
     return Str2SyncName(SHARED_FOLDER);
-}
-
-std::string Utility::userName() {
-    return userName_private();
 }
 
 } // namespace KDC

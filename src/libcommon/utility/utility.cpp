@@ -533,17 +533,8 @@ QString CommonUtility::languageCode(const Language language) {
     return englishCode;
 }
 
-SyncPath CommonUtility::getAppDir() {
-    const KDC::SyncPath dirPath(KDC::getAppDir_private());
-    return dirPath;
-}
-
-bool CommonUtility::hasDarkSystray() {
-    return KDC::hasDarkSystray_private();
-}
-
 SyncPath CommonUtility::getAppSupportDir() {
-    SyncPath dirPath(getAppSupportDir_private());
+    SyncPath dirPath(getGenericAppSupportDir());
 
     dirPath.append(APPLICATION_NAME);
     std::error_code ec;
