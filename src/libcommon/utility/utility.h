@@ -51,11 +51,11 @@ struct COMMON_EXPORT CommonUtility {
         static const int logsPurgeRate; // Delay after which the logs are purged, expressed in days
         static const int logMaxSize;
 
-        static QString getIconPath(IconType iconType);
+        static std::string getIconPath(IconType iconType);
         static SyncPath _workingDirPath;
 
         static bool hasDarkSystray();
-        static bool setFolderCustomIcon(const QString &folderPath, IconType iconType);
+        static bool setFolderCustomIcon(const SyncPath &folderPath, IconType iconType);
 
         static std::string generateRandomStringAlphaNum(int length = 10);
         static std::string generateRandomStringPKCE(int length = 10);

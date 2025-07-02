@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "utility.h"
+
 #include "types.h"
 
 #include <QString>
@@ -25,27 +27,27 @@
 
 namespace KDC {
 
-std::string getAppDir() {
+SyncPath CommonUtility::getAppDir() {
     NSError *error;
     NSURL *appDirUrl = [[NSFileManager defaultManager] URLForDirectory:NSApplicationDirectory
                                                               inDomain:NSUserDomainMask
                                                      appropriateForURL:nil
                                                                 create:YES
                                                                  error:&error];
-    return std::string([[appDirUrl path] UTF8String]);
+    return [[appDirUrl path] UTF8String];
 }
 
-std::string getAppSupportDir() {
+SyncPath CommonUtility::getGenericAppSupportDir() {
     NSError *error;
     NSURL *appSupportDirUrl = [[NSFileManager defaultManager] URLForDirectory:NSApplicationSupportDirectory
                                                                      inDomain:NSUserDomainMask
                                                             appropriateForURL:nil
                                                                        create:YES
                                                                         error:&error];
-    return std::string([[appSupportDirUrl path] UTF8String]);
+    return [[appSupportDirUrl path] UTF8String];
 }
 
-bool hasDarkSystray() {
+bool CommonUtility::hasDarkSystray() {
     NSString *appearanceName = NSApp.effectiveAppearance.name;
     if ([appearanceName rangeOfString:@"Dark"].location != NSNotFound) {
         return true;
@@ -54,9 +56,13 @@ bool hasDarkSystray() {
     return false;
 }
 
-bool setFolderCustomIcon(const QString &folderPath, const QString &icon) {
-    NSImage *iconImage = [[NSImage alloc] initWithContentsOfFile:icon.toNSString()];
-    return [[NSWorkspace sharedWorkspace] setIcon:iconImage forFile:folderPath.toNSString() options:0];
+bool CommonUtility::setFolderCustomIcon(const SyncPath &folderPath, const IconType iconType) {
+    const auto iconPath = getIconPath(iconType);
+    NSString *iconPathStr = [NSString stringWithCString:iconPath.c_str() encoding:NSUTF8StringEncoding];
+    NSImage *iconImage = [[NSImage alloc] initWithContentsOfFile:iconPathStr];
+
+    NSString *folderPathStr = [NSString stringWithCString:folderPath.c_str() encoding:NSUTF8StringEncoding];
+    return [[NSWorkspace sharedWorkspace] setIcon:iconImage forFile:folderPathStr options:0];
 }
 
-}  // namespace KDC
+} // namespace KDC

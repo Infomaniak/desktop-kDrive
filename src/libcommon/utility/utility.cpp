@@ -58,13 +58,8 @@
 #include <QSqlQuery>
 #include <QOperatingSystemVersion>
 
-#if defined(Q_OS_WIN)
-#include "utility_win.cpp"
-#elif defined(Q_OS_MAC)
-#include "utility_mac.cpp"
+#if defined(Q_OS_MAC)
 #include <mach-o/dyld.h>
-#else
-#include "utility_linux.cpp"
 #endif
 
 #define MAX_PATH_LENGTH_WIN_LONG 32767
@@ -210,7 +205,7 @@ void CommonUtility::resetTranslations() {
     }
 }
 
-QString CommonUtility::getIconPath(const IconType iconType) {
+std::string CommonUtility::getIconPath(const IconType iconType) {
     switch (iconType) {
         case KDC::CommonUtility::MAIN_FOLDER_ICON:
             return "../Resources/kdrive-mac.icns"; // TODO : To be changed to a specific incs file
@@ -228,21 +223,7 @@ QString CommonUtility::getIconPath(const IconType iconType) {
             break;
     }
 
-    return QString();
-}
-
-bool CommonUtility::setFolderCustomIcon(const QString &folderPath, IconType iconType) {
-#ifdef Q_OS_MAC
-    if (!setFolderCustomIcon_private(folderPath, getIconPath(iconType))) {
-        return false;
-    }
-    return true;
-#else
-    Q_UNUSED(folderPath)
-    Q_UNUSED(iconType)
-
-    return true;
-#endif
+    return {};
 }
 
 qint64 CommonUtility::freeDiskSpace(const QString &path) {

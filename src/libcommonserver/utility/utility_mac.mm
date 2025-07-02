@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "utility.h"
+
 #import "utility/types.h"
 #import "config.h"
 
@@ -31,11 +33,17 @@
 
 namespace KDC {
 
-bool moveItemToTrash(const SyncPath &itemPath, std::wstring &errorStr) {
+bool Utility::moveItemToTrash(const SyncPath &itemPath) {
+    if (itemPath.empty()) {
+        LOG_WARN(Log::instance()->getLogger(), "Path is empty");
+        return false;
+    }
+
     NSString *filePath = [NSString stringWithCString:itemPath.c_str() encoding:NSUTF8StringEncoding];
 
     if (filePath == nullptr) {
-        errorStr = L"Error in stringWithCString. Failed to cast std filepath to NSString.";
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in stringWithCString. Failed to cast std filepath to NSString." << Utility::formatSyncPath(itemPath));
         return false;
     }
     NSURL *fileURL = [NSURL fileURLWithPath:filePath];
@@ -48,13 +56,13 @@ bool moveItemToTrash(const SyncPath &itemPath, std::wstring &errorStr) {
     if (error != nil) {
         const auto wcharError = reinterpret_cast<const wchar_t *>(
                 [error.localizedDescription cStringUsingEncoding:NSUTF32LittleEndianStringEncoding]);
-        errorStr = std::wstring(wcharError);
+        LOGW_WARN(Log::instance()->getLogger(), std::wstring(wcharError) << Utility::formatSyncPath(itemPath));
     }
 
     return success;
 }
 
-bool preventSleeping(bool enable) {
+bool Utility::preventSleeping(bool enable) {
     static IOPMAssertionID assertionID;
 
     if (!enable && !assertionID) {
@@ -72,7 +80,7 @@ bool preventSleeping(bool enable) {
     return (ret == kIOReturnSuccess);
 }
 
-void restartFinderExtension() {
+void Utility::restartFinderExtension() {
     NSString *bundleID = NSBundle.mainBundle.bundleIdentifier;
     NSString *extBundleID = [NSString stringWithFormat:@"%@.Extension", bundleID];
     NSArray<NSRunningApplication *> *apps = [NSRunningApplication runningApplicationsWithBundleIdentifier:extBundleID];

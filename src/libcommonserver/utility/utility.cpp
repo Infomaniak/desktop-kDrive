@@ -529,18 +529,6 @@ bool Utility::isStrictDescendant(const SyncPath &potentialDescendant, const Sync
     return isDescendantOrEqual(potentialDescendant, path);
 }
 
-#ifdef __APPLE__
-bool Utility::preventSleeping(bool enable) {
-    return preventSleeping_private(enable);
-}
-#endif
-
-void Utility::restartFinderExtension() {
-#ifdef __APPLE__
-    restartFinderExtension_private();
-#endif
-}
-
 void Utility::str2hexstr(const std::string &str, std::string &hexstr, bool capital) {
     hexstr.resize(str.size() * 2);
     const char a = capital ? 'A' - 1 : 'a' - 1;
