@@ -43,8 +43,7 @@ class CppunitConan(ConanFile):
         return getattr(self, "settings_build", self.settings)
 
     def config_options(self):
-        if self.settings.os == "Windows":
-            del self.options.fPIC
+        del self.options.fPIC
 
     def configure(self):
         if self.options.shared:
@@ -54,10 +53,9 @@ class CppunitConan(ConanFile):
         basic_layout(self, src_folder="src")
 
     def build_requirements(self):
-        if self._settings_build.os == "Windows":
-            self.win_bash = True
-            if not self.conf.get("tools.microsoft.bash:path", check_type=str):
-                self.tool_requires("msys2/cci.latest")
+        self.win_bash = True
+        if not self.conf.get("tools.microsoft.bash:path", check_type=str):
+            self.tool_requires("msys2/cci.latest")
         if is_msvc(self):
             self.tool_requires("automake/1.16.5")
 
@@ -69,7 +67,7 @@ class CppunitConan(ConanFile):
         env.generate()
 
         tc = AutotoolsToolchain(self)
-        if self.settings.os == "Windows" and self.options.shared:
+        if self.options.shared:
             tc.extra_defines.append("CPPUNIT_BUILD_DLL")
         if is_msvc(self):
             tc.extra_cxxflags.extend([ "-EHsc", "/std:c++20" ])
@@ -105,7 +103,6 @@ class CppunitConan(ConanFile):
     def build(self):
         autotools = Autotools(self)
         autotools.configure()
-
         autotools.make()
 
     def package(self):
@@ -123,11 +120,9 @@ class CppunitConan(ConanFile):
     def package_info(self):
         self.cpp_info.set_property("pkg_config_name", "cppunit")
         self.cpp_info.libs = ["cppunit"]
-        if not self.options.shared:
+        if self.options.shared:
+            self.cpp_info.defines.append("CPPUNIT_DLL")
+        else:
             libcxx = stdcpp_library(self)
             if libcxx:
                 self.cpp_info.system_libs.append(libcxx)
-            if self.settings.os in ["Linux", "FreeBSD"]:
-                self.cpp_info.system_libs.extend(["dl", "m"])
-        if self.options.shared and self.settings.os == "Windows":
-            self.cpp_info.defines.append("CPPUNIT_DLL")
