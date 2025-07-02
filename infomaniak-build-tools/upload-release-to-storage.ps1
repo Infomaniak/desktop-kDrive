@@ -35,21 +35,30 @@ $languages = @(
     "it"
 )
 
+Start-Process -NoNewWindow -FilePath "mc.exe" -ArgumentList "config host add kdrive-storage https://storage.infomaniak.com <username> <pass> --api s3v4" -Wait
+
 # Upload release notes
 foreach ($os in $os_s)
 {
     foreach ($lang in $languages)
     {
-        $file = "release_notes\$app\$app-$os-$lang.html"
-        $size = (Get-ChildItem $file | % {[int]($_.length)})
-        Write-Host "Uploading $file ($size) to the storage" -f Cyan
+        $fileName = "$app-$os-$lang.html"
+        $filePath = ".\release_notes\$app\$fileName"
+        $size = (Get-ChildItem $filePath | % {[int]($_.length)})
+        Write-Host "Uploading: $fileName ($size) to the storage" -f Cyan
+        Start-Process -NoNewWindow -FilePath "mc.exe" -ArgumentList "cp --attr Content-Type=text/html $filePath kdrive-storage/download/drive/desktopclient/$fileName" -Wait
     }
 }
 
 # Upload installers / AppImages
 # Windows
-$file = "installers\$app.exe"
-$size = (Get-ChildItem $file | % {[int]($_.length)})
-Write-Host "Uploading $file ($size) to the storage" -f Cyan
+$fileName = "$app.exe"
+$filePath = ".\installers\$fileName"
+$size = (Get-ChildItem $filePath | % {[int]($_.length)})
+Write-Host "Uploading: $fileName ($size) to the storage" -f Cyan
+
+#!!! TODO change content type!!! Start-Process -NoNewWindow -FilePath "mc.exe" -ArgumentList "cp --attr Content-Type=text/html $filePath kdrive-storage/download/drive/desktopclient/$fileName" -Wait
+Start-Process -NoNewWindow -FilePath "mc.exe" -ArgumentList "config host remove kdrive-storage" -Wait
+
 
 
