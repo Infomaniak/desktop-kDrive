@@ -438,7 +438,7 @@ function Prepare-Archive {
 
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    if (!&upload) {
+    if (!$upload) {
         Write-Host "Archive prepared for CI build."
         exit 0
     }
