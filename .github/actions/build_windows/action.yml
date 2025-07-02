@@ -68,7 +68,7 @@ runs:
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
           if "${{ inputs.release_build }}" == "true" (
-            powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ext -clean remake -ci -upload -csp ${{ inputs.physical_cert_csp }} -token ${{ inputs.physical_cert_token }}
+            powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ext -clean remake -ci -upload -thumbprint B1D273E77CAF9DBDA865896F3C51A3EB31C6C5AD # -csp ${{ inputs.physical_cert_csp }} -token ${{ inputs.physical_cert_token }} TODO: Unlock the usb key with CSP and token
             ) else (
             powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
             )

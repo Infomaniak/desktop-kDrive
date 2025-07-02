@@ -355,18 +355,18 @@ function Sign-File{
         [String] $signingKeyToken = ""
     )
       Write-Host "Signing the file $filePath with thumbprint $thumbprint" -f Yellow
-      if (!$upload -OR $csp -eq "" -OR $signingKeyToken -eq "") {
-            if ($upload) {
+      if (-not $upload -OR $csp -eq "" -OR $signingKeyToken -eq "") {
+          if ($upload) {
                 Write-Host "No CSP or signing key token provided, the USB-KEY will need to be unlocked manually" -f Yellow
             }
-          & signtool sign /sha1 $thumbprint /t http://timestamp.digicert.com  /fd SHA1  /v $filePath,
+          & signtool sign /sha1 $thumbprint /t http://timestamp.digicert.com  /fd SHA1  /v $filePath
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & signtool sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256  /fd sha256 /td sha256 /as /v $filePath,
+          & signtool sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256  /fd sha256 /td sha256 /as /v $filePath
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       }else{
-          & signtool sign /sha1 $thumbprint /t http://timestamp.digicert.com /fd SHA1 /csp $csp /kc $signingKeyToken /v $filePath,
+          & signtool sign /sha1 $thumbprint /t http://timestamp.digicert.com /fd SHA1 /csp $csp /kc $signingKeyToken /v $filePath
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & signtool sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256  /fd sha256 /td sha256 /csp $csp /kc $signingKeyToken /as /v $filePath,
+          & signtool sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256  /fd sha256 /td sha256 /csp $csp /kc $signingKeyToken /as /v $filePath
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       }
 }
@@ -721,7 +721,7 @@ Prepare-Archive $buildType $buildPath $vfsDir $archivePath $upload
 if ($upload) {
     Create-Archive $path $buildPath $contentPath $installPath $archiveName $archivePath $upload
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "Archive creation failed. Aborting." -f Red
+        Write-Host "Archive creation failed ($LASTEXITCODE) . Aborting." -f Red
         exit $LASTEXITCODE
     }
 }
