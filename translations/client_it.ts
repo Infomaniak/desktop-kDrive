@@ -293,7 +293,7 @@ Seleziona un'altra cartella. Se continui, Lite Sync verrà disabilitato.&lt;br&g
 <context>
 <name>KDC::AppServer</name>
 <message numerus="yes">
-<location filename="../src/server/appserver.cpp" line="3266"/>
+<location filename="../src/server/appserver.cpp" line="3273"/>
 <source>%1 and %n other file(s) have been removed.</source>
 <translation>
 <numerusform>%1 e %n altri file sono stati rimossi.</numerusform>
@@ -301,13 +301,13 @@ Seleziona un'altra cartella. Se continui, Lite Sync verrà disabilitato.&lt;br&g
 </translation>
 </message>
 <message>
-<location filename="../src/server/appserver.cpp" line="3268"/>
+<location filename="../src/server/appserver.cpp" line="3275"/>
 <source>%1 has been removed.</source>
 <comment>%1 names a file.</comment>
 <translation>%1 è stato rimosso.</translation>
 </message>
 <message numerus="yes">
-<location filename="../src/server/appserver.cpp" line="3273"/>
+<location filename="../src/server/appserver.cpp" line="3280"/>
 <source>%1 and %n other file(s) have been added.</source>
 <translation>
 <numerusform>%1 e %n altri file sono stati aggiunti.</numerusform>
@@ -315,13 +315,13 @@ Seleziona un'altra cartella. Se continui, Lite Sync verrà disabilitato.&lt;br&g
 </translation>
 </message>
 <message>
-<location filename="../src/server/appserver.cpp" line="3275"/>
+<location filename="../src/server/appserver.cpp" line="3282"/>
 <source>%1 has been added.</source>
 <comment>%1 names a file.</comment>
 <translation>%1 è stato aggiunto.</translation>
 </message>
 <message numerus="yes">
-<location filename="../src/server/appserver.cpp" line="3280"/>
+<location filename="../src/server/appserver.cpp" line="3287"/>
 <source>%1 and %n other file(s) have been updated.</source>
 <translation>
 <numerusform>%1 e %n altri file sono stati aggiornati.</numerusform>
@@ -329,13 +329,13 @@ Seleziona un'altra cartella. Se continui, Lite Sync verrà disabilitato.&lt;br&g
 </translation>
 </message>
 <message>
-<location filename="../src/server/appserver.cpp" line="3282"/>
+<location filename="../src/server/appserver.cpp" line="3289"/>
 <source>%1 has been updated.</source>
 <comment>%1 names a file.</comment>
 <translation>%1 è stato aggiornato.</translation>
 </message>
 <message numerus="yes">
-<location filename="../src/server/appserver.cpp" line="3287"/>
+<location filename="../src/server/appserver.cpp" line="3294"/>
 <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
 <translation>
 <numerusform>%1 è stato spostato in %2 e %n altri file sono stati spostati.</numerusform>
@@ -343,17 +343,17 @@ Seleziona un'altra cartella. Se continui, Lite Sync verrà disabilitato.&lt;br&g
 </translation>
 </message>
 <message>
-<location filename="../src/server/appserver.cpp" line="3290"/>
+<location filename="../src/server/appserver.cpp" line="3297"/>
 <source>%1 has been moved to %2.</source>
 <translation>%1 è stato spostato in %2.</translation>
 </message>
 <message>
-<location filename="../src/server/appserver.cpp" line="3298"/>
+<location filename="../src/server/appserver.cpp" line="3305"/>
 <source>Sync Activity</source>
 <translation>Sincronizza attività</translation>
 </message>
 <message>
-<location filename="../src/server/appserver.cpp" line="4206"/>
+<location filename="../src/server/appserver.cpp" line="4213"/>
 <source>A new folder larger than %1 MB has been added in the drive %2, you must validate its synchronization: %3.
 </source>
 <translation>È stata aggiunta una nuova cartella più grande di %1 MB nell'unità %2, devi convalidarne la sincronizzazione: %3.
@@ -951,22 +951,22 @@ Seleziona quelli che desideri sincronizzare:</translation>
 <context>
 <name>KDC::DrivePreferencesWidget</name>
 <message>
-<location filename="../src/gui/drivepreferenceswidget.cpp" line="1260"/>
+<location filename="../src/gui/drivepreferenceswidget.cpp" line="1261"/>
 <source>Folders</source>
 <translation>Cartelle</translation>
 </message>
 <message>
-<location filename="../src/gui/drivepreferenceswidget.cpp" line="1262"/>
+<location filename="../src/gui/drivepreferenceswidget.cpp" line="1263"/>
 <source>Notifications</source>
 <translation>Notifiche</translation>
 </message>
 <message>
-<location filename="../src/gui/drivepreferenceswidget.cpp" line="1265"/>
+<location filename="../src/gui/drivepreferenceswidget.cpp" line="1266"/>
 <source>A notification will be displayed as soon as a new folder has been synchronized or modified</source>
 <translation>Verrà visualizzata una notifica appena una nuova cartella sarà sincronizzata o modificata</translation>
 </message>
 <message>
-<location filename="../src/gui/drivepreferenceswidget.cpp" line="1266"/>
+<location filename="../src/gui/drivepreferenceswidget.cpp" line="1267"/>
 <source>Connected with</source>
 <translation>Connesso a</translation>
 </message>
@@ -977,7 +977,7 @@ Seleziona quelli che desideri sincronizzare:</translation>
 </message>
 <message>
 <location filename="../src/gui/drivepreferenceswidget.cpp" line="129"/>
-<location filename="../src/gui/drivepreferenceswidget.cpp" line="1259"/>
+<location filename="../src/gui/drivepreferenceswidget.cpp" line="1260"/>
 <source>Some folders were not synchronized because they are too large.</source>
 <translation>Alcune cartelle non sono state sincronizzate perché sono troppo grandi.</translation>
 </message>
@@ -1019,7 +1019,7 @@ Seleziona quelli che desideri sincronizzare:</translation>
 <translation>Si è verificato un errore durante il caricamento dell'elenco delle sottocartelle.</translation>
 </message>
 <message>
-<location filename="../src/gui/drivepreferenceswidget.cpp" line="1263"/>
+<location filename="../src/gui/drivepreferenceswidget.cpp" line="1264"/>
 <source>Enable the notifications for this kDrive</source>
 <translation>Abilita le notifiche per questo kDrive</translation>
 </message>
@@ -1031,13 +1031,13 @@ Seleziona quelli che desideri sincronizzare:</translation>
 </message>
 <message>
 <location filename="../src/gui/drivepreferenceswidget.cpp" line="119"/>
-<location filename="../src/gui/drivepreferenceswidget.cpp" line="1258"/>
+<location filename="../src/gui/drivepreferenceswidget.cpp" line="1259"/>
 <source>Synchronization errors and information.</source>
 <translation>Errori di sincronizzazione e informazioni.</translation>
 </message>
 <message>
 <location filename="../src/gui/drivepreferenceswidget.cpp" line="148"/>
-<location filename="../src/gui/drivepreferenceswidget.cpp" line="1261"/>
+<location filename="../src/gui/drivepreferenceswidget.cpp" line="1262"/>
 <source>Synchronize a local folder</source>
 <translation>Sincronizza una cartella locale</translation>
 </message>
@@ -1087,7 +1087,7 @@ Seleziona quelli che desideri sincronizzare:</translation>
 <translation>Impossibile interrompere la sincronizzazione della cartella &lt;i&gt;%1&lt;/i&gt;.</translation>
 </message>
 <message>
-<location filename="../src/gui/drivepreferenceswidget.cpp" line="1267"/>
+<location filename="../src/gui/drivepreferenceswidget.cpp" line="1268"/>
 <source>Remove all synchronizations</source>
 <translation>Rimuovi tutte le sincronizzazioni</translation>
 </message>
@@ -2305,7 +2305,7 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
 <translation>CONTINUA</translation>
 </message>
 <message>
-<location filename="../src/gui/serverfoldersdialog.cpp" line="145"/>
+<location filename="../src/gui/serverfoldersdialog.cpp" line="146"/>
 <source>No subfolders currently on the server.</source>
 <translation>Attualmente non ci sono sottocartelle sul server.</translation>
 </message>
@@ -2638,22 +2638,17 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
 <translation>&lt;p&gt;La nuova versione &lt;b&gt;%1&lt;/b&gt; del client %2 è disponibile ed è stata scaricata.&lt;/p&gt;&lt;p&gt;La versione installata è %3.&lt;/p&gt;</translation>
 </message>
 <message>
-<location filename="../src/gui/updater/updatedialog.cpp" line="74"/>
-<source>Release Notes:</source>
-<translation>Note sulla versione:</translation>
-</message>
-<message>
-<location filename="../src/gui/updater/updatedialog.cpp" line="92"/>
+<location filename="../src/gui/updater/updatedialog.cpp" line="99"/>
 <source>Skip this version</source>
 <translation>Salta questa versione</translation>
 </message>
 <message>
-<location filename="../src/gui/updater/updatedialog.cpp" line="100"/>
+<location filename="../src/gui/updater/updatedialog.cpp" line="107"/>
 <source>Remind me later</source>
 <translation>Ricordamelo più tardi</translation>
 </message>
 <message>
-<location filename="../src/gui/updater/updatedialog.cpp" line="106"/>
+<location filename="../src/gui/updater/updatedialog.cpp" line="113"/>
 <source>Install update</source>
 <translation>Installa</translation>
 </message>
@@ -3044,6 +3039,11 @@ Puoi aggiungerne uno dalle impostazioni di kDrive.</translation>
 <location filename="../src/gui/guiutility.cpp" line="597"/>
 <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected as sync folder. Please, select another folder. Suggested folder: &lt;b&gt;%2&lt;/b&gt;</source>
 <translation>La cartella &lt;b&gt;%1&lt;/b&gt; non può essere selezionata come cartella di sincronizzazione. Selezionare un'altra cartella. Cartella suggerita: &lt;b&gt;%2&lt;/b&gt;</translation>
+</message>
+<message>
+<location filename="../src/gui/guiutility.cpp" line="639"/>
+<source>You cannot blacklist more than 50 folders. Please uncheck higher-level folders.</source>
+<translation>Non è possibile inserire nella lista nera più di 50 cartelle. Deselezionare le cartelle di livello superiore.</translation>
 </message>
 <message>
 <location filename="../src/gui/guiutility.cpp" line="348"/>

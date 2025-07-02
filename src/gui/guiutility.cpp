@@ -632,6 +632,19 @@ QString GuiUtility::getDateForCurrentLanguage(const QDateTime &dateTime, const Q
     return languageToQLocale(lang).toString(dateTime, dateFormat);
 }
 
+bool GuiUtility::checkBlacklistSize(const size_t blacklistSize, QWidget *parent) {
+    if (blacklistSize > 50) {
+        (void) CustomMessageBox(
+                QMessageBox::Warning,
+                QCoreApplication::translate("utility",
+                                            "You cannot blacklist more than 50 folders. Please uncheck higher-level folders."),
+                QMessageBox::Ok, parent)
+                .exec();
+        return false;
+    }
+    return true;
+}
+
 #ifdef Q_OS_LINUX
 bool GuiUtility::getLinuxDesktopType(QString &type, QString &version) {
     type = QProcessEnvironment::systemEnvironment().value("XDG_CURRENT_DESKTOP");
