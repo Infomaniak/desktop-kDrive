@@ -915,10 +915,9 @@ void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory 
     }
 }
 
-#ifdef KD_WINDOWS
-std::string CommonUtility::toUnsafeStr(const SyncName &name) {
-    std::string unsafeName(name.begin(), name.end());
-    return unsafeName;
+#if defined(KD_MACOS) || defined(KD_LINUX)
+inline bool isLikeFileNotFoundError(const std::error_code &ec) noexcept {
+    return ec.value() == static_cast<int>(std::errc::no_such_file_or_directory);
 }
 #endif
 
