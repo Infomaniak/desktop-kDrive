@@ -38,6 +38,9 @@ class KDriveDesktop(ConanFile):
     def layout(self):
         cmake_layout(self)
 
+    def build_requirements(self):
+        self.tool_requires("cmake/[>=3.20 <4]")
+
     def requirements(self):
         """
         Specify the dependencies required for this package.
@@ -46,6 +49,7 @@ class KDriveDesktop(ConanFile):
         - `log4cplus/2.1.2`: A C++ logging library.
         :return: None
         """
+        self.requires("qt/6.2.3") # From local recipe, using the qt online installer.
         self.requires("xxhash/0.8.2") # From local recipe
         # log4cplus
         log4cplus_options = { "shared": True, "unicode": True }

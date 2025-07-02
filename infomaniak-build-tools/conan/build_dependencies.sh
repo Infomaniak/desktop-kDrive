@@ -23,7 +23,12 @@
 
 if [[ "${1:-}" =~ ^-h|--help$ ]]; then
     cat << EOF >&2
-Usage: $0 [Debug|Release] [--output-dir=<output_dir>]
+Usage: $0 [Debug|Release] [--output-dir=<output_dir>] [--ci]
+  Arguments:
+    [Debug|Release]         Build type (default: Debug)
+    --output-dir=<output_dir>  Set output directory for dependencies
+    --ci                    Enable CI mode
+
   There are three ways to set the output directory (in descending order of priority):
     1. --output-dir=<output_dir> argument
     2. KDRIVE_OUTPUT_DIR environment variable
@@ -32,7 +37,7 @@ EOF
     exit 0
 fi
 
-
+ci_mode=false
 
 set -euox pipefail
 
@@ -41,19 +46,20 @@ error(){ echo "[ERROR] $*" >&2; exit 1; }
 
 function get_platform {
     platform="$(uname | tr '[:upper:]' '[:lower:]')"
-    
+
     echo "$platform"
 }
 
 function get_architecture {
+    # b: target machine architecture, h: host machine architecture (h is used to get macOS architecture)
     platform=$1
 
     architecture="" # Left empty for Linux systems.
     if [[ "$platform" = "darwin" ]]; then
-       architecture="-s:a=arch=armv8|x86_64" # Making universal binary. See https://docs.conan.io/2/reference/tools/cmake/cmaketoolchain.html#conan-tools-cmaketoolchain-universal-binaries
+       architecture="-s:a=arch=armv8|x86_64"
     fi
 
-    echo $architecture
+    echo "$architecture"
 }
 
 function get_output_dir {
@@ -81,6 +87,13 @@ function get_output_dir {
 
 args="$@"
 build_type="${1:-Debug}"
+
+for arg in $args; do
+    if [[ "$arg" == "--ci" ]]; then
+        ci_mode=true
+    fi
+done
+
 output_dir=$(get_output_dir "$args")
 
 if [[ -n "${KDRIVE_OUTPUT_DIR:-}" && "$output_dir" == "$KDRIVE_OUTPUT_DIR" ]]; then
@@ -116,18 +129,25 @@ if [[ "$platform" == "darwin" ]]; then
     log "Building universal binary for macOS."
 fi
 
-architecture=$(get_architecture $platform)
+architecture=$(get_architecture "$platform")
 
 mkdir -p "$output_dir"
 
-echo 
+echo
 log "Configuration:"
 log "--------------"
 log "- Platform: '$platform'"
 log "- Architecture option: '$architecture'"
 log "- Build type: '$build_type'"
 log "- Output directory: '$output_dir'"
+log "- CI Mode: '$($ci_mode && echo "enabled" || echo "disabled")'"
 echo
+
+
+qt_login_type_param="ini" # By default, use ini file for QT installer login type
+if [[ $ci_mode == true ]]; then
+    qt_login_type_param="envvars" # Use environment variables for CI mode
+fi
 
 # Create the conan package for xxHash.
 conan_recipes_folder="$conan_remote_base_folder/recipes"
@@ -136,12 +156,21 @@ conan create "$conan_recipes_folder/xxhash/all/" --build=missing $architecture -
 
 if [ "$platform" = "darwin" ]; then
   log "Creating openssl package..."
-  conan create "$conan_recipes_folder/openssl-universal/3.2.4/" --build=missing -s:a=build_type="$build_type" -r="$local_recipe_remote_name" -r=conancenter
+  conan create "$conan_recipes_folder/openssl-universal/all/" --build=missing -s:a=build_type="$build_type" -r="$local_recipe_remote_name" -r=conancenter
 fi
+
+log "Creating package Qt..."
+conan create "$conan_recipes_folder/qt/all/" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter # -o "&:qt_login_type=$qt_login_type_param"
 
 log "Installing dependencies..."
 # Install this packet in the build folder.
-conan install . --output-folder="$output_dir" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter
+# The '$architecture' value is "" on Linux systems, and "-s:b=arch=armv8|x86_64 -s:h=arch=armv8" on macOS systems.
+conan install . \
+  --output-folder="$output_dir" \
+  --build=missing \
+  $architecture \
+  -s:a=build_type="$build_type" \
+  -r=$local_recipe_remote_name -r=conancenter
 
 if [ $? -ne 0 ]; then
   error "Failed to install Conan dependencies."

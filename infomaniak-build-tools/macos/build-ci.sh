@@ -73,7 +73,7 @@ fi
 
 build_type="Release"
 
-bash infomaniak-build-tools/conan/build_dependencies.sh "$build_type" "--output-dir=$conan_folder"
+bash infomaniak-build-tools/conan/build_dependencies.sh "$build_type" "--output-dir=$conan_folder" --ci
 
 conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
 
