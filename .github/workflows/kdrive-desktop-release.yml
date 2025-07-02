@@ -60,6 +60,8 @@ jobs:
           physical_cert_token: ${{ secrets.WINDOWS_VIRTUAL_CERT_TOKEN }}
           release_build: true    
 
+# TODO: build Linux and macOS apps
+
 # Tests Windows
   test-Windows:
     needs: build-Windows
@@ -83,7 +85,8 @@ jobs:
        #     test_name: ${{ matrix.test_name }}
        #     test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
-# Upload the installer to kDrive
+
+# Upload the installer to kDrive and sentry artifacts
   upload-to-kDrive-and-sentry:
     needs: [test-Windows, build-Windows]
     runs-on: [self-hosted, Windows]
@@ -130,7 +133,9 @@ jobs:
           merge-multiple: true
 
       - name: Upload apps and release notes to storage server
-        run: powershell ./infomaniak-build-tools/upload-release-to-storage.ps1 -version "${{ needs.build-Windows.outputs.kDrive_version }}"
+        run: |
+            Invoke-WebRequest -Uri https://dl.min.io/client/mc/release/windows-amd64/mc.exe -OutFile mc.exe
+            powershell ./infomaniak-build-tools/upload-release-to-storage.ps1 -version "${{ needs.build-Windows.outputs.kDrive_version }}"
 
 # Update kStore
   update-kStore:
