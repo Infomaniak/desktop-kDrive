@@ -438,7 +438,7 @@ function Prepare-Archive {
 
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    if (!upload) {
+    if (!&upload) {
         Write-Host "Archive prepared for CI build."
         exit 0
     }
@@ -469,7 +469,7 @@ function Prepare-Archive {
         if (!$thumbprint) {
             $thumbprint = Get-Thumbprint $upload
         }
-        Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -Csp $csp -SigningKeyToken $signingKeyToken
+        Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -csp $csp -signingKeyToken $signingKeyToken
     }
 
     Write-Host "Archive prepared."
@@ -513,7 +513,7 @@ function Create-Archive {
     $installerPath = Get-Installer-Path $buildPath $contentPath
 
     if (Test-Path -Path $installerPath) {
-        Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -Csp $csp -SigningKeyToken $signingKeyToken
+        Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -csp $csp -signingKeyToken $signingKeyToken
         Write-Host ("$installerPath signed successfully.") -f Green
     }
     else {
