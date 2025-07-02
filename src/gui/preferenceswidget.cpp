@@ -28,7 +28,6 @@
 #include "aboutdialog.h"
 #include "custommessagebox.h"
 #include "guiutility.h"
-#include "common/utility.h"
 #include "languagechangefilter.h"
 #include "config.h"
 #include "litesyncdialog.h"

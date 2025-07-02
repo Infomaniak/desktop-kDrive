@@ -20,7 +20,6 @@
 #include "config.h"
 #include "version.h"
 #include "libcommon/utility/logiffail.h"
-#include "common/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommon/theme/theme.h"

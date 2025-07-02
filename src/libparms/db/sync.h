@@ -29,10 +29,10 @@ namespace KDC {
 class PARMS_EXPORT Sync {
     public:
         Sync();
-        Sync(int dbId, int driveDbId, const std::filesystem::path &localPath, const NodeId &localNodeId,
-             const std::filesystem::path &targetPath, const NodeId &targetNodeId = NodeId(), bool paused = false,
-             bool supportVfs = false, VirtualFileMode virtualFileMode = VirtualFileMode::Off, bool notificationsDisabled = false,
-             const std::filesystem::path &dbPath = std::filesystem::path(), bool hasFullyCompleted = false,
+        Sync(int dbId, int driveDbId, const SyncPath &localPath, const NodeId &localNodeId, const SyncPath &targetPath,
+             const NodeId &targetNodeId = NodeId(), bool paused = false, bool supportVfs = false,
+             VirtualFileMode virtualFileMode = VirtualFileMode::Off, bool notificationsDisabled = false,
+             const SyncPath &dbPath = SyncPath(), bool hasFullyCompleted = false,
              const std::string &navigationPaneClsid = std::string(), const std::string &listingCursor = std::string(),
              int64_t listingCursorTimestamp = 0);
 
@@ -40,16 +40,16 @@ class PARMS_EXPORT Sync {
         inline int dbId() const { return _dbId; }
         inline void setDriveDbId(int driveDbId) { _driveDbId = driveDbId; }
         inline int driveDbId() const { return _driveDbId; }
-        inline void setLocalPath(const std::filesystem::path &localPath) { _localPath = localPath; }
-        inline const std::filesystem::path &localPath() const { return _localPath; }
+        inline void setLocalPath(const SyncPath &localPath) { _localPath = localPath; }
+        inline const SyncPath &localPath() const { return _localPath; }
         inline void setLocalNodeId(const NodeId &localNodeId) { _localNodeId = localNodeId; }
         inline const NodeId &localNodeId() const { return _localNodeId; }
-        inline void setTargetPath(const std::filesystem::path &targetPath) { _targetPath = targetPath; }
-        inline const std::filesystem::path &targetPath() const { return _targetPath; }
+        inline void setTargetPath(const SyncPath &targetPath) { _targetPath = targetPath; }
+        inline const SyncPath &targetPath() const { return _targetPath; }
         inline void setTargetNodeId(const NodeId &targetNodeId) { _targetNodeId = targetNodeId; }
         inline const NodeId &targetNodeId() const { return _targetNodeId; }
-        inline void setDbPath(const std::filesystem::path &dbPath) { _dbPath = dbPath; }
-        inline const std::filesystem::path &dbPath() const { return _dbPath; }
+        inline void setDbPath(const SyncPath &dbPath) { _dbPath = dbPath; }
+        inline const SyncPath &dbPath() const { return _dbPath; }
         inline void setPaused(bool paused) { _paused = paused; }
         inline bool paused() const { return _paused; }
         inline void setSupportVfs(bool supportVfs) { _supportVfs = supportVfs; }
@@ -74,15 +74,15 @@ class PARMS_EXPORT Sync {
     private:
         int _dbId{0};
         int _driveDbId{0};
-        std::filesystem::path _localPath;
+        SyncPath _localPath;
         NodeId _localNodeId;
-        std::filesystem::path _targetPath;
+        SyncPath _targetPath;
         NodeId _targetNodeId;
         bool _paused{false};
         bool _supportVfs{false};
         VirtualFileMode _virtualFileMode{VirtualFileMode::Off};
         bool _notificationsDisabled{false};
-        std::filesystem::path _dbPath;
+        SyncPath _dbPath;
         bool _hasFullyCompleted{false};
         std::string _navigationPaneClsid;
         std::string _listingCursor;

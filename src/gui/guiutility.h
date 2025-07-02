@@ -19,7 +19,6 @@
 #ifndef GUIUTILITY_H
 #define GUIUTILITY_H
 
-#include "common/utility.h"
 #include "info/syncinfoclient.h"
 #include "libcommon/utility/types.h"
 

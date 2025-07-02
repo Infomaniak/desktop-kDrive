@@ -17,7 +17,6 @@
  */
 
 #include "guiutility.h"
-#include "common/utility.h"
 #include "appclient.h"
 #include "parameterscache.h"
 #include "custommessagebox.h"

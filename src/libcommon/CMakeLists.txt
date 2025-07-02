@@ -23,7 +23,6 @@ add_definitions(-D_UNICODE)
 
 # Sources
 set(libcommon_SRCS
-    ../common/utility.h ../common/utility.cpp
     comm.h
     utility/types.h utility/types.cpp
     utility/utility.h utility/utility.cpp

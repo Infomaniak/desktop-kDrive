@@ -23,7 +23,6 @@
 #include "libcommonserver/utility/utility.h"
 
 #include "libcommon/utility/utility.h"
-#include "common/utility.h"
 
 #if defined(__APPLE__) || defined(__unix__)
 #include <unistd.h>

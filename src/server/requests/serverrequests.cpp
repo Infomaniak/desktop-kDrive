@@ -21,7 +21,6 @@
 #endif
 
 #include "serverrequests.h"
-#include "common/utility.h"
 #include "config.h"
 #include "keychainmanager/keychainmanager.h"
 #include "jobs/network/API_v2/getrootfilelistjob.h"

@@ -204,6 +204,29 @@ struct COMMONSERVER_EXPORT Utility {
         static bool hasLaunchOnStartup(const std::string &appName);
         static bool setLaunchOnStartup(const std::string &appName, const std::string &guiName, bool enable);
 
+#ifdef _WIN32
+        using kdVariant = std::variant<int, std::wstring>;
+
+        static void setFolderPinState(const std::wstring &clsid, bool show);
+
+        static bool registryExistKeyTree(HKEY hRootKey, const std::wstring &subKey);
+        static bool registryExistKeyValue(HKEY hRootKey, const std::wstring &subKey, const std::wstring &valueName);
+        static kdVariant registryGetKeyValue(HKEY hRootKey, const std::wstring &subKey, const std::wstring &valueName);
+        static bool registrySetKeyValue(HKEY hRootKey, const std::wstring &subKey, const std::wstring &valueName, DWORD type,
+                                        const kdVariant &value, std::wstring &error);
+        static bool registryDeleteKeyTree(HKEY hRootKey, const std::wstring &subKey);
+        static bool registryDeleteKeyValue(HKEY hRootKey, const std::wstring &subKey, const std::wstring &valueName);
+        static bool registryWalkSubKeys(HKEY hRootKey, const std::wstring &subKey,
+                                        const std::function<void(HKEY, const std::wstring &)> &callback);
+
+        // Add/remove legacy sync root keys
+        static void addLegacySyncRootKeys(const std::wstring &clsid, const SyncPath &folderPath, bool show);
+        static void removeLegacySyncRootKeys(const std::wstring &clsid);
+
+        // Possibly refactor to share code with UnixTimevalToFileTime in c_time.c
+        static void unixTimeToFiletime(time_t t, FILETIME *filetime);
+#endif
+
     private:
         static log4cplus::Logger _logger;
 

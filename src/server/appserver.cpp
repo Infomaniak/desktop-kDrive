@@ -17,7 +17,6 @@
  */
 
 #include "appserver.h"
-#include "common/utility.h"
 #include "migration/migrationparams.h"
 #include "socketapi.h"
 #include "keychainmanager/keychainmanager.h"
@@ -297,11 +296,11 @@ void AppServer::init() {
 #if defined(__unix__) && !defined(__APPLE__)
     // On Linux, override the auto startup file on every app launch to make sure it points to the correct executable.
     if (ParametersCache::instance()->parameters().autoStart()) {
-        OldUtility::setLaunchOnStartup(_theme->appName(), _theme->appNameGUI(), true, _logger);
+        Utility::setLaunchOnStartup(_theme->appName(), _theme->appNameGUI(), true, _logger);
     }
 #else
-    if (ParametersCache::instance()->parameters().autoStart() && !OldUtility::hasLaunchOnStartup(_theme->appName(), _logger)) {
-        OldUtility::setLaunchOnStartup(_theme->appName(), _theme->appClientName(), true, _logger);
+    if (ParametersCache::instance()->parameters().autoStart() && !Utility::hasLaunchOnStartup(_theme->appName(), _logger)) {
+        Utility::setLaunchOnStartup(_theme->appName(), _theme->appClientName(), true, _logger);
     }
 #endif
 #endif
@@ -3639,16 +3638,15 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
     tmpSync.setNavigationPaneClsid(_vfsMap[sync.dbId()]->namespaceCLSID());
 
     if (tmpSync.virtualFileMode() == KDC::VirtualFileMode::Win) {
-        OldUtility::setFolderPinState(QUuid(QString::fromStdString(tmpSync.navigationPaneClsid())),
-                                      _navigationPaneHelper->showInExplorerNavigationPane());
+        Utility::setFolderPinState(Utility::s2ws(tmpSync.navigationPaneClsid()),
+                                   _navigationPaneHelper->showInExplorerNavigationPane());
     } else {
         if (tmpSync.navigationPaneClsid().empty()) {
             tmpSync.setNavigationPaneClsid(QUuid::createUuid().toString().toStdString());
             _vfsMap[sync.dbId()]->setNamespaceCLSID(tmpSync.navigationPaneClsid());
         }
-        OldUtility::addLegacySyncRootKeys(QUuid(QString::fromStdString(sync.navigationPaneClsid())),
-                                          SyncName2QStr(sync.localPath().native()),
-                                          _navigationPaneHelper->showInExplorerNavigationPane());
+        Utility::addLegacySyncRootKeys(Utility::s2ws(sync.navigationPaneClsid()), sync.localPath(),
+                                       _navigationPaneHelper->showInExplorerNavigationPane());
     }
 
     bool found = false;
@@ -3739,7 +3737,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
 #ifdef _WIN32
         if (newMode == VirtualFileMode::Win) {
             // Remove legacy sync root keys
-            OldUtility::removeLegacySyncRootKeys(QUuid(QString::fromStdString(sync.navigationPaneClsid())));
+            Utility::removeLegacySyncRootKeys(Utility::s2ws(sync.navigationPaneClsid()));
             sync.setNavigationPaneClsid(std::string());
         } else if (sync.virtualFileMode() == VirtualFileMode::Win) {
             // Add legacy sync root keys
@@ -3747,8 +3745,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
             if (sync.navigationPaneClsid().empty()) {
                 sync.setNavigationPaneClsid(QUuid::createUuid().toString().toStdString());
             }
-            OldUtility::addLegacySyncRootKeys(QUuid(QString::fromStdString(sync.navigationPaneClsid())),
-                                              SyncName2QStr(sync.localPath().native()), show);
+            Utility::addLegacySyncRootKeys(Utility::s2ws(sync.navigationPaneClsid()), sync.localPath(), show);
         }
 #endif
 
