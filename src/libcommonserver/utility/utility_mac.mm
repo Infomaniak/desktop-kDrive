@@ -100,7 +100,7 @@ void restartFinderExtension() {
     });
 }
 
-bool Utility::hasLaunchOnStartup(const QString &, log4cplus::Logger logger) {
+bool Utility::hasLaunchOnStartup(const std::string &) {
     // this is quite some duplicate code with setLaunchOnStartup, at some point we should fix this FIXME.
     bool returnValue = false;
     SyncPath filePath = CommonUtility::applicationFilePath().parent_path().parent_path().parent_path();
@@ -117,15 +117,14 @@ bool Utility::hasLaunchOnStartup(const QString &, log4cplus::Logger logger) {
     UInt32 seedValue;
     CFArrayRef itemsArray = LSSharedFileListCopySnapshot(loginItems, &seedValue);
     CFStringRef appUrlRefString = CFURLGetString(urlRef); // no need for release
-    LOG_DEBUG(Log::instance()->getLogger(), "App filePath=" << CFStringGetCStringPtr(appUrlRefString, kCFStringEncodingUTF8));
+    LOG_DEBUG(logger(), "App filePath=" << CFStringGetCStringPtr(appUrlRefString, kCFStringEncodingUTF8));
     for (int i = 0; i < CFArrayGetCount(itemsArray); i++) {
         LSSharedFileListItemRef item = (LSSharedFileListItemRef) CFArrayGetValueAtIndex(itemsArray, i);
         CFURLRef itemUrlRef = NULL;
 
         if (LSSharedFileListItemResolve(item, 0, &itemUrlRef, NULL) == noErr && itemUrlRef) {
             CFStringRef itemUrlString = CFURLGetString(itemUrlRef);
-            LOG_DEBUG(Log::instance()->getLogger(),
-                      "Login item filePath=" << CFStringGetCStringPtr(itemUrlString, kCFStringEncodingUTF8));
+            LOG_DEBUG(logger(), "Login item filePath=" << CFStringGetCStringPtr(itemUrlString, kCFStringEncodingUTF8));
             if (CFStringCompare(itemUrlString, appUrlRefString, 0) == kCFCompareEqualTo) {
                 returnValue = true;
             }
@@ -139,7 +138,7 @@ bool Utility::hasLaunchOnStartup(const QString &, log4cplus::Logger logger) {
     return returnValue;
 }
 
-void Utility::setLaunchOnStartup(const QString &appName, const QString &guiName, bool enable, log4cplus::Logger logger) {
+bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &guiName, bool enable) {
     SyncPath filePath = CommonUtility::applicationFilePath().parent_path().parent_path().parent_path();
     CFStringRef folderCFStr = CFStringCreateWithCString(0, filePath.c_str(), kCFStringEncodingUTF8);
     CFURLRef urlRef = CFURLCreateWithFileSystemPath(0, folderCFStr, kCFURLPOSIXPathStyle, true);
@@ -147,7 +146,7 @@ void Utility::setLaunchOnStartup(const QString &appName, const QString &guiName,
     if (!loginItems) {
         CFRelease(folderCFStr);
         CFRelease(urlRef);
-        return;
+        return false;
     }
 
     if (enable) {
@@ -155,12 +154,12 @@ void Utility::setLaunchOnStartup(const QString &appName, const QString &guiName,
         CFStringRef appUrlRefString = CFURLGetString(urlRef);
         LSSharedFileListItemRef item = LSSharedFileListInsertItemURL(loginItems, kLSSharedFileListItemLast, 0, 0, urlRef, 0, 0);
         if (item) {
-            LOG_DEBUG(logger, "filePath=" << CFStringGetCStringPtr(appUrlRefString, kCFStringEncodingUTF8)
-                                          << " inserted to open at login list");
+            LOG_DEBUG(logger(), "filePath=" << CFStringGetCStringPtr(appUrlRefString, kCFStringEncodingUTF8)
+                                            << " inserted to open at login list");
             CFRelease(item);
         } else {
-            LOG_DEBUG(logger, "Failed to insert item " << CFStringGetCStringPtr(appUrlRefString, kCFStringEncodingUTF8)
-                                                       << " to open at login list!");
+            LOG_DEBUG(logger(), "Failed to insert item " << CFStringGetCStringPtr(appUrlRefString, kCFStringEncodingUTF8)
+                                                         << " to open at login list!");
         }
         CFRelease(loginItems);
     } else {
@@ -168,24 +167,25 @@ void Utility::setLaunchOnStartup(const QString &appName, const QString &guiName,
         UInt32 seedValue;
         CFArrayRef itemsArray = LSSharedFileListCopySnapshot(loginItems, &seedValue);
         CFStringRef appUrlRefString = CFURLGetString(urlRef);
-        LOG_DEBUG(logger, "App to remove filePath=" << CFStringGetCStringPtr(appUrlRefString, kCFStringEncodingUTF8));
+        LOG_DEBUG(logger(), "App to remove filePath=" << CFStringGetCStringPtr(appUrlRefString, kCFStringEncodingUTF8));
         for (int i = 0; i < CFArrayGetCount(itemsArray); i++) {
             LSSharedFileListItemRef item = (LSSharedFileListItemRef) CFArrayGetValueAtIndex(itemsArray, i);
             CFURLRef itemUrlRef = NULL;
 
             if (LSSharedFileListItemResolve(item, 0, &itemUrlRef, NULL) == noErr && itemUrlRef) {
                 CFStringRef itemUrlString = CFURLGetString(itemUrlRef);
-                LOG_DEBUG(logger, "Login item filePath=" << CFStringGetCStringPtr(itemUrlString, kCFStringEncodingUTF8));
+                LOG_DEBUG(logger(), "Login item filePath=" << CFStringGetCStringPtr(itemUrlString, kCFStringEncodingUTF8));
                 if (CFStringCompare(itemUrlString, appUrlRefString, 0) == kCFCompareEqualTo) {
-                    LOG_DEBUG(logger, "Removing item " << CFStringGetCStringPtr(itemUrlString, kCFStringEncodingUTF8)
-                                                       << " from open at login list");
+                    LOG_DEBUG(logger(), "Removing item " << CFStringGetCStringPtr(itemUrlString, kCFStringEncodingUTF8)
+                                                         << " from open at login list");
                     if (LSSharedFileListItemRemove(loginItems, item) != noErr) {
-                        LOG_WARN(logger, "Failed to remove item " << CFStringGetCStringPtr(itemUrlString, kCFStringEncodingUTF8));
+                        LOG_WARN(logger(),
+                                 "Failed to remove item " << CFStringGetCStringPtr(itemUrlString, kCFStringEncodingUTF8));
                     }
                 }
                 CFRelease(itemUrlRef);
             } else {
-                LOG_WARN(logger, "Failed to extract item's URL");
+                LOG_WARN(logger(), "Failed to extract item's URL");
             }
         }
         CFRelease(itemsArray);
@@ -194,9 +194,11 @@ void Utility::setLaunchOnStartup(const QString &appName, const QString &guiName,
 
     CFRelease(folderCFStr);
     CFRelease(urlRef);
+
+    return true;
 }
 
-bool Utility::hasSystemLaunchOnStartup(const QString &appName, log4cplus::Logger logger) {
+bool Utility::hasSystemLaunchOnStartup(const std::string &) {
     return false;
 }
 
