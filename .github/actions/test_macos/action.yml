@@ -59,7 +59,7 @@ runs:
         shell: bash
 
       - name: Get the path to kDrive-logdir
-        run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
+        run : echo "logdir_path="$(find /private/var/folders -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
         if  : success() || failure()
         shell: bash
 
