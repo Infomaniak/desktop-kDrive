@@ -915,10 +915,9 @@ void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory 
     }
 }
 
-#ifdef _WIN32
-std::string CommonUtility::toUnsafeStr(const SyncName &name) {
-    std::string unsafeName(name.begin(), name.end());
-    return unsafeName;
+#if defined(__APPLE__) || defined(__unix__)
+bool CommonUtility::isLikeFileNotFoundError(const std::error_code &ec) noexcept {
+    return ec.value() == static_cast<int>(std::errc::no_such_file_or_directory);
 }
 #endif
 

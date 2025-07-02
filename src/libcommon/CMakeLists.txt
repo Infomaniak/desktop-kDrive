@@ -26,7 +26,7 @@ set(libcommon_SRCS
     ../common/utility.h ../common/utility.cpp
     comm.h
     utility/types.h utility/types.cpp
-    utility/utility_base.h utility/utility.h utility/utility.cpp
+    utility/utility.h utility/utility.cpp
     utility/filename.h utility/commonmacros.h utility/coveragemacros.h
     utility/logiffail.h utility/qlogiffail.h
     utility/jsonparserutility.h
