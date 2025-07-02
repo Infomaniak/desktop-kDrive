@@ -137,7 +137,7 @@ void TestFileRescuer::testGetDestinationPath() {
     CPPUNIT_ASSERT(res.filename().native() == Str2SyncName("test (1).txt"));
 
     // Test with a file name with special characters
-    SyncName fileName = WStr2SyncName(L"°.txt");
+    fileName = WStr2SyncName(L"°.txt");
     res = fileRescuer.getDestinationPath(fileName);
     CPPUNIT_ASSERT(res.filename().native() == L"°.txt");
     res = fileRescuer.getDestinationPath(fileName, 1);
