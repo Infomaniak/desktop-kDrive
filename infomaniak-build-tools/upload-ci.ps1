@@ -26,7 +26,7 @@ if (-not $env:KDRIVE_TOKEN) {
 }
 
 $app = "kDrive-$version"
-Set-Location build-windows
+Push-Location build-windows
 
 $headers = @{
     Authorization="Bearer $env:KDRIVE_TOKEN"
@@ -50,8 +50,11 @@ foreach ($file in $win_files)
     Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $file
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Failed to upload $file to kDrive" -f Red
+        Pop-Location
         exit 1
     }
 }
+
+Pop-Location
 
 # TODO add Linux and macOS uploads
