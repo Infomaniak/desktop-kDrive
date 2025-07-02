@@ -105,7 +105,7 @@ jobs:
           merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
-        run: powershell ./infomaniak-build-tools/upload-ci.ps1 --version ${{ needs.build-Windows.outputs.kDrive_version }}
+        run: powershell ./infomaniak-build-tools/upload-ci.ps1 -version "${{ needs.build-Windows.outputs.kDrive_version }}"
 
       - name : Upload sentry artifacts
         run: |
