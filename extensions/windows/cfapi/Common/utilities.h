@@ -108,6 +108,15 @@ class Utilities {
         static bool checkIfIsDirectory(const wchar_t *path, bool &isDirectory, bool &exists);
         static bool getCreateFileFlagsAndAttributes(const wchar_t *path, DWORD &dwFlagsAndAttributes, bool &exists);
 
+        inline static bool isLikeFileNotFoundError(DWORD dwError) noexcept {
+            return (dwError == ERROR_FILE_NOT_FOUND) || (dwError == ERROR_PATH_NOT_FOUND) || (dwError == ERROR_INVALID_DRIVE) ||
+                   (dwError == ERROR_BAD_NETPATH);
+        }
+
+        inline static bool isLikeFileNotFoundError(const std::error_code &ec) noexcept {
+            return isLikeFileNotFoundError(static_cast<DWORD>(ec.value()));
+        }
+
         static TraceCbk s_traceCbk;
         static std::wstring s_appName;
         static DWORD s_processId;
