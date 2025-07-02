@@ -27,6 +27,7 @@ namespace KDC {
 class TestFileRescuer final : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestFileRescuer);
         CPPUNIT_TEST(testFileRescuer);
+        CPPUNIT_TEST(testGetDestinationPath);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -35,6 +36,7 @@ class TestFileRescuer final : public CppUnit::TestFixture, public TestBase {
 
     private:
         void testFileRescuer();
+        void testGetDestinationPath();
 
         LocalTemporaryDirectory _localTempDir{"TestFileRescuer"};
         std::shared_ptr<SyncPal> _syncPal;
