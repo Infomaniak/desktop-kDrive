@@ -168,7 +168,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Log "Installing Conan dependencies..."
-& $ConanExe install . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType -r $LocalRemoteName -r conancenter
+& $ConanExe install . --output-folder="$OutputDir" --build=missing -c tools.cmake.cmaketoolchain:generator=Ninja -s build_type=$BuildType -r $LocalRemoteName -r conancenter
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to install Conan dependencies."
 }
