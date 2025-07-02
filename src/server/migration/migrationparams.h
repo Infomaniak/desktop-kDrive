@@ -35,7 +35,7 @@ class MigrationParams {
         ExitCode migrateGeneralParams();
         ExitCode migrateAccountsParams();
         ExitCode migrateTemplateExclusion();
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
         ExitCode migrateAppExclusion();
 #endif
         ExitCode migrateProxySettings(ProxyConfig &proxyConfig);

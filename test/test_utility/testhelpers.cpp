@@ -24,7 +24,7 @@
 #include <Poco/JSON/Object.h>
 
 
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include <sys/utime.h>

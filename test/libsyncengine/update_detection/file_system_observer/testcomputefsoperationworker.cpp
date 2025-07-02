@@ -155,7 +155,7 @@ void TestComputeFSOperationWorker::testAccessDenied() {
 
         IoError ioError = IoError::Success;
         SyncPath bbNodePath = bNodePath / "BB";
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         // NB: In Windows, it is possible to access a file that is located in a directory that is denied access.
         {
             std::ofstream ofs(_syncPal->localPath() / bbNodePath);
@@ -196,7 +196,7 @@ void TestComputeFSOperationWorker::testAccessDenied() {
         IoError ioError = IoError::Success;
         SyncPath aaNodePath = aNodePath / "AA";
 
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         // NB: In Windows, it is possible to access a file that is located in a directory that is denied access.
         {
             std::ofstream ofs(_syncPal->localPath() / aaNodePath);

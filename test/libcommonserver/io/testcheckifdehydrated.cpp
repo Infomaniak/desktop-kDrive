@@ -20,7 +20,7 @@
 
 #include <filesystem>
 
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
 #include <windows.h>
 #endif
 
@@ -136,7 +136,7 @@ void TestIo::testCheckIfFileIsDehydrated() {
 
         std::filesystem::permissions(path, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
 
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
         CPPUNIT_ASSERT(ioError == IoError::AccessDenied);
 #else
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);

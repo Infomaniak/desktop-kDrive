@@ -156,7 +156,7 @@ void TestIo::testCheckIfIsDirectory() {
 
         IoError ioError = IoError::Success;
         bool isDirectory = true;
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(IoHelper::checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
 #else
@@ -181,7 +181,7 @@ void TestIo::testCheckIfIsDirectory() {
         bool isDirectory = true;
 
         CPPUNIT_ASSERT(IoHelper::checkIfIsDirectory(path, isDirectory, ioError));
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         CPPUNIT_ASSERT(isDirectory);
 #else
@@ -301,7 +301,7 @@ void TestIo::testCreateDirectory() {
                                      std::filesystem::perm_options::remove);
 
         IoError ioError = IoError::Success;
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(IoHelper::createDirectory(path, false, ioError));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 #else
@@ -320,7 +320,7 @@ void TestIo::testCreateDirectory() {
         const SyncPath path = _localTestDirPath / veryLongDirName; // This directory doesn't exist.
 
         IoError ioError = IoError::Success;
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(!IoHelper::createDirectory(path, false, ioError));
         CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
 #else

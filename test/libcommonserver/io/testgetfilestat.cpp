@@ -19,7 +19,7 @@
 #include "testio.h"
 
 #include "libcommonserver/io/filestat.h"
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
 #include "libcommonserver/vfs/mac/litesyncextconnector.h"
 #endif
 
@@ -57,7 +57,7 @@ void TestIo::testGetFileStat() {
 
         CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(int64_t(0u), fileStat.size);
 #else
         CPPUNIT_ASSERT(fileStat.size > 0);
@@ -84,7 +84,7 @@ void TestIo::testGetFileStat() {
 
         CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(int64_t(0), fileStat.size);
 #else
         CPPUNIT_ASSERT(fileStat.size == static_cast<int64_t>(targetPath.native().length()));
@@ -110,7 +110,7 @@ void TestIo::testGetFileStat() {
 
         CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(int64_t(0), fileStat.size);
 #else
         CPPUNIT_ASSERT(fileStat.size == static_cast<int64_t>(targetPath.native().length()));
@@ -147,7 +147,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.creationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
 #else
         CPPUNIT_ASSERT_EQUAL(IoError::FileNameTooLong, ioError);
@@ -234,7 +234,7 @@ void TestIo::testGetFileStat() {
 
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(!IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_EQUAL(SyncTime(0u), fileStat.size);
@@ -285,14 +285,14 @@ void TestIo::testGetFileStat() {
 
         CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(int64_t(0), fileStat.size);
 
 #else
         CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(targetPath.native().length()), fileStat.size);
 #endif
         CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
 #else
         CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
@@ -480,7 +480,7 @@ void TestIo::testGetFileStat() {
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::add);
 
         CPPUNIT_ASSERT(!fileStat.isHidden);
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(int64_t(0u), fileStat.size);
 #else
         CPPUNIT_ASSERT(fileStat.size > 0u);
@@ -504,7 +504,7 @@ void TestIo::testGetFileStat() {
 
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
 #else
         CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
@@ -541,7 +541,7 @@ void TestIo::testGetFileStat() {
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
 
         CPPUNIT_ASSERT(!fileStat.isHidden);
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_GREATER(int64_t(0u), fileStat.size);
         CPPUNIT_ASSERT_GREATER(SyncTime(0), fileStat.modificationTime);
         CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);

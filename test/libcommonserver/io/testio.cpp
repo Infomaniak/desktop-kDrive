@@ -120,7 +120,7 @@ void TestIo::testLogDirectoryPath() {
 }
 
 void TestIo::testAccesDeniedOnLockedFiles() {
-#ifdef KD_WINDOWS // This test is only relevant on Windows, as on Unix systems, there is no standard way to lock files.
+#if defined(KD_WINDOWS) // This test is only relevant on Windows, as on Unix systems, there is no standard way to lock files.
     LocalTemporaryDirectory tmpDir("TestIo-testAccesDeniedOnLockedFiles");
     const SyncPath lockedFile = tmpDir.path() / "lockedFile.txt";
     std::ofstream file(lockedFile);
@@ -176,7 +176,7 @@ void TestIo::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modificationTime);
 
         // Test on a file without access right.
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         // On Windows, we can edit a file even if we do not have access to its parent.
         const auto &rightPath = filepath;
 #else
@@ -266,7 +266,7 @@ void TestIo::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modificationTime);
 #endif
 
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         // Test on an alias on a file.
         linkPath = tempDir.path() / "test_junction_file";
 

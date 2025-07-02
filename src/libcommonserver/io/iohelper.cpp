@@ -49,7 +49,7 @@ std::function<SyncPath(std::error_code &ec)> IoHelper::_tempDirectoryPath =
 
 std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> IoHelper::_getFileStat = IoHelper::_getFileStatFn;
 bool IoHelper::_unsuportedFSLogged = false;
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
 std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> IoHelper::_readAlias =
         [](const SyncPath &path, SyncPath &targetPath, IoError &ioError) -> bool {
     std::string data;
@@ -86,7 +86,7 @@ IoError IoHelper::stdError2ioError(int error) noexcept {
 }
 #endif
 
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
 bool isLocked(const SyncPath &path);
 #endif
 
@@ -110,12 +110,12 @@ IoError IoHelper::posixError2ioError(int error) noexcept {
             return IoError::InvalidArgument;
         case ENAMETOOLONG:
             return IoError::FileNameTooLong;
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         case ESRCH:
 #endif
         case ENOENT:
             return IoError::NoSuchFileOrDirectory;
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
         case ENOATTR:
             return IoError::AttrNotFound;
 #endif
@@ -269,7 +269,7 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoErro
         return true;
     }
 
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
     static const std::string VolumesFolder = "/Volumes";
 
     if (path == VolumesFolder) {
@@ -289,7 +289,7 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoErro
     }
 
     isHidden = filestat.isHidden;
-#endif // #ifdef KD_MACOS
+#endif
 
     return true;
 }
@@ -342,7 +342,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     const bool isSymlink = _isSymlink(path, ec);
 
     itemType.ioError = stdError2ioError(ec);
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
     const bool fsSupportsSymlinks = Utility::isNtfs(path);
 #else
     const bool fsSupportsSymlinks =
@@ -386,7 +386,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
         return true;
     }
 
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
     // Check whether the item indicated by `path` is an alias.
     bool isAlias = false;
     if (!_checkIfAlias(path, isAlias, itemType.ioError)) {
@@ -420,7 +420,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     }
 #endif
 
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
     // Check whether the item indicated by `path` is a junction.
     if (fsSupportsSymlinks) {
         bool isJunction = false;
@@ -644,7 +644,7 @@ class CacheDirectoryHanlder {
             static const SyncName cacheDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName("-cache"));
             if (initDirectoryPathFromEnv("KDRIVE_CACHE_PATH", cacheDirName)) return;
 
-#ifdef KD_LINUX
+#if defined(KD_LINUX)
             if (initDirectoryPathFromEnv("XDG_CACHE_HOME", cacheDirName)) return;
             if (initDirectoryPathFromEnv("HOME", cacheDirName, ".cache")) return;
 #endif
@@ -749,7 +749,7 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
         ioError = IoError::Success;
         return true;
     }
-#ifdef KD_WINDOWS // TODO: Remove this block when migrating the release process to Visual Studio 2022.
+#if defined(KD_WINDOWS) // TODO: Remove this block when migrating the release process to Visual Studio 2022.
     // Prior to Visual Studio 2022, std::filesystem::symlink_status would return a misleading InvalidArgument if the path is
     // found but located on a FAT32 disk. If the file is not found, it works as expected. This behavior is fixed when
     // compiling with VS2022, see
@@ -1003,7 +1003,7 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
     }
 
     if (_dirIterator != dirIteratorEnd) {
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         // skip_permission_denied doesn't work on Windows
         try {
             bool dummy = _dirIterator->exists();

@@ -29,7 +29,7 @@
 #include <iostream>
 #include <filesystem>
 
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
 #include <Windows.h>
 #include <ShObjIdl_core.h>
 #include <ShlObj_core.h>
@@ -206,7 +206,7 @@ void TestUtility::testMoveItemToTrash(void) {
 void TestUtility::testGetLinuxDesktopType() {
     std::string currentDesktop;
 
-#ifdef KD_LINUX
+#if defined(KD_LINUX)
     CPPUNIT_ASSERT(_testObj->getLinuxDesktopType(currentDesktop));
     CPPUNIT_ASSERT(!currentDesktop.empty());
     return;
@@ -482,7 +482,7 @@ void TestUtility::testNormalizedSyncPath() {
     SyncPath normalizedPath;
     CPPUNIT_ASSERT(Utility::normalizedSyncPath("a/b/c", normalizedPath) && normalizedPath == SyncPath("a/b/c"));
     CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a/b/c", normalizedPath) && normalizedPath == SyncPath("/a/b/c"));
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
     CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(a\b\c)", normalizedPath) && normalizedPath == SyncPath("a/b/c"));
     CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(\a\b\c)", normalizedPath) && normalizedPath == SyncPath("/a/b/c"));
     CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a\\b/c", normalizedPath) && normalizedPath == SyncPath("/a/b/c"));
@@ -526,7 +526,7 @@ void TestUtility::testUserName() {
     std::string userName(Utility::userName());
     LOG_DEBUG(Log::instance()->getLogger(), "userName=" << userName);
 
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
     const char *value = std::getenv("USERPROFILE");
     CPPUNIT_ASSERT(value);
     const SyncPath homeDir(value);

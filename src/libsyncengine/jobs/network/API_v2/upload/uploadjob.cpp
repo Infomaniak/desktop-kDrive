@@ -243,7 +243,7 @@ ExitInfo UploadJob::readLink() {
         std::error_code ec;
         _linkTarget = std::filesystem::read_symlink(_absoluteFilePath, ec);
         if (ec.value() != 0) {
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
             bool exists = (ec.value() != ERROR_FILE_NOT_FOUND && ec.value() != ERROR_PATH_NOT_FOUND &&
                            ec.value() != ERROR_INVALID_DRIVE);
 #else
@@ -268,7 +268,7 @@ ExitInfo UploadJob::readLink() {
 
         _linkTarget = _absoluteFilePath;
     } else if (_linkType == LinkType::Junction) {
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         IoError ioError = IoError::Success;
         if (!IoHelper::readJunction(_absoluteFilePath, _data, _linkTarget, ioError)) {
             LOGW_WARN(_logger, L"Failed to read junction - " << Utility::formatIoError(_absoluteFilePath, ioError));
@@ -286,7 +286,7 @@ ExitInfo UploadJob::readLink() {
         }
 #endif
     } else if (_linkType == LinkType::FinderAlias) {
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
         IoError ioError = IoError::Success;
         if (!IoHelper::readAlias(_absoluteFilePath, _data, _linkTarget, ioError)) {
             LOGW_WARN(_logger, L"Failed to read alias - path=" << Path2WStr(_absoluteFilePath));

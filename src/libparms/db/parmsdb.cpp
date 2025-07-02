@@ -372,7 +372,7 @@
 //
 // exclusion_app
 //
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
 #define CREATE_EXCLUSION_APP_TABLE_ID "create_exclusion_app"
 #define CREATE_EXCLUSION_APP_TABLE              \
     "CREATE TABLE IF NOT EXISTS exclusion_app(" \
@@ -788,7 +788,7 @@ bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
     return result;
 }
 
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
 bool ParmsDb::updateExclusionApps() {
     // Load exclusion apps in DB
     std::vector<ExclusionApp> exclusionAppDbList;
@@ -936,7 +936,7 @@ bool ParmsDb::create(bool &retry) {
     }
     queryFree(CREATE_EXCLUSION_TEMPLATE_TABLE_ID);
 
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
     // Exclusion App
     if (!createAndPrepareRequest(CREATE_EXCLUSION_APP_TABLE_ID, CREATE_EXCLUSION_APP_TABLE)) return false;
     if (!queryExec(CREATE_EXCLUSION_APP_TABLE_ID, errId, error)) {
@@ -1018,7 +1018,7 @@ bool ParmsDb::prepare() {
     if (!createAndPrepareRequest(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST)) return false;
     if (!createAndPrepareRequest(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST))
         return false;
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
     // Exclusion App
     if (!createAndPrepareRequest(INSERT_EXCLUSION_APP_REQUEST_ID, INSERT_EXCLUSION_APP_REQUEST)) return false;
     if (!createAndPrepareRequest(UPDATE_EXCLUSION_APP_REQUEST_ID, UPDATE_EXCLUSION_APP_REQUEST)) return false;
@@ -1068,7 +1068,7 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersi
             LOG_WARN(_logger, "Insertion of the normalizations of user exclusion file patterns has failed.");
             return false;
         }
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         if (!replaceShortDbPathsWithLongPaths()) {
             LOG_WARN(_logger, "Failed to replace short DB paths with long ones.");
         }
@@ -1166,7 +1166,7 @@ bool ParmsDb::initData() {
         return false;
     }
 
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
     // Update exclusion apps
     if (!updateExclusionApps()) {
         LOG_WARN(_logger, "Error in updateExclusionApps");
@@ -2642,7 +2642,7 @@ bool ParmsDb::updateAllExclusionTemplates(bool defaultTemplates, const std::vect
     return true;
 }
 
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
 bool ParmsDb::insertExclusionApp(const ExclusionApp &exclusionApp, bool &constraintError) {
     const std::scoped_lock lock(_mutex);
 
@@ -3099,7 +3099,7 @@ bool ParmsDb::selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync
     return true;
 }
 
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
 bool ParmsDb::replaceShortDbPathsWithLongPaths() {
     LOG_INFO(_logger, "Replacing short DB path names wiht long ones in sync table.")
 

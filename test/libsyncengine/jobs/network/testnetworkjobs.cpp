@@ -68,7 +68,7 @@ static const NodeId testFileRemoteId = "97370"; // test_ci/test_networkjobs/test
 static const NodeId testFileRemoteRenameId = "97376"; // test_ci/test_networkjobs/test_rename*.txt
 static const NodeId testFileSymlinkRemoteId = "4284808"; // test_ci/test_networkjobs/test_sl.log
 static const NodeId testFolderSymlinkRemoteId = "4284810"; // test_ci/test_networkjobs/Test_sl
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
 static const NodeId testAliasDnDRemoteId = "2023013"; // test_ci/test_networkjobs/test_alias_dnd
 static const NodeId testAliasGoodRemoteId = "2017813"; // test_ci/test_networkjobs/test_alias_good.log
 static const NodeId testAliasCorruptedRemoteId = "2017817"; // test_ci/test_networkjobs/test_alias_corrupted.log
@@ -360,7 +360,7 @@ void TestNetworkJobs::testDownload() {
         CPPUNIT_ASSERT(nodeId == nodeId2);
 
         // Download again but as an EDIT to be propagated on a hydrated placeholder
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
         {
             // Set file status
             IoError ioError = IoError::Success;
@@ -407,7 +407,7 @@ void TestNetworkJobs::testDownload() {
         CPPUNIT_ASSERT(IoHelper::getNodeId(localDestFilePath, nodeId2));
         CPPUNIT_ASSERT(nodeId == nodeId2);
 
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
         {
             // Check that the file is still hydrated
             IoError ioError = IoError::Success;
@@ -431,7 +431,7 @@ void TestNetworkJobs::testDownload() {
         };
         std::function<void(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)> MockRename =
                 []([[maybe_unused]] const SyncPath &, [[maybe_unused]] const SyncPath &, std::error_code &ec) {
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
                     ec = std::make_error_code(static_cast<std::errc>(ERROR_NOT_SAME_DEVICE));
 #else
                     ec = std::make_error_code(std::errc::cross_device_link);
@@ -645,7 +645,7 @@ void TestNetworkJobs::testDownload() {
         }
     }
 
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
     {
         const LocalTemporaryDirectory temporaryDirectory("tmp");
         const LocalTemporaryDirectory temporaryDirectorySync("syncDir");

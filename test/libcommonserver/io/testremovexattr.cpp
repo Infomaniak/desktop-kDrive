@@ -20,7 +20,7 @@
 
 #include <filesystem>
 
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
 #include <windows.h>
 #endif
 

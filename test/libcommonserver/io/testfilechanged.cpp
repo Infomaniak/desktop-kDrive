@@ -353,7 +353,7 @@ void TestIo::testCheckIfIsHiddenFile() {
 
         bool isHidden = true;
         IoError ioError = IoError::Success;
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(IoHelper::checkIfIsHiddenFile(path, false, isHidden, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
 #elif defined(KD_MACOS)

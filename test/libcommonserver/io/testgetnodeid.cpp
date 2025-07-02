@@ -294,7 +294,7 @@ void TestIo::testGetNodeId() {
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::remove);
 
         NodeId nodeId;
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
 #else
         CPPUNIT_ASSERT(!IoHelper::getNodeId(path, nodeId));
@@ -303,7 +303,7 @@ void TestIo::testGetNodeId() {
         // Restore permission to allow subdir removal
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
 
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(!nodeId.empty());
 #else
         CPPUNIT_ASSERT(nodeId.empty());

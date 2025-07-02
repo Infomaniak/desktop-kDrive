@@ -247,7 +247,7 @@ void TestIo::testGetFileSizeAllBranches() {
         std::filesystem::remove_all(subdir); // required to allow automated deletion of `temporaryDirectory`
 
         // Remark: the test CPPUNIT_ASSERT(fileSize == 0u) fails on MacOSX.
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 #else
         CPPUNIT_ASSERT(ioError == IoError::AccessDenied);

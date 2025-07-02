@@ -49,7 +49,7 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
 
         bool canComputeChecksum(const SyncPath &absolutePath);
 
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
         ExitCode isEditValid(const NodeId &nodeId, const SyncPath &path, SyncTime lastModifiedLocal, bool &valid) const;
 #endif
 

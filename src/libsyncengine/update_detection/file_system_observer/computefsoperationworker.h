@@ -84,7 +84,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
         bool isWhitelisted(const std::shared_ptr<const Snapshot> snapshot, const NodeId &nodeId) const;
         bool isTooBig(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId, int64_t size);
         bool isPathTooLong(const SyncPath &path, const NodeId &nodeId, NodeType type) const;
-#ifdef KD_LINUX
+#if defined(KD_LINUX)
         void isReusedNodeId(const NodeId &localNodeId, const DbNode &dbNode, const std::shared_ptr<const Snapshot> &snapshot,
                             bool &isReused) const;
 #endif

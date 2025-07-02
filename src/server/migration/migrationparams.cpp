@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
 #define _WINSOCKAPI_
 #endif
 
@@ -528,7 +528,7 @@ ExitCode MigrationParams::migrateTemplateExclusion() {
     return ExitCode::Ok;
 }
 
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
 ExitCode MigrationParams::migrateAppExclusion() {
     LOG_INFO(Log::instance()->getLogger(), "Migrate app exclusion");
 

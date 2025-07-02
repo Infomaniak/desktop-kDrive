@@ -24,7 +24,7 @@
 #include "syncpal/excludelistpropagator.h"
 #include "syncpal/conflictingfilescorrector.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
 #include "update_detection/file_system_observer/localfilesystemobserverworker_win.h"
 #else
 #include "update_detection/file_system_observer/localfilesystemobserverworker_unix.h"
@@ -580,7 +580,7 @@ bool SyncPal::setProgress(const SyncPath &relativePath, int64_t current) {
 }
 
 bool SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status, const NodeId &newRemoteNodeId) {
-    if(!newRemoteNodeId.empty()) {
+    if (!newRemoteNodeId.empty()) {
         if (!_progressInfo->setSyncFileItemRemoteId(relativeLocalPath, newRemoteNodeId)) {
             LOG_SYNCPAL_WARN(_logger, "Error in ProgressInfo::setSyncFileItemRemoteId");
             // Continue anyway as this is not critical, the share menu on activities will not be available for this file

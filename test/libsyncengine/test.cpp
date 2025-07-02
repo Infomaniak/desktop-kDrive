@@ -48,7 +48,7 @@
 #include "requests/testexclusiontemplatecache.h"
 #include "update_detection/update_detector/benchupdatetreeworker.h"
 
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
 #include "update_detection/file_system_observer/testfolderwatchermac.h"
 #elif KD_LINUX
 #include "update_detection/file_system_observer/testfolderwatcherlinux.h"
@@ -68,7 +68,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshot);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFsOperation);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFsOperationSet);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalFileSystemObserverWorker);
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcher_mac);
 #elif KD_LINUX
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcherLinux);

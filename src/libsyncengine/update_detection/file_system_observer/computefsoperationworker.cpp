@@ -794,7 +794,7 @@ bool ComputeFSOperationWorker::isPathTooLong(const SyncPath &path, const NodeId 
     return false;
 }
 
-#ifdef KD_LINUX
+#if defined(KD_LINUX)
 void ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const DbNode &dbNode,
                                               const std::shared_ptr<const Snapshot> &snapshot, bool &isReused) const {
     isReused = false;

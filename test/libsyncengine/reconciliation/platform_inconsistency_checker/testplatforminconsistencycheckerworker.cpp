@@ -101,7 +101,7 @@ void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
     SyncName forbiddenName = Str("test/test");
     CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
 
-#if defined(WIN32)
+#if defined(KD_WINDOWS)
     forbiddenName = Str("test\\test");
     CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
     forbiddenName = Str("test:test");
@@ -139,7 +139,7 @@ void TestPlatformInconsistencyCheckerWorker::testCheckReservedNames() {
         CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(name));
     }
 
-#if defined(WIN32)
+#if defined(KD_WINDOWS)
     std::array<SyncName, 7> reservedWinNames{
             {Str("...."), Str("CON"), Str("LPT5"), Str("COM8"), Str("NUL"), Str("AUX"), Str("test.")}};
 
@@ -164,7 +164,7 @@ void TestPlatformInconsistencyCheckerWorker::testNameClash() {
 
     _syncPal->_platformInconsistencyCheckerWorker->checkNameClashAgainstSiblings(parentNode);
 
-#if defined(WIN32) || defined(KD_MACOS)
+#if defined(KD_WINDOWS) || defined(KD_MACOS)
     CPPUNIT_ASSERT(!_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
 #else
     CPPUNIT_ASSERT(_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
@@ -223,7 +223,7 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
     // Check name clash
     _syncPal->_platformInconsistencyCheckerWorker->checkNameClashAgainstSiblings(remoteParentNode);
 
-#if defined(WIN32) || defined(KD_MACOS)
+#if defined(KD_WINDOWS) || defined(KD_MACOS)
     CPPUNIT_ASSERT(!_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
 #else
     CPPUNIT_ASSERT(_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
@@ -264,7 +264,7 @@ void TestPlatformInconsistencyCheckerWorker::testExecute() {
                       << _syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeLower->id()));
     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->exists(*parentNode->id()));
 
-#if defined(WIN32) || defined(KD_MACOS)
+#if defined(KD_WINDOWS) || defined(KD_MACOS)
     CPPUNIT_ASSERT(exactly1exist);
 #else
     (void) exactly1exist;

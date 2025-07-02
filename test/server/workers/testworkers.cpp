@@ -26,7 +26,7 @@
 
 #include "test_utility/testhelpers.h"
 
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
 #include <combaseapi.h>
 #endif
 
@@ -44,7 +44,7 @@ bool TestWorkers::_vfsInstallationDone = false;
 bool TestWorkers::_vfsActivationDone = false;
 bool TestWorkers::_vfsConnectionDone = false;
 
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
 // TODO: On macOS, SIP should be deactivated and LiteSync extension signed to be able to install the Lite Sync extension.
 // Set to true if the Login Item Agent and the Lite Sync extensions are already installed on the test machine.
 constexpr bool connectorsAreAlreadyInstalled = false;
@@ -105,7 +105,7 @@ void TestWorkers::setUp() {
     // Create VFS instance
     VfsSetupParams vfsSetupParams;
     vfsSetupParams.syncDbId = _sync.dbId();
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
     vfsSetupParams.driveId = drive.driveId();
     vfsSetupParams.userId = user.userId();
 #endif
@@ -141,13 +141,13 @@ void TestWorkers::setUp() {
     vfsMap[_sync.dbId()] = _vfsPtr;
     _socketApi = std::make_unique<SocketApi>(syncPalMap, vfsMap);
 
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
     // Initializes the COM library
     CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 #endif
 
     // Start Vfs
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
     if (connectorsAreAlreadyInstalled) {
         _vfsInstallationDone = true;
         _vfsActivationDone = true;
@@ -213,7 +213,7 @@ void TestWorkers::testCreatePlaceholder() {
         syncItem.setPath(relativeFolderPath);
         syncItem.setType(NodeType::Directory);
         syncItem.setDirection(SyncDirection::Down);
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         syncItem.setRemoteNodeId("1");
 #endif
 
@@ -237,7 +237,7 @@ void TestWorkers::testCreatePlaceholder() {
         syncItem.setPath(relativeFilePath);
         syncItem.setType(NodeType::File);
         syncItem.setDirection(SyncDirection::Down);
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         syncItem.setRemoteNodeId("2");
 #endif
 
@@ -251,7 +251,7 @@ void TestWorkers::testCreatePlaceholder() {
                                        ioError == IoError::Success);
 
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFilePath);
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
         CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
         CPPUNIT_ASSERT_EQUAL(ExitCause::FileAccessError, exitInfo.cause());
 #else

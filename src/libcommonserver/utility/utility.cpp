@@ -194,7 +194,7 @@ std::string Utility::trim(const std::string &s) {
     return ltrim(rtrim(s));
 }
 
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
 SyncName Utility::ltrim(const SyncName &s) {
     SyncName sout(s);
     const auto it =
@@ -248,7 +248,7 @@ std::wstring Utility::formatPath(const QString &path) {
 }
 
 std::wstring Utility::formatStdError(const std::error_code &ec) {
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
     std::stringstream ss;
     ss << ec.message() << " (code: " << ec.value() << ")";
     return s2ws(ss.str());
@@ -331,7 +331,7 @@ void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::
     LOG_WARN(logger, errorTitle << ": " << errorMsg);
 }
 
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
 static std::unordered_map<std::string, bool> rootFsTypeMap;
 
 bool Utility::isNtfs(const SyncPath &targetPath) {
@@ -465,7 +465,7 @@ bool Utility::contains(const std::string &str, const std::string &substr) {
     return str.find(substr) != std::string::npos;
 }
 
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
 bool Utility::startsWithInsensitive(const SyncName &str, const SyncName &prefix) {
     return str.size() >= prefix.size() && std::equal(prefix.begin(), prefix.end(), str.begin(), [](SyncChar c1, SyncChar c2) {
                return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
@@ -541,14 +541,14 @@ bool Utility::moveItemToTrash(const SyncPath &itemPath) {
     return moveItemToTrash_private(itemPath);
 }
 
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
 bool Utility::preventSleeping(bool enable) {
     return preventSleeping_private(enable);
 }
 #endif
 
 void Utility::restartFinderExtension() {
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
     restartFinderExtension_private();
 #endif
 }
@@ -695,7 +695,7 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
     bool success = CommonUtility::normalizedSyncName(name, normalizedName, normalization);
     std::wstring errorMessage = L"Failed to normalize " + formatSyncName(name);
     if (!success) {
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         const DWORD dwError = GetLastError();
         errorMessage += L" (" + CommonUtility::getErrorMessage(dwError) + L")";
 #endif
@@ -791,7 +791,7 @@ bool Utility::getLinuxDesktopType(std::string &currentDesktop) {
     return false;
 }
 
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
 bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound) {
     int length = GetLongPathNameW(shortPathIn.native().c_str(), 0, 0);
     if (!length) {
@@ -884,7 +884,7 @@ bool Utility::ramCurrentlyUsedByProcess(uint64_t &ram, int &errorCode) {
 
 bool Utility::cpuUsage(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint64_t &lastTotalSys, uint64_t &lastTotalIdle,
                        double &percent) {
-#ifdef KD_LINUX
+#if defined(KD_LINUX)
     return cpuUsage_private(lastTotalUser, lastTotalUserLow, lastTotalSys, lastTotalIdle, percent);
 #else
     (void) (lastTotalUser);
@@ -897,7 +897,7 @@ bool Utility::cpuUsage(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint
 }
 
 bool Utility::cpuUsage(uint64_t &previousTotalTicks, uint64_t &previousIdleTicks, double &percent) {
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
     return cpuUsage_private(previousTotalTicks, previousIdleTicks, percent);
 #else
     (void) (previousTotalTicks);

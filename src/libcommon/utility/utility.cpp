@@ -35,7 +35,7 @@
 #include <sstream>
 #include <signal.h>
 
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
 #include <Poco/Util/WinRegistryKey.h>
 #endif
 
@@ -72,7 +72,7 @@
 #define MAX_PATH_LENGTH_MAC 1023
 #define MAX_PATH_LENGTH_LINUX 4096
 
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
 constexpr char liteSyncExtBundleIdStr[] = "com.infomaniak.drive.desktopclient.LiteSyncExt";
 constexpr char loginItemAgentIdStr[] = "864VDCS2QY.com.infomaniak.drive.desktopclient.LoginItemAgent";
 #endif
@@ -407,7 +407,7 @@ bool CommonUtility::compressFile(const QString &originalName, const QString &tar
 }
 
 QString applicationTrPath() {
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
     QString devTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../../../../src/gui/");
 #else
     QString devTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../src/gui/");
@@ -772,7 +772,7 @@ static std::string tmpDirName = "kdrive_" + CommonUtility::generateRandomStringA
 
 // Check if dir name is valid by trying to create a tmp dir
 bool CommonUtility::dirNameIsValid(const SyncName &name) {
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
     std::error_code ec;
 
     SyncPath tmpDirPath = std::filesystem::temp_directory_path() / tmpDirName;
@@ -820,7 +820,7 @@ bool CommonUtility::fileNameIsValid(const SyncName &name) {
     return true;
 }
 
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
 const std::string CommonUtility::loginItemAgentId() {
     return loginItemAgentIdStr;
 }
@@ -836,7 +836,7 @@ std::string CommonUtility::envVarValue(const std::string &name) {
 }
 
 std::string CommonUtility::envVarValue(const std::string &name, bool &isSet) {
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
     char *value = nullptr;
     isSet = false;
     if (size_t sz = 0; _dupenv_s(&value, &sz, name.c_str()) == 0 && value != nullptr) {
@@ -921,7 +921,7 @@ bool CommonUtility::isLikeFileNotFoundError(const std::error_code &ec) noexcept 
 }
 #endif
 
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
 bool CommonUtility::isLiteSyncExtEnabled() {
     QProcess *process = new QProcess();
     process->start(

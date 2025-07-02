@@ -88,7 +88,7 @@ void PerformanceWatcher::run() {
 }
 
 bool PerformanceWatcher::updateCpuUsage() {
-#ifdef KD_LINUX
+#if defined(KD_LINUX)
     double cpuUsage = 0;
     if (Utility::cpuUsage(_lastTotalUser, _lastTotalUserLow, _lastTotalSys, _lastTotalIdle, cpuUsage)) {
         _cpuUsagePercent = (int) cpuUsage;

@@ -82,7 +82,7 @@ void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
     LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " started");
     if (_syncPal->vfsMode() != VirtualFileMode::Off) {
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         auto resetFunc = std::function<void()>([this]() { resetVfsFilesStatus(); });
         _resetVfsFilesStatusThread = StdLoggingThread(resetFunc);
 #else

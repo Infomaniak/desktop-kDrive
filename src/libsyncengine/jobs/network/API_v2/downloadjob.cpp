@@ -463,7 +463,7 @@ bool DownloadJob::removeTmpFile() {
 
 bool DownloadJob::moveTmpFile() {
     // Move downloaded file from tmp directory to sync directory
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
     bool retry = true;
     int counter = 50;
     while (retry) {
@@ -473,7 +473,7 @@ bool DownloadJob::moveTmpFile() {
         bool error = false;
         bool accessDeniedError = false;
         bool crossDeviceLinkError = false;
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
         bool sharingViolationError = false;
 #endif
         static const bool forceCopy = CommonUtility::envVarValue("KDRIVE_PRESERVE_PERMISSIONS_ON_CREATE") == "1";
@@ -502,14 +502,14 @@ bool DownloadJob::moveTmpFile() {
                                                                       << Utility::formatStdError(ec) << L"'");
                 error = true;
                 accessDeniedError = IoHelper::stdError2ioError(ec.value()) == IoError::AccessDenied;
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
                 sharingViolationError = ec.value() == ERROR_SHARING_VIOLATION; // In this case, we will try again
 #endif
             }
         }
 
         if (error) {
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
             if (sharingViolationError) {
                 if (counter) {
                     // Retry
@@ -550,7 +550,7 @@ bool DownloadJob::moveTmpFile() {
                 return false;
             }
         }
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
     }
 #endif
 

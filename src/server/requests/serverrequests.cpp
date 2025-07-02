@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
 #define _WINSOCKAPI_
 #endif
 
@@ -1211,7 +1211,7 @@ ExitCode ServerRequests::setExclusionTemplateList(bool def, const QList<Exclusio
     return ExitCode::Ok;
 }
 
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
 ExitCode ServerRequests::getExclusionAppList(bool def, QList<ExclusionAppInfo> &list) {
     std::vector<ExclusionApp> exclusionList;
     if (!ParmsDb::instance()->selectAllExclusionApps(def, exclusionList)) {
@@ -1506,7 +1506,7 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
     sync.setDbId(syncDbId);
     sync.setDriveDbId(driveDbId);
     auto localPath = QStr2Path(localFolderPath);
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
     // On macOS, the special characters in file names are NFD encoded. However, we use QFileDialog::getExistingDirectory to
     // retrieve the selected sync path which return a NFC encoded path.
     (void) Utility::normalizedSyncPath(localFolderPath.toStdString(), localPath, UnicodeNormalization::NFD);

@@ -26,7 +26,7 @@
 
 #include <utility/utility.h>
 
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
 #include <objbase.h>
 #endif
 
