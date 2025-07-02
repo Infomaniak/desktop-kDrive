@@ -136,11 +136,13 @@ void TestFileRescuer::testGetDestinationPath() {
     res = fileRescuer.getDestinationPath(fileName, 1);
     CPPUNIT_ASSERT(res.filename().native() == Str2SyncName("test (1).txt"));
 
+#ifdef _WIN32
     // Test with a file name with special characters
     fileName = WStr2SyncName(L"°.txt");
     res = fileRescuer.getDestinationPath(fileName);
     CPPUNIT_ASSERT(res.filename().native() == L"°.txt");
     res = fileRescuer.getDestinationPath(fileName, 1);
     CPPUNIT_ASSERT(res.filename().native() == L"° (1).txt");
+#endif // _WIN32
 }
 } // namespace KDC
