@@ -105,7 +105,7 @@ jobs:
           merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
-        run: powershell ./infomaniak-build-tools/upload-ci.ps1 -version "${{ needs.build-Windows.outputs.kDrive_version }}"
+        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ needs.build-Windows.outputs.kDrive_version }}"
 
       - name : Upload sentry artifacts
         run: |
@@ -119,11 +119,18 @@ jobs:
 
 # Upload to the storage server
   upload-app-to-storage-server:
-    needs: [upload-to-kDrive-and-sentry]
+    needs: [upload-to-kDrive-and-sentry, build-Windows]
     runs-on: [self-hosted, Windows]
     steps:
-      - name: Upload app to storage server
-        run: echo "TODO Upload the app to the storage server..."
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: installers
+          pattern: "*-release-artifacts-installer"
+          merge-multiple: true
+
+      - name: Upload apps and release notes to storage server
+        run: powershell ./infomaniak-build-tools/upload-release-to-storage.ps1 -version "${{ needs.build-Windows.outputs.kDrive_version }}"
 
 # Update kStore
   update-kStore:

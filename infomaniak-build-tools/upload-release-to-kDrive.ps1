@@ -32,9 +32,6 @@ $headers = @{
     Authorization="Bearer $env:KDRIVE_TOKEN"
 }
 
-$minorVersion = $version.Substring(0, 5)
-$date = $version.Substring(6)
-
 $win_files = @(
     "$app.exe",
     "kDrive.pdb",
