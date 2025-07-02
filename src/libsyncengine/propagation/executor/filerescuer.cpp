@@ -86,8 +86,7 @@ SyncPath FileRescuer::getDestinationPath(const SyncPath &relativeOriginPath, con
     if (counter == 0) return _syncPal->localPath() / _rescueFolderName / relativeOriginPath.filename();
     const SyncName suffix =
             Str(" (") + Str2SyncName(std::to_string(counter)) + Str(")"); // TODO : use format when fully moved to c++20
-    const SyncName filename =
-            Str2SyncName(relativeOriginPath.stem().string()) + suffix + Str2SyncName(relativeOriginPath.extension().string());
+    const SyncName filename = relativeOriginPath.stem().native() + suffix + relativeOriginPath.extension().native();
     return _syncPal->localPath() / _rescueFolderName / filename;
 }
 
