@@ -44,19 +44,16 @@ runs:
         shell: powershell
 
       - name: Import Windows certificate
-        env:
-          WINDOWS_VIRTUAL_CERT:  ${{ inputs.virtual_cert }}
-          WINDOWS_PHYSICAL_CERT: ${{ inputs.physical_cert }}
         run: |
           if("${{ inputs.release_build }}" -eq "true") {
             New-Item -ItemType directory -Path certificate
-            Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_PHYSICAL_CERT
+            Set-Content -Path certificate/tempCert.txt -Value ${{ inputs.physical_cert }}
             certutil -decode certificate/tempCert.txt certificate/certificate.cert
             Remove-Item -path certificate -include tempCert.txt
             Import-Certificate -Filepath certificate/certificate.cert -CertStoreLocation Cert:\CurrentUser\My
             } else {
             New-Item -ItemType directory -Path certificate
-            Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_VIRTUAL_CERT
+            Set-Content -Path certificate/tempCert.txt -Value ${{ inputs.virtual_cert }}
             certutil -decode certificate/tempCert.txt certificate/certificate.pfx
             Remove-Item -path certificate -include tempCert.txt
             Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String "${{ inputs.virtual_cert_pass }}" -Force -AsPlainText)
