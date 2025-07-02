@@ -91,7 +91,7 @@ using OStringStream = std::wostringstream;
 #define QStr2SyncName(s) s.toStdWString()
 #define Str2SyncName(s) Utility::s2ws(s)
 #define SyncName2Str(s) Utility::ws2s(s)
-#define WStr2SyncName(s) s
+#define WStr2SyncName(s) SyncName(s)
 #define SyncName2WStr(s) s
 #else
 using StringStream = std::stringstream;
@@ -99,7 +99,7 @@ using OStringStream = std::ostringstream;
 #define Str(s) s
 #define SyncName2QStr(s) QString::fromStdString(s)
 #define QStr2SyncName(s) s.toStdString()
-#define Str2SyncName(s) s
+#define Str2SyncName(s) SyncName(s)
 #define SyncName2Str(s) s
 #define WStr2SyncName(s) Utility::ws2s(s)
 #define SyncName2WStr(s) Utility::s2ws(s)
