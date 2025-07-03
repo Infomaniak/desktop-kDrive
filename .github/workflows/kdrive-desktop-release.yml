@@ -43,7 +43,7 @@ jobs:
     needs: [check-release-notes, check-translations]
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
     outputs:
-      kDrive_version: ${{ steps.build-windows-step.kDrive_version }}
+      kDrive_version: ${{ steps.build-windows-step.outputs.kDrive_version }}
     env:
       KDC_PHYSICAL_AUMID: ${{ secrets.KDC_PHYSICAL_AUMID }}
     steps:
@@ -88,7 +88,8 @@ jobs:
 
 # Upload the installer to kDrive and sentry artifacts
   upload-to-kDrive-and-sentry:
-    needs: [test-Windows, build-Windows]
+   # needs: [test-Windows, build-Windows]
+    needs: [build-Windows]
     runs-on: [self-hosted, Windows]
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
@@ -100,6 +101,10 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
       
+      - name: Download artifacts
+        run: |
+            Write-Host "Version: ${{ needs.build-Windows.outputs.kDrive_version }}"
+
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
