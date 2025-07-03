@@ -64,12 +64,10 @@ struct FileData {
         KDC::VirtualFileMode virtualFileMode{KDC::VirtualFileMode::Off};
 };
 
-class CommApi : public QObject {
-        Q_OBJECT
-
+class CommApi {
     public:
         explicit CommApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> &syncPalMap,
-                         const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap, QObject *parent = 0);
+                         const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap);
         virtual ~CommApi();
 
         inline void setAddErrorCallback(void (*addError)(const KDC::Error &)) { _addError = addError; }
@@ -85,16 +83,17 @@ class CommApi : public QObject {
 
         static bool syncForPath(const std::filesystem::path &path, KDC::Sync &sync);
 
+        void onNewExtConnection();
+        void onNewGuiConnection();
+        void onLostExtConnection();
+        void onLostGuiConnection();
+
     public slots:
         void executeCommandDirect(const QString &commandLine);
 
     private slots:
-        void onNewExtConnection();
-        void onLostExtConnection();
         void onExtListenerDestroyed(QObject *obj);
         void onReadyRead();
-        void onNewGuiConnection();
-        void onLostGuiConnection();
         void onQueryReceived();
 
         static void copyUrlToClipboard(const QString &link);
@@ -120,34 +119,37 @@ class CommApi : public QObject {
         void broadcastMessage(const QString &msg, bool doWait = false);
         void executeCommand(const QString &commandLine, const CommListener *listener);
 
-        Q_INVOKABLE void command_RETRIEVE_FOLDER_STATUS(const QString &argument, CommListener *listener);
-        Q_INVOKABLE void command_RETRIEVE_FILE_STATUS(const QString &argument, CommListener *listener);
+        // Commands map
+        std::map<std::string, std::function<void(const std::string &, CommListener *)>> _commands;
 
-        Q_INVOKABLE void command_VERSION(const QString &argument, CommListener *listener);
+        void commandRetrieveFolderStatus(const std::string &argument, CommListener *listener);
+        void commandRetrieveFileStatus(const std::string &argument, CommListener *listener);
+
+        void commandVersion(const std::string &argument, CommListener *listener);
 
         // The context menu actions
-        Q_INVOKABLE void command_COPY_PUBLIC_LINK(const QString &localFile, CommListener *listener);
-        Q_INVOKABLE void command_COPY_PRIVATE_LINK(const QString &localFile, CommListener *listener);
-        Q_INVOKABLE void command_OPEN_PRIVATE_LINK(const QString &localFile, CommListener *listener);
-        Q_INVOKABLE void command_MAKE_AVAILABLE_LOCALLY_DIRECT(const QString &filesArg);
-        Q_INVOKABLE void command_MAKE_ONLINE_ONLY_DIRECT(const QString &filesArg, CommListener *listener);
-        Q_INVOKABLE void command_CANCEL_DEHYDRATION_DIRECT(const QString &);
-        Q_INVOKABLE void command_CANCEL_HYDRATION_DIRECT(const QString &);
+        void commandCopyPublicLink(const std::string &localFile, CommListener *listener);
+        void commandCopyPrivateLink(const std::string &localFile, CommListener *listener);
+        void commandOpenPrivateLink(const std::string &localFile, CommListener *listener);
+        void commandMakeAvailableLocallyDirect(const std::string &filesArg);
+        void commandMakeOnlineOnlyDirect(const std::string &filesArg, CommListener *listener);
+        void commandCancelDehydrationDirect(const std::string &);
+        void commandCancelHydrationDirect(const std::string &);
+
+        /** Sends translated/branded strings that may be useful to the integration */
+        void commandGetStrings(const QString &argument, CommListener *listener);
+
+        /** Sends the request URL to get a thumbnail */
+#ifdef _WIN32
+        void commandGetThumbnail(const QString &argument, CommListener *listener);
+#endif
+
+#ifdef __APPLE__
+        void commandSetThumbnail(const QString &filePath);
+#endif
 
         // Fetch the private link and call targetFun
         void fetchPrivateLinkUrlHelper(const QString &localFile, const std::function<void(const QString &url)> &targetFun);
-
-        /** Sends translated/branded strings that may be useful to the integration */
-        Q_INVOKABLE void command_GET_STRINGS(const QString &argument, CommListener *listener);
-
-        /** Sends the request URL to get a thumbnail */
-#ifdef Q_OS_WIN
-        Q_INVOKABLE void command_GET_THUMBNAIL(const QString &argument, CommListener *listener);
-#endif
-
-#ifdef Q_OS_MAC
-        Q_INVOKABLE void command_SET_THUMBNAIL(const QString &filePath);
-#endif
 
         // Sends the context menu options relating to sharing to listener
         void sendSharingContextMenuOptions(const FileData &fileData, const CommListener *listener);

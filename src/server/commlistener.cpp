@@ -26,15 +26,15 @@
 namespace KDC {
 
 BloomFilter::BloomFilter() :
-    hashBits(NumBits) {}
+    _hashBits(NumBits) {}
 
 void BloomFilter::storeHash(uint hash) {
-    hashBits.setBit((hash & 0xFFFF) % NumBits);
-    hashBits.setBit((hash >> 16) % NumBits);
+    _hashBits.setBit((hash & 0xFFFF) % NumBits);
+    _hashBits.setBit((hash >> 16) % NumBits);
 }
 
 bool BloomFilter::isHashMaybeStored(uint hash) const {
-    return hashBits.testBit((hash & 0xFFFF) % NumBits) && hashBits.testBit((hash >> 16) % NumBits);
+    return _hashBits.testBit((hash & 0xFFFF) % NumBits) && _hashBits.testBit((hash >> 16) % NumBits);
 }
 
 CommListener::CommListener(QIODevice *ioDevice) : ioDevice(ioDevice) {

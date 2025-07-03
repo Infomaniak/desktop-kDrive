@@ -24,8 +24,6 @@
 
 #include "../libcommon/utility/utility.h"
 
-#include <QCoreApplication>
-
 @interface LocalEnd : NSObject <XPCExtensionRemoteProtocol, XPCGuiProtocol>
 
 @property CommChannelPrivate *wrapper;
@@ -296,7 +294,8 @@ class CommServerPrivate {
     CommServer *server = _wrapper->_q_ptr;
 
     if (listener == _extListener) {
-        CommChannel *channel = new CommChannel(server, channelPrivate);
+        CommChannel *channel = new CommChannel(channelPrivate);
+        channel->setLostConnectionCbk(std::bind(&CommServer::lostExtConnectionCbk, server));
         _wrapper->_pendingExtChannels.append(channel);
 
         // Set exported interface
@@ -314,23 +313,24 @@ class CommServerPrivate {
           // The extension has exited or crashed
           NSLog(@"[KD] Connection with ext interrupted");
           channelPrivate->_remoteEnd.connection = nil;
-          emit channel->disconnected();
+          channel->lostConnectionCbk();
         };
 
         newConnection.invalidationHandler = ^{
           // Connection can not be formed or has terminated and may not be re-established
           NSLog(@"[KD] Connection with ext invalidated");
           channelPrivate->_remoteEnd.connection = nil;
-          emit channel->disconnected();
+          channel->lostConnectionCbk();
         };
 
         // Start processing incoming messages.
         NSLog(@"[KD] Resume connection with ext");
         [newConnection resume];
 
-        emit server->newExtConnection();
+        server->newExtConnectionCbk();
     } else if (listener == _guiListener) {
-        _wrapper->_guiChannel = new CommChannel(server, channelPrivate);
+        _wrapper->_guiChannel = new CommChannel(channelPrivate);
+        _wrapper->_guiChannel->setLostConnectionCbk(std::bind(&CommServer::lostGuiConnectionCbk, server));
 
         // Set exported interface
         NSLog(@"[KD] Set exported interface for connection with gui");
@@ -347,21 +347,21 @@ class CommServerPrivate {
           // The extension has exited or crashed
           NSLog(@"[KD] Connection with gui interrupted");
           channelPrivate->_remoteEnd.connection = nil;
-          emit _wrapper->_guiChannel->disconnected();
+          _wrapper->_guiChannel->lostConnectionCbk();
         };
 
         newConnection.invalidationHandler = ^{
           // Connection can not be formed or has terminated and may not be re-established
           NSLog(@"[KD] Connection with gui invalidated");
           channelPrivate->_remoteEnd.connection = nil;
-          emit _wrapper->_guiChannel->disconnected();
+          _wrapper->_guiChannel->lostConnectionCbk();
         };
 
         // Start processing incoming messages.
         NSLog(@"[KD] Resume connection with gui");
         [newConnection resume];
 
-        emit server->newGuiConnection();
+        server->newGuiConnectionCbk();
     }
 
     return YES;
@@ -388,7 +388,8 @@ class CommServerPrivate {
 
 // CommChannelPrivate implementation
 CommChannelPrivate::CommChannelPrivate(NSXPCConnection *remoteConnection) :
-    _remoteEnd([[RemoteEnd alloc] init:remoteConnection]), _localEnd([[LocalEnd alloc] initWithWrapper:this]) {}
+    _remoteEnd([[RemoteEnd alloc] init:remoteConnection]),
+    _localEnd([[LocalEnd alloc] initWithWrapper:this]) {}
 
 CommChannelPrivate::~CommChannelPrivate() {
     disconnectRemote();
@@ -414,53 +415,49 @@ CommServerPrivate::~CommServerPrivate() {
 
 
 // CommChannel implementation
-CommChannel::CommChannel(QObject *parent, CommChannelPrivate *p) : QIODevice(parent), d_ptr(p) {
-    Q_D(CommChannel);
-    d->_q_ptr = this;
+CommChannel::CommChannel(CommChannelPrivate *p) :
+    d_ptr(p) {
+    d_ptr->_q_ptr = this;
     open(ReadWrite);
 }
 
 CommChannel::~CommChannel() {}
 
-qint64 CommChannel::readData(char *data, qint64 maxlen) {
-    Q_D(CommChannel);
-    qint64 len = std::min(maxlen, static_cast<qint64>(d->_inBuffer.size()));
-    memcpy(data, d->_inBuffer.constData(), static_cast<size_t>(len));
-    d->_inBuffer.remove(0, len);
+uint64_t CommChannel::readData(char *data, uint64_t maxlen) {
+    uint64_t len = std::min(maxlen, static_cast<uint64_t>(d_ptr->_inBuffer.size()));
+    memcpy(data, d_ptr->_inBuffer.constData(), static_cast<size_t>(len));
+    d_ptr->_inBuffer.remove(0, len);
     return len;
 }
 
-qint64 CommChannel::writeData(const char *data, qint64 len) {
-    Q_D(CommChannel);
-    if (d->_isRemoteDisconnected) return -1;
+uint64_t CommChannel::writeData(const char *data, uint64_t len) {
+    if (d_ptr->_isRemoteDisconnected) return -1;
 
     @try {
-        [d->_remoteEnd sendMessage:[NSData dataWithBytesNoCopy:const_cast<char *>(data)
-                                                        length:static_cast<NSUInteger>(len)
-                                                  freeWhenDone:NO]];
+        [d_ptr->_remoteEnd sendMessage:[NSData dataWithBytesNoCopy:const_cast<char *>(data)
+                                                            length:static_cast<NSUInteger>(len)
+                                                      freeWhenDone:NO]];
         return len;
     } @catch (NSException *e) {
-        d->disconnectRemote();
-        emit disconnected();
+        d_ptr->disconnectRemote();
+        lostConnectionCbk();
         return -1;
     }
 }
 
-qint64 CommChannel::bytesAvailable() const {
-    Q_D(const CommChannel);
-    return d->_inBuffer.size() + QIODevice::bytesAvailable();
+uint64_t CommChannel::bytesAvailable() const {
+    return d_ptr->_inBuffer.size();
 }
 
 bool CommChannel::canReadLine() const {
-    Q_D(const CommChannel);
-    return d->_inBuffer.indexOf('\n', int(pos())) != -1 || QIODevice::canReadLine();
+    return d_ptr->_inBuffer.indexOf('\n', int(pos())) != -1;
 }
 
 
 // CommServer implementation
-CommServer::CommServer() : d_ptr(new CommServerPrivate) {
-    Q_D(CommServer);
-    d->_q_ptr = this;
+CommServer::CommServer() :
+    d_ptr(new CommServerPrivate) {
+    d_ptr->_q_ptr = this;
 }
 
 CommServer::~CommServer() {}
@@ -469,21 +466,18 @@ void CommServer::close() {
     // Assume we'll be destroyed right after
 }
 
-bool CommServer::listen(const QString &name) {
-    Q_UNUSED(name)
-    Q_D(CommServer);
+bool CommServer::listen(const std::string &name) {
+    (void) name;
 
-    [d->_server start];
+    [d_ptr->_server start];
 
     return TRUE;
 }
 
 CommChannel *CommServer::nextPendingConnection() {
-    Q_D(CommServer);
-    return d->_pendingExtChannels.takeFirst();
+    return d_ptr->_pendingExtChannels.takeFirst();
 }
 
 CommChannel *CommServer::guiConnection() {
-    Q_D(CommServer);
-    return d->_guiChannel;
+    return d_ptr->_guiChannel;
 }

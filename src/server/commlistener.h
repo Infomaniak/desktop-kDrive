@@ -39,7 +39,7 @@ class BloomFilter {
         bool isHashMaybeStored(uint hash) const;
 
     private:
-        QBitArray hashBits;
+        QBitArray _hashBits;
 };
 
 class CommListener {

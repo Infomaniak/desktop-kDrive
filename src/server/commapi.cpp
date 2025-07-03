@@ -91,12 +91,43 @@ struct ListenerHasSocketPred {
 };
 
 CommApi::CommApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> &syncPalMap,
-                 const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap, QObject *parent) :
-    QObject(parent),
+                 const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap) :
     _syncPalMap(syncPalMap),
     _vfsMap(vfsMap) {
-    QString socketPath;
+    _commands = {
+            {"RETRIEVE_FOLDER_STATUS",
+             std::bind(&CommApi::commandRetrieveFolderStatus, this, std::placeholders::_1, std::placeholders::_2)},
+            {"RETRIEVE_FILE_STATUS",
+             std::bind(&CommApi::commandRetrieveFileStatus, this, std::placeholders::_1, std::placeholders::_2)},
+            {"VERSION", std::bind(&CommApi::commandVersion, this, std::placeholders::_1, std::placeholders::_2)},
+            {"COPY_PUBLIC_LINK", std::bind(&CommApi::commandCopyPublicLink, this, std::placeholders::_1, std::placeholders::_2)},
+            {"COPY_PRIVATE_LINK",
+             std::bind(&CommApi::commandCopyPrivateLink, this, std::placeholders::_1, std::placeholders::_2)},
+            {"OPEN_PRIVATE_LINK",
+             std::bind(&CommApi::commandOpenPrivateLink, this, std::placeholders::_1, std::placeholders::_2)},
+            {"MAKE_AVAILABLE_LOCALLY_DIRECT",
+             std::bind(&CommApi::commandMakeAvailableLocallyDirect, this, std::placeholders::_1, std::placeholders::_2)},
+            {"MAKE_ONLINE_ONLY_DIRECT",
+             std::bind(&CommApi::commandMakeOnlineOnlyDirect, this, std::placeholders::_1, std::placeholders::_2)},
+            {"CANCEL_DEHYDRATION_DIRECT",
+             std::bind(&CommApi::commandCancelDehydrationDirect, this, std::placeholders::_1, std::placeholders::_2)},
+            {"CANCEL_HYDRATION_DIRECT",
+             std::bind(&CommApi::commandCancelHydrationDirect, this, std::placeholders::_1, std::placeholders::_2)},
+            {"GET_STRINGS", std::bind(&CommApi::commandGetStrings, this, std::placeholders::_1, std::placeholders::_2)},
+#ifdef _WIN32
+            {"GET_THUMBNAIL", std::bind(&CommApi::commandGetThumbnail, this, std::placeholders::_1, std::placeholders::_2)},
+#endif
+#ifdef __APPLE__
+            {"SET_THUMBNAIL", std::bind(&CommApi::commandSetThumbnail, this, std::placeholders::_1, std::placeholders::_2)}
+#endif
+    };
 
+    _localServer.setNewExtConnectionCbk(std::bind(&CommApi::onNewExtConnection, this));
+    _localServer.setNewGuiConnectionCbk(std::bind(&CommApi::onNewGuiConnection, this));
+    _localServer.setLostExtConnectionCbk(std::bind(&CommApi::onLostExtConnection, this));
+    _localServer.setLostGuiConnectionCbk(std::bind(&CommApi::onLostGuiConnection, this));
+
+    QString socketPath;
     if (OldUtility::isWindows()) {
         socketPath = QString(R"(\\.\pipe\%1-%2)").arg(APPLICATION_SHORTNAME, Utility::userName().c_str());
     } else if (OldUtility::isMac()) {
@@ -123,7 +154,7 @@ CommApi::CommApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> &s
         LOG_WARN(KDC::Log::instance()->getLogger(), "An unexpected system detected, this probably won't work.");
     }
 
-    CommServer::removeServer(socketPath);
+    CommServer::removeServer(socketPath.toStdString());
     const QFileInfo info(socketPath);
     if (!info.dir().exists()) {
         bool result = info.dir().mkpath(".");
@@ -133,15 +164,12 @@ CommApi::CommApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> &s
         }
     }
 
-    if (!_localServer.listen(socketPath)) {
+    if (!_localServer.listen(socketPath.toStdString())) {
         LOGW_WARN(KDC::Log::instance()->getLogger(), L"Can't start server - " << Utility::formatPath(socketPath));
         _addError(KDC::Error(errId(), KDC::ExitCode::SystemError, KDC::ExitCause::Unknown));
     } else {
         LOGW_INFO(KDC::Log::instance()->getLogger(), L"Server started - " << Utility::formatPath(socketPath));
     }
-
-    connect(&_localServer, &CommServer::newExtConnection, this, &CommApi::onNewExtConnection);
-    connect(&_localServer, &CommServer::newGuiConnection, this, &CommApi::onNewGuiConnection);
 }
 
 CommApi::~CommApi() {
@@ -149,7 +177,7 @@ CommApi::~CommApi() {
     _listeners.clear();
 }
 
-void SocketApi::executeCommandDirect(const QString &commandLineStr) {
+void CommApi::executeCommandDirect(const QString &commandLineStr) {
     LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Execute command - cmd=" << commandLineStr.toStdWString());
 
     QByteArray command = commandLineStr.split(MSG_CDE_SEPARATOR).value(0).toLatin1();
@@ -192,12 +220,11 @@ void CommApi::executeCommand(const QString &commandLine, const CommListener *lis
 }
 
 void CommApi::onNewExtConnection() {
-    QIODevice *ioDevice = _localServer.nextPendingConnection();
+    AbstractIODevice *ioDevice = _localServer.nextPendingConnection();
     if (!ioDevice) return;
 
     LOG_INFO(KDC::Log::instance()->getLogger(), "New ext connection - ioDevice=" << ioDevice);
     connect(ioDevice, &QIODevice::readyRead, this, &CommApi::onReadyRead);
-    connect(ioDevice, SIGNAL(disconnected()), this, SLOT(onLostExtConnection()));
     connect(ioDevice, &QObject::destroyed, this, &CommApi::onExtListenerDestroyed);
 
     _listeners.append(CommListener(ioDevice));
@@ -234,7 +261,7 @@ void CommApi::onExtListenerDestroyed(QObject *obj) {
 }
 
 void CommApi::onNewGuiConnection() {
-    QIODevice *ioDevice = _localServer.guiConnection();
+    AbstractIODevice *ioDevice = _localServer.guiConnection();
     if (!ioDevice) return;
 
     LOG_INFO(KDC::Log::instance()->getLogger(), "New gui connection - ioDevice=" << ioDevice);
@@ -295,14 +322,14 @@ void CommApi::onReadyRead() {
         while (!line.endsWith(QUERY_END_SEPARATOR)) {
             if (!ioDevice->canReadLine()) {
                 LOGW_WARN(KDC::Log::instance()->getLogger(),
-                          L"Failed to parse SocketAPI message - msg=" << line.toStdWString() << L" socket=" << socket);
+                          L"Failed to parse SocketAPI message - msg=" << line.toStdWString() << L" ioDevice=" << ioDevice);
                 return;
             }
             line.append(ioDevice->readLine());
         }
         line.chop(QUERY_END_SEPARATOR.length()); // remove the separator
         LOGW_INFO(KDC::Log::instance()->getLogger(),
-                  L"Received SocketAPI message - msg=" << line.toStdWString() << L" socket=" << socket);
+                  L"Received SocketAPI message - msg=" << line.toStdWString() << L" ioDevice=" << ioDevice);
         executeCommand(line, listener);
     }
 }
@@ -353,12 +380,12 @@ void CommApi::broadcastMessage(const QString &msg, bool doWait) {
     }
 }
 
-void CommApi::command_RETRIEVE_FOLDER_STATUS(const QString &argument, CommListener *listener) {
+void CommApi::command_RETRIEVE_FOLDER_STATUS(const std::string &argument, CommListener *listener) {
     // This command is the same as RETRIEVE_FILE_STATUS
     command_RETRIEVE_FILE_STATUS(argument, listener);
 }
 
-void CommApi::command_RETRIEVE_FILE_STATUS(const QString &argument, CommListener *listener) {
+void CommApi::command_RETRIEVE_FILE_STATUS(const std::string &argument, CommListener *listener) {
     const auto fileData = FileData::get(argument);
     if (fileData.syncDbId) {
         // The user probably visited this directory in the file shell.
@@ -379,12 +406,12 @@ void CommApi::command_RETRIEVE_FILE_STATUS(const QString &argument, CommListener
     listener->sendMessage(message);
 }
 
-void CommApi::command_VERSION(const QString &, CommListener *listener) {
+void CommApi::command_VERSION(const std::string &, CommListener *listener) {
     listener->sendMessage(
             QString("VERSION%1%2%1%3").arg(MSG_CDE_SEPARATOR).arg(KDRIVE_VERSION_STRING, KDRIVE_SOCKET_API_VERSION));
 }
 
-void CommApi::command_COPY_PUBLIC_LINK(const QString &localFile, CommListener *) {
+void CommApi::command_COPY_PUBLIC_LINK(const std::string &localFile, CommListener *) {
     const auto fileData = FileData::get(localFile);
     if (!fileData.syncDbId) return;
 
@@ -568,11 +595,11 @@ bool CommApi::cancelDownloadJobs(int syncDbId, const QStringList &fileList) {
     return true;
 }
 
-void CommApi::command_COPY_PRIVATE_LINK(const QString &localFile, CommListener *) {
+void CommApi::command_COPY_PRIVATE_LINK(const std::string &localFile, CommListener *) {
     fetchPrivateLinkUrlHelper(localFile, &CommApi::copyUrlToClipboard);
 }
 
-void CommApi::command_OPEN_PRIVATE_LINK(const QString &localFile, CommListener *) {
+void CommApi::command_OPEN_PRIVATE_LINK(const std::string &localFile, CommListener *) {
     fetchPrivateLinkUrlHelper(localFile, &CommApi::openPrivateLink);
 }
 
@@ -580,7 +607,7 @@ void CommApi::copyUrlToClipboard(const QString &link) {
     QApplication::clipboard()->setText(link);
 }
 
-void CommApi::command_MAKE_AVAILABLE_LOCALLY_DIRECT(const QString &filesArg) {
+void CommApi::command_MAKE_AVAILABLE_LOCALLY_DIRECT(const std::string &filesArg) {
     const QStringList fileList = filesArg.split(MSG_ARG_SEPARATOR);
 
     QSet<QString> impactedFolders;
@@ -694,7 +721,7 @@ QString CommApi::socketAPIString(SyncFileStatus status, const VfsStatus &vfsStat
     return statusString;
 }
 
-void CommApi::command_MAKE_ONLINE_ONLY_DIRECT(const QString &filesArg, CommListener *) {
+void CommApi::command_MAKE_ONLINE_ONLY_DIRECT(const std::string &filesArg, CommListener *) {
     const QStringList fileList = filesArg.split(MSG_ARG_SEPARATOR);
 
     _dehydrationMutex.lock();
@@ -750,13 +777,13 @@ void CommApi::command_MAKE_ONLINE_ONLY_DIRECT(const QString &filesArg, CommListe
     _dehydrationMutex.unlock();
 }
 
-void CommApi::command_CANCEL_DEHYDRATION_DIRECT(const QString &) {
+void CommApi::command_CANCEL_DEHYDRATION_DIRECT(const std::string &) {
     LOG_INFO(KDC::Log::instance()->getLogger(), "Ongoing files dehydrations canceled");
     _dehydrationCanceled = true;
     return;
 }
 
-void CommApi::command_CANCEL_HYDRATION_DIRECT(const QString &filesArg) {
+void CommApi::command_CANCEL_HYDRATION_DIRECT(const std::string &filesArg) {
     LOG_INFO(KDC::Log::instance()->getLogger(), "Ongoing files hydrations canceled");
 
     const QStringList fileList = filesArg.split(MSG_ARG_SEPARATOR);
@@ -1393,7 +1420,7 @@ FileData FileData::get(const KDC::SyncPath &path) {
 #endif
 
     KDC::Sync sync;
-    if (!SocketApi::syncForPath(tmpPath, sync)) {
+    if (!CommApi::syncForPath(tmpPath, sync)) {
         LOGW_WARN(KDC::Log::instance()->getLogger(), L"Sync not found - " << Utility::formatSyncPath(tmpPath));
         return FileData();
     }

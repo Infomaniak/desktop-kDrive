@@ -18,55 +18,75 @@
 
 #pragma once
 
-#include <QAbstractSocket>
-#include <QIODevice>
+#include "abstractiodevice.h"
+
+#include <string>
+#include <functional>
+
+namespace KDC {
+class CommApi;
+} // namespace KDC
 
 class CommServerPrivate;
 class CommChannelPrivate;
 
-class CommChannel : public QIODevice {
-        Q_OBJECT
-
+class CommChannel : public KDC::AbstractIODevice {
     public:
-        CommChannel(QObject *parent, CommChannelPrivate *p);
+        CommChannel(CommChannelPrivate *p);
         ~CommChannel();
 
-        qint64 readData(char *data, qint64 maxlen) override;
-        qint64 writeData(const char *data, qint64 len) override;
+        uint64_t readData(char *data, uint64_t maxlen) override;
+        uint64_t writeData(const char *data, uint64_t len) override;
 
         bool isSequential() const override { return true; }
-        qint64 bytesAvailable() const override;
+        uint64_t bytesAvailable() const override;
         bool canReadLine() const override;
 
-    signals:
-        void disconnected();
+        void setLostConnectionCbk(const std::function<void()> &cbk) { _onLostConnectionFct = cbk; }
+        void lostConnectionCbk() {
+            if (_onLostConnectionFct) _onLostConnectionFct();
+        }
 
     private:
-        // Use Qt's p-impl system to hide objective-c types from C++ code including this file
-        Q_DECLARE_PRIVATE(CommChannel)
-        QScopedPointer<CommChannelPrivate> d_ptr;
+        std::unique_ptr<CommChannelPrivate> d_ptr;
+        std::function<void()> _onLostConnectionFct;
+
         friend class CommServerPrivate;
 };
 
-class CommServer : public QObject {
-        Q_OBJECT
-
+class CommServer {
     public:
         CommServer();
         ~CommServer();
 
         void close();
-        bool listen(const QString &name);
+        bool listen(const std::string &name);
         CommChannel *nextPendingConnection();
         CommChannel *guiConnection();
 
-        static bool removeServer(const QString &) { return false; }
+        static bool removeServer(const std::string &) { return false; }
 
-    signals:
-        void newExtConnection();
-        void newGuiConnection();
+        void setNewExtConnectionCbk(const std::function<void()> &cbk) { _onNewExtConnectionFct = cbk; }
+        void newExtConnectionCbk() {
+            if (_onNewExtConnectionFct) _onNewExtConnectionFct();
+        }
+        void setNewGuiConnectionCbk(const std::function<void()> &cbk) { _onNewGuiConnectionFct = cbk; }
+        void newGuiConnectionCbk() {
+            if (_onNewGuiConnectionFct) _onNewGuiConnectionFct();
+        }
+        void setLostExtConnectionCbk(const std::function<void()> &cbk) { _onLostExtConnectionFct = cbk; }
+        void lostExtConnectionCbk() {
+            if (_onLostExtConnectionFct) _onLostExtConnectionFct();
+        }
+        void setLostGuiConnectionCbk(const std::function<void()> &cbk) { _onLostGuiConnectionFct = cbk; }
+        void lostGuiConnectionCbk() {
+            if (_onLostGuiConnectionFct) _onLostGuiConnectionFct();
+        }
 
     private:
-        Q_DECLARE_PRIVATE(CommServer)
-        QScopedPointer<CommServerPrivate> d_ptr;
+        std::unique_ptr<CommServerPrivate> d_ptr;
+        std::function<void()> _onNewExtConnectionFct;
+        std::function<void()> _onNewGuiConnectionFct;
+        std::function<void()> _onLostExtConnectionFct;
+        std::function<void()> _onLostGuiConnectionFct;
 };
