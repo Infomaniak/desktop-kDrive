@@ -79,8 +79,7 @@ class TestSituationGenerator {
         // Utility functions used to simulate events in the update tree
         std::shared_ptr<Node> createNode(const ReplicaSide side, const NodeType itemType, const NodeId &id,
                                          const NodeId &parentId, const bool setChangeEvent = true) const {
-            DbNodeId dnNodeId = -1;
-            const auto node = insertInUpdateTree(side, itemType, id, parentId, dnNodeId);
+            const auto node = insertInUpdateTree(side, itemType, id, parentId, std::nullopt);
             if (setChangeEvent) node->setChangeEvents(OperationType::Create);
             return node;
         }
