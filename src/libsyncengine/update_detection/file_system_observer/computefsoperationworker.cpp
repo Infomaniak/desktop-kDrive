@@ -365,7 +365,7 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
         DbNode dbNode;
         bool dbNodeIsFound = false;
         const auto dbNodeIds = *nodesIdsIt;
-        if (!_syncDbReadOnlyCache.node(nodesIdsIt->dbNodeId, dbNode, dbNodeIsFound)) {
+        if (!_syncDbReadOnlyCache.node(dbNodeIds.dbNodeId, dbNode, dbNodeIsFound)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
             setExitCause(ExitCause::DbAccessError);
             return ExitCode::DbError;
