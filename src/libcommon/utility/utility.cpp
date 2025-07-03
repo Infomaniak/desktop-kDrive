@@ -995,22 +995,31 @@ QString CommonUtility::truncateLongLogMessage(const QString &message) {
     return message;
 }
 
+namespace {
+void getApplicationPath(std::vector<SyncChar> &pathStr, const size_t maxPathLength, bool &isValid) {
+    isValid = false;
+#if defined(KD_WINDOWS)
+    const auto pathLength = static_cast<DWORD>(maxPathLength);
+    const auto count = GetModuleFileNameW(nullptr, pathStr.data(), pathLength);
+    isValid = static_cast<bool>(count);
+#elif defined(KD_MACOS)
+    auto pathLength = static_cast<uint32_t>(maxPathLength);
+    const auto ret = _NSGetExecutablePath(pathStr.data(), &pathLength);
+    isValid = !ret;
+#else
+    const auto count = readlink("/proc/self/exe", pathStr.data(), maxPathLength);
+    isValid = count != -1;
+#endif
+}
+} // namespace
+
 SyncPath CommonUtility::applicationFilePath() {
     const auto maxPathLength = CommonUtility::maxPathLength();
     std::vector<SyncChar> pathStr(maxPathLength + 1, '\0');
 
-#if defined(KD_WINDOWS)
-    const auto pathLength = static_cast<DWORD>(maxPathLength);
-    const auto count = GetModuleFileNameW(nullptr, pathStr.data(), pathLength);
-    assert(count);
-#elif defined(KD_MACOS)
-    auto pathLength = static_cast<uint32_t>(maxPathLength);
-    const auto ret = _NSGetExecutablePath(pathStr.data(), &pathLength);
-    assert(!ret);
-#else
-    const auto count = readlink("/proc/self/exe", pathStr.data(), maxPathLength);
-    assert(count != -1);
-#endif
+    bool isValid = false;
+    getApplicationPath(pathStr, maxPathLength, isValid);
+    assert(isValid);
 
     return SyncPath(pathStr.data());
 }
