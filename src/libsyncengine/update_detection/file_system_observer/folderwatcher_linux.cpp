@@ -70,8 +70,8 @@ void FolderWatcher_linux::startWatching() {
                 continue;
             }
             // iterate events in buffer
-            unsigned int offset = 0;
-            while (offset < len) {
+            std::uint64_t offset = 0;
+            while (offset < static_cast<std::uint64_t>(len)) {
                 if (_stop) {
                     break;
                 }

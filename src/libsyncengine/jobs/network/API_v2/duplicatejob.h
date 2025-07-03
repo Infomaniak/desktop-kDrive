@@ -27,7 +27,7 @@ class DuplicateJob : public AbstractTokenNetworkJob {
     public:
         DuplicateJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId,
                      const SyncPath &absoluteFinalPath);
-        ~DuplicateJob() final;
+        ~DuplicateJob() override;
 
         inline const NodeId &nodeId() const { return _nodeId; }
         inline SyncTime modtime() const { return _modtime; }
@@ -37,7 +37,8 @@ class DuplicateJob : public AbstractTokenNetworkJob {
 
     private:
         std::string getSpecificUrl() override;
-        void setQueryParameters(Poco::URI &, bool &) override { /* No query parameters */ }
+        void setQueryParameters(Poco::URI &, bool &) override { /* No query parameters */
+        }
         ExitInfo setData() override;
 
         NodeId _remoteFileId;
