@@ -3092,8 +3092,14 @@ void AppServer::processInterruptedLogsUpload() {
     }
 
     if (const auto logUploadToken = std::get<std::string>(appStateValue); !logUploadToken.empty()) {
-        UploadSessionCancelJob cancelJob(UploadSessionType::Log, logUploadToken);
-        if (const ExitCode exitCode = cancelJob.runSynchronously(); exitCode != ExitCode::Ok) {
+        std::shared_ptr<UploadSessionCancelJob> cancelJob = nullptr;
+        try {
+            cancelJob = std::make_shared<UploadSessionCancelJob>(UploadSessionType::Log, logUploadToken);
+        } catch (const std::exception &e) {
+            LOG_WARN(_logger, "Error in UploadSessionCancelJob::UploadSessionCancelJob error=" << e.what());
+            return;
+        }
+        if (const ExitCode exitCode = cancelJob->runSynchronously(); exitCode != ExitCode::Ok) {
             LOG_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously: code=" << exitCode);
         } else {
             LOG_INFO(_logger, "Previous Log upload api call cancelled");
