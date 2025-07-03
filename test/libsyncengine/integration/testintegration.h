@@ -55,6 +55,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testLocalChanges();
         void testRemoteChanges();
         void testSimultaneousChanges();
+        void testUploadBigFile();
 
         void inconsistencyTests();
 
