@@ -1028,9 +1028,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 AppServer::stopAllSyncsTask(syncDbIdList);
                 AppServer::deleteDrive(driveDbId);
             });
-
+#if defined(__APPLE__)
             Utility::restartFinderExtension();
-
+#endif
             break;
         }
         case RequestNum::SYNC_INFOLIST: {
@@ -1095,9 +1095,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitInfo));
                 mainExitInfo.merge(exitInfo, {ExitCode::SystemError});
             }
-
+#if defined(__APPLE__)
             Utility::restartFinderExtension();
-
+#endif
             resultStream << mainExitInfo.code();
             break;
         }
@@ -1284,8 +1284,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
                     sendSyncRemoved(syncInfo.dbId());
                 }
-
+#if defined(__APPLE__)
                 Utility::restartFinderExtension();
+#endif
             });
             break;
         }
@@ -1330,7 +1331,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
                 // Delete sync from DB
                 deleteSync(syncDbId);
+#if defined(__APPLE__)
                 Utility::restartFinderExtension();
+#endif
             });
 
             break;
@@ -2638,9 +2641,9 @@ ExitInfo AppServer::startSyncs() {
             mainExitInfo.merge(exitInfo, {ExitCode::SystemError});
         }
     }
-
+#if defined(__APPLE__)
     Utility::restartFinderExtension();
-
+#endif
     return mainExitInfo;
 }
 
@@ -4292,7 +4295,9 @@ void AppServer::onRestartSyncs() {
         if ((syncPtr->isPaused() || syncPtr->pauseAsked()) &&
             syncPtr->pauseTime() + std::chrono::minutes(1) < std::chrono::steady_clock::now()) {
             syncPtr->unpause();
+#if defined(__APPLE__)
             Utility::restartFinderExtension();
+#endif
         }
     }
 }

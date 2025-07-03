@@ -138,8 +138,8 @@ struct COMMONSERVER_EXPORT Utility {
         static bool moveItemToTrash(const SyncPath &itemPath);
 #ifdef __APPLE__
         static bool preventSleeping(bool enable);
-#endif
         static void restartFinderExtension();
+#endif
         static bool getLinuxDesktopType(std::string &currentDesktop);
 
         static void str2hexstr(const std::string &str, std::string &hexstr, bool capital = false);
@@ -187,7 +187,7 @@ struct COMMONSERVER_EXPORT Utility {
 #endif
         static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, IoError &ioError,
                                              const ItemType &itemType = ItemType());
-        /* Resources analyser */
+        /* Resource analyzer */
         static bool totalRamAvailable(uint64_t &ram, int &errorCode);
         static bool ramCurrentlyUsed(uint64_t &ram, int &errorCode);
         static bool ramCurrentlyUsedByProcess(uint64_t &ram, int &errorCode);

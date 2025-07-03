@@ -52,7 +52,7 @@ constexpr int userNameBufLen = 4096;
 
 namespace KDC {
 
-static bool moveItemToTrash_private(const SyncPath &itemPath) {
+bool Utility::moveItemToTrash(const SyncPath &itemPath) {
     if (CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED) != S_OK) {
         LOGW_INFO(Log::instance()->getLogger(),
                   L"Error in CoInitializeEx in moveItemToTrash. Might be already initialized. Check if next call to "
@@ -185,27 +185,27 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
     return true;
 }
 
-static bool totalRamAvailable_private(uint64_t &ram, int &errorCode) {
+bool Utility::totalRamAvailable(uint64_t &ram, int &errorCode) {
     return true;
 }
 
-static bool ramCurrentlyUsed_private(uint64_t &ram, int &errorCode) {
+bool Utility::ramCurrentlyUsed(uint64_t &ram, int &errorCode) {
     return true;
 }
 
-static bool ramCurrentlyUsedByProcess_private(uint64_t &ram, int &errorCode) {
+bool Utility::ramCurrentlyUsedByProcess(uint64_t &ram, int &errorCode) {
     return true;
 }
 
-static bool cpuUsage_private(uint64_t &previousTotalTicks, uint64_t &previousIdleTicks, double &percent) {
+bool Utility::cpuUsage(uint64_t &previousTotalTicks, uint64_t &previousIdleTicks, double &percent) {
     return true;
 }
 
-static bool cpuUsageByProcess_private(double &percent) {
+bool Utility::cpuUsageByProcess(double &percent) {
     return true;
 }
 
-static std::string userName_private() {
+std::string Utility::userName() {
     DWORD len = userNameBufLen;
     wchar_t userName[userNameBufLen];
     GetUserName(userName, &len);
