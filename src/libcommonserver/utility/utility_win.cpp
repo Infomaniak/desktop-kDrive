@@ -468,8 +468,6 @@ bool Utility::registryExistKeyTree(HKEY hRootKey, const std::wstring &subKey) {
 }
 
 bool Utility::registryExistKeyValue(HKEY hRootKey, const std::wstring &subKey, const std::wstring &valueName) {
-    QVariant value;
-
     HKEY hKey;
 
     REGSAM sam = KEY_READ | KEY_WOW64_64KEY;
