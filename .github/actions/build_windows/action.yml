@@ -63,15 +63,26 @@ runs:
         if: steps.build.outcome == 'success'
         shell: powershell
         run: |
-            $conanPath = "$env:USERPROFILE\.conan2\p"
-            Write-Host "Fetching Conan dependencies in $conanPath"
-            $patterns = @("libxxhash*.dll", "liblog4cplus*.dll", "libssl*.dll", "libcrypto*.dll")
-            foreach ($pattern in $patterns) {
-            Get-ChildItem -Path $conanPath -Recurse -Filter $pattern | ForEach-Object {
-                Copy-Item -Path $_.FullName -Destination ./dependencies/ -Force
-                Write-Host "Conan dependency found -> $($_.FullName)"
+          $conanRunBat = Get-ChildItem -Path "${{ github.workspace }}" -Recurse -Filter "conanrun.bat" | Select-Object -First 1
+          
+          if ($conanRunBat) {
+            Write-Host "Sourcing $($conanRunBat.FullName)"
+            cmd /c `"$($conanRunBat.FullName)`"  # modifie l'environnement du shell cmd
+          }
+          
+          $patterns = @("libxxhash*.dll", "liblog4cplus*.dll", "libssl*.dll", "libcrypto*.dll")
+          $paths = $env:PATH -split ';' | Where-Object { $_ -like '*\.conan2\p*' }
+          foreach ($dir in $paths) {
+            if (Test-Path $dir) {
+              Write-Host "Looking in $dir"
+              foreach ($pattern in $patterns) {
+                Get-ChildItem -Path $dir -Recurse -Filter $pattern -ErrorAction SilentlyContinue | ForEach-Object {
+                  Copy-Item -Path $_.FullName -Destination ./dependencies/ -Force
+                  Write-Host "Conan dependency found -> $($_.FullName)"
+                }
+              }
             }
-            }
+          }
       - name: Upload build common files
         uses: actions/upload-artifact@v4
         with:

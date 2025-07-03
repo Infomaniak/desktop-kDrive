@@ -898,8 +898,8 @@ void DrivePreferencesWidget::onAddLocalFolder(bool checked) {
                     }
 
                     serverFolderSize = serverFoldersDialog.selectionSize();
-                    blackList = serverFoldersDialog.createBlackList();
-                    whiteList = serverFoldersDialog.createWhiteList();
+                    blackList = serverFoldersDialog.getBlacklist();
+                    whiteList = serverFoldersDialog.getWhiteList();
                     qCDebug(lcDrivePreferencesWidget) << "Server subfolders selected";
                 }
             }
@@ -1211,15 +1211,16 @@ void DrivePreferencesWidget::onValidateUpdate(int syncDbId) {
             return;
         }
 
-        // Update the black list
-        QSet<QString> blackSet = treeItemWidget->createBlackSet();
+        // Update the blacklist
+        const QSet<QString> blackSet = treeItemWidget->createBlackSet();
+        if (!GuiUtility::checkBlacklistSize(blackSet.size(), this)) return;
         exitCode = GuiRequests::setSyncIdSet(syncDbId, SyncNodeType::BlackList, blackSet);
         if (exitCode != ExitCode::Ok) {
             qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::setSyncIdSet";
             return;
         }
 
-        // Update the white list
+        // Update the whitelist
         QSet<QString> whiteSet = (oldUndecidedSet + oldBlackSet) - blackSet;
         exitCode = GuiRequests::setSyncIdSet(syncDbId, SyncNodeType::WhiteList, whiteSet);
         if (exitCode != ExitCode::Ok) {

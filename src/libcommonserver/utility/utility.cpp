@@ -547,7 +547,7 @@ void Utility::strhex2str(const std::string &hexstr, std::string &str) {
 
     for (size_t i = 0, j = 0; i < str.size(); i++, j++) {
         str[i] = static_cast<char>((hexstr[j] & '@' ? hexstr[j] + 9 : hexstr[j]) << 4), j++;
-        str[i] |= (hexstr[j] & '@' ? hexstr[j] + 9 : hexstr[j]) & 0xF;
+        str[i] |= static_cast<char>((hexstr[j] & '@' ? hexstr[j] + 9 : hexstr[j]) & 0xF);
     }
 }
 
