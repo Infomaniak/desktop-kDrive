@@ -1632,7 +1632,7 @@ ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::share
                     auto uploadSessionJob(std::dynamic_pointer_cast<DriveUploadSession>(job));
                     if (uploadSessionJob) {
                         nodeId = uploadSessionJob->nodeId();
-                        newCreationTime = uploadJob->creationTime();
+                        newCreationTime = uploadSessionJob->creationTime();
                         newModificationTime = uploadSessionJob->modificationTime();
                         newSize = uploadSessionJob->size();
                         jobOk = true;
