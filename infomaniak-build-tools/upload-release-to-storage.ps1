@@ -36,7 +36,12 @@ $languages = @(
 )
 
 Start-Process -NoNewWindow -FilePath "mc.exe" -ArgumentList "config host add kdrive-storage https://storage.infomaniak.com <username> <pass> --api s3v4" -Wait
-
+if ($LASTEXITCODE -ne 0)
+        {
+            "Failed to connect to the storage" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+            Write-Host "Error uploading $fileName" -f Red
+            exit 1
+        }
 # Upload release notes
 foreach ($os in $os_s)
 {
@@ -47,6 +52,13 @@ foreach ($os in $os_s)
         $size = (Get-ChildItem $filePath | % {[int]($_.length)})
         Write-Host "Uploading: $fileName ($size) to the storage" -f Cyan
         Start-Process -NoNewWindow -FilePath "mc.exe" -ArgumentList "cp --attr Content-Type=text/html $filePath kdrive-storage/download/drive/desktopclient/$fileName" -Wait
+        if ($LASTEXITCODE -ne 0)
+        {
+            "Failed to upload: $filePath to the storage :stop_sign:" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+            Write-Host "Error uploading $fileName" -f Red
+            exit 1
+        }
+        "$fileName Uploaded to the storage :white_check_mark:" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
     }
 }
 
@@ -58,6 +70,13 @@ $size = (Get-ChildItem $filePath | % {[int]($_.length)})
 Write-Host "Uploading: $fileName ($size) to the storage" -f Cyan
 
 #!!! TODO change content type!!! Start-Process -NoNewWindow -FilePath "mc.exe" -ArgumentList "cp --attr Content-Type=text/html $filePath kdrive-storage/download/drive/desktopclient/$fileName" -Wait
+if ($LASTEXITCODE -ne 0)
+{
+    "Failed to upload: $filePath to the storage :stop_sign:" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+    Write-Host "Error uploading $fileName" -f Red
+    exit 1
+}
+"$fileName Uploaded to the storage :white_check_mark:" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
 Start-Process -NoNewWindow -FilePath "mc.exe" -ArgumentList "config host remove kdrive-storage" -Wait
 
 
