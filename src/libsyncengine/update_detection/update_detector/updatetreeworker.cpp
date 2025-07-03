@@ -1212,7 +1212,7 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
         if (!node->createdAt().has_value()) {
             node->setCreatedAt(dbNode.created());
         }
-        if (!node->lastmodified().has_value()) {
+        if (!node->modificationTime().has_value()) {
             node->setLastModified(_side == ReplicaSide::Local ? dbNode.lastModifiedLocal() : dbNode.lastModifiedRemote());
         }
         if (node->size() == 0) {

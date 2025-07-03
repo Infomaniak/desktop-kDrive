@@ -57,7 +57,7 @@ bool OperationProcessor::editChangeShouldBePropagated(std::shared_ptr<Node> affe
         return true;
     }
 
-    if (affectedNode->size() == affectedDbNode.size() && affectedNode->lastmodified() == affectedDbNode.lastModifiedLocal() &&
+    if (affectedNode->size() == affectedDbNode.size() && affectedNode->modificationTime() == affectedDbNode.lastModifiedLocal() &&
         affectedNode->createdAt() != affectedDbNode.created()) {
         return false;
     }
@@ -102,7 +102,7 @@ bool OperationProcessor::isPseudoConflict(const std::shared_ptr<Node> node, cons
 
     // Size can differ for links between remote and local replica, do not check it in that case
     const auto snapshot = _syncPal->snapshot(node->side());
-    const bool sameSizeAndDate = node->lastmodified() == correspondingNode->lastmodified() &&
+    const bool sameSizeAndDate = node->modificationTime() == correspondingNode->modificationTime() &&
                                  (snapshot->isLink(*node->id()) || node->size() == correspondingNode->size());
 
     const auto nodeChecksum = snapshot->contentChecksum(*node->id());

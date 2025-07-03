@@ -90,7 +90,7 @@ class TestSituationGenerator {
         std::shared_ptr<Node> moveNode(ReplicaSide side, const NodeId &id, const NodeId &newParentId,
                                        const SyncName &newName = {}) const;
         std::shared_ptr<Node> renameNode(ReplicaSide side, const NodeId &id, const SyncName &newName) const;
-        std::shared_ptr<Node> editNode(ReplicaSide side, const NodeId &id) const;
+        std::shared_ptr<Node> editNode(ReplicaSide side, const NodeId &id, SyncTime timeInput = 0) const;
         std::shared_ptr<Node> deleteNode(ReplicaSide side, const NodeId &id) const;
 
     private:

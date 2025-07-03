@@ -96,7 +96,7 @@ class Node {
         inline InconsistencyType inconsistencyType() const { return _inconsistencyType; }
         inline OperationType changeEvents() const { return _changeEvents; }
         inline std::optional<SyncTime> createdAt() const { return _createdAt; }
-        inline std::optional<SyncTime> lastmodified() const { return _lastModified; }
+        inline std::optional<SyncTime> modificationTime() const { return _lastModified; }
         inline int64_t size() const { return _size; }
         inline std::optional<NodeId> id() const { return _id; }
         inline std::optional<NodeId> previousId() const { return _previousId; }

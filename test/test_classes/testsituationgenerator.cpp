@@ -113,11 +113,17 @@ std::shared_ptr<Node> TestSituationGenerator::renameNode(const ReplicaSide side,
     return node;
 }
 
-[[maybe_unused]] std::shared_ptr<Node> TestSituationGenerator::editNode(const ReplicaSide side, const NodeId &id) const {
+[[maybe_unused]] std::shared_ptr<Node> TestSituationGenerator::editNode(const ReplicaSide side, const NodeId &id,
+                                                                        const SyncTime timeInput /*= 0*/) const {
     static uint64_t editCounter = 0; // Make sure that 2 consecutive edit operations do not generate the same operation.
     const auto node = updateTree(side)->getNodeById(generateId(side, id));
-    const auto lastModifiedDate = node->lastmodified().value();
-    node->setLastModified(static_cast<SyncTime>(++editCounter) + lastModifiedDate);
+    auto modificationTime = 0;
+    if (timeInput) {
+        modificationTime = timeInput;
+    } else {
+        modificationTime += node->modificationTime().value() + static_cast<SyncTime>(++editCounter);
+    }
+    node->setLastModified(modificationTime);
     node->insertChangeEvent(OperationType::Edit);
     return node;
 }

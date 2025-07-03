@@ -142,8 +142,9 @@ void TestOperationGeneratorWorker::testEditOp() {
 
 void TestOperationGeneratorWorker::testEditOpWithPseudoConflict() {
     // Simulate the edition of A/AA on both replicas.
-    (void) _situationGenerator.editNode(ReplicaSide::Local, "aa");
-    (void) _situationGenerator.editNode(ReplicaSide::Remote, "aa");
+    const auto modificationTime = _situationGenerator.getNode(ReplicaSide::Local, "aa")->modificationTime().value() + 10;
+    (void) _situationGenerator.editNode(ReplicaSide::Local, "aa", modificationTime);
+    (void) _situationGenerator.editNode(ReplicaSide::Remote, "aa", modificationTime);
 
     _syncPal->_operationsGeneratorWorker->execute();
 
@@ -196,7 +197,7 @@ void TestOperationGeneratorWorker::testMoveEditOps() {
     // Simulate the edition of A/AA on remote replica.
     const auto nodeA = _situationGenerator.editNode(ReplicaSide::Local, "a");
     // Simulate the deletion of A/AA to B/AA on remote replica.
-    (void) _situationGenerator.editNode(ReplicaSide::Local, "a");
+    (void) _situationGenerator.moveNode(ReplicaSide::Local, "aa", "b");
 
     _syncPal->_operationsGeneratorWorker->execute();
 
@@ -221,30 +222,30 @@ void TestOperationGeneratorWorker::testMoveEditOps() {
 }
 
 void TestOperationGeneratorWorker::testEditChangeShouldBePropagated() {
-    const auto nodeAl = _situationGenerator.getNode(ReplicaSide::Local, "a");
+    const auto nodeAAl = _situationGenerator.getNode(ReplicaSide::Local, "aa");
 
-    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAl));
+    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl));
 
     // Edit of mtime are always propagated
-    nodeAl->setLastModified(testhelpers::defaultTime + 1);
-    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAl));
-    nodeAl->setLastModified(testhelpers::defaultTime);
+    nodeAAl->setLastModified(testhelpers::defaultTime + 1);
+    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl));
+    nodeAAl->setLastModified(testhelpers::defaultTime);
 
     // Edit of size are always propagated
-    nodeAl->setSize(testhelpers::defaultFileSize + 1);
-    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAl));
-    nodeAl->setSize(testhelpers::defaultFileSize);
+    nodeAAl->setSize(testhelpers::defaultFileSize + 1);
+    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl));
+    nodeAAl->setSize(testhelpers::defaultFileSize);
 
     // Local Edit of createdAt are not propagated if the other attributes are the same
-    nodeAl->setCreatedAt(testhelpers::defaultTime + 1);
-    CPPUNIT_ASSERT(!_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAl));
+    nodeAAl->setCreatedAt(testhelpers::defaultTime + 1);
+    CPPUNIT_ASSERT(!_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl));
 
-    nodeAl->setSize(testhelpers::defaultFileSize + 1);
-    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAl));
-    nodeAl->setLastModified(testhelpers::defaultTime + 1);
-    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAl));
-    nodeAl->setSize(testhelpers::defaultFileSize);
-    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAl));
+    nodeAAl->setSize(testhelpers::defaultFileSize + 1);
+    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl));
+    nodeAAl->setLastModified(testhelpers::defaultTime + 1);
+    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl));
+    nodeAAl->setSize(testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl));
 }
 
 } // namespace KDC
