@@ -395,7 +395,7 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
             return ExitCode::DbError;
         }
         if (!dbPathsAreFound) {
-            LOG_SYNCPAL_WARN(_logger, "Failed to retrieve node for dbId=" << nodesIdsIt->dbNodeId);
+            LOG_SYNCPAL_WARN(_logger, "Failed to retrieve node for dbId=" << dbNodeIds.dbNodeId);
             setExitCause(ExitCause::DbEntryNotFound);
             return ExitCode::DataError;
         }
