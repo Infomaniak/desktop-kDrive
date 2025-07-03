@@ -137,7 +137,7 @@ void TestIo::testFileChanged() {
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
-#if defined(KD_MACOS) || defined(WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
     // A file that is set to "hidden" on MacOSX or Windows: no change detected
     {
         const LocalTemporaryDirectory temporaryDirectory;
@@ -182,7 +182,7 @@ void TestIo::testCheckIfIsHiddenFile() {
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
-#if defined(KD_MACOS) || defined(WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
     // A hidden file on MacOSX and Windows
     {
         const LocalTemporaryDirectory temporaryDirectory;
@@ -208,7 +208,7 @@ void TestIo::testCheckIfIsHiddenFile() {
     }
 #endif
 
-#if !defined(WIN32)
+#if !defined(KD_WINDOWS)
     // A hidden file on MacOSX and Linux
     {
         const LocalTemporaryDirectory temporaryDirectory;
@@ -230,7 +230,7 @@ void TestIo::testCheckIfIsHiddenFile() {
     }
 #endif
 
-#if defined(KD_MACOS) || defined(WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
     // A non-hidden file within a hidden directory
     {
         const LocalTemporaryDirectory temporaryDirectory;
@@ -279,7 +279,7 @@ void TestIo::testCheckIfIsHiddenFile() {
     }
 #endif
 
-#if !defined(WIN32)
+#if !defined(KD_WINDOWS)
     // A non-hidden file within a hidden directory
     {
         const LocalTemporaryDirectory temporaryDirectory;
@@ -329,7 +329,7 @@ void TestIo::testCheckIfIsHiddenFile() {
 #endif
     }
 
-#if !defined(WIN32)
+#if !defined(KD_WINDOWS)
     // A non-existing file is hidden if its name starts with a dot
     {
         const LocalTemporaryDirectory temporaryDirectory;
@@ -366,7 +366,7 @@ void TestIo::testCheckIfIsHiddenFile() {
         CPPUNIT_ASSERT(!isHidden);
     }
 
-#if !defined(WIN32)
+#if !defined(KD_WINDOWS)
     // A non-existing file with a very long path is hidden if its name starts with a dot
     {
         std::string pathSegment(50, '.');

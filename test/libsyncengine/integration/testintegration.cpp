@@ -743,7 +743,7 @@ void TestIntegration::waitForSyncToBeIdle(
 
 void TestIntegration::logStep(const std::string &str) {
     std::stringstream ss;
-#if defined(KD_MACOS) || defined(WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
     ss << "$$$$$ Step `" << str << "` done in " << _timer.lap<std::chrono::milliseconds>() << " $$$$$";
 #else
     ss << "$$$$$ Step `" << str << "` done in " << _timer.lap<std::chrono::milliseconds>().count() << " $$$$$";

@@ -175,7 +175,7 @@ void TestIo::testGetFileStat() {
     // A hidden file
     {
         const LocalTemporaryDirectory temporaryDirectory;
-#if defined(KD_MACOS) || defined(WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         const SyncPath path = temporaryDirectory.path() / "hidden_file.txt";
 #else
         const SyncPath path = temporaryDirectory.path() / ".hidden_file.txt";
@@ -185,7 +185,7 @@ void TestIo::testGetFileStat() {
             ofs << "Some content.\n";
         }
 
-#if defined(KD_MACOS) || defined(WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         IoHelper::setFileHidden(path, true);
 #endif
 
@@ -204,14 +204,14 @@ void TestIo::testGetFileStat() {
     // A hidden directory
     {
         const LocalTemporaryDirectory temporaryDirectory;
-#if defined(KD_MACOS) || defined(WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         const SyncPath path = temporaryDirectory.path();
 #else
         const SyncPath path = temporaryDirectory.path() / ".hidden_directory";
         std::filesystem::create_directory(path);
 #endif
 
-#if defined(KD_MACOS) || defined(WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         IoHelper::setFileHidden(path, true);
 #endif
         FileStat fileStat;
