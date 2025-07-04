@@ -548,8 +548,9 @@ void TestOperationSorterWorker::testCheckAllMethods() {
 
 void TestOperationSorterWorker::testDifferentEncodings() {
     // Generate a MoveBeforeCreate situation but with different encodings
-    const auto nodeNfc = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "nfc", "", false);
-    nodeNfc->setName(testhelpers::makeNfcSyncName());
+    _testSituationGenerator.addItem(NodeType::File, "nfc", "");
+    const auto nodeNfc = _testSituationGenerator.getNode(ReplicaSide::Local, "nfc");
+    nodeNfc->setName(testhelpers::makeNfcSyncName()); // Rename node to "ééé" (NFC encoded)
 
     // Move "ééé" to B/"ééé"
     (void) _testSituationGenerator.moveNode(ReplicaSide::Local, nodeNfc->id().value(), "b");

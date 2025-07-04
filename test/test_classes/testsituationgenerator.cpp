@@ -89,6 +89,13 @@ bool TestSituationGenerator::getDbNode(const NodeId &id, DbNode &dbNode) const {
     return found;
 }
 
+std::shared_ptr<Node> TestSituationGenerator::createNode(const ReplicaSide side, const NodeType itemType, const NodeId &id,
+                                                         const NodeId &parentId, const bool setChangeEvent) const {
+    const auto node = insertInUpdateTree(side, itemType, id, parentId, std::nullopt);
+    if (setChangeEvent) node->setChangeEvents(OperationType::Create);
+    return node;
+}
+
 std::shared_ptr<Node> TestSituationGenerator::moveNode(const ReplicaSide side, const NodeId &id, const NodeId &newParentId,
                                                        const SyncName &newName /*= {}*/) const {
     const auto newParentNode =
@@ -117,13 +124,13 @@ std::shared_ptr<Node> TestSituationGenerator::renameNode(const ReplicaSide side,
                                                                         const SyncTime timeInput /*= 0*/) const {
     static uint64_t editCounter = 0; // Make sure that 2 consecutive edit operations do not generate the same operation.
     const auto node = updateTree(side)->getNodeById(generateId(side, id));
-    auto modificationTime = 0;
+    SyncTime modificationTime = 0;
     if (timeInput) {
         modificationTime = timeInput;
     } else {
         modificationTime += node->modificationTime().value() + static_cast<SyncTime>(++editCounter);
     }
-    node->setLastModified(modificationTime);
+    node->setModificationTime(modificationTime);
     node->insertChangeEvent(OperationType::Edit);
     return node;
 }
