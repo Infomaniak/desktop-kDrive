@@ -42,7 +42,7 @@ endif()
 set(server_SRCS
     oldcommserver.h oldcommserver.cpp
     navigationpanehelper.h navigationpanehelper.cpp
-    commapi.h commapi.cpp
+    commmanager.h commmanager.cpp
     commlistener.h commlistener.cpp
     appserver.h appserver.cpp
     abstractiodevice.h

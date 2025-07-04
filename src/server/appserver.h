@@ -21,7 +21,7 @@
 #include "qtsingleapplication.h"
 #include "oldcommserver.h"
 #include "navigationpanehelper.h"
-#include "commapi.h"
+#include "commmanager.h"
 #include "config.h"
 #include "syncpal/syncpal.h"
 #include "libparms/db/user.h"
@@ -102,7 +102,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         static std::vector<Notification> _notifications;
 
         std::unique_ptr<NavigationPaneHelper> _navigationPaneHelper;
-        QScopedPointer<CommApi> _commApi;
+        QScopedPointer<CommManager> _commManager;
         bool _appRestartRequired{false};
         Theme *_theme{nullptr};
         bool _helpAsked{false};
@@ -253,8 +253,5 @@ class AppServer : public SharedTools::QtSingleApplication {
         void onRestartClientReceived();
         void onMessageReceivedFromAnotherProcess(const QString &message, QObject *);
         void onSendNotifAsked(const QString &title, const QString &message);
-
-    signals:
-        void commApiExecuteCommandDirect(const QString &commandLine);
 };
 } // namespace KDC

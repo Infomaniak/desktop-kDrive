@@ -119,7 +119,7 @@ class CommServerPrivate {
     if (_wrapper && _wrapper->_q_ptr) {
         _wrapper->_inBuffer += QByteArray::fromRawNSData(msg);
         _wrapper->_inBuffer += "\n";
-        emit _wrapper->_q_ptr->readyRead();
+        emit _wrapper->_q_ptr->readyReadCbk();
     }
 }
 
@@ -135,7 +135,7 @@ class CommServerPrivate {
 
     if (_wrapper) {
         _wrapper->_inBuffer += QByteArray::fromRawNSData(msg);
-        emit _wrapper->_q_ptr->readyRead();
+        emit _wrapper->_q_ptr->readyReadCbk();
     }
 }
 
@@ -452,7 +452,6 @@ uint64_t CommChannel::bytesAvailable() const {
 bool CommChannel::canReadLine() const {
     return d_ptr->_inBuffer.indexOf('\n', int(pos())) != -1;
 }
-
 
 // CommServer implementation
 CommServer::CommServer() :

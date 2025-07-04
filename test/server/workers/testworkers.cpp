@@ -134,12 +134,12 @@ void TestWorkers::setUp() {
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createProgressInfo();
 
-    // Setup CommApi
+    // Setup CommManager
     std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> syncPalMap;
     syncPalMap[_sync.dbId()] = _syncPal;
     std::unordered_map<int, std::shared_ptr<KDC::Vfs>> vfsMap;
     vfsMap[_sync.dbId()] = _vfsPtr;
-    _commApi = std::make_unique<CommApi>(syncPalMap, vfsMap);
+    _CommManager = std::make_unique<CommManager>(syncPalMap, vfsMap);
 
 #ifdef _WIN32
     // Initializes the COM library

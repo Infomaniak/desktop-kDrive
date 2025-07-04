@@ -42,14 +42,8 @@ class CommChannel : public KDC::AbstractIODevice {
         uint64_t bytesAvailable() const override;
         bool canReadLine() const override;
 
-        void setLostConnectionCbk(const std::function<void()> &cbk) { _onLostConnectionFct = cbk; }
-        void lostConnectionCbk() {
-            if (_onLostConnectionFct) _onLostConnectionFct();
-        }
-
     private:
         std::unique_ptr<CommChannelPrivate> d_ptr;
-        std::function<void()> _onLostConnectionFct;
 
         friend class CommServerPrivate;
 };
@@ -66,27 +60,27 @@ class CommServer {
 
         static bool removeServer(const std::string &) { return false; }
 
-        void setNewExtConnectionCbk(const std::function<void()> &cbk) { _onNewExtConnectionFct = cbk; }
+        void setNewExtConnectionCbk(const std::function<void()> &cbk) { _onNewExtConnectionCbk = cbk; }
         void newExtConnectionCbk() {
-            if (_onNewExtConnectionFct) _onNewExtConnectionFct();
+            if (_onNewExtConnectionCbk) _onNewExtConnectionCbk();
         }
-        void setNewGuiConnectionCbk(const std::function<void()> &cbk) { _onNewGuiConnectionFct = cbk; }
+        void setNewGuiConnectionCbk(const std::function<void()> &cbk) { _onNewGuiConnectionCbk = cbk; }
         void newGuiConnectionCbk() {
-            if (_onNewGuiConnectionFct) _onNewGuiConnectionFct();
+            if (_onNewGuiConnectionCbk) _onNewGuiConnectionCbk();
         }
-        void setLostExtConnectionCbk(const std::function<void()> &cbk) { _onLostExtConnectionFct = cbk; }
+        void setLostExtConnectionCbk(const std::function<void()> &cbk) { _onLostExtConnectionCbk = cbk; }
         void lostExtConnectionCbk() {
-            if (_onLostExtConnectionFct) _onLostExtConnectionFct();
+            if (_onLostExtConnectionCbk) _onLostExtConnectionCbk();
         }
-        void setLostGuiConnectionCbk(const std::function<void()> &cbk) { _onLostGuiConnectionFct = cbk; }
+        void setLostGuiConnectionCbk(const std::function<void()> &cbk) { _onLostGuiConnectionCbk = cbk; }
         void lostGuiConnectionCbk() {
-            if (_onLostGuiConnectionFct) _onLostGuiConnectionFct();
+            if (_onLostGuiConnectionCbk) _onLostGuiConnectionCbk();
         }
 
     private:
         std::unique_ptr<CommServerPrivate> d_ptr;
-        std::function<void()> _onNewExtConnectionFct;
-        std::function<void()> _onNewGuiConnectionFct;
-        std::function<void()> _onLostExtConnectionFct;
-        std::function<void()> _onLostGuiConnectionFct;
+        std::function<void()> _onNewExtConnectionCbk;
+        std::function<void()> _onNewGuiConnectionCbk;
+        std::function<void()> _onLostExtConnectionCbk;
+        std::function<void()> _onLostGuiConnectionCbk;
 };

@@ -20,13 +20,14 @@
 
 #include <cstdint>
 #include <memory>
+#include <functional>
 
 namespace KDC {
 
 class AbstractIODevice {
     public:
         AbstractIODevice();
-        ~AbstractIODevice();
+        ~AbstractIODevice() { destroyedCbk(); }
 
         virtual uint64_t readData(char *data, uint64_t maxlen) = 0;
         virtual uint64_t writeData(const char *data, uint64_t len) = 0;
@@ -34,6 +35,24 @@ class AbstractIODevice {
         virtual bool isSequential() const { return true; }
         virtual uint64_t bytesAvailable() const = 0;
         virtual bool canReadLine() const = 0;
+
+        void setLostConnectionCbk(const std::function<void()> &cbk) { _onLostConnectionCbk = cbk; }
+        void lostConnectionCbk() {
+            if (_onLostConnectionCbk) _onLostConnectionCbk();
+        }
+        void setReadyReadCbk(const std::function<void()> &cbk) { _onReadyReadCbk = cbk; }
+        void readyReadCbk() {
+            if (_onReadyReadCbk) _onReadyReadCbk();
+        }
+        void setDestroyedCbk(const std::function<void(AbstractIODevice *)> &cbk) { _onDestroyedCbk = cbk; }
+        void destroyedCbk() {
+            if (_onDestroyedCbk) _onDestroyedCbk(this);
+        }
+
+    private:
+        std::function<void()> _onLostConnectionCbk;
+        std::function<void()> _onReadyReadCbk;
+        std::function<void(AbstractIODevice *)> _onDestroyedCbk;
 };
 
 } // namespace KDC

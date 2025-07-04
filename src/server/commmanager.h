@@ -28,11 +28,8 @@
 
 #include <QList>
 #include <QMutex>
-#include <QWaitCondition>
-#include <QTemporaryFile>
-#include <QTimer>
 
-#if defined(Q_OS_MAC)
+#if defined(__APPLE__)
 #include "commserver_mac.h"
 #else
 #include <QLocalServer>
@@ -64,11 +61,11 @@ struct FileData {
         KDC::VirtualFileMode virtualFileMode{KDC::VirtualFileMode::Off};
 };
 
-class CommApi {
+class CommManager {
     public:
-        explicit CommApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> &syncPalMap,
-                         const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap);
-        virtual ~CommApi();
+        explicit CommManager(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> &syncPalMap,
+                             const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap);
+        virtual ~CommManager();
 
         inline void setAddErrorCallback(void (*addError)(const KDC::Error &)) { _addError = addError; }
         inline void setGetThumbnailCallback(KDC::ExitCode (*getThumbnail)(int, KDC::NodeId, int, std::string &)) {
@@ -78,26 +75,9 @@ class CommApi {
             _getPublicLinkUrl = getPublicLinkUrl;
         }
 
-        void unregisterSync(int syncDbId);
         void registerSync(int syncDbId);
-
-        static bool syncForPath(const std::filesystem::path &path, KDC::Sync &sync);
-
-        void onNewExtConnection();
-        void onNewGuiConnection();
-        void onLostExtConnection();
-        void onLostGuiConnection();
-
-    public slots:
+        void unregisterSync(int syncDbId);
         void executeCommandDirect(const QString &commandLine);
-
-    private slots:
-        void onExtListenerDestroyed(QObject *obj);
-        void onReadyRead();
-        void onQueryReceived();
-
-        static void copyUrlToClipboard(const QString &link);
-        static void openPrivateLink(const QString &link);
 
     private:
         const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> &_syncPalMap;
@@ -112,68 +92,71 @@ class CommApi {
         QMutex _dehydrationMutex;
 
         // Callbacks
+        void onNewExtConnection();
+        void onNewGuiConnection();
+        void onLostExtConnection();
+        void onLostGuiConnection();
+        void onExtListenerDestroyed(AbstractIODevice *ioDevice);
+        void onReadyRead();
+        void onQueryReceived();
+
+        // AppServer callbacks
         void (*_addError)(const KDC::Error &error);
         KDC::ExitCode (*_getThumbnail)(int driveDbId, KDC::NodeId nodeId, int width, std::string &thumbnail);
         KDC::ExitCode (*_getPublicLinkUrl)(int driveDbId, const QString &nodeId, QString &linkUrl);
 
+        // Send message to all listeners
         void broadcastMessage(const QString &msg, bool doWait = false);
+
+        // Execute commands requested by the FinderSync and LiteSync extensions
         void executeCommand(const QString &commandLine, const CommListener *listener);
 
         // Commands map
-        std::map<std::string, std::function<void(const std::string &, CommListener *)>> _commands;
+        std::map<std::string, std::function<void(const SyncName &, CommListener *)>> _commands;
 
-        void commandRetrieveFolderStatus(const std::string &argument, CommListener *listener);
-        void commandRetrieveFileStatus(const std::string &argument, CommListener *listener);
-
-        void commandVersion(const std::string &argument, CommListener *listener);
-
-        // The context menu actions
-        void commandCopyPublicLink(const std::string &localFile, CommListener *listener);
-        void commandCopyPrivateLink(const std::string &localFile, CommListener *listener);
-        void commandOpenPrivateLink(const std::string &localFile, CommListener *listener);
-        void commandMakeAvailableLocallyDirect(const std::string &filesArg);
-        void commandMakeOnlineOnlyDirect(const std::string &filesArg, CommListener *listener);
-        void commandCancelDehydrationDirect(const std::string &);
-        void commandCancelHydrationDirect(const std::string &);
-
-        /** Sends translated/branded strings that may be useful to the integration */
-        void commandGetStrings(const QString &argument, CommListener *listener);
-
-        /** Sends the request URL to get a thumbnail */
+        // Commands from FinderSyncExt & FileExplorerExtension (Contextual menu)
+        void commandCopyPublicLink(const SyncName &argument, CommListener *listener);
+        void commandCopyPrivateLink(const SyncName &argument, CommListener *listener);
+        void commandOpenPrivateLink(const SyncName &argument, CommListener *listener);
+        void commandCancelDehydrationDirect(const SyncName &, CommListener *);
+        void commandCancelHydrationDirect(const SyncName &, CommListener *);
+        // Commands from FinderSyncExt (Contextual menu) & FileExplorerExtension (Cloud provider)
+        void commandMakeAvailableLocallyDirect(const SyncName &argument, CommListener *listener);
 #ifdef _WIN32
-        void commandGetThumbnail(const QString &argument, CommListener *listener);
+        // Commands from FileExplorerExtension (Contextual menu)
+        void commandGetAllMenuItems(const SyncName &argument, CommListener *listener);
+        // Commands from FileExplorerExtension (Thumbnail provider)
+        void commandGetThumbnail(const SyncName &argument, CommListener *listener);
 #endif
-
 #ifdef __APPLE__
-        void commandSetThumbnail(const QString &filePath);
-#endif
-
-        // Fetch the private link and call targetFun
-        void fetchPrivateLinkUrlHelper(const QString &localFile, const std::function<void(const QString &url)> &targetFun);
-
-        // Sends the context menu options relating to sharing to listener
-        void sendSharingContextMenuOptions(const FileData &fileData, const CommListener *listener);
-        void addSharingContextMenuOptions(const FileData &fileData, QTextStream &response);
-
-        /** Send the list of menu item. (added in version 1.1)
+        // Commands from FinderSyncExt
+        void commandRetrieveFolderStatus(const SyncName &argument, CommListener *listener);
+        void commandRetrieveFileStatus(const SyncName &argument, CommListener *listener);
+        // Commands from FinderSyncExt (Contextual menu)
+        /** Request for the list of menu items.
          * argument is a list of files for which the menu should be shown, separated by '\x1e'
          * Reply with  GET_MENU_ITEMS:BEGIN
          * followed by several MENU_ITEM:[Action]:[flag]:[Text]
          * If flag contains 'd', the menu should be disabled
          * and ends with GET_MENU_ITEMS:END
          */
-        // Mac and Windows (sync without Lite Sync) menu
-        Q_INVOKABLE void command_GET_MENU_ITEMS(const QString &argument, CommListener *listener);
+        void commandGetMenuItems(const SyncName &argument, CommListener *listener);
+        void commandMakeOnlineOnlyDirect(const SyncName &argument, CommListener *listener);
+        // Commands from LiteSyncExt
+        void commandSetThumbnail(const SyncName &argument, CommListener *);
+#endif
+
+        // Fetch the private link and call targetFun
+        void fetchPrivateLinkUrlHelper(const SyncPath &localFile, const std::function<void(const QString &url)> &targetFun);
+
+        // Sends the context menu options relating to sharing to listener
+        void sendSharingContextMenuOptions(const FileData &fileData, const CommListener *listener);
+        void addSharingContextMenuOptions(const FileData &fileData, QTextStream &response);
+
         void manageActionsOnSingleFile(CommListener *listener, const QStringList &files,
                                        std::unordered_map<int, std::shared_ptr<KDC::SyncPal>>::const_iterator syncPalMapIt,
                                        std::unordered_map<int, std::shared_ptr<KDC::Vfs>>::const_iterator vfsMapIt,
                                        const KDC::Sync &sync);
-
-#ifdef Q_OS_WIN
-        // Windows (sync with Lite Sync) menu
-        Q_INVOKABLE void command_GET_ALL_MENU_ITEMS(const QString &argument, CommListener *listener);
-#endif
-
         QString buildRegisterPathMessage(const QString &path);
         void processFileList(const QStringList &inFileList, std::list<SyncPath> &outFileList);
         bool syncFileStatus(const FileData &fileData, SyncFileStatus &status, VfsStatus &vfsStatus);
@@ -188,8 +171,7 @@ class CommApi {
         QString cancelHydrationText();
         static bool openBrowser(const QUrl &url);
 
-        QString socketAPIString(SyncFileStatus status, const VfsStatus &vfsStatus) const;
-
+        QString statusString(SyncFileStatus status, const VfsStatus &vfsStatus) const;
 
         // Try to retrieve the Sync object with DB ID `syncDbId`.
         // Returns `false`, add errors and log messages on failure.
@@ -200,6 +182,10 @@ class CommApi {
         // Returns the end() iterator on failure but also add an error and log a message in this case.
         std::unordered_map<int, std::shared_ptr<KDC::Vfs>>::const_iterator retrieveVfsMapIt(const int syncDbId) const;
         std::unordered_map<int, std::shared_ptr<KDC::SyncPal>>::const_iterator retrieveSyncPalMapIt(const int syncDbId) const;
+
+        static bool syncForPath(const std::filesystem::path &path, KDC::Sync &sync);
+        static void copyUrlToClipboard(const QString &link);
+        static void openPrivateLink(const QString &link);
 };
 
 } // namespace KDC

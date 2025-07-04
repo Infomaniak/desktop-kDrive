@@ -23,7 +23,7 @@ set(server_srcs_path ${CMAKE_SOURCE_DIR}/src/server)
 
 set(server_SRCS
     ${server_srcs_path}/appserver.h ${server_srcs_path}/appserver.cpp
-    ${server_srcs_path}/commapi.h ${server_srcs_path}/commapi.cpp
+    ${server_srcs_path}/commmanager.h ${server_srcs_path}/commmanager.cpp
     ${server_srcs_path}/commlistener.h ${server_srcs_path}/commlistener.cpp
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
     ${server_srcs_path}/updater/updatechecker.h ${server_srcs_path}/updater/updatechecker.cpp
