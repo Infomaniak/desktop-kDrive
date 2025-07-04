@@ -1884,7 +1884,7 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
             return ExitCode::DataError;
         }
         syncOp->correspondingNode()->setCreatedAt(newCreationTime);
-        syncOp->correspondingNode()->setLastModified(newLastModificationTime);
+        syncOp->correspondingNode()->setModificationTime(newLastModificationTime);
     }
     node = syncOp->correspondingNode();
 

@@ -113,7 +113,7 @@ class Node {
         inline void setInconsistencyType(InconsistencyType newInconsistencyType) { _inconsistencyType = newInconsistencyType; }
         inline void addInconsistencyType(InconsistencyType newInconsistencyType) { _inconsistencyType |= newInconsistencyType; }
         inline void setCreatedAt(const std::optional<SyncTime> &createdAt) { _createdAt = createdAt; }
-        inline void setLastModified(const std::optional<SyncTime> &lastmodified) { _lastModified = lastmodified; }
+        inline void setModificationTime(const std::optional<SyncTime> &lastmodified) { _lastModified = lastmodified; }
         inline void setSize(int64_t size) { _size = size; }
         inline void setPreviousId(const std::optional<NodeId> &previousNodeId) { _previousId = previousNodeId; }
         bool setParentNode(std::shared_ptr<Node> parentNode);

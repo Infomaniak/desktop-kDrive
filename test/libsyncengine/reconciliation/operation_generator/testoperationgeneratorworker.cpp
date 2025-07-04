@@ -226,10 +226,10 @@ void TestOperationGeneratorWorker::testEditChangeShouldBePropagated() {
 
     CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl));
 
-    // Edit of mtime are always propagated
-    nodeAAl->setLastModified(testhelpers::defaultTime + 1);
+    // Edit of modification time are always propagated
+    nodeAAl->setModificationTime(testhelpers::defaultTime + 1);
     CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl));
-    nodeAAl->setLastModified(testhelpers::defaultTime);
+    nodeAAl->setModificationTime(testhelpers::defaultTime);
 
     // Edit of size are always propagated
     nodeAAl->setSize(testhelpers::defaultFileSize + 1);
@@ -242,7 +242,7 @@ void TestOperationGeneratorWorker::testEditChangeShouldBePropagated() {
 
     nodeAAl->setSize(testhelpers::defaultFileSize + 1);
     CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl));
-    nodeAAl->setLastModified(testhelpers::defaultTime + 1);
+    nodeAAl->setModificationTime(testhelpers::defaultTime + 1);
     CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl));
     nodeAAl->setSize(testhelpers::defaultFileSize);
     CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl));
