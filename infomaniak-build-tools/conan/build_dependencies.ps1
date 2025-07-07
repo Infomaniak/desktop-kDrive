@@ -206,7 +206,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Log "Creating CPPUnit Conan package..."
-& $ConanExe create "$RecipesFolder/cppunit/all/conanfile-windows.py" --build=missing -s build_type=Release -r $LocalRemoteName -r conancenter -o 'cppunit/*:shared=True'
+& $ConanExe create "$RecipesFolder/cppunit/all/conanfile-windows.py" --version 1.15.1 --build=missing -s build_type=Release -r $LocalRemoteName -r conancenter -o 'cppunit/*:shared=True'
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to create CPPUnit Conan package."
 }
