@@ -191,6 +191,26 @@ Note that installing `NASM` is not required.
 <summary>CPPUnit 1.15.1</summary>
 
 ### macOS
+Download and build `CPPUnit`:
+
+You will probably need to install `automake` and `libtool`:
+```
+brew install automake
+brew install libtool
+```
+
+CPPUnit must be build in single architecture. Replace with `x86_64` or `arm64` in the following command:
+```bash
+cd ~/Projects
+git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
+cd cppunit
+./autogen.sh
+./configure CXXFLAGS="-arch <your_arch> -mmacosx-version-min=10.15"
+make
+sudo make install
+```
+
+If the server does not reply to the `git clone` command, you can download the source from https://www.freedesktop.org/wiki/Software/cppunit/.
 
 ### Linux
 ```bash
