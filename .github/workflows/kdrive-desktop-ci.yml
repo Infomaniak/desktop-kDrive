@@ -83,7 +83,7 @@ jobs:
          uses: ./.github/actions/test_windows
          with:  
             test_name: ${{ matrix.test_name }}
-            test_dependencies_version: "cppunit-v2" # TODO: Refresh this to use the global variable '${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}' and increment it once it's working
+            test_dependencies_version: "cppunit-v3" # TODO: Refresh this to use the global variable '${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}' and increment it once it's working
 
 # Tests Linux
   Test-Linux:
@@ -106,7 +106,7 @@ jobs:
          uses: ./.github/actions/test_linux
          with:  
             test_name: ${{ matrix.test_name }}
-            test_dependencies_version: "cppunit-v2" # TODO: Refresh this to use the global variable '${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}' and increment it once it's working
+            test_dependencies_version: "cppunit-v3" # TODO: Refresh this to use the global variable '${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}' and increment it once it's working
 
 # Tests macOS
   Test-macOS:
@@ -129,7 +129,7 @@ jobs:
          uses: ./.github/actions/test_macos
          with:  
             test_name: ${{ matrix.test_name }}
-            test_dependencies_version: "cppunit-v2" # TODO: Refresh this to use the global variable '${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}' and increment it once it's working
+            test_dependencies_version: "cppunit-v3" # TODO: Refresh this to use the global variable '${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}' and increment it once it's working
 
   Unit-Tests:
     runs-on: [self-hosted, Windows]
