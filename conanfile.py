@@ -44,6 +44,8 @@ class KDriveDesktop(ConanFile):
         Here are the dependencies used:
         - `xxhash/0.8.2`: A fast non-cryptographic hash algorithm.
         - `log4cplus/2.1.2`: A C++ logging library.
+        - `openssl/3.2.4`: A widely used library for secure communication.
+        - `cppunit/1.15.1`: A C++ unit testing framework.
         :return: None
         """
         self.requires("xxhash/0.8.2") # From local recipe
