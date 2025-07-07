@@ -70,7 +70,7 @@ class CppunitConan(ConanFile):
         if self.options.shared:
             tc.extra_defines.append("CPPUNIT_BUILD_DLL")
         if is_msvc(self):
-            tc.extra_cxxflags.extend([ "-EHsc", "/std:c++20" ])
+            tc.extra_cxxflags.extend([ "-EHsc", "-std=c++20" ])
             if check_min_vs(self, "180", raise_invalid=False):
                 tc.extra_cflags.append("-FS")
                 tc.extra_cxxflags.append("-FS")
