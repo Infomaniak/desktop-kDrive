@@ -97,6 +97,6 @@ cmake \
 	"$src_dir"
 
 # Build kDrive sources
-make -j6 all install VERBOSE=1
+make -j6 all install
 
 popd
