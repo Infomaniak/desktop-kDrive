@@ -183,6 +183,20 @@ void DownloadJob::runJob() noexcept {
     AbstractTokenNetworkJob::runJob();
 }
 
+namespace {
+std::wstring notEnoughPlaceMessage(const UniqueId jobId, const SyncPath &tmpDirPath, const SyncPath &destDirPath,
+                                   const int64_t expectedSizeInBytes) {
+    std::wstringstream wss;
+    const auto requiredFreeSpaceInBytes = expectedSizeInBytes + Utility::freeDiskSpaceLimit();
+
+    wss << L"Request " << jobId << L": not enough place at " << Utility::formatSyncPath(tmpDirPath) << L" or "
+        << Utility::formatSyncPath(destDirPath.parent_path()) << L". Required free space: " << requiredFreeSpaceInBytes
+        << " bytes. Download cancelled.";
+
+    return wss.str();
+}
+} // namespace
+
 bool DownloadJob::handleResponse(std::istream &is) {
     // Get Mime type
     std::string contentType;
@@ -267,10 +281,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
                                        ? BUF_SIZE
                                        : (_resHttp.getContentLength() - getProgress());
                        !hasEnoughPlace(_tmpPath, _localpath, neededPlace)) {
-                LOGW_WARN(_logger, L"Request " << jobId() << L": Disk almost full, not enough place at "
-                                               << Utility::formatSyncPath(_tmpPath) << L" or "
-                                               << Utility::formatSyncPath(_localpath.parent_path())
-                                               << L". Download job cancelled.");
+                LOGW_WARN(_logger, notEnoughPlaceMessage(jobId(), _tmpPath, _localpath, neededPlace));
                 _exitInfo = {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
                 return false;
             } else {
@@ -612,8 +623,7 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
         setProgress(0);
         if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH) {
             if (!hasEnoughPlace(_tmpPath, _localpath, expectedSize)) {
-                LOGW_WARN(_logger, L"Request " << jobId() << L": not enough place at " << Utility::formatSyncPath(_tmpPath)
-                                               << L" or " << Utility::formatSyncPath(_localpath));
+                LOGW_WARN(_logger, notEnoughPlaceMessage(jobId(), _tmpPath, _localpath, expectedSize));
                 writeError = true;
             }
             if (expectedSize < 0) {
