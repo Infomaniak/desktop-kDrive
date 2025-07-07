@@ -5,7 +5,6 @@
     - [Qt 6.2.3](#qt-623)
     - [Sentry](#sentry)
     - [Poco](#poco)
-    - [CPPUnit](#cppunit)
     - [Zlib](#zlib)
     - [libzip](#libzip)
     - [C++ Redistributable](#redistributable)
