@@ -41,7 +41,7 @@
 #include <QOperatingSystemVersion>
 #include <QPainter>
 #include <QPixmap>
-#include <QProcess>
+#include <QProcessEnvironment>
 #include <QScreen>
 #include <QUrlQuery>
 
@@ -649,14 +649,16 @@ bool GuiUtility::checkBlacklistSize(const size_t blacklistSize, QWidget *parent)
 bool GuiUtility::getLinuxDesktopType(QString &type, QString &version) {
     type = QProcessEnvironment::systemEnvironment().value("XDG_CURRENT_DESKTOP");
     if (type.contains("GNOME")) {
-        QProcess process;
-        process.start("gnome-shell", QStringList() << "--version");
-        process.waitForStarted();
-        process.waitForFinished();
+        std::vector<std::string> arguments;
+        arguments.push_back("--version");
 
-        QByteArray result = process.readAll();
-        if (result.startsWith("GNOME")) {
-            QList<QByteArray> resultList = result.split(' ');
+        std::string output;
+        if (!CommonUtility::runExe("gnome-shell", arguments, false, output)) {
+            return false;
+        }
+
+        if (output.starts_with("GNOME")) {
+            QStringList resultList = QString::fromStdString(output).split(' ');
             if (resultList.size() == 3) {
                 version = resultList[2];
             }

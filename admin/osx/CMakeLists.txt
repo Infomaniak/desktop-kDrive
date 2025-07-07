@@ -11,6 +11,7 @@ endif()
 
 find_package(Qt6 6.2 COMPONENTS Core REQUIRED)
 configure_file(create_mac.sh.cmake ${CMAKE_CURRENT_BINARY_DIR}/create_mac.sh)
+configure_file(create_mac_appstore.sh.cmake ${CMAKE_CURRENT_BINARY_DIR}/create_mac_appstore.sh)
 configure_file(macosx.pkgproj.cmake ${CMAKE_CURRENT_BINARY_DIR}/macosx.pkgproj)
 configure_file(pre_install.sh.cmake ${CMAKE_CURRENT_BINARY_DIR}/pre_install.sh)
 configure_file(post_install.sh.cmake ${CMAKE_CURRENT_BINARY_DIR}/post_install.sh)

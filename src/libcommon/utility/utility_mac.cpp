@@ -36,6 +36,7 @@ bool hasDarkSystray();
 std::string getAppSupportDir();
 std::string getAppDir();
 bool setFolderCustomIcon(const QString &folderPath, const QString &icon);
+bool runExe(const SyncPath &path, const std::vector<std::string> &args, bool detached, std::string &output);
 
 } // namespace KDC
 
@@ -58,6 +59,10 @@ static bool setFolderCustomIcon_private(const QString &folderPath, const QString
         return true;
     }
     return KDC::setFolderCustomIcon(folderPath, iconPath);
+}
+
+static bool runExe_private(const SyncPath &path, const std::vector<std::string> &args, bool detached, std::string &output) {
+    return KDC::runExe(path, args, detached, output);
 }
 
 } // namespace KDC

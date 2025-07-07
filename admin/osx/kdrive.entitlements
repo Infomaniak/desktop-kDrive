@@ -8,5 +8,15 @@
 	<true/>
 	<key>com.apple.developer.team-identifier</key>
 	<string>864VDCS2QY</string>
+	<key>com.apple.security.app-sandbox</key>
+	<true/>
+	<key>com.apple.security.network.client</key>
+	<true/>
+	<key>com.apple.security.network.server</key>
+	<true/>
+	<key>com.apple.security.temporary-exception.files.absolute-path.read-write</key>
+	<array>
+        	<string>/</string>
+    	</array>
 </dict>
 </plist>
