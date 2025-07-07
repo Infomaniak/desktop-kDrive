@@ -70,7 +70,7 @@ runs:
             cmd /c `"$($conanRunBat.FullName)`"  # modifie l'environnement du shell cmd
           }
           
-          $patterns = @("libxxhash*.dll", "liblog4cplus*.dll", "libssl*.dll", "libcrypto*.dll", "*cppunit*.dll")
+          $patterns = @("libxxhash*.dll", "liblog4cplus*.dll", "libssl*.dll", "libcrypto*.dll", "cppunit*.dll")
           $paths = $env:PATH -split ';' | Where-Object { $_ -like '*\.conan2\p*' }
           foreach ($dir in $paths) {
             if (Test-Path $dir) {
