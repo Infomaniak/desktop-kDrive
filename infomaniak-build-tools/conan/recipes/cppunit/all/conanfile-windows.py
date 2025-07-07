@@ -90,8 +90,8 @@ class CppunitConan(ConanFile):
         if is_msvc(self):
             compile_wrapper = unix_path(self, self.conf.get("user.automake:compile-wrapper", check_type=str))
             ar_wrapper = unix_path(self, self.conf.get("user.automake:lib-wrapper", check_type=str))
-            env.define("CC", f"{compile_wrapper} cl -nologo /std:c++20")
-            env.define("CXX", f"{compile_wrapper} cl -nologo /std:c++20")
+            env.define("CC", f"{compile_wrapper} cl -nologo -std=c++20")
+            env.define("CXX", f"{compile_wrapper} cl -nologo -std=c++20")
             env.define("LD", "link -nologo")
             env.define("AR", f"{ar_wrapper} \"lib -nologo\"")
             env.define("NM", "dumpbin -symbols")
