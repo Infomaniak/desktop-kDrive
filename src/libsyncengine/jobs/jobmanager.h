@@ -22,6 +22,15 @@
 #include "abstractjob.h"
 #include "jobmanagerdata.h"
 
+#include "jobs/network/abstractnetworkjob.h"
+
+#include "network/API_v2/downloadjob.h"
+#include "network/API_v2/upload/upload_session/driveuploadsession.h"
+#include "performance_watcher/performancewatcher.h"
+#include "requests/parameterscache.h"
+
+#include <log4cplus/loggingmacros.h>
+
 #include "jobs/network/networkjobsparams.h"
 
 #include "libcommon/utility/utility.h"
@@ -30,10 +39,12 @@
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 
+#include <Poco/Exception.h>
 #include <Poco/Thread.h>
 #include <Poco/ThreadPool.h>
 #include <Poco/Net/HTTPSClientSession.h>
-#include <Poco/ThreadPool.h>
+
+#include <algorithm> // std::max
 
 namespace KDC {
 
@@ -184,11 +195,6 @@ JobManager<Job>::JobManager() {
 }
 
 template<class Job>
-bool JobManager<Job>::canRunJob(const std::shared_ptr<Job>) const {
-    return true;
-}
-
-template<class Job>
 void JobManager<Job>::run() noexcept {
     while (true) {
         if (_stop) {
@@ -282,6 +288,44 @@ void JobManager<Job>::managePendingJobs() {
             _data.removeFromPendingJobs(job->jobId());
         }
     }
+}
+
+namespace {
+
+inline bool isBigFileDownloadJob(const std::shared_ptr<AbstractJob> job) {
+    if (const auto &downloadJob = std::dynamic_pointer_cast<DownloadJob>(job);
+        downloadJob && downloadJob->expectedSize() > bigFileThreshold) {
+        return true;
+    }
+
+    return false;
+}
+
+
+inline bool isBigFileUploadJob(const std::shared_ptr<AbstractJob> job) {
+    // Upload sessions are only for big files
+    return bool{std::dynamic_pointer_cast<DriveUploadSession>(job)};
+}
+
+}; // namespace
+
+
+template<>
+inline bool JobManager<AbstractJob>::canRunJob(const std::shared_ptr<AbstractJob> job) const {
+    if (isBigFileUploadJob(job)) {
+        for (const auto &runningJobId: _data.runningJobs()) {
+            if (const auto &uploadSession = std::dynamic_pointer_cast<DriveUploadSession>(getJob(runningJobId)); uploadSession) {
+                // An upload session is already running.
+                return false;
+            }
+        }
+        return true;
+    }
+    if (isBigFileDownloadJob(job) && availableThreadsInPool() < 0.5 * Poco::ThreadPool::defaultPool().capacity()) {
+        // Allow big file download only if there is more than 50% of thread available in the pool.
+        return false;
+    }
+    return true;
 }
 
 } // namespace KDC

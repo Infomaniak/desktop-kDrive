@@ -22,7 +22,7 @@ set(syncengine_SRCS
     # Login
     login/login.h login/login.cpp
     # Jobs
-    jobs/jobmanager.h jobs/jobmanager.cpp
+    jobs/jobmanager.h
     jobs/jobmanagerdata.h
     jobs/abstractjob.h jobs/abstractjob.cpp
     jobs/abstractpropagatorjob.h

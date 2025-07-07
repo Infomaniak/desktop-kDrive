@@ -23,7 +23,6 @@
 
 #include "libsyncengine/jobs/abstractjob.h"
 #include "libsyncengine/jobs/jobmanager.h"
-#include "libsyncengine/jobs/jobmanager.cpp"
 
 #include "libcommon/utility/logiffail.h"
 #include "syncpal/excludelistpropagator.h"
@@ -585,7 +584,7 @@ bool SyncPal::setProgress(const SyncPath &relativePath, int64_t current) {
 }
 
 bool SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status, const NodeId &newRemoteNodeId) {
-    if(!newRemoteNodeId.empty()) {
+    if (!newRemoteNodeId.empty()) {
         if (!_progressInfo->setSyncFileItemRemoteId(relativeLocalPath, newRemoteNodeId)) {
             LOG_SYNCPAL_WARN(_logger, "Error in ProgressInfo::setSyncFileItemRemoteId");
             // Continue anyway as this is not critical, the share menu on activities will not be available for this file

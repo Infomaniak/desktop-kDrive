@@ -19,7 +19,6 @@
 #include "benchmarkparalleljobs.h"
 
 #include "db/parmsdb.h"
-#include "gui/parameterscache.h"
 #include "jobs/jobmanager.h"
 #include "jobs/network/API_v2/downloadjob.h"
 #include "jobs/network/API_v2/getfilelistjob.h"
