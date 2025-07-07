@@ -37,6 +37,7 @@ class TestExecutorWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testPropagateConflictToDbAndTree);
         CPPUNIT_TEST(testDeleteOpNodes);
         CPPUNIT_TEST(testInitSyncFileItem);
+        CPPUNIT_TEST(testCheckAlreadyExcluded);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -54,6 +55,7 @@ class TestExecutorWorker : public CppUnit::TestFixture, public TestBase {
         void testPropagateConflictToDbAndTree();
         void testInitSyncFileItem();
         void testDeleteOpNodes();
+        void testCheckAlreadyExcluded();
 
         bool opsExist(SyncOpPtr op);
         SyncOpPtr generateSyncOperation(const DbNodeId dbNodeId, const SyncName &filename,
@@ -63,6 +65,7 @@ class TestExecutorWorker : public CppUnit::TestFixture, public TestBase {
 
         std::shared_ptr<SyncPal> _syncPal;
         std::shared_ptr<MockVfs<VfsOff>> _mockVfs;
+        int _driveDbId;
         Sync _sync;
         std::shared_ptr<ExecutorWorker> _executorWorker;
         LocalTemporaryDirectory _localTempDir{"TestExecutorWorker"};
