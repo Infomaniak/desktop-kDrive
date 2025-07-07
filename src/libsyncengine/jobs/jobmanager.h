@@ -184,6 +184,11 @@ JobManager<Job>::JobManager() {
 }
 
 template<class Job>
+bool JobManager<Job>::canRunJob(const std::shared_ptr<Job>) const {
+    return true;
+}
+
+template<class Job>
 void JobManager<Job>::run() noexcept {
     while (true) {
         if (_stop) {
