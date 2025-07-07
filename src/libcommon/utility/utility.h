@@ -152,7 +152,7 @@ struct COMMON_EXPORT CommonUtility {
         // Inspired by https://stackoverflow.com/a/3649351/4675396
         template<class Type>
         static std::string getTypeName(const Type &object) {
-#if defined(KD_WINDOWS)
+#if defined(_WIN32)
             return typeid(object).name();
 #else
             int status = 0;
