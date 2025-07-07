@@ -78,7 +78,7 @@ class CppunitConan(ConanFile):
             "--enable-debug={}".format(yes_no(self.settings.build_type == "Debug")),
             "--enable-doxygen=no",
             "--enable-dot=no",
-            "--enable-werror=no",
+            "--disable-werror",
             "--enable-html-docs=no",
         ])
         env = tc.environment()
