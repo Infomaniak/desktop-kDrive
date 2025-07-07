@@ -65,6 +65,10 @@ class CppunitConan(ConanFile):
         tc = AutotoolsToolchain(self)
         if self.settings.os == "Windows" and self.options.shared:
             tc.extra_defines.append("CPPUNIT_BUILD_DLL")
+            def_path = os.path.join(self.source_folder, "cppunit.def")
+            def_path_unix = unix_path(self, def_path)  # For MSYS
+            tc.extra_ldflags.append(def_path_unix)
+
         if is_msvc(self):
             tc.extra_cxxflags.append("-EHsc")
             if check_min_vs(self, "180", raise_invalid=False):
@@ -97,6 +101,12 @@ class CppunitConan(ConanFile):
 
     def build(self):
         autotools = Autotools(self)
+
+        if self.settings.os == "Windows" and self.options.shared:
+            def_path = os.path.join(self.source_folder, "cppunit.def")
+            with open(def_path, "w") as def_file:
+                def_file.write("LIBRARY cppunit.dll\nEXPORTS\n")
+
         autotools.configure()
         autotools.make()
 
