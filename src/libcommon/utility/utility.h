@@ -28,6 +28,8 @@
 
 #ifdef _WIN32
 #include <strsafe.h>
+#else
+#include <cxxabi.h>
 #endif
 
 #include <QByteArray>
@@ -37,8 +39,6 @@
 #include <QThread>
 
 #include <log4cplus/log4cplus.h>
-
-#include <cxxabi.h>
 
 namespace KDC {
 struct COMMON_EXPORT CommonUtility {
