@@ -24,8 +24,13 @@ function(get_library_dirs prefix libname)
     # Let the variables named like openssl_LIB_DIRS_RELEASE or xxhash_LIB_DIRS_RELWITHDEBINFO become _openssl_LIB_DIRS or _xxhash_LIB_DIRS, independently of the build type.
     # This lets us use the same variable name in the CMakeLists.txt file, independently of the build type.
     string(TOUPPER "${CMAKE_BUILD_TYPE}" _BUILD_TYPE_UPPER)
-    set(_${prefix}_LIB_DIRS "${${libname}_LIB_DIRS_${_BUILD_TYPE_UPPER}}" PARENT_SCOPE)
-    message(STATUS "Using _${prefix}_LIB_DIRS (${libname}_LIB_DIRS_${_BUILD_TYPE_UPPER}) = ${_${prefix}_LIB_DIRS}")
+    if(WIN32) # On Windows, we use the BIN_DIRS instead of the LIB_DIRS since the dll files are in the BIN_DIRS.
+        set(_${prefix}_LIB_DIRS "${${libname}_BIN_DIRS_${_BUILD_TYPE_UPPER}}" PARENT_SCOPE)
+        message(STATUS "Using _${prefix}_LIB_DIRS (${libname}_BIN_DIRS_${_BUILD_TYPE_UPPER}) = ${_${prefix}_BIN_DIRS}")
+    else()
+        set(_${prefix}_LIB_DIRS "${${libname}_LIB_DIRS_${_BUILD_TYPE_UPPER}}" PARENT_SCOPE)
+        message(STATUS "Using _${prefix}_LIB_DIRS (${libname}_LIB_DIRS_${_BUILD_TYPE_UPPER}) = ${_${prefix}_LIB_DIRS}")
+    endif()
 endfunction()
 
 function(get_include_dirs prefix libname)
