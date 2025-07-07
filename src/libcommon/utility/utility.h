@@ -120,7 +120,8 @@ struct COMMON_EXPORT CommonUtility {
         /**
          * @brief Determines if the given path is the root folder of a disk and optionally suggests a corrected path.
          * @param absolutePath The absolute path to check for being a disk root folder.
-         * @param suggestedPath Reference to a path variable where a suggested corrected path may be stored if the input is not a disk root.
+         * @param suggestedPath Reference to a path variable where a suggested corrected path may be stored if the input is not a
+         * disk root.
          * @return True if the given path is a disk root folder; otherwise, false.
          */
         static bool isDiskRootFolder(const SyncPath &absolutePath, SyncPath &suggestedPath);
@@ -151,11 +152,15 @@ struct COMMON_EXPORT CommonUtility {
         // Inspired by https://stackoverflow.com/a/3649351/4675396
         template<class Type>
         static std::string getTypeName(const Type &object) {
+#if defined(KD_WINDOWS)
+            return typeid(object).name();
+#else
             int status = 0;
             char *demangled = abi::__cxa_demangle(typeid(object).name(), 0, 0, &status);
             std::string result{std::move(demangled)};
 
             return result;
+#endif
         };
 
 
