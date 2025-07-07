@@ -63,12 +63,6 @@ class CppunitConan(ConanFile):
         env.generate()
 
         tc = AutotoolsToolchain(self)
-        if self.settings.os == "Windows" and self.options.shared:
-            tc.extra_defines.append("CPPUNIT_BUILD_DLL")
-            def_path = os.path.join(self.source_folder, "cppunit.def")
-            def_path_unix = unix_path(self, def_path)  # For MSYS
-            tc.extra_ldflags.append(def_path_unix)
-
         if is_msvc(self):
             tc.extra_cxxflags.append("-EHsc")
             if check_min_vs(self, "180", raise_invalid=False):
@@ -101,12 +95,6 @@ class CppunitConan(ConanFile):
 
     def build(self):
         autotools = Autotools(self)
-
-        if self.settings.os == "Windows" and self.options.shared:
-            def_path = os.path.join(self.source_folder, "cppunit.def")
-            with open(def_path, "w") as def_file:
-                def_file.write("LIBRARY cppunit.dll\nEXPORTS\n")
-
         autotools.configure()
         autotools.make()
 
@@ -117,6 +105,10 @@ class CppunitConan(ConanFile):
         if is_msvc(self) and self.options.shared:
             rename(self, os.path.join(self.package_folder, "lib", "cppunit.dll.lib"),
                    os.path.join(self.package_folder, "lib", "cppunit.lib"))
+            old_dll_path = os.path.join(self.package_folder, "bin", f"cppunit-{self.version}.dll")
+            new_dll_path = os.path.join(self.package_folder, "bin", "cppunit.dll")
+            if os.path.exists(old_dll_path):
+                rename(self, old_dll_path, new_dll_path)
         rm(self, "*.la", os.path.join(self.package_folder, "lib"))
         rmdir(self, os.path.join(self.package_folder, "lib", "pkgconfig"))
         rmdir(self, os.path.join(self.package_folder, "share"))
