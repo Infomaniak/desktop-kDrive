@@ -295,7 +295,7 @@ class CommServerPrivate {
 
     if (listener == _extListener) {
         CommChannel *channel = new CommChannel(channelPrivate);
-        channel->setLostConnectionCbk(std::bind(&CommServer::lostExtConnectionCbk, server));
+        channel->setLostConnectionCbk(std::bind(&CommServer::lostExtConnectionCbk, server, std::placeholders::_1));
         _wrapper->_pendingExtChannels.append(channel);
 
         // Set exported interface
@@ -330,7 +330,7 @@ class CommServerPrivate {
         server->newExtConnectionCbk();
     } else if (listener == _guiListener) {
         _wrapper->_guiChannel = new CommChannel(channelPrivate);
-        _wrapper->_guiChannel->setLostConnectionCbk(std::bind(&CommServer::lostGuiConnectionCbk, server));
+        _wrapper->_guiChannel->setLostConnectionCbk(std::bind(&CommServer::lostGuiConnectionCbk, server, std::placeholders::_1));
 
         // Set exported interface
         NSLog(@"[KD] Set exported interface for connection with gui");

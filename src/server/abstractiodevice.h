@@ -27,7 +27,7 @@ namespace KDC {
 class AbstractIODevice {
     public:
         AbstractIODevice();
-        ~AbstractIODevice() { destroyedCbk(); }
+        virtual ~AbstractIODevice() { destroyedCbk(); }
 
         virtual uint64_t readData(char *data, uint64_t maxlen) = 0;
         virtual uint64_t writeData(const char *data, uint64_t len) = 0;
@@ -36,13 +36,13 @@ class AbstractIODevice {
         virtual uint64_t bytesAvailable() const = 0;
         virtual bool canReadLine() const = 0;
 
-        void setLostConnectionCbk(const std::function<void()> &cbk) { _onLostConnectionCbk = cbk; }
+        void setLostConnectionCbk(const std::function<void(AbstractIODevice *)> &cbk) { _onLostConnectionCbk = cbk; }
         void lostConnectionCbk() {
-            if (_onLostConnectionCbk) _onLostConnectionCbk();
+            if (_onLostConnectionCbk) _onLostConnectionCbk(this);
         }
-        void setReadyReadCbk(const std::function<void()> &cbk) { _onReadyReadCbk = cbk; }
+        void setReadyReadCbk(const std::function<void(AbstractIODevice *)> &cbk) { _onReadyReadCbk = cbk; }
         void readyReadCbk() {
-            if (_onReadyReadCbk) _onReadyReadCbk();
+            if (_onReadyReadCbk) _onReadyReadCbk(this);
         }
         void setDestroyedCbk(const std::function<void(AbstractIODevice *)> &cbk) { _onDestroyedCbk = cbk; }
         void destroyedCbk() {
@@ -50,8 +50,8 @@ class AbstractIODevice {
         }
 
     private:
-        std::function<void()> _onLostConnectionCbk;
-        std::function<void()> _onReadyReadCbk;
+        std::function<void(AbstractIODevice *)> _onLostConnectionCbk;
+        std::function<void(AbstractIODevice *)> _onReadyReadCbk;
         std::function<void(AbstractIODevice *)> _onDestroyedCbk;
 };
 

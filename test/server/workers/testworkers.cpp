@@ -139,7 +139,7 @@ void TestWorkers::setUp() {
     syncPalMap[_sync.dbId()] = _syncPal;
     std::unordered_map<int, std::shared_ptr<KDC::Vfs>> vfsMap;
     vfsMap[_sync.dbId()] = _vfsPtr;
-    _CommManager = std::make_unique<CommManager>(syncPalMap, vfsMap);
+    _commManager = std::make_unique<CommManager>(syncPalMap, vfsMap);
 
 #ifdef _WIN32
     // Initializes the COM library

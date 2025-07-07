@@ -83,15 +83,16 @@ static QString buildMessage(const QString &verb, const QString &path, const QStr
 namespace KDC {
 
 struct ListenerHasSocketPred {
-        QIODevice *ioDevice;
+        AbstractIODevice *ioDevice;
 
-        ListenerHasSocketPred(QIODevice *ioDevice) : ioDevice(ioDevice) {}
+        ListenerHasSocketPred(AbstractIODevice *ioDevice) :
+            ioDevice(ioDevice) {}
 
         bool operator()(const CommListener &listener) const { return listener.ioDevice == ioDevice; }
 };
 
-CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> &syncPalMap,
-                         const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap) :
+CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<SyncPal>> &syncPalMap,
+                         const std::unordered_map<int, std::shared_ptr<Vfs>> &vfsMap) :
     _syncPalMap(syncPalMap),
     _vfsMap(vfsMap) {
     _commands = {
@@ -129,8 +130,8 @@ CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<KDC::Sync
 
     _localServer.setNewExtConnectionCbk(std::bind(&CommManager::onNewExtConnection, this));
     _localServer.setNewGuiConnectionCbk(std::bind(&CommManager::onNewGuiConnection, this));
-    _localServer.setLostExtConnectionCbk(std::bind(&CommManager::onLostExtConnection, this));
-    _localServer.setLostGuiConnectionCbk(std::bind(&CommManager::onLostGuiConnection, this));
+    _localServer.setLostExtConnectionCbk(std::bind(&CommManager::onLostExtConnection, this, std::placeholders::_1));
+    _localServer.setLostGuiConnectionCbk(std::bind(&CommManager::onLostGuiConnection, this, std::placeholders::_1));
 
     QString socketPath;
     if (OldUtility::isWindows()) {
@@ -154,26 +155,26 @@ CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<KDC::Sync
 #endif
     } else if (OldUtility::isLinux() || OldUtility::isBSD()) {
         const QString runtimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
-        socketPath = runtimeDir + "/" + KDC::Theme::instance()->appName() + "/socket";
+        socketPath = runtimeDir + "/" + Theme::instance()->appName() + "/socket";
     } else {
-        LOG_WARN(KDC::Log::instance()->getLogger(), "An unexpected system detected, this probably won't work.");
+        LOG_WARN(Log::instance()->getLogger(), "An unexpected system detected, this probably won't work.");
     }
 
     CommServer::removeServer(socketPath.toStdString());
     const QFileInfo info(socketPath);
     if (!info.dir().exists()) {
         bool result = info.dir().mkpath(".");
-        LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Creating " << info.dir().path().toStdWString() << result);
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Creating " << info.dir().path().toStdWString() << result);
         if (result) {
             QFile::setPermissions(socketPath, QFile::Permissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner));
         }
     }
 
     if (!_localServer.listen(socketPath.toStdString())) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Can't start server - " << Utility::formatPath(socketPath));
-        _addError(KDC::Error(errId(), KDC::ExitCode::SystemError, KDC::ExitCause::Unknown));
+        LOGW_WARN(Log::instance()->getLogger(), L"Can't start server - " << Utility::formatPath(socketPath));
+        _addError(Error(errId(), ExitCode::SystemError, ExitCause::Unknown));
     } else {
-        LOGW_INFO(KDC::Log::instance()->getLogger(), L"Server started - " << Utility::formatPath(socketPath));
+        LOGW_INFO(Log::instance()->getLogger(), L"Server started - " << Utility::formatPath(socketPath));
     }
 }
 
@@ -183,7 +184,7 @@ CommManager::~CommManager() {
 }
 
 void CommManager::executeCommandDirect(const QString &commandLineStr) {
-    LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Execute command - cmd=" << commandLineStr.toStdWString());
+    LOGW_DEBUG(Log::instance()->getLogger(), L"Execute command - cmd=" << commandLineStr.toStdWString());
 
     QByteArray command = commandLineStr.split(MSG_CDE_SEPARATOR).value(0).toLatin1();
     if (command.compare(QByteArray("MAKE_AVAILABLE_LOCALLY_DIRECT")) == 0 || command.compare(QByteArray("SET_THUMBNAIL")) == 0) {
@@ -202,9 +203,9 @@ void CommManager::executeCommand(const QString &commandLine, const CommListener 
     argument.remove(0, command.length() + 1);
 
     if (_commands.find(command.toStdString()) == _commands.end()) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"The command is not supported by this version of the client - cmd="
-                                                             << KDC::Utility::s2ws(command.toStdString()) << L" arg="
-                                                             << argument.toStdWString());
+        LOGW_WARN(Log::instance()->getLogger(), L"The command is not supported by this version of the client - cmd="
+                                                        << Utility::s2ws(command.toStdString()) << L" arg="
+                                                        << argument.toStdWString());
     } else {
         _commands[command.toStdString()](QStr2SyncName(argument), const_cast<CommListener *>(listener));
     }
@@ -214,22 +215,22 @@ void CommManager::onNewExtConnection() {
     AbstractIODevice *ioDevice = _localServer.nextPendingConnection();
     if (!ioDevice) return;
 
-    LOG_INFO(KDC::Log::instance()->getLogger(), "New ext connection - ioDevice=" << ioDevice);
-    ioDevice->setReadyReadCbk(std::bind(&CommManager::onReadyRead, this));
+    LOG_INFO(Log::instance()->getLogger(), "New ext connection - ioDevice=" << ioDevice);
+    ioDevice->setReadyReadCbk(std::bind(&CommManager::onReadyRead, this, std::placeholders::_1));
     ioDevice->setDestroyedCbk(std::bind(&CommManager::onExtListenerDestroyed, this, std::placeholders::_1));
 
     _listeners.append(CommListener(ioDevice));
     CommListener &listener = _listeners.last();
 
     // Load sync list
-    std::vector<KDC::Sync> syncList;
-    if (!KDC::ParmsDb::instance()->selectAllSyncs(syncList)) {
-        LOG_WARN(KDC::Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
-        _addError(KDC::Error(errId(), KDC::ExitCode::DbError, KDC::ExitCause::Unknown));
+    std::vector<Sync> syncList;
+    if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
+        _addError(Error(errId(), ExitCode::DbError, ExitCause::Unknown));
         return;
     }
 
-    for (const KDC::Sync &sync: syncList) {
+    for (const Sync &sync: syncList) {
         if (!sync.paused()) {
             QString message = buildRegisterPathMessage(SyncName2QStr(sync.localPath().native()));
             listener.sendMessage(message);
@@ -237,11 +238,10 @@ void CommManager::onNewExtConnection() {
     }
 }
 
-void CommManager::onLostExtConnection() {
-    LOG_INFO(KDC::Log::instance()->getLogger(), "Lost ext connection - sender=" << sender());
-    sender()->deleteLater();
+void CommManager::onLostExtConnection(AbstractIODevice *ioDevice) {
+    LOG_INFO(Log::instance()->getLogger(), "Lost ext connection - ioDevice=" << ioDevice);
+    delete ioDevice;
 
-    auto ioDevice = qobject_cast<QIODevice *>(sender());
     LOG_IF_FAIL(Log::instance()->getLogger(), ioDevice)
     _listeners.erase(std::remove_if(_listeners.begin(), _listeners.end(), ListenerHasSocketPred(ioDevice)), _listeners.end());
 }
@@ -254,24 +254,22 @@ void CommManager::onNewGuiConnection() {
     AbstractIODevice *ioDevice = _localServer.guiConnection();
     if (!ioDevice) return;
 
-    LOG_INFO(KDC::Log::instance()->getLogger(), "New gui connection - ioDevice=" << ioDevice);
-    ioDevice->setReadyReadCbk(std::bind(&CommManager::onQueryReceived, this));
-    connect(ioDevice, SIGNAL(disconnected()), this, SLOT(onLostGuiConnection()));
+    LOG_INFO(Log::instance()->getLogger(), "New gui connection - ioDevice=" << ioDevice);
+    ioDevice->setReadyReadCbk(std::bind(&CommManager::onQueryReceived, this, std::placeholders::_1));
 }
 
-void CommManager::onLostGuiConnection() {
-    LOG_INFO(KDC::Log::instance()->getLogger(), "Lost gui connection - sender=" << sender());
-    sender()->deleteLater();
+void CommManager::onLostGuiConnection(AbstractIODevice *ioDevice) {
+    LOG_INFO(Log::instance()->getLogger(), "Lost gui connection - sender=" << ioDevice);
+    delete ioDevice;
 }
 
-void CommManager::onQueryReceived() {
-    LOG_INFO(KDC::Log::instance()->getLogger(), "onQueryReceived");
-    auto *ioDevice = qobject_cast<QIODevice *>(sender());
+void CommManager::onQueryReceived(AbstractIODevice *ioDevice) {
+    LOG_INFO(Log::instance()->getLogger(), "onQueryReceived");
     LOG_IF_FAIL(Log::instance()->getLogger(), ioDevice)
 
     while (ioDevice->canReadLine()) {
         QString query = ioDevice->readLine().trimmed();
-        LOG_INFO(KDC::Log::instance()->getLogger(), "Query received: " << query.toStdString());
+        LOG_INFO(Log::instance()->getLogger(), "Query received: " << query.toStdString());
 
         QStringList queryArr = query.split(";");
         const int id = queryArr[0].toInt();
@@ -288,8 +286,7 @@ void CommManager::onQueryReceived() {
     }
 }
 
-void CommManager::onReadyRead() {
-    auto *ioDevice = qobject_cast<QIODevice *>(sender());
+void CommManager::onReadyRead(AbstractIODevice *ioDevice) {
     LOG_IF_FAIL(Log::instance()->getLogger(), ioDevice)
 
     // Find the CommListener
@@ -311,31 +308,31 @@ void CommManager::onReadyRead() {
         QString line;
         while (!line.endsWith(QUERY_END_SEPARATOR)) {
             if (!ioDevice->canReadLine()) {
-                LOGW_WARN(KDC::Log::instance()->getLogger(),
+                LOGW_WARN(Log::instance()->getLogger(),
                           L"Failed to parse SocketAPI message - msg=" << line.toStdWString() << L" ioDevice=" << ioDevice);
                 return;
             }
             line.append(ioDevice->readLine());
         }
         line.chop(QUERY_END_SEPARATOR.length()); // remove the separator
-        LOGW_INFO(KDC::Log::instance()->getLogger(),
+        LOGW_INFO(Log::instance()->getLogger(),
                   L"Received SocketAPI message - msg=" << line.toStdWString() << L" ioDevice=" << ioDevice);
         executeCommand(line, listener);
     }
 }
 
-bool CommManager::tryToRetrieveSync(const int syncDbId, KDC::Sync &sync) const {
+bool CommManager::tryToRetrieveSync(const int syncDbId, Sync &sync) const {
     if (!_registeredSyncs.contains(syncDbId)) return false; // Make sure not to register twice to each connected client
 
     bool found = false;
-    if (!KDC::ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
-        LOG_WARN(KDC::Log::instance()->getLogger(), "Error in ParmsDb::selectSync - syncDbId=" << syncDbId);
-        _addError(KDC::Error(errId(), KDC::ExitCode::DbError, KDC::ExitCause::Unknown));
+    if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync - syncDbId=" << syncDbId);
+        _addError(Error(errId(), ExitCode::DbError, ExitCause::Unknown));
         return false;
     }
     if (!found) {
-        LOG_WARN(KDC::Log::instance()->getLogger(), "Sync not found in sync table - syncDbId=" << syncDbId);
-        _addError(KDC::Error(errId(), KDC::ExitCode::DataError, KDC::ExitCause::Unknown));
+        LOG_WARN(Log::instance()->getLogger(), "Sync not found in sync table - syncDbId=" << syncDbId);
+        _addError(Error(errId(), ExitCode::DataError, ExitCause::Unknown));
         return false;
     }
 
@@ -343,7 +340,7 @@ bool CommManager::tryToRetrieveSync(const int syncDbId, KDC::Sync &sync) const {
 }
 
 void CommManager::registerSync(int syncDbId) {
-    KDC::Sync sync;
+    Sync sync;
     if (!tryToRetrieveSync(syncDbId, sync)) return;
 
     QString message = buildRegisterPathMessage(SyncName2QStr(sync.localPath().native()));
@@ -377,20 +374,18 @@ void CommManager::commandCopyPublicLink(const SyncName &argument, CommListener *
     if (syncPalMapIt == _syncPalMap.end()) return;
 
     // Get NodeId
-    KDC::NodeId nodeId;
-    KDC::ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2Path(fileData.relativePath), nodeId);
-    if (exitCode != KDC::ExitCode::Ok) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(),
-                  L"Error in SyncPal::itemId - " << Utility::formatPath(fileData.relativePath));
+    NodeId nodeId;
+    ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2Path(fileData.relativePath), nodeId);
+    if (exitCode != ExitCode::Ok) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatPath(fileData.relativePath));
         return;
     }
 
     // Get public link URL
     QString linkUrl;
     exitCode = _getPublicLinkUrl(fileData.driveDbId, QString::fromStdString(nodeId), linkUrl);
-    if (exitCode != KDC::ExitCode::Ok) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(),
-                  L"Error in getPublicLinkUrl - " << Utility::formatPath(fileData.relativePath));
+    if (exitCode != ExitCode::Ok) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in getPublicLinkUrl - " << Utility::formatPath(fileData.relativePath));
         return;
     }
 
@@ -406,13 +401,13 @@ void CommManager::commandOpenPrivateLink(const SyncName &argument, CommListener 
 }
 
 void CommManager::commandCancelDehydrationDirect(const SyncName &, CommListener *) {
-    LOG_INFO(KDC::Log::instance()->getLogger(), "Ongoing files dehydrations canceled");
+    LOG_INFO(Log::instance()->getLogger(), "Ongoing files dehydrations canceled");
     _dehydrationCanceled = true;
     return;
 }
 
 void CommManager::commandCancelHydrationDirect(const SyncName &argument, CommListener *) {
-    LOG_INFO(KDC::Log::instance()->getLogger(), "Ongoing files hydrations canceled");
+    LOG_INFO(Log::instance()->getLogger(), "Ongoing files hydrations canceled");
 
     const QStringList fileList = SyncName2QStr(argument).split(MSG_ARG_SEPARATOR);
 
@@ -420,14 +415,14 @@ void CommManager::commandCancelHydrationDirect(const SyncName &argument, CommLis
         return;
     }
 
-    KDC::Sync sync;
+    Sync sync;
     if (!syncForPath(QStr2Path(fileList[0]), sync)) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Sync not found - " << Utility::formatPath(fileList[0]));
+        LOGW_WARN(Log::instance()->getLogger(), L"Sync not found - " << Utility::formatPath(fileList[0]));
         return;
     }
 
     if (!cancelDownloadJobs(sync.dbId(), fileList)) {
-        LOGW_INFO(KDC::Log::instance()->getLogger(), L"Error in CommManager::cancelDownloadJobs");
+        LOGW_INFO(Log::instance()->getLogger(), L"Error in CommManager::cancelDownloadJobs");
         return;
     }
 
@@ -452,7 +447,7 @@ void CommManager::commandMakeAvailableLocallyDirect(const SyncName &argument, Co
     const QStringList fileList = SyncName2QStr(argument).split(MSG_ARG_SEPARATOR);
 
 #ifdef __APPLE__
-    std::list<KDC::SyncPath> fileListExpanded;
+    std::list<SyncPath> fileListExpanded;
     processFileList(fileList, fileListExpanded);
 
     for (const auto &filePath: qAsConst(fileListExpanded)) {
@@ -462,12 +457,12 @@ void CommManager::commandMakeAvailableLocallyDirect(const SyncName &argument, Co
 #endif
         auto fileData = FileData::get(filePath);
         if (!fileData.syncDbId) {
-            LOGW_WARN(KDC::Log::instance()->getLogger(), L"No file data - " << Utility::formatSyncPath(filePath));
+            LOGW_WARN(Log::instance()->getLogger(), L"No file data - " << Utility::formatSyncPath(filePath));
             continue;
         }
 
         if (fileData.isLink) {
-            LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Don't hydrate symlinks - " << Utility::formatSyncPath(filePath));
+            LOGW_DEBUG(Log::instance()->getLogger(), L"Don't hydrate symlinks - " << Utility::formatSyncPath(filePath));
             continue;
         }
 
@@ -475,34 +470,33 @@ void CommManager::commandMakeAvailableLocallyDirect(const SyncName &argument, Co
         auto status = SyncFileStatus::Unknown;
         VfsStatus vfsStatus;
         if (!syncFileStatus(fileData, status, vfsStatus)) {
-            LOGW_WARN(KDC::Log::instance()->getLogger(),
+            LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in SocketApi::syncFileStatus - " << Utility::formatSyncPath(filePath));
             continue;
         }
 
         if (!vfsStatus.isPlaceholder) {
             // File is not a placeholder, this should never happen
-            LOGW_WARN(KDC::Log::instance()->getLogger(), L"File is not a placeholder - " << Utility::formatSyncPath(filePath));
+            LOGW_WARN(Log::instance()->getLogger(), L"File is not a placeholder - " << Utility::formatSyncPath(filePath));
             continue;
         }
 
-        if (vfsStatus.isHydrated || status == KDC::SyncFileStatus::Syncing) {
-            LOGW_INFO(KDC::Log::instance()->getLogger(), L"File is already hydrated/ing - " << Utility::formatSyncPath(filePath));
+        if (vfsStatus.isHydrated || status == SyncFileStatus::Syncing) {
+            LOGW_INFO(Log::instance()->getLogger(), L"File is already hydrated/ing - " << Utility::formatSyncPath(filePath));
             continue;
         }
 
 #ifdef __APPLE__
         // Not done in Windows case: triggers a hydration
         // Set pin state
-        if (!setPinState(fileData, KDC::PinState::AlwaysLocal)) {
-            LOGW_INFO(KDC::Log::instance()->getLogger(),
-                      L"Error in SocketApi::setPinState - " << Utility::formatSyncPath(filePath));
+        if (!setPinState(fileData, PinState::AlwaysLocal)) {
+            LOGW_INFO(Log::instance()->getLogger(), L"Error in SocketApi::setPinState - " << Utility::formatSyncPath(filePath));
             continue;
         }
 #endif
 
         if (!addDownloadJob(fileData)) {
-            LOGW_INFO(KDC::Log::instance()->getLogger(),
+            LOGW_INFO(Log::instance()->getLogger(),
                       L"Error in SocketApi::addDownloadJob - " << Utility::formatSyncPath(filePath));
             continue;
         }
@@ -520,12 +514,12 @@ void CommManager::commandGetAllMenuItems(const SyncName &argument, CommListener 
 
     QString responseStr;
     QTextStream response(&responseStr);
-    response << msgId << MSG_CDE_SEPARATOR << KDC::Theme::instance()->appNameGUI();
+    response << msgId << MSG_CDE_SEPARATOR << Theme::instance()->appNameGUI();
 
     // Find the common sync
-    KDC::Sync sync;
+    Sync sync;
     for (const auto &file: qAsConst(argumentList)) {
-        KDC::Sync tmpSync;
+        Sync tmpSync;
         if (!syncForPath(QStr2Path(file), tmpSync)) {
             listener->sendMessage(responseStr);
             return;
@@ -541,8 +535,8 @@ void CommManager::commandGetAllMenuItems(const SyncName &argument, CommListener 
         }
     }
 
-    std::unordered_map<int, std::shared_ptr<KDC::SyncPal>>::const_iterator syncPalMapIt;
-    std::unordered_map<int, std::shared_ptr<KDC::Vfs>>::const_iterator vfsMapIt;
+    std::unordered_map<int, std::shared_ptr<SyncPal>>::const_iterator syncPalMapIt;
+    std::unordered_map<int, std::shared_ptr<Vfs>>::const_iterator vfsMapIt;
     if (sync.dbId()) {
         syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
         if (syncPalMapIt == _syncPalMap.end()) {
@@ -557,16 +551,15 @@ void CommManager::commandGetAllMenuItems(const SyncName &argument, CommListener 
         }
     }
 
-    response << MSG_CDE_SEPARATOR << (sync.dbId() ? KDC::Vfs::modeToString(vfsMapIt->second->mode()) : QString());
+    response << MSG_CDE_SEPARATOR << (sync.dbId() ? Vfs::modeToString(vfsMapIt->second->mode()) : QString());
 
     // Some options only show for single files
     if (argumentList.size() == 1) {
         FileData fileData = FileData::get(argumentList.first());
-        KDC::NodeId nodeId;
-        KDC::ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2Path(fileData.relativePath), nodeId);
-        if (exitCode != KDC::ExitCode::Ok) {
-            LOGW_WARN(KDC::Log::instance()->getLogger(),
-                      L"Error in SyncPal::itemId - " << Utility::formatPath(fileData.relativePath));
+        NodeId nodeId;
+        ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2Path(fileData.relativePath), nodeId);
+        if (exitCode != ExitCode::Ok) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatPath(fileData.relativePath));
             listener->sendMessage(responseStr);
             return;
         }
@@ -583,7 +576,7 @@ void CommManager::commandGetAllMenuItems(const SyncName &argument, CommListener 
     bool canCancelDehydration = false;
 
     // File availability actions
-    if (sync.dbId() && sync.virtualFileMode() != KDC::VirtualFileMode::Off) {
+    if (sync.dbId() && sync.virtualFileMode() != VirtualFileMode::Off) {
         LOG_IF_FAIL(Log::instance()->getLogger(), !argumentList.isEmpty());
 
         for (const auto &file: qAsConst(argumentList)) {
@@ -610,7 +603,7 @@ void CommManager::commandGetThumbnail(const SyncName &argument, CommListener *li
     QStringList argumentList = SyncName2QStr(argument).split(MSG_ARG_SEPARATOR);
 
     if (argumentList.size() != 3) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Invalid argument - arg=" << argument.toStdWString());
+        LOGW_WARN(Log::instance()->getLogger(), L"Invalid argument - arg=" << argument.toStdWString());
         return;
     }
 
@@ -620,21 +613,20 @@ void CommManager::commandGetThumbnail(const SyncName &argument, CommListener *li
     // Picture width asked
     unsigned int width(argumentList[1].toInt());
     if (width == 0) {
-        LOG_WARN(KDC::Log::instance()->getLogger(), "Bad width - value=" << width);
+        LOG_WARN(Log::instance()->getLogger(), "Bad width - value=" << width);
         return;
     }
 
     // File path
     QString filePath(argumentList[2]);
     if (!QFileInfo(filePath).isFile()) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Not a file - " << Utility::formatPath(filePath));
+        LOGW_WARN(Log::instance()->getLogger(), L"Not a file - " << Utility::formatPath(filePath));
         return;
     }
 
     FileData fileData = FileData::get(filePath);
     if (!fileData.syncDbId) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(),
-                  L"The file is not in a synchonized folder - " << Utility::formatPath(filePath));
+        LOGW_WARN(Log::instance()->getLogger(), L"The file is not in a synchonized folder - " << Utility::formatPath(filePath));
         return;
     }
 
@@ -643,37 +635,37 @@ void CommManager::commandGetThumbnail(const SyncName &argument, CommListener *li
 
 
     // Get NodeId
-    KDC::NodeId nodeId;
-    KDC::ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2WStr(fileData.relativePath), nodeId);
-    if (exitCode != KDC::ExitCode::Ok) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatPath(filePath));
+    NodeId nodeId;
+    ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2WStr(fileData.relativePath), nodeId);
+    if (exitCode != ExitCode::Ok) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatPath(filePath));
         return;
     }
 
     // Get thumbnail
     std::string thumbnail;
     exitCode = _getThumbnail(fileData.driveDbId, nodeId, 256, thumbnail);
-    if (exitCode != KDC::ExitCode::Ok) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in getThumbnail - " << Utility::formatPath(filePath));
+    if (exitCode != ExitCode::Ok) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in getThumbnail - " << Utility::formatPath(filePath));
         return;
     }
 
     QByteArray thumbnailArr(thumbnail.c_str(), thumbnail.length());
     QPixmap pixmap;
     if (!pixmap.loadFromData(thumbnailArr)) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in QPixmap::loadFromData - " << Utility::formatPath(filePath));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in QPixmap::loadFromData - " << Utility::formatPath(filePath));
         return;
     }
 
     // Resize pixmap
-    LOG_DEBUG(KDC::Log::instance()->getLogger(), "Thumbnail fetched - size=" << pixmap.width() << "x" << pixmap.height());
+    LOG_DEBUG(Log::instance()->getLogger(), "Thumbnail fetched - size=" << pixmap.width() << "x" << pixmap.height());
     if (width) {
         if (pixmap.width() > pixmap.height()) {
             pixmap = pixmap.scaledToWidth(width, Qt::SmoothTransformation);
         } else {
             pixmap = pixmap.scaledToHeight(width, Qt::SmoothTransformation);
         }
-        LOG_DEBUG(KDC::Log::instance()->getLogger(), "Thumbnail scaled - size=" << pixmap.width() << "x" << pixmap.height());
+        LOG_DEBUG(Log::instance()->getLogger(), "Thumbnail scaled - size=" << pixmap.width() << "x" << pixmap.height());
     }
 
     // Set Thumbnail
@@ -703,7 +695,7 @@ void CommManager::commandRetrieveFileStatus(const SyncName &argument, CommListen
     auto status = SyncFileStatus::Unknown;
     VfsStatus vfsStatus;
     if (!syncFileStatus(fileData, status, vfsStatus)) {
-        LOGW_DEBUG(KDC::Log::instance()->getLogger(),
+        LOGW_DEBUG(Log::instance()->getLogger(),
                    L"Error in SocketApi::syncFileStatus - " << Utility::formatPath(fileData.localPath));
         return;
     }
@@ -734,8 +726,8 @@ void CommManager::commandGetMenuItems(const SyncName &argument, CommListener *li
     }
 
     // Find SyncPal and Vfs associated to sync
-    std::unordered_map<int, std::shared_ptr<KDC::SyncPal>>::const_iterator syncPalMapIt = _syncPalMap.end();
-    std::unordered_map<int, std::shared_ptr<KDC::Vfs>>::const_iterator vfsMapIt = _vfsMap.end();
+    std::unordered_map<int, std::shared_ptr<SyncPal>>::const_iterator syncPalMapIt = _syncPalMap.end();
+    std::unordered_map<int, std::shared_ptr<Vfs>>::const_iterator vfsMapIt = _vfsMap.end();
     if (sync.dbId()) {
         syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
         if (syncPalMapIt == _syncPalMap.end()) return;
@@ -817,7 +809,7 @@ void CommManager::commandMakeOnlineOnlyDirect(const SyncName &argument, CommList
     _nbOngoingDehydration++;
     _dehydrationMutex.unlock();
 
-    std::list<KDC::SyncPath> fileListExpanded;
+    std::list<SyncPath> fileListExpanded;
     processFileList(fileList, fileListExpanded);
 
     for (const auto &filePath: qAsConst(fileListExpanded)) {
@@ -827,25 +819,25 @@ void CommManager::commandMakeOnlineOnlyDirect(const SyncName &argument, CommList
 
         const auto fileData = FileData::get(filePath);
         if (!fileData.syncDbId) {
-            LOGW_WARN(KDC::Log::instance()->getLogger(), L"No file data - " << Utility::formatSyncPath(filePath));
+            LOGW_WARN(Log::instance()->getLogger(), L"No file data - " << Utility::formatSyncPath(filePath));
             continue;
         }
 
         if (fileData.isLink) {
-            LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Don't dehydrate symlinks - " << Utility::formatSyncPath(filePath));
+            LOGW_DEBUG(Log::instance()->getLogger(), L"Don't dehydrate symlinks - " << Utility::formatSyncPath(filePath));
             continue;
         }
 
         // Set pin state
-        if (ExitInfo exitInfo = setPinState(fileData, KDC::PinState::OnlineOnly); !exitInfo) {
-            LOGW_INFO(KDC::Log::instance()->getLogger(),
+        if (ExitInfo exitInfo = setPinState(fileData, PinState::OnlineOnly); !exitInfo) {
+            LOGW_INFO(Log::instance()->getLogger(),
                       L"Error in CommManager::setPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
             continue;
         }
 
         // Dehydrate placeholder
         if (ExitInfo exitInfo = dehydratePlaceholder(fileData); !exitInfo) {
-            LOGW_INFO(KDC::Log::instance()->getLogger(),
+            LOGW_INFO(Log::instance()->getLogger(),
                       L"Error in CommManager::dehydratePlaceholder - " << Utility::formatSyncPath(filePath) << exitInfo);
             continue;
         }
@@ -868,13 +860,13 @@ void CommManager::commandSetThumbnail(const SyncName &argument, CommListener *) 
     }
 
     if (!QFileInfo(SyncName2QStr(argument)).isFile()) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Not a file - " << Utility::formatSyncPath(argument));
+        LOGW_WARN(Log::instance()->getLogger(), L"Not a file - " << Utility::formatSyncPath(argument));
         return;
     }
 
     FileData fileData = FileData::get(argument);
     if (!fileData.syncDbId) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(),
+        LOGW_WARN(Log::instance()->getLogger(),
                   L"The file is not in a synchronized folder - " << Utility::formatSyncPath(argument));
         return;
     }
@@ -887,33 +879,33 @@ void CommManager::commandSetThumbnail(const SyncName &argument, CommListener *) 
     if (vfsMapIt == _vfsMap.end()) return;
 
     // Get NodeId
-    KDC::NodeId nodeId;
-    KDC::ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2Path(fileData.relativePath), nodeId);
-    if (exitCode != KDC::ExitCode::Ok) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatSyncPath(argument));
+    NodeId nodeId;
+    ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2Path(fileData.relativePath), nodeId);
+    if (exitCode != ExitCode::Ok) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatSyncPath(argument));
         return;
     }
 
     // Get thumbnail
     std::string thumbnail;
     exitCode = _getThumbnail(fileData.driveDbId, nodeId, 256, thumbnail);
-    if (exitCode != KDC::ExitCode::Ok) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in getThumbnail - " << Utility::formatSyncPath(argument));
+    if (exitCode != ExitCode::Ok) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in getThumbnail - " << Utility::formatSyncPath(argument));
         return;
     }
 
     QByteArray thumbnailArr(thumbnail.c_str(), static_cast<qsizetype>(thumbnail.length()));
     QPixmap pixmap;
     if (!pixmap.loadFromData(thumbnailArr)) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in QPixmap::loadFromData - " << Utility::formatSyncPath(argument));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in QPixmap::loadFromData - " << Utility::formatSyncPath(argument));
         return;
     }
 
-    LOG_DEBUG(KDC::Log::instance()->getLogger(), "Thumbnail fetched - size=" << pixmap.width() << "x" << pixmap.height());
+    LOG_DEBUG(Log::instance()->getLogger(), "Thumbnail fetched - size=" << pixmap.width() << "x" << pixmap.height());
 
     // Set thumbnail
     if (!vfsMapIt->second->setThumbnail(QStr2Path(fileData.localPath), pixmap)) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in setThumbnail - " << Utility::formatSyncPath(argument));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in setThumbnail - " << Utility::formatSyncPath(argument));
         return;
     }
 }
@@ -922,25 +914,25 @@ void CommManager::commandSetThumbnail(const SyncName &argument, CommListener *) 
 // Fetches the private link url asynchronously and then calls the target slot
 void CommManager::fetchPrivateLinkUrlHelper(const SyncPath &localFile, const std::function<void(const QString &url)> &targetFun) {
     // Find the common sync
-    KDC::Sync sync;
+    Sync sync;
     if (!syncForPath(localFile, sync)) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Sync not found - " << Utility::formatSyncPath(localFile));
+        LOGW_WARN(Log::instance()->getLogger(), L"Sync not found - " << Utility::formatSyncPath(localFile));
         return;
     }
 
-    KDC::Drive drive;
+    Drive drive;
     bool found = false;
-    if (!KDC::ParmsDb::instance()->selectDrive(sync.driveDbId(), drive, found)) {
-        LOG_WARN(KDC::Log::instance()->getLogger(), "Error in ParmsDb::selectDrive");
+    if (!ParmsDb::instance()->selectDrive(sync.driveDbId(), drive, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectDrive");
         return;
     }
     if (!found) {
-        LOG_WARN(KDC::Log::instance()->getLogger(), "Drive not found - id=" << sync.driveDbId());
+        LOG_WARN(Log::instance()->getLogger(), "Drive not found - id=" << sync.driveDbId());
         return;
     }
 
     // Find the syncpal associated to sync
-    std::unordered_map<int, std::shared_ptr<KDC::SyncPal>>::const_iterator syncPalMapIt = _syncPalMap.end();
+    std::unordered_map<int, std::shared_ptr<SyncPal>>::const_iterator syncPalMapIt = _syncPalMap.end();
     if (sync.dbId()) {
         syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
     }
@@ -948,9 +940,9 @@ void CommManager::fetchPrivateLinkUrlHelper(const SyncPath &localFile, const std
     if (syncPalMapIt == _syncPalMap.end()) return;
 
     FileData fileData = FileData::get(localFile);
-    KDC::NodeId itemId;
-    if (syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2Path(fileData.relativePath), itemId) != KDC::ExitCode::Ok) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatSyncPath(localFile));
+    NodeId itemId;
+    if (syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2Path(fileData.relativePath), itemId) != ExitCode::Ok) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatSyncPath(localFile));
         return;
     }
 
@@ -970,7 +962,7 @@ bool CommManager::syncFileStatus(const FileData &fileData, SyncFileStatus &statu
 
     bool exists = false;
     if (!syncPalMapIt->second->checkIfExistsOnServer(QStr2Path(fileData.relativePath), exists)) {
-        LOGW_DEBUG(KDC::Log::instance()->getLogger(),
+        LOGW_DEBUG(Log::instance()->getLogger(),
                    L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatPath(fileData.relativePath));
         // Occurs when the sync is stopped
         return false;
@@ -984,43 +976,42 @@ bool CommManager::syncFileStatus(const FileData &fileData, SyncFileStatus &statu
     if (vfsMapIt == _vfsMap.end()) return false;
 
 
-    if (vfsMapIt->second->mode() == KDC::VirtualFileMode::Mac || vfsMapIt->second->mode() == KDC::VirtualFileMode::Win) {
+    if (vfsMapIt->second->mode() == VirtualFileMode::Mac || vfsMapIt->second->mode() == VirtualFileMode::Win) {
         if (!vfsMapIt->second->status(QStr2Path(fileData.localPath), vfsStatus)) {
-            LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in Vfs::status - " << Utility::formatPath(fileData.localPath));
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::status - " << Utility::formatPath(fileData.localPath));
             return false;
         }
 
         if (vfsStatus.isSyncing) {
-            status = KDC::SyncFileStatus::Syncing;
+            status = SyncFileStatus::Syncing;
         }
     }
 
     return true;
 }
 
-std::unordered_map<int, std::shared_ptr<KDC::SyncPal>>::const_iterator CommManager::retrieveSyncPalMapIt(
-        const int syncDbId) const {
+std::unordered_map<int, std::shared_ptr<SyncPal>>::const_iterator CommManager::retrieveSyncPalMapIt(const int syncDbId) const {
     const auto result = _syncPalMap.find(syncDbId);
 
     if (result == _syncPalMap.end()) {
-        LOG_WARN(KDC::Log::instance()->getLogger(), "SyncPal not found in SyncPalMap - syncDbId=" << syncDbId);
+        LOG_WARN(Log::instance()->getLogger(), "SyncPal not found in SyncPalMap - syncDbId=" << syncDbId);
         return _syncPalMap.end();
     }
 
     return result;
 }
 
-std::unordered_map<int, std::shared_ptr<KDC::Vfs>>::const_iterator CommManager::retrieveVfsMapIt(const int syncDbId) const {
+std::unordered_map<int, std::shared_ptr<Vfs>>::const_iterator CommManager::retrieveVfsMapIt(const int syncDbId) const {
     const auto result = _vfsMap.find(syncDbId);
     if (result == _vfsMap.cend()) {
-        LOG_WARN(KDC::Log::instance()->getLogger(), "Vfs not found in VfsMap - syncDbId=" << syncDbId);
+        LOG_WARN(Log::instance()->getLogger(), "Vfs not found in VfsMap - syncDbId=" << syncDbId);
         return _vfsMap.cend();
     }
 
     return result;
 }
 
-ExitInfo CommManager::setPinState(const FileData &fileData, KDC::PinState pinState) {
+ExitInfo CommManager::setPinState(const FileData &fileData, PinState pinState) {
     if (!fileData.syncDbId) return {ExitCode::LogicError, ExitCause::InvalidArgument};
 
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
@@ -1045,10 +1036,10 @@ bool CommManager::addDownloadJob(const FileData &fileData) {
     if (syncPalMapIt == _syncPalMap.end()) return false;
 
     // Create download job
-    const KDC::ExitCode exitCode =
+    const ExitCode exitCode =
             syncPalMapIt->second->addDlDirectJob(QStr2Path(fileData.relativePath), QStr2Path(fileData.localPath));
-    if (exitCode != KDC::ExitCode::Ok) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(),
+    if (exitCode != ExitCode::Ok) {
+        LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in SyncPal::addDownloadJob - " << Utility::formatPath(fileData.relativePath));
         return false;
     }
@@ -1063,13 +1054,13 @@ bool CommManager::cancelDownloadJobs(int syncDbId, const QStringList &fileList) 
     const auto vfsMapIt = retrieveVfsMapIt(syncDbId);
     if (vfsMapIt == _vfsMap.end()) return false;
 
-    std::list<KDC::SyncPath> syncPathList;
+    std::list<SyncPath> syncPathList;
     processFileList(fileList, syncPathList);
 
     // Cancel download jobs
-    const KDC::ExitCode exitCode = syncPalMapIt->second->cancelDlDirectJobs(syncPathList);
-    if (exitCode != KDC::ExitCode::Ok) {
-        LOG_WARN(KDC::Log::instance()->getLogger(), "Error in SyncPal::cancelDlDirectJobs");
+    const ExitCode exitCode = syncPalMapIt->second->cancelDlDirectJobs(syncPathList);
+    if (exitCode != ExitCode::Ok) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in SyncPal::cancelDlDirectJobs");
         return false;
     }
 
@@ -1080,15 +1071,15 @@ void CommManager::copyUrlToClipboard(const QString &link) {
     QApplication::clipboard()->setText(link);
 }
 
-bool CommManager::syncForPath(const std::filesystem::path &path, KDC::Sync &sync) {
-    std::vector<KDC::Sync> syncList;
-    if (!KDC::ParmsDb::instance()->selectAllSyncs(syncList)) {
-        LOG_WARN(KDC::Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
+bool CommManager::syncForPath(const std::filesystem::path &path, Sync &sync) {
+    std::vector<Sync> syncList;
+    if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
         return false;
     }
 
-    for (const KDC::Sync &tmpSync: syncList) {
-        if (KDC::CommonUtility::isSubDir(tmpSync.localPath(), path)) {
+    for (const Sync &tmpSync: syncList) {
+        if (CommonUtility::isSubDir(tmpSync.localPath(), path)) {
             sync = tmpSync;
             return true;
         }
@@ -1134,7 +1125,7 @@ void CommManager::openPrivateLink(const QString &link) {
 }
 
 void CommManager::sendSharingContextMenuOptions(const FileData &fileData, const CommListener *listener) {
-    auto theme = KDC::Theme::instance();
+    auto theme = Theme::instance();
     if (!(theme->userGroupSharing() || theme->linkSharing())) return;
 
     // Find SyncPal associated to sync
@@ -1145,7 +1136,7 @@ void CommManager::sendSharingContextMenuOptions(const FileData &fileData, const 
 
     bool isOnTheServer = false;
     if (!syncPalMapIt->second->checkIfExistsOnServer(QStr2Path(fileData.relativePath), isOnTheServer)) {
-        LOGW_DEBUG(KDC::Log::instance()->getLogger(),
+        LOGW_DEBUG(Log::instance()->getLogger(),
                    L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatPath(fileData.relativePath));
         // Occurs when the sync is stopped
         return;
@@ -1153,7 +1144,7 @@ void CommManager::sendSharingContextMenuOptions(const FileData &fileData, const 
 
     bool canShare = false;
     if (!syncPalMapIt->second->checkIfCanShareItem(QStr2Path(fileData.relativePath), canShare)) {
-        LOGW_DEBUG(KDC::Log::instance()->getLogger(),
+        LOGW_DEBUG(Log::instance()->getLogger(),
                    L"Error in SyncPal::checkIfCanShareItem: " << Utility::formatPath(fileData.relativePath));
         // Occurs when the sync is stopped
         return;
@@ -1192,7 +1183,7 @@ void CommManager::sendSharingContextMenuOptions(const FileData &fileData, const 
 }
 
 void CommManager::addSharingContextMenuOptions(const FileData &fileData, QTextStream &response) {
-    auto theme = KDC::Theme::instance();
+    auto theme = Theme::instance();
     if (!(theme->userGroupSharing() || theme->linkSharing())) return;
 
     // Find SyncPal associated to sync
@@ -1203,7 +1194,7 @@ void CommManager::addSharingContextMenuOptions(const FileData &fileData, QTextSt
 
     bool isOnTheServer = false;
     if (!syncPalMapIt->second->checkIfExistsOnServer(QStr2Path(fileData.relativePath), isOnTheServer)) {
-        LOGW_DEBUG(KDC::Log::instance()->getLogger(),
+        LOGW_DEBUG(Log::instance()->getLogger(),
                    L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatPath(fileData.relativePath));
         // Occurs when the sync is stopped
         return;
@@ -1211,7 +1202,7 @@ void CommManager::addSharingContextMenuOptions(const FileData &fileData, QTextSt
 
     bool canShare = false;
     if (!syncPalMapIt->second->checkIfCanShareItem(QStr2Path(fileData.relativePath), canShare)) {
-        LOGW_DEBUG(KDC::Log::instance()->getLogger(),
+        LOGW_DEBUG(Log::instance()->getLogger(),
                    L"Error in SyncPal::checkIfCanShareItem: " << Utility::formatPath(fileData.relativePath));
         // Occurs when the sync is stopped
         return;
@@ -1248,12 +1239,12 @@ void CommManager::addSharingContextMenuOptions(const FileData &fileData, QTextSt
 }
 
 void CommManager::manageActionsOnSingleFile(CommListener *listener, const QStringList &files,
-                                            std::unordered_map<int, std::shared_ptr<KDC::SyncPal>>::const_iterator syncPalMapIt,
-                                            std::unordered_map<int, std::shared_ptr<KDC::Vfs>>::const_iterator vfsMapIt,
-                                            const KDC::Sync &sync) {
+                                            std::unordered_map<int, std::shared_ptr<SyncPal>>::const_iterator syncPalMapIt,
+                                            std::unordered_map<int, std::shared_ptr<Vfs>>::const_iterator vfsMapIt,
+                                            const Sync &sync) {
     bool exists = false;
     IoError ioError = IoError::Success;
-    if (!KDC::IoHelper::checkIfPathExists(QStr2Path(files.first()), exists, ioError) || !exists) {
+    if (!IoHelper::checkIfPathExists(QStr2Path(files.first()), exists, ioError) || !exists) {
         return;
     }
 
@@ -1266,18 +1257,17 @@ void CommManager::manageActionsOnSingleFile(CommListener *listener, const QStrin
         return;
     }
 
-    KDC::NodeId nodeId;
-    KDC::ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2Path(fileData.relativePath), nodeId);
-    if (exitCode != KDC::ExitCode::Ok) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(),
-                  L"Error in SyncPal::itemId - " << Utility::formatPath(fileData.relativePath));
+    NodeId nodeId;
+    ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2Path(fileData.relativePath), nodeId);
+    if (exitCode != ExitCode::Ok) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatPath(fileData.relativePath));
         return;
     }
     bool isOnTheServer = !nodeId.empty();
     auto flagString = QString("%1%2%1").arg(MSG_CDE_SEPARATOR).arg(isOnTheServer ? QString() : QString("d"));
 
     if (sync.dbId()) {
-        listener->sendMessage(QString("VFS_MODE%1%2").arg(MSG_CDE_SEPARATOR).arg(KDC::Vfs::modeToString(sync.virtualFileMode())));
+        listener->sendMessage(QString("VFS_MODE%1%2").arg(MSG_CDE_SEPARATOR).arg(Vfs::modeToString(sync.virtualFileMode())));
     }
 
     if (sync.dbId()) {
@@ -1310,7 +1300,7 @@ void CommManager::processFileList(const QStringList &inFileList, std::list<SyncP
 
                     auto status = SyncFileStatus::Unknown;
                     if (VfsStatus vfsStatus; !syncFileStatus(tmpFileData, status, vfsStatus)) {
-                        LOGW_WARN(KDC::Log::instance()->getLogger(),
+                        LOGW_WARN(Log::instance()->getLogger(),
                                   L"Error in SocketApi::syncFileStatus - " << Utility::formatPath(tmpPath));
                         continue;
                     }
@@ -1356,7 +1346,7 @@ QString CommManager::cancelHydrationText() {
 
 bool CommManager::openBrowser(const QUrl &url) {
     if (!QDesktopServices::openUrl(url)) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"QDesktopServices::openUrl failed - url=" << url.toString().toStdWString());
+        LOGW_WARN(Log::instance()->getLogger(), L"QDesktopServices::openUrl failed - url=" << url.toString().toStdWString());
         return false;
     }
     return true;
@@ -1368,25 +1358,25 @@ FileData FileData::get(const QString &path) {
     return get(localPath);
 }
 
-FileData FileData::get(const KDC::SyncPath &path) {
+FileData FileData::get(const SyncPath &path) {
 #ifdef _WIN32
-    KDC::SyncPath tmpPath;
+    SyncPath tmpPath;
     bool notFound = false;
-    if (!KDC::Utility::longPath(path, tmpPath, notFound)) {
+    if (!Utility::longPath(path, tmpPath, notFound)) {
         if (notFound) {
-            LOGW_WARN(KDC::Log::instance()->getLogger(), L"File not found - " << Utility::formatSyncPath(path));
+            LOGW_WARN(Log::instance()->getLogger(), L"File not found - " << Utility::formatSyncPath(path));
         } else {
-            LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in Utility::longpath - " << Utility::formatSyncPath(path));
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::longpath - " << Utility::formatSyncPath(path));
         }
         return FileData();
     }
 #else
-    KDC::SyncPath tmpPath(path);
+    SyncPath tmpPath(path);
 #endif
 
-    KDC::Sync sync;
+    Sync sync;
     if (!CommManager::syncForPath(tmpPath, sync)) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Sync not found - " << Utility::formatSyncPath(tmpPath));
+        LOGW_WARN(Log::instance()->getLogger(), L"Sync not found - " << Utility::formatSyncPath(tmpPath));
         return FileData();
     }
 
@@ -1395,21 +1385,21 @@ FileData FileData::get(const KDC::SyncPath &path) {
     data.driveDbId = sync.driveDbId();
     data.virtualFileMode = sync.virtualFileMode();
     data.localPath = SyncName2QStr(tmpPath.native());
-    data.relativePath = SyncName2QStr(KDC::CommonUtility::relativePath(sync.localPath(), tmpPath).native());
+    data.relativePath = SyncName2QStr(CommonUtility::relativePath(sync.localPath(), tmpPath).native());
 
     ItemType itemType;
-    if (!KDC::IoHelper::getItemType(tmpPath, itemType)) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(),
+    if (!IoHelper::getItemType(tmpPath, itemType)) {
+        LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in Utility::getItemType: " << Utility::formatIoError(tmpPath, itemType.ioError));
         return FileData();
     }
 
     if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-        LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Item does not exist anymore - " << Utility::formatSyncPath(tmpPath));
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Item does not exist anymore - " << Utility::formatSyncPath(tmpPath));
         return FileData();
     }
 
-    data.isLink = itemType.linkType != KDC::LinkType::None;
+    data.isLink = itemType.linkType != LinkType::None;
     if (data.isLink) {
         data.isDirectory = false;
     } else {
@@ -1419,12 +1409,11 @@ FileData FileData::get(const KDC::SyncPath &path) {
             const bool exists = !CommonUtility::isLikeFileNotFoundError(ec);
             if (!exists) {
                 // Item doesn't exist anymore
-                LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Item doesn't exist - " << Utility::formatPath(data.localPath));
+                LOGW_DEBUG(Log::instance()->getLogger(), L"Item doesn't exist - " << Utility::formatPath(data.localPath));
             } else {
-                LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to check if the path is a directory - "
-                                                                     << Utility::formatPath(data.localPath) << L" err="
-                                                                     << KDC::Utility::s2ws(ec.message()) << L" (" << ec.value()
-                                                                     << L")");
+                LOGW_WARN(Log::instance()->getLogger(), L"Failed to check if the path is a directory - "
+                                                                << Utility::formatPath(data.localPath) << L" err="
+                                                                << Utility::s2ws(ec.message()) << L" (" << ec.value() << L")");
             }
             return FileData();
         }

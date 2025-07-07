@@ -79,6 +79,8 @@ class CommManager {
         void unregisterSync(int syncDbId);
         void executeCommandDirect(const QString &commandLine);
 
+        static bool syncForPath(const std::filesystem::path &path, KDC::Sync &sync);
+
     private:
         const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> &_syncPalMap;
         const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &_vfsMap;
@@ -94,11 +96,11 @@ class CommManager {
         // Callbacks
         void onNewExtConnection();
         void onNewGuiConnection();
-        void onLostExtConnection();
-        void onLostGuiConnection();
+        void onLostExtConnection(AbstractIODevice *ioDevice);
+        void onLostGuiConnection(AbstractIODevice *ioDevice);
         void onExtListenerDestroyed(AbstractIODevice *ioDevice);
-        void onReadyRead();
-        void onQueryReceived();
+        void onReadyRead(AbstractIODevice *ioDevice);
+        void onQueryReceived(AbstractIODevice *ioDevice);
 
         // AppServer callbacks
         void (*_addError)(const KDC::Error &error);
@@ -183,7 +185,6 @@ class CommManager {
         std::unordered_map<int, std::shared_ptr<KDC::Vfs>>::const_iterator retrieveVfsMapIt(const int syncDbId) const;
         std::unordered_map<int, std::shared_ptr<KDC::SyncPal>>::const_iterator retrieveSyncPalMapIt(const int syncDbId) const;
 
-        static bool syncForPath(const std::filesystem::path &path, KDC::Sync &sync);
         static void copyUrlToClipboard(const QString &link);
         static void openPrivateLink(const QString &link);
 };

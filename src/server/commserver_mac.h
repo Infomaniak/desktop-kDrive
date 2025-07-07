@@ -42,8 +42,15 @@ class CommChannel : public KDC::AbstractIODevice {
         uint64_t bytesAvailable() const override;
         bool canReadLine() const override;
 
+        void setLostConnectionCbk(const std::function<void(KDC::AbstractIODevice *)> &cbk) { _onLostConnectionCbk = cbk; }
+        void lostConnectionCbk() {
+            if (_onLostConnectionCbk) _onLostConnectionCbk(this);
+        }
+
     private:
         std::unique_ptr<CommChannelPrivate> d_ptr;
+
+        std::function<void(KDC::AbstractIODevice *)> _onLostConnectionCbk;
 
         friend class CommServerPrivate;
 };
@@ -68,19 +75,20 @@ class CommServer {
         void newGuiConnectionCbk() {
             if (_onNewGuiConnectionCbk) _onNewGuiConnectionCbk();
         }
-        void setLostExtConnectionCbk(const std::function<void()> &cbk) { _onLostExtConnectionCbk = cbk; }
-        void lostExtConnectionCbk() {
-            if (_onLostExtConnectionCbk) _onLostExtConnectionCbk();
+
+        void setLostExtConnectionCbk(const std::function<void(KDC::AbstractIODevice *)> &cbk) { _onLostExtConnectionCbk = cbk; }
+        void lostExtConnectionCbk(KDC::AbstractIODevice *ioDevice) {
+            if (_onLostExtConnectionCbk) _onLostExtConnectionCbk(ioDevice);
         }
-        void setLostGuiConnectionCbk(const std::function<void()> &cbk) { _onLostGuiConnectionCbk = cbk; }
-        void lostGuiConnectionCbk() {
-            if (_onLostGuiConnectionCbk) _onLostGuiConnectionCbk();
+        void setLostGuiConnectionCbk(const std::function<void(KDC::AbstractIODevice *)> &cbk) { _onLostGuiConnectionCbk = cbk; }
+        void lostGuiConnectionCbk(KDC::AbstractIODevice *ioDevice) {
+            if (_onLostGuiConnectionCbk) _onLostGuiConnectionCbk(ioDevice);
         }
 
     private:
         std::unique_ptr<CommServerPrivate> d_ptr;
         std::function<void()> _onNewExtConnectionCbk;
         std::function<void()> _onNewGuiConnectionCbk;
-        std::function<void()> _onLostExtConnectionCbk;
-        std::function<void()> _onLostGuiConnectionCbk;
+        std::function<void(KDC::AbstractIODevice *)> _onLostExtConnectionCbk;
+        std::function<void(KDC::AbstractIODevice *)> _onLostGuiConnectionCbk;
 };

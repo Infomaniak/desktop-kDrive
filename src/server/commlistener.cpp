@@ -37,7 +37,8 @@ bool BloomFilter::isHashMaybeStored(uint hash) const {
     return _hashBits.testBit((hash & 0xFFFF) % NumBits) && _hashBits.testBit((hash >> 16) % NumBits);
 }
 
-CommListener::CommListener(QIODevice *ioDevice) : ioDevice(ioDevice) {
+CommListener::CommListener(AbstractIODevice *ioDevice) :
+    ioDevice(ioDevice) {
     _threadId = std::this_thread::get_id();
 }
 
@@ -46,14 +47,13 @@ void CommListener::sendMessage(const QString &message, bool doWait) const {
     assert(_threadId == std::this_thread::get_id() && "CommListener::sendMessage should only be called from the main thread");
 
     if (!ioDevice) {
-        LOGW_INFO(KDC::Log::instance()->getLogger(), L"Not sending message to dead ioDevice: " << message.toStdWString());
+        LOGW_INFO(Log::instance()->getLogger(), L"Not sending message to dead ioDevice: " << message.toStdWString());
         return;
     }
 
     const QString truncatedLogMessage = CommonUtility::truncateLongLogMessage(message);
 
-    LOGW_INFO(KDC::Log::instance()->getLogger(),
-              L"Sending message: " << truncatedLogMessage.toStdWString() << L" to: " << ioDevice);
+    LOGW_INFO(Log::instance()->getLogger(), L"Sending message: " << truncatedLogMessage.toStdWString() << L" to: " << ioDevice);
 
     QString localMessage = message;
     if (!localMessage.endsWith(QLatin1Char('\n'))) {
@@ -66,7 +66,7 @@ void CommListener::sendMessage(const QString &message, bool doWait) const {
         ioDevice->waitForBytesWritten(1000);
     }
     if (sent != bytesToSend.length()) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Could not send all data on ioDevice for " << localMessage.toStdWString());
+        LOGW_WARN(Log::instance()->getLogger(), L"Could not send all data on ioDevice for " << localMessage.toStdWString());
     }
 }
 

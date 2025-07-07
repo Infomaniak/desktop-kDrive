@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "server/abstractiodevice.h"
+
 #include <QBitArray>
 #include <QIODevice>
 #include <QPointer>
@@ -44,9 +46,9 @@ class BloomFilter {
 
 class CommListener {
     public:
-        QPointer<QIODevice> ioDevice;
+        std::unique_ptr<AbstractIODevice> ioDevice;
 
-        explicit CommListener(QIODevice *ioDevice);
+        explicit CommListener(AbstractIODevice *ioDevice);
 
         void sendMessage(const QString &message, bool doWait = false) const;
 
