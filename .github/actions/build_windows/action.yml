@@ -63,11 +63,20 @@ runs:
         if: steps.build.outcome == 'success'
         shell: powershell
         run: |
-          $conanRunBat = Get-ChildItem -Path "${{ github.workspace }}" -Recurse -Filter "conanrun.bat" | Select-Object -First 1
-          
-          if ($conanRunBat) {
-            Write-Host "Sourcing $($conanRunBat.FullName)"
-            cmd /c `"$($conanRunBat.FullName)`"  # modifie l'environnement du shell cmd
+          $conanRunScript = Get-ChildItem -Path "${{ github.workspace }}" -Recurse | Where-Object {
+            $_.Name -in @("conanrun.bat", "conanrun.ps1")
+          } | Select-Object -First 1
+        
+          if ($conanRunScript) {
+            Write-Host "Sourcing $($conanRunScript.FullName)"
+            
+            if ($conanRunScript.Extension -eq ".bat") {
+              cmd /c `"$($conanRunScript.FullName)`"
+            } elseif ($conanRunScript.Extension -eq ".ps1") {
+              . "$($conanRunScript.FullName)"
+            }
+          } else {
+            Write-Host "No conanrun script found."
           }
           
           $patterns = @("libxxhash*.dll", "liblog4cplus*.dll", "libssl*.dll", "libcrypto*.dll", "cppunit*.dll")
