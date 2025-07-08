@@ -28,7 +28,7 @@ class KDriveDesktop(ConanFile):
             # (in the CI's profile, it is Release), yielding $<$<CONFIG:Release>:MultiThreadedDLL>. Other configs
             # (RelWithDebInfo, Debug) fall back to MSVC’s default CRT selection (/MT), here, we want /MD
             tc.blocks.remove("vs_runtime")
-            tc.blocks["override_vs_runtime"] = OverrideVSRuntimeBlock
+            tc.blocks["override_vs_runtime"] = OverrideVSRuntimeBlock(self, tc, "override_vs_runtime")
 
         if self.settings.os == "Macos":
             tc.variables["CMAKE_OSX_ARCHITECTURES"] = "x86_64;arm64"
