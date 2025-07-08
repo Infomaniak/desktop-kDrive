@@ -1,4 +1,4 @@
-<#
+﻿<#
  Infomaniak kDrive - Desktop App
  Copyright (C) 2023-2024 Infomaniak Network SA
 
@@ -16,7 +16,9 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #>
 param (
-    [string]$version
+    [string]$version,
+    [string]$user,
+    [string]$pass
 )
 
 $app = "kDrive-$version"
@@ -34,14 +36,9 @@ $languages = @(
     "fr",
     "it"
 )
+try {
+Start-Process -NoNewWindow -FilePath "mc.exe" -ArgumentList "config host add kdrive-storage https://storage.infomaniak.com $user $pass --api s3v4" -Wait
 
-Start-Process -NoNewWindow -FilePath "mc.exe" -ArgumentList "config host add kdrive-storage https://storage.infomaniak.com <username> <pass> --api s3v4" -Wait
-if ($LASTEXITCODE -ne 0)
-        {
-            "Failed to connect to the storage" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-            Write-Host "Error uploading $fileName" -f Red
-            exit 1
-        }
 # Upload release notes
 foreach ($os in $os_s)
 {
@@ -49,35 +46,54 @@ foreach ($os in $os_s)
     {
         $fileName = "$app-$os-$lang.html"
         $filePath = ".\release_notes\$app\$fileName"
-        $size = (Get-ChildItem $filePath | % {[int]($_.length)})
-        Write-Host "Uploading: $fileName ($size) to the storage" -f Cyan
-        Start-Process -NoNewWindow -FilePath "mc.exe" -ArgumentList "cp --attr Content-Type=text/html $filePath kdrive-storage/download/drive/desktopclient/$fileName" -Wait
-        if ($LASTEXITCODE -ne 0)
-        {
-            "Failed to upload: $filePath to the storage :stop_sign:" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-            Write-Host "Error uploading $fileName" -f Red
+        if (-not (Test-Path $filePath)) {
+            Write-Host "❌ File $filePath does not exist, aborting upload." -f Red
             exit 1
         }
-        "$fileName Uploaded to the storage :white_check_mark:" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+
+        $size = (Get-ChildItem $filePath | % {[int]($_.length)})
+        $proc = Start-Process -NoNewWindow -FilePath "mc.exe" `
+        -ArgumentList "cp --attr Content-Type=text/html $filePath kdrive-storage/download/drive/desktopclient/$fileName" `
+        -Wait -PassThru
+
+        if (-not ($proc.ExitCode -eq 0)) {
+            Write-Host "❌ Upload of $fileName failed" -f Red
+            exit 1
+        }
     }
 }
 
-# Upload installers / AppImages
-# Windows
-$fileName = "$app.exe"
-$filePath = ".\installers\$fileName"
-$size = (Get-ChildItem $filePath | % {[int]($_.length)})
-Write-Host "Uploading: $fileName ($size) to the storage" -f Cyan
+# Upload the application files
+$executables = @(
+    "$app.exe"
+)
 
-#!!! TODO change content type!!! Start-Process -NoNewWindow -FilePath "mc.exe" -ArgumentList "cp --attr Content-Type=text/html $filePath kdrive-storage/download/drive/desktopclient/$fileName" -Wait
-if ($LASTEXITCODE -ne 0)
+foreach ($executable in $executables)
 {
-    "Failed to upload: $filePath to the storage :stop_sign:" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-    Write-Host "Error uploading $fileName" -f Red
-    exit 1
+    $filePath = ".\installers\$executable"
+        if (-not (Test-Path $filePath)) {
+            Write-Host "❌ File $filePath does not exist, aborting upload." -f Red
+            exit 1
+        }
+    $size = (Get-ChildItem $filePath | % {[int]($_.length)})
+    $proc = Start-Process -NoNewWindow -FilePath "mc.exe" `
+    -ArgumentList "cp --attr Content-Type=application/octet-stream $filePath kdrive-storage/download/drive/desktopclient/$executable" `
+    -Wait -PassThru
+
+    if (-not ($proc.ExitCode -eq 0)) {
+        Write-Host "❌ Upload of $executable failed" -f Red
+        exit 1
+    }
 }
-"$fileName Uploaded to the storage :white_check_mark:" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-Start-Process -NoNewWindow -FilePath "mc.exe" -ArgumentList "config host remove kdrive-storage" -Wait
+
+Write-Host "✅ All files uploaded successfully to kDrive storage." -f Green
+} catch {
+    Write-Host "❌ An error occurred: $_" -f Red
+    exit 1
+} finally {
+    # Clean up the connection to the storage
+    Start-Process -NoNewWindow -FilePath "mc.exe" -ArgumentList "config host remove kdrive-storage" -Wait
+}
 
 
 
