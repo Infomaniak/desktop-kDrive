@@ -39,6 +39,8 @@ $win_files = @(
     "kDrive_client.pdb",
     "kDrive_client.src.zip"
 )
+
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls12
 foreach ($file in $win_files)
 {
     $size = (Get-ChildItem $file | % {[int]($_.length)})
