@@ -446,14 +446,14 @@ ExitInfo ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, cons
 
     for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
         Poco::JSON::Object::Ptr obj = it->extract<Poco::JSON::Object::Ptr>();
-        std::string name;
+        SyncName name;
         if (!JsonParserUtility::extractValue(obj, nameKey, name)) {
             LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
                              "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId);
             return {ExitCode::BackError, ExitCause::ApiErr};
         }
 
-        if (name == absolutePath.filename().string()) {
+        if (name == absolutePath.filename()) {
             alreadyExist = true;
             break;
         }
@@ -1638,7 +1638,7 @@ ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::share
                     auto uploadSessionJob(std::dynamic_pointer_cast<DriveUploadSession>(job));
                     if (uploadSessionJob) {
                         nodeId = uploadSessionJob->nodeId();
-                        newCreationTime = uploadJob->creationTime();
+                        newCreationTime = uploadSessionJob->creationTime();
                         newModificationTime = uploadSessionJob->modificationTime();
                         newSize = uploadSessionJob->size();
                         jobOk = true;
