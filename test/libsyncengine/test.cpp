@@ -50,7 +50,7 @@
 
 #if defined(KD_MACOS)
 #include "update_detection/file_system_observer/testfolderwatchermac.h"
-#elif KD_LINUX
+#elif defined(KD_LINUX)
 #include "update_detection/file_system_observer/testfolderwatcherlinux.h"
 #endif
 
@@ -70,7 +70,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestFsOperationSet);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalFileSystemObserverWorker);
 #if defined(KD_MACOS)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcher_mac);
-#elif KD_LINUX
+#elif defined(KD_LINUX)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcherLinux);
 #endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshotItemHandler);
