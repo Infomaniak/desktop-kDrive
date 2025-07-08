@@ -1,7 +1,12 @@
-name: Release kDrive Desktop Beta (internal)
+name: Release kDrive Desktop app
 
 on:
   workflow_dispatch:  
+    inputs:
+      environment:
+        type: environment
+        description: Select the deployment environment
+        default: Internal beta
   pull_request:
     branches-ignore:
         - 'release/**'
@@ -58,6 +63,7 @@ jobs:
           physical_cert: ${{ secrets.WINDOWS_PHYSICAL_CERT }}
           physical_cert_pass: ${{ secrets.WINDOWS_PHYSICAL_CERT_PASSWORD }}
           release_build: true    
+      
 
 # TODO: build Linux and macOS apps
 
@@ -100,16 +106,26 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
       
-      - name: Download artifacts
-        run: |
-            Write-Host "Version: ${{ needs.build-Windows.outputs.kDrive_version }}"
-
-      - name: Download artifacts
+      - name: Download Windows artifacts
         uses: actions/download-artifact@v4
         with:
           path: build-windows
           pattern: win-release-artifacts-*
           merge-multiple: true
+
+      #- name: Download macOS artifacts
+      #  uses: actions/download-artifact@v4
+      #  with:
+      #    path: build-macos
+      #    pattern: mac-release-artifacts-*
+      #    merge-multiple: true
+      #
+      #- name: Download Linux artifacts
+      #  uses: actions/download-artifact@v4
+      #  with:
+      #    path: build-linux
+      #    pattern: linux-release-artifacts-*
+      #    merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
         run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ needs.build-Windows.outputs.kDrive_version }}"
@@ -127,8 +143,13 @@ jobs:
 # Upload to the storage server
   upload-app-to-storage-server:
     needs: [upload-to-kDrive-and-sentry, build-Windows]
-    runs-on: [self-hosted, Windows]
+    runs-on: [self-hosted, Windows, desktop-kdrive]
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
@@ -139,7 +160,7 @@ jobs:
       - name: Upload apps and release notes to storage server
         run: |
             Invoke-WebRequest -Uri https://dl.min.io/client/mc/release/windows-amd64/mc.exe -OutFile mc.exe
-            powershell ./infomaniak-build-tools/upload-release-to-storage.ps1 -version "${{ needs.build-Windows.outputs.kDrive_version }}"
+            powershell ./infomaniak-build-tools/upload-release-to-storage.ps1 -version "${{ needs.build-Windows.outputs.kDrive_version }}" -user "${{ secrets.STORAGE_SERVER_USER }}" -pass "${{ secrets.STORAGE_SERVER_PASSWORD }}"
 
 # Update kStore
   update-kStore:
