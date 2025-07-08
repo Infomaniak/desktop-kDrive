@@ -40,11 +40,8 @@ Param(
     # Upload: Flag to trigger the use of the USB-key signing certificate
     [switch] $upload,
 
-    # csp: The CSP to use for unlocking the USB-key signing certificate (only used if upload is set)
-    [String] $csp = "eToken Base Cryptographic Provider",
-
-    # csp: The signing key token ([reader{{password}}]=name) to use for unlocking the USB-key signing certificate (only used if upload is set)
-    [String] $signingKeyToken,
+    # tokenPass: The password to use for unlocking the USB-key signing certificate (only used if upload is set)
+    [String] $tokenPass,
 
     # Coverage: Flag to enable or disable the code coverage computation
     [switch] $coverage,
@@ -351,24 +348,13 @@ function Sign-File{
         [string] $filePath,
         [bool] $upload = $false,
         [string] $thumbprint,
-        [String] $csp = "",
-        [String] $signingKeyToken = ""
+        [String] $tokenPass = ""
     )
       Write-Host "Signing the file $filePath with thumbprint $thumbprint" -f Yellow
-      if (-not $upload -OR $csp -eq "" -OR $signingKeyToken -eq "") {
-          if ($upload) {
-                Write-Host "No CSP or signing key token provided, the USB-KEY will need to be unlocked manually" -f Yellow
-            }
-          & signtool sign /sha1 $thumbprint /t http://timestamp.digicert.com  /fd SHA1  /v $filePath
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & signtool sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256  /fd sha256 /td sha256 /as /v $filePath
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      }else{
-          & signtool sign /sha1 $thumbprint /t http://timestamp.digicert.com /fd SHA1 /csp $csp /kc $signingKeyToken /v $filePath
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & signtool sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256  /fd sha256 /td sha256 /csp $csp /kc $signingKeyToken /as /v $filePath
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      }
+      & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /t http://timestamp.digicert.com  /fd SHA1 /v $filePath /password:$tokenPass
+      if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256  /fd sha256 /td sha256 /as /v $filePath /password:$tokenPass
+      if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
 function Prepare-Archive {
@@ -469,7 +455,7 @@ function Prepare-Archive {
         if (!$thumbprint) {
             $thumbprint = Get-Thumbprint $upload
         }
-        Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -csp $csp -signingKeyToken $signingKeyToken
+        Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass
     }
 
     Write-Host "Archive prepared."
@@ -513,7 +499,7 @@ function Create-Archive {
     $installerPath = Get-Installer-Path $buildPath $contentPath
 
     if (Test-Path -Path $installerPath) {
-        Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -csp $csp -signingKeyToken $signingKeyToken
+        Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass
         Write-Host ("$installerPath signed successfully.") -f Green
     }
     else {
