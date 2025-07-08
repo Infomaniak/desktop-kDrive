@@ -40,12 +40,12 @@ else()
 endif()
 
 set(server_SRCS
-    oldcommserver.h oldcommserver.cpp
-    navigationpanehelper.h navigationpanehelper.cpp
-    commmanager.h commmanager.cpp
-    commlistener.h commlistener.cpp
     appserver.h appserver.cpp
-    abstractiodevice.h
+    navigationpanehelper.h navigationpanehelper.cpp
+    comm/oldcommserver.h comm/oldcommserver.cpp
+    comm/abstractiodevice.h
+    comm/commlistener.h comm/commlistener.cpp
+    comm/commmanager.h comm/commmanager.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
     app_resources.rc
@@ -59,8 +59,8 @@ set(updater_SRCS
 
 if(APPLE)
     list(APPEND server_SRCS ../common/utility_mac.cpp)
-    list(APPEND server_SRCS commserver_mac.mm)
-    set_property(SOURCE commserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    list(APPEND server_SRCS comm/commserver_mac.mm)
+    set_property(SOURCE comm/commserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
     list(APPEND server_SRCS ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m)
     set_property(SOURCE ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
@@ -144,8 +144,7 @@ if(NOT BUILD_KDRIVE_OSX_BUNDLE)
     add_executable(${APPLICATION_EXECUTABLE} WIN32 mainserver.cpp ${final_src})
 else()
     # we must add MACOSX_BUNDLE only if building a bundle
-    add_executable(${APPLICATION_EXECUTABLE} WIN32 MACOSX_BUNDLE mainserver.cpp ${final_src}
-        abstractiodevice.h)
+    add_executable(${APPLICATION_EXECUTABLE} WIN32 MACOSX_BUNDLE mainserver.cpp ${final_src})
 
     get_target_property(_qmake Qt6::qmake LOCATION)
     execute_process(COMMAND ${_qmake} -query QT_INSTALL_TRANSLATIONS

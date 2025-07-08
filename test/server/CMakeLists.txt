@@ -23,21 +23,22 @@ set(server_srcs_path ${CMAKE_SOURCE_DIR}/src/server)
 
 set(server_SRCS
     ${server_srcs_path}/appserver.h ${server_srcs_path}/appserver.cpp
-    ${server_srcs_path}/commmanager.h ${server_srcs_path}/commmanager.cpp
-    ${server_srcs_path}/commlistener.h ${server_srcs_path}/commlistener.cpp
+    ${server_srcs_path}/navigationpanehelper.h ${server_srcs_path}/navigationpanehelper.cpp
+    ${server_srcs_path}/comm/oldcommserver.h ${server_srcs_path}/comm/oldcommserver.cpp
+    ${server_srcs_path}/comm/abstractiodevice.h
+    ${server_srcs_path}/comm/commlistener.h ${server_srcs_path}/comm/commlistener.cpp
+    ${server_srcs_path}/comm/commmanager.h ${server_srcs_path}/comm/commmanager.cpp
+    ${server_srcs_path}/migration/migrationparams.h ${server_srcs_path}/migration/migrationparams.cpp
+    ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
     ${server_srcs_path}/updater/updatechecker.h ${server_srcs_path}/updater/updatechecker.cpp
-    ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
-    ${server_srcs_path}/oldcommserver.h ${server_srcs_path}/oldcommserver.cpp
-    ${server_srcs_path}/navigationpanehelper.h ${server_srcs_path}/navigationpanehelper.cpp
-    ${server_srcs_path}/migration/migrationparams.h ${server_srcs_path}/migration/migrationparams.cpp
     ${server_srcs_path}/app_resources.rc
 )
 
 if(APPLE)
     list(APPEND server_SRCS ${server_srcs_path}/../common/utility_mac.cpp)
-    list(APPEND server_SRCS ${server_srcs_path}/commserver_mac.mm)
-    set_property(SOURCE ${server_srcs_path}/commserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    list(APPEND server_SRCS ${server_srcs_path}/comm/commserver_mac.mm)
+    set_property(SOURCE ${server_srcs_path}/comm/commserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
     message(STATUS "server_srcs_path=${server_srcs_path}")
     list(APPEND server_SRCS ${server_srcs_path}/../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m)
@@ -85,6 +86,7 @@ set(testserver_SRCS
     workers/testworkers.h workers/testworkers.cpp
     requests/testserverrequests.h requests/testserverrequests.cpp
     appserver/testappserver.h appserver/testappserver.cpp
+    comm/testabstractiodevice.h comm/testabstractiodevice.cpp
 )
 
 if(APPLE)

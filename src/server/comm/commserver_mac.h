@@ -23,10 +23,6 @@
 #include <string>
 #include <functional>
 
-namespace KDC {
-class CommApi;
-} // namespace KDC
-
 class CommServerPrivate;
 class CommChannelPrivate;
 

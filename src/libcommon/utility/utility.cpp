@@ -988,14 +988,6 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
 
 #endif
 
-QString CommonUtility::truncateLongLogMessage(const QString &message) {
-    if (static const qsizetype maxLogMessageSize = 2048; message.size() > maxLogMessageSize) {
-        return message.left(maxLogMessageSize) + " (truncated)";
-    }
-
-    return message;
-}
-
 SyncPath CommonUtility::applicationFilePath() {
     const auto maxPathLength = CommonUtility::maxPathLength();
     std::vector<SyncChar> pathStr(maxPathLength + 1, '\0');
@@ -1062,10 +1054,11 @@ std::list<SyncName> CommonUtility::splitSyncPath(const SyncPath &path) {
     return itemNames;
 }
 
-std::vector<SyncName> CommonUtility::splitSyncName(SyncName name, const SyncName &separator) {
-    std::vector<SyncName> tokens;
+template<typename T>
+std::vector<T> CommonUtility::splitString(T name, const T &separator) {
+    std::vector<T> tokens;
     size_t pos = 0;
-    SyncName token;
+    T token;
 
     while ((pos = name.find(separator)) != std::string::npos) {
         token = name.substr(0, pos);
@@ -1075,6 +1068,14 @@ std::vector<SyncName> CommonUtility::splitSyncName(SyncName name, const SyncName
     tokens.push_back(name);
 
     return tokens;
+}
+
+std::vector<SyncName> CommonUtility::splitSyncName(SyncName name, const SyncName &separator) {
+    return CommonUtility::splitString<SyncName>(name, separator);
+}
+
+std::vector<CommString> CommonUtility::splitCommString(CommString str, const CommString &separator) {
+    return CommonUtility::splitString<CommString>(str, separator);
 }
 
 std::vector<SyncName> CommonUtility::splitPath(const SyncName &pathName) {

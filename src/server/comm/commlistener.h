@@ -18,11 +18,9 @@
 
 #pragma once
 
-#include "server/abstractiodevice.h"
+#include "abstractiodevice.h"
 
 #include <QBitArray>
-#include <QIODevice>
-#include <QPointer>
 
 #include <thread>
 
@@ -50,15 +48,17 @@ class CommListener {
 
         explicit CommListener(AbstractIODevice *ioDevice);
 
-        void sendMessage(const QString &message, bool doWait = false) const;
+        void sendMessage(const CommString &message, bool doWait = false) const;
 
-        void sendMessageIfDirectoryMonitored(const QString &message, uint systemDirectoryHash) const;
+        void sendMessageIfDirectoryMonitored(const CommString &message, uint systemDirectoryHash) const;
 
         void registerMonitoredDirectory(uint systemDirectoryHash);
 
     private:
         BloomFilter _monitoredDirectoriesBloomFilter;
         std::thread::id _threadId;
+
+        static CommString truncateLongLogMessage(const CommString &message);
 };
 
 } // namespace KDC

@@ -43,39 +43,46 @@ CommListener::CommListener(AbstractIODevice *ioDevice) :
 }
 
 
-void CommListener::sendMessage(const QString &message, bool doWait) const {
+void CommListener::sendMessage(const CommString &message, bool doWait) const {
     assert(_threadId == std::this_thread::get_id() && "CommListener::sendMessage should only be called from the main thread");
 
     if (!ioDevice) {
-        LOGW_INFO(Log::instance()->getLogger(), L"Not sending message to dead ioDevice: " << message.toStdWString());
+        LOGW_INFO(Log::instance()->getLogger(), L"Do not send message to dead ioDevice: " << CommString2WStr(message));
         return;
     }
 
-    const QString truncatedLogMessage = CommonUtility::truncateLongLogMessage(message);
+    const CommString truncatedLogMessage = truncateLongLogMessage(message);
+    LOGW_INFO(Log::instance()->getLogger(),
+              L"Sending message: " << CommString2WStr(truncatedLogMessage) << L" to: " << ioDevice.get());
 
-    LOGW_INFO(Log::instance()->getLogger(), L"Sending message: " << truncatedLogMessage.toStdWString() << L" to: " << ioDevice);
-
-    QString localMessage = message;
-    if (!localMessage.endsWith(QLatin1Char('\n'))) {
-        localMessage.append(QLatin1Char('\n'));
+    CommString localMessage = message;
+    if (!localMessage.ends_with('\n')) {
+        localMessage.append("\n");
     }
 
-    QByteArray bytesToSend = localMessage.toUtf8();
-    qint64 sent = ioDevice->write(bytesToSend);
+    uint64_t sent = ioDevice->write(localMessage);
     if (doWait) {
         ioDevice->waitForBytesWritten(1000);
     }
-    if (sent != bytesToSend.length()) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Could not send all data on ioDevice for " << localMessage.toStdWString());
+    if (sent != localMessage.size()) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Could not send all data on ioDevice for " << CommString2WStr(localMessage));
     }
 }
 
-void CommListener::sendMessageIfDirectoryMonitored(const QString &message, uint systemDirectoryHash) const {
+void CommListener::sendMessageIfDirectoryMonitored(const CommString &message, uint systemDirectoryHash) const {
     if (_monitoredDirectoriesBloomFilter.isHashMaybeStored(systemDirectoryHash)) sendMessage(message, false);
 }
 
 void CommListener::registerMonitoredDirectory(uint systemDirectoryHash) {
     _monitoredDirectoriesBloomFilter.storeHash(systemDirectoryHash);
+}
+
+CommString CommListener::truncateLongLogMessage(const CommString &message) {
+    if (static const size_t maxLogMessageSize = 2048; message.size() > maxLogMessageSize) {
+        return message.substr(0, maxLogMessageSize) + " (truncated)";
+    }
+
+    return message;
 }
 
 } // namespace KDC

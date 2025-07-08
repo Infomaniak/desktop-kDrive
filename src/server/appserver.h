@@ -19,10 +19,10 @@
 #pragma once
 
 #include "qtsingleapplication.h"
-#include "oldcommserver.h"
 #include "navigationpanehelper.h"
-#include "commmanager.h"
 #include "config.h"
+#include "comm/oldcommserver.h"
+#include "comm/commmanager.h"
 #include "syncpal/syncpal.h"
 #include "libparms/db/user.h"
 #include "libcommon/info/userinfo.h"

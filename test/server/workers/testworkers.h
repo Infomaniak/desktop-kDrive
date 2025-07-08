@@ -17,7 +17,7 @@
  */
 
 #include "testincludes.h"
-#include "commmanager.h"
+#include "comm/commmanager.h"
 
 #if defined(__APPLE__)
 #include "libcommonserver/vfs/mac/vfs_mac.h"

@@ -156,8 +156,6 @@ struct COMMON_EXPORT CommonUtility {
         static bool isLikeFileNotFoundError(DWORD dwError) noexcept { return utility_base::isLikeFileNotFoundError(dwError); };
 #endif
 
-        static QString truncateLongLogMessage(const QString &message);
-
         static SyncPath applicationFilePath();
 
         static void resetTranslations();
@@ -181,7 +179,10 @@ struct COMMON_EXPORT CommonUtility {
          * Example: the return value associated to Str("A / B / c.txt") is the vector
          * ["A", "B", "c.txt"]
          */
+        template<typename T>
+        static std::vector<T> splitString(T name, const T &separator);
         static std::vector<SyncName> splitSyncName(SyncName name, const SyncName &delimiter);
+        static std::vector<CommString> splitCommString(CommString str, const CommString &separator);
 
         /**
          * Split the input path string into a vector of file and directory names.

@@ -479,7 +479,7 @@ class LiteSyncExtConnectorPrivate {
         bool vfsStart(const QString &folderPath);
         bool vfsStop(const QString &folderPath);
 
-        bool executeCommand(const QString &commandLine);
+        bool executeCommand(const CommString &commandLine);
         bool updateFetchStatus(const QString &filePath, const QString &status);
         bool setThumbnail(const QString &filePath, const QPixmap &pixmap);
         bool setAppExcludeList(const QString &appList);
@@ -628,7 +628,7 @@ bool LiteSyncExtConnectorPrivate::vfsStop(const QString &folderPath) {
     return true;
 }
 
-bool LiteSyncExtConnectorPrivate::executeCommand(const QString &commandLine) {
+bool LiteSyncExtConnectorPrivate::executeCommand(const CommString &commandLine) {
     if (!_connector) {
         LOG_WARN(_logger, "Connector not initialized!");
         return false;
@@ -639,8 +639,8 @@ bool LiteSyncExtConnectorPrivate::executeCommand(const QString &commandLine) {
         return false;
     }
 
-    LOGW_DEBUG(_logger, L"Execute command: " << QStr2WStr(commandLine));
-    _executeCommand(QStr2Str(commandLine).c_str());
+    LOGW_DEBUG(_logger, L"Execute command: " << CommString2WStr(commandLine));
+    _executeCommand(commandLine);
 
     return true;
 }
@@ -856,7 +856,10 @@ bool LiteSyncExtConnector::vfsHydratePlaceHolder(const QString &filePath) {
 
         // Get file
         LOGW_DEBUG(_logger, L"Get file with " << Utility::formatPath(filePath));
-        _private->executeCommand(QString("MAKE_AVAILABLE_LOCALLY_DIRECT:%1").arg(filePath));
+        CommString command(Str("MAKE_AVAILABLE_LOCALLY_DIRECT"));
+        command.append(Str(":"));
+        command.append(QStr2CommString(filePath));
+        _private->executeCommand(command);
     }
 
     return true;
@@ -1542,7 +1545,12 @@ bool LiteSyncExtConnector::sendStatusToFinder(const QString &path, const VfsStat
 
     // Update Finder
     LOGW_DEBUG(_logger, L"Send status to the Finder extension: " << Utility::formatPath(path));
-    return _private->executeCommand(QString("STATUS:%1:%2").arg(status, path));
+    CommString command(Str("STATUS"));
+    command.append(Str(":"));
+    command.append(QStr2CommString(status));
+    command.append(Str(":"));
+    command.append(QStr2CommString(path));
+    return _private->executeCommand(command);
 }
 
 bool LiteSyncExtConnector::checkFilesAttributes(const QString &path, const QString &localSyncPath, QStringList &filesToFix) {

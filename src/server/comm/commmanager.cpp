@@ -31,19 +31,11 @@
 
 #include <array>
 
-#include <QBitArray>
 #include <QUrl>
-#include <QMetaMethod>
-#include <QMetaObject>
 #include <QStringList>
-#include <QScopedPointer>
 #include <QFile>
 #include <QDir>
 #include <QApplication>
-#include <QLocalSocket>
-#include <QStringBuilder>
-#include <QMessageBox>
-#include <QFileDialog>
 #include <QClipboard>
 #include <QBuffer>
 #include <QDesktopServices>
@@ -55,30 +47,11 @@
 
 #include <log4cplus/loggingmacros.h>
 
-// This is the version that is returned when the client asks for the VERSION.
-// The first number should be changed if there is an incompatible change that breaks old clients.
-// The second number should be changed when there are new features.
-#define KDRIVE_SOCKET_API_VERSION "1.1"
+#define MSG_CDE_SEPARATOR Str(":")
+#define MSG_ARG_SEPARATOR Str("\x1e")
 
-#define MSG_CDE_SEPARATOR QChar(L':')
-#define MSG_ARG_SEPARATOR QChar(L'\x1e')
-
-#define QUERY_END_SEPARATOR QString("\\/\n")
-
-static QString buildMessage(const QString &verb, const QString &path, const QString &status = "") {
-    QString msg(verb);
-
-    if (!status.isEmpty()) {
-        msg.append(MSG_CDE_SEPARATOR);
-        msg.append(status);
-    }
-    if (!path.isEmpty()) {
-        msg.append(MSG_CDE_SEPARATOR);
-        const QFileInfo fi(path);
-        msg.append(QDir::toNativeSeparators(fi.absoluteFilePath()));
-    }
-    return msg;
-}
+#define QUERY_END_SEPARATOR Str("\\/\n")
+#define QUERY_ARG_SEPARATOR Str(";")
 
 namespace KDC {
 
@@ -88,7 +61,7 @@ struct ListenerHasSocketPred {
         ListenerHasSocketPred(AbstractIODevice *ioDevice) :
             ioDevice(ioDevice) {}
 
-        bool operator()(const CommListener &listener) const { return listener.ioDevice == ioDevice; }
+        bool operator()(std::shared_ptr<CommListener> listener) const { return listener->ioDevice.get() == ioDevice; }
 };
 
 CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<SyncPal>> &syncPalMap,
@@ -183,31 +156,32 @@ CommManager::~CommManager() {
     _listeners.clear();
 }
 
-void CommManager::executeCommandDirect(const QString &commandLineStr) {
-    LOGW_DEBUG(Log::instance()->getLogger(), L"Execute command - cmd=" << commandLineStr.toStdWString());
+void CommManager::executeCommandDirect(const CommString &commandLineStr) {
+    LOGW_DEBUG(Log::instance()->getLogger(), L"Execute command - cmd=" << CommString2WStr(commandLineStr));
 
-    QByteArray command = commandLineStr.split(MSG_CDE_SEPARATOR).value(0).toLatin1();
-    if (command.compare(QByteArray("MAKE_AVAILABLE_LOCALLY_DIRECT")) == 0 || command.compare(QByteArray("SET_THUMBNAIL")) == 0) {
-        // Command from LiteSync extension
+    std::vector<CommString> commands = CommonUtility::splitCommString(commandLineStr, MSG_CDE_SEPARATOR);
+    std::string command = CommString2Str(commands[0]);
+    if (command.compare("MAKE_AVAILABLE_LOCALLY_DIRECT") == 0 || command.compare("SET_THUMBNAIL") == 0) {
+        // Execute command from LiteSync extension
         executeCommand(commandLineStr, nullptr);
-    } else if (command.compare(QByteArray("STATUS")) == 0) {
+    } else if (command.compare("STATUS") == 0) {
         // Reply to FinderSync extension
         broadcastMessage(commandLineStr);
     }
 }
 
-void CommManager::executeCommand(const QString &commandLine, const CommListener *listener) {
-    QByteArray command = commandLine.split(MSG_CDE_SEPARATOR).value(0).toLatin1();
+void CommManager::executeCommand(const CommString &commandLineStr, std::shared_ptr<CommListener> listener) {
+    std::vector<CommString> commands = CommonUtility::splitCommString(commandLineStr, MSG_CDE_SEPARATOR);
+    std::string command = CommString2Str(commands[0]);
 
-    QString argument(commandLine);
-    argument.remove(0, command.length() + 1);
+    CommString argument(commandLineStr);
+    argument.erase(0, commands[0].length() + 1);
 
-    if (_commands.find(command.toStdString()) == _commands.end()) {
+    if (_commands.find(command) == _commands.end()) {
         LOGW_WARN(Log::instance()->getLogger(), L"The command is not supported by this version of the client - cmd="
-                                                        << Utility::s2ws(command.toStdString()) << L" arg="
-                                                        << argument.toStdWString());
+                                                        << Utility::s2ws(command) << L" arg=" << CommString2WStr(argument));
     } else {
-        _commands[command.toStdString()](QStr2SyncName(argument), const_cast<CommListener *>(listener));
+        _commands[command](argument, listener);
     }
 }
 
@@ -219,8 +193,8 @@ void CommManager::onNewExtConnection() {
     ioDevice->setReadyReadCbk(std::bind(&CommManager::onReadyRead, this, std::placeholders::_1));
     ioDevice->setDestroyedCbk(std::bind(&CommManager::onExtListenerDestroyed, this, std::placeholders::_1));
 
-    _listeners.append(CommListener(ioDevice));
-    CommListener &listener = _listeners.last();
+    _listeners.push_back(std::make_shared<CommListener>(ioDevice));
+    auto listener = _listeners.back();
 
     // Load sync list
     std::vector<Sync> syncList;
@@ -232,8 +206,7 @@ void CommManager::onNewExtConnection() {
 
     for (const Sync &sync: syncList) {
         if (!sync.paused()) {
-            QString message = buildRegisterPathMessage(SyncName2QStr(sync.localPath().native()));
-            listener.sendMessage(message);
+            buildAndSendRegisterPathMessage(listener, sync.localPath());
         }
     }
 }
@@ -268,15 +241,17 @@ void CommManager::onQueryReceived(AbstractIODevice *ioDevice) {
     LOG_IF_FAIL(Log::instance()->getLogger(), ioDevice)
 
     while (ioDevice->canReadLine()) {
-        QString query = ioDevice->readLine().trimmed();
-        LOG_INFO(Log::instance()->getLogger(), "Query received: " << query.toStdString());
+        CommString query = ioDevice->readLine();
+        LOGW_INFO(Log::instance()->getLogger(), L"Query received: " << CommString2WStr(query));
 
-        QStringList queryArr = query.split(";");
-        const int id = queryArr[0].toInt();
-        const RequestNum num = static_cast<RequestNum>(queryArr[1].toInt());
+        std::vector<CommString> queryArgs = CommonUtility::splitCommString(query, QUERY_ARG_SEPARATOR);
+        // Query ID
+        const int id = std::stoi(queryArgs[0]);
+        // Query type
+        const RequestNum num = static_cast<RequestNum>(std::stoi(queryArgs[1]));
 
         if (num == RequestNum::SYNC_START || num == RequestNum::SYNC_STOP) {
-            const int syncDbId = queryArr[2].toInt();
+            const int syncDbId = std::stoi(queryArgs[2]);
             QByteArray params;
             QDataStream paramsStream(&params, QIODevice::WriteOnly);
             paramsStream << syncDbId;
@@ -295,28 +270,26 @@ void CommManager::onReadyRead(AbstractIODevice *ioDevice) {
     // the readyRead() signals are received - in that case there won't be a
     // valid listener. We execute the handler anyway, but it will work with
     // a CommListener that doesn't send any messages.
-    static auto noListener = CommListener(nullptr);
-    CommListener *listener = &noListener;
+    std::shared_ptr<CommListener> listener;
     auto listenerIt = std::find_if(_listeners.begin(), _listeners.end(), ListenerHasSocketPred(ioDevice));
     if (listenerIt != _listeners.end()) {
-        listener = &*listenerIt;
+        listener = *listenerIt;
     }
 
     while (ioDevice->canReadLine()) {
-        // Make sure to normalize the input from the socket to
-        // make sure that the path will match, especially on OS X.
-        QString line;
-        while (!line.endsWith(QUERY_END_SEPARATOR)) {
+        CommString line;
+        while (!line.ends_with(QUERY_END_SEPARATOR)) {
             if (!ioDevice->canReadLine()) {
                 LOGW_WARN(Log::instance()->getLogger(),
-                          L"Failed to parse SocketAPI message - msg=" << line.toStdWString() << L" ioDevice=" << ioDevice);
+                          L"Failed to parse SocketAPI message - msg=" << CommString2WStr(line) << L" ioDevice=" << ioDevice);
                 return;
             }
             line.append(ioDevice->readLine());
         }
-        line.chop(QUERY_END_SEPARATOR.length()); // remove the separator
+        // Remove the separator
+        line.erase(line.find(QUERY_END_SEPARATOR));
         LOGW_INFO(Log::instance()->getLogger(),
-                  L"Received SocketAPI message - msg=" << line.toStdWString() << L" ioDevice=" << ioDevice);
+                  L"Received SocketAPI message - msg=" << CommString2WStr(line) << L" ioDevice=" << ioDevice);
         executeCommand(line, listener);
     }
 }
@@ -343,9 +316,8 @@ void CommManager::registerSync(int syncDbId) {
     Sync sync;
     if (!tryToRetrieveSync(syncDbId, sync)) return;
 
-    QString message = buildRegisterPathMessage(SyncName2QStr(sync.localPath().native()));
     foreach (auto &listener, _listeners) {
-        listener.sendMessage(message);
+        buildAndSendRegisterPathMessage(listener, sync.localPath());
     }
 
     _registeredSyncs.insert(syncDbId);
@@ -355,18 +327,18 @@ void CommManager::unregisterSync(int syncDbId) {
     Sync sync;
     if (!tryToRetrieveSync(syncDbId, sync)) return;
 
-    broadcastMessage(buildMessage(QString("UNREGISTER_PATH"), SyncName2QStr(sync.localPath().native()), QString()), true);
+    broadcastMessage(buildMessage("UNREGISTER_PATH", sync.localPath(), ""), true);
 
     _registeredSyncs.remove(syncDbId);
 }
 
-void CommManager::broadcastMessage(const QString &msg, bool doWait) {
-    foreach (auto &listener, _listeners) {
-        listener.sendMessage(msg, doWait);
+void CommManager::broadcastMessage(const CommString &msg, bool doWait) {
+    foreach (auto listener, _listeners) {
+        listener->sendMessage(msg, doWait);
     }
 }
 
-void CommManager::commandCopyPublicLink(const SyncName &argument, CommListener *) {
+void CommManager::commandCopyPublicLink(const CommString &argument, std::shared_ptr<CommListener>) {
     const auto fileData = FileData::get(argument);
     if (!fileData.syncDbId) return;
 
@@ -392,21 +364,21 @@ void CommManager::commandCopyPublicLink(const SyncName &argument, CommListener *
     copyUrlToClipboard(linkUrl);
 }
 
-void CommManager::commandCopyPrivateLink(const SyncName &argument, CommListener *) {
+void CommManager::commandCopyPrivateLink(const CommString &argument, std::shared_ptr<CommListener>) {
     fetchPrivateLinkUrlHelper(argument, &CommManager::copyUrlToClipboard);
 }
 
-void CommManager::commandOpenPrivateLink(const SyncName &argument, CommListener *) {
+void CommManager::commandOpenPrivateLink(const CommString &argument, std::shared_ptr<CommListener>) {
     fetchPrivateLinkUrlHelper(argument, &CommManager::openPrivateLink);
 }
 
-void CommManager::commandCancelDehydrationDirect(const SyncName &, CommListener *) {
+void CommManager::commandCancelDehydrationDirect(const CommString &, std::shared_ptr<CommListener>) {
     LOG_INFO(Log::instance()->getLogger(), "Ongoing files dehydrations canceled");
     _dehydrationCanceled = true;
     return;
 }
 
-void CommManager::commandCancelHydrationDirect(const SyncName &argument, CommListener *) {
+void CommManager::commandCancelHydrationDirect(const CommString &argument, std::shared_ptr<CommListener>) {
     LOG_INFO(Log::instance()->getLogger(), "Ongoing files hydrations canceled");
 
     const QStringList fileList = SyncName2QStr(argument).split(MSG_ARG_SEPARATOR);
@@ -443,7 +415,7 @@ void CommManager::commandCancelHydrationDirect(const SyncName &argument, CommLis
 #endif
 }
 
-void CommManager::commandMakeAvailableLocallyDirect(const SyncName &argument, CommListener *) {
+void CommManager::commandMakeAvailableLocallyDirect(const CommString &argument, std::shared_ptr<CommListener>) {
     const QStringList fileList = SyncName2QStr(argument).split(MSG_ARG_SEPARATOR);
 
 #ifdef __APPLE__
@@ -506,7 +478,7 @@ void CommManager::commandMakeAvailableLocallyDirect(const SyncName &argument, Co
 }
 
 #ifdef _WIN32
-void CommManager::commandGetAllMenuItems(const SyncName &argument, CommListener *listener) {
+void CommManager::commandGetAllMenuItems(const CommString &argument, CommListener *listener) {
     QStringList argumentList = SyncName2QStr(argument).split(MSG_ARG_SEPARATOR);
 
     QString msgId = argumentList[0];
@@ -599,7 +571,7 @@ void CommManager::commandGetAllMenuItems(const SyncName &argument, CommListener 
     listener->sendMessage(responseStr);
 }
 
-void CommManager::commandGetThumbnail(const SyncName &argument, CommListener *listener) {
+void CommManager::commandGetThumbnail(const CommString &argument, CommListener *listener) {
     QStringList argumentList = SyncName2QStr(argument).split(MSG_ARG_SEPARATOR);
 
     if (argumentList.size() != 3) {
@@ -678,12 +650,12 @@ void CommManager::commandGetThumbnail(const SyncName &argument, CommListener *li
 }
 #endif
 #ifdef __APPLE__
-void CommManager::commandRetrieveFolderStatus(const SyncName &argument, CommListener *listener) {
+void CommManager::commandRetrieveFolderStatus(const CommString &argument, std::shared_ptr<CommListener> listener) {
     // This command is the same as RETRIEVE_FILE_STATUS
     commandRetrieveFileStatus(argument, listener);
 }
 
-void CommManager::commandRetrieveFileStatus(const SyncName &argument, CommListener *listener) {
+void CommManager::commandRetrieveFileStatus(const CommString &argument, std::shared_ptr<CommListener> listener) {
     const auto fileData = FileData::get(argument);
     if (fileData.syncDbId) {
         // The user probably visited this directory in the file shell.
@@ -700,19 +672,25 @@ void CommManager::commandRetrieveFileStatus(const SyncName &argument, CommListen
         return;
     }
 
-    const QString message = buildMessage(QString("STATUS"), fileData.localPath, statusString(status, vfsStatus));
+    const CommString message = buildMessage("STATUS", QStr2Path(fileData.localPath), statusString(status, vfsStatus));
     listener->sendMessage(message);
 }
 
-void CommManager::commandGetMenuItems(const SyncName &argument, CommListener *listener) {
-    listener->sendMessage(QString("GET_MENU_ITEMS%1BEGIN").arg(MSG_CDE_SEPARATOR));
-    const QStringList files = SyncName2QStr(argument).split(MSG_ARG_SEPARATOR);
+void CommManager::commandGetMenuItems(const CommString &argument, std::shared_ptr<CommListener> listener) {
+    {
+        CommString message(Str("GET_MENU_ITEMS"));
+        message.append(MSG_CDE_SEPARATOR);
+        message.append(Str("BEGIN"));
+        listener->sendMessage(message);
+    }
+
+    std::vector<CommString> files = CommonUtility::splitCommString(argument, MSG_ARG_SEPARATOR);
 
     // Find the common sync
     Sync sync;
-    for (const auto &file: qAsConst(files)) {
+    for (const auto &file: files) {
         Sync tmpSync;
-        if (!syncForPath(QStr2Path(file), tmpSync)) {
+        if (!syncForPath(file, tmpSync)) {
             return;
         }
         if (tmpSync.dbId() != sync.dbId()) {
@@ -741,7 +719,7 @@ void CommManager::commandGetMenuItems(const SyncName &argument, CommListener *li
     if (files.size() == 1) {
         manageActionsOnSingleFile(listener, files, syncPalMapIt, vfsMapIt, sync);
 
-        isSingleFile = QFileInfo(files.first()).isFile();
+        isSingleFile = QFileInfo(CommString2QStr(files[0])).isFile();
     }
 
     // Manage dehydration cancellation
@@ -754,15 +732,15 @@ void CommManager::commandGetMenuItems(const SyncName &argument, CommListener *li
 
     // File availability actions
     if (sync.dbId() && sync.virtualFileMode() != VirtualFileMode::Off && vfsMapIt->second->socketApiPinStateActionsShown()) {
-        LOG_IF_FAIL(Log::instance()->getLogger(), !files.isEmpty());
+        LOG_IF_FAIL(Log::instance()->getLogger(), !files.empty());
 
         bool canHydrate = true;
         bool canDehydrate = true;
         bool canCancelHydration = false;
-        for (const auto &file: qAsConst(files)) {
+        for (const auto &file: files) {
             VfsStatus vfsStatus;
-            if (!canCancelHydration && vfsMapIt->second->status(QStr2Path(file), vfsStatus) && vfsStatus.isSyncing) {
-                canCancelHydration = syncPalMapIt->second->isDownloadOngoing(QStr2Path(file));
+            if (!canCancelHydration && vfsMapIt->second->status(file, vfsStatus) && vfsStatus.isSyncing) {
+                canCancelHydration = syncPalMapIt->second->isDownloadOngoing(file);
             }
 
             if (isSingleFile) {
@@ -773,36 +751,35 @@ void CommManager::commandGetMenuItems(const SyncName &argument, CommListener *li
 
         // TODO: Should be a submenu, should use icons
         auto makePinContextMenu = [&](bool makeAvailableLocally, bool freeSpace, bool cancelDehydration, bool cancelHydration) {
-            listener->sendMessage(QString("MENU_ITEM%1MAKE_AVAILABLE_LOCALLY_DIRECT%1%2%1%3")
-                                          .arg(MSG_CDE_SEPARATOR)
-                                          .arg(makeAvailableLocally ? QString() : QString("d"))
-                                          .arg(vfsPinActionText()));
+            buildAndSendMenuItemMessage(listener, Str("MAKE_AVAILABLE_LOCALLY_DIRECT"), makeAvailableLocally,
+                                        QStr2CommString(vfsPinActionText()));
+
             if (cancelHydration) {
-                listener->sendMessage(QString("MENU_ITEM%1CANCEL_HYDRATION_DIRECT%1%2%1%3")
-                                              .arg(MSG_CDE_SEPARATOR)
-                                              .arg(QString(""))
-                                              .arg(cancelHydrationText()));
+                buildAndSendMenuItemMessage(listener, Str("CANCEL_HYDRATION_DIRECT"), true,
+                                            QStr2CommString(cancelHydrationText()));
             }
 
-            listener->sendMessage(QString("MENU_ITEM%1MAKE_ONLINE_ONLY_DIRECT%1%2%1%3")
-                                          .arg(MSG_CDE_SEPARATOR)
-                                          .arg(freeSpace ? QString() : QString("d"))
-                                          .arg(vfsFreeSpaceActionText()));
+            buildAndSendMenuItemMessage(listener, Str("MAKE_ONLINE_ONLY_DIRECT"), freeSpace,
+                                        QStr2CommString(vfsFreeSpaceActionText()));
+
             if (cancelDehydration) {
-                listener->sendMessage(QString("MENU_ITEM%1CANCEL_DEHYDRATION_DIRECT%1%2%1%3")
-                                              .arg(MSG_CDE_SEPARATOR)
-                                              .arg(QString(""))
-                                              .arg(cancelDehydrationText()));
+                buildAndSendMenuItemMessage(listener, Str("CANCEL_DEHYDRATION_DIRECT"), true,
+                                            QStr2CommString(cancelDehydrationText()));
             }
         };
 
         makePinContextMenu(canHydrate, canDehydrate, canCancelDehydration, canCancelHydration);
     }
 
-    listener->sendMessage(QString("GET_MENU_ITEMS%1END").arg(MSG_CDE_SEPARATOR));
+    {
+        CommString message(Str("GET_MENU_ITEMS"));
+        message.append(MSG_CDE_SEPARATOR);
+        message.append(Str("END"));
+        listener->sendMessage(message);
+    }
 }
 
-void CommManager::commandMakeOnlineOnlyDirect(const SyncName &argument, CommListener *) {
+void CommManager::commandMakeOnlineOnlyDirect(const CommString &argument, std::shared_ptr<CommListener>) {
     const QStringList fileList = SyncName2QStr(argument).split(MSG_ARG_SEPARATOR);
 
     _dehydrationMutex.lock();
@@ -853,7 +830,7 @@ void CommManager::commandMakeOnlineOnlyDirect(const SyncName &argument, CommList
     _dehydrationMutex.unlock();
 }
 
-void CommManager::commandSetThumbnail(const SyncName &argument, CommListener *) {
+void CommManager::commandSetThumbnail(const CommString &argument, std::shared_ptr<CommListener>) {
     if (argument.empty()) {
         // No thumbnail for root
         return;
@@ -1088,30 +1065,31 @@ bool CommManager::syncForPath(const std::filesystem::path &path, Sync &sync) {
     return false;
 }
 
-QString CommManager::statusString(SyncFileStatus status, const VfsStatus &vfsStatus) const {
-    QString statusString;
+std::string CommManager::statusString(SyncFileStatus status, const VfsStatus &vfsStatus) const {
+    std::string statusString;
 
     switch (status) {
         case SyncFileStatus::Unknown:
-            statusString = QLatin1String("NOP");
+            statusString = "NOP";
             break;
         case SyncFileStatus::Syncing:
-            statusString = QLatin1String("SYNC_%1").arg(QString::number(vfsStatus.progress));
+            statusString = "SYNC_";
+            statusString.append(std::to_string(vfsStatus.progress));
             break;
         case SyncFileStatus::Conflict:
         case SyncFileStatus::Ignored:
-            statusString = QLatin1String("IGNORE");
+            statusString = "IGNORE";
             break;
         case SyncFileStatus::Success:
         case SyncFileStatus::Inconsistency:
             if ((vfsStatus.isPlaceholder && vfsStatus.isHydrated) || !vfsStatus.isPlaceholder) {
-                statusString = QLatin1String("OK");
+                statusString = "OK";
             } else {
-                statusString = QLatin1String("ONLINE");
+                statusString = "ONLINE";
             }
             break;
         case SyncFileStatus::Error:
-            statusString = QLatin1String("ERROR");
+            statusString = "ERROR";
             break;
         case SyncFileStatus::EnumEnd:
             assert(false && "Invalid enum value in switch statement.");
@@ -1124,7 +1102,7 @@ void CommManager::openPrivateLink(const QString &link) {
     openBrowser(link);
 }
 
-void CommManager::sendSharingContextMenuOptions(const FileData &fileData, const CommListener *listener) {
+void CommManager::sendSharingContextMenuOptions(const FileData &fileData, std::shared_ptr<CommListener> listener) {
     auto theme = Theme::instance();
     if (!(theme->userGroupSharing() || theme->linkSharing())) return;
 
@@ -1150,15 +1128,10 @@ void CommManager::sendSharingContextMenuOptions(const FileData &fileData, const 
         return;
     }
 
-    const auto flagString = QString("%1%2%1").arg(MSG_CDE_SEPARATOR).arg(isOnTheServer ? QString() : QString("d"));
-
     // If sharing is globally disabled, do not show any sharing entries.
     // If there is no permission to share for this file, add a disabled entry saying so
     if (isOnTheServer && !canShare) {
-        listener->sendMessage(QString("MENU_ITEM%1DISABLED%1d%1%2")
-                                      .arg(MSG_CDE_SEPARATOR)
-                                      .arg(fileData.isDirectory ? QObject::tr("Resharing this file is not allowed")
-                                                                : QObject::tr("Resharing this folder is not allowed")));
+        buildAndSendMenuItemMessage(listener, Str("DISABLED"), false, QStr2CommString(resharingText(fileData.isDirectory)));
     } else {
         // Do we have public links?
         bool publicLinksEnabled = theme->linkSharing();
@@ -1167,19 +1140,15 @@ void CommManager::sendSharingContextMenuOptions(const FileData &fileData, const 
         bool canCreateDefaultPublicLink = publicLinksEnabled;
 
         if (canCreateDefaultPublicLink) {
-            listener->sendMessage(QString("MENU_ITEM%1COPY_PUBLIC_LINK%2")
-                                          .arg(MSG_CDE_SEPARATOR)
-                                          .arg(flagString + QObject::tr("Copy public share link")));
+            buildAndSendMenuItemMessage(listener, Str("COPY_PUBLIC_LINK"), isOnTheServer,
+                                        QStr2CommString(copyPublicShareLinkText()));
         } else if (publicLinksEnabled) {
-            listener->sendMessage(QString("MENU_ITEM%1MANAGE_PUBLIC_LINKS%2")
-                                          .arg(MSG_CDE_SEPARATOR)
-                                          .arg(flagString + QObject::tr("Copy public share link")));
+            buildAndSendMenuItemMessage(listener, Str("MANAGE_PUBLIC_LINKS"), isOnTheServer,
+                                        QStr2CommString(copyPublicShareLinkText()));
         }
     }
 
-    listener->sendMessage(QString("MENU_ITEM%1COPY_PRIVATE_LINK%2")
-                                  .arg(MSG_CDE_SEPARATOR)
-                                  .arg(flagString + QObject::tr("Copy private share link")));
+    buildAndSendMenuItemMessage(listener, Str("COPY_PRIVATE_LINK"), isOnTheServer, QStr2CommString(copyPrivateShareLinkText()));
 }
 
 void CommManager::addSharingContextMenuOptions(const FileData &fileData, QTextStream &response) {
@@ -1238,17 +1207,17 @@ void CommManager::addSharingContextMenuOptions(const FileData &fileData, QTextSt
     response << QString("%1COPY_PRIVATE_LINK%2").arg(MSG_CDE_SEPARATOR).arg(flagString + QObject::tr("Copy private share link"));
 }
 
-void CommManager::manageActionsOnSingleFile(CommListener *listener, const QStringList &files,
+void CommManager::manageActionsOnSingleFile(std::shared_ptr<CommListener> listener, const std::vector<CommString> &files,
                                             std::unordered_map<int, std::shared_ptr<SyncPal>>::const_iterator syncPalMapIt,
                                             std::unordered_map<int, std::shared_ptr<Vfs>>::const_iterator vfsMapIt,
                                             const Sync &sync) {
     bool exists = false;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(QStr2Path(files.first()), exists, ioError) || !exists) {
+    if (!IoHelper::checkIfPathExists(files[0], exists, ioError) || !exists) {
         return;
     }
 
-    FileData fileData = FileData::get(files.first());
+    FileData fileData = FileData::get(files[0]);
     if (fileData.localPath.isEmpty()) {
         return;
     }
@@ -1264,25 +1233,39 @@ void CommManager::manageActionsOnSingleFile(CommListener *listener, const QStrin
         return;
     }
     bool isOnTheServer = !nodeId.empty();
-    auto flagString = QString("%1%2%1").arg(MSG_CDE_SEPARATOR).arg(isOnTheServer ? QString() : QString("d"));
 
     if (sync.dbId()) {
-        listener->sendMessage(QString("VFS_MODE%1%2").arg(MSG_CDE_SEPARATOR).arg(Vfs::modeToString(sync.virtualFileMode())));
+        {
+            CommString message(Str("VFS_MODE"));
+            message.append(MSG_CDE_SEPARATOR);
+            message.append(QStr2CommString(Vfs::modeToString(sync.virtualFileMode())));
+            listener->sendMessage(message);
+        }
     }
 
     if (sync.dbId()) {
         sendSharingContextMenuOptions(fileData, listener);
-        listener->sendMessage(QString("MENU_ITEM%1OPEN_PRIVATE_LINK%2")
-                                      .arg(MSG_CDE_SEPARATOR)
-                                      .arg(flagString + QObject::tr("Open in browser")));
+        buildAndSendMenuItemMessage(listener, Str("OPEN_PRIVATE_LINK"), isOnTheServer, QStr2CommString(openInBrowserText()));
     }
 }
 
-QString CommManager::buildRegisterPathMessage(const QString &path) {
-    QFileInfo fi(path);
-    QString message = QString("REGISTER_PATH%1").arg(MSG_CDE_SEPARATOR);
-    message.append(QDir::toNativeSeparators(fi.absoluteFilePath()));
-    return message;
+void CommManager::buildAndSendRegisterPathMessage(std::shared_ptr<CommListener> listener, const SyncPath &path) {
+    CommString message("REGISTER_PATH");
+    message.append(MSG_CDE_SEPARATOR);
+    message.append(path.native());
+    listener->sendMessage(message);
+}
+
+void CommManager::buildAndSendMenuItemMessage(std::shared_ptr<CommListener> listener, const CommString &type, bool enabled,
+                                              const CommString &text) {
+    CommString message(Str("MENU_ITEM"));
+    message.append(MSG_CDE_SEPARATOR);
+    message.append(type);
+    message.append(MSG_CDE_SEPARATOR);
+    message.append(enabled ? Str("") : Str("d"));
+    message.append(MSG_CDE_SEPARATOR);
+    message.append(text);
+    listener->sendMessage(message);
 }
 
 void CommManager::processFileList(const QStringList &inFileList, std::list<SyncPath> &outFileList) {
@@ -1325,23 +1308,35 @@ void CommManager::processFileList(const QStringList &inFileList, std::list<SyncP
 }
 
 QString CommManager::vfsPinActionText() {
-    return QCoreApplication::translate("utility", "Make available locally");
+    return QObject::tr("Make available locally");
 }
 
 QString CommManager::vfsFreeSpaceActionText() {
-    return QCoreApplication::translate("utility", "Free up local space");
+    return QObject::tr("Free up local space");
 }
 
 QString CommManager::cancelDehydrationText() {
-    return QCoreApplication::translate("utility", "Cancel free up local space");
+    return QObject::tr("Cancel free up local space");
 }
 
 QString CommManager::cancelHydrationText() {
-#ifdef __APPLE__
-    return QCoreApplication::translate("utility", "Cancel make available locally");
-#else
-    return QCoreApplication::translate("utility", "Cancel make available locally");
-#endif
+    return QObject::tr("Cancel make available locally");
+}
+
+QString CommManager::resharingText(bool isDirectory) {
+    return isDirectory ? QObject::tr("Resharing this file is not allowed") : QObject::tr("Resharing this folder is not allowed");
+}
+
+QString CommManager::copyPublicShareLinkText() {
+    return QObject::tr("Copy public share link");
+}
+
+QString CommManager::copyPrivateShareLinkText() {
+    return QObject::tr("Copy private share link");
+}
+
+QString CommManager::openInBrowserText() {
+    return QObject::tr("Open in browser");
 }
 
 bool CommManager::openBrowser(const QUrl &url) {
@@ -1350,6 +1345,20 @@ bool CommManager::openBrowser(const QUrl &url) {
         return false;
     }
     return true;
+}
+
+CommString CommManager::buildMessage(const std::string &verb, const SyncPath &path, const std::string &status) {
+    CommString msg(Str2CommString(verb));
+
+    if (!status.empty()) {
+        msg.append(MSG_CDE_SEPARATOR);
+        msg.append(Str2CommString(status));
+    }
+    if (!path.empty()) {
+        msg.append(MSG_CDE_SEPARATOR);
+        msg.append(path.native());
+    }
+    return msg;
 }
 
 

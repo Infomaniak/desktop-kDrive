@@ -68,7 +68,7 @@ class CommChannelPrivate {
 
         RemoteEnd *_remoteEnd;
         LocalEnd *_localEnd;
-        QByteArray _inBuffer;
+        std::string _inBuffer;
         bool _isRemoteDisconnected = false;
 };
 
@@ -117,7 +117,7 @@ class CommServerPrivate {
     }
 
     if (_wrapper && _wrapper->_q_ptr) {
-        _wrapper->_inBuffer += QByteArray::fromRawNSData(msg);
+        _wrapper->_inBuffer += std::string([answer UTF8String]);
         _wrapper->_inBuffer += "\n";
         emit _wrapper->_q_ptr->readyReadCbk();
     }
@@ -134,7 +134,7 @@ class CommServerPrivate {
     NSLog(@"[KD] Message received %@", answer);
 
     if (_wrapper) {
-        _wrapper->_inBuffer += QByteArray::fromRawNSData(msg);
+        _wrapper->_inBuffer += std::string([answer UTF8String]);
         emit _wrapper->_q_ptr->readyReadCbk();
     }
 }
@@ -418,15 +418,15 @@ CommServerPrivate::~CommServerPrivate() {
 CommChannel::CommChannel(CommChannelPrivate *p) :
     d_ptr(p) {
     d_ptr->_q_ptr = this;
-    open(ReadWrite);
+    open(/*ReadWrite*/);
 }
 
 CommChannel::~CommChannel() {}
 
 uint64_t CommChannel::readData(char *data, uint64_t maxlen) {
     uint64_t len = std::min(maxlen, static_cast<uint64_t>(d_ptr->_inBuffer.size()));
-    memcpy(data, d_ptr->_inBuffer.constData(), static_cast<size_t>(len));
-    d_ptr->_inBuffer.remove(0, len);
+    memcpy(data, d_ptr->_inBuffer.c_str(), static_cast<size_t>(len));
+    d_ptr->_inBuffer.erase(0, len);
     return len;
 }
 
@@ -450,7 +450,7 @@ uint64_t CommChannel::bytesAvailable() const {
 }
 
 bool CommChannel::canReadLine() const {
-    return d_ptr->_inBuffer.indexOf('\n', int(pos())) != -1;
+    return d_ptr->_inBuffer.find('\n', 0) != std::string::npos;
 }
 
 // CommServer implementation

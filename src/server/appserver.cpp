@@ -3594,7 +3594,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 #endif
         vfsSetupParams.localPath = sync.localPath();
         vfsSetupParams.targetPath = sync.targetPath();
-        vfsSetupParams.executeCommand = [this](const char *command) { _commManager->executeCommandDirect(QString(command)); };
+        vfsSetupParams.executeCommand = [this](const CommString &command) { _commManager->executeCommandDirect(command); };
         vfsSetupParams.logger = _logger;
         vfsSetupParams.sentryHandler = sentry::Handler::instance();
         QString error;
