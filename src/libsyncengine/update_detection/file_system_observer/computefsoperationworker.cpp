@@ -17,6 +17,8 @@
  */
 
 #include "computefsoperationworker.h"
+
+#include "io/filestat.h"
 #include "requests/parameterscache.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
@@ -94,6 +96,11 @@ void ComputeFSOperationWorker::execute() {
         exitCode = exploreSnapshotTree(ReplicaSide::Remote, remoteIdsSet);
         ok = exitCode == ExitCode::Ok;
         if (ok) perfMonitor.stop();
+    }
+    if (ok && !stopAsked()) {
+        sentry::pTraces::scoped::CheckIfFileStillBeingWritten perfMonitor(syncDbId());
+        checkIfFileStillBeingWritten();
+        perfMonitor.stop();
     }
 
     const std::chrono::duration<double> elapsedSeconds = std::chrono::steady_clock::now() - start;
@@ -522,6 +529,28 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const N
                 continue;
             }
 
+            // if (side == ReplicaSide::Local) {
+            //     // TODO : this portion of code aimed to wait for a file to be available locally before starting to synchronize
+            //     it
+            //     // For example, on Windows, when copying a big file inside the sync folder, the creation event is received
+            //     // immediately but the copy will take some time. Therefor, the file will appear locked during the copy.
+            //     // However, this will also block the update of file locked by an application during its edition (Microsoft
+            //     Office,
+            //     // Open Office, ...)
+            //     const bool isLink = _syncPal->_localSnapshot->isLink(nodeId);
+            //     if (type == NodeType::File && !isLink) {
+            //         // On Windows, we receive CREATE event while the file is still being copied
+            //         // Do not start synchronizing the file while copying is in progress
+            //         const SyncPath absolutePath = _syncPal->localPath() / snapshotPath;
+            //         IoError ioError = IoError::Success;
+            //         if (!IoHelper::isFileAccessible(absolutePath, ioError)) {
+            //             LOGW_SYNCPAL_INFO(_logger, L"Item \"" << Utility::formatSyncPath(absolutePath)
+            //                                                   << L"\" is not ready. Synchronization postponed.");
+            //             continue;
+            //         }
+            //     }
+            // }
+
             // Create operation
             FSOpPtr fsOp = std::make_shared<FSOperation>(OperationType::Create, nodeId, type, snapshot->createdAt(nodeId),
                                                          snapshot->lastModified(nodeId), snapshotSize, snapshotPath);
@@ -615,14 +644,48 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
 
         // No operations detected on this file but its size is not the same between remote and local replica
         // Remove it from local replica and download the remote version
-        LOGW_SYNCPAL_DEBUG(_logger, L"File size mismatch for \"" << Path2WStr(absoluteLocalPath)
-                                                                 << L"\". Remote version will be downloaded again.");
+        LOGW_SYNCPAL_DEBUG(_logger, L"File size mismatch for " << Path2WStr(absoluteLocalPath)
+                                                               << L". Remote version will be downloaded again.");
         _fileSizeMismatchMap.insert({dbNode.nodeIdLocal().value(), absoluteLocalPath});
         sentry::Handler::captureMessage(sentry::Level::Warning, "ComputeFSOperationWorker::exploreDbTree",
                                         "File size mismatch detected");
     }
 
     return ExitCode::Ok;
+}
+
+void ComputeFSOperationWorker::checkIfFileStillBeingWritten() {
+    const auto localOpsSet = _syncPal->operationSet(ReplicaSide::Local);
+
+    for (const auto opType: {OperationType::Create, OperationType::Edit}) {
+        const auto opIds = localOpsSet->getOpsByType(opType);
+        for (const auto &opId: opIds) {
+            FSOpPtr op;
+            if (!localOpsSet->getOp(opId, op)) {
+                LOGW_SYNCPAL_DEBUG(_logger, L"FS operation not found for ID: " << opId);
+                continue;
+            }
+
+            // Retrieve current size
+            FileStat fileStat;
+            bool found = false;
+            IoHelper::getFileStat(_syncPal->localPath() / op->path(), &fileStat, found);
+            if (!found) {
+                LOGW_SYNCPAL_DEBUG(_logger, L"File not found: " << Utility::formatSyncPath(op->path()));
+                continue;
+            }
+
+            LOGW_SYNCPAL_INFO(_logger, L"op size: " << op->size() << L" / FS size: " << fileStat.size);
+            Utility::msleep(100);
+            LOGW_SYNCPAL_INFO(_logger, L"op size: " << op->size() << L" / FS size: " << fileStat.size);
+
+            if (op->size() < fileStat.size) {
+                LOGW_SYNCPAL_INFO(_logger, L"Item \"" << Utility::formatSyncPath(op->path())
+                                                      << L"\" is not ready. Synchronization postponed.");
+                (void) _syncPal->operationSet(ReplicaSide::Local)->removeOp(opId);
+            }
+        }
+    }
 }
 
 bool ComputeFSOperationWorker::isExcludedFromSync(const std::shared_ptr<const Snapshot> snapshot, const ReplicaSide side,

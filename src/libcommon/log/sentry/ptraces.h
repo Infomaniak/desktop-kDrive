@@ -184,6 +184,14 @@ struct ExploreRemoteSnapshot : public AbstractScopedPTrace {
                                  PTraceStatus::Aborted, syncDbId) {}
 };
 
+// This scoped performance trace expects to be manually stopped.
+struct CheckIfFileStillBeingWritten : public AbstractScopedPTrace {
+        explicit CheckIfFileStillBeingWritten(int syncDbId) :
+            AbstractScopedPTrace({"CheckIfFileStillBeingWritten", "Check if file is still being written",
+                                  PTraceName::CheckIfFileStillBeingWritten, PTraceName::UpdateDetection1},
+                                 PTraceStatus::Aborted, syncDbId) {}
+};
+
 struct Step1MoveDirectory : public AbstractScopedPTrace {
         explicit Step1MoveDirectory(int syncDbId) :
             AbstractScopedPTrace(

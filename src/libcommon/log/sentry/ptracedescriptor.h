@@ -31,6 +31,7 @@ enum class PTraceName {
     /*Sync*/ /*UpdateDetection1*/ InferChangesFromDb,
     /*Sync*/ /*UpdateDetection1*/ ExploreLocalSnapshot,
     /*Sync*/ /*UpdateDetection1*/ ExploreRemoteSnapshot,
+    /*Sync*/ /*UpdateDetection1*/ CheckIfFileStillBeingWritten,
     /*Sync*/ UpdateDetection2,
     /*Sync*/ /*UpdateDetection2*/ ResetNodes,
     /*Sync*/ /*UpdateDetection2*/ Step1MoveDirectory,

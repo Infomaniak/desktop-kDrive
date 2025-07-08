@@ -279,6 +279,10 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError 
     filestat->nodeType = pFileInfo->FileAttributes & FILE_ATTRIBUTE_DIRECTORY ? NodeType::Directory : NodeType::File;
     CloseHandle(hParent);
 
+    // GET THE SIZE ON DISK
+    LPDWORD test;
+    DWORD sizeOnDisk = GetCompressedFileSizeW(path.native().c_str(), test);
+
     return true;
 }
 

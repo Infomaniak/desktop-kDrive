@@ -25,9 +25,9 @@ FSOperationSet::~FSOperationSet() {
     clear();
 }
 
-bool FSOperationSet::getOp(UniqueId id, FSOpPtr &opPtr) const {
+bool FSOperationSet::getOp(const UniqueId id, FSOpPtr &opPtr) const {
     const std::scoped_lock lock(_mutex);
-    if (auto it = _ops.find(id); it != _ops.end()) {
+    if (const auto it = _ops.find(id); it != _ops.end()) {
         opPtr = it->second;
         return true;
     }
@@ -41,7 +41,7 @@ std::unordered_map<UniqueId, FSOpPtr> FSOperationSet::getAllOps() const {
 
 std::unordered_set<UniqueId> FSOperationSet::getOpsByType(const OperationType type) const {
     const std::scoped_lock lock(_mutex);
-    if (auto it = _opsByType.find(type); it != _opsByType.end()) {
+    if (const auto it = _opsByType.find(type); it != _opsByType.end()) {
         return it->second;
     }
     return std::unordered_set<UniqueId>();
@@ -49,7 +49,7 @@ std::unordered_set<UniqueId> FSOperationSet::getOpsByType(const OperationType ty
 
 std::unordered_set<UniqueId> FSOperationSet::getOpsByNodeId(const NodeId &nodeId) const {
     const std::scoped_lock lock(_mutex);
-    if (auto it = _opsByNodeId.find(nodeId); it != _opsByNodeId.end()) {
+    if (const auto it = _opsByNodeId.find(nodeId); it != _opsByNodeId.end()) {
         return it->second;
     }
     return std::unordered_set<UniqueId>();
@@ -62,7 +62,7 @@ uint64_t FSOperationSet::nbOps() const {
 
 uint64_t FSOperationSet::nbOpsByType(const OperationType type) const {
     const std::scoped_lock lock(_mutex);
-    if (auto it = _opsByType.find(type); it != _opsByType.end()) {
+    if (const auto it = _opsByType.find(type); it != _opsByType.end()) {
         return it->second.size();
     }
     return 0;
