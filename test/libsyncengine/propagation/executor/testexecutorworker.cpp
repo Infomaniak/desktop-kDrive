@@ -661,9 +661,9 @@ void TestExecutorWorker::testAffectedUpdateTree() {
     syncOp->setTargetSide(ReplicaSide::Remote);
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, _executorWorker->affectedUpdateTree(syncOp)->side());
 
-    // // ReplicaSide::Unknown case
-    // syncOp->setTargetSide(ReplicaSide::Unknown);
-    // CPPUNIT_ASSERT_EQUAL(std::shared_ptr<UpdateTree>(nullptr), _executorWorker->affectedUpdateTree(syncOp));
+    // ReplicaSide::Unknown case
+    syncOp->setTargetSide(ReplicaSide::Unknown);
+    CPPUNIT_ASSERT_EQUAL(std::shared_ptr<UpdateTree>(nullptr), _executorWorker->affectedUpdateTree(syncOp));
 }
 
 void TestExecutorWorker::testTargetUpdateTree() {
@@ -675,9 +675,9 @@ void TestExecutorWorker::testTargetUpdateTree() {
     syncOp->setTargetSide(ReplicaSide::Remote);
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, _executorWorker->targetUpdateTree(syncOp)->side());
 
-    // // ReplicaSide::Unknown case
-    // syncOp->setTargetSide(ReplicaSide::Unknown);
-    // CPPUNIT_ASSERT_EQUAL(std::shared_ptr<UpdateTree>(nullptr), _executorWorker->targetUpdateTree(syncOp));
+    // ReplicaSide::Unknown case
+    syncOp->setTargetSide(ReplicaSide::Unknown);
+    CPPUNIT_ASSERT_EQUAL(std::shared_ptr<UpdateTree>(nullptr), _executorWorker->targetUpdateTree(syncOp));
 }
 
 void TestExecutorWorker::testRemoveDependentOps() {
