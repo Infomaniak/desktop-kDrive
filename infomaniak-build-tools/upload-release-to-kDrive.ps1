@@ -1,4 +1,4 @@
-<#
+﻿<#
  Infomaniak kDrive - Desktop App
  Copyright (C) 2023-2024 Infomaniak Network SA
 
@@ -21,39 +21,66 @@ param (
 )
 
 if (-not $env:KDRIVE_TOKEN) {
-    Write-Host "No token found to upload to kDrive." -f Red 
+    Write-Host "No KDRIVE_TOKEN found to upload to kDrive." -f Red 
     exit 1
 }
 
+if (-not $env:KDRIVE_ID) {
+    Write-Host "No KDRIVE_ID found to upload to kDrive." -f Red 
+    exit 1
+}
+
+if (-not $env:KDRIVE_DIR_ID) {
+    Write-Host "No KDRIVE_DIR_ID found to upload to kDrive." -f Red 
+    exit 1
+}
+
+#version example 3.7.1.20250708
 $app = "kDrive-$version"
+
+#Extract the date  (after the 3rd .)
+$versionTab = $version.Split('.')
+$date = $versionTab[3]
+if ($date.Length -ne 8) {
+    Write-Host "Invalid version format, expected 3.7.1.20250708, got $version" -f Red
+    exit 1
+}
+$versionNumber = $versionTab[0..2] -join '.'
+
 Push-Location build-windows
 
 $headers = @{
     Authorization="Bearer $env:KDRIVE_TOKEN"
 }
 
-$win_files = @(
-    "$app.exe",
+$win_files = @(   
+    "$app.exe", 
     "kDrive.pdb",
-    "kDrive.src.zip",
     "kDrive_client.pdb",
+    "kDrive.src.zip",
     "kDrive_client.src.zip"
 )
 
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls12
 foreach ($file in $win_files)
 {
-    $size = (Get-ChildItem $file | % {[int]($_.length)})
-    $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$file&directory_path=$minorVersion/$date/windows&conflict=version"
-
-    Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $file
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Failed to upload $file to kDrive" -f Red
+    try {
+        $size = (Get-Item $file).length
+        if ($size -eq 0) {
+            Write-Host "Unable to get file size for $file, aborting upload." -f Red
+            Pop-Location
+            exit 1
+        }
+        $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$file&directory_path=$versionNumber/$date/windows&conflict=version"
+        Write-Host "uploading $file to kDrive at $uri" 
+        $result = Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $file
+        Write-Host "Uploaded $file to kDrive successfully. $result" -f Green
+    } catch {
+        Write-Host "Failed to upload $file to kDrive -> $_" -f Red
         Pop-Location
         exit 1
     }
+    Sleep(5)
 }
-
 Pop-Location
 
 # TODO add Linux and macOS uploads
