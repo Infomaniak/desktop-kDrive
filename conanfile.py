@@ -63,8 +63,15 @@ class KDriveDesktop(ConanFile):
             self.requires("openssl/3.2.4", options={ "shared": True }) # From https://conan.io/center/recipes/openssl
 
 class OverrideVSRuntimeBlock(VSRuntimeBlock):
-    template = textwrap.dedent("""\
-    cmake_policy(SET CMP0091 NEW)
-    message(STATUS "Conan toolchain: Setting CMAKE_MSVC_RUNTIME_LIBRARY=$<$<CONFIG:Debug>:MultiThreadedDebugDLL>$<$<NOT:$<CONFIG:Debug>>:MultiThreadedDLL>")
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "$<$<CONFIG:Debug>:MultiThreadedDebugDLL>$<$<NOT:$<CONFIG:Debug>>:MultiThreadedDLL>" CACHE STRING "" FORCE)
-    """)
+    def __init__(self, conanfile, toolchain, name):
+        super().__init__(conanfile, toolchain, name)
+        build_type = str(conanfile.settings.build_type)
+        if build_type == "Debug":
+            runtime = "MultiThreadedDebugDLL"
+        else:
+            runtime = "MultiThreadedDLL"
+        self.template = textwrap.dedent(f"""\
+        cmake_policy(SET CMP0091 NEW)
+        message(STATUS "Conan toolchain: Setting CMAKE_MSVC_RUNTIME_LIBRARY={runtime}")
+        set(CMAKE_MSVC_RUNTIME_LIBRARY "{runtime}" CACHE STRING "" FORCE)
+        """)
