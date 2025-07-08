@@ -54,7 +54,7 @@ namespace AutoSafeNetLogon
             {
                 Console.Error.WriteLine($"Failed to start signtool: {ex.Message}");
             }
-
+            Console.WriteLine("ksigntool finished");
             // Clear automation handlers
             Automation.RemoveAllEventHandlers();
         }
