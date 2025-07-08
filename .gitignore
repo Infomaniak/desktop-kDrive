@@ -197,6 +197,6 @@ cmake-build-debug*
 .venv/
 
 # cppunit conanfile.py
-# This file is not present in the repository, but moved from conanfile-windows.py or conanfile-macos.py depending on the platform.
+# This file is not present in the repository, but moved from windows.py or macos.py depending on the platform.
 # Renamed to keep the integrity of the local repository.
 /infomaniak-build-tools/conan/recipes/cppunit/all/conanfile.py
