@@ -47,6 +47,9 @@
 #include <zlib.h>
 #endif
 
+#include "utility_base.h"
+
+
 #include <QDir>
 #include <QTranslator>
 #include <QLibraryInfo>
@@ -549,7 +552,7 @@ SyncPath CommonUtility::getAppSupportDir() {
     std::error_code ec;
     if (!std::filesystem::is_directory(dirPath, ec)) {
         bool exists = false;
-        exists = !CommonUtility::isLikeFileNotFoundError(ec);
+        exists = !utility_base::isLikeFileNotFoundError(ec);
         if (exists) return SyncPath();
         if (!std::filesystem::create_directory(dirPath, ec)) return SyncPath();
     }

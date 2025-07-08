@@ -52,6 +52,9 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
+#include "utility/utility_base.h"
+
+
 #include <log4cplus/loggingmacros.h>
 
 // This is the version that is returned when the client asks for the VERSION.
@@ -1385,7 +1388,7 @@ FileData FileData::get(const KDC::SyncPath &path) {
         std::error_code ec;
         data.isDirectory = std::filesystem::is_directory(tmpPath, ec);
         if (!data.isDirectory && ec.value() != 0) {
-            const bool exists = !CommonUtility::isLikeFileNotFoundError(ec);
+            const bool exists = !utility_base::isLikeFileNotFoundError(ec);
             if (!exists) {
                 // Item doesn't exist anymore
                 LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Item doesn't exist - " << Utility::formatPath(data.localPath));

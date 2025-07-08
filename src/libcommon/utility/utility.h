@@ -146,13 +146,7 @@ struct COMMON_EXPORT CommonUtility {
 #if defined(KD_WINDOWS)
         // Converts a std::wstring to std::string assuming that it contains only mono byte chars
         static std::string toUnsafeStr(const SyncName &name);
-
-        static std::wstring getErrorMessage(DWORD errorMessageId);
-        static std::wstring getLastErrorMessage();
-        static bool isLikeFileNotFoundError(DWORD dwError) noexcept;
 #endif
-
-        static bool isLikeFileNotFoundError(const std::error_code &ec) noexcept;
 
         static QString truncateLongLogMessage(const QString &message);
 

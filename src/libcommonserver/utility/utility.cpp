@@ -40,6 +40,9 @@
 #include <fileapi.h>
 #endif
 
+#include "utility/utility_base.h"
+
+
 #include <locale>
 #include <algorithm>
 #include <thread>
@@ -367,7 +370,7 @@ std::string Utility::fileSystemName(const SyncPath &targetPath) {
         // Not all the requested information is retrieved
         DWORD dwError = GetLastError();
         LOGW_WARN(logger(), L"Error in GetVolumeInformation for " << formatSyncName(targetPath.root_name()) << L" ("
-                                                                  << CommonUtility::getErrorMessage(dwError) << L")");
+                                                                  << utility_base::getErrorMessage(dwError) << L")");
 
         // !!! File system name can be OK or not !!!
         return ws2s(szFileSystemName);
@@ -697,7 +700,7 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
     if (!success) {
 #if defined(KD_WINDOWS)
         const DWORD dwError = GetLastError();
-        errorMessage += L" (" + CommonUtility::getErrorMessage(dwError) + L")";
+        errorMessage += L" (" + utility_base::getErrorMessage(dwError) + L")";
 #endif
         LOGW_DEBUG(logger(), L"Failed to normalize " << errorMessage);
     }
@@ -795,7 +798,7 @@ bool Utility::getLinuxDesktopType(std::string &currentDesktop) {
 bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound) {
     int length = GetLongPathNameW(shortPathIn.native().c_str(), 0, 0);
     if (!length) {
-        const bool exists = !CommonUtility::isLikeFileNotFoundError(GetLastError());
+        const bool exists = !utility_base::isLikeFileNotFoundError(GetLastError());
         if (!exists) {
             notFound = true;
         }
@@ -809,7 +812,7 @@ bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool 
 
     length = GetLongPathNameW(shortPathIn.native().c_str(), buffer, length);
     if (!length) {
-        const bool exists = !CommonUtility::isLikeFileNotFoundError(GetLastError());
+        const bool exists = !utility_base::isLikeFileNotFoundError(GetLastError());
         if (!exists) {
             notFound = true;
         }

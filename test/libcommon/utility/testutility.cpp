@@ -24,6 +24,8 @@
 #include "libcommon/utility/sourcelocation.h"
 #include "libcommonserver/io/iohelper.h"
 #include "test_utility/localtemporarydirectory.h"
+#include "utility/utility_base.h"
+
 #include <iostream>
 #include <regex>
 
@@ -413,13 +415,13 @@ void TestUtility::testGetLastErrorMessage() {
 
     // No actual error. Display the expected success message.
     {
-        const std::wstring msg = CommonUtility::getLastErrorMessage();
+        const std::wstring msg = utility_base::getLastErrorMessage();
         CPPUNIT_ASSERT_MESSAGE(SyncName2Str(msg.c_str()), msg.starts_with(L"(0) - "));
     }
     // Display the file-not-found error message.
     {
         GetFileAttributesW(L"this_file_does_not_exist.txt");
-        const std::wstring msg = CommonUtility::getLastErrorMessage();
+        const std::wstring msg = utility_base::getLastErrorMessage();
         CPPUNIT_ASSERT(msg.starts_with(L"(2) - "));
     }
 }
