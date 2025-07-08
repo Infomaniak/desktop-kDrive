@@ -19,8 +19,8 @@
 #pragma once
 
 #include "testincludes.h"
-
-#include <reconciliation/operation_generator/operationgeneratorworker.h>
+#include "syncpal/syncpal.h"
+#include "test_classes/testsituationgenerator.h"
 
 namespace KDC {
 
@@ -34,7 +34,8 @@ class TestOperationGeneratorWorker : public CppUnit::TestFixture, public TestBas
         CPPUNIT_TEST(testMoveOpWithPseudoConflictButDifferentEncoding);
         CPPUNIT_TEST(testEditOp);
         CPPUNIT_TEST(testEditOpWithPseudoConflict);
-        CPPUNIT_TEST(testDeleteOp);
+        CPPUNIT_TEST(testDeleteFileOp);
+        CPPUNIT_TEST(testDeleteFolderOp);
         CPPUNIT_TEST(testDeleteOpWithPseudoConflict);
         CPPUNIT_TEST(testMoveEditOps);
         CPPUNIT_TEST(testEditChangeShouldBePropagated);
@@ -52,14 +53,15 @@ class TestOperationGeneratorWorker : public CppUnit::TestFixture, public TestBas
         void testMoveOpWithPseudoConflictButDifferentEncoding();
         void testEditOp();
         void testEditOpWithPseudoConflict();
-        void testDeleteOp();
+        void testDeleteFileOp();
+        void testDeleteFolderOp();
         void testDeleteOpWithPseudoConflict();
         void testMoveEditOps();
         void testEditChangeShouldBePropagated();
 
     private:
         std::shared_ptr<SyncPal> _syncPal = nullptr;
-        log4cplus::Logger _logger;
+        TestSituationGenerator _situationGenerator;
 };
 
 } // namespace KDC
