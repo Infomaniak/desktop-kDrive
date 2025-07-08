@@ -56,8 +56,7 @@ jobs:
         uses: ./.github/actions/build_windows
         with:  
           physical_cert: ${{ secrets.WINDOWS_PHYSICAL_CERT }}
-          physical_cert_csp: ${{ secrets.WINDOWS_VIRTUAL_CERT_CSP }}
-          physical_cert_token: ${{ secrets.WINDOWS_VIRTUAL_CERT_TOKEN }}
+          physical_cert_pass: ${{ secrets.WINDOWS_PHYSICAL_CERT_PASSWORD }}
           release_build: true    
 
 # TODO: build Linux and macOS apps

@@ -11,11 +11,8 @@ inputs:
   physical_cert:
     description: 'The physical certificate, mandatory for release builds'
     required: false
-  physical_cert_csp:
-    description: 'CSP of the physical certificate, mandatory for release builds'
-    required: false
-  physical_cert_token:
-    description: 'Token of the physical certificate ([reader{{password}}]=name), mandatory for release builds'
+  physical_cert_pass:
+    description: 'Password of the physical certificate, mandatory for release builds'
     required: false
   release_build:
     description: 'If true, run the release build script'
@@ -68,7 +65,7 @@ runs:
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
           if "${{ inputs.release_build }}" == "true" (
-            powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ext -clean remake -ci -upload -thumbprint B1D273E77CAF9DBDA865896F3C51A3EB31C6C5AD # -csp ${{ inputs.physical_cert_csp }} -token ${{ inputs.physical_cert_token }} TODO: Unlock the usb key with CSP and token
+            powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci -ext -clean remake -upload -thumbprint B1D273E77CAF9DBDA865896F3C51A3EB31C6C5AD -tokenPass ${{ inputs.physical_cert_pass }}
             ) else (
             powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
             )
