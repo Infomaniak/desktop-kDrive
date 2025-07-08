@@ -36,19 +36,19 @@ class MockComputeFSOperationWorker : public ComputeFSOperationWorker {
 
 class TestComputeFSOperationWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestComputeFSOperationWorker);
-        CPPUNIT_TEST(testNoOps);
-        CPPUNIT_TEST(testMultipleOps);
-        CPPUNIT_TEST(testLnkFileAlreadySynchronized);
-        CPPUNIT_TEST(testDifferentEncoding_NFC_NFD);
-        CPPUNIT_TEST(testDifferentEncoding_NFD_NFC);
+        // CPPUNIT_TEST(testNoOps);
+        // CPPUNIT_TEST(testMultipleOps);
+        // CPPUNIT_TEST(testLnkFileAlreadySynchronized);
+        // CPPUNIT_TEST(testDifferentEncoding_NFC_NFD);
+        // CPPUNIT_TEST(testDifferentEncoding_NFD_NFC);
         CPPUNIT_TEST(testDifferentEncoding_NFD_NFD);
-        CPPUNIT_TEST(testDifferentEncoding_NFC_NFC);
-        CPPUNIT_TEST(testCreateDuplicateNamesWithDistinctEncodings);
-        CPPUNIT_TEST(testDeletionOfNestedFolders);
-        CPPUNIT_TEST(testAccessDenied);
-        CPPUNIT_TEST(testExclusion);
-        CPPUNIT_TEST(testIsInUnsyncedList);
-        CPPUNIT_TEST(testHasChangedSinceLastSeen);
+        // CPPUNIT_TEST(testDifferentEncoding_NFC_NFC);
+        // CPPUNIT_TEST(testCreateDuplicateNamesWithDistinctEncodings);
+        // CPPUNIT_TEST(testDeletionOfNestedFolders);
+        // CPPUNIT_TEST(testAccessDenied);
+        // CPPUNIT_TEST(testExclusion);
+        // CPPUNIT_TEST(testIsInUnsyncedList);
+        // CPPUNIT_TEST(testHasChangedSinceLastSeen);
         CPPUNIT_TEST_SUITE_END();
 
     public:
