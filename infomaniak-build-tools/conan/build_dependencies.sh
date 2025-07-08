@@ -203,7 +203,10 @@ if [ "$platform" = "darwin" ]; then
   conan create "$conan_recipes_folder/openssl-universal/3.2.4/" --build=missing -s:a=build_type="$build_type" --profile:all="$conan_profile" -r="$local_recipe_remote_name" -r=conancenter
 
   log "Creating CPPUnit package..."
-  conan create "$conan_recipes_folder/cppunit/all/conanfile-macos.py" --build=missing -s:a=build_type="$build_type" --profile:all="$conan_profile" -r="$local_recipe_remote_name" -r=conancenter -o 'cppunit/*:shared=True'
+  if [ -f "$conan_recipes_folder/cppunit/all/conanfile-macos.py" ]; then
+    mv "$conan_recipes_folder/cppunit/all/conanfile-macos.py" "$conan_recipes_folder/cppunit/all/conanfile.py"
+  fi
+  conan create "$conan_recipes_folder/cppunit/all/" --build=missing -s:a=build_type="$build_type" --profile:all="$conan_profile" -r="$local_recipe_remote_name" -r=conancenter -o 'cppunit/*:shared=True'
 fi
 
 log "Installing dependencies..."

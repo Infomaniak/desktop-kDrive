@@ -206,6 +206,9 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Log "Creating CPPUnit Conan package..."
+if (Test-Path -Path "$RecipesFolder/cppunit/all/conanfile-windows.py") {
+    Move-Item -Path "$RecipesFolder/cppunit/all/conanfile-windows.py" -Destination "$RecipesFolder/cppunit/all/conanfile.py" -Force
+}
 & $ConanExe create "$RecipesFolder/cppunit/all/conanfile-windows.py" --version 1.15.1 --build=missing -s build_type=$BuildType -r $LocalRemoteName -r conancenter -o 'cppunit/*:shared=True'
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to create CPPUnit Conan package."
