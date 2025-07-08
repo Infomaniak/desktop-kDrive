@@ -53,6 +53,7 @@ void IoHelperTestUtilities::setReadAliasFunction(
 
 void IoHelperTestUtilities::resetFunctions() {
     // Reset to default std::filesytem implementation.
+    setRename(static_cast<void (*)(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)>(&std::filesystem::rename));
     setIsDirectoryFunction(static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_directory));
     setIsSymlinkFunction(static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_symlink));
     setReadSymlinkFunction(static_cast<SyncPath (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::read_symlink));
