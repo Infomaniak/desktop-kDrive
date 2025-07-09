@@ -439,7 +439,6 @@ void TestNetworkJobs::testDownload() {
                 };
         IoHelperTestUtilities::setRename(MockRename);
         IoHelperTestUtilities::setTempDirectoryPathFunction(MockTempDirectoryPath);
-        int64_t sizeOut = 0;
         // CREATE
         {
             DownloadJob job(nullptr, _driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, true);

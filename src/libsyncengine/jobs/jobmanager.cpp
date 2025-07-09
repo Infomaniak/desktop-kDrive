@@ -47,7 +47,7 @@ void JobManager::stop() {
 }
 
 void JobManager::clear() {
-    Poco::ThreadPool::defaultPool().stopAll();
+    _threadPool.stopAll();
     if (_mainThread) {
         if (_mainThread->joinable()) _mainThread->join();
         _mainThread = nullptr;
@@ -79,7 +79,7 @@ void JobManager::setPoolCapacity(const int nbThread) {
     static_assert(threadPoolMinCapacity >= 2 && "Thread pool min capacity is too low.");
 
     _maxNbThread = std::max(nbThread, threadPoolMinCapacity);
-    Poco::ThreadPool::defaultPool().addCapacity(_maxNbThread - Poco::ThreadPool::defaultPool().capacity());
+    _threadPool.addCapacity(_maxNbThread - _threadPool.capacity());
     LOG_DEBUG(_logger, "Max number of thread changed to " << _maxNbThread << " threads");
 }
 
@@ -139,7 +139,7 @@ void JobManager::startJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priori
             _data.erase(job->jobId());
         } else {
             LOG_DEBUG(Log::instance()->getLogger(), "Starting job " << job->jobId() << " with priority " << priority);
-            Poco::ThreadPool::defaultPool().startWithPriority(priority, *job);
+            _threadPool.startWithPriority(priority, *job);
             if (!_data.addToRunningJobs(job->jobId())) {
                 LOG_WARN(Log::instance()->getLogger(), "Failed to insert job " << job->jobId() << " in _runningJobs map");
             }
@@ -166,7 +166,7 @@ void JobManager::addToPendingJobs(const std::shared_ptr<AbstractJob> job, const 
 
 int JobManager::availableThreadsInPool() const {
     try {
-        return static_cast<int>(Poco::ThreadPool::defaultPool().available());
+        return static_cast<int>(_threadPool.available());
     } catch (Poco::Exception &) {
         return 0;
     }
@@ -182,7 +182,7 @@ bool JobManager::canRunjob(const std::shared_ptr<AbstractJob> job) const {
         }
         return true;
     }
-    if (isBigFileDownloadJob(job) && availableThreadsInPool() < 0.5 * Poco::ThreadPool::defaultPool().capacity()) {
+    if (isBigFileDownloadJob(job) && availableThreadsInPool() < 0.5 * _threadPool.capacity()) {
         // Allow big file download only if there is more than 50% of thread available in the pool.
         return false;
     }
