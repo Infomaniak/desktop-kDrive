@@ -130,4 +130,9 @@ bool DriveUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessi
 
     return true;
 }
+
+bool DriveUploadSession::isExclusiveOf(std::shared_ptr<AbstractJob> job) const {
+    return std::dynamic_pointer_cast<DriveUploadSession>(job) != nullptr;
+}
+
 } // namespace KDC
