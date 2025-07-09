@@ -107,7 +107,7 @@ build_release() {
   mkdir -p "$build_dir"
 
   conan_folder="$build_dir/conan"
-  bash "$src_dir/infomaniak-build-tools/conan/build_dependencies.sh" $build_type "--output-dir=$conan_folder"
+  bash "$src_dir/infomaniak-build-tools/conan/build_dependencies.sh" $build_type "--output-dir=$conan_folder" --make-release
 
   conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
   conan_generator_folder="$(dirname "$conan_toolchain_file")"
