@@ -110,7 +110,7 @@ runs:
           cp /usr/lib/x86_64-linux-gnu/libgthread* ./dependencies/
           cp /usr/lib/x86_64-linux-gnu/libdbus-1.so.3 ./dependencies/
         shell: bash
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build = 'true' }}
+        if: steps.build.outcome == 'success'
 
       - name: Fetch Conan dependencies
         run: |
