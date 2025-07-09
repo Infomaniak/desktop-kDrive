@@ -62,10 +62,26 @@ jobs:
         with:  
           physical_cert: ${{ secrets.WINDOWS_PHYSICAL_CERT }}
           physical_cert_pass: ${{ secrets.WINDOWS_PHYSICAL_CERT_PASSWORD }}
-          release_build: true    
-      
+          release_build: true
 
-# TODO: build Linux and macOS apps
+  build-Linux:
+    needs: [check-release-notes, check-translations]
+    runs-on: [ self-hosted, Linux, desktop-kdrive ]
+    outputs:
+      kDrive_version: ${{ steps.build-linux-step.outputs.kDrive_version }}
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build Linux
+        id: build-linux-step
+        uses: ./.github/actions/build_linux
+        with:
+          release_build: true
+
+
+  # TODO: build macOS apps
 
 # Tests Windows
   test-Windows:
