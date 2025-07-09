@@ -27,7 +27,7 @@ runs:
       - name: Build kDrive desktop
         id: build
         run: |
-          if [ "${{ inputs.release_build }}" -eq "true ]; then
+          if [ "${{ inputs.release_build }}" -eq "true" ]; then
             ./infomaniak-build-tools/linux/build-release-amd64.sh
           else
             ./infomaniak-build-tools/linux/build-ci-amd64.sh -u -t release
