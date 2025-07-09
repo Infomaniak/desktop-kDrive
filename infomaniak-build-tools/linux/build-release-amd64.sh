@@ -39,7 +39,7 @@ src_dir="$(get_default_src_dir)"
 
 function display_help {
   echo "$program_name [-h] [-d git-directory] [-u]"
-  echo "  Build the Linux Amd64 release executables built inside <git-directory>/build-linux-amd64."
+  echo "  Build the Linux Amd64 release executables built inside <git-directory>/build-linux."
   echo "where:"
   echo "-h  Show this help text."
   echo "-d <git-directory>" 
