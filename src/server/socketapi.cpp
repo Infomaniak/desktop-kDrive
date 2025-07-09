@@ -482,6 +482,15 @@ ExitInfo SocketApi::setPinState(const FileData &fileData, KDC::PinState pinState
     return vfsMapIt->second->setPinState(QStr2Path(fileData.relativePath), pinState);
 }
 
+ExitInfo SocketApi::forceStatus(const FileData &fileData, const VfsStatus &status) {
+    if (!fileData.syncDbId) return {ExitCode::LogicError, ExitCause::InvalidArgument};
+
+    const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
+    if (vfsMapIt == _vfsMap.cend()) return {ExitCode::LogicError};
+
+    return vfsMapIt->second->forceStatus(QStr2Path(fileData.relativePath), status);
+}
+
 ExitInfo SocketApi::dehydratePlaceholder(const FileData &fileData) {
     if (!fileData.syncDbId) return {ExitCode::LogicError, ExitCause::InvalidArgument};
 
@@ -594,6 +603,17 @@ void SocketApi::command_MAKE_AVAILABLE_LOCALLY_DIRECT(const QString &filesArg) {
                       L"Error in SocketApi::setPinState - " << Utility::formatSyncPath(filePath));
             continue;
         }
+        // Update the status of empty folders.
+        if (fileData.isDirectory) {
+            auto tmpStatus = vfsStatus;
+            tmpStatus.isSyncing = false;
+            tmpStatus.isHydrated = true;
+            if (!forceStatus(fileData, tmpStatus)) {
+                LOGW_INFO(KDC::Log::instance()->getLogger(),
+                          L"Error in SocketApi::setPinState - " << Utility::formatSyncPath(filePath));
+            }
+            continue;
+        }
 #endif
 
         if (!addDownloadJob(fileData)) {
@@ -693,6 +713,17 @@ void SocketApi::command_MAKE_ONLINE_ONLY_DIRECT(const QString &filesArg, SocketL
             continue;
         }
 
+#ifdef Q_OS_MAC
+        // Update the status of empty folders.
+        if (fileData.isDirectory) {
+            if (!forceStatus(fileData, {.isPlaceholder = true, .isHydrated = false, .isSyncing = false, .progress = 0})) {
+                LOGW_INFO(KDC::Log::instance()->getLogger(),
+                          L"Error in SocketApi::setPinState - " << Utility::formatSyncPath(filePath));
+            }
+            continue;
+        }
+#endif
+
         // Dehydrate placeholder
         if (ExitInfo exitInfo = dehydratePlaceholder(fileData); !exitInfo) {
             LOGW_INFO(KDC::Log::instance()->getLogger(),
@@ -714,7 +745,6 @@ void SocketApi::command_MAKE_ONLINE_ONLY_DIRECT(const QString &filesArg, SocketL
 void SocketApi::command_CANCEL_DEHYDRATION_DIRECT(const QString &) {
     LOG_INFO(KDC::Log::instance()->getLogger(), "Ongoing files dehydrations canceled");
     _dehydrationCanceled = true;
-    return;
 }
 
 void SocketApi::command_CANCEL_HYDRATION_DIRECT(const QString &filesArg) {
@@ -1293,6 +1323,9 @@ void SocketApi::processFileList(const QStringList &inFileList, std::list<SyncPat
 
                 if (fileList.size() > 0) {
                     processFileList(fileList, outFileList);
+                } else {
+                    // Empty folders need to appear in `outFileList` so that their status can be updated.
+                    outFileList.push_back(QStr2Path(path));
                 }
             } else {
                 outFileList.push_back(QStr2Path(path));
