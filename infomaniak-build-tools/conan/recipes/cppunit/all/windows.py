@@ -58,7 +58,7 @@ class CppunitConan(ConanFile):
         get(self, **self.conan_data["sources"][self.version], strip_root=True)
 
         mafile_in = os.path.join(self.source_folder, "Makefile.in")
-        replace_in_file(self, mafile_in, "^SUBDIRS\s*=\s*((src|include|examples|doc)\s+){3}(src|include|examples|doc)\s*$", "SUBDIRS = src include")
+        replace_in_file(self, mafile_in, "SUBDIRS = src include examples doc", "SUBDIRS = src include")
 
     def generate(self):
         env = VirtualBuildEnv(self)
