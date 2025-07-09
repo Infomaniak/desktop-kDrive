@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include "commlistener.h"
 #include "libcommon/utility/types.h"
 #include "libcommonserver/vfs/vfs.h"
 #include "libsyncengine/syncpal/syncpal.h"
@@ -66,6 +65,7 @@ class CommManager {
                              const std::unordered_map<int, std::shared_ptr<Vfs>> &vfsMap);
         virtual ~CommManager();
 
+        // AppServer callbacks setting
         inline void setAddErrorCallback(void (*addError)(const Error &)) { _addError = addError; }
         inline void setGetThumbnailCallback(ExitCode (*getThumbnail)(int, NodeId, int, std::string &)) {
             _getThumbnail = getThumbnail;
@@ -74,32 +74,31 @@ class CommManager {
             _getPublicLinkUrl = getPublicLinkUrl;
         }
 
+        // Finder/File explorer actions
         void registerSync(int syncDbId);
         void unregisterSync(int syncDbId);
-        void executeCommandDirect(const CommString &commandLine);
 
-        static bool syncForPath(const std::filesystem::path &path, Sync &sync);
+        void executeCommandDirect(const CommString &commandLine);
 
     private:
         const std::unordered_map<int, std::shared_ptr<SyncPal>> &_syncPalMap;
         const std::unordered_map<int, std::shared_ptr<Vfs>> &_vfsMap;
 
         QSet<int> _registeredSyncs;
-        std::list<std::shared_ptr<CommListener>> _listeners;
-        CommServer _localServer;
+        std::unique_ptr<AbstractCommServer> _localServer;
 
         bool _dehydrationCanceled = false;
         unsigned _nbOngoingDehydration = 0;
         QMutex _dehydrationMutex;
 
         // Callbacks
-        void onNewExtConnection();
+        void onNewExtConnection(); // Can be a Mac Finder Extension or a Windows Shell Extension
+        void onExtQueryReceived(std::shared_ptr<AbstractCommChannel> channel);
+        void onLostExtConnection(std::shared_ptr<AbstractCommChannel> channel);
+
         void onNewGuiConnection();
-        void onLostExtConnection(AbstractIODevice *ioDevice);
-        void onLostGuiConnection(AbstractIODevice *ioDevice);
-        void onExtListenerDestroyed(AbstractIODevice *ioDevice);
-        void onReadyRead(AbstractIODevice *ioDevice);
-        void onQueryReceived(AbstractIODevice *ioDevice);
+        void onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channel);
+        void onLostGuiConnection(std::shared_ptr<AbstractCommChannel> channel);
 
         // AppServer callbacks
         void (*_addError)(const Error &error);
@@ -110,29 +109,29 @@ class CommManager {
         void broadcastMessage(const CommString &msg, bool doWait = false);
 
         // Execute commands requested by the FinderSync and LiteSync extensions
-        void executeCommand(const CommString &commandLineStr, std::shared_ptr<CommListener> listener);
+        void executeCommand(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel);
 
         // Commands map
-        std::map<std::string, std::function<void(const CommString &, std::shared_ptr<CommListener>)>> _commands;
+        std::map<std::string, std::function<void(const CommString &, std::shared_ptr<AbstractCommChannel>)>> _commands;
 
         // Commands from FinderSyncExt & FileExplorerExtension (Contextual menu)
-        void commandCopyPublicLink(const CommString &argument, std::shared_ptr<CommListener>);
-        void commandCopyPrivateLink(const CommString &argument, std::shared_ptr<CommListener> listener);
-        void commandOpenPrivateLink(const CommString &argument, std::shared_ptr<CommListener> listener);
-        void commandCancelDehydrationDirect(const CommString &, std::shared_ptr<CommListener>);
-        void commandCancelHydrationDirect(const CommString &, std::shared_ptr<CommListener>);
+        void commandCopyPublicLink(const CommString &argument, std::shared_ptr<AbstractCommChannel>);
+        void commandCopyPrivateLink(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
+        void commandOpenPrivateLink(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
+        void commandCancelDehydrationDirect(const CommString &, std::shared_ptr<AbstractCommChannel>);
+        void commandCancelHydrationDirect(const CommString &, std::shared_ptr<AbstractCommChannel>);
         // Commands from FinderSyncExt (Contextual menu) & FileExplorerExtension (Cloud provider)
-        void commandMakeAvailableLocallyDirect(const CommString &argument, std::shared_ptr<CommListener> listener);
+        void commandMakeAvailableLocallyDirect(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
 #ifdef _WIN32
         // Commands from FileExplorerExtension (Contextual menu)
-        void commandGetAllMenuItems(const CommString &argument, std::shared_ptr<CommListener> listener);
+        void commandGetAllMenuItems(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
         // Commands from FileExplorerExtension (Thumbnail provider)
-        void commandGetThumbnail(const CommString &argument, std::shared_ptr<CommListener> listener);
+        void commandGetThumbnail(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
 #endif
 #ifdef __APPLE__
         // Commands from FinderSyncExt
-        void commandRetrieveFolderStatus(const CommString &argument, std::shared_ptr<CommListener> listener);
-        void commandRetrieveFileStatus(const CommString &argument, std::shared_ptr<CommListener> listener);
+        void commandRetrieveFolderStatus(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
+        void commandRetrieveFileStatus(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
         // Commands from FinderSyncExt (Contextual menu)
         /** Request for the list of menu items.
          * argument is a list of files for which the menu should be shown, separated by '\x1e'
@@ -141,24 +140,24 @@ class CommManager {
          * If flag contains 'd', the menu should be disabled
          * and ends with GET_MENU_ITEMS:END
          */
-        void commandGetMenuItems(const CommString &argument, std::shared_ptr<CommListener> listener);
-        void commandMakeOnlineOnlyDirect(const CommString &argument, std::shared_ptr<CommListener> listener);
+        void commandGetMenuItems(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
+        void commandMakeOnlineOnlyDirect(const CommString &argument, std::shared_ptr<AbstractCommChannel>);
         // Commands from LiteSyncExt
-        void commandSetThumbnail(const CommString &argument, std::shared_ptr<CommListener>);
+        void commandSetThumbnail(const CommString &argument, std::shared_ptr<AbstractCommChannel>);
 #endif
 
         // Fetch the private link and call targetFun
         void fetchPrivateLinkUrlHelper(const SyncPath &localFile, const std::function<void(const QString &url)> &targetFun);
 
         // Sends the context menu options relating to sharing to listener
-        void sendSharingContextMenuOptions(const FileData &fileData, std::shared_ptr<CommListener> listener);
+        void sendSharingContextMenuOptions(const FileData &fileData, std::shared_ptr<AbstractCommChannel> channel);
         void addSharingContextMenuOptions(const FileData &fileData, QTextStream &response);
 
-        void manageActionsOnSingleFile(std::shared_ptr<CommListener> listener, const std::vector<CommString> &files,
+        void manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel> channel, const std::vector<CommString> &files,
                                        std::unordered_map<int, std::shared_ptr<SyncPal>>::const_iterator syncPalMapIt,
                                        std::unordered_map<int, std::shared_ptr<Vfs>>::const_iterator vfsMapIt, const Sync &sync);
-        void buildAndSendRegisterPathMessage(std::shared_ptr<CommListener> listener, const SyncPath &path);
-        void buildAndSendMenuItemMessage(std::shared_ptr<CommListener> listener, const CommString &type, bool enabled,
+        void buildAndSendRegisterPathMessage(std::shared_ptr<AbstractCommChannel> channel, const SyncPath &path);
+        void buildAndSendMenuItemMessage(std::shared_ptr<AbstractCommChannel> channel, const CommString &type, bool enabled,
                                          const CommString &text);
         void processFileList(const QStringList &inFileList, std::list<SyncPath> &outFileList);
         bool syncFileStatus(const FileData &fileData, SyncFileStatus &status, VfsStatus &vfsStatus);

@@ -27,42 +27,18 @@
 
 namespace KDC {
 
-class AbstractIODevice {
+class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChannel> {
     public:
-        AbstractIODevice() = default;
-        virtual ~AbstractIODevice() { destroyedCbk(); }
+        AbstractCommChannel() = default;
+        virtual ~AbstractCommChannel();
 
-        bool open() { return true; }
-        void close() { _readBuffer.clear(); }
+        bool open();
+        void close();
+        void sendMessage(const CommString &message, bool doWait = false);
 
-        uint64_t write(const CommString &data) {
-            std::string dataStr = CommString2Str(data);
-            return writeData(dataStr.c_str(), dataStr.length());
-        }
-
-        bool waitForBytesWritten(int msecs) {
-            (void) msecs;
-            return true;
-        }
-
-        CommString readLine() {
-            static const uint64_t maxlen = 1024;
-            char data[maxlen];
-            uint64_t readSize = 0;
-            CommString line;
-            do {
-                readSize = readData(data, maxlen);
-                _readBuffer += Str2CommString(data);
-                if (auto eofPos = _readBuffer.find('\n'); eofPos != std::string::npos) {
-                    line = _readBuffer.substr(0, eofPos);
-                    _readBuffer.erase(0, eofPos);
-                    break;
-                }
-            } while (readSize == maxlen);
-            return line;
-        }
-
-        virtual bool isSequential() const { return true; }
+        uint64_t write(const CommString &data);
+        bool waitForBytesWritten(int msecs);
+        CommString readLine();
 
         //! Reads from the device.
         /*!
@@ -93,24 +69,28 @@ class AbstractIODevice {
         virtual bool canReadLine() const = 0;
 
         // Callbacks
-        void setLostConnectionCbk(const std::function<void(AbstractIODevice *)> &cbk) { _onLostConnectionCbk = cbk; }
+        void setLostConnectionCbk(const std::function<void(std::shared_ptr<AbstractCommChannel>)> &cbk) {
+            _onLostConnectionCbk = cbk;
+        }
         void lostConnectionCbk() {
-            if (_onLostConnectionCbk) _onLostConnectionCbk(this);
+            if (_onLostConnectionCbk) _onLostConnectionCbk(shared_from_this());
         }
-        void setReadyReadCbk(const std::function<void(AbstractIODevice *)> &cbk) { _onReadyReadCbk = cbk; }
+        void setReadyReadCbk(const std::function<void(std::shared_ptr<AbstractCommChannel>)> &cbk) { _onReadyReadCbk = cbk; }
         void readyReadCbk() {
-            if (_onReadyReadCbk) _onReadyReadCbk(this);
+            if (_onReadyReadCbk) _onReadyReadCbk(shared_from_this());
         }
-        void setDestroyedCbk(const std::function<void(AbstractIODevice *)> &cbk) { _onDestroyedCbk = cbk; }
+        void setDestroyedCbk(const std::function<void(std::shared_ptr<AbstractCommChannel>)> &cbk) { _onDestroyedCbk = cbk; }
         void destroyedCbk() {
-            if (_onDestroyedCbk) _onDestroyedCbk(this);
+            if (_onDestroyedCbk) _onDestroyedCbk(shared_from_this());
         }
 
     private:
         CommString _readBuffer;
-        std::function<void(AbstractIODevice *)> _onLostConnectionCbk;
-        std::function<void(AbstractIODevice *)> _onReadyReadCbk;
-        std::function<void(AbstractIODevice *)> _onDestroyedCbk;
+        std::function<void(std::shared_ptr<AbstractCommChannel>)> _onLostConnectionCbk;
+        std::function<void(std::shared_ptr<AbstractCommChannel>)> _onReadyReadCbk;
+        std::function<void(std::shared_ptr<AbstractCommChannel>)> _onDestroyedCbk;
+
+        CommString truncateLongLogMessage(const CommString &message);
 };
 
 } // namespace KDC

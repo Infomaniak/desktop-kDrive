@@ -25,8 +25,7 @@ set(server_SRCS
     ${server_srcs_path}/appserver.h ${server_srcs_path}/appserver.cpp
     ${server_srcs_path}/navigationpanehelper.h ${server_srcs_path}/navigationpanehelper.cpp
     ${server_srcs_path}/comm/oldcommserver.h ${server_srcs_path}/comm/oldcommserver.cpp
-    ${server_srcs_path}/comm/abstractiodevice.h
-    ${server_srcs_path}/comm/commlistener.h ${server_srcs_path}/comm/commlistener.cpp
+    ${server_srcs_path}/comm/abstractcommchannel.h ${server_srcs_path}/comm/abstractcommchannel.cpp
     ${server_srcs_path}/comm/commmanager.h ${server_srcs_path}/comm/commmanager.cpp
     ${server_srcs_path}/migration/migrationparams.h ${server_srcs_path}/migration/migrationparams.cpp
     ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
@@ -86,7 +85,7 @@ set(testserver_SRCS
     workers/testworkers.h workers/testworkers.cpp
     requests/testserverrequests.h requests/testserverrequests.cpp
     appserver/testappserver.h appserver/testappserver.cpp
-    comm/testabstractiodevice.h comm/testabstractiodevice.cpp
+    comm/testabstractcommchannel.h comm/testabstractcommchannel.cpp
 )
 
 if(APPLE)

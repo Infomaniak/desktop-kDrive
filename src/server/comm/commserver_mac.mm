@@ -80,8 +80,8 @@ class CommServerPrivate {
         CommServerPrivate();
         ~CommServerPrivate();
 
-        QList<CommChannel *> _pendingExtChannels;
-        CommChannel *_guiChannel;
+        std::list<std::shared_ptr<CommChannel>> _pendingExtChannels;
+        std::shared_ptr<CommChannel> _guiChannel;
         Server *_server;
 };
 
@@ -133,7 +133,7 @@ class CommServerPrivate {
     NSString *answer = [[NSString alloc] initWithData:msg encoding:NSUTF8StringEncoding];
     NSLog(@"[KD] Message received %@", answer);
 
-    if (_wrapper) {
+    if (_wrapper && _wrapper->_q_ptr) {
         _wrapper->_inBuffer += std::string([answer UTF8String]);
         emit _wrapper->_q_ptr->readyReadCbk();
     }
@@ -280,7 +280,7 @@ class CommServerPrivate {
     [_guiListener setDelegate:self];
     [_guiListener resume];
 
-    // Send server endpoint to login item agent
+    // Send ext endpoint to login item agent
     NSLog(@"[KD] Send server endpoint to login item agent");
     [[_loginItemAgentConnection remoteObjectProxy] setServerExtEndpoint:[_extListener endpoint]];
 
@@ -294,9 +294,9 @@ class CommServerPrivate {
     CommServer *server = _wrapper->_q_ptr;
 
     if (listener == _extListener) {
-        CommChannel *channel = new CommChannel(channelPrivate);
+        auto channel = std::make_shared<CommChannel>(channelPrivate);
         channel->setLostConnectionCbk(std::bind(&CommServer::lostExtConnectionCbk, server, std::placeholders::_1));
-        _wrapper->_pendingExtChannels.append(channel);
+        _wrapper->_pendingExtChannels.push_back(channel);
 
         // Set exported interface
         NSLog(@"[KD] Set exported interface for connection with ext");
@@ -329,7 +329,7 @@ class CommServerPrivate {
 
         server->newExtConnectionCbk();
     } else if (listener == _guiListener) {
-        _wrapper->_guiChannel = new CommChannel(channelPrivate);
+        _wrapper->_guiChannel = std::make_shared<CommChannel>(channelPrivate);
         _wrapper->_guiChannel->setLostConnectionCbk(std::bind(&CommServer::lostGuiConnectionCbk, server, std::placeholders::_1));
 
         // Set exported interface
@@ -418,16 +418,15 @@ CommServerPrivate::~CommServerPrivate() {
 CommChannel::CommChannel(CommChannelPrivate *p) :
     d_ptr(p) {
     d_ptr->_q_ptr = this;
-    open(/*ReadWrite*/);
+    open();
 }
 
 CommChannel::~CommChannel() {}
 
-uint64_t CommChannel::readData(char *data, uint64_t maxlen) {
-    uint64_t len = std::min(maxlen, static_cast<uint64_t>(d_ptr->_inBuffer.size()));
-    memcpy(data, d_ptr->_inBuffer.c_str(), static_cast<size_t>(len));
-    d_ptr->_inBuffer.erase(0, len);
-    return len;
+uint64_t CommChannel::readData(char *data, uint64_t maxSize) {
+    auto size = d_ptr->_inBuffer.copy(data, maxSize);
+    d_ptr->_inBuffer.erase(0, size);
+    return size;
 }
 
 uint64_t CommChannel::writeData(const char *data, uint64_t len) {
@@ -473,10 +472,14 @@ bool CommServer::listen(const std::string &name) {
     return TRUE;
 }
 
-CommChannel *CommServer::nextPendingConnection() {
-    return d_ptr->_pendingExtChannels.takeFirst();
+std::shared_ptr<KDC::AbstractCommChannel> CommServer::nextPendingConnection() {
+    return d_ptr->_pendingExtChannels.back();
 }
 
-CommChannel *CommServer::guiConnection() {
+std::list<std::shared_ptr<KDC::AbstractCommChannel>> CommServer::extConnections() {
+    return d_ptr->_pendingExtChannels;
+}
+
+std::shared_ptr<KDC::AbstractCommChannel> CommServer::guiConnection() {
     return d_ptr->_guiChannel;
 }

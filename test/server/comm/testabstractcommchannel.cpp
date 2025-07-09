@@ -16,20 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testabstractiodevice.h"
-
-#include "comm/abstractiodevice.h"
+#include "testabstractcommchannel.h"
 
 namespace KDC {
 
-void TestAbstractIODevice::setUp() {
+void TestAbstractCommChannel::setUp() {
     TestBase::start();
 }
 
-void TestAbstractIODevice::tearDown() {
+void TestAbstractCommChannel::tearDown() {
     TestBase::stop();
 }
 
-void TestAbstractIODevice::testAll() {}
+void TestAbstractCommChannel::testAll() {}
 
 } // namespace KDC

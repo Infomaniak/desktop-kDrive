@@ -55,14 +55,22 @@
 
 namespace KDC {
 
-struct ListenerHasSocketPred {
-        AbstractIODevice *ioDevice;
+bool syncForPath(const std::filesystem::path &path, Sync &sync) {
+    std::vector<Sync> syncList;
+    if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
+        return false;
+    }
 
-        ListenerHasSocketPred(AbstractIODevice *ioDevice) :
-            ioDevice(ioDevice) {}
+    for (const Sync &tmpSync: syncList) {
+        if (CommonUtility::isSubDir(tmpSync.localPath(), path)) {
+            sync = tmpSync;
+            return true;
+        }
+    }
 
-        bool operator()(std::shared_ptr<CommListener> listener) const { return listener->ioDevice.get() == ioDevice; }
-};
+    return false;
+}
 
 CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<SyncPal>> &syncPalMap,
                          const std::unordered_map<int, std::shared_ptr<Vfs>> &vfsMap) :
@@ -101,10 +109,10 @@ CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<SyncPal>>
 #endif
     };
 
-    _localServer.setNewExtConnectionCbk(std::bind(&CommManager::onNewExtConnection, this));
-    _localServer.setNewGuiConnectionCbk(std::bind(&CommManager::onNewGuiConnection, this));
-    _localServer.setLostExtConnectionCbk(std::bind(&CommManager::onLostExtConnection, this, std::placeholders::_1));
-    _localServer.setLostGuiConnectionCbk(std::bind(&CommManager::onLostGuiConnection, this, std::placeholders::_1));
+    _localServer->setNewExtConnectionCbk(std::bind(&CommManager::onNewExtConnection, this));
+    _localServer->setNewGuiConnectionCbk(std::bind(&CommManager::onNewGuiConnection, this));
+    _localServer->setLostExtConnectionCbk(std::bind(&CommManager::onLostExtConnection, this, std::placeholders::_1));
+    _localServer->setLostGuiConnectionCbk(std::bind(&CommManager::onLostGuiConnection, this, std::placeholders::_1));
 
     QString socketPath;
     if (OldUtility::isWindows()) {
@@ -126,7 +134,7 @@ CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<SyncPal>>
             system(cmd.toLocal8Bit());
         }
 #endif
-    } else if (OldUtility::isLinux() || OldUtility::isBSD()) {
+    } else if (OldUtility::isLinux()) {
         const QString runtimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
         socketPath = runtimeDir + "/" + Theme::instance()->appName() + "/socket";
     } else {
@@ -143,7 +151,7 @@ CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<SyncPal>>
         }
     }
 
-    if (!_localServer.listen(socketPath.toStdString())) {
+    if (!_localServer->listen(socketPath.toStdString())) {
         LOGW_WARN(Log::instance()->getLogger(), L"Can't start server - " << Utility::formatPath(socketPath));
         _addError(Error(errId(), ExitCode::SystemError, ExitCause::Unknown));
     } else {
@@ -152,8 +160,7 @@ CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<SyncPal>>
 }
 
 CommManager::~CommManager() {
-    _localServer.close();
-    _listeners.clear();
+    _localServer->close();
 }
 
 void CommManager::executeCommandDirect(const CommString &commandLineStr) {
@@ -170,7 +177,7 @@ void CommManager::executeCommandDirect(const CommString &commandLineStr) {
     }
 }
 
-void CommManager::executeCommand(const CommString &commandLineStr, std::shared_ptr<CommListener> listener) {
+void CommManager::executeCommand(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel) {
     std::vector<CommString> commands = CommonUtility::splitCommString(commandLineStr, MSG_CDE_SEPARATOR);
     std::string command = CommString2Str(commands[0]);
 
@@ -180,21 +187,18 @@ void CommManager::executeCommand(const CommString &commandLineStr, std::shared_p
     if (_commands.find(command) == _commands.end()) {
         LOGW_WARN(Log::instance()->getLogger(), L"The command is not supported by this version of the client - cmd="
                                                         << Utility::s2ws(command) << L" arg=" << CommString2WStr(argument));
-    } else {
-        _commands[command](argument, listener);
+        return;
     }
+
+    _commands[command](argument, channel);
 }
 
 void CommManager::onNewExtConnection() {
-    AbstractIODevice *ioDevice = _localServer.nextPendingConnection();
-    if (!ioDevice) return;
+    std::shared_ptr<AbstractCommChannel> channel = _localServer->nextPendingConnection();
+    if (!channel) return;
 
-    LOG_INFO(Log::instance()->getLogger(), "New ext connection - ioDevice=" << ioDevice);
-    ioDevice->setReadyReadCbk(std::bind(&CommManager::onReadyRead, this, std::placeholders::_1));
-    ioDevice->setDestroyedCbk(std::bind(&CommManager::onExtListenerDestroyed, this, std::placeholders::_1));
-
-    _listeners.push_back(std::make_shared<CommListener>(ioDevice));
-    auto listener = _listeners.back();
+    LOG_INFO(Log::instance()->getLogger(), "New ext connection - channel=" << channel.get());
+    channel->setReadyReadCbk(std::bind(&CommManager::onExtQueryReceived, this, std::placeholders::_1));
 
     // Load sync list
     std::vector<Sync> syncList;
@@ -206,42 +210,33 @@ void CommManager::onNewExtConnection() {
 
     for (const Sync &sync: syncList) {
         if (!sync.paused()) {
-            buildAndSendRegisterPathMessage(listener, sync.localPath());
+            buildAndSendRegisterPathMessage(channel, sync.localPath());
         }
     }
 }
 
-void CommManager::onLostExtConnection(AbstractIODevice *ioDevice) {
-    LOG_INFO(Log::instance()->getLogger(), "Lost ext connection - ioDevice=" << ioDevice);
-    delete ioDevice;
-
-    LOG_IF_FAIL(Log::instance()->getLogger(), ioDevice)
-    _listeners.erase(std::remove_if(_listeners.begin(), _listeners.end(), ListenerHasSocketPred(ioDevice)), _listeners.end());
-}
-
-void CommManager::onExtListenerDestroyed(AbstractIODevice *ioDevice) {
-    _listeners.erase(std::remove_if(_listeners.begin(), _listeners.end(), ListenerHasSocketPred(ioDevice)), _listeners.end());
+void CommManager::onLostExtConnection(std::shared_ptr<AbstractCommChannel> channel) {
+    LOG_INFO(Log::instance()->getLogger(), "Lost ext connection - channel=" << channel.get());
 }
 
 void CommManager::onNewGuiConnection() {
-    AbstractIODevice *ioDevice = _localServer.guiConnection();
-    if (!ioDevice) return;
+    std::shared_ptr<AbstractCommChannel> channel = _localServer->guiConnection();
+    if (!channel) return;
 
-    LOG_INFO(Log::instance()->getLogger(), "New gui connection - ioDevice=" << ioDevice);
-    ioDevice->setReadyReadCbk(std::bind(&CommManager::onQueryReceived, this, std::placeholders::_1));
+    LOG_INFO(Log::instance()->getLogger(), "New gui connection - channel=" << channel.get());
+    channel->setReadyReadCbk(std::bind(&CommManager::onGuiQueryReceived, this, std::placeholders::_1));
 }
 
-void CommManager::onLostGuiConnection(AbstractIODevice *ioDevice) {
-    LOG_INFO(Log::instance()->getLogger(), "Lost gui connection - sender=" << ioDevice);
-    delete ioDevice;
+void CommManager::onLostGuiConnection(std::shared_ptr<AbstractCommChannel> channel) {
+    LOG_INFO(Log::instance()->getLogger(), "Lost gui connection - sender=" << channel.get());
 }
 
-void CommManager::onQueryReceived(AbstractIODevice *ioDevice) {
+void CommManager::onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channel) {
     LOG_INFO(Log::instance()->getLogger(), "onQueryReceived");
-    LOG_IF_FAIL(Log::instance()->getLogger(), ioDevice)
+    LOG_IF_FAIL(Log::instance()->getLogger(), channel)
 
-    while (ioDevice->canReadLine()) {
-        CommString query = ioDevice->readLine();
+    while (channel->canReadLine()) {
+        CommString query = channel->readLine();
         LOGW_INFO(Log::instance()->getLogger(), L"Query received: " << CommString2WStr(query));
 
         std::vector<CommString> queryArgs = CommonUtility::splitCommString(query, QUERY_ARG_SEPARATOR);
@@ -261,36 +256,24 @@ void CommManager::onQueryReceived(AbstractIODevice *ioDevice) {
     }
 }
 
-void CommManager::onReadyRead(AbstractIODevice *ioDevice) {
-    LOG_IF_FAIL(Log::instance()->getLogger(), ioDevice)
+void CommManager::onExtQueryReceived(std::shared_ptr<AbstractCommChannel> channel) {
+    LOG_IF_FAIL(Log::instance()->getLogger(), channel)
 
-    // Find the CommListener
-    //
-    // It's possible for the disconnected() signal to be triggered before
-    // the readyRead() signals are received - in that case there won't be a
-    // valid listener. We execute the handler anyway, but it will work with
-    // a CommListener that doesn't send any messages.
-    std::shared_ptr<CommListener> listener;
-    auto listenerIt = std::find_if(_listeners.begin(), _listeners.end(), ListenerHasSocketPred(ioDevice));
-    if (listenerIt != _listeners.end()) {
-        listener = *listenerIt;
-    }
-
-    while (ioDevice->canReadLine()) {
+    while (channel->canReadLine()) {
         CommString line;
         while (!line.ends_with(QUERY_END_SEPARATOR)) {
-            if (!ioDevice->canReadLine()) {
+            if (!channel->canReadLine()) {
                 LOGW_WARN(Log::instance()->getLogger(),
-                          L"Failed to parse SocketAPI message - msg=" << CommString2WStr(line) << L" ioDevice=" << ioDevice);
+                          L"Failed to parse SocketAPI message - msg=" << CommString2WStr(line) << L" channel=" << channel.get());
                 return;
             }
-            line.append(ioDevice->readLine());
+            line.append(channel->readLine());
         }
         // Remove the separator
         line.erase(line.find(QUERY_END_SEPARATOR));
         LOGW_INFO(Log::instance()->getLogger(),
-                  L"Received SocketAPI message - msg=" << CommString2WStr(line) << L" ioDevice=" << ioDevice);
-        executeCommand(line, listener);
+                  L"Received SocketAPI message - msg=" << CommString2WStr(line) << L" channel=" << channel.get());
+        executeCommand(line, channel);
     }
 }
 
@@ -316,8 +299,8 @@ void CommManager::registerSync(int syncDbId) {
     Sync sync;
     if (!tryToRetrieveSync(syncDbId, sync)) return;
 
-    foreach (auto &listener, _listeners) {
-        buildAndSendRegisterPathMessage(listener, sync.localPath());
+    foreach (auto &channel, _localServer->extConnections()) {
+        buildAndSendRegisterPathMessage(channel, sync.localPath());
     }
 
     _registeredSyncs.insert(syncDbId);
@@ -333,12 +316,12 @@ void CommManager::unregisterSync(int syncDbId) {
 }
 
 void CommManager::broadcastMessage(const CommString &msg, bool doWait) {
-    foreach (auto listener, _listeners) {
-        listener->sendMessage(msg, doWait);
+    foreach (auto &channel, _localServer->extConnections()) {
+        channel->sendMessage(msg, doWait);
     }
 }
 
-void CommManager::commandCopyPublicLink(const CommString &argument, std::shared_ptr<CommListener>) {
+void CommManager::commandCopyPublicLink(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
     const auto fileData = FileData::get(argument);
     if (!fileData.syncDbId) return;
 
@@ -364,21 +347,21 @@ void CommManager::commandCopyPublicLink(const CommString &argument, std::shared_
     copyUrlToClipboard(linkUrl);
 }
 
-void CommManager::commandCopyPrivateLink(const CommString &argument, std::shared_ptr<CommListener>) {
+void CommManager::commandCopyPrivateLink(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
     fetchPrivateLinkUrlHelper(argument, &CommManager::copyUrlToClipboard);
 }
 
-void CommManager::commandOpenPrivateLink(const CommString &argument, std::shared_ptr<CommListener>) {
+void CommManager::commandOpenPrivateLink(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
     fetchPrivateLinkUrlHelper(argument, &CommManager::openPrivateLink);
 }
 
-void CommManager::commandCancelDehydrationDirect(const CommString &, std::shared_ptr<CommListener>) {
+void CommManager::commandCancelDehydrationDirect(const CommString &, std::shared_ptr<AbstractCommChannel>) {
     LOG_INFO(Log::instance()->getLogger(), "Ongoing files dehydrations canceled");
     _dehydrationCanceled = true;
     return;
 }
 
-void CommManager::commandCancelHydrationDirect(const CommString &argument, std::shared_ptr<CommListener>) {
+void CommManager::commandCancelHydrationDirect(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
     LOG_INFO(Log::instance()->getLogger(), "Ongoing files hydrations canceled");
 
     const QStringList fileList = SyncName2QStr(argument).split(MSG_ARG_SEPARATOR);
@@ -415,7 +398,7 @@ void CommManager::commandCancelHydrationDirect(const CommString &argument, std::
 #endif
 }
 
-void CommManager::commandMakeAvailableLocallyDirect(const CommString &argument, std::shared_ptr<CommListener>) {
+void CommManager::commandMakeAvailableLocallyDirect(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
     const QStringList fileList = SyncName2QStr(argument).split(MSG_ARG_SEPARATOR);
 
 #ifdef __APPLE__
@@ -478,7 +461,7 @@ void CommManager::commandMakeAvailableLocallyDirect(const CommString &argument, 
 }
 
 #ifdef _WIN32
-void CommManager::commandGetAllMenuItems(const CommString &argument, CommListener *listener) {
+void CommManager::commandGetAllMenuItems(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
     QStringList argumentList = SyncName2QStr(argument).split(MSG_ARG_SEPARATOR);
 
     QString msgId = argumentList[0];
@@ -493,7 +476,7 @@ void CommManager::commandGetAllMenuItems(const CommString &argument, CommListene
     for (const auto &file: qAsConst(argumentList)) {
         Sync tmpSync;
         if (!syncForPath(QStr2Path(file), tmpSync)) {
-            listener->sendMessage(responseStr);
+            channel->sendMessage(responseStr);
             return;
         }
 
@@ -568,10 +551,10 @@ void CommManager::commandGetAllMenuItems(const CommString &argument, CommListene
         response << QString("%1CANCEL_HYDRATION_DIRECT%1%1%2").arg(MSG_CDE_SEPARATOR, cancelHydrationText());
     }
 
-    listener->sendMessage(responseStr);
+    channel->sendMessage(responseStr);
 }
 
-void CommManager::commandGetThumbnail(const CommString &argument, CommListener *listener) {
+void CommManager::commandGetThumbnail(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
     QStringList argumentList = SyncName2QStr(argument).split(MSG_ARG_SEPARATOR);
 
     if (argumentList.size() != 3) {
@@ -645,25 +628,18 @@ void CommManager::commandGetThumbnail(const CommString &argument, CommListener *
     pixmapBuffer.open(QIODevice::WriteOnly);
     pixmap.save(&pixmapBuffer, "BMP");
 
-    listener->sendMessage(
+    channel->sendMessage(
             QString("%1%2%3").arg(QString::number(msgId)).arg(MSG_CDE_SEPARATOR).arg(QString(pixmapBuffer.data().toBase64())));
 }
 #endif
 #ifdef __APPLE__
-void CommManager::commandRetrieveFolderStatus(const CommString &argument, std::shared_ptr<CommListener> listener) {
+void CommManager::commandRetrieveFolderStatus(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
     // This command is the same as RETRIEVE_FILE_STATUS
-    commandRetrieveFileStatus(argument, listener);
+    commandRetrieveFileStatus(argument, channel);
 }
 
-void CommManager::commandRetrieveFileStatus(const CommString &argument, std::shared_ptr<CommListener> listener) {
+void CommManager::commandRetrieveFileStatus(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
     const auto fileData = FileData::get(argument);
-    if (fileData.syncDbId) {
-        // The user probably visited this directory in the file shell.
-        // Let the listener know that it should now send status pushes for sibblings of this file.
-        QString directory = fileData.localPath.left(fileData.localPath.lastIndexOf('/'));
-        listener->registerMonitoredDirectory(static_cast<unsigned int>(qHash(directory)));
-    }
-
     auto status = SyncFileStatus::Unknown;
     VfsStatus vfsStatus;
     if (!syncFileStatus(fileData, status, vfsStatus)) {
@@ -673,15 +649,15 @@ void CommManager::commandRetrieveFileStatus(const CommString &argument, std::sha
     }
 
     const CommString message = buildMessage("STATUS", QStr2Path(fileData.localPath), statusString(status, vfsStatus));
-    listener->sendMessage(message);
+    channel->sendMessage(message);
 }
 
-void CommManager::commandGetMenuItems(const CommString &argument, std::shared_ptr<CommListener> listener) {
+void CommManager::commandGetMenuItems(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
     {
         CommString message(Str("GET_MENU_ITEMS"));
         message.append(MSG_CDE_SEPARATOR);
         message.append(Str("BEGIN"));
-        listener->sendMessage(message);
+        channel->sendMessage(message);
     }
 
     std::vector<CommString> files = CommonUtility::splitCommString(argument, MSG_ARG_SEPARATOR);
@@ -717,7 +693,7 @@ void CommManager::commandGetMenuItems(const CommString &argument, std::shared_pt
     // Some options only show for single files
     bool isSingleFile = false;
     if (files.size() == 1) {
-        manageActionsOnSingleFile(listener, files, syncPalMapIt, vfsMapIt, sync);
+        manageActionsOnSingleFile(channel, files, syncPalMapIt, vfsMapIt, sync);
 
         isSingleFile = QFileInfo(CommString2QStr(files[0])).isFile();
     }
@@ -751,19 +727,19 @@ void CommManager::commandGetMenuItems(const CommString &argument, std::shared_pt
 
         // TODO: Should be a submenu, should use icons
         auto makePinContextMenu = [&](bool makeAvailableLocally, bool freeSpace, bool cancelDehydration, bool cancelHydration) {
-            buildAndSendMenuItemMessage(listener, Str("MAKE_AVAILABLE_LOCALLY_DIRECT"), makeAvailableLocally,
+            buildAndSendMenuItemMessage(channel, Str("MAKE_AVAILABLE_LOCALLY_DIRECT"), makeAvailableLocally,
                                         QStr2CommString(vfsPinActionText()));
 
             if (cancelHydration) {
-                buildAndSendMenuItemMessage(listener, Str("CANCEL_HYDRATION_DIRECT"), true,
+                buildAndSendMenuItemMessage(channel, Str("CANCEL_HYDRATION_DIRECT"), true,
                                             QStr2CommString(cancelHydrationText()));
             }
 
-            buildAndSendMenuItemMessage(listener, Str("MAKE_ONLINE_ONLY_DIRECT"), freeSpace,
+            buildAndSendMenuItemMessage(channel, Str("MAKE_ONLINE_ONLY_DIRECT"), freeSpace,
                                         QStr2CommString(vfsFreeSpaceActionText()));
 
             if (cancelDehydration) {
-                buildAndSendMenuItemMessage(listener, Str("CANCEL_DEHYDRATION_DIRECT"), true,
+                buildAndSendMenuItemMessage(channel, Str("CANCEL_DEHYDRATION_DIRECT"), true,
                                             QStr2CommString(cancelDehydrationText()));
             }
         };
@@ -775,11 +751,11 @@ void CommManager::commandGetMenuItems(const CommString &argument, std::shared_pt
         CommString message(Str("GET_MENU_ITEMS"));
         message.append(MSG_CDE_SEPARATOR);
         message.append(Str("END"));
-        listener->sendMessage(message);
+        channel->sendMessage(message);
     }
 }
 
-void CommManager::commandMakeOnlineOnlyDirect(const CommString &argument, std::shared_ptr<CommListener>) {
+void CommManager::commandMakeOnlineOnlyDirect(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
     const QStringList fileList = SyncName2QStr(argument).split(MSG_ARG_SEPARATOR);
 
     _dehydrationMutex.lock();
@@ -830,7 +806,7 @@ void CommManager::commandMakeOnlineOnlyDirect(const CommString &argument, std::s
     _dehydrationMutex.unlock();
 }
 
-void CommManager::commandSetThumbnail(const CommString &argument, std::shared_ptr<CommListener>) {
+void CommManager::commandSetThumbnail(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
     if (argument.empty()) {
         // No thumbnail for root
         return;
@@ -1048,23 +1024,6 @@ void CommManager::copyUrlToClipboard(const QString &link) {
     QApplication::clipboard()->setText(link);
 }
 
-bool CommManager::syncForPath(const std::filesystem::path &path, Sync &sync) {
-    std::vector<Sync> syncList;
-    if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
-        return false;
-    }
-
-    for (const Sync &tmpSync: syncList) {
-        if (CommonUtility::isSubDir(tmpSync.localPath(), path)) {
-            sync = tmpSync;
-            return true;
-        }
-    }
-
-    return false;
-}
-
 std::string CommManager::statusString(SyncFileStatus status, const VfsStatus &vfsStatus) const {
     std::string statusString;
 
@@ -1102,7 +1061,7 @@ void CommManager::openPrivateLink(const QString &link) {
     openBrowser(link);
 }
 
-void CommManager::sendSharingContextMenuOptions(const FileData &fileData, std::shared_ptr<CommListener> listener) {
+void CommManager::sendSharingContextMenuOptions(const FileData &fileData, std::shared_ptr<AbstractCommChannel> channel) {
     auto theme = Theme::instance();
     if (!(theme->userGroupSharing() || theme->linkSharing())) return;
 
@@ -1131,7 +1090,7 @@ void CommManager::sendSharingContextMenuOptions(const FileData &fileData, std::s
     // If sharing is globally disabled, do not show any sharing entries.
     // If there is no permission to share for this file, add a disabled entry saying so
     if (isOnTheServer && !canShare) {
-        buildAndSendMenuItemMessage(listener, Str("DISABLED"), false, QStr2CommString(resharingText(fileData.isDirectory)));
+        buildAndSendMenuItemMessage(channel, Str("DISABLED"), false, QStr2CommString(resharingText(fileData.isDirectory)));
     } else {
         // Do we have public links?
         bool publicLinksEnabled = theme->linkSharing();
@@ -1140,15 +1099,15 @@ void CommManager::sendSharingContextMenuOptions(const FileData &fileData, std::s
         bool canCreateDefaultPublicLink = publicLinksEnabled;
 
         if (canCreateDefaultPublicLink) {
-            buildAndSendMenuItemMessage(listener, Str("COPY_PUBLIC_LINK"), isOnTheServer,
+            buildAndSendMenuItemMessage(channel, Str("COPY_PUBLIC_LINK"), isOnTheServer,
                                         QStr2CommString(copyPublicShareLinkText()));
         } else if (publicLinksEnabled) {
-            buildAndSendMenuItemMessage(listener, Str("MANAGE_PUBLIC_LINKS"), isOnTheServer,
+            buildAndSendMenuItemMessage(channel, Str("MANAGE_PUBLIC_LINKS"), isOnTheServer,
                                         QStr2CommString(copyPublicShareLinkText()));
         }
     }
 
-    buildAndSendMenuItemMessage(listener, Str("COPY_PRIVATE_LINK"), isOnTheServer, QStr2CommString(copyPrivateShareLinkText()));
+    buildAndSendMenuItemMessage(channel, Str("COPY_PRIVATE_LINK"), isOnTheServer, QStr2CommString(copyPrivateShareLinkText()));
 }
 
 void CommManager::addSharingContextMenuOptions(const FileData &fileData, QTextStream &response) {
@@ -1207,7 +1166,7 @@ void CommManager::addSharingContextMenuOptions(const FileData &fileData, QTextSt
     response << QString("%1COPY_PRIVATE_LINK%2").arg(MSG_CDE_SEPARATOR).arg(flagString + QObject::tr("Copy private share link"));
 }
 
-void CommManager::manageActionsOnSingleFile(std::shared_ptr<CommListener> listener, const std::vector<CommString> &files,
+void CommManager::manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel> channel, const std::vector<CommString> &files,
                                             std::unordered_map<int, std::shared_ptr<SyncPal>>::const_iterator syncPalMapIt,
                                             std::unordered_map<int, std::shared_ptr<Vfs>>::const_iterator vfsMapIt,
                                             const Sync &sync) {
@@ -1239,24 +1198,24 @@ void CommManager::manageActionsOnSingleFile(std::shared_ptr<CommListener> listen
             CommString message(Str("VFS_MODE"));
             message.append(MSG_CDE_SEPARATOR);
             message.append(QStr2CommString(Vfs::modeToString(sync.virtualFileMode())));
-            listener->sendMessage(message);
+            channel->sendMessage(message);
         }
     }
 
     if (sync.dbId()) {
-        sendSharingContextMenuOptions(fileData, listener);
-        buildAndSendMenuItemMessage(listener, Str("OPEN_PRIVATE_LINK"), isOnTheServer, QStr2CommString(openInBrowserText()));
+        sendSharingContextMenuOptions(fileData, channel);
+        buildAndSendMenuItemMessage(channel, Str("OPEN_PRIVATE_LINK"), isOnTheServer, QStr2CommString(openInBrowserText()));
     }
 }
 
-void CommManager::buildAndSendRegisterPathMessage(std::shared_ptr<CommListener> listener, const SyncPath &path) {
+void CommManager::buildAndSendRegisterPathMessage(std::shared_ptr<AbstractCommChannel> channel, const SyncPath &path) {
     CommString message("REGISTER_PATH");
     message.append(MSG_CDE_SEPARATOR);
     message.append(path.native());
-    listener->sendMessage(message);
+    channel->sendMessage(message);
 }
 
-void CommManager::buildAndSendMenuItemMessage(std::shared_ptr<CommListener> listener, const CommString &type, bool enabled,
+void CommManager::buildAndSendMenuItemMessage(std::shared_ptr<AbstractCommChannel> channel, const CommString &type, bool enabled,
                                               const CommString &text) {
     CommString message(Str("MENU_ITEM"));
     message.append(MSG_CDE_SEPARATOR);
@@ -1265,7 +1224,7 @@ void CommManager::buildAndSendMenuItemMessage(std::shared_ptr<CommListener> list
     message.append(enabled ? Str("") : Str("d"));
     message.append(MSG_CDE_SEPARATOR);
     message.append(text);
-    listener->sendMessage(message);
+    channel->sendMessage(message);
 }
 
 void CommManager::processFileList(const QStringList &inFileList, std::list<SyncPath> &outFileList) {
@@ -1384,7 +1343,7 @@ FileData FileData::get(const SyncPath &path) {
 #endif
 
     Sync sync;
-    if (!CommManager::syncForPath(tmpPath, sync)) {
+    if (!syncForPath(tmpPath, sync)) {
         LOGW_WARN(Log::instance()->getLogger(), L"Sync not found - " << Utility::formatSyncPath(tmpPath));
         return FileData();
     }

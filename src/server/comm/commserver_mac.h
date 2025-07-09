@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "abstractiodevice.h"
+#include "abstractcommserver.h"
 
 #include <string>
 #include <functional>
@@ -26,65 +26,35 @@
 class CommServerPrivate;
 class CommChannelPrivate;
 
-class CommChannel : public KDC::AbstractIODevice {
+class CommChannel : public KDC::AbstractCommChannel {
     public:
         CommChannel(CommChannelPrivate *p);
         ~CommChannel();
 
         uint64_t readData(char *data, uint64_t maxlen) override;
         uint64_t writeData(const char *data, uint64_t len) override;
-
-        bool isSequential() const override { return true; }
         uint64_t bytesAvailable() const override;
         bool canReadLine() const override;
-
-        void setLostConnectionCbk(const std::function<void(KDC::AbstractIODevice *)> &cbk) { _onLostConnectionCbk = cbk; }
-        void lostConnectionCbk() {
-            if (_onLostConnectionCbk) _onLostConnectionCbk(this);
-        }
 
     private:
         std::unique_ptr<CommChannelPrivate> d_ptr;
 
-        std::function<void(KDC::AbstractIODevice *)> _onLostConnectionCbk;
-
         friend class CommServerPrivate;
 };
 
-class CommServer {
+class CommServer : public KDC::AbstractCommServer {
     public:
         CommServer();
         ~CommServer();
 
-        void close();
-        bool listen(const std::string &name);
-        CommChannel *nextPendingConnection();
-        CommChannel *guiConnection();
+        void close() override;
+        bool listen(const std::string &name) override;
+        std::shared_ptr<KDC::AbstractCommChannel> nextPendingConnection() override;
+        std::list<std::shared_ptr<KDC::AbstractCommChannel>> extConnections() override;
+        std::shared_ptr<KDC::AbstractCommChannel> guiConnection() override;
 
-        static bool removeServer(const std::string &) { return false; }
-
-        void setNewExtConnectionCbk(const std::function<void()> &cbk) { _onNewExtConnectionCbk = cbk; }
-        void newExtConnectionCbk() {
-            if (_onNewExtConnectionCbk) _onNewExtConnectionCbk();
-        }
-        void setNewGuiConnectionCbk(const std::function<void()> &cbk) { _onNewGuiConnectionCbk = cbk; }
-        void newGuiConnectionCbk() {
-            if (_onNewGuiConnectionCbk) _onNewGuiConnectionCbk();
-        }
-
-        void setLostExtConnectionCbk(const std::function<void(KDC::AbstractIODevice *)> &cbk) { _onLostExtConnectionCbk = cbk; }
-        void lostExtConnectionCbk(KDC::AbstractIODevice *ioDevice) {
-            if (_onLostExtConnectionCbk) _onLostExtConnectionCbk(ioDevice);
-        }
-        void setLostGuiConnectionCbk(const std::function<void(KDC::AbstractIODevice *)> &cbk) { _onLostGuiConnectionCbk = cbk; }
-        void lostGuiConnectionCbk(KDC::AbstractIODevice *ioDevice) {
-            if (_onLostGuiConnectionCbk) _onLostGuiConnectionCbk(ioDevice);
-        }
+        static bool removeServer(const std::string &) { return true; }
 
     private:
         std::unique_ptr<CommServerPrivate> d_ptr;
-        std::function<void()> _onNewExtConnectionCbk;
-        std::function<void()> _onNewGuiConnectionCbk;
-        std::function<void(KDC::AbstractIODevice *)> _onLostExtConnectionCbk;
-        std::function<void(KDC::AbstractIODevice *)> _onLostGuiConnectionCbk;
 };

@@ -17,26 +17,31 @@
  */
 
 #include "testincludes.h"
-#include "server/comm/abstractiodevice.h"
+#include "server/comm/abstractcommchannel.h"
 
 namespace KDC {
 
-class TestIODevice : public AbstractIODevice {
+class TestCommChannel : public AbstractCommChannel {
     public:
-        uint64_t readData(char *data, uint64_t maxSize) override { return _buffer.copy(data, maxSize); }
+        uint64_t readData(char *data, uint64_t maxSize) override {
+            auto size = _inBuffer.copy(data, maxSize);
+            _inBuffer.erase(0, size);
+            return size;
+        }
         uint64_t writeData(const char *data, uint64_t maxSize) override {
-            _buffer += CommString(data, maxSize);
+            _outBuffer += CommString(data, maxSize);
             return maxSize;
         }
-        uint64_t bytesAvailable() const override { return _buffer.size(); }
-        bool canReadLine() const override { return _buffer.find('\n') != std::string::npos; }
+        uint64_t bytesAvailable() const override { return _inBuffer.size(); }
+        bool canReadLine() const override { return _inBuffer.find('\n') != std::string::npos; }
 
     private:
-        CommString _buffer;
+        CommString _inBuffer;
+        CommString _outBuffer;
 };
 
-class TestAbstractIODevice : public CppUnit::TestFixture, public TestBase {
-        CPPUNIT_TEST_SUITE(TestAbstractIODevice);
+class TestAbstractCommChannel : public CppUnit::TestFixture, public TestBase {
+        CPPUNIT_TEST_SUITE(TestAbstractCommChannel);
         CPPUNIT_TEST(testAll);
         CPPUNIT_TEST_SUITE_END();
 
@@ -47,7 +52,7 @@ class TestAbstractIODevice : public CppUnit::TestFixture, public TestBase {
         void testAll();
 
     private:
-        TestIODevice *testIODevice;
+        TestCommChannel *testCommChannel;
 };
 
 } // namespace KDC

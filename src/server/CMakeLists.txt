@@ -43,8 +43,8 @@ set(server_SRCS
     appserver.h appserver.cpp
     navigationpanehelper.h navigationpanehelper.cpp
     comm/oldcommserver.h comm/oldcommserver.cpp
-    comm/abstractiodevice.h
-    comm/commlistener.h comm/commlistener.cpp
+    comm/abstractcommserver.h
+    comm/abstractcommchannel.h comm/abstractcommchannel.cpp
     comm/commmanager.h comm/commmanager.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
