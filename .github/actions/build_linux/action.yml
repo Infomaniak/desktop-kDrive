@@ -81,8 +81,9 @@ runs:
 
       - name: Fetch dependencies
         run: |
+          build_folder="build-linux$([[ ${{ inputs.release_build }} = "true" ]] && echo "-amd64")" 
           mkdir dependencies
-          cp ${{ github.workspace }}/build-linux/build/bin/sync-exclude.lst ./dependencies/
+          cp ${{ github.workspace }}/$build_folder/build/bin/sync-exclude.lst ./dependencies/
           cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Widgets.* ./dependencies/ 
           cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Gui.* ./dependencies/
           cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Network.* ./dependencies/
@@ -114,8 +115,9 @@ runs:
 
       - name: Fetch Conan dependencies
         run: |
+          build_folder="build-linux$([[ ${{ inputs.release_build }} = "true" ]] && echo "-amd64")" 
           echo "Sourcing conanrun.sh to get LD_LIBRARY_PATH..."
-          source $(find "${{ github.workspace }}/build-linux" -name conanrun.sh | head -n 1)
+          source $(find "${{ github.workspace }}/$build_folder" -name conanrun.sh | head -n 1)
           echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
           IFS=':' read -ra dirs <<< "$LD_LIBRARY_PATH"
           for dir in "${dirs[@]}"; do
