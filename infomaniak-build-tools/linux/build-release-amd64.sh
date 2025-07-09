@@ -60,7 +60,7 @@ do
           ;;
       -u | --unit-tests)
           build_unit_tests=1
-          shit 1;
+          shift 1;
           ;;
       --) # End of all options
           shift
