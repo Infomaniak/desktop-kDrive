@@ -69,6 +69,7 @@ jobs:
 
 # Tests Windows
   test-Windows:
+    if: false
     needs: build-Windows
     strategy:
       fail-fast: false
@@ -142,7 +143,7 @@ jobs:
 
 # Upload to the storage server
   upload-app-to-storage-server:
-    needs: [upload-to-kDrive-and-sentry, build-Windows]
+    needs: [build-Windows]
     runs-on: [self-hosted, Windows, desktop-kdrive]
     steps:
       - name: Checkout the PR

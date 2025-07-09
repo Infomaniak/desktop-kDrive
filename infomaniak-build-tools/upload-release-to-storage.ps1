@@ -37,8 +37,11 @@ $languages = @(
     "it"
 )
 try {
-Start-Process -NoNewWindow -FilePath "mc.exe" -ArgumentList "config host add kdrive-storage https://storage.infomaniak.com $user $pass --api s3v4" -Wait
-
+$proc = Start-Process -NoNewWindow -FilePath "./mc.exe" -ArgumentList "alias set kdrive-storage https://storage.infomaniak.com $user $pass --api s3v4" -Wait -PassThru
+if (-not ($proc.ExitCode -eq 0)) {
+    Write-Host "❌ config host add kdrive-storage failed: $proc" -f Red
+    exit 1
+}
 # Upload release notes
 foreach ($os in $os_s)
 {
@@ -52,7 +55,7 @@ foreach ($os in $os_s)
         }
 
         $size = (Get-ChildItem $filePath | % {[int]($_.length)})
-        $proc = Start-Process -NoNewWindow -FilePath "mc.exe" `
+        $proc = Start-Process -NoNewWindow -FilePath "./mc.exe" `
         -ArgumentList "cp --attr Content-Type=text/html $filePath kdrive-storage/download/drive/desktopclient/$fileName" `
         -Wait -PassThru
 
@@ -76,7 +79,7 @@ foreach ($executable in $executables)
             exit 1
         }
     $size = (Get-ChildItem $filePath | % {[int]($_.length)})
-    $proc = Start-Process -NoNewWindow -FilePath "mc.exe" `
+    $proc = Start-Process -NoNewWindow -FilePath "./mc.exe" `
     -ArgumentList "cp --attr Content-Type=application/octet-stream $filePath kdrive-storage/download/drive/desktopclient/$executable" `
     -Wait -PassThru
 
@@ -92,7 +95,7 @@ Write-Host "✅ All files uploaded successfully to kDrive storage." -f Green
     exit 1
 } finally {
     # Clean up the connection to the storage
-    Start-Process -NoNewWindow -FilePath "mc.exe" -ArgumentList "config host remove kdrive-storage" -Wait
+    Start-Process -NoNewWindow -FilePath "./mc.exe" -ArgumentList "alias remove kdrive-storage" -Wait
 }
 
 
