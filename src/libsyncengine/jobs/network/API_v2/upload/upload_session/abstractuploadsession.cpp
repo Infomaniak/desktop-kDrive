@@ -20,7 +20,7 @@
 
 #include "io/iohelper.h"
 #include "jobs/network/networkjobsparams.h"
-#include "jobs/jobmanager.h"
+#include "jobs/syncjobmanager.h"
 #include "log/log.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
@@ -334,7 +334,7 @@ bool AbstractUploadSession::sendChunks() {
                 const std::scoped_lock lock(_mutex);
                 _threadCounter++;
                 chunkJob->setAdditionalCallback(callback);
-                JobManager::instance()->queueAsyncJob(chunkJob, Poco::Thread::PRIO_NORMAL);
+                SyncJobManager::instance()->queueAsyncJob(chunkJob, Poco::Thread::PRIO_NORMAL);
                 const auto &[_, inserted] = _ongoingChunkJobs.try_emplace(chunkJob->jobId(), chunkJob);
                 if (!inserted) {
                     LOG_ERROR(_logger, "Session " << _sessionToken << ", job " << chunkJob->jobId()

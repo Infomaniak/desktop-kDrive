@@ -35,20 +35,6 @@
 
 namespace KDC {
 
-std::shared_ptr<JobManager> JobManager::_instance = nullptr;
-
-std::shared_ptr<JobManager> JobManager::instance() noexcept {
-    if (_instance == nullptr) {
-        try {
-            _instance = std::shared_ptr<JobManager>(new JobManager());
-        } catch (...) {
-            return nullptr;
-        }
-    }
-
-    return _instance;
-}
-
 void JobManager::startMainThreadIfNeeded() {
     if (!_mainThread) {
         const std::function<void()> runFunction = std::bind_front(&JobManager::run, this);
@@ -69,10 +55,6 @@ void JobManager::clear() {
 
     _data.clear();
     _stop = false;
-
-    if (_instance) {
-        _instance.reset();
-    }
 }
 
 void JobManager::queueAsyncJob(const std::shared_ptr<AbstractJob> job,
