@@ -44,21 +44,21 @@ runs:
       - name: Create sentry server artifacts
         if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
         run: |
-          DBG_FILE="${{ github.workspace }}/build-linux-amd64/kDrive.dbg"
+          DBG_FILE="${{ github.workspace }}/build-linux/kDrive.dbg"
           ./sentry-cli debug-files bundle-sources "$DBG_FILE"
-          mkdir "${{ github.workspace }}/build-linux-amd64/sentry-server-artifacts"
-          mv "${{ github.workspace }}/build-linux-amd64/kDrive.src.zip" "${{ github.workspace }}/build-linux-amd64/sentry-server-artifacts"
-          mv "$DBG_FILE" "${{ github.workspace }}/build-linux-amd64/sentry-server-artifacts"
+          mkdir "${{ github.workspace }}/build-linux/sentry-server-artifacts"
+          mv "${{ github.workspace }}/build-linux/kDrive.src.zip" "${{ github.workspace }}/build-linux/sentry-server-artifacts"
+          mv "$DBG_FILE" "${{ github.workspace }}/build-linux/sentry-server-artifacts"
         shell: bash
 
       - name: Create sentry client artifacts
         if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
         run: |
-          DBG_FILE="${{ github.workspace }}/build-linux-amd64/kDrive_client.dbg"
+          DBG_FILE="${{ github.workspace }}/build-linux/kDrive_client.dbg"
           ./sentry-cli debug-files bundle-sources "$DBG_FILE"
-          mkdir "${{ github.workspace }}/build-linux-amd64/sentry-client-artifacts"
-          mv "${{ github.workspace }}/build-linux-amd64/kDrive_client.src.zip" "${{ github.workspace }}/build-linux-amd64/sentry-client-artifacts"
-          mv "$DBG_FILE" "${{ github.workspace }}/build-linux-amd64/sentry-client-artifacts"
+          mkdir "${{ github.workspace }}/build-linux/sentry-client-artifacts"
+          mv "${{ github.workspace }}/build-linux/kDrive_client.src.zip" "${{ github.workspace }}/build-linux/sentry-client-artifacts"
+          mv "$DBG_FILE" "${{ github.workspace }}/build-linux/sentry-client-artifacts"
         shell: bash
 
       - name: Upload sentry server artifacts
@@ -66,7 +66,7 @@ runs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-release-artifacts-server-debug
-          path: ${{ github.workspace }}/build-linux-amd64/sentry-server-artifacts
+          path: ${{ github.workspace }}/build-linux/sentry-server-artifacts
           retention-days: 1
           compression-level: 0
 
@@ -75,15 +75,14 @@ runs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-release-artifacts-client-debug
-          path: ${{ github.workspace }}/build-linux-amd64/sentry-client-artifacts
+          path: ${{ github.workspace }}/build-linux/sentry-client-artifacts
           retention-days: 1
           compression-level: 0
 
       - name: Fetch dependencies
         run: |
-          build_folder="build-linux$([[ ${{ inputs.release_build }} = "true" ]] && echo "-amd64")" 
           mkdir dependencies
-          cp ${{ github.workspace }}/$build_folder/build/bin/sync-exclude.lst ./dependencies/
+          cp ${{ github.workspace }}/build-linux/build/bin/sync-exclude.lst ./dependencies/
           cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Widgets.* ./dependencies/ 
           cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Gui.* ./dependencies/
           cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Network.* ./dependencies/
@@ -115,9 +114,8 @@ runs:
 
       - name: Fetch Conan dependencies
         run: |
-          build_folder="build-linux$([[ ${{ inputs.release_build }} = "true" ]] && echo "-amd64")" 
           echo "Sourcing conanrun.sh to get LD_LIBRARY_PATH..."
-          source $(find "${{ github.workspace }}/$build_folder" -name conanrun.sh | head -n 1)
+          source $(find "${{ github.workspace }}/build-linux" -name conanrun.sh | head -n 1)
           echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
           IFS=':' read -ra dirs <<< "$LD_LIBRARY_PATH"
           for dir in "${dirs[@]}"; do

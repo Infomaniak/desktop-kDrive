@@ -82,7 +82,7 @@ if [ ! -d "$src_dir" ]; then
 fi
 
 
-build_dir="$src_dir/build-linux-amd64"
+build_dir="$src_dir/build-linux"
 app_dir="$build_dir/install"
 build_type="RelWithDebInfo"
 
