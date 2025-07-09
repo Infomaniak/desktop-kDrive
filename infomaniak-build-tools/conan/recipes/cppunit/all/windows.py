@@ -41,6 +41,14 @@ class CppunitConan(ConanFile):
     def _settings_build(self):
         return getattr(self, "settings_build", self.settings)
 
+    def patch_werror(self, folder=None):
+        if folder is None:
+            folder = self.build_folder
+        self.output.info(f"Patching Makefiles to remove -Werror in the folder {folder}")
+        import glob
+        for makefile in glob.glob(os.path.join(folder, "**/Makefile"), recursive=True):
+            replace_in_file(self, makefile, "-Werror", "")
+
     def config_options(self):
         del self.options.fPIC
 
@@ -96,12 +104,7 @@ class CppunitConan(ConanFile):
         autotools = Autotools(self)
         autotools.configure()
 
-        self.output.info("Patching Makefiles to remove -Werror")
-        for root, _, files in os.walk(self.build_folder):
-            if "Makefile" in files:
-                makefile_path = os.path.join(root, "Makefile")
-                replace_in_file(self, makefile_path, "-Werror", "", strict=False)
-
+        # self.patch_werror()
         autotools.make()
 
     def package(self):
