@@ -101,7 +101,7 @@ export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 # Set defaults
 export SUFFIX=""
 
-mkdir -p "$build_dir/client"
+mkdir -p "$BUILD_DIR/client"
 
 conan_build_folder="$BUILD_DIR/conan"
 conan_dependencies_folder="$BUILD_DIR/conan/dependencies"
