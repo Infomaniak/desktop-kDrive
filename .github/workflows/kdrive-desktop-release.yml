@@ -66,7 +66,7 @@ jobs:
 
   build-Linux:
     needs: [check-release-notes, check-translations]
-    runs-on: [ self-hosted, Linux, desktop-kdrive ]
+    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     outputs:
       kDrive_version: ${{ steps.build-linux-step.outputs.kDrive_version }}
     steps:
@@ -107,8 +107,30 @@ jobs:
        #     test_name: ${{ matrix.test_name }}
        #     test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
+  Test-Linux:
+    if: false # TODO: disabled to avoid running tests on every push / Reenable when ready
+    needs: build-Linux
+    strategy:
+      fail-fast: false
+      matrix:
+        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
+    runs-on: [ self-hosted, Linux, X64 ]
+    env:
+      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
+      KDRIVE_SENTRY_ENVIRONMENT: "linux_ci_runner"
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
 
-# Upload the installer to kDrive and sentry artifacts
+      - name: Run test
+        uses: ./.github/actions/test_linux
+        with:
+          test_name: ${{ matrix.test_name }}
+          test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+
+  # Upload the installer to kDrive and sentry artifacts
   upload-to-kDrive-and-sentry:
    # needs: [test-Windows, build-Windows]
     needs: [build-Windows, build-Linux]
