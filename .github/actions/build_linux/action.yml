@@ -34,6 +34,51 @@ runs:
           fi
         shell: bash
 
+      - name: Download sentry-cli for Linux
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+        run: |
+          curl -L https://github.com/getsentry/sentry-cli/releases/download/2.46.0/sentry-cli-Linux-x86_64 -o sentry-cli \
+          && chmod +x ./sentry-cli
+        shell: bash
+
+      - name: Create sentry server artifacts
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+        run: |
+          DBG_FILE="${{ github.workspace }}/build-linux-amd64/kDrive.dbg"
+          ./sentry-cli debug-files bundle-sources "$DBG_FILE"
+          mkdir "${{ github.workspace }}/build-linux-amd64/sentry-server-artifacts"
+          mv "${{ github.workspace }}/build-linux-amd64/kDrive.src.zip" "${{ github.workspace }}/build-linux-amd64/sentry-server-artifacts"
+          mv "$DBG_FILE" "${{ github.workspace }}/build-linux-amd64/sentry-server-artifacts"
+        shell: bash
+
+      - name: Create sentry client artifacts
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+        run: |
+          DBG_FILE="${{ github.workspace }}/build-linux-amd64/kDrive_client.dbg"
+          ./sentry-cli debug-files bundle-sources "$DBG_FILE"
+          mkdir "${{ github.workspace }}/build-linux-amd64/sentry-client-artifacts"
+          mv "${{ github.workspace }}/build-linux-amd64/kDrive_client.src.zip" "${{ github.workspace }}/build-linux-amd64/sentry-client-artifacts"
+          mv "$DBG_FILE" "${{ github.workspace }}/build-linux-amd64/sentry-client-artifacts"
+        shell: bash
+
+      - name: Upload sentry server artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-release-artifacts-server-debug
+          path: ${{ github.workspace }}/build-linux-amd64/sentry-server-artifacts
+          retention-days: 1
+          compression-level: 0
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+
+      - name: Upload sentry client artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-release-artifacts-client-debug
+          path: ${{ github.workspace }}/build-linux-amd64/sentry-client-artifacts
+          retention-days: 1
+          compression-level: 0
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+
       - name: Fetch dependencies
         run: |
           mkdir dependencies
