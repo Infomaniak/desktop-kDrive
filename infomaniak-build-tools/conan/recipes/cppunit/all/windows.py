@@ -44,10 +44,6 @@ class CppunitConan(ConanFile):
     def config_options(self):
         del self.options.fPIC
 
-    def configure(self):
-        if self.options.shared:
-            self.options.rm_safe("fPIC")
-
     def layout(self):
         basic_layout(self, src_folder="src")
 
@@ -96,12 +92,21 @@ class CppunitConan(ConanFile):
     def build(self):
         autotools = Autotools(self)
         autotools.configure()
+
+        self.output.info("Patching Makefiles to remove -Werror")
+        for root, _, files in os.walk(self.build_folder):
+            if "Makefile" in files:
+                makefile_path = os.path.join(root, "Makefile")
+                replace_in_file(self, makefile_path, "-Werror", "", strict=False)
+
         autotools.make()
 
     def package(self):
         copy(self, "COPYING", src=self.source_folder, dst=os.path.join(self.package_folder, "licenses"))
         autotools = Autotools(self)
+        self.output.info("Install")
         autotools.install()
+        self.output.info("Install finished")
         if is_msvc(self) and self.options.shared:
             rename(self, os.path.join(self.package_folder, "lib", "cppunit.dll.lib"),
                    os.path.join(self.package_folder, "lib", "cppunit.lib"))
@@ -112,16 +117,13 @@ class CppunitConan(ConanFile):
         rm(self, "*.la", os.path.join(self.package_folder, "lib"))
         rmdir(self, os.path.join(self.package_folder, "lib", "pkgconfig"))
         rmdir(self, os.path.join(self.package_folder, "share"))
-        fix_apple_shared_install_name(self)
 
     def package_info(self):
         self.cpp_info.set_property("pkg_config_name", "cppunit")
         self.cpp_info.libs = ["cppunit"]
-        if not self.options.shared:
+        if self.options.shared:
+            self.cpp_info.defines.append("CPPUNIT_DLL")
+        else:
             libcxx = stdcpp_library(self)
             if libcxx:
                 self.cpp_info.system_libs.append(libcxx)
-            if self.settings.os in ["Linux", "FreeBSD"]:
-                self.cpp_info.system_libs.extend(["dl", "m"])
-        if self.options.shared:
-            self.cpp_info.defines.append("CPPUNIT_DLL")
