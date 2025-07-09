@@ -103,7 +103,7 @@ class CppunitConan(ConanFile):
             "--enable-html-docs=no",
         ])
 
-        # self.patch_werror()
+        self.patch_werror()
         autotools.make()
 
     def package(self):
