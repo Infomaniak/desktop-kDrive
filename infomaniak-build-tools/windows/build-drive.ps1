@@ -351,9 +351,9 @@ function Sign-File{
         [String] $tokenPass = ""
     )
       Write-Host "Signing the file $filePath with thumbprint $thumbprint" -f Yellow
-      $res = & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /t http://timestamp.digicert.com  /fd SHA1 /v $filePath /password:$tokenPass
+      $res = & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /t http://timestamp.digicert.com  /fd SHA1 /v /sm $filePath /password:$tokenPass
       if ($res -ne 0) { exit $res }
-      # $res & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256  /fd sha256 /td sha256 /as /v $filePath /password:$tokenPass
+      # $res & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256  /fd sha256 /td sha256 /as /v /sm $filePath /password:$tokenPass
       #if ($res -ne 0) { exit $res }
 }
 
@@ -455,7 +455,7 @@ function Prepare-Archive {
         if (!$thumbprint) {
             $thumbprint = Get-Thumbprint $upload
         }
-        #Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass
+        Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass
     }
 
     Write-Host "Archive prepared."
