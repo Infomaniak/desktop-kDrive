@@ -99,7 +99,7 @@ class CppunitConan(ConanFile):
             f"--enable-debug={debug_answer}",
             "--enable-doxygen=no",
             "--enable-dot=no",
-            "--disable-werror",
+            "--enable-werror=no",
             "--enable-html-docs=no",
         ]])
 
