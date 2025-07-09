@@ -18,11 +18,11 @@
 
 #pragma once
 
-#include "jobs/abstractjob.h"
+#include "jobs/syncjob.h"
 
 namespace KDC {
 
-class LocalCopyJob : public AbstractJob {
+class LocalCopyJob : public SyncJob {
     public:
         LocalCopyJob(const SyncPath &source, const SyncPath &dest);
 

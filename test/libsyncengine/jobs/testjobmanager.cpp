@@ -543,7 +543,7 @@ void TestJobManager::cancelAllOngoingJobs() {
     const std::scoped_lock lock(_mutex);
 
     // First, abort all jobs that are not running yet to avoid starting them for nothing
-    std::list<std::shared_ptr<AbstractJob>> remainingJobs;
+    std::list<std::shared_ptr<SyncJob>> remainingJobs;
     for (const auto &[jobId, job]: _ongoingJobs) {
         if (!job->isRunning()) {
             LOG_DEBUG(Log::instance()->getLogger(), "Cancelling job: " << jobId);
