@@ -918,12 +918,6 @@ void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory 
     }
 }
 
-#if defined(KD_MACOS) || defined(KD_LINUX)
-bool CommonUtility::isLikeFileNotFoundError(const std::error_code &ec) noexcept {
-    return ec.value() == static_cast<int>(std::errc::no_such_file_or_directory);
-}
-#endif
-
 #if defined(KD_MACOS)
 bool CommonUtility::isLiteSyncExtEnabled() {
     QProcess *process = new QProcess();
