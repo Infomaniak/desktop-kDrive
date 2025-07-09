@@ -63,7 +63,6 @@ class JobManager {
         void startJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority);
         void eraseJob(UniqueId jobId);
         void addToPendingJobs(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority);
-        void adjustMaxNbThread();
         void managePendingJobs();
 
         int availableThreadsInPool() const;
@@ -73,6 +72,7 @@ class JobManager {
 
         bool _stop{false};
         int _maxNbThread{0};
+        Poco::ThreadPool _threadPool;
 
         log4cplus::Logger _logger;
         std::unique_ptr<std::thread> _mainThread;
