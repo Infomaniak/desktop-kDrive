@@ -33,15 +33,17 @@ function get_default_src_dir() {
      echo "$PWD"
     fi
 }
+build_unit_tests=0
 
 src_dir="$(get_default_src_dir)"
 
 function display_help {
-  echo "$program_name [-h] [-d git-directory]"
+  echo "$program_name [-h] [-d git-directory] [-u]"
   echo "  Build the Linux Amd64 release executables built inside <git-directory>/build-linux-amd64."
   echo "where:"
   echo "-h  Show this help text."
   echo "-d <git-directory>" 
+  echo "-u  Activate the build of unit tests. Without this flag, unit tests will not be built."
   echo "  Set the path to the desktop-kDrive git directory. Defaults to '$src_dir'."
 }
 
@@ -55,6 +57,10 @@ do
       -h | --help)
           display_help 
           exit 0
+          ;;
+      -u | --unit-tests)
+          build_unit_tests=1
+          shit 1;
           ;;
       --) # End of all options
           shift
@@ -137,6 +143,7 @@ build_release() {
       -DCMAKE_INSTALL_PREFIX=/usr \
       -DBIN_INSTALL_DIR="$build_dir/client/bin" \
       -DKDRIVE_VERSION_SUFFIX="$SUFFIX" \
+      -DBUILD_UNIT_TESTS="$build_unit_tests" \
       -DKDRIVE_THEME_DIR="$src_dir/infomaniak" \
       -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
       -DCONAN_DEP_DIR="$conan_dependencies_folder" \

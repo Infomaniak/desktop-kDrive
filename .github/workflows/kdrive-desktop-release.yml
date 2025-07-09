@@ -147,14 +147,27 @@ jobs:
       - name: Upload debug files and installers/appimage to kDrive
         run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ needs.build-Windows.outputs.kDrive_version }}"
 
-      - name : Upload sentry artifacts
+      - name: Download sentry-cli
         run: |
           Invoke-WebRequest -Uri https://github.com/getsentry/sentry-cli/releases/download/2.46.0/sentry-cli-Windows-x86_64.exe -OutFile sentry-cli.exe
+        shell: powershell
+
+      - name : Upload sentry artifacts - Windows
+        if: false # TODO: Reenable when windows PR is ready
+        run: |
           .\sentry-cli.exe login --auth-token=${{ secrets.SENTRY_AUTH_TOKEN }}
           .\sentry-cli.exe debug-files upload --project kdrive-server .\build-windows\kDrive.pdb
           .\sentry-cli.exe debug-files upload --project kdrive-client .\build-windows\kDrive_client.pdb
           .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-windows\kDrive.src.zip
           .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\build-windows\kDrive_client.src.zip
+        shell: powershell
+
+      - name: Upload sentry artifacts - Linux
+        run: |
+          .\sentry-cli.exe debug-files upload --project kdrive-server .\build-linux\kDrive.pdb
+          .\sentry-cli.exe debug-files upload --project kdrive-client .\build-linux\kDrive_client.pdb
+          .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-linux\kDrive.src.zip
+          .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\build-linux\kDrive_client.src.zip
         shell: powershell
 
 # Upload to the storage server
