@@ -131,10 +131,11 @@ if ($CI) {
     & "C:\Program Files\Python313\.venv\Scripts\activate.ps1"
 
     # Call vcvarsall.bat to set up the environment for MSVC
-    & "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
     Log "CI mode enabled."
 }
 
+# TODO move this up into the $CI part
+& "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
 # Locate Conan executable
 $ConanExe = Get-ConanExePath
 if (-not $ConanExe) {
@@ -161,10 +162,10 @@ $RecipesFolder         = Join-Path $ConanRemoteBaseFolder "recipes"
 Log "Current conan home configuration:"
 & $ConanExe config home
 
-if (Test-Path -Path "$RecipesFolder/openssl-universal") {
-    Log "Removing existing openssl-universal recipe folder."
-    Remove-Item -Path "$RecipesFolder/openssl-universal" -Recurse -Force
-}
+#if (Test-Path -Path "$RecipesFolder/openssl-universal") {
+#    Log "Removing existing openssl-universal recipe folder."
+#    Remove-Item -Path "$RecipesFolder/openssl-universal" -Recurse -Force
+#}
 
 if ($MakeRelease) {
     $ConanProfile = "infomaniak_release"
