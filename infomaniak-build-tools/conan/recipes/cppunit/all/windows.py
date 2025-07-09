@@ -78,14 +78,6 @@ class CppunitConan(ConanFile):
             if check_min_vs(self, "180", raise_invalid=False):
                 tc.extra_cflags.append("-FS")
                 tc.extra_cxxflags.append("-FS")
-        yes_no = lambda v: "yes" if v else "no"
-        tc.configure_args.extend([
-            "--enable-debug={}".format(yes_no(self.settings.build_type == "Debug")),
-            "--enable-doxygen=no",
-            "--enable-dot=no",
-            "--disable-werror",
-            "--enable-html-docs=no",
-        ])
         env = tc.environment()
         if is_msvc(self):
             compile_wrapper = unix_path(self, self.conf.get("user.automake:compile-wrapper", check_type=str))
@@ -102,7 +94,14 @@ class CppunitConan(ConanFile):
 
     def build(self):
         autotools = Autotools(self)
-        autotools.configure()
+        debug_answer = "yes" if self.settings.build_type == "Debug" else "no"
+        autotools.configure(args=[[
+            f"--enable-debug={debug_answer}",
+            "--enable-doxygen=no",
+            "--enable-dot=no",
+            "--disable-werror",
+            "--enable-html-docs=no",
+        ]])
 
         # self.patch_werror()
         autotools.make()
