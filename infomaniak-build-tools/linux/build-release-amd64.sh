@@ -99,7 +99,7 @@ build_release() {
   export QT_BASE_DIR="$HOME/Qt/6.2.3"
   export QTDIR="$QT_BASE_DIR/gcc_64"
   export QMAKE="$QTDIR/bin/qmake"
-  export PATH="$QTDIR/bin:$QTDIR/libexec:$PATH"
+  export PATH="$QTDIR/bin:$QTDIR/libexec:/home/runner/.local/bin:$PATH"
   export LD_LIBRARY_PATH="$QTDIR/lib:$LD_LIBRARY_PATH"
   export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
@@ -156,7 +156,7 @@ package_release() {
   export QT_BASE_DIR="$HOME/Qt/6.2.3/gcc_64"
   export QTDIR="$QT_BASE_DIR"
   export QMAKE="$QT_BASE_DIR/bin/qmake"
-  export PATH="$QT_BASE_DIR/bin:$QT_BASE_DIR/libexec:/home/runner/.local/bin:$PATH"
+  export PATH="$QT_BASE_DIR/bin:$QT_BASE_DIR/libexec:$PATH"
   export LD_LIBRARY_PATH="$QT_BASE_DIR/lib:$app_dir/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
   export PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
