@@ -44,10 +44,11 @@ class CppunitConan(ConanFile):
     def patch_werror(self, folder=None):
         if folder is None:
             folder = self.build_folder
-        self.output.info(f"Patching Makefiles to remove -Werror in the folder {folder}")
+        self.output.highlight(f"Patching Makefiles to remove -Werror in the folder {folder}")
+        self.output.highlight("Note: This can generate Warnings, do not take them into account.")
         import glob
         for makefile in glob.glob(os.path.join(folder, "**/Makefile"), recursive=True):
-            replace_in_file(self, makefile, "-Werror", "")
+            replace_in_file(self, makefile, "-Werror", "", strict=False) # Warnings generated if the disable-werror is taken into account
 
     def config_options(self):
         del self.options.fPIC
