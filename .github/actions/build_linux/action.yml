@@ -62,22 +62,22 @@ runs:
         shell: bash
 
       - name: Upload sentry server artifacts
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: linux-release-artifacts-server-debug
           path: ${{ github.workspace }}/build-linux-amd64/sentry-server-artifacts
           retention-days: 1
           compression-level: 0
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
 
       - name: Upload sentry client artifacts
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: linux-release-artifacts-client-debug
           path: ${{ github.workspace }}/build-linux-amd64/sentry-client-artifacts
           retention-days: 1
           compression-level: 0
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
 
       - name: Fetch dependencies
         run: |
