@@ -172,37 +172,31 @@ int JobManager::availableThreadsInPool() const {
     }
 }
 
+namespace {
+bool isBigFileDownloadJob(const std::shared_ptr<AbstractJob> job) {
+    const auto &downloadJob = std::dynamic_pointer_cast<DownloadJob>(job);
+
+    return downloadJob && downloadJob->expectedSize() > bigFileThreshold;
+}
+
+bool isBigFileUploadJob(const std::shared_ptr<AbstractJob> job) {
+    return std::dynamic_pointer_cast<DriveUploadSession>(job) != nullptr;
+}
+} // namespace
+
 bool JobManager::canRunjob(const std::shared_ptr<AbstractJob> job) const {
     if (isBigFileUploadJob(job)) {
         for (const auto &runningJobId: _data.runningJobs()) {
-            if (const auto &uploadSession = std::dynamic_pointer_cast<DriveUploadSession>(getJob(runningJobId)); uploadSession) {
+            if (isBigFileUploadJob(getJob(runningJobId))) {
                 // An upload session is already running.
                 return false;
             }
         }
         return true;
     }
-    if (isBigFileDownloadJob(job) && availableThreadsInPool() < 0.5 * _threadPool.capacity()) {
-        // Allow big file download only if there is more than 50% of thread available in the pool.
-        return false;
-    }
-    return true;
-}
 
-bool JobManager::isBigFileDownloadJob(const std::shared_ptr<AbstractJob> job) const {
-    if (const auto &downloadJob = std::dynamic_pointer_cast<DownloadJob>(job);
-        downloadJob && downloadJob->expectedSize() > bigFileThreshold) {
-        return true;
-    }
-    return false;
-}
-
-bool JobManager::isBigFileUploadJob(const std::shared_ptr<AbstractJob> job) const {
-    if (std::dynamic_pointer_cast<DriveUploadSession>(job)) {
-        // Upload sessions are only for big files
-        return true;
-    }
-    return false;
+    // Allow big file download only if there is more than 50% of thread available in the pool.
+    return isBigFileDownloadJob(job) && (availableThreadsInPool() < 0.5 * _threadPool.capacity());
 }
 
 void JobManager::managePendingJobs() {
