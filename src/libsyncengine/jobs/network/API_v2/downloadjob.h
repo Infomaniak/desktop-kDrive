@@ -40,6 +40,9 @@ class DownloadJob : public AbstractTokenNetworkJob {
         [[nodiscard]] inline int64_t size() const { return _sizeOut; }
 
         [[nodiscard]] int64_t expectedSize() const { return _expectedSize; }
+
+        virtual bool canRunWithLowThreadPoolCapacity() const noexcept override;
+
     private:
         virtual std::string getSpecificUrl() override;
         virtual void setQueryParameters(Poco::URI &, bool &) override {}

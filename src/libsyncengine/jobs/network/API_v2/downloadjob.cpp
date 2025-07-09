@@ -744,4 +744,8 @@ bool DownloadJob::createTmpFile(const std::string &data, bool &writeError) {
                          fetchCanceled, fetchFinished, fetchError);
 }
 
+bool DownloadJob::canRunWithLowThreadPoolCapacity() const noexcept {
+    return expectedSize() <= bigFileThreshold;
+}
+
 } // namespace KDC

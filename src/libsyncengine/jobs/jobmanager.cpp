@@ -172,31 +172,17 @@ int JobManager::availableThreadsInPool() const {
     }
 }
 
-namespace {
-bool isBigFileDownloadJob(const std::shared_ptr<AbstractJob> job) {
-    const auto &downloadJob = std::dynamic_pointer_cast<DownloadJob>(job);
-
-    return downloadJob && downloadJob->expectedSize() > bigFileThreshold;
-}
-
-bool isBigFileUploadJob(const std::shared_ptr<AbstractJob> job) {
-    return std::dynamic_pointer_cast<DriveUploadSession>(job) != nullptr;
-}
-} // namespace
-
 bool JobManager::canRunjob(const std::shared_ptr<AbstractJob> job) const {
-    if (isBigFileUploadJob(job)) {
+    if (job->canRunOnlyOneInstance()) {
         for (const auto &runningJobId: _data.runningJobs()) {
-            if (isBigFileUploadJob(getJob(runningJobId))) {
-                // An upload session is already running.
+            if (job->isExclusiveOf(getJob(runningJobId))) {
                 return false;
             }
         }
-        return true;
     }
 
-    // Allow big file download only if there is more than 50% of thread available in the pool.
-    return isBigFileDownloadJob(job) && (availableThreadsInPool() < 0.5 * _threadPool.capacity());
+    const bool lowCapacity = availableThreadsInPool() < 0.5 * _threadPool.capacity();
+    return !lowCapacity || job->canRunWithLowThreadPoolCapacity();
 }
 
 void JobManager::managePendingJobs() {
