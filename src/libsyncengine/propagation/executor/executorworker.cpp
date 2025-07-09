@@ -31,7 +31,7 @@
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "update_detection/update_detector/updatetree.h"
-#include "jobs/jobmanager.h"
+#include "jobs/syncjobmanager.h"
 #include "jobs/network/API_v2/upload/uploadjob.h"
 #include "jobs/network/API_v2/upload/upload_session/driveuploadsession.h"
 #include "libcommon/log/sentry/ptraces.h"
@@ -157,7 +157,7 @@ void ExecutorWorker::execute() {
                 std::function<void(UniqueId)> callback =
                         std::bind(&ExecutorWorker::executorCallback, this, std::placeholders::_1);
                 job->setAdditionalCallback(callback);
-                JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
+                SyncJobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
                 _ongoingJobs.insert({job->jobId(), job});
                 _jobToSyncOpMap.insert({job->jobId(), syncOp});
             } else {

@@ -34,8 +34,7 @@ namespace KDC {
 
 class JobManager {
     public:
-        static std::shared_ptr<JobManager> instance() noexcept;
-
+        JobManager();
         JobManager(JobManager const &) = delete;
         void operator=(JobManager const &) = delete;
 
@@ -58,7 +57,6 @@ class JobManager {
         void decreasePoolCapacity();
 
     private:
-        JobManager();
         void startMainThreadIfNeeded();
 
         void run() noexcept;
@@ -73,7 +71,6 @@ class JobManager {
         bool isBigFileDownloadJob(const std::shared_ptr<AbstractJob> job) const;
         bool isBigFileUploadJob(const std::shared_ptr<AbstractJob> job) const;
 
-        static std::shared_ptr<JobManager> _instance;
         bool _stop{false};
         int _maxNbThread{0};
 
