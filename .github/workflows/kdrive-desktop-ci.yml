@@ -48,6 +48,8 @@ jobs:
           submodules: recursive
       - name: Build Linux
         uses: ./.github/actions/build_linux
+        with:
+          release_build: 'false'
 
   build-MacOS:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
