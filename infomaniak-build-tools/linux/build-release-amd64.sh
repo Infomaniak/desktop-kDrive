@@ -168,6 +168,7 @@ package_release() {
   cp -P -r "$QTDIR/resources" "$app_dir/usr"
   cp -P -r "$QTDIR/translations" "$app_dir/usr"
 
+  # Temporary find folder because fixed inside another PR.
   temp_conan_dep_folder="$(find "$build_dir" -name "$(basename "$conan_dependencies_folder")" -type d -print -quit 2>/dev/null | head -n 1)"
   cp -P "$temp_conan_dep_folder/"* "$app_dir/usr/lib"
 
