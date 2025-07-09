@@ -50,13 +50,15 @@ runs:
             Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_PHYSICAL_CERT
             certutil -decode certificate/tempCert.txt certificate/certificate.cert
             Remove-Item -path certificate -include tempCert.txt
-            Import-Certificate -Filepath certificate/certificate.cert -CertStoreLocation Cert:\CurrentUser\My
+            Import-Certificate -Filepath certificate/certificate.cert -CertStoreLocation Cert:\LocalMachine\My
+            Write-Host "Physical certificate imported successfully."
             } else {
             New-Item -ItemType directory -Path certificate
             Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_VIRTUAL_CERT
             certutil -decode certificate/tempCert.txt certificate/certificate.pfx
             Remove-Item -path certificate -include tempCert.txt
-            Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String "${{ inputs.virtual_cert_pass }}" -Force -AsPlainText)
+            Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\LocalMachine\My -Password (ConvertTo-SecureString -String "${{ inputs.virtual_cert_pass }}" -Force -AsPlainText)
+            Write-Host "Virtual certificate imported successfully."
             }
         shell: powershell
 
