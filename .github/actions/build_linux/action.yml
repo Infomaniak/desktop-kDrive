@@ -110,7 +110,7 @@ runs:
           cp /usr/lib/x86_64-linux-gnu/libgthread* ./dependencies/
           cp /usr/lib/x86_64-linux-gnu/libdbus-1.so.3 ./dependencies/
         shell: bash
-        if: steps.build.outcome == 'success'
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build != 'true' }}
 
       - name: Fetch Conan dependencies
         run: |
@@ -131,7 +131,7 @@ runs:
             fi
           done
         shell: bash
-        if: steps.build.outcome == 'success'
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build != 'true' }}
 
       - name: Upload build common files
         uses: actions/upload-artifact@v4
@@ -140,7 +140,7 @@ runs:
           path: ./dependencies/
           retention-days: 1
           compression-level: 0
-        if: steps.build.outcome == 'success'
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build != 'true' }}
 
       - name: Upload build test common executable
         uses: actions/upload-artifact@v4
@@ -149,7 +149,7 @@ runs:
           path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_common
           retention-days: 1
           compression-level: 0
-        if: steps.build.outcome == 'success'
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build != 'true' }}
 
       - name: Upload build test common server executable
         uses: actions/upload-artifact@v4
@@ -158,7 +158,7 @@ runs:
           path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_common_server
           retention-days: 1
           compression-level: 0
-        if: steps.build.outcome == 'success'
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build != 'true' }}
 
       - name: Upload build test server executable
         uses: actions/upload-artifact@v4
@@ -167,7 +167,7 @@ runs:
           path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_server
           retention-days: 1
           compression-level: 0
-        if: steps.build.outcome == 'success'
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build != 'true' }}
 
       - name: Upload build test syncengine executable
         uses: actions/upload-artifact@v4
@@ -176,7 +176,7 @@ runs:
           path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_syncengine
           retention-days: 1
           compression-level: 0
-        if: steps.build.outcome == 'success'
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build != 'true' }}
 
       - name: Upload build test parms executable
         uses: actions/upload-artifact@v4
@@ -185,7 +185,7 @@ runs:
           path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_parms
           retention-days: 1
           compression-level: 0
-        if: steps.build.outcome == 'success'
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build != 'true' }}
 
       - name: Clean-up generated code
         run : rm -rf build-linux
