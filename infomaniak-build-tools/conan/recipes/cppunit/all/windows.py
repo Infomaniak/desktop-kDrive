@@ -95,13 +95,13 @@ class CppunitConan(ConanFile):
     def build(self):
         autotools = Autotools(self)
         debug_answer = "yes" if self.settings.build_type == "Debug" else "no"
-        autotools.configure(args=[[
+        autotools.configure(args=[
             f"--enable-debug={debug_answer}",
             "--enable-doxygen=no",
             "--enable-dot=no",
             "--disable-werror",
             "--enable-html-docs=no",
-        ]])
+        ])
 
         # self.patch_werror()
         autotools.make()
