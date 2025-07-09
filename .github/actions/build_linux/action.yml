@@ -16,7 +16,7 @@ runs:
 
       - name: Grant building script execute permission
         run : |
-          if [ "${{ inputs.release_build }}" -eq "true ]; then
+          if [ "${{ inputs.release_build }}" -eq "true" ]; then
             chmod +x ./infomaniak-build-tools/linux/build-release-amd64.sh
           else
             chmod +x ./infomaniak-build-tools/linux/build-ci-amd64.sh
