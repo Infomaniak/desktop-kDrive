@@ -136,13 +136,13 @@ jobs:
       #    path: build-macos
       #    pattern: mac-release-artifacts-*
       #    merge-multiple: true
-      #
-      #- name: Download Linux artifacts
-      #  uses: actions/download-artifact@v4
-      #  with:
-      #    path: build-linux
-      #    pattern: linux-release-artifacts-*
-      #    merge-multiple: true
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: build-linux
+          pattern: linux-release-artifacts-*
+          merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
         run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ needs.build-Windows.outputs.kDrive_version }}"
