@@ -67,8 +67,6 @@ class JobManager {
 
         int availableThreadsInPool() const;
         bool canRunjob(const std::shared_ptr<AbstractJob> job) const;
-        bool isBigFileDownloadJob(const std::shared_ptr<AbstractJob> job) const;
-        bool isBigFileUploadJob(const std::shared_ptr<AbstractJob> job) const;
 
         bool _stop{false};
         int _maxNbThread{0};
