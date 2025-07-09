@@ -137,7 +137,7 @@ void AbstractUploadSession::uploadChunkCallback(const UniqueId jobId) {
 
 void AbstractUploadSession::abort() {
     LOG_DEBUG(_logger, "Aborting upload session job " << jobId());
-    AbstractJob::abort();
+    SyncJob::abort();
 }
 
 bool AbstractUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) {

@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "abstractjob.h"
+#include "syncjob.h"
 #include "jobmanagerdata.h"
 #include "libcommon/utility/utility.h"
 

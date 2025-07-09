@@ -57,8 +57,6 @@ class AbstractJob : public Poco::Runnable {
         void setProgress(int64_t newProgress);
         void addProgress(int64_t progressToAdd);
         bool progressChanged();
-        const SyncPath &affectedFilePath() const { return _affectedFilePath; }
-        void setAffectedFilePath(const SyncPath &newAffectedFilePath) { _affectedFilePath = newAffectedFilePath; }
         bool isProgressTracked() const { return _progress > -1; }
 
         UniqueId jobId() const { return _jobId; }
@@ -69,17 +67,14 @@ class AbstractJob : public Poco::Runnable {
         virtual void abort();
         bool isAborted() const;
 
-        [[nodiscard]] bool bypassCheck() const { return _bypassCheck; }
-        void setBypassCheck(bool newBypassCheck) { _bypassCheck = newBypassCheck; }
-
     protected:
+        void run() override;
         virtual bool canRun() { return true; }
 
         log4cplus::Logger _logger;
         ExitInfo _exitInfo;
 
     private:
-        void run() final;
         virtual void callback(UniqueId) final;
 
         std::function<void(UniqueId)> _mainCallback = nullptr; // Used by the job manager to keep track of running jobs
@@ -97,10 +92,8 @@ class AbstractJob : public Poco::Runnable {
                 expectedFinishProgressNotSetValue; // Expected progress value when the job is finished. -2 means it is not set.
         int64_t _progress = -1; // Progress is -1 when it is not relevant for the current job
         int64_t _lastProgress = -1; // Progress last time it was checked using progressChanged()
-        SyncPath _affectedFilePath; // The file path associated to _progress
 
         bool _abort = false;
-        bool _bypassCheck = false;
         bool _isExtendedLog = false;
         bool _isRunning = false;
 };

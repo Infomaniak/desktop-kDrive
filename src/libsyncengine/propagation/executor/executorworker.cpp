@@ -105,7 +105,7 @@ void ExecutorWorker::execute() {
 
             changesCounter++;
 
-            std::shared_ptr<AbstractJob> job = nullptr;
+            std::shared_ptr<SyncJob> job = nullptr;
             bool ignored = false;
             bool bypassProgressComplete = false;
             bool hydrating = false;
@@ -282,7 +282,7 @@ void ExecutorWorker::setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus 
     }
 }
 
-ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &ignored, bool &hydrating) {
+ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJob> &job, bool &ignored, bool &hydrating) {
     // The execution of the create operation consists of three steps:
     // 1. If omit-flag is False, propagate the file or directory to target replica, because the object is missing there.
     // 2. Insert a new entry into the database, to avoid that the object is detected again by compute_ops() on the next sync
@@ -466,7 +466,7 @@ ExitInfo ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, cons
     return {ExitCode::DataError, ExitCause::FileExists};
 }
 
-ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hydrating) noexcept {
+ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<SyncJob> &job, bool &hydrating) noexcept {
     // 1. If omit-flag is False, propagate the file or directory to replica Y, because the object is missing there.
     std::shared_ptr<Node> newCorrespondingParentNode = nullptr;
     if (affectedUpdateTree(syncOp)->rootNode() == syncOp->affectedNode()->parentNode()) {
@@ -742,7 +742,7 @@ ExitInfo ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath,
     return ExitCode::Ok;
 }
 
-ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &ignored) {
+ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<SyncJob> &job, bool &ignored) {
     // The execution of the edit operation consists of three steps:
     // 1. If omit-flag is False, propagate the file to replicaY, replacing the existing one.
     // 2. Insert a new entry into the database, to avoid that the object is detected again by compute_ops() on the next sync
@@ -802,7 +802,7 @@ ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<Abstract
     return ExitCode::Ok;
 }
 
-ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job) {
+ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJob> &job) {
     // 1. If omit-flag is False, propagate the file to replicaY, replacing the existing one.
     if (syncOp->targetSide() == ReplicaSide::Local) {
         SyncPath relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
@@ -983,7 +983,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
 
     // 1. If omit-flag is False, move the object on replica Y (where it still needs to be moved) from uY to vY, changing the
     // name to nameX.
-    std::shared_ptr<AbstractJob> job = nullptr;
+    std::shared_ptr<SyncJob> job = nullptr;
 
     SyncPath relativeDestLocalFilePath;
     SyncPath absoluteDestLocalFilePath;
@@ -1157,7 +1157,7 @@ ExitInfo ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool
     bypassProgressComplete = false;
 
     // 1. If omit-flag is False, delete the file or directory on replicaY, because the objects till exists there
-    std::shared_ptr<AbstractJob> job = nullptr;
+    std::shared_ptr<SyncJob> job = nullptr;
     SyncPath relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
     SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
     bool isDehydratedPlaceholder = false;
@@ -1294,7 +1294,7 @@ ExitInfo ExecutorWorker::deleteFinishedAsyncJobs() {
                 continue;
             }
 
-            std::shared_ptr<AbstractJob> job = onGoingJobIt->second;
+            std::shared_ptr<SyncJob> job = onGoingJobIt->second;
 
             auto jobToSyncOpIt = _jobToSyncOpMap.find(job->jobId());
             if (jobToSyncOpIt == _jobToSyncOpMap.end()) {
@@ -1396,7 +1396,7 @@ bool isManagedBackError(const ExitCause exitCause) {
 }
 } // namespace details
 
-ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath,
+ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<SyncJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath,
                                            bool &ignored, bool &bypassProgressComplete) {
     ignored = false;
     bypassProgressComplete = false;
@@ -1604,8 +1604,7 @@ ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &pr
     return ExitCode::Ok;
 }
 
-ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job,
-                                                    std::shared_ptr<Node> &node) {
+ExitInfo ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_ptr<SyncJob> job, std::shared_ptr<Node> &node) {
     if (syncOp->hasConflict()) {
         bool propagateChange = true;
         ExitInfo exitInfo = propagateConflictToDbAndTree(syncOp, propagateChange);
@@ -2032,7 +2031,7 @@ ExitInfo ExecutorWorker::deleteFromDb(std::shared_ptr<Node> node) {
     return ExitCode::Ok;
 }
 
-ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job) {
+ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<SyncJob> job) {
     job->runSynchronously();
 
     std::string errorCode;
@@ -2103,7 +2102,7 @@ void ExecutorWorker::cancelAllOngoingJobs() {
 
     // First, abort all jobs that are not running yet to avoid starting them for
     // nothing
-    std::list<std::shared_ptr<AbstractJob>> remainingJobs;
+    std::list<std::shared_ptr<SyncJob>> remainingJobs;
     for (const auto &job: _ongoingJobs) {
         if (!job.second->isRunning()) {
             LOG_SYNCPAL_DEBUG(_logger, "Cancelling job: " << job.second->jobId());

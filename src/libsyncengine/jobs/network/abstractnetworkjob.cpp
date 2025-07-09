@@ -255,7 +255,7 @@ void AbstractNetworkJob::addRawHeader(const std::string &key, const std::string 
 void AbstractNetworkJob::abort() {
     LOG_DEBUG(_logger, "Aborting session for job " << jobId());
 
-    AbstractJob::abort();
+    SyncJob::abort();
 
     abortSession();
 }

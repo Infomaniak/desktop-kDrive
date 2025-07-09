@@ -16,33 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "syncjob.h"
+#include "log/log.h"
+#include "requests/parameterscache.h"
 
-#include "jobs/syncjob.h"
+#include <log4cplus/loggingmacros.h>
 
-namespace KDC {
-
-class LocalCreateDirJob : public SyncJob {
-    public:
-        LocalCreateDirJob(const SyncPath &destFilepath);
-
-        SyncPath destFilePath() const { return _destFilePath; }
-
-        const NodeId &nodeId() const { return _nodeId; }
-        SyncTime modtime() const { return _modtime; }
-        SyncTime creationTime() const { return _creationTime; }
-
-    protected:
-        virtual bool canRun() override;
-
-    private:
-        virtual void runJob() override;
-
-        SyncPath _destFilePath;
-
-        NodeId _nodeId;
-        SyncTime _modtime = 0;
-        SyncTime _creationTime = 0;
-};
-
-} // namespace KDC
+namespace KDC {} // namespace KDC

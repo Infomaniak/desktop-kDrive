@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "abstractjob.h"
+#include "syncjob.h"
 #include "log/log.h"
 #include "requests/parameterscache.h"
 

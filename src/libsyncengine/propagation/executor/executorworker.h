@@ -21,7 +21,7 @@
 #include "syncpal/operationprocessor.h"
 #include "syncpal/syncpal.h"
 #include "reconciliation/syncoperation.h"
-#include "jobs/abstractjob.h"
+#include "jobs/syncjob.h"
 #include "utility/timerutility.h"
 
 #include <queue>
@@ -76,14 +76,14 @@ class ExecutorWorker : public OperationProcessor {
         void initProgressManager();
         void initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem);
 
-        ExitInfo handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &ignored, bool &hydrating);
+        ExitInfo handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJob> &job, bool &ignored, bool &hydrating);
         ExitInfo checkAlreadyExcluded(const SyncPath &absolutePath, const NodeId &parentId);
-        ExitInfo generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hydrating) noexcept;
+        ExitInfo generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<SyncJob> &job, bool &hydrating) noexcept;
         ExitInfo checkLiteSyncInfoForCreate(SyncOpPtr syncOp, const SyncPath &path, bool &isDehydratedPlaceholder);
         ExitInfo createPlaceholder(const SyncPath &relativeLocalPath);
         ExitInfo convertToPlaceholder(const SyncPath &relativeLocalPath, bool hydrated);
-        ExitInfo handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &ignored);
-        ExitInfo generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job);
+        ExitInfo handleEditOp(SyncOpPtr syncOp, std::shared_ptr<SyncJob> &job, bool &ignored);
+        ExitInfo generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJob> &job);
 
         /**
          * This method aims to fix the last modification date of a local file using the date stored in DB. This allows us to fix
@@ -107,7 +107,7 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo waitForAllJobsToFinish();
         ExitInfo deleteFinishedAsyncJobs();
         ExitInfo handleManagedBackError(const ExitInfo &jobExitInfo, SyncOpPtr syncOp, bool invalidName);
-        ExitInfo handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath,
+        ExitInfo handleFinishedJob(std::shared_ptr<SyncJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath,
                                    bool &ignored, bool &bypassProgressComplete);
         ExitInfo handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath, bool &ignored);
         void sendProgress();
@@ -115,7 +115,7 @@ class ExecutorWorker : public OperationProcessor {
         bool enoughLocalSpace(SyncOpPtr syncOp);
 
         ExitInfo propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propagateChange);
-        ExitInfo propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job, std::shared_ptr<Node> &node);
+        ExitInfo propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_ptr<SyncJob> job, std::shared_ptr<Node> &node);
         ExitInfo propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newCreationTime,
                                             std::optional<SyncTime> newLastModificationTime, std::shared_ptr<Node> &node,
                                             int64_t newSize = -1);
@@ -126,7 +126,7 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo propagateDeleteToDbAndTree(SyncOpPtr syncOp);
         ExitInfo deleteFromDb(std::shared_ptr<Node> node);
 
-        ExitInfo runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
+        ExitInfo runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<SyncJob> job);
         void cancelAllOngoingJobs();
 
         [[nodiscard]] bool isLiteSyncActivated() const { return _syncPal->vfsMode() != VirtualFileMode::Off; }
@@ -159,7 +159,7 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo removeDependentOps(SyncOpPtr syncOp);
         ExitInfo removeDependentOps(std::shared_ptr<Node> localNode, std::shared_ptr<Node> remoteNode, OperationType opType);
 
-        std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _ongoingJobs;
+        std::unordered_map<UniqueId, std::shared_ptr<SyncJob>> _ongoingJobs;
         TerminatedJobsQueue _terminatedJobs;
         std::unordered_map<UniqueId, SyncOpPtr> _jobToSyncOpMap;
 
