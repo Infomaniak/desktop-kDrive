@@ -3,7 +3,7 @@ from conan.errors import ConanInvalidConfiguration
 from conan.tools.apple import is_apple_os, fix_apple_shared_install_name
 from conan.tools.build import stdcpp_library
 from conan.tools.env import VirtualBuildEnv
-from conan.tools.files import copy, get, rename, rm, rmdir
+from conan.tools.files import copy, get, rename, rm, rmdir, replace_in_file
 from conan.tools.gnu import Autotools, AutotoolsToolchain
 from conan.tools.layout import basic_layout
 from conan.tools.microsoft import check_min_vs, is_msvc, unix_path
@@ -56,6 +56,9 @@ class CppunitConan(ConanFile):
 
     def source(self):
         get(self, **self.conan_data["sources"][self.version], strip_root=True)
+
+        mafile_in = os.path.join(self.source_folder, "Makefile.in")
+        replace_in_file(self, mafile_in, "^SUBDIRS\s*=\s*((src|include|examples|doc)\s+){3}(src|include|examples|doc)\s*$", "SUBDIRS = src include")
 
     def generate(self):
         env = VirtualBuildEnv(self)
