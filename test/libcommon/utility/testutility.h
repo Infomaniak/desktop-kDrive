@@ -97,7 +97,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
                            bool startWithSeparator, std::vector<SyncPath> &result, const std::string &start = "", size_t pos = 0);
 
         template<class T>
-        class TestClassWithTemplate {};
+        class TestClassWithTemplate {}; // Used by testGetTypeName
 };
 
 

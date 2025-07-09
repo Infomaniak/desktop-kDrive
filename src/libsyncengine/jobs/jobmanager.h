@@ -48,7 +48,7 @@
 
 namespace KDC {
 
-template<class Job>
+template<class J>
 class JobManager {
     public:
         static std::shared_ptr<JobManager> instance() noexcept;
@@ -65,10 +65,10 @@ class JobManager {
          * @param priority Job's priority level.
          * @param externalCallback Callback to be run once the job is done.
          */
-        void queueAsyncJob(std::shared_ptr<Job> job, Poco::Thread::Priority priority = Poco::Thread::PRIO_NORMAL) noexcept;
+        void queueAsyncJob(std::shared_ptr<J> job, Poco::Thread::Priority priority = Poco::Thread::PRIO_NORMAL) noexcept;
 
         bool isJobFinished(const UniqueId jobId) const;
-        std::shared_ptr<Job> getJob(const UniqueId jobId) const;
+        std::shared_ptr<J> getJob(const UniqueId jobId) const;
 
         void setPoolCapacity(int nbThread);
         void decreasePoolCapacity();
@@ -78,13 +78,13 @@ class JobManager {
         void startMainThreadIfNeeded();
 
         void run() noexcept;
-        void startJob(std::shared_ptr<Job> job, Poco::Thread::Priority priority);
+        void startJob(std::shared_ptr<J> job, Poco::Thread::Priority priority);
         void eraseJob(UniqueId jobId);
-        void addToPendingJobs(std::shared_ptr<Job> job, Poco::Thread::Priority priority);
+        void addToPendingJobs(std::shared_ptr<J> job, Poco::Thread::Priority priority);
         void managePendingJobs();
 
         int availableThreadsInPool() const;
-        bool canRunJob(const std::shared_ptr<Job> job) const;
+        bool canRunJob(const std::shared_ptr<J> job) const;
 
         static std::shared_ptr<JobManager> _instance;
         bool _stop{false};
@@ -93,19 +93,19 @@ class JobManager {
         log4cplus::Logger _logger{Log::instance()->getLogger()};
         std::unique_ptr<std::thread> _mainThread;
 
-        JobManagerData<Job> _data;
+        JobManagerData<J> _data;
 
         friend class TestJobManager;
 };
 
-template<class Job>
-std::shared_ptr<JobManager<Job>> JobManager<Job>::_instance = nullptr;
+template<class J>
+std::shared_ptr<JobManager<J>> JobManager<J>::_instance = nullptr;
 
-template<class Job>
-std::shared_ptr<JobManager<Job>> JobManager<Job>::instance() noexcept {
+template<class J>
+std::shared_ptr<JobManager<J>> JobManager<J>::instance() noexcept {
     if (_instance == nullptr) {
         try {
-            _instance = std::shared_ptr<JobManager<Job>>(new JobManager<Job>());
+            _instance = std::shared_ptr<JobManager<J>>(new JobManager<J>());
         } catch (...) {
             return nullptr;
         }
@@ -114,21 +114,21 @@ std::shared_ptr<JobManager<Job>> JobManager<Job>::instance() noexcept {
     return _instance;
 }
 
-template<class Job>
-void JobManager<Job>::startMainThreadIfNeeded() {
+template<class J>
+void JobManager<J>::startMainThreadIfNeeded() {
     if (!_mainThread) {
-        const std::function<void()> runFunction = std::bind_front(&JobManager<Job>::run, this);
+        const std::function<void()> runFunction = std::bind_front(&JobManager<J>::run, this);
         _mainThread = std::make_unique<std::thread>(runFunction);
     }
 }
 
-template<class Job>
-void JobManager<Job>::stop() {
+template<class J>
+void JobManager<J>::stop() {
     _stop = true;
 }
 
-template<class Job>
-void JobManager<Job>::clear() {
+template<class J>
+void JobManager<J>::clear() {
     Poco::ThreadPool::defaultPool().stopAll();
     if (_mainThread) {
         if (_mainThread->joinable()) _mainThread->join();
@@ -143,27 +143,27 @@ void JobManager<Job>::clear() {
     }
 }
 
-template<class Job>
-void JobManager<Job>::queueAsyncJob(const std::shared_ptr<Job> job,
-                                    const Poco::Thread::Priority priority /*= Poco::Thread::PRIO_NORMAL*/) noexcept {
+template<class J>
+void JobManager<J>::queueAsyncJob(const std::shared_ptr<J> job,
+                                  const Poco::Thread::Priority priority /*= Poco::Thread::PRIO_NORMAL*/) noexcept {
     startMainThreadIfNeeded();
-    const std::function<void(const UniqueId)> callback = std::bind_front(&JobManager<Job>::eraseJob, this);
+    const std::function<void(const UniqueId)> callback = std::bind_front(&JobManager<J>::eraseJob, this);
     job->setMainCallback(callback);
     _data.queue(job, priority);
 }
 
-template<class Job>
-bool JobManager<Job>::isJobFinished(const UniqueId jobId) const {
+template<class J>
+bool JobManager<J>::isJobFinished(const UniqueId jobId) const {
     return !_data.isManaged(jobId);
 }
 
-template<class Job>
-std::shared_ptr<Job> JobManager<Job>::getJob(const UniqueId jobId) const {
+template<class J>
+std::shared_ptr<J> JobManager<J>::getJob(const UniqueId jobId) const {
     return _data.getJob(jobId);
 }
 
-template<class Job>
-void JobManager<Job>::setPoolCapacity(const int nbThread) {
+template<class J>
+void JobManager<J>::setPoolCapacity(const int nbThread) {
     // Poco::ThreadPool throws an exception if the capacity is set to a
     // value less than then minimum capacity (2 by default).
     static_assert(threadPoolMinCapacity >= 2 && "Thread pool min capacity is too low.");
@@ -173,29 +173,29 @@ void JobManager<Job>::setPoolCapacity(const int nbThread) {
     LOG_DEBUG(_logger, "Max number of thread changed to " << _maxNbThread << " threads");
 }
 
-template<class Job>
-void JobManager<Job>::decreasePoolCapacity() {
+template<class J>
+void JobManager<J>::decreasePoolCapacity() {
     if (_maxNbThread > threadPoolMinCapacity) {
         // Divide the maximum number of threads by 2 (rounded up) on each call.
         _maxNbThread -= static_cast<int>(std::ceil((_maxNbThread - threadPoolMinCapacity) / 2.0));
         setPoolCapacity(_maxNbThread);
     } else {
         const std::string jobManagerClassName = CommonUtility::getTypeName(*this);
-        const std::string methodName = jobManagerClassName + "::defaultCallback";
+        const std::string methodName = jobManagerClassName + "::decreasePoolCapacity";
         const std::string message = jobManagerClassName + " capacity cannot be decreased";
         sentry::Handler::captureMessage(sentry::Level::Warning, methodName, message);
     }
 }
 
-template<class Job>
-JobManager<Job>::JobManager() {
+template<class J>
+JobManager<J>::JobManager() {
     setPoolCapacity(std::min(static_cast<int>(std::thread::hardware_concurrency()), threadPoolMaxCapacity));
 
     LOG_DEBUG(_logger, "Job Manager started with max " << _maxNbThread << " threads");
 }
 
-template<class Job>
-void JobManager<Job>::run() noexcept {
+template<class J>
+void JobManager<J>::run() noexcept {
     while (true) {
         if (_stop) {
             break;
@@ -226,8 +226,8 @@ void JobManager<Job>::run() noexcept {
     }
 }
 
-template<class Job>
-void JobManager<Job>::startJob(std::shared_ptr<Job> job, Poco::Thread::Priority priority) {
+template<class J>
+void JobManager<J>::startJob(std::shared_ptr<J> job, Poco::Thread::Priority priority) {
     try {
         if (job->isAborted()) {
             LOG_DEBUG(_logger, "Job " << job->jobId() << " has been canceled");
@@ -247,13 +247,13 @@ void JobManager<Job>::startJob(std::shared_ptr<Job> job, Poco::Thread::Priority 
     }
 }
 
-template<class Job>
-void JobManager<Job>::eraseJob(const UniqueId jobId) {
+template<class J>
+void JobManager<J>::eraseJob(const UniqueId jobId) {
     _data.erase(jobId);
 }
 
-template<class Job>
-void JobManager<Job>::addToPendingJobs(const std::shared_ptr<Job> job, const Poco::Thread::Priority priority) {
+template<class J>
+void JobManager<J>::addToPendingJobs(const std::shared_ptr<J> job, const Poco::Thread::Priority priority) {
     if (!_data.addToPendingJobs(job->jobId(), job, priority)) {
         LOG_ERROR(_logger, "Failed to insert job " << job->jobId() << " in pending jobs list!");
         return;
@@ -261,8 +261,8 @@ void JobManager<Job>::addToPendingJobs(const std::shared_ptr<Job> job, const Poc
     LOG_DEBUG(_logger, "Job " << job->jobId() << " is pending (thread pool maximum capacity reached)");
 }
 
-template<class Job>
-int JobManager<Job>::availableThreadsInPool() const {
+template<class J>
+int JobManager<J>::availableThreadsInPool() const {
     try {
         return static_cast<int>(Poco::ThreadPool::defaultPool().available());
     } catch (Poco::Exception &) {
@@ -270,8 +270,8 @@ int JobManager<Job>::availableThreadsInPool() const {
     }
 }
 
-template<class Job>
-void JobManager<Job>::managePendingJobs() {
+template<class J>
+void JobManager<J>::managePendingJobs() {
     const auto pendingJobs = _data.pendingJobs();
     for (const auto &[jobId, jobInfo]: pendingJobs) {
         const auto &job = jobInfo.first;
@@ -307,7 +307,7 @@ inline bool isBigFileUploadJob(const std::shared_ptr<AbstractJob> job) {
     return bool{std::dynamic_pointer_cast<DriveUploadSession>(job)};
 }
 
-}; // namespace
+} // namespace
 
 
 template<>
