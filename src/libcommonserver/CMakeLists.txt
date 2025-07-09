@@ -166,7 +166,7 @@ else()
     include(ConanGetLibDirs)
     get_library_dirs("OpenSSL" "openssl")
     get_library_dirs("xxHash" "xxhash")
-    install(INSTALL
+    file(INSTALL
             # xxHash
             "${_xxHash_LIB_DIRS}/libxxhash.so"
             "${_xxHash_LIB_DIRS}/libxxhash.so.0"
