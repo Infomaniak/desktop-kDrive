@@ -131,17 +131,17 @@ build_release() {
   export SUFFIX=""
 
   # Build client
-  mkdir -p "$build_dir/client"
-  cd "$build_dir/client"
+  mkdir -p "$build_dir/build"
+  cd "$build_dir/build"
 
 
   export KDRIVE_DEBUG=0
 
-  cmake -B"$build_dir/client" -H"$src_dir" \
+  cmake -B"$build_dir/build" -H"$src_dir" \
       -DQT_FEATURE_neon=OFF \
       -DCMAKE_BUILD_TYPE=$build_type \
       -DCMAKE_INSTALL_PREFIX=/usr \
-      -DBIN_INSTALL_DIR="$build_dir/bin" \
+      -DBIN_INSTALL_DIR="$build_dir/build/bin" \
       -DKDRIVE_VERSION_SUFFIX="$SUFFIX" \
       -DBUILD_UNIT_TESTS="$build_unit_tests" \
       -DKDRIVE_THEME_DIR="$src_dir/infomaniak" \
@@ -156,7 +156,7 @@ build_release() {
 
   make DESTDIR="$app_dir" install
 
-  cp "$src_dir/sync-exclude-linux.lst" "$build_dir/client/bin/sync-exclude.lst"
+  cp "$src_dir/sync-exclude-linux.lst" "$build_dir/build/bin/sync-exclude.lst"
 } 
 
 package_release() {
@@ -194,7 +194,7 @@ package_release() {
 
   "$HOME/desktop-setup/linuxdeploy-x86_64.AppImage" --appdir "$app_dir" -e "$app_dir/usr/bin/kDrive" -i "$app_dir/kdrive-win.png" -d "$app_dir/usr/share/applications/kDrive_client.desktop" --plugin qt --output appimage -v0
 
-  full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/client/version.h" | awk '{print $3}')"
+  full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
   app_name="kDrive-${full_version}-amd64.AppImage"
   mv kDrive*.AppImage "$app_dir/$app_name"
 }
