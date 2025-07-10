@@ -175,7 +175,7 @@ class SocketApi : public QObject {
         ExitInfo forceStatus(const FileData &fileData, const VfsStatus &status);
         ExitInfo dehydratePlaceholder(const FileData &fileData);
         bool addDownloadJob(const FileData &fileData);
-        bool addBundleDownload(const FileData &fileData);
+        void addBundleDownload(const FileData &fileData);
         bool cancelDownloadJobs(int syncDbId, const QStringList &fileList);
 
         QString vfsPinActionText();

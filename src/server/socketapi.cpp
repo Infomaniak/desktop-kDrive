@@ -519,20 +519,13 @@ bool SocketApi::addDownloadJob(const FileData &fileData) {
     return true;
 }
 
-bool SocketApi::addBundleDownload(const FileData &fileData) {
-    if (!fileData.syncDbId) return false;
+void SocketApi::addBundleDownload(const FileData &fileData) {
+    if (!fileData.syncDbId) return;
 
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
-    if (syncPalMapIt == _syncPalMap.end()) return false;
+    if (syncPalMapIt == _syncPalMap.end()) return;
 
-    if (const KDC::ExitCode exitCode = syncPalMapIt->second->addBundleDownload(QStr2Path(fileData.absoluteLocalPath));
-        exitCode != KDC::ExitCode::Ok) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(),
-                  L"Error in SyncPal::addDownloadJob - " << Utility::formatPath(fileData.relativePath));
-        return false;
-    }
-
-    return true;
+    syncPalMapIt->second->addBundleDownload(QStr2Path(fileData.absoluteLocalPath));
 }
 
 bool SocketApi::cancelDownloadJobs(int syncDbId, const QStringList &fileList) {
@@ -1317,6 +1310,10 @@ void SocketApi::processFileList(const QStringList &inFileList, std::list<SyncPat
         FileData fileData = FileData::get(path);
         if (fileData.virtualFileMode == VirtualFileMode::Mac) {
             QFileInfo info(path);
+            if (info.isBundle()) {
+                addBundleDownload(fileData);
+                continue;
+            }
             if (info.isDir()) {
                 const QFileInfoList infoList = QDir(path).entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
                 QStringList fileList;

@@ -484,11 +484,12 @@ ExitInfo VfsMac::updateFetchStatus(const SyncPath &tmpPathStd, const SyncPath &p
     return ExitCode::Ok;
 }
 
-ExitInfo VfsMac::updateFetchStatus(const SyncPath &absolutePath, std::string status) {
+ExitInfo VfsMac::updateFetchStatus(const SyncPath &absolutePath, const std::string &status) {
     if (!_connector->vfsUpdateFetchStatus(Path2QStr(absolutePath), QString::fromStdString(status))) {
         LOG_WARN(logger(), "Error in vfsUpdateFetchStatus!");
         return handleVfsError(absolutePath);
     }
+    return ExitCode::Ok;
 }
 
 void VfsMac::cancelHydrate(const SyncPath &filePathStd) {

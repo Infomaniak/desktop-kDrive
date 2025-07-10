@@ -634,16 +634,19 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
         const auto &bundlePath = it->first;
         if (it->second.erase(downloadJob->affectedFilePath())) {
             LOGW_INFO(_logger, L"Download item: " << Utility::formatSyncPath(downloadJob->affectedFilePath()) << L" from bundle "
-                                                  << Utility::formatSyncPath(bundlePath));
+                                                  << Utility::formatSyncPath(bundlePath) << L" terminated.");
         }
         if (it->second.empty()) {
             if (const auto exitInfo = _vfs->updateFetchStatus(bundlePath, "OK"); !exitInfo) {
                 LOGW_WARN(_logger,
                           L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(bundlePath) << L" : " << exitInfo);
+            } else {
+                LOGW_INFO(_logger, L"Download of bundle: " << Utility::formatSyncPath(bundlePath) << L" terminated.");
             }
-            LOGW_INFO(_logger, L"Download of bundle: " << Utility::formatSyncPath(bundlePath) << L" terminated.");
             it = _bundleDownloadMap.erase(it);
+            continue;
         }
+        it++;
     }
 }
 
@@ -715,7 +718,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     return ExitCode::Ok;
 }
 
-ExitCode SyncPal::addBundleDownload(const SyncPath &absoluteLocalPath) {
+void SyncPal::addBundleDownload(const SyncPath &absoluteLocalPath) {
     std::unordered_set<SyncPath> absoluteLocalPathSet;
 
     IoError ioError = IoError::Unknown;
@@ -731,6 +734,7 @@ ExitCode SyncPal::addBundleDownload(const SyncPath &absoluteLocalPath) {
     }
     const std::lock_guard lock(_directDownloadJobsMapMutex);
     (void) _bundleDownloadMap.try_emplace(absoluteLocalPath, absoluteLocalPathSet);
+    LOGW_INFO(_logger, L"Start watching bundle: " << Utility::formatSyncPath(absoluteLocalPath));
 }
 
 ExitCode SyncPal::cancelDlDirectJobs(const std::list<SyncPath> &fileList) {

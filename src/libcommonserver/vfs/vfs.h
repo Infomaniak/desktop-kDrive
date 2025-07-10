@@ -198,7 +198,7 @@ class Vfs : public QObject {
          */
         virtual ExitInfo updateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
                                            bool &finished) = 0;
-        virtual ExitInfo updateFetchStatus(const SyncPath &tmpPath, std::string status) { return ExitCode::Ok; }
+        virtual ExitInfo updateFetchStatus(const SyncPath &tmpPath, const std::string &status) { return ExitCode::Ok; }
 
         /** Force the status of a file.
          *
