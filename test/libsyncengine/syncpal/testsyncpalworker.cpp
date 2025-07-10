@@ -96,7 +96,7 @@ void TestSyncPalWorker::tearDown() {
         }
     }
     SyncJobManager::instance()->stop();
-    SyncJobManager::instance()->clear();
+    SyncJobManager::clear();
 }
 
 void TestSyncPalWorker::setUpTestInternalPause(const std::chrono::steady_clock::duration &longPollDuration) {

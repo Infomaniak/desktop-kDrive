@@ -92,7 +92,7 @@ void KDC::TestJobManager::tearDown() {
     ParmsDb::reset();
     ParametersCache::reset();
     SyncJobManager::instance()->stop();
-    SyncJobManager::instance()->clear();
+    SyncJobManager::clear();
     TestBase::stop();
 }
 

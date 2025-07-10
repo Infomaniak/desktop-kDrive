@@ -35,7 +35,7 @@ void TestUpdateChecker::setUp() {
 void TestUpdateChecker::tearDown() {
     ParametersCache::reset();
     SyncJobManager::instance()->stop();
-    SyncJobManager::instance()->clear();
+    SyncJobManager::clear();
     TestBase::stop();
 }
 
