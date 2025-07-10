@@ -426,7 +426,7 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "Vfs(s) stopped");
 
     // Clear JobManager
-    SyncJobManager::instance()->clear();
+    SyncJobManager::clear();
     LOG_DEBUG(_logger, "JobManager::clear() done");
 
     // Clear maps

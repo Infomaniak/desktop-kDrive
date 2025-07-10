@@ -137,7 +137,7 @@ void TestIntegration::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
     SyncJobManager::instance()->stop();
-    SyncJobManager::instance()->clear();
+    SyncJobManager::clear();
     TestBase::stop();
 }
 
