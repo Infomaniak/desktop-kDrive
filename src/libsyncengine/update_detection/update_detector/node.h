@@ -138,7 +138,6 @@ class Node {
 
         void setChangeEvents(OperationType ops);
         void insertChangeEvent(OperationType op);
-        void deleteChangeEvent(const OperationType op) { _changeEvents ^= op; }
         void clearChangeEvents() { _changeEvents = OperationType::None; }
         bool hasChangeEvent() const { return _changeEvents != OperationType::None; }
         bool hasChangeEvent(const OperationType op) const { return (_changeEvents & op) == op; }
