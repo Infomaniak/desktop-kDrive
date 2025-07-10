@@ -40,7 +40,7 @@ jobs:
         with:
           script: |
             const file = await github.rest.repos.getContent({
-              owner: context.repo.owner,
+              owner: ccontext.repo.owner,
               repo: context.repo.repo,
               path: 'VERSION.cmake',
               ref: context.sha
@@ -53,7 +53,7 @@ jobs:
             
             const full_version = `${major}.${minor}.${patch}.${date}`;
             core.setOutput("kDrive_version", full_version);
-            core.info("kDrive version is ", full_version);
+            core.info("kDrive version is ${full_version}");
 
 # Check translation files
   check-translations:
