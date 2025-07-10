@@ -357,7 +357,7 @@ The content of the `Arguments` field is of the form:
 
 ```
 kDrive
-/Users/clementkunz/Projects/CLion-build-debug/build/Debug/install/kDrive.app
+/Users/<username>/Projects/CLion-build-debug/build/Debug/install/kDrive.app
 "Developer ID Application: Infomaniak Network SA (864VDCS2QY)"
 "864VDCS2QY"
 "com.infomaniak.drive.desktopclient"
