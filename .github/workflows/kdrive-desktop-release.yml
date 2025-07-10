@@ -40,7 +40,7 @@ jobs:
         with:
           script: |
             const file = await github.rest.repos.getContent({
-              owner: ccontext.repo.owner,
+              owner: context.repo.owner,
               repo: context.repo.repo,
               path: 'VERSION.cmake',
               ref: context.sha
