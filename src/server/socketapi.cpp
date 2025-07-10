@@ -324,7 +324,7 @@ void SocketApi::command_RETRIEVE_FILE_STATUS(const QString &argument, SocketList
     if (fileData.syncDbId) {
         // The user probably visited this directory in the file shell.
         // Let the listener know that it should now send status pushes for sibblings of this file.
-        QString directory = fileData.localPath.left(fileData.localPath.lastIndexOf('/'));
+        QString directory = fileData.absoluteLocalPath.left(fileData.absoluteLocalPath.lastIndexOf('/'));
         listener->registerMonitoredDirectory(static_cast<unsigned int>(qHash(directory)));
     }
 
@@ -332,11 +332,11 @@ void SocketApi::command_RETRIEVE_FILE_STATUS(const QString &argument, SocketList
     VfsStatus vfsStatus;
     if (!syncFileStatus(fileData, status, vfsStatus)) {
         LOGW_DEBUG(KDC::Log::instance()->getLogger(),
-                   L"Error in SocketApi::syncFileStatus - " << Utility::formatPath(fileData.localPath));
+                   L"Error in SocketApi::syncFileStatus - " << Utility::formatPath(fileData.absoluteLocalPath));
         return;
     }
 
-    const QString message = buildMessage(QString("STATUS"), fileData.localPath, socketAPIString(status, vfsStatus));
+    const QString message = buildMessage(QString("STATUS"), fileData.absoluteLocalPath, socketAPIString(status, vfsStatus));
     listener->sendMessage(message);
 }
 
@@ -439,8 +439,9 @@ bool SocketApi::syncFileStatus(const FileData &fileData, SyncFileStatus &status,
 
 
     if (vfsMapIt->second->mode() == KDC::VirtualFileMode::Mac || vfsMapIt->second->mode() == KDC::VirtualFileMode::Win) {
-        if (!vfsMapIt->second->status(QStr2Path(fileData.localPath), vfsStatus)) {
-            LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in Vfs::status - " << Utility::formatPath(fileData.localPath));
+        if (!vfsMapIt->second->status(QStr2Path(fileData.absoluteLocalPath), vfsStatus)) {
+            LOGW_WARN(KDC::Log::instance()->getLogger(),
+                      L"Error in Vfs::status - " << Utility::formatPath(fileData.absoluteLocalPath));
             return false;
         }
 
@@ -508,8 +509,24 @@ bool SocketApi::addDownloadJob(const FileData &fileData) {
 
     // Create download job
     const KDC::ExitCode exitCode =
-            syncPalMapIt->second->addDlDirectJob(QStr2Path(fileData.relativePath), QStr2Path(fileData.localPath));
+            syncPalMapIt->second->addDlDirectJob(QStr2Path(fileData.relativePath), QStr2Path(fileData.absoluteLocalPath));
     if (exitCode != KDC::ExitCode::Ok) {
+        LOGW_WARN(KDC::Log::instance()->getLogger(),
+                  L"Error in SyncPal::addDownloadJob - " << Utility::formatPath(fileData.relativePath));
+        return false;
+    }
+
+    return true;
+}
+
+bool SocketApi::addBundleDownload(const FileData &fileData) {
+    if (!fileData.syncDbId) return false;
+
+    const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
+    if (syncPalMapIt == _syncPalMap.end()) return false;
+
+    if (const KDC::ExitCode exitCode = syncPalMapIt->second->addBundleDownload(QStr2Path(fileData.absoluteLocalPath));
+        exitCode != KDC::ExitCode::Ok) {
         LOGW_WARN(KDC::Log::instance()->getLogger(),
                   L"Error in SyncPal::addDownloadJob - " << Utility::formatPath(fileData.relativePath));
         return false;
@@ -936,7 +953,7 @@ void SocketApi::command_SET_THUMBNAIL(const QString &filePath) {
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "Thumbnail fetched - size=" << pixmap.width() << "x" << pixmap.height());
 
     // Set thumbnail
-    if (!vfsMapIt->second->setThumbnail(QStr2Path(fileData.localPath), pixmap)) {
+    if (!vfsMapIt->second->setThumbnail(QStr2Path(fileData.absoluteLocalPath), pixmap)) {
         LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in setThumbnail - " << Utility::formatPath(filePath));
         return;
     }
@@ -1162,10 +1179,10 @@ void SocketApi::manageActionsOnSingleFile(SocketListener *listener, const QStrin
     }
 
     FileData fileData = FileData::get(files.first());
-    if (fileData.localPath.isEmpty()) {
+    if (fileData.absoluteLocalPath.isEmpty()) {
         return;
     }
-    bool isExcluded = vfsMapIt->second->isExcluded(QStr2Path(fileData.localPath));
+    bool isExcluded = vfsMapIt->second->isExcluded(QStr2Path(fileData.absoluteLocalPath));
     if (isExcluded) {
         return;
     }
@@ -1396,7 +1413,7 @@ FileData FileData::get(const KDC::SyncPath &path) {
     data.syncDbId = sync.dbId();
     data.driveDbId = sync.driveDbId();
     data.virtualFileMode = sync.virtualFileMode();
-    data.localPath = SyncName2QStr(tmpPath.native());
+    data.absoluteLocalPath = SyncName2QStr(tmpPath.native());
     data.relativePath = SyncName2QStr(KDC::CommonUtility::relativePath(sync.localPath(), tmpPath).native());
 
     ItemType itemType;
@@ -1421,10 +1438,11 @@ FileData FileData::get(const KDC::SyncPath &path) {
             const bool exists = !CommonUtility::isLikeFileNotFoundError(ec);
             if (!exists) {
                 // Item doesn't exist anymore
-                LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Item doesn't exist - " << Utility::formatPath(data.localPath));
+                LOGW_DEBUG(KDC::Log::instance()->getLogger(),
+                           L"Item doesn't exist - " << Utility::formatPath(data.absoluteLocalPath));
             } else {
                 LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to check if the path is a directory - "
-                                                                     << Utility::formatPath(data.localPath) << L" err="
+                                                                     << Utility::formatPath(data.absoluteLocalPath) << L" err="
                                                                      << KDC::Utility::s2ws(ec.message()) << L" (" << ec.value()
                                                                      << L")");
             }
@@ -1436,7 +1454,7 @@ FileData FileData::get(const KDC::SyncPath &path) {
 }
 
 FileData FileData::parentFolder() const {
-    return FileData::get(QFileInfo(localPath).dir().path().toUtf8());
+    return FileData::get(QFileInfo(absoluteLocalPath).dir().path().toUtf8());
 }
 
 } // namespace KDC

@@ -51,7 +51,7 @@ struct FileData {
         FileData parentFolder() const;
 
         // Absolute path of the file locally
-        QString localPath;
+        QString absoluteLocalPath;
 
         // Relative path of the file
         QString relativePath;
@@ -175,6 +175,7 @@ class SocketApi : public QObject {
         ExitInfo forceStatus(const FileData &fileData, const VfsStatus &status);
         ExitInfo dehydratePlaceholder(const FileData &fileData);
         bool addDownloadJob(const FileData &fileData);
+        bool addBundleDownload(const FileData &fileData);
         bool cancelDownloadJobs(int syncDbId, const QStringList &fileList);
 
         QString vfsPinActionText();

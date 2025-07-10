@@ -580,7 +580,7 @@ bool SyncPal::setProgress(const SyncPath &relativePath, int64_t current) {
 }
 
 bool SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status, const NodeId &newRemoteNodeId) {
-    if(!newRemoteNodeId.empty()) {
+    if (!newRemoteNodeId.empty()) {
         if (!_progressInfo->setSyncFileItemRemoteId(relativeLocalPath, newRemoteNodeId)) {
             LOG_SYNCPAL_WARN(_logger, "Error in ProgressInfo::setSyncFileItemRemoteId");
             // Continue anyway as this is not critical, the share menu on activities will not be available for this file
@@ -607,28 +607,39 @@ bool SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileSta
 }
 
 void SyncPal::directDownloadCallback(UniqueId jobId) {
-    const std::lock_guard<std::mutex> lock(_directDownloadJobsMapMutex);
+    const std::lock_guard lock(_directDownloadJobsMapMutex);
     auto directDownloadJobsMapIt = _directDownloadJobsMap.find(jobId);
     if (directDownloadJobsMapIt == _directDownloadJobsMap.end()) {
         // No need to send a warning, the job might have been cancelled and therefor not in the map anymore
         return;
     }
 
-    if (directDownloadJobsMapIt->second->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
+    const auto downloadJob = directDownloadJobsMapIt->second;
+    if (downloadJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
         Error error;
         error.setLevel(ErrorLevel::Node);
         error.setSyncDbId(syncDbId());
-        error.setRemoteNodeId(directDownloadJobsMapIt->second->remoteNodeId());
-        error.setPath(directDownloadJobsMapIt->second->localPath());
+        error.setRemoteNodeId(downloadJob->remoteNodeId());
+        error.setPath(downloadJob->localPath());
         error.setExitCode(ExitCode::BackError);
         error.setExitCause(ExitCause::NotFound);
         addError(error);
 
-        vfs()->cancelHydrate(directDownloadJobsMapIt->second->localPath());
+        vfs()->cancelHydrate(downloadJob->localPath());
     }
 
-    _syncPathToDownloadJobMap.erase(directDownloadJobsMapIt->second->affectedFilePath());
-    _directDownloadJobsMap.erase(directDownloadJobsMapIt);
+    _syncPathToDownloadJobMap.erase(downloadJob->affectedFilePath());
+    (void) _directDownloadJobsMap.erase(directDownloadJobsMapIt);
+    for (auto it = _bundleDownloadMap.begin(); it != _bundleDownloadMap.end();) {
+        (void) it->second.erase(downloadJob->affectedFilePath());
+        if (it->second.empty()) {
+            if (const auto exitInfo = _vfs->updateFetchStatus(it->first, "OK"); !exitInfo) {
+                LOGW_WARN(_logger,
+                          L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(it->first) << L" : " << exitInfo);
+            }
+            it = _bundleDownloadMap.erase(it);
+        }
+    }
 }
 
 bool SyncPal::getSyncFileItem(const SyncPath &path, SyncFileItem &item) {
@@ -640,7 +651,7 @@ void SyncPal::resetSnapshotInvalidationCounters() {
     _remoteFSObserverWorker->resetInvalidateCounter();
 }
 
-ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &localPath) {
+ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath) {
     std::optional<NodeId> localNodeId = std::nullopt;
     bool found = false;
     if (!_syncDb->id(ReplicaSide::Local, relativePath, localNodeId, found)) {
@@ -675,12 +686,12 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
     // Hydration job
     std::shared_ptr<DownloadJob> job = nullptr;
     try {
-        job = std::make_shared<DownloadJob>(vfs(), driveDbId(), remoteNodeId, localPath, expectedSize);
+        job = std::make_shared<DownloadJob>(vfs(), driveDbId(), remoteNodeId, absoluteLocalPath, expectedSize);
         if (!job) {
             LOG_SYNCPAL_WARN(_logger, "Memory allocation error");
             return ExitCode::SystemError;
         }
-        job->setAffectedFilePath(localPath);
+        job->setAffectedFilePath(absoluteLocalPath);
     } catch (const std::exception &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in DownloadJob::DownloadJob: error=" << e.what());
         addError(Error(syncDbId(), errId(), ExitCode::Unknown, ExitCause::Unknown));
@@ -692,17 +703,34 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
     job->setAdditionalCallback(callback);
     JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGH);
 
-    _directDownloadJobsMapMutex.lock();
+    const std::lock_guard lock(_directDownloadJobsMapMutex);
     _directDownloadJobsMap.insert({job->jobId(), job});
-    _syncPathToDownloadJobMap.insert({localPath, job->jobId()});
-    _directDownloadJobsMapMutex.unlock();
+    _syncPathToDownloadJobMap.insert({absoluteLocalPath, job->jobId()});
 
     return ExitCode::Ok;
 }
 
+ExitCode SyncPal::addBundleDownload(const SyncPath &absoluteLocalPath) {
+    std::unordered_set<SyncPath> absoluteLocalPathSet;
+
+    IoError ioError = IoError::Unknown;
+    IoHelper::DirectoryIterator dirIt(absoluteLocalPath, true, ioError);
+    bool endOfDir = false;
+    DirectoryEntry entry;
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+        // TODO : check status for empty directories
+        if (entry.is_directory()) continue;
+
+        (void) addDlDirectJob(CommonUtility::relativePath(localPath(), entry.path()), entry.path());
+        (void) absoluteLocalPathSet.emplace(entry.path());
+    }
+    const std::lock_guard lock(_directDownloadJobsMapMutex);
+    (void) _bundleDownloadMap.try_emplace(absoluteLocalPath, absoluteLocalPathSet);
+}
+
 ExitCode SyncPal::cancelDlDirectJobs(const std::list<SyncPath> &fileList) {
     for (const auto &filePath: fileList) {
-        const std::lock_guard<std::mutex> lock(_directDownloadJobsMapMutex);
+        const std::lock_guard lock(_directDownloadJobsMapMutex);
         auto itId = _syncPathToDownloadJobMap.find(filePath);
         if (itId != _syncPathToDownloadJobMap.end()) {
             auto itJob = _directDownloadJobsMap.find(itId->second);
