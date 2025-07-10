@@ -30,7 +30,7 @@ env:
 jobs:
 
   get-version:
-    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    runs-on: [ self-hosted ]
     outputs:
       kDrive_version: ${{ steps.get-version-step.outputs.kDrive_version }}
     steps:
