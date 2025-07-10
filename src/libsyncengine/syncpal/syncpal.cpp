@@ -631,12 +631,17 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
     _syncPathToDownloadJobMap.erase(downloadJob->affectedFilePath());
     (void) _directDownloadJobsMap.erase(directDownloadJobsMapIt);
     for (auto it = _bundleDownloadMap.begin(); it != _bundleDownloadMap.end();) {
-        (void) it->second.erase(downloadJob->affectedFilePath());
+        const auto &bundlePath = it->first;
+        if (it->second.erase(downloadJob->affectedFilePath())) {
+            LOGW_INFO(_logger, L"Download item: " << Utility::formatSyncPath(downloadJob->affectedFilePath()) << L" from bundle "
+                                                  << Utility::formatSyncPath(bundlePath));
+        }
         if (it->second.empty()) {
-            if (const auto exitInfo = _vfs->updateFetchStatus(it->first, "OK"); !exitInfo) {
+            if (const auto exitInfo = _vfs->updateFetchStatus(bundlePath, "OK"); !exitInfo) {
                 LOGW_WARN(_logger,
-                          L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(it->first) << L" : " << exitInfo);
+                          L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(bundlePath) << L" : " << exitInfo);
             }
+            LOGW_INFO(_logger, L"Download of bundle: " << Utility::formatSyncPath(bundlePath) << L" terminated.");
             it = _bundleDownloadMap.erase(it);
         }
     }
