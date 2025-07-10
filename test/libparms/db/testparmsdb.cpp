@@ -364,7 +364,7 @@ void TestParmsDb::testUpdateExclusionTemplates() {
     CPPUNIT_ASSERT(!dbDefaultExclusionTemplates.empty());
 
     std::vector<std::string> fileDefaultExclusionTemplates;
-    const auto &excludeListFileName = Utility::getExcludedTemplateFilePath(true);
+    const auto &excludeListFileName = Utility::getExcludedTemplateFilePath(true).string();
     ParmsDb::instance()->getDefaultExclusionTemplatesFromFile(excludeListFileName, fileDefaultExclusionTemplates);
 
     std::vector<ExclusionTemplate> dbUserExclusionTemplates;

@@ -662,7 +662,7 @@ bool ParmsDb::updateExclusionTemplates() {
 
     // Load default exclusion templates from the template configuration file
     std::vector<std::string> fileDefaultExclusionTemplates;
-    if (const auto &excludeListFileName = Utility::getExcludedTemplateFilePath(_test);
+    if (const auto &excludeListFileName = Utility::getExcludedTemplateFilePath(_test).string();
         !getDefaultExclusionTemplatesFromFile(excludeListFileName, fileDefaultExclusionTemplates)) {
         LOGW_WARN(_logger, L"Cannot open exclusion templates file " << Utility::formatSyncName(excludeListFileName));
         return false;
