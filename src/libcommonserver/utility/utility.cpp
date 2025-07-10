@@ -648,7 +648,7 @@ std::string Utility::xxHashToStr(XXH64_hash_t hash) {
 }
 
 #if defined(__APPLE__)
-SyncName Utility::getExcludedAppFilePath(bool test /*= false*/) {
+SyncPath Utility::getExcludedAppFilePath(bool test /*= false*/) {
     return (test ? excludedAppFileName : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedAppFileName).native());
 }
 #endif

@@ -157,7 +157,7 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string xxHashToStr(XXH64_hash_t hash);
 
 #ifdef __APPLE__
-        static SyncName getExcludedAppFilePath(bool test = false);
+        static SyncPath getExcludedAppFilePath(bool test = false);
 #endif
         static SyncName getExcludedTemplateFilePath(bool test = false);
         static SyncPath binRelativePath();
