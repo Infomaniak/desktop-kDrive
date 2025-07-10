@@ -18,7 +18,6 @@
 
 #include "benchupdatetreeworker.h"
 
-#include "gui/parameterscache.h"
 #include "test_utility/testhelpers.h"
 #include "update_detection/update_detector/updatetreeworker.h"
 #include "utility/timerutility.h"

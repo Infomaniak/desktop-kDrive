@@ -19,7 +19,6 @@
 #include "benchmarkparalleljobs.h"
 
 #include "db/parmsdb.h"
-#include "gui/parameterscache.h"
 #include "jobs/jobmanager.h"
 #include "jobs/network/API_v2/downloadjob.h"
 #include "jobs/network/API_v2/getfilelistjob.h"
@@ -82,8 +81,8 @@ void BenchmarkParallelJobs::setUp() {
 void BenchmarkParallelJobs::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
-    JobManager::instance()->stop();
-    JobManager::instance()->clear();
+    JobManager<AbstractJob>::instance()->stop();
+    JobManager<AbstractJob>::instance()->clear();
     TestBase::stop();
 }
 
@@ -243,7 +242,7 @@ std::list<std::shared_ptr<AbstractJob>> BenchmarkParallelJobs::generateDownloadJ
 
 void BenchmarkParallelJobs::runJobs(const uint16_t nbThread, DataExtractor &dataExtractor,
                                     const std::list<std::shared_ptr<AbstractJob>> &jobs) const {
-    JobManager::instance()->setPoolCapacity(nbThread);
+    JobManager<AbstractJob>::instance()->setPoolCapacity(nbThread);
     std::queue<UniqueId> jobIds;
 
     const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
@@ -252,7 +251,7 @@ void BenchmarkParallelJobs::runJobs(const uint16_t nbThread, DataExtractor &data
         if (nbThread == 1) {
             (void) job->runSynchronously();
         } else {
-            JobManager::instance()->queueAsyncJob(job);
+            JobManager<AbstractJob>::instance()->queueAsyncJob(job);
             jobIds.push(job->jobId());
         }
     }
@@ -260,7 +259,7 @@ void BenchmarkParallelJobs::runJobs(const uint16_t nbThread, DataExtractor &data
     // Wait for all uploads to finish
     while (!jobIds.empty()) {
         Utility::msleep(10); // Wait 10ms
-        while (!jobIds.empty() && JobManager::instance()->isJobFinished(jobIds.front())) {
+        while (!jobIds.empty() && JobManager<AbstractJob>::instance()->isJobFinished(jobIds.front())) {
             jobIds.pop();
         }
     }

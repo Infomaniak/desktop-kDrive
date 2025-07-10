@@ -218,7 +218,7 @@ void MockAppServer::cleanup() {
 
     // Reset static variables
     AppServer::reset();
-    JobManager::instance()->clear();
+    JobManager<AbstractJob>::instance()->clear();
     ParmsDb::reset();
     ParametersCache::reset();
 }

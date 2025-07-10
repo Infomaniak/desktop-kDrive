@@ -34,8 +34,8 @@ void TestUpdateChecker::setUp() {
 
 void TestUpdateChecker::tearDown() {
     ParametersCache::reset();
-    JobManager::instance()->stop();
-    JobManager::instance()->clear();
+    JobManager<AbstractJob>::instance()->stop();
+    JobManager<AbstractJob>::instance()->clear();
     TestBase::stop();
 }
 
@@ -46,7 +46,7 @@ void TestUpdateChecker::testCheckUpdateAvailable() {
         UniqueId jobId = 0;
         testObj.setUpdateShoudBeAvailable(true);
         testObj.checkUpdateAvailability(&jobId);
-        while (!JobManager::instance()->isJobFinished(jobId)) Utility::msleep(10);
+        while (!JobManager<AbstractJob>::instance()->isJobFinished(jobId)) Utility::msleep(10);
         CPPUNIT_ASSERT(testObj.versionInfo(VersionChannel::Beta).isValid());
     }
 
@@ -56,7 +56,7 @@ void TestUpdateChecker::testCheckUpdateAvailable() {
         UniqueId jobId = 0;
         testObj.setUpdateShoudBeAvailable(false);
         testObj.checkUpdateAvailability(&jobId);
-        while (!JobManager::instance()->isJobFinished(jobId)) Utility::msleep(10);
+        while (!JobManager<AbstractJob>::instance()->isJobFinished(jobId)) Utility::msleep(10);
         CPPUNIT_ASSERT(testObj.versionInfo(VersionChannel::Beta).isValid());
     }
 }

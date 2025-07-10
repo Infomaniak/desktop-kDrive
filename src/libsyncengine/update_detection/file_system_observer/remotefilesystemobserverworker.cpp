@@ -39,6 +39,8 @@
 
 #include "utility/timerutility.h"
 
+#include "libsyncengine/jobs/abstractjob.h"
+#include "libsyncengine/jobs/jobmanager.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -275,8 +277,8 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
-    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_LOW);
-    while (!JobManager::instance()->isJobFinished(job->jobId())) {
+    JobManager<AbstractJob>::instance()->queueAsyncJob(job, Poco::Thread::PRIO_LOW);
+    while (!JobManager<AbstractJob>::instance()->isJobFinished(job->jobId())) {
         if (stopAsked()) {
             return ExitCode::Ok;
         }
@@ -411,8 +413,8 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
             return AbstractTokenNetworkJob::exception2ExitCode(e);
         }
 
-        JobManager::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_LOW);
-        while (!JobManager::instance()->isJobFinished(notifyJob->jobId())) {
+        JobManager<AbstractJob>::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_LOW);
+        while (!JobManager<AbstractJob>::instance()->isJobFinished(notifyJob->jobId())) {
             if (stopAsked()) {
                 LOG_DEBUG(_logger, "Request " << notifyJob->jobId() << ": aborting LongPoll job");
                 notifyJob->abort();

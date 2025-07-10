@@ -136,8 +136,8 @@ void TestIntegration::tearDown() {
 
     ParmsDb::instance()->close();
     ParmsDb::reset();
-    JobManager::instance()->stop();
-    JobManager::instance()->clear();
+    JobManager<AbstractJob>::instance()->stop();
+    JobManager<AbstractJob>::instance()->clear();
     TestBase::stop();
 }
 
