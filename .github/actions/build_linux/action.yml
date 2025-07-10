@@ -146,7 +146,7 @@ runs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-kDrive_test_common
-          path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_common
+          path: ${{ github.workspace }}/build-linux/bin/kDrive_test_common
           retention-days: 1
           compression-level: 0
         if: steps.build.outcome == 'success'
@@ -155,7 +155,7 @@ runs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-kDrive_test_common_server
-          path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_common_server
+          path: ${{ github.workspace }}/build-linux/bin/kDrive_test_common_server
           retention-days: 1
           compression-level: 0
         if: steps.build.outcome == 'success'
@@ -164,7 +164,7 @@ runs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-kDrive_test_server
-          path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_server
+          path: ${{ github.workspace }}/build-linux/bin/kDrive_test_server
           retention-days: 1
           compression-level: 0
         if: steps.build.outcome == 'success'
@@ -173,7 +173,7 @@ runs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-kDrive_test_syncengine
-          path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_syncengine
+          path: ${{ github.workspace }}/build-linux/bin/kDrive_test_syncengine
           retention-days: 1
           compression-level: 0
         if: steps.build.outcome == 'success'
@@ -182,7 +182,7 @@ runs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-kDrive_test_parms
-          path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_parms
+          path: ${{ github.workspace }}/build-linux/bin/kDrive_test_parms
           retention-days: 1
           compression-level: 0
         if: steps.build.outcome == 'success'

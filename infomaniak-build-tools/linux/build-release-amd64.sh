@@ -141,7 +141,7 @@ build_release() {
       -DQT_FEATURE_neon=OFF \
       -DCMAKE_BUILD_TYPE=$build_type \
       -DCMAKE_INSTALL_PREFIX=/usr \
-      -DBIN_INSTALL_DIR="$build_dir/client/bin" \
+      -DBIN_INSTALL_DIR="$build_dir/bin" \
       -DKDRIVE_VERSION_SUFFIX="$SUFFIX" \
       -DBUILD_UNIT_TESTS="$build_unit_tests" \
       -DKDRIVE_THEME_DIR="$src_dir/infomaniak" \

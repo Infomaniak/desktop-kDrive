@@ -101,8 +101,6 @@ export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 # Set defaults
 export SUFFIX=""
 
-mkdir -p "$BUILD_DIR/client"
-
 conan_build_folder="$BUILD_DIR/conan"
 conan_dependencies_folder="$BUILD_DIR/conan/dependencies"
 
@@ -128,7 +126,7 @@ cmake -B"$BUILD_DIR" -H"$BASEPATH" \
     -DCMAKE_BUILD_TYPE="$build_type" \
     -DCMAKE_PREFIX_PATH="$BASEPATH" \
     -DCMAKE_INSTALL_PREFIX=/usr \
-    -DBIN_INSTALL_DIR="$BUILD_DIR/client" \
+    -DBIN_INSTALL_DIR="$BUILD_DIR/bin" \
     -DKDRIVE_VERSION_SUFFIX="$SUFFIX" \
     -DKDRIVE_THEME_DIR="$BASEPATH/infomaniak" \
     -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
@@ -143,4 +141,4 @@ extract_debug ./bin kDrive_client
 
 make DESTDIR="$APPDIR" install
 
-cp "$BASEPATH/sync-exclude-linux.lst" "$CONTENTDIR/client/sync-exclude.lst"
+cp "$BASEPATH/sync-exclude-linux.lst" "$BUILD_DIR/bin/sync-exclude.lst"
