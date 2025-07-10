@@ -11,9 +11,7 @@ endif()
 
 # utf8proc
 if(UNIX)
-    set(CMAKE_POLICY_VERSION_MINIMUM ${CMAKE_MINIMUM_REQUIRED_VERSION})
     add_subdirectory(src/3rdparty/utf8proc)
-    unset(CMAKE_POLICY_VERSION_MINIMUM)
 endif()
 
 # keychain
