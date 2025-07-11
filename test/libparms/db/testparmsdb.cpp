@@ -481,7 +481,7 @@ void TestParmsDb::testAppState(void) {
     CPPUNIT_ASSERT_EQUAL(std::string("test1"), std::get<std::string>(value));
 }
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 void TestParmsDb::testExclusionApp() {
     ExclusionApp exclusionApp1("app id 1", "description 1");
     ExclusionApp exclusionApp2("app id 2", "description 2");
@@ -536,7 +536,7 @@ void TestParmsDb::testError() {
     }
 }
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 void TestParmsDb::testUpgradeOfShortPathNames() {
     LocalTemporaryDirectory temporaryDirectory("testUpgrade");
     std::vector<SyncPath> syncDbLongPaths(3, SyncPath{});

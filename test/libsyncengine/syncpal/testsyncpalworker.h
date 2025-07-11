@@ -20,7 +20,7 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "syncpal/syncpal.h"
 #include "syncpal/tmpblacklistmanager.h"
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include "update_detection/file_system_observer/localfilesystemobserverworker_win.h"
 #else
 #include "update_detection/file_system_observer/localfilesystemobserverworker_unix.h"
@@ -160,7 +160,7 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
         };
 
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         class MockLFSO : public LocalFileSystemObserverWorker_win {
             public:
                 using LocalFileSystemObserverWorker_win::LocalFileSystemObserverWorker_win;

@@ -607,7 +607,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                 return ExitCode::DataError;
             }
         } else {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
             // Don't do this on macOS as status and pin state are set at the end of the upload
             if (ExitInfo exitInfo = convertToPlaceholder(relativeLocalFilePath, true); !exitInfo) {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to convert to placeholder for: "
@@ -705,10 +705,10 @@ ExitInfo ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath,
 
     SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalPath;
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     // VfsMac::convertToPlaceholder needs only SyncFileItem::_dehydrated
     syncItem.setDehydrated(!hydrated);
-#elif _WIN32
+#elif defined(KD_WINDOWS)
     // VfsWin::convertToPlaceholder needs only SyncFileItem::_localNodeId
     FileStat fileStat;
     IoError ioError = IoError::Success;

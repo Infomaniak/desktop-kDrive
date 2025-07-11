@@ -211,7 +211,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         static void syncFileStatus(int syncDbId, const KDC::SyncPath &path, KDC::SyncFileStatus &status);
         static void syncFileSyncing(int syncDbId, const KDC::SyncPath &path, bool &syncing);
         static void setSyncFileSyncing(int syncDbId, const KDC::SyncPath &path, bool syncing);
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         static void exclusionAppList(QString &appList);
 #endif
         static void sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &item);
@@ -230,7 +230,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool clientHasCrashed() const;
         void handleClientCrash(bool &quit);
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         bool noMacVfsSync() const;
         bool areMacVfsAuthsOk() const;
 #endif

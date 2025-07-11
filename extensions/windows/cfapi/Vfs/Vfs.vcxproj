@@ -160,10 +160,10 @@
     </Midl>
     <Manifest />
     <PostBuildEvent>
-      <Command>copy /Y "$(ProjectDir)..\Common\debug.h" "F:\Projects\desktop-kDrive\src\libcommonserver\vfs\win\."
-copy /Y "$(ProjectDir)$(TargetName).h" "F:\Projects\desktop-kDrive\src\libcommonserver\vfs\win\."
-copy /Y "$(TargetDir)$(TargetName).dll" "F:\Projects\build-desktop-kDrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug\bin\."
-copy /Y "$(TargetDir)$(TargetName).pdb" "F:\Projects\build-desktop-kDrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug\."</Command>
+      <Command>copy /Y "$(ProjectDir)..\Common\debug.h" "C:\Users\cleme\Projects\desktop-kDrive\src\libcommonserver\vfs\win\."
+copy /Y "$(ProjectDir)$(TargetName).h" "C:\Users\cleme\Projects\desktop-kDrive\src\libcommonserver\vfs\win\."
+copy /Y "$(TargetDir)$(TargetName).dll" "C:\Users\cleme\Projects\cmake-build-debug_CLion\bin\."
+copy /Y "$(TargetDir)$(TargetName).pdb" "C:\Users\cleme\Projects\cmake-build-debug_CLion\."</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

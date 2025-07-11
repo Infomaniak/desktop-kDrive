@@ -18,8 +18,8 @@
 
 #pragma once
 
-#if defined(_WIN32)
-// || defined(__APPLE__) still buggy on macOS
+#if defined(KD_WINDOWS)
+// || defined(KD_MACOS) still buggy on macOS
 // https://www.reddit.com/r/cpp/comments/1b1pjii/comment/ksg8efc/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
 
 #define SRC_LOC_AVALAIBALE
@@ -39,7 +39,7 @@ class SourceLocation {
         constexpr SourceLocation() = default;
 #ifdef SRC_LOC_AVALAIBALE
         [[nodiscard]] static consteval SourceLocation currentLoc(
-                const std::source_location& loc = std::source_location::current()) {
+                const std::source_location &loc = std::source_location::current()) {
             SourceLocation result;
             result._line = loc.line();
             result._fileName = loc.file_name();
@@ -51,7 +51,7 @@ class SourceLocation {
         // It is not as accurate as std::source_location but it is better than nothing.
         // void foo(SourceLocation loc = currentLoc()) -> loc will be evaluated at the definition site instead of the call site.
 #define currentLoc() currentLocCompatibility(__LINE__, __FILE__)
-        [[nodiscard]] static constexpr SourceLocation currentLocCompatibility(uint32_t line, const char* file) {
+        [[nodiscard]] static constexpr SourceLocation currentLocCompatibility(uint32_t line, const char *file) {
             SourceLocation result;
             result._line = line;
             result._fileName = file;
@@ -77,8 +77,8 @@ class SourceLocation {
 
     private:
         uint32_t _line = 0;
-        const char* _fileName = "";
-        const char* _functionName = "";
+        const char *_fileName = "";
+        const char *_functionName = "";
 };
 
 } // namespace KDC
