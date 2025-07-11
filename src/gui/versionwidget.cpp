@@ -103,8 +103,7 @@ void VersionWidget::showReleaseNotes() const {
     QString languageCode = CommonUtility::languageCode(appLanguage);
     if (languageCode.isEmpty()) languageCode = CommonUtility::englishCode;
     QDesktopServices::openUrl(
-            QUrl(QString("%1-%2-%3-%4.html")
-                         .arg(APPLICATION_STORAGE_URL, versionInfo.fullVersion().c_str(), os, languageCode.left(2))));
+            QUrl(QString("%1-%2-%3-%4.html").arg(APPLICATION_STORAGE_URL, versionInfo.tag.c_str(), os, languageCode.left(2))));
 }
 
 void VersionWidget::showDownloadPage() const {
