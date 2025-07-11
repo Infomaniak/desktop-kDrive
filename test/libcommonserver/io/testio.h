@@ -127,6 +127,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testCheckDirectoryRecursive();
         void testCheckDirectoryIteratorUnexpectedDelete();
         void testCheckDirectoryPermissionLost();
+        void testHasNext();
         void testAccesDeniedOnLockedFiles();
         void testOpenFileSuccess();
         void testOpenFileAccessDenied();

@@ -875,6 +875,13 @@ bool IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoErr
     return true;
 }
 
+IoError IoHelper::checkIfDirectoryIsEmpty(const SyncPath &absolutePath, bool &isEmpty) noexcept {
+    IoError ioError = IoError::Success;
+    IoHelper::DirectoryIterator dirIt(absolutePath, true, ioError);
+    isEmpty = !dirIt.hasNext();
+    return ioError;
+}
+
 bool IoHelper::createDirectory(const SyncPath &path, const bool recursive, IoError &ioError) noexcept {
     std::error_code ec;
     const bool creationSuccess =
@@ -1023,6 +1030,14 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
         endOfDirectory = true;
         return true;
     }
+}
+
+bool IoHelper::DirectoryIterator::hasNext() {
+    DirectoryEntry dummyEntry;
+    bool end = false;
+    IoError dummyError = IoError::Unknown;
+    (void) next(dummyEntry, end, dummyError);
+    return !end;
 }
 
 void IoHelper::DirectoryIterator::disableRecursionPending() {

@@ -34,6 +34,7 @@ void TestIo::testCheckDirectoryIterator() {
     testCheckDirectoryIteratorUnexpectedDelete();
     testCheckDirectoryIteratorPermission();
     testCheckDirectoryPermissionLost();
+    testHasNext();
 }
 
 void TestIo::testCheckDirectoryIteratorNonExistingPath() {
@@ -322,4 +323,24 @@ void TestIo::testCheckDirectoryPermissionLost() {
         CPPUNIT_ASSERT(endOfDirectory);
     }
 }
+
+void TestIo::testHasNext() {
+    LocalTemporaryDirectory tempDir;
+    {
+        IoError ioError = IoError::Success;
+        IoHelper::DirectoryIterator it(tempDir.path(), true, ioError);
+        CPPUNIT_ASSERT(!it.hasNext());
+    }
+    testhelpers::generateOrEditTestFile(tempDir.path() / "testHasNext");
+    {
+        IoError ioError = IoError::Success;
+        IoHelper::DirectoryIterator it(tempDir.path(), true, ioError);
+        CPPUNIT_ASSERT(it.hasNext());
+        DirectoryEntry entry;
+        bool endOfDirectory = false;
+        (void) it.next(entry, endOfDirectory, ioError);
+        CPPUNIT_ASSERT(!it.hasNext());
+    }
+}
+
 } // namespace KDC
