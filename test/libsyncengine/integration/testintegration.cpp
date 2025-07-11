@@ -186,7 +186,7 @@ void TestIntegration::inconsistencyTests() {
     _syncPal->unpause();
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "testForbiddenChar"));
     CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / "test:*ForbiddenChar"));
 #else
@@ -195,7 +195,7 @@ void TestIntegration::inconsistencyTests() {
 #endif
 
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "testNameClash"));
-#ifdef __unix__
+#if defined(KD_LINUX)
     // No clash on Linux
     CPPUNIT_ASSERT(!std::filesystem::exists(nameClashLocalPath));
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "testNameClash"));
@@ -523,7 +523,7 @@ void TestIntegration::testNegativeModificationTime() {
 
         GetFileInfoJob fileInfoJob(_driveDbId, *dbNode.nodeIdRemote());
         (void) fileInfoJob.runSynchronously();
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         // Windows: negative creation dates are accepted.
         CPPUNIT_ASSERT_EQUAL(timeInput, fileInfoJob.creationTime());
 #else
@@ -549,7 +549,7 @@ void TestIntegration::testNegativeModificationTime() {
 
         GetFileInfoJob fileInfoJob(_driveDbId, *dbNode.nodeIdRemote());
         (void) fileInfoJob.runSynchronously();
-#ifdef __unix__
+#if defined(KD_LINUX)
         // Linux: Creation date cannot be changed.
         CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, fileInfoJob.creationTime());
 #else
@@ -562,7 +562,7 @@ void TestIntegration::testNegativeModificationTime() {
     logStep("testNegativeModificationTime");
 }
 
-#ifdef __unix__
+#if defined(KD_LINUX)
 void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     if (!testhelpers::isExtendedTest()) return;
 
@@ -743,7 +743,7 @@ void TestIntegration::waitForSyncToBeIdle(
 
 void TestIntegration::logStep(const std::string &str) {
     std::stringstream ss;
-#if defined(__APPLE__) || defined(WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
     ss << "$$$$$ Step `" << str << "` done in " << _timer.lap<std::chrono::milliseconds>() << " $$$$$";
 #else
     ss << "$$$$$ Step `" << str << "` done in " << _timer.lap<std::chrono::milliseconds>().count() << " $$$$$";

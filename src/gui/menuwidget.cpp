@@ -79,7 +79,7 @@ void MenuWidget::paintEvent(QPaintEvent *event) {
                                 0);
                 break;
             case List:
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
                 offset = QPoint(-10, -10);
 #else
                 offset = QPoint(-10, -2);

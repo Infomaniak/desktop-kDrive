@@ -384,7 +384,7 @@ void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydra
             return;
         }
         for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
             // skip_permission_denied doesn't work on Windows
             try {
                 bool dummy = dirIt->exists();
