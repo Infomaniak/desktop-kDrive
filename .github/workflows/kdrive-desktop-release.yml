@@ -90,6 +90,7 @@ jobs:
             done
           done
           echo "All release notes files are present."
+        shell: bash
 
 # Build apps
 #  build-Windows:
