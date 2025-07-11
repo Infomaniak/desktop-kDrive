@@ -61,7 +61,7 @@ void ISyncWorker::stop() {
     }
 
     if (_stopAsked) {
-        LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " is already stoping");
+        LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " is already stopping");
         return;
     }
 
@@ -102,7 +102,7 @@ void ISyncWorker::sleepUntilStartDelay(bool &awakenByStop) {
 
 void ISyncWorker::setDone(ExitCode exitCode) {
     std::stringstream logStream;
-    ss << "Worker " << _name.c_str() << " has finished with code=" << exitCode << " cause=" << _exitCause;
+    logStream << "Worker " << _name << " has finished with code=" << exitCode << " cause=" << _exitCause;
 
     if (exitCode == ExitCode::Ok) {
         LOG_SYNCPAL_DEBUG(_logger, logStream.str());
