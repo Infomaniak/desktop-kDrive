@@ -74,7 +74,7 @@ void TestConflictFinderWorker::testCreateCreate() {
 }
 
 void TestConflictFinderWorker::testCreateCreateDifferentEncoding() {
-    // Simulate CREATE of A/AC on both replica
+    // Simulate CREATE of A/AC on both replicas
     const auto lNodeAC = _situationGenerator.createNode(ReplicaSide::Local, NodeType::File, "ac", "a");
     lNodeAC->setName(testhelpers::makeNfcSyncName());
     lNodeAC->setSize(testhelpers::defaultFileSize + 1);
@@ -90,7 +90,7 @@ void TestConflictFinderWorker::testCreateCreateDifferentEncoding() {
 }
 
 void TestConflictFinderWorker::testEditEdit() {
-    // Simulate EDIT of A/AA on both replica
+    // Simulate EDIT of A/AA on both replicas
     const auto lNodeAA = _situationGenerator.editNode(ReplicaSide::Local, "aa");
     const auto rNodeAA = _situationGenerator.editNode(ReplicaSide::Remote, "aa");
 

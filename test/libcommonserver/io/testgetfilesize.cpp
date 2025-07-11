@@ -120,7 +120,7 @@ void TestIo::testGetFileSizeSimpleCases() {
         }
     }
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     // Getting the size of a MacOSX Finder alias on a regular file.
     {
         const LocalTemporaryDirectory temporaryDirectory;
@@ -182,7 +182,7 @@ void TestIo::testGetFileSizeSimpleCases() {
         CPPUNIT_ASSERT(fileSize == std::filesystem::file_size(path));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
     // Getting the size of a regular junction.
     {
         const LocalTemporaryDirectory temporaryDirectory;
@@ -247,7 +247,7 @@ void TestIo::testGetFileSizeAllBranches() {
         std::filesystem::remove_all(subdir); // required to allow automated deletion of `temporaryDirectory`
 
         // Remark: the test CPPUNIT_ASSERT(fileSize == 0u) fails on MacOSX.
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 #else
         CPPUNIT_ASSERT(ioError == IoError::AccessDenied);

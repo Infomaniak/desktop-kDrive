@@ -1,10 +1,21 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_CXX_STANDARD 20)
 project(client)
 if(APPLE)
     enable_language(OBJC)
     enable_language(OBJCXX)
+endif()
+
+# Redefine compiler predefined macros to uniformize their format.
+# Source:
+# https://web.archive.org/web/20140625123925/http://nadeausoftware.com/articles/2012/01/c_c_tip_how_use_compiler_predefined_macros_detect_operating_system
+if(APPLE)
+    add_compile_definitions(KD_MACOS)
+elseif(WIN32)
+    add_compile_definitions(KD_WINDOWS)
+else()
+    add_compile_definitions(KD_LINUX)
 endif()
 
 ##### Submodules

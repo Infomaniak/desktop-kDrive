@@ -29,7 +29,7 @@
 #include <iostream>
 #include <filesystem>
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include <Windows.h>
 #include <ShObjIdl_core.h>
 #include <ShlObj_core.h>
@@ -42,7 +42,7 @@ namespace KDC {
 void TestUtility::testFreeDiskSpace() {
     int64_t freeSpace;
 
-#if defined(__APPLE__) || defined(__unix__)
+#if defined(KD_MACOS) || defined(KD_LINUX)
     freeSpace = Utility::getFreeDiskSpace("/");
 #elif defined(_WIN32)
     freeSpace = Utility::getFreeDiskSpace(R"(C:\)");
@@ -124,10 +124,10 @@ void TestUtility::testV2ws() {
 }
 
 void TestUtility::testFileSystemName() {
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     CPPUNIT_ASSERT(Utility::fileSystemName("/") == "apfs");
     CPPUNIT_ASSERT(Utility::fileSystemName("/bin") == "apfs");
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
     CPPUNIT_ASSERT(Utility::fileSystemName(std::filesystem::temp_directory_path()) == "NTFS");
     // CPPUNIT_ASSERT(Utility::fileSystemName(R"(C:\)") == "NTFS");
     // CPPUNIT_ASSERT(Utility::fileSystemName(R"(C:\windows)") == "NTFS");
@@ -206,7 +206,7 @@ void TestUtility::testMoveItemToTrash(void) {
 void TestUtility::testGetLinuxDesktopType() {
     std::string currentDesktop;
 
-#ifdef __unix__
+#if defined(KD_LINUX)
     CPPUNIT_ASSERT(Utility::getLinuxDesktopType(currentDesktop));
     CPPUNIT_ASSERT(!currentDesktop.empty());
     return;
@@ -329,12 +329,12 @@ void TestUtility::testIsDiskRootFolder() {
     CPPUNIT_ASSERT_EQUAL_MESSAGE(suggestedPath.string(), true, CommonUtility::isDiskRootFolder("/", suggestedPath));
     CPPUNIT_ASSERT(suggestedPath.empty() || !CommonUtility::isDiskRootFolder(suggestedPath, dummyPath));
 
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("C:\\Users", suggestedPath));
 
     CPPUNIT_ASSERT_EQUAL_MESSAGE(suggestedPath.string(), true, CommonUtility::isDiskRootFolder("C:\\", suggestedPath));
     CPPUNIT_ASSERT(suggestedPath.empty() || !CommonUtility::isDiskRootFolder(suggestedPath, dummyPath));
-#elif defined(__APPLE__)
+#elif defined(KD_MACOS)
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("/Volumes/drivename/kDrive", suggestedPath));
 
     CPPUNIT_ASSERT_EQUAL_MESSAGE(suggestedPath.string(), true,
@@ -482,7 +482,7 @@ void TestUtility::testNormalizedSyncPath() {
     SyncPath normalizedPath;
     CPPUNIT_ASSERT(Utility::normalizedSyncPath("a/b/c", normalizedPath) && normalizedPath == SyncPath("a/b/c"));
     CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a/b/c", normalizedPath) && normalizedPath == SyncPath("/a/b/c"));
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(a\b\c)", normalizedPath) && normalizedPath == SyncPath("a/b/c"));
     CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(\a\b\c)", normalizedPath) && normalizedPath == SyncPath("/a/b/c"));
     CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a\\b/c", normalizedPath) && normalizedPath == SyncPath("/a/b/c"));
@@ -526,7 +526,7 @@ void TestUtility::testUserName() {
     std::string userName(Utility::userName());
     LOG_DEBUG(Log::instance()->getLogger(), "userName=" << userName);
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     const char *value = std::getenv("USERPROFILE");
     CPPUNIT_ASSERT(value);
     const SyncPath homeDir(value);

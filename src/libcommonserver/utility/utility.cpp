@@ -22,15 +22,18 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
 #include <sys/statvfs.h>
 #include <sys/mount.h>
-#elif defined(__unix__)
+#elif defined(KD_LINUX)
 #include <sys/statvfs.h>
 #include <sys/statfs.h>
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
 #include <fileapi.h>
 #endif
+
+#include "utility/utility_base.h"
+
 
 #include <locale>
 #include <algorithm>
@@ -56,20 +59,20 @@
 namespace KDC {
 static const SyncName excludedTemplateFileName(Str("sync-exclude.lst"));
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
 static const SyncName excludedAppFileName(Str("litesync-exclude.lst"));
 #endif
 
 // Resources relative path from working dir
-#if defined(__APPLE__)
-static const SyncName resourcesPath(Str("../../Contents/Resources"));
-#elif defined(__unix__)
+#if defined(KD_MACOS)
+static const SyncName resourcesPath(Str("../Resources"));
+#elif defined(KD_LINUX)
 static const SyncName resourcesPath(Str(""));
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
 static const SyncName resourcesPath(Str(""));
 #endif
 
-#ifndef __APPLE__ // Not used on macOS
+#ifndef KD_MACOS // Not used on macOS
 static const std::string NTFS("NTFS");
 #endif
 
@@ -97,17 +100,17 @@ int64_t Utility::getFreeDiskSpace(const SyncPath &path) {
     }
     SyncPath tmpDirPath = isDirectory ? path : path.parent_path();
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     struct statvfs stat;
     if (statvfs(tmpDirPath.c_str(), &stat) == 0) {
         return (int64_t) (stat.f_bavail * stat.f_frsize);
     }
-#elif defined(__unix__)
+#elif defined(KD_LINUX)
     struct statvfs64 stat;
     if (statvfs64(tmpDirPath.c_str(), &stat) == 0) {
         return (int64_t) (stat.f_bavail * stat.f_frsize);
     }
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
     ULARGE_INTEGER freeBytes;
     freeBytes.QuadPart = 0L;
     if (GetDiskFreeSpaceEx(reinterpret_cast<const wchar_t *>(Path2WStr(tmpDirPath).c_str()), &freeBytes, NULL, NULL)) {
@@ -186,7 +189,7 @@ std::string Utility::trim(const std::string &s) {
     return ltrim(rtrim(s));
 }
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 SyncName Utility::ltrim(const SyncName &s) {
     SyncName sout(s);
     const auto it =
@@ -240,15 +243,15 @@ std::wstring Utility::formatPath(const QString &path) {
 }
 
 std::wstring Utility::formatStdError(const std::error_code &ec) {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     std::stringstream ss;
     ss << ec.message() << " (code: " << ec.value() << ")";
     return s2ws(ss.str());
-#elif defined(__unix__)
+#elif defined(KD_LINUX)
     std::stringstream ss;
     ss << ec.message() << ". (code: " << ec.value() << ")";
     return s2ws(ss.str());
-#elif defined(__APPLE__)
+#elif defined(KD_MACOS)
     return s2ws(ec.message());
 #endif
 }
@@ -323,7 +326,7 @@ void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::
     LOG_WARN(logger, errorTitle << ": " << errorMsg);
 }
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 static std::unordered_map<std::string, bool> rootFsTypeMap;
 
 bool Utility::isNtfs(const SyncPath &targetPath) {
@@ -342,12 +345,12 @@ bool Utility::isNtfs(const SyncPath &targetPath) {
 #endif
 
 std::string Utility::fileSystemName(const SyncPath &targetPath) {
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     struct statfs stat;
     if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
         return stat.f_fstypename;
     }
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
     TCHAR szFileSystemName[MAX_PATH + 1];
     DWORD dwMaxFileNameLength = 0;
     DWORD dwFileSystemFlags = 0;
@@ -359,12 +362,12 @@ std::string Utility::fileSystemName(const SyncPath &targetPath) {
         // Not all the requested information is retrieved
         DWORD dwError = GetLastError();
         LOGW_WARN(logger(), L"Error in GetVolumeInformation for " << formatSyncName(targetPath.root_name()) << L" ("
-                                                                  << CommonUtility::getErrorMessage(dwError) << L")");
+                                                                  << utility_base::getErrorMessage(dwError) << L")");
 
         // !!! File system name can be OK or not !!!
         return ws2s(szFileSystemName);
     }
-#elif defined(__unix__)
+#elif defined(KD_LINUX)
     struct statfs stat;
     if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
         const auto formatFsName = [](const std::string &prettyName, long fsCode) {
@@ -457,7 +460,7 @@ bool Utility::contains(const std::string &str, const std::string &substr) {
     return str.find(substr) != std::string::npos;
 }
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 bool Utility::startsWithInsensitive(const SyncName &str, const SyncName &prefix) {
     return str.size() >= prefix.size() && std::equal(prefix.begin(), prefix.end(), str.begin(), [](SyncChar c1, SyncChar c2) {
                return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
@@ -623,7 +626,7 @@ std::string Utility::xxHashToStr(XXH64_hash_t hash) {
     return output;
 }
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
 SyncName Utility::getExcludedAppFilePath(bool test /*= false*/) {
     return (test ? excludedAppFileName : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedAppFileName).native());
 }
@@ -694,9 +697,9 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
     bool success = CommonUtility::normalizedSyncName(name, normalizedName, normalization);
     std::wstring errorMessage = L"Failed to normalize " + formatSyncName(name);
     if (!success) {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         const DWORD dwError = GetLastError();
-        errorMessage += L" (" + CommonUtility::getErrorMessage(dwError) + L")";
+        errorMessage += L" (" + utility_base::getErrorMessage(dwError) + L")";
 #endif
         LOGW_DEBUG(logger(), L"Failed to normalize " << errorMessage);
     }
@@ -790,11 +793,11 @@ bool Utility::getLinuxDesktopType(std::string &currentDesktop) {
     return false;
 }
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound) {
     int length = GetLongPathNameW(shortPathIn.native().c_str(), 0, 0);
     if (!length) {
-        const bool exists = !CommonUtility::isLikeFileNotFoundError(GetLastError());
+        const bool exists = !utility_base::isLikeFileNotFoundError(GetLastError());
         if (!exists) {
             notFound = true;
         }
@@ -808,7 +811,7 @@ bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool 
 
     length = GetLongPathNameW(shortPathIn.native().c_str(), buffer, length);
     if (!length) {
-        const bool exists = !CommonUtility::isLikeFileNotFoundError(GetLastError());
+        const bool exists = !utility_base::isLikeFileNotFoundError(GetLastError());
         if (!exists) {
             notFound = true;
         }

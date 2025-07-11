@@ -18,7 +18,7 @@
 
 #include "localfilesystemobserverworker_unix.h"
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 #include "folderwatcher_mac.h"
 #else
 #include "folderwatcher_linux.h"
@@ -31,7 +31,7 @@ namespace KDC {
 LocalFileSystemObserverWorker_unix::LocalFileSystemObserverWorker_unix(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                                        const std::string &shortName) :
     LocalFileSystemObserverWorker(syncPal, name, shortName) {
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     _folderWatcher.reset(new FolderWatcher_mac(this, syncPal->localPath()));
 #else
     _folderWatcher.reset(new FolderWatcher_linux(this, syncPal->localPath()));

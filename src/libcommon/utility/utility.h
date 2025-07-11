@@ -25,7 +25,7 @@
 #include <thread>
 #include <random>
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include <strsafe.h>
 #endif
 
@@ -128,7 +128,7 @@ struct COMMON_EXPORT CommonUtility {
         static bool dirNameIsValid(const SyncName &name);
         static bool fileNameIsValid(const SyncName &name);
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         static const std::string loginItemAgentId();
         static const std::string liteSyncExtBundleId();
         static bool isLiteSyncExtEnabled();
@@ -142,13 +142,10 @@ struct COMMON_EXPORT CommonUtility {
         static void writeSignalFile(AppType appType, SignalType signalType) noexcept;
         static void clearSignalFile(AppType appType, SignalCategory signalCategory, SignalType &signalType) noexcept;
 
-#ifdef _WIN32
+
+#if defined(KD_WINDOWS)
         // Converts a std::wstring to std::string assuming that it contains only mono byte chars
         static std::string toUnsafeStr(const SyncName &name);
-
-        static std::wstring getErrorMessage(DWORD errorMessageId);
-        static std::wstring getLastErrorMessage();
-        static bool isLikeFileNotFoundError(DWORD dwError) noexcept;
 #endif
         static bool isLikeFileNotFoundError(const std::error_code &ec) noexcept;
 

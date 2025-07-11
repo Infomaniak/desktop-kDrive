@@ -198,9 +198,9 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     bool movedIntoUnsyncedFolder = false;
     const auto nodeExistsInSnapshot = snapshot->exists(nodeId);
     bool nodeIdReused = false;
-#if defined(__unix__)
+#if defined(KD_LINUX)
     isReusedNodeId(nodeId, dbNode, snapshot, nodeIdReused);
-#endif // __unix__
+#endif
 
     if (side == ReplicaSide::Remote) {
         // In case of a move inside an excluded folder, the item must be removed in this sync
@@ -365,7 +365,7 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
         DbNode dbNode;
         bool dbNodeIsFound = false;
         const auto dbNodeIds = *nodesIdsIt;
-        if (!_syncDbReadOnlyCache.node(nodesIdsIt->dbNodeId, dbNode, dbNodeIsFound)) {
+        if (!_syncDbReadOnlyCache.node(dbNodeIds.dbNodeId, dbNode, dbNodeIsFound)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
             setExitCause(ExitCause::DbAccessError);
             return ExitCode::DbError;
@@ -395,7 +395,7 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
             return ExitCode::DbError;
         }
         if (!dbPathsAreFound) {
-            LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << nodesIdsIt->dbNodeId);
+            LOG_SYNCPAL_WARN(_logger, "Failed to retrieve node for dbId=" << dbNodeIds.dbNodeId);
             setExitCause(ExitCause::DbEntryNotFound);
             return ExitCode::DataError;
         }
@@ -794,7 +794,7 @@ bool ComputeFSOperationWorker::isPathTooLong(const SyncPath &path, const NodeId 
     return false;
 }
 
-#ifdef __unix__
+#if defined(KD_LINUX)
 void ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const DbNode &dbNode,
                                               const std::shared_ptr<const Snapshot> &snapshot, bool &isReused) const {
     isReused = false;
@@ -862,7 +862,7 @@ void ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const D
                                         << Utility::s2ws(localNodeId) << L". Node is reused.");
     isReused = true;
 }
-#endif // __unix__
+#endif
 
 ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(const ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId,
                                                      bool &isExcluded) {
