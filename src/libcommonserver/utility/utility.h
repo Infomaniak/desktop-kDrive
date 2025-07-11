@@ -157,11 +157,9 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string xxHashToStr(XXH64_hash_t hash);
 
 #ifdef __APPLE__
-        static SyncName getExcludedAppFilePath(bool test = false);
+        static SyncPath getExcludedAppFilePath(bool test = false);
 #endif
-        static SyncName getExcludedTemplateFilePath(bool test = false);
-        static SyncPath binRelativePath();
-        static SyncPath resourcesRelativePath();
+        static SyncPath getExcludedTemplateFilePath(bool test = false);
         static SyncName logFileName();
         static SyncName logFileNameWithTime();
         static std::string toUpper(const std::string &str);
