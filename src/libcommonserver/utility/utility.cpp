@@ -73,7 +73,7 @@ static const SyncName excludedAppFileName(Str("litesync-exclude.lst"));
 
 // Resources relative path from working dir
 #if defined(KD_MACOS)
-static const SyncName resourcesPath(Str("../../Contents/Resources"));
+static const SyncName resourcesPath(Str("../Resources"));
 #elif defined(KD_LINUX)
 static const SyncName resourcesPath(Str(""));
 #elif defined(KD_WINDOWS)
