@@ -301,7 +301,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<ConflictingFilesCorrector> _conflictingFilesCorrector = nullptr;
 
         std::unordered_map<UniqueId, std::shared_ptr<DownloadJob>> _directDownloadJobsMap;
-        std::unordered_map<SyncPath, std::unordered_set<SyncPath>>
+        std::unordered_map<SyncPath, std::unordered_set<SyncPath, PathHashFunction>, PathHashFunction>
                 _bundleDownloadMap; // key: bundle path, value: bundle children paths
         std::unordered_map<SyncPath, UniqueId, PathHashFunction> _syncPathToDownloadJobMap;
         std::mutex _directDownloadJobsMapMutex;

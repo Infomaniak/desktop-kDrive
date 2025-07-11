@@ -719,7 +719,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
 }
 
 void SyncPal::addBundleDownload(const SyncPath &absoluteLocalPath) {
-    std::unordered_set<SyncPath> absoluteLocalPathSet;
+    std::unordered_set<SyncPath, PathHashFunction> absoluteLocalPathSet;
 
     IoError ioError = IoError::Unknown;
     IoHelper::DirectoryIterator dirIt(absoluteLocalPath, true, ioError);
@@ -736,7 +736,7 @@ void SyncPal::addBundleDownload(const SyncPath &absoluteLocalPath) {
                 continue;
             }
             if (isEmpty && _vfs) {
-                // Update folder status manually
+                // Update folder status manually.
                 (void) _vfs->forceStatus(entry.path(),
                                          {.isPlaceholder = true, .isHydrated = true, .isSyncing = false, .progress = 100});
             }
