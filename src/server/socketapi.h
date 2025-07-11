@@ -169,7 +169,7 @@ class SocketApi : public QObject {
 #endif
 
         QString buildRegisterPathMessage(const QString &path);
-        void processFileList(const QStringList &inFileList, std::list<SyncPath> &outFileList);
+        void processFileList(const QStringList &inFileList, std::list<SyncPath> &outFileList, bool isHydration = false);
         bool syncFileStatus(const FileData &fileData, SyncFileStatus &status, VfsStatus &vfsStatus);
         ExitInfo setPinState(const FileData &fileData, PinState pinState);
         ExitInfo forceStatus(const FileData &fileData, const VfsStatus &status);

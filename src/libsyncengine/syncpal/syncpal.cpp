@@ -754,15 +754,15 @@ void SyncPal::addBundleDownload(const SyncPath &absoluteLocalPath) {
 ExitCode SyncPal::cancelDlDirectJobs(const std::list<SyncPath> &fileList) {
     for (const auto &filePath: fileList) {
         const std::lock_guard lock(_directDownloadJobsMapMutex);
-        auto itId = _syncPathToDownloadJobMap.find(filePath);
-        if (itId != _syncPathToDownloadJobMap.end()) {
-            auto itJob = _directDownloadJobsMap.find(itId->second);
-            if (itJob != _directDownloadJobsMap.end()) {
+
+        if (const auto itId = _syncPathToDownloadJobMap.find(filePath); itId != _syncPathToDownloadJobMap.end()) {
+            if (const auto itJob = _directDownloadJobsMap.find(itId->second); itJob != _directDownloadJobsMap.end()) {
                 itJob->second->abort();
-                _directDownloadJobsMap.erase(itJob);
+                (void) _directDownloadJobsMap.erase(itJob);
             }
-            _syncPathToDownloadJobMap.erase(itId);
+            (void) _syncPathToDownloadJobMap.erase(itId);
         }
+        (void) _bundleDownloadMap.erase(filePath);
     }
 
     return ExitCode::Ok;

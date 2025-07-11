@@ -565,7 +565,7 @@ void SocketApi::command_MAKE_AVAILABLE_LOCALLY_DIRECT(const QString &filesArg) {
 
 #ifdef Q_OS_MAC
     std::list<KDC::SyncPath> fileListExpanded;
-    processFileList(fileList, fileListExpanded);
+    processFileList(fileList, fileListExpanded, true);
 
     for (const auto &filePath: qAsConst(fileListExpanded)) {
 #else
@@ -1302,7 +1302,8 @@ QString SocketApi::buildRegisterPathMessage(const QString &path) {
     return message;
 }
 
-void SocketApi::processFileList(const QStringList &inFileList, std::list<SyncPath> &outFileList) {
+void SocketApi::processFileList(const QStringList &inFileList, std::list<SyncPath> &outFileList,
+                                const bool isHydration /*= false*/) {
     // Process all files
     for (const QString &path: qAsConst(inFileList)) {
         const FileData fileData = FileData::get(path);
@@ -1312,7 +1313,7 @@ void SocketApi::processFileList(const QStringList &inFileList, std::list<SyncPat
         }
 
         const QFileInfo info(path);
-        if (info.isBundle()) {
+        if (isHydration && info.isBundle()) {
             addBundleDownload(fileData);
             continue;
         }
