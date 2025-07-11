@@ -222,7 +222,7 @@ jobs:
 
 # Upload to the storage server
   upload-app-to-storage-server:
-    needs: [build-Linux, test-Linux]
+    needs: [get-version, build-Linux, test-Linux]
     runs-on: [self-hosted, Windows, desktop-kdrive]
     steps:
       - name: Checkout the PR
@@ -240,7 +240,7 @@ jobs:
       - name: Upload apps and release notes to storage server
         run: |
             Invoke-WebRequest -Uri https://dl.min.io/client/mc/release/windows-amd64/mc.exe -OutFile mc.exe
-            powershell ./infomaniak-build-tools/upload-release-to-storage.ps1 -version "${{ needs.build-Windows.outputs.kDrive_version }}" -user "${{ secrets.STORAGE_SERVER_USER }}" -pass "${{ secrets.STORAGE_SERVER_PASSWORD }}"
+            powershell ./infomaniak-build-tools/upload-release-to-storage.ps1 -version "${{ needs.get-version.outputs.kDrive_version }}" -user "${{ secrets.STORAGE_SERVER_USER }}" -pass "${{ secrets.STORAGE_SERVER_PASSWORD }}"
 
 # Update kStore
   update-kStore:
