@@ -48,9 +48,12 @@
 #include <QDesktopServices>
 #include <QStandardPaths>
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 #include <CoreFoundation/CoreFoundation.h>
 #endif
+
+#include "utility/utility_base.h"
+
 
 #include <log4cplus/loggingmacros.h>
 
@@ -586,7 +589,7 @@ void SocketApi::command_MAKE_AVAILABLE_LOCALLY_DIRECT(const QString &filesArg) {
             continue;
         }
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         // Not done in Windows case: triggers a hydration
         // Set pin state
         if (!setPinState(fileData, KDC::PinState::AlwaysLocal)) {
@@ -1338,7 +1341,7 @@ FileData FileData::get(const QString &path) {
 }
 
 FileData FileData::get(const KDC::SyncPath &path) {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     KDC::SyncPath tmpPath;
     bool notFound = false;
     if (!KDC::Utility::longPath(path, tmpPath, notFound)) {
@@ -1385,7 +1388,7 @@ FileData FileData::get(const KDC::SyncPath &path) {
         std::error_code ec;
         data.isDirectory = std::filesystem::is_directory(tmpPath, ec);
         if (!data.isDirectory && ec.value() != 0) {
-            const bool exists = !CommonUtility::isLikeFileNotFoundError(ec);
+            const bool exists = !utility_base::isLikeFileNotFoundError(ec);
             if (!exists) {
                 // Item doesn't exist anymore
                 LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Item doesn't exist - " << Utility::formatPath(data.localPath));

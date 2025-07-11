@@ -37,8 +37,7 @@ class DuplicateJob : public AbstractTokenNetworkJob {
 
     private:
         std::string getSpecificUrl() override;
-        void setQueryParameters(Poco::URI &, bool &) override { /* No query parameters */
-        }
+        void setQueryParameters(Poco::URI &, bool &) override { /* No query parameters */ }
         ExitInfo setData() override;
 
         NodeId _remoteFileId;

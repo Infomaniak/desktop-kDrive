@@ -24,6 +24,8 @@
 #include "libcommon/utility/sourcelocation.h"
 #include "libcommonserver/io/iohelper.h"
 #include "test_utility/localtemporarydirectory.h"
+#include "utility/utility_base.h"
+
 #include <iostream>
 #include <regex>
 
@@ -33,10 +35,10 @@ void TestUtility::testGetAppSupportDir() {
     SyncPath appSupportDir = CommonUtility::getAppSupportDir();
     std::string faillureMessage = "Path: " + appSupportDir.string();
     CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), !appSupportDir.empty());
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), appSupportDir.string().find("AppData") != std::string::npos);
     CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), appSupportDir.string().find("Local") != std::string::npos);
-#elif defined(__APPLE__)
+#elif defined(KD_MACOS)
     CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), appSupportDir.string().find("Library") != std::string::npos);
     CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), appSupportDir.string().find("Application") != std::string::npos);
 #else
@@ -406,20 +408,20 @@ void TestUtility::testIsSupportedLanguage() {
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isSupportedLanguage(""));
 }
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 void TestUtility::testGetLastErrorMessage() {
     // Ensure that the error message is reset.
     SetLastError(0);
 
     // No actual error. Display the expected success message.
     {
-        const std::wstring msg = CommonUtility::getLastErrorMessage();
+        const std::wstring msg = utility_base::getLastErrorMessage();
         CPPUNIT_ASSERT_MESSAGE(SyncName2Str(msg.c_str()), msg.starts_with(L"(0) - "));
     }
     // Display the file-not-found error message.
     {
         GetFileAttributesW(L"this_file_does_not_exist.txt");
-        const std::wstring msg = CommonUtility::getLastErrorMessage();
+        const std::wstring msg = utility_base::getLastErrorMessage();
         CPPUNIT_ASSERT(msg.starts_with(L"(2) - "));
     }
 }
@@ -583,7 +585,7 @@ void TestUtility::testSplitSyncPath() {
     splitting.pop_front();
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("C")}), SyncName2Str(splitting.front()));
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     twoSeparators = Str("A\\B\\C");
     splitting = CommonUtility::splitSyncPath(SyncPath{twoSeparators});
     CPPUNIT_ASSERT_EQUAL(size_t{3}, splitting.size());
@@ -679,7 +681,7 @@ void TestUtility::testSplitPathFromSyncName() {
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("B")}), SyncName2Str(splitting.at(1)));
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("C")}), SyncName2Str(splitting.at(2)));
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     twoSeparators = Str("A/B\\C");
     splitting = CommonUtility::splitPath(twoSeparators);
     CPPUNIT_ASSERT_EQUAL(size_t{3}, splitting.size());
@@ -740,7 +742,7 @@ void TestUtility::testComputePathNormalizations() {
     CPPUNIT_ASSERT_EQUAL(size_t{8}, normalizations.size());
     CPPUNIT_ASSERT(computeExpectedPathNormalizations() == normalizations);
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     const SyncName path4 = Str("é/é\\é");
     normalizations = CommonUtility::computePathNormalizations(path4);
     CPPUNIT_ASSERT_EQUAL(size_t{8}, normalizations.size());

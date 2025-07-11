@@ -38,7 +38,7 @@ typedef void (TestIntegration::*testFctPtr)();
 class TestIntegration : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestIntegration);
         CPPUNIT_TEST(testAll);
-#ifdef __unix__
+#if defined(KD_LINUX)
         CPPUNIT_TEST(testNodeIdReuseFile2DirAndDir2File);
         CPPUNIT_TEST(testNodeIdReuseFile2File);
 #endif
@@ -101,7 +101,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
                 std::map<SyncPath, uint64_t> _pathNodeIdMap;
         };
 
-#ifdef __unix__
+#if defined(KD_LINUX)
         void testNodeIdReuseFile2DirAndDir2File();
         void testNodeIdReuseFile2File();
 #endif
