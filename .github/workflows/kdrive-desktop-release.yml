@@ -55,7 +55,7 @@ jobs:
             core.setOutput("kDrive_version", "3.7.1.20250709");
             core.info(`kDrive version is ${full_version}`);
             core.summary.addHeading('kDrive Desktop Version', 1);
-            core.summary.addHeading(`${full_version} (override for test purpose by 3.7.1.20250709`, 3).write();
+            core.summary.addHeading(`${full_version} (override for test purpose by 3.7.1.20250709)`, 3).write();
 
 # Check translation files
   check-translations:
