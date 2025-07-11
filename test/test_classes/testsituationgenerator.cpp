@@ -20,6 +20,8 @@
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "db/dbnode.h"
 #include "syncpal/syncpal.h"
+
+#include "test_utility/localtemporarydirectory.h"
 #include "test_utility/testhelpers.h"
 
 #include <Poco/JSON/Parser.h>
@@ -35,8 +37,11 @@ class TestSituationGeneratorException final : public std::runtime_error {
             std::runtime_error(what) {}
 };
 
-TestSituationGenerator::TestSituationGenerator() :
-    _syncDb(std::make_shared<SyncDb>("dummySyncDb_" + CommonUtility::generateRandomStringAlphaNum(), "3.6.10")) {
+TestSituationGenerator::TestSituationGenerator() {
+    const LocalTemporaryDirectory temporaryDirectory("TestSituationGenerator");
+
+    const auto syncDbPath = temporaryDirectory.path() / ("dummySyncDb_" + CommonUtility::generateRandomStringAlphaNum());
+    _syncDb = std::make_shared<SyncDb>(syncDbPath, "3.6.10");
     (void) _syncDb->init("3.6.10");
     _syncDb->setAutoDelete(true);
 
