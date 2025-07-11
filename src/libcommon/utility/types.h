@@ -83,7 +83,7 @@ using StrSet = std::unordered_set<std::string, StringHashFunction, std::equal_to
 
 using SigValueType = std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring>;
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 using StringStream = std::wstringstream;
 using OStringStream = std::wostringstream;
 #define Str(s) L##s

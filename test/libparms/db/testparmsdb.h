@@ -37,12 +37,12 @@ class TestParmsDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testExclusionTemplate);
         CPPUNIT_TEST(testUpdateExclusionTemplates);
         CPPUNIT_TEST(testUpgrade);
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         CPPUNIT_TEST(testExclusionApp);
 #endif
         CPPUNIT_TEST(testError);
         CPPUNIT_TEST(testAppState);
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         CPPUNIT_TEST(testUpgradeOfShortPathNames);
 #endif
         CPPUNIT_TEST_SUITE_END();
@@ -61,11 +61,11 @@ class TestParmsDb : public CppUnit::TestFixture, public TestBase {
         void testAppState();
         void testUpdateExclusionTemplates();
         void testUpgrade();
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         void testExclusionApp();
 #endif
         void testError();
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         void testUpgradeOfShortPathNames();
 #endif
 

@@ -20,7 +20,7 @@
 
 #include <filesystem>
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include <windows.h>
 #endif
 
@@ -35,14 +35,14 @@ void TestIo::testCheckIfFileIsDehydrated() {
         IoError ioError = IoError::Unknown;
         bool isDehydrated = false;
         CPPUNIT_ASSERT(IoHelper::checkIfFileIsDehydrated(path, isDehydrated, ioError));
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
         CPPUNIT_ASSERT_EQUAL(IoError::AttrNotFound, ioError);
-#elif defined(__unix__) || defined(_WIN32)
+#elif defined(KD_LINUX) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(IoError::Success) + "!=" + toString(ioError), IoError::Success, ioError);
 #endif
         CPPUNIT_ASSERT(!isDehydrated);
     }
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     // A dehydrated file
     {
         const LocalTemporaryDirectory temporaryDirectory;
@@ -77,7 +77,7 @@ void TestIo::testCheckIfFileIsDehydrated() {
     }
 #endif
 
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
     // A dehydrated file
     {
         const LocalTemporaryDirectory temporaryDirectory;
@@ -112,7 +112,7 @@ void TestIo::testCheckIfFileIsDehydrated() {
         IoError ioError = IoError::Success;
         bool isDehydrated = true;
         CPPUNIT_ASSERT(IoHelper::checkIfFileIsDehydrated(path, isDehydrated, ioError));
-#if defined(__unix__)
+#if defined(KD_LINUX)
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 #else
         CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
@@ -136,7 +136,7 @@ void TestIo::testCheckIfFileIsDehydrated() {
 
         std::filesystem::permissions(path, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         CPPUNIT_ASSERT(ioError == IoError::AccessDenied);
 #else
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);

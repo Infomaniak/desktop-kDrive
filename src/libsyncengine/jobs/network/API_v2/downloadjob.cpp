@@ -25,7 +25,7 @@
 #include "libcommon/utility/utility.h"
 #include "common/utility.h"
 
-#if defined(__APPLE__) || defined(__unix__)
+#if defined(KD_MACOS) || defined(KD_LINUX)
 #include <unistd.h>
 #endif
 
@@ -316,7 +316,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
     _creationTimeOut = filestat.creationTime;
     _modificationTimeOut = filestat.modificationTime;
     _sizeOut = filestat.size;
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
     if (_creationTimeIn != _creationTimeOut || _modificationTimeIn != _modificationTimeOut) {
         // In the following cases, it is not an issue:
         // - Windows: if creation/modification date = 0, it is set to current date
@@ -382,7 +382,7 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
             return false;
         }
     } else if (mimeType == mimeTypeJunction) {
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
         LOGW_DEBUG(_logger, L"Create junction: " << Utility::formatSyncPath(_localpath));
 
         IoError ioError = IoError::Success;
@@ -392,7 +392,7 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
         }
 #endif
     } else if (mimeType == mimeTypeFinderAlias) {
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
         LOGW_DEBUG(_logger, L"Create alias: " << Utility::formatSyncPath(_localpath));
 
         IoError ioError = IoError::Success;
@@ -463,7 +463,7 @@ bool DownloadJob::removeTmpFile() {
 
 bool DownloadJob::moveTmpFile() {
     // Move downloaded file from tmp directory to sync directory
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     bool retry = true;
     int counter = 50;
     while (retry) {
@@ -473,7 +473,7 @@ bool DownloadJob::moveTmpFile() {
         bool error = false;
         bool accessDeniedError = false;
         bool crossDeviceLinkError = false;
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         bool sharingViolationError = false;
 #endif
         static const bool forceCopy = CommonUtility::envVarValue("KDRIVE_PRESERVE_PERMISSIONS_ON_CREATE") == "1";
@@ -502,14 +502,14 @@ bool DownloadJob::moveTmpFile() {
                                                                       << Utility::formatStdError(ec) << L"'");
                 error = true;
                 accessDeniedError = IoHelper::stdError2ioError(ec.value()) == IoError::AccessDenied;
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
                 sharingViolationError = ec.value() == ERROR_SHARING_VIOLATION; // In this case, we will try again
 #endif
             }
         }
 
         if (error) {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
             if (sharingViolationError) {
                 if (counter) {
                     // Retry
@@ -550,7 +550,7 @@ bool DownloadJob::moveTmpFile() {
                 return false;
             }
         }
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     }
 #endif
 

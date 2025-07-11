@@ -26,7 +26,7 @@ namespace KDC {
 RefreshTokenJob::RefreshTokenJob(const ApiToken &apiToken) {
     _apiToken = apiToken;
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     if (!Utility::preventSleeping(true)) {
         LOG_WARN(_logger, "Error in Utility::preventSleeping");
     }
@@ -34,7 +34,7 @@ RefreshTokenJob::RefreshTokenJob(const ApiToken &apiToken) {
 }
 
 RefreshTokenJob::~RefreshTokenJob() {
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     if (!Utility::preventSleeping(false)) {
         LOG_WARN(_logger, "Error in Utility::preventSleeping");
     }

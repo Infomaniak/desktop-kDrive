@@ -42,7 +42,7 @@ class PlatformInconsistencyCheckerUtility {
         static bool isNameOnlySpaces(const SyncName &name);
         static bool nameEndWithForbiddenSpace(const SyncName &name);
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         bool fixNameWithBackslash(const SyncName &name, SyncName &newName);
 #endif
         bool checkReservedNames(const SyncName &name);
