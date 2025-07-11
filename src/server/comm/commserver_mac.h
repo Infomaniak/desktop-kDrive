@@ -49,7 +49,7 @@ class CommServer : public KDC::AbstractCommServer {
         ~CommServer();
 
         void close() override;
-        bool listen(const std::string &name) override;
+        bool listen(const KDC::SyncPath &) override;
         std::shared_ptr<KDC::AbstractCommChannel> nextPendingConnection() override;
         std::list<std::shared_ptr<KDC::AbstractCommChannel>> extConnections() override;
         std::shared_ptr<KDC::AbstractCommChannel> guiConnection() override;

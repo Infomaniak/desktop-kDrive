@@ -35,8 +35,6 @@
 #include "commserver.h"
 #endif
 
-#include <QApplication>
-#include <QUrl>
 #include <QFile>
 #include <QDir>
 #include <QClipboard>
@@ -44,6 +42,7 @@
 #include <QDesktopServices>
 #include <QStandardPaths>
 #include <QPixmap>
+#include <QUrl>
 
 #ifdef __APPLE__
 #include <CoreFoundation/CoreFoundation.h>
@@ -526,8 +525,6 @@ void CommManager::commandMakeAvailableLocallyDirect(const CommString &argument, 
                       L"Error in SocketApi::addDownloadJob - " << Utility::formatSyncPath(filePath));
             continue;
         }
-
-        QCoreApplication::processEvents();
     }
 }
 

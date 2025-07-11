@@ -468,7 +468,7 @@ void CommServer::close() {
     // Assume we'll be destroyed right after
 }
 
-bool CommServer::listen(const SyncPath &) {
+bool CommServer::listen(const KDC::SyncPath &) {
     [_privatePtr->_server start];
 
     return TRUE;
