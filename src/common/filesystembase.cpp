@@ -44,7 +44,7 @@ QString FileSystem::longWinPath(const QString &inpath) {
 }
 
 void FileSystem::setFileHidden(const QString &filename, bool hidden) {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     QString fName = longWinPath(filename);
     DWORD dwAttrs;
 

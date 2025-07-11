@@ -20,13 +20,12 @@
 
 #include "libcommon/libcommon.h"
 #include "types.h"
-#include "utility_base.h"
 
 #include <string>
 #include <thread>
 #include <random>
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include <strsafe.h>
 #endif
 
@@ -118,7 +117,8 @@ struct COMMON_EXPORT CommonUtility {
         /**
          * @brief Determines if the given path is the root folder of a disk and optionally suggests a corrected path.
          * @param absolutePath The absolute path to check for being a disk root folder.
-         * @param suggestedPath Reference to a path variable where a suggested corrected path may be stored if the input is not a disk root.
+         * @param suggestedPath Reference to a path variable where a suggested corrected path may be stored if the input is not a
+         * disk root.
          * @return True if the given path is a disk root folder; otherwise, false.
          */
         static bool isDiskRootFolder(const SyncPath &absolutePath, SyncPath &suggestedPath);
@@ -128,7 +128,7 @@ struct COMMON_EXPORT CommonUtility {
         static bool dirNameIsValid(const SyncName &name);
         static bool fileNameIsValid(const SyncName &name);
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         static const std::string loginItemAgentId();
         static const std::string liteSyncExtBundleId();
         static bool isLiteSyncExtEnabled();
@@ -142,18 +142,10 @@ struct COMMON_EXPORT CommonUtility {
         static void writeSignalFile(AppType appType, SignalType signalType) noexcept;
         static void clearSignalFile(AppType appType, SignalCategory signalCategory, SignalType &signalType) noexcept;
 
-        static bool isLikeFileNotFoundError(const std::error_code &ec) noexcept {
-            return utility_base::isLikeFileNotFoundError(ec);
-        };
 
-
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         // Converts a std::wstring to std::string assuming that it contains only mono byte chars
         static std::string toUnsafeStr(const SyncName &name);
-
-        static std::wstring getErrorMessage(DWORD errorMessageId) { return utility_base::getErrorMessage(errorMessageId); }
-        static std::wstring getLastErrorMessage() { return utility_base::getLastErrorMessage(); };
-        static bool isLikeFileNotFoundError(DWORD dwError) noexcept { return utility_base::isLikeFileNotFoundError(dwError); };
 #endif
 
         static QString truncateLongLogMessage(const QString &message);

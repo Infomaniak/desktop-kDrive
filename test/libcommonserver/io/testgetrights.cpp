@@ -123,7 +123,7 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     // Getting the rights of a MacOSX Finder alias on a regular file.
     {
         const LocalTemporaryDirectory temporaryDirectory;
@@ -232,7 +232,7 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(execPermission == false);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
     // Getting the rights of a junction on a regular folder.
     {
         const LocalTemporaryDirectory temporaryDirectory;

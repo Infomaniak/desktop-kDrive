@@ -99,7 +99,7 @@ void TestExecutorWorker::tearDown() {
 }
 
 void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     _executorWorker = std::make_shared<ExecutorWorker>(_syncPal, "Executor", "EXEC");
 
 

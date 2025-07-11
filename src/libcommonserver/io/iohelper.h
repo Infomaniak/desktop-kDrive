@@ -22,13 +22,13 @@
 #include "libcommon/utility/types.h"
 #include "libcommonserver/log/log.h"
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include <AccCtrl.h>
 #endif
 
 namespace KDC {
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 namespace litesync_attrs {
 
 //! Item status
@@ -178,7 +178,7 @@ struct IoHelper {
         static bool checkIfIsHiddenFile(const SyncPath &path, bool checkAncestors, bool &isHidden, IoError &ioError) noexcept;
         static bool checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError &ioError) noexcept;
 
-#if defined(__APPLE__) || defined(WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         //! Hides or reveals the item indicated by path.
         /*!
          \param path is a file system path to a directory entry (we also call it an item).
@@ -250,7 +250,7 @@ struct IoHelper {
         */
         static bool createSymlink(const SyncPath &targetPath, const SyncPath &path, bool isFolder, IoError &ioError) noexcept;
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         //! Create a Finder alias file for the specified target under the specified path.
         /*!
          \param targetPath is the file system path of the target item.
@@ -350,7 +350,7 @@ struct IoHelper {
         static bool copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
 
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         // From `man xattr`:
         // Extended attributes are arbitrary metadata stored with a file, but separate from the
         // filesystem attributes (such as modification time or file size). The metadata is often a null-terminated UTF-8 string,
@@ -404,7 +404,7 @@ struct IoHelper {
         }
 #endif
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #ifndef _WINDEF_
         using DWORD = unsigned long;
 #endif
@@ -477,7 +477,7 @@ struct IoHelper {
 
         static bool openFile(const SyncPath &path, std::ifstream &file, IoError &ioError, int timeOut = 10 /*in seconds*/);
         static ExitInfo openFile(const SyncPath &path, std::ifstream &file, int timeOut = 10 /*in seconds*/);
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         static bool getLongPathName(const SyncPath &path, SyncPath &longPathName, IoError &ioError);
         static bool getShortPathName(const SyncPath &path, SyncPath &shortPathName, IoError &ioError);
 #endif
@@ -494,7 +494,7 @@ struct IoHelper {
         static std::function<SyncPath(const SyncPath &path, std::error_code &ec)> _readSymlink;
         static std::function<std::uintmax_t(const SyncPath &path, std::error_code &ec)> _fileSize;
         static std::function<SyncPath(std::error_code &ec)> _tempDirectoryPath;
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         // Can be modified in tests.
         static std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> _readAlias;
 #endif
@@ -507,7 +507,7 @@ struct IoHelper {
         static log4cplus::Logger _logger;
         inline static log4cplus::Logger logger() { return Log::isSet() ? Log::instance()->getLogger() : _logger; }
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         static bool _checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioError) noexcept;
 #endif
         static bool _setTargetType(ItemType &itemType) noexcept;
@@ -515,7 +515,7 @@ struct IoHelper {
 
         static bool _setRightsStd(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         static bool _setRightsWindowsApiInheritance; // For windows tests only
         static int _getAndSetRightsMethod;
         static std::unique_ptr<BYTE[]> _psid;
