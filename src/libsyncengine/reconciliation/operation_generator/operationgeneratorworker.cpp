@@ -276,9 +276,10 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
                                                        std::shared_ptr<Node> correspondingNode) {
     auto op = std::make_shared<SyncOperation>();
 
-    assert(correspondingNode); // Node must exist on both replica (except for create operations)
+    assert(correspondingNode);
 
     // Do not generate delete operation if parent already deleted
+    assert(currentNode->parentNode() && currentNode->parentNode()->id().has_value());
     if (_deletedNodes.contains(*currentNode->parentNode()->id())) {
         return;
     }
