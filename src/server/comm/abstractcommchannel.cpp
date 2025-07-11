@@ -21,6 +21,8 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 
+static constexpr char messageSeparator('\n');
+
 namespace KDC {
 
 AbstractCommChannel::~AbstractCommChannel() {
@@ -37,20 +39,22 @@ void AbstractCommChannel::close() {
 
 void AbstractCommChannel::sendMessage(const CommString &message, bool doWait) {
     const CommString truncatedLogMessage = truncateLongLogMessage(message);
-    LOGW_INFO(KDC::Log::instance()->getLogger(),
-              L"Sending message: " << CommString2WStr(truncatedLogMessage) << L" to: " << this);
+    LOGW_INFO(Log::instance()->getLogger(),
+              L"Sending message: " << CommString2WStr(truncatedLogMessage) << L" to: " << Utility::s2ws(id()));
 
+    // Add messages separator if needed
     CommString localMessage = message;
-    if (!localMessage.ends_with('\n')) {
-        localMessage.append("\n");
+    if (!localMessage.ends_with(messageSeparator)) {
+        localMessage.push_back(messageSeparator);
     }
 
     auto sent = write(localMessage);
     if (doWait) {
         waitForBytesWritten(1000);
     }
+
     if (sent != localMessage.size()) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Could not send all data on socket for " << CommString2WStr(localMessage));
+        LOGW_WARN(Log::instance()->getLogger(), L"Could not send all data on socket for " << CommString2WStr(localMessage));
     }
 }
 
@@ -67,17 +71,19 @@ bool AbstractCommChannel::waitForBytesWritten(int msecs) {
 CommString AbstractCommChannel::readLine() {
     static const uint64_t maxlen = 1024;
     char data[maxlen];
-    uint64_t readSize = 0;
     CommString line;
-    do {
-        readSize = readData(data, maxlen);
-        _readBuffer += Str2CommString(data);
-        if (auto eofPos = _readBuffer.find('\n'); eofPos != std::string::npos) {
-            line = _readBuffer.substr(0, eofPos);
-            _readBuffer.erase(0, eofPos);
+    forever {
+        if (auto sepPos = _readBuffer.find(messageSeparator); sepPos != std::string::npos) {
+            line = _readBuffer.substr(0, sepPos);
+            _readBuffer.erase(0, sepPos + 1);
             break;
         }
-    } while (readSize == maxlen);
+        if (auto readSize = readData(data, maxlen); readSize > 0) {
+            _readBuffer.append(data, readSize);
+        } else {
+            break;
+        }
+    }
     return line;
 }
 

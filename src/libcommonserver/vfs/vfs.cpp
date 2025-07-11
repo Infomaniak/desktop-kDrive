@@ -67,23 +67,23 @@ Vfs::~Vfs() {
     }
 }
 
-QString Vfs::modeToString(KDC::VirtualFileMode virtualFileMode) {
+CommString Vfs::modeToString(KDC::VirtualFileMode virtualFileMode) {
     // Note: Strings are used for config and must be stable
     switch (virtualFileMode) {
         case KDC::VirtualFileMode::Off:
-            return QStringLiteral("off");
+            return Str("off");
         case KDC::VirtualFileMode::Suffix:
-            return QStringLiteral("suffix");
+            return Str("suffix");
         case KDC::VirtualFileMode::Win:
-            return QStringLiteral("wincfapi");
+            return Str("wincfapi");
         case KDC::VirtualFileMode::Mac:
-            return QStringLiteral("mac");
+            return Str("mac");
         case KDC::VirtualFileMode::EnumEnd: {
             assert(false && "Invalid enum value in switch statement.");
         }
     }
 
-    return QStringLiteral("off");
+    return Str("off");
 }
 
 KDC::VirtualFileMode Vfs::modeFromString(const QString &str) {

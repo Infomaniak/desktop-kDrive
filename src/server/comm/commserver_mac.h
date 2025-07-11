@@ -35,9 +35,10 @@ class CommChannel : public KDC::AbstractCommChannel {
         uint64_t writeData(const char *data, uint64_t len) override;
         uint64_t bytesAvailable() const override;
         bool canReadLine() const override;
+        std::string id() const override;
 
     private:
-        std::unique_ptr<CommChannelPrivate> d_ptr;
+        std::unique_ptr<CommChannelPrivate> _privatePtr;
 
         friend class CommServerPrivate;
 };
@@ -53,8 +54,8 @@ class CommServer : public KDC::AbstractCommServer {
         std::list<std::shared_ptr<KDC::AbstractCommChannel>> extConnections() override;
         std::shared_ptr<KDC::AbstractCommChannel> guiConnection() override;
 
-        static bool removeServer(const std::string &) { return true; }
+        static bool removeServer(const KDC::SyncPath &) { return true; }
 
     private:
-        std::unique_ptr<CommServerPrivate> d_ptr;
+        std::unique_ptr<CommServerPrivate> _privatePtr;
 };

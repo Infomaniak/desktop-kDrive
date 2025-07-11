@@ -68,6 +68,12 @@ class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChan
         */
         virtual bool canReadLine() const = 0;
 
+        //! Gets a device ID.
+        /*!
+          \return the device ID.
+        */
+        virtual std::string id() const = 0;
+
         // Callbacks
         void setLostConnectionCbk(const std::function<void(std::shared_ptr<AbstractCommChannel>)> &cbk) {
             _onLostConnectionCbk = cbk;

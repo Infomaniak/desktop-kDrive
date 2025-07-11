@@ -97,7 +97,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
                                       bool withPath = false);
         static ExitInfo getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath = false);
         static ExitCode createDir(int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId);
-        static ExitCode getPublicLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl);
+        static ExitCode getPublicLinkUrl(int driveDbId, const NodeId &nodeId, std::string &linkUrl);
         static ExitInfo getFolderSize(int userDbId, int driveId, const NodeId &nodeId,
                                       std::function<void(const QString &, qint64)> callback);
         static ExitCode getNodeIdByPath(int userDbId, int driveId, const SyncPath &path, QString &nodeId);

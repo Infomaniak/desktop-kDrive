@@ -219,7 +219,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void resetSnapshotInvalidationCounters();
 
         ExitCode addDlDirectJob(const SyncPath &relativePath, const SyncPath &localPath);
-        ExitCode cancelDlDirectJobs(const std::list<SyncPath> &fileList);
+        ExitCode cancelDlDirectJobs(const std::vector<SyncPath> &fileList);
         ExitCode cancelAllDlDirectJobs(bool quit);
         ExitCode cleanOldUploadSessionTokens();
         bool isDownloadOngoing(const SyncPath &localPath);

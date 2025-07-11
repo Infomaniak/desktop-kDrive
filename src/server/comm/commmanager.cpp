@@ -32,10 +32,8 @@
 #include <array>
 
 #include <QUrl>
-#include <QStringList>
 #include <QFile>
 #include <QDir>
-#include <QApplication>
 #include <QClipboard>
 #include <QBuffer>
 #include <QDesktopServices>
@@ -75,8 +73,11 @@ bool syncForPath(const std::filesystem::path &path, Sync &sync) {
 CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<SyncPal>> &syncPalMap,
                          const std::unordered_map<int, std::shared_ptr<Vfs>> &vfsMap) :
     _syncPalMap(syncPalMap),
-    _vfsMap(vfsMap) {
+    _vfsMap(vfsMap),
+    _localServer(std::make_unique<CommServer>()) {
+    // Extensions commands
     _commands = {
+            {"GET_MENU_ITEMS", std::bind(&CommManager::commandGetMenuItems, this, std::placeholders::_1, std::placeholders::_2)},
             {"COPY_PUBLIC_LINK",
              std::bind(&CommManager::commandCopyPublicLink, this, std::placeholders::_1, std::placeholders::_2)},
             {"COPY_PRIVATE_LINK",
@@ -91,20 +92,16 @@ CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<SyncPal>>
             {"GET_THUMBNAIL", std::bind(&CommManager::commandGetThumbnail, this, std::placeholders::_1, std::placeholders::_2)},
 #endif
 #ifdef __APPLE__
-            // From FinderSyncExt
             {"RETRIEVE_FOLDER_STATUS",
              std::bind(&CommManager::commandRetrieveFolderStatus, this, std::placeholders::_1, std::placeholders::_2)},
             {"RETRIEVE_FILE_STATUS",
              std::bind(&CommManager::commandRetrieveFileStatus, this, std::placeholders::_1, std::placeholders::_2)},
-            // From FinderSyncExt (Contextual menu)
-            {"GET_MENU_ITEMS", std::bind(&CommManager::commandGetMenuItems, this, std::placeholders::_1, std::placeholders::_2)},
             {"MAKE_ONLINE_ONLY_DIRECT",
              std::bind(&CommManager::commandMakeOnlineOnlyDirect, this, std::placeholders::_1, std::placeholders::_2)},
             {"CANCEL_DEHYDRATION_DIRECT",
              std::bind(&CommManager::commandCancelDehydrationDirect, this, std::placeholders::_1, std::placeholders::_2)},
             {"CANCEL_HYDRATION_DIRECT",
              std::bind(&CommManager::commandCancelHydrationDirect, this, std::placeholders::_1, std::placeholders::_2)},
-            // From LiteSyncExt
             {"SET_THUMBNAIL", std::bind(&CommManager::commandSetThumbnail, this, std::placeholders::_1, std::placeholders::_2)}
 #endif
     };
@@ -114,48 +111,54 @@ CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<SyncPal>>
     _localServer->setLostExtConnectionCbk(std::bind(&CommManager::onLostExtConnection, this, std::placeholders::_1));
     _localServer->setLostGuiConnectionCbk(std::bind(&CommManager::onLostGuiConnection, this, std::placeholders::_1));
 
-    QString socketPath;
-    if (OldUtility::isWindows()) {
-        socketPath = QString(R"(\\.\pipe\%1-%2)").arg(APPLICATION_SHORTNAME, Utility::userName().c_str());
-    } else if (OldUtility::isMac()) {
-        socketPath = SOCKETAPI_TEAM_IDENTIFIER_PREFIX APPLICATION_REV_DOMAIN ".socketApi";
 #ifdef __APPLE__
-        // Tell Finder to use the Extension (checking it from System Preferences -> Extensions)
-        QString cmd = QString("pluginkit -v -e use -i " APPLICATION_REV_DOMAIN ".Extension");
-        system(cmd.toLocal8Bit());
+    // Tell Finder to use the Extension (checking it from System Preferences -> Extensions)
+    std::string cmd("pluginkit -v -e use -i ");
+    cmd.append(APPLICATION_REV_DOMAIN);
+    cmd.append(".Extension");
+    system(cmd.c_str());
 
-        // Add it again. This was needed for Mojave to trigger a load.
-        // TODO: Still needed?
-        CFURLRef url = (CFURLRef) CFAutorelease((CFURLRef) CFBundleCopyBundleURL(CFBundleGetMainBundle()));
-        QString appexPath = QUrl::fromCFURL(url).path() + "Contents/PlugIns/Extension.appex/";
-        if (std::filesystem::exists(QStr2Path(appexPath))) {
-            // Bundled app (i.e. not test executable)
-            cmd = QString("pluginkit -v -a ") + appexPath;
-            system(cmd.toLocal8Bit());
-        }
+    // Add it again. This was needed for Mojave to trigger a load.
+    // TODO: Still needed?
+    SyncPath extPath(CommonUtility::getExtensionPath());
+    if (std::filesystem::exists(extPath)) {
+        // Bundled app (i.e. not test executable)
+        std::string cmd("pluginkit -v -a ");
+        cmd.append(extPath.native());
+        system(cmd.c_str());
+    }
 #endif
-    } else if (OldUtility::isLinux()) {
-        const QString runtimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
-        socketPath = runtimeDir + "/" + Theme::instance()->appName() + "/socket";
-    } else {
-        LOG_WARN(Log::instance()->getLogger(), "An unexpected system detected, this probably won't work.");
-    }
 
-    CommServer::removeServer(socketPath.toStdString());
-    const QFileInfo info(socketPath);
-    if (!info.dir().exists()) {
-        bool result = info.dir().mkpath(".");
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Creating " << info.dir().path().toStdWString() << result);
-        if (result) {
-            QFile::setPermissions(socketPath, QFile::Permissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner));
+    SyncPath socketPath;
+#if defined(_WIN32) or defined(__unix__)
+    // Create socket file
+#ifdef _WIN32
+    std::string name(APPLICATION_SHORTNAME);
+    name.append("-");
+    name.append(Utility::userName());
+    socketPath = SyncPath(R"(\\.\pipe\)") / Str2SyncName(name);
+#else
+    socketPath = QStr2Path(QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation)) /
+                 QStr2SyncName(Theme::instance()->appName()) / Str("socket");
+#endif
+
+    CommServer::removeServer(socketPath);
+    if (const QFileInfo info(Path2QStr(socketPath)); !info.dir().exists()) {
+        if (info.dir().mkpath(".")) {
+            QFile::setPermissions(Path2QStr(socketPath),
+                                  QFile::Permissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner));
+            LOGW_DEBUG(Log::instance()->getLogger(), L"Socket created: " << Utility::formatSyncPath(socketPath));
+        } else {
+            LOGW_WARN(Log::instance()->getLogger(), L"Failed to create socket: " << Utility::formatSyncPath(socketPath));
         }
     }
+#endif
 
-    if (!_localServer->listen(socketPath.toStdString())) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Can't start server - " << Utility::formatPath(socketPath));
+    if (!_localServer->listen(socketPath)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Can't start server: " << Utility::formatSyncPath(socketPath));
         _addError(Error(errId(), ExitCode::SystemError, ExitCause::Unknown));
     } else {
-        LOGW_INFO(Log::instance()->getLogger(), L"Server started - " << Utility::formatPath(socketPath));
+        LOGW_INFO(Log::instance()->getLogger(), L"Server started: " << Utility::formatSyncPath(socketPath));
     }
 }
 
@@ -178,7 +181,7 @@ void CommManager::executeCommandDirect(const CommString &commandLineStr) {
 }
 
 void CommManager::executeCommand(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel) {
-    std::vector<CommString> commands = CommonUtility::splitCommString(commandLineStr, MSG_CDE_SEPARATOR);
+    const auto commands = CommonUtility::splitCommString(commandLineStr, MSG_CDE_SEPARATOR);
     std::string command = CommString2Str(commands[0]);
 
     CommString argument(commandLineStr);
@@ -197,7 +200,7 @@ void CommManager::onNewExtConnection() {
     std::shared_ptr<AbstractCommChannel> channel = _localServer->nextPendingConnection();
     if (!channel) return;
 
-    LOG_INFO(Log::instance()->getLogger(), "New ext connection - channel=" << channel.get());
+    LOG_INFO(Log::instance()->getLogger(), "New ext connection - channel=" << channel->id());
     channel->setReadyReadCbk(std::bind(&CommManager::onExtQueryReceived, this, std::placeholders::_1));
 
     // Load sync list
@@ -216,19 +219,19 @@ void CommManager::onNewExtConnection() {
 }
 
 void CommManager::onLostExtConnection(std::shared_ptr<AbstractCommChannel> channel) {
-    LOG_INFO(Log::instance()->getLogger(), "Lost ext connection - channel=" << channel.get());
+    LOG_INFO(Log::instance()->getLogger(), "Lost ext connection - channel=" << channel->id());
 }
 
 void CommManager::onNewGuiConnection() {
     std::shared_ptr<AbstractCommChannel> channel = _localServer->guiConnection();
     if (!channel) return;
 
-    LOG_INFO(Log::instance()->getLogger(), "New gui connection - channel=" << channel.get());
+    LOG_INFO(Log::instance()->getLogger(), "New gui connection - channel=" << channel->id());
     channel->setReadyReadCbk(std::bind(&CommManager::onGuiQueryReceived, this, std::placeholders::_1));
 }
 
 void CommManager::onLostGuiConnection(std::shared_ptr<AbstractCommChannel> channel) {
-    LOG_INFO(Log::instance()->getLogger(), "Lost gui connection - sender=" << channel.get());
+    LOG_INFO(Log::instance()->getLogger(), "Lost gui connection - sender=" << channel->id());
 }
 
 void CommManager::onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channel) {
@@ -239,14 +242,14 @@ void CommManager::onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channe
         CommString query = channel->readLine();
         LOGW_INFO(Log::instance()->getLogger(), L"Query received: " << CommString2WStr(query));
 
-        std::vector<CommString> queryArgs = CommonUtility::splitCommString(query, QUERY_ARG_SEPARATOR);
+        const auto queryArgs = CommonUtility::splitCommString(query, QUERY_ARG_SEPARATOR);
         // Query ID
-        const int id = std::stoi(queryArgs[0]);
+        const int id = CommString2Int(queryArgs[0]);
         // Query type
-        const RequestNum num = static_cast<RequestNum>(std::stoi(queryArgs[1]));
+        const RequestNum num = static_cast<RequestNum>(CommString2Int(queryArgs[1]));
 
         if (num == RequestNum::SYNC_START || num == RequestNum::SYNC_STOP) {
-            const int syncDbId = std::stoi(queryArgs[2]);
+            const int syncDbId = CommString2Int(queryArgs[2]);
             QByteArray params;
             QDataStream paramsStream(&params, QIODevice::WriteOnly);
             paramsStream << syncDbId;
@@ -263,8 +266,9 @@ void CommManager::onExtQueryReceived(std::shared_ptr<AbstractCommChannel> channe
         CommString line;
         while (!line.ends_with(QUERY_END_SEPARATOR)) {
             if (!channel->canReadLine()) {
-                LOGW_WARN(Log::instance()->getLogger(),
-                          L"Failed to parse SocketAPI message - msg=" << CommString2WStr(line) << L" channel=" << channel.get());
+                LOGW_WARN(Log::instance()->getLogger(), L"Failed to parse SocketAPI message - msg="
+                                                                << CommString2WStr(line) << L" channel="
+                                                                << Utility::s2ws(channel->id()));
                 return;
             }
             line.append(channel->readLine());
@@ -272,7 +276,7 @@ void CommManager::onExtQueryReceived(std::shared_ptr<AbstractCommChannel> channe
         // Remove the separator
         line.erase(line.find(QUERY_END_SEPARATOR));
         LOGW_INFO(Log::instance()->getLogger(),
-                  L"Received SocketAPI message - msg=" << CommString2WStr(line) << L" channel=" << channel.get());
+                  L"Received SocketAPI message - msg=" << CommString2WStr(line) << L" channel=" << Utility::s2ws(channel->id()));
         executeCommand(line, channel);
     }
 }
@@ -312,12 +316,113 @@ void CommManager::unregisterSync(int syncDbId) {
 
     broadcastMessage(buildMessage("UNREGISTER_PATH", sync.localPath(), ""), true);
 
-    _registeredSyncs.remove(syncDbId);
+    _registeredSyncs.erase(syncDbId);
 }
 
 void CommManager::broadcastMessage(const CommString &msg, bool doWait) {
     foreach (auto &channel, _localServer->extConnections()) {
         channel->sendMessage(msg, doWait);
+    }
+}
+
+void CommManager::commandGetMenuItems(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
+    {
+        CommString message(Str("GET_MENU_ITEMS"));
+        message.append(MSG_CDE_SEPARATOR);
+        message.append(Str("BEGIN"));
+        channel->sendMessage(message);
+    }
+
+    const auto files = CommonUtility::splitCommString(argument, MSG_ARG_SEPARATOR);
+
+    // Find the common sync
+    Sync sync;
+    for (const auto &file: files) {
+        Sync tmpSync;
+        if (!syncForPath(file, tmpSync)) {
+            return;
+        }
+        if (tmpSync.dbId() != sync.dbId()) {
+            if (!sync.dbId()) {
+                sync = tmpSync;
+            } else {
+                sync.setDbId(0);
+                break;
+            }
+        }
+    }
+
+    // Find SyncPal and Vfs associated to sync
+    std::unordered_map<int, std::shared_ptr<SyncPal>>::const_iterator syncPalMapIt = _syncPalMap.end();
+    std::unordered_map<int, std::shared_ptr<Vfs>>::const_iterator vfsMapIt = _vfsMap.end();
+    if (sync.dbId()) {
+        syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
+        if (syncPalMapIt == _syncPalMap.end()) return;
+
+        vfsMapIt = retrieveVfsMapIt(sync.dbId());
+        if (vfsMapIt == _vfsMap.end()) return;
+    }
+
+    // Some options only show for single files
+    bool isSingleFile = false;
+    if (files.size() == 1) {
+        manageActionsOnSingleFile(channel, files, syncPalMapIt, vfsMapIt, sync);
+
+        isSingleFile = QFileInfo(CommString2QStr(files[0])).isFile();
+    }
+
+    // Manage dehydration cancellation
+    bool canCancelDehydration = false;
+
+    {
+        const std::lock_guard lock(_dehydrationMutex);
+        if (_nbOngoingDehydration > 0) {
+            canCancelDehydration = true;
+        }
+    }
+
+    // File availability actions
+    if (sync.dbId() && sync.virtualFileMode() != VirtualFileMode::Off && vfsMapIt->second->socketApiPinStateActionsShown()) {
+        LOG_IF_FAIL(Log::instance()->getLogger(), !files.empty());
+
+        bool canHydrate = true;
+        bool canDehydrate = true;
+        bool canCancelHydration = false;
+        for (const auto &file: files) {
+            VfsStatus vfsStatus;
+            if (!canCancelHydration && vfsMapIt->second->status(file, vfsStatus) && vfsStatus.isSyncing) {
+                canCancelHydration = syncPalMapIt->second->isDownloadOngoing(file);
+            }
+
+            if (isSingleFile) {
+                canHydrate = vfsStatus.isPlaceholder && !vfsStatus.isSyncing && !vfsStatus.isHydrated;
+                canDehydrate = vfsStatus.isPlaceholder && !vfsStatus.isSyncing && vfsStatus.isHydrated;
+            }
+        }
+
+        // TODO: Should be a submenu, should use icons
+        auto makePinContextMenu = [&](bool makeAvailableLocally, bool freeSpace, bool cancelDehydration, bool cancelHydration) {
+            buildAndSendMenuItemMessage(channel, Str("MAKE_AVAILABLE_LOCALLY_DIRECT"), makeAvailableLocally, vfsPinActionText());
+
+            if (cancelHydration) {
+                buildAndSendMenuItemMessage(channel, Str("CANCEL_HYDRATION_DIRECT"), true, cancelHydrationText());
+            }
+
+            buildAndSendMenuItemMessage(channel, Str("MAKE_ONLINE_ONLY_DIRECT"), freeSpace, vfsFreeSpaceActionText());
+
+            if (cancelDehydration) {
+                buildAndSendMenuItemMessage(channel, Str("CANCEL_DEHYDRATION_DIRECT"), true, cancelDehydrationText());
+            }
+        };
+
+        makePinContextMenu(canHydrate, canDehydrate, canCancelDehydration, canCancelHydration);
+    }
+
+    {
+        CommString message(Str("GET_MENU_ITEMS"));
+        message.append(MSG_CDE_SEPARATOR);
+        message.append(Str("END"));
+        channel->sendMessage(message);
     }
 }
 
@@ -330,17 +435,18 @@ void CommManager::commandCopyPublicLink(const CommString &argument, std::shared_
 
     // Get NodeId
     NodeId nodeId;
-    ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2Path(fileData.relativePath), nodeId);
+    ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(fileData.relativePath, nodeId);
     if (exitCode != ExitCode::Ok) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatPath(fileData.relativePath));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatSyncPath(fileData.relativePath));
         return;
     }
 
     // Get public link URL
-    QString linkUrl;
-    exitCode = _getPublicLinkUrl(fileData.driveDbId, QString::fromStdString(nodeId), linkUrl);
+    std::string linkUrl;
+    exitCode = _getPublicLinkUrl(fileData.driveDbId, nodeId, linkUrl);
     if (exitCode != ExitCode::Ok) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in getPublicLinkUrl - " << Utility::formatPath(fileData.relativePath));
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in getPublicLinkUrl - " << Utility::formatSyncPath(fileData.relativePath));
         return;
     }
 
@@ -364,15 +470,14 @@ void CommManager::commandCancelDehydrationDirect(const CommString &, std::shared
 void CommManager::commandCancelHydrationDirect(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
     LOG_INFO(Log::instance()->getLogger(), "Ongoing files hydrations canceled");
 
-    const QStringList fileList = SyncName2QStr(argument).split(MSG_ARG_SEPARATOR);
-
+    const auto fileList = CommonUtility::splitCommString(argument, QUERY_ARG_SEPARATOR);
     if (fileList.size() == 0) {
         return;
     }
 
     Sync sync;
-    if (!syncForPath(QStr2Path(fileList[0]), sync)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Sync not found - " << Utility::formatPath(fileList[0]));
+    if (!syncForPath(fileList[0], sync)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Sync not found - " << Utility::formatSyncPath(fileList[0]));
         return;
     }
 
@@ -382,8 +487,8 @@ void CommManager::commandCancelHydrationDirect(const CommString &argument, std::
     }
 
 #ifdef _WIN32
-    for (const auto &p: qAsConst(fileList)) {
-        QString filePath = QDir::cleanPath(p);
+    for (const auto &filePathStr: fileList) {
+        SyncPath filePath(filePathStr);
         FileData fileData = FileData::get(filePath);
 
         if (!fileData.syncDbId) {
@@ -393,22 +498,22 @@ void CommManager::commandCancelHydrationDirect(const CommString &argument, std::
         auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
         if (vfsMapIt == _vfsMap.cend()) continue;
 
-        vfsMapIt->second->cancelHydrate(QStr2Path(filePath));
+        vfsMapIt->second->cancelHydrate(filePath);
     }
 #endif
 }
 
 void CommManager::commandMakeAvailableLocallyDirect(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
-    const QStringList fileList = SyncName2QStr(argument).split(MSG_ARG_SEPARATOR);
+    const auto fileList = CommonUtility::splitCommString(argument, MSG_ARG_SEPARATOR);
 
 #ifdef __APPLE__
-    std::list<SyncPath> fileListExpanded;
+    std::vector<SyncPath> fileListExpanded;
     processFileList(fileList, fileListExpanded);
 
-    for (const auto &filePath: qAsConst(fileListExpanded)) {
+    for (const auto &filePath: fileListExpanded) {
 #else
-    for (const auto &str: qAsConst(fileList)) {
-        std::filesystem::path filePath = QStr2Path(str);
+    for (const auto &filePathStr: fileList) {
+        SyncPath filePath(filePathStr);
 #endif
         auto fileData = FileData::get(filePath);
         if (!fileData.syncDbId) {
@@ -462,21 +567,21 @@ void CommManager::commandMakeAvailableLocallyDirect(const CommString &argument, 
 
 #ifdef _WIN32
 void CommManager::commandGetAllMenuItems(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
-    QStringList argumentList = SyncName2QStr(argument).split(MSG_ARG_SEPARATOR);
+    const auto argumentList = CommonUtility::splitCommString(argument, MSG_ARG_SEPARATOR);
 
-    QString msgId = argumentList[0];
-    argumentList.removeFirst();
+    CommString msgId = argumentList[0];
+    argumentList.erase(argumentList.begin());
 
-    QString responseStr;
-    QTextStream response(&responseStr);
-    response << msgId << MSG_CDE_SEPARATOR << Theme::instance()->appNameGUI();
+    CommString response(msgId);
+    response.append(MSG_CDE_SEPARATOR);
+    response.append(QStr2CommString(Theme::instance()->appNameGUI()));
 
     // Find the common sync
     Sync sync;
-    for (const auto &file: qAsConst(argumentList)) {
+    for (const auto &filePathStr: argumentList) {
         Sync tmpSync;
-        if (!syncForPath(QStr2Path(file), tmpSync)) {
-            channel->sendMessage(responseStr);
+        if (!syncForPath(filePathStr, tmpSync)) {
+            channel->sendMessage(response);
             return;
         }
 
@@ -495,35 +600,41 @@ void CommManager::commandGetAllMenuItems(const CommString &argument, std::shared
     if (sync.dbId()) {
         syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
         if (syncPalMapIt == _syncPalMap.end()) {
-            listener->sendMessage(responseStr);
+            listener->sendMessage(response);
             return;
         }
 
         vfsMapIt = retrieveVfsMapIt(sync.dbId());
         if (vfsMapIt == _vfsMap.end()) {
-            listener->sendMessage(responseStr);
+            listener->sendMessage(response);
             return;
         }
     }
 
-    response << MSG_CDE_SEPARATOR << (sync.dbId() ? Vfs::modeToString(vfsMapIt->second->mode()) : QString());
+    response.append(MSG_CDE_SEPARATOR);
+    response.append(sync.dbId() ? Vfs::modeToString(vfsMapIt->second->mode()) : Str(""));
 
     // Some options only show for single files
     if (argumentList.size() == 1) {
-        FileData fileData = FileData::get(argumentList.first());
+        FileData fileData = FileData::get(argumentList[0]);
         NodeId nodeId;
-        ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2Path(fileData.relativePath), nodeId);
+        ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(fileData.relativePath, nodeId);
         if (exitCode != ExitCode::Ok) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatPath(fileData.relativePath));
-            listener->sendMessage(responseStr);
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in SyncPal::itemId - " << Utility::formatSyncPath(fileData.relativePath));
+            listener->sendMessage(response);
             return;
         }
         bool isOnTheServer = !nodeId.empty();
-        auto flagString = QString("%1%2%1").arg(MSG_CDE_SEPARATOR).arg(isOnTheServer ? QString() : QString("d"));
 
         if (sync.dbId()) {
             addSharingContextMenuOptions(fileData, response);
-            response << QString("%1OPEN_PRIVATE_LINK%2").arg(MSG_CDE_SEPARATOR).arg(flagString + QObject::tr("Open in browser"));
+            response.append(MSG_CDE_SEPARATOR);
+            response.append(Str("OPEN_PRIVATE_LINK"));
+            response.append(MSG_CDE_SEPARATOR);
+            response.append(isOnTheServer ? Str("") : Str("d"));
+            response.append(MSG_CDE_SEPARATOR);
+            response.append(openInBrowserText());
         }
     }
 
@@ -532,11 +643,12 @@ void CommManager::commandGetAllMenuItems(const CommString &argument, std::shared
 
     // File availability actions
     if (sync.dbId() && sync.virtualFileMode() != VirtualFileMode::Off) {
-        LOG_IF_FAIL(Log::instance()->getLogger(), !argumentList.isEmpty());
+        LOG_IF_FAIL(Log::instance()->getLogger(), !argumentList.empty());
 
-        for (const auto &file: qAsConst(argumentList)) {
-            auto fileData = FileData::get(file);
-            if (syncPalMapIt->second->isDownloadOngoing(QStr2Path(fileData.relativePath))) {
+        for (const auto &filePathStr: argumentList) {
+            SyncPath filePath(filePathStr);
+            auto fileData = FileData::get(filePath);
+            if (syncPalMapIt->second->isDownloadOngoing(fileData.relativePath)) {
                 canCancelHydration = true;
                 break;
             }
@@ -544,56 +656,64 @@ void CommManager::commandGetAllMenuItems(const CommString &argument, std::shared
     }
 
     if (canCancelDehydration) {
-        response << QString("%1CANCEL_DEHYDRATION_DIRECT%1%1%2").arg(MSG_CDE_SEPARATOR, cancelDehydrationText());
+        response.append(MSG_CDE_SEPARATOR);
+        response.append(Str("CANCEL_DEHYDRATION_DIRECT"));
+        response.append(MSG_CDE_SEPARATOR);
+        response.append(MSG_CDE_SEPARATOR);
+        response.append(cancelDehydrationText());
     }
 
     if (canCancelHydration) {
-        response << QString("%1CANCEL_HYDRATION_DIRECT%1%1%2").arg(MSG_CDE_SEPARATOR, cancelHydrationText());
+        response.append(MSG_CDE_SEPARATOR);
+        response.append(Str("CANCEL_HYDRATION_DIRECT"));
+        response.append(MSG_CDE_SEPARATOR);
+        response.append(MSG_CDE_SEPARATOR);
+        response.append(cancelHydrationText());
     }
 
     channel->sendMessage(responseStr);
 }
 
 void CommManager::commandGetThumbnail(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
-    QStringList argumentList = SyncName2QStr(argument).split(MSG_ARG_SEPARATOR);
+    const auto argumentList = CommonUtility::splitCommString(argument, MSG_ARG_SEPARATOR);
 
     if (argumentList.size() != 3) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Invalid argument - arg=" << argument.toStdWString());
+        LOGW_WARN(Log::instance()->getLogger(), L"Invalid argument - arg=" << CommString2WStr(argument));
         return;
     }
 
     // Msg Id
-    uint64_t msgId(argumentList[0].toULongLong());
+    CommString msgId(argumentList[0]);
 
     // Picture width asked
-    unsigned int width(argumentList[1].toInt());
+    unsigned int width(CommString2Int(argumentList[1]));
     if (width == 0) {
         LOG_WARN(Log::instance()->getLogger(), "Bad width - value=" << width);
         return;
     }
 
     // File path
-    QString filePath(argumentList[2]);
-    if (!QFileInfo(filePath).isFile()) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Not a file - " << Utility::formatPath(filePath));
+    SyncPath filePath(argumentList[2]);
+    if (!QFileInfo(CommString2QStr(filePath)).isFile()) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Not a file - " << Utility::formatSyncPath(filePath));
         return;
     }
 
     FileData fileData = FileData::get(filePath);
     if (!fileData.syncDbId) {
-        LOGW_WARN(Log::instance()->getLogger(), L"The file is not in a synchonized folder - " << Utility::formatPath(filePath));
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"The file is not in a synchonized folder - " << Utility::formatSyncPath(filePath));
         return;
     }
 
     auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
     if (syncPalMapIt == _syncPalMap.end()) return;
 
-
     // Get NodeId
     NodeId nodeId;
-    ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2WStr(fileData.relativePath), nodeId);
+    ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(fileData.relativePath, nodeId);
     if (exitCode != ExitCode::Ok) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatPath(filePath));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatSyncPath(filePath));
         return;
     }
 
@@ -601,14 +721,14 @@ void CommManager::commandGetThumbnail(const CommString &argument, std::shared_pt
     std::string thumbnail;
     exitCode = _getThumbnail(fileData.driveDbId, nodeId, 256, thumbnail);
     if (exitCode != ExitCode::Ok) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in getThumbnail - " << Utility::formatPath(filePath));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in getThumbnail - " << Utility::formatSyncPath(filePath));
         return;
     }
 
     QByteArray thumbnailArr(thumbnail.c_str(), thumbnail.length());
     QPixmap pixmap;
     if (!pixmap.loadFromData(thumbnailArr)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in QPixmap::loadFromData - " << Utility::formatPath(filePath));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in QPixmap::loadFromData - " << Utility::formatSyncPath(filePath));
         return;
     }
 
@@ -628,8 +748,10 @@ void CommManager::commandGetThumbnail(const CommString &argument, std::shared_pt
     pixmapBuffer.open(QIODevice::WriteOnly);
     pixmap.save(&pixmapBuffer, "BMP");
 
-    channel->sendMessage(
-            QString("%1%2%3").arg(QString::number(msgId)).arg(MSG_CDE_SEPARATOR).arg(QString(pixmapBuffer.data().toBase64())));
+    CommString message(msgId);
+    message.append(MSG_CDE_SEPARATOR);
+    message.append(QStr2CommString(QString(pixmapBuffer.data().toBase64())));
+    channel->sendMessage(message);
 }
 #endif
 #ifdef __APPLE__
@@ -644,125 +766,23 @@ void CommManager::commandRetrieveFileStatus(const CommString &argument, std::sha
     VfsStatus vfsStatus;
     if (!syncFileStatus(fileData, status, vfsStatus)) {
         LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Error in SocketApi::syncFileStatus - " << Utility::formatPath(fileData.localPath));
+                   L"Error in SocketApi::syncFileStatus - " << Utility::formatSyncPath(fileData.localPath));
         return;
     }
 
-    const CommString message = buildMessage("STATUS", QStr2Path(fileData.localPath), statusString(status, vfsStatus));
+    const CommString message = buildMessage("STATUS", fileData.localPath, statusString(status, vfsStatus));
     channel->sendMessage(message);
 }
 
-void CommManager::commandGetMenuItems(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
-    {
-        CommString message(Str("GET_MENU_ITEMS"));
-        message.append(MSG_CDE_SEPARATOR);
-        message.append(Str("BEGIN"));
-        channel->sendMessage(message);
-    }
-
-    std::vector<CommString> files = CommonUtility::splitCommString(argument, MSG_ARG_SEPARATOR);
-
-    // Find the common sync
-    Sync sync;
-    for (const auto &file: files) {
-        Sync tmpSync;
-        if (!syncForPath(file, tmpSync)) {
-            return;
-        }
-        if (tmpSync.dbId() != sync.dbId()) {
-            if (!sync.dbId()) {
-                sync = tmpSync;
-            } else {
-                sync.setDbId(0);
-                break;
-            }
-        }
-    }
-
-    // Find SyncPal and Vfs associated to sync
-    std::unordered_map<int, std::shared_ptr<SyncPal>>::const_iterator syncPalMapIt = _syncPalMap.end();
-    std::unordered_map<int, std::shared_ptr<Vfs>>::const_iterator vfsMapIt = _vfsMap.end();
-    if (sync.dbId()) {
-        syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
-        if (syncPalMapIt == _syncPalMap.end()) return;
-
-        vfsMapIt = retrieveVfsMapIt(sync.dbId());
-        if (vfsMapIt == _vfsMap.end()) return;
-    }
-
-    // Some options only show for single files
-    bool isSingleFile = false;
-    if (files.size() == 1) {
-        manageActionsOnSingleFile(channel, files, syncPalMapIt, vfsMapIt, sync);
-
-        isSingleFile = QFileInfo(CommString2QStr(files[0])).isFile();
-    }
-
-    // Manage dehydration cancellation
-    bool canCancelDehydration = false;
-    _dehydrationMutex.lock();
-    if (_nbOngoingDehydration > 0) {
-        canCancelDehydration = true;
-    }
-    _dehydrationMutex.unlock();
-
-    // File availability actions
-    if (sync.dbId() && sync.virtualFileMode() != VirtualFileMode::Off && vfsMapIt->second->socketApiPinStateActionsShown()) {
-        LOG_IF_FAIL(Log::instance()->getLogger(), !files.empty());
-
-        bool canHydrate = true;
-        bool canDehydrate = true;
-        bool canCancelHydration = false;
-        for (const auto &file: files) {
-            VfsStatus vfsStatus;
-            if (!canCancelHydration && vfsMapIt->second->status(file, vfsStatus) && vfsStatus.isSyncing) {
-                canCancelHydration = syncPalMapIt->second->isDownloadOngoing(file);
-            }
-
-            if (isSingleFile) {
-                canHydrate = vfsStatus.isPlaceholder && !vfsStatus.isSyncing && !vfsStatus.isHydrated;
-                canDehydrate = vfsStatus.isPlaceholder && !vfsStatus.isSyncing && vfsStatus.isHydrated;
-            }
-        }
-
-        // TODO: Should be a submenu, should use icons
-        auto makePinContextMenu = [&](bool makeAvailableLocally, bool freeSpace, bool cancelDehydration, bool cancelHydration) {
-            buildAndSendMenuItemMessage(channel, Str("MAKE_AVAILABLE_LOCALLY_DIRECT"), makeAvailableLocally,
-                                        QStr2CommString(vfsPinActionText()));
-
-            if (cancelHydration) {
-                buildAndSendMenuItemMessage(channel, Str("CANCEL_HYDRATION_DIRECT"), true,
-                                            QStr2CommString(cancelHydrationText()));
-            }
-
-            buildAndSendMenuItemMessage(channel, Str("MAKE_ONLINE_ONLY_DIRECT"), freeSpace,
-                                        QStr2CommString(vfsFreeSpaceActionText()));
-
-            if (cancelDehydration) {
-                buildAndSendMenuItemMessage(channel, Str("CANCEL_DEHYDRATION_DIRECT"), true,
-                                            QStr2CommString(cancelDehydrationText()));
-            }
-        };
-
-        makePinContextMenu(canHydrate, canDehydrate, canCancelDehydration, canCancelHydration);
-    }
-
-    {
-        CommString message(Str("GET_MENU_ITEMS"));
-        message.append(MSG_CDE_SEPARATOR);
-        message.append(Str("END"));
-        channel->sendMessage(message);
-    }
-}
-
 void CommManager::commandMakeOnlineOnlyDirect(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
-    const QStringList fileList = SyncName2QStr(argument).split(MSG_ARG_SEPARATOR);
+    const auto fileList = CommonUtility::splitCommString(argument, MSG_CDE_SEPARATOR);
 
-    _dehydrationMutex.lock();
-    _nbOngoingDehydration++;
-    _dehydrationMutex.unlock();
+    {
+        const std::lock_guard lock(_dehydrationMutex);
+        _nbOngoingDehydration++;
+    }
 
-    std::list<SyncPath> fileListExpanded;
+    std::vector<SyncPath> fileListExpanded;
     processFileList(fileList, fileListExpanded);
 
     for (const auto &filePath: qAsConst(fileListExpanded)) {
@@ -794,16 +814,15 @@ void CommManager::commandMakeOnlineOnlyDirect(const CommString &argument, std::s
                       L"Error in CommManager::dehydratePlaceholder - " << Utility::formatSyncPath(filePath) << exitInfo);
             continue;
         }
-
-        QCoreApplication::processEvents();
     }
 
-    _dehydrationMutex.lock();
-    _nbOngoingDehydration--;
-    if (_nbOngoingDehydration == 0) {
-        _dehydrationCanceled = false;
+    {
+        const std::lock_guard lock(_dehydrationMutex);
+        _nbOngoingDehydration--;
+        if (_nbOngoingDehydration == 0) {
+            _dehydrationCanceled = false;
+        }
     }
-    _dehydrationMutex.unlock();
 }
 
 void CommManager::commandSetThumbnail(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
@@ -833,7 +852,7 @@ void CommManager::commandSetThumbnail(const CommString &argument, std::shared_pt
 
     // Get NodeId
     NodeId nodeId;
-    ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2Path(fileData.relativePath), nodeId);
+    ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(fileData.relativePath, nodeId);
     if (exitCode != ExitCode::Ok) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatSyncPath(argument));
         return;
@@ -857,7 +876,7 @@ void CommManager::commandSetThumbnail(const CommString &argument, std::shared_pt
     LOG_DEBUG(Log::instance()->getLogger(), "Thumbnail fetched - size=" << pixmap.width() << "x" << pixmap.height());
 
     // Set thumbnail
-    if (!vfsMapIt->second->setThumbnail(QStr2Path(fileData.localPath), pixmap)) {
+    if (!vfsMapIt->second->setThumbnail(fileData.localPath, pixmap)) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in setThumbnail - " << Utility::formatSyncPath(argument));
         return;
     }
@@ -865,7 +884,8 @@ void CommManager::commandSetThumbnail(const CommString &argument, std::shared_pt
 #endif
 
 // Fetches the private link url asynchronously and then calls the target slot
-void CommManager::fetchPrivateLinkUrlHelper(const SyncPath &localFile, const std::function<void(const QString &url)> &targetFun) {
+void CommManager::fetchPrivateLinkUrlHelper(const SyncPath &localFile,
+                                            const std::function<void(const std::string &url)> &targetFun) {
     // Find the common sync
     Sync sync;
     if (!syncForPath(localFile, sync)) {
@@ -894,13 +914,13 @@ void CommManager::fetchPrivateLinkUrlHelper(const SyncPath &localFile, const std
 
     FileData fileData = FileData::get(localFile);
     NodeId itemId;
-    if (syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2Path(fileData.relativePath), itemId) != ExitCode::Ok) {
+    if (syncPalMapIt->second->fileRemoteIdFromLocalPath(fileData.relativePath, itemId) != ExitCode::Ok) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatSyncPath(localFile));
         return;
     }
 
     const QString linkUrl = QString(APPLICATION_PREVIEW_URL).arg(drive.driveId()).arg(itemId.c_str());
-    targetFun(linkUrl);
+    targetFun(linkUrl.toStdString());
 }
 
 bool CommManager::syncFileStatus(const FileData &fileData, SyncFileStatus &status, VfsStatus &vfsStatus) {
@@ -914,9 +934,9 @@ bool CommManager::syncFileStatus(const FileData &fileData, SyncFileStatus &statu
     if (syncPalMapIt == _syncPalMap.end()) return false;
 
     bool exists = false;
-    if (!syncPalMapIt->second->checkIfExistsOnServer(QStr2Path(fileData.relativePath), exists)) {
+    if (!syncPalMapIt->second->checkIfExistsOnServer(fileData.relativePath, exists)) {
         LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatPath(fileData.relativePath));
+                   L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatSyncPath(fileData.relativePath));
         // Occurs when the sync is stopped
         return false;
     }
@@ -930,8 +950,8 @@ bool CommManager::syncFileStatus(const FileData &fileData, SyncFileStatus &statu
 
 
     if (vfsMapIt->second->mode() == VirtualFileMode::Mac || vfsMapIt->second->mode() == VirtualFileMode::Win) {
-        if (!vfsMapIt->second->status(QStr2Path(fileData.localPath), vfsStatus)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::status - " << Utility::formatPath(fileData.localPath));
+        if (!vfsMapIt->second->status(fileData.localPath, vfsStatus)) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::status - " << Utility::formatSyncPath(fileData.localPath));
             return false;
         }
 
@@ -970,7 +990,7 @@ ExitInfo CommManager::setPinState(const FileData &fileData, PinState pinState) {
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
     if (vfsMapIt == _vfsMap.cend()) return {ExitCode::LogicError};
 
-    return vfsMapIt->second->setPinState(QStr2Path(fileData.relativePath), pinState);
+    return vfsMapIt->second->setPinState(fileData.relativePath, pinState);
 }
 
 ExitInfo CommManager::dehydratePlaceholder(const FileData &fileData) {
@@ -979,7 +999,7 @@ ExitInfo CommManager::dehydratePlaceholder(const FileData &fileData) {
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
     if (vfsMapIt == _vfsMap.cend()) return {ExitCode::LogicError};
 
-    return vfsMapIt->second->dehydratePlaceholder(QStr2Path(fileData.relativePath));
+    return vfsMapIt->second->dehydratePlaceholder(fileData.relativePath);
 }
 
 bool CommManager::addDownloadJob(const FileData &fileData) {
@@ -989,25 +1009,24 @@ bool CommManager::addDownloadJob(const FileData &fileData) {
     if (syncPalMapIt == _syncPalMap.end()) return false;
 
     // Create download job
-    const ExitCode exitCode =
-            syncPalMapIt->second->addDlDirectJob(QStr2Path(fileData.relativePath), QStr2Path(fileData.localPath));
+    const ExitCode exitCode = syncPalMapIt->second->addDlDirectJob(fileData.relativePath, fileData.localPath);
     if (exitCode != ExitCode::Ok) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in SyncPal::addDownloadJob - " << Utility::formatPath(fileData.relativePath));
+                  L"Error in SyncPal::addDownloadJob - " << Utility::formatSyncPath(fileData.relativePath));
         return false;
     }
 
     return true;
 }
 
-bool CommManager::cancelDownloadJobs(int syncDbId, const QStringList &fileList) {
+bool CommManager::cancelDownloadJobs(int syncDbId, const std::vector<CommString> &fileList) {
     const auto syncPalMapIt = retrieveSyncPalMapIt(syncDbId);
     if (syncPalMapIt == _syncPalMap.end()) return false;
 
     const auto vfsMapIt = retrieveVfsMapIt(syncDbId);
     if (vfsMapIt == _vfsMap.end()) return false;
 
-    std::list<SyncPath> syncPathList;
+    std::vector<SyncPath> syncPathList;
     processFileList(fileList, syncPathList);
 
     // Cancel download jobs
@@ -1020,8 +1039,8 @@ bool CommManager::cancelDownloadJobs(int syncDbId, const QStringList &fileList) 
     return true;
 }
 
-void CommManager::copyUrlToClipboard(const QString &link) {
-    QApplication::clipboard()->setText(link);
+void CommManager::copyUrlToClipboard(const std::string &link) {
+    QApplication::clipboard()->setText(QString::fromStdString(link));
 }
 
 std::string CommManager::statusString(SyncFileStatus status, const VfsStatus &vfsStatus) const {
@@ -1057,7 +1076,7 @@ std::string CommManager::statusString(SyncFileStatus status, const VfsStatus &vf
     return statusString;
 }
 
-void CommManager::openPrivateLink(const QString &link) {
+void CommManager::openPrivateLink(const std::string &link) {
     openBrowser(link);
 }
 
@@ -1072,17 +1091,17 @@ void CommManager::sendSharingContextMenuOptions(const FileData &fileData, std::s
     }
 
     bool isOnTheServer = false;
-    if (!syncPalMapIt->second->checkIfExistsOnServer(QStr2Path(fileData.relativePath), isOnTheServer)) {
+    if (!syncPalMapIt->second->checkIfExistsOnServer(fileData.relativePath, isOnTheServer)) {
         LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatPath(fileData.relativePath));
+                   L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatSyncPath(fileData.relativePath));
         // Occurs when the sync is stopped
         return;
     }
 
     bool canShare = false;
-    if (!syncPalMapIt->second->checkIfCanShareItem(QStr2Path(fileData.relativePath), canShare)) {
+    if (!syncPalMapIt->second->checkIfCanShareItem(fileData.relativePath, canShare)) {
         LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Error in SyncPal::checkIfCanShareItem: " << Utility::formatPath(fileData.relativePath));
+                   L"Error in SyncPal::checkIfCanShareItem: " << Utility::formatSyncPath(fileData.relativePath));
         // Occurs when the sync is stopped
         return;
     }
@@ -1090,7 +1109,7 @@ void CommManager::sendSharingContextMenuOptions(const FileData &fileData, std::s
     // If sharing is globally disabled, do not show any sharing entries.
     // If there is no permission to share for this file, add a disabled entry saying so
     if (isOnTheServer && !canShare) {
-        buildAndSendMenuItemMessage(channel, Str("DISABLED"), false, QStr2CommString(resharingText(fileData.isDirectory)));
+        buildAndSendMenuItemMessage(channel, Str("DISABLED"), false, resharingText(fileData.isDirectory));
     } else {
         // Do we have public links?
         bool publicLinksEnabled = theme->linkSharing();
@@ -1099,18 +1118,16 @@ void CommManager::sendSharingContextMenuOptions(const FileData &fileData, std::s
         bool canCreateDefaultPublicLink = publicLinksEnabled;
 
         if (canCreateDefaultPublicLink) {
-            buildAndSendMenuItemMessage(channel, Str("COPY_PUBLIC_LINK"), isOnTheServer,
-                                        QStr2CommString(copyPublicShareLinkText()));
+            buildAndSendMenuItemMessage(channel, Str("COPY_PUBLIC_LINK"), isOnTheServer, copyPublicShareLinkText());
         } else if (publicLinksEnabled) {
-            buildAndSendMenuItemMessage(channel, Str("MANAGE_PUBLIC_LINKS"), isOnTheServer,
-                                        QStr2CommString(copyPublicShareLinkText()));
+            buildAndSendMenuItemMessage(channel, Str("MANAGE_PUBLIC_LINKS"), isOnTheServer, copyPublicShareLinkText());
         }
     }
 
-    buildAndSendMenuItemMessage(channel, Str("COPY_PRIVATE_LINK"), isOnTheServer, QStr2CommString(copyPrivateShareLinkText()));
+    buildAndSendMenuItemMessage(channel, Str("COPY_PRIVATE_LINK"), isOnTheServer, copyPrivateShareLinkText());
 }
 
-void CommManager::addSharingContextMenuOptions(const FileData &fileData, QTextStream &response) {
+void CommManager::addSharingContextMenuOptions(const FileData &fileData, CommString &response) {
     auto theme = Theme::instance();
     if (!(theme->userGroupSharing() || theme->linkSharing())) return;
 
@@ -1121,49 +1138,51 @@ void CommManager::addSharingContextMenuOptions(const FileData &fileData, QTextSt
     }
 
     bool isOnTheServer = false;
-    if (!syncPalMapIt->second->checkIfExistsOnServer(QStr2Path(fileData.relativePath), isOnTheServer)) {
+    if (!syncPalMapIt->second->checkIfExistsOnServer(fileData.relativePath, isOnTheServer)) {
         LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatPath(fileData.relativePath));
+                   L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatSyncPath(fileData.relativePath));
         // Occurs when the sync is stopped
         return;
     }
 
     bool canShare = false;
-    if (!syncPalMapIt->second->checkIfCanShareItem(QStr2Path(fileData.relativePath), canShare)) {
+    if (!syncPalMapIt->second->checkIfCanShareItem(fileData.relativePath, canShare)) {
         LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Error in SyncPal::checkIfCanShareItem: " << Utility::formatPath(fileData.relativePath));
+                   L"Error in SyncPal::checkIfCanShareItem: " << Utility::formatSyncPath(fileData.relativePath));
         // Occurs when the sync is stopped
         return;
     }
 
-    const auto flagString = QString("%1%2%1").arg(MSG_CDE_SEPARATOR).arg(isOnTheServer ? QString() : QString("d"));
 
     // If sharing is globally disabled, do not show any sharing entries.
     // If there is no permission to share for this file, add a disabled entry saying so
     if (isOnTheServer && !canShare) {
-        response << QString("%1DISABLED%1d%1%2")
-                            .arg(MSG_CDE_SEPARATOR)
-                            .arg(fileData.isDirectory ? QObject::tr("Resharing this file is not allowed")
-                                                      : QObject::tr("Resharing this folder is not allowed"));
+        response.append(MSG_CDE_SEPARATOR);
+        response.append(Str("DISABLED"));
+        response.append(MSG_CDE_SEPARATOR);
+        response.append(Str("d"));
+        response.append(MSG_CDE_SEPARATOR);
+        response.append(resharingText(fileData.isDirectory));
     } else {
         // Do we have public links?
         bool publicLinksEnabled = theme->linkSharing();
 
-        // Is is possible to create a public link without user choices?
-        bool canCreateDefaultPublicLink = publicLinksEnabled;
-
-        if (canCreateDefaultPublicLink) {
-            response << QString("%1COPY_PUBLIC_LINK%2")
-                                .arg(MSG_CDE_SEPARATOR)
-                                .arg(flagString + QObject::tr("Copy public share link"));
-        } else if (publicLinksEnabled) {
-            response << QString("%1MANAGE_PUBLIC_LINKS%2")
-                                .arg(MSG_CDE_SEPARATOR)
-                                .arg(flagString + QObject::tr("Copy public share link"));
+        if (publicLinksEnabled) {
+            response.append(MSG_CDE_SEPARATOR);
+            response.append(Str("COPY_PUBLIC_LINK"));
+            response.append(MSG_CDE_SEPARATOR);
+            response.append(isOnTheServer ? Str("") : Str("d"));
+            response.append(MSG_CDE_SEPARATOR);
+            response.append(copyPublicShareLinkText());
         }
     }
 
-    response << QString("%1COPY_PRIVATE_LINK%2").arg(MSG_CDE_SEPARATOR).arg(flagString + QObject::tr("Copy private share link"));
+    response.append(MSG_CDE_SEPARATOR);
+    response.append(Str("COPY_PRIVATE_LINK"));
+    response.append(MSG_CDE_SEPARATOR);
+    response.append(isOnTheServer ? Str("") : Str("d"));
+    response.append(MSG_CDE_SEPARATOR);
+    response.append(copyPrivateShareLinkText());
 }
 
 void CommManager::manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel> channel, const std::vector<CommString> &files,
@@ -1177,18 +1196,18 @@ void CommManager::manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel>
     }
 
     FileData fileData = FileData::get(files[0]);
-    if (fileData.localPath.isEmpty()) {
+    if (fileData.localPath.empty()) {
         return;
     }
-    bool isExcluded = vfsMapIt->second->isExcluded(QStr2Path(fileData.localPath));
+    bool isExcluded = vfsMapIt->second->isExcluded(fileData.localPath);
     if (isExcluded) {
         return;
     }
 
     NodeId nodeId;
-    ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2Path(fileData.relativePath), nodeId);
+    ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(fileData.relativePath, nodeId);
     if (exitCode != ExitCode::Ok) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatPath(fileData.relativePath));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatSyncPath(fileData.relativePath));
         return;
     }
     bool isOnTheServer = !nodeId.empty();
@@ -1197,14 +1216,14 @@ void CommManager::manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel>
         {
             CommString message(Str("VFS_MODE"));
             message.append(MSG_CDE_SEPARATOR);
-            message.append(QStr2CommString(Vfs::modeToString(sync.virtualFileMode())));
+            message.append(Vfs::modeToString(sync.virtualFileMode()));
             channel->sendMessage(message);
         }
     }
 
     if (sync.dbId()) {
         sendSharingContextMenuOptions(fileData, channel);
-        buildAndSendMenuItemMessage(channel, Str("OPEN_PRIVATE_LINK"), isOnTheServer, QStr2CommString(openInBrowserText()));
+        buildAndSendMenuItemMessage(channel, Str("OPEN_PRIVATE_LINK"), isOnTheServer, openInBrowserText());
     }
 }
 
@@ -1227,23 +1246,24 @@ void CommManager::buildAndSendMenuItemMessage(std::shared_ptr<AbstractCommChanne
     channel->sendMessage(message);
 }
 
-void CommManager::processFileList(const QStringList &inFileList, std::list<SyncPath> &outFileList) {
+void CommManager::processFileList(const std::vector<CommString> &inFileList, std::vector<SyncPath> &outFileList) {
     // Process all files
-    for (const QString &path: qAsConst(inFileList)) {
+    for (const auto &path: inFileList) {
         FileData fileData = FileData::get(path);
         if (fileData.virtualFileMode == VirtualFileMode::Mac) {
-            QFileInfo info(path);
+            QFileInfo info(CommString2QStr(path));
             if (info.isDir()) {
-                const QFileInfoList infoList = QDir(path).entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
-                QStringList fileList;
+                const QFileInfoList infoList =
+                        QDir(CommString2QStr(path)).entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
+                std::vector<CommString> fileList;
                 for (const auto &tmpInfo: qAsConst(infoList)) {
-                    QString tmpPath(tmpInfo.filePath());
+                    SyncPath tmpPath(QStr2Path(tmpInfo.filePath()));
                     FileData tmpFileData = FileData::get(tmpPath);
 
                     auto status = SyncFileStatus::Unknown;
                     if (VfsStatus vfsStatus; !syncFileStatus(tmpFileData, status, vfsStatus)) {
                         LOGW_WARN(Log::instance()->getLogger(),
-                                  L"Error in SocketApi::syncFileStatus - " << Utility::formatPath(tmpPath));
+                                  L"Error in SocketApi::syncFileStatus - " << Utility::formatSyncPath(tmpPath));
                         continue;
                     }
 
@@ -1251,56 +1271,57 @@ void CommManager::processFileList(const QStringList &inFileList, std::list<SyncP
                         continue;
                     }
 
-                    fileList.append(tmpPath);
+                    fileList.push_back(tmpPath);
                 }
 
                 if (fileList.size() > 0) {
                     processFileList(fileList, outFileList);
                 }
             } else {
-                outFileList.push_back(QStr2Path(path));
+                outFileList.push_back(path);
             }
         } else {
-            outFileList.push_back(QStr2Path(path));
+            outFileList.push_back(path);
         }
     }
 }
 
-QString CommManager::vfsPinActionText() {
-    return QObject::tr("Make available locally");
+CommString CommManager::vfsPinActionText() {
+    return QStr2CommString(QObject::tr("Make available locally"));
 }
 
-QString CommManager::vfsFreeSpaceActionText() {
-    return QObject::tr("Free up local space");
+CommString CommManager::vfsFreeSpaceActionText() {
+    return QStr2CommString(QObject::tr("Free up local space"));
 }
 
-QString CommManager::cancelDehydrationText() {
-    return QObject::tr("Cancel free up local space");
+CommString CommManager::cancelDehydrationText() {
+    return QStr2CommString(QObject::tr("Cancel free up local space"));
 }
 
-QString CommManager::cancelHydrationText() {
-    return QObject::tr("Cancel make available locally");
+CommString CommManager::cancelHydrationText() {
+    return QStr2CommString(QObject::tr("Cancel make available locally"));
 }
 
-QString CommManager::resharingText(bool isDirectory) {
-    return isDirectory ? QObject::tr("Resharing this file is not allowed") : QObject::tr("Resharing this folder is not allowed");
+CommString CommManager::resharingText(bool isDirectory) {
+    return isDirectory ? QStr2CommString(QObject::tr("Resharing this file is not allowed"))
+                       : QStr2CommString(QObject::tr("Resharing this folder is not allowed"));
 }
 
-QString CommManager::copyPublicShareLinkText() {
-    return QObject::tr("Copy public share link");
+CommString CommManager::copyPublicShareLinkText() {
+    return QStr2CommString(QObject::tr("Copy public share link"));
 }
 
-QString CommManager::copyPrivateShareLinkText() {
-    return QObject::tr("Copy private share link");
+CommString CommManager::copyPrivateShareLinkText() {
+    return QStr2CommString(QObject::tr("Copy private share link"));
 }
 
-QString CommManager::openInBrowserText() {
-    return QObject::tr("Open in browser");
+CommString CommManager::openInBrowserText() {
+    return QStr2CommString(QObject::tr("Open in browser"));
 }
 
-bool CommManager::openBrowser(const QUrl &url) {
-    if (!QDesktopServices::openUrl(url)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"QDesktopServices::openUrl failed - url=" << url.toString().toStdWString());
+bool CommManager::openBrowser(const std::string &url) {
+    if (!QDesktopServices::openUrl(QString::fromStdString(url))) {
+        LOG_WARN(Log::instance()->getLogger(), "QDesktopServices::openUrl failed - url=" << url);
         return false;
     }
     return true;
@@ -1318,12 +1339,6 @@ CommString CommManager::buildMessage(const std::string &verb, const SyncPath &pa
         msg.append(path.native());
     }
     return msg;
-}
-
-
-FileData FileData::get(const QString &path) {
-    std::filesystem::path localPath = QStr2Path(path);
-    return get(localPath);
 }
 
 FileData FileData::get(const SyncPath &path) {
@@ -1352,8 +1367,8 @@ FileData FileData::get(const SyncPath &path) {
     data.syncDbId = sync.dbId();
     data.driveDbId = sync.driveDbId();
     data.virtualFileMode = sync.virtualFileMode();
-    data.localPath = SyncName2QStr(tmpPath.native());
-    data.relativePath = SyncName2QStr(CommonUtility::relativePath(sync.localPath(), tmpPath).native());
+    data.localPath = tmpPath.native();
+    data.relativePath = CommonUtility::relativePath(sync.localPath(), tmpPath).native();
 
     ItemType itemType;
     if (!IoHelper::getItemType(tmpPath, itemType)) {
@@ -1377,10 +1392,10 @@ FileData FileData::get(const SyncPath &path) {
             const bool exists = !CommonUtility::isLikeFileNotFoundError(ec);
             if (!exists) {
                 // Item doesn't exist anymore
-                LOGW_DEBUG(Log::instance()->getLogger(), L"Item doesn't exist - " << Utility::formatPath(data.localPath));
+                LOGW_DEBUG(Log::instance()->getLogger(), L"Item doesn't exist - " << Utility::formatSyncPath(data.localPath));
             } else {
                 LOGW_WARN(Log::instance()->getLogger(), L"Failed to check if the path is a directory - "
-                                                                << Utility::formatPath(data.localPath) << L" err="
+                                                                << Utility::formatSyncPath(data.localPath) << L" err="
                                                                 << Utility::s2ws(ec.message()) << L" (" << ec.value() << L")");
             }
             return FileData();
@@ -1391,7 +1406,7 @@ FileData FileData::get(const SyncPath &path) {
 }
 
 FileData FileData::parentFolder() const {
-    return FileData::get(QFileInfo(localPath).dir().path().toUtf8());
+    return FileData::get(localPath.parent_path());
 }
 
 } // namespace KDC

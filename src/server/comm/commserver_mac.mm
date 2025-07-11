@@ -58,7 +58,7 @@
 
 class CommChannelPrivate {
     public:
-        CommChannel *_q_ptr;
+        CommChannel *publicPtr;
 
         CommChannelPrivate(NSXPCConnection *remoteConnection);
         ~CommChannelPrivate();
@@ -75,7 +75,7 @@ class CommChannelPrivate {
 
 class CommServerPrivate {
     public:
-        CommServer *_q_ptr;
+        CommServer *publicPtr;
 
         CommServerPrivate();
         ~CommServerPrivate();
@@ -116,10 +116,10 @@ class CommServerPrivate {
         NSLog(@"[KD] Error sending ack signal: %@", e.name);
     }
 
-    if (_wrapper && _wrapper->_q_ptr) {
+    if (_wrapper && _wrapper->publicPtr) {
         _wrapper->_inBuffer += std::string([answer UTF8String]);
         _wrapper->_inBuffer += "\n";
-        emit _wrapper->_q_ptr->readyReadCbk();
+        emit _wrapper->publicPtr->readyReadCbk();
     }
 }
 
@@ -133,9 +133,9 @@ class CommServerPrivate {
     NSString *answer = [[NSString alloc] initWithData:msg encoding:NSUTF8StringEncoding];
     NSLog(@"[KD] Message received %@", answer);
 
-    if (_wrapper && _wrapper->_q_ptr) {
+    if (_wrapper && _wrapper->publicPtr) {
         _wrapper->_inBuffer += std::string([answer UTF8String]);
-        emit _wrapper->_q_ptr->readyReadCbk();
+        emit _wrapper->publicPtr->readyReadCbk();
     }
 }
 
@@ -291,7 +291,7 @@ class CommServerPrivate {
 
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection {
     CommChannelPrivate *channelPrivate = new CommChannelPrivate(newConnection);
-    CommServer *server = _wrapper->_q_ptr;
+    CommServer *server = _wrapper->publicPtr;
 
     if (listener == _extListener) {
         auto channel = std::make_shared<CommChannel>(channelPrivate);
@@ -416,46 +416,50 @@ CommServerPrivate::~CommServerPrivate() {
 
 // CommChannel implementation
 CommChannel::CommChannel(CommChannelPrivate *p) :
-    d_ptr(p) {
-    d_ptr->_q_ptr = this;
+    _privatePtr(p) {
+    _privatePtr->publicPtr = this;
     open();
 }
 
 CommChannel::~CommChannel() {}
 
 uint64_t CommChannel::readData(char *data, uint64_t maxSize) {
-    auto size = d_ptr->_inBuffer.copy(data, maxSize);
-    d_ptr->_inBuffer.erase(0, size);
+    auto size = _privatePtr->_inBuffer.copy(data, maxSize);
+    _privatePtr->_inBuffer.erase(0, size);
     return size;
 }
 
 uint64_t CommChannel::writeData(const char *data, uint64_t len) {
-    if (d_ptr->_isRemoteDisconnected) return -1;
+    if (_privatePtr->_isRemoteDisconnected) return -1;
 
     @try {
-        [d_ptr->_remoteEnd sendMessage:[NSData dataWithBytesNoCopy:const_cast<char *>(data)
-                                                            length:static_cast<NSUInteger>(len)
-                                                      freeWhenDone:NO]];
+        [_privatePtr->_remoteEnd sendMessage:[NSData dataWithBytesNoCopy:const_cast<char *>(data)
+                                                                  length:static_cast<NSUInteger>(len)
+                                                            freeWhenDone:NO]];
         return len;
     } @catch (NSException *e) {
-        d_ptr->disconnectRemote();
+        _privatePtr->disconnectRemote();
         lostConnectionCbk();
         return -1;
     }
 }
 
 uint64_t CommChannel::bytesAvailable() const {
-    return d_ptr->_inBuffer.size();
+    return _privatePtr->_inBuffer.size();
 }
 
 bool CommChannel::canReadLine() const {
-    return d_ptr->_inBuffer.find('\n', 0) != std::string::npos;
+    return _privatePtr->_inBuffer.find('\n', 0) != std::string::npos;
+}
+
+std::string CommChannel::id() const {
+    return std::to_string(reinterpret_cast<uintptr_t>(this));
 }
 
 // CommServer implementation
 CommServer::CommServer() :
-    d_ptr(new CommServerPrivate) {
-    d_ptr->_q_ptr = this;
+    _privatePtr(new CommServerPrivate) {
+    _privatePtr->publicPtr = this;
 }
 
 CommServer::~CommServer() {}
@@ -467,19 +471,21 @@ void CommServer::close() {
 bool CommServer::listen(const std::string &name) {
     (void) name;
 
-    [d_ptr->_server start];
+    [_privatePtr->_server start];
 
     return TRUE;
 }
 
 std::shared_ptr<KDC::AbstractCommChannel> CommServer::nextPendingConnection() {
-    return d_ptr->_pendingExtChannels.back();
+    return _privatePtr->_pendingExtChannels.back();
 }
 
 std::list<std::shared_ptr<KDC::AbstractCommChannel>> CommServer::extConnections() {
-    return d_ptr->_pendingExtChannels;
+    std::list<std::shared_ptr<KDC::AbstractCommChannel>> res(_privatePtr->_pendingExtChannels.begin(),
+                                                             _privatePtr->_pendingExtChannels.end());
+    return res;
 }
 
 std::shared_ptr<KDC::AbstractCommChannel> CommServer::guiConnection() {
-    return d_ptr->_guiChannel;
+    return _privatePtr->_guiChannel;
 }

@@ -1342,15 +1342,15 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> driveDbId;
             paramsStream >> nodeId;
 
-            QString linkUrl;
-            ExitCode exitCode = ServerRequests::getPublicLinkUrl(driveDbId, nodeId, linkUrl);
+            std::string linkUrl;
+            ExitCode exitCode = ServerRequests::getPublicLinkUrl(driveDbId, nodeId.toStdString(), linkUrl);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::getLinkUrl");
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
             resultStream << toInt(exitCode);
-            resultStream << linkUrl;
+            resultStream << QString::fromStdString(linkUrl);
             break;
         }
         case RequestNum::SYNC_GETPRIVATELINKURL: {

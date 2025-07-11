@@ -700,7 +700,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
     return ExitCode::Ok;
 }
 
-ExitCode SyncPal::cancelDlDirectJobs(const std::list<SyncPath> &fileList) {
+ExitCode SyncPal::cancelDlDirectJobs(const std::vector<SyncPath> &fileList) {
     for (const auto &filePath: fileList) {
         const std::lock_guard<std::mutex> lock(_directDownloadJobsMapMutex);
         auto itId = _syncPathToDownloadJobMap.find(filePath);

@@ -106,6 +106,9 @@ struct COMMON_EXPORT CommonUtility {
         static SyncPath getAppDir();
         static SyncPath getAppSupportDir();
         static SyncPath getAppWorkingDir();
+#ifdef __APPLE__
+        static SyncPath getExtensionPath();
+#endif
 
         static QString getFileIconPathFromFileName(const QString &fileName, NodeType type);
 

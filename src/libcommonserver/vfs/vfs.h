@@ -87,7 +87,7 @@ class Vfs : public QObject {
 
     public:
         std::array<WorkerInfo, nbWorkers> _workerInfo;
-        static QString modeToString(VirtualFileMode virtualFileMode);
+        static CommString modeToString(VirtualFileMode virtualFileMode);
         static VirtualFileMode modeFromString(const QString &str);
 
         explicit Vfs(const VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);

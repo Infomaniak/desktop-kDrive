@@ -19,25 +19,32 @@
 #include "testincludes.h"
 #include "server/comm/abstractcommchannel.h"
 
+#include <log4cplus/logger.h>
+
 namespace KDC {
 
-class TestCommChannel : public AbstractCommChannel {
+class CommChannelTest : public AbstractCommChannel {
     public:
+        ~CommChannelTest() {}
         uint64_t readData(char *data, uint64_t maxSize) override {
-            auto size = _inBuffer.copy(data, maxSize);
-            _inBuffer.erase(0, size);
+            auto size = _buffer.copy(data, maxSize);
+            _buffer.erase(0, size);
             return size;
         }
         uint64_t writeData(const char *data, uint64_t maxSize) override {
-            _outBuffer += CommString(data, maxSize);
+            _buffer += CommString(data, maxSize);
             return maxSize;
         }
-        uint64_t bytesAvailable() const override { return _inBuffer.size(); }
-        bool canReadLine() const override { return _inBuffer.find('\n') != std::string::npos; }
+        uint64_t bytesAvailable() const override { return _buffer.size(); }
+        bool canReadLine() const override { return _buffer.find('\n') != std::string::npos; }
+        std::string id() const override {
+            const auto now = std::chrono::system_clock::now();
+            const std::time_t time = std::chrono::system_clock::to_time_t(now);
+            return std::ctime(&time);
+        }
 
     private:
-        CommString _inBuffer;
-        CommString _outBuffer;
+        CommString _buffer; // Write & read to/from the same buffer
 };
 
 class TestAbstractCommChannel : public CppUnit::TestFixture, public TestBase {
@@ -52,7 +59,8 @@ class TestAbstractCommChannel : public CppUnit::TestFixture, public TestBase {
         void testAll();
 
     private:
-        TestCommChannel *testCommChannel;
+        log4cplus::Logger _logger;
+        std::unique_ptr<CommChannelTest> _commChannelTest;
 };
 
 } // namespace KDC

@@ -534,12 +534,12 @@ QString CommonUtility::languageCode(const Language language) {
 }
 
 SyncPath CommonUtility::getAppDir() {
-    const KDC::SyncPath dirPath(KDC::getAppDir_private());
+    const SyncPath dirPath(getAppDir_private());
     return dirPath;
 }
 
 bool CommonUtility::hasDarkSystray() {
-    return KDC::hasDarkSystray_private();
+    return hasDarkSystray_private();
 }
 
 SyncPath CommonUtility::getAppSupportDir() {
@@ -560,6 +560,12 @@ SyncPath CommonUtility::getAppSupportDir() {
 SyncPath CommonUtility::getAppWorkingDir() {
     return _workingDirPath;
 }
+
+#ifdef __APPLE__
+SyncPath CommonUtility::getExtensionPath() {
+    return getExtensionPath_private();
+}
+#endif
 
 QString CommonUtility::getFileIconPathFromFileName(const QString &fileName, const NodeType type) {
     if (type == NodeType::Directory) {

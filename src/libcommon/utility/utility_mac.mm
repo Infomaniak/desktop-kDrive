@@ -25,7 +25,7 @@
 
 namespace KDC {
 
-std::string getAppDir() {
+SyncPath getAppDir() {
     NSError *error;
     NSURL *appDirUrl = [[NSFileManager defaultManager] URLForDirectory:NSApplicationDirectory
                                                               inDomain:NSUserDomainMask
@@ -35,7 +35,7 @@ std::string getAppDir() {
     return std::string([[appDirUrl path] UTF8String]);
 }
 
-std::string getAppSupportDir() {
+SyncPath getAppSupportDir() {
     NSError *error;
     NSURL *appSupportDirUrl = [[NSFileManager defaultManager] URLForDirectory:NSApplicationSupportDirectory
                                                                      inDomain:NSUserDomainMask
@@ -43,6 +43,17 @@ std::string getAppSupportDir() {
                                                                        create:YES
                                                                         error:&error];
     return std::string([[appSupportDirUrl path] UTF8String]);
+}
+
+SyncPath getExtensionPath() {
+    CFURLRef url = (CFURLRef) CFBundleCopyBundleURL(CFBundleGetMainBundle());
+    CFStringRef urlStr = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
+    CFRelease(url);
+    std::string extPath = std::string([(__bridge NSString *) urlStr UTF8String]);
+    CFRelease(urlStr);
+
+    extPath.append("/Contents/PlugIns/Extension.appex/");
+    return extPath;
 }
 
 bool hasDarkSystray() {
