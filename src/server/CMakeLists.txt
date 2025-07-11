@@ -43,8 +43,8 @@ set(server_SRCS
     appserver.h appserver.cpp
     navigationpanehelper.h navigationpanehelper.cpp
     comm/oldcommserver.h comm/oldcommserver.cpp
-    comm/abstractcommserver.h
     comm/abstractcommchannel.h comm/abstractcommchannel.cpp
+    comm/abstractcommserver.h
     comm/commmanager.h comm/commmanager.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
@@ -79,9 +79,11 @@ if(APPLE)
     endif()
 elseif(WIN32)
     list(APPEND server_SRCS ../common/utility_win.cpp)
+    list(APPEND server_SRCS comm/commserver.h comm/commserver.cpp)
     list(APPEND updater_SRCS updater/windowsupdater.h updater/windowsupdater.cpp)
 else()
     list(APPEND server_SRCS ../common/utility_linux.cpp)
+    list(APPEND server_SRCS comm/commserver.h comm/commserver.cpp)
     list(APPEND updater_SRCS updater/linuxupdater.h updater/linuxupdater.cpp)
 endif()
 

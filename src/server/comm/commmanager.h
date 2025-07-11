@@ -19,18 +19,13 @@
 
 #pragma once
 
+#include "abstractcommchannel.h"
+#include "abstractcommserver.h"
 #include "libcommon/utility/types.h"
 #include "libcommonserver/vfs/vfs.h"
 #include "libsyncengine/syncpal/syncpal.h"
 
 #include <unordered_map>
-
-#if defined(__APPLE__)
-#include "commserver_mac.h"
-#else
-#include <QLocalServer>
-typedef QLocalServer CommServer;
-#endif
 
 namespace KDC {
 

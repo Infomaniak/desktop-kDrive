@@ -134,14 +134,12 @@ using CommString = std::filesystem::path::string_type;
 #define CommString2WStr(s) s
 #define QStr2CommString(s) s.toStdWString()
 #define CommString2QStr(s) QString::fromStdWString(s)
-#define CommString2Int(s) std::wcstoi(s)
 #else
 #define Str2CommString(s) s
 #define CommString2Str(s) s
 #define CommString2WStr(s) Utility::s2ws(s)
 #define QStr2CommString(s) s.toStdString()
 #define CommString2QStr(s) QString::fromStdString(s)
-#define CommString2Int(s) std::stoi(s)
 #endif
 
 namespace event_dump_files {

@@ -32,19 +32,15 @@ class CommChannelTest : public AbstractCommChannel {
             return size;
         }
         uint64_t writeData(const char *data, uint64_t maxSize) override {
-            _buffer += CommString(data, maxSize);
+            _buffer.append(data, maxSize);
             return maxSize;
         }
         uint64_t bytesAvailable() const override { return _buffer.size(); }
         bool canReadLine() const override { return _buffer.find('\n') != std::string::npos; }
-        std::string id() const override {
-            const auto now = std::chrono::system_clock::now();
-            const std::time_t time = std::chrono::system_clock::to_time_t(now);
-            return std::ctime(&time);
-        }
+        std::string id() const override { return std::to_string(reinterpret_cast<uintptr_t>(this)); }
 
     private:
-        CommString _buffer; // Write & read to/from the same buffer
+        std::string _buffer; // Write & read to/from the same buffer
 };
 
 class TestAbstractCommChannel : public CppUnit::TestFixture, public TestBase {

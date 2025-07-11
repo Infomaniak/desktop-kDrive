@@ -18,8 +18,6 @@
 
 #include "commmanager.h"
 #include "config.h"
-#include "version.h"
-#include "common/utility.h"
 #include "libcommon/utility/logiffail.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
@@ -27,10 +25,17 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
+
+// TODO: To remove later
 #include "oldcommserver.h"
 
-#include <array>
+#if defined(__APPLE__)
+#include "commserver_mac.h"
+#else
+#include "commserver.h"
+#endif
 
+#include <QApplication>
 #include <QUrl>
 #include <QFile>
 #include <QDir>
@@ -38,6 +43,7 @@
 #include <QBuffer>
 #include <QDesktopServices>
 #include <QStandardPaths>
+#include <QPixmap>
 
 #ifdef __APPLE__
 #include <CoreFoundation/CoreFoundation.h>
@@ -244,12 +250,12 @@ void CommManager::onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channe
 
         const auto queryArgs = CommonUtility::splitCommString(query, QUERY_ARG_SEPARATOR);
         // Query ID
-        const int id = CommString2Int(queryArgs[0]);
+        const int id = std::stoi(queryArgs[0]);
         // Query type
-        const RequestNum num = static_cast<RequestNum>(CommString2Int(queryArgs[1]));
+        const RequestNum num = static_cast<RequestNum>(std::stoi(queryArgs[1]));
 
         if (num == RequestNum::SYNC_START || num == RequestNum::SYNC_STOP) {
-            const int syncDbId = CommString2Int(queryArgs[2]);
+            const int syncDbId = std::stoi(queryArgs[2]);
             QByteArray params;
             QDataStream paramsStream(&params, QIODevice::WriteOnly);
             paramsStream << syncDbId;
@@ -363,14 +369,7 @@ void CommManager::commandGetMenuItems(const CommString &argument, std::shared_pt
         if (vfsMapIt == _vfsMap.end()) return;
     }
 
-    // Some options only show for single files
-    bool isSingleFile = false;
-    if (files.size() == 1) {
-        manageActionsOnSingleFile(channel, files, syncPalMapIt, vfsMapIt, sync);
-
-        isSingleFile = QFileInfo(CommString2QStr(files[0])).isFile();
-    }
-
+#ifdef __APPLE__
     // Manage dehydration cancellation
     bool canCancelDehydration = false;
 
@@ -384,6 +383,14 @@ void CommManager::commandGetMenuItems(const CommString &argument, std::shared_pt
     // File availability actions
     if (sync.dbId() && sync.virtualFileMode() != VirtualFileMode::Off && vfsMapIt->second->socketApiPinStateActionsShown()) {
         LOG_IF_FAIL(Log::instance()->getLogger(), !files.empty());
+
+        // Some options only show for single files
+        bool isSingleFile = false;
+        if (files.size() == 1) {
+            manageActionsOnSingleFile(channel, files, syncPalMapIt, vfsMapIt, sync);
+
+            isSingleFile = QFileInfo(CommString2QStr(files[0])).isFile();
+        }
 
         bool canHydrate = true;
         bool canDehydrate = true;
@@ -417,6 +424,7 @@ void CommManager::commandGetMenuItems(const CommString &argument, std::shared_pt
 
         makePinContextMenu(canHydrate, canDehydrate, canCancelDehydration, canCancelHydration);
     }
+#endif
 
     {
         CommString message(Str("GET_MENU_ITEMS"));
@@ -459,48 +467,6 @@ void CommManager::commandCopyPrivateLink(const CommString &argument, std::shared
 
 void CommManager::commandOpenPrivateLink(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
     fetchPrivateLinkUrlHelper(argument, &CommManager::openPrivateLink);
-}
-
-void CommManager::commandCancelDehydrationDirect(const CommString &, std::shared_ptr<AbstractCommChannel>) {
-    LOG_INFO(Log::instance()->getLogger(), "Ongoing files dehydrations canceled");
-    _dehydrationCanceled = true;
-    return;
-}
-
-void CommManager::commandCancelHydrationDirect(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
-    LOG_INFO(Log::instance()->getLogger(), "Ongoing files hydrations canceled");
-
-    const auto fileList = CommonUtility::splitCommString(argument, QUERY_ARG_SEPARATOR);
-    if (fileList.size() == 0) {
-        return;
-    }
-
-    Sync sync;
-    if (!syncForPath(fileList[0], sync)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Sync not found - " << Utility::formatSyncPath(fileList[0]));
-        return;
-    }
-
-    if (!cancelDownloadJobs(sync.dbId(), fileList)) {
-        LOGW_INFO(Log::instance()->getLogger(), L"Error in CommManager::cancelDownloadJobs");
-        return;
-    }
-
-#ifdef _WIN32
-    for (const auto &filePathStr: fileList) {
-        SyncPath filePath(filePathStr);
-        FileData fileData = FileData::get(filePath);
-
-        if (!fileData.syncDbId) {
-            continue;
-        }
-
-        auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
-        if (vfsMapIt == _vfsMap.cend()) continue;
-
-        vfsMapIt->second->cancelHydrate(filePath);
-    }
-#endif
 }
 
 void CommManager::commandMakeAvailableLocallyDirect(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
@@ -567,7 +533,7 @@ void CommManager::commandMakeAvailableLocallyDirect(const CommString &argument, 
 
 #ifdef _WIN32
 void CommManager::commandGetAllMenuItems(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
-    const auto argumentList = CommonUtility::splitCommString(argument, MSG_ARG_SEPARATOR);
+    auto argumentList = CommonUtility::splitCommString(argument, MSG_ARG_SEPARATOR);
 
     CommString msgId = argumentList[0];
     argumentList.erase(argumentList.begin());
@@ -600,13 +566,13 @@ void CommManager::commandGetAllMenuItems(const CommString &argument, std::shared
     if (sync.dbId()) {
         syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
         if (syncPalMapIt == _syncPalMap.end()) {
-            listener->sendMessage(response);
+            channel->sendMessage(response);
             return;
         }
 
         vfsMapIt = retrieveVfsMapIt(sync.dbId());
         if (vfsMapIt == _vfsMap.end()) {
-            listener->sendMessage(response);
+            channel->sendMessage(response);
             return;
         }
     }
@@ -622,7 +588,7 @@ void CommManager::commandGetAllMenuItems(const CommString &argument, std::shared
         if (exitCode != ExitCode::Ok) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in SyncPal::itemId - " << Utility::formatSyncPath(fileData.relativePath));
-            listener->sendMessage(response);
+            channel->sendMessage(response);
             return;
         }
         bool isOnTheServer = !nodeId.empty();
@@ -671,7 +637,7 @@ void CommManager::commandGetAllMenuItems(const CommString &argument, std::shared
         response.append(cancelHydrationText());
     }
 
-    channel->sendMessage(responseStr);
+    channel->sendMessage(response);
 }
 
 void CommManager::commandGetThumbnail(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
@@ -686,7 +652,7 @@ void CommManager::commandGetThumbnail(const CommString &argument, std::shared_pt
     CommString msgId(argumentList[0]);
 
     // Picture width asked
-    unsigned int width(CommString2Int(argumentList[1]));
+    unsigned int width(std::stoi(argumentList[1]));
     if (width == 0) {
         LOG_WARN(Log::instance()->getLogger(), "Bad width - value=" << width);
         return;
@@ -822,6 +788,32 @@ void CommManager::commandMakeOnlineOnlyDirect(const CommString &argument, std::s
         if (_nbOngoingDehydration == 0) {
             _dehydrationCanceled = false;
         }
+    }
+}
+
+void CommManager::commandCancelDehydrationDirect(const CommString &, std::shared_ptr<AbstractCommChannel>) {
+    LOG_INFO(Log::instance()->getLogger(), "Ongoing files dehydrations canceled");
+    _dehydrationCanceled = true;
+    return;
+}
+
+void CommManager::commandCancelHydrationDirect(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
+    LOG_INFO(Log::instance()->getLogger(), "Ongoing files hydrations canceled");
+
+    const auto fileList = CommonUtility::splitCommString(argument, QUERY_ARG_SEPARATOR);
+    if (fileList.size() == 0) {
+        return;
+    }
+
+    Sync sync;
+    if (!syncForPath(fileList[0], sync)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Sync not found - " << Utility::formatSyncPath(fileList[0]));
+        return;
+    }
+
+    if (!cancelDownloadJobs(sync.dbId(), fileList)) {
+        LOGW_INFO(Log::instance()->getLogger(), L"Error in CommManager::cancelDownloadJobs");
+        return;
     }
 }
 
@@ -1228,7 +1220,7 @@ void CommManager::manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel>
 }
 
 void CommManager::buildAndSendRegisterPathMessage(std::shared_ptr<AbstractCommChannel> channel, const SyncPath &path) {
-    CommString message("REGISTER_PATH");
+    CommString message(Str("REGISTER_PATH"));
     message.append(MSG_CDE_SEPARATOR);
     message.append(path.native());
     channel->sendMessage(message);

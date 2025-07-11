@@ -79,7 +79,8 @@ CommString AbstractCommChannel::readLine() {
             break;
         }
         if (auto readSize = readData(data, maxlen); readSize > 0) {
-            _readBuffer.append(data, readSize);
+            std::string dataStr(data, readSize);
+            _readBuffer.append(Str2CommString(dataStr));
         } else {
             break;
         }
@@ -89,7 +90,7 @@ CommString AbstractCommChannel::readLine() {
 
 CommString AbstractCommChannel::truncateLongLogMessage(const CommString &message) {
     if (static const size_t maxLogMessageSize = 2048; message.size() > maxLogMessageSize) {
-        return message.substr(0, maxLogMessageSize) + " (truncated)";
+        return message.substr(0, maxLogMessageSize) + Str(" (truncated)");
     }
 
     return message;

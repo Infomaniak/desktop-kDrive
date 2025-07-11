@@ -28,12 +28,12 @@ class AbstractCommServer {
         virtual ~AbstractCommServer() {}
 
         virtual void close() = 0;
-        virtual bool listen(const std::string &name) = 0;
+        virtual bool listen(const SyncPath &name) = 0;
         virtual std::shared_ptr<AbstractCommChannel> nextPendingConnection() = 0;
         virtual std::list<std::shared_ptr<AbstractCommChannel>> extConnections() = 0;
         virtual std::shared_ptr<AbstractCommChannel> guiConnection() = 0;
 
-        static bool removeServer(const std::string &) { return true; }
+        static bool removeServer(const SyncPath &) { return true; }
 
         void setNewExtConnectionCbk(const std::function<void()> &cbk) { _onNewExtConnectionCbk = cbk; }
         void newExtConnectionCbk() {

@@ -468,9 +468,7 @@ void CommServer::close() {
     // Assume we'll be destroyed right after
 }
 
-bool CommServer::listen(const std::string &name) {
-    (void) name;
-
+bool CommServer::listen(const SyncPath &) {
     [_privatePtr->_server start];
 
     return TRUE;

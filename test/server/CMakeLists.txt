@@ -51,8 +51,10 @@ if(APPLE)
     endif()
 elseif(WIN32)
     list(APPEND server_SRCS ${server_srcs_path}/updater/windowsupdater.h ${server_srcs_path}/updater/windowsupdater.cpp ${server_srcs_path}/../common/utility_win.cpp)
+    list(APPEND server_SRCS ${server_srcs_path}/comm/commserver.h ${server_srcs_path}/comm/commserver.cpp)
 else()
     list(APPEND server_SRCS ${server_srcs_path}/updater/linuxupdater.h ${server_srcs_path}/updater/linuxupdater.cpp ${server_srcs_path}/../common/utility_linux.cpp)
+    list(APPEND server_SRCS ${server_srcs_path}/comm/commserver.h ${server_srcs_path}/comm/commserver.cpp)
 endif()
 
 set(3rdparty_SRC
