@@ -563,8 +563,6 @@ void SocketApi::copyUrlToClipboard(const QString &link) {
 void SocketApi::command_MAKE_AVAILABLE_LOCALLY_DIRECT(const QString &filesArg) {
     const QStringList fileList = filesArg.split(MSG_ARG_SEPARATOR);
 
-    QSet<QString> impactedFolders;
-
 #ifdef Q_OS_MAC
     std::list<KDC::SyncPath> fileListExpanded;
     processFileList(fileList, fileListExpanded);
@@ -574,7 +572,7 @@ void SocketApi::command_MAKE_AVAILABLE_LOCALLY_DIRECT(const QString &filesArg) {
     for (const auto &str: qAsConst(fileList)) {
         std::filesystem::path filePath = QStr2Path(str);
 #endif
-        auto fileData = FileData::get(filePath);
+        const auto fileData = FileData::get(filePath);
         if (!fileData.syncDbId) {
             LOGW_WARN(KDC::Log::instance()->getLogger(), L"No file data - " << Utility::formatSyncPath(filePath));
             continue;
@@ -1307,45 +1305,47 @@ QString SocketApi::buildRegisterPathMessage(const QString &path) {
 void SocketApi::processFileList(const QStringList &inFileList, std::list<SyncPath> &outFileList) {
     // Process all files
     for (const QString &path: qAsConst(inFileList)) {
-        FileData fileData = FileData::get(path);
-        if (fileData.virtualFileMode == VirtualFileMode::Mac) {
-            QFileInfo info(path);
-            if (info.isBundle()) {
-                addBundleDownload(fileData);
+        const FileData fileData = FileData::get(path);
+        if (fileData.virtualFileMode != VirtualFileMode::Mac) {
+            (void) outFileList.emplace_back(QStr2Path(path));
+            continue;
+        }
+
+        const QFileInfo info(path);
+        if (info.isBundle()) {
+            addBundleDownload(fileData);
+            continue;
+        }
+        if (!info.isDir()) {
+            (void) outFileList.emplace_back(QStr2Path(path));
+            continue;
+        }
+
+        const QFileInfoList infoList = QDir(path).entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
+        QStringList fileList;
+        for (const auto &tmpInfo: infoList) {
+            const QString tmpPath(tmpInfo.filePath());
+            const FileData tmpFileData = FileData::get(tmpPath);
+
+            auto status = SyncFileStatus::Unknown;
+            if (VfsStatus vfsStatus; !syncFileStatus(tmpFileData, status, vfsStatus)) {
+                LOGW_WARN(KDC::Log::instance()->getLogger(),
+                          L"Error in SocketApi::syncFileStatus - " << Utility::formatPath(tmpPath));
                 continue;
             }
-            if (info.isDir()) {
-                const QFileInfoList infoList = QDir(path).entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
-                QStringList fileList;
-                for (const auto &tmpInfo: qAsConst(infoList)) {
-                    QString tmpPath(tmpInfo.filePath());
-                    FileData tmpFileData = FileData::get(tmpPath);
 
-                    auto status = SyncFileStatus::Unknown;
-                    if (VfsStatus vfsStatus; !syncFileStatus(tmpFileData, status, vfsStatus)) {
-                        LOGW_WARN(KDC::Log::instance()->getLogger(),
-                                  L"Error in SocketApi::syncFileStatus - " << Utility::formatPath(tmpPath));
-                        continue;
-                    }
-
-                    if (status == SyncFileStatus::Unknown || status == SyncFileStatus::Ignored) {
-                        continue;
-                    }
-
-                    fileList.append(tmpPath);
-                }
-
-                if (fileList.size() > 0) {
-                    processFileList(fileList, outFileList);
-                } else {
-                    // Empty folders need to appear in `outFileList` so that their status can be updated.
-                    outFileList.push_back(QStr2Path(path));
-                }
-            } else {
-                outFileList.push_back(QStr2Path(path));
+            if (status == SyncFileStatus::Unknown || status == SyncFileStatus::Ignored) {
+                continue;
             }
+
+            fileList.append(tmpPath);
+        }
+
+        if (fileList.size() > 0) {
+            processFileList(fileList, outFileList);
         } else {
-            outFileList.push_back(QStr2Path(path));
+            // Empty folders need to appear in `outFileList` so that their status can be updated.
+            (void) outFileList.emplace_back(QStr2Path(path));
         }
     }
 }

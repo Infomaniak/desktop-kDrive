@@ -726,8 +726,22 @@ void SyncPal::addBundleDownload(const SyncPath &absoluteLocalPath) {
     bool endOfDir = false;
     DirectoryEntry entry;
     while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
-        // TODO : check status for empty directories
-        if (entry.is_directory()) continue;
+        if (entry.is_directory()) {
+            // Status of empty directories needs to be handled separately.
+            bool isEmpty = false;
+            ioError = IoHelper::checkIfDirectoryIsEmpty(entry.path(), isEmpty);
+            if (ioError != IoError::Success) {
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Error in IoHelper::checkIfDirectoryIsEmpty for " << Utility::formatSyncPath(entry.path()));
+                continue;
+            }
+            if (isEmpty && _vfs) {
+                // Update folder status manually
+                (void) _vfs->forceStatus(entry.path(),
+                                         {.isPlaceholder = true, .isHydrated = true, .isSyncing = false, .progress = 100});
+            }
+            continue;
+        }
 
         (void) addDlDirectJob(CommonUtility::relativePath(localPath(), entry.path()), entry.path());
         (void) absoluteLocalPathSet.emplace(entry.path());
