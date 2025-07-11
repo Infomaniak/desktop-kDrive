@@ -72,25 +72,25 @@ jobs:
         run: echo "TODO Check release notes..."
 
 # Build apps
-  build-Windows:
-    needs: [check-release-notes, check-translations]
-    runs-on: [ self-hosted, Windows, desktop-kdrive ]
-    outputs:
-      kDrive_version: ${{ steps.build-windows-step.outputs.kDrive_version }}
-    env:
-      KDC_PHYSICAL_AUMID: ${{ secrets.KDC_PHYSICAL_AUMID }}
-    steps:
-      - name: Checkout the PR
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-      - name: Build Windows
-        id: build-windows-step
-        uses: ./.github/actions/build_windows
-        with:  
-          physical_cert: ${{ secrets.WINDOWS_PHYSICAL_CERT }}
-          physical_cert_pass: ${{ secrets.WINDOWS_PHYSICAL_CERT_PASSWORD }}
-          release_build: true
+#  build-Windows:
+#    needs: [check-release-notes, check-translations]
+#    runs-on: [ self-hosted, Windows, desktop-kdrive ]
+#    outputs:
+#      kDrive_version: ${{ steps.build-windows-step.outputs.kDrive_version }}
+#    env:
+#      KDC_PHYSICAL_AUMID: ${{ secrets.KDC_PHYSICAL_AUMID }}
+#    steps:
+#      - name: Checkout the PR
+#        uses: actions/checkout@v4
+#        with:
+#          submodules: recursive
+#      - name: Build Windows
+#        id: build-windows-step
+#        uses: ./.github/actions/build_windows
+#        with:
+#          physical_cert: ${{ secrets.WINDOWS_PHYSICAL_CERT }}
+#          physical_cert_pass: ${{ secrets.WINDOWS_PHYSICAL_CERT_PASSWORD }}
+#          release_build: true
 
   build-Linux:
     needs: [check-release-notes, check-translations]
@@ -110,22 +110,22 @@ jobs:
   # TODO: build macOS apps
 
 # Tests Windows
-  test-Windows:
-    if: false
-    needs: build-Windows
-    strategy:
-      fail-fast: false
-      matrix:
-        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
-    runs-on: [ self-hosted, Windows ]
-    env:
-      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
-      KDRIVE_SENTRY_ENVIRONMENT: "windows_ci_runner"
-    steps:
-       - name: Checkout the PR
-         uses: actions/checkout@v4.1.1
-         with:
-          ref: ${{ github.head_ref }}
+#  test-Windows:
+#    if: false
+#    needs: build-Windows
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
+#    runs-on: [ self-hosted, Windows ]
+#    env:
+#      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
+#      KDRIVE_SENTRY_ENVIRONMENT: "windows_ci_runner"
+#    steps:
+#       - name: Checkout the PR
+#         uses: actions/checkout@v4.1.1
+#         with:
+#          ref: ${{ github.head_ref }}
 
        #- name: Run test
        #  uses: ./.github/actions/test_windows
