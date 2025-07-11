@@ -68,10 +68,28 @@ jobs:
 # Check Release Notes
   check-release-notes:
     needs: get-version
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, Linux, X64, desktop-kdrive]
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+
       - name: Check release notes
-        run: echo "TODO Check release notes..."
+        run: |
+          VERSION_NUMBER="${{ needs.get-version.outputs.kDrive_version }}"
+          BASE_NAME="kDrive-${VERSION_NUMBER}"
+          BASE_PATH="./release_notes/${BASE_NAME}"
+          OS=( "win" "linux" "macos" )
+          LANGUAGES=( "fr" "de" "es" "it" )
+          for version in "${OS[@]}"; do
+            for lang in "${LANGUAGES[@]}"; do
+              FILE="${BASE_PATH}/kDrive-${version}-${lang}.html"
+              if [ ! -f "$FILE" ]; then
+                echo "Release notes file not found: $FILE"
+                exit 1
+              fi
+            done
+          done
+          echo "All release notes files are present."
 
 # Build apps
 #  build-Windows:
