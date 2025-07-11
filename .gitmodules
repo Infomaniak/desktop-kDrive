@@ -4,3 +4,6 @@
 [submodule "src/3rdparty/qt-piwik-tracker"]
 	path = src/3rdparty/qt-piwik-tracker
 	url = https://github.com/pbek/qt-piwik-tracker.git
+[submodule "src/3rdparty/utf8proc"]
+	path = src/3rdparty/utf8proc
+	url = https://github.com/JuliaStrings/utf8proc.git
