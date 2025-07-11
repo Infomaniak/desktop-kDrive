@@ -799,7 +799,7 @@ bool ParmsDb::updateExclusionApps() {
 
     // Load exclusion app in configuration file
     std::vector<std::pair<std::string, std::string>> exclusionAppFileList;
-    std::ifstream exclusionFile(Utility::getExcludedAppFilePath(_test).string());
+    std::ifstream exclusionFile(Utility::getExcludedAppFilePath(_test).c_str());
     if (exclusionFile.is_open()) {
         std::string line;
         while (std::getline(exclusionFile, line)) {
