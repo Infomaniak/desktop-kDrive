@@ -80,9 +80,9 @@ jobs:
           BASE_PATH="./release_notes/${BASE_NAME}"
           OS=( "win" "linux" "macos" )
           LANGUAGES=( "fr" "de" "es" "it" )
-          for version in "${OS[@]}"; do
+          for os in "${OS[@]}"; do
             for lang in "${LANGUAGES[@]}"; do
-              FILE="${BASE_PATH}/kDrive-${version}-${lang}.html"
+              FILE="${BASE_PATH}/kDrive-${VERSION_NUMBER}-${os}-${lang}.html"
               if [ ! -f "$FILE" ]; then
                 echo "Release notes file not found: $FILE"
                 exit 1
