@@ -42,6 +42,7 @@ namespace AutoSafeNetLogon
 
             try
             {
+                Console.WriteLine("Signtool starting with arguments: " + startInfo.Arguments);
                 var process = Process.Start(startInfo);
                 process.OutputDataReceived += (sender, e) => Console.WriteLine(e.Data);
                 process.ErrorDataReceived += (sender, e) => Console.Error.WriteLine(e.Data);
