@@ -73,7 +73,7 @@ QIcon Theme::themeIcon(const QString &name, bool sysTray, bool sysTrayMenuVisibl
                 QOperatingSystemVersion::current() > QOperatingSystemVersion::MacOSCatalina) {
                 flavor = QString("black");
             } else {
-                flavor = KDC::CommonUtility::hasDarkSystray() ? QString("white") : QString("black");
+                flavor = CommonUtility::hasDarkSystray() ? QString("white") : QString("black");
             }
         } else {
             flavor = QString("colored");

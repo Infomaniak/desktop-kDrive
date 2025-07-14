@@ -60,6 +60,8 @@ if(APPLE)
     set_property(SOURCE utility/utility_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 elseif (WIN32)
     list(APPEND libcommon_SRCS utility/utility_win.cpp)
+else ()
+    list(APPEND libcommon_SRCS utility/utility_linux.cpp)
 endif()
 
 # Target
