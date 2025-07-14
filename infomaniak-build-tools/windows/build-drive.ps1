@@ -119,15 +119,22 @@ function Clean {
 
 function Get-Thumbprint {
     param (
-        [bool] $upload
+        [bool] $upload,
+        [bool] $ci # On CI build, the certificate are located in local computer store
     )
+    if ($ci) {
+        $certStore = "Cert:\LocalMachine\My"
+    } else {
+        $certStore = "Cert:\CurrentUser\My"
+    }
     $thumbprint = 
     If ($upload) {
-         Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -match "EV" } | Select -ExpandProperty Thumbprint
+         Get-ChildItem $certStore | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -match "EV" } | Select -ExpandProperty Thumbprint
     } 
     Else {
-        Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -notmatch "EV" } | Select -ExpandProperty Thumbprint
+        Get-ChildItem $certStore | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -notmatch "EV" } | Select -ExpandProperty Thumbprint
     }
+    Write-Host "Using thumbprint: $thumbprint"
     return $thumbprint
 }
 
@@ -653,7 +660,7 @@ if ($LASTEXITCODE -ne 0) {
 #################################################################################################
 
 if (!(Test-Path "$vfsDir\vfs.dll") -or $ext) {
-    $thumbprint = Get-Thumbprint $upload
+    $thumbprint = Get-Thumbprint $upload -ci $ci
     Build-Extension $path $extPath $buildType $thumbprint
 
     if ($LASTEXITCODE -ne 0) {
