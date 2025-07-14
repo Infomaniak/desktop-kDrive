@@ -371,7 +371,7 @@ function Sign-File{
         [String] $tokenPass = ""
     )
     Write-Host "Signing the file $filePath with thumbprint $thumbprint" -f Yellow
-    & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /sm $filePath /password:$tokenPass
+    & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm $filePath /password:$tokenPass
     $res = $LASTEXITCODE
     Write-Host "Signing exit code: $res" -ForegroundColor Yellow
     if ($res -ne 0) {
