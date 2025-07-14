@@ -508,7 +508,7 @@ Utility::kdVariant Utility::registryGetKeyValue(const HKEY hRootKey, const std::
     }
 
     switch (type) {
-        case REG_DWORD:
+        case REG_DWORD: {
             DWORD dword = 0;
             Q_ASSERT(sizeInBytes == sizeof(dword));
             if (RegQueryValueEx(hKey, valueName.c_str(), 0, &type, reinterpret_cast<LPBYTE>(&dword), &sizeInBytes) ==
@@ -516,6 +516,7 @@ Utility::kdVariant Utility::registryGetKeyValue(const HKEY hRootKey, const std::
                 value = int(dword);
             }
             break;
+        }
         case REG_EXPAND_SZ:
         case REG_SZ: {
             std::wstring string;
