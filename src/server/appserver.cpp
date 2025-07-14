@@ -296,7 +296,7 @@ void AppServer::init() {
 #if defined(KD_LINUX)
     // On Linux, override the auto startup file on every app launch to make sure it points to the correct executable.
     if (ParametersCache::instance()->parameters().autoStart()) {
-        Utility::setLaunchOnStartup(_theme->appName(), _theme->appNameGUI(), true);
+        Utility::setLaunchOnStartup(_theme->appName(), _theme->appName(), true);
     }
 #else
     if (ParametersCache::instance()->parameters().autoStart() && !Utility::hasLaunchOnStartup(_theme->appName())) {
