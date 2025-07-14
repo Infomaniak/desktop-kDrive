@@ -33,6 +33,7 @@ void TestIntegration::basicTests() {
     testLocalChanges();
     testRemoteChanges();
     testSimultaneousChanges();
+    testUploadBigFile();
 }
 
 void TestIntegration::testLocalChanges() {
@@ -187,4 +188,30 @@ void TestIntegration::testSimultaneousChanges() {
     CPPUNIT_ASSERT(remoteTestFileInfo.isValid());
     logStep("testSimultaneousChanges");
 }
+
+void TestIntegration::testUploadBigFile() {
+    const LocalTemporaryDirectory temporaryDir("testUploadBigFile", _syncPal->localPath());
+
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    const auto localFilePath = testhelpers::generateBigFile(temporaryDir.path(), 110); // Generate a 110MB local file.
+
+    bool found = false;
+    FileStat fileStat;
+    IoHelper::getFileStat(localFilePath, &fileStat, found);
+
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    DbNode dbNode;
+    CPPUNIT_ASSERT(_syncPal->syncDb()->node(ReplicaSide::Local, std::to_string(fileStat.inode), dbNode, found) && found);
+
+    GetFileInfoJob fileInfoJob(_driveDbId, *dbNode.nodeIdRemote());
+    (void) fileInfoJob.runSynchronously();
+
+    CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, fileInfoJob.creationTime());
+    CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, fileInfoJob.modificationTime());
+    CPPUNIT_ASSERT_EQUAL(fileStat.size, fileInfoJob.size());
+    logStep("testUploadBigFile");
+}
+
 } // namespace KDC
