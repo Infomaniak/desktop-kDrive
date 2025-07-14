@@ -204,11 +204,12 @@ function Build-Extension {
 
 
     Write-Host "Extension version: $version"
-    Sign-File -FilePath "$extPath\FileExplorerExtensionPackage\AppPackages\FileExplorerExtensionPackage_$version.0_Test\FileExplorerExtensionPackage_$version.0_x64_arm64.msixbundle" -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass
+    $bundlePath = "$extPath" + "FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$version.0_Test/FileExplorerExtensionPackage_$version.0_x64_arm64.msixbundle"
+    Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass
 
-    $srcVfsPath = "$path\src\libcommonserver\vfs\win\."
-    Copy-Item -Path "$extPath\Vfs\..\Common\debug.h" -Destination $srcVfsPath
-    Copy-Item -Path "$extPath\Vfs\Vfs.h" -Destination $srcVfsPath
+    $srcVfsPath = "$path/src/libcommonserver/vfs/win/."
+    Copy-Item -Path "$extPath/Vfs/../Common/debug.h" -Destination $srcVfsPath
+    Copy-Item -Path "$extPath/Vfs/Vfs.h" -Destination $srcVfsPath
 
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
