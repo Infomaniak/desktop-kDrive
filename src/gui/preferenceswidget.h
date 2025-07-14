@@ -93,7 +93,13 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
         QLabel *_debuggingFolderLabel{nullptr};
         QLabel *_filesToExcludeLabel{nullptr};
         QLabel *_proxyServerLabel{nullptr};
+#ifdef Q_OS_MAC
         QLabel *_liteSyncLabel{nullptr};
+#endif
+#ifdef Q_OS_WIN
+        QLabel *_emlIndexationLabel{nullptr};
+        QLabel *_emlIndexationDisclaimerLabel{nullptr};
+#endif
         ActionWidget *_displayErrorsWidget{nullptr};
 
         void showEvent(QShowEvent *event) override;
@@ -116,7 +122,12 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
         void onDebuggingWidgetClicked();
         void onFilesToExcludeWidgetClicked();
         void onProxyServerWidgetClicked();
+#ifdef Q_OS_MAC
         void onLiteSyncWidgetClicked();
+#endif
+#ifdef Q_OS_WIN
+        void onEmlIndexationSwitchClicked(bool checked);
+#endif
         void onLinkActivated(const QString &link);
 
         void retranslateUi() const;

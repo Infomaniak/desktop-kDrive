@@ -85,6 +85,9 @@ void SyncPalWorker::execute() {
 #if defined(KD_WINDOWS)
         auto resetFunc = std::function<void()>([this]() { resetVfsFilesStatus(); });
         _resetVfsFilesStatusThread = StdLoggingThread(resetFunc);
+        _resetVfsFilesStatusThread.detach();
+
+        _syncPal->fixFilesIndexation();
 #else
         resetVfsFilesStatus();
 #endif
@@ -267,9 +270,6 @@ void SyncPalWorker::stop() {
     _pauseAsked = false;
     _unpauseAsked = true;
     ISyncWorker::stop();
-    if (_resetVfsFilesStatusThread.joinable()) {
-        _resetVfsFilesStatusThread.join();
-    }
 }
 
 void SyncPalWorker::pause() {

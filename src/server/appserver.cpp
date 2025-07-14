@@ -1811,6 +1811,15 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 Proxy::instance()->setProxyConfig(ParametersCache::instance()->parameters().proxyConfig());
             }
 
+#ifdef _WIN32
+            // eml indexation change propagation
+            if (parameters.emlIndexation() != parametersInfo.emlIndexation()) {
+                for (const auto &[_, syncPalElt]: _syncPalMap) {
+                    syncPalElt->fixFilesIndexation();
+                }
+            }
+#endif
+
             resultStream << toInt(exitCode);
             break;
         }

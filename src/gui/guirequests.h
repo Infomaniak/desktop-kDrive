@@ -82,7 +82,7 @@ struct GuiRequests {
 
 #ifdef Q_OS_WIN
         static ExitCode showInExplorerNavigationPane(bool &show);
-        static ExitCode setShowInExplorerNavigationPane(const bool &show);
+        static ExitCode setShowInExplorerNavigationPane(bool show);
 #endif
 
         // C/S requests (access to network)

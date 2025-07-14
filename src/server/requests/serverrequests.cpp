@@ -2057,6 +2057,7 @@ void ServerRequests::parametersToParametersInfo(const Parameters &parameters, Pa
     }
     parametersInfo.setMaxAllowedCpu(parameters.maxAllowedCpu());
     parametersInfo.setDistributionChannel(parameters.distributionChannel());
+    parametersInfo.setEmlIndexation(parameters.emlIndexation());
 }
 
 void ServerRequests::parametersInfoToParameters(const ParametersInfo &parametersInfo, Parameters &parameters) {
@@ -2092,6 +2093,7 @@ void ServerRequests::parametersInfoToParameters(const ParametersInfo &parameters
     }
     parameters.setMaxAllowedCpu(parametersInfo.maxAllowedCpu());
     parameters.setDistributionChannel(parametersInfo.distributionChannel());
+    parameters.setEmlIndexation(parametersInfo.emlIndexation());
 }
 
 void ServerRequests::proxyConfigToProxyConfigInfo(const ProxyConfig &proxyConfig, ProxyConfigInfo &proxyConfigInfo) {

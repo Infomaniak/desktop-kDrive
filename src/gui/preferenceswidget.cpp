@@ -133,6 +133,8 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     _debuggingFolderLabel{new QLabel()},
     _filesToExcludeLabel{new QLabel()},
     _proxyServerLabel{new QLabel()},
+    _emlIndexationLabel{new QLabel()},
+    _emlIndexationDisclaimerLabel{new QLabel()},
     _displayErrorsWidget{new ActionWidget(":/client/resources/icons/actions/warning.svg", "")} {
     setContentsMargins(0, 0, 0, 0);
 
@@ -282,6 +284,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     moveToTrashTitleBox->addWidget(_moveToTrashLabel);
     moveToTrashTitleBox->addWidget(_moveToTrashTipsLabel);
     moveToTrashBox->addLayout(moveToTrashTitleBox);
+    moveToTrashBox->setStretchFactor(moveToTrashTitleBox, 1);
 
     const auto moveToTrashSwitch = new CustomSwitch();
     moveToTrashSwitch->setLayoutDirection(Qt::RightToLeft);
@@ -390,6 +393,28 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     liteSyncVBox->addWidget(_liteSyncLabel);
 #endif
 
+#ifdef Q_OS_WIN
+    // .eml files indexation
+    const auto emlIndexationBox = advancedBloc->addLayout(QBoxLayout::Direction::LeftToRight);
+    const auto emlIndexationTitleBox = new QVBoxLayout();
+    emlIndexationTitleBox->setContentsMargins(0, 0, 0, 0);
+
+    _emlIndexationLabel->setWordWrap(true);
+    emlIndexationTitleBox->addWidget(_emlIndexationLabel);
+    _emlIndexationDisclaimerLabel->setWordWrap(true);
+    _emlIndexationDisclaimerLabel->setObjectName("description");
+    emlIndexationTitleBox->addWidget(_emlIndexationDisclaimerLabel);
+    emlIndexationBox->addLayout(emlIndexationTitleBox);
+    emlIndexationBox->setStretchFactor(emlIndexationTitleBox, 1);
+
+    const auto emlIndexationSwitch = new CustomSwitch();
+    emlIndexationSwitch->setLayoutDirection(Qt::RightToLeft);
+    emlIndexationSwitch->setAttribute(Qt::WA_MacShowFocusRect, false);
+    emlIndexationSwitch->setCheckState(ParametersCache::instance()->parametersInfo().emlIndexation() ? Qt::Checked
+                                                                                                     : Qt::Unchecked);
+    emlIndexationBox->addWidget(emlIndexationSwitch);
+#endif
+
     // Version
     _versionWidget = new VersionWidget(this);
     vBox->addWidget(_versionWidget);
@@ -421,6 +446,9 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     connect(proxyServerWidget, &ClickableWidget::clicked, this, &PreferencesWidget::onProxyServerWidgetClicked);
 #ifdef Q_OS_MAC
     connect(liteSyncWidget, &ClickableWidget::clicked, this, &PreferencesWidget::onLiteSyncWidgetClicked);
+#endif
+#ifdef Q_OS_WIN
+    connect(emlIndexationSwitch, &CustomSwitch::clicked, this, &PreferencesWidget::onEmlIndexationSwitchClicked);
 #endif
 
     connect(_gui.get(), &ClientGui::updateStateChanged, _versionWidget, &VersionWidget::onUpdateStateChanged);
@@ -586,16 +614,27 @@ void PreferencesWidget::onProxyServerWidgetClicked() {
     MatomoClient::sendVisit(MatomoNameField::PG_Preferences_Proxy);
 }
 
+#ifdef Q_OS_MAC
 void PreferencesWidget::onLiteSyncWidgetClicked() {
     EnableStateHolder _(this);
 
     MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "liteSyncPopup");
     LiteSyncDialog dialog(_gui, this);
     dialog.exec();
-#ifdef Q_OS_MAC
     MatomoClient::sendVisit(MatomoNameField::PG_Preferences_LiteSync);
-#endif
 }
+#endif
+
+#ifdef Q_OS_WIN
+void PreferencesWidget::onEmlIndexationSwitchClicked(bool checked) {
+    ParametersCache::instance()->parametersInfo().setEmlIndexation(checked);
+    if (!ParametersCache::instance()->saveParametersInfo()) {
+        return;
+    }
+
+    MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "emlIndexationSwitch", checked ? 1 : 0);
+}
+#endif
 
 void PreferencesWidget::onLinkActivated(const QString &link) {
     if (link == debuggingFolderLink) {
@@ -667,6 +706,12 @@ void PreferencesWidget::retranslateUi() const {
     _proxyServerLabel->setText(tr("Proxy server"));
 #ifdef Q_OS_MAC
     _liteSyncLabel->setText(tr("Lite Sync"));
+#endif
+#ifdef Q_OS_WIN
+    _emlIndexationLabel->setText(tr("Emails saved as plain text (.eml) indexation."));
+    _emlIndexationDisclaimerLabel->setText(
+            tr("Enabling this option is not recommended as it can lead to synchronization loops."));
+
 #endif
 }
 

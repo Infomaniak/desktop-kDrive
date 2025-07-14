@@ -33,7 +33,7 @@ class ParametersInfo {
         ParametersInfo(Language language, bool monoIcons, bool autoStart, bool moveToTrash,
                        NotificationsDisabled notificationsDisabled, bool useLog, LogLevel logLevel, bool extendedLog,
                        bool purgeOldLogs, bool useBigFolderSizeLimit, qint64 bigFolderSizeLimit, bool darkTheme,
-                       bool showShortcuts, QMap<QString, QByteArray> dialogGeometry, int maxAllowedCpu);
+                       bool showShortcuts, QMap<QString, QByteArray> dialogGeometry, int maxAllowedCpu, bool emlIndexation);
         ParametersInfo();
 
         inline void setLanguage(Language language) { _language = language; }
@@ -75,6 +75,8 @@ class ParametersInfo {
         inline void setMaxAllowedCpu(int maxAllowedCpu) { _maxAllowedCpu = maxAllowedCpu; }
         [[nodiscard]] VersionChannel distributionChannel() const { return _distributionChannel; }
         void setDistributionChannel(const VersionChannel channel) { _distributionChannel = channel; }
+        bool emlIndexation() const { return _emlIndexation; }
+        void setEmlIndexation(bool emlIndexation) { _emlIndexation = emlIndexation; }
 
         friend QDataStream &operator>>(QDataStream &in, ParametersInfo &parametersInfo);
         friend QDataStream &operator<<(QDataStream &out, const ParametersInfo &parametersInfo);
@@ -97,6 +99,7 @@ class ParametersInfo {
         QMap<QString, QByteArray> _dialogGeometry;
         int _maxAllowedCpu;
         VersionChannel _distributionChannel{VersionChannel::Prod};
+        bool _emlIndexation;
 };
 
 } // namespace KDC
