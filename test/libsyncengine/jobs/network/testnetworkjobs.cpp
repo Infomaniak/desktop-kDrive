@@ -439,7 +439,6 @@ void TestNetworkJobs::testDownload() {
                 };
         IoHelperTestUtilities::setRename(MockRename);
         IoHelperTestUtilities::setTempDirectoryPathFunction(MockTempDirectoryPath);
-        int64_t sizeOut = 0;
         // CREATE
         {
             DownloadJob job(nullptr, _driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, true);
@@ -719,6 +718,26 @@ void TestNetworkJobs::testDownload() {
         CPPUNIT_ASSERT(std::filesystem::is_empty(temporaryDirectory.path()));
     }
 #endif
+}
+
+void TestNetworkJobs::testDownloadHasEnoughSpace() {
+    if (!testhelpers::isRunningOnCI() && testhelpers::isExtendedTest(false)) return;
+
+    // Only run on CI because it requires a small partition to be set up)
+    const SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
+    if (smallPartitionPath.empty()) return;
+
+    // Enough disk space
+    const LocalTemporaryDirectory temporaryDirectory("tmp");
+    SyncPath lowDiskSpacePath;
+    CPPUNIT_ASSERT(DownloadJob::hasEnoughPlace(temporaryDirectory.path(), temporaryDirectory.path(), 7000000, lowDiskSpacePath,
+                                               Log::instance()->getLogger()));
+    CPPUNIT_ASSERT(temporaryDirectory.path() == SyncPath{});
+
+    // Not Enough disk space
+    CPPUNIT_ASSERT(!DownloadJob::hasEnoughPlace(temporaryDirectory.path(), temporaryDirectory.path(), 9000000, lowDiskSpacePath,
+                                                Log::instance()->getLogger()));
+    CPPUNIT_ASSERT(SyncPath{} == lowDiskSpacePath);
 }
 
 void TestNetworkJobs::testDownloadAborted() {
