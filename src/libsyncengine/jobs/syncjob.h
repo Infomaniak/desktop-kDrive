@@ -18,31 +18,29 @@
 
 #pragma once
 
-#include "jobs/syncjob.h"
+#include "abstractjob.h"
+
+#include "utility/types.h"
+#include <Poco/Runnable.h>
+
+#include <log4cplus/logger.h>
 
 namespace KDC {
 
-class LocalCreateDirJob : public SyncJob {
+class SyncJob : public AbstractJob {
     public:
-        LocalCreateDirJob(const SyncPath &destFilepath);
+        SyncJob() :
+            AbstractJob(){};
 
-        SyncPath destFilePath() const { return _destFilePath; }
+        [[nodiscard]] const SyncPath &affectedFilePath() const { return _affectedFilePath; }
+        void setAffectedFilePath(const SyncPath &newAffectedFilePath) { _affectedFilePath = newAffectedFilePath; }
 
-        const NodeId &nodeId() const { return _nodeId; }
-        SyncTime modtime() const { return _modtime; }
-        SyncTime creationTime() const { return _creationTime; }
-
-    protected:
-        virtual bool canRun() override;
+        [[nodiscard]] bool bypassCheck() const { return _bypassCheck; }
+        void setBypassCheck(bool newBypassCheck) { _bypassCheck = newBypassCheck; }
 
     private:
-        virtual void runJob() override;
-
-        SyncPath _destFilePath;
-
-        NodeId _nodeId;
-        SyncTime _modtime = 0;
-        SyncTime _creationTime = 0;
+        SyncPath _affectedFilePath; // The file path associated to _progress
+        bool _bypassCheck = false;
 };
 
 } // namespace KDC

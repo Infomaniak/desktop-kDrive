@@ -16,33 +16,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "syncjobmanager.h"
+#include "jobmanager.h"
 
-#include "jobs/syncjob.h"
 
 namespace KDC {
+std::shared_ptr<JobManager> SyncJobManager::_instance = nullptr;
 
-class LocalCreateDirJob : public SyncJob {
-    public:
-        LocalCreateDirJob(const SyncPath &destFilepath);
+std::shared_ptr<JobManager> SyncJobManager::instance() noexcept {
+    if (_instance == nullptr) {
+        try {
+            _instance = std::shared_ptr<JobManager>(new JobManager());
+        } catch (...) {
+            return nullptr;
+        }
+    }
 
-        SyncPath destFilePath() const { return _destFilePath; }
+    return _instance;
+}
 
-        const NodeId &nodeId() const { return _nodeId; }
-        SyncTime modtime() const { return _modtime; }
-        SyncTime creationTime() const { return _creationTime; }
-
-    protected:
-        virtual bool canRun() override;
-
-    private:
-        virtual void runJob() override;
-
-        SyncPath _destFilePath;
-
-        NodeId _nodeId;
-        SyncTime _modtime = 0;
-        SyncTime _creationTime = 0;
-};
+void SyncJobManager::clear() {
+    if (_instance) {
+        _instance->clear();
+        _instance.reset();
+    }
+}
 
 } // namespace KDC
