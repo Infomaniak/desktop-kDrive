@@ -28,7 +28,7 @@
 namespace KDC {
 
 static constexpr int hMargin = 4;
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 static constexpr int offset = 0;
 #else
 static constexpr int offset = 2;

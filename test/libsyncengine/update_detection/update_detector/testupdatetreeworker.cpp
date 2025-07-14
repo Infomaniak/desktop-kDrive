@@ -356,7 +356,7 @@ void TestUpdateTreeWorker::testUpdateTmpFileNode() {
         CPPUNIT_ASSERT(_localUpdateTreeWorker->updateTmpFileNode(newNode, createOp, deleteOp, OperationType::Edit));
         CPPUNIT_ASSERT_EQUAL(NodeId("id51"), *newNode->id());
         CPPUNIT_ASSERT_EQUAL(*newNode->createdAt(), createOp->createdAt());
-        CPPUNIT_ASSERT_EQUAL(*newNode->lastmodified(), createOp->lastModified());
+        CPPUNIT_ASSERT_EQUAL(*newNode->modificationTime(), createOp->lastModified());
         CPPUNIT_ASSERT_EQUAL(newNode->size(), createOp->size());
         CPPUNIT_ASSERT(newNode->hasChangeEvent(OperationType::Edit));
         CPPUNIT_ASSERT_EQUAL(deleteOp->nodeId(), *newNode->previousId());
@@ -375,7 +375,7 @@ void TestUpdateTreeWorker::testUpdateTmpFileNode() {
         CPPUNIT_ASSERT(_localUpdateTreeWorker->updateTmpFileNode(newNode, deleteOp, deleteOp, OperationType::Delete));
         CPPUNIT_ASSERT_EQUAL(NodeId("id51bis"), *newNode->id());
         CPPUNIT_ASSERT_EQUAL(*newNode->createdAt(), deleteOp->createdAt());
-        CPPUNIT_ASSERT_EQUAL(*newNode->lastmodified(), deleteOp->lastModified());
+        CPPUNIT_ASSERT_EQUAL(*newNode->modificationTime(), deleteOp->lastModified());
         CPPUNIT_ASSERT_EQUAL(newNode->size(), createOp->size());
         CPPUNIT_ASSERT(newNode->hasChangeEvent(OperationType::Delete));
         CPPUNIT_ASSERT(!newNode->isTmp());
@@ -570,7 +570,7 @@ void TestUpdateTreeWorker::testStep4() {
             _localUpdateTree->getNodeByPath("Dir 4/Dir 4.1*/Dir 4.1.1/File 4.1.1.1")->hasChangeEvent(OperationType::Delete));
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 4/Dir 4.1*/Dir 4.1.1/File 4.1.1.1")->id() == "id4111");
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 4/Dir 4.1*/Dir 4.1.1/File 4.1.1.1")->parentNode()->id() == "id411");
-    CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 4/Dir 4.1*/Dir 4.1.1/File 4.1.1.1")->lastmodified() ==
+    CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 4/Dir 4.1*/Dir 4.1.1/File 4.1.1.1")->modificationTime() ==
                    testhelpers::defaultTime);
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 5/File 5.1")->hasChangeEvent(OperationType::Edit));
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 5/File 5.1")->id() == "id511");
@@ -779,7 +779,7 @@ void TestUpdateTreeWorker::testClearTreeStep4() {
             _localUpdateTree->getNodeByPath("Dir 4/Dir 4.1*/Dir 4.1.1/File 4.1.1.1")->hasChangeEvent(OperationType::Delete));
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 4/Dir 4.1*/Dir 4.1.1/File 4.1.1.1")->id() == "id4111");
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 4/Dir 4.1*/Dir 4.1.1/File 4.1.1.1")->parentNode()->isTmp());
-    CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 4/Dir 4.1*/Dir 4.1.1/File 4.1.1.1")->lastmodified() ==
+    CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 4/Dir 4.1*/Dir 4.1.1/File 4.1.1.1")->modificationTime() ==
                    testhelpers::defaultTime);
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 5/File 5.1")->hasChangeEvent(OperationType::Edit));
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 5/File 5.1")->id() == "id51bis");

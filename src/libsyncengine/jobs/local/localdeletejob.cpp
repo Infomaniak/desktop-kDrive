@@ -26,7 +26,7 @@
 
 #include <utility/utility.h>
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include <objbase.h>
 #endif
 
@@ -53,7 +53,7 @@ bool LocalDeleteJob::matchRelativePaths(const SyncPath &targetPath, const SyncPa
                                         const SyncPath &remoteRelativePath) {
     if (targetPath.empty()) return localRelativePath == remoteRelativePath;
 
-    // Case of an advanced synchronisation
+    // Case of an advanced synchronization
     return Path(remoteRelativePath).endsWith(SyncPath(targetPath.filename()) / localRelativePath);
 }
 

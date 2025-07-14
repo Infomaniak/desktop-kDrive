@@ -24,19 +24,19 @@
 
 namespace KDC {
 
-LocalTemporaryDirectory::LocalTemporaryDirectory(const std::string &testType) {
+LocalTemporaryDirectory::LocalTemporaryDirectory(const std::string &testType, const SyncPath &destinationPath /*= {}*/) {
     const std::time_t now = std::time(nullptr);
     const std::tm tm = *std::localtime(&now);
     std::ostringstream woss;
     woss << std::put_time(&tm, "%Y%m%d_%H%M");
 
-    _path = std::filesystem::temp_directory_path() / ("kdrive_" + testType + "_unit_tests_" + woss.str());
+    const auto basePath = destinationPath.empty() ? std::filesystem::temp_directory_path() : destinationPath;
+    _path = basePath / ("kdrive_" + testType + "_unit_tests_" + woss.str());
     int retryCount = 0;
     const int maxRetry = 100;
     while (!std::filesystem::create_directory(_path) && retryCount < maxRetry) {
         retryCount++;
-        _path = std::filesystem::temp_directory_path() /
-                ("kdrive_" + testType + "_unit_tests_" + woss.str() + "_" + std::to_string(retryCount));
+        _path = basePath / ("kdrive_" + testType + "_unit_tests_" + woss.str() + "_" + std::to_string(retryCount));
     }
 
     if (retryCount == maxRetry) {

@@ -43,7 +43,7 @@ SyncPath makeFileNameWithEmojis() {
 
 TestIo::TestIo() :
     CppUnit::TestFixture(),
-    _localTestDirPath(std::wstring(L"" TEST_DIR) + L"/test_ci") {}
+    _localTestDirPath(testhelpers::localTestDirPath()) {}
 
 void TestIo::setUp() {
     TestBase::start();
@@ -120,7 +120,7 @@ void TestIo::testLogDirectoryPath() {
 }
 
 void TestIo::testAccesDeniedOnLockedFiles() {
-#ifdef _WIN32 // This test is only relevant on Windows, as on Unix systems, there is no standard way to lock files.
+#if defined(KD_WINDOWS) // This test is only relevant on Windows, as on Unix systems, there is no standard way to lock files.
     LocalTemporaryDirectory tmpDir("TestIo-testAccesDeniedOnLockedFiles");
     const SyncPath lockedFile = tmpDir.path() / "lockedFile.txt";
     std::ofstream file(lockedFile);
@@ -157,7 +157,7 @@ void TestIo::testSetFileDates() {
 
         FileStat filestat;
         (void) IoHelper::getFileStat(filepath, &filestat, ioError);
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
 #endif
         CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modificationTime);
@@ -170,13 +170,13 @@ void TestIo::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         (void) IoHelper::getFileStat(folderPath, &filestat, ioError);
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
 #endif
         CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modificationTime);
 
         // Test on a file without access right.
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         // On Windows, we can edit a file even if we do not have access to its parent.
         const auto &rightPath = filepath;
 #else
@@ -192,7 +192,7 @@ void TestIo::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, ioError);
 
         (void) IoHelper::getFileStat(filepath, &filestat, ioError);
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
 #endif
         CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modificationTime);
@@ -207,12 +207,12 @@ void TestIo::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         (void) IoHelper::getFileStat(linkPath, &filestat, ioError);
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(linkTimestamp, filestat.creationTime);
 #endif
         CPPUNIT_ASSERT_EQUAL(linkTimestamp + 10, filestat.modificationTime);
         (void) IoHelper::getFileStat(filepath, &filestat, ioError);
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
 #endif
         CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modificationTime);
@@ -224,17 +224,17 @@ void TestIo::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         (void) IoHelper::getFileStat(linkPath, &filestat, ioError);
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(linkTimestamp, filestat.creationTime);
 #endif
         CPPUNIT_ASSERT_EQUAL(linkTimestamp + 10, filestat.modificationTime);
         (void) IoHelper::getFileStat(folderPath, &filestat, ioError);
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
 #endif
         CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modificationTime);
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
         // Test on an alias on a file.
         linkPath = tempDir.path() / "test_alias_file";
 
@@ -266,7 +266,7 @@ void TestIo::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modificationTime);
 #endif
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         // Test on an alias on a file.
         linkPath = tempDir.path() / "test_junction_file";
 
@@ -306,10 +306,10 @@ void TestIo::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         (void) IoHelper::getFileStat(filepath, &filestat, ioError);
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
         // Creation date is set to modification date
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.creationTime);
 #endif
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modificationTime);
@@ -322,7 +322,7 @@ void TestIo::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         (void) IoHelper::getFileStat(filepath, &filestat, ioError);
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(SyncTime{0}, filestat.creationTime);
 #endif
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.modificationTime);
@@ -335,11 +335,11 @@ void TestIo::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         (void) IoHelper::getFileStat(filepath, &filestat, ioError);
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
         // Creation date is set to modification date = 0
         CPPUNIT_ASSERT(filestat.creationTime == 0);
         CPPUNIT_ASSERT(filestat.modificationTime == 0);
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
         CPPUNIT_ASSERT_EQUAL(SyncTime(0), filestat.modificationTime);
 #endif

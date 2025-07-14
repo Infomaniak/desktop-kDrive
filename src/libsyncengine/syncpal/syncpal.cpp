@@ -24,7 +24,7 @@
 #include "syncpal/excludelistpropagator.h"
 #include "syncpal/conflictingfilescorrector.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include "update_detection/file_system_observer/localfilesystemobserverworker_win.h"
 #else
 #include "update_detection/file_system_observer/localfilesystemobserverworker_unix.h"
@@ -449,7 +449,7 @@ void SyncPal::resetSharedObjects() {
 
 void SyncPal::createWorkers(const std::chrono::seconds &startDelay) {
     LOG_SYNCPAL_DEBUG(_logger, "Create workers");
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
     _localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
             new LocalFileSystemObserverWorker_win(shared_from_this(), "Local File System Observer", "LFSO"));
 #else
@@ -579,7 +579,14 @@ bool SyncPal::setProgress(const SyncPath &relativePath, int64_t current) {
     return true;
 }
 
-bool SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status) {
+bool SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status, const NodeId &newRemoteNodeId) {
+    if (!newRemoteNodeId.empty()) {
+        if (!_progressInfo->setSyncFileItemRemoteId(relativeLocalPath, newRemoteNodeId)) {
+            LOG_SYNCPAL_WARN(_logger, "Error in ProgressInfo::setSyncFileItemRemoteId");
+            // Continue anyway as this is not critical, the share menu on activities will not be available for this file
+        }
+    }
+
     if (!_progressInfo->setProgressComplete(relativeLocalPath, status)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ProgressInfo::setProgressComplete");
         return false;
@@ -848,10 +855,6 @@ const LiveSnapshot &SyncPal::liveSnapshot(ReplicaSide side) const {
     LOG_IF_FAIL(_localFSObserverWorker);
     LOG_IF_FAIL(_remoteFSObserverWorker);
     return (side == ReplicaSide::Local ? _localFSObserverWorker->liveSnapshot() : _remoteFSObserverWorker->liveSnapshot());
-}
-
-uint64_t SyncPal::syncCount() const {
-    return _syncPalWorker ? _syncPalWorker->syncCounter() : 0;
 }
 
 std::shared_ptr<FSOperationSet> SyncPal::operationSet(ReplicaSide side) const {

@@ -295,6 +295,7 @@ void AddDriveWizard::onStepTerminated(bool next) {
         if (next) {
             _selectionSize = _addDriveServerFoldersWidget->selectionSize();
             _blackList = _addDriveServerFoldersWidget->createBlackList();
+            if (!GuiUtility::checkBlacklistSize(_blackList.size(), this)) return;
             _whiteList = _addDriveServerFoldersWidget->createWhiteList();
         }
         startNextStep(!next);

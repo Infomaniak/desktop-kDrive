@@ -171,6 +171,23 @@ bool ProgressInfo::setProgressComplete(const SyncPath &path, const SyncFileStatu
     return true;
 }
 
+bool ProgressInfo::setSyncFileItemRemoteId(const SyncPath &path, const NodeId &remoteId) {
+    SyncPath normalizedPath;
+    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
+        return false;
+    }
+    const auto it = _currentItems.find(normalizedPath);
+    if (it == _currentItems.end() || it->second.empty()) {
+        LOGW_INFO(Log::instance()->getLogger(),
+                  L"Item not found in ProgressInfo list (normal for omitted operation): " << Utility::formatSyncPath(path));
+        return true;
+    }
+
+    it->second.front().item().setRemoteNodeId(remoteId);
+    return true;
+}
+
 bool ProgressInfo::isSizeDependent(const SyncFileItem &item) const {
     return !item.isDirectory() &&
            (item.instruction() == SyncFileInstruction::Update || item.instruction() == SyncFileInstruction::Get ||

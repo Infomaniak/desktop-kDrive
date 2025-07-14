@@ -1,0 +1,76 @@
+name: Test macOS
+description: 'Test macOS app'
+
+inputs:
+  test_dependencies_version:
+    description: 'The version of the kDrive tests dependencies'
+    required: true
+  test_name:
+    description: 'The name of the test executable'
+    required: true
+
+runs:
+    using: "composite"
+    steps:
+      - name: Load cached dependencies
+        id: cache
+        uses: herve-er/local-cache@v2
+        with:
+          path: build-macos/client/cache
+          base: ${{ github.workspace }}/../local-cache
+          key: ${{ inputs.test_dependencies_version }}
+          clean-key: true
+
+      - name: Clean the log directory
+        if  : contains(env.logdir_path, 'kDrive-logdir')
+        run : rm -rf ${{ env.logdir_path }}/* || true
+        shell: bash
+        continue-on-error: true
+
+      - name: Download common files
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-common-files
+          path: ${{ github.workspace }}/build-macos/client/cache/
+
+      - name: Copy the cache to the build directory
+        run: |
+            mkdir -p ${{ github.workspace }}/build-macos/client/bin/
+            cp -r ${{ github.workspace }}/build-macos/client/cache/* ${{ github.workspace }}/build-macos/client/bin/
+        shell: bash
+
+      - name: Download test executable
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-${{ inputs.test_name }}
+          path: ${{ github.workspace }}/build-macos/client/bin/
+
+      - name: Grant tests script execute permission
+        run : |
+            chmod +x ./infomaniak-build-tools/run-test.sh
+            chmod +x ./build-macos/client/bin/crashpad_handler
+        shell: bash
+
+      - name: Execute tests
+        run : |
+              install_name_tool -add_rpath @executable_path ./build-macos/client/bin/${{ inputs.test_name }}        
+              ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ ${{ inputs.test_name }}
+        shell: bash
+
+      - name: Get the path to kDrive-logdir
+        run : echo "logdir_path="$(find /private/var/folders -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
+        if  : success() || failure()
+        shell: bash
+
+      - name: Upload tests logs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-logs-${{ inputs.test_name }}
+          path: ${{ env.logdir_path }}/*
+          retention-days: 1
+        if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
+
+      - name: Clean up
+        run : rm -rf ${{ github.workspace }}/build-macos/client/bin/*
+        shell: bash

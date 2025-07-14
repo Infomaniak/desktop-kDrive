@@ -82,7 +82,7 @@ void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
     LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " started");
     if (_syncPal->vfsMode() != VirtualFileMode::Off) {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         auto resetFunc = std::function<void()>([this]() { resetVfsFilesStatus(); });
         _resetVfsFilesStatusThread = StdLoggingThread(resetFunc);
 #else
@@ -385,14 +385,13 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             _syncPal->syncDb()->cache().clear(); // Cache is not needed anymore, free resources
             break;
         case SyncStep::Done:
-            LOG_SYNCPAL_DEBUG(_logger, "Sync " << _syncCounter++ << " finished")
             workers[0] = nullptr;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             _syncPal->stopEstimateUpdates();
-            _syncPal->resetSnapshotInvalidationCounters();
             if (!_syncPal->restart()) {
+                _syncPal->resetSnapshotInvalidationCounters();
                 _syncPal->setSyncHasFullyCompletedInParms(true);
             }
             sentry::pTraces::basic::Sync(syncDbId()).stop();
@@ -633,7 +632,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
             if (!vfsStatus.isPlaceholder) continue;
 
             const PinState pinState = _syncPal->vfs()->pinState(dirIt->path());
-#ifndef _WIN32 // Handle by the API on windows.
+#ifndef KD_WINDOWS // Handle by the API on windows.
             if (vfsStatus.isSyncing) {
                 // Force status to dehydrate
                 if (const ExitInfo exitInfo = _syncPal->vfs()->forceStatus(dirIt->path(), VfsStatus()); !exitInfo) {
