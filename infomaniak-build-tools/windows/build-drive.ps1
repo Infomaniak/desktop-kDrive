@@ -194,7 +194,16 @@ function Build-Extension {
     msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     
-    $version = (Select-String -Path $buildPath\version.h KDRIVE_VERSION_FULL | foreach-object { $data = $_ -split " "; echo $data[3] })
+    $map = @{}
+    Select-String -Path ".\VERSION.cmake" -Pattern 'set\( *KDRIVE_VERSION_(MAJOR|MINOR|PATCH) *(\d+)' | ForEach-Object {
+        if ($_ -match 'KDRIVE_VERSION_(MAJOR|MINOR|PATCH)\s+(\d+)') {
+            $map[$matches[1]] = [int]$matches[2]
+        }
+    }
+    $version = "$($map['MAJOR']).$($map['MINOR']).$($map['PATCH'])"
+
+
+    Write-Host "Extension version: $version"
     Sign-File -FilePath "$extPath\FileExplorerExtensionPackage\AppPackages\FileExplorerExtensionPackage_$version.0_Test\FileExplorerExtensionPackage_$version.0_x64_arm64.msixbundle" -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass
 
     $srcVfsPath = "$path\src\libcommonserver\vfs\win\."
