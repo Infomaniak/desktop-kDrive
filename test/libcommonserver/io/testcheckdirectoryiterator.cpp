@@ -338,7 +338,7 @@ void TestIo::testHasNext() {
         CPPUNIT_ASSERT(it.hasNext());
         DirectoryEntry entry;
         bool endOfDirectory = false;
-        (void) it.next(entry, endOfDirectory, ioError);
+        CPPUNIT_ASSERT(it.next(entry, endOfDirectory, ioError));
         CPPUNIT_ASSERT(!it.hasNext());
     }
 }
