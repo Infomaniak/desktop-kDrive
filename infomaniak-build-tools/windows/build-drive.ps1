@@ -175,7 +175,8 @@ function Build-Extension {
     param (
         [string] $path,
         [string] $extPath,
-        [string] $buildType 
+        [string] $buildType,
+        [string] $thumbprint = ""
     )
 
     Write-Host "Building extension ($buildType) ..."
@@ -183,7 +184,7 @@ function Build-Extension {
     $configuration = $buildType
     if ($buildType -eq "RelWithDebInfo") { $configuration = "Release" }
 
-    msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true
+    msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint"
 
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
@@ -350,11 +351,11 @@ function Sign-File{
         [string] $thumbprint,
         [String] $tokenPass = ""
     )
-      Write-Host "Signing the file $filePath with thumbprint $thumbprint" -f Yellow
-      $res = & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /t http://timestamp.digicert.com  /fd SHA1 /v /sm $filePath /password:$tokenPass
-      if ($res -ne 0) { exit $res }
-      # $res & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256  /fd sha256 /td sha256 /as /v /sm $filePath /password:$tokenPass
-      #if ($res -ne 0) { exit $res }
+    Write-Host "Signing the file $filePath with thumbprint $thumbprint" -f Yellow
+    $res = & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /t http://timestamp.digicert.com  /fd SHA1 /v /sm $filePath /password:$tokenPass
+    if ($res -ne 0) { exit $res }
+    # $res & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256  /fd sha256 /td sha256 /as /v /sm $filePath /password:$tokenPass
+    #if ($res -ne 0) { exit $res }
 }
 
 function Prepare-Archive {
@@ -652,7 +653,8 @@ if ($LASTEXITCODE -ne 0) {
 #################################################################################################
 
 if (!(Test-Path "$vfsDir\vfs.dll") -or $ext) {
-    Build-Extension $path $extPath $buildType
+    $thumbprint = Get-Thumbprint $upload
+    Build-Extension $path $extPath $buildType $thumbprint
 
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Failed to build the extension. Aborting." -f Red
