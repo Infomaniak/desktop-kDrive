@@ -49,6 +49,15 @@ namespace AutoSafeNetLogon
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
                 process.WaitForExit();
+                if (process.ExitCode != 0)
+                {
+                    Console.Error.WriteLine($"Signtool exited with code {process.ExitCode}");
+                    Environment.Exit(process.ExitCode);
+                }
+                else
+                {
+                    Console.WriteLine("Signtool completed successfully.");
+                }
             }
             catch (Exception ex)
             {
