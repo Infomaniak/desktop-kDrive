@@ -55,7 +55,7 @@ jobs:
                 echo "linux_amd64_exe_name=$app_name-amd64.AppImage" >> $GITHUB_OUTPUT
                 echo "win_url=https://download.storage.infomaniak.com/drive/desktopclient/kDrive-$app_name.exe" >> $GITHUB_OUTPUT
                 echo "mac_url=https://download.storage.infomaniak.com/drive/desktopclient/update-macos-$app_name.xml" >> $GITHUB_OUTPUT
-                echo "linux_arm_url=https://download.storage.infomaniak.com/drive/desktopclient/kDrive-$app_name-arm64.AppImage" >> $GITHUB_OUTPUT
+                echo "linux_arm64_url=https://download.storage.infomaniak.com/drive/desktopclient/kDrive-$app_name-arm64.AppImage" >> $GITHUB_OUTPUT
                 echo "linux_amd64_url=https://download.storage.infomaniak.com/drive/desktopclient/kDrive-$app_name-amd64.AppImage" >> $GITHUB_OUTPUT
   
             - name: Check out the repository
@@ -77,7 +77,7 @@ jobs:
                 echo "App Name: ${{ steps.process_inputs.outputs.app_name }}"
                 echo "Windows URL: ${{ steps.process_inputs.outputs.win_url }}"
                 echo "macOS URL: ${{ steps.process_inputs.outputs.mac_url }}"
-                echo "Linux ARM URL: ${{ steps.process_inputs.outputs.linux_arm_url }}"
+                echo "Linux ARM URL: ${{ steps.process_inputs.outputs.linux_arm64_url }}"
                 echo "Linux AMD64 URL: ${{ steps.process_inputs.outputs.linux_amd64_url }}"
                 echo "Release Notes macOS: $(cat ${{ github.workspace }}/release_notes/${{ steps.process_inputs.outputs.app_name }}/${{ steps.process_inputs.outputs.app_name }}-macos-en.html)"
                 echo "Release Notes Windows: $(cat ${{ github.workspace }}/release_notes/${{ steps.process_inputs.outputs.app_name }}/${{ steps.process_inputs.outputs.app_name }}-win-en.html)"
@@ -87,25 +87,75 @@ jobs:
               if: ${{ inputs.environment == 'internal beta' && !inputs.skip_check }}
               run: echo "This workflow is called to update the kStore for kDrive desktop."
 
-            - name: Update kStore
+            - name: Update win kStore
               env:
                 TOKEN: ${{ secrets.KSTORE_API_TOKEN }}
               run: |
                 set -e
-
                 changelog_file="${{ github.workspace }}/release_notes/${{ steps.process_inputs.outputs.app_name }}/${{ steps.process_inputs.outputs.app_name }}-win-en.html"
                 version_changelog=$(cat "$changelog_file" | jq -Rs .)
-
                 curl -X PATCH "https://api.infomaniak.com/1/app-information/private/applications/26/k-store/${{ vars.KSTORE_CHANNEL }}" \
                   -H "Authorization: Bearer $TOKEN" \
                   -H "Content-Type: application/json" \
                   -d '{
                     "tag": "${{ inputs.tag }}",
                     "version_changelog": '"$version_changelog"',
-                    "type": "internal",
+                    "type": "${{ vars.KSTORE_CHANNEL }}",
                     "build_version": "${{ inputs.build_date }}",
                     "build_min_os_version": "Windows 10 1709",
                     "download_link": "${{ steps.process_inputs.outputs.win_url }}",
+                    "data": []
+                  }'
+
+            - name: Update macOS kStore
+              env:
+                TOKEN: ${{ secrets.KSTORE_API_TOKEN }}
+              run: |
+                set -e
+                changelog_file="${{ github.workspace }}/release_notes/${{ steps.process_inputs.outputs.app_name }}/${{ steps.process_inputs.outputs.app_name }}-mac-en.html"
+                version_changelog=$(cat "$changelog_file" | jq -Rs .)
+                curl -X PATCH "https://api.infomaniak.com/1/app-information/private/applications/27/k-store/${{ vars.KSTORE_CHANNEL }}" \
+                  -H "Authorization: Bearer $TOKEN" \
+                  -H "Content-Type: application/json" \
+                  -d '{
+                    "tag": "${{ inputs.tag }}",
+                    "version_changelog": '"$version_changelog"',
+                    "type": "${{ vars.KSTORE_CHANNEL }}",
+                    "build_version": "${{ inputs.build_date }}",
+                    "build_min_os_version": "macOS 10.15",
+                    "download_link": "${{ steps.process_inputs.outputs.mac_url }}",
+                    "data": []
+                  }'
+
+            - name: Update Linux kStore
+              env:
+                TOKEN: ${{ secrets.KSTORE_API_TOKEN }}
+              run: |
+                set -e
+                changelog_file="${{ github.workspace }}/release_notes/${{ steps.process_inputs.outputs.app_name }}/${{ steps.process_inputs.outputs.app_name }}-linux-en.html"
+                version_changelog=$(cat "$changelog_file" | jq -Rs .)
+                curl -X PATCH "https://api.infomaniak.com/1/app-information/private/applications/28/k-store/${{ vars.KSTORE_CHANNEL }}" \
+                  -H "Authorization: Bearer $TOKEN" \
+                  -H "Content-Type: application/json" \
+                  -d '{
+                    "tag": "${{ inputs.tag }}",
+                    "version_changelog": '"$version_changelog"',
+                    "type": "${{ vars.KSTORE_CHANNEL }}",
+                    "build_version": "${{ inputs.build_date }}",
+                    "build_min_os_version": "Ubuntu 22.04",
+                    "download_link": "${{ steps.process_inputs.outputs.linux_arm64_url }}",
+                    "data": []
+                  }'
+                curl -X PATCH "https://api.infomaniak.com/1/app-information/private/applications/29/k-store/${{ vars.KSTORE_CHANNEL }}" \
+                  -H "Authorization: Bearer $TOKEN" \
+                  -H "Content-Type: application/json" \
+                  -d '{
+                    "tag": "${{ inputs.tag }}",
+                    "version_changelog": '"$version_changelog"',
+                    "type": "${{ vars.KSTORE_CHANNEL }}",
+                    "build_version": "${{ inputs.build_date }}",
+                    "build_min_os_version": "Ubuntu 22.04",
+                    "download_link": "${{ steps.process_inputs.outputs.linux_amd64_url }}",
                     "data": []
                   }'
 
