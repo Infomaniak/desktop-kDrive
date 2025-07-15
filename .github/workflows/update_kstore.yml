@@ -88,12 +88,24 @@ jobs:
               run: echo "This workflow is called to update the kStore for kDrive desktop."
 
             - name: Update kStore
+              env:
+                TOKEN: ${{ secrets.KSTORE_API_TOKEN }}
               run: |
-                echo "Updating kStore for ${{ vars.KSTORE_CHANNEL }} with the following details:"
-                echo "Tag: ${{ inputs.tag }}"
-                echo "Build Date: ${{ inputs.build_date }}"
-                echo "App Name: ${{ steps.process_inputs.outputs.app_name }}"
-                echo "Windows URL: ${{ steps.process_inputs.outputs.win_url }}"
-                echo "macOS URL: ${{ steps.process_inputs.outputs.mac_url }}"
-                echo "Linux ARM URL: ${{ steps.process_inputs.outputs.linux_arm_url }}"
-                echo "Linux AMD64 URL: ${{ steps.process_inputs.outputs.linux_amd64_url }}"
+                set -e
+
+                changelog_file="${{ github.workspace }}/release_notes/${{ steps.process_inputs.outputs.app_name }}/${{ steps.process_inputs.outputs.app_name }}-win-en.html"
+                version_changelog=$(cat "$changelog_file" | jq -Rs .)
+
+                curl -X PATCH "https://api.infomaniak.com/1/app-information/private/applications/26/k-store/${{ vars.KSTORE_CHANNEL }}" \
+                  -H "Authorization: Bearer $TOKEN" \
+                  -H "Content-Type: application/json" \
+                  -d '{
+                    "tag": "${{ inputs.tag }}",
+                    "version_changelog": '"$version_changelog"',
+                    "type": "internal",
+                    "build_version": "${{ inputs.build_date }}",
+                    "build_min_os_version": "Windows 10 1709",
+                    "download_link": "${{ steps.process_inputs.outputs.win_url }}",
+                    "data": []
+                  }'
+
