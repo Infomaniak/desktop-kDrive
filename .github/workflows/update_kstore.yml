@@ -3,11 +3,6 @@ name: Update the kStore
 on:
   workflow_call:
     inputs:
-        environment:
-            description: 'The environment to update the kStore for'
-            type: environment
-            required: true
-            default: 'internal beta'
         tag:
             description: 'The new version number of kDrive. :warning: this tag should not include the date'
             type: string
