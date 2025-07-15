@@ -16,14 +16,11 @@ on:
             description: 'The date of the build in YYYYMMDD format'
             type: string
             required: true
-        download_link:
-            description: 'The download link of the new kDrive version'
-            type: string
-            required: true
-        release_notes:
-            description: 'The release notes of the new kDrive version'
-            type: string
-            required: true
+        skip_check:
+            description: 'Skip all the security checks, this parameter is only considered when the workflow target the internal beta environment.'
+            type: boolean
+            required: false
+            default: false
 
   workflow_dispatch:
     inputs:
@@ -40,19 +37,35 @@ on:
             description: 'The date of the build in YYYYMMDD format'
             type: string
             required: true
-        download_link:
-            description: 'The download link of the new kDrive version'
-            type: string
-            required: true
-        release_notes:
-            description: 'The release notes of the new kDrive version'
-            type: string
-            required: true
 
 jobs:
-    dummy:
-        runs-on: [ self-hosted, Linux, X64 ]
+    UpdateKStore:
+        runs-on: [ self-hosted, Linux, desktop-kDrive ]
+        environment : ${{ inputs.environment }}
         steps:
-            - name: Dummy step to allow the workflow to be called
+            - name: process inputs
+              id: process_inputs
+              run: |
+                echo "environment=${{ vars.KSTORE_CHANNEL }}" >> $GITHUB_OUTPUT
+                echo "tag=${{ inputs.tag }}" >> $GITHUB_OUTPUT
+                echo "build_date=${{ inputs.build_date }}" >> $GITHUB_OUTPUT
+                echo "app_name="kDrive-${{ inputs.tag }}.${{ inputs.build_date }}" >> $GITHUB_OUTPUT
+                echo "win_url=https://download.storage.infomaniak.com/drive/desktopclient/kDrive-${{ inputs.tag }}.${{ inputs.build_date }}.exe" >> $GITHUB_OUTPUT
+                echo "mac_url=https://download.storage.infomaniak.com/drive/desktopclient/update-macos-${{ inputs.tag }}.${{ inputs.build_date }}.xml" >> $GITHUB_OUTPUT
+                echo "linux_arm_url=https://download.storage.infomaniak.com/drive/desktopclient/kDrive-${{ inputs.tag }}.${{ inputs.build_date }}-arm64.AppImage" >> $GITHUB_OUTPUT
+                echo "linux_amd64_url=https://download.storage.infomaniak.com/drive/desktopclient/kDrive-${{ inputs.tag }}.${{ inputs.build_date }}-amd64.AppImage" >> $GITHUB_OUTPUT
+
+            - name: Print processed inputs
+              run: |
+                echo "Environment: ${{ vars.KSTORE_CHANNEL }}"
+                echo "Tag: ${{ inputs.tag }}"
+                echo "Build Date: ${{ inputs.build_date }}"
+                echo "App Name: ${{ steps.process_inputs.outputs.app_name }}"
+                echo "Windows URL: ${{ steps.process_inputs.outputs.win_url }}"
+                echo "macOS URL: ${{ steps.process_inputs.outputs.mac_url }}"
+                echo "Linux ARM URL: ${{ steps.process_inputs.outputs.linux_arm_url }}"
+                echo "Linux AMD64 URL: ${{ steps.process_inputs.outputs.linux_amd64_url }}"
+
+            - name: Check if the executable/release notes are available on storage
+              if: ${{ inputs.environment == 'internal beta' && !inputs.skip_check }}
               run: echo "This workflow is called to update the kStore for kDrive desktop."
-  
