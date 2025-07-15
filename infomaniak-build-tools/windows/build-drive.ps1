@@ -62,8 +62,8 @@ $contentPath = "$path/build-windows"
 $buildPath = "$contentPath/build"
 $installPath = "$contentPath/install"
 
-$extPath = "$path/extensions/windows/cfapi/"
-$vfsDir = $extPath + "x64/Release"
+$extPath = "$path/extensions/windows/cfapi"
+$vfsDir = "$extPath/x64/Release"
 
 # Files to be added to the archive and then packaged
 $archivePath = "$installPath/bin"
@@ -204,7 +204,7 @@ function Build-Extension {
 
 
     Write-Host "Extension version: $version"
-    $bundlePath = "$extPath" + "FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$version.0_Test/FileExplorerExtensionPackage_$version.0_x64_arm64.msixbundle"
+    $bundlePath = "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$version.0_Test/FileExplorerExtensionPackage_$version.0_x64_arm64.msixbundle"
     Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass
 
     $srcVfsPath = "$path/src/libcommonserver/vfs/win/."
