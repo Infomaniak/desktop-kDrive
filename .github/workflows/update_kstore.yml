@@ -3,11 +3,6 @@ name: Update the kStore
 on:
   workflow_call:
     inputs:
-        environment:
-            description: 'The environment to update the kStore for'
-            type: environment
-            required: true
-            default: 'internal beta'
         tag:
             description: 'The new version number of kDrive. :warning: this tag should not include the date'
             type: string
@@ -49,7 +44,7 @@ jobs:
                 echo "environment=${{ vars.KSTORE_CHANNEL }}" >> $GITHUB_OUTPUT
                 echo "tag=${{ inputs.tag }}" >> $GITHUB_OUTPUT
                 echo "build_date=${{ inputs.build_date }}" >> $GITHUB_OUTPUT
-                echo "app_name="kDrive-${{ inputs.tag }}.${{ inputs.build_date }}" >> $GITHUB_OUTPUT
+                echo "app_name=kDrive-${{ inputs.tag }}.${{ inputs.build_date }}" >> $GITHUB_OUTPUT
                 echo "win_url=https://download.storage.infomaniak.com/drive/desktopclient/kDrive-${{ inputs.tag }}.${{ inputs.build_date }}.exe" >> $GITHUB_OUTPUT
                 echo "mac_url=https://download.storage.infomaniak.com/drive/desktopclient/update-macos-${{ inputs.tag }}.${{ inputs.build_date }}.xml" >> $GITHUB_OUTPUT
                 echo "linux_arm_url=https://download.storage.infomaniak.com/drive/desktopclient/kDrive-${{ inputs.tag }}.${{ inputs.build_date }}-arm64.AppImage" >> $GITHUB_OUTPUT
