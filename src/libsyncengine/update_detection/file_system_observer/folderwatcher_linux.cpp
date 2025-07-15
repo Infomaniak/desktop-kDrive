@@ -144,10 +144,8 @@ void FolderWatcher_linux::startWatching() {
 }
 
 bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath> &fullList) {
-    IoError ioError = IoError::Success;
     IoHelper::DirectoryIterator dirIt;
-    IoHelper::getDirectoryIterator(dir, true, ioError, dirIt);
-    if (ioError != IoError::Success) {
+    if (IoError ioError = IoError::Success; !IoHelper::getDirectoryIterator(dir, true, ioError, dirIt)) {
         LOGW_WARN(logger(), L"Error in DirectoryIterator for " << Utility::formatIoError(dir, ioError));
         if (ioError == IoError::AccessDenied) {
             setExitInfo({ExitCode::SystemError, ExitCause::FileAccessError});
@@ -160,7 +158,7 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
     }
 
     DirectoryEntry entry;
-    ioError = IoError::Success;
+    IoError ioError = IoError::Success;
     bool endOfDir = false;
     while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
         if (entry.is_directory() && !entry.is_symlink()) fullList.push_back(entry.path());

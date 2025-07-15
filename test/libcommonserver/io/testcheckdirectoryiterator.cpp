@@ -365,6 +365,8 @@ void TestIo::testCheckDirectoryIteratorSymlinkEntry() {
             // /!\ is_regular_file == true for a file symlink
             CPPUNIT_ASSERT(entry.is_regular_file());
             CPPUNIT_ASSERT(entry.is_symlink());
+        } else {
+            CPPUNIT_ASSERT(false);
         }
     }
 }
