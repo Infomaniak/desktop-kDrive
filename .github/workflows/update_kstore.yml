@@ -28,10 +28,12 @@ on:
             description: 'The new version number of kDrive. :warning: this tag should not include the date'
             type: string
             required: true
+            default: 3.7.1
         build_date:
             description: 'The date of the build in YYYYMMDD format'
             type: string
             required: true
+            default: '20250604'
 
 jobs:
     UpdateKStore:
@@ -44,15 +46,50 @@ jobs:
                 echo "environment=${{ vars.KSTORE_CHANNEL }}" >> $GITHUB_OUTPUT
                 echo "tag=${{ inputs.tag }}" >> $GITHUB_OUTPUT
                 echo "build_date=${{ inputs.build_date }}" >> $GITHUB_OUTPUT
-                echo "app_name=kDrive-${{ inputs.tag }}.${{ inputs.build_date }}" >> $GITHUB_OUTPUT
-                echo "win_url=https://download.storage.infomaniak.com/drive/desktopclient/kDrive-${{ inputs.tag }}.${{ inputs.build_date }}.exe" >> $GITHUB_OUTPUT
-                echo "mac_url=https://download.storage.infomaniak.com/drive/desktopclient/update-macos-${{ inputs.tag }}.${{ inputs.build_date }}.xml" >> $GITHUB_OUTPUT
-                echo "linux_arm_url=https://download.storage.infomaniak.com/drive/desktopclient/kDrive-${{ inputs.tag }}.${{ inputs.build_date }}-arm64.AppImage" >> $GITHUB_OUTPUT
-                echo "linux_amd64_url=https://download.storage.infomaniak.com/drive/desktopclient/kDrive-${{ inputs.tag }}.${{ inputs.build_date }}-amd64.AppImage" >> $GITHUB_OUTPUT
+                app_name="kDrive-${{ inputs.tag }}.${{ inputs.build_date }}"
+                echo "app_name=$app_name" >> $GITHUB_OUTPUT
+                echo "win_exe_name=$app_name.exe" >> $GITHUB_OUTPUT
+                echo "mac_exe_name=$app_name.pkg" >> $GITHUB_OUTPUT
+                echo "mac_xml_name=update-macos-$app_name.xml" >> $GITHUB_OUTPUT
+                echo "linux_arm_exe_name=$app_name-arm64.AppImage" >> $GITHUB_OUTPUT
+                echo "linux_amd64_exe_name=$app_name-amd64.AppImage" >> $GITHUB_OUTPUT
+                echo "win_url=https://download.storage.infomaniak.com/drive/desktopclient/kDrive-$app_name.exe" >> $GITHUB_OUTPUT
+                echo "mac_url=https://download.storage.infomaniak.com/drive/desktopclient/update-macos-$app_name.xml" >> $GITHUB_OUTPUT
+                echo "linux_arm_url=https://download.storage.infomaniak.com/drive/desktopclient/kDrive-$app_name-arm64.AppImage" >> $GITHUB_OUTPUT
+                echo "linux_amd64_url=https://download.storage.infomaniak.com/drive/desktopclient/kDrive-$app_name-amd64.AppImage" >> $GITHUB_OUTPUT
+  
+            - name: Check out the repository
+              uses: actions/checkout@v4
+              with:
+                submodules: recursive
+                fetch-depth: 0
 
             - name: Print processed inputs
               run: |
                 echo "Environment: ${{ vars.KSTORE_CHANNEL }}"
+                echo "Tag: ${{ inputs.tag }}"
+                echo "Build Date: ${{ inputs.build_date }}"
+                echo "Windows exe name: ${{ steps.process_inputs.outputs.win_exe_name }}"
+                echo "mac XML name: ${{ steps.process_inputs.outputs.mac_xml_name }}"
+                echo "macOS exe name: ${{ steps.process_inputs.outputs.mac_exe_name }}"
+                echo "Linux ARM exe name: ${{ steps.process_inputs.outputs.linux_arm_exe_name }}"
+                echo "Linux AMD64 exe name: ${{ steps.process_inputs.outputs.linux_amd64_exe_name }}"
+                echo "App Name: ${{ steps.process_inputs.outputs.app_name }}"
+                echo "Windows URL: ${{ steps.process_inputs.outputs.win_url }}"
+                echo "macOS URL: ${{ steps.process_inputs.outputs.mac_url }}"
+                echo "Linux ARM URL: ${{ steps.process_inputs.outputs.linux_arm_url }}"
+                echo "Linux AMD64 URL: ${{ steps.process_inputs.outputs.linux_amd64_url }}"
+                echo "Release Notes macOS: $(cat ${{ github.workspace }}/release_notes/${{ steps.process_inputs.outputs.app_name }}/${{ steps.process_inputs.outputs.app_name }}-macos-en.html)"
+                echo "Release Notes Windows: $(cat ${{ github.workspace }}/release_notes/${{ steps.process_inputs.outputs.app_name }}/${{ steps.process_inputs.outputs.app_name }}-win-en.html)"
+                echo "Release Notes Linux: $(cat ${{ github.workspace }}/release_notes/${{ steps.process_inputs.outputs.app_name }}/${{ steps.process_inputs.outputs.app_name }}-linux-en.html)"
+
+            - name: Check if the executable/release notes are available on storage
+              if: ${{ inputs.environment == 'internal beta' && !inputs.skip_check }}
+              run: echo "This workflow is called to update the kStore for kDrive desktop."
+
+            - name: Update kStore
+              run: |
+                echo "Updating kStore for ${{ vars.KSTORE_CHANNEL }} with the following details:"
                 echo "Tag: ${{ inputs.tag }}"
                 echo "Build Date: ${{ inputs.build_date }}"
                 echo "App Name: ${{ steps.process_inputs.outputs.app_name }}"
@@ -60,7 +97,3 @@ jobs:
                 echo "macOS URL: ${{ steps.process_inputs.outputs.mac_url }}"
                 echo "Linux ARM URL: ${{ steps.process_inputs.outputs.linux_arm_url }}"
                 echo "Linux AMD64 URL: ${{ steps.process_inputs.outputs.linux_amd64_url }}"
-
-            - name: Check if the executable/release notes are available on storage
-              if: ${{ inputs.environment == 'internal beta' && !inputs.skip_check }}
-              run: echo "This workflow is called to update the kStore for kDrive desktop."
