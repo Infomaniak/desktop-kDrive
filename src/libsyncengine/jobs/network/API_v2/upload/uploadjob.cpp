@@ -97,6 +97,19 @@ bool UploadJob::canRun() {
         return false;
     }
 
+    FileStat fileStat;
+    bool found = false;
+    IoHelper::getFileStat(_absoluteFilePath, &fileStat, found);
+    if (!found) {
+        LOGW_DEBUG(_logger, L"File not found " << Utility::formatSyncPath(_absoluteFilePath));
+        return false;
+    }
+    if (fileStat.size != _modificationTimeIn) {
+        LOGW_DEBUG(_logger, L"Modification time ha changed for file " << Utility::formatSyncPath(_absoluteFilePath)
+                                                                      << L". Upload postponed.");
+        return false;
+    }
+
     return true;
 }
 

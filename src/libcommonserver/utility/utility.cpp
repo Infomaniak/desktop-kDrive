@@ -40,6 +40,7 @@
 #include <fileapi.h>
 #endif
 
+#include "utility/timerutility.h"
 #include "utility/utility_base.h"
 
 
@@ -648,6 +649,62 @@ std::string Utility::xxHashToStr(XXH64_hash_t hash) {
         output.append(buf);
     }
     return output;
+}
+
+ExitInfo Utility::readFile(const SyncPath &absolutePath, std::string &data) {
+    std::ifstream file;
+    if (ExitInfo exitInfo = IoHelper::openFile(absolutePath, file, 10); !exitInfo) {
+        LOGW_WARN(logger(), L"Failed to open file " << Utility::formatSyncPath(absolutePath));
+        return exitInfo;
+    }
+
+    std::ostringstream ostrm;
+    ostrm << file.rdbuf();
+    if (ostrm.bad()) {
+        // Read/writing error or logical error
+        LOGW_WARN(logger(), L"Failed to insert file content into string stream - path=" << Path2WStr(absolutePath));
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }
+
+    (void) ostrm.flush();
+    if (ostrm.bad()) {
+        // Read/writing error or logical error
+        LOGW_WARN(logger(), L"Failed to flush string stream - path=" << Path2WStr(absolutePath));
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }
+
+    if (file.bad()) {
+        file.close();
+        // Read/writing error or logical error
+        LOGW_WARN(logger(), L"Failed to close file - path=" << Path2WStr(absolutePath));
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }
+
+    try {
+        data = ostrm.str();
+    } catch (const std::bad_alloc &) {
+        file.close();
+        LOGW_WARN(logger(), L"Memory allocation error when setting data content - path=" << Path2WStr(absolutePath));
+        return {ExitCode::SystemError, ExitCause::NotEnoughMemory};
+    }
+    file.close();
+
+    return ExitCode::Ok;
+}
+
+ExitInfo Utility::computeFileXxHash(const SyncPath &absolutePath, std::string &hash) {
+    const TimerUtility timer;
+    std::string data;
+    if (const auto exitInfo = readFile(absolutePath, data); !exitInfo) {
+        return exitInfo;
+    }
+
+    hash = computeXxHash(data);
+    std::wstringstream ws;
+    ws << L"xxHash checksum " << Utility::s2ws(hash) << " computed in " << timer.elapsed<DoubleSeconds>() << L" for "
+       << Utility::formatSyncPath(absolutePath);
+    LOGW_INFO(logger(), ws.str());
+    return ExitCode::Ok;
 }
 
 #if defined(KD_MACOS)

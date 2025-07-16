@@ -156,6 +156,9 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string computeXxHash(const char *in, std::size_t length);
         static std::string xxHashToStr(XXH64_hash_t hash);
 
+        static ExitInfo readFile(const SyncPath &absolutePath, std::string &data);
+        static ExitInfo computeFileXxHash(const SyncPath &absolutePath, std::string &hash);
+
 #if defined(KD_MACOS)
         static SyncName getExcludedAppFilePath(bool test = false);
 #endif

@@ -302,6 +302,12 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
             SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime,
                               fileStat.modificationTime, nodeType, fileStat.size, isLink, true, true);
 
+            if (nodeType == NodeType::File) {
+                std::string hash;
+                (void) Utility::computeFileXxHash(absolutePath, hash);
+                item.setContentChecksum(hash);
+            }
+
             if (!_liveSnapshot.updateItem(item)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to insert item: " << Utility::formatSyncPath(absolutePath) << L" ("
                                                                       << Utility::s2ws(nodeId) << L")");
@@ -310,9 +316,10 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
             }
 
             if (ParametersCache::isExtendedLogEnabled()) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: " << Utility::formatSyncPath(absolutePath) << L" ("
-                                                                                 << Utility::s2ws(nodeId) << L") at "
-                                                                                 << fileStat.modificationTime);
+                LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: "
+                                                    << Utility::formatSyncPath(absolutePath) << L" (" << Utility::s2ws(nodeId)
+                                                    << L") at " << fileStat.modificationTime << L", contentChecksum:"
+                                                    << Utility::s2ws(item.contentChecksum()));
 
                 //                if (nodeType == NodeType::File) {
                 //                    if (canComputeChecksum(absolutePath)) {
@@ -363,11 +370,20 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
         }
 
         // Update liveSnapshot
-        if (_liveSnapshot.updateItem(SnapshotItem(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime,
-                                                  fileStat.modificationTime, nodeType, fileStat.size, isLink, true, true))) {
+        auto item = SnapshotItem(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime,
+                                 fileStat.modificationTime, nodeType, fileStat.size, isLink, true, true);
+
+        if (nodeType == NodeType::File) {
+            std::string hash;
+            (void) Utility::computeFileXxHash(absolutePath, hash);
+            item.setContentChecksum(hash);
+        }
+
+        if (_liveSnapshot.updateItem(item)) {
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absolutePath) << L" (" << Utility::s2ws(nodeId)
-                                                      << L") updated in local snapshot at " << fileStat.modificationTime);
+                                                      << L") updated in local snapshot at " << fileStat.modificationTime
+                                                      << L", contentChecksum:" << Utility::s2ws(item.contentChecksum()));
             }
 
             if (nodeType == NodeType::File) {
@@ -723,8 +739,15 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 }
             }
 
-            const SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime,
-                                    fileStat.modificationTime, itemType.nodeType, fileStat.size, isLink, true, true);
+            SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime,
+                              fileStat.modificationTime, itemType.nodeType, fileStat.size, isLink, true, true);
+
+            if (itemType.nodeType == NodeType::File) {
+                std::string hash;
+                (void) Utility::computeFileXxHash(absolutePath, hash);
+                item.setContentChecksum(hash);
+            }
+
             if (_liveSnapshot.updateItem(item)) {
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: "
@@ -733,7 +756,8 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                                                         << Utility::s2ws(parentNodeId) << L" createdAt:" << fileStat.creationTime
                                                         << L" modificationTime:" << fileStat.modificationTime << L" isDir:"
                                                         << (itemType.nodeType == NodeType::Directory) << L" size:"
-                                                        << fileStat.size << L" isLink:" << isLink);
+                                                        << fileStat.size << L" isLink:" << isLink << L", contentChecksum:"
+                                                        << Utility::s2ws(item.contentChecksum()));
                 }
             } else {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to insert item: " << Utility::formatSyncPath(absolutePath.filename())

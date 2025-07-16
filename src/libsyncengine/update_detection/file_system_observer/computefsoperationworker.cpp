@@ -97,11 +97,11 @@ void ComputeFSOperationWorker::execute() {
         ok = exitCode == ExitCode::Ok;
         if (ok) perfMonitor.stop();
     }
-    if (ok && !stopAsked()) {
-        sentry::pTraces::scoped::CheckIfFileStillBeingWritten perfMonitor(syncDbId());
-        checkIfFileStillBeingWritten();
-        perfMonitor.stop();
-    }
+    // if (ok && !stopAsked()) {
+    //     sentry::pTraces::scoped::CheckIfFileStillBeingWritten perfMonitor(syncDbId());
+    //     checkIfFileStillBeingWritten();
+    //     perfMonitor.stop();
+    // }
 
     const std::chrono::duration<double> elapsedSeconds = std::chrono::steady_clock::now() - start;
 
@@ -529,31 +529,31 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const N
                 continue;
             }
 
-            // if (side == ReplicaSide::Local) {
-            //     // TODO : this portion of code aimed to wait for a file to be available locally before starting to synchronize
-            //     it
-            //     // For example, on Windows, when copying a big file inside the sync folder, the creation event is received
-            //     // immediately but the copy will take some time. Therefor, the file will appear locked during the copy.
-            //     // However, this will also block the update of file locked by an application during its edition (Microsoft
-            //     Office,
-            //     // Open Office, ...)
-            //     const bool isLink = _syncPal->_localSnapshot->isLink(nodeId);
-            //     if (type == NodeType::File && !isLink) {
-            //         // On Windows, we receive CREATE event while the file is still being copied
-            //         // Do not start synchronizing the file while copying is in progress
-            //         const SyncPath absolutePath = _syncPal->localPath() / snapshotPath;
-            //         IoError ioError = IoError::Success;
-            //         if (!IoHelper::isFileAccessible(absolutePath, ioError)) {
-            //             LOGW_SYNCPAL_INFO(_logger, L"Item \"" << Utility::formatSyncPath(absolutePath)
-            //                                                   << L"\" is not ready. Synchronization postponed.");
-            //             continue;
-            //         }
-            //     }
-            // }
+            bool toBeIgnored = false;
+            if (side == ReplicaSide::Local) {
+                // TODO : this portion of code aimed to wait for a file to be available locally before starting to synchronize
+                // For example, on Windows, when copying a big file inside the sync folder, the creation event is received
+                // immediately but the copy will take some time. Therefor, the file will appear locked during the copy.
+                // How ever, this will also block the update of file locked by an application during its edition (Microsoft
+                // Office, Open Office, ...)
+                const bool isLink = _syncPal->_localSnapshot->isLink(nodeId);
+                if (type == NodeType::File && !isLink) {
+                    // On Windows, we receive CREATE event while the file is still being copied
+                    // Do not start synchronizing the file while copying is in progress
+                    const SyncPath absolutePath = _syncPal->localPath() / snapshotPath;
+                    IoError ioError = IoError::Success;
+                    if (!IoHelper::isFileAccessible(absolutePath, ioError)) {
+                        LOGW_SYNCPAL_INFO(_logger, L"Item " << Utility::formatSyncPath(absolutePath)
+                                                            << L" is not ready. Synchronization postponed.");
+                        // toBeIgnored = true;
+                    }
+                }
+            }
 
             // Create operation
-            FSOpPtr fsOp = std::make_shared<FSOperation>(OperationType::Create, nodeId, type, snapshot->createdAt(nodeId),
-                                                         snapshot->lastModified(nodeId), snapshotSize, snapshotPath);
+            FSOpPtr fsOp =
+                    std::make_shared<FSOperation>(OperationType::Create, nodeId, type, snapshot->createdAt(nodeId),
+                                                  snapshot->lastModified(nodeId), snapshotSize, snapshotPath, "", toBeIgnored);
             opSet->insertOp(fsOp);
             logOperationGeneration(snapshot->side(), fsOp);
         }

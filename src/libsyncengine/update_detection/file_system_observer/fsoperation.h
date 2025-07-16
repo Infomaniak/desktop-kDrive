@@ -26,7 +26,7 @@ struct FSOperation {
     public:
         FSOperation(OperationType operationType, const NodeId &nodeId, NodeType objectType = NodeType::Unknown,
                     SyncTime createdAt = 0, SyncTime lastModified = 0, int64_t size = 0, const SyncPath &path = "",
-                    const SyncPath &destinationPath = "");
+                    const SyncPath &destinationPath = "", bool toBeIgnored = false);
 
         inline UniqueId id() const { return _id; }
         inline OperationType operationType() const { return _operationType; }
@@ -37,6 +37,7 @@ struct FSOperation {
         inline int64_t size() const { return _size; }
         inline SyncPath path() const { return _path; }
         inline SyncPath destinationPath() const { return _destinationPath; }
+        inline bool toBeIgnored() const { return _toBeIgnored; }
 
         bool operator!=(const FSOperation &o) const {
             return (this->_operationType != o._operationType) || (this->_nodeId != o._nodeId);
@@ -54,6 +55,7 @@ struct FSOperation {
         int64_t _size = 0;
         SyncPath _path;
         SyncPath _destinationPath;
+        bool _toBeIgnored{false};
 
         static UniqueId _nextId;
 };

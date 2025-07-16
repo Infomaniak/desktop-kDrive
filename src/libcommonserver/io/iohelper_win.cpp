@@ -42,6 +42,7 @@
 #include "utility/utility_base.h"
 
 
+#include <corecrt_io.h>
 #include <security.h>
 #include <winioctl.h>
 #include <winsock2.h>
@@ -191,8 +192,59 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     return true;
 }
 
+int64_t getCompressedFileSizeSafe(const std::wstring &filePath) {
+    DWORD highSize = 0;
+    DWORD lowSize = GetCompressedFileSizeW(filePath.c_str(), &highSize);
+    if (lowSize == INVALID_FILE_SIZE) {
+        DWORD error = GetLastError();
+        if (error != NO_ERROR) {
+            std::wcerr << L"Failed to get compressed file size for " << filePath << L", error: " << error << std::endl;
+            return 0;
+        }
+    }
+    int64_t compressedSize = (static_cast<int64_t>(highSize) << 32) | lowSize;
+    return compressedSize;
+}
+
+void testSize(const SyncPath &path) {
+    HANDLE hFile = CreateFileW(Path2WStr(path).c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
+                               FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hFile == INVALID_HANDLE_VALUE) {
+        return;
+    }
+
+    int compressedSize = getCompressedFileSizeSafe(path);
+
+    LPDWORD highPart = 0;
+    DWORD lowPart = GetFileSize(hFile, highPart);
+    auto size = ((long long) highPart << 32) + (long long) lowPart;
+
+    LARGE_INTEGER largeInt;
+    BOOL ok = GetFileSizeEx(hFile, &largeInt);
+    int64_t size2 = static_cast<int64_t>(largeInt.QuadPart);
+
+    CloseHandle(hFile);
+
+    auto fileSystemSize{std::filesystem::file_size(path)};
+
+    std::ifstream ifs(path, std::ios_base::binary | std::ios_base::in);
+    ifs.seekg(0, std::ios_base::beg);
+    std::ifstream::pos_type begin_pos = ifs.tellg();
+    ifs.seekg(0, std::ios_base::end);
+    int64_t sizeStream = ifs.tellg() - begin_pos;
+    ifs.close();
+
+
+    // computeXxHash()
+
+    std::cout << path << " - compressedSize:" << compressedSize << " - GetFileSize:" << size << " - GetFileSizeEx:" << size2
+              << " - fileSystemSize:" << fileSystemSize << " - sizeStream:" << sizeStream << std::endl;
+}
+
 bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept {
     ioError = IoError::Success;
+
+    testSize(path);
 
     // Get parent folder handle
     HANDLE hParent;
@@ -257,7 +309,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError 
     const bool isNtfs = Utility::isNtfs(path);
     if ((isNtfs && !NT_SUCCESS(status)) ||
         (!isNtfs && dwError != 0)) { // On FAT32 file system, NT_SUCCESS will return false even if it is a success, therefore we
-                                     // also check GetLastError
+        // also check GetLastError
         CloseHandle(hParent);
 
         if (!NT_SUCCESS(status)) {
@@ -282,9 +334,11 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError 
     filestat->nodeType = pFileInfo->FileAttributes & FILE_ATTRIBUTE_DIRECTORY ? NodeType::Directory : NodeType::File;
     CloseHandle(hParent);
 
-    // GET THE SIZE ON DISK
-    LPDWORD test;
-    DWORD sizeOnDisk = GetCompressedFileSizeW(path.native().c_str(), test);
+    // Get the real size on disk
+    filestat->sizeOnDisk = getCompressedFileSizeSafe(path);
+
+    // auto testSize = _filelengthi64(filestat->inode);
+    // LOGW_DEBUG(logger(), Utility::formatSyncPath(path) << L" - testSize: " << testSize);
 
     return true;
 }

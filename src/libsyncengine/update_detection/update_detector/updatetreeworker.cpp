@@ -402,6 +402,10 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
                 // op is now the createOperation
                 op = tmp;
                 _createFileOperationSet.erase(normalizedPath);
+                if (op->toBeIgnored()) {
+                    LOGW_SYNCPAL_INFO(_logger, L"Operations on " << Utility::formatSyncPath(normalizedPath) << L" postponed.");
+                    continue;
+                }
             }
         }
 
@@ -567,13 +571,18 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
 
 ExitCode UpdateTreeWorker::step6CreateFile() {
     auto perfMonitor = sentry::pTraces::scoped::Step6CreateFile(syncDbId());
-    for (const auto &op: _createFileOperationSet) {
+    for (const auto &opInfo: _createFileOperationSet) {
         // worker stop or pause
         if (stopAsked()) {
             return ExitCode::Ok;
         }
 
-        FSOpPtr operation = op.second;
+        const auto operation = opInfo.second;
+
+        if (operation->toBeIgnored()) {
+            LOGW_SYNCPAL_INFO(_logger, L"Operations on " << Utility::formatSyncPath(operation->path()) << L" postponed.");
+            continue;
+        }
 
         // find parentNode by path
         std::shared_ptr<Node> parentNode;
