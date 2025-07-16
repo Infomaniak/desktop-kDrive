@@ -550,7 +550,7 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     ioError = IoError::Success;
     bool endOfDirectory = false;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-        if (entry.is_directory()) {
+        if (entry.is_directory() && !entry.is_symlink()) {
             if (maxDepth == 0) {
                 LOGW_WARN(logger(), L"Max depth reached in getDirectorySize, skipping deeper directories for "
                                             << Utility::formatSyncPath(path));
@@ -967,6 +967,7 @@ IoHelper::DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, bo
 bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDirectory, IoError &ioError) {
     std::error_code ec;
     endOfDirectory = false;
+    ioError = IoError::Success;
 
     if (_invalid) {
         ioError = IoError::InvalidDirectoryIterator;
@@ -980,7 +981,6 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
     const auto dirIteratorEnd = std::filesystem::end(_dirIterator);
     if (_dirIterator == dirIteratorEnd) {
         endOfDirectory = true;
-        ioError = IoError::Success;
         return true;
     }
 
@@ -1019,7 +1019,6 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
         nextEntry = *_dirIterator;
         return true;
     } else {
-        ioError = IoError::Success;
         endOfDirectory = true;
         return true;
     }
