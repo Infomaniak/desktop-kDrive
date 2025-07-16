@@ -39,13 +39,4 @@ void LongPollJob::setSpecificQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("timeout", std::to_string(apiTimout) + "s");
 }
 
-bool LongPollJob::handleError(std::istream &is, const Poco::URI &uri) {
-    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_BAD_GATEWAY) {
-        _exitInfo = {ExitCode::NetworkError, ExitCause::BadGateway};
-        return true;
-    } else {
-        return AbstractListingJob::handleError(is, uri);
-    }
-}
-
 } // namespace KDC

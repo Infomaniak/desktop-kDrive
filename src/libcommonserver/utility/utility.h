@@ -195,6 +195,8 @@ struct COMMONSERVER_EXPORT Utility {
         static SyncPath sharedFolderName();
         static std::string userName();
 
+        static bool isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode);
+
     private:
         static log4cplus::Logger _logger;
 
