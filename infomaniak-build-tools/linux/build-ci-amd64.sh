@@ -104,7 +104,6 @@ export SUFFIX=""
 mkdir -p "$build_dir/client"
 
 conan_build_folder="$build_dir/conan"
-conan_dependencies_folder="$build_dir/conan/dependencies"
 
 bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" --output-dir="$conan_build_folder"
 
@@ -133,7 +132,6 @@ cmake -B"$build_dir" -H"$BASEPATH" \
     -DKDRIVE_THEME_DIR="$BASEPATH/infomaniak" \
     -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
     -DBUILD_UNIT_TESTS=$unit_tests \
-    -DCONAN_DEP_DIR="$conan_dependencies_folder" \
     -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
 
 make "-j$(nproc)"
