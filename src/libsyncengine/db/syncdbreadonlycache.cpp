@@ -320,7 +320,7 @@ bool SyncDbReadOnlyCache::id(ReplicaSide side, const SyncPath &path, std::option
     if (side == ReplicaSide::Unknown) return false;
 
     found = false;
-    const std::vector<SyncName> itemNames = Utility::splitPath(path);
+    const auto &itemNames = CommonUtility::splitSyncPath(path);
     DbNode tmpNode = _syncDb.rootNode();
     if (itemNames.empty()) {
         nodeId = tmpNode.nodeId(side);
@@ -329,15 +329,16 @@ bool SyncDbReadOnlyCache::id(ReplicaSide side, const SyncPath &path, std::option
     }
 
     const auto dbNodesParentToChildrenMapEnd = _dbNodesParentToChildrenMap.end();
-    for (auto nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
+    for (const auto &name: itemNames) {
         auto children = _dbNodesParentToChildrenMap.find(tmpNode.nodeId());
         if (children == dbNodesParentToChildrenMapEnd) {
             return true;
         }
         // Replace std::find_if by std::ranges::find_if once compiler version has been bumped for Linux release build.
-        const auto childIt = std::find_if(children->second.begin(), children->second.end(), [this, &nameIt, &side](const DbNodeId& childId) {
-            const DbNode& childNode = _dbNodesCache.at(childId);
-                    return childNode.name(side) == *nameIt;
+        const auto childIt =
+                std::find_if(children->second.begin(), children->second.end(), [this, &name, &side](const DbNodeId &childId) {
+                    const DbNode &childNode = _dbNodesCache.at(childId);
+                    return childNode.name(side) == name;
                 });
         if (childIt == children->second.end()) {
             return true;

@@ -232,8 +232,8 @@ bool IoHelper::_setTargetType(ItemType &itemType) noexcept {
         const bool expected = isExpectedError(ioError);
         if (!expected) {
             itemType.ioError = ioError;
-            LOGW_WARN(logger(), L"Failed to check if the item is a directory: "
-                                        << Utility::formatStdError(itemType.targetPath, ec).c_str());
+            LOGW_WARN(logger(),
+                      L"Failed to check if the item is a directory: " << Utility::formatStdError(itemType.targetPath, ec));
         }
         return expected;
     }
@@ -280,7 +280,7 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoErro
 
     FileStat filestat;
     if (!getFileStat(path, &filestat, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(path, ioError).c_str());
+        LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(path, ioError));
         return false;
     }
 
@@ -303,7 +303,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     ItemType itemType;
     const bool success = getItemType(path, itemType);
     if (!success) {
-        LOGW_WARN(logger(), L"Failed to get item type: " << Utility::formatIoError(path, itemType.ioError).c_str());
+        LOGW_WARN(logger(), L"Failed to get item type: " << Utility::formatIoError(path, itemType.ioError));
         return false;
     }
     ioError = itemType.ioError;
@@ -321,7 +321,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
         if (!exists) {
             ioError = IoError::NoSuchFileOrDirectory;
         }
-        LOGW_WARN(logger(), L"Failed to get permissions: " << Utility::formatStdError(path, ec).c_str());
+        LOGW_WARN(logger(), L"Failed to get permissions: " << Utility::formatStdError(path, ec));
         return isExpectedError(ioError);
     }
 
@@ -353,7 +353,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
         if (isExpectedError(itemType.ioError)) {
             return true;
         }
-        LOGW_WARN(logger(), L"Failed to check if the item is a symlink: " << Utility::formatStdError(path, ec).c_str());
+        LOGW_WARN(logger(), L"Failed to check if the item is a symlink: " << Utility::formatStdError(path, ec));
         return false;
     }
 
@@ -363,7 +363,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
         if (itemType.ioError != IoError::Success) {
             const bool success = isExpectedError(itemType.ioError);
             if (!success) {
-                LOGW_WARN(logger(), L"Failed to read symlink: " << Utility::formatStdError(path, ec).c_str());
+                LOGW_WARN(logger(), L"Failed to read symlink: " << Utility::formatStdError(path, ec));
             }
             return success;
         }
@@ -374,7 +374,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
         // Get target type
         FileStat filestat;
         if (!getFileStat(path, &filestat, itemType.ioError)) {
-            LOGW_WARN(logger(), L"Error in getFileStat: " << Utility::formatStdError(path, ec).c_str());
+            LOGW_WARN(logger(), L"Error in getFileStat: " << Utility::formatStdError(path, ec));
             return false;
         }
 
@@ -390,8 +390,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     // Check whether the item indicated by `path` is an alias.
     bool isAlias = false;
     if (!_checkIfAlias(path, isAlias, itemType.ioError)) {
-        LOGW_WARN(logger(),
-                  L"Failed to check if the item is an alias: " << Utility::formatIoError(path, itemType.ioError).c_str());
+        LOGW_WARN(logger(), L"Failed to check if the item is an alias: " << Utility::formatIoError(path, itemType.ioError));
         return false;
     }
 
@@ -403,8 +402,8 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
         // !!! isAlias is true for a symlink and for a Finder alias !!!
         IoError aliasReadError = IoError::Success;
         if (!_readAlias(path, itemType.targetPath, aliasReadError)) {
-            LOGW_WARN(logger(), L"Failed to read an item first identified as an alias: "
-                                        << Utility::formatIoError(path, itemType.ioError).c_str());
+            LOGW_WARN(logger(),
+                      L"Failed to read an item first identified as an alias: " << Utility::formatIoError(path, itemType.ioError));
             itemType.ioError = aliasReadError;
 
             return false;
@@ -426,8 +425,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     if (fsSupportsSymlinks) {
         bool isJunction = false;
         if (!checkIfIsJunction(path, isJunction, itemType.ioError)) {
-            LOGW_WARN(logger(),
-                      L"Failed to check if the item is a junction: " << Utility::formatIoError(path, itemType.ioError).c_str());
+            LOGW_WARN(logger(), L"Failed to check if the item is a junction: " << Utility::formatIoError(path, itemType.ioError));
 
             return false;
         }
@@ -443,8 +441,8 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
 
             std::string data;
             if (!IoHelper::readJunction(path, data, itemType.targetPath, itemType.ioError)) {
-                LOGW_WARN(logger(), L"Failed to read an item identified as a junction: "
-                                            << Utility::formatIoError(path, itemType.ioError).c_str());
+                LOGW_WARN(logger(),
+                          L"Failed to read an item identified as a junction: " << Utility::formatIoError(path, itemType.ioError));
                 return false;
             }
 
@@ -459,7 +457,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     if (itemType.ioError != IoError::Success) {
         const bool success = isExpectedError(itemType.ioError);
         if (!success) {
-            LOGW_WARN(logger(), L"Failed to check that item is a directory: " << Utility::formatStdError(path, ec).c_str());
+            LOGW_WARN(logger(), L"Failed to check that item is a directory: " << Utility::formatStdError(path, ec));
         }
         return success;
     }
@@ -477,17 +475,17 @@ bool IoHelper::getFileSize(const SyncPath &path, uint64_t &size, IoError &ioErro
     const bool success = getItemType(path, itemType);
     ioError = itemType.ioError;
     if (!success) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatSyncPath(path).c_str());
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatSyncPath(path));
         return false;
     }
 
     if (ioError != IoError::Success) {
-        LOGW_DEBUG(logger(), L"Failed to get item type for " << Utility::formatSyncPath(path).c_str());
+        LOGW_DEBUG(logger(), L"Failed to get item type for " << Utility::formatSyncPath(path));
         return isExpectedError(ioError);
     }
 
     if (itemType.nodeType == NodeType::Directory) {
-        LOGW_WARN(logger(), L"Logic error for " << Utility::formatSyncPath(path).c_str());
+        LOGW_WARN(logger(), L"Logic error for " << Utility::formatSyncPath(path));
         ioError = IoError::IsADirectory;
         return false;
     }
@@ -503,7 +501,7 @@ bool IoHelper::getFileSize(const SyncPath &path, uint64_t &size, IoError &ioErro
             break;
         default:
             if (itemType.nodeType != NodeType::File) {
-                LOGW_WARN(logger(), L"Logic error for " << Utility::formatSyncPath(path).c_str());
+                LOGW_WARN(logger(), L"Logic error for " << Utility::formatSyncPath(path));
                 return false;
             }
 
@@ -512,7 +510,7 @@ bool IoHelper::getFileSize(const SyncPath &path, uint64_t &size, IoError &ioErro
             ioError = stdError2ioError(ec);
 
             if (ioError != IoError::Success) {
-                LOGW_DEBUG(logger(), L"Failed to get item type for " << Utility::formatSyncPath(path).c_str());
+                LOGW_DEBUG(logger(), L"Failed to get item type for " << Utility::formatSyncPath(path));
                 return isExpectedError(ioError);
             }
     }
@@ -526,17 +524,17 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     const bool success = getItemType(path, itemType);
     ioError = itemType.ioError;
     if (!success) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatSyncPath(path).c_str());
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatSyncPath(path));
         return false;
     }
 
     if (ioError != IoError::Success) {
-        LOGW_DEBUG(logger(), L"Failed to get item type for " << Utility::formatSyncPath(path).c_str());
+        LOGW_DEBUG(logger(), L"Failed to get item type for " << Utility::formatSyncPath(path));
         return isExpectedError(ioError);
     }
 
     if (itemType.nodeType != NodeType::Directory) {
-        LOGW_WARN(logger(), L"Logic error for " << Utility::formatSyncPath(path).c_str());
+        LOGW_WARN(logger(), L"Logic error for " << Utility::formatSyncPath(path));
         ioError = IoError::IsAFile;
         return false;
     }
@@ -544,7 +542,7 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     IoHelper::DirectoryIterator dir;
     IoHelper::getDirectoryIterator(path, true, ioError, dir);
     if (ioError != IoError::Success) {
-        LOGW_WARN(logger(), L"Error in DirectoryIterator for " << Utility::formatIoError(path, ioError).c_str());
+        LOGW_WARN(logger(), L"Error in DirectoryIterator for " << Utility::formatIoError(path, ioError));
         return isExpectedError(ioError);
     }
 
@@ -555,24 +553,23 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
         if (entry.is_directory()) {
             if (maxDepth == 0) {
                 LOGW_WARN(logger(), L"Max depth reached in getDirectorySize, skipping deeper directories for "
-                                            << Utility::formatSyncPath(path).c_str());
+                                            << Utility::formatSyncPath(path));
                 ioError = IoError::MaxDepthExceeded;
                 return isExpectedError(ioError);
             }
             uint64_t entrySize = 0;
             if (!getDirectorySize(entry.path(), entrySize, ioError, maxDepth - 1)) {
-                LOGW_WARN(logger(), L"Error in IoHelper::getDirectorySize for " << Utility::formatSyncPath(entry.path()).c_str());
+                LOGW_WARN(logger(), L"Error in IoHelper::getDirectorySize for " << Utility::formatSyncPath(entry.path()));
                 return false;
             }
 
             if (ioError != IoError::Success) {
                 if (isExpectedError(ioError)) {
                     // Ignore the directory
-                    LOGW_DEBUG(logger(),
-                               L"Failed to get directory size, ignoring " << Utility::formatSyncPath(entry.path()).c_str());
+                    LOGW_DEBUG(logger(), L"Failed to get directory size, ignoring " << Utility::formatSyncPath(entry.path()));
                     continue;
                 } else {
-                    LOGW_WARN(logger(), L"Failed to get directory size for " << Utility::formatSyncPath(entry.path()).c_str());
+                    LOGW_WARN(logger(), L"Failed to get directory size for " << Utility::formatSyncPath(entry.path()));
                     return false;
                 }
             }
@@ -583,17 +580,17 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
 
         uint64_t entrySize = 0;
         if (!getFileSize(entry.path(), entrySize, ioError)) {
-            LOGW_WARN(logger(), L"Error in IoHelper::getFileSize for " << Utility::formatSyncPath(entry.path()).c_str());
+            LOGW_WARN(logger(), L"Error in IoHelper::getFileSize for " << Utility::formatSyncPath(entry.path()));
             return false;
         }
 
         if (ioError != IoError::Success) {
             if (isExpectedError(ioError)) {
                 // Ignore the file
-                LOGW_DEBUG(logger(), L"Failed to get file size, ignoring " << Utility::formatSyncPath(entry.path()).c_str());
+                LOGW_DEBUG(logger(), L"Failed to get file size, ignoring " << Utility::formatSyncPath(entry.path()));
                 continue;
             } else {
-                LOGW_WARN(logger(), L"Failed to get file size for " << Utility::formatSyncPath(entry.path()).c_str());
+                LOGW_WARN(logger(), L"Failed to get file size for " << Utility::formatSyncPath(entry.path()));
                 return false;
             }
         }
@@ -602,7 +599,7 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     }
 
     if (!endOfDirectory) {
-        LOGW_WARN(logger(), L"Error in DirectoryIterator for " << Utility::formatIoError(path, ioError).c_str());
+        LOGW_WARN(logger(), L"Error in DirectoryIterator for " << Utility::formatIoError(path, ioError));
         return isExpectedError(ioError);
     }
 
@@ -615,6 +612,96 @@ bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noex
     directoryPath = _tempDirectoryPath(ec); // The std::filesystem implementation returns an empty path on error.
     ioError = stdError2ioError(ec);
     return ioError == IoError::Success;
+}
+
+namespace details {
+class CacheDirectoryHanlder {
+    public:
+        static CacheDirectoryHanlder &instance() noexcept { return _instance; }
+        const SyncPath &directoryPath() noexcept { return _directoryPath; }
+        void setDirectoryPath(const SyncPath &newPath) {
+            deleteDirectoryPath();
+            _directoryPath = newPath;
+            createDirectoryPath();
+        }
+        void resetDirectoryPath() noexcept {
+            deleteDirectoryPath();
+            initDirectoryPath();
+            if (!_directoryPath.empty()) createDirectoryPath();
+        }
+        ~CacheDirectoryHanlder() { deleteDirectoryPath(); }
+
+    private:
+        static CacheDirectoryHanlder _instance;
+        SyncPath _directoryPath;
+
+        CacheDirectoryHanlder() {
+            if (_directoryPath.empty()) initDirectoryPath();
+            if (!_directoryPath.empty()) createDirectoryPath();
+        }
+
+        void initDirectoryPath() noexcept {
+            static const SyncName cacheDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName("-cache"));
+            if (initDirectoryPathFromEnv("KDRIVE_CACHE_PATH", cacheDirName)) return;
+
+#ifdef __unix__
+            if (initDirectoryPathFromEnv("XDG_CACHE_HOME", cacheDirName)) return;
+            if (initDirectoryPathFromEnv("HOME", cacheDirName, ".cache")) return;
+#endif
+            IoError ioError = IoError::Success;
+            if (!IoHelper::tempDirectoryPath(_directoryPath, ioError)) {
+                return;
+            }
+            _directoryPath /= cacheDirName;
+            return;
+        }
+
+        bool initDirectoryPathFromEnv(const std::string &envVar, const SyncName &cacheDirName,
+                                      const SyncPath &subDir = "") noexcept {
+            bool isSet = false;
+            if (const auto value = CommonUtility::envVarValue(envVar, isSet); isSet && !value.empty()) {
+                if (subDir.empty()) {
+                    _directoryPath = SyncPath(value) / cacheDirName;
+                } else {
+                    _directoryPath = SyncPath(value) / subDir / cacheDirName;
+                }
+                return true;
+            }
+            return false;
+        };
+
+        void createDirectoryPath() noexcept {
+            if (!_directoryPath.empty()) {
+                IoError ioError = IoError::Success;
+                // It is a best effort, we cannot log/sentry anything here as the logger/sentry may not be initialized yet.
+                if (!IoHelper::createDirectory(_directoryPath, true, ioError) && ioError != IoError::DirectoryExists) {
+                    _directoryPath.clear(); // Clear the path if the directory could not be created.
+                    return;
+                }
+            }
+        }
+
+        void deleteDirectoryPath() noexcept {
+            // It is a best effort, we cannot log/sentry anything here as the logger/sentry may have been destroyed already.
+            IoError ioError = IoError::Success;
+            (void) IoHelper::deleteItem(_directoryPath, ioError);
+        }
+};
+
+CacheDirectoryHanlder CacheDirectoryHanlder::_instance;
+} // namespace details
+
+void IoHelper::setCacheDirectoryPath(const SyncPath &newPath) {
+    if (!newPath.empty()) {
+        details::CacheDirectoryHanlder::instance().setDirectoryPath(newPath);
+    } else {
+        details::CacheDirectoryHanlder::instance().resetDirectoryPath();
+    }
+}
+
+bool IoHelper::cacheDirectoryPath(SyncPath &directoryPath) noexcept {
+    directoryPath = details::CacheDirectoryHanlder::instance().directoryPath();
+    return !directoryPath.empty();
 }
 
 bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
@@ -696,7 +783,7 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
     if (exists) {
         // Check nodeId
         if (!getNodeId(path, otherNodeId)) {
-            LOGW_WARN(logger(), L"Error in IoHelper::getNodeId for " << Utility::formatSyncPath(path).c_str());
+            LOGW_WARN(logger(), L"Error in IoHelper::getNodeId for " << Utility::formatSyncPath(path));
         }
 
         existsWithSameId = (nodeId == otherNodeId);
@@ -725,7 +812,7 @@ bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, Sy
 
     FileStat fileStat;
     if (!getFileStat(path, &fileStat, ioError)) {
-        LOGW_WARN(logger(), L"Failed to get file status: " << Utility::formatIoError(path, ioError).c_str());
+        LOGW_WARN(logger(), L"Failed to get file status: " << Utility::formatIoError(path, ioError));
 
         return false;
     }
@@ -734,7 +821,7 @@ bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, Sy
         return isExpectedError(ioError);
     }
 
-    changed = (previousSize != fileStat.size) || (previousMtime != fileStat.modtime) ||
+    changed = (previousSize != fileStat.size) || (previousMtime != fileStat.modificationTime) ||
               (previousCreationTime != fileStat.creationTime);
 
     return true;
@@ -779,7 +866,7 @@ bool IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoErr
     ioError = itemType.ioError;
 
     if (!success) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(path, ioError).c_str());
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(path, ioError));
         return false;
     }
 
@@ -788,9 +875,10 @@ bool IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoErr
     return true;
 }
 
-bool IoHelper::createDirectory(const SyncPath &path, IoError &ioError) noexcept {
+bool IoHelper::createDirectory(const SyncPath &path, const bool recursive, IoError &ioError) noexcept {
     std::error_code ec;
-    const bool creationSuccess = std::filesystem::create_directory(path, ec);
+    const bool creationSuccess =
+            recursive ? std::filesystem::create_directories(path, ec) : std::filesystem::create_directory(path, ec);
     ioError = stdError2ioError(ec);
 
     if (!creationSuccess && ioError == IoError::Success) {
@@ -843,19 +931,18 @@ bool IoHelper::getDirectoryEntry(const SyncPath &path, IoError &ioError, Directo
 
 bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, bool isFolder, IoError &ioError) noexcept {
     if (targetPath == path) {
-        LOGW_DEBUG(logger(), L"Cannot create symlink on itself: " << Utility::formatSyncPath(path).c_str());
+        LOGW_DEBUG(logger(), L"Cannot create symlink on itself: " << Utility::formatSyncPath(path));
         ioError = IoError::InvalidArgument;
         return false;
     }
 
     std::error_code ec;
     if (isFolder) {
-        LOGW_DEBUG(logger(), L"Create directory symlink: target " << Path2WStr(targetPath).c_str() << L", "
-                                                                  << Utility::formatSyncPath(path).c_str());
+        LOGW_DEBUG(logger(),
+                   L"Create directory symlink: target " << Path2WStr(targetPath) << L", " << Utility::formatSyncPath(path));
         std::filesystem::create_directory_symlink(targetPath, path, ec);
     } else {
-        LOGW_DEBUG(logger(), L"Create file symlink: target " << Path2WStr(targetPath).c_str() << L", "
-                                                             << Utility::formatSyncPath(path).c_str());
+        LOGW_DEBUG(logger(), L"Create file symlink: target " << Path2WStr(targetPath) << L", " << Utility::formatSyncPath(path));
         std::filesystem::create_symlink(targetPath, path, ec);
     }
 
@@ -867,7 +954,8 @@ bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, b
 // DirectoryIterator
 
 IoHelper::DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, bool recursive, IoError &ioError) :
-    _recursive(recursive), _directoryPath(directoryPath) {
+    _recursive(recursive),
+    _directoryPath(directoryPath) {
     std::error_code ec;
 
     _dirIterator = std::filesystem::begin(
@@ -879,6 +967,7 @@ IoHelper::DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, bo
 bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDirectory, IoError &ioError) {
     std::error_code ec;
     endOfDirectory = false;
+    ioError = IoError::Success;
 
     if (_invalid) {
         ioError = IoError::InvalidDirectoryIterator;
@@ -892,7 +981,6 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
     const auto dirIteratorEnd = std::filesystem::end(_dirIterator);
     if (_dirIterator == dirIteratorEnd) {
         endOfDirectory = true;
-        ioError = IoError::Success;
         return true;
     }
 
@@ -931,7 +1019,6 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
         nextEntry = *_dirIterator;
         return true;
     } else {
-        ioError = IoError::Success;
         endOfDirectory = true;
         return true;
     }

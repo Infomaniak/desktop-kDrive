@@ -65,7 +65,7 @@ void TestExecutorWorker::setUp() {
     Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
-    _sync = Sync(1, drive.dbId(), localPathStr, testVariables.remotePath);
+    _sync = Sync(1, drive.dbId(), localPathStr, "", testVariables.remotePath);
     (void) ParmsDb::instance()->insertSync(_sync);
 
     // Setup proxy
@@ -613,7 +613,7 @@ void TestExecutorWorker::testFixModificationDate() {
     IoHelper::getFileStat(path, &filestat, ioError);
 
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime, filestat.modtime);
+    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime, filestat.modificationTime);
 }
 
 void TestExecutorWorker::testAffectedUpdateTree() {

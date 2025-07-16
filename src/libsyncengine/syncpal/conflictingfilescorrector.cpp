@@ -33,15 +33,17 @@ namespace KDC {
 
 ConflictingFilesCorrector::ConflictingFilesCorrector(std::shared_ptr<SyncPal> syncPal, bool keepLocalVersion,
                                                      std::vector<Error> &errors) :
-    _syncPal(syncPal), _keepLocalVersion(keepLocalVersion), _errors(std::move(errors)) {}
+    _syncPal(syncPal),
+    _keepLocalVersion(keepLocalVersion),
+    _errors(std::move(errors)) {}
 
 void ConflictingFilesCorrector::runJob() {
     for (auto &error: _errors) {
         bool exists = false;
         IoError ioError = IoError::Success;
         if (!IoHelper::checkIfPathExists(_syncPal->localPath() / error.destinationPath(), exists, ioError)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::checkIfPathExists: "
-                                                            << Utility::formatIoError(error.destinationPath(), ioError).c_str());
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(error.destinationPath(), ioError));
             _nbErrors++;
             continue;
         }

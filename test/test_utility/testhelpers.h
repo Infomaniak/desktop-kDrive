@@ -22,6 +22,7 @@
 #include "libcommon/utility/types.h"
 #include "libcommonserver/utility/utility.h"
 #include "version.h"
+#include "io/filestat.h"
 
 #include <config.h>
 
@@ -37,7 +38,7 @@ constexpr int64_t defaultDirSize = 0;
 SyncName makeNfdSyncName();
 SyncName makeNfcSyncName();
 
-std::string loadEnvVariable(const std::string& key, bool mandatory);
+std::string loadEnvVariable(const std::string &key, bool mandatory);
 struct TestVariables {
         std::string userId;
         std::string accountId;
@@ -58,17 +59,15 @@ struct TestVariables {
         }
 };
 
-void generateOrEditTestFile(const SyncPath& path);
+void generateOrEditTestFile(const SyncPath &path);
 /**
  * @brief Generate test files.
  * @param dirPath Directory in which the files will be created.
  * @param size The size of each file in MB.
  * @param count The number of file to generate.
  */
-void generateBigFiles(const SyncPath& dirPath, uint16_t size, uint16_t count);
-SyncPath generateBigFile(const SyncPath& dirPath, uint16_t size);
-
-void setModificationDate(const SyncPath& path, const std::chrono::time_point<std::chrono::system_clock>& timePoint);
+void generateBigFiles(const SyncPath &dirPath, uint16_t size, uint16_t count);
+SyncPath generateBigFile(const SyncPath &dirPath, uint16_t size);
 
 inline bool isRunningOnCI(bool print = true) {
     static const bool isRunningOnCI = !loadEnvVariable("KDRIVE_TEST_CI_RUNNING_ON_CI", false).empty();
@@ -87,4 +86,5 @@ inline bool isExtendedTest(bool print = true) {
     }
     return isExtended;
 }
+
 } // namespace KDC::testhelpers

@@ -30,14 +30,10 @@ namespace KDC {
  * @param clientId clientId (field _id & cid in the url), if empty, a new one is generated and stored in QSettings.
  * @return the MatomoClient instance
  */
-MatomoClient& MatomoClient::instance(const QString& clientId)
-{
-    static MatomoClient _inst(
-        qobject_cast<QCoreApplication*>(QCoreApplication::instance()),
-        clientId
-    );
-    // We needed to set the parent to the QCoreApplication instance to retrieve screen resolutions (and other details) in PiwikTracker,
-    // but we then set it to nullptr to prevent Qt from freeing this object when QCoreApplication is destroyed.
+MatomoClient &MatomoClient::instance(const QString &clientId) {
+    static MatomoClient _inst(qobject_cast<QCoreApplication *>(QCoreApplication::instance()), clientId);
+    // We needed to set the parent to the QCoreApplication instance to retrieve screen resolutions (and other details) in
+    // PiwikTracker, but we then set it to nullptr to prevent Qt from freeing this object when QCoreApplication is destroyed.
     _inst.setParent(nullptr);
     return _inst;
 }
@@ -49,11 +45,8 @@ MatomoClient& MatomoClient::instance(const QString& clientId)
  * @param app the QCoreApplication instance
  * @param clientId the clientId (field _id & cid in the URL), if empty, a new one is generated and stored in QSettings.
  */
-MatomoClient::MatomoClient(QCoreApplication* app, const QString& clientId)
-    : PiwikTracker(app,
-                   QUrl(MATOMO_URL),
-                   MATOMO_SITE_ID,
-                   clientId) {
+MatomoClient::MatomoClient(QCoreApplication *app, const QString &clientId) :
+    PiwikTracker(app, QUrl(MATOMO_URL), MATOMO_SITE_ID, clientId) {
     initNameFieldMap();
 }
 
@@ -62,8 +55,7 @@ MatomoClient::MatomoClient(QCoreApplication* app, const QString& clientId)
  *
  * @param page the page to track
  */
-void MatomoClient::sendVisit(const MatomoNameField page)
-{
+void MatomoClient::sendVisit(const MatomoNameField page) {
     QString path;
     QString action;
     instance().getPathAndAction(page, path, action);
@@ -82,7 +74,7 @@ void MatomoClient::sendVisit(const MatomoNameField page)
  * @param name the name of the event
  * @param value the value of the event
  */
-void MatomoClient::sendEvent(const QString& category, const MatomoEventAction action, const QString& name, const int value) {
+void MatomoClient::sendEvent(const QString &category, const MatomoEventAction action, const QString &name, const int value) {
     QString actionStr;
     switch (action) {
         case MatomoEventAction::Click:
@@ -110,31 +102,31 @@ void MatomoClient::sendEvent(const QString& category, const MatomoEventAction ac
  */
 void MatomoClient::initNameFieldMap() {
     _nameFieldMap = {
-#ifdef Q_OS_WIN
-        { MatomoNameField::WV_ReleaseNotes, { "webview", "release-notes" }},
-#endif
 #ifdef Q_OS_MAC
-        { MatomoNameField::PG_Preferences_LiteSync, { "preferences/litesync", "litesync" }},
+            {MatomoNameField::PG_Preferences_LiteSync, {"preferences/litesync", "litesync"}},
 #endif
-        { MatomoNameField::VW_LoginPage, { "webview", "login" }},
-        { MatomoNameField::PG_SynthesisPopover, { "popover", "popover" }},
-        { MatomoNameField::PG_SynthesisPopover, { "popover", "kebab_menu" }},
-        { MatomoNameField::PG_Preferences, { "preferences", "preferences" }},
-        { MatomoNameField::PG_Preferences_Debugging, { "preferences/debugging", "debugging" }},
-        { MatomoNameField::PG_Preferences_FilesToExclude, { "preferences/files_to_exclude", "files_to_exclude" }},
-        { MatomoNameField::PG_Preferences_Proxy, { "preferences/proxy", "proxy" }},
-        { MatomoNameField::PG_Preferences_About, { "preferences/about", "about" }},
-        { MatomoNameField::PG_Preferences_Beta, { "preferences/beta", "beta" }},
-        { MatomoNameField::PG_Parameters, { "parameters", "parameters" }},
-        { MatomoNameField::PG_Parameters_NewSync_LocalFolder, { "parameters/newsync", "local_folder" }},
-        { MatomoNameField::PG_Parameters_NewSync_RemoteFolder, { "parameters/newsync", "remote_folder" }},
-        { MatomoNameField::PG_Parameters_NewSync_Summary, { "parameters/newsync", "summary" }},
-        { MatomoNameField::PG_AddNewDrive_SelectDrive, { "add_new_drive", "select_drive" }},
-        { MatomoNameField::PG_AddNewDrive_ActivateLiteSync, { "add_new_drive", "activate_litesync" }},
-        { MatomoNameField::PG_AddNewDrive_SelectRemoteFolder, { "add_new_drive", "select_remote_folder" }},
-        { MatomoNameField::PG_AddNewDrive_SelectLocalFolder, { "add_new_drive", "select_local_folder" }},
-        { MatomoNameField::PG_AddNewDrive_ExtensionSetup, { "add_new_drive", "extension_setup" }},
-        { MatomoNameField::PG_AddNewDrive_Confirmation, { "add_new_drive", "confirmation" }},
+            {MatomoNameField::VW_LoginPage, {"webview", "login"}},
+            {MatomoNameField::PG_SynthesisPopover, {"popover", "popover"}},
+            {MatomoNameField::PG_SynthesisPopover, {"popover", "kebab_menu"}},
+            {MatomoNameField::PG_Preferences, {"preferences", "preferences"}},
+            {MatomoNameField::PG_Preferences_Debugging, {"preferences/debugging", "debugging"}},
+            {MatomoNameField::PG_Preferences_FilesToExclude, {"preferences/files_to_exclude", "files_to_exclude"}},
+            {MatomoNameField::PG_Preferences_Proxy, {"preferences/proxy", "proxy"}},
+            {MatomoNameField::PG_Preferences_About, {"preferences/about", "about"}},
+            {MatomoNameField::PG_Preferences_Beta, {"preferences/beta", "beta"}},
+#ifdef Q_OS_WIN
+            {MatomoNameField::PG_Preferences_UpdateDialog, {"preferences/update_dialog", "update_dialog"}},
+#endif
+            {MatomoNameField::PG_Parameters, {"parameters", "parameters"}},
+            {MatomoNameField::PG_Parameters_NewSync_LocalFolder, {"parameters/newsync", "local_folder"}},
+            {MatomoNameField::PG_Parameters_NewSync_RemoteFolder, {"parameters/newsync", "remote_folder"}},
+            {MatomoNameField::PG_Parameters_NewSync_Summary, {"parameters/newsync", "summary"}},
+            {MatomoNameField::PG_AddNewDrive_SelectDrive, {"add_new_drive", "select_drive"}},
+            {MatomoNameField::PG_AddNewDrive_ActivateLiteSync, {"add_new_drive", "activate_litesync"}},
+            {MatomoNameField::PG_AddNewDrive_SelectRemoteFolder, {"add_new_drive", "select_remote_folder"}},
+            {MatomoNameField::PG_AddNewDrive_SelectLocalFolder, {"add_new_drive", "select_local_folder"}},
+            {MatomoNameField::PG_AddNewDrive_ExtensionSetup, {"add_new_drive", "extension_setup"}},
+            {MatomoNameField::PG_AddNewDrive_Confirmation, {"add_new_drive", "confirmation"}},
     };
 }
 
@@ -145,13 +137,14 @@ void MatomoClient::initNameFieldMap() {
  * @param path[out] the path associated with the MatomoNameField
  * @param action[out] the action associated with the MatomoNameField
  */
-void MatomoClient::getPathAndAction(const MatomoNameField name, QString& path, QString& action) const {
+void MatomoClient::getPathAndAction(const MatomoNameField name, QString &path, QString &action) const {
     const auto it = _nameFieldMap.find(name);
     if (it != _nameFieldMap.end()) {
         path = it->second.first;
         action = it->second.second;
     } else {
-        qCWarning(lcMatomoClient) << "MatomoClient::getPathAndAction triggered with page value unknown (" << static_cast<matomo_enum_t>(name) << ").";
+        qCWarning(lcMatomoClient) << "MatomoClient::getPathAndAction triggered with page value unknown ("
+                                  << static_cast<matomo_enum_t>(name) << ").";
         path = action = "unknown";
     }
 }

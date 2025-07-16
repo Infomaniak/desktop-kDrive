@@ -33,7 +33,11 @@ class MenuWidget : public QMenu {
         Q_PROPERTY(QColor background_color READ backgroundColor WRITE setBackgroundColor)
 
     public:
-        enum Type { Menu = 0, Submenu, List };
+        enum Type {
+            Menu = 0,
+            Submenu,
+            List
+        };
 
         static const std::string actionTypeProperty;
 

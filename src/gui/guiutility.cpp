@@ -587,11 +587,18 @@ bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<
         }
     }
 
-    if (CommonUtility::isDiskRootFolder(directoryPath)) {
+    if (SyncPath suggestedPath; CommonUtility::isDiskRootFolder(directoryPath, suggestedPath)) {
         warn = true;
-        warningMsg = QCoreApplication::translate(
-                             "utility", "Folder <b>%1</b> cannot be selected as sync folder. Please, select another folder.")
-                             .arg(selectedFolderName);
+        if (suggestedPath.empty()) {
+            warningMsg = QCoreApplication::translate(
+                                 "utility", "Folder <b>%1</b> cannot be selected as sync folder. Please, select another folder.")
+                                 .arg(selectedFolderName);
+        } else {
+            warningMsg = QCoreApplication::translate("utility",
+                                                     "Folder <b>%1</b> cannot be selected as sync folder. Please, select another "
+                                                     "folder. Suggested folder: <b>%2</b>")
+                                 .arg(selectedFolderName, QString::fromStdString(suggestedPath.lexically_normal().string()));
+        }
     }
 
     if (warn) {

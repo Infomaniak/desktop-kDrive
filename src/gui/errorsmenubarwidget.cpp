@@ -34,7 +34,12 @@ static const int driveLogoIconSize = 24;
 Q_LOGGING_CATEGORY(lcErrorsMenuBarWidget, "gui.errorsmenubarwidget", QtInfoMsg)
 
 ErrorsMenuBarWidget::ErrorsMenuBarWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
-    HalfRoundRectWidget(parent), _gui(gui), _driveDbId(0), _backButton(nullptr), _driveIconLabel(nullptr), _titleLabel(nullptr) {
+    HalfRoundRectWidget(parent),
+    _gui(gui),
+    _driveDbId(0),
+    _backButton(nullptr),
+    _driveIconLabel(nullptr),
+    _titleLabel(nullptr) {
     setContentsMargins(hMargin, 0, hMargin, vMargin);
     setSpacing(0);
 

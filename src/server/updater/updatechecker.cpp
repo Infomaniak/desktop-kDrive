@@ -36,7 +36,8 @@ ExitCode UpdateChecker::checkUpdateAvailability(UniqueId *id /*= nullptr*/) {
     LOG_INFO(Log::instance()->getLogger(), "Looking for new app version...");
 
     const std::function<void(UniqueId)> callback = std::bind_front(&UpdateChecker::versionInfoReceived, this);
-    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL, callback);
+    job->setAdditionalCallback(callback);
+    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
     return ExitCode::Ok;
 }
 
@@ -98,7 +99,7 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
         std::stringstream ss;
         ss << errorCode.c_str() << " - " << errorDescr;
         sentry::Handler::captureMessage(sentry::Level::Warning, "AbstractUpdater::checkUpdateAvailable", ss.str());
-        LOG_ERROR(Log::instance()->getLogger(), ss.str().c_str());
+        LOG_ERROR(Log::instance()->getLogger(), ss.str());
     } else if (getAppVersionJobPtr->exitInfo().code() != ExitCode::Ok) {
         LOG_ERROR(Log::instance()->getLogger(),
                   "Error in UpdateChecker::versionInfoReceived : " << getAppVersionJobPtr->exitInfo());

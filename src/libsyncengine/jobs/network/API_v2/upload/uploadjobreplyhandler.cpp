@@ -21,9 +21,12 @@
 
 namespace KDC {
 
-UploadJobReplyHandler::UploadJobReplyHandler(const SyncPath& absoluteFilePath, const SyncTime modtime) :
+UploadJobReplyHandler::UploadJobReplyHandler(const SyncPath &absoluteFilePath, bool isLink, const SyncTime creationTime,
+                                             SyncTime modificationTime) :
     _absoluteFilePath(absoluteFilePath),
-    _modtimeIn(modtime) {}
+    _isLink(isLink),
+    _creationTimeIn(creationTime),
+    _modificationTimeIn(modificationTime) {}
 
 bool UploadJobReplyHandler::extractData(const Poco::JSON::Object::Ptr jsonRes) {
     if (!jsonRes) return false;
@@ -37,19 +40,28 @@ bool UploadJobReplyHandler::extractData(const Poco::JSON::Object::Ptr jsonRes) {
     }
 
     if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeIdOut)) return false;
-    if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtimeOut)) return false;
+    if (!JsonParserUtility::extractValue(dataObj, createdAtKey, _creationTimeOut)) return false;
+    if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modificationTimeOut)) return false;
     if (!JsonParserUtility::extractValue(dataObj, sizeKey, _sizeOut)) return false;
 
-    if (_modtimeIn != _modtimeOut) {
-        // The backend refused the modification time. To avoid further EDIT operations, we apply the backend's time on local file.
-        bool exists = false;
-        if (Utility::setFileDates(_absoluteFilePath, 0, _modtimeOut, false, exists)) {
-            LOG_INFO(Log::instance()->getLogger(),
-                     "Modification time " << _modtimeIn << " refused by the backend. The modification time has been updated to "
-                                          << _modtimeOut << " on local file.");
-        } else {
-            LOG_WARN(Log::instance()->getLogger(), "Failed to change modification time on local file.");
+    if (_creationTimeIn != _creationTimeOut || _modificationTimeIn != _modificationTimeOut) {
+        // The backend refused the creation/modification time(s). To avoid further EDIT operations, we apply the backend's times
+        // on local file.
+        LOGW_INFO(Log::instance()->getLogger(), L"Applying backend creation/modification times."
+                                                        << L" Sent values: " << _creationTimeIn << L"/" << _modificationTimeIn
+                                                        << L" Returned values: " << _creationTimeOut << L"/"
+                                                        << _modificationTimeOut << L" for "
+                                                        << Utility::formatSyncPath(_absoluteFilePath));
+
+        if (const IoError ioError = IoHelper::setFileDates(_absoluteFilePath, _creationTimeOut, _modificationTimeOut, _isLink);
+            ioError != IoError::Success) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in IoHelper::setFileDates: " << Utility::formatIoError(_absoluteFilePath, ioError));
         }
+#ifdef __unix__
+        _creationTimeOut = _creationTimeIn; // Unix systems do not support setting creation time, so we keep the original value.
+#endif // __unix__
+
     }
     return true;
 }

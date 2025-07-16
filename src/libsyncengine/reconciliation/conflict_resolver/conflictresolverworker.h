@@ -55,9 +55,9 @@ class ConflictResolverWorker : public OperationProcessor {
 
         /**
          * @brief If we have a conflict between a local edit and a remote operation,
-         * and if the local edit is omitted (i.e., the local creation date is different from DB local creation date and that is the only difference),
-         * the local omited edit will be propagated during the conflict resolution sync. The remote file will be pulled on next
-         * sync.
+         * and if the local edit is omitted (i.e., the local creation date is different from DB local creation date and that is
+         * the only difference), the local omitted edit will be propagated during the conflict resolution sync. The remote file
+         * will be pulled on next sync.
          * @param conflict The conflict to be resolved.
          * @param continueSolving A boolean value indicating if we can generate more conflict resolution operations.
          * @return ExitCode indicating if the operation was successful.
@@ -79,7 +79,32 @@ class ConflictResolverWorker : public OperationProcessor {
          * @param continueSolving A boolean value indicating if we can generate more conflict resolution operations.
          * @return ExitCode indicating if the operation was successful.
          */
+
+        /**
+         * @brief Resolves a synchronization conflict between an edit and a delete operation (Edit vs Delete).
+         *
+         * This function handles cases where a file has been edited on one replica while being deleted on the other.
+         * It considers two main scenarios:
+         *
+         * 1. **The parent directory has not been deleted**:
+         *    - The edit operation takes precedence.
+         *    - The node is removed from the database, causing it to be detected as a new file in the next sync
+         *      cycle, effectively restoring it.
+         *
+         * 2. **The parent directory of the file has also been deleted**:
+         *    - If the edit happened locally and the delete happened remotely, the user's changes are preserved by moving the
+         *      modified file to a rescue folder.
+         *    - If the edit happened remotely, the file will be deleted anyway. The user can recover them from the kDrive
+         *      trash.
+         *    - In both cases, the delete operation takes precedence, as restoring the deleted hierarchy (similar to what is done
+         *      in case 1) could be expensive, undesired, and highly error-prone.
+         *
+         * @param conflict The conflict to be resolved.
+         * @param continueSolving A boolean value indicating if we can generate more conflict resolution operations.
+         * @return ExitCode indicating if the operation was successful.
+         */
         ExitCode generateEditDeleteConflictOperation(const Conflict &conflict, bool &continueSolving);
+
         /**
          * @brief If the moved item is local, revert the move operation. If the created item is local, rename it as a conflicted
          * file. Remote always wins.

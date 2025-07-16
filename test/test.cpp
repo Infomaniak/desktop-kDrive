@@ -28,8 +28,16 @@ int runTestSuite(const std::string &logFileName) {
     /* initialize random seed: */
     srand(static_cast<unsigned int>(time(NULL)));
 
-    // Disable sentry
-    KDC::sentry::Handler::init(KDC::AppType::None); // Disable sentry
+    // Enable sentry only if the environment variable KDRIVE_SENTRY_ENVIRONMENT is set.
+    bool isSentryEnvSet = false;
+    (void) KDC::CommonUtility::envVarValue("KDRIVE_SENTRY_ENVIRONMENT", isSentryEnvSet);
+    if (isSentryEnvSet) {
+        KDC::sentry::Handler::init(KDC::AppType::Test);
+    } else {
+        KDC::sentry::Handler::init(KDC::AppType::None); // Disable Sentry.
+    }
+
+
     // Setup log4cplus
     log4cplus::Initializer initializer;
     std::time_t now = std::time(nullptr);

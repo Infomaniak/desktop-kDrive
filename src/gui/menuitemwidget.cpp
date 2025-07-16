@@ -31,9 +31,20 @@ static const int boxVMargin = 10;
 static const int boxSpacing = 10;
 
 MenuItemWidget::MenuItemWidget(const QString &text, QWidget *parent, QMargins margins, bool hideIconLabels /*= false*/) :
-    QWidget(parent), _leftIconPath(QString()), _leftIconColor(QColor()), _leftIconSize(QSize()), _rightIconPath(QString()),
-    _rightIconColor(QColor()), _rightIconSize(QSize()), _defaultIconColor(QColor()), _checkIconColor(QColor()),
-    _defaultIconSize(QSize()), _submenuIconSize(QSize()), _leftIconLabel(nullptr), _rightIconLabel(nullptr), _checked(false),
+    QWidget(parent),
+    _leftIconPath(QString()),
+    _leftIconColor(QColor()),
+    _leftIconSize(QSize()),
+    _rightIconPath(QString()),
+    _rightIconColor(QColor()),
+    _rightIconSize(QSize()),
+    _defaultIconColor(QColor()),
+    _checkIconColor(QColor()),
+    _defaultIconSize(QSize()),
+    _submenuIconSize(QSize()),
+    _leftIconLabel(nullptr),
+    _rightIconLabel(nullptr),
+    _checked(false),
     _hasSubmenu(false) {
     if (margins.isNull()) {
         margins = QMargins(boxHMargin, boxVMargin, boxHMargin, boxVMargin);

@@ -20,9 +20,13 @@
 
 namespace KDC {
 
-AccountInfo::AccountInfo(int dbId, int userDbId) : _dbId(dbId), _userDbId(userDbId) {}
+AccountInfo::AccountInfo(int dbId, int userDbId) :
+    _dbId(dbId),
+    _userDbId(userDbId) {}
 
-AccountInfo::AccountInfo() : _dbId(0), _userDbId(0) {}
+AccountInfo::AccountInfo() :
+    _dbId(0),
+    _userDbId(0) {}
 
 QDataStream &operator>>(QDataStream &in, AccountInfo &accountInfo) {
     in >> accountInfo._dbId >> accountInfo._userDbId;

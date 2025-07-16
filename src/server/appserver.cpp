@@ -252,7 +252,7 @@ void AppServer::init() {
         addError(Error(errId(), ExitCode::SystemError, ExitCause::Unknown));
     }
 
-    // Log usefull infomation
+    // Log useful information
     logUsefulInformation();
 
     // Init ExclusionTemplateCache instance
@@ -401,7 +401,7 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "AppServer::cleanup");
 
     // Stop JobManager
-    JobManager::stop();
+    JobManager::instance()->stop();
     LOG_DEBUG(_logger, "JobManager stopped");
 
     // Stop SyncPals
@@ -421,7 +421,7 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "Vfs(s) stopped");
 
     // Clear JobManager
-    JobManager::clear();
+    JobManager::instance()->clear();
     LOG_DEBUG(_logger, "JobManager::clear() done");
 
     // Clear maps
@@ -2096,7 +2096,7 @@ void AppServer::startSyncsAndRetryOnError() {
     LOG_DEBUG(_logger, "Start syncs");
     if (const auto exitInfo = startSyncs(); !exitInfo) {
         LOG_WARN(_logger, "Error in startSyncsAndRetryOnError: " << exitInfo);
-        if (exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::SyncDirDoesntExist) {
+        if (exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::SyncDirAccessError) {
             LOG_DEBUG(_logger, "Retry to start syncs in " << START_SYNCPALS_RETRY_INTERVAL << " ms");
             QTimer::singleShot(START_SYNCPALS_RETRY_INTERVAL, this, [=, this]() { startSyncsAndRetryOnError(); });
         }
@@ -2178,7 +2178,8 @@ void AppServer::uploadLog(const bool includeArchivedLogs) {
             addError(Error(errId(), ExitCode::LogUploadFailed, exitInfo.cause()));
         }
     };
-    JobManager::instance()->queueAsyncJob(logUploadJob, Poco::Thread::PRIO_HIGH, jobResultCallback);
+    logUploadJob->setAdditionalCallback(jobResultCallback);
+    JobManager::instance()->queueAsyncJob(logUploadJob, Poco::Thread::PRIO_HIGH);
 }
 
 ExitInfo AppServer::checkIfSyncIsValid(const Sync &sync) {
@@ -2198,7 +2199,7 @@ ExitInfo AppServer::checkIfSyncIsValid(const Sync &sync) {
             LOGW_WARN(_logger, L"Nested syncs - (1) dbId=" << sync.dbId() << L", " << Utility::formatSyncPath(sync.localPath())
                                                            << L"; (2) dbId=" << sync_.dbId() << L", "
                                                            << Utility::formatSyncPath(sync_.localPath()));
-            return ExitCode::InvalidSync;
+            return {ExitCode::InvalidSync, ExitCause::SyncDirNestingError};
         }
     }
 
@@ -2653,8 +2654,10 @@ ExitInfo AppServer::tryCreateAndStartVfs(const Sync &sync) noexcept {
     const std::string liteSyncMsg = liteSyncActivationLogMessage(sync.virtualFileMode() != VirtualFileMode::Off, sync.dbId());
     LOG_INFO(_logger, liteSyncMsg);
     if (const auto exitInfo = createAndStartVfs(sync); !exitInfo) {
-        LOG_WARN(_logger, "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo << ", pausing.");
-        addError(Error(sync.dbId(), errId(), exitInfo));
+        if (exitInfo != ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccessError)) {
+            LOG_WARN(_logger, "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo << ", pausing.");
+            addError(Error(sync.dbId(), errId(), exitInfo));
+        }
         return exitInfo;
     }
 
@@ -2745,7 +2748,7 @@ ExitInfo AppServer::startSyncs(User &user) {
                     if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
                         continue;
                     }
-                    // Continue (ie. Init SyncPal but don't start it)
+                    // Continue (i.e. Init SyncPal but don't start it)
                     start = false;
                 }
 
@@ -2787,27 +2790,27 @@ ExitInfo AppServer::processMigratedSyncOnceConnected(int userDbId, int driveId, 
 
     // Set sync target nodeId for advanced sync
     if (!sync.targetPath().empty()) {
-        std::vector<SyncName> itemNames = Utility::splitPath(sync.targetPath());
-
         // Get root subfolders
-        QList<NodeInfo> list;
-        if (const ExitInfo exitInfo = ServerRequests::getSubFolders(sync.driveDbId(), "", list); !exitInfo) {
+        QList<NodeInfo> nodeInfoList;
+        if (const ExitInfo exitInfo = ServerRequests::getSubFolders(sync.driveDbId(), "", nodeInfoList); !exitInfo) {
             LOG_WARN(_logger, "Error in Requests::getSubFolders with driveDbId =" << sync.driveDbId() << " : " << exitInfo);
             return exitInfo;
         }
 
         NodeId nodeId;
-        while (!list.empty() && !itemNames.empty()) {
-            NodeInfo info = list.back();
-            list.pop_back();
-            if (QStr2SyncName(info.name()) == itemNames.back()) {
-                itemNames.pop_back();
+        auto itemNames = CommonUtility::splitSyncPath(sync.targetPath());
+        while (!nodeInfoList.empty() && !itemNames.empty()) {
+            NodeInfo info = nodeInfoList.back();
+            nodeInfoList.pop_back();
+            if (QStr2SyncName(info.name()) == itemNames.front()) {
+                itemNames.pop_front();
                 if (itemNames.empty()) {
                     nodeId = info.nodeId().toStdString();
                     break;
                 }
 
-                if (const ExitInfo exitInfo = ServerRequests::getSubFolders(sync.driveDbId(), info.nodeId(), list); !exitInfo) {
+                if (const ExitInfo exitInfo = ServerRequests::getSubFolders(sync.driveDbId(), info.nodeId(), nodeInfoList);
+                    !exitInfo) {
                     LOG_WARN(_logger, "Error in Requests::getSubFolders with driveDbId =" << sync.driveDbId() << " nodeId = "
                                                                                           << info.nodeId().toStdString() << " : "
                                                                                           << exitInfo);
@@ -2887,6 +2890,14 @@ void AppServer::logUsefulInformation() const {
     LOG_INFO(_logger, "kernel version : " << QSysInfo::kernelVersion().toStdString());
     LOG_INFO(_logger, "kernel type : " << QSysInfo::kernelType().toStdString());
     LOG_INFO(_logger, "locale: " << QLocale::system().name().toStdString());
+    LOG_INFO(_logger, "# of logical CPU core: " << std::thread::hardware_concurrency());
+
+    // Log cache path
+    SyncPath cachePath;
+    if (!IoHelper::cacheDirectoryPath(cachePath)) {
+        LOGW_WARN(_logger, L"Error getting cache directory");
+    }
+    LOGW_INFO(_logger, L"cache " << Utility::formatSyncPath(cachePath));
 
     // Log app ID
     AppStateValue appStateValue = "";
@@ -3358,7 +3369,7 @@ ExitCode AppServer::updateAllUsersInfo() {
             LOG_INFO(_logger,
                      "User: " << user.email() << " (id:" << user.userId() << ") is not used anymore. It will be removed.");
             ServerRequests::deleteUser(user.dbId());
-            sendUserRemoved(user.userId());
+            sendUserRemoved(user.dbId());
             continue;
         }
         if (user.keychainKey().empty()) {
@@ -3417,7 +3428,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, cons
         }
 
         if (!whiteList.empty()) {
-            // Set undecidedList (create or overwrite the possible existing list in DB)
+            // Set whiteList (create or overwrite the possible existing list in DB)
             if (const ExitInfo exitInfo = _syncPalMap[sync.dbId()]->setSyncIdSet(SyncNodeType::WhiteList, whiteList); !exitInfo) {
                 LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet for syncDbId=" << sync.dbId() << " : " << exitInfo);
                 return exitInfo;
@@ -3515,7 +3526,12 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 
     if (!exists) {
         LOGW_WARN(_logger, L"Sync localpath " << Utility::formatSyncPath(sync.localPath()) << L" doesn't exist.");
-        return {ExitCode::SystemError, ExitCause::SyncDirDoesntExist};
+        auto tmpSync(sync);
+        tmpSync.setPaused(true);
+        if (bool found = false; !ParmsDb::instance()->updateSync(tmpSync, found) || !found) {
+            LOG_WARN(_logger, "Failed to update sync status!");
+        }
+        return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
     }
 
 #ifdef __APPLE__
@@ -4130,7 +4146,8 @@ void AppServer::onUpdateSyncsProgress() {
     for (const auto &sync: syncList) {
         if (const auto syncPalIt = _syncPalMap.find(sync.dbId()); syncPalIt == _syncPalMap.end()) {
             // No SyncPal for this sync
-            sendSyncProgressInfo(sync.dbId(), SyncStatus::Error, SyncStep::None, SyncProgress());
+            sendSyncProgressInfo(sync.dbId(), sync.paused() ? SyncStatus::Paused : SyncStatus::Error, SyncStep::None,
+                                 SyncProgress());
         } else {
             if (!syncPalIt->second) {
                 assert(false);
@@ -4272,6 +4289,7 @@ void AppServer::onRestartSyncs() {
         if ((syncPtr->isPaused() || syncPtr->pauseAsked()) &&
             syncPtr->pauseTime() + std::chrono::minutes(1) < std::chrono::steady_clock::now()) {
             syncPtr->unpause();
+            Utility::restartFinderExtension();
         }
     }
 }

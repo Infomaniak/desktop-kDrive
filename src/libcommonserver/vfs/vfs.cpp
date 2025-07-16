@@ -32,7 +32,10 @@
 using namespace KDC;
 
 Vfs::Vfs(const VfsSetupParams &vfsSetupParams, QObject *parent) :
-    QObject(parent), _vfsSetupParams(vfsSetupParams), _extendedLog(false), _started(false) {}
+    QObject(parent),
+    _vfsSetupParams(vfsSetupParams),
+    _extendedLog(false),
+    _started(false) {}
 
 void Vfs::starVfsWorkers() {
     // Start hydration/dehydration workers
@@ -144,14 +147,17 @@ ExitInfo Vfs::checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist, con
             return {ExitCode::SystemError, ExitCause::NotFound, location};
         } else {
             LOGW_DEBUG(logger(), L"File already exists: " << Utility::formatSyncPath(itemPath));
-            return {ExitCode::SystemError, ExitCause::FileAlreadyExists, location};
+            return {ExitCode::SystemError, ExitCause::FileExists, location};
         }
     }
     return ExitCode::Ok;
 }
 
 VfsWorker::VfsWorker(Vfs *vfs, size_t type, size_t num, log4cplus::Logger logger) :
-    _vfs(vfs), _type(type), _num(num), _logger(logger) {}
+    _vfs(vfs),
+    _type(type),
+    _num(num),
+    _logger(logger) {}
 
 void VfsWorker::start() {
     LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " started");
@@ -192,9 +198,11 @@ void VfsWorker::start() {
     LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " ended");
 }
 
-VfsOff::VfsOff(QObject *parent) : Vfs(VfsSetupParams(), parent) {}
+VfsOff::VfsOff(QObject *parent) :
+    Vfs(VfsSetupParams(), parent) {}
 
-VfsOff::VfsOff(const VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {}
+VfsOff::VfsOff(const VfsSetupParams &vfsSetupParams, QObject *parent) :
+    Vfs(vfsSetupParams, parent) {}
 
 VfsOff::~VfsOff() = default;
 
@@ -204,7 +212,7 @@ ExitInfo VfsOff::forceStatus(const SyncPath &pathStd, const VfsStatus &vfsStatus
         return exitInfo;
     }
     // Update Finder
-    LOGW_DEBUG(logger(), L"Send status to the Finder extension for file/directory " << Path2WStr(fullPath).c_str());
+    LOGW_DEBUG(logger(), L"Send status to the Finder extension for file/directory " << Path2WStr(fullPath));
     QString status = vfsStatus.isSyncing ? "SYNC" : "OK";
     QString path = SyncName2QStr(pathStd.native());
     if (_vfsSetupParams.executeCommand)

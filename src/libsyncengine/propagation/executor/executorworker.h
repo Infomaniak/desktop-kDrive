@@ -116,17 +116,18 @@ class ExecutorWorker : public OperationProcessor {
 
         ExitInfo propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propagateChange);
         ExitInfo propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job, std::shared_ptr<Node> &node);
-        ExitInfo propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newLastModTime,
-                                            std::optional<SyncTime> newCreationTime, std::shared_ptr<Node> &node, int64_t newSize = -1);
-        ExitInfo propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newLastModTime,
-                                          std::optional<SyncTime> newCreationTime, std::shared_ptr<Node> &node, int64_t newSize = -1);
+        ExitInfo propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newCreationTime,
+                                            std::optional<SyncTime> newLastModificationTime, std::shared_ptr<Node> &node,
+                                            int64_t newSize = -1);
+        ExitInfo propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newCreationTime,
+                                          std::optional<SyncTime> newLastModificationTime, std::shared_ptr<Node> &node,
+                                          int64_t newSize = -1);
         ExitInfo propagateMoveToDbAndTree(SyncOpPtr syncOp);
         ExitInfo propagateDeleteToDbAndTree(SyncOpPtr syncOp);
         ExitInfo deleteFromDb(std::shared_ptr<Node> node);
 
         ExitInfo runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
         void cancelAllOngoingJobs();
-        void manageJobDependencies(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
 
         [[nodiscard]] bool isLiteSyncActivated() const { return _syncPal->vfsMode() != VirtualFileMode::Off; }
 
@@ -137,7 +138,7 @@ class ExecutorWorker : public OperationProcessor {
             return _syncPal->updateTree(syncOp->targetSide());
         }
 
-        void increaseErrorCount(SyncOpPtr syncOp, ExitInfo exitInfo = ExitInfo());
+        void increaseErrorCount(SyncOpPtr syncOp, ExitInfo exitInfo);
 
         ExitInfo getFileSize(const SyncPath &path, uint64_t &size);
 
@@ -152,6 +153,7 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo handleExecutorError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
         ExitInfo handleOpsLocalFileAccessError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
         ExitInfo handleOpsFileNotFound(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
+        ExitInfo handleOpsRemoteFileLocked(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
         ExitInfo handleOpsAlreadyExistError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
 
         ExitInfo removeDependentOps(SyncOpPtr syncOp);
@@ -160,7 +162,6 @@ class ExecutorWorker : public OperationProcessor {
         std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _ongoingJobs;
         TerminatedJobsQueue _terminatedJobs;
         std::unordered_map<UniqueId, SyncOpPtr> _jobToSyncOpMap;
-        std::unordered_map<UniqueId, UniqueId> _syncOpToJobMap;
 
         std::list<UniqueId> _opList;
         std::recursive_mutex _opListMutex;

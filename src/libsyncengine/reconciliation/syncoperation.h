@@ -71,9 +71,6 @@ class SyncOperation {
         bool operator==(const SyncOperation &other) const;
 
         [[nodiscard]] UniqueId id() const { return _id; }
-        [[nodiscard]] UniqueId parentId() const { return _parentId; }
-        void setParentId(const UniqueId newParentId) { _parentId = newParentId; }
-        [[nodiscard]] bool hasParentOp() const { return _parentId > -1; }
 
         [[nodiscard]] bool isBreakingCycleOp() const { return _isBreakingCycleOp; }
         void setIsBreakingCycleOp(const bool isBreakingCycleOp) { _isBreakingCycleOp = isBreakingCycleOp; }
@@ -112,7 +109,6 @@ class SyncOperation {
         SyncPath _relativeDestinationPath;
 
         UniqueId _id = -1;
-        UniqueId _parentId = -1; // ID of the parent operation i.e. the operation that must be completed before starting this one
 
         static UniqueId _nextId;
 };

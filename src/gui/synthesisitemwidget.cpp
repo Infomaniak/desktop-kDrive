@@ -33,7 +33,9 @@ static const int iconPositionX = 12;
 static const int iconWidth = 25;
 static const int iconHeight = 25;
 
-SynthesisItemWidget::SynthesisItemWidget(const SynchronizedItem &item, QWidget *parent) : QWidget(parent), _item(item) {}
+SynthesisItemWidget::SynthesisItemWidget(const SynchronizedItem &item, QWidget *parent) :
+    QWidget(parent),
+    _item(item) {}
 
 void SynthesisItemWidget::paintEvent(QPaintEvent *event) {
     Q_UNUSED(event);

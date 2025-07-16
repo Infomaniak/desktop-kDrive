@@ -31,8 +31,6 @@
 
 namespace KDC {
 
-bool setFileDates(const SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
-                  std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists);
 bool moveItemToTrash(const SyncPath &itemPath, std::wstring &errorStr);
 bool preventSleeping(bool enable);
 bool preventSleeping();
@@ -164,11 +162,6 @@ static bool cpuUsageByProcess_private(double &percent) {
     }
     percent = cpuUsage;
     return true;
-}
-
-static bool setFileDates_private(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
-                                 std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists) {
-    return KDC::setFileDates(filePath, creationDate, modificationDate, symlink, exists);
 }
 
 static std::string userName_private() {

@@ -24,7 +24,11 @@ namespace KDC {
 
 ISyncWorker::ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
                          const std::chrono::seconds &startDelay, bool testing /*= false*/) :
-    _logger(Log::instance()->getLogger()), _syncPal(syncPal), _testing(testing), _name(name), _shortName(shortName),
+    _logger(Log::instance()->getLogger()),
+    _syncPal(syncPal),
+    _testing(testing),
+    _name(name),
+    _shortName(shortName),
     _startDelay(startDelay) {}
 
 ISyncWorker::~ISyncWorker() {
@@ -32,17 +36,17 @@ ISyncWorker::~ISyncWorker() {
         ISyncWorker::stop();
     }
     waitForExit();
-    LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " destroyed");
+    LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " destroyed");
     log4cplus::threadCleanup();
 }
 
 void ISyncWorker::start() {
     if (_isRunning) {
-        LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " is already running");
+        LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " is already running");
         return;
     }
 
-    LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " start");
+    LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " start");
 
     init();
     _isRunning = true;
@@ -52,22 +56,22 @@ void ISyncWorker::start() {
 
 void ISyncWorker::stop() {
     if (!_isRunning) {
-        LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " is not running");
+        LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " is not running");
         return;
     }
 
     if (_stopAsked) {
-        LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " is already stoping");
+        LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " is already stoping");
         return;
     }
 
-    LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " stop");
+    LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " stop");
 
     _stopAsked = true;
 }
 
 void ISyncWorker::waitForExit() {
-    LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " wait for exit");
+    LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " wait for exit");
 
     if (_thread && _thread->joinable()) {
         _thread->join();
@@ -97,7 +101,7 @@ void ISyncWorker::sleepUntilStartDelay(bool &awakenByStop) {
 }
 
 void ISyncWorker::setDone(ExitCode exitCode) {
-    LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " has finished with code=" << exitCode << " cause=" << _exitCause);
+    LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " has finished with code=" << exitCode << " cause=" << _exitCause);
 
     if (exitCode != ExitCode::Ok) {
         _syncPal->addError(Error(_syncPal->syncDbId(), _shortName, exitCode, _exitCause));

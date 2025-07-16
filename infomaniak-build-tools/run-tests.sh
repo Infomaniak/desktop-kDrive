@@ -25,19 +25,20 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
+source ./build-macos/client/conan/build/Release/generators/conanrun.sh 
+
 testers=$(find . -type f -name "kDrive_test_*")
 errors=0
 failures=()
 
 for tester in ${testers[@]}; do
-
     echo -e "${YELLOW}---------- Running $(basename $tester) ----------${NC}"
     chmod +x $tester
     pushd $(dirname "$tester") 1>/dev/null
     ./$(basename "$tester")
 
     if [ $? -ne 0 ]; then
-        errors+=1
+        (( errors+=1 ))
         failures+=($(basename $tester))
         echo -e "${RED}---------- Failure: $(basename $tester) ----------${NC}";
     else

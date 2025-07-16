@@ -83,14 +83,14 @@ std::shared_ptr<Node> UpdateTree::getNodeByPath(const SyncPath &path) {
         return _rootNode;
     }
 
-    const std::vector<SyncName> itemNames = Utility::splitPath(path);
+    const auto &itemNames = CommonUtility::splitSyncPath(path);
     std::shared_ptr<Node> tmpNode = _rootNode;
 
-    for (auto nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
+    for (const auto &name: itemNames) {
         std::shared_ptr<Node> tmpChildNode = nullptr;
 
         for (const auto &[_, childNode]: tmpNode->children()) {
-            if (*nameIt == childNode->name()) {
+            if (name == childNode->name()) {
                 tmpChildNode = childNode;
                 break;
             }
@@ -110,15 +110,14 @@ std::shared_ptr<Node> UpdateTree::getNodeByPathNormalized(const SyncPath &path) 
         return _rootNode;
     }
 
-    const std::vector<SyncName> itemNames = Utility::splitPath(path);
+    const auto &itemNames = CommonUtility::splitSyncPath(path);
     std::shared_ptr<Node> tmpNode = _rootNode;
 
-    for (auto nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
+    for (const auto &name: itemNames) {
         std::shared_ptr<Node> tmpChildNode = nullptr;
         SyncName normalizedSyncName;
-        if (!Utility::normalizedSyncName(*nameIt, normalizedSyncName)) {
-            LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(*nameIt));
+        if (!Utility::normalizedSyncName(name, normalizedSyncName)) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(name));
             return nullptr;
         }
 
@@ -215,6 +214,11 @@ bool UpdateTree::updateNodeId(std::shared_ptr<Node> node, const NodeId &newId) {
 }
 
 void UpdateTree::clear() {
+    std::unordered_map<NodeId, std::shared_ptr<Node>>::iterator it = _nodes.begin();
+    while (it != _nodes.end()) {
+        it->second->clear();
+        it++;
+    }
     _nodes.clear();
     _previousIdSet.clear();
     init();
@@ -227,12 +231,12 @@ void UpdateTree::drawUpdateTree() {
 
     SyncName treeStr;
     drawUpdateTreeRow(rootNode(), treeStr);
-    LOGW_INFO(Log::instance()->getLogger(), _side << L" update tree:\n" << SyncName2WStr(treeStr).c_str());
+    LOGW_INFO(Log::instance()->getLogger(), _side << L" update tree:\n" << SyncName2WStr(treeStr));
 }
 
 void UpdateTree::drawUpdateTreeRow(const std::shared_ptr<Node> node, SyncName &treeStr, uint64_t depth /*= 0*/) {
     for (uint64_t i = 0; i < depth; i++) {
-        treeStr += Str(" ");
+        treeStr += Str("\t");
     }
     treeStr += Str("'") + node->name() + Str("'");
     treeStr += Str("[");

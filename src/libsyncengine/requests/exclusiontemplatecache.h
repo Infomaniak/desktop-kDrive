@@ -31,6 +31,7 @@ namespace KDC {
 class SYNCENGINE_EXPORT ExclusionTemplateCache {
     public:
         static std::shared_ptr<ExclusionTemplateCache> instance();
+        static void reset();
 
         ExclusionTemplateCache(ExclusionTemplateCache const &) = delete;
 
@@ -47,6 +48,7 @@ class SYNCENGINE_EXPORT ExclusionTemplateCache {
         bool isExcluded(const SyncPath &relativePath, bool &isWarning) noexcept;
 
     private:
+        friend class TestExclusionTemplateCache;
         static std::shared_ptr<ExclusionTemplateCache> _instance;
         std::vector<ExclusionTemplate> _undeletedExclusionTemplates;
         std::vector<ExclusionTemplate> _defExclusionTemplates;
@@ -62,6 +64,8 @@ class SYNCENGINE_EXPORT ExclusionTemplateCache {
         void updateRegexPatterns();
 
         void escapeRegexSpecialChar(std::string &in);
+
+        void addRegexForAllNormalizationForms(std::string regexPattern, ExclusionTemplate exclusionTemplate);
 };
 
 } // namespace KDC

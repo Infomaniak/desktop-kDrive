@@ -26,43 +26,45 @@ export TEAM_IDENTIFIER="864VDCS2QY"
 export APP_DOMAIN="com.infomaniak.drive.desktopclient"
 export SIGN_IDENTITY="Developer ID Application: Infomaniak Network SA (864VDCS2QY)"
 export INSTALLER_SIGN_IDENTITY="Developer ID Installer: Infomaniak Network SA (864VDCS2QY)"
-export QTDIR="$HOME/Qt/6.2.3/macos"
+export QT_DIR="$HOME/Qt/6.2.3/macos"
 
 # Uncomment to build for testing
 # export KDRIVE_DEBUG=1
 
 export MACOSX_DEPLOYMENT_TARGET="10.15"
 export CODE_SIGN_INJECT_BASE_ENTITLEMENTS="NO"
-SRCDIR="${1-$PWD}"
-APPNAME="kDrive"
+src_dir="${1-$PWD}"
+app_name="kDrive"
 
 # define Qt6 directory
-QTDIR="${QTDIR-$HOME/Qt/6.2.3/macos}"
-export PATH=$QTDIR/bin:$PATH
+QT_DIR="${QT_DIR-$HOME/Qt/6.2.3/macos}"
+export PATH="$QT_DIR/bin:$PATH"
 
 # Set Infomaniak Theme
-KDRIVE_DIR="$SRCDIR/infomaniak"
+kdrive_dir="$src_dir/infomaniak"
 
 # Path to Sparkle installation
-SPARKLE_DIR="$HOME/Library/Frameworks"
+sparkle_dir="$HOME/Library/Frameworks"
 
 # Set build dir
-BUILDDIR="$PWD/build-macos/client"
+build_dir="$PWD/build-macos/client"
+
+
+# Set conan dir
+conan_folder="$build_dir/conan"
+mkdir -p "$conan_folder"
 
 # Set install dir
-INSTALLDIR="$PWD/build-macos/client/install"
-
-# Create install dir if needed
-mkdir -p build-macos/client
-mkdir -p build-macos/client/install
+install_dir="$PWD/build-macos/client/install"
+mkdir -p "$install_dir"
 
 # Backup the existing .app if there is one
-if [ -d "$INSTALLDIR/$APPNAME-old.app" ]; then
-	rm -rf "$INSTALLDIR/$APPNAME-old.app"
+if [ -d "$install_dir/$app_name-old.app" ]; then
+	rm -rf "$install_dir/$app_name-old.app"
 fi
 
-if [ -d "$INSTALLDIR/$APPNAME.app" ]; then
-	cp -a "$INSTALLDIR/$APPNAME.app" "$INSTALLDIR/$APPNAME-old.app"
+if [ -d "$install_dir/$app_name.app" ]; then
+	cp -a "$install_dir/$app_name.app" "$install_dir/$app_name-old.app"
 fi
 
 # Prepare additional cmake arguments
@@ -72,22 +74,32 @@ fi
 
 CMAKE_PARAMS=(-DKDRIVE_VERSION_BUILD="$KDRIVE_VERSION_BUILD")
 
-if [ -n "$TEAM_IDENTIFIER" -a -n "$SIGN_IDENTITY" ]; then
+if [ -n "$TEAM_IDENTIFIER" ] && [ -n "$SIGN_IDENTITY" ]; then
 	CMAKE_PARAMS+=(-DSOCKETAPI_TEAM_IDENTIFIER_PREFIX="$TEAM_IDENTIFIER.")
 fi
 
+bash infomaniak-build-tools/conan/build_dependencies.sh Release --output-dir="$conan_folder"
+
+conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
+
+if [ ! -f "$conan_toolchain_file" ]; then
+  echo "Conan toolchain file not found: $conan_toolchain_file"
+  exit 1
+fi
+
 # Configure
-pushd "$BUILDDIR"
+pushd "$build_dir"
 
 cmake \
 	-DCMAKE_OSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" \
-	-DCMAKE_INSTALL_PREFIX="$INSTALLDIR" \
+	-DCMAKE_INSTALL_PREFIX="$install_dir" \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DSPARKLE_LIBRARY="$SPARKLE_DIR/Sparkle.framework" \
-	-DKDRIVE_THEME_DIR="$KDRIVE_DIR" \
+	-DSPARKLE_LIBRARY="$sparkle_dir/Sparkle.framework" \
+	-DKDRIVE_THEME_DIR="$kdrive_dir" \
 	-DBUILD_UNIT_TESTS=0 \
+	-DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
 	"${CMAKE_PARAMS[@]}" \
-	"$SRCDIR"
+	"$src_dir"
 
 # Build
 make -j6 all install
@@ -99,35 +111,35 @@ dsymutil ./bin/kDrive_client -o ./install/kDrive_client.dSYM
 popd
 
 # Sign
-SIGN_FILES=()
+sign_files=()
 
-if [ -n "$TEAM_IDENTIFIER" -a -n "$APP_DOMAIN" -a -n "$SIGN_IDENTITY" ]; then
-	$SRCDIR/admin/osx/sign_app.sh "$INSTALLDIR/$APPNAME.app" "$SIGN_IDENTITY" "$TEAM_IDENTIFIER" "$APP_DOMAIN"
-	SIGN_FILES+=("$INSTALLDIR/$APPNAME.app")
+if [ -n "$TEAM_IDENTIFIER" ] && [ -n "$APP_DOMAIN" ] && [ -n "$SIGN_IDENTITY" ]; then
+	"$src_dir/admin/osx/sign_app.sh" "$install_dir/$app_name.app" "$SIGN_IDENTITY" "$TEAM_IDENTIFIER" "$APP_DOMAIN"
+	sign_files+=("$install_dir/$app_name.app")
 fi
 
 if [ -n "$INSTALLER_SIGN_IDENTITY" ]; then
-	# xcrun stapler staple $PACKAGE_FILE
-	$BUILDDIR/admin/osx/create_mac.sh "$INSTALLDIR" "$BUILDDIR" "$INSTALLER_SIGN_IDENTITY"
-	PACKAGE_FILE=$(grep "installer=" $BUILDDIR/admin/osx/create_mac.sh | sed -E 's/installer="([^"]+)"/\1/')
-	SIGN_FILES+=("$INSTALLDIR/$PACKAGE_FILE.pkg")
+	# xcrun stapler staple $package_file
+	"$build_dir/admin/osx/create_mac.sh" "$install_dir" "$build_dir" "$INSTALLER_SIGN_IDENTITY"
+	package_file=$(grep "installer=" "$build_dir/admin/osx/create_mac.sh" | sed -E 's/installer="([^"]+)"/\1/')
+	sign_files+=("$install_dir/$package_file.pkg")
 else
-	$BUILDDIR/admin/osx/create_mac.sh "$INSTALLDIR" "$BUILDDIR"
+	"$build_dir/admin/osx/create_mac.sh" "$install_dir" "$build_dir"
 fi
 
 # Notarise
-if [ -n "$SIGN_FILES" ]; then
-	rm -rf $INSTALLDIR/notorization $INSTALLDIR/notarization/
-	mkdir -p $INSTALLDIR/notarization
+if [ -n "$sign_files" ]; then
+	rm -rf "$install_dir/notorization" "$install_dir/notarization/"
+	mkdir -p "$install_dir/notarization"
 
-	for file in "${SIGN_FILES[@]}"; do
-		cp -a "$file" "$INSTALLDIR/notarization"
+	for file in "${sign_files[@]}"; do
+		cp -a "$file" "$install_dir/notarization"
 	done
 
 	# Prepare for notarization
 	echo "Preparing for notarization"
-	/usr/bin/ditto -c -k --keepParent "$INSTALLDIR/notarization" "$INSTALLDIR/InfomaniakDrive.zip"
+	/usr/bin/ditto -c -k --keepParent "$install_dir/notarization" "$install_dir/InfomaniakDrive.zip"
 	# Send to notarization
 	echo "Sending notarization request"
-	xcrun notarytool submit --apple-id "$ALTOOL_USERNAME" --keychain-profile "notarytool" "$INSTALLDIR/InfomaniakDrive.zip" --progress --wait
+	xcrun notarytool submit --apple-id "$ALTOOL_USERNAME" --keychain-profile "notarytool" "$install_dir/InfomaniakDrive.zip" --progress --wait
 fi

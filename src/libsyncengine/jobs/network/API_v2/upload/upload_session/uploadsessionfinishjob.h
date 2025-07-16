@@ -27,15 +27,18 @@ class UploadSessionFinishJob : public AbstractUploadSessionJob {
     public:
         UploadSessionFinishJob(const std::shared_ptr<Vfs> &vfs, UploadSessionType uploadType, int driveDbId,
                                const SyncPath &absoluteFilePath, const std::string &sessionToken,
-                               const std::string &totalChunkHash, uint64_t totalChunks, SyncTime modtime);
+                               const std::string &totalChunkHash, uint64_t totalChunks, SyncTime creationTime,
+                               SyncTime modificationTime);
 
         UploadSessionFinishJob(UploadSessionType uploadType, const SyncPath &absoluteFilePath, const std::string &sessionToken,
-                               const std::string &totalChunkHash, uint64_t totalChunks, SyncTime modtime);
+                               const std::string &totalChunkHash, uint64_t totalChunks, SyncTime creationTime,
+                               SyncTime modificationTime);
 
         ~UploadSessionFinishJob() override;
 
         const NodeId &nodeId() const { return _nodeId; }
-        SyncTime modtime() const { return _modtimeOut; }
+        SyncTime creationTime() const { return _creationTimeOut; }
+        SyncTime modificationTime() const { return _modificationTimeOut; }
         int64_t size() const { return _sizeOut; }
 
     protected:
@@ -48,10 +51,12 @@ class UploadSessionFinishJob : public AbstractUploadSessionJob {
 
         std::string _totalChunkHash;
         uint64_t _totalChunks = 0;
-        SyncTime _modtimeIn = 0;
+        const SyncTime _creationTimeIn = 0;
+        const SyncTime _modificationTimeIn = 0;
 
         NodeId _nodeId;
-        SyncTime _modtimeOut = 0;
+        SyncTime _creationTimeOut = 0;
+        SyncTime _modificationTimeOut = 0;
         int64_t _sizeOut = 0;
         const std::shared_ptr<Vfs> _vfs;
 };
