@@ -20,7 +20,6 @@
 #include "config.h"
 #include "version.h"
 #include "libcommon/utility/logiffail.h"
-#include "common/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommon/theme/theme.h"
@@ -100,9 +99,9 @@ SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>
     _vfsMap(vfsMap) {
     QString socketPath;
 
-    if (OldUtility::isWindows()) {
-        socketPath = QString(R"(\\.\pipe\%1-%2)").arg(APPLICATION_SHORTNAME, Utility::userName().c_str());
-    } else if (OldUtility::isMac()) {
+    if (CommonUtility::isWindows()) {
+        socketPath = QString(R"(\\.\pipe\%1-%2)").arg(APPLICATION_NAME, Utility::userName().c_str());
+    } else if (CommonUtility::isMac()) {
         socketPath = SOCKETAPI_TEAM_IDENTIFIER_PREFIX APPLICATION_REV_DOMAIN ".socketApi";
 #ifdef Q_OS_MAC
         // Tell Finder to use the Extension (checking it from System Preferences -> Extensions)
@@ -119,9 +118,9 @@ SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>
             system(cmd.toLocal8Bit());
         }
 #endif
-    } else if (OldUtility::isLinux() || OldUtility::isBSD()) {
+    } else if (CommonUtility::isLinux()) {
         const QString runtimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
-        socketPath = runtimeDir + "/" + KDC::Theme::instance()->appName() + "/socket";
+        socketPath = runtimeDir + "/" + QString::fromStdString(KDC::Theme::instance()->appName()) + "/socket";
     } else {
         LOG_WARN(KDC::Log::instance()->getLogger(), "An unexpected system detected, this probably won't work.");
     }
@@ -763,7 +762,7 @@ void SocketApi::openPrivateLink(const QString &link) {
 
 void SocketApi::command_GET_STRINGS(const QString &argument, SocketListener *listener) {
     static std::array<std::pair<const char *, QString>, 2> strings{{
-            {"CONTEXT_MENU_TITLE", KDC::Theme::instance()->appNameGUI()},
+            {"CONTEXT_MENU_TITLE", QString::fromStdString(KDC::Theme::instance()->appName())},
             {"COPY_PRIVATE_LINK_MENU_TITLE", tr("Copy private share link")},
     }};
     listener->sendMessage(QString("GET_STRINGS%1BEGIN").arg(MSG_CDE_SEPARATOR));
@@ -1173,7 +1172,7 @@ void SocketApi::command_GET_ALL_MENU_ITEMS(const QString &argument, SocketListen
 
     QString responseStr;
     QTextStream response(&responseStr);
-    response << msgId << MSG_CDE_SEPARATOR << KDC::Theme::instance()->appNameGUI();
+    response << msgId << MSG_CDE_SEPARATOR << QString::fromStdString(Theme::instance()->appName());
 
     // Find the common sync
     KDC::Sync sync;

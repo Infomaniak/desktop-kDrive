@@ -4,8 +4,6 @@ find_package(Qt6)
 add_library("${libcommonserver_NAME}_vfs_mac" SHARED
         vfs_mac.h vfs_mac.cpp
         litesyncextconnector.h litesyncextconnector.mm
-        ../../../common/filepermissionholder.h ../../../common/filepermissionholder.cpp
-        ../../../common/filesystembase.h ../../../common/filesystembase.cpp
 )
 
 set_property(SOURCE litesyncextconnector.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")

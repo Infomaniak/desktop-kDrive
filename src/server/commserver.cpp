@@ -17,7 +17,6 @@
  */
 
 #include "commserver.h"
-#include "common/utility.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"

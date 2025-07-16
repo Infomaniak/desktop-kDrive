@@ -34,7 +34,6 @@ set(server_SRCS
 )
 
 if(APPLE)
-    list(APPEND server_SRCS ${server_srcs_path}/../common/utility_mac.cpp)
     list(APPEND server_SRCS ${server_srcs_path}/socketapisocket_mac.mm)
     set_property(SOURCE ${server_srcs_path}/socketapisocket_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
@@ -49,9 +48,7 @@ if(APPLE)
         list(APPEND updater_DEPS ${SPARKLE_LIBRARY})
     endif()
 elseif(WIN32)
-    list(APPEND server_SRCS ${server_srcs_path}/updater/windowsupdater.h ${server_srcs_path}/updater/windowsupdater.cpp ${server_srcs_path}/../common/utility_win.cpp)
-else()
-    list(APPEND server_SRCS ${server_srcs_path}/updater/linuxupdater.h ${server_srcs_path}/updater/linuxupdater.cpp ${server_srcs_path}/../common/utility_linux.cpp)
+    list(APPEND server_SRCS ${server_srcs_path}/updater/windowsupdater.h ${server_srcs_path}/updater/windowsupdater.cpp)
 endif()
 
 set(3rdparty_SRC

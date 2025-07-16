@@ -17,7 +17,6 @@
  */
 
 #include "commclient.h"
-#include "common/utility.h"
 #include "libcommon/utility/utility.h"
 
 #include <QHostAddress>

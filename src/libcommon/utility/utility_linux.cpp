@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "utility.h"
+
 #include <QStandardPaths>
 
 #include <filesystem>
@@ -34,35 +36,35 @@
 
 namespace KDC {
 
-static SyncPath getAppSupportDir_private() {
+SyncPath CommonUtility::getGenericAppSupportDir() {
     const char *homeDir;
     if ((homeDir = getenv("HOME")) == NULL) {
         homeDir = getpwuid(getuid())->pw_dir;
     }
-    std::filesystem::path homePath(homeDir);
+    SyncPath homePath(homeDir);
 
     std::string appSupportName(".config");
-    std::filesystem::path appSupportPath(homePath / appSupportName);
+    SyncPath appSupportPath(homePath / appSupportName);
 
     std::error_code ec;
     if (!std::filesystem::exists(appSupportPath, ec)) {
         if (ec.value() != 0) {
-            return std::string();
+            return {};
         }
 
         if (!std::filesystem::create_directory(appSupportPath, ec)) {
-            return std::string();
+            return {};
         }
     }
 
-    return appSupportPath.string();
+    return appSupportPath;
 }
 
-static std::string getAppDir_private() {
-    return "";
+SyncPath CommonUtility::getAppDir() {
+    return {};
 }
 
-static inline bool hasDarkSystray_private() {
+bool CommonUtility::hasDarkSystray() {
     return true;
 }
 

@@ -51,7 +51,7 @@ std::wstring CommunicationSocket::DefaultPipePath() {
 
 #define WIDEN_(exp) L##exp
 #define WIDEN(exp) WIDEN_(exp)
-    pipename += WIDEN(APPLICATION_SHORTNAME);
+    pipename += WIDEN(APPLICATION_NAME);
 #undef WIDEN
 #undef WIDEN_
 
@@ -60,7 +60,8 @@ std::wstring CommunicationSocket::DefaultPipePath() {
     return pipename;
 }
 
-CommunicationSocket::CommunicationSocket() : _pipe(INVALID_HANDLE_VALUE) {}
+CommunicationSocket::CommunicationSocket() :
+    _pipe(INVALID_HANDLE_VALUE) {}
 
 CommunicationSocket::~CommunicationSocket() {
     Close();
@@ -76,7 +77,7 @@ bool CommunicationSocket::Close() {
 }
 
 
-bool CommunicationSocket::Connect(const std::wstring& pipename) {
+bool CommunicationSocket::Connect(const std::wstring &pipename) {
     _pipe = CreateFile(pipename.data(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
 
     if (_pipe == INVALID_HANDLE_VALUE) {
@@ -86,7 +87,7 @@ bool CommunicationSocket::Connect(const std::wstring& pipename) {
     return true;
 }
 
-bool CommunicationSocket::SendMsg(const wchar_t* message) const {
+bool CommunicationSocket::SendMsg(const wchar_t *message) const {
     auto utf8_msg = StringUtil::toUtf8(message);
 
     DWORD numBytesWritten = 0;
@@ -95,13 +96,13 @@ bool CommunicationSocket::SendMsg(const wchar_t* message) const {
     if (result) {
         return true;
     } else {
-        const_cast<CommunicationSocket*>(this)->Close();
+        const_cast<CommunicationSocket *>(this)->Close();
 
         return false;
     }
 }
 
-bool CommunicationSocket::ReadLine(wstring* response) {
+bool CommunicationSocket::ReadLine(wstring *response) {
     if (!response) {
         return false;
     }

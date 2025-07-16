@@ -23,7 +23,6 @@
 #include "libcommonserver/utility/utility.h"
 
 #include "libcommon/utility/utility.h"
-#include "common/utility.h"
 
 #if defined(KD_MACOS) || defined(KD_LINUX)
 #include <unistd.h>
@@ -209,7 +208,8 @@ bool DownloadJob::handleResponse(std::istream &is) {
     bool isLink = false;
     std::string linkData;
     if (mimeType == mimeTypeSymlink || mimeType == mimeTypeSymlinkFolder || mimeType == mimeTypeHardlink ||
-        (mimeType == mimeTypeFinderAlias && OldUtility::isMac()) || (mimeType == mimeTypeJunction && OldUtility::isWindows())) {
+        (mimeType == mimeTypeFinderAlias && CommonUtility::isMac()) ||
+        (mimeType == mimeTypeJunction && CommonUtility::isWindows())) {
         // Read link data
         getStringFromStream(is, linkData);
         isLink = true;
