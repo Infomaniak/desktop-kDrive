@@ -1132,6 +1132,30 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersi
         return false;
     }
 
+    LOG_INFO(_logger, "Columns upgrade in " << dbType() << " successfully completed.");
+
+    return true;
+}
+
+bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersion) {
+    LOG_INFO(_logger, "Apply generic upgrade fixes to " << dbType() << " DB version " << fromVersion);
+    if (!upgradeTables()) {
+        LOG_WARN(_logger, "Failed to insert missing columns.");
+        return false;
+    }
+
+    if (CommonUtility::isVersionLower(fromVersion, toVersion)) {
+        LOG_INFO(_logger, "Upgrade " << dbType() << " DB from " << fromVersion << " to " << toVersion);
+        if (!insertUserTemplateNormalizations(fromVersion)) {
+            LOG_WARN(_logger, "Insertion of the normalizations of user exclusion file patterns has failed.");
+            return false;
+        }
+#ifdef _WIN32
+        if (!replaceShortDbPathsWithLongPaths()) {
+            LOG_WARN(_logger, "Failed to replace short DB paths with long ones.");
+        }
+#endif
+    }
     LOG_INFO(_logger, "Upgrade " << dbType() << " successfully completed.");
 
     return true;
@@ -3101,7 +3125,7 @@ bool ParmsDb::selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync
 
 #if defined(KD_WINDOWS)
 bool ParmsDb::replaceShortDbPathsWithLongPaths() {
-    LOG_INFO(_logger, "Replacing short DB path names wiht long ones in sync table.")
+    LOG_INFO(_logger, "Replacing short DB path names with long ones in sync table.")
 
     if (!createAndPrepareRequest(SELECT_ALL_SYNCS_REQUEST_ID, SELECT_ALL_SYNCS_REQUEST)) return false;
     std::vector<Sync> syncList;
