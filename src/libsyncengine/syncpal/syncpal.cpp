@@ -718,7 +718,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     (void) _directDownloadJobsMap.try_emplace(job->jobId(), job);
     (void) _syncPathToDownloadJobMap.try_emplace(absoluteLocalPath, job->jobId());
     if (!parentFolderPath.empty() && _folderHydrationInProgress.contains(parentFolderPath)) {
-        _folderHydrationInProgress[parentFolderPath].emplace(absoluteLocalPath);
+        (void) _folderHydrationInProgress[parentFolderPath].emplace(absoluteLocalPath);
     }
 
     return ExitCode::Ok;
