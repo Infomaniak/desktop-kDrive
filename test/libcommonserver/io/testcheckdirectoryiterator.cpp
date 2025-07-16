@@ -34,7 +34,6 @@ void TestIo::testCheckDirectoryIterator() {
     testCheckDirectoryIteratorUnexpectedDelete();
     testCheckDirectoryIteratorPermission();
     testCheckDirectoryPermissionLost();
-    testHasNext();
 }
 
 void TestIo::testCheckDirectoryIteratorNonExistingPath() {
@@ -74,7 +73,7 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
 
     // Check that the directory iterator is valid when the path is an empty directory and return EOF
     {
-        IoError error;
+        IoError error = IoError::Unknown;
 
         IoHelper::DirectoryIterator it(emptyDir, false, error);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, error);
@@ -321,25 +320,6 @@ void TestIo::testCheckDirectoryPermissionLost() {
 
         CPPUNIT_ASSERT(result /*result = it.next(entry, endOfDirectory, ioError);*/);
         CPPUNIT_ASSERT(endOfDirectory);
-    }
-}
-
-void TestIo::testHasNext() {
-    LocalTemporaryDirectory tempDir;
-    {
-        IoError ioError = IoError::Success;
-        IoHelper::DirectoryIterator it(tempDir.path(), true, ioError);
-        CPPUNIT_ASSERT(!it.hasNext());
-    }
-    testhelpers::generateOrEditTestFile(tempDir.path() / "testHasNext");
-    {
-        IoError ioError = IoError::Success;
-        IoHelper::DirectoryIterator it(tempDir.path(), true, ioError);
-        CPPUNIT_ASSERT(it.hasNext());
-        DirectoryEntry entry;
-        bool endOfDirectory = false;
-        CPPUNIT_ASSERT(it.next(entry, endOfDirectory, ioError));
-        CPPUNIT_ASSERT(!it.hasNext());
     }
 }
 

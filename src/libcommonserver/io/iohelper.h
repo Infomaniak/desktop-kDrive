@@ -69,7 +69,6 @@ struct IoHelper {
                   \return true if no error occurred, false otherwise.
                 */
                 bool next(DirectoryEntry &nextEntry, bool &endOfDirectory, IoError &ioError);
-                bool hasNext();
                 void disableRecursionPending();
 
             private:
@@ -274,14 +273,6 @@ struct IoHelper {
          false.
          */
         static bool checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoError &ioError) noexcept;
-
-        /**
-         * @brief Check whether a directory is empty.
-         * @param path Absolute local path to the directory.
-         * @param isEmpty `true` if the directory is empty. Ignore this value in case of error.
-         * @return IoError::Success in case of success, a dedicated IoError in case of error.
-         */
-        static IoError checkIfDirectoryIsEmpty(const SyncPath &absolutePath, bool &isEmpty) noexcept;
 
         //! Create a directory located under the specified path.
         /*!
