@@ -610,7 +610,7 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
     const std::lock_guard lock(_directDownloadJobsMapMutex);
     auto directDownloadJobsMapIt = _directDownloadJobsMap.find(jobId);
     if (directDownloadJobsMapIt == _directDownloadJobsMap.end()) {
-        // No need to send a warning, the job might have been cancelled and therefor not in the map anymore
+        // No need to send a warning, the job might have been canceled, and therefor not in the map anymore
         return;
     }
 
@@ -628,22 +628,24 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
         vfs()->cancelHydrate(downloadJob->localPath());
     }
 
-    _syncPathToDownloadJobMap.erase(downloadJob->affectedFilePath());
+    (void) _syncPathToDownloadJobMap.erase(downloadJob->affectedFilePath());
     (void) _directDownloadJobsMap.erase(directDownloadJobsMapIt);
-    for (auto it = _bundleDownloadMap.begin(); it != _bundleDownloadMap.end();) {
-        const auto &bundlePath = it->first;
+    for (auto it = _folderHydrationInProgress.begin(); it != _folderHydrationInProgress.end();) {
+        const auto &parentFolderPath = it->first;
         if (it->second.erase(downloadJob->affectedFilePath())) {
-            LOGW_INFO(_logger, L"Download item: " << Utility::formatSyncPath(downloadJob->affectedFilePath()) << L" from bundle "
-                                                  << Utility::formatSyncPath(bundlePath) << L" terminated.");
+            LOGW_INFO(_logger, L"Download of item " << Utility::formatSyncPath(downloadJob->affectedFilePath())
+                                                    << L" from parent folder " << Utility::formatSyncPath(parentFolderPath)
+                                                    << L" terminated.");
         }
         if (it->second.empty()) {
-            if (const auto exitInfo = _vfs->updateFetchStatus(bundlePath, "OK"); !exitInfo) {
+            // Notify the LiteSync extension that the hydration of the folder is terminated.
+            if (const auto exitInfo = _vfs->updateFetchStatus(parentFolderPath, "OK"); !exitInfo) {
                 LOGW_WARN(_logger,
-                          L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(bundlePath) << L" : " << exitInfo);
+                          L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(parentFolderPath) << L" : " << exitInfo);
             } else {
-                LOGW_INFO(_logger, L"Download of bundle: " << Utility::formatSyncPath(bundlePath) << L" terminated.");
+                LOGW_INFO(_logger, L"Hydration of folder: " << Utility::formatSyncPath(parentFolderPath) << L" terminated.");
             }
-            it = _bundleDownloadMap.erase(it);
+            it = _folderHydrationInProgress.erase(it);
             continue;
         }
         it++;
@@ -659,7 +661,8 @@ void SyncPal::resetSnapshotInvalidationCounters() {
     _remoteFSObserverWorker->resetInvalidateCounter();
 }
 
-ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath) {
+ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath,
+                                 const SyncPath &parentFolderPath) {
     std::optional<NodeId> localNodeId = std::nullopt;
     bool found = false;
     if (!_syncDb->id(ReplicaSide::Local, relativePath, localNodeId, found)) {
@@ -707,48 +710,24 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     }
 
     // Queue job
-    std::function<void(UniqueId)> callback = std::bind(&SyncPal::directDownloadCallback, this, std::placeholders::_1);
+    std::function<void(UniqueId)> callback = std::bind_front(&SyncPal::directDownloadCallback, this);
     job->setAdditionalCallback(callback);
     JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGH);
 
     const std::lock_guard lock(_directDownloadJobsMapMutex);
-    _directDownloadJobsMap.insert({job->jobId(), job});
-    _syncPathToDownloadJobMap.insert({absoluteLocalPath, job->jobId()});
+    (void) _directDownloadJobsMap.try_emplace(job->jobId(), job);
+    (void) _syncPathToDownloadJobMap.try_emplace(absoluteLocalPath, job->jobId());
+    if (!parentFolderPath.empty() && _folderHydrationInProgress.contains(parentFolderPath)) {
+        _folderHydrationInProgress[parentFolderPath].emplace(absoluteLocalPath);
+    }
 
     return ExitCode::Ok;
 }
 
-void SyncPal::addBundleDownload(const SyncPath &absoluteLocalPath) {
-    std::unordered_set<SyncPath, PathHashFunction> absoluteLocalPathSet;
-
-    IoError ioError = IoError::Unknown;
-    IoHelper::DirectoryIterator dirIt(absoluteLocalPath, true, ioError);
-    bool endOfDir = false;
-    DirectoryEntry entry;
-    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
-        if (entry.is_directory()) {
-            // Status of empty directories needs to be handled separately.
-            bool isEmpty = false;
-            ioError = IoHelper::checkIfDirectoryIsEmpty(entry.path(), isEmpty);
-            if (ioError != IoError::Success) {
-                LOGW_SYNCPAL_WARN(_logger,
-                                  L"Error in IoHelper::checkIfDirectoryIsEmpty for " << Utility::formatSyncPath(entry.path()));
-                continue;
-            }
-            if (isEmpty && _vfs) {
-                // Update folder status manually.
-                (void) _vfs->forceStatus(entry.path(),
-                                         {.isPlaceholder = true, .isHydrated = true, .isSyncing = false, .progress = 100});
-            }
-            continue;
-        }
-
-        (void) addDlDirectJob(CommonUtility::relativePath(localPath(), entry.path()), entry.path());
-        (void) absoluteLocalPathSet.emplace(entry.path());
-    }
+void SyncPal::monitorFolderHydration(const SyncPath &absoluteLocalPath) {
     const std::lock_guard lock(_directDownloadJobsMapMutex);
-    (void) _bundleDownloadMap.try_emplace(absoluteLocalPath, absoluteLocalPathSet);
-    LOGW_INFO(_logger, L"Start watching bundle: " << Utility::formatSyncPath(absoluteLocalPath));
+    (void) _folderHydrationInProgress.try_emplace(absoluteLocalPath);
+    LOGW_INFO(_logger, L"Monitoring folder hydration: " << Utility::formatSyncPath(absoluteLocalPath));
 }
 
 ExitCode SyncPal::cancelDlDirectJobs(const std::list<SyncPath> &fileList) {
@@ -762,7 +741,10 @@ ExitCode SyncPal::cancelDlDirectJobs(const std::list<SyncPath> &fileList) {
             }
             (void) _syncPathToDownloadJobMap.erase(itId);
         }
-        (void) _bundleDownloadMap.erase(filePath);
+        if (_folderHydrationInProgress.contains(filePath)) {
+            _vfs->cancelHydrate(filePath);
+            (void) _folderHydrationInProgress.erase(filePath);
+        }
     }
 
     return ExitCode::Ok;
@@ -782,6 +764,10 @@ ExitCode SyncPal::cancelAllDlDirectJobs(bool quit) {
 
     _directDownloadJobsMap.clear();
     _syncPathToDownloadJobMap.clear();
+    for (const auto &[parentFolderPath, _]: _folderHydrationInProgress) {
+        _vfs->cancelHydrate(parentFolderPath);
+    }
+    _folderHydrationInProgress.clear();
 
     LOG_SYNCPAL_INFO(_logger, "Cancelling all direct download jobs done");
 

@@ -326,7 +326,7 @@ void SocketApi::command_RETRIEVE_FILE_STATUS(const QString &argument, SocketList
     const auto fileData = FileData::get(argument);
     if (fileData.syncDbId) {
         // The user probably visited this directory in the file shell.
-        // Let the listener know that it should now send status pushes for sibblings of this file.
+        // Let the listener know that it should now send status pushes for siblings of this file.
         QString directory = fileData.absoluteLocalPath.left(fileData.absoluteLocalPath.lastIndexOf('/'));
         listener->registerMonitoredDirectory(static_cast<unsigned int>(qHash(directory)));
     }
@@ -504,15 +504,15 @@ ExitInfo SocketApi::dehydratePlaceholder(const FileData &fileData) {
     return vfsMapIt->second->dehydratePlaceholder(QStr2Path(fileData.relativePath));
 }
 
-bool SocketApi::addDownloadJob(const FileData &fileData) {
+bool SocketApi::addDownloadJob(const FileData &fileData, const SyncPath &parentFolderPath) {
     if (!fileData.syncDbId) return false;
 
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
     if (syncPalMapIt == _syncPalMap.end()) return false;
 
     // Create download job
-    const KDC::ExitCode exitCode =
-            syncPalMapIt->second->addDlDirectJob(QStr2Path(fileData.relativePath), QStr2Path(fileData.absoluteLocalPath));
+    const KDC::ExitCode exitCode = syncPalMapIt->second->addDlDirectJob(QStr2Path(fileData.relativePath),
+                                                                        QStr2Path(fileData.absoluteLocalPath), parentFolderPath);
     if (exitCode != KDC::ExitCode::Ok) {
         LOGW_WARN(KDC::Log::instance()->getLogger(),
                   L"Error in SyncPal::addDownloadJob - " << Utility::formatPath(fileData.relativePath));
@@ -522,13 +522,13 @@ bool SocketApi::addDownloadJob(const FileData &fileData) {
     return true;
 }
 
-void SocketApi::addBundleDownload(const FileData &fileData) {
+void SocketApi::monitorFolderHydration(const FileData &fileData) const {
     if (!fileData.syncDbId) return;
 
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
     if (syncPalMapIt == _syncPalMap.end()) return;
 
-    syncPalMapIt->second->addBundleDownload(QStr2Path(fileData.absoluteLocalPath));
+    syncPalMapIt->second->monitorFolderHydration(QStr2Path(fileData.absoluteLocalPath));
 }
 
 bool SocketApi::cancelDownloadJobs(int syncDbId, const QStringList &fileList) {
@@ -566,9 +566,19 @@ void SocketApi::copyUrlToClipboard(const QString &link) {
 void SocketApi::command_MAKE_AVAILABLE_LOCALLY_DIRECT(const QString &filesArg) {
     const QStringList fileList = filesArg.split(MSG_ARG_SEPARATOR);
 
+    SyncPath parentFolder;
 #ifdef Q_OS_MAC
+
+    if (fileList.size() == 1) {
+        const auto fileData = FileData::get(fileList.at(0));
+        if (fileData.isDirectory) {
+            monitorFolderHydration(fileData);
+            parentFolder = QStr2Path(fileData.absoluteLocalPath);
+        }
+    }
+
     std::list<KDC::SyncPath> fileListExpanded;
-    processFileList(fileList, fileListExpanded, true);
+    processFileList(fileList, fileListExpanded);
 
     for (const auto &filePath: qAsConst(fileListExpanded)) {
 #else
@@ -607,7 +617,7 @@ void SocketApi::command_MAKE_AVAILABLE_LOCALLY_DIRECT(const QString &filesArg) {
         }
 
 #if defined(KD_MACOS)
-        // Not done in Windows case: triggers a hydration
+        // Not done in Windows because it triggers a hydration
         // Set pin state
         if (!setPinState(fileData, KDC::PinState::AlwaysLocal)) {
             LOGW_INFO(KDC::Log::instance()->getLogger(),
@@ -627,7 +637,7 @@ void SocketApi::command_MAKE_AVAILABLE_LOCALLY_DIRECT(const QString &filesArg) {
         }
 #endif
 
-        if (!addDownloadJob(fileData)) {
+        if (!addDownloadJob(fileData, parentFolder)) {
             LOGW_INFO(KDC::Log::instance()->getLogger(),
                       L"Error in SocketApi::addDownloadJob - " << Utility::formatSyncPath(filePath));
             continue;
@@ -1305,8 +1315,7 @@ QString SocketApi::buildRegisterPathMessage(const QString &path) {
     return message;
 }
 
-void SocketApi::processFileList(const QStringList &inFileList, std::list<SyncPath> &outFileList,
-                                const bool isHydration /*= false*/) {
+void SocketApi::processFileList(const QStringList &inFileList, std::list<SyncPath> &outFileList) {
     // Process all files
     for (const QString &path: qAsConst(inFileList)) {
         const FileData fileData = FileData::get(path);
@@ -1315,12 +1324,7 @@ void SocketApi::processFileList(const QStringList &inFileList, std::list<SyncPat
             continue;
         }
 
-        const QFileInfo info(path);
-        if (isHydration && info.isBundle()) {
-            addBundleDownload(fileData);
-            continue;
-        }
-        if (!info.isDir()) {
+        if (const QFileInfo info(path); !info.isDir()) {
             (void) outFileList.emplace_back(QStr2Path(path));
             continue;
         }

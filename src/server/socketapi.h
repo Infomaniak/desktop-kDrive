@@ -169,13 +169,13 @@ class SocketApi : public QObject {
 #endif
 
         QString buildRegisterPathMessage(const QString &path);
-        void processFileList(const QStringList &inFileList, std::list<SyncPath> &outFileList, bool isHydration = false);
+        void processFileList(const QStringList &inFileList, std::list<SyncPath> &outFileList);
         bool syncFileStatus(const FileData &fileData, SyncFileStatus &status, VfsStatus &vfsStatus);
         ExitInfo setPinState(const FileData &fileData, PinState pinState);
         ExitInfo forceStatus(const FileData &fileData, const VfsStatus &status);
         ExitInfo dehydratePlaceholder(const FileData &fileData);
-        bool addDownloadJob(const FileData &fileData);
-        void addBundleDownload(const FileData &fileData);
+        bool addDownloadJob(const FileData &fileData, const SyncPath &parentFolderPath);
+        void monitorFolderHydration(const FileData &fileData) const;
         bool cancelDownloadJobs(int syncDbId, const QStringList &fileList);
 
         QString vfsPinActionText();

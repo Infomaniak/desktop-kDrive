@@ -218,8 +218,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         void resetSnapshotInvalidationCounters();
 
-        ExitCode addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath);
-        void addBundleDownload(const SyncPath &absoluteLocalPath);
+        ExitCode addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath,
+                                const SyncPath &parentFolderPath);
+        void monitorFolderHydration(const SyncPath &absoluteLocalPath);
         ExitCode cancelDlDirectJobs(const std::list<SyncPath> &fileList);
         ExitCode cancelAllDlDirectJobs(bool quit);
         ExitCode cleanOldUploadSessionTokens();
@@ -302,7 +303,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         std::unordered_map<UniqueId, std::shared_ptr<DownloadJob>> _directDownloadJobsMap;
         std::unordered_map<SyncPath, std::unordered_set<SyncPath, PathHashFunction>, PathHashFunction>
-                _bundleDownloadMap; // key: bundle path, value: bundle children paths
+                _folderHydrationInProgress; // key: bundle path, value: bundle children paths
         std::unordered_map<SyncPath, UniqueId, PathHashFunction> _syncPathToDownloadJobMap;
         std::mutex _directDownloadJobsMapMutex;
 
