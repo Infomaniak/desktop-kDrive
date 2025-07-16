@@ -204,7 +204,7 @@ void AddDriveServerFoldersWidget::setLogoColor(const QColor &color) {
 void AddDriveServerFoldersWidget::onSubfoldersLoaded(const bool error, const ExitCause exitCause) {
     if (error) {
         QString errorMsg = tr("An error occurred while loading the list of subfolders.");
-        if (exitCause == ExitCause::ServiceUnavailable) {
+        if (exitCause == ExitCause::Http5xx) {
             QString driveLink = QString(APPLICATION_PREVIEW_URL).arg(_driveInfo.driveId()).arg("");
             errorMsg =
                     tr(R"(Impossible to load the list of subfolders. Your kDrive might be in maintenance.<br>)"
