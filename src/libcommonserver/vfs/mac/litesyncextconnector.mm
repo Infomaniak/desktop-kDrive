@@ -442,7 +442,7 @@
 - (void)sendMessage:(NSData *)params {
     NSLog(@"[KD] sendMessage called");
     NSString *paramsStr = [[NSString alloc] initWithData:params encoding:NSUTF8StringEncoding];
-    _executeCommand([paramsStr UTF8String]);
+    _executeCommand([paramsStr UTF8String], false);
 }
 
 @end
@@ -479,7 +479,7 @@ class LiteSyncExtConnectorPrivate {
         bool vfsStart(const QString &folderPath);
         bool vfsStop(const QString &folderPath);
 
-        bool executeCommand(const CommString &commandLine);
+        bool executeCommand(const CommString &commandLine, bool broadcast);
         bool updateFetchStatus(const QString &filePath, const QString &status);
         bool setThumbnail(const QString &filePath, const QPixmap &pixmap);
         bool setAppExcludeList(const QString &appList);
@@ -628,7 +628,7 @@ bool LiteSyncExtConnectorPrivate::vfsStop(const QString &folderPath) {
     return true;
 }
 
-bool LiteSyncExtConnectorPrivate::executeCommand(const CommString &commandLine) {
+bool LiteSyncExtConnectorPrivate::executeCommand(const CommString &commandLine, bool broadcast) {
     if (!_connector) {
         LOG_WARN(_logger, "Connector not initialized!");
         return false;
@@ -640,7 +640,7 @@ bool LiteSyncExtConnectorPrivate::executeCommand(const CommString &commandLine) 
     }
 
     LOGW_DEBUG(_logger, L"Execute command: " << CommString2WStr(commandLine));
-    _executeCommand(commandLine);
+    _executeCommand(commandLine, broadcast);
 
     return true;
 }
@@ -857,9 +857,9 @@ bool LiteSyncExtConnector::vfsHydratePlaceHolder(const QString &filePath) {
         // Get file
         LOGW_DEBUG(_logger, L"Get file with " << Utility::formatPath(filePath));
         CommString command(Str("MAKE_AVAILABLE_LOCALLY_DIRECT"));
-        command.append(Str(":"));
+        command.append(messageCdeSeparator);
         command.append(QStr2CommString(filePath));
-        _private->executeCommand(command);
+        _private->executeCommand(command, false);
     }
 
     return true;
@@ -1533,24 +1533,18 @@ bool LiteSyncExtConnector::sendStatusToFinder(const QString &path, const VfsStat
         return false;
     }
 
-    QString status;
-    if (vfsStatus.isSyncing) {
-        int stepWidth = 100 / SYNC_STEPS;
-        status = QString("SYNC_%1").arg(ceil(float(vfsStatus.progress) / stepWidth) * stepWidth);
-    } else if (vfsStatus.isHydrated) {
-        status = "OK";
-    } else {
-        status = "ONLINE";
-    }
-
     // Update Finder
     LOGW_DEBUG(_logger, L"Send status to the Finder extension: " << Utility::formatPath(path));
     CommString command(Str("STATUS"));
-    command.append(Str(":"));
-    command.append(QStr2CommString(status));
-    command.append(Str(":"));
+    command.append(messageCdeSeparator);
+    command.append(Str2CommString(std::to_string(vfsStatus.isSyncing)));
+    command.append(messageArgSeparator);
+    command.append(Str2CommString(std::to_string(vfsStatus.progress)));
+    command.append(messageArgSeparator);
+    command.append(Str2CommString(std::to_string(vfsStatus.isHydrated)));
+    command.append(messageArgSeparator);
     command.append(QStr2CommString(path));
-    return _private->executeCommand(command);
+    return _private->executeCommand(command, true);
 }
 
 bool LiteSyncExtConnector::checkFilesAttributes(const QString &path, const QString &localSyncPath, QStringList &filesToFix) {

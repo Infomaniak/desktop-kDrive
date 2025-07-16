@@ -28,7 +28,11 @@ class AbstractCommServer {
         virtual ~AbstractCommServer() {}
 
         virtual void close() = 0;
-        virtual bool listen(const SyncPath &name) = 0;
+        /**
+         * @brief start server
+         * @param socketPath is the path of the socket file for a server accepting socket connections
+         */
+        virtual bool listen(const SyncPath &socketPath) = 0;
         virtual std::shared_ptr<AbstractCommChannel> nextPendingConnection() = 0;
         virtual std::list<std::shared_ptr<AbstractCommChannel>> extConnections() = 0;
         virtual std::shared_ptr<AbstractCommChannel> guiConnection() = 0;

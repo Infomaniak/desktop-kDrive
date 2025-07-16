@@ -46,6 +46,7 @@ set(server_SRCS
     comm/abstractcommchannel.h comm/abstractcommchannel.cpp
     comm/abstractcommserver.h
     comm/commmanager.h comm/commmanager.cpp
+    comm/extensionjob.h comm/extensionjob.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
     app_resources.rc

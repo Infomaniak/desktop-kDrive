@@ -73,8 +73,8 @@
 #define MAX_PATH_LENGTH_LINUX 4096
 
 #ifdef __APPLE__
-constexpr char liteSyncExtBundleIdStr[] = "com.infomaniak.drive.desktopclient.LiteSyncExt";
-constexpr char loginItemAgentIdStr[] = "864VDCS2QY.com.infomaniak.drive.desktopclient.LoginItemAgent";
+constexpr std::string_view liteSyncExtBundleIdStr = "com.infomaniak.drive.desktopclient.LiteSyncExt";
+constexpr std::string_view loginItemAgentIdStr = "com.infomaniak.drive.desktopclient.LoginItemAgent";
 #endif
 
 namespace KDC {
@@ -828,11 +828,11 @@ bool CommonUtility::fileNameIsValid(const SyncName &name) {
 
 #ifdef __APPLE__
 const std::string CommonUtility::loginItemAgentId() {
-    return loginItemAgentIdStr;
+    return TEAM_IDENTIFIER_PREFIX + std::string(loginItemAgentIdStr);
 }
 
 const std::string CommonUtility::liteSyncExtBundleId() {
-    return liteSyncExtBundleIdStr;
+    return liteSyncExtBundleIdStr.data();
 }
 #endif
 
@@ -931,10 +931,9 @@ std::string CommonUtility::toUnsafeStr(const SyncName &name) {
 #ifdef __APPLE__
 bool CommonUtility::isLiteSyncExtEnabled() {
     QProcess *process = new QProcess();
-    process->start(
-            "bash",
-            QStringList() << "-c"
-                          << QString("systemextensionsctl list | grep %1 | grep enabled | wc -l").arg(liteSyncExtBundleIdStr));
+    process->start("bash", QStringList() << "-c"
+                                         << QString("systemextensionsctl list | grep %1 | grep enabled | wc -l")
+                                                    .arg(liteSyncExtBundleIdStr.data()));
     process->waitForStarted();
     process->waitForFinished();
     QByteArray result = process->readAll();
@@ -955,14 +954,14 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
                                   " and client = \"%2\""
                                   " and client_type = 0")
                                   .arg(serviceStr)
-                                  .arg(liteSyncExtBundleIdStr));
+                                  .arg(liteSyncExtBundleIdStr.data()));
         } else {
             query.prepare(QString("SELECT auth_value FROM access"
                                   " WHERE service = \"%1\""
                                   " and client = \"%2\""
                                   " and client_type = 0")
                                   .arg(serviceStr)
-                                  .arg(liteSyncExtBundleIdStr));
+                                  .arg(liteSyncExtBundleIdStr.data()));
         }
 
         query.exec();

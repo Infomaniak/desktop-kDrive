@@ -113,7 +113,7 @@ void TestWorkers::setUp() {
     vfsSetupParams.targetPath = _sync.targetPath();
     vfsSetupParams.logger = _logger;
     vfsSetupParams.sentryHandler = sentry::Handler::instance();
-    vfsSetupParams.executeCommand = [](const CommString &) {};
+    vfsSetupParams.executeCommand = [](const CommString &, bool) {};
 
 #if defined(__APPLE__)
     _vfsPtr = std::shared_ptr<VfsMac>(new VfsMac(vfsSetupParams));

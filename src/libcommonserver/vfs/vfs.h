@@ -125,7 +125,7 @@ class Vfs : public QObject {
          * Some plugins might provide alternate shell integration, making the normal
          * context menu actions redundant.
          */
-        virtual bool socketApiPinStateActionsShown() const = 0;
+        virtual bool showPinStateActions() const = 0;
 
         /** Update placeholder metadata.
          *
@@ -398,7 +398,7 @@ class VfsOff : public Vfs {
 
         VirtualFileMode mode() const override { return VirtualFileMode::Off; }
 
-        bool socketApiPinStateActionsShown() const override { return false; }
+        bool showPinStateActions() const override { return false; }
 
         ExitInfo updateMetadata(const SyncPath &, time_t, time_t, int64_t, const NodeId &) override { return ExitCode::Ok; }
         ExitInfo createPlaceholder(const SyncPath &, const SyncFileItem &) override { return ExitCode::Ok; }

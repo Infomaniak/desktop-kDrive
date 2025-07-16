@@ -38,7 +38,7 @@ class VfsMac : public Vfs {
 
         VirtualFileMode mode() const override;
 
-        bool socketApiPinStateActionsShown() const override { return true; }
+        bool showPinStateActions() const override { return true; }
 
         ExitInfo updateMetadata(const SyncPath &absoluteFilePath, time_t creationTime, time_t modtime, int64_t size,
                                 const NodeId &fileId) override;

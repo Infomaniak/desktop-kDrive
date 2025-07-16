@@ -1671,13 +1671,19 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 for (auto &syncPalMapElt: _syncPalMap) {
                     if (!syncPalMapElt.second) continue;
                     if (_commManager) {
-                        _commManager->unregisterSync(syncPalMapElt.second->syncDbId());
+                        CommString command(Str("UNREGISTER_PATH"));
+                        command.append(messageCdeSeparator);
+                        command.append(syncPalMapElt.second->localPath().native());
+                        _commManager->executeCommandDirect(command, true);
                     }
 
                     _syncPalMap[syncPalMapElt.first]->excludeListUpdated();
 
                     if (_commManager) {
-                        _commManager->registerSync(syncPalMapElt.second->syncDbId());
+                        CommString command(Str("REGISTER_PATH"));
+                        command.append(messageCdeSeparator);
+                        command.append(syncPalMapElt.second->localPath().native());
+                        _commManager->executeCommandDirect(command, true);
                     }
                 }
             });
@@ -3462,9 +3468,12 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, cons
         }
     }
 
-    // Register the folder with the socket API
+    // Ask the Finder/File explorer Extension to register the folder
     if (_commManager) {
-        _commManager->registerSync(sync.dbId());
+        CommString command(Str("REGISTER_PATH"));
+        command.append(messageCdeSeparator);
+        command.append(sync.localPath().native());
+        _commManager->executeCommandDirect(command, true);
     }
 
     return ExitCode::Ok;
@@ -3501,11 +3510,6 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const QSet<QString> &blackList
 ExitInfo AppServer::stopSyncPal(int syncDbId, bool pausedByUser, bool quit, bool clear) {
     LOG_DEBUG(_logger, "Stop SyncPal for syncDbId=" << syncDbId);
 
-    // Unregister the folder with the socket API
-    if (_commManager) {
-        _commManager->unregisterSync(syncDbId);
-    }
-
     // Stop SyncPal
     if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
         LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
@@ -3513,6 +3517,14 @@ ExitInfo AppServer::stopSyncPal(int syncDbId, bool pausedByUser, bool quit, bool
     }
 
     if (_syncPalMap[syncDbId]) {
+        // Ask the Finder/File explorer Extension to unregister the folder
+        if (_commManager) {
+            CommString command(Str("UNREGISTER_PATH"));
+            command.append(messageCdeSeparator);
+            command.append(_syncPalMap[syncDbId]->localPath().native());
+            _commManager->executeCommandDirect(command, true);
+        }
+
         _syncPalMap[syncDbId]->stop(pausedByUser, quit, clear);
     }
 
@@ -3594,7 +3606,9 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 #endif
         vfsSetupParams.localPath = sync.localPath();
         vfsSetupParams.targetPath = sync.targetPath();
-        vfsSetupParams.executeCommand = [this](const CommString &command) { _commManager->executeCommandDirect(command); };
+        vfsSetupParams.executeCommand = [this](const CommString &command, bool broadcast) {
+            _commManager->executeCommandDirect(command, broadcast);
+        };
         vfsSetupParams.logger = _logger;
         vfsSetupParams.sentryHandler = sentry::Handler::instance();
         QString error;

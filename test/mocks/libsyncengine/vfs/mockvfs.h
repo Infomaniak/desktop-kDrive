@@ -100,9 +100,7 @@ class MockVfs : public T {
 
         // Mock functions setters
         void setMockMode(std::function<VirtualFileMode()> mode) { _mode = mode; }
-        void setMockSocketApiPinStateActionsShown(std::function<bool()> socketApiPinStateActionsShown) {
-            _socketApiPinStateActionsShown = socketApiPinStateActionsShown;
-        }
+        void setMockShowPinStateActions(std::function<bool()> showPinStateActions) { _showPinStateActions = showPinStateActions; }
         void setMockUpdateMetadata(
                 std::function<ExitInfo(const SyncPath &, time_t, time_t, int64_t, const NodeId &)> updateMetadata) {
             _updateMetadata = updateMetadata;
@@ -151,7 +149,7 @@ class MockVfs : public T {
 
         // Mock functions resetters
         void resetMockMode() { _mode = nullptr; }
-        void resetMockSocketApiPinStateActionsShown() { _socketApiPinStateActionsShown = nullptr; }
+        void resetMockShowPinStateActions() { _showPinStateActions = nullptr; }
         void resetMockUpdateMetadata() { _updateMetadata = nullptr; }
         void resetMockCreatePlaceholder() { _createPlaceholder = nullptr; }
         void resetMockDehydratePlaceholder() { _dehydratePlaceholder = nullptr; }
@@ -175,7 +173,7 @@ class MockVfs : public T {
 
     private:
         std::function<VirtualFileMode()> _mode;
-        std::function<bool()> _socketApiPinStateActionsShown;
+        std::function<bool()> _showPinStateActions;
         std::function<ExitInfo(const SyncPath &, time_t, time_t, int64_t, const NodeId &)> _updateMetadata;
         std::function<ExitInfo(const SyncPath &, const SyncFileItem &)> _createPlaceholder;
         std::function<ExitInfo(const SyncPath &)> _dehydratePlaceholder;

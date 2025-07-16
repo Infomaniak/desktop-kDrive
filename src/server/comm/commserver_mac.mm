@@ -470,7 +470,6 @@ void CommServer::close() {
 
 bool CommServer::listen(const KDC::SyncPath &) {
     [_privatePtr->_server start];
-
     return TRUE;
 }
 
