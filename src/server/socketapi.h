@@ -51,7 +51,7 @@ struct FileData {
         FileData parentFolder() const;
 
         // Absolute path of the file locally
-        QString localPath;
+        QString absoluteLocalPath;
 
         // Relative path of the file
         QString relativePath;
@@ -97,8 +97,8 @@ class SocketApi : public QObject {
         static void openPrivateLink(const QString &link);
 
     private:
-        const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> &_syncPalMap;
-        const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &_vfsMap;
+        const std::unordered_map<int, std::shared_ptr<SyncPal>> &_syncPalMap;
+        const std::unordered_map<int, std::shared_ptr<Vfs>> &_vfsMap;
 
         QSet<int> _registeredSyncs;
         QList<SocketListener> _listeners;
@@ -109,9 +109,9 @@ class SocketApi : public QObject {
         QMutex _dehydrationMutex;
 
         // Callbacks
-        void (*_addError)(const KDC::Error &error);
-        KDC::ExitCode (*_getThumbnail)(int driveDbId, KDC::NodeId nodeId, int width, std::string &thumbnail);
-        KDC::ExitCode (*_getPublicLinkUrl)(int driveDbId, const QString &nodeId, QString &linkUrl);
+        void (*_addError)(const Error &error);
+        ExitCode (*_getThumbnail)(int driveDbId, NodeId nodeId, int width, std::string &thumbnail);
+        ExitCode (*_getPublicLinkUrl)(int driveDbId, const QString &nodeId, QString &linkUrl);
 
         void broadcastMessage(const QString &msg, bool doWait = false);
         void executeCommand(const QString &commandLine, const SocketListener *listener);
@@ -172,8 +172,10 @@ class SocketApi : public QObject {
         void processFileList(const QStringList &inFileList, std::list<SyncPath> &outFileList);
         bool syncFileStatus(const FileData &fileData, SyncFileStatus &status, VfsStatus &vfsStatus);
         ExitInfo setPinState(const FileData &fileData, PinState pinState);
+        ExitInfo forceStatus(const FileData &fileData, const VfsStatus &status);
         ExitInfo dehydratePlaceholder(const FileData &fileData);
-        bool addDownloadJob(const FileData &fileData);
+        bool addDownloadJob(const FileData &fileData, const SyncPath &parentFolderPath);
+        void monitorFolderHydration(const FileData &fileData) const;
         bool cancelDownloadJobs(int syncDbId, const QStringList &fileList);
 
         QString vfsPinActionText();

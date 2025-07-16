@@ -733,12 +733,12 @@ void TestNetworkJobs::testDownloadHasEnoughSpace() {
     CPPUNIT_ASSERT(DownloadJob::hasEnoughPlace(temporaryDirectory.path(), temporaryDirectory.path(), 9000000, lowDiskSpacePath,
                                                Log::instance()->getLogger()));
     CPPUNIT_ASSERT_EQUAL(SyncPath{}, lowDiskSpacePath);
-    
+
     // Enough disk space on destination path, but not on tmp path
     CPPUNIT_ASSERT(!DownloadJob::hasEnoughPlace(temporaryDirectory.path(), smallPartitionPath, 9000000, lowDiskSpacePath,
                                                 Log::instance()->getLogger()));
     CPPUNIT_ASSERT_EQUAL(smallPartitionPath, lowDiskSpacePath);
-    
+
     // Enough disk space on tmp path, but not on destination path
     CPPUNIT_ASSERT(!DownloadJob::hasEnoughPlace(smallPartitionPath, temporaryDirectory.path(), 9000000, lowDiskSpacePath,
                                                 Log::instance()->getLogger()));

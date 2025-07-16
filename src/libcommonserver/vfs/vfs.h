@@ -198,6 +198,7 @@ class Vfs : public QObject {
          */
         virtual ExitInfo updateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
                                            bool &finished) = 0;
+        virtual ExitInfo updateFetchStatus(const SyncPath &, const std::string &) = 0;
 
         /** Force the status of a file.
          *
@@ -405,6 +406,7 @@ class VfsOff : public Vfs {
         ExitInfo dehydratePlaceholder(const SyncPath &) override { return ExitCode::Ok; }
         ExitInfo convertToPlaceholder(const SyncPath &, const SyncFileItem &) override { return ExitCode::Ok; }
         ExitInfo updateFetchStatus(const SyncPath &, const SyncPath &, int64_t, bool &, bool &) override { return ExitCode::Ok; }
+        ExitInfo updateFetchStatus(const SyncPath &, const std::string &) override { return ExitCode::Ok; }
         ExitInfo forceStatus(const SyncPath &path, const VfsStatus &vfsStatus) override;
 
         ExitInfo isDehydratedPlaceholder(const SyncPath &, bool &isDehydrated) override {
