@@ -305,10 +305,6 @@ elseif(BUILD_CLIENT)
 endif()
 
 if(UNIX AND NOT APPLE)
-    if (NOT DEFINED ${CONAN_DEP_DIR})
-        set(CONAN_DEP_DIR "${CMAKE_BINARY_DIR}/conan_dependencies" CACHE PATH "Conan dependencies directory. Used to copy the .so files for the appimage builder.")
-    ENDIF ()
-
     # Copy .so files to the conan dependency directory
     include(ConanGetLibDirs)
     get_library_dirs("log4cplus" "log4cplus")

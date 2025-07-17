@@ -158,8 +158,4 @@ elseif(APPLE)
         ${FOUNDATION_LIBRARY}
         ${CORESERVICES_LIBRARY}
         ${APPKIT_LIBRARY})
-else()
-    target_link_libraries(${libcommonserver_NAME}
-        utf8proc
-    )
 endif()
