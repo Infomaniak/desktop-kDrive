@@ -18,24 +18,33 @@
 
 #pragma once
 
-#include "libcommon/utility/types.h"
-#include "abstracttokennetworkjob.h"
+#include "jobs/network/abstracttokennetworkjob.h"
 #include "libcommonserver/vfs/vfs.h"
 
 namespace KDC {
 
-class RenameJob : public AbstractTokenNetworkJob {
+class DuplicateJob : public AbstractTokenNetworkJob {
     public:
-        RenameJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &absoluteFinalPath);
-        ~RenameJob();
+        DuplicateJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId,
+                     const SyncPath &absoluteFinalPath);
+        ~DuplicateJob() override;
+
+        inline const NodeId &nodeId() const { return _nodeId; }
+        inline SyncTime modtime() const { return _modtime; }
+
+    protected:
+        bool handleResponse(std::istream &is) override;
 
     private:
-        virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &, bool &canceled) override { canceled = false; }
-        virtual ExitInfo setData() override;
+        std::string getSpecificUrl() override;
+        void setQueryParameters(Poco::URI &, bool &) override { /* No query parameters */ }
+        ExitInfo setData() override;
 
-        std::string _remoteFileId;
+        NodeId _remoteFileId;
         SyncPath _absoluteFinalPath;
+
+        NodeId _nodeId;
+        SyncTime _modtime = 0;
         const std::shared_ptr<Vfs> _vfs;
 };
 
