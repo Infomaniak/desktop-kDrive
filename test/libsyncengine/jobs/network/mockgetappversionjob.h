@@ -20,7 +20,7 @@
 
 #include "testincludes.h"
 #include "utility/types.h"
-#include "libsyncengine/jobs/network/getappversionjob.h"
+#include "jobs/network/infomaniak_API/getappversionjob.h"
 
 namespace KDC {
 
@@ -30,7 +30,11 @@ static const std::string mediumTagValue = "55.55.55";
 static constexpr uint64_t mediumBuildVersionValue = 20240604;
 static const std::string lowTagValue = "1.1.1";
 static constexpr uint64_t lowBuildVersionValue = 20200604;
-enum VersionValue { High, Medium, Low };
+enum VersionValue {
+    High,
+    Medium,
+    Low
+};
 
 inline const std::string &tag(const VersionValue versionNumber) {
     switch (versionNumber) {
@@ -59,7 +63,8 @@ inline uint64_t buildVersion(const VersionValue versionNumber) {
 class MockGetAppVersionJob final : public GetAppVersionJob {
     public:
         MockGetAppVersionJob(const Platform platform, const std::string &appID, const bool updateShouldBeAvailable) :
-            GetAppVersionJob(platform, appID), _updateShouldBeAvailable(updateShouldBeAvailable) {}
+            GetAppVersionJob(platform, appID),
+            _updateShouldBeAvailable(updateShouldBeAvailable) {}
 
         void runJob() noexcept override {
             const auto str = _updateShouldBeAvailable ? generateJsonReply(highTagValue, highBuildVersionValue)
