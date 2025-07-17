@@ -131,10 +131,11 @@ if ($CI) {
     & "C:\Program Files\Python313\.venv\Scripts\activate.ps1"
 
     # Call vcvarsall.bat to set up the environment for MSVC
-    & "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
     Log "CI mode enabled."
 }
 
+# TODO move this up into the $CI part
+& "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
 # Locate Conan executable
 $ConanExe = Get-ConanExePath
 if (-not $ConanExe) {
@@ -160,6 +161,11 @@ $RecipesFolder         = Join-Path $ConanRemoteBaseFolder "recipes"
 
 Log "Current conan home configuration:"
 & $ConanExe config home
+
+#if (Test-Path -Path "$RecipesFolder/openssl-universal") {
+#    Log "Removing existing openssl-universal recipe folder."
+#    Remove-Item -Path "$RecipesFolder/openssl-universal" -Recurse -Force
+#}
 
 if ($MakeRelease) {
     $ConanProfile = "infomaniak_release"
@@ -195,13 +201,23 @@ if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null # mkdir
 
 Log "Creating xxHash Conan package..."
-& $ConanExe create "$RecipesFolder/xxhash/all/" --build=missing -s build_type=Release --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter
+& $ConanExe create "$RecipesFolder/xxhash/all/" --build=missing -s build_type=$BuildType --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to create xxHash Conan package."
 }
 
+Log "Creating CPPUnit Conan package..."
+if (Test-Path -Path "$RecipesFolder/cppunit/all/windows.py") {
+    Copy-Item -Path "$RecipesFolder/cppunit/all/windows.py" -Destination "$RecipesFolder/cppunit/all/conanfile.py" -Force
+}
+& $ConanExe create "$RecipesFolder/cppunit/all/windows.py" --version 1.15.1 --build=missing -s build_type=$BuildType -r $LocalRemoteName -r conancenter -o 'cppunit/*:shared=True'
+if ($LASTEXITCODE -ne 0) {
+    Err "Failed to create CPPUnit Conan package."
+}
+
 Log "Installing Conan dependencies..."
-& $ConanExe install . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter
+& $ConanExe install . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter -c tools.env.virtualenv:powershell=powershell.exe
+
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to install Conan dependencies."
 }

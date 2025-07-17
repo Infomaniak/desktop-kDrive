@@ -44,6 +44,8 @@ class KDriveDesktop(ConanFile):
         Here are the dependencies used:
         - `xxhash/0.8.2`: A fast non-cryptographic hash algorithm.
         - `log4cplus/2.1.2`: A C++ logging library.
+        - `openssl/3.2.4`: A widely used library for secure communication.
+        - `cppunit/1.15.1`: A C++ unit testing framework.
         :return: None
         """
         self.requires("xxhash/0.8.2") # From local recipe
@@ -52,6 +54,7 @@ class KDriveDesktop(ConanFile):
         if self.settings.os == "Windows":
             log4cplus_options["thread_pool"] = False
         self.requires("log4cplus/2.1.2", options=log4cplus_options) # From https://conan.io/center/recipes/log4cplus
+        self.requires("cppunit/1.15.1", options={ "shared": True }) # From https://conan.io/center/recipes/cppunit or ./infomaniak-build-tools/conan/recipes/cppunit/all/(macos|windows).py moved to conanfile.py on macOS and Windows
 
         # openssl depends on zlib, which is already inside the conanfile.py of openssl-universal
         # but since we build openssl-universal two times (for x86_64 and arm64) in single arch and then merge them, we need to add zlib in 'armv8|x86_64' arch mode.

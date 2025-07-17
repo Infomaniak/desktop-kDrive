@@ -6,7 +6,6 @@
 	- [Xcode](#xcode)
 	- [Qt 6.2.3](#qt-623)
 	- [Sentry](#sentry)
-	- [cppunit](#cppunit)
 	- [Poco](#poco)
 	- [libzip](#libzip)
 	- [Sparkle](#sparkle)
@@ -89,29 +88,6 @@ cmake -B build -DSENTRY_BACKEND=crashpad -DSENTRY_INTEGRATION_QT=YES -DCMAKE_BUI
 cmake --build build --parallel
 sudo cmake --install build
 ```
-
-## CPPUnit
-
-Download and build `CPPUnit`:
-
-You will probably need to install `automake` and `libtool`:
-```
-brew install automake
-brew install libtool
-```
-
-CPPUnit must be build in single architecture. Replace with `x86_64` or `arm64` in the following command:
-```bash
-cd ~/Projects
-git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
-cd cppunit
-./autogen.sh
-./configure CXXFLAGS="-arch <your_arch> -mmacosx-version-min=10.15"
-make
-sudo make install
-```
-
-If the server does not reply to the `git clone` command, you can download the source from https://www.freedesktop.org/wiki/Software/cppunit/.
 
 ## Poco
 

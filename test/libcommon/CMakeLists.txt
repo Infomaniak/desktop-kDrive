@@ -6,6 +6,7 @@ endif()
 
 find_package(Poco REQUIRED Foundation)
 find_package(log4cplus 2.1.2 REQUIRED)
+find_package(cppunit REQUIRED)
 
 set(testcommon_NAME ${APPLICATION_NAME}_test_common)
 
@@ -25,7 +26,6 @@ set(testcommon_SRCS
 )
 
 if(WIN32)
-    include_directories("C:/Program Files (x86)/cppunit/include")
     include_directories("C:/Program Files (x86)/Sentry-Native/include")
 else()
     include_directories("/usr/local/include")
@@ -37,9 +37,6 @@ add_executable(${testcommon_NAME} ${testcommon_SRCS})
 set(PC_HEADER_FILES
     # std c++
     "$<$<COMPILE_LANGUAGE:CXX>:<filesystem$<ANGLE-R>>"
-    # cppunit
-    "$<$<COMPILE_LANGUAGE:CXX>:<cppunit/TestFixture.h$<ANGLE-R>>"
-    "$<$<COMPILE_LANGUAGE:CXX>:<cppunit/extensions/HelperMacros.h$<ANGLE-R>>"
 )
 
 target_precompile_headers(${testcommon_NAME} PRIVATE ${PC_HEADER_FILES})
@@ -51,16 +48,18 @@ target_link_libraries(${testcommon_NAME}
         ${libcommonserver_NAME}
 )
 
-if(WIN32)
-    target_link_libraries(${testcommon_NAME}
-            debug
-            "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"
-            optimized
-            "C:/Program Files (x86)/cppunit/lib/cppunit_dll.lib")
-elseif(APPLE)
-    target_link_libraries(${testcommon_NAME}
-            "/usr/local/lib/libcppunit.dylib")
+include(ConanGetLibDirs)
+get_include_and_library_dirs("cppunit" "cppunit")
+include_directories("${_cppunit_INCLUDE_DIRS}")
+if(APPLE)
+    set(lib_prefix "lib")
+    set(lib_suffix ".dylib")
+elseif(WIN32)
+    set(lib_prefix "")
+    set(lib_suffix ".lib")
 else()
-    target_link_libraries(${testcommon_NAME}
-            "/usr/local/lib/libcppunit.so")
-endif ()
+    set(lib_prefix "lib")
+    set(lib_suffix ".so")
+endif()
+target_link_libraries(${testcommon_NAME} "${_cppunit_LIB_DIRS}/${lib_prefix}cppunit${lib_suffix}")
+

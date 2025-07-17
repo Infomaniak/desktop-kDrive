@@ -27,3 +27,19 @@ function(get_library_dirs prefix libname)
     set(_${prefix}_LIB_DIRS "${${libname}_LIB_DIRS_${_BUILD_TYPE_UPPER}}" PARENT_SCOPE)
     message(STATUS "Using _${prefix}_LIB_DIRS (${libname}_LIB_DIRS_${_BUILD_TYPE_UPPER}) = ${_${prefix}_LIB_DIRS}")
 endfunction()
+
+function(get_include_dirs prefix libname)
+    find_package(${prefix} REQUIRED)
+    # Same for include directories as for library directories.
+    string(TOUPPER "${CMAKE_BUILD_TYPE}" _BUILD_TYPE_UPPER) # cppunit_INCLUDE_DIRS_RELEASE
+    set(_${prefix}_INCLUDE_DIRS "${${libname}_INCLUDE_DIRS_${_BUILD_TYPE_UPPER}}" PARENT_SCOPE)
+    message(STATUS "Using _${prefix}_INCLUDE_DIRS (${libname}_INCLUDE_DIRS_${_BUILD_TYPE_UPPER}) = ${_${prefix}_INCLUDE_DIRS}")
+endfunction()
+
+function(get_include_and_library_dirs prefix libname)
+    # This function combines the previous two functions to get both include and library directories.
+    get_include_dirs(${prefix} ${libname})
+    get_library_dirs(${prefix} ${libname})
+    set(_${prefix}_INCLUDE_DIRS "${_${prefix}_INCLUDE_DIRS}" PARENT_SCOPE)
+    set(_${prefix}_LIB_DIRS "${_${prefix}_LIB_DIRS}" PARENT_SCOPE)
+endfunction()

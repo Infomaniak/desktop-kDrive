@@ -5,7 +5,6 @@
     - [Qt 6.2.3](#qt-623)
     - [Sentry](#sentry)
     - [Poco](#poco)
-    - [CPPUnit](#cppunit)
     - [Zlib](#zlib)
     - [libzip](#libzip)
     - [C++ Redistributable](#redistributable)
@@ -123,25 +122,6 @@ While still in the `build` directory, issue the following commands:
 cmake --build . --target install --config Debug
 cmake --build . --target install --config Release
 ```
-
-## CPPUnit
-
-Clone `CPPUnit`:
-
-```powershell
-cd F:\Projects
-git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
-```
-
-If the server does not reply to the `git clone` command, you can download the source from https://www.freedesktop.org/wiki/Software/cppunit/.
-
-Then open `src/CppUnitLibrariesXXXX.sln` workspace in Visual Studio to configure as follows:
-- Select all projects then right click to access `Properties`.
-- Select `All configurations` and `All plateforms`,  then add `_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH` in `C/C++ > Preprocessor > Preprocessor Definitions`.
-- In the `Build` menu, select `Batch Build...`.
-- Select all projects in `x64` version and click on `build`.
-
-Copy `lib` and `include` folders from F:\Projects\cppunit\` to `C:\Program Files (x86)\cppunit`.
 
 ## Zlib
 

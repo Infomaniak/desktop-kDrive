@@ -54,7 +54,6 @@ runs:
           cp /usr/local/lib/libPocoFoundation.103.dylib ./dependencies/
           cp /usr/local/lib/libPocoNet.103.dylib ./dependencies/
           cp /usr/local/lib/libPocoCrypto.103.dylib ./dependencies/
-          cp /usr/local/lib/libcppunit-1.15.2.dylib ./dependencies/
           cp /usr/local/lib/libsentry.dylib ./dependencies/
           cp /usr/local/lib/libzip.5.dylib ./dependencies/
           cp /usr/local/lib/libzstd.1.dylib ./dependencies/
@@ -78,6 +77,7 @@ runs:
                   '(' -iname 'libxxhash.0.dylib' \
                    -o -iname 'liblog4cplus*.dylib' \
                    -o -iname 'libssl*.dylib' \
+                   -o -iname 'libcppunit*.dylib' \
                    -o -iname 'libcrypto*.dylib' ')' \
                 -exec cp {} ./dependencies/ \; \
                 -exec echo "Conan dependency found -> " {} \;
