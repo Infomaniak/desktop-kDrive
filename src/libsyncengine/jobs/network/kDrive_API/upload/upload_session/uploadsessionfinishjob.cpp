@@ -18,7 +18,7 @@
 
 #include "uploadsessionfinishjob.h"
 
-#include "jobs/network/API_v2/upload/uploadjobreplyhandler.h"
+#include "jobs/network/kDrive_API/upload/uploadjobreplyhandler.h"
 #include "libcommonserver/utility/utility.h"
 #include "utility/jsonparserutility.h"
 

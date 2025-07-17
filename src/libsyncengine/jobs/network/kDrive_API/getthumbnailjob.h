@@ -16,25 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #pragma once
 
-#include "jobs/network/API_v2/abstracttokennetworkjob.h"
+#include "jobs/network/abstracttokennetworkjob.h"
 
 namespace KDC {
 
-class AbstractUploadSessionJob : public AbstractTokenNetworkJob {
+class GetThumbnailJob : public AbstractTokenNetworkJob {
     public:
-        AbstractUploadSessionJob(UploadSessionType uploadType, int driveDbId);
-        AbstractUploadSessionJob(UploadSessionType uploadType, int driveDbId, const SyncPath &filepath,
-                                 const std::string &sessionToken);
-        ~AbstractUploadSessionJob() override = default;
+        GetThumbnailJob(int driveDbId, NodeId nodeId, unsigned width);
 
-        inline const std::string &sessionToken() const { return _sessionToken; }
+    private:
+        virtual std::string getSpecificUrl() override;
+        virtual void setQueryParameters(Poco::URI &uri, bool &canceled) override;
+        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
 
-    protected:
-        std::string _sessionToken;
-        SyncPath _absoluteFilePath;
+        NodeId _nodeId;
+        unsigned _width;
 };
 
 } // namespace KDC

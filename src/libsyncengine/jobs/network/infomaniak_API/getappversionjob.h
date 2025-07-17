@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "API_v2/abstracttokennetworkjob.h"
+#include "jobs/network/abstracttokennetworkjob.h"
 #include "utility/urlhelper.h"
 
 #include <config.h>

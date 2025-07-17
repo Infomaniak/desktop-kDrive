@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "jobs/network/API_v2/abstracttokennetworkjob.h"
+#include "jobs/network/abstracttokennetworkjob.h"
 
 #include "libcommon/utility/types.h"
 #include "libcommonserver/vfs/vfs.h"
