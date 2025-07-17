@@ -62,10 +62,6 @@ IF (WIN32)
     )
 ENDIF ()
 
-if (UNIX)
-    set(CONAN_DEP_DIR "${CMAKE_BINARY_DIR}/conan_dependencies" CACHE PATH "Conan dependencies directory. Used to copy the .so files for the appimage builder.")
-ENDIF ()
-
 set(libcommon_NAME "${APPLICATION_NAME}common")
 set(libcommonserver_NAME "${APPLICATION_NAME}commonserver")
 set(libcommongui_NAME "${APPLICATION_NAME}commongui")
@@ -306,4 +302,31 @@ elseif(BUILD_CLIENT)
             endif()
         endif()
     endif()
+endif()
+
+if(UNIX AND NOT APPLE)
+    if (NOT DEFINED ${CONAN_DEP_DIR})
+        set(CONAN_DEP_DIR "${CMAKE_BINARY_DIR}/conan_dependencies" CACHE PATH "Conan dependencies directory. Used to copy the .so files for the appimage builder.")
+    ENDIF ()
+
+    # Copy .so files to the conan dependency directory
+    include(ConanGetLibDirs)
+    get_library_dirs("log4cplus" "log4cplus")
+    get_library_dirs("OpenSSL" "openssl")
+    get_library_dirs("xxHash" "xxhash")
+    file(COPY
+        # log4cplus
+        "${_log4cplus_LIB_DIRS}/liblog4cplus.so"
+        "${_log4cplus_LIB_DIRS}/liblog4cplus.so.9"
+        # xxHash
+        "${_xxHash_LIB_DIRS}/libxxhash.so"
+        "${_xxHash_LIB_DIRS}/libxxhash.so.0"
+        "${_xxHash_LIB_DIRS}/libxxhash.so.0.8.2"
+        # OpenSSL
+        "${_OpenSSL_LIB_DIRS}/libcrypto.so"
+        "${_OpenSSL_LIB_DIRS}/libcrypto.so.3"
+        "${_OpenSSL_LIB_DIRS}/libssl.so"
+        "${_OpenSSL_LIB_DIRS}/libssl.so.3"
+        DESTINATION "${CONAN_DEP_DIR}"
+        FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
 endif()
