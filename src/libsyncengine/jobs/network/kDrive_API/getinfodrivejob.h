@@ -18,28 +18,21 @@
 
 #pragma once
 
-#include "abstracttokennetworkjob.h"
+#include "jobs/network/abstracttokennetworkjob.h"
 
 namespace KDC {
 
-class GetSizeJob : public AbstractTokenNetworkJob {
+class GetInfoDriveJob : public AbstractTokenNetworkJob {
     public:
-        GetSizeJob(int userDbId, int driveId, const NodeId &nodeId);
-        GetSizeJob(int driveDbId, const NodeId &nodeId);
-
-        inline const NodeId &nodeId() const { return _nodeId; }
-        inline int64_t size() const { return _size; }
+        GetInfoDriveJob(int userDbId, int driveId);
+        GetInfoDriveJob(int driveDbId);
 
     protected:
-        virtual bool handleResponse(std::istream &is) override;
         virtual bool handleError(std::istream &is, const Poco::URI &uri) override;
 
     private:
-        virtual std::string getSpecificUrl() override;
         virtual void setQueryParameters(Poco::URI &, bool &canceled) override { canceled = false; }
         inline virtual ExitInfo setData() override { return ExitCode::Ok; }
-
-        NodeId _nodeId;
-        int64_t _size{0};
 };
+
 } // namespace KDC

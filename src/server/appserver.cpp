@@ -53,8 +53,8 @@
 #include <windows.h>
 #endif
 
-#include "jobs/network/API_v2/upload/loguploadjob.h"
-#include "jobs/network/API_v2/upload/upload_session/uploadsessioncanceljob.h"
+#include "jobs/network/kDrive_API/upload/loguploadjob.h"
+#include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
 #include "updater/updatemanager.h"
 
 #include <QDesktopServices>
@@ -1031,6 +1031,34 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             });
 
             Utility::restartFinderExtension();
+
+            break;
+        }
+        case RequestNum::DRIVE_SEARCH: {
+            int driveDbId = 0;
+            QList<DriveInfo> list;
+            ArgsWriter(params).write(driveDbId);
+            ArgsWriter(params).write(list);
+
+            // Find drive ID
+            Drive drive;
+            bool found = false;
+            if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
+                LOG_WARN(_logger, "Error in ParmsDb::selectSync");
+                resultStream << ExitCode::DbError;
+                break;
+            }
+            if (!found) {
+                LOG_WARN(_logger, "Drive not found for ID: " << driveDbId);
+                resultStream << ExitCode::DataError;
+                break;
+            }
+
+            // Send search request (synchonously for now)
+
+
+            resultStream << ExitCode::Ok;
+
 
             break;
         }
