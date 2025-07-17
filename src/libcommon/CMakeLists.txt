@@ -126,10 +126,10 @@ target_link_libraries(${libcommon_NAME}
     keychain
     libzip::zip)
 
-if(ZLIB_FOUND)
-    target_link_libraries("${libcommon_NAME}"
-        ZLIB::ZLIB)
-endif(ZLIB_FOUND)
+if(UNIX)
+    target_link_libraries(${libcommon_NAME}
+        utf8proc)
+endif()
 
 if(APPLE)
     # For utility_mac.mm
@@ -141,7 +141,9 @@ if(APPLE)
         ${FOUNDATION_LIBRARY}
         ${CORESERVICES_LIBRARY}
         ${APPKIT_LIBRARY})
-elseif(UNIX)
-    target_link_libraries(${libcommon_NAME}
-        utf8proc)
 endif()
+
+if(ZLIB_FOUND)
+    target_link_libraries("${libcommon_NAME}"
+        ZLIB::ZLIB)
+endif(ZLIB_FOUND)
