@@ -20,8 +20,10 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/testhelpers.h"
 #include "config.h"
+#include "io/iohelper.h"
 #include "libcommon/utility/utility.h" // CommonUtility::isSubDir
 #include "libcommonserver/log/log.h"
+#include "utility/timerutility.h"
 
 #include <Poco/URI.h>
 
@@ -289,6 +291,45 @@ void TestUtility::testXxHash() {
     std::string contentHash = _testObj->computeXxHash(data);
 
     CPPUNIT_ASSERT(contentHash == "5dcc477e35136516");
+
+    {
+        const SyncPath testFilePath(R"(C:\Users\cleme\tests\big_file_2000_0_test11.txt)");
+
+        {
+            TimerUtility timer;
+            std::string hash;
+            (void) Utility::computeFileXxHash(testFilePath, hash);
+            std::cout << "TEST CK : hash " << hash << " computed in " << timer.elapsed<DoubleSeconds>() << std::endl;
+        }
+
+        {
+            TimerUtility timer;
+            std::ifstream file;
+            ExitInfo exitInfo = IoHelper::openFile(testFilePath, file, 10);
+
+            const auto chunkSize = 1000000;
+            const auto nbChunk = static_cast<uint64_t>(
+                    std::ceil(static_cast<double>(std::filesystem::file_size(testFilePath)) / static_cast<double>(chunkSize)));
+
+            XXH3_state_t *const state = XXH3_createState();
+            XXH3_64bits_reset(state);
+
+            for (uint64_t chunkNb = 1; chunkNb <= nbChunk; chunkNb++) {
+                const auto memblock = std::make_unique<char[]>(chunkSize);
+                (void) file.read(memblock.get(), static_cast<std::streamsize>(chunkSize));
+
+                const std::streamsize actualChunkSize = file.gcount();
+                const auto chunkContent = std::string(memblock.get(), static_cast<size_t>(actualChunkSize));
+                std::string contentHash = _testObj->computeXxHash(data);
+                XXH3_64bits_update(state, contentHash.data(), contentHash.length());
+            }
+            file.close();
+            XXH64_hash_t const hash2 = XXH3_64bits_digest(state);
+            std::string hash = Utility::xxHashToStr(hash2);
+            (void) XXH3_freeState(state);
+            std::cout << "TEST CK2 : hash " << hash << " computed in " << timer.elapsed<DoubleSeconds>() << std::endl;
+        }
+    }
 }
 
 void TestUtility::testToUpper() {
