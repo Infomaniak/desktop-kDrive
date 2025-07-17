@@ -18,31 +18,27 @@
 
 #pragma once
 
-#include "abstracttokennetworkjob.h"
+#include "jobs/network/abstracttokennetworkjob.h"
+#include "jobs/network/networkjobsparams.h"
 
 namespace KDC {
 
-class CopyToDirectoryJob : public AbstractTokenNetworkJob {
+class DeleteJob : public AbstractTokenNetworkJob {
     public:
-        CopyToDirectoryJob(int driveDbId, const NodeId &remoteFileId, const NodeId &remoteDestId, const SyncName &newName);
-
-        inline const NodeId &nodeId() const { return _nodeId; }
-        inline SyncTime modtime() const { return _modtime; }
-
-    protected:
-        virtual bool handleResponse(std::istream &is) override;
+        DeleteJob(int driveDbId, const NodeId &remoteItemId, const NodeId &localItemId, const SyncPath &absoluteLocalFilepath,
+                  NodeType nodeType);
+        DeleteJob(int driveDbId, const NodeId &remoteItemId); // To be used in tests only.
+        virtual bool canRun() override;
 
     private:
         virtual std::string getSpecificUrl() override;
         virtual void setQueryParameters(Poco::URI &, bool &) override {}
-        virtual ExitInfo setData() override;
+        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
 
-        NodeId _remoteFileId;
-        NodeId _remoteDestId;
-        SyncName _newName;
-
-        NodeId _nodeId;
-        SyncTime _modtime = 0;
+        const NodeId _remoteItemId;
+        const NodeId _localItemId;
+        SyncPath _absoluteLocalFilepath;
+        NodeType _nodeType;
 };
 
 } // namespace KDC

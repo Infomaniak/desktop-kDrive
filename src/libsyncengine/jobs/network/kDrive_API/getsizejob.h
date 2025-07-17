@@ -18,31 +18,28 @@
 
 #pragma once
 
-#include "abstracttokennetworkjob.h"
+#include "jobs/network/abstracttokennetworkjob.h"
 
 namespace KDC {
 
-class GetInfoUserJob final : public AbstractTokenNetworkJob {
+class GetSizeJob : public AbstractTokenNetworkJob {
     public:
-        explicit GetInfoUserJob(int userDbId);
+        GetSizeJob(int userDbId, int driveId, const NodeId &nodeId);
+        GetSizeJob(int driveDbId, const NodeId &nodeId);
 
-        [[nodiscard]] const std::string& name() const { return _name; }
-        [[nodiscard]] const std::string& email() const { return _email; }
-        [[nodiscard]] const std::string& avatarUrl() const { return _avatarUrl; }
-        [[nodiscard]] bool isStaff() const { return _isStaff; }
+        inline const NodeId &nodeId() const { return _nodeId; }
+        inline int64_t size() const { return _size; }
 
     protected:
-        bool handleJsonResponse(std::istream& is) override;
+        virtual bool handleResponse(std::istream &is) override;
+        virtual bool handleError(std::istream &is, const Poco::URI &uri) override;
 
     private:
-        std::string getSpecificUrl() override;
-        void setQueryParameters(Poco::URI&, bool& canceled) override { canceled = false; }
-        ExitInfo setData() override { return ExitCode::Ok; }
+        virtual std::string getSpecificUrl() override;
+        virtual void setQueryParameters(Poco::URI &, bool &canceled) override { canceled = false; }
+        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
 
-        std::string _name;
-        std::string _email;
-        std::string _avatarUrl;
-        bool _isStaff{false};
+        NodeId _nodeId;
+        int64_t _size{0};
 };
-
 } // namespace KDC
