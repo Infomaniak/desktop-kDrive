@@ -18,30 +18,20 @@
 
 #pragma once
 
-#include "libcommon/utility/types.h"
-#include "abstracttokennetworkjob.h"
-#include "libcommonserver/vfs/vfs.h"
+#include "jobs/network/abstracttokennetworkjob.h"
 
 namespace KDC {
 
-class MoveJob : public AbstractTokenNetworkJob {
+class GetFileLinkJob : public AbstractTokenNetworkJob {
     public:
-        MoveJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &destFilepath, const NodeId &fileId,
-                const NodeId &destDirId, const SyncName &name = Str(""));
-        ~MoveJob() override;
-
-        bool canRun() override;
+        GetFileLinkJob(int driveDbId, const NodeId &nodeId);
 
     private:
-        std::string getSpecificUrl() override;
-        void setQueryParameters(Poco::URI &uri, bool &canceled) override;
-        ExitInfo setData() override;
+        virtual std::string getSpecificUrl() override;
+        virtual void setQueryParameters(Poco::URI &, bool &) override {}
+        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
 
-        SyncPath _destFilepath;
-        std::string _fileId;
-        std::string _destDirId;
-        SyncName _name;
-        const std::shared_ptr<Vfs> _vfs;
+        NodeId _nodeId;
 };
 
 } // namespace KDC
