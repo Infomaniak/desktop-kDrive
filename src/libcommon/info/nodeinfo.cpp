@@ -59,9 +59,9 @@ QDataStream &operator>>(QDataStream &in, QList<NodeInfo> &list) {
     auto count = 0;
     in >> count;
     for (int i = 0; i < count; i++) {
-        NodeInfo *info = new NodeInfo();
-        in >> *info;
-        list.push_back(*info);
+        NodeInfo info;
+        in >> info;
+        list.push_back(info);
     }
     return in;
 }

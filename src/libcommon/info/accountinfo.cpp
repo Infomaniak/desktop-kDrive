@@ -52,9 +52,9 @@ QDataStream &operator>>(QDataStream &in, QList<AccountInfo> &list) {
     int count = 0;
     in >> count;
     for (int i = 0; i < count; i++) {
-        AccountInfo *accountInfo = new AccountInfo();
-        in >> *accountInfo;
-        list.push_back(*accountInfo);
+        AccountInfo accountInfo;
+        in >> accountInfo;
+        list.push_back(accountInfo);
     }
     return in;
 }
