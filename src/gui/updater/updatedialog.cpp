@@ -78,19 +78,15 @@ void UpdateDialog::initUi(const VersionInfo &versionInfo) {
     const Language language = ParametersCache::instance()->parametersInfo().language();
     QString languageCode = CommonUtility::languageCode(language);
     if (languageCode.isEmpty()) languageCode = "en";
-    const QUrl notesUrl(
-        QString("%1-%2-win-%3.html")
-        .arg(APPLICATION_STORAGE_URL, versionInfo.fullVersion().c_str(), languageCode.left(2))
-    );
+    const QUrl notesUrl(QString("%1-%2-win-%3.html").arg(APPLICATION_STORAGE_URL, versionInfo.tag.c_str(), languageCode.left(2)));
 
-    connect(manager, &QNetworkAccessManager::finished, this,
-        [releaseNoteContentWidget](QNetworkReply *reply) {
-            if (reply->error() == QNetworkReply::NoError) {
-                const QByteArray html = reply->readAll();
-                releaseNoteContentWidget->setHtml(QString::fromUtf8(html));
-            }
-            reply->deleteLater();
-        });
+    (void) connect(manager, &QNetworkAccessManager::finished, this, [releaseNoteContentWidget](QNetworkReply *const reply) {
+        if (reply->error() == QNetworkReply::NoError) {
+            const QByteArray html = reply->readAll();
+            releaseNoteContentWidget->setHtml(QString::fromUtf8(html));
+        }
+        reply->deleteLater();
+    });
     manager->get(QNetworkRequest(notesUrl));
 
 
