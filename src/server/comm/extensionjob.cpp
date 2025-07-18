@@ -99,13 +99,6 @@ ExtensionJob::ExtensionJob(std::shared_ptr<CommManager> commManager, const CommS
     };
 }
 
-ExtensionJob::ExtensionJob(std::shared_ptr<CommManager> commManager, const CommString &commandLineStr,
-                           std::shared_ptr<AbstractCommChannel> channel) :
-    ExtensionJob(commManager, commandLineStr, std::list<std::shared_ptr<AbstractCommChannel>>({channel})) {}
-
-ExtensionJob::ExtensionJob(std::shared_ptr<CommManager> commManager, const CommString &commandLineStr) :
-    ExtensionJob(commManager, commandLineStr, std::list<std::shared_ptr<AbstractCommChannel>>()) {}
-
 void ExtensionJob::runJob() {
     if (_channels.empty()) {
         executeCommand(_commandLineStr, nullptr);
@@ -316,17 +309,27 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
 }
 
 void ExtensionJob::commandRegisterFolder(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
+    SyncPath path(argument);
+    if (_registeredSyncPaths.contains(path)) return;
+
     CommString response(Str("REGISTER_PATH"));
     response.append(responseToFinderArgSeparator);
     response.append(argument); // path
     channel->sendMessage(response);
+
+    _registeredSyncPaths.insert(path);
 }
 
 void ExtensionJob::commandUnregisterFolder(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
+    SyncPath path(argument);
+    if (!_registeredSyncPaths.contains(path)) return;
+
     CommString response(Str("UNREGISTER_PATH"));
     response.append(responseToFinderArgSeparator);
     response.append(argument); // path
     channel->sendMessage(response);
+
+    _registeredSyncPaths.erase(path);
 }
 
 void ExtensionJob::commandForceStatus(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {

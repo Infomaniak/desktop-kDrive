@@ -1671,19 +1671,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 for (auto &syncPalMapElt: _syncPalMap) {
                     if (!syncPalMapElt.second) continue;
                     if (_commManager) {
-                        CommString command(Str("UNREGISTER_PATH"));
-                        command.append(messageCdeSeparator);
-                        command.append(syncPalMapElt.second->localPath().native());
-                        _commManager->executeCommandDirect(command, true);
+                        _commManager->unregisterSync(syncPalMapElt.second->localPath().native());
                     }
 
                     _syncPalMap[syncPalMapElt.first]->excludeListUpdated();
 
                     if (_commManager) {
-                        CommString command(Str("REGISTER_PATH"));
-                        command.append(messageCdeSeparator);
-                        command.append(syncPalMapElt.second->localPath().native());
-                        _commManager->executeCommandDirect(command, true);
+                        _commManager->registerSync(syncPalMapElt.second->localPath().native());
                     }
                 }
             });
@@ -3470,10 +3464,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, cons
 
     // Ask the Finder/File explorer Extension to register the folder
     if (_commManager) {
-        CommString command(Str("REGISTER_PATH"));
-        command.append(messageCdeSeparator);
-        command.append(sync.localPath().native());
-        _commManager->executeCommandDirect(command, true);
+        _commManager->registerSync(sync.localPath().native());
     }
 
     return ExitCode::Ok;
@@ -3519,10 +3510,7 @@ ExitInfo AppServer::stopSyncPal(int syncDbId, bool pausedByUser, bool quit, bool
     if (_syncPalMap[syncDbId]) {
         // Ask the Finder/File explorer Extension to unregister the folder
         if (_commManager) {
-            CommString command(Str("UNREGISTER_PATH"));
-            command.append(messageCdeSeparator);
-            command.append(_syncPalMap[syncDbId]->localPath().native());
-            _commManager->executeCommandDirect(command, true);
+            _commManager->unregisterSync(_syncPalMap[syncDbId]->localPath().native());
         }
 
         _syncPalMap[syncDbId]->stop(pausedByUser, quit, clear);

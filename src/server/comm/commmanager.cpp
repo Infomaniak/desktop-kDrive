@@ -114,7 +114,7 @@ void CommManager::onNewExtConnection() {
 
     for (const Sync &sync: syncList) {
         if (!sync.paused()) {
-            registerSync(sync.dbId());
+            registerSync(sync.localPath().native());
         }
     }
 }
@@ -182,48 +182,22 @@ void CommManager::onExtQueryReceived(std::shared_ptr<AbstractCommChannel> channe
     }
 }
 
-bool CommManager::tryToRetrieveSync(const int syncDbId, Sync &sync) const {
-    if (!_registeredSyncs.contains(syncDbId)) return false; // Make sure not to register twice to each connected client
-
-    bool found = false;
-    if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync - syncDbId=" << syncDbId);
-        _addError(Error(errId(), ExitCode::DbError, ExitCause::Unknown));
-        return false;
-    }
-    if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "Sync not found in sync table - syncDbId=" << syncDbId);
-        _addError(Error(errId(), ExitCode::DataError, ExitCause::Unknown));
-        return false;
-    }
-
-    return true;
-}
-
-void CommManager::registerSync(int syncDbId) {
-    Sync sync;
-    if (!tryToRetrieveSync(syncDbId, sync)) return;
-
+void CommManager::registerSync(const SyncPath &localPath) {
     CommString command(Str("REGISTER_PATH"));
     command.append(messageCdeSeparator);
-    command.append(sync.localPath().native());
+    command.append(localPath.native());
     broadcastCommand(command);
-
-    _registeredSyncs.insert(syncDbId);
 }
 
-void CommManager::unregisterSync(int syncDbId) {
-    Sync sync;
-    if (!tryToRetrieveSync(syncDbId, sync)) return;
-
+void CommManager::unregisterSync(const SyncPath &localPath) {
     CommString command(Str("UNREGISTER_PATH"));
     command.append(messageCdeSeparator);
-    command.append(sync.localPath().native());
+    command.append(localPath.native());
     broadcastCommand(command);
-
-    _registeredSyncs.erase(syncDbId);
 }
 
+
+#if defined(_WIN32) or defined(__unix__)
 SyncPath CommManager::createSocket() {
     // Get socket file path
     SyncPath socketPath;
@@ -251,6 +225,7 @@ SyncPath CommManager::createSocket() {
 
     return socketPath;
 }
+#endif
 
 void CommManager::executeCommandDirect(const CommString &commandLineStr, bool broadcast) {
     if (broadcast) {
@@ -263,7 +238,8 @@ void CommManager::executeCommandDirect(const CommString &commandLineStr, bool br
 void CommManager::executeCommand(const CommString &commandLineStr) {
     LOGW_DEBUG(Log::instance()->getLogger(), L"Execute command - cmd=" << CommString2WStr(commandLineStr));
 
-    std::shared_ptr<ExtensionJob> job = std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr);
+    std::shared_ptr<ExtensionJob> job =
+            std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr, std::list<std::shared_ptr<AbstractCommChannel>>());
     if (ExitInfo exitInfo = job->runSynchronously(); exitInfo.code() != ExitCode::Ok) {
         LOGW_DEBUG(Log::instance()->getLogger(),
                    L"Error in ExtensionJob::runSynchronously - cmd=" << CommString2WStr(commandLineStr));
@@ -273,7 +249,8 @@ void CommManager::executeCommand(const CommString &commandLineStr) {
 void CommManager::executeCommand(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel) {
     LOGW_DEBUG(Log::instance()->getLogger(), L"Execute command - cmd=" << CommString2WStr(commandLineStr));
 
-    std::shared_ptr<ExtensionJob> job = std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr, channel);
+    std::shared_ptr<ExtensionJob> job = std::make_shared<ExtensionJob>(
+            shared_from_this(), commandLineStr, std::list<std::shared_ptr<AbstractCommChannel>>({channel}));
     if (ExitInfo exitInfo = job->runSynchronously(); exitInfo.code() != ExitCode::Ok) {
         LOGW_DEBUG(Log::instance()->getLogger(),
                    L"Error in ExtensionJob::runSynchronously - cmd=" << CommString2WStr(commandLineStr));

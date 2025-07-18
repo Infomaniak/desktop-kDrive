@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include "abstractcommchannel.h"
 #include "abstractcommserver.h"
 #include "libcommon/utility/types.h"
 #include "libcommonserver/vfs/vfs.h"
@@ -35,7 +34,7 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
     public:
         explicit CommManager(const std::unordered_map<int, std::shared_ptr<SyncPal>> &syncPalMap,
                              const std::unordered_map<int, std::shared_ptr<Vfs>> &vfsMap);
-        virtual ~CommManager();
+        ~CommManager();
 
         // AppServer callbacks setting
         inline void setAddErrorCallback(void (*addError)(const Error &)) { _addError = addError; }
@@ -46,6 +45,11 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
             _getPublicLinkUrl = getPublicLinkUrl;
         }
 
+        // Register a new sync path on all the Finder extensions
+        void registerSync(const SyncPath &localPath);
+        // Unregister a sync path on all the Finder extensions
+        void unregisterSync(const SyncPath &localPath);
+        // TODO: to remove when the LiteSync server will be implemented
         void executeCommandDirect(const CommString &commandLineStr, bool broadcast);
 
     private:
@@ -53,38 +57,37 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         const std::unordered_map<int, std::shared_ptr<SyncPal>> &_syncPalMap;
         const std::unordered_map<int, std::shared_ptr<Vfs>> &_vfsMap;
 
-        std::unique_ptr<AbstractCommServer> _commServer;
-
         // AppServer callbacks
         void (*_addError)(const Error &error);
         ExitCode (*_getThumbnail)(int driveDbId, NodeId nodeId, int width, std::string &thumbnail);
         ExitCode (*_getPublicLinkUrl)(int driveDbId, const NodeId &nodeId, std::string &linkUrl);
 
-        std::unordered_set<int> _registeredSyncs;
+        // Communication server
+        std::unique_ptr<AbstractCommServer> _commServer;
 
-        // Callbacks
+        // Execute a command received from an extension, which does not require an answer
+        void executeCommand(const CommString &commandLineStr);
+        // Execute a command received from an extension and responds on the provided channel
+        void executeCommand(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel);
+        // Broadcast a command to all the server channels
+        void broadcastCommand(const CommString &commandLineStr);
+
+        // Finder callbacks
         void onNewExtConnection(); // Can be a Mac Finder Extension or a Windows Shell Extension
         void onExtQueryReceived(std::shared_ptr<AbstractCommChannel> channel);
         void onLostExtConnection(std::shared_ptr<AbstractCommChannel> channel);
 
+        // GUI callbacks
         void onNewGuiConnection();
         void onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channel);
         void onLostGuiConnection(std::shared_ptr<AbstractCommChannel> channel);
 
-        void executeCommand(const CommString &commandLineStr);
-        void executeCommand(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel);
-        void broadcastCommand(const CommString &commandLineStr);
-
-        // Try to retrieve the Sync object with DB ID `syncDbId`.
-        // Returns `false`, add errors and log messages on failure.
-        // Returns `true` and set `sync` with the result otherwise.
-        bool tryToRetrieveSync(const int syncDbId, Sync &sync) const;
-
-        void registerSync(int syncDbId);
-        void unregisterSync(int syncDbId);
-
+#if defined(_WIN32) or defined(__unix__)
+        // Windows & Linux: socket interprocess communication
         SyncPath createSocket();
-
+#else
+        // macOS: XPC interprocess communication
+#endif
 
         friend class ExtensionJob;
 };

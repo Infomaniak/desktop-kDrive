@@ -19,7 +19,6 @@
 #pragma once
 
 #include "abstractcommchannel.h"
-#include "commmanager.h"
 #include "libsyncengine/jobs/abstractjob.h"
 #include "libsyncengine/syncpal/syncpal.h"
 #include "vfs/vfs.h"
@@ -51,10 +50,8 @@ class CommManager;
 class ExtensionJob : public AbstractJob {
     public:
         ExtensionJob(std::shared_ptr<CommManager> commManager, const CommString &commandLineStr,
-                     const std::list<std::shared_ptr<KDC::AbstractCommChannel>> &channels);
-        ExtensionJob(std::shared_ptr<CommManager> commManager, const CommString &commandLineStr,
-                     std::shared_ptr<KDC::AbstractCommChannel> channel);
-        ExtensionJob(std::shared_ptr<CommManager> commManager, const CommString &commandLineStr);
+                     const std::list<std::shared_ptr<AbstractCommChannel>> &channels);
+        ~ExtensionJob() {}
 
         void runJob() override;
 
@@ -63,12 +60,14 @@ class ExtensionJob : public AbstractJob {
         CommString _commandLineStr;
         std::list<std::shared_ptr<AbstractCommChannel>> _channels;
 
+        std::unordered_set<SyncPath> _registeredSyncPaths;
+
         static bool _dehydrationCanceled;
         static unsigned _nbOngoingDehydration;
         static std::mutex _dehydrationMutex;
 
         // Commands map
-        static std::map<std::string, std::function<void(const CommString &, std::shared_ptr<AbstractCommChannel>)>> _commands;
+        std::map<std::string, std::function<void(const CommString &, std::shared_ptr<AbstractCommChannel>)>> _commands;
 
         // Commands...
         // To FinderSyncExt & FileExplorerExtension
