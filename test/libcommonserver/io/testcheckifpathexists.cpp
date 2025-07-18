@@ -35,6 +35,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::pathExists(path));
     }
 
     // A regular directory
@@ -45,6 +46,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::pathExists(path));
     }
 
     // A regular symbolic link on a file
@@ -59,6 +61,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::pathExists(path));
     }
 
     // A regular symbolic link on a folder
@@ -73,6 +76,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::pathExists(path));
     }
 
     // A non-existing file
@@ -83,6 +87,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(!exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, IoHelper::pathExists(path));
     }
 
     // A dangling symbolic link
@@ -97,6 +102,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::pathExists(path));
     }
 
     // A regular file without read/write permission
@@ -117,6 +123,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT(checkIfPathExistsResult);
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::pathExists(path));
     }
 
     // Checking existence of a subdirectory inside a directory that has been deleted and replaced with a file with the same name.
@@ -128,6 +135,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(!exists);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, IoHelper::pathExists(path));
     }
 
 #if defined(KD_MACOS)
@@ -145,6 +153,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::pathExists(path));
     }
 
     // A dangling MacOSX Finder alias on a non-existing file.
@@ -168,6 +177,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::pathExists(path));
     }
 #endif
 
@@ -186,6 +196,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::pathExists(path));
     }
 
     // A Windows junction on a non-existing target directory.
@@ -202,6 +213,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::pathExists(path));
     }
 
     // A Windows junction on a regular target file.
@@ -218,6 +230,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::pathExists(path));
     }
 #endif
 }

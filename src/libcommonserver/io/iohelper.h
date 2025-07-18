@@ -196,6 +196,13 @@ struct IoHelper {
          */
         static bool checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError) noexcept;
 
+        /**
+         * @brief A simpler implementation of `checkIfPathExists`.
+         * @param path is the file system path indicating the item to check.
+         * @return IoError::Success if the path is found. An `IoError` representing the underlying OS API call error.
+         */
+        static IoError pathExists(const SyncPath &path) noexcept;
+
         //! Checks if the item indicated by the specified path exists and has the specified node identifier.
         /*!
          \param path is the file system path indicating the item to check.
