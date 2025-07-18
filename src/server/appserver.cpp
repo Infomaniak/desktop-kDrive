@@ -53,8 +53,9 @@
 #include <windows.h>
 #endif
 
-#include "jobs/network/API_v2/upload/loguploadjob.h"
-#include "jobs/network/API_v2/upload/upload_session/uploadsessioncanceljob.h"
+#include "jobs/network/kDrive_API/searchjob.h"
+#include "jobs/network/kDrive_API/upload/loguploadjob.h"
+#include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
 #include "updater/updatemanager.h"
 
 #include <QDesktopServices>
@@ -1032,6 +1033,39 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             Utility::restartFinderExtension();
 
+            break;
+        }
+        case RequestNum::DRIVE_SEARCH: {
+            int driveDbId = 0;
+            QString searchString;
+            ArgsWriter(params).write(driveDbId, searchString);
+
+            // Find drive ID
+            Drive drive;
+            bool found = false;
+            if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
+                LOG_WARN(_logger, "Error in ParmsDb::selectSync");
+                resultStream << ExitCode::DbError;
+                break;
+            }
+            if (!found) {
+                LOG_WARN(_logger, "Drive not found for ID: " << driveDbId);
+                resultStream << ExitCode::DataError;
+                break;
+            }
+
+            // Send search request (synchronously for now)
+            SearchJob searchJob(driveDbId, searchString.toStdString());
+            (void) searchJob.runSynchronously();
+            QList<SearchInfo> list;
+            for (const auto &searchInfo: searchJob.searchResults()) {
+                list << searchInfo;
+            }
+
+            resultStream << ExitCode::Ok;
+            resultStream << list;
+            resultStream << searchJob.hasMore();
+            resultStream << QString::fromStdString(searchJob.cursor());
             break;
         }
         case RequestNum::SYNC_INFOLIST: {

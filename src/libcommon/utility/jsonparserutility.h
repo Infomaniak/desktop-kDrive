@@ -37,7 +37,7 @@ struct COMMONSERVER_EXPORT JsonParserUtility {
             } // namespace KDC
 
             if (obj->has(key) && obj->isNull(key)) {
-                // Item exist in JSON but is null, this is ok
+                // Item exists in JSON but is null, this is ok
                 return true;
             }
 
@@ -54,7 +54,7 @@ struct COMMONSERVER_EXPORT JsonParserUtility {
             }
 
             return true;
-        }
+        } // namespace KDC
 
         static Poco::JSON::Object::Ptr extractJsonObject(const Poco::JSON::Object::Ptr parentObj, const std::string &key) {
             if (!parentObj) {

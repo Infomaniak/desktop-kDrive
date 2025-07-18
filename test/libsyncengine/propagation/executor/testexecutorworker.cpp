@@ -25,7 +25,7 @@
 #include "mocks/libsyncengine/vfs/mockvfs.h"
 #include "network/proxy.h"
 #include "propagation/executor/filerescuer.h"
-#include "jobs/network/API_v2/upload/uploadjob.h"
+#include "jobs/network/kDrive_API/upload/uploadjob.h"
 
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "test_classes/testsituationgenerator.h"

@@ -59,6 +59,7 @@ enum class RequestNum {
     DRIVE_DEFAULTCOLOR,
     DRIVE_UPDATE,
     DRIVE_DELETE,
+    DRIVE_SEARCH,
     SYNC_INFOLIST,
     SYNC_START,
     SYNC_STOP,

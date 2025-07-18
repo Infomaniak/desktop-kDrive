@@ -54,9 +54,9 @@ QDataStream &operator>>(QDataStream &in, QList<ExclusionAppInfo> &list) {
     auto count = 0;
     in >> count;
     for (int i = 0; i < count; i++) {
-        ExclusionAppInfo *exclusionAppInfo = new ExclusionAppInfo();
-        in >> *exclusionAppInfo;
-        list.push_back(*exclusionAppInfo);
+        ExclusionAppInfo exclusionAppInfo;
+        in >> exclusionAppInfo;
+        list.push_back(exclusionAppInfo);
     }
     return in;
 }
