@@ -93,9 +93,9 @@ struct COMMONSERVER_EXPORT Utility {
         static void logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle,
                                           std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
 
-#if defined(KD_WINDOWS)
         static bool isNtfs(const SyncPath &targetPath);
-#endif
+        static bool isFat(const SyncPath &targetPath);
+
         static std::string fileSystemName(const SyncPath &targetPath);
         static bool startsWith(const std::string &str, const std::string &prefix);
         static bool startsWithInsensitive(const std::string &str, const std::string &prefix);
