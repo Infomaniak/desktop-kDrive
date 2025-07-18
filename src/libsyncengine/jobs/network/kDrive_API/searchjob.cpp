@@ -26,9 +26,10 @@
 
 namespace KDC {
 
-SearchJob::SearchJob(int driveDbId, const std::string &searchString) :
+SearchJob::SearchJob(int driveDbId, const std::string &searchString, const std::string &cursorInput /*= {}*/) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
-    _searchString(searchString) {
+    _searchString(searchString),
+    _cursorInput(cursorInput) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _apiVersion = 3;
 }
@@ -50,6 +51,9 @@ void SearchJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
     }
     uri.addQueryParameter("limit", std::to_string(100));
     uri.addQueryParameter("order_by", "relevance");
+    if (!_cursorInput.empty()) {
+        uri.addQueryParameter("cursor", _cursorInput);
+    }
 }
 
 bool SearchJob::handleResponse(std::istream &is) {
@@ -58,6 +62,13 @@ bool SearchJob::handleResponse(std::istream &is) {
     }
     if (!jsonRes()) {
         LOG_WARN(_logger, "Invalid JSON object");
+        return false;
+    }
+
+    if (!JsonParserUtility::extractValue(jsonRes(), cursorKey, _cursorOutput)) {
+        return false;
+    }
+    if (!JsonParserUtility::extractValue(jsonRes(), hasMoreKey, _hasMore)) {
         return false;
     }
 

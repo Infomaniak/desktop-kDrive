@@ -1105,7 +1105,9 @@ void DrivePreferencesWidget::onSearch() {
     _searchProgressLabel->setText("Searching...");
 
     QList<SearchInfo> searchInfos;
-    (void) GuiRequests::searchItemInDrive(_driveDbId, searchString, searchInfos);
+    bool hasMore = false; // To be used for the new UI
+    QString cursor; // To be used for the new UI
+    (void) GuiRequests::searchItemInDrive(_driveDbId, searchString, searchInfos, hasMore, cursor);
     if (searchInfos.empty()) {
         _searchProgressLabel->setText("No items found!");
         return;

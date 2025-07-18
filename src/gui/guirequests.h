@@ -115,8 +115,8 @@ struct GuiRequests {
         static ExitCode checkCommStatus(); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode deleteUser(int userDbId); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode deleteDrive(int driveDbId); // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode searchItemInDrive(int driveDbId, const QString &searchString,
-                                          QList<SearchInfo> &list); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode searchItemInDrive(int driveDbId, const QString &searchString, QList<SearchInfo> &list, bool &hasMore,
+                                          QString &cursor); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode deleteSync(int syncDbId); // Asynchronous because it can be time consuming
         static ExitCode propagateSyncListChange(int syncDbId, bool restartSync);
         static ExitCode bestAvailableVfsMode(VirtualFileMode &mode);

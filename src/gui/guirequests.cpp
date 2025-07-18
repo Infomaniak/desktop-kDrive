@@ -357,7 +357,8 @@ ExitCode GuiRequests::deleteDrive(const int driveDbId) {
     return exitCode;
 }
 
-ExitCode GuiRequests::searchItemInDrive(const int driveDbId, const QString &searchString, QList<SearchInfo> &list) {
+ExitCode GuiRequests::searchItemInDrive(const int driveDbId, const QString &searchString, QList<SearchInfo> &list, bool &hasMore,
+                                        QString &cursor) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << driveDbId;
@@ -372,6 +373,8 @@ ExitCode GuiRequests::searchItemInDrive(const int driveDbId, const QString &sear
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> list;
+    resultStream >> hasMore;
+    resultStream >> cursor;
 
     return exitCode;
 }

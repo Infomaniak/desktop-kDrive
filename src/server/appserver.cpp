@@ -1064,6 +1064,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             resultStream << ExitCode::Ok;
             resultStream << list;
+            resultStream << searchJob.hasMore();
+            resultStream << QString::fromStdString(searchJob.cursor());
             break;
         }
         case RequestNum::SYNC_INFOLIST: {

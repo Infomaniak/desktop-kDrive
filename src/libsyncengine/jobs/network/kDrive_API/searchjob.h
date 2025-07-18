@@ -26,9 +26,11 @@ namespace KDC {
 
 class SearchJob : public AbstractTokenNetworkJob {
     public:
-        SearchJob(int driveDbId, const std::string &searchString);
+        SearchJob(int driveDbId, const std::string &searchString, const std::string &cursorInput = {});
 
         std::list<SearchInfo> searchResults() const { return _searchResults; }
+        [[nodiscard]] const std::string &cursor() const { return _cursorOutput; }
+        [[nodiscard]] bool hasMore() const { return _hasMore; }
 
     private:
         std::string getSpecificUrl() override;
@@ -36,7 +38,11 @@ class SearchJob : public AbstractTokenNetworkJob {
         bool handleResponse(std::istream &is) override;
 
         std::string _searchString;
+        std::string _cursorInput;
+
         std::list<SearchInfo> _searchResults;
+        std::string _cursorOutput;
+        bool _hasMore{false};
 };
 
 } // namespace KDC
