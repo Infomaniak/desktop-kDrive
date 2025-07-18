@@ -305,24 +305,26 @@ elseif(BUILD_CLIENT)
 endif()
 
 if(UNIX AND NOT APPLE)
-    # Copy .so files to the conan dependency directory
-    include(ConanGetLibDirs)
-    get_library_dirs("log4cplus" "log4cplus")
-    get_library_dirs("OpenSSL" "openssl")
-    get_library_dirs("xxHash" "xxhash")
-    file(COPY
-        # log4cplus
-        "${_log4cplus_LIB_DIRS}/liblog4cplus.so"
-        "${_log4cplus_LIB_DIRS}/liblog4cplus.so.9"
-        # xxHash
-        "${_xxHash_LIB_DIRS}/libxxhash.so"
-        "${_xxHash_LIB_DIRS}/libxxhash.so.0"
-        "${_xxHash_LIB_DIRS}/libxxhash.so.0.8.2"
-        # OpenSSL
-        "${_OpenSSL_LIB_DIRS}/libcrypto.so"
-        "${_OpenSSL_LIB_DIRS}/libcrypto.so.3"
-        "${_OpenSSL_LIB_DIRS}/libssl.so"
-        "${_OpenSSL_LIB_DIRS}/libssl.so.3"
-        DESTINATION "${CONAN_DEP_DIR}"
-        FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+    if (DEFINED CONAN_DEP_DIR)
+        # Copy .so files to the conan dependency directory
+        include(ConanGetLibDirs)
+        get_library_dirs("log4cplus" "log4cplus")
+        get_library_dirs("OpenSSL" "openssl")
+        get_library_dirs("xxHash" "xxhash")
+        file(COPY
+            # log4cplus
+            "${_log4cplus_LIB_DIRS}/liblog4cplus.so"
+            "${_log4cplus_LIB_DIRS}/liblog4cplus.so.9"
+            # xxHash
+            "${_xxHash_LIB_DIRS}/libxxhash.so"
+            "${_xxHash_LIB_DIRS}/libxxhash.so.0"
+            "${_xxHash_LIB_DIRS}/libxxhash.so.0.8.2"
+            # OpenSSL
+            "${_OpenSSL_LIB_DIRS}/libcrypto.so"
+            "${_OpenSSL_LIB_DIRS}/libcrypto.so.3"
+            "${_OpenSSL_LIB_DIRS}/libssl.so"
+            "${_OpenSSL_LIB_DIRS}/libssl.so.3"
+            DESTINATION "${CONAN_DEP_DIR}"
+            FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+    endif()
 endif()
