@@ -53,6 +53,7 @@
 #include <windows.h>
 #endif
 
+#include "jobs/network/kDrive_API/searchjob.h"
 #include "jobs/network/kDrive_API/upload/loguploadjob.h"
 #include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
 #include "updater/updatemanager.h"
@@ -1036,9 +1037,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         }
         case RequestNum::DRIVE_SEARCH: {
             int driveDbId = 0;
-            QList<DriveInfo> list;
-            ArgsWriter(params).write(driveDbId);
-            ArgsWriter(params).write(list);
+            QString searchString;
+            ArgsWriter(params).write(driveDbId, searchString);
 
             // Find drive ID
             Drive drive;
@@ -1054,12 +1054,16 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 break;
             }
 
-            // Send search request (synchonously for now)
-
+            // Send search request (synchronously for now)
+            SearchJob searchJob(driveDbId, searchString.toStdString());
+            (void) searchJob.runSynchronously();
+            QList<SearchInfo> list;
+            for (const auto &searchInfo: searchJob.searchResults()) {
+                list << searchInfo;
+            }
 
             resultStream << ExitCode::Ok;
-
-
+            resultStream << list;
             break;
         }
         case RequestNum::SYNC_INFOLIST: {
