@@ -135,11 +135,14 @@ DrivePreferencesWidget::DrivePreferencesWidget(std::shared_ptr<ClientGui> gui, Q
     //
     //  Search bloc
     //
+    bool showSearchBloc = !CommonUtility::envVarValue("KDRIVE_SHOW_SEARCH").empty();
     _searchLabel = new QLabel(this);
     _searchLabel->setObjectName("blocLabel");
+    _searchLabel->setVisible(showSearchBloc);
     _mainVBox->addWidget(_searchLabel);
 
     auto *searchBloc = new PreferencesBlocWidget(this);
+    searchBloc->setVisible(showSearchBloc);
     _mainVBox->addWidget(searchBloc);
 
     auto *searchLayout = searchBloc->addLayout(QBoxLayout::Direction::TopToBottom);
