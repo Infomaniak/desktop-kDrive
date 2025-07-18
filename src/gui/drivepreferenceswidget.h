@@ -104,7 +104,7 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
                     _data = data;
                     QStringList list;
                     for (const auto &item: _data) {
-                        list << QString::fromStdString(item.name());
+                        list << SyncName2QStr(item.name());
                     }
                     setStringList(list);
                 };
