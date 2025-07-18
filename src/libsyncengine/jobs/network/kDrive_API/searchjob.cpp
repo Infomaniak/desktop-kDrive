@@ -49,7 +49,6 @@ void SearchJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
         // Otherwise, search only by name.
         uri.addQueryParameter("name", _searchString);
     }
-    uri.addQueryParameter("limit", std::to_string(100));
     uri.addQueryParameter("order_by", "relevance");
     if (!_cursorInput.empty()) {
         uri.addQueryParameter("cursor", _cursorInput);
