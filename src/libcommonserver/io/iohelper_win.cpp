@@ -254,10 +254,8 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError 
                                            FileIdFullDirectoryInformation, true, &fn, TRUE);
 
     DWORD dwError = GetLastError();
-    const bool isNtfs = Utility::isNtfs(path);
-    if ((isNtfs && !NT_SUCCESS(status)) ||
-        (!isNtfs && dwError != 0)) { // On FAT32 file system, NT_SUCCESS will return false even if it is a success, therefore we
-                                     // also check GetLastError
+    // On FAT32 file system, NT_SUCCESS will return false even if it is a success, therefore we also check GetLastError
+    if ((Utility::isNtfs(path) && !NT_SUCCESS(status)) || (Utility::isFat(path) && dwError != 0)) {
         CloseHandle(hParent);
 
         if (!NT_SUCCESS(status)) {

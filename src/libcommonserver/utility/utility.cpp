@@ -80,10 +80,6 @@ static const SyncName resourcesPath(Str(""));
 static const SyncName resourcesPath(Str(""));
 #endif
 
-#ifndef KD_MACOS // Not used on macOS
-static const std::string NTFS("NTFS");
-#endif
-
 struct VariantPrinter {
         std::wstring operator()(std::monostate) { return std::wstring(L"NULL"); }
         std::wstring operator()(int value) { return std::to_wstring(value); }
@@ -334,23 +330,29 @@ void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::
     LOG_WARN(logger, errorTitle << ": " << errorMsg);
 }
 
-#if defined(KD_WINDOWS)
-static std::unordered_map<std::string, bool> rootFsTypeMap;
-
-bool Utility::isNtfs(const SyncPath &targetPath) {
+static std::unordered_map<std::string, std::string> rootFsTypeMap;
+std::string getRootFsType(const SyncPath &targetPath) {
     auto it = rootFsTypeMap.find(targetPath.root_name().string());
     if (it == rootFsTypeMap.end()) {
-        std::string fsType = fileSystemName(targetPath);
-        auto val = rootFsTypeMap.insert({targetPath.root_name().string(), fsType == NTFS});
-        if (!val.second) {
-            // Failed to insert into map
-            return false;
+        const std::string fsType = Utility::fileSystemName(targetPath);
+        const auto [it2, inserted] = rootFsTypeMap.try_emplace(targetPath.root_name().string(), Utility::toUpper(fsType));
+        if (!inserted) {
+            return {};
         }
-        it = val.first;
+        it = it2;
     }
     return it->second;
 }
-#endif
+
+bool Utility::isNtfs(const SyncPath &targetPath) {
+    static const std::string ntfs("NTFS");
+    return getRootFsType(targetPath) == ntfs;
+}
+
+bool Utility::isFat(const SyncPath &targetPath) {
+    static const std::string fat("FAT");
+    return Utility::contains(getRootFsType(targetPath), fat);
+}
 
 std::string Utility::fileSystemName(const SyncPath &targetPath) {
 #if defined(KD_MACOS)
