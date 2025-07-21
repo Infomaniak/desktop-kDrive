@@ -1,0 +1,58 @@
+name: Update the kStore
+
+on:
+  workflow_call:
+    inputs:
+        environment:
+            description: 'The environment to update the kStore for'
+            type: environment
+            required: true
+            default: 'internal beta'
+        tag:
+            description: 'The new version number of kDrive. :warning: this tag should not include the date'
+            type: string
+            required: true
+        build_date:
+            description: 'The date of the build in YYYYMMDD format'
+            type: string
+            required: true
+        download_link:
+            description: 'The download link of the new kDrive version'
+            type: string
+            required: true
+        release_notes:
+            description: 'The release notes of the new kDrive version'
+            type: string
+            required: true
+
+  workflow_dispatch:
+    inputs:
+        environment:
+            description: 'The environment to update the kStore for'
+            type: environment
+            required: true
+            default: 'internal beta'
+        tag:
+            description: 'The new version number of kDrive. :warning: this tag should not include the date'
+            type: string
+            required: true
+        build_date:
+            description: 'The date of the build in YYYYMMDD format'
+            type: string
+            required: true
+        download_link:
+            description: 'The download link of the new kDrive version'
+            type: string
+            required: true
+        release_notes:
+            description: 'The release notes of the new kDrive version'
+            type: string
+            required: true
+
+jobs:
+    dummy:
+        runs-on: [ self-hosted, Linux, X64 ]
+        steps:
+            - name: Dummy step to allow the workflow to be called
+              run: echo "This workflow is called to update the kStore for kDrive desktop."
+  
