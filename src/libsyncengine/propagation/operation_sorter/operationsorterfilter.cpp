@@ -60,6 +60,7 @@ void OperationSorterFilter::clear() {
 
 // delete before move, e.g. user deletes an object at path "x" and moves another object "a" to "x".
 void OperationSorterFilter::filterDeleteBeforeMoveCandidates(const SyncOpPtr &op, NameToOpMap &deleteBeforeMoveCandidates) {
+    if (op->omit()) return;
     if (op->type() == OperationType::Delete || op->type() == OperationType::Move) {
         if (const auto [_, ok] = deleteBeforeMoveCandidates.try_emplace(op->affectedNode()->normalizedName(), op); !ok) {
             const auto &otherOp = deleteBeforeMoveCandidates.at(op->affectedNode()->normalizedName());
@@ -72,6 +73,7 @@ void OperationSorterFilter::filterDeleteBeforeMoveCandidates(const SyncOpPtr &op
 }
 
 void OperationSorterFilter::filterMoveBeforeCreateCandidates(const SyncOpPtr &op, NameToOpMap &moveBeforeCreateCandidates) {
+    if (op->omit()) return;
     if (op->type() == OperationType::Create) {
         const SyncName name = op->affectedNode()->normalizedName();
         if (const auto &[_, ok] = moveBeforeCreateCandidates.try_emplace(name, op); !ok) {
@@ -97,6 +99,7 @@ void OperationSorterFilter::filterMoveBeforeCreateCandidates(const SyncOpPtr &op
 
 void OperationSorterFilter::filterMoveBeforeDeleteCandidates(const SyncOpPtr &op, SyncPathToSyncOpMap &deletedDirectoryPaths,
                                                              SyncPathToSyncOpMap &moveOriginPaths) {
+    if (op->omit()) return;
     if (op->type() == OperationType::Delete) {
         if (op->affectedNode()->type() != NodeType::Directory) {
             return;
@@ -139,6 +142,7 @@ void OperationSorterFilter::filterMoveBeforeDeleteCandidates(const SyncOpPtr &op
 
 void OperationSorterFilter::filterCreateBeforeMoveCandidates(const SyncOpPtr &op, SyncPathToSyncOpMap &createdDirectoryPaths,
                                                              SyncPathToSyncOpMap &moveDestinationPaths) {
+    if (op->omit()) return;
     if (op->type() == OperationType::Create) {
         if (op->affectedNode()->type() != NodeType::Directory) {
             return;
@@ -185,6 +189,7 @@ void OperationSorterFilter::filterCreateBeforeMoveCandidates(const SyncOpPtr &op
     }
 }
 void OperationSorterFilter::filterDeleteBeforeCreateCandidates(const SyncOpPtr &op, NameToOpMap &deleteBeforeCreateCandidates) {
+    if (op->omit()) return;
     if (op->type() == OperationType::Delete) {
         if (const auto [_, ok] = deleteBeforeCreateCandidates.try_emplace(op->affectedNode()->normalizedName(), op); !ok) {
             const auto &otherOp = deleteBeforeCreateCandidates.at(op->affectedNode()->normalizedName());
@@ -207,7 +212,7 @@ void OperationSorterFilter::filterDeleteBeforeCreateCandidates(const SyncOpPtr &
 
 void OperationSorterFilter::filterMoveBeforeMoveOccupiedCandidates(const SyncOpPtr &op, NameToOpMap &moveOriginNames,
                                                                    NameToOpMap &moveDestinationNames) {
-    if (op->type() != OperationType::Move) return;
+    if (op->type() != OperationType::Move || op->omit()) return;
 
     const SyncName originName = op->affectedNode()->moveOriginInfos().normalizedPath().filename().native();
     const SyncName destinationName = op->affectedNode()->normalizedName();
@@ -234,6 +239,7 @@ void OperationSorterFilter::filterMoveBeforeMoveOccupiedCandidates(const SyncOpP
 }
 
 void OperationSorterFilter::filterEditBeforeMoveCandidates(const SyncOpPtr &op) {
+    if (op->omit()) return;
     if (op->affectedNode()->hasChangeEvent(OperationType::Edit) && op->affectedNode()->hasChangeEvent(OperationType::Move)) {
         (void) _fixEditBeforeMoveCandidates[op->affectedNode()->idb().value()].emplace_back(op);
         return;
@@ -260,7 +266,7 @@ void OperationSorterFilter::filterEditBeforeMoveCandidates(const SyncOpPtr &op) 
 
 void OperationSorterFilter::filterMoveBeforeMoveHierarchyFlipCandidates(
         const SyncOpPtr &op, std::list<std::pair<SyncOpPtr, SyncPath>> &moveBeforeMoveHierarchyFlipCandidates) {
-    if (op->type() != OperationType::Move || op->nodeType() != NodeType::Directory) return;
+    if (op->type() != OperationType::Move || op->nodeType() != NodeType::Directory || op->omit()) return;
 
     const auto &originPath = op->affectedNode()->moveOriginInfos().normalizedPath();
     SyncPath normalizedDestinationPath;

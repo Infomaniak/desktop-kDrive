@@ -226,7 +226,7 @@ The project requires additional CMake variables for a correct build. To inject t
    set(BUILD_UNIT_TESTS "ON")      # Set to "OFF" to skip tests
    set(SOCKETAPI_TEAM_IDENTIFIER_PREFIX "864VDCS2QY")
    set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.2.3/macos")
-   set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/Projects/CLion-build-debug/install")
+   set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/Projects/CLion-build-debug/build/Debug/install")
    ```
 
 2. In your profile (`~/.conan2/profiles/default`), add under a new `[conf]` section:
@@ -328,6 +328,18 @@ Add a `Run external tool` in the `Before launch` steps:
 Create the external tool to run `sign_app_debug.sh`:
 
 ![alt text](doc-images/sign_package.png)
+
+The content of the `Arguments` field is of the form:
+
+```
+kDrive
+/Users/<username>/Projects/CLion-build-debug/build/Debug/install/kDrive.app
+"Developer ID Application: Infomaniak Network SA (864VDCS2QY)"
+"864VDCS2QY"
+"com.infomaniak.drive.desktopclient"
+2>&1
+1>/dev/null
+```
 
 Signing package is mandatory only if you need to use the LiteSync in debug mode. Otherwise you can remove this step in order to start the app faster.
 

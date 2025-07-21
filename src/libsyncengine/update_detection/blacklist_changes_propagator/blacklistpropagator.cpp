@@ -157,7 +157,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
                     return ExitCode::Ok;
                 }
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
                 // skip_permission_denied doesn't work on Windows
                 try {
                     bool dummy = dirIt->exists();

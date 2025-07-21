@@ -45,7 +45,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSplitPathFromSyncName);
         CPPUNIT_TEST(testComputeSyncNameNormalizations);
         CPPUNIT_TEST(testComputePathNormalizations);
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         CPPUNIT_TEST(testGetLastErrorMessage);
 #endif
         CPPUNIT_TEST_SUITE_END();
@@ -74,7 +74,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testComputeSyncNameNormalizations();
         void testComputePathNormalizations();
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         void testGetLastErrorMessage();
 #endif
 

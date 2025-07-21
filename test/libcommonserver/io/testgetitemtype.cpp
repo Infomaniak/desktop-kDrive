@@ -164,7 +164,7 @@ void TestIo::testGetItemTypeSimpleCases() {
         const std::string veryLongfileName(1000, 'a'); // Exceeds the max allowed name length on every file system of interest.
         const SyncPath path = _localTestDirPath / veryLongfileName; // This file doesn't exist.
         ItemType itemType;
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoError::NoSuchFileOrDirectory);
 #else
@@ -186,7 +186,7 @@ void TestIo::testGetItemTypeSimpleCases() {
             path /= pathSegment; // Eventually exceeds the max allowed path length on every file system of interest.
         }
         ItemType itemType;
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoError::NoSuchFileOrDirectory);
 #else
@@ -206,7 +206,7 @@ void TestIo::testGetItemTypeSimpleCases() {
         const SyncPath path = temporaryDirectory.path() / ":.file.::.name.:";
         { std::ofstream ofs(path); }
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         ItemType itemType;
         CPPUNIT_ASSERT(IoHelper::getItemType(
                 path, itemType)); // Invalid name is considered as IoError::NoSuchFileOrDirectory (expected error)
@@ -246,7 +246,7 @@ void TestIo::testGetItemTypeSimpleCases() {
         CPPUNIT_ASSERT(targetPath == targetPath_ && ec.value() == 0);
 
         // Actual test
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         const auto result = checker.checkSuccessfullRetrievalOfDanglingLink(path, targetPath, LinkType::Symlink, NodeType::File);
 #else
         const auto result =
@@ -255,7 +255,7 @@ void TestIo::testGetItemTypeSimpleCases() {
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     // A MacOSX Finder alias on a regular file.
     {
         const LocalTemporaryDirectory temporaryDirectory;
@@ -314,7 +314,7 @@ void TestIo::testGetItemTypeSimpleCases() {
                 checker.checkSuccessfullRetrievalOfDanglingLink(path, SyncPath{}, LinkType::FinderAlias, NodeType::Unknown);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
     // A Windows junction on a regular folder.
     {
         const LocalTemporaryDirectory temporaryDirectory;
@@ -389,7 +389,7 @@ void TestIo::testGetItemTypeSimpleCases() {
 
         ItemType itemType;
         CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(itemType.ioError == IoError::Success);
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::File);
 #else
@@ -418,7 +418,7 @@ void TestIo::testGetItemTypeSimpleCases() {
 
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::remove);
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         ItemType itemType;
         CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
         // Restore permission to allow subdir removal
@@ -497,7 +497,7 @@ void TestIo::testGetItemTypeAllBranches() {
             return std::filesystem::read_symlink(path, ec);
         });
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         ItemType itemType;
         CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoError::Success);
@@ -552,7 +552,7 @@ void TestIo::testGetItemTypeAllBranches() {
         _testObj->resetFunctions();
     }
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     // Failing to read a regular MacOSX Finder alias link after `checkIfAlias` was called.
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
@@ -613,7 +613,7 @@ void TestIo::testGetItemTypeAllBranches() {
 }
 
 void TestIo::testGetItemTypeEdgeCases() {
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     // A regular file with a file path of length 1023 which contains moreover a Japanese character.
     // Such a path causes the function `getResourceValue` to issue an error with code 258 in the following excerpt:
     //

@@ -39,7 +39,7 @@ namespace KDC {
 
 namespace OldUtility {
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 void setFolderPinState(const QUuid &clsid, bool show);
 #endif
 

@@ -18,6 +18,8 @@
 
 #pragma once
 
+#define KD_WINDOWS
+
 #include "framework.h"
 #include "debug.h"
 #include "targetver.h"

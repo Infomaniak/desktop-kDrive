@@ -19,7 +19,7 @@
 #include "testincludes.h"
 
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 #include "vfs/mac/testlitesyncextconnector.h"
 #include "vfs/mac/testvfsmac.h"
 #endif
@@ -31,7 +31,7 @@
 
 namespace KDC {
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestVfsMac);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncExtConnector);
 #endif
