@@ -7,6 +7,10 @@ on:
         type: environment
         description: Select the deployment environment
         default: Internal beta
+  pull_request:
+    branches-ignore:
+        - 'release/**'
+    types: [synchronize, opened]
 
 concurrency:
   group: kDrive-desktop-release-${{ github.head_ref }}
@@ -101,6 +105,7 @@ jobs:
 
 # Build apps
   build-Windows:
+    if: false
     needs: [check-release-notes, check-translations]
     runs-on: [ self-hosted, Windows, desktop-kdrive-with-gui ] #with-gui is required for the build_windows action to unlock the release signing certificate
     outputs:
@@ -147,7 +152,9 @@ jobs:
         with:
           release_build: true
 
-# Tests Windows
+  # TODO: build macOS apps
+
+  # Tests Windows
   test-Windows:
     needs: build-Windows
     strategy:
@@ -194,7 +201,8 @@ jobs:
 
 # Upload the installer and sentry artifacts
   upload-to-kDrive-and-sentry:
-    needs: [get-version, build-Linux, test-Linux, build-Windows, test-Windows]
+   # needs: [test-Windows, build-Windows]
+    needs: [get-version, build-Linux-amd, build-Linux-arm, test-Linux, build-Windows, test-Windows]
     runs-on: [self-hosted, Windows]
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
@@ -254,7 +262,7 @@ jobs:
 
 # Upload to the storage server
   upload-app-to-storage-server:
-    needs: [get-version, build-Linux, test-Linux, build-Windows, test-Windows]
+    needs: [get-version, build-Linux-amd, build-Linux-arm, test-Linux, build-Windows, test-Windows]
     runs-on: [self-hosted, Windows, desktop-kdrive]
     steps:
       - name: Checkout the PR
