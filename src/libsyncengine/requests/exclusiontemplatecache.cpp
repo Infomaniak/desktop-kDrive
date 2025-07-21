@@ -229,10 +229,10 @@ bool ExclusionTemplateCache::isExcluded(const SyncPath &relativePath, bool &isWa
                     exclude = fileName.find(tmpStr) != std::string::npos;
                 } else if (atBeginning) {
                     // Must be at the end only
-                    exclude = Utility::endsWith(fileName, tmpStr);
+                    exclude = CommonUtility::endsWith(fileName, tmpStr);
                 } else {
                     // Must be at the beginning only
-                    exclude = Utility::startsWith(fileName, tmpStr);
+                    exclude = CommonUtility::startsWith(fileName, tmpStr);
                 }
 
                 if (exclude) {

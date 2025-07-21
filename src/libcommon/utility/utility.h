@@ -60,7 +60,11 @@ struct COMMON_EXPORT CommonUtility {
         static std::string generateRandomStringAlphaNum(int length = 10);
         static std::string generateRandomStringPKCE(int length = 10);
 
-        static QString fileSystemName(const QString &dirPath);
+        // File system type
+        static bool isNTFS(const SyncPath &targetPath);
+        static bool isAPFS(const SyncPath &targetPath);
+        static bool isFAT(const SyncPath &targetPath);
+        static std::string fileSystemName(const SyncPath &targetPath);
 
         static qint64 freeDiskSpace(const QString &path);
         static void crash();
@@ -153,6 +157,24 @@ struct COMMON_EXPORT CommonUtility {
         static SyncPath applicationFilePath();
 
         static void resetTranslations();
+
+        // String manipulation
+        static bool startsWith(const std::string &str, const std::string &prefix);
+        static bool startsWithInsensitive(const std::string &str, const std::string &prefix);
+        static bool endsWith(const std::string &str, const std::string &suffix);
+        static bool endsWithInsensitive(const std::string &str, const std::string &suffix);
+        static bool contains(const std::string &str, const std::string &substr);
+        static std::string toUpper(const std::string &str);
+#if defined(KD_WINDOWS)
+        static bool startsWithInsensitive(const SyncName &str, const SyncName &prefix);
+        static bool startsWith(const SyncName &str, const SyncName &prefix);
+        static bool endsWith(const SyncName &str, const SyncName &suffix);
+        static bool endsWithInsensitive(const SyncName &str, const SyncName &suffix);
+#endif
+
+        static bool isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path);
+        static bool isStrictDescendant(const SyncPath &potentialDescendant, const SyncPath &path);
+
 
         static bool normalizedSyncName(const SyncName &name, SyncName &normalizedName,
                                        UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;

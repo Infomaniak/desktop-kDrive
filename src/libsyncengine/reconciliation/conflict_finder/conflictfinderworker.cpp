@@ -405,10 +405,10 @@ std::optional<std::vector<Conflict>> ConflictFinderWorker::determineMoveMoveCycl
                 continue;
             }
 
-            if (Utility::isDescendantOrEqual(SyncPath(localDbPath).lexically_normal(),
-                                             SyncPath(remoteDbPath.native() + Str("/")).lexically_normal()) ||
-                Utility::isDescendantOrEqual(SyncPath(remoteDbPath).lexically_normal(),
-                                             SyncPath(localDbPath.native() + Str("/")).lexically_normal())) {
+            if (CommonUtility::isDescendantOrEqual(SyncPath(localDbPath).lexically_normal(),
+                                                   SyncPath(remoteDbPath.native() + Str("/")).lexically_normal()) ||
+                CommonUtility::isDescendantOrEqual(SyncPath(remoteDbPath).lexically_normal(),
+                                                   SyncPath(localDbPath.native() + Str("/")).lexically_normal())) {
                 continue;
             }
 

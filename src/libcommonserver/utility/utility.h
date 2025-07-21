@@ -93,21 +93,6 @@ struct COMMONSERVER_EXPORT Utility {
         static void logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle,
                                           std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
 
-        static bool isNtfs(const SyncPath &targetPath);
-        static bool isFat(const SyncPath &targetPath);
-
-        static std::string fileSystemName(const SyncPath &targetPath);
-        static bool startsWith(const std::string &str, const std::string &prefix);
-        static bool startsWithInsensitive(const std::string &str, const std::string &prefix);
-        static bool endsWith(const std::string &str, const std::string &suffix);
-        static bool endsWithInsensitive(const std::string &str, const std::string &suffix);
-        static bool contains(const std::string &str, const std::string &substr);
-#if defined(KD_WINDOWS)
-        static bool startsWithInsensitive(const SyncName &str, const SyncName &prefix);
-        static bool startsWith(const SyncName &str, const SyncName &prefix);
-        static bool endsWith(const SyncName &str, const SyncName &suffix);
-        static bool endsWithInsensitive(const SyncName &str, const SyncName &suffix);
-#endif
         /**
          * Check if two paths coincide up to case and encoding of file names.
          * @param a SyncPath value to be compared.
@@ -116,8 +101,6 @@ struct COMMONSERVER_EXPORT Utility {
          * @return true if no normalization issue occurs when comparing.
          */
         static bool checkIfEqualUpToCaseAndEncoding(const SyncPath &a, const SyncPath &b, bool &isEqual);
-        static bool isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path);
-        static bool isStrictDescendant(const SyncPath &potentialDescendant, const SyncPath &path);
         /**
          * Normalize the SyncName parameters before comparing them.
          * @param a SyncName value to be compared.
@@ -134,6 +117,7 @@ struct COMMONSERVER_EXPORT Utility {
          * @return true if no normalization issue.
          */
         static bool checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame);
+
 
         static bool moveItemToTrash(const SyncPath &itemPath);
 #if defined(KD_MACOS)
@@ -164,7 +148,6 @@ struct COMMONSERVER_EXPORT Utility {
         static SyncPath resourcesRelativePath();
         static SyncName logFileName();
         static SyncName logFileNameWithTime();
-        static std::string toUpper(const std::string &str);
 
         /* TODO : Replace with std::source_location when we will bump gcc version to 10 or higher
          *  static std::string errId(std::source_location location = std::source_location::current());

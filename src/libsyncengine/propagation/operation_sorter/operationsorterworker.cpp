@@ -381,7 +381,7 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
         normalizedPath = path;
     }
 
-    if (!Utility::isDescendantOrEqual(normalizedPath, node->moveOriginInfos().normalizedPath())) {
+    if (!CommonUtility::isDescendantOrEqual(normalizedPath, node->moveOriginInfos().normalizedPath())) {
         return std::nullopt; // firstOp is possible
     }
 
