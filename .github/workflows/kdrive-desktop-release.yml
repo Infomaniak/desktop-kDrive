@@ -93,6 +93,7 @@ jobs:
 
 # Build apps
   build-Windows:
+    if: false # TODO: Reenable when windows PR is ready
     needs: [check-release-notes, check-translations]
     runs-on: [ self-hosted, Windows, desktop-kdrive, with-gui ] #with-gui is required for the build_windows action to unlock the release signing certificate
     outputs:
