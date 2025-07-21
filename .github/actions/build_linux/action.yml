@@ -15,6 +15,7 @@ runs:
         shell: bash
 
       - name: Run the build script
+        id: build
         run: |
           if [[ "${{ inputs.release_build }}" == "true" ]]; then
             SCRIPT="./infomaniak-build-tools/linux/build-release-amd64.sh"
