@@ -38,6 +38,14 @@ fi
 dir="$1"
 tester="$2"
 
+conanrun=$(find . -type f -name "conanrun.sh" | head -n 1)
+if [[ -n "$conanrun" ]]; then
+    source "$conanrun"
+else
+    echo -e "${RED}conanrun.sh not found${NC}"
+    exit 1
+fi
+
 echo "${YELLOW}---------- Running $tester ----------${NC}"
 pushd "$dir" 1>/dev/null
 
