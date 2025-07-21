@@ -63,16 +63,6 @@ struct COMMONSERVER_EXPORT Utility {
         static bool findNodeValue(const Poco::XML::Document &doc, const std::string &nodeName, std::string *outValue);
         static bool isCreationDateValid(int64_t creationDate);
 
-        static std::wstring s2ws(const std::string &str);
-        static std::string ws2s(const std::wstring &wstr);
-        static std::string ltrim(const std::string &s);
-        static std::string rtrim(const std::string &s);
-        static std::string trim(const std::string &s);
-#if defined(KD_WINDOWS)
-        static SyncName ltrim(const SyncName &s);
-        static SyncName rtrim(const SyncName &s);
-        static SyncName trim(const SyncName &s);
-#endif
         static void msleep(int msec);
         static std::wstring v2ws(const dbtype &v);
 

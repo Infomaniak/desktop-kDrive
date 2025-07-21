@@ -80,7 +80,7 @@ bool CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
 
     _ss.seekg(0, std::ios_base::beg);
     if (isExtendedLog()) {
-        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received - length=" << length << L" value=" << Utility::s2ws(_ss.str()));
+        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received - length=" << length << L" value=" << CommonUtility::s2ws(_ss.str()));
     }
     return true;
 }

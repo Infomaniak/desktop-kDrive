@@ -2924,7 +2924,7 @@ void AppServer::logUsefulInformation() const {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
     }
     for (const auto &user: userList) {
-        LOGW_INFO(Log::instance()->getLogger(), L"User ID: " << user.userId() << L", email: " << Utility::s2ws(user.email()));
+        LOGW_INFO(Log::instance()->getLogger(), L"User ID: " << user.userId() << L", email: " << CommonUtility::s2ws(user.email()));
     }
 
     // Log drive IDs

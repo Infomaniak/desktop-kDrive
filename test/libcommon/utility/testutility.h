@@ -55,6 +55,11 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testToUpper);
         CPPUNIT_TEST(testIsSameOrParentPath);
         CPPUNIT_TEST(testFileSystemName);
+        CPPUNIT_TEST(testS2ws);
+        CPPUNIT_TEST(testWs2s);
+        CPPUNIT_TEST(testLtrim);
+        CPPUNIT_TEST(testRtrim);
+        CPPUNIT_TEST(testTrim);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -91,6 +96,11 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testToUpper();
         void testIsSameOrParentPath();
         void testFileSystemName();
+        void testS2ws();
+        void testWs2s();
+        void testLtrim();
+        void testRtrim();
+        void testTrim();
 
     private:
         /* Generate all the possible path for a set of items and separators

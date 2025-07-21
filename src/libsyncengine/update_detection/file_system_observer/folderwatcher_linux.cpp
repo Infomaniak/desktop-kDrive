@@ -235,7 +235,7 @@ ExitInfo FolderWatcher_linux::addFolderRecursive(const SyncPath &path) {
         } else {
             if (ec) {
                 LOGW_WARN(_logger, L"Failed to check if path exists " << Utility::formatSyncPath(path) << L": "
-                                                                      << Utility::s2ws(ec.message()) << L" (" << ec.value()
+                                                                      << CommonUtility::s2ws(ec.message()) << L" (" << ec.value()
                                                                       << L")");
             }
             LOGW_DEBUG(_logger, L"    `-> discarded: " << Utility::formatSyncPath(subDirPath));

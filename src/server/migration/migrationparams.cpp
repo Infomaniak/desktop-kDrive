@@ -739,7 +739,7 @@ ExitCode MigrationParams::getOldAppPwd(const std::string &keychainKey, std::stri
     }
 #elif defined(KD_WINDOWS)
     CREDENTIAL *cred;
-    bool result = ::CredRead(Utility::s2ws(keychainKey).c_str(), CRED_TYPE_GENERIC, 0, &cred);
+    bool result = ::CredRead(CommonUtility::s2ws(keychainKey).c_str(), CRED_TYPE_GENERIC, 0, &cred);
 
     if (result == TRUE) {
         LOGW_DEBUG(_logger, L"Application password found");
@@ -775,8 +775,8 @@ ExitCode MigrationParams::getTokenFromAppPassword(const std::string &email, cons
 
         LOG_DEBUG(_logger, "job.runSynchronously() done");
         if (job.hasErrorApi(&errorCode, &errorDescr)) {
-            LOGW_WARN(_logger, L"Failed to retrieve authentification token. code=" << KDC::Utility::s2ws(errorCode) << L" descr="
-                                                                                   << KDC::Utility::s2ws(errorDescr));
+            LOGW_WARN(_logger, L"Failed to retrieve authentification token. code=" << KDC::CommonUtility::s2ws(errorCode) << L" descr="
+                                                                                   << KDC::CommonUtility::s2ws(errorDescr));
             return ExitCode::BackError;
         }
 
