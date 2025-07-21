@@ -28,8 +28,6 @@ class CPPUnitMacOSConan(ConanFile):
 
     def build(self):
         script = os.path.join(self.build_folder, self._script_name)
-
-        self.run(f"chmod +x {script}")
         self.run(f"bash {script} --build-folder {self.build_folder} {'--shared' if self.options.shared else '--static'} --version {self.version} --package-folder {self.package_folder}")
 
     def package(self):
