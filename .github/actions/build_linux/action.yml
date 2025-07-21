@@ -14,24 +14,18 @@ runs:
         run : rm -rf /tmp/kDrive-logdir/*
         shell: bash
 
-      - name: Grant building script execute permission
-        run : |
-          if [ "${{ inputs.release_build }}" = "true" ]; then
-            chmod +x ./infomaniak-build-tools/linux/build-release-amd64.sh
-          else
-            chmod +x ./infomaniak-build-tools/linux/build-ci-amd64.sh
-          fi
-        shell: bash
-
-
-      - name: Build kDrive desktop
-        id: build
+      - name: Prepare and run build
         run: |
-          if [ "${{ inputs.release_build }}" = "true" ]; then
-            ./infomaniak-build-tools/linux/build-release-amd64.sh -u
+          if [[ "${{ inputs.release_build }}" == "true" ]]; then
+            SCRIPT="./infomaniak-build-tools/linux/build-release-amd64.sh"
+            ARGS="-u"
           else
-            ./infomaniak-build-tools/linux/build-ci-amd64.sh -u -t release
+            SCRIPT="./infomaniak-build-tools/linux/build-ci-amd64.sh"
+            ARGS="-u -t release"
           fi
+          
+          chmod +x "$SCRIPT"
+          "$SCRIPT" $ARGS
         shell: bash
 
       - name: Download sentry-cli for Linux
