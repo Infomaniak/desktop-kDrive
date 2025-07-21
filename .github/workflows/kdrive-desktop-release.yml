@@ -158,7 +158,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test_name: ["kDrive_test_parms", "kDrive_test_syncengine", "kDrive_test_server", "kDrive_test_common", "kDrive_test_common_server"]
+        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
     runs-on: [ self-hosted, Linux, X64 ]
     env:
       KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
