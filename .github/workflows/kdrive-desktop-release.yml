@@ -77,12 +77,8 @@ jobs:
           physical_cert_pass: ${{ secrets.WINDOWS_PHYSICAL_CERT_PASSWORD }}
           release_build: true    
       
-
-# TODO: build Linux and macOS apps
-
 # Tests Windows
   test-Windows:
-    if: false
     needs: build-Windows
     strategy:
       fail-fast: false
@@ -98,17 +94,16 @@ jobs:
          with:
           ref: ${{ github.head_ref }}
 
-       #- name: Run test
-       #  uses: ./.github/actions/test_windows
-       #  with:  
-       #     test_name: ${{ matrix.test_name }}
-       #     test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+       - name: Run test
+         uses: ./.github/actions/test_windows
+         with:  
+            test_name: ${{ matrix.test_name }}
+            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
 
-# Upload the installer to kDrive and sentry artifacts
+# Upload the installer to kDrive and upload sentry artifacts
   upload-to-kDrive-and-sentry:
-   # needs: [test-Windows, build-Windows]
-    needs: [build-Windows]
+    needs: [test-Windows, build-Windows]
     runs-on: [self-hosted, Windows]
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
