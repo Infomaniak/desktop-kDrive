@@ -154,14 +154,56 @@ runs:
           compression-level: 0
         if: steps.build.outcome == 'success'
 
+      - name: Download sentry-cli for macOS
+        run: curl -sL https://sentry.io/get-cli/ | sh
+        shell: bash
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+
+      - name : Create sentry server artifacts
+        run: |
+          sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-macos/build/client/kDrive.dylib
+          mkdir ${{ github.workspace }}/build-macos/sentry-server-artifacts
+          mv ${{ github.workspace }}/build-macos/build/client/kDrive.dylib ${{ github.workspace }}/build-macos/sentry-server-artifacts/kDrive.dylib
+          mv ${{ github.workspace }}/build-macos/build/client/kDrive.src.zip ${{ github.workspace }}/build-macos/sentry-server-artifacts/kDrive.src.zip
+        shell: powershell
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+
+      - name : Create sentry client artifacts
+        run: |
+          .\sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-macos/build/client/kDrive_client.dylib
+          mkdir ${{ github.workspace }}/build-macos/sentry-client-artifacts
+          mv ${{ github.workspace }}/build-macos/build/client/kDrive_client.dylib ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.dylib
+            mv ${{ github.workspace }}/build-macos/build/client/kDrive_client.src.zip ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.src.zip
+        shell: powershell
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+
+      - name: Upload sentry server artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-release-artifacts-server-debug
+          path: ${{ github.workspace }}/build-macos/sentry-server-artifacts
+          retention-days: 1
+          compression-level: 0
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+
+      - name: Upload sentry client artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-release-artifacts-client-debug
+          path: ${{ github.workspace }}/build-macos/sentry-client-artifacts
+          retention-days: 1
+          compression-level: 0
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+
+
       - name: Upload kDrive Package
         uses: actions/upload-artifact@v4
         with:
           name: macos-release-artifacts-package
-          path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_parms
+          path: ${{ github.workspace }}/build-macos/client/install/*.pkg
           retention-days: 1
           compression-level: 0
-        if: steps.build.outcome == 'success' && ${ inputs.release_build } == 'true'
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build }} == 'true'
 
       - name: Clean-up generated code
         run : rm -rf build-macos
