@@ -42,17 +42,57 @@ $app = "kDrive-$version"
 $versionTab = $version.Split('.')
 $date = $versionTab[3]
 if ($date.Length -ne 8) {
-    Write-Host "Invalid version format, expected 3.7.1.20250708, got $version" -f Red
+    Write-Host "Invalid version format, expected x.x.x.yyyymmdd, got $version" -f Red
     exit 1
 }
 $versionNumber = $versionTab[0..2] -join '.'
-
-Push-Location build-windows
 
 $headers = @{
     Authorization="Bearer $env:KDRIVE_TOKEN"
 }
 
+# upload release notes
+$os_s = @(
+    "linux",
+    "macos",
+    "win"
+)
+
+$languages = @(
+    "de",
+    "en",
+    "es",
+    "fr",
+    "it"
+)
+
+foreach ($os in $os_s)
+{
+    foreach ($lang in $languages)
+    {
+        $fileName = "$app-$os-$lang.html"
+        $filePath = ".\release_notes\$app\$fileName"
+        if (-not (Test-Path $filePath)) {
+            Write-Host "❌ File $filePath does not exist, aborting upload." -f Red
+            exit 1
+        }
+
+        $size = (Get-ChildItem $filePath | % {[int]($_.length)})
+        if ($size -eq 0) {
+            Write-Host "Unable to get file size for $filePath, aborting upload." -f Red
+            Pop-Location
+            exit 1
+        }
+
+        $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$file&directory_path=$versionNumber/$date/release-notes&conflict=version"
+        Write-Host "uploading $filePath to kDrive at $uri" 
+        $result = Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $filePath
+        Write-Host "Uploaded $filePath to kDrive successfully. $result" -f Green
+    }
+}
+
+# Upload windows files
+Push-Location build-windows
 $win_files = @(   
     "$app.exe", 
     "kDrive.pdb",
