@@ -5,6 +5,10 @@ inputs:
   keychain_password:
     description: 'The password of the keychain'
     required: true
+  release_build:
+    description: 'If true, run the release build script'
+    required: false
+    default: 'false'
 
 runs:
     using: "composite"
@@ -26,12 +30,22 @@ runs:
         shell: bash
 
       - name: Grant building script execute permission
-        run : chmod +x ./infomaniak-build-tools/macos/build-ci.sh
+        run : |
+            if [ "${{ inputs.release_build }}" = "true" ]; then
+                chmod +x ./infomaniak-build-tools/macos/build-release.sh
+            else
+                chmod +x ./infomaniak-build-tools/macos/build-ci.sh
+            fi
         shell: bash
 
       - name: Build kDrive desktop
         id: build
-        run : ./infomaniak-build-tools/macos/build-ci.sh
+        run : |
+            if [ "${{ inputs.release_build }}" = "true" ]; then
+                ./infomaniak-build-tools/macos/build-release.sh
+            else
+                ./infomaniak-build-tools/macos/build-ci.sh
+            fi
         shell: bash
 
       - name: Fetch dependencies
@@ -139,6 +153,15 @@ runs:
           retention-days: 1
           compression-level: 0
         if: steps.build.outcome == 'success'
+
+      - name: Upload kDrive Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-release-artifacts-package
+          path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_parms
+          retention-days: 1
+          compression-level: 0
+        if: steps.build.outcome == 'success' && ${ inputs.release_build } == 'true'
 
       - name: Clean-up generated code
         run : rm -rf build-macos
