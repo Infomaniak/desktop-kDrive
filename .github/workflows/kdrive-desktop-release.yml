@@ -52,7 +52,7 @@ jobs:
             const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
             
             const full_version = `${major}.${minor}.${patch}.${date}`;
-            core.setOutput("kDrive_version", "3.7.1.20250714");
+            core.setOutput("kDrive_version", `${full_version}`);
             core.info(`kDrive version is ${full_version}`);
             core.summary.addHeading('kDrive Desktop Version', 1);
             core.summary.addHeading(`${full_version} (overridden for test purposes by 3.7.1.20250714)`, 3).write();
