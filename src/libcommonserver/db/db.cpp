@@ -83,11 +83,11 @@ namespace KDC {
 
 static std::string defaultJournalMode(const std::string &dbPath) {
 #if defined(KD_MACOS)
-    if (Utility::startsWith(dbPath, "/Volumes/")) {
+    if (CommonUtility::startsWith(dbPath, "/Volumes/")) {
         return "DELETE";
     }
 #elif defined(KD_WINDOWS)
-    std::string fsName = Utility::fileSystemName(dbPath);
+    std::string fsName = CommonUtility::fileSystemName(dbPath);
     if (fsName.find("FAT") != std::string::npos) {
         return "DELETE";
     }

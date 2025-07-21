@@ -48,6 +48,13 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
 #if defined(KD_WINDOWS)
         CPPUNIT_TEST(testGetLastErrorMessage);
 #endif
+        CPPUNIT_TEST(testStartsWith);
+        CPPUNIT_TEST(testStartsWithInsensitive);
+        CPPUNIT_TEST(testEndsWith);
+        CPPUNIT_TEST(testEndsWithInsensitive);
+        CPPUNIT_TEST(testToUpper);
+        CPPUNIT_TEST(testIsSameOrParentPath);
+        CPPUNIT_TEST(testFileSystemName);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -77,6 +84,13 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
 #if defined(KD_WINDOWS)
         void testGetLastErrorMessage();
 #endif
+        void testStartsWith();
+        void testStartsWithInsensitive();
+        void testEndsWith();
+        void testEndsWithInsensitive();
+        void testToUpper();
+        void testIsSameOrParentPath();
+        void testFileSystemName();
 
     private:
         /* Generate all the possible path for a set of items and separators

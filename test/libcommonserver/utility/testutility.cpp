@@ -123,39 +123,6 @@ void TestUtility::testV2ws() {
     CPPUNIT_ASSERT(_testObj->v2ws(stringValue) == L"hello");
 }
 
-void TestUtility::testFileSystemName() {
-#if defined(KD_MACOS)
-    CPPUNIT_ASSERT(_testObj->fileSystemName("/") == "apfs");
-    CPPUNIT_ASSERT(_testObj->fileSystemName("/bin") == "apfs");
-#elif defined(KD_WINDOWS)
-    CPPUNIT_ASSERT(_testObj->fileSystemName(std::filesystem::temp_directory_path()) == "NTFS");
-    // CPPUNIT_ASSERT(_testObj->fileSystemName(R"(C:\)") == "NTFS");
-    // CPPUNIT_ASSERT(_testObj->fileSystemName(R"(C:\windows)") == "NTFS");
-#endif
-}
-
-void TestUtility::testStartsWith() {
-    CPPUNIT_ASSERT(_testObj->startsWith(SyncName(Str("abcdefg")), SyncName(Str("abcd"))));
-    CPPUNIT_ASSERT(!_testObj->startsWith(SyncName(Str("abcdefg")), SyncName(Str("ABCD"))));
-}
-
-void TestUtility::testStartsWithInsensitive() {
-    CPPUNIT_ASSERT(_testObj->startsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("aBcD"))));
-    CPPUNIT_ASSERT(_testObj->startsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("ABCD"))));
-}
-
-void TestUtility::testEndsWith() {
-    CPPUNIT_ASSERT(_testObj->endsWith(SyncName(Str("abcdefg")), SyncName(Str("defg"))));
-    CPPUNIT_ASSERT(!_testObj->endsWith(SyncName(Str("abcdefg")), SyncName(Str("abc"))));
-    CPPUNIT_ASSERT(!_testObj->endsWith(SyncName(Str("abcdefg")), SyncName(Str("dEfG"))));
-}
-
-void TestUtility::testEndsWithInsensitive() {
-    CPPUNIT_ASSERT(_testObj->endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("defg"))));
-    CPPUNIT_ASSERT(!_testObj->endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("abc"))));
-    CPPUNIT_ASSERT(_testObj->endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("dEfG"))));
-}
-
 void TestUtility::testIsEqualUpToCaseAndEnc(void) {
     bool isEqual = false;
     const SyncPath pathA{"abcdefg"};
@@ -289,17 +256,6 @@ void TestUtility::testXxHash() {
     std::string contentHash = _testObj->computeXxHash(data);
 
     CPPUNIT_ASSERT(contentHash == "5dcc477e35136516");
-}
-
-void TestUtility::testToUpper() {
-    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), _testObj->toUpper("abc"));
-    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), _testObj->toUpper("ABC"));
-    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), _testObj->toUpper("AbC"));
-    CPPUNIT_ASSERT_EQUAL(std::string(""), _testObj->toUpper(""));
-    CPPUNIT_ASSERT_EQUAL(std::string("123"), _testObj->toUpper("123"));
-
-    CPPUNIT_ASSERT_EQUAL(std::string("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"),
-                         _testObj->toUpper("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"));
 }
 
 void TestUtility::testErrId() {
@@ -504,22 +460,6 @@ bool TestUtility::checkNfcAndNfdNamesEqual(const SyncName &name, bool &equal) {
     }
     equal = (nfcNormalized == nfdNormalized);
     return true;
-}
-
-void TestUtility::testIsSameOrParentPath() {
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("", "a"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a", "a/b"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a", "a/b/c"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b", "a/b/c"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b/c", "a/b/c1"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b/c1", "a/b/c"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("/a/b/c", "a/b/c"));
-
-    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("", ""));
-    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a/b/c"));
-    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a", ""));
-    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a/b"));
-    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a"));
 }
 
 void TestUtility::testUserName() {

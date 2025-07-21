@@ -750,4 +750,64 @@ void TestUtility::testComputePathNormalizations() {
 #endif
 }
 
+void TestUtility::testStartsWith() {
+    CPPUNIT_ASSERT(CommonUtility::startsWith(SyncName(Str("abcdefg")), SyncName(Str("abcd"))));
+    CPPUNIT_ASSERT(!CommonUtility::startsWith(SyncName(Str("abcdefg")), SyncName(Str("ABCD"))));
+}
+
+void TestUtility::testStartsWithInsensitive() {
+    CPPUNIT_ASSERT(CommonUtility::startsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("aBcD"))));
+    CPPUNIT_ASSERT(CommonUtility::startsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("ABCD"))));
+}
+
+void TestUtility::testEndsWith() {
+    CPPUNIT_ASSERT(CommonUtility::endsWith(SyncName(Str("abcdefg")), SyncName(Str("defg"))));
+    CPPUNIT_ASSERT(!CommonUtility::endsWith(SyncName(Str("abcdefg")), SyncName(Str("abc"))));
+    CPPUNIT_ASSERT(!CommonUtility::endsWith(SyncName(Str("abcdefg")), SyncName(Str("dEfG"))));
+}
+
+void TestUtility::testEndsWithInsensitive() {
+    CPPUNIT_ASSERT(CommonUtility::endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("defg"))));
+    CPPUNIT_ASSERT(!CommonUtility::endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("abc"))));
+    CPPUNIT_ASSERT(CommonUtility::endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("dEfG"))));
+}
+
+void TestUtility::testToUpper() {
+    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), CommonUtility::toUpper("abc"));
+    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), CommonUtility::toUpper("ABC"));
+    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), CommonUtility::toUpper("AbC"));
+    CPPUNIT_ASSERT_EQUAL(std::string(""), CommonUtility::toUpper(""));
+    CPPUNIT_ASSERT_EQUAL(std::string("123"), CommonUtility::toUpper("123"));
+
+    CPPUNIT_ASSERT_EQUAL(std::string("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"),
+                         CommonUtility::toUpper("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"));
+}
+
+void TestUtility::testIsSameOrParentPath() {
+    CPPUNIT_ASSERT(!CommonUtility::isDescendantOrEqual("", "a"));
+    CPPUNIT_ASSERT(!CommonUtility::isDescendantOrEqual("a", "a/b"));
+    CPPUNIT_ASSERT(!CommonUtility::isDescendantOrEqual("a", "a/b/c"));
+    CPPUNIT_ASSERT(!CommonUtility::isDescendantOrEqual("a/b", "a/b/c"));
+    CPPUNIT_ASSERT(!CommonUtility::isDescendantOrEqual("a/b/c", "a/b/c1"));
+    CPPUNIT_ASSERT(!CommonUtility::isDescendantOrEqual("a/b/c1", "a/b/c"));
+    CPPUNIT_ASSERT(!CommonUtility::isDescendantOrEqual("/a/b/c", "a/b/c"));
+
+    CPPUNIT_ASSERT(CommonUtility::isDescendantOrEqual("", ""));
+    CPPUNIT_ASSERT(CommonUtility::isDescendantOrEqual("a/b/c", "a/b/c"));
+    CPPUNIT_ASSERT(CommonUtility::isDescendantOrEqual("a", ""));
+    CPPUNIT_ASSERT(CommonUtility::isDescendantOrEqual("a/b/c", "a/b"));
+    CPPUNIT_ASSERT(CommonUtility::isDescendantOrEqual("a/b/c", "a"));
+}
+
+void TestUtility::testFileSystemName() {
+#if defined(KD_MACOS)
+    CPPUNIT_ASSERT(CommonUtility::fileSystemName("/") == "apfs");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemName("/bin") == "apfs");
+#elif defined(KD_WINDOWS)
+    CPPUNIT_ASSERT(CommonUtility::fileSystemName(std::filesystem::temp_directory_path()) == "NTFS");
+    // CPPUNIT_ASSERT(CommonUtility::fileSystemName(R"(C:\)") == "NTFS");
+    // CPPUNIT_ASSERT(CommonUtility::fileSystemName(R"(C:\windows)") == "NTFS");
+#endif
+}
+
 } // namespace KDC
