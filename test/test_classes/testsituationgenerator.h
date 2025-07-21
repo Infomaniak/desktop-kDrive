@@ -78,12 +78,7 @@ class TestSituationGenerator {
 
         // Utility functions used to simulate events in the update tree
         std::shared_ptr<Node> createNode(const ReplicaSide side, const NodeType itemType, const NodeId &id,
-                                         const NodeId &parentId, const bool setChangeEvent = true) const {
-            DbNodeId dnNodeId = -1;
-            const auto node = insertInUpdateTree(side, itemType, id, parentId, dnNodeId);
-            if (setChangeEvent) node->setChangeEvents(OperationType::Create);
-            return node;
-        }
+                                         const NodeId &parentId, const bool setChangeEvent = true) const;
         std::shared_ptr<Node> createNode(const ReplicaSide side, const NodeType itemType, const NodeId &id,
                                          const std::shared_ptr<Node> &parentNode, const bool setChangeEvent = true) const {
             return createNode(side, itemType, id, parentNode ? *parentNode->id() : "", setChangeEvent);
@@ -91,7 +86,7 @@ class TestSituationGenerator {
         std::shared_ptr<Node> moveNode(ReplicaSide side, const NodeId &id, const NodeId &newParentId,
                                        const SyncName &newName = {}) const;
         std::shared_ptr<Node> renameNode(ReplicaSide side, const NodeId &id, const SyncName &newName) const;
-        std::shared_ptr<Node> editNode(ReplicaSide side, const NodeId &id) const;
+        std::shared_ptr<Node> editNode(ReplicaSide side, const NodeId &id, SyncTime timeInput = 0) const;
         std::shared_ptr<Node> deleteNode(ReplicaSide side, const NodeId &id) const;
 
     private:

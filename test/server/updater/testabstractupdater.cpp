@@ -21,11 +21,11 @@
 #include "db/parmsdb.h"
 #include "requests/parameterscache.h"
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
 #include "server/updater/sparkleupdater.h"
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
 #include "server/updater/windowsupdater.h"
-#elif defined(__linux__)
+#elif defined(KD_LINUX)
 #include "server/updater/linuxupdater.h"
 #endif
 

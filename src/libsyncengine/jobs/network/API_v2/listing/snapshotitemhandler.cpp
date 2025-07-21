@@ -50,7 +50,7 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, const CsvIn
         }
         case CsvIndexName: {
             SyncName name = Str2SyncName(str);
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
             SyncName newName;
             if (PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(name, newName)) {
                 name = newName;
@@ -95,12 +95,6 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, const CsvIn
                 logError(L"setCreatedAt", L"out_of_range", str, exc);
                 return false;
             }
-
-            if (item.createdAt() < 0) {
-                LOGW_WARN(_logger, L"Error in setCreatedAt, got a negative value - str='" << Utility::s2ws(str) << L"'");
-                return false;
-            }
-
             break;
         }
         case CsvIndexModtime: {

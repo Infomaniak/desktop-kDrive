@@ -35,14 +35,14 @@ void TestUrlHelper::testGetUrl() {
     const auto test = distrib(gen);
     const bool usePreprod = test == 1;
     if (usePreprod) {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         _putenv_s("KDRIVE_USE_PREPROD_URL", "1");
 #else
         (void) setenv("KDRIVE_USE_PREPROD_URL", "1", true);
 #endif
         std::cout << " Testing preprod URLs";
     } else {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         _putenv_s("KDRIVE_USE_PREPROD_URL", "0");
 #else
         (void) setenv("KDRIVE_USE_PREPROD_URL", "0", true);
