@@ -87,6 +87,13 @@ jobs:
               if: ${{ inputs.environment == 'internal beta' && !inputs.skip_check }}
               run: echo "This workflow is called to update the kStore for kDrive desktop."
 
+            - name: Connect to VPN
+              uses: "kota65535/github-openvpn-connect-action@v2"
+              with:
+                config_file: .github/workflows/client.ovpn
+                username: ${{ secrets.OVPN_USERNAME }}
+                password: ${{ secrets.OVPN_PASSWORD }}
+
             - name: Update win kStore
               env:
                 TOKEN: ${{ secrets.KSTORE_API_TOKEN }}
