@@ -93,6 +93,7 @@ jobs:
 
 # Build apps
   build-Windows:
+    if: false
     needs: [check-release-notes, check-translations]
     runs-on: [ self-hosted, Windows, desktop-kdrive-with-gui ] #with-gui is required for the build_windows action to unlock the release signing certificate
     outputs:
@@ -113,7 +114,7 @@ jobs:
           release_build: true
 
 
-  build-Linux:
+  build-Linux-amd:
     needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     steps:
@@ -123,7 +124,21 @@ jobs:
           submodules: recursive
       - name: Build Linux
         id: build-linux-step
-        uses: ./.github/actions/build_linux
+        uses: ./.github/actions/build_linux_amd
+        with:
+          release_build: true
+
+  build-Linux-arm:
+    needs: [ check-release-notes, check-translations ]
+    runs-on: [ self-hosted, macOS, ARM64, desktop-kdrive ]
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build Linux
+        id: build-linux-step
+        uses: ./.github/actions/build_linux_arm
         with:
           release_build: true
 

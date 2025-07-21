@@ -1,5 +1,5 @@
-name: Build Linux
-description: 'Build Linux app'
+name: Build AMD Linux
+description: 'Build AMD Version of the Linux app'
 
 inputs:
   release_build:
