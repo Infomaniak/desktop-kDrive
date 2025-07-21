@@ -140,39 +140,3 @@ jobs:
           .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-windows\kDrive.src.zip
           .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\build-windows\kDrive_client.src.zip
         shell: powershell
-
-# Upload to the storage server
-  upload-app-to-storage-server:
-    needs: [build-Windows]
-    runs-on: [self-hosted, Linux, X64, desktop-kdrive-with-gui]
-    steps:
-      - name: Checkout the PR
-        uses: actions/checkout@v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: installers
-          pattern: "*-release-artifacts-installer"
-          merge-multiple: true
-      - name: Connect to VPN
-        uses: "kota65535/github-openvpn-connect-action@v2"
-        with:
-          config_file: .github/workflows/client.ovpn
-          username: ${{ secrets.OVPN_USERNAME }}
-          password: ${{ secrets.OVPN_PASSWORD }}
-
-      - name: Upload apps and release notes to storage server
-        run: |
-            Invoke-WebRequest -Uri https://dl.min.io/client/mc/release/windows-amd64/mc.exe -OutFile mc.exe
-            powershell ./infomaniak-build-tools/upload-release-to-storage.sh "${{ needs.build-Windows.outputs.kDrive_version }}" "${{ secrets.STORAGE_SERVER_USER }}" "${{ secrets.STORAGE_SERVER_PASSWORD }}"
-
-# Update kStore
-  update-kStore:
-    needs: upload-app-to-storage-server
-    runs-on: [self-hosted, Windows]
-    steps:
-      - name: Update kStore
-        run: echo "TODO Update kStore..."
