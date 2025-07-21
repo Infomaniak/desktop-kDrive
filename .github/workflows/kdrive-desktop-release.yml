@@ -48,7 +48,7 @@ jobs:
             const content = Buffer.from(file.data.content, file.data.encoding).toString();
             const major = content.match(/KDRIVE_VERSION_MAJOR\s+(\d+)/)?.[1];
             const minor = content.match(/KDRIVE_VERSION_MINOR\s+(\d+)/)?.[1];
-            const patch = 2 //content.match(/KDRIVE_VERSION_PATCH\s+(\d+)/)?.[1];
+            const patch = content.match(/KDRIVE_VERSION_PATCH\s+(\d+)/)?.[1];
             const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
             
             const full_version = `${major}.${minor}.${patch}.${date}`;
