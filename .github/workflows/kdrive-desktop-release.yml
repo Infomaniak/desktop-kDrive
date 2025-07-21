@@ -33,6 +33,9 @@ jobs:
   check-translations:
     runs-on: [self-hosted]
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+            
       - name: Check translations
         run: echo "TODO Check translations..."
 
