@@ -240,15 +240,15 @@ int SqliteQuery::blobSize(int index) const {
 }
 
 bool SqliteQuery::isSelect() const {
-    return Utility::startsWithInsensitive(_sql, "SELECT");
+    return CommonUtility::startsWithInsensitive(_sql, "SELECT");
 }
 
 bool SqliteQuery::isInsert() const {
-    return Utility::startsWithInsensitive(_sql, "INSERT");
+    return CommonUtility::startsWithInsensitive(_sql, "INSERT");
 }
 
 bool SqliteQuery::isPragma() const {
-    return Utility::startsWithInsensitive(_sql, "PRAGMA");
+    return CommonUtility::startsWithInsensitive(_sql, "PRAGMA");
 }
 
 } // namespace KDC

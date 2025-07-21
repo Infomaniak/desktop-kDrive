@@ -30,6 +30,8 @@
 #include "utility_win.cpp"
 #endif
 
+#include "utility/utility_base.h"
+
 #if defined(KD_MACOS)
 #include <sys/statvfs.h>
 #include <sys/mount.h>
@@ -39,9 +41,6 @@
 #elif defined(KD_WINDOWS)
 #include <fileapi.h>
 #endif
-
-#include "utility/utility_base.h"
-
 
 #include <locale>
 #include <algorithm>
@@ -330,115 +329,6 @@ void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::
     LOG_WARN(logger, errorTitle << ": " << errorMsg);
 }
 
-static std::unordered_map<std::string, std::string> rootFsTypeMap;
-std::string getRootFsType(const SyncPath &targetPath) {
-    auto it = rootFsTypeMap.find(targetPath.root_name().string());
-    if (it == rootFsTypeMap.end()) {
-        const std::string fsType = Utility::fileSystemName(targetPath);
-        const auto [it2, inserted] = rootFsTypeMap.try_emplace(targetPath.root_name().string(), Utility::toUpper(fsType));
-        if (!inserted) {
-            return {};
-        }
-        it = it2;
-    }
-    return it->second;
-}
-
-bool Utility::isNtfs(const SyncPath &targetPath) {
-    static const std::string ntfs("NTFS");
-    return getRootFsType(targetPath) == ntfs;
-}
-
-bool Utility::isFat(const SyncPath &targetPath) {
-    static const std::string fat("FAT");
-    return Utility::contains(getRootFsType(targetPath), fat);
-}
-
-std::string Utility::fileSystemName(const SyncPath &targetPath) {
-#if defined(KD_MACOS)
-    struct statfs stat;
-    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
-        return stat.f_fstypename;
-    }
-#elif defined(KD_WINDOWS)
-    TCHAR szFileSystemName[MAX_PATH + 1];
-    DWORD dwMaxFileNameLength = 0;
-    DWORD dwFileSystemFlags = 0;
-
-    if (GetVolumeInformation(targetPath.root_path().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
-                             szFileSystemName, sizeof(szFileSystemName)) == TRUE) {
-        return ws2s(szFileSystemName);
-    } else {
-        // Not all the requested information is retrieved
-        DWORD dwError = GetLastError();
-        LOGW_WARN(logger(), L"Error in GetVolumeInformation for " << formatSyncName(targetPath.root_name()) << L" ("
-                                                                  << utility_base::getErrorMessage(dwError) << L")");
-
-        // !!! File system name can be OK or not !!!
-        return ws2s(szFileSystemName);
-    }
-#elif defined(KD_LINUX)
-    struct statfs stat;
-    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
-        const auto formatFsName = [](const std::string &prettyName, long fsCode) {
-            std::stringstream stream;
-            stream << std::hex << fsCode;
-            return prettyName + " | 0x" + stream.str();
-        };
-        switch (stat.f_type) {
-            case 0x137d:
-                return formatFsName("EXT(1)", stat.f_type);
-            case 0xef51:
-                return formatFsName("EXT2", stat.f_type);
-            case 0xef53:
-                return formatFsName("EXT2/3/4", stat.f_type);
-            case 0xbad1dea:
-            case 0xa501fcf5:
-            case 0x58465342:
-                return formatFsName("XFS", stat.f_type);
-            case 0x9123683e:
-            case 0x73727279:
-                return formatFsName("BTRFS", stat.f_type);
-            case 0xf15f:
-                return formatFsName("ECRYPTFS", stat.f_type);
-            case 0x4244:
-                return formatFsName("HFS", stat.f_type);
-            case 0x5346544e:
-                return formatFsName(NTFS, stat.f_type);
-            case 0x858458f6:
-                return formatFsName("RAMFS", stat.f_type);
-            default:
-                return formatFsName("Unknown-see corresponding entry at https://man7.org/linux/man-pages/man2/statfs.2.html",
-                                    stat.f_type);
-        }
-    }
-#endif
-
-    return "Error";
-}
-
-bool Utility::startsWith(const std::string &str, const std::string &prefix) {
-    return str.size() >= prefix.size() &&
-           std::equal(prefix.begin(), prefix.end(), str.begin(), [](char c1, char c2) { return c1 == c2; });
-}
-
-bool Utility::startsWithInsensitive(const std::string &str, const std::string &prefix) {
-    return str.size() >= prefix.size() && std::equal(prefix.begin(), prefix.end(), str.begin(), [](char c1, char c2) {
-               return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
-           });
-}
-
-bool Utility::endsWith(const std::string &str, const std::string &suffix) {
-    return str.size() >= suffix.size() && std::equal(str.begin() + static_cast<long>(str.length() - suffix.length()), str.end(),
-                                                     suffix.begin(), [](char c1, char c2) { return c1 == c2; });
-}
-
-bool Utility::endsWithInsensitive(const std::string &str, const std::string &suffix) {
-    return str.size() >= suffix.size() &&
-           std::equal(str.begin() + static_cast<long>(str.length() - suffix.length()), str.end(), suffix.begin(),
-                      [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
-}
-
 bool Utility::checkIfEqualUpToCaseAndEncoding(const SyncPath &a, const SyncPath &b, bool &isEqual) {
     isEqual = false;
 
@@ -465,34 +355,6 @@ bool Utility::checkIfEqualUpToCaseAndEncoding(const SyncPath &a, const SyncPath 
 
     return true;
 }
-
-bool Utility::contains(const std::string &str, const std::string &substr) {
-    return str.find(substr) != std::string::npos;
-}
-
-#if defined(KD_WINDOWS)
-bool Utility::startsWithInsensitive(const SyncName &str, const SyncName &prefix) {
-    return str.size() >= prefix.size() && std::equal(prefix.begin(), prefix.end(), str.begin(), [](SyncChar c1, SyncChar c2) {
-               return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
-           });
-}
-
-bool Utility::startsWith(const SyncName &str, const SyncName &prefix) {
-    return str.size() >= prefix.size() &&
-           std::equal(prefix.begin(), prefix.end(), str.begin(), [](SyncChar c1, SyncChar c2) { return c1 == c2; });
-}
-
-bool Utility::endsWith(const SyncName &str, const SyncName &suffix) {
-    return str.size() >= suffix.size() && std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
-                                                     [](char c1, char c2) { return c1 == c2; });
-}
-
-bool Utility::endsWithInsensitive(const SyncName &str, const SyncName &suffix) {
-    return str.size() >= suffix.size() &&
-           std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
-                      [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
-}
-#endif
 
 bool Utility::checkIfSameNormalization(const SyncName &a, const SyncName &b, bool &areSame) {
     SyncName aNormalized;
@@ -522,24 +384,6 @@ bool Utility::checkIfSameNormalization(const SyncPath &a, const SyncPath &b, boo
     }
     areSame = (aNormalized == bNormalized);
     return true;
-}
-
-bool Utility::isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path) {
-    if (path == potentialDescendant) return true;
-    for (auto it = potentialDescendant.begin(), it2 = path.begin(); it != potentialDescendant.end(); ++it, ++it2) {
-        if (it2 == path.end()) {
-            return true;
-        }
-        if (*it != *it2) {
-            return false;
-        }
-    }
-    return false;
-}
-
-bool Utility::isStrictDescendant(const SyncPath &potentialDescendant, const SyncPath &path) {
-    if (path == potentialDescendant) return false;
-    return isDescendantOrEqual(potentialDescendant, path);
 }
 
 bool Utility::moveItemToTrash(const SyncPath &itemPath) {
@@ -681,15 +525,9 @@ SyncName Utility::logFileNameWithTime() {
     return woss.str();
 }
 
-std::string Utility::toUpper(const std::string &str) {
-    std::string upperStr(str);
-    // std::ranges::transform(str, upperStr.begin(), [](unsigned char c) { return std::toupper(c); });   // Needs gcc-11
-    std::transform(str.begin(), str.end(), upperStr.begin(), [](unsigned char c) { return std::toupper(c); });
-    return upperStr;
-}
-
 std::string Utility::_errId(const char *file, int line) {
-    std::string err = toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" + std::to_string(line);
+    std::string err = CommonUtility::toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" +
+                      std::to_string(line);
     return err;
 }
 

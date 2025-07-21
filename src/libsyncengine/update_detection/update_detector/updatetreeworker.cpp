@@ -1101,7 +1101,7 @@ bool UpdateTreeWorker::integrityCheck() {
     // TODO : check if this does not slow the process too much
     LOGW_SYNCPAL_INFO(_logger, _side << L" update tree integrity check started");
     for (const auto &node: _updateTree->nodes()) {
-        if (node.second->isTmp() || Utility::startsWith(*node.second->id(), "tmp_")) {
+        if (node.second->isTmp() || CommonUtility::startsWith(*node.second->id(), "tmp_")) {
             LOGW_SYNCPAL_WARN(_logger,
                               _side << L" update tree integrity check failed. A temporary node remains in the update tree: "
                                     << L" (node ID: '" << Utility::s2ws(node.second->id().value_or("")) << L"', DB ID: '"

@@ -34,7 +34,7 @@ ComputeFSOperationWorker::ComputeFSOperationWorker(std::shared_ptr<SyncPal> sync
     _syncDbReadOnlyCache(syncPal->syncDb()->cache()) {
     // Resolution for the modification time is 2s on FAT filesystems:
     // https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-filetime
-    if (Utility::isFat(_syncPal->localPath())) _timeDifferenceThresholdForEdit = 1;
+    if (CommonUtility::isFAT(_syncPal->localPath())) _timeDifferenceThresholdForEdit = 1;
 }
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(SyncDbReadOnlyCache &testSyncDbReadOnlyCache, const std::string &name,
