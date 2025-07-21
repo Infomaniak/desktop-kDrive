@@ -58,11 +58,23 @@ jobs:
             core.summary.addHeading(`${full_version}`, 3).write();
 # Check translation files
   check-translations:
-    needs: get-version
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, Windows, desktop-kdrive-with-gui ]
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+            
       - name: Check translations
-        run: echo "TODO Check translations..."
+        run: |
+             cd translations\updateTool
+             $result = .\Windows.ps1
+             # Ensure that result contains FOUR TIMES the string "0 new"
+             if ($result[2] -notmatch "0 new" -OR $result[5] -notmatch "0 new" -OR $result[8] -notmatch "0 new" -OR $result[11] -notmatch "0 new") {
+                 Write-Host "Translation files are not up to date. Please run the update tool." -ForegroundColor Red
+                 exit 1
+             } else {
+                 Write-Host "Translation files are up to date." -ForegroundColor Green
+                 exit 0
+             }
 
 # Check Release Notes
   check-release-notes:
@@ -108,7 +120,7 @@ jobs:
       - name: Build Windows
         id: build-windows-step
         uses: ./.github/actions/build_windows
-        with:
+        with:  
           physical_cert: ${{ secrets.WINDOWS_PHYSICAL_CERT }}
           physical_cert_pass: ${{ secrets.WINDOWS_PHYSICAL_CERT_PASSWORD }}
           release_build: true
@@ -146,7 +158,6 @@ jobs:
 
   # Tests Windows
   test-Windows:
-    if: false
     needs: build-Windows
     strategy:
       fail-fast: false
@@ -162,11 +173,11 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      #- name: Run test
-      #  uses: ./.github/actions/test_windows
-      #  with:
-      #     test_name: ${{ matrix.test_name }}
-      #     test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+      - name: Run test
+        uses: ./.github/actions/test_windows
+        with:
+           test_name: ${{ matrix.test_name }}
+           test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
   test-Linux:
     needs: build-Linux
