@@ -67,6 +67,7 @@ runs:
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
           if "${{ inputs.release_build }}" == "true" (
+            powershell certutil -scinfo -Silent
             powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci -ext -clean remake -upload -tokenPass ${{ inputs.physical_cert_pass }}
             ) else (
             powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
@@ -228,8 +229,7 @@ runs:
           name: win-release-artifacts-installer
           path: ${{ github.workspace }}\build-windows\kDrive-* # kDrive-x.x.x.yyyymmdd.exe
           retention-days: 1
-          compression-level: 0
-        if: steps.build.outcome == 'success'
+        if: steps.build.outcome == 'success'    
 
       - name: Clean-up generated code
         run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all

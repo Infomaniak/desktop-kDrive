@@ -11,15 +11,14 @@ namespace AutoSafeNetLogon
         {
             // Find and extract the password argument
             string passwordArg = args.FirstOrDefault(a => a.StartsWith("/password:", StringComparison.OrdinalIgnoreCase));
+            string password = "";
             if (passwordArg != null)
             {
-                string password = passwordArg.Substring("/password:".Length);
+                password = passwordArg.Substring("/password:".Length);
+            }
 
-                if (string.IsNullOrWhiteSpace(password))
-                {
-                    Console.Error.WriteLine("Empty password provided, please provide a valid password.");
-                    return;
-                }
+            if (!string.IsNullOrWhiteSpace(password))
+            {
                 // Add an automation event handler to handle SafeNet token password requests
                 SatisfyEverySafeNetTokenPasswordRequest(password);
             }
@@ -43,12 +42,22 @@ namespace AutoSafeNetLogon
 
             try
             {
+                Console.WriteLine("Signtool starting with arguments: " + startInfo.Arguments);
                 var process = Process.Start(startInfo);
                 process.OutputDataReceived += (sender, e) => Console.WriteLine(e.Data);
                 process.ErrorDataReceived += (sender, e) => Console.Error.WriteLine(e.Data);
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
                 process.WaitForExit();
+                if (process.ExitCode != 0)
+                {
+                    Console.Error.WriteLine($"Signtool exited with code {process.ExitCode}");
+                    Environment.Exit(process.ExitCode);
+                }
+                else
+                {
+                    Console.WriteLine("Signtool completed successfully.");
+                }
             }
             catch (Exception ex)
             {

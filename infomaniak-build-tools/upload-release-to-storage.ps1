@@ -37,7 +37,7 @@ $languages = @(
     "it"
 )
 try {
-$proc = Start-Process -NoNewWindow -FilePath "./mc.exe" -ArgumentList "alias set kdrive-storage https://storage.infomaniak.com $user $pass --api s3v4" -Wait -PassThru
+$proc = Start-Process -NoNewWindow -FilePath "./mc.exe" -ArgumentList "alias set kdrive-storage https://storage5.infomaniak.com $user $pass --api s3v4" -Wait -PassThru
 if (-not ($proc.ExitCode -eq 0)) {
     Write-Host "❌ config host add kdrive-storage failed: $proc" -f Red
     exit 1
@@ -80,7 +80,7 @@ foreach ($executable in $executables)
         }
     $size = (Get-ChildItem $filePath | % {[int]($_.length)})
     $proc = Start-Process -NoNewWindow -FilePath "./mc.exe" `
-    -ArgumentList "cp --attr Content-Type=application/octet-stream $filePath kdrive-storage/download/drive/desktopclient/$executable" `
+    -ArgumentList "cp --attr Content-Type=application/octet-stream $filePath kdrive-storage/download/drive/desktopclient/$executable --debug" `
     -Wait -PassThru
 
     if (-not ($proc.ExitCode -eq 0)) {

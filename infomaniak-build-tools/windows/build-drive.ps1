@@ -62,8 +62,8 @@ $contentPath = "$path/build-windows"
 $buildPath = "$contentPath/build"
 $installPath = "$contentPath/install"
 
-$extPath = "$path/extensions/windows/cfapi/"
-$vfsDir = $extPath + "x64/Release"
+$extPath = "$path/extensions/windows/cfapi"
+$vfsDir = "$extPath/x64/Release"
 
 # Files to be added to the archive and then packaged
 $archivePath = "$installPath/bin"
@@ -119,15 +119,22 @@ function Clean {
 
 function Get-Thumbprint {
     param (
-        [bool] $upload
+        [bool] $upload,
+        [bool] $ci # On CI build, the certificate are located in local computer store
     )
+    if ($ci) {
+        $certStore = "Cert:\LocalMachine\My"
+    } else {
+        $certStore = "Cert:\CurrentUser\My"
+    }
     $thumbprint = 
     If ($upload) {
-         Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -match "EV" } | Select -ExpandProperty Thumbprint
+         Get-ChildItem $certStore | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -match "EV" } | Select -ExpandProperty Thumbprint
     } 
     Else {
-        Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -notmatch "EV" } | Select -ExpandProperty Thumbprint
+        Get-ChildItem $certStore | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -notmatch "EV" } | Select -ExpandProperty Thumbprint
     }
+    Write-Host "Using thumbprint: $thumbprint"
     return $thumbprint
 }
 
@@ -175,7 +182,8 @@ function Build-Extension {
     param (
         [string] $path,
         [string] $extPath,
-        [string] $buildType 
+        [string] $buildType,
+        [string] $thumbprint = ""
     )
 
     Write-Host "Building extension ($buildType) ..."
@@ -183,13 +191,25 @@ function Build-Extension {
     $configuration = $buildType
     if ($buildType -eq "RelWithDebInfo") { $configuration = "Release" }
 
-    msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true
-
+    msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    
+    $map = @{}
+    Select-String -Path ".\VERSION.cmake" -Pattern 'set\( *KDRIVE_VERSION_(MAJOR|MINOR|PATCH) *(\d+)' | ForEach-Object {
+        if ($_ -match 'KDRIVE_VERSION_(MAJOR|MINOR|PATCH)\s+(\d+)') {
+            $map[$matches[1]] = [int]$matches[2]
+        }
+    }
+    $version = "$($map['MAJOR']).$($map['MINOR']).$($map['PATCH'])"
 
-    $srcVfsPath = "$path\src\libcommonserver\vfs\win\."
-    Copy-Item -Path "$extPath\Vfs\..\Common\debug.h" -Destination $srcVfsPath
-    Copy-Item -Path "$extPath\Vfs\Vfs.h" -Destination $srcVfsPath
+
+    Write-Host "Extension version: $version"
+    $bundlePath = "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$version.0_Test/FileExplorerExtensionPackage_$version.0_x64_arm64.msixbundle"
+    Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass
+
+    $srcVfsPath = "$path/src/libcommonserver/vfs/win/."
+    Copy-Item -Path "$extPath/Vfs/../Common/debug.h" -Destination $srcVfsPath
+    Copy-Item -Path "$extPath/Vfs/Vfs.h" -Destination $srcVfsPath
 
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
@@ -350,11 +370,17 @@ function Sign-File{
         [string] $thumbprint,
         [String] $tokenPass = ""
     )
-      Write-Host "Signing the file $filePath with thumbprint $thumbprint" -f Yellow
-      $res = & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /t http://timestamp.digicert.com  /fd SHA1 /v /sm $filePath /password:$tokenPass
-      if ($res -ne 0) { exit $res }
-      # $res & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256  /fd sha256 /td sha256 /as /v /sm $filePath /password:$tokenPass
-      #if ($res -ne 0) { exit $res }
+    Write-Host "Signing the file $filePath with thumbprint $thumbprint" -f Yellow
+    & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm $filePath /password:$tokenPass
+    $res = $LASTEXITCODE
+    Write-Host "Signing exit code: $res" -ForegroundColor Yellow
+    if ($res -ne 0) {
+        Write-Host "Signing failed with exit code $res" -ForegroundColor Red
+        exit $res
+    }
+    else {
+        Write-Host "Signing successful." -ForegroundColor Green
+    }
 }
 
 function Prepare-Archive {
@@ -652,7 +678,8 @@ if ($LASTEXITCODE -ne 0) {
 #################################################################################################
 
 if (!(Test-Path "$vfsDir\vfs.dll") -or $ext) {
-    Build-Extension $path $extPath $buildType
+    $thumbprint = Get-Thumbprint $upload -ci $ci
+    Build-Extension $path $extPath $buildType $thumbprint
 
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Failed to build the extension. Aborting." -f Red
