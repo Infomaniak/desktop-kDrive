@@ -180,7 +180,7 @@ jobs:
            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
   test-Linux:
-    needs: build-Linux
+    needs: build-Linux-amd
     strategy:
       fail-fast: false
       matrix:
