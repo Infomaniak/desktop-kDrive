@@ -202,7 +202,7 @@ jobs:
 # Upload the installer to kDrive and sentry artifacts
   upload-to-kDrive-and-sentry:
    # needs: [test-Windows, build-Windows]
-    needs: [get-version, build-Linux, test-Linux]
+    needs: [get-version, build-Linux-amd, build-Linux-arm, test-Linux]
     runs-on: [self-hosted, Windows]
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
@@ -266,7 +266,7 @@ jobs:
 
 # Upload to the storage server
   upload-app-to-storage-server:
-    needs: [get-version, build-Linux, test-Linux]
+    needs: [get-version, build-Linux-amd, build-Linux-arm, test-Linux]
     runs-on: [self-hosted, Windows, desktop-kdrive]
     steps:
       - name: Checkout the PR
