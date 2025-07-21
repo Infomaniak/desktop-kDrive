@@ -18,10 +18,6 @@ inputs:
     description: 'If true, run the release build script'
     required: false
     default: 'false'
-  kchat_webhook_url:
-    description: 'Webhook URL for kChat notifications (used to ask for approval of the virtual certificate)'
-    required: false # Required only if 'release_build' is set to true
-    default: ''
     
 outputs:
   kDrive_version:
