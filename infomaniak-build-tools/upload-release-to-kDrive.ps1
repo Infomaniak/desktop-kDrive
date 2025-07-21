@@ -84,10 +84,11 @@ foreach ($os in $os_s)
             exit 1
         }
 
-        $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$file&directory_path=$versionNumber/$date/release-notes&conflict=version"
+        $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$fileName&directory_path=$versionNumber/$date/release-notes&conflict=version"
         Write-Host "uploading $filePath to kDrive at $uri" 
         $result = Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $filePath
         Write-Host "Uploaded $filePath to kDrive successfully. $result" -f Green
+        Sleep(5)
     }
 }
 

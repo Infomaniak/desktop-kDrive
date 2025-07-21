@@ -35,7 +35,7 @@ void FolderWatcher::start() {
 
     _thread = std::make_unique<std::thread>(executeFunc, this);
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     _thread->detach();
     uint16_t counter = 0;
     while (!_ready && counter < 100) { // Wait max 1 sec
@@ -52,7 +52,7 @@ void FolderWatcher::stop() {
 
     stopWatching();
 
-#if !defined(__APPLE__)
+#if !defined(KD_MACOS)
     if (_thread && _thread->joinable()) {
         _thread->join();
     }

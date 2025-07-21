@@ -110,4 +110,9 @@ bool CommonUtility::normalizedSyncName(const SyncName &name, SyncName &normalize
     return true;
 }
 
+std::string CommonUtility::toUnsafeStr(const SyncName &name) {
+    std::string unsafeName(name.begin(), name.end());
+    return unsafeName;
+}
+
 } // namespace KDC
