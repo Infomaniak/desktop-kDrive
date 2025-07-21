@@ -25,7 +25,13 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
-source ./build-macos/client/conan/build/Release/generators/conanrun.sh 
+conanrun=$(find . -type f -name "conanrun.sh" | head -n 1)
+if [[ -n "$conanrun" ]]; then
+    source "$conanrun"
+else
+    echo -e "${RED}conanrun.sh not found${NC}"
+    exit 1
+fi
 
 testers=$(find . -type f -name "kDrive_test_*")
 errors=0
