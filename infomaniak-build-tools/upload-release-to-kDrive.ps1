@@ -88,6 +88,8 @@ foreach ($os in $os_s)
         Write-Host "uploading $filePath to kDrive at $uri" 
         $result = Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $filePath
         Write-Host "Uploaded $filePath to kDrive successfully. $result" -f Green
+        Sleep(5)
+
     }
 }
 
