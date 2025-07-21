@@ -52,11 +52,10 @@ jobs:
             const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
             
             const full_version = `${major}.${minor}.${patch}.${date}`;
-            core.setOutput("kDrive_version", "3.7.1.20250709");
+            core.setOutput("kDrive_version", "3.7.1.20250714");
             core.info(`kDrive version is ${full_version}`);
             core.summary.addHeading('kDrive Desktop Version', 1);
-            core.summary.addHeading(`${full_version} (override for test purpose by 3.7.1.20250709)`, 3).write();
-
+            core.summary.addHeading(`${full_version} (overridden for test purposes by 3.7.1.20250714)`, 3).write();
 # Check translation files
   check-translations:
     needs: get-version
@@ -115,7 +114,7 @@ jobs:
 
 
   build-Linux:
-    needs: [check-release-notes, check-translations]
+    needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     steps:
       - name: Checkout the PR
@@ -128,9 +127,9 @@ jobs:
         with:
           release_build: true
 
-# TODO: build Linux and macOS apps
+  # TODO: build Linux and macOS apps
 
-# Tests Windows
+  # Tests Windows
   test-Windows:
     if: false
     needs: build-Windows
