@@ -130,7 +130,6 @@ jobs:
         with:
           submodules: recursive
       - name: Build Linux
-        id: build-linux-step
         uses: ./.github/actions/build_linux_amd
         with:
           release_build: true
@@ -144,7 +143,6 @@ jobs:
         with:
           submodules: recursive
       - name: Build Linux
-        id: build-linux-step
         uses: ./.github/actions/build_linux_arm
         with:
           release_build: true
