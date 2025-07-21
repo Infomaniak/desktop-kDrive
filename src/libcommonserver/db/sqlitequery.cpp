@@ -41,7 +41,7 @@ SqliteQuery::SqliteQuery(std::shared_ptr<sqlite3> sqlite3Db) :
     _sqlite3Db(sqlite3Db) {}
 
 int SqliteQuery::prepare(const std::string &sql, bool allow_failure) {
-    _sql = Utility::trim(sql);
+    _sql = CommonUtility::trim(sql);
     if (_stmt) {
         sqlite3_finalize(_stmt.get());
     }

@@ -28,11 +28,6 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestUtility);
         CPPUNIT_TEST(testFreeDiskSpace);
         CPPUNIT_TEST(testIsCreationDateValid);
-        CPPUNIT_TEST(testS2ws);
-        CPPUNIT_TEST(testWs2s);
-        CPPUNIT_TEST(testLtrim);
-        CPPUNIT_TEST(testRtrim);
-        CPPUNIT_TEST(testTrim);
         CPPUNIT_TEST(testMsSleep);
         CPPUNIT_TEST(testV2ws);
         CPPUNIT_TEST(testFormatStdError);
@@ -66,11 +61,6 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
     protected:
         void testFreeDiskSpace();
         void testIsCreationDateValid();
-        void testS2ws();
-        void testWs2s();
-        void testLtrim();
-        void testRtrim();
-        void testTrim();
         void testMsSleep();
         void testV2ws();
         void testFormatStdError();

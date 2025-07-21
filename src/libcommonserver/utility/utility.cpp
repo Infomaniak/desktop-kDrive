@@ -84,7 +84,7 @@ struct VariantPrinter {
         std::wstring operator()(int value) { return std::to_wstring(value); }
         std::wstring operator()(int64_t value) { return std::to_wstring(value); }
         std::wstring operator()(double value) { return std::to_wstring(value); }
-        std::wstring operator()(const std::string &value) { return Utility::s2ws(value); }
+        std::wstring operator()(const std::string &value) { return CommonUtility::s2ws(value); }
         std::wstring operator()(const std::wstring &value) { return value; }
         std::wstring operator()(std::shared_ptr<std::vector<char>>) { return std::wstring(); }
 };
@@ -158,62 +158,6 @@ bool Utility::isCreationDateValid(int64_t creationDate) {
     return true;
 }
 
-std::wstring Utility::s2ws(const std::string &str) {
-    Poco::UnicodeConverter converter;
-    std::wstring output;
-    converter.convert(str, output);
-    return output;
-}
-
-std::string Utility::ws2s(const std::wstring &wstr) {
-    Poco::UnicodeConverter converter;
-    std::string output;
-    converter.convert(wstr, output);
-    return output;
-}
-
-std::string Utility::ltrim(const std::string &s) {
-    std::string sout(s);
-    const auto it =
-            std::find_if(sout.begin(), sout.end(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
-    sout.erase(sout.begin(), it);
-    return sout;
-}
-
-std::string Utility::rtrim(const std::string &s) {
-    std::string sout(s);
-    const auto it =
-            std::find_if(sout.rbegin(), sout.rend(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
-    sout.erase(it.base(), sout.end());
-    return sout;
-}
-
-std::string Utility::trim(const std::string &s) {
-    return ltrim(rtrim(s));
-}
-
-#if defined(KD_WINDOWS)
-SyncName Utility::ltrim(const SyncName &s) {
-    SyncName sout(s);
-    const auto it =
-            std::find_if(sout.begin(), sout.end(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
-    sout.erase(sout.begin(), it);
-    return sout;
-}
-
-SyncName Utility::rtrim(const SyncName &s) {
-    SyncName sout(s);
-    const auto it =
-            std::find_if(sout.rbegin(), sout.rend(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
-    sout.erase(it.base(), sout.end());
-    return sout;
-}
-
-SyncName Utility::trim(const SyncName &s) {
-    return ltrim(rtrim(s));
-}
-#endif
-
 void Utility::msleep(int msec) {
     std::chrono::milliseconds dura(msec);
     std::this_thread::sleep_for(dura);
@@ -249,7 +193,7 @@ std::wstring Utility::formatStdError(const std::error_code &ec) {
 #if defined(KD_WINDOWS)
     std::stringstream ss;
     ss << ec.message() << " (code: " << ec.value() << ")";
-    return s2ws(ss.str());
+    return CommonUtility::s2ws(ss.str());
 #elif defined(KD_LINUX)
     std::stringstream ss;
     ss << ec.message() << ". (code: " << ec.value() << ")";
@@ -268,7 +212,7 @@ std::wstring Utility::formatStdError(const SyncPath &path, const std::error_code
 
 std::wstring Utility::formatIoError(const IoError ioError) {
     std::wstringstream ss;
-    ss << s2ws(IoHelper::ioError2StdString(ioError));
+    ss << CommonUtility::s2ws(IoHelper::ioError2StdString(ioError));
 
     return ss.str();
 }

@@ -163,13 +163,23 @@ struct COMMON_EXPORT CommonUtility {
         static bool startsWithInsensitive(const std::string &str, const std::string &prefix);
         static bool endsWith(const std::string &str, const std::string &suffix);
         static bool endsWithInsensitive(const std::string &str, const std::string &suffix);
-        static bool contains(const std::string &str, const std::string &substr);
-        static std::string toUpper(const std::string &str);
 #if defined(KD_WINDOWS)
         static bool startsWithInsensitive(const SyncName &str, const SyncName &prefix);
         static bool startsWith(const SyncName &str, const SyncName &prefix);
         static bool endsWith(const SyncName &str, const SyncName &suffix);
         static bool endsWithInsensitive(const SyncName &str, const SyncName &suffix);
+#endif
+        static bool contains(const std::string &str, const std::string &substr);
+        static std::string toUpper(const std::string &str);
+        static std::wstring s2ws(const std::string &str);
+        static std::string ws2s(const std::wstring &wstr);
+        static std::string ltrim(const std::string &s);
+        static std::string rtrim(const std::string &s);
+        static std::string trim(const std::string &s);
+#if defined(KD_WINDOWS)
+        static SyncName ltrim(const SyncName &s);
+        static SyncName rtrim(const SyncName &s);
+        static SyncName trim(const SyncName &s);
 #endif
 
         static bool isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path);

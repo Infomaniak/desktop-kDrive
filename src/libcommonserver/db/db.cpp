@@ -87,8 +87,7 @@ static std::string defaultJournalMode(const std::string &dbPath) {
         return "DELETE";
     }
 #elif defined(KD_WINDOWS)
-    std::string fsName = CommonUtility::fileSystemName(dbPath);
-    if (fsName.find("FAT") != std::string::npos) {
+    if (CommonUtility::isFAT(dbPath)) {
         return "DELETE";
     }
 #else

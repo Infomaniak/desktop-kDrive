@@ -116,7 +116,7 @@ bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncPath &
 }
 
 bool PlatformInconsistencyCheckerUtility::isNameOnlySpaces(const SyncName &name) {
-    return Utility::ltrim(name).empty();
+    return CommonUtility::ltrim(name).empty();
 }
 
 bool PlatformInconsistencyCheckerUtility::nameEndWithForbiddenSpace([[maybe_unused]] const SyncName &name) {
@@ -172,7 +172,7 @@ bool PlatformInconsistencyCheckerUtility::checkReservedNames(const SyncName &nam
     }
 
     for (const auto &reserved: reservedWinNames) {
-        if (Utility::startsWithInsensitive(name, Str2SyncName(reserved)) && name.size() == reserved.size()) {
+        if (CommonUtility::startsWithInsensitive(name, Str2SyncName(reserved)) && name.size() == reserved.size()) {
             return true;
         }
     }

@@ -34,7 +34,7 @@ std::string loadEnvVariable(const std::string &key, bool mandatory);
 inline const SyncPath localTestDirPath() {
     static SyncPath localTestDirPath;
     if (!localTestDirPath.empty()) return localTestDirPath;
-    localTestDirPath = Utility::s2ws(loadEnvVariable("KDRIVE_TEST_CI_LOCAL_PATH", true));
+    localTestDirPath = CommonUtility::s2ws(loadEnvVariable("KDRIVE_TEST_CI_LOCAL_PATH", true));
     LOGW_INFO(Log::instance()->getLogger(), L"test_ci dir is: " << Utility::formatSyncPath(localTestDirPath));
     return localTestDirPath;
 }

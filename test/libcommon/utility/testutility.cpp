@@ -810,4 +810,26 @@ void TestUtility::testFileSystemName() {
 #endif
 }
 
+void TestUtility::testS2ws() {
+    CPPUNIT_ASSERT(CommonUtility::s2ws("abcd") == L"abcd");
+    CPPUNIT_ASSERT(CommonUtility::s2ws("éèêà") == L"éèêà");
+}
+
+void TestUtility::testWs2s() {
+    CPPUNIT_ASSERT(CommonUtility::ws2s(L"abcd") == "abcd");
+    CPPUNIT_ASSERT(CommonUtility::ws2s(L"éèêà") == "éèêà");
+}
+
+void TestUtility::testLtrim() {
+    CPPUNIT_ASSERT(CommonUtility::ltrim("    ab    cd    ") == "ab    cd    ");
+}
+
+void TestUtility::testRtrim() {
+    CPPUNIT_ASSERT(CommonUtility::rtrim("    ab    cd    ") == "    ab    cd");
+}
+
+void TestUtility::testTrim() {
+    CPPUNIT_ASSERT(CommonUtility::trim("    ab    cd    ") == "ab    cd");
+}
+
 } // namespace KDC

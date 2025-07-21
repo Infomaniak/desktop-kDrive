@@ -72,29 +72,6 @@ void TestUtility::testIsCreationDateValid(void) {
                            _testObj->isCreationDateValid(futureTimestamp));
 }
 
-
-void TestUtility::testS2ws() {
-    CPPUNIT_ASSERT(_testObj->s2ws("abcd") == L"abcd");
-    CPPUNIT_ASSERT(_testObj->s2ws("éèêà") == L"éèêà");
-}
-
-void TestUtility::testWs2s() {
-    CPPUNIT_ASSERT(_testObj->ws2s(L"abcd") == "abcd");
-    CPPUNIT_ASSERT(_testObj->ws2s(L"éèêà") == "éèêà");
-}
-
-void TestUtility::testLtrim() {
-    CPPUNIT_ASSERT(_testObj->ltrim("    ab    cd    ") == "ab    cd    ");
-}
-
-void TestUtility::testRtrim() {
-    CPPUNIT_ASSERT(_testObj->rtrim("    ab    cd    ") == "    ab    cd");
-}
-
-void TestUtility::testTrim() {
-    CPPUNIT_ASSERT(_testObj->trim("    ab    cd    ") == "ab    cd");
-}
-
 void TestUtility::testMsSleep() {
     auto start = std::chrono::high_resolution_clock::now();
     _testObj->msleep(1000);
@@ -354,7 +331,7 @@ void TestUtility::testFormatStdError() {
                            result.find(L"error: 0") != std::wstring::npos || result.find(L"code: 0") != std::wstring::npos);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", (result.length() - path.native().length()) > 20);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.",
-                           result.find(Utility::s2ws(path.string())) != std::wstring::npos);
+                           result.find(CommonUtility::s2ws(path.string())) != std::wstring::npos);
 }
 
 void TestUtility::testFormatIoError() {
@@ -367,7 +344,7 @@ void TestUtility::testFormatIoError() {
         CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.",
                                (result.length() - path.native().length()) > 20);
         CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.",
-                               result.find(Utility::s2ws(path.string())) != std::wstring::npos);
+                               result.find(CommonUtility::s2ws(path.string())) != std::wstring::npos);
     }
 
     {
@@ -395,7 +372,7 @@ void TestUtility::testFormatPath() {
 
 void TestUtility::testFormatSyncPath() {
     const SyncPath path = "A/AA";
-    CPPUNIT_ASSERT(Utility::formatSyncPath(path).find(Utility::s2ws(path.string())) != std::wstring::npos);
+    CPPUNIT_ASSERT(Utility::formatSyncPath(path).find(CommonUtility::s2ws(path.string())) != std::wstring::npos);
 }
 
 void TestUtility::testFormatRequest() {

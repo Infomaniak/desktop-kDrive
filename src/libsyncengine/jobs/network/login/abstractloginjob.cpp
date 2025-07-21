@@ -81,7 +81,7 @@ bool AbstractLoginJob::handleError(std::istream &inputStream, const Poco::URI &u
     if (isExtendedLog()) {
         std::ostringstream os;
         jsonError->stringify(os);
-        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << Utility::s2ws(os.str()));
+        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << CommonUtility::s2ws(os.str()));
     }
 
     Poco::JSON::Object::Ptr errorObj = jsonError->getObject(errorKey);

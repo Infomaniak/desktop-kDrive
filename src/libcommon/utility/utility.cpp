@@ -66,6 +66,7 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QOperatingSystemVersion>
+#include <Poco/UnicodeConverter.h>
 
 #if defined(Q_OS_WIN)
 #include "utility_win.cpp"
@@ -236,8 +237,10 @@ std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
     } else {
         // Not all the requested information is retrieved
         DWORD dwError = GetLastError();
-        LOGW_WARN(logger(), L"Error in GetVolumeInformation for " << formatSyncName(targetPath.root_name()) << L" ("
-                                                                  << utility_base::getErrorMessage(dwError) << L")");
+        std::wstringstream message;
+        message << L"Error in GetVolumeInformation for " << Path2WStr(targetPath.root_name()) << L" ("
+                << utility_base::getErrorMessage(dwError) << L")";
+        sentry::Handler::captureMessage(sentry::Level::Warning, "CommonUtility::fileSystemName", ws2s(message.str()));
 
         // !!! File system name can be OK or not !!!
         return ws2s(szFileSystemName);
@@ -320,6 +323,30 @@ bool CommonUtility::endsWithInsensitive(const std::string &str, const std::strin
                       [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
 }
 
+#if defined(KD_WINDOWS)
+bool CommonUtility::startsWithInsensitive(const SyncName &str, const SyncName &prefix) {
+    return str.size() >= prefix.size() && std::equal(prefix.begin(), prefix.end(), str.begin(), [](SyncChar c1, SyncChar c2) {
+               return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
+           });
+}
+
+bool CommonUtility::startsWith(const SyncName &str, const SyncName &prefix) {
+    return str.size() >= prefix.size() &&
+           std::equal(prefix.begin(), prefix.end(), str.begin(), [](SyncChar c1, SyncChar c2) { return c1 == c2; });
+}
+
+bool CommonUtility::endsWith(const SyncName &str, const SyncName &suffix) {
+    return str.size() >= suffix.size() && std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
+                                                     [](char c1, char c2) { return c1 == c2; });
+}
+
+bool CommonUtility::endsWithInsensitive(const SyncName &str, const SyncName &suffix) {
+    return str.size() >= suffix.size() &&
+           std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
+                      [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
+}
+#endif
+
 bool CommonUtility::contains(const std::string &str, const std::string &substr) {
     return str.find(substr) != std::string::npos;
 }
@@ -327,31 +354,63 @@ bool CommonUtility::contains(const std::string &str, const std::string &substr) 
 std::string CommonUtility::toUpper(const std::string &str) {
     std::string upperStr(str);
     // std::ranges::transform(str, upperStr.begin(), [](unsigned char c) { return std::toupper(c); });   // Needs gcc-11
-    std::transform(str.begin(), str.end(), upperStr.begin(), [](unsigned char c) { return std::toupper(c); });
+    (void) std::transform(str.begin(), str.end(), upperStr.begin(), [](unsigned char c) { return std::toupper(c); });
     return upperStr;
 }
 
+std::wstring CommonUtility::s2ws(const std::string &str) {
+    const Poco::UnicodeConverter converter;
+    std::wstring output;
+    (void) converter.convert(str, output);
+    return output;
+}
+
+std::string CommonUtility::ws2s(const std::wstring &wstr) {
+    const Poco::UnicodeConverter converter;
+    std::string output;
+    (void) converter.convert(wstr, output);
+    return output;
+}
+
+std::string CommonUtility::ltrim(const std::string &s) {
+    std::string sout(s);
+    const auto it =
+            std::find_if(sout.begin(), sout.end(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
+    (void) sout.erase(sout.begin(), it);
+    return sout;
+}
+
+std::string CommonUtility::rtrim(const std::string &s) {
+    std::string sout(s);
+    const auto it =
+            std::find_if(sout.rbegin(), sout.rend(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
+    (void) sout.erase(it.base(), sout.end());
+    return sout;
+}
+
+std::string CommonUtility::trim(const std::string &s) {
+    return ltrim(rtrim(s));
+}
+
 #if defined(KD_WINDOWS)
-bool Utility::startsWithInsensitive(const SyncName &str, const SyncName &prefix) {
-    return str.size() >= prefix.size() && std::equal(prefix.begin(), prefix.end(), str.begin(), [](SyncChar c1, SyncChar c2) {
-               return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
-           });
+SyncName CommonUtility::ltrim(const SyncName &s) {
+    SyncName sout(s);
+    const auto it =
+            std::find_if(sout.begin(), sout.end(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
+    sout.erase(sout.begin(), it);
+    return sout;
 }
 
-bool Utility::startsWith(const SyncName &str, const SyncName &prefix) {
-    return str.size() >= prefix.size() &&
-           std::equal(prefix.begin(), prefix.end(), str.begin(), [](SyncChar c1, SyncChar c2) { return c1 == c2; });
+SyncName CommonUtility::rtrim(const SyncName &s) {
+    SyncName sout(s);
+    const auto it =
+            std::find_if(sout.rbegin(), sout.rend(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
+    sout.erase(it.base(), sout.end());
+    return sout;
 }
 
-bool Utility::endsWith(const SyncName &str, const SyncName &suffix) {
-    return str.size() >= suffix.size() && std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
-                                                     [](char c1, char c2) { return c1 == c2; });
-}
-
-bool Utility::endsWithInsensitive(const SyncName &str, const SyncName &suffix) {
-    return str.size() >= suffix.size() &&
-           std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
-                      [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
+SyncName CommonUtility::trim(const SyncName &s) {
+    return ltrim(rtrim(s));
 }
 #endif
 

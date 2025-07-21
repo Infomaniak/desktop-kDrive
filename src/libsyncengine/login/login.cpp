@@ -65,8 +65,8 @@ ExitCode Login::requestToken(const std::string &authorizationCode, const std::st
         std::string errorCode;
         std::string errorDescr;
         if (job.hasErrorApi(&errorCode, &errorDescr)) {
-            LOGW_WARN(_logger, L"Failed to retrieve authentification token. Error : " << KDC::Utility::s2ws(errorCode) << L" - "
-                                                                                      << KDC::Utility::s2ws(errorDescr));
+            LOGW_WARN(_logger, L"Failed to retrieve authentification token. Error : " << KDC::CommonUtility::s2ws(errorCode) << L" - "
+                                                                                      << KDC::CommonUtility::s2ws(errorDescr));
             _error = errorCode;
             _errorDescr = errorDescr;
             return ExitCode::BackError;
