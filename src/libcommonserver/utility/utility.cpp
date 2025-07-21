@@ -197,9 +197,9 @@ std::wstring Utility::formatStdError(const std::error_code &ec) {
 #elif defined(KD_LINUX)
     std::stringstream ss;
     ss << ec.message() << ". (code: " << ec.value() << ")";
-    return s2ws(ss.str());
+    return CommonUtility::s2ws(ss.str());
 #elif defined(KD_MACOS)
-    return s2ws(ec.message());
+    return CommonUtility::s2ws(ec.message());
 #endif
 }
 
