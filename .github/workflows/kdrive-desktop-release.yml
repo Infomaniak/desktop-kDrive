@@ -221,10 +221,14 @@ jobs:
           Invoke-WebRequest -Uri https://github.com/getsentry/sentry-cli/releases/download/2.46.0/sentry-cli-Windows-x86_64.exe -OutFile sentry-cli.exe
         shell: powershell
 
+      - name: Login to Sentry
+        run: |
+          .\sentry-cli.exe login --auth-token ${{ secrets.SENTRY_AUTH_TOKEN }}
+        shell: powershell
+
       - name : Upload sentry artifacts - Windows
         if: false # TODO: Reenable when windows PR is ready
         run: |
-          .\sentry-cli.exe login --auth-token=${{ secrets.SENTRY_AUTH_TOKEN }}
           .\sentry-cli.exe debug-files upload --project kdrive-server .\build-windows\kDrive.pdb
           .\sentry-cli.exe debug-files upload --project kdrive-client .\build-windows\kDrive_client.pdb
           .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-windows\kDrive.src.zip
