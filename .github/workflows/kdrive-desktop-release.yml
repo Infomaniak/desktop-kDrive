@@ -46,7 +46,7 @@ jobs:
 # Build apps
   build-Windows:
     needs: [check-release-notes, check-translations]
-    runs-on: [ self-hosted, Windows, desktop-kdrive, with-gui ] #with-gui is required for the build_windows action to unlock the release signing certificate
+    runs-on: [ self-hosted, Windows, desktop-kdrive-with-gui ] #with-gui is required for the build_windows action to unlock the release signing certificate
     outputs:
       kDrive_version: ${{ steps.build-windows-step.outputs.kDrive_version }}
     env:
@@ -144,7 +144,7 @@ jobs:
 # Upload to the storage server
   upload-app-to-storage-server:
     needs: [build-Windows]
-    runs-on: [self-hosted, Linux, X64, desktop-kdrive]
+    runs-on: [self-hosted, Linux, X64, desktop-kdrive-with-gui]
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
