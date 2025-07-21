@@ -14,7 +14,7 @@ runs:
         run : rm -rf /tmp/kDrive-logdir/*
         shell: bash
 
-      - name: Prepare and run build
+      - name: Run the build script
         run: |
           if [[ "${{ inputs.release_build }}" == "true" ]]; then
             SCRIPT="./infomaniak-build-tools/linux/build-release-amd64.sh"
@@ -24,8 +24,7 @@ runs:
             ARGS="-u -t release"
           fi
           
-          chmod +x "$SCRIPT"
-          "$SCRIPT" $ARGS
+          bash "$SCRIPT" $ARGS
         shell: bash
 
       - name: Download sentry-cli for Linux
