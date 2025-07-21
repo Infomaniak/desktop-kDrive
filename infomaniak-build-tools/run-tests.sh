@@ -25,7 +25,16 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
-source ./build-macos/client/conan/build/Release/generators/conanrun.sh 
+os="$(uname -s)"
+if [[ "$os" == "Darwin" ]]; then
+    source ./build-macos/client/conan/build/Release/generators/conanrun.sh
+elif [[ "$os" == "Linux" ]]; then
+    source ./build-linux/client/conan/build/Release/generators/conanrun.sh
+else
+    echo -e "${RED}Unsupported OS: $os${NC}"
+    echo -e "${RED}This script is only supported on Linux and macOS.${NC}"
+    exit 1
+fi
 
 testers=$(find . -type f -name "kDrive_test_*")
 errors=0
