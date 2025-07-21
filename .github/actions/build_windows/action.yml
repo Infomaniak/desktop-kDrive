@@ -70,14 +70,6 @@ runs:
           )
         shell: cmd
 
-      - name: Set version output
-        id: set_version
-        run: |
-            $version = (Select-String -Path .\build-windows\build\version.h KDRIVE_VERSION_FULL | foreach-object { $data = $_ -split " "; echo $data[3]})
-            "kDrive_version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            "kDrive version: $version built successfully :rocket:" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-        shell: powershell
-
       - name: Fetch dependencies
         run: |
           mkdir dependencies

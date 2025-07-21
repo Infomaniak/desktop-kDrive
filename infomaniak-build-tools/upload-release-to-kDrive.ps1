@@ -102,6 +102,34 @@ function Upload-FilesToKDrive {
     Push-Location $directory
     foreach ($file in $files) {
         try {
+            $item = Get-Item $file
+
+            # Check if it is a directory (zip it if needed)
+            if ($item.PSIsContainer) {
+              Write-Host "Zipping directory: $file" -f Yellow
+
+             # Define the ZIP file path: same parent location, same name + .zip
+             $parentDir = Split-Path $item.FullName -Parent
+             $zipFileName = "$($item.Name).zip"
+             $zipFilePath = Join-Path $parentDir $zipFileName
+
+             # Remove existing zip if present
+             if (Test-Path $zipFilePath) {
+                    Remove-Item $zipFilePath -Force
+                 Write-Host "Existing zip removed: $zipFilePath" -f Cyan
+              }
+
+              # Load .NET Compression assembly
+               Add-Type -AssemblyName System.IO.Compression.FileSystem
+            
+               # Create ZIP archive beside the folder
+               [System.IO.Compression.ZipFile]::CreateFromDirectory($item.FullName, $zipFilePath)
+            
+               # Replace $file with the zipped file for upload
+                $file = $zipFileName            
+               Write-Host "Directory zipped: $zipFilePath" -f Green
+            }    
+
             $size = (Get-Item $file).length
             if ($size -eq 0) {
                 Write-Host "Unable to get file size for $file, aborting upload." -f Red
@@ -121,8 +149,7 @@ function Upload-FilesToKDrive {
     }
     Pop-Location
 }
-
-Write-Host " - Windows Files - "
+Write-Host " - Windows Files - " # Windows
 $win_files = @(
     "$app.exe",
     "kDrive.pdb",
@@ -133,7 +160,20 @@ $win_files = @(
 Upload-FilesToKDrive -directory build-windows -files $win_files -targetSubDir "windows"
 Write-Host " - Windows Files - \n"
 
-Write-Host " - Linux AMD64 Files - "
+Write-Host " - macOS Files - " # macOS
+$macos_files = @(
+    "$app.pkg",
+    "$app.zip", # Sparkle zip
+    "update-macos-$version.xml", # Sparkle update xml
+    "kDrive.dSYM",
+    "kDrive_client.dSYM",
+    "kDrive.src.zip",
+    "kDrive_client.src.zip"
+)
+Upload-FilesToKDrive -directory build-macos -files $macos_files -targetSubDir "macos"
+Write-Host " - macOS Files - \n"
+
+Write-Host " - Linux AMD64 Files - " # Linux AMD
 $linux_amd_files = @(
     "$app-amd64.AppImage",
     "kDrive.dbg",
@@ -144,7 +184,7 @@ $linux_amd_files = @(
 Upload-FilesToKDrive -directory build-linux-amd64 -files $linux_amd_files -targetSubDir "linux-amd"
 Write-Host " - Linux AMD64 Files - \n"
 
-Write-Host " - Linux ARM64 Files - "
+Write-Host " - Linux ARM64 Files - " # Linux ARM
 $linux_arm_files = @(
     "$app-arm64.AppImage",
     "kDrive.dbg",
@@ -154,5 +194,3 @@ $linux_arm_files = @(
 )
 Upload-FilesToKDrive -directory build-linux-arm64 -files $linux_arm_files -targetSubDir "linux-arm"
 Write-Host " - Linux ARM64 Files - \n"
-
-# TODO add macOS uploads

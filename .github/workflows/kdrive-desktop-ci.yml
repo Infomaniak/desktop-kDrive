@@ -1,10 +1,11 @@
 name: kDrive desktop CI
 
 on:
-  pull_request:
-    branches-ignore:
-        - 'release/**'
-    types: [synchronize, review_requested, opened]
+  workflow_dispatch:
+  #pull_request:
+  #  branches-ignore:
+  #      - 'release/**'
+  #  types: [synchronize, review_requested, opened]
 
 concurrency:
   group: kDrive-desktop-ci-${{ github.head_ref }}
@@ -37,7 +38,6 @@ jobs:
           virtual_cert: ${{ secrets.WINDOWS_VIRTUAL_CERT }}
           virtual_cert_pass: ${{ secrets.WINDOWS_VIRTUAL_CERT_PASSWORD }}
     
-
   build-Linux:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     steps:
