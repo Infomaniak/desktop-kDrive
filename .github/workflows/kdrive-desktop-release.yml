@@ -31,13 +31,23 @@ jobs:
 
 # Check translation files
   check-translations:
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, Windows, desktop-kdrive-with-gui ]
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4
             
       - name: Check translations
-        run: echo "TODO Check translations..."
+        run: |
+             cd translations\updateTool
+             $result = .\Windows.ps1
+             # Ensure that result contains FOUR TIMES the string "0 new"
+             if ($result[2] -notmatch "0 new" -OR $result[5] -notmatch "0 new" -OR $result[8] -notmatch "0 new" -OR $result[11] -notmatch "0 new") {
+                 Write-Host "Translation files are not up to date. Please run the update tool." -ForegroundColor Red
+                 exit 1
+             } else {
+                 Write-Host "Translation files are up to date." -ForegroundColor Green
+                 exit 0
+             }
 
 # Check Release Notes
   check-release-notes:
