@@ -190,20 +190,38 @@ function Build-Extension {
 
     $configuration = $buildType
     if ($buildType -eq "RelWithDebInfo") { $configuration = "Release" }
+    if($upload) {
+        $publisher = "CN=Infomaniak Network SA, O=Infomaniak Network SA, S=Genève, C=CH, OID.2.5.4.15=Private Organization, OID.1.3.6.1.4.1.311.60.2.1.3=CH, SERIALNUMBER=CHE-103.167.648"
+    }else{
+        $publisher = "CN=INFOMANIAK NETWORK SA, O=INFOMANIAK NETWORK SA, S=Genève, C=CH"
+    }
 
-    msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint"
-    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    
+    $appxManifestPath = "$extPath\FileExplorerExtensionPackage\Package.appxmanifest"
+    if (Test-Path $appxManifestPath) {
+        (Get-Content $appxManifestPath -Raw) -replace 'Publisher="[^"]*"', "Publisher=`"$publisher`"" |
+        Set-Content -Encoding UTF8 -Force $appxManifestPath
+    } else {
+        Write-Host "Package.appxmanifest not found at $appxManifestPath" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "Publisher set to: $publisher" -ForegroundColor Yellow
+
+        
     $map = @{}
     Select-String -Path ".\VERSION.cmake" -Pattern 'set\( *KDRIVE_VERSION_(MAJOR|MINOR|PATCH) *(\d+)' | ForEach-Object {
         if ($_ -match 'KDRIVE_VERSION_(MAJOR|MINOR|PATCH)\s+(\d+)') {
             $map[$matches[1]] = [int]$matches[2]
         }
     }
+
     $version = "$($map['MAJOR']).$($map['MINOR']).$($map['PATCH'])"
-
-
+    (Get-Content $appxManifestPath -Raw) -replace ' Version="[^"]*" />', " Version=`"$version.0`" />" |
+        Set-Content -Encoding UTF8 -Force $appxManifestPath
     Write-Host "Extension version: $version"
+
+    msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint"
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
     $bundlePath = "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$version.0_Test/FileExplorerExtensionPackage_$version.0_x64_arm64.msixbundle"
     Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass
 

@@ -18,10 +18,6 @@ inputs:
     description: 'If true, run the release build script'
     required: false
     default: 'false'
-  kchat_webhook_url:
-    description: 'Webhook URL for kChat notifications (used to ask for approval of the virtual certificate)'
-    required: false # Required only if 'release_build' is set to true
-    default: ''
     
 outputs:
   kDrive_version:
@@ -66,12 +62,12 @@ runs:
         id: build
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
-          if "${{ inputs.release_build }}" == "true" (
-            powershell certutil -scinfo -Silent
-            powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci -ext -clean remake -upload -tokenPass ${{ inputs.physical_cert_pass }}
-            ) else (
-            powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
-            )
+          IF "${{ inputs.release_build }}"=="true" (
+            powershell "certutil -scinfo -Silent"
+            powershell "./infomaniak-build-tools/windows/build-drive.ps1" -ci -ext -clean remake -upload -tokenPass ${{ inputs.physical_cert_pass }}
+          ) ELSE (
+            powershell -File "./infomaniak-build-tools/windows/build-drive.ps1" -ci
+          )
         shell: cmd
 
       - name: Set version output
@@ -212,7 +208,7 @@ runs:
           path: ${{ github.workspace }}/build-windows/sentry-server-artifacts
           retention-days: 1
           compression-level: 0
-        if: steps.build.outcome == 'success'
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
 
       - name: Upload sentry client artifacts
         uses: actions/upload-artifact@v4
@@ -221,7 +217,7 @@ runs:
           path: ${{ github.workspace }}/build-windows/sentry-client-artifacts
           retention-days: 1
           compression-level: 0
-        if: steps.build.outcome == 'success'
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
 
       - name: Upload app installer
         uses: actions/upload-artifact@v4
@@ -229,7 +225,7 @@ runs:
           name: win-release-artifacts-installer
           path: ${{ github.workspace }}\build-windows\kDrive-* # kDrive-x.x.x.yyyymmdd.exe
           retention-days: 1
-        if: steps.build.outcome == 'success'    
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
 
       - name: Clean-up generated code
         run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all

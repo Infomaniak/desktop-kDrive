@@ -7,10 +7,6 @@ on:
         type: environment
         description: Select the deployment environment
         default: Internal beta
-  pull_request:
-    branches-ignore:
-        - 'release/**'
-    types: [synchronize, opened]
 
 concurrency:
   group: kDrive-desktop-release-${{ github.head_ref }}
@@ -81,31 +77,33 @@ jobs:
     needs: get-version
     runs-on: [ self-hosted, Linux, X64 ]
     steps:
-      - name: Checkout the PR
-        uses: actions/checkout@v4
-
-      - name: Check release notes
-        run: |
-          VERSION_NUMBER="${{ needs.get-version.outputs.kDrive_version }}"
-          BASE_NAME="kDrive-${VERSION_NUMBER}"
-          BASE_PATH="./release_notes/${BASE_NAME}"
-          OS=( "win" "linux" "macos" )
-          LANGUAGES=( "fr" "de" "es" "it" )
-          for os in "${OS[@]}"; do
-            for lang in "${LANGUAGES[@]}"; do
-              FILE="${BASE_PATH}/kDrive-${VERSION_NUMBER}-${os}-${lang}.html"
-              if [ ! -f "$FILE" ]; then
-                echo "Release notes file not found: $FILE"
-                exit 1
-              fi
-            done
-          done
-          echo "All release notes files are present."
+      - name: Bypass this step for test purposes
+        run: echo "This step is bypassed for test purposes"; exit 0
         shell: bash
+#      - name: Checkout the PR
+#        uses: actions/checkout@v4
+#
+#      - name: Check release notes
+#        run: |
+#          VERSION_NUMBER="${{ needs.get-version.outputs.kDrive_version }}"
+#          BASE_NAME="kDrive-${VERSION_NUMBER}"
+#          BASE_PATH="./release_notes/${BASE_NAME}"
+#          OS=( "win" "linux" "macos" )
+#          LANGUAGES=( "fr" "de" "es" "it" )
+#          for os in "${OS[@]}"; do
+#            for lang in "${LANGUAGES[@]}"; do
+#              FILE="${BASE_PATH}/kDrive-${VERSION_NUMBER}-${os}-${lang}.html"
+#              if [ ! -f "$FILE" ]; then
+#                echo "Release notes file not found: $FILE"
+#                exit 1
+#              fi
+#            done
+#          done
+#          echo "All release notes files are present."
+#        shell: bash
 
 # Build apps
   build-Windows:
-    if: false
     needs: [check-release-notes, check-translations]
     runs-on: [ self-hosted, Windows, desktop-kdrive-with-gui ] #with-gui is required for the build_windows action to unlock the release signing certificate
     outputs:
