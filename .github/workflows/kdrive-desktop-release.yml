@@ -7,10 +7,6 @@ on:
         type: environment
         description: Select the deployment environment
         default: Internal beta
-  pull_request:
-    branches-ignore:
-        - 'release/**'
-    types: [synchronize, opened]
 
 concurrency:
   group: kDrive-desktop-release-${{ github.head_ref }}
