@@ -122,7 +122,21 @@ jobs:
         with:  
           physical_cert: ${{ secrets.WINDOWS_PHYSICAL_CERT }}
           physical_cert_pass: ${{ secrets.WINDOWS_PHYSICAL_CERT_PASSWORD }}
-          release_build: true    
+          release_build: true
+
+
+  build-Linux:
+    needs: [ check-release-notes, check-translations ]
+    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build Linux
+        uses: ./.github/actions/build_linux
+        with:
+          release_build: true
       
 # Tests Windows
   test-Windows:
