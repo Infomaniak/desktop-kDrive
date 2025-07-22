@@ -256,7 +256,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: installers
-          pattern: "*-release-artifacts-installer"
+          pattern: "(win|linux)-release-artifacts-(installer|appimage)"
           merge-multiple: true
 
       - name: Upload apps and release notes to storage server
