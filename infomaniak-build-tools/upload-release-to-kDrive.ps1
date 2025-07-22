@@ -134,11 +134,11 @@ $win_files = @(
 Upload-FilesToKDrive -directory build-windows -files $win_files -targetSubDir "windows"
 
 $linux_files = @(
-"$app-amd64.AppImage",
-"kDrive.dbg",
-"kDrive_client.dbg",
-"kDrive.src.zip",
-"kDrive_client.src.zip"
+    "$app-amd64.AppImage",
+    "kDrive.dbg",
+    "kDrive_client.dbg",
+    "kDrive.src.zip",
+    "kDrive_client.src.zip"
 )
 Upload-FilesToKDrive -directory build-linux -files $linux_files -targetSubDir "linux"
 
