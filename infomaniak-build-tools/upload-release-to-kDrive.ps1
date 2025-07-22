@@ -92,8 +92,38 @@ foreach ($os in $os_s)
     }
 }
 
+function Upload-FilesToKDrive {
+    param (
+        [string]$directory,
+        [array]$files,
+        [string]$targetSubDir
+    )
+
+    Push-Location $directory
+    foreach ($file in $files) {
+        try {
+            $size = (Get-Item $file).length
+            if ($size -eq 0) {
+                Write-Host "Unable to get file size for $file, aborting upload." -f Red
+                Pop-Location
+                exit 1
+            }
+            $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$file&directory_path=$versionNumber/$date/$targetSubDir&conflict=version"
+            Write-Host "uploading $file to kDrive at $uri"
+            Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $file
+            Write-Host "Uploaded $file to kDrive successfully." -f Green
+        } catch {
+            Write-Host "Failed to upload $file to kDrive -> $_" -f Red
+            Pop-Location
+            exit 1
+        }
+        Sleep(5)
+    }
+    Pop-Location
+}
+
+
 # Upload windows files
-Push-Location build-windows
 $win_files = @(   
     "$app.exe", 
     "kDrive.pdb",
@@ -101,27 +131,15 @@ $win_files = @(
     "kDrive.src.zip",
     "kDrive_client.src.zip"
 )
+Upload-FilesToKDrive -directory build-windows -files $win_files -targetSubDir "windows"
 
-foreach ($file in $win_files)
-{
-    try {
-        $size = (Get-Item $file).length
-        if ($size -eq 0) {
-            Write-Host "Unable to get file size for $file, aborting upload." -f Red
-            Pop-Location
-            exit 1
-        }
-        $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$file&directory_path=$versionNumber/$date/windows&conflict=version"
-        Write-Host "uploading $file to kDrive at $uri" 
-        $result = Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $file
-        Write-Host "Uploaded $file to kDrive successfully. $result" -f Green
-    } catch {
-        Write-Host "Failed to upload $file to kDrive -> $_" -f Red
-        Pop-Location
-        exit 1
-    }
-    Sleep(5)
-}
-Pop-Location
+$linux_files = @(
+"$app-amd64.AppImage",
+"kDrive.dbg",
+"kDrive_client.dbg",
+"kDrive.src.zip",
+"kDrive_client.src.zip"
+)
+Upload-FilesToKDrive -directory build-linux -files $linux_files -targetSubDir "linux"
 
-# TODO add Linux and macOS uploads
+# TODO add macOS uploads
