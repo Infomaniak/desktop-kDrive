@@ -165,7 +165,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test_name: ["kDrive_test_parms"] #, "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_common"]
+        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
     runs-on: [ self-hosted, Linux, X64 ]
     env:
       KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
@@ -184,8 +184,7 @@ jobs:
 
 # Upload the installer to kDrive and sentry artifacts
   upload-to-kDrive-and-sentry:
-   # needs: [test-Windows, build-Windows]
-    needs: [get-version, build-Linux, test-Linux]
+    needs: [get-version, build-Linux, test-Linux, build-Windows, test-Windows]
     runs-on: [self-hosted, Windows]
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
