@@ -29,14 +29,14 @@ runs:
         shell: bash
 
       - name: Download sentry-cli for Linux
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+        if: ${{ steps.build.outcome == 'success' &&  inputs.release_build == 'true' }}
         run: |
           curl -L https://github.com/getsentry/sentry-cli/releases/download/2.46.0/sentry-cli-Linux-x86_64 -o sentry-cli \
           && chmod +x ./sentry-cli
         shell: bash
 
       - name: Create sentry server artifacts
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+        if: ${{ steps.build.outcome == 'success' &&  inputs.release_build == 'true' }}
         run: |
           DBG_FILE="${{ github.workspace }}/build-linux/kDrive.dbg"
           ./sentry-cli debug-files bundle-sources "$DBG_FILE"
@@ -46,7 +46,7 @@ runs:
         shell: bash
 
       - name: Create sentry client artifacts
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+        if: ${{ steps.build.outcome == 'success' &&  inputs.release_build == 'true' }}
         run: |
           DBG_FILE="${{ github.workspace }}/build-linux/kDrive_client.dbg"
           ./sentry-cli debug-files bundle-sources "$DBG_FILE"
@@ -56,7 +56,7 @@ runs:
         shell: bash
 
       - name: Upload sentry server artifacts
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+        if: ${{ steps.build.outcome == 'success' &&  inputs.release_build == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: linux-release-artifacts-server-debug
@@ -65,7 +65,7 @@ runs:
           compression-level: 0
 
       - name: Upload sentry client artifacts
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+        if: ${{ steps.build.outcome == 'success' &&  inputs.release_build == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: linux-release-artifacts-client-debug
