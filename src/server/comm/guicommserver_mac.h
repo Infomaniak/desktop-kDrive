@@ -16,34 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "commserver.h"
+#pragma once
 
-namespace KDC {
+#include "xpccommserver_mac.h"
 
-CommServer::CommServer() {}
+#include <string>
+#include <functional>
 
-CommServer::~CommServer() {}
+class GuiCommServerPrivate;
+class GuiCommChannelPrivate;
 
-void CommServer::close() {}
+class GuiCommChannel : public XPCCommChannel {
+    public:
+        GuiCommChannel(GuiCommChannelPrivate *p);
+        uint64_t writeData(const char *data, uint64_t len) override;
+};
 
-bool CommServer::listen(const SyncPath &name) {
-    return true;
-}
-
-std::shared_ptr<AbstractCommChannel> CommServer::nextPendingConnection() {
-    return nullptr;
-}
-
-std::list<std::shared_ptr<AbstractCommChannel>> CommServer::extConnections() {
-    return std::list<std::shared_ptr<AbstractCommChannel>>();
-}
-
-std::shared_ptr<AbstractCommChannel> CommServer::guiConnection() {
-    return nullptr;
-}
-
-bool CommServer::removeServer(const SyncPath &) {
-    return true;
-}
-
-} // namespace KDC
+class GuiCommServer : public XPCCommServer {
+    public:
+        GuiCommServer(const std::string &name);
+};

@@ -31,9 +31,10 @@
 #include "oldcommserver.h"
 
 #if defined(__APPLE__)
-#include "commserver_mac.h"
+#include "extcommserver_mac.h"
+#include "guicommserver_mac.h"
 #else
-#include "commserver.h"
+#include "extcommserver.h"
 #endif
 
 #include <QByteArray>
@@ -55,7 +56,8 @@ CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<SyncPal>>
                          const std::unordered_map<int, std::shared_ptr<Vfs>> &vfsMap) :
     _syncPalMap(syncPalMap),
     _vfsMap(vfsMap),
-    _commServer(std::make_unique<CommServer>()) {
+    _extCommServer(std::make_shared<ExtCommServer>("Extension Comm Server")),
+    _guiCommServer(std::make_shared<GuiCommServer>("GUI Comm Server")) {
 #ifdef __APPLE__
     // Tell the Finder to use the Extension (checking it from System Preferences -> Extensions)
     std::string cmd("pluginkit -v -e use -i ");
@@ -74,31 +76,37 @@ CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<SyncPal>>
     }
 #endif
 
-    // Set CommServer callbacks
-    _commServer->setNewExtConnectionCbk(std::bind(&CommManager::onNewExtConnection, this));
-    _commServer->setNewGuiConnectionCbk(std::bind(&CommManager::onNewGuiConnection, this));
-    _commServer->setLostExtConnectionCbk(std::bind(&CommManager::onLostExtConnection, this, std::placeholders::_1));
-    _commServer->setLostGuiConnectionCbk(std::bind(&CommManager::onLostGuiConnection, this, std::placeholders::_1));
+    // Set CommServer(s) callbacks
+    _extCommServer->setNewConnectionCbk(std::bind(&CommManager::onNewExtConnection, this));
+    _extCommServer->setLostConnectionCbk(std::bind(&CommManager::onLostExtConnection, this, std::placeholders::_1));
+    _guiCommServer->setNewConnectionCbk(std::bind(&CommManager::onNewGuiConnection, this));
+    _guiCommServer->setLostConnectionCbk(std::bind(&CommManager::onLostGuiConnection, this, std::placeholders::_1));
 
-    // Start comm server
-    SyncPath socketPath;
+    // Start CommServer(s)
+    for (auto server: {_extCommServer, _guiCommServer}) {
+        SyncPath socketPath;
 #if defined(_WIN32) or defined(__unix__)
-    socketPath = createSocket();
+        socketPath = createSocket();
 #endif
-    if (!_commServer->listen(socketPath)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Can't start server: " << Utility::formatSyncPath(socketPath));
-        _addError(Error(errId(), ExitCode::SystemError, ExitCause::Unknown));
-    } else {
-        LOGW_INFO(Log::instance()->getLogger(), L"Server started: " << Utility::formatSyncPath(socketPath));
+
+        if (!server->listen(socketPath)) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Can't start " << Utility::s2ws(server->name()) << L": " << Utility::formatSyncPath(socketPath));
+            _addError(Error(errId(), ExitCode::SystemError, ExitCause::Unknown));
+        } else {
+            LOGW_INFO(Log::instance()->getLogger(), Utility::s2ws(server->name())
+                                                            << L" started: " << Utility::formatSyncPath(socketPath));
+        }
     }
 }
 
 CommManager::~CommManager() {
-    _commServer->close();
+    _extCommServer->close();
+    _guiCommServer->close();
 }
 
 void CommManager::onNewExtConnection() {
-    std::shared_ptr<AbstractCommChannel> channel = _commServer->nextPendingConnection();
+    std::shared_ptr<AbstractCommChannel> channel = _extCommServer->nextPendingConnection();
     if (!channel) return;
 
     LOG_INFO(Log::instance()->getLogger(), "New ext connection - channel=" << channel->id());
@@ -124,7 +132,7 @@ void CommManager::onLostExtConnection(std::shared_ptr<AbstractCommChannel> chann
 }
 
 void CommManager::onNewGuiConnection() {
-    std::shared_ptr<AbstractCommChannel> channel = _commServer->guiConnection();
+    std::shared_ptr<AbstractCommChannel> channel = _guiCommServer->connections().back();
     if (!channel) return;
 
     LOG_INFO(Log::instance()->getLogger(), "New gui connection - channel=" << channel->id());
@@ -178,7 +186,7 @@ void CommManager::onExtQueryReceived(std::shared_ptr<AbstractCommChannel> channe
         line.erase(line.find(QUERY_END_SEPARATOR));
         LOGW_INFO(Log::instance()->getLogger(),
                   L"Received Extension message - msg=" << CommString2WStr(line) << L" channel=" << Utility::s2ws(channel->id()));
-        executeCommand(line, channel);
+        executeExtCommand(line, channel);
     }
 }
 
@@ -186,29 +194,32 @@ void CommManager::registerSync(const SyncPath &localPath) {
     CommString command(Str("REGISTER_PATH"));
     command.append(messageCdeSeparator);
     command.append(localPath.native());
-    broadcastCommand(command);
+    broadcastExtCommand(command);
 }
 
 void CommManager::unregisterSync(const SyncPath &localPath) {
     CommString command(Str("UNREGISTER_PATH"));
     command.append(messageCdeSeparator);
     command.append(localPath.native());
-    broadcastCommand(command);
+    broadcastExtCommand(command);
 }
 
 
 #if defined(_WIN32) or defined(__unix__)
 SyncPath CommManager::createSocket() {
     // Get socket file path
-    SyncPath socketPath;
-#ifdef _WIN32
-    std::string name(APPLICATION_SHORTNAME);
+    std::string name(QStr2Str(Theme::instance()->appName()));
     name.append("-");
     name.append(Utility::userName());
+    name.append("-");
+    name.append(generateRandomStringAlphaNum());
+
+    SyncPath socketPath;
+#ifdef _WIN32
     socketPath = SyncPath(R"(\\.\pipe\)") / Str2SyncName(name);
 #else
-    socketPath = QStr2Path(QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation)) /
-                 QStr2SyncName(Theme::instance()->appName()) / Str("socket");
+    socketPath =
+            QStr2Path(QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation)) / Str2SyncName(name) / Str("socket");
 #endif
 
     // Delete/create socket file
@@ -229,13 +240,13 @@ SyncPath CommManager::createSocket() {
 
 void CommManager::executeCommandDirect(const CommString &commandLineStr, bool broadcast) {
     if (broadcast) {
-        executeCommand(commandLineStr);
+        executeExtCommand(commandLineStr);
     } else {
-        broadcastCommand(commandLineStr);
+        broadcastExtCommand(commandLineStr);
     }
 }
 
-void CommManager::executeCommand(const CommString &commandLineStr) {
+void CommManager::executeExtCommand(const CommString &commandLineStr) {
     LOGW_DEBUG(Log::instance()->getLogger(), L"Execute command - cmd=" << CommString2WStr(commandLineStr));
 
     std::shared_ptr<ExtensionJob> job =
@@ -246,7 +257,7 @@ void CommManager::executeCommand(const CommString &commandLineStr) {
     }
 }
 
-void CommManager::executeCommand(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel) {
+void CommManager::executeExtCommand(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel) {
     LOGW_DEBUG(Log::instance()->getLogger(), L"Execute command - cmd=" << CommString2WStr(commandLineStr));
 
     std::shared_ptr<ExtensionJob> job = std::make_shared<ExtensionJob>(
@@ -257,11 +268,11 @@ void CommManager::executeCommand(const CommString &commandLineStr, std::shared_p
     }
 }
 
-void CommManager::broadcastCommand(const CommString &commandLineStr) {
+void CommManager::broadcastExtCommand(const CommString &commandLineStr) {
     LOGW_DEBUG(Log::instance()->getLogger(), L"Execute command - cmd=" << CommString2WStr(commandLineStr));
 
     std::shared_ptr<ExtensionJob> job =
-            std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr, _commServer->extConnections());
+            std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr, _extCommServer->connections());
     if (ExitInfo exitInfo = job->runSynchronously(); exitInfo.code() != ExitCode::Ok) {
         LOGW_DEBUG(Log::instance()->getLogger(),
                    L"Error in ExtensionJob::runSynchronously - cmd=" << CommString2WStr(commandLineStr));

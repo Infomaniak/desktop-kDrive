@@ -16,16 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#import <Foundation/Foundation.h>
+#pragma once
 
-@protocol XPCGuiProtocol
+#include "xpccommserver_mac.h"
 
-- (void)sendSignal:(NSData *)msg;
+#include <string>
+#include <functional>
 
-@end
+class ExtCommServerPrivate;
+class ExtCommChannelPrivate;
 
-@protocol XPCGuiRemoteProtocol
+class ExtCommChannel : public XPCCommChannel {
+    public:
+        ExtCommChannel(ExtCommChannelPrivate *p);
+        uint64_t writeData(const char *data, uint64_t len) override;
+};
 
-- (void)sendQuery:(NSData *)msg;
-
-@end
+class ExtCommServer : public XPCCommServer {
+    public:
+        ExtCommServer(const std::string &name);
+};

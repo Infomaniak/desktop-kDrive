@@ -24,8 +24,12 @@ namespace KDC {
 
 class AbstractCommServer {
     public:
-        AbstractCommServer() = default;
+        AbstractCommServer(const std::string &name) :
+            _name(name) {}
+
         virtual ~AbstractCommServer() {}
+
+        std::string name() { return _name; }
 
         virtual void close() = 0;
         /**
@@ -34,38 +38,26 @@ class AbstractCommServer {
          */
         virtual bool listen(const SyncPath &socketPath) = 0;
         virtual std::shared_ptr<AbstractCommChannel> nextPendingConnection() = 0;
-        virtual std::list<std::shared_ptr<AbstractCommChannel>> extConnections() = 0;
-        virtual std::shared_ptr<AbstractCommChannel> guiConnection() = 0;
+        virtual std::list<std::shared_ptr<AbstractCommChannel>> connections() = 0;
 
         static bool removeServer(const SyncPath &) { return true; }
 
-        void setNewExtConnectionCbk(const std::function<void()> &cbk) { _onNewExtConnectionCbk = cbk; }
-        void newExtConnectionCbk() {
-            if (_onNewExtConnectionCbk) _onNewExtConnectionCbk();
-        }
-        void setNewGuiConnectionCbk(const std::function<void()> &cbk) { _onNewGuiConnectionCbk = cbk; }
-        void newGuiConnectionCbk() {
-            if (_onNewGuiConnectionCbk) _onNewGuiConnectionCbk();
+        void setNewConnectionCbk(const std::function<void()> &cbk) { _onNewConnectionCbk = cbk; }
+        void newConnectionCbk() {
+            if (_onNewConnectionCbk) _onNewConnectionCbk();
         }
 
-        void setLostExtConnectionCbk(const std::function<void(std::shared_ptr<AbstractCommChannel>)> &cbk) {
-            _onLostExtConnectionCbk = cbk;
+        void setLostConnectionCbk(const std::function<void(std::shared_ptr<AbstractCommChannel>)> &cbk) {
+            _onLostConnectionCbk = cbk;
         }
-        void lostExtConnectionCbk(std::shared_ptr<AbstractCommChannel> channel) {
-            if (_onLostExtConnectionCbk) _onLostExtConnectionCbk(channel);
-        }
-        void setLostGuiConnectionCbk(const std::function<void(std::shared_ptr<AbstractCommChannel>)> &cbk) {
-            _onLostGuiConnectionCbk = cbk;
-        }
-        void lostGuiConnectionCbk(std::shared_ptr<AbstractCommChannel> channel) {
-            if (_onLostGuiConnectionCbk) _onLostGuiConnectionCbk(channel);
+        void lostConnectionCbk(std::shared_ptr<AbstractCommChannel> channel) {
+            if (_onLostConnectionCbk) _onLostConnectionCbk(channel);
         }
 
     private:
-        std::function<void()> _onNewExtConnectionCbk;
-        std::function<void()> _onNewGuiConnectionCbk;
-        std::function<void(std::shared_ptr<AbstractCommChannel>)> _onLostExtConnectionCbk;
-        std::function<void(std::shared_ptr<AbstractCommChannel>)> _onLostGuiConnectionCbk;
+        std::string _name;
+        std::function<void()> _onNewConnectionCbk;
+        std::function<void(std::shared_ptr<AbstractCommChannel>)> _onLostConnectionCbk;
 };
 
 } // namespace KDC

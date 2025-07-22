@@ -62,15 +62,16 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         ExitCode (*_getThumbnail)(int driveDbId, NodeId nodeId, int width, std::string &thumbnail);
         ExitCode (*_getPublicLinkUrl)(int driveDbId, const NodeId &nodeId, std::string &linkUrl);
 
-        // Communication server
-        std::unique_ptr<AbstractCommServer> _commServer;
+        // Communication servers
+        std::shared_ptr<AbstractCommServer> _extCommServer;
+        std::shared_ptr<AbstractCommServer> _guiCommServer;
 
         // Execute a command received from an extension, which does not require an answer
-        void executeCommand(const CommString &commandLineStr);
+        void executeExtCommand(const CommString &commandLineStr);
         // Execute a command received from an extension and responds on the provided channel
-        void executeCommand(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel);
+        void executeExtCommand(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel);
         // Broadcast a command to all the server channels
-        void broadcastCommand(const CommString &commandLineStr);
+        void broadcastExtCommand(const CommString &commandLineStr);
 
         // Finder callbacks
         void onNewExtConnection(); // Can be a Mac Finder Extension or a Windows Shell Extension

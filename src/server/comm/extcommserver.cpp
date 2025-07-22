@@ -16,24 +16,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
-#include "abstractcommserver.h"
+#include "commserver.h"
 
 namespace KDC {
 
-class CommServer : public AbstractCommServer {
-    public:
-        CommServer();
-        ~CommServer();
+ExtCommServer::ExtCommServer(const std::string &name) :
+    AbstractCommServer(name) {}
 
-        void close() override;
-        bool listen(const SyncPath &name) override;
-        std::shared_ptr<AbstractCommChannel> nextPendingConnection() override;
-        std::list<std::shared_ptr<AbstractCommChannel>> extConnections() override;
-        std::shared_ptr<AbstractCommChannel> guiConnection() override;
+ExtCommServer::~ExtCommServer() {}
 
-        static bool removeServer(const SyncPath &);
-};
+void ExtCommServer::close() {}
+
+bool ExtCommServer::listen(const SyncPath &name) {
+    return true;
+}
+
+std::shared_ptr<AbstractCommChannel> ExtCommServer::nextPendingConnection() {
+    return nullptr;
+}
+
+std::list<std::shared_ptr<AbstractCommChannel>> ExtCommServer::connections() {
+    return std::list<std::shared_ptr<AbstractCommChannel>>();
+}
+
+bool ExtCommServer::removeServer(const SyncPath &) {
+    return true;
+}
 
 } // namespace KDC

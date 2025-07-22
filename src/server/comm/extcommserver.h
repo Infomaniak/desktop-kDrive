@@ -16,16 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#import <Foundation/Foundation.h>
+#pragma once
 
-@protocol XPCGuiProtocol
+#include "abstractcommserver.h"
 
-- (void)sendSignal:(NSData *)msg;
+namespace KDC {
 
-@end
+class ExtCommServer : public AbstractCommServer {
+    public:
+        ExtCommServer(const std::string &name);
+        ~ExtCommServer();
 
-@protocol XPCGuiRemoteProtocol
+        void close() override;
+        bool listen(const SyncPath &name) override;
+        std::shared_ptr<AbstractCommChannel> nextPendingConnection() override;
+        std::list<std::shared_ptr<AbstractCommChannel>> connections() override;
 
-- (void)sendQuery:(NSData *)msg;
+        static bool removeServer(const SyncPath &);
+};
 
-@end
+} // namespace KDC

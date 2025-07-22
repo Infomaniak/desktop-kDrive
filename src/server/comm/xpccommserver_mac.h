@@ -20,42 +20,36 @@
 
 #include "abstractcommserver.h"
 
-#include <string>
-#include <functional>
+class AbstractCommChannelPrivate;
+class AbstractCommServerPrivate;
 
-class CommServerPrivate;
-class CommChannelPrivate;
-
-class CommChannel : public KDC::AbstractCommChannel {
+class XPCCommChannel : public KDC::AbstractCommChannel {
     public:
-        CommChannel(CommChannelPrivate *p);
-        ~CommChannel();
+        XPCCommChannel(AbstractCommChannelPrivate *commChannelPrivate);
+        ~XPCCommChannel();
 
         uint64_t readData(char *data, uint64_t maxlen) override;
-        uint64_t writeData(const char *data, uint64_t len) override;
+        virtual uint64_t writeData(const char *data, uint64_t len) override;
         uint64_t bytesAvailable() const override;
         bool canReadLine() const override;
         std::string id() const override;
 
-    private:
-        std::unique_ptr<CommChannelPrivate> _privatePtr;
-
-        friend class CommServerPrivate;
+    protected:
+        std::unique_ptr<AbstractCommChannelPrivate> _privatePtr;
 };
 
-class CommServer : public KDC::AbstractCommServer {
+class XPCCommServer : public KDC::AbstractCommServer {
     public:
-        CommServer();
-        ~CommServer();
+        XPCCommServer(const std::string &name, AbstractCommServerPrivate *commServerPrivate);
+        ~XPCCommServer();
 
         void close() override;
         bool listen(const KDC::SyncPath &) override;
         std::shared_ptr<KDC::AbstractCommChannel> nextPendingConnection() override;
-        std::list<std::shared_ptr<KDC::AbstractCommChannel>> extConnections() override;
-        std::shared_ptr<KDC::AbstractCommChannel> guiConnection() override;
+        std::list<std::shared_ptr<KDC::AbstractCommChannel>> connections() override;
 
         static bool removeServer(const KDC::SyncPath &) { return true; }
 
-    private:
-        std::unique_ptr<CommServerPrivate> _privatePtr;
+    protected:
+        std::unique_ptr<AbstractCommServerPrivate> _privatePtr;
 };
