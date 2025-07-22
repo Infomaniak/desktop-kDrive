@@ -221,13 +221,9 @@ jobs:
       - name: Upload debug files and installers/appimage to kDrive
         run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ needs.get-version.outputs.kDrive_version }}"
 
-      - name: Download sentry-cli
+      - name: Download sentry-cli and login
         run: |
           Invoke-WebRequest -Uri https://github.com/getsentry/sentry-cli/releases/download/2.46.0/sentry-cli-Windows-x86_64.exe -OutFile sentry-cli.exe
-        shell: powershell
-
-      - name: Login to Sentry
-        run: |
           .\sentry-cli.exe login --auth-token ${{ secrets.SENTRY_AUTH_TOKEN }}
         shell: powershell
 
