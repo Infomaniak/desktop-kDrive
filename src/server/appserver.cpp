@@ -55,6 +55,7 @@
 
 #include "jobs/network/API_v2/upload/loguploadjob.h"
 #include "jobs/network/API_v2/upload/upload_session/uploadsessioncanceljob.h"
+#include "requests/offlinefilessizeestimator.h"
 #include "updater/updatemanager.h"
 
 #include <QDesktopServices>
@@ -1038,46 +1039,15 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             int driveDbId = 0;
             ArgsWriter(params).write(driveDbId);
 
-            quint64 offlineFilesTotalSize = 0;
-
-            IoError ioError = IoError::Unknown;
-            bool endOfDir = false;
+            std::vector<std::shared_ptr<SyncPal>> syncPals;
             for (const auto &[_, syncpal]: _syncPalMap) {
                 if (!syncpal || syncpal->driveDbId() != driveDbId || !syncpal->vfs()) continue;
-
-                const auto basePath = syncpal->localPath();
-                IoHelper::DirectoryIterator dirIt(basePath, true, ioError);
-
-                DirectoryEntry entry;
-                while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
-                    if (entry.is_directory() || entry.is_symlink()) continue;
-
-                    VfsStatus vfsStatus;
-                    if (const auto exitInfo = syncpal->vfs()->status(entry.path(), vfsStatus); exitInfo.code() != ExitCode::Ok) {
-                        LOGW_WARN(_logger, L"Failed to get VFS status for file " << Utility::formatSyncPath(entry.path()));
-                        break;
-                    }
-                    if (vfsStatus.isPlaceholder && !vfsStatus.isHydrated) continue;
-
-                    uint64_t entrySize = 0;
-                    if (!IoHelper::getFileSize(entry.path(), entrySize, ioError)) {
-                        LOGW_WARN(_logger, L"Error in IoHelper::getFileSize for " << Utility::formatSyncPath(entry.path()));
-                        break;
-                    }
-                    if (ioError != IoError::Success) {
-                        // Ignore the file
-                        LOGW_DEBUG(_logger, L"Failed to get file size, ignoring " << Utility::formatSyncPath(entry.path()));
-                        break;
-                    }
-
-                    offlineFilesTotalSize += entrySize;
-                }
-
-                if (!endOfDir || ioError != IoError::Success) break;
+                (void) syncPals.emplace_back(syncpal);
             }
 
-            resultStream << (endOfDir && ioError == IoError::Success ? ExitCode::Ok : ExitCode::Unknown);
-            resultStream << offlineFilesTotalSize;
+            OfflineFilesSizeEstimator estimator(syncPals);
+            resultStream << estimator.runSynchronously().code(); // Run synchronously for now.
+            resultStream << static_cast<quint64>(estimator.offlineFilesTotalSize());
             break;
         }
         case RequestNum::SYNC_INFOLIST: {
