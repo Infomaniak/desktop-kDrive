@@ -24,15 +24,15 @@ runs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-release-artifacts-appimage-arm64
-          path: ${{ github.workspace }}/build-linux-arm64/install/kDrive-*-amd64.AppImage # kDrive-<full_version>-amd64.AppImage
+          path: ${{ github.workspace }}/build-linux-arm64/install/kDrive-*-arm64.AppImage # kDrive-<full_version>-arm64.AppImage
           retention-days: 1
         if: steps.build.outcome == 'success'
 
 
-      - name: Download sentry-cli for Linux
+      - name: Download sentry-cli for macOS (ARM64)
         if: ${{ steps.build.outcome == 'success' &&  inputs.release_build == 'true' }}
         run: |
-          curl -L https://github.com/getsentry/sentry-cli/releases/download/2.46.0/sentry-cli-Linux-aarch64 -o sentry-cli \
+          curl -L https://github.com/getsentry/sentry-cli/releases/download/2.50.2/sentry-cli-Darwin-arm64 -o sentry-cli \
           && chmod +x ./sentry-cli
         shell: bash
 
