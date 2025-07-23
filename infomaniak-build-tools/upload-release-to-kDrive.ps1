@@ -122,17 +122,18 @@ function Upload-FilesToKDrive {
     Pop-Location
 }
 
-
-# Upload windows files
-$win_files = @(   
-    "$app.exe", 
+Write-Host " - Windows Files - "
+$win_files = @(
+    "$app.exe",
     "kDrive.pdb",
     "kDrive_client.pdb",
     "kDrive.src.zip",
     "kDrive_client.src.zip"
 )
 Upload-FilesToKDrive -directory build-windows -files $win_files -targetSubDir "windows"
+Write-Host " - Windows Files - \n"
 
+Write-Host " - Linux AMD64 Files - "
 $linux_amd_files = @(
     "$app-amd64.AppImage",
     "kDrive.dbg",
@@ -141,7 +142,9 @@ $linux_amd_files = @(
     "kDrive_client.src.zip"
 )
 Upload-FilesToKDrive -directory build-linux-amd64 -files $linux_amd_files -targetSubDir "linux-amd"
+Write-Host " - Linux AMD64 Files - \n"
 
+Write-Host " - Linux ARM64 Files - "
 $linux_arm_files = @(
     "$app-arm64.AppImage",
     "kDrive.dbg",
@@ -150,5 +153,6 @@ $linux_arm_files = @(
     "kDrive_client.src.zip"
 )
 Upload-FilesToKDrive -directory build-linux-arm64 -files $linux_arm_files -targetSubDir "linux-arm"
+Write-Host " - Linux ARM64 Files - \n"
 
 # TODO add macOS uploads
