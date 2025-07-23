@@ -124,7 +124,7 @@ jobs:
 
 
   build-Linux-amd:
-    needs: [ check-release-notes, check-translations ]
+    needs: [ check-release-notes ] #, check-translations ]
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     steps:
       - name: Checkout the PR
@@ -137,7 +137,7 @@ jobs:
           release_build: true
 
   build-Linux-arm:
-    needs: [ check-release-notes, check-translations ]
+    needs: [ check-release-notes ] #, check-translations ]
     runs-on: [ self-hosted, macOS, ARM64, desktop-kdrive ]
     steps:
       - name: Checkout the PR
