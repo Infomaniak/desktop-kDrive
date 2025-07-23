@@ -91,7 +91,7 @@ jobs:
             for lang in "${LANGUAGES[@]}"; do
               FILE="${BASE_PATH}/kDrive-${VERSION_NUMBER}-${os}-${lang}.html"
               if [ ! -f "$FILE" ]; then
-                echo "Release notes file not found: $FILE"
+                echo "❌ Release notes file not found: $FILE" >> $GITHUB_STEP_SUMMARY
                 exit 1
               fi
             done
