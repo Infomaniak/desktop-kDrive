@@ -21,7 +21,6 @@
 set -ex
 
 src_dir="$HOME/Projects/desktop-kDrive"
-with_sentry_flag=""
 
 # Display help message
 usage() {
@@ -30,7 +29,6 @@ Usage: $(basename "$0") [options]
 
 Options:
   --src-dir <dir>    Specify the host directory mapped to /src (default: \$HOME/Projects/desktop-kDrive)
-  --with-sentry      Pass the --with-sentry flag to build-release-appimage-arm64.sh
   -h, --help         Show this help message and exit
 EOF
   }
@@ -49,10 +47,6 @@ while [[ $# -gt 0 ]]; do
         echo "Error: --src-dir requires a non-empty argument." >&2
         exit 1
       fi
-      ;;
-    --with-sentry)
-      with_sentry_flag="--with-sentry"
-      shift
       ;;
     *)
       break
@@ -92,7 +86,7 @@ podman run --rm -it \
 	--env APPLICATION_SERVER_URL="$APPLICATION_SERVER_URL" \
 	--env KDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
 	--arch arm64 \
-	ghcr.io/infomaniak/kdrive-desktop-linux:arm64 /bin/bash -c "/src/infomaniak-build-tools/linux/build-release-appimage-arm64.sh $with_sentry_flag"
+	ghcr.io/infomaniak/kdrive-desktop-linux:arm64 /bin/bash -c "/src/infomaniak-build-tools/linux/build-release-appimage-arm64.sh"
 podman machine stop build_kdrive
 
 version=$(grep "KDRIVE_VERSION_FULL" "$build_dir/client/version.h" | awk '{print $3}')
