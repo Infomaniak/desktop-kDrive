@@ -103,7 +103,7 @@ jobs:
 
 # Build apps
   build-Windows:
-    needs: [check-release-notes, check-translations]
+    needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, Windows, desktop-kdrive-with-gui ] #with-gui is required for the build_windows action to unlock the release signing certificate
     outputs:
       kDrive_version: ${{ steps.build-windows-step.outputs.kDrive_version }}
