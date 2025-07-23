@@ -179,7 +179,7 @@ jobs:
           test_name: ${{ matrix.test_name }}
           test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
-# Upload the installer to kDrive and sentry artifacts
+# Upload the installer and sentry artifacts
   upload-to-kDrive-and-sentry:
     needs: [get-version, build-Linux, test-Linux, build-Windows, test-Windows]
     runs-on: [self-hosted, Windows]
