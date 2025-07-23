@@ -220,6 +220,8 @@ std::string toString(const ExitCause e) {
             return "BadGateway";
         case ExitCause::NotEnoughINotifyWatches:
             return "NotEnoughINotifyWatches";
+        case ExitCause::FileOrDirectoryCorrupted:
+            return "FileOrDirectoryCorrupted";
         default:
             return noConversionStr;
     }
@@ -683,6 +685,8 @@ std::string toString(const IoError e) {
             return "ResultOutOfRange";
         case IoError::CrossDeviceLink:
             return "CrossDeviceLink";
+        case IoError::FileOrDirectoryCorrupted:
+            return "FileOrDirectoryCorrupted";
         case IoError::Unknown:
             return "Unknown";
         default:
