@@ -20,6 +20,48 @@
 
 set -ex
 
+src_dir="$HOME/Projects/desktop-kDrive"
+with_sentry_flag=""
+
+# Display help message
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") [options]
+
+Options:
+  --src-dir <dir>    Specify the host directory mapped to /src (default: \$HOME/Projects/desktop-kDrive)
+  --with-sentry      Pass the --with-sentry flag to build-release-appimage-arm64.sh
+  -h, --help         Show this help message and exit
+EOF
+  }
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    --src-dir)
+      if [[ -n "$2" ]]; then
+        src_dir="$2"
+        shift 2
+      else
+        echo "Error: --src-dir requires a non-empty argument." >&2
+        exit 1
+      fi
+      ;;
+    --with-sentry)
+      with_sentry_flag="--with-sentry"
+      shift
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+
+
 build_dir="$PWD/build-linux"
 client_dir="$build_dir/client"
 install_dir="$build_dir/install"
@@ -41,7 +83,7 @@ podman machine start build_kdrive
 podman run --rm -it \
 	--privileged \
 	--ulimit nofile=4000000:4000000 \
-	--volume "$HOME/Projects/desktop-kDrive:/src" \
+	--volume "$src_dir:/src" \
 	--volume "$build_dir:/build" \
 	--volume "$install_dir:/install" \
 	--volume "$conan_cache_folder:/root/.conan2/p" \
@@ -50,7 +92,7 @@ podman run --rm -it \
 	--env APPLICATION_SERVER_URL="$APPLICATION_SERVER_URL" \
 	--env KDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
 	--arch arm64 \
-	ghcr.io/infomaniak/kdrive-desktop-linux:arm64 /bin/bash -c "/src/infomaniak-build-tools/linux/build-release-appimage-arm64.sh"
+	ghcr.io/infomaniak/kdrive-desktop-linux:arm64 /bin/bash -c "/src/infomaniak-build-tools/linux/build-release-appimage-arm64.sh $with_sentry_flag"
 podman machine stop build_kdrive
 
 version=$(grep "KDRIVE_VERSION_FULL" "$build_dir/client/version.h" | awk '{print $3}')
