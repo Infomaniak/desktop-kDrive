@@ -221,7 +221,7 @@ jobs:
           pattern: win-release-artifacts-*
           merge-multiple: true
 
-      #- name: Download macOS artifacts
+      #- name: Download macOS artifacts # TODO
       #  uses: actions/download-artifact@v4
       #  with:
       #    path: build-macos
