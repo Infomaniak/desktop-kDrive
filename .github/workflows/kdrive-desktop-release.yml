@@ -239,33 +239,3 @@ jobs:
           .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\build-linux\kDrive_client.src.zip
         shell: powershell
 
-# Upload to the storage server
-  upload-app-to-storage-server:
-    needs: [get-version, build-Linux, test-Linux, build-Windows, test-Windows]
-    runs-on: [self-hosted, Windows, desktop-kdrive]
-    steps:
-      - name: Checkout the PR
-        uses: actions/checkout@v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: installers
-          pattern: "(win|linux)-release-artifacts-(installer|appimage)"
-          merge-multiple: true
-
-      - name: Upload apps and release notes to storage server
-        run: |
-            Invoke-WebRequest -Uri https://dl.min.io/client/mc/release/windows-amd64/mc.exe -OutFile mc.exe
-            powershell ./infomaniak-build-tools/upload-release-to-storage.ps1 -version "${{ needs.get-version.outputs.kDrive_version }}" -user "${{ secrets.STORAGE_SERVER_USER }}" -pass "${{ secrets.STORAGE_SERVER_PASSWORD }}"
-
-# Update kStore
-  update-kStore:
-    needs: upload-app-to-storage-server
-    runs-on: [self-hosted, Windows]
-    steps:
-      - name: Update kStore
-        run: echo "TODO Update kStore..."
-        shell: powershell
