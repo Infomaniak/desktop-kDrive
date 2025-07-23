@@ -20,7 +20,7 @@ runs:
           /usr/bin/env bash ${{ github.workspace }}/infomaniak-build-tools/linux/build-release-appimage-arm64.sh --src-dir ${{ github.workspace }}
         shell: bash
 
-      - name: Upload app installer
+      - name: Upload app AppImage
         uses: actions/upload-artifact@v4
         with:
           name: linux-release-artifacts-appimage-arm64

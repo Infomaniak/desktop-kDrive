@@ -28,7 +28,7 @@ runs:
           /usr/bin/env bash "$SCRIPT" $ARGS
         shell: bash
 
-      - name: Upload app installer
+      - name: Upload app AppImage
         uses: actions/upload-artifact@v4
         with:
           name: linux-release-artifacts-appimage-arm64
