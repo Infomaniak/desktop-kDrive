@@ -25,7 +25,7 @@ runs:
             ARGS="-u -t release"
           fi
           
-          bash "$SCRIPT" $ARGS
+          /usr/bin/env bash "$SCRIPT" $ARGS
         shell: bash
 
       - name: Upload app installer
