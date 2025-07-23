@@ -355,7 +355,7 @@ ExitCode GuiRequests::deleteDrive(const int driveDbId) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getOfflineFilesTotalSize(const int driveDbId) {
+ExitCode GuiRequests::getOfflineFilesTotalSize(const int driveDbId, uint64_t &totalSize) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << driveDbId;
@@ -365,8 +365,7 @@ ExitCode GuiRequests::getOfflineFilesTotalSize(const int driveDbId) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode = ExitCode::Ok;
-    uint64_t totalSize = 0;
+    auto exitCode = ExitCode::Ok;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> totalSize;
