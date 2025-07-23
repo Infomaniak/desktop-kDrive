@@ -1050,6 +1050,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
                 DirectoryEntry entry;
                 while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+                    if (entry.is_directory() || entry.is_symlink()) continue;
+
                     VfsStatus vfsStatus;
                     if (const auto exitInfo = syncpal->vfs()->status(entry.path(), vfsStatus); exitInfo.code() != ExitCode::Ok) {
                         LOGW_WARN(_logger, L"Failed to get VFS status for file " << Utility::formatSyncPath(entry.path()));
