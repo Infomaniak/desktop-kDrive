@@ -140,6 +140,15 @@ $linux_files = @(
     "kDrive.src.zip",
     "kDrive_client.src.zip"
 )
-Upload-FilesToKDrive -directory build-linux -files $linux_files -targetSubDir "linux"
+Upload-FilesToKDrive -directory build-linux-amd64 -files $linux_files -targetSubDir "linux-amd"
+
+$linux_files = @(
+    "$app-arm64.AppImage",
+    "kDrive.dbg",
+    "kDrive_client.dbg",
+    "kDrive.src.zip",
+    "kDrive_client.src.zip"
+)
+Upload-FilesToKDrive -directory build-linux-arm64 -files $linux_files -targetSubDir "linux-arm"
 
 # TODO add macOS uploads

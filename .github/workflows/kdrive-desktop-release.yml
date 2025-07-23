@@ -224,11 +224,18 @@ jobs:
       #    pattern: mac-release-artifacts-*
       #    merge-multiple: true
 
-      - name: Download Linux artifacts
+      - name: Download Linux ARM64 artifacts
         uses: actions/download-artifact@v4
         with:
-          path: build-linux
-          pattern: linux-release-artifacts-*
+          path: build-linux-arm64
+          pattern: linux-release-artifacts-*-arm64
+          merge-multiple: true
+
+      - name: Download Linux AMD64 artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: build-linux-amd64
+          pattern: linux-release-artifacts-*-amd64
           merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
