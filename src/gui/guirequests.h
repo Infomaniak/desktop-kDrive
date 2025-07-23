@@ -134,5 +134,6 @@ struct GuiRequests {
         static ExitCode startInstaller();
         static ExitCode skipUpdate(const std::string &version);
         static ExitCode reportClientDisplayed();
+        static ExitCode getOfflineFilesTotalSize(int driveDbId);
 };
 } // namespace KDC
