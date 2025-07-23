@@ -109,9 +109,9 @@ function Upload-FilesToKDrive {
                 exit 1
             }
             $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$file&directory_path=$versionNumber/$date/$targetSubDir&conflict=version"
-            Write-Host "uploading $file to kDrive at $uri"
+            Write-Host "Uploading $file to kDrive at $uri"
             Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $file
-            Write-Host "Uploaded $file to kDrive successfully." -f Green
+            Write-Host "\t\t => ✅" -f Green
         } catch {
             Write-Host "Failed to upload $file to kDrive -> $_" -f Red
             Pop-Location
