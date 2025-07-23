@@ -1072,7 +1072,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             resultStream << ExitCode::Ok;
-            resultStream << offlineFilesTotalSize;
+            resultStream << quint64(offlineFilesTotalSize);
             break;
         }
         case RequestNum::SYNC_INFOLIST: {

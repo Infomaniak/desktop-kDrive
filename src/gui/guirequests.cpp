@@ -366,9 +366,11 @@ ExitCode GuiRequests::getOfflineFilesTotalSize(const int driveDbId, uint64_t &to
     }
 
     auto exitCode = ExitCode::Ok;
+    quint64 tmpSize = 0;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
-    resultStream >> totalSize;
+    resultStream >> tmpSize;
+    totalSize = tmpSize;
 
     return exitCode;
 }
