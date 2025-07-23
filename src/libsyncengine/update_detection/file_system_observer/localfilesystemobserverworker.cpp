@@ -751,7 +751,22 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
         return ExitCode::SystemError;
     }
 
-    return ioError == IoError::Success ? ExitCode::Ok : ExitCode::SystemError;
+    ExitInfo res = ExitCode::Ok;
+    switch (ioError) {
+        case IoError::Success:
+            res = {ExitCode::Ok};
+            break;
+        case IoError::AccessDenied:
+            res = {ExitCode::SystemError, ExitCause::FileAccessError};
+            break;
+        case IoError::FileOrDirectoryCorrupted:
+            res = {ExitCode::SystemError, ExitCause::FileOrDirectoryCorrupted};
+            break;
+        default:
+            res = {ExitCode::SystemError};
+            break;
+    }
+    return res;
 }
 
 } // namespace KDC
