@@ -83,7 +83,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         [[nodiscard]] int userId() const { return _userId; }
         [[nodiscard]] int driveId() const { return _driveId; }
-        ApiType getApiType() { return _apiType; }
+        ApiType getApiType() const { return _apiType; }
 
     private:
         // User cache: <userDbId, <Login, userId>>
