@@ -31,7 +31,7 @@ runs:
       - name: Upload app installer
         uses: actions/upload-artifact@v4
         with:
-          name: linux-release-artifacts-appimage
+          name: linux-release-artifacts-appimage-arm64
           path: ${{ github.workspace }}/build-linux/install/kDrive-*-amd64.AppImage # kDrive-<full_version>-amd64.AppImage
           retention-days: 1
         if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
@@ -67,7 +67,7 @@ runs:
         if: ${{ steps.build.outcome == 'success' &&  inputs.release_build == 'true' }}
         uses: actions/upload-artifact@v4
         with:
-          name: linux-release-artifacts-server-debug
+          name: linux-release-artifacts-server-debug-arm64
           path: ${{ github.workspace }}/build-linux/sentry-server-artifacts
           retention-days: 1
           compression-level: 0
@@ -76,7 +76,7 @@ runs:
         if: ${{ steps.build.outcome == 'success' &&  inputs.release_build == 'true' }}
         uses: actions/upload-artifact@v4
         with:
-          name: linux-release-artifacts-client-debug
+          name: linux-release-artifacts-client-debug-arm64
           path: ${{ github.workspace }}/build-linux/sentry-client-artifacts
           retention-days: 1
           compression-level: 0
