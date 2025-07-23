@@ -77,29 +77,28 @@ jobs:
     needs: get-version
     runs-on: [ self-hosted, Linux, X64 ]
     steps:
-      - name: Bypass this step for testing purposes
-        run: echo "Bypassing release notes check for testing purposes"; exit 0
-#      - name: Checkout the PR
-#        uses: actions/checkout@v4
-#
-#      - name: Check release notes
-#        run: |
-#          VERSION_NUMBER="${{ needs.get-version.outputs.kDrive_version }}"
-#          BASE_NAME="kDrive-${VERSION_NUMBER}"
-#          BASE_PATH="./release_notes/${BASE_NAME}"
-#          OS=( "win" "linux" "macos" )
-#          LANGUAGES=( "fr" "de" "es" "it" )
-#          for os in "${OS[@]}"; do
-#            for lang in "${LANGUAGES[@]}"; do
-#              FILE="${BASE_PATH}/kDrive-${VERSION_NUMBER}-${os}-${lang}.html"
-#              if [ ! -f "$FILE" ]; then
-#                echo "Release notes file not found: $FILE"
-#                exit 1
-#              fi
-#            done
-#          done
-#          echo "All release notes files are present."
-#        shell: bash
+
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+
+      - name: Check release notes
+        run: |
+          VERSION_NUMBER="${{ needs.get-version.outputs.kDrive_version }}"
+          BASE_NAME="kDrive-${VERSION_NUMBER}"
+          BASE_PATH="./release_notes/${BASE_NAME}"
+          OS=( "win" "linux" "macos" )
+          LANGUAGES=( "fr" "de" "es" "it" )
+          for os in "${OS[@]}"; do
+            for lang in "${LANGUAGES[@]}"; do
+              FILE="${BASE_PATH}/kDrive-${VERSION_NUMBER}-${os}-${lang}.html"
+              if [ ! -f "$FILE" ]; then
+                echo "❌ Release notes file not found: $FILE" >> $GITHUB_STEP_SUMMARY
+                exit 1
+              fi
+            done
+          done
+          echo "All release notes files are present."
+        shell: bash
 
 # Build apps
   build-Windows:
@@ -261,35 +260,4 @@ jobs:
           .\sentry-cli.exe debug-files upload --project kdrive-client .\build-linux\kDrive_client.pdb
           .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-linux\kDrive.src.zip
           .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\build-linux\kDrive_client.src.zip
-        shell: powershell
-
-# Upload to the storage server
-  upload-app-to-storage-server:
-    needs: [get-version, build-Linux-amd, build-Linux-arm, test-Linux, build-Windows, test-Windows]
-    runs-on: [self-hosted, Windows, desktop-kdrive]
-    steps:
-      - name: Checkout the PR
-        uses: actions/checkout@v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: installers
-          pattern: "(win|linux)-release-artifacts-(installer|appimage)"
-          merge-multiple: true
-
-      - name: Upload apps and release notes to storage server
-        run: |
-            Invoke-WebRequest -Uri https://dl.min.io/client/mc/release/windows-amd64/mc.exe -OutFile mc.exe
-            powershell ./infomaniak-build-tools/upload-release-to-storage.ps1 -version "${{ needs.get-version.outputs.kDrive_version }}" -user "${{ secrets.STORAGE_SERVER_USER }}" -pass "${{ secrets.STORAGE_SERVER_PASSWORD }}"
-
-# Update kStore
-  update-kStore:
-    needs: upload-app-to-storage-server
-    runs-on: [self-hosted, Windows]
-    steps:
-      - name: Update kStore
-        run: echo "TODO Update kStore..."
         shell: powershell
