@@ -254,6 +254,7 @@ class QtConan(ConanFile):
         copy(self, "*", src=os.path.join(self.build_folder, f"install/{self.version}/{subfolder}/"), dst=self.package_folder)
 
         rmdir(self, os.path.join(self.package_folder, "doc"))
+        rmdir(self, os.path.join(self.package_folder, "modules"))
 
         # copy(self, "Tools/", src=self.source_folder, dst=self.package_folder)
 
