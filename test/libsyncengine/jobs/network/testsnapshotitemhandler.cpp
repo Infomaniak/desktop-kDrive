@@ -80,6 +80,9 @@ void TestSnapshotItemHandler::testUpdateItem() {
         CPPUNIT_ASSERT(handler.updateSnapshotItem("123", SnapshotItemHandler::CsvIndexCreatedAt, item));
         CPPUNIT_ASSERT_EQUAL(SyncTime(123), item.createdAt());
 
+        CPPUNIT_ASSERT(handler.updateSnapshotItem("-2082841200", SnapshotItemHandler::CsvIndexCreatedAt, item));
+        CPPUNIT_ASSERT_EQUAL(SyncTime(-2082841200), item.createdAt());
+
         CPPUNIT_ASSERT(handler.updateSnapshotItem("124", SnapshotItemHandler::CsvIndexModtime, item));
         CPPUNIT_ASSERT_EQUAL(SyncTime(124), item.lastModified());
         CPPUNIT_ASSERT(handler.updateSnapshotItem("-1", SnapshotItemHandler::CsvIndexModtime,
@@ -123,11 +126,6 @@ void TestSnapshotItemHandler::testUpdateItem() {
         CPPUNIT_ASSERT(!handler.updateSnapshotItem("Invalid date! Integer representation expected",
                                                    SnapshotItemHandler::CsvIndexCreatedAt, item));
         CPPUNIT_ASSERT_EQUAL(int64_t(0), item.createdAt());
-    }
-    {
-        SnapshotItem item;
-        CPPUNIT_ASSERT(!handler.updateSnapshotItem("-1", SnapshotItemHandler::CsvIndexCreatedAt, item));
-        CPPUNIT_ASSERT_EQUAL(int64_t(-1), item.createdAt());
     }
     {
         SnapshotItem item;

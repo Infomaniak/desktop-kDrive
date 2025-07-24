@@ -22,7 +22,7 @@
 #include "mocks/libsyncengine/vfs/mockvfs.h"
 
 #include "test_utility/testhelpers.h"
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
 #include "vfs/mac/vfs_mac.h"
 #endif
 

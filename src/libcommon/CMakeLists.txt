@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.16)
 if(APPLE)
     project(libcommon LANGUAGES C CXX OBJC OBJCXX)
 else()
@@ -125,8 +124,12 @@ target_link_libraries(${libcommon_NAME}
     log4cplus::log4cplus
     sentry::sentry
     keychain
-    libzip::zip
-    )
+    libzip::zip)
+
+if(UNIX)
+    target_link_libraries(${libcommon_NAME}
+        utf8proc)
+endif()
 
 if(APPLE)
     # For utility_mac.mm
@@ -140,24 +143,7 @@ if(APPLE)
         ${APPKIT_LIBRARY})
 endif()
 
-if(UNIX)
-    target_link_libraries(${libcommon_NAME} utf8proc)
-
-    if(NOT APPLE)
-        # Copy .so files to the conan dependency directory
-        include(ConanGetLibDirs)
-        get_library_dirs("log4cplus" "log4cplus")
-        install(FILES
-                "${_log4cplus_LIB_DIRS}/liblog4cplus.so"
-                "${_log4cplus_LIB_DIRS}/liblog4cplus.so.9"
-                DESTINATION "${CONAN_DEP_DIR}"
-                PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
-        )
-    endif()
-endif()
-
 if(ZLIB_FOUND)
     target_link_libraries("${libcommon_NAME}"
         ZLIB::ZLIB)
 endif(ZLIB_FOUND)
-

@@ -34,6 +34,7 @@ void TestIo::testCheckDirectoryIterator() {
     testCheckDirectoryIteratorUnexpectedDelete();
     testCheckDirectoryIteratorPermission();
     testCheckDirectoryPermissionLost();
+    testCheckDirectoryIteratorSymlinkEntry();
 }
 
 void TestIo::testCheckDirectoryIteratorNonExistingPath() {
@@ -320,6 +321,53 @@ void TestIo::testCheckDirectoryPermissionLost() {
 
         CPPUNIT_ASSERT(result /*result = it.next(entry, endOfDirectory, ioError);*/);
         CPPUNIT_ASSERT(endOfDirectory);
+    }
+}
+
+void TestIo::testCheckDirectoryIteratorSymlinkEntry() {
+    // Directory
+    const LocalTemporaryDirectory temporaryDirectory;
+    const SyncPath dir1Path = temporaryDirectory.path() / "dir1";
+    CPPUNIT_ASSERT(std::filesystem::create_directories(dir1Path));
+
+    // Symlink to directory
+    const SyncPath dir1SymlinkPath = temporaryDirectory.path() / "dir1Symlink";
+    std::error_code ec;
+    std::filesystem::create_directory_symlink(dir1Path, dir1SymlinkPath, ec);
+    CPPUNIT_ASSERT(!ec);
+
+    // File
+    const SyncPath file1Path = dir1Path / "file1.txt";
+    { std::ofstream file1(file1Path); }
+
+    // Symlink to file
+    const SyncPath file1SymlinkPath = temporaryDirectory.path() / "file1Symlink";
+    std::filesystem::create_directory_symlink(file1Path, file1SymlinkPath, ec);
+    CPPUNIT_ASSERT(!ec);
+
+    IoError ioError = IoError::Success;
+    IoHelper::DirectoryIterator it(temporaryDirectory.path(), true, ioError);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+    DirectoryEntry entry;
+    bool endOfDirectory = false;
+    while (it.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+        if (entry.path() == dir1Path) {
+            CPPUNIT_ASSERT(entry.is_directory());
+        } else if (entry.path() == dir1SymlinkPath) {
+            CPPUNIT_ASSERT(!entry.is_regular_file());
+            CPPUNIT_ASSERT(entry.is_symlink());
+            // /!\ is_directory == true for a directory symlink
+            CPPUNIT_ASSERT(entry.is_directory());
+        } else if (entry.path() == file1Path) {
+            CPPUNIT_ASSERT(entry.is_regular_file());
+        } else if (entry.path() == file1SymlinkPath) {
+            // /!\ is_regular_file == true for a file symlink
+            CPPUNIT_ASSERT(entry.is_regular_file());
+            CPPUNIT_ASSERT(entry.is_symlink());
+        } else {
+            CPPUNIT_ASSERT(false);
+        }
     }
 }
 } // namespace KDC

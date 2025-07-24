@@ -42,8 +42,8 @@ class ServerFoldersDialog : public CustomDialog {
                                      const QString &serverFolderNodeId, QWidget *parent = nullptr);
 
         qint64 selectionSize() const;
-        QSet<QString> createBlackList() const;
-        QSet<QString> createWhiteList() const;
+        const QSet<QString> &getBlacklist() const { return _blacklist; }
+        QSet<QString> getWhiteList() const;
 
     private:
         std::shared_ptr<ClientGui> _gui;
@@ -54,11 +54,14 @@ class ServerFoldersDialog : public CustomDialog {
         QPushButton *_backButton;
         QPushButton *_continueButton;
         bool _needToSave;
+        QSet<QString> _blacklist;
 
         void setButtonIcon(const QColor &value) override;
 
         void initUI();
         void updateUI();
+
+        void createBlackList();
 
     private slots:
         void onExit();

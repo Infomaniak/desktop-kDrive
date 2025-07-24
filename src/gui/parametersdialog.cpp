@@ -427,6 +427,11 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, const Ex
                         .arg(err);
             }
         }
+        case ExitCause::FileOrDirectoryCorrupted: {
+            return tr(
+                    "A file or folder inside your synchronisation folder appears to be corrupted.<br>"
+                    "The synchronization has been stopped.");
+        }
         default:
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")
