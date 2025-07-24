@@ -275,108 +275,115 @@ class QtConan(ConanFile):
         return frameworks_paths, frameworks_names
 
     def package_info(self):
+        import os
         from conan.tools.microsoft import is_msvc
         from conan.tools.apple import is_apple_os
+
+        # --- Propriétés globales ---
         self.cpp_info.set_property("cmake_file_name", "Qt6")
         self.cpp_info.set_property("pkg_config_name", "qt6")
 
-        self.runenv_info.define("QT_PLUGIN_PATH", os.path.join(self.package_folder, "plugins"))
-        self.buildenv_info.define("QT_PLUGIN_PATH", os.path.join(self.package_folder, "plugins"))
+        # --- Variables d’environnement pour les plugins Qt ---
+        qt_plugins = os.path.join(self.package_folder, "plugins")
+        self.runenv_info.define("QT_PLUGIN_PATH", qt_plugins)
+        self.buildenv_info.define("QT_PLUGIN_PATH", qt_plugins)
         self.buildenv_info.define("QT_HOST_PATH", self.package_folder)
 
-
-        def _get_corrected_reqs(requires):
-            reqs = []
-            for r in requires:
+        # --- Helpers internes ---
+        def _fix_requires(reqs):
+            corrected = []
+            for r in reqs:
                 if "::" in r:
-                    corrected_req = r
+                    corrected.append(r)
                 else:
-                    corrected_req = f"qt{r}"
-                    assert corrected_req in self.cpp_info.components, f"{corrected_req} required but not yet present in self.cpp_info.components"
-                reqs.append(corrected_req)
-            return reqs
+                    comp = f"qt{r}"
+                    assert comp in self.cpp_info.components, f"Composant {comp} introuvable"
+                    corrected.append(comp)
+            return corrected
 
-        def _create_module(module, requires, has_include_dir=True):
-            componentname = f"qt{module}"
-            assert componentname not in self.cpp_info.components, f"Module {module} already present in self.cpp_info.components"
-            self.cpp_info.components[componentname].set_property("cmake_target_name", f"Qt6::{module}")
-            self.cpp_info.components[componentname].set_property("pkg_config_name", f"Qt6{module}")
-            if module.endswith("Private"):
-                libname = module[:-7]
-            else:
-                libname = module
-            self.cpp_info.components[componentname].libs = [f"Qt6{libname}"]
-            if has_include_dir:
-                self.cpp_info.components[componentname].includedirs = ["include", os.path.join("include", f"Qt{module}")]
-            self.cpp_info.components[componentname].defines = [f"QT_{module.upper()}_LIB"]
-            if module != "Core" and "Core" not in requires:
-                requires.append("Core")
-            self.cpp_info.components[componentname].requires = _get_corrected_reqs(requires)
-
-        def _create_plugin(pluginname, libname, plugintype, requires):
-            componentname = f"qt{pluginname}"
-            assert componentname not in self.cpp_info.components, f"Plugin {pluginname} already present in self.cpp_info.components"
-            self.cpp_info.components[componentname].set_property("cmake_target_name", f"Qt6::{pluginname}")
-            self.cpp_info.components[componentname].libs = [libname]
-            self.cpp_info.components[componentname].libdirs = [os.path.join("plugins", plugintype)]
-            self.cpp_info.components[componentname].includedirs = []
-            if "Core" not in requires:
-                requires.append("Core")
-            self.cpp_info.components[componentname].requires = _get_corrected_reqs(requires)
-
-        _create_module("Core", [ "zlib::zlib" ])
-        if self.settings.os == "Windows":
-            self.cpp_info.components["qtCore"].system_libs.append("authz")
-        if is_msvc(self):
-            self.cpp_info.components["qtCore"].cxxflags.append("-permissive-")
-            self.cpp_info.components["qtCore"].cxxflags.append("-Zc:__cplusplus")
-            self.cpp_info.components["qtCore"].system_libs.append("synchronization")
-            self.cpp_info.components["qtCore"].system_libs.append("runtimeobject")
-
-        # Frameworks
-        fw_paths, fw_names = self._find_qt_frameworks()
-        self.cpp_info.frameworks = fw_names
-        self.cpp_info.frameworkdirs = fw_paths
-
-        # Libraries
-        self.cpp_info.libs = [ "lib", "libexec" ]
-        self.cpp_info.bin = [ "bin" ]
-        self.cpp_info.include = [ "include" ]
-
-
-        _create_module("DBus", [])
-        gui_reqs = []
-        if self.settings.os == "Linux":
-            gui_reqs = [ "DBus", "xkbcommon::xkbcommon" ]
-        _create_module("Gui", gui_reqs)
-        _create_module("Widgets", [])
-        _create_module("Network", [])
-        _create_module("Sql", [])
-        _create_module("Svg", [])
-        _create_module("SvgWidgets", [])
-        _create_module("WebEngineWidgets", [])
-        if self.settings.os == "Windows":
-            # https://github.com/qt/qtbase/blob/v6.6.1/src/dbus/CMakeLists.txt#L71-L77
-            self.cpp_info.components["qtDBus"].system_libs.append("advapi32")
-            self.cpp_info.components["qtDBus"].system_libs.append("netapi32")
-            self.cpp_info.components["qtDBus"].system_libs.append("user32")
-            self.cpp_info.components["qtDBus"].system_libs.append("ws2_32")
-
-            self.cpp_info.components["qtGui"].system_libs += [
-                "advapi32", "gdi32", "ole32", "shell32", "user32", "d3d11", "dxgi", "dxguid"
-            ] # https://github.com/qt/qtbase/blob/v6.2.3/src/gui/CMakeLists.txt#L393-L402
-            self.cpp_info.components["qtGui"].system_libs.append("d2d1")
-            self.cpp_info.components["qtGui"].system_libs.append("dwrite")
-        if is_apple_os(self):
-            self.cpp_info.components["qtGui"].frameworks = ["CoreFoundation", "CoreGraphics", "CoreText", "Foundation", "ImageIO"]
-            if self.settings.os == "Macos":
-                _create_plugin("QCocoaIntegrationPlugin", "qcocoa", "platforms", ["Core", "Gui"])
-                self.cpp_info.components["QCocoaIntegrationPlugin"].frameworks = [
-                    "AppKit", "Carbon", "CoreServices", "CoreVideo", "IOKit", "IOSurface", "Metal", "QuartzCore"
+        def _add_module(name, requires=None, has_include=True):
+            requires = requires or []
+            comp_name = f"qt{name}"
+            comp = self.cpp_info.components[comp_name]
+            # CMake & pkg-config
+            comp.set_property("cmake_target_name", f"Qt6::{name}")
+            comp.set_property("pkg_config_name", f"qt6{name.lower()}")
+            # Bibliothèque
+            # comp.libs = [f"Qt6{name}"]
+            comp.frameworks = f"Qt{name}"
+            comp.frameworkdirs = [ "lib" ]
+            # Includes
+            if has_include:
+                comp.includedirs = [
+                    os.path.join("include"),
+                    os.path.join("lib", f"Qt{name}.framework", "Headers")
                 ]
+            # Macro & flags
+            comp.defines = [f"QT_{name.upper()}_LIB"]
+            # Dépendances internes (Core toujours présent sauf pour Core)
+            deps = (["Core"] if name != "Core" else []) + requires
+            comp.requires = _fix_requires(deps)
+
+        def _add_plugin(name, libname, folder, requires=None):
+            requires = requires or []
+            comp_name = f"qt{name}"
+            comp = self.cpp_info.components[comp_name]
+            comp.set_property("cmake_target_name", f"Qt6::{name}")
+            comp.set_property("pkg_config_name", f"qt6{name.lower()}")
+            comp.libs = [libname]
+            comp.libdirs = [os.path.join("plugins", folder)]
+            comp.requires = _fix_requires(["Core"] + requires)
+
+        # --- Module Core ---
+        _add_module("Core", requires=["zlib::zlib"])
+        if is_msvc(self):
+            core = self.cpp_info.components["qtCore"]
+            core.cxxflags.extend(["-permissive-", "-Zc:__cplusplus"])
+            core.system_libs.extend(["synchronization", "runtimeobject"])
+
+        # --- Modules Qt principaux ---
+        modules = {
+            "DBus": [],
+            "Gui": ["DBus"] if self.settings.os == "Linux" else [],
+            "Widgets": [],
+            "Network": [],
+            "Sql": [],
+            "Svg": [],
+            "SvgWidgets": [],
+            "WebEngineWidgets": [],
+        }
+        for mod, reqs in modules.items():
+            _add_module(mod, requires=reqs)
+
+        # --- Windows : libs système supplémentaires ---
+        if self.settings.os == "Windows":
+            self.cpp_info.components["qtDBus"].system_libs += ["advapi32", "netapi32", "user32", "ws2_32"]
+            self.cpp_info.components["qtGui"].system_libs += [
+                "advapi32", "gdi32", "ole32", "shell32", "user32",
+                "d3d11", "dxgi", "dxguid", "d2d1", "dwrite"
+            ]
+
+        # --- macOS : frameworks et plugin Cocoa ---
+        if is_apple_os(self):
+            # Frameworks système pour Gui
+            gui = self.cpp_info.components["qtGui"]
+            gui.frameworks = ["CoreFoundation", "CoreGraphics", "CoreText", "Foundation", "ImageIO"]
+            gui.frameworkdirs = []  # utilise les frameworks système
+
+            # Plugin QCocoaIntegration
+            _add_plugin("QCocoaIntegrationPlugin", "qcocoa", "platforms", requires=["Gui"])
+            cocoa = self.cpp_info.components["qtQCocoaIntegrationPlugin"]
+            cocoa.frameworks = [
+                "AppKit", "Carbon", "CoreServices", "CoreVideo",
+                "IOKit", "IOSurface", "Metal", "QuartzCore"
+            ]
+            cocoa.frameworkdirs = [os.path.join(self.package_folder, "lib")]
+
+        # --- Répertoires globaux ---
+        self.cpp_info.bindirs = ["bin", "libexec"]
+        self.cpp_info.libdirs = ["lib"]
+        self.cpp_info.includedirs = ["include"]
 
 
     def package_id(self):
         self.info.settings.clear()
-
-
