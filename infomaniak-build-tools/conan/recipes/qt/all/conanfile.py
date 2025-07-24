@@ -257,23 +257,6 @@ class QtConan(ConanFile):
         rmdir(self, os.path.join(self.package_folder, "doc"))
         rmdir(self, os.path.join(self.package_folder, "modules"))
 
-        # copy(self, "Tools/", src=self.source_folder, dst=self.package_folder)
-
-    def _find_qt_frameworks(self):
-        """
-        Find the Qt frameworks in the package folder.
-        :return: A list of Qt frameworks found in the package folder.
-        """
-        frameworks_paths = glob.glob(os.path.join(self.package_folder, "lib", "Qt*.framework"))
-        if not frameworks_paths:
-            raise ConanException("No Qt frameworks found in the package folder.")
-        # Get only the name of the frameworks, not the full path
-        frameworks_names = [os.path.basename(path)[:-10] for path in frameworks_paths]
-        for framework in frameworks_names:
-            self.output.info(f"\t Found Qt framework: {framework}")
-        for paths in frameworks_paths:
-            self.output.info(f"\t Found Qt framework path: {paths}")
-        return frameworks_paths, frameworks_names
 
     def package_info(self):
         from conan.tools.microsoft import is_msvc
@@ -297,7 +280,7 @@ class QtConan(ConanFile):
                     corrected.append(r)
                 else:
                     comp = f"qt{r}"
-                    assert comp in self.cpp_info.components, f"Composant {comp} introuvable"
+                    assert comp in self.cpp_info.components, f"Component '{comp}' not found in Qt components."
                     corrected.append(comp)
             return corrected
 
