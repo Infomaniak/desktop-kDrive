@@ -228,7 +228,7 @@ fi
 # Create the conan package for xxHash.
 conan_recipes_folder="$conan_remote_base_folder/recipes"
 log "Creating package xxHash..."
-conan create "$conan_recipes_folder/xxhash/all/" --build=missing "$architecture" -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=$local_recipe_remote_name
+conan create "$conan_recipes_folder/xxhash/all/" --build=missing $architecture -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=$local_recipe_remote_name
 
 if [ "$platform" = "darwin" ]; then
   log "Creating openssl package..."
@@ -236,11 +236,11 @@ if [ "$platform" = "darwin" ]; then
 fi
 
 log "Creating package Qt..."
-conan create "$conan_recipes_folder/qt/all/" --build=missing "$architecture" -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter # -o "&:qt_login_type=$qt_login_type_param"
+conan create "$conan_recipes_folder/qt/all/" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter # -o "&:qt_login_type=$qt_login_type_param"
 
 log "Installing dependencies..."
 # Install this packet in the build folder.
-conan install . --output-folder="$output_dir" --build=missing "$architecture" -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter
+conan install . --output-folder="$output_dir" --build=missing $architecture -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter
 
 if [ $? -ne 0 ]; then
   error "Failed to install Conan dependencies."
