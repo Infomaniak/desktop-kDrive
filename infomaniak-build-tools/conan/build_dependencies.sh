@@ -134,12 +134,15 @@ function get_default_output_dir {
 }
 
 output_dir="$(get_arg_value '--output-dir')"
-if [[ -z "$output_dir" ]]; then
-  output_dir="$(get_env_var_value 'KDRIVE_OUTPUT_DIR')"
-  log "Using environment variable 'KDRIVE_OUTPUT_DIR' as conan output_dir : '$KDRIVE_OUTPUT_DIR'" >&2
-fi
-if [[ -z "$output_dir" ]]; then
-  output_dir="$(get_default_output_dir)"
+if [[ -z "${output_dir}" ]]; then
+  env_output_dir="$(get_env_var_value 'KDRIVE_OUTPUT_DIR')"
+  if [[ -n "${env_output_dir}" ]]; then
+    output_dir="${env_output_dir}"
+    log "Using environment variable 'KDRIVE_OUTPUT_DIR' as conan output_dir : '${output_dir}'" >&2
+  else
+    log "No output directory specified. Using default output directory." >&2
+    output_dir="$(get_default_output_dir)"
+  fi
 fi
 
 
@@ -229,7 +232,7 @@ conan create "$conan_recipes_folder/xxhash/all/" --build=missing $architecture -
 
 if [ "$platform" = "darwin" ]; then
   log "Creating openssl package..."
-  conan create "$conan_recipes_folder/openssl-universal/3.2.4/" --build=missing -s:a=build_type="$build_type" --profile:all="$conan_profile" -r="$local_recipe_remote_name" -r=conancenter
+  conan create "$conan_recipes_folder/openssl-universal/all/" --build=missing -s:a=build_type="$build_type" --profile:all="$conan_profile" -r="$local_recipe_remote_name" -r=conancenter
 fi
 
 log "Creating package Qt..."
