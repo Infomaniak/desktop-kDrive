@@ -1,7 +1,6 @@
 name: kDrive desktop CI
 
 on:
-  workflow_dispatch:  
   pull_request:
     branches-ignore:
         - 'release/**'
@@ -35,7 +34,7 @@ jobs:
       - name: Build Windows
         uses: ./.github/actions/build_windows
         with:  
-          virtual_cert_id: ${{ secrets.WINDOWS_VIRTUAL_CERT }}
+          virtual_cert: ${{ secrets.WINDOWS_VIRTUAL_CERT }}
           virtual_cert_pass: ${{ secrets.WINDOWS_VIRTUAL_CERT_PASSWORD }}
     
 

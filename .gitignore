@@ -195,6 +195,7 @@ cmake-build-debug*
 /CMakeUserPresets.json
 # Python virtual environment folder, used by the installation of conan.
 .venv/
+/infomaniak-build-tools/windows/ksigntool/.vs/ksigntool
 
 # cppunit conanfile.py
 # This file is not present in the repository, but moved from windows.py or macos.py depending on the platform.
