@@ -46,7 +46,7 @@ jobs:
         with:
           submodules: recursive
       - name: Build Linux
-        uses: ./.github/actions/build_linux
+        uses: ./.github/actions/build_linux_amd
 
   build-MacOS:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
