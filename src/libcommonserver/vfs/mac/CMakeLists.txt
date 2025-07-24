@@ -38,7 +38,7 @@ install(TARGETS "${libcommonserver_NAME}_vfs_mac"
 if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
     set(ENV_DEST_DIR $ENV{DESTDIR})
 
-    include(ConanGetLibDirs)
+    include(GeneralizeConanLibraryDirs)
     get_library_dirs("OpenSSL" "openssl-universal")
     install(CODE "
         message(STATUS \"Fixing library paths for kDrivecommonserver_vfs_mac...\")

@@ -27,3 +27,8 @@ function(get_library_dirs prefix libname)
     set(_${prefix}_LIB_DIRS "${${libname}_LIB_DIRS_${_BUILD_TYPE_UPPER}}" PARENT_SCOPE)
     message(STATUS "Using _${prefix}_LIB_DIRS (${libname}_LIB_DIRS_${_BUILD_TYPE_UPPER}) = ${_${prefix}_LIB_DIRS}")
 endfunction()
+
+function(get_package_folder libname) # qt_PACKAGE_FOLDER_RELEASE ->
+    string(TOUPPER "${CMAKE_BUILD_TYPE}" _BUILD_TYPE_UPPER)
+    set(_${libname}_PACKAGE_FOLDER "${${libname}_PACKAGE_FOLDER_${_BUILD_TYPE_UPPER}}" PARENT_SCOPE)
+endfunction()

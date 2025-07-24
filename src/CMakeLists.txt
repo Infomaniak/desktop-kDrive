@@ -1,7 +1,9 @@
 find_package(Qt6 REQUIRED Core Concurrent WebEngineCore Core5Compat)
 
-get_target_property(QT_QMAKE_EXECUTABLE Qt6::qmake IMPORTED_LOCATION)
-message(STATUS "Using Qt ${Qt6Core_VERSION} (${QT_QMAKE_EXECUTABLE})")
+include(GeneralizeConanLibraryDirs)
+get_package_folder("qt")
+set(_qmake "${_qt_PACKAGE_FOLDER}/bin/qmake")
+message(STATUS "Using Qt ${Qt6_VERSION_STRING} (${_qmake})")
 
 if(NOT MSVC)
   if(NOT (CMAKE_SYSTEM_PROCESSOR MATCHES "^(alpha|parisc|hppa)") AND NOT CMAKE_CROSSCOMPILING)
