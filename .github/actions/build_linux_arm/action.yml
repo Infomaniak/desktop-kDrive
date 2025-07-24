@@ -82,5 +82,5 @@ runs:
           compression-level: 0
 
       - name: Clean-up generated code
-        run : rm -rf build-linux
+        run : rm -rf build-linux-arm64
         shell: bash
