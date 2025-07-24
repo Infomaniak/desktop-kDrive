@@ -102,7 +102,7 @@
     }
 
     // Set exported interface
-    NSLog(@"[KD] Set exported interface for connection with ext");
+    NSLog(@"[KD] Set exported interface for connection with login agent");
     _loginItemAgentConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCLoginItemRemoteProtocol)];
     _loginItemAgentConnection.exportedObject = self;
 
@@ -153,12 +153,9 @@
 
 // XPCLoginItemRemoteProtocol protocol implementation
 - (void)processType:(void (^)(ProcessType))callback {
-    NSLog(@"[KD] Process type asked");
-    callback(server);
 }
 
 - (void)serverIsRunning:(NSXPCListenerEndpoint *)endpoint {
-    NSLog(@"[KD] Server Ext is running");
 }
 
 @end

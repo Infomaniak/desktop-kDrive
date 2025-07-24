@@ -19,7 +19,8 @@
 #import <Foundation/Foundation.h>
 
 typedef enum {
-    server,
+    extServer,
+    guiServer,
     client,
     finderExt
 } ProcessType;

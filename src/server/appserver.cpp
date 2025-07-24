@@ -325,11 +325,12 @@ void AppServer::init() {
 #endif
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
 
-    // Init comm manager
-    _commManager.reset(new CommManager(_syncPalMap, _vfsMap));
+    // Init CommManager
+    _commManager = std::make_shared<CommManager>(_syncPalMap, _vfsMap);
     _commManager->setAddErrorCallback(&addError);
     _commManager->setGetThumbnailCallback(&ServerRequests::getThumbnail);
     _commManager->setGetPublicLinkUrlCallback(&ServerRequests::getPublicLinkUrl);
+    _commManager->start();
 
     // Init CommServer instance
     if (!OldCommServer::instance()) {
@@ -406,6 +407,9 @@ void AppServer::init() {
 void AppServer::cleanup() {
     LOG_DEBUG(_logger, "AppServer::cleanup");
 
+    // Stop CommManager
+    _commManager->stop();
+
     // Stop JobManager
     JobManager::instance()->stop();
     LOG_DEBUG(_logger, "JobManager stopped");
@@ -425,6 +429,9 @@ void AppServer::cleanup() {
         }
     }
     LOG_DEBUG(_logger, "Vfs(s) stopped");
+
+    // Clear CommManager
+    _commManager.reset();
 
     // Clear JobManager
     JobManager::instance()->clear();

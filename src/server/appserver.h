@@ -102,7 +102,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         static std::vector<Notification> _notifications;
 
         std::unique_ptr<NavigationPaneHelper> _navigationPaneHelper;
-        QScopedPointer<CommManager> _commManager;
+        std::shared_ptr<CommManager> _commManager;
         bool _appRestartRequired{false};
         Theme *_theme{nullptr};
         bool _helpAsked{false};

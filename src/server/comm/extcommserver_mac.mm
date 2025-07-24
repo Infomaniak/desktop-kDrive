@@ -137,6 +137,12 @@ class ExtCommServerPrivate : public AbstractCommServerPrivate {
     return YES;
 }
 
+// XPCLoginItemRemoteProtocol protocol implementation
+- (void)processType:(void (^)(ProcessType))callback {
+    NSLog(@"[KD] Process type asked");
+    callback(extServer);
+}
+
 @end
 
 // ExtCommChannelPrivate implementation

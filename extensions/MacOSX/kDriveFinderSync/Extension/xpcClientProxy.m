@@ -235,7 +235,7 @@
 // XPCLoginItemRemoteProtocol protocol implementation
 - (void)processType:(void (^)(ProcessType))callback
 {
-    NSLog(@"[KD] Process type asked");
+    NSLog(@"[KD] Process type asked: finderExt");
     callback(finderExt);
 }
 

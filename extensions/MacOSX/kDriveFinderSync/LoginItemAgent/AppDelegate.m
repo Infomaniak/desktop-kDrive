@@ -23,7 +23,8 @@
 - (instancetype)init {
     self = [super init];
     
-    _srvConnection = nil;
+    _srvExtConnection = nil;
+    _srvGuiConnection = nil;
     _srvExtEndpoint = nil;
     _srvGuiEndpoint = nil;
     _extConnection = nil;
@@ -46,36 +47,38 @@
     // Set connection handlers
     NSLog(@"[KD] Setup connection handlers");
     newConnection.interruptionHandler = ^{
-        if (self->_srvConnection) {
-            if (self->_srvConnection == newConnection) {
-                NSLog(@"[KD] Connection with server interrupted");
-                self->_srvConnection = nil;
-                self->_srvExtEndpoint = nil;
-                self->_srvGuiEndpoint = nil;
-            } else if (self->_guiConnection == newConnection) {
-                NSLog(@"[KD] Connection with gui interrupted");
-                self->_guiConnection = nil;
-            } else if (self->_extConnection == newConnection) {
-                NSLog(@"[KD] Connection with ext interrupted");
-                self->_extConnection = nil;
-            }
+        if (self->_srvExtConnection == newConnection) {
+            NSLog(@"[KD] Connection with ext server interrupted");
+            self->_srvExtConnection = nil;
+            self->_srvExtEndpoint = nil;
+        } else if (self->_srvGuiConnection == newConnection) {
+            NSLog(@"[KD] Connection with gui server interrupted");
+            self->_srvGuiConnection = nil;
+            self->_srvGuiEndpoint = nil;
+        } else if (self->_guiConnection == newConnection) {
+            NSLog(@"[KD] Connection with gui interrupted");
+            self->_guiConnection = nil;
+        } else if (self->_extConnection == newConnection) {
+            NSLog(@"[KD] Connection with ext interrupted");
+            self->_extConnection = nil;
         }
     };
 
     newConnection.invalidationHandler = ^{
-        if (self->_srvConnection) {
-            if (self->_srvConnection == newConnection) {
-                NSLog(@"[KD] Connection with server invalidated");
-                self->_srvConnection = nil;
-                self->_srvExtEndpoint = nil;
-                self->_srvGuiEndpoint = nil;
-            } else if (self->_guiConnection == newConnection) {
-                NSLog(@"[KD] Connection with gui invalidated");
-                self->_guiConnection = nil;
-            } else if (self->_extConnection == newConnection) {
-                NSLog(@"[KD] Connection with ext invalidated");
-                self->_extConnection = nil;
-            }
+        if (self->_srvExtConnection == newConnection) {
+            NSLog(@"[KD] Connection with ext server invalidated");
+            self->_srvExtConnection = nil;
+            self->_srvExtEndpoint = nil;
+        } else if (self->_srvGuiConnection == newConnection) {
+            NSLog(@"[KD] Connection with gui server invalidated");
+            self->_srvGuiConnection = nil;
+            self->_srvGuiEndpoint = nil;
+        } else if (self->_guiConnection == newConnection) {
+            NSLog(@"[KD] Connection with gui invalidated");
+            self->_guiConnection = nil;
+        } else if (self->_extConnection == newConnection) {
+            NSLog(@"[KD] Connection with ext invalidated");
+            self->_extConnection = nil;
         }
     };
     
@@ -85,14 +88,17 @@
     
     // Get remote object role
     [[newConnection remoteObjectProxy] processType:^(ProcessType value) {
-        if (value == server) {
-            NSLog(@"[KD] Process server connected");
-            self->_srvConnection = newConnection;
+        if (value == extServer) {
+            NSLog(@"[KD] Extension server connected");
+            self->_srvExtConnection = newConnection;
+        } else if (value == guiServer) {
+            NSLog(@"[KD] GUI server connected");
+            self->_srvGuiConnection = newConnection;
         } else if (value == client) {
-            NSLog(@"[KD] Process gui connected");
+            NSLog(@"[KD] Client connected");
             self->_guiConnection = newConnection;
         } else if (value == finderExt) {
-            NSLog(@"[KD] Process ext connected");
+            NSLog(@"[KD] Finder Extension connected");
             self->_extConnection = newConnection;
         }
     }];

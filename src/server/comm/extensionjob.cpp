@@ -68,6 +68,7 @@ ExtensionJob::ExtensionJob(std::shared_ptr<CommManager> commManager, const CommS
              std::bind(&ExtensionJob::commandRegisterFolder, this, std::placeholders::_1, std::placeholders::_2)},
             {"UNREGISTER_PATH",
              std::bind(&ExtensionJob::commandUnregisterFolder, this, std::placeholders::_1, std::placeholders::_2)},
+            {"GET_STRINGS", std::bind(&ExtensionJob::commandGetStrings, this, std::placeholders::_1, std::placeholders::_2)},
             {"STATUS", std::bind(&ExtensionJob::commandForceStatus, this, std::placeholders::_1, std::placeholders::_2)},
             {"GET_MENU_ITEMS", std::bind(&ExtensionJob::commandGetMenuItems, this, std::placeholders::_1, std::placeholders::_2)},
             {"COPY_PUBLIC_LINK",
@@ -107,6 +108,8 @@ void ExtensionJob::runJob() {
             executeCommand(_commandLineStr, channel);
         }
     }
+
+    _exitInfo = ExitCode::Ok;
 }
 
 void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
@@ -309,30 +312,26 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
 }
 
 void ExtensionJob::commandRegisterFolder(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
-    SyncPath path(argument);
-    if (_registeredSyncPaths.contains(path)) return;
+    if (!channel) return;
 
     CommString response(Str("REGISTER_PATH"));
     response.append(responseToFinderArgSeparator);
     response.append(argument); // path
     channel->sendMessage(response);
-
-    _registeredSyncPaths.insert(path);
 }
 
 void ExtensionJob::commandUnregisterFolder(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
-    SyncPath path(argument);
-    if (!_registeredSyncPaths.contains(path)) return;
+    if (!channel) return;
 
     CommString response(Str("UNREGISTER_PATH"));
     response.append(responseToFinderArgSeparator);
     response.append(argument); // path
     channel->sendMessage(response);
-
-    _registeredSyncPaths.erase(path);
 }
 
 void ExtensionJob::commandForceStatus(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
+    if (!channel) return;
+
     auto argumentList = CommonUtility::splitCommString(argument, messageArgSeparator);
 
     if (argumentList.size() != 4) {
@@ -359,6 +358,38 @@ void ExtensionJob::commandForceStatus(const CommString &argument, std::shared_pt
     response.append(responseToFinderArgSeparator);
     response.append(argumentList[3]); // path
     channel->sendMessage(response);
+}
+
+void ExtensionJob::commandGetStrings(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
+    static std::array<std::pair<CommString, CommString>, 1> strings{
+            {{Str("CONTEXT_MENU_TITLE"), QStr2CommString(Theme::instance()->appNameGUI())}}};
+
+    {
+        CommString response(Str("GET_STRINGS"));
+        response.append(responseToFinderArgSeparator);
+        response.append(Str("BEGIN"));
+        channel->sendMessage(response);
+    }
+
+    for (auto &[key, value]: strings) {
+        if (argument.empty() || argument == key) {
+            {
+                CommString response(Str("STRING"));
+                response.append(responseToFinderArgSeparator);
+                response.append(key);
+                response.append(responseToFinderArgSeparator);
+                response.append(value);
+                channel->sendMessage(response);
+            }
+        }
+    }
+
+    {
+        CommString response(Str("GET_STRINGS"));
+        response.append(responseToFinderArgSeparator);
+        response.append(Str("END"));
+        channel->sendMessage(response);
+    }
 }
 
 #ifdef _WIN32

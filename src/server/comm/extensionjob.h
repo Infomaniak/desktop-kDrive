@@ -60,8 +60,6 @@ class ExtensionJob : public AbstractJob {
         CommString _commandLineStr;
         std::list<std::shared_ptr<AbstractCommChannel>> _channels;
 
-        std::unordered_set<SyncPath> _registeredSyncPaths;
-
         static bool _dehydrationCanceled;
         static unsigned _nbOngoingDehydration;
         static std::mutex _dehydrationMutex;
@@ -96,6 +94,13 @@ class ExtensionJob : public AbstractJob {
          */
         void commandForceStatus(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
         // From FinderSyncExt & KDContextMenu
+        /** Request for values corresponding to keys.
+         * argument is a list of keys for which the values are needed (empty for all keys)
+         * Reply with  GET_STRINGS:BEGIN
+         * followed by several STRING:[Key]:[Value]
+         * and ends with GET_STRINGS:END
+         */
+        void commandGetStrings(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
         /** Request for the list of menu items.
          * argument is a list of files for which the menu should be shown, separated by messageArgSeparator
          * Reply with  GET_MENU_ITEMS:BEGIN

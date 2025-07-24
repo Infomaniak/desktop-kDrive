@@ -47,10 +47,10 @@
 
 #include <log4cplus/loggingmacros.h>
 
-#define QUERY_END_SEPARATOR Str("\\/\n")
-#define QUERY_ARG_SEPARATOR Str(";")
-
 namespace KDC {
+
+static constexpr CommString finderExtQuerySeparator(Str("\\/"));
+static constexpr CommString guiArgSeparator(Str(";"));
 
 CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<SyncPal>> &syncPalMap,
                          const std::unordered_map<int, std::shared_ptr<Vfs>> &vfsMap) :
@@ -81,26 +81,39 @@ CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<SyncPal>>
     _extCommServer->setLostConnectionCbk(std::bind(&CommManager::onLostExtConnection, this, std::placeholders::_1));
     _guiCommServer->setNewConnectionCbk(std::bind(&CommManager::onNewGuiConnection, this));
     _guiCommServer->setLostConnectionCbk(std::bind(&CommManager::onLostGuiConnection, this, std::placeholders::_1));
+}
 
+CommManager::~CommManager() {
+    _extCommServer.reset();
+    _guiCommServer.reset();
+
+    // Check that there is no memory leak
+    assert(_extCommServer.use_count() == 0);
+    assert(_guiCommServer.use_count() == 0);
+}
+
+void CommManager::start() {
     // Start CommServer(s)
     for (auto server: {_extCommServer, _guiCommServer}) {
         SyncPath socketPath;
 #if defined(_WIN32) or defined(__unix__)
         socketPath = createSocket();
+        LOGW_INFO(Log::instance()->getLogger(),
+                  L"Starting " << Utility::s2ws(server->name()) << L": " << Utility::formatSyncPath(socketPath));
+#else
+        LOGW_INFO(Log::instance()->getLogger(), L"Starting " << Utility::s2ws(server->name()));
 #endif
 
         if (!server->listen(socketPath)) {
-            LOGW_WARN(Log::instance()->getLogger(),
-                      L"Can't start " << Utility::s2ws(server->name()) << L": " << Utility::formatSyncPath(socketPath));
+            LOGW_WARN(Log::instance()->getLogger(), L"Can't start " << Utility::s2ws(server->name()));
             _addError(Error(errId(), ExitCode::SystemError, ExitCause::Unknown));
         } else {
-            LOGW_INFO(Log::instance()->getLogger(), Utility::s2ws(server->name())
-                                                            << L" started: " << Utility::formatSyncPath(socketPath));
+            LOGW_INFO(Log::instance()->getLogger(), Utility::s2ws(server->name()) << L" started");
         }
     }
 }
 
-CommManager::~CommManager() {
+void CommManager::stop() {
     _extCommServer->close();
     _guiCommServer->close();
 }
@@ -151,7 +164,7 @@ void CommManager::onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channe
         CommString query = channel->readLine();
         LOGW_INFO(Log::instance()->getLogger(), L"Query received: " << CommString2WStr(query));
 
-        const auto queryArgs = CommonUtility::splitCommString(query, QUERY_ARG_SEPARATOR);
+        const auto queryArgs = CommonUtility::splitCommString(query, guiArgSeparator);
         // Query ID
         const int id = std::stoi(queryArgs[0]);
         // Query type
@@ -173,7 +186,7 @@ void CommManager::onExtQueryReceived(std::shared_ptr<AbstractCommChannel> channe
 
     while (channel->canReadLine()) {
         CommString line;
-        while (!line.ends_with(QUERY_END_SEPARATOR)) {
+        while (!line.ends_with(finderExtQuerySeparator)) {
             if (!channel->canReadLine()) {
                 LOGW_WARN(Log::instance()->getLogger(), L"Failed to parse Extension message - msg="
                                                                 << CommString2WStr(line) << L" channel="
@@ -183,7 +196,7 @@ void CommManager::onExtQueryReceived(std::shared_ptr<AbstractCommChannel> channe
             line.append(channel->readLine());
         }
         // Remove the separator
-        line.erase(line.find(QUERY_END_SEPARATOR));
+        line.erase(line.find(finderExtQuerySeparator));
         LOGW_INFO(Log::instance()->getLogger(),
                   L"Received Extension message - msg=" << CommString2WStr(line) << L" channel=" << Utility::s2ws(channel->id()));
         executeExtCommand(line, channel);
@@ -240,9 +253,9 @@ SyncPath CommManager::createSocket() {
 
 void CommManager::executeCommandDirect(const CommString &commandLineStr, bool broadcast) {
     if (broadcast) {
-        executeExtCommand(commandLineStr);
-    } else {
         broadcastExtCommand(commandLineStr);
+    } else {
+        executeExtCommand(commandLineStr);
     }
 }
 
@@ -252,30 +265,34 @@ void CommManager::executeExtCommand(const CommString &commandLineStr) {
     std::shared_ptr<ExtensionJob> job =
             std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr, std::list<std::shared_ptr<AbstractCommChannel>>());
     if (ExitInfo exitInfo = job->runSynchronously(); exitInfo.code() != ExitCode::Ok) {
-        LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Error in ExtensionJob::runSynchronously - cmd=" << CommString2WStr(commandLineStr));
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in ExtensionJob::runSynchronously - cmd=" << CommString2WStr(commandLineStr));
     }
 }
 
 void CommManager::executeExtCommand(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel) {
     LOGW_DEBUG(Log::instance()->getLogger(), L"Execute command - cmd=" << CommString2WStr(commandLineStr));
 
-    std::shared_ptr<ExtensionJob> job = std::make_shared<ExtensionJob>(
-            shared_from_this(), commandLineStr, std::list<std::shared_ptr<AbstractCommChannel>>({channel}));
-    if (ExitInfo exitInfo = job->runSynchronously(); exitInfo.code() != ExitCode::Ok) {
-        LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Error in ExtensionJob::runSynchronously - cmd=" << CommString2WStr(commandLineStr));
+    if (channel) {
+        std::shared_ptr<ExtensionJob> job = std::make_shared<ExtensionJob>(
+                shared_from_this(), commandLineStr, std::list<std::shared_ptr<AbstractCommChannel>>({channel}));
+        if (ExitInfo exitInfo = job->runSynchronously(); exitInfo.code() != ExitCode::Ok) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in ExtensionJob::runSynchronously - cmd=" << CommString2WStr(commandLineStr));
+        }
     }
 }
 
 void CommManager::broadcastExtCommand(const CommString &commandLineStr) {
     LOGW_DEBUG(Log::instance()->getLogger(), L"Execute command - cmd=" << CommString2WStr(commandLineStr));
 
-    std::shared_ptr<ExtensionJob> job =
-            std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr, _extCommServer->connections());
-    if (ExitInfo exitInfo = job->runSynchronously(); exitInfo.code() != ExitCode::Ok) {
-        LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Error in ExtensionJob::runSynchronously - cmd=" << CommString2WStr(commandLineStr));
+    if (!_extCommServer->connections().empty()) {
+        std::shared_ptr<ExtensionJob> job =
+                std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr, _extCommServer->connections());
+        if (ExitInfo exitInfo = job->runSynchronously(); exitInfo.code() != ExitCode::Ok) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in ExtensionJob::runSynchronously - cmd=" << CommString2WStr(commandLineStr));
+        }
     }
 }
 

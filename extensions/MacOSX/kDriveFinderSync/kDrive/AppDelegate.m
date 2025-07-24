@@ -112,77 +112,40 @@
     _extListener = [NSXPCListener anonymousListener];
     [_extListener setDelegate:self];
     [_extListener resume];
-    
-    // Create anonymous gui listener
-    NSLog(@"[KD] Create anonymous gui listener");
-    _guiListener = [NSXPCListener anonymousListener];
-    [_guiListener setDelegate:self];
-    [_guiListener resume];
-    
+        
     // Send endpoints to login item agent
     NSLog(@"[KD] Send server endpoint to login item agent");
     [[_loginItemAgentConnection remoteObjectProxy] setServerExtEndpoint:[_extListener endpoint]];
-    NSLog(@"[KD] Send gui endpoint to login item agent");
-    [[_loginItemAgentConnection remoteObjectProxy] setServerGuiEndpoint:[_guiListener endpoint]];
 }
 
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection
 {
-    if (listener == _extListener) {
-        // Set exported interface
-        NSLog(@"[KD] Set exported interface for connection with ext");
-        newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionRemoteProtocol)];
-        newConnection.exportedObject = self;
-        
-        // Set remote object interface
-        NSLog(@"[KD] Set remote object interface for connection with ext");
-        newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionProtocol)];
-        
-        // Set connection handlers
-        NSLog(@"[KD] Set connection handlers for connection with ext");
-        newConnection.interruptionHandler = ^{
-            // The extension has exited or crashed
-            NSLog(@"[KD] Connection with ext interrupted");
-        };
+    // Set exported interface
+    NSLog(@"[KD] Set exported interface for connection with ext");
+    newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionRemoteProtocol)];
+    newConnection.exportedObject = self;
+    
+    // Set remote object interface
+    NSLog(@"[KD] Set remote object interface for connection with ext");
+    newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionProtocol)];
+    
+    // Set connection handlers
+    NSLog(@"[KD] Set connection handlers for connection with ext");
+    newConnection.interruptionHandler = ^{
+        // The extension has exited or crashed
+        NSLog(@"[KD] Connection with ext interrupted");
+    };
 
-        newConnection.invalidationHandler = ^{
-            // Connection can not be formed or has terminated and may not be re-established
-            NSLog(@"[KD] Connection with ext invalidated");
-        };
-        
-        // Start processing incoming messages.
-        NSLog(@"[KD] Resume connection with ext");
-        [newConnection resume];
-        
-        _extConnection = newConnection;
-    } else if (listener == _guiListener) {
-        // Set exported interface
-        NSLog(@"[KD] Set exported interface for connection with gui");
-        newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCGuiProtocol)];
-        newConnection.exportedObject = self;
-        
-        // Set remote object interface
-        NSLog(@"[KD] Set remote object interface for connection with gui");
-        newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCGuiRemoteProtocol)];
-        
-        // Set connection handlers
-        NSLog(@"[KD] Set connection handlers for connection with gui");
-        newConnection.interruptionHandler = ^{
-            // The extension has exited or crashed
-            NSLog(@"[KD] Connection with gui interrupted");
-        };
-
-        newConnection.invalidationHandler = ^{
-            // Connection can not be formed or has terminated and may not be re-established
-            NSLog(@"[KD] Connection with gui invalidated");
-        };
-        
-        // Start processing incoming messages.
-        NSLog(@"[KD] Resume connection with gui");
-        [newConnection resume];
-        
-        _guiConnection = newConnection;
-    }
+    newConnection.invalidationHandler = ^{
+        // Connection can not be formed or has terminated and may not be re-established
+        NSLog(@"[KD] Connection with ext invalidated");
+    };
+    
+    // Start processing incoming messages.
+    NSLog(@"[KD] Resume connection with ext");
+    [newConnection resume];
+    
+    _extConnection = newConnection;
 
     return YES;
 }
@@ -242,13 +205,12 @@
 // XPCLoginItemRemoteProtocol protocol implementation
 - (void)processType:(void (^)(ProcessType))callback
 {
-    NSLog(@"[KD] Process type asked");
-    callback(server);
+    NSLog(@"[KD] Process type asked: extServer");
+    callback(extServer);
 }
 
 - (void)serverIsRunning:(NSXPCListenerEndpoint *)endPoint
 {
-    NSLog(@"[KD] Server is running");
 }
 
 - (IBAction) okButtonAction : (id) sender {

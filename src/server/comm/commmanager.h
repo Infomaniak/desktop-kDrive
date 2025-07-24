@@ -36,6 +36,9 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
                              const std::unordered_map<int, std::shared_ptr<Vfs>> &vfsMap);
         ~CommManager();
 
+        void start();
+        void stop();
+
         // AppServer callbacks setting
         inline void setAddErrorCallback(void (*addError)(const Error &)) { _addError = addError; }
         inline void setGetThumbnailCallback(ExitCode (*getThumbnail)(int, NodeId, int, std::string &)) {
