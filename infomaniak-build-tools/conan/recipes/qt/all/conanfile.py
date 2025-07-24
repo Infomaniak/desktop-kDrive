@@ -267,7 +267,7 @@ class QtConan(ConanFile):
         if not frameworks_paths:
             raise ConanException("No Qt frameworks found in the package folder.")
         # Get only the name of the frameworks, not the full path
-        frameworks_names = [os.path.basename(path) for path in frameworks_paths]
+        frameworks_names = [os.path.basename(path)[:-10] for path in frameworks_paths]
         for framework in frameworks_names:
             self.output.info(f"\t Found Qt framework: {framework}")
         for paths in frameworks_paths:
