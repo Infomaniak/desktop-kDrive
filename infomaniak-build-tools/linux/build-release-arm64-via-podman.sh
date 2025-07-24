@@ -56,7 +56,7 @@ done
 
 
 
-build_dir="$PWD/build-linux"
+build_dir="$src_dir/build-linux"
 client_dir="$build_dir/client"
 install_dir="$build_dir/install"
 
