@@ -3,7 +3,7 @@ import os
 
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration, ConanException
-from conan.tools.files import copy
+from conan.tools.files import copy, rmdir
 
 
 class QtConan(ConanFile):
@@ -252,6 +252,9 @@ class QtConan(ConanFile):
         subfolder = "macos" if self.settings.os == "Macos" else ("gcc_64" if self.settings.os == "Linux" else "msvc2019_64")
 
         copy(self, "*", src=os.path.join(self.build_folder, f"install/{self.version}/{subfolder}/"), dst=self.package_folder)
+
+        rmdir(self, os.path.join(self.package_folder, "doc"))
+
         # copy(self, "Tools/", src=self.source_folder, dst=self.package_folder)
 
     def _find_qt_frameworks(self):
@@ -264,7 +267,10 @@ class QtConan(ConanFile):
             raise ConanException("No Qt frameworks found in the package folder.")
         # Get only the name of the frameworks, not the full path
         frameworks_names = [os.path.basename(path) for path in frameworks_paths]
-        self.output.info(f"Found Qt frameworks: {', '.join(frameworks_names)}")
+        for framework in frameworks_names:
+            self.output.info(f"\t Found Qt framework: {framework}")
+        for paths in frameworks_paths:
+            self.output.info(f"\t Found Qt framework path: {paths}")
         return frameworks_paths, frameworks_names
 
     def package_info(self):
@@ -369,7 +375,7 @@ class QtConan(ConanFile):
                 ]
 
 
-def package_id(self):
-    self.info.settings.clear()
+    def package_id(self):
+        self.info.settings.clear()
 
 
