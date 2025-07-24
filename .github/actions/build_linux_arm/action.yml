@@ -1,5 +1,5 @@
-name: Build ARM Linux
-description: 'Build ARM Version of the Linux app'
+name: Build ARM64 Linux
+description: 'Build ARM64 Version of the Linux app'
 
 inputs:
   release_build:
