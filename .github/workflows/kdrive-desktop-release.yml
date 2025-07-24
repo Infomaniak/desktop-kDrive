@@ -77,7 +77,6 @@ jobs:
     needs: get-version
     runs-on: [ self-hosted, Linux, X64 ]
     steps:
-
       - name: Checkout the PR
         uses: actions/checkout@v4
 
