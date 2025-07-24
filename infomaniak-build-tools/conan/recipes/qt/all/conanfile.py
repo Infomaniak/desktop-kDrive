@@ -348,14 +348,14 @@ class QtConan(ConanFile):
             "Sql": [],
             "Svg": ["Widgets", "Gui"],
             "SvgWidgets": ["Svg", "Widgets", "Gui"],
-            "WebEngineCore": ["Quick", "QmlModels", "OpenGL", "Gui", "WebChannel", "Qml", "Network", "Positioning"],
-            "WebEngineWidgets": ["WebEngineCore"],
-            "Quick": ["QmlModels", "OpenGL", "Gui"],
             "Qml": ["Network"],
             "QmlModels": ["Qml", "Network"],
             "OpenGL": ["Gui"],
+            "Quick": ["QmlModels", "OpenGL", "Gui"],
             "WebChannel": ["Qml", "Network"],
             "Positioning": [],
+            "WebEngineCore": ["Quick", "QmlModels", "OpenGL", "Gui", "WebChannel", "Qml", "Network", "Positioning"],
+            "WebEngineWidgets": ["WebEngineCore"],
         }
         for mod, reqs in modules.items():
             _add_module(mod, requires=reqs)
@@ -398,7 +398,9 @@ class QtConan(ConanFile):
             for fname in os.listdir(cmake_folder):
                 for module_name in modules:
                     if fname.lower().endswith(".cmake"):
-                        find_modules.append(os.path.join("lib", "cmake", f"Qt6{module_name}", fname))
+                        path = os.path.join("lib", "cmake", f"Qt6{module_name}", fname)
+                        find_modules.append(path)
+                        self.output.highlight("Found CMake module: " + path)
         if find_modules:
             self.cpp_info.set_property("cmake_build_modules", find_modules)
 
