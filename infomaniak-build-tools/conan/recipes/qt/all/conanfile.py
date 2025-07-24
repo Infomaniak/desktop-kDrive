@@ -275,7 +275,6 @@ class QtConan(ConanFile):
         return frameworks_paths, frameworks_names
 
     def package_info(self):
-        import os
         from conan.tools.microsoft import is_msvc
         from conan.tools.apple import is_apple_os
 
@@ -309,8 +308,7 @@ class QtConan(ConanFile):
             comp.set_property("cmake_target_name", f"Qt6::{name}")
             comp.set_property("pkg_config_name", f"qt6{name.lower()}")
             # Bibliothèque
-            # comp.libs = [f"Qt6{name}"]
-            comp.frameworks = f"Qt{name}"
+            comp.frameworks = [ f"Qt{name}" ]
             comp.frameworkdirs = [ "lib" ]
             # Includes
             if has_include:
@@ -345,12 +343,19 @@ class QtConan(ConanFile):
         modules = {
             "DBus": [],
             "Gui": ["DBus"] if self.settings.os == "Linux" else [],
-            "Widgets": [],
+            "Widgets": ["Gui"],
             "Network": [],
             "Sql": [],
-            "Svg": [],
-            "SvgWidgets": [],
-            "WebEngineWidgets": [],
+            "Svg": ["Widgets", "Gui"],
+            "SvgWidgets": ["Svg", "Widgets", "Gui"],
+            "WebEngineCore": ["Quick", "QmlModels", "OpenGL", "Gui", "WebChannel", "Qml", "Network", "Positioning"],
+            "WebEngineWidgets": ["WebEngineCore"],
+            "Quick": ["QmlModels", "OpenGL", "Gui"],
+            "Qml": ["Network"],
+            "QmlModels": ["Qml", "Network"],
+            "OpenGL": ["Gui"],
+            "WebChannel": ["Qml", "Network"],
+            "Positioning": [],
         }
         for mod, reqs in modules.items():
             _add_module(mod, requires=reqs)
@@ -383,6 +388,20 @@ class QtConan(ConanFile):
         self.cpp_info.bindirs = ["bin", "libexec"]
         self.cpp_info.libdirs = ["lib"]
         self.cpp_info.includedirs = ["include"]
+
+        # --- .cmake includes ---
+        cmake_folder = os.path.join(self.package_folder, "cmake")
+        find_modules = []
+        concerned_modules = list(modules.keys())
+        concerned_modules.append("Core")
+        if os.path.isdir(cmake_folder):
+            for fname in os.listdir(cmake_folder):
+                for module_name in modules:
+                    if fname.lower().endswith(".cmake"):
+                        find_modules.append(os.path.join("lib", "cmake", f"Qt6{module_name}", fname))
+        if find_modules:
+            self.cpp_info.set_property("cmake_build_modules", find_modules)
+
 
 
     def package_id(self):
