@@ -354,8 +354,7 @@ class QtConan(ConanFile):
 
         if is_apple_os(self):
             gui = self.cpp_info.components["qtGui"]
-            gui.frameworks = ["CoreFoundation", "CoreGraphics", "CoreText", "Foundation", "ImageIO"]
-            gui.frameworkdirs = []  # utilise les frameworks système
+            gui.frameworks += ["CoreFoundation", "CoreGraphics", "CoreText", "Foundation", "ImageIO"]
 
             _add_plugin("QCocoaIntegrationPlugin", "qcocoa", "platforms", requires=["Gui"])
             cocoa = self.cpp_info.components["qtQCocoaIntegrationPlugin"]
@@ -363,10 +362,10 @@ class QtConan(ConanFile):
                 "AppKit", "Carbon", "CoreServices", "CoreVideo",
                 "IOKit", "IOSurface", "Metal", "QuartzCore"
             ]
-            cocoa.frameworkdirs = [os.path.join(self.package_folder, "lib")]
+            cocoa.frameworkdirs = ["lib"]
 
         self.cpp_info.bindirs = ["bin", "libexec"]
-        self.cpp_info.libdirs = ["lib"]
+        self.cpp_info.libdirs = self.cpp_info.frameworkdirs = ["lib"]
         self.cpp_info.includedirs = ["include"]
 
         cmake_folder = os.path.join(self.package_folder, "lib", "cmake")
@@ -392,7 +391,7 @@ class QtConan(ConanFile):
 
     def package_id(self):
         self.info.settings.clear()
-        
+
     def _check_integrity(self):
         expected_paths = [
             os.path.join(self.package_folder, "bin"),
@@ -423,15 +422,10 @@ class QtConan(ConanFile):
         self.buildenv_info.define("QT_QPA_PLATFORM_PLUGIN_PATH", platforms_path)
         self.runenv_info.define("QT_QPA_PLATFORM_PLUGIN_PATH", platforms_path)
 
-        # Optionnel pour tooling ou override
         self.buildenv_info.define_path("QT_TOOLS_PATH", bin_path)
         self.buildenv_info.define_path("QT_LIBEXEC_PATH", libexec_path)
         self.buildenv_info.define_path("QT_LIB_DIR", os.path.join(self.package_folder, "lib"))
         self.buildenv_info.define_path("QT_INCLUDE_DIR", os.path.join(self.package_folder, "include"))
         self.buildenv_info.define_path("QT_HOST_PATH", self.package_folder)
 
-        # Pour aider CMake à trouver Qt
         self.buildenv_info.prepend_path("CMAKE_PREFIX_PATH", self.package_folder)
-
-        # Pour le debug des plugins Qt
-        self.runenv_info.define("QT_DEBUG_PLUGINS", "1")
