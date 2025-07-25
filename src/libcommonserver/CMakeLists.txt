@@ -42,7 +42,7 @@ set(libcommonserver_SRCS
     # Io
     io/filestat.h
     io/iohelper.h io/iohelper.cpp
-    io/permissionsholder.h
+    io/permissionsholder.h io/permissionsholder.cpp
     # VFS
     vfs/vfs.h vfs/vfs.cpp
     vfs/workerinfo.h vfs/vfsworker.h

@@ -122,6 +122,19 @@ IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime /*creati
     return IoError::Success;
 }
 
+IoError IoHelper::lock(const SyncPath &path) noexcept {
+    return IoError::Success;
+}
+
+IoError IoHelper::unlock(const SyncPath &path) noexcept {
+    return IoError::Success;
+}
+
+IoError IoHelper::isLocked(const SyncPath &path, bool &locked) noexcept {
+    locked = false;
+    return IoError::Success;
+}
+
 IoError IoHelper::setReadOnly(const SyncPath &path) {
     if (IoError ioError = IoError::Unknown; !setRights(path, true, false, false, ioError) || ioError != IoError::Success) {
         LOGW_ERROR(logger(), L"IoHelper::setReadOnly : " << Utility::formatSyncPath(path));
@@ -130,7 +143,7 @@ IoError IoHelper::setReadOnly(const SyncPath &path) {
     return IoError::Success;
 }
 
-IoError IoHelper::unsetReadOnly(const SyncPath &path) {
+IoError IoHelper::setFullAccess(const SyncPath &path) {
     if (IoError ioError = IoError::Unknown; !setRights(path, true, true, true, ioError) || ioError != IoError::Success) {
         LOGW_ERROR(logger(), L"IoHelper::setReadOnly : " << Utility::formatSyncPath(path));
         return ioError;

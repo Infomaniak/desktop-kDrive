@@ -726,6 +726,19 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
     return _setRightsStd(path, read, write, exec, ioError);
 }
 
+IoError IoHelper::lock(const SyncPath &path) noexcept {
+    return IoError::Success;
+}
+
+IoError IoHelper::unlock(const SyncPath &path) noexcept {
+    return IoError::Success;
+}
+
+IoError IoHelper::isLocked(const SyncPath &path, bool &locked) noexcept {
+    locked = false;
+    return IoError::Success;
+}
+
 bool IoHelper::checkIfIsJunction(const SyncPath &path, bool &isJunction, IoError &ioError) noexcept {
     isJunction = false;
     ioError = IoError::Success;
@@ -1010,6 +1023,6 @@ bool IoHelper::getShortPathName(const SyncPath &path, SyncPath &shortPathName, I
 }
 
 IoError IoHelper::setReadOnly(const SyncPath &path) {}
-IoError IoHelper::unsetReadOnly(const SyncPath &path) {}
+IoError IoHelper::setFullAccess(const SyncPath &path) {}
 
 } // namespace KDC

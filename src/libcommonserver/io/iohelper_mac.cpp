@@ -177,13 +177,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
     return true;
 }
 
-IoError IoHelper::setReadOnly(const SyncPath &path) {
-    // Remove write right.
-    if (IoError ioError = IoHelper::setRights(path, true, false, true); ioError != IoError::Success) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to set rights for: " << Utility::formatSyncPath(path));
-        return ioError;
-    }
-
+IoError IoHelper::lock(const SyncPath &path) noexcept {
     // Set uchg flag to lock the item.
     if (chflags(path.string().c_str(), UF_IMMUTABLE)) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to set uchg flag for: " << Utility::formatSyncPath(path));
@@ -192,8 +186,7 @@ IoError IoHelper::setReadOnly(const SyncPath &path) {
     return IoError::Success;
 }
 
-IoError IoHelper::unsetReadOnly(const SyncPath &path) {
-    // The file must be unlocked before changing its access rights.
+IoError IoHelper::unlock(const SyncPath &path) noexcept {
     FileStat filestat;
     bool found = false;
     IoHelper::getFileStat(path, &filestat, found);
@@ -209,8 +202,40 @@ IoError IoHelper::unsetReadOnly(const SyncPath &path) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to unset uchg flag for: " << Utility::formatSyncPath(path));
         return IoError::Unknown;
     }
+    return IoError::Success;
+}
 
-    // Add write right.
+IoError IoHelper::isLocked(const SyncPath &path, bool &locked) noexcept {
+    FileStat filestat;
+    bool found = false;
+    IoHelper::getFileStat(path, &filestat, found);
+    if (!found) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Not found: " << Utility::formatSyncPath(path));
+        return IoError::NoSuchFileOrDirectory;
+    }
+
+    locked = filestat._flags & UF_IMMUTABLE;
+    return IoError::Success;
+}
+
+IoError IoHelper::setReadOnly(const SyncPath &path) noexcept {
+    // Remove write right.
+    if (IoError ioError = IoHelper::setRights(path, true, false, true); ioError != IoError::Success) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to set rights for: " << Utility::formatSyncPath(path));
+        return ioError;
+    }
+
+    // Lock the file.
+    return lock(path);
+}
+
+IoError IoHelper::setFullAccess(const SyncPath &path) noexcept {
+    // The file must be unlocked before changing its access rights.
+    if (const auto ioError = unlock(path); ioError != IoError::Success) {
+        return ioError;
+    }
+
+    // Set full access rights.
     if (IoError ioError = IoHelper::setRights(path, true, true, true); ioError != IoError::Success) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to set rights for: " << Utility::formatSyncPath(path));
         return IoError::Unknown;
