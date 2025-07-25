@@ -160,7 +160,7 @@ runs:
         if: steps.build.outcome == 'success'
 
       - name: Download sentry-cli for macOS
-        run: curl -sL https://sentry.io/get-cli/ | sh
+        run: curl -sL https://sentry.io/get-cli/ | sh || true
         shell: bash
         if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
 
