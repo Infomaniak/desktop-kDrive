@@ -264,7 +264,7 @@ void OperationSorterWorker::fixCreateBeforeCreate() {
     for (const auto &opId: _syncPal->_syncOps->opSortedList()) {
         SyncOpPtr createOp = _syncPal->_syncOps->getOp(opId);
         LOG_IF_FAIL(createOp)
-        if (createOp->type() != OperationType::Create || createOp->omit()) {
+        if (createOp->type() != OperationType::Create) {
             continue;
         }
 
