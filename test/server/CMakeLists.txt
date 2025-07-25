@@ -41,10 +41,12 @@ if(APPLE)
     list(APPEND server_SRCS ${server_srcs_path}/comm/xpccommserver_mac.h ${server_srcs_path}/comm/xpccommserver_mac.mm)
     list(APPEND server_SRCS ${server_srcs_path}/comm/extcommserver_mac.h ${server_srcs_path}/comm/extcommserver_mac.mm)
     list(APPEND server_SRCS ${server_srcs_path}/comm/guicommserver_mac.h ${server_srcs_path}/comm/guicommserver_mac.mm)
+    list(APPEND server_SRCS ${server_srcs_path}/comm/litesynccommclient_mac.h ${server_srcs_path}/comm/litesynccommclient_mac.mm)
     set_property(SOURCE ${server_srcs_path}/comm/abstractcommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE ${server_srcs_path}/comm/xpccommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE ${server_srcs_path}/comm/extcommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE ${server_srcs_path}/comm/guicommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    set_property(SOURCE ${server_srcs_path}/comm/litesynccommclient_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
     message(STATUS "server_srcs_path=${server_srcs_path}")
     list(APPEND server_SRCS ${server_srcs_path}/../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m)
@@ -98,7 +100,7 @@ set(testserver_SRCS
 )
 
 if(APPLE)
-    list(APPEND testserver_SRCS vfs/mac/testlitesyncextconnector.h vfs/mac/testlitesyncextconnector.cpp)
+    list(APPEND testserver_SRCS vfs/mac/testlitesynccommclient.h vfs/mac/testlitesynccommclient.cpp)
     list(APPEND testserver_SRCS vfs/mac/testvfsmac.h vfs/mac/testvfsmac.cpp)
 endif()
 
@@ -152,11 +154,11 @@ endif()
 
 if(APPLE)
     target_link_libraries(${testserver_NAME}
-        "${libcommonserver_NAME}_vfs_mac"
+        "${APPLICATION_EXECUTABLE}_vfs_mac"
         "${updater_DEPS}")
 elseif(WIN32)
     target_link_libraries(${testserver_NAME}
-        "${libcommonserver_NAME}_vfs_win")
+        "${APPLICATION_EXECUTABLE}_vfs_win")
 endif()
 
 if(UNIX AND NOT APPLE)

@@ -16,25 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testlitesyncextconnector.h"
+#include "testlitesynccommclient.h"
 
-#include "libcommonserver/vfs/mac/litesyncextconnector.h"
+#include "comm/litesynccommclient_mac.h"
 
 using namespace CppUnit;
 
 namespace KDC {
 
-TestLiteSyncExtConnector::TestLiteSyncExtConnector() : CppUnit::TestFixture() {}
+TestLiteSyncCommClient::TestLiteSyncCommClient() :
+    CppUnit::TestFixture() {}
 
-void TestLiteSyncExtConnector::setUp() {
+void TestLiteSyncCommClient::setUp() {
     TestBase::start();
 }
 
-void TestLiteSyncExtConnector::tearDown() {
+void TestLiteSyncCommClient::tearDown() {
     TestBase::stop();
 }
 
-void TestLiteSyncExtConnector::testGetVfsStatus() {
+void TestLiteSyncCommClient::testGetVfsStatus() {
     /*
     bool isPlaceholder = false;
     bool isHydrated = false;
@@ -43,7 +44,7 @@ void TestLiteSyncExtConnector::testGetVfsStatus() {
 
     // vfsGetStatus returns `true` if the file path indicates a non-existing item.
     log4cplus::Logger logger;
-    CPPUNIT_ASSERT(LiteSyncExtConnector::vfsGetStatus("this_file_does_not_exist.txt", isPlaceholder, isHydrated, isSyncing,
+    CPPUNIT_ASSERT(LiteSyncCommClient::vfsGetStatus("this_file_does_not_exist.txt", isPlaceholder, isHydrated, isSyncing,
                                                       progress, logger));
     */
 }

@@ -16,6 +16,8 @@ set(CMAKE_AUTORCC TRUE)
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
 
+add_subdirectory(vfs)
+
 if(UNIX AND NOT APPLE)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIE")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIE")
@@ -40,6 +42,8 @@ else()
 endif()
 
 set(server_SRCS
+    ../common/filesystembase.h ../common/filesystembase.cpp
+    ../common/filepermissionholder.h ../common/filepermissionholder.cpp
     appserver.h appserver.cpp
     navigationpanehelper.h navigationpanehelper.cpp
     comm/oldcommserver.h comm/oldcommserver.cpp
@@ -64,10 +68,13 @@ if(APPLE)
     list(APPEND server_SRCS comm/xpccommserver_mac.h comm/xpccommserver_mac.mm)
     list(APPEND server_SRCS comm/extcommserver_mac.h comm/extcommserver_mac.mm)
     list(APPEND server_SRCS comm/guicommserver_mac.h comm/guicommserver_mac.mm)
+    list(APPEND server_SRCS comm/litesynccommclient_mac.h comm/litesynccommclient_mac.mm)
+    set_property(SOURCE ../common/utility_mac.cpp APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE comm/abstractcommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE comm/xpccommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE comm/extcommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE comm/guicommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    set_property(SOURCE comm/litesynccommclient_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
     list(APPEND server_SRCS ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m)
     set_property(SOURCE ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
@@ -238,7 +245,9 @@ endif()
 
 if(APPLE)
     find_library(SERVICE_MANAGEMENT_LIBRARY NAMES ServiceManagement)
+    find_library(SYSTEM_EXTENSION_LIBRARY NAMES SystemExtensions)
     target_link_libraries(${APPLICATION_EXECUTABLE} ${SERVICE_MANAGEMENT_LIBRARY})
+    target_link_libraries(${APPLICATION_EXECUTABLE} ${SYSTEM_EXTENSION_LIBRARY})
 endif()
 
 if(ZLIB_FOUND)

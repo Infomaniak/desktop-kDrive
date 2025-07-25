@@ -21,7 +21,6 @@
 #include "testincludes.h"
 #include "mocks/libsyncengine/vfs/mockvfs.h"
 #include "test_classes/testsituationgenerator.h"
-#include "vfs/mac/vfs_mac.h"
 
 #include <reconciliation/conflict_resolver/conflictresolverworker.h>
 

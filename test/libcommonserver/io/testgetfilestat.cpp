@@ -19,9 +19,6 @@
 #include "testio.h"
 
 #include "libcommonserver/io/filestat.h"
-#ifdef __APPLE__
-#include "libcommonserver/vfs/mac/litesyncextconnector.h"
-#endif
 
 #include <filesystem>
 

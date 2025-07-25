@@ -16,37 +16,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#import "litesyncextconnector.h"
+#import "litesynccommclient_mac.h"
 #import "../extensions/MacOSX/kDriveLiteSync/Extension/xpcLiteSyncExtensionProtocol.h"
 #import "../extensions/MacOSX/kDriveLiteSync/kDrive/xpcLiteSyncExtensionRemoteProtocol.h"
-#include "common/filepermissionholder.h"
-#include "common/filesystembase.h"
-#include "common/utility.h"
-#include "libcommon/utility/types.h"
-#include "libcommon/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/log/log.h"
-#include "libcommonserver/utility/utility.h"
-
-#include <QDir>
-#include <QPixmap>
 
 #import <Cocoa/Cocoa.h>
 #import <SystemExtensions/SystemExtensions.h>
 #import <Foundation/Foundation.h>
 
-#include <sys/xattr.h>
-#include <sys/stat.h>
+#include "common/filepermissionholder.h"
+#include "common/filesystembase.h"
+#include "libcommonserver/log/log.h"
+#include "libcommonserver/utility/utility.h"
+#include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/io/filestat.h"
 
 #include <log4cplus/loggingmacros.h>
 
+#include <sys/xattr.h>
+
+#include <QDir>
+#include <QFileInfo>
+#include <QString>
 
 #define COPY_CHUNK_SIZE 4096 * 1000
 
 #define CSV_SEPARATOR @";"
 
 #define SYNC_STEPS 20
+
+//
+// Interfaces
+//
 
 // SystemExtensionRequestDelegate
 @interface SystemExtensionRequestDelegate : NSObject <OSSystemExtensionRequestDelegate> {
@@ -60,6 +61,64 @@
 
 @end
 
+// Connector
+@interface Connector : NSObject <XPCLiteSyncExtensionRemoteProtocol> {
+    KDC::ExecuteCommand _executeCommand;
+    NSString *_pId;
+    BOOL _activationDone;
+    BOOL _timeout;
+    NSMutableSet *_pathSet;
+}
+
+@property(retain) NSXPCConnection *_Nullable connection;
+
+- (_Nonnull instancetype)init:(KDC::ExecuteCommand)executeCommand;
+- (void)dealloc;
+- (BOOL)installExt:(BOOL *_Nonnull)activationDone;
+- (void)onTimeout:(NSTimer *_Nonnull)timer;
+- (BOOL)connectToExt;
+- (BOOL)reconnectToExt;
+- (BOOL)registerFolder:(NSString *_Nonnull)folderPath;
+- (BOOL)unregisterFolder:(NSString *_Nonnull)folderPath;
+- (BOOL)setAppExcludeList:(NSString *_Nonnull)list;
+- (BOOL)updateFetchStatus:(NSString *_Nonnull)path fileStatus:(NSString *_Nonnull)status;
+- (BOOL)updateThumbnailFetchStatus:(NSString *_Nonnull)path fileStatus:(NSString *_Nonnull)status;
+- (BOOL)getFetchingAppList:(NSMutableDictionary<NSString *, NSString *> *_Nonnull *_Nonnull)appMap;
+- (BOOL)setThumbnail:(NSString *_Nonnull)path image:(NSImage *_Nonnull)image;
+
+@end
+
+namespace KDC {
+
+class LiteSyncCommClientPrivate {
+    public:
+        LiteSyncCommClientPrivate(log4cplus::Logger logger, KDC::ExecuteCommand executeCommand);
+        ~LiteSyncCommClientPrivate();
+
+        bool install(bool &activationDone);
+        bool connect();
+
+        bool vfsInit();
+        bool vfsStart(const QString &folderPath);
+        bool vfsStop(const QString &folderPath);
+
+        bool executeCommand(const KDC::CommString &commandLine, bool broadcast);
+        bool updateFetchStatus(const QString &filePath, const QString &status);
+        bool setThumbnail(const QString &filePath, const QPixmap &pixmap);
+        bool setAppExcludeList(const QString &appList);
+        bool getFetchingAppList(QHash<QString, QString> &appTable);
+
+    private:
+        log4cplus::Logger _logger;
+        Connector *_Nullable _connector = nullptr;
+        KDC::ExecuteCommand _executeCommand = nullptr;
+};
+
+} // namespace KDC
+
+//
+// Implementation
+//
 
 @implementation SystemExtensionRequestDelegate
 
@@ -105,35 +164,6 @@
 }
 
 @end
-
-
-// Connector
-@interface Connector : NSObject <XPCLiteSyncExtensionRemoteProtocol> {
-    KDC::ExecuteCommand _executeCommand;
-    NSString *_pId;
-    BOOL _activationDone;
-    BOOL _timeout;
-    NSMutableSet *_pathSet;
-}
-
-@property(retain) NSXPCConnection *connection;
-
-- (instancetype)init:(KDC::ExecuteCommand)executeCommand;
-- (void)dealloc;
-- (BOOL)installExt:(BOOL *)activationDone;
-- (void)onTimeout:(NSTimer *)timer;
-- (BOOL)connectToExt;
-- (BOOL)reconnectToExt;
-- (BOOL)registerFolder:(NSString *)folderPath;
-- (BOOL)unregisterFolder:(NSString *)folderPath;
-- (BOOL)setAppExcludeList:(NSString *)list;
-- (BOOL)updateFetchStatus:(NSString *)path fileStatus:(NSString *)status;
-- (BOOL)updateThumbnailFetchStatus:(NSString *)path fileStatus:(NSString *)status;
-- (BOOL)getFetchingAppList:(NSMutableDictionary<NSString *, NSString *> **)appMap;
-- (BOOL)setThumbnail:(NSString *)path image:(NSImage *)image;
-
-@end
-
 
 @implementation Connector
 
@@ -447,62 +477,22 @@
 
 @end
 
-
 namespace KDC {
 
-LiteSyncExtConnector *LiteSyncExtConnector::_liteSyncExtConnector = nullptr;
+LiteSyncCommClient *LiteSyncCommClient::_liteSyncCommClient = nullptr;
 
-static bool getXAttrValue(const QString &path, const std::string_view &attrName, std::string &value, IoError &ioError) {
-    bool result = IoHelper::getXAttrValue(SyncPath(path.toStdString()), attrName, value, ioError);
-    if (!result) {
-        return false;
-    }
-    return true;
-}
-
-static bool setXAttrValue(const QString &path, const std::string_view &attrName, const std::string_view &value,
-                          IoError &ioError) {
-    bool result = IoHelper::setXAttrValue(QStr2Path(path), attrName, value, ioError);
-
-    return result;
-}
-
-class LiteSyncExtConnectorPrivate {
-    public:
-        LiteSyncExtConnectorPrivate(log4cplus::Logger logger, ExecuteCommand executeCommand);
-        ~LiteSyncExtConnectorPrivate();
-
-        bool install(bool &activationDone);
-        bool connect();
-
-        bool vfsInit();
-        bool vfsStart(const QString &folderPath);
-        bool vfsStop(const QString &folderPath);
-
-        bool executeCommand(const CommString &commandLine, bool broadcast);
-        bool updateFetchStatus(const QString &filePath, const QString &status);
-        bool setThumbnail(const QString &filePath, const QPixmap &pixmap);
-        bool setAppExcludeList(const QString &appList);
-        bool getFetchingAppList(QHash<QString, QString> &appTable);
-
-    private:
-        log4cplus::Logger _logger;
-        Connector *_connector = nullptr;
-        ExecuteCommand _executeCommand = nullptr;
-};
-
-// LiteSyncExtConnectorPrivate implementation
-LiteSyncExtConnectorPrivate::LiteSyncExtConnectorPrivate(log4cplus::Logger logger, ExecuteCommand executeCommand) :
+// LiteSyncCommClientPrivate implementation
+LiteSyncCommClientPrivate::LiteSyncCommClientPrivate(log4cplus::Logger logger, ExecuteCommand executeCommand) :
     _logger(logger) {
-    LOG_DEBUG(_logger, "LiteSyncExtConnectorPrivate creation");
+    LOG_DEBUG(_logger, "LiteSyncCommClientPrivate creation");
 
     _connector = [[Connector alloc] init:executeCommand];
     _executeCommand = executeCommand;
 }
 
-LiteSyncExtConnectorPrivate::~LiteSyncExtConnectorPrivate() {}
+LiteSyncCommClientPrivate::~LiteSyncCommClientPrivate() {}
 
-bool LiteSyncExtConnectorPrivate::install(bool &activationDone) {
+bool LiteSyncCommClientPrivate::install(bool &activationDone) {
     // Install LiteSync extension
     BOOL activationDoneTmp = FALSE;
     if (![_connector installExt:&activationDoneTmp]) {
@@ -514,7 +504,7 @@ bool LiteSyncExtConnectorPrivate::install(bool &activationDone) {
     return true;
 }
 
-bool LiteSyncExtConnectorPrivate::connect() {
+bool LiteSyncCommClientPrivate::connect() {
     // Connect to LiteSync extension
     if (![_connector connectToExt]) {
         LOG_ERROR(_logger, "Error in connectToExt!");
@@ -565,7 +555,7 @@ bool checkIoErrorAndLogIfNeeded(IoError ioError, const std::string &itemType, co
 }
 } // namespace
 
-bool LiteSyncExtConnectorPrivate::vfsStart(const QString &folderPath) {
+bool LiteSyncCommClientPrivate::vfsStart(const QString &folderPath) {
     if (!_connector) {
         LOG_ERROR(_logger, "Connector not initialized!");
         return false;
@@ -579,7 +569,7 @@ bool LiteSyncExtConnectorPrivate::vfsStart(const QString &folderPath) {
     // Read folder status
     std::string value;
     IoError ioError = IoError::Success;
-    const bool result = getXAttrValue(folderPath, litesync_attrs::status, value, ioError);
+    const bool result = IoHelper::getXAttrValue(QStr2Path(folderPath), litesync_attrs::status, value, ioError);
     if (!result) {
         LOGW_WARN(_logger, L"Error in getXAttrValue: " << Utility::formatIoError(folderPath, ioError));
         return false;
@@ -591,7 +581,7 @@ bool LiteSyncExtConnectorPrivate::vfsStart(const QString &folderPath) {
 
     if (value.empty()) {
         // Set default folder status
-        if (!setXAttrValue(folderPath, litesync_attrs::status, litesync_attrs::statusOnline, ioError)) {
+        if (!IoHelper::setXAttrValue(QStr2Path(folderPath), litesync_attrs::status, litesync_attrs::statusOnline, ioError)) {
             LOGW_WARN(_logger, L"Error in setXAttrValue: " << Utility::formatIoError(folderPath, ioError));
             return false;
         }
@@ -601,7 +591,8 @@ bool LiteSyncExtConnectorPrivate::vfsStart(const QString &folderPath) {
         }
 
         // Set default folder pin state
-        if (!setXAttrValue(folderPath, litesync_attrs::pinState, litesync_attrs::pinStateUnpinned, ioError)) {
+        if (!IoHelper::setXAttrValue(QStr2Path(folderPath), litesync_attrs::pinState, litesync_attrs::pinStateUnpinned,
+                                     ioError)) {
             LOGW_WARN(_logger, L"Error in setXAttrValue: " << Utility::formatIoError(folderPath, ioError));
             return false;
         }
@@ -614,7 +605,7 @@ bool LiteSyncExtConnectorPrivate::vfsStart(const QString &folderPath) {
     return true;
 }
 
-bool LiteSyncExtConnectorPrivate::vfsStop(const QString &folderPath) {
+bool LiteSyncCommClientPrivate::vfsStop(const QString &folderPath) {
     if (!_connector) {
         LOG_ERROR(_logger, "Connector not initialized!");
         return false;
@@ -628,7 +619,7 @@ bool LiteSyncExtConnectorPrivate::vfsStop(const QString &folderPath) {
     return true;
 }
 
-bool LiteSyncExtConnectorPrivate::executeCommand(const CommString &commandLine, bool broadcast) {
+bool LiteSyncCommClientPrivate::executeCommand(const CommString &commandLine, bool broadcast) {
     if (!_connector) {
         LOG_WARN(_logger, "Connector not initialized!");
         return false;
@@ -645,7 +636,7 @@ bool LiteSyncExtConnectorPrivate::executeCommand(const CommString &commandLine, 
     return true;
 }
 
-bool LiteSyncExtConnectorPrivate::updateFetchStatus(const QString &filePath, const QString &status) {
+bool LiteSyncCommClientPrivate::updateFetchStatus(const QString &filePath, const QString &status) {
     if (!_connector) {
         LOG_WARN(_logger, "Connector not initialized!");
         return false;
@@ -659,7 +650,7 @@ bool LiteSyncExtConnectorPrivate::updateFetchStatus(const QString &filePath, con
     return true;
 }
 
-bool LiteSyncExtConnectorPrivate::setThumbnail(const QString &filePath, const QPixmap &pixmap) {
+bool LiteSyncCommClientPrivate::setThumbnail(const QString &filePath, const QPixmap &pixmap) {
     if (!_connector) {
         LOG_WARN(_logger, "Connector not initialized!");
         return false;
@@ -703,7 +694,7 @@ bool LiteSyncExtConnectorPrivate::setThumbnail(const QString &filePath, const QP
     return !error;
 }
 
-bool LiteSyncExtConnectorPrivate::setAppExcludeList(const QString &appList) {
+bool LiteSyncCommClientPrivate::setAppExcludeList(const QString &appList) {
     if (!_connector) {
         LOG_WARN(_logger, "Connector not initialized!");
         return false;
@@ -717,7 +708,7 @@ bool LiteSyncExtConnectorPrivate::setAppExcludeList(const QString &appList) {
     return true;
 }
 
-bool LiteSyncExtConnectorPrivate::getFetchingAppList(QHash<QString, QString> &appTable) {
+bool LiteSyncCommClientPrivate::getFetchingAppList(QHash<QString, QString> &appTable) {
     if (!_connector) {
         LOG_WARN(_logger, "Connector not initialized!");
         return false;
@@ -736,37 +727,37 @@ bool LiteSyncExtConnectorPrivate::getFetchingAppList(QHash<QString, QString> &ap
     return true;
 }
 
-// LiteSyncExtConnector implementation
-LiteSyncExtConnector::LiteSyncExtConnector(log4cplus::Logger logger, ExecuteCommand executeCommand) :
+// LiteSyncCommClient implementation
+LiteSyncCommClient::LiteSyncCommClient(log4cplus::Logger logger, ExecuteCommand executeCommand) :
     _logger(logger) {
-    LOG_DEBUG(_logger, "LiteSyncExtConnector creation");
+    LOG_DEBUG(_logger, "LiteSyncCommClient creation");
 
-    _private = new LiteSyncExtConnectorPrivate(logger, executeCommand);
+    _private = new LiteSyncCommClientPrivate(logger, executeCommand);
     if (!_private) {
-        LOG_ERROR(_logger, "Error in LiteSyncExtConnectorPrivate constructor");
-        throw std::runtime_error("Error in LiteSyncExtConnectorPrivate constructor!");
+        LOG_ERROR(_logger, "Error in LiteSyncCommClientPrivate constructor");
+        throw std::runtime_error("Error in LiteSyncCommClientPrivate constructor!");
     }
 }
 
-LiteSyncExtConnector *LiteSyncExtConnector::instance(log4cplus::Logger logger, ExecuteCommand executeCommand) {
-    if (_liteSyncExtConnector == nullptr) {
+LiteSyncCommClient *LiteSyncCommClient::instance(log4cplus::Logger logger, ExecuteCommand executeCommand) {
+    if (_liteSyncCommClient == nullptr) {
         try {
-            _liteSyncExtConnector = new LiteSyncExtConnector(logger, executeCommand);
+            _liteSyncCommClient = new LiteSyncCommClient(logger, executeCommand);
         } catch (std::exception const &) {
             assert(false);
             return nullptr;
         }
     }
 
-    return _liteSyncExtConnector;
+    return _liteSyncCommClient;
 }
 
-LiteSyncExtConnector::~LiteSyncExtConnector() {
+LiteSyncCommClient::~LiteSyncCommClient() {
     delete _private;
     _private = nullptr;
 }
 
-bool LiteSyncExtConnector::install(bool &activationDone) {
+bool LiteSyncCommClient::install(bool &activationDone) {
     if (!_private) {
         return false;
     }
@@ -774,7 +765,7 @@ bool LiteSyncExtConnector::install(bool &activationDone) {
     return _private->install(activationDone);
 }
 
-bool LiteSyncExtConnector::connect() {
+bool LiteSyncCommClient::connect() {
     if (!_private) {
         return false;
     }
@@ -782,7 +773,7 @@ bool LiteSyncExtConnector::connect() {
     return _private->connect();
 }
 
-bool LiteSyncExtConnector::vfsStart(int syncDbId, const QString &folderPath, bool &isPlaceholder, bool &isSyncing) {
+bool LiteSyncCommClient::vfsStart(int syncDbId, const QString &folderPath, bool &isPlaceholder, bool &isSyncing) {
     if (!_private) {
         return false;
     }
@@ -811,7 +802,7 @@ bool LiteSyncExtConnector::vfsStart(int syncDbId, const QString &folderPath, boo
     return true;
 }
 
-bool LiteSyncExtConnector::vfsStop(int syncDbId) {
+bool LiteSyncCommClient::vfsStop(int syncDbId) {
     if (!_private) {
         return false;
     }
@@ -827,7 +818,7 @@ bool LiteSyncExtConnector::vfsStop(int syncDbId) {
     return _private->vfsStop(path);
 }
 
-bool LiteSyncExtConnector::vfsHydratePlaceHolder(const QString &filePath) {
+bool LiteSyncCommClient::vfsHydratePlaceHolder(const QString &filePath) {
     if (!_private) {
         return false;
     }
@@ -835,7 +826,7 @@ bool LiteSyncExtConnector::vfsHydratePlaceHolder(const QString &filePath) {
     // Read status
     std::string value;
     IoError ioError = IoError::Success;
-    const bool result = getXAttrValue(filePath, litesync_attrs::status, value, ioError);
+    const bool result = IoHelper::getXAttrValue(QStr2Path(filePath), litesync_attrs::status, value, ioError);
     if (!result) {
         LOGW_WARN(_logger, L"Error in getXAttrValue: " << Utility::formatIoError(filePath, ioError));
         return false;
@@ -865,11 +856,11 @@ bool LiteSyncExtConnector::vfsHydratePlaceHolder(const QString &filePath) {
     return true;
 }
 
-bool LiteSyncExtConnector::vfsDehydratePlaceHolder(const QString &absoluteFilepath, const QString &localSyncPath) {
+bool LiteSyncCommClient::vfsDehydratePlaceHolder(const QString &absoluteFilepath, const QString &localSyncPath) {
     // Read status
     std::string value;
     IoError ioError = IoError::Success;
-    const bool result = getXAttrValue(absoluteFilepath, litesync_attrs::status, value, ioError);
+    const bool result = IoHelper::getXAttrValue(QStr2Path(absoluteFilepath), litesync_attrs::status, value, ioError);
     if (!result) {
         LOGW_WARN(_logger, L"Error in getXAttrValue: " << Utility::formatPath(absoluteFilepath));
         return false;
@@ -940,14 +931,14 @@ bool LiteSyncExtConnector::vfsDehydratePlaceHolder(const QString &absoluteFilepa
     return true;
 }
 
-bool LiteSyncExtConnector::vfsSetPinState(const QString &path, const QString &localSyncPath, const std::string_view &pinState) {
+bool LiteSyncCommClient::vfsSetPinState(const QString &path, const QString &localSyncPath, const std::string_view &pinState) {
     FilePermissionHolder permHolder(path);
 
     // Try to temporarily change the write access right of the file
     FileSystem::setUserWritePermission(path);
 
     IoError ioError = IoError::Success;
-    if (!setXAttrValue(path, litesync_attrs::pinState, pinState, ioError)) {
+    if (!IoHelper::setXAttrValue(QStr2Path(path), litesync_attrs::pinState, pinState, ioError)) {
         LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << Utility::formatErrno(path, errno));
         return false;
     }
@@ -989,11 +980,11 @@ bool LiteSyncExtConnector::vfsSetPinState(const QString &path, const QString &lo
     return true;
 }
 
-bool LiteSyncExtConnector::vfsGetPinState(const QString &path, std::string &pinState) {
+bool LiteSyncCommClient::vfsGetPinState(const QString &path, std::string &pinState) {
     // Read pin state
     std::string value;
     IoError ioError = IoError::Success;
-    const bool result = getXAttrValue(path, litesync_attrs::pinState, value, ioError);
+    const bool result = IoHelper::getXAttrValue(QStr2Path(path), litesync_attrs::pinState, value, ioError);
     if (!result) {
         LOGW_WARN(_logger, L"Error in getXAttrValue: " << Utility::formatIoError(path, ioError));
         return false;
@@ -1013,11 +1004,11 @@ bool LiteSyncExtConnector::vfsGetPinState(const QString &path, std::string &pinS
     return true;
 }
 
-bool LiteSyncExtConnector::vfsConvertToPlaceHolder(const QString &filePath, bool isHydrated) {
+bool LiteSyncCommClient::vfsConvertToPlaceHolder(const QString &filePath, bool isHydrated) {
     // Set status
     const std::string_view status = (isHydrated ? litesync_attrs::statusOffline : litesync_attrs::statusOnline);
     IoError ioError = IoError::Success;
-    if (!setXAttrValue(filePath, litesync_attrs::status, status, ioError)) {
+    if (!IoHelper::setXAttrValue(QStr2Path(filePath), litesync_attrs::status, status, ioError)) {
         LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << Utility::formatIoError(filePath, ioError));
         return false;
     }
@@ -1028,7 +1019,7 @@ bool LiteSyncExtConnector::vfsConvertToPlaceHolder(const QString &filePath, bool
 
     // Set pin state
     const std::string_view pinState = (isHydrated ? litesync_attrs::pinStatePinned : litesync_attrs::pinStateUnpinned);
-    if (!setXAttrValue(filePath, litesync_attrs::pinState, pinState, ioError)) {
+    if (!IoHelper::setXAttrValue(QStr2Path(filePath), litesync_attrs::pinState, pinState, ioError)) {
         LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << Utility::formatIoError(filePath, ioError));
         return false;
     }
@@ -1040,8 +1031,8 @@ bool LiteSyncExtConnector::vfsConvertToPlaceHolder(const QString &filePath, bool
     return true;
 }
 
-bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, const QString &localSyncPath,
-                                                const struct stat *fileStat) {
+bool LiteSyncCommClient::vfsCreatePlaceHolder(const QString &relativePath, const QString &localSyncPath,
+                                              const struct stat *fileStat) {
     if (!fileStat) {
         LOG_WARN(_logger, "Bad parameters");
         return false;
@@ -1088,7 +1079,7 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
 
     // Set status
     IoError ioError = IoError::Success;
-    if (!setXAttrValue(path, litesync_attrs::status, litesync_attrs::statusOnline, ioError)) {
+    if (!IoHelper::setXAttrValue(QStr2Path(path), litesync_attrs::status, litesync_attrs::statusOnline, ioError)) {
         LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << Utility::formatIoError(path, ioError));
         return false;
     }
@@ -1098,7 +1089,7 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
     }
 
     // Set pin state
-    if (!setXAttrValue(path, litesync_attrs::pinState, litesync_attrs::pinStateUnpinned, ioError)) {
+    if (!IoHelper::setXAttrValue(QStr2Path(path), litesync_attrs::pinState, litesync_attrs::pinStateUnpinned, ioError)) {
         LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << Utility::formatIoError(path, ioError));
         return false;
     }
@@ -1136,8 +1127,8 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
     return true;
 }
 
-bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, const QString &filePath, const QString &localSyncPath,
-                                                unsigned long long completed, bool &canceled, bool &finished) {
+bool LiteSyncCommClient::vfsUpdateFetchStatus(const QString &tmpFilePath, const QString &filePath, const QString &localSyncPath,
+                                              unsigned long long completed, bool &canceled, bool &finished) {
     FilePermissionHolder permHolder(filePath);
 
     // Temporarily change the write access right of the file
@@ -1260,7 +1251,7 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
     return true;
 }
 
-bool LiteSyncExtConnector::vfsCancelHydrate(const QString &filePath) {
+bool LiteSyncCommClient::vfsCancelHydrate(const QString &filePath) {
     if (!_private->updateFetchStatus(filePath, QString("CANCEL"))) {
         LOGW_WARN(_logger, L"Call to updateFetchStatus failed: " << Utility::formatPath(filePath));
         return false;
@@ -1268,7 +1259,7 @@ bool LiteSyncExtConnector::vfsCancelHydrate(const QString &filePath) {
     return true;
 }
 
-bool LiteSyncExtConnector::vfsSetThumbnail(const QString &absoluteFilePath, const QPixmap &pixmap) {
+bool LiteSyncCommClient::vfsSetThumbnail(const QString &absoluteFilePath, const QPixmap &pixmap) {
     // Set thumbnail
     if (!_private->setThumbnail(absoluteFilePath, pixmap)) {
         LOGW_WARN(_logger, L"Call to setThumbnail failed: " << Utility::formatPath(absoluteFilePath));
@@ -1277,8 +1268,7 @@ bool LiteSyncExtConnector::vfsSetThumbnail(const QString &absoluteFilePath, cons
     return true;
 }
 
-bool LiteSyncExtConnector::vfsGetStatus(const QString &absoluteFilePath, VfsStatus &vfsStatus,
-                                        log4cplus::Logger &logger) noexcept {
+bool LiteSyncCommClient::vfsGetStatus(const QString &absoluteFilePath, VfsStatus &vfsStatus, log4cplus::Logger &logger) noexcept {
     constexpr auto isExpectedError = [](IoError error) -> bool {
         return error == IoError::Success || error == IoError::AttrNotFound || error == IoError::NoSuchFileOrDirectory;
     };
@@ -1286,7 +1276,8 @@ bool LiteSyncExtConnector::vfsGetStatus(const QString &absoluteFilePath, VfsStat
     // Read status
     std::string value;
     IoError ioError = IoError::Success;
-    if (!getXAttrValue(absoluteFilePath, litesync_attrs::status, value, ioError) && !isExpectedError(ioError)) {
+    if (!IoHelper::getXAttrValue(QStr2Path(absoluteFilePath), litesync_attrs::status, value, ioError) &&
+        !isExpectedError(ioError)) {
         LOGW_WARN(logger, L"Error in getXAttrValue: " << Utility::formatIoError(absoluteFilePath, ioError));
         return false;
     }
@@ -1304,7 +1295,7 @@ bool LiteSyncExtConnector::vfsGetStatus(const QString &absoluteFilePath, VfsStat
     return true;
 }
 
-bool LiteSyncExtConnector::vfsSetAppExcludeList(const QString &appList) {
+bool LiteSyncCommClient::vfsSetAppExcludeList(const QString &appList) {
     if (!_private) {
         return false;
     }
@@ -1312,7 +1303,7 @@ bool LiteSyncExtConnector::vfsSetAppExcludeList(const QString &appList) {
     return _private->setAppExcludeList(appList);
 }
 
-bool LiteSyncExtConnector::vfsGetFetchingAppList(QHash<QString, QString> &appTable) {
+bool LiteSyncCommClient::vfsGetFetchingAppList(QHash<QString, QString> &appTable) {
     if (!_private) {
         return false;
     }
@@ -1320,7 +1311,7 @@ bool LiteSyncExtConnector::vfsGetFetchingAppList(QHash<QString, QString> &appTab
     return _private->getFetchingAppList(appTable);
 }
 
-bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, const struct stat *fileStat) {
+bool LiteSyncCommClient::vfsUpdateMetadata(const QString &absoluteFilePath, const struct stat *fileStat) {
     FilePermissionHolder permHolder(absoluteFilePath);
 
     if (!fileStat) {
@@ -1378,7 +1369,7 @@ bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, co
     return true;
 }
 
-bool LiteSyncExtConnector::vfsIsExcluded(const QString &path) {
+bool LiteSyncCommClient::vfsIsExcluded(const QString &path) {
     std::string pinState;
     if (!vfsGetPinState(QDir::toNativeSeparators(path), pinState)) {
         return false;
@@ -1387,7 +1378,7 @@ bool LiteSyncExtConnector::vfsIsExcluded(const QString &path) {
     return pinState == litesync_attrs::pinStateExcluded;
 }
 
-bool LiteSyncExtConnector::vfsSetStatus(const QString &path, const QString &localSyncPath, const VfsStatus &vfsStatus) {
+bool LiteSyncCommClient::vfsSetStatus(const QString &path, const QString &localSyncPath, const VfsStatus &vfsStatus) {
     VfsStatus currentVfsStatus;
     if (!vfsGetStatus(path, currentVfsStatus)) {
         return false;
@@ -1409,7 +1400,7 @@ bool LiteSyncExtConnector::vfsSetStatus(const QString &path, const QString &loca
         // Set status
         std::string status = IoHelper::statusXAttr(vfsStatus.isSyncing, roundedProgress, vfsStatus.isHydrated);
         IoError ioError = IoError::Success;
-        if (!setXAttrValue(path, litesync_attrs::status, status, ioError)) {
+        if (!IoHelper::setXAttrValue(QStr2Path(path), litesync_attrs::status, status, ioError)) {
             LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << Utility::formatIoError(path, ioError));
             return false;
         }
@@ -1455,7 +1446,7 @@ bool LiteSyncExtConnector::vfsSetStatus(const QString &path, const QString &loca
     return true;
 }
 
-bool LiteSyncExtConnector::vfsCleanUpStatuses(const QString &localSyncPath) {
+bool LiteSyncCommClient::vfsCleanUpStatuses(const QString &localSyncPath) {
     const std::scoped_lock lock(_mutex);
     QHashIterator<QString, QSet<QString>> it(_syncingFolders);
     while (it.hasNext()) {
@@ -1466,7 +1457,7 @@ bool LiteSyncExtConnector::vfsCleanUpStatuses(const QString &localSyncPath) {
     return true;
 }
 
-bool LiteSyncExtConnector::vfsProcessDirStatus(const QString &path, const QString &localSyncPath) {
+bool LiteSyncCommClient::vfsProcessDirStatus(const QString &path, const QString &localSyncPath) {
     VfsStatus vfsStatus;
     if (!vfsGetStatus(path, vfsStatus)) {
         return false;
@@ -1523,12 +1514,12 @@ bool LiteSyncExtConnector::vfsProcessDirStatus(const QString &path, const QStrin
     return true;
 }
 
-void LiteSyncExtConnector::vfsClearFileAttributes(const QString &path) {
+void LiteSyncCommClient::vfsClearFileAttributes(const QString &path) {
     removexattr(path.toStdString().c_str(), litesync_attrs::status.data(), 0);
     removexattr(path.toStdString().c_str(), litesync_attrs::pinState.data(), 0);
 }
 
-bool LiteSyncExtConnector::sendStatusToFinder(const QString &path, const VfsStatus &vfsStatus) {
+bool LiteSyncCommClient::sendStatusToFinder(const QString &path, const VfsStatus &vfsStatus) {
     if (!_private) {
         return false;
     }
@@ -1547,7 +1538,7 @@ bool LiteSyncExtConnector::sendStatusToFinder(const QString &path, const VfsStat
     return _private->executeCommand(command, true);
 }
 
-bool LiteSyncExtConnector::checkFilesAttributes(const QString &path, const QString &localSyncPath, QStringList &filesToFix) {
+bool LiteSyncCommClient::checkFilesAttributes(const QString &path, const QString &localSyncPath, QStringList &filesToFix) {
     QDir dir(path);
     const QFileInfoList infoList = dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
 
@@ -1596,15 +1587,15 @@ bool LiteSyncExtConnector::checkFilesAttributes(const QString &path, const QStri
     return atLeastOneChanged;
 }
 
-void LiteSyncExtConnector::resetConnector(log4cplus::Logger logger, ExecuteCommand executeCommand) {
+void LiteSyncCommClient::resetConnector(log4cplus::Logger logger, ExecuteCommand executeCommand) {
     if (_private) {
         delete _private;
         _private = nullptr;
 
-        _private = new LiteSyncExtConnectorPrivate(logger, executeCommand);
+        _private = new LiteSyncCommClientPrivate(logger, executeCommand);
         if (!_private) {
-            LOG_ERROR(_logger, "Error in LiteSyncExtConnectorPrivate constructor");
-            throw std::runtime_error("Error in LiteSyncExtConnectorPrivate constructor!");
+            LOG_ERROR(_logger, "Error in LiteSyncCommClientPrivate constructor");
+            throw std::runtime_error("Error in LiteSyncCommClientPrivate constructor!");
         }
     }
 }

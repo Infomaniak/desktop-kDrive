@@ -234,7 +234,6 @@ ExitInfo VfsOff::startImpl(bool &, bool &, bool &) {
 }
 
 static QString modeToPluginName(const VirtualFileMode virtualFileMode) {
-    if (virtualFileMode == VirtualFileMode::Suffix) return "suffix";
     if (virtualFileMode == VirtualFileMode::Win) return "win";
     if (virtualFileMode == VirtualFileMode::Mac) return "mac";
     return {};

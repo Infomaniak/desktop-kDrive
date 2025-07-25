@@ -21,7 +21,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/vfs/vfs.h"
 #include "libcommonserver/vfs/plugin.h"
-#include "litesyncextconnector.h"
+#include "../../comm/litesynccommclient_mac.h"
 
 #include <deque>
 
@@ -77,7 +77,7 @@ class VfsMac : public Vfs {
         friend class TestWorkers;
 
     private:
-        LiteSyncExtConnector *_connector{nullptr};
+        LiteSyncCommClient *_connector{nullptr};
 
         void resetLiteSyncConnector();
         const QString _localSyncPath;
@@ -85,7 +85,7 @@ class VfsMac : public Vfs {
 
 class MacVfsPluginFactory : public QObject, public DefaultPluginFactory<VfsMac> {
         Q_OBJECT
-        Q_PLUGIN_METADATA(IID "org.kdrive.PluginFactory" FILE "../vfspluginmetadata.json")
+        Q_PLUGIN_METADATA(IID "org.kdrive.PluginFactory" FILE "../../libcommonserver/vfs/vfspluginmetadata.json")
         Q_INTERFACES(KDC::PluginFactory)
 };
 

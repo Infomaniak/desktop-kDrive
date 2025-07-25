@@ -20,11 +20,11 @@
 #include "comm/commmanager.h"
 
 #if defined(__APPLE__)
-#include "libcommonserver/vfs/mac/vfs_mac.h"
+#include "vfs/mac/vfs_mac.h"
 #elif defined(_WIN32)
-#include "libcommonserver/vfs/win/vfs_win.h"
+#include "vfs/win/vfs_win.h"
 #else
-#include "libcommonserver/vfs/vfs.h"
+#include "vfs/vfs.h"
 #endif
 
 #include "libsyncengine/propagation/executor/executorworker.h"

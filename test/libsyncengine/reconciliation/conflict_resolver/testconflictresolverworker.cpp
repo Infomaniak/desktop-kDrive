@@ -22,9 +22,6 @@
 #include "mocks/libsyncengine/vfs/mockvfs.h"
 
 #include "test_utility/testhelpers.h"
-#if defined(__APPLE__)
-#include "vfs/mac/vfs_mac.h"
-#endif
 
 #include <memory>
 

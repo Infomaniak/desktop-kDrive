@@ -25,10 +25,12 @@
 #include <QFile>
 
 #include <iostream>
+#include <sys/stat.h>
 
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
+
 VfsMac::VfsMac(const VfsSetupParams &vfsSetupParams, QObject *parent) :
     Vfs(vfsSetupParams, parent),
     _localSyncPath{Path2QStr(_vfsSetupParams.localPath)} {
@@ -38,7 +40,7 @@ VfsMac::VfsMac(const VfsSetupParams &vfsSetupParams, QObject *parent) :
     Utility::setLogger(logger());
     IoHelper::setLogger(logger());
 
-    _connector = LiteSyncExtConnector::instance(logger(), vfsSetupParams.executeCommand);
+    _connector = LiteSyncCommClient::instance(logger(), vfsSetupParams.executeCommand);
     if (!_connector) {
         LOG_WARN(logger(), "Error in LiteSyncExtConnector::instance");
         throw std::runtime_error("Unable to initialize LiteSyncExtConnector.");
