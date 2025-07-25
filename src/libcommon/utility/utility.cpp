@@ -353,6 +353,13 @@ std::string CommonUtility::toUpper(const std::string &str) {
     return upperStr;
 }
 
+std::string CommonUtility::toLower(const std::string &str) {
+    std::string lowerStr(str);
+    // std::ranges::transform(str, lowerStr.begin(), [](unsigned char c) { return std::tolower(c); });   // Needs gcc-11
+    (void) std::transform(str.begin(), str.end(), lowerStr.begin(), [](unsigned char c) { return std::tolower(c); });
+    return lowerStr;
+}
+
 std::wstring CommonUtility::s2ws(const std::string &str) {
     const Poco::UnicodeConverter converter;
     std::wstring output;

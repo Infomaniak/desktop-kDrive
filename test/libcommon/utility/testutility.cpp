@@ -785,6 +785,17 @@ void TestUtility::testToUpper() {
                          CommonUtility::toUpper("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"));
 }
 
+void TestUtility::testToLower() {
+    CPPUNIT_ASSERT_EQUAL(std::string("abc"), CommonUtility::toLower("abc"));
+    CPPUNIT_ASSERT_EQUAL(std::string("abc"), CommonUtility::toLower("ABC"));
+    CPPUNIT_ASSERT_EQUAL(std::string("abc"), CommonUtility::toLower("AbC"));
+    CPPUNIT_ASSERT_EQUAL(std::string(""), CommonUtility::toLower(""));
+    CPPUNIT_ASSERT_EQUAL(std::string("123"), CommonUtility::toLower("123"));
+
+    CPPUNIT_ASSERT_EQUAL(std::string("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"),
+                         CommonUtility::toUpper("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"));
+}
+
 void TestUtility::testIsSameOrParentPath() {
     CPPUNIT_ASSERT(!CommonUtility::isDescendantOrEqual("", "a"));
     CPPUNIT_ASSERT(!CommonUtility::isDescendantOrEqual("a", "a/b"));

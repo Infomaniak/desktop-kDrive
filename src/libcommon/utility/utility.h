@@ -172,6 +172,7 @@ struct COMMON_EXPORT CommonUtility {
 #endif
         static bool contains(const std::string &str, const std::string &substr);
         static std::string toUpper(const std::string &str);
+        static std::string toLower(const std::string &str);
         static std::wstring s2ws(const std::string &str);
         static std::string ws2s(const std::wstring &wstr);
         static std::string ltrim(const std::string &s);
