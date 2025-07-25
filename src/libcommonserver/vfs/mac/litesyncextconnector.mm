@@ -1236,6 +1236,14 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
     return true;
 }
 
+bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &absolutePath, const QString &status) {
+    if (!_private->updateFetchStatus(absolutePath, status)) {
+        LOGW_WARN(_logger, L"Call to updateFetchStatus failed: " << Utility::formatPath(absolutePath));
+        return false;
+    }
+    return true;
+}
+
 bool LiteSyncExtConnector::vfsCancelHydrate(const QString &filePath) {
     if (!_private->updateFetchStatus(filePath, QString("CANCEL"))) {
         LOGW_WARN(_logger, L"Call to updateFetchStatus failed: " << Utility::formatPath(filePath));

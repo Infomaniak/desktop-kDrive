@@ -97,7 +97,7 @@ struct IoHelper {
 
         //! Returns the directory location suitable for temporary files.
         /*!
-         \param directoryPath is a path to a directory suitable for temporary files. Empty if there is a an error.
+         \param directoryPath is a path to a directory suitable for temporary files. Empty if there is an error.
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
@@ -107,14 +107,14 @@ struct IoHelper {
         //! Returns the directory location suitable for temporary files.
         /*! This directory is deleted at the end of the application run.
           ! The location of this folder can be enforce with the env variable: KDRIVE_CACHE_PATH
-         \param directoryPath is a path to a directory suitable for temporary files. Empty if there is a an error.
+         \param directoryPath is a path to a directory suitable for temporary files. Empty if there is an error.
          \return true if no unexpected error occurred, false otherwise.
          */
         static bool cacheDirectoryPath(SyncPath &directoryPath) noexcept;
 
         //! Returns the log directory path of the application.
         /*!
-         \param directoryPath is set with the path of to the log directory of the application. Empty if there is a an error.
+         \param directoryPath is set with the path of to the log directory of the application. Empty if there is an error.
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
@@ -122,7 +122,7 @@ struct IoHelper {
 
         //! Returns the log archiver directory path of the application.
         /*!
-         \param directoryPath is set with the path of to the log directory of the application. Empty if there is a an error.
+         \param directoryPath is set with the path of to the log directory of the application. Empty if there is an error.
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
@@ -268,7 +268,7 @@ struct IoHelper {
          \param path is the file system path of the item to check for.
          \param isDirectory is boolean that is set to true if the type of the item indicated by path is `NodeType::File`, false
          otherwise.
-         \param ioError holds the error returned when an underlying OS API call fails. Defaults to false.
+         \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise. If the return value is false, isDirectory is also set with
          false.
          */
