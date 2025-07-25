@@ -427,7 +427,7 @@ bool CommonUtility::isStrictDescendant(const SyncPath &potentialDescendant, cons
     return isDescendantOrEqual(potentialDescendant, path);
 }
 
-QString CommonUtility::getIconPath(const IconType iconType) {
+std::string CommonUtility::getIconPath(const IconType iconType) {
     switch (iconType) {
         case KDC::CommonUtility::MAIN_FOLDER_ICON:
             return "../Resources/kdrive-mac.icns"; // TODO : To be changed to a specific incs file

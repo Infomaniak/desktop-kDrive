@@ -1446,7 +1446,7 @@ FileData FileData::get(const KDC::SyncPath &path) {
                            L"Item doesn't exist - " << Utility::formatPath(data.absoluteLocalPath));
             } else {
                 LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to check if the path is a directory - "
-                                                                     << Utility::formatPath(data.localPath) << L" err="
+                                                                     << Utility::formatPath(data.absoluteLocalPath) << L" err="
                                                                      << KDC::CommonUtility::s2ws(ec.message()) << L" ("
                                                                      << ec.value() << L")");
             }
