@@ -270,17 +270,11 @@ class QtConan(ConanFile):
         from conan.tools.microsoft import is_msvc
         from conan.tools.apple import is_apple_os
 
-        # --- Propriétés globales ---
+        # --- Global properties ---
         self.cpp_info.set_property("cmake_file_name", "Qt6")
         self.cpp_info.set_property("pkg_config_name", "qt6")
 
-        # --- Variables d’environnement pour les plugins Qt ---
-        qt_plugins = os.path.join(self.package_folder, "plugins")
-        self.runenv_info.define("QT_PLUGIN_PATH", qt_plugins)
-        self.buildenv_info.define("QT_PLUGIN_PATH", qt_plugins)
-        self.buildenv_info.define("QT_HOST_PATH", self.package_folder)
-
-        # --- Helpers internes ---
+        # --- Internal helpers ---
         def _fix_requires(reqs):
             corrected = []
             for r in reqs:
@@ -299,7 +293,7 @@ class QtConan(ConanFile):
             # CMake & pkg-config
             comp.set_property("cmake_target_name", f"Qt6::{name}")
             comp.set_property("pkg_config_name", f"qt6{name.lower()}")
-            # Bibliothèque
+            # Frameworks, bin and libexec directories
             comp.frameworks = [ f"Qt{name}" ]
             comp.frameworkdirs = [ "lib" ]
             # Includes
@@ -310,7 +304,7 @@ class QtConan(ConanFile):
                 ]
             # Macro & flags
             comp.defines = [f"QT_{name.upper()}_LIB"]
-            # Dépendances internes (Core toujours présent sauf pour Core)
+            # internal dependencies (e.g. QtCore always required)
             deps = (["Core"] if name != "Core" else []) + requires
             comp.requires = _fix_requires(deps)
 
