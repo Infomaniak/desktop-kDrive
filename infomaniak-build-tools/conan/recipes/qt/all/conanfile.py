@@ -263,6 +263,7 @@ class QtConan(ConanFile):
 
         rmdir(self, os.path.join(self.package_folder, "doc"))
         rmdir(self, os.path.join(self.package_folder, "modules"))
+        self._check_integrity()
 
 
     def package_info(self):
@@ -392,3 +393,14 @@ class QtConan(ConanFile):
 
     def package_id(self):
         self.info.settings.clear()
+    def _check_integrity(self):
+        expected_paths = [
+            os.path.join(self.package_folder, "bin"),
+            os.path.join(self.package_folder, "lib"),
+            os.path.join(self.package_folder, "libexec"),
+            os.path.join(self.package_folder, "include"),
+        ]
+
+        for path in expected_paths:
+            if not os.path.exists(path):
+                raise ConanException(f"Missing expected file or directory: {path}")
