@@ -18,6 +18,7 @@
 
 #include "localdeletejob.h"
 #include "../network/API_v2/getfileinfojob.h"
+#include "io/permissionsholder.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
@@ -173,6 +174,9 @@ bool LocalDeleteJob::moveToTrash() {
 
 void LocalDeleteJob::runJob() {
     if (!canRun()) return;
+
+    // Make sure we are allowed to propagate the change
+    PermissionsHolder _(_absolutePath.parent_path());
 
     const bool tryMoveToTrash =
             (ParametersCache::instance()->parameters().moveToTrash() && !_isDehydratedPlaceholder) || _forceToTrash;

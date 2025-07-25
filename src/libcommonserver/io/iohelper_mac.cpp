@@ -151,6 +151,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
     }
 
     buf->isHidden = false;
+    buf->_flags = sb.st_flags;
     if (sb.st_flags & UF_HIDDEN) {
         buf->isHidden = true;
     }
@@ -175,4 +176,46 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
 
     return true;
 }
+
+IoError IoHelper::lock(const SyncPath &path) noexcept {
+    // Set uchg flag to lock the item.
+    if (chflags(path.string().c_str(), UF_IMMUTABLE)) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to set uchg flag for: " << Utility::formatSyncPath(path));
+        return IoError::Unknown;
+    }
+    return IoError::Success;
+}
+
+IoError IoHelper::unlock(const SyncPath &path) noexcept {
+    FileStat filestat;
+    bool found = false;
+    IoHelper::getFileStat(path, &filestat, found);
+    if (!found) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Not found: " << Utility::formatSyncPath(path));
+        return IoError::NoSuchFileOrDirectory;
+    }
+
+    // Unset uchg flag to unlock the item.
+    u_int flags = filestat._flags;
+    flags &= ~UF_IMMUTABLE;
+    if (chflags(path.string().c_str(), flags)) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to unset uchg flag for: " << Utility::formatSyncPath(path));
+        return IoError::Unknown;
+    }
+    return IoError::Success;
+}
+
+IoError IoHelper::isLocked(const SyncPath &path, bool &locked) noexcept {
+    FileStat filestat;
+    bool found = false;
+    IoHelper::getFileStat(path, &filestat, found);
+    if (!found) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Not found: " << Utility::formatSyncPath(path));
+        return IoError::NoSuchFileOrDirectory;
+    }
+
+    locked = filestat._flags & UF_IMMUTABLE;
+    return IoError::Success;
+}
+
 } // namespace KDC

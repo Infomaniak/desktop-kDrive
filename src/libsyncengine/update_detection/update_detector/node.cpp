@@ -215,6 +215,10 @@ bool Node::isSharedFolder() const {
     return false;
 }
 
+bool Node::isSpecialFolder() const {
+    return isCommonDocumentsFolder() || isSharedFolder();
+}
+
 SyncPath Node::getPath() const {
     std::vector<SyncName> names;
     names.push_back(name());

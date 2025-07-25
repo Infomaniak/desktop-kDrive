@@ -31,6 +31,8 @@ namespace KDC {
 class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestIo);
         CPPUNIT_TEST(testCheckSetAndGetRights); // Keep this test before any tests that may use set/get rights functions
+        CPPUNIT_TEST(testLock);
+        CPPUNIT_TEST(testReadOnly);
         CPPUNIT_TEST(testGetItemType);
         CPPUNIT_TEST(testGetFileSize);
         CPPUNIT_TEST(testTempDirectoryPath);
@@ -106,6 +108,8 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
 #endif
         void testCheckIfFileIsDehydrated();
         void testCheckSetAndGetRights();
+        void testLock();
+        void testReadOnly();
 
     private:
         void testGetItemTypeSimpleCases();

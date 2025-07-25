@@ -1,7 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2025 Infomaniak Network SA
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,32 +17,18 @@
 
 #pragma once
 
-#include "jobs/abstractjob.h"
+#include "iohelper.h"
+#include "utility/types.h"
 
 namespace KDC {
 
-class LocalCreateDirJob : public AbstractJob {
+class PermissionsHolder {
     public:
-        LocalCreateDirJob(const SyncPath &destFilepath, bool readOnly = false);
-
-        SyncPath destFilePath() const { return _destFilePath; }
-
-        const NodeId &nodeId() const { return _nodeId; }
-        SyncTime modtime() const { return _modtime; }
-        SyncTime creationTime() const { return _creationTime; }
-
-    protected:
-        virtual bool canRun() override;
+        PermissionsHolder(const SyncPath &path);
+        ~PermissionsHolder();
 
     private:
-        virtual void runJob() override;
-
-        SyncPath _destFilePath;
-        bool _readOnly{false};
-
-        NodeId _nodeId;
-        SyncTime _modtime = 0;
-        SyncTime _creationTime = 0;
+        SyncPath _path;
 };
 
 } // namespace KDC

@@ -17,6 +17,8 @@
  */
 
 #include "localmovejob.h"
+
+#include "io/permissionsholder.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
@@ -86,6 +88,9 @@ void LocalMoveJob::runJob() {
     if (!canRun()) {
         return;
     }
+
+    // Make sure we are allowed to propagate the change
+    PermissionsHolder _(_dest.parent_path());
 
     std::error_code ec;
     std::filesystem::rename(_source, _dest, ec);

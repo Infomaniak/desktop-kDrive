@@ -52,6 +52,7 @@ LocalTemporaryDirectory::LocalTemporaryDirectory(const std::string &testType, co
 
 LocalTemporaryDirectory::~LocalTemporaryDirectory() {
     auto ioError = IoError::Success;
+    (void) IoHelper::unlock(_path);
     (void) IoHelper::setRights(_path, true, true, true, ioError);
 
     std::error_code ec;
