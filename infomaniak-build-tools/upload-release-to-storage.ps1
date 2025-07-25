@@ -68,7 +68,8 @@ foreach ($os in $os_s)
 
 # Upload the application files
 $executables = @(
-    "$app.exe"
+    "$app.exe",
+    "$app-amd64.AppImage"
 )
 
 foreach ($executable in $executables)
