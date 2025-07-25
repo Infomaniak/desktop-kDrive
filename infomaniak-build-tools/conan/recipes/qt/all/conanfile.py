@@ -316,15 +316,14 @@ class QtConan(ConanFile):
             comp.libdirs = [os.path.join("plugins", folder)]
             comp.requires = _fix_requires(["Core"] + requires)
 
-        # --- Module Core ---
         _add_module("Core", requires=["zlib::zlib"])
         if is_msvc(self):
             core = self.cpp_info.components["qtCore"]
             core.cxxflags.extend(["-permissive-", "-Zc:__cplusplus"])
             core.system_libs.extend(["synchronization", "runtimeobject"])
 
-        # --- Modules Qt principaux ---
         modules = {
+            # Here, the order of the modules is important, the dependencies must be declared before the modules that depend on them.
             "DBus": [],
             "Gui": ["DBus"] if self.settings.os == "Linux" else [],
             "Widgets": ["Gui"],
@@ -344,7 +343,6 @@ class QtConan(ConanFile):
         for mod, reqs in modules.items():
             _add_module(mod, requires=reqs)
 
-        # --- Windows : libs système supplémentaires ---
         if self.settings.os == "Windows":
             self.cpp_info.components["qtDBus"].system_libs += ["advapi32", "netapi32", "user32", "ws2_32"]
             self.cpp_info.components["qtGui"].system_libs += [
@@ -352,14 +350,11 @@ class QtConan(ConanFile):
                 "d3d11", "dxgi", "dxguid", "d2d1", "dwrite"
             ]
 
-        # --- macOS : frameworks et plugin Cocoa ---
         if is_apple_os(self):
-            # Frameworks système pour Gui
             gui = self.cpp_info.components["qtGui"]
             gui.frameworks = ["CoreFoundation", "CoreGraphics", "CoreText", "Foundation", "ImageIO"]
             gui.frameworkdirs = []  # utilise les frameworks système
 
-            # Plugin QCocoaIntegration
             _add_plugin("QCocoaIntegrationPlugin", "qcocoa", "platforms", requires=["Gui"])
             cocoa = self.cpp_info.components["qtQCocoaIntegrationPlugin"]
             cocoa.frameworks = [
@@ -368,12 +363,10 @@ class QtConan(ConanFile):
             ]
             cocoa.frameworkdirs = [os.path.join(self.package_folder, "lib")]
 
-        # --- Répertoires globaux ---
         self.cpp_info.bindirs = ["bin", "libexec"]
         self.cpp_info.libdirs = ["lib"]
         self.cpp_info.includedirs = ["include"]
 
-        # --- .cmake includes ---
         cmake_folder = os.path.join(self.package_folder, "cmake")
         find_modules = []
         concerned_modules = list(modules.keys())
