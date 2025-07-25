@@ -1,12 +1,16 @@
 name: Release kDrive Desktop app
 
 on:
-  workflow_dispatch:  
-    inputs:
-      environment:
-        type: environment
-        description: Select the deployment environment
-        default: Internal beta
+  #workflow_dispatch:  
+  #  inputs:
+  #    environment:
+  #      type: environment
+  #      description: Select the deployment environment
+  #      default: Internal beta
+  pull_request:
+    branches-ignore:
+        - 'release/**'
+    types: [synchronize, review_requested, opened]
 
 concurrency:
   group: kDrive-desktop-release-${{ github.head_ref }}
