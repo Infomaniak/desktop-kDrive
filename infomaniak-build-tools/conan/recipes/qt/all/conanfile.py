@@ -375,19 +375,21 @@ class QtConan(ConanFile):
         self.cpp_info.libdirs = ["lib"]
         self.cpp_info.includedirs = ["include"]
 
-        cmake_folder = os.path.join(self.package_folder, "cmake")
+        cmake_folder = os.path.join(self.package_folder, "lib", "cmake")
         find_modules = []
         concerned_modules = list(modules.keys())
         concerned_modules.append("Core")
         if os.path.isdir(cmake_folder):
-            for fname in os.listdir(cmake_folder):
-                for module_name in modules:
-                    if fname.lower().endswith(".cmake"):
-                        path = os.path.join("lib", "cmake", f"Qt6{module_name}", fname)
-                        find_modules.append(path)
-                        self.output.highlight("Found CMake module: " + path)
+            for module_name in modules:
+                path = os.path.join("lib", "cmake", f"Qt6{module_name}", module_name)
+                for cmake_files in glob.glob(os.path.join(cmake_folder, f"{path}*.cmake")):
+                    if os.path.isfile(cmake_files):
+                        find_modules.append(cmake_files)
+                        self.output.highlight("Found CMake module: " + cmake_files)
         if find_modules:
             self.cpp_info.set_property("cmake_build_modules", find_modules)
+        else:
+            raise ConanException(f"Could not find CMake module in '{cmake_folder}'.")
 
         self._setup_environment()
 
