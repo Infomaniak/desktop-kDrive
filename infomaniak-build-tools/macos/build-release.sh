@@ -27,6 +27,7 @@ export APP_DOMAIN="com.infomaniak.drive.desktopclient"
 export SIGN_IDENTITY="Developer ID Application: Infomaniak Network SA (864VDCS2QY)"
 export INSTALLER_SIGN_IDENTITY="Developer ID Installer: Infomaniak Network SA (864VDCS2QY)"
 export QT_DIR="$HOME/Qt/6.2.3/macos"
+export QTDIR="$HOME/Qt/6.2.3/macos"
 
 # Uncomment to build for testing
 # export KDRIVE_DEBUG=1
