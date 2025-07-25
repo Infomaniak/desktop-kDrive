@@ -26,6 +26,7 @@ struct FileStat {
         SyncTime creationTime = 0;
         SyncTime modificationTime = 0;
         int64_t size = 0;
+        int64_t sizeOnDisk = 0;
         uint64_t inode = 0;
         bool isHidden = false;
         // Type of the item or target item if symlink
