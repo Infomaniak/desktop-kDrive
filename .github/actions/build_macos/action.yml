@@ -161,19 +161,19 @@ runs:
 
       - name : Create sentry server artifacts
         run: |
-          sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-macos/build/client/kDrive.dylib
+          sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-macos/client/install/kDrive.dSYM
           mkdir ${{ github.workspace }}/build-macos/sentry-server-artifacts
-          mv ${{ github.workspace }}/build-macos/build/client/kDrive.dylib ${{ github.workspace }}/build-macos/sentry-server-artifacts/kDrive.dylib
-          mv ${{ github.workspace }}/build-macos/build/client/kDrive.src.zip ${{ github.workspace }}/build-macos/sentry-server-artifacts/kDrive.src.zip
+          cp ${{ github.workspace }}/build-macos/client/install/kDrive.dSYM ${{ github.workspace }}/build-macos/sentry-server-artifacts/kDrive.dSYM
+          cp ${{ github.workspace }}/build-macos/client/install/kDrive.src.zip ${{ github.workspace }}/build-macos/sentry-server-artifacts/kDrive.src.zip
         shell: powershell
         if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
 
       - name : Create sentry client artifacts
         run: |
-          .\sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-macos/build/client/kDrive_client.dylib
+          .\sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-macos/client/install/kDrive_client.dSYM
           mkdir ${{ github.workspace }}/build-macos/sentry-client-artifacts
-          mv ${{ github.workspace }}/build-macos/build/client/kDrive_client.dylib ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.dylib
-            mv ${{ github.workspace }}/build-macos/build/client/kDrive_client.src.zip ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.src.zip
+          cp ${{ github.workspace }}/build-macos/client/install/kDrive.dSYM ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.dSYM
+          cp ${{ github.workspace }}/build-macos/client/install/kDrive_client.src.zip ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.src.zip
         shell: powershell
         if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
 

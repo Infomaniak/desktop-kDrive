@@ -101,6 +101,8 @@ jobs:
             done
           done
           echo "All release notes files are present."
+
+          cat  >> $GITHUB_STEP_SUMMARY
         shell: bash
 
 # Build apps
