@@ -5,6 +5,14 @@ inputs:
   keychain_password:
     description: 'The password of the keychain'
     required: true
+  release_build:
+    description: 'If true, run the release build script'
+    required: false
+    default: 'false'
+  release_build_altool_username:
+    description: 'Username for altool upload'
+    required: false
+    default: ''
 
 runs:
     using: "composite"
@@ -26,12 +34,23 @@ runs:
         shell: bash
 
       - name: Grant building script execute permission
-        run : chmod +x ./infomaniak-build-tools/macos/build-ci.sh
+        run : |
+            export ALTOOL_USERNAME="${{ inputs.release_build_altool_username }}"
+            if [ "${{ inputs.release_build }}" = "true" ]; then
+                chmod +x ./infomaniak-build-tools/macos/build-release.sh
+            else
+                chmod +x ./infomaniak-build-tools/macos/build-ci.sh
+            fi
         shell: bash
 
       - name: Build kDrive desktop
         id: build
-        run : ./infomaniak-build-tools/macos/build-ci.sh
+        run : |
+            if [ "${{ inputs.release_build }}" = "true" ]; then
+                ./infomaniak-build-tools/macos/build-release.sh
+            else
+                ./infomaniak-build-tools/macos/build-ci.sh
+            fi
         shell: bash
 
       - name: Fetch dependencies
@@ -139,6 +158,57 @@ runs:
           retention-days: 1
           compression-level: 0
         if: steps.build.outcome == 'success'
+
+      - name: Download sentry-cli for macOS
+        run: curl -sL https://sentry.io/get-cli/ | sh || true
+        shell: bash
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+
+      - name : Create sentry server artifacts
+        run: |
+          sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-macos/client/install/kDrive.dSYM
+          mkdir ${{ github.workspace }}/build-macos/sentry-server-artifacts
+          cp ${{ github.workspace }}/build-macos/client/install/kDrive.dSYM ${{ github.workspace }}/build-macos/sentry-server-artifacts/kDrive.dSYM
+          cp ${{ github.workspace }}/build-macos/client/install/kDrive.src.zip ${{ github.workspace }}/build-macos/sentry-server-artifacts/kDrive.src.zip
+        shell: powershell
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+
+      - name : Create sentry client artifacts
+        run: |
+          .\sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-macos/client/install/kDrive_client.dSYM
+          mkdir ${{ github.workspace }}/build-macos/sentry-client-artifacts
+          cp ${{ github.workspace }}/build-macos/client/install/kDrive.dSYM ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.dSYM
+          cp ${{ github.workspace }}/build-macos/client/install/kDrive_client.src.zip ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.src.zip
+        shell: powershell
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+
+      - name: Upload sentry server artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-release-artifacts-server-debug
+          path: ${{ github.workspace }}/build-macos/sentry-server-artifacts
+          retention-days: 1
+          compression-level: 0
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+
+      - name: Upload sentry client artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-release-artifacts-client-debug
+          path: ${{ github.workspace }}/build-macos/sentry-client-artifacts
+          retention-days: 1
+          compression-level: 0
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+
+
+      - name: Upload kDrive Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-release-artifacts-package
+          path: ${{ github.workspace }}/build-macos/client/install/*.pkg
+          retention-days: 1
+          compression-level: 0
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build }} == 'true'
 
       - name: Clean-up generated code
         run : rm -rf build-macos

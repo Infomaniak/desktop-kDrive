@@ -1,12 +1,16 @@
 name: Release kDrive Desktop app
 
 on:
-  workflow_dispatch:  
-    inputs:
-      environment:
-        type: environment
-        description: Select the deployment environment
-        default: Internal beta
+  #workflow_dispatch:  
+  #  inputs:
+  #    environment:
+  #      type: environment
+  #      description: Select the deployment environment
+  #      default: Internal beta
+  pull_request:
+    branches-ignore:
+        - 'release/**'
+    types: [synchronize, review_requested, opened]
 
 concurrency:
   group: kDrive-desktop-release-${{ github.head_ref }}
@@ -24,7 +28,6 @@ env:
   QT_QPA_PLATFORM: offscreen
 
 jobs:
-
   get-version:
     runs-on: [ self-hosted ]
     outputs:
@@ -52,6 +55,7 @@ jobs:
             core.info(`kDrive version is ${full_version}`);
             core.summary.addHeading('kDrive Desktop Version', 1);
             core.summary.addHeading(`${full_version}`, 3).write();
+
 # Check translation files
   check-translations:
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui ]
@@ -97,6 +101,8 @@ jobs:
             done
           done
           echo "All release notes files are present."
+
+          cat  >> $GITHUB_STEP_SUMMARY
         shell: bash
 
 # Build apps
@@ -146,10 +152,23 @@ jobs:
         uses: ./.github/actions/build_linux_arm
         with:
           release_build: true
+      
+  build-MacOS:
+    needs: [ check-release-notes, check-translations ]
+    runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build macOS
+        uses: ./.github/actions/build_macos
+        with:  
+          keychain_password: ${{ secrets.KEYCHAIN_PASSWORD }}
+          release_build: true    
+          release_build_altool_username: ${{ secrets.ALTOOL_USERNAME }}
 
-  # TODO: build macOS apps
-
-  # Tests Windows
+# Tests Windows
   test-Windows:
     needs: build-Windows
     strategy:
@@ -173,7 +192,7 @@ jobs:
            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
   test-Linux:
-    needs: build-Linux-amd
+    needs: [build-Linux-amd, build-Linux-arm]
     strategy:
       fail-fast: false
       matrix:
@@ -194,9 +213,32 @@ jobs:
           test_name: ${{ matrix.test_name }}
           test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
+# Tests macOS
+  test-macOS:
+    needs: build-MacOS
+    strategy:
+      fail-fast: false
+      matrix:
+        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
+    runs-on: [ self-hosted, macOS ]
+    env:
+      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
+      KDRIVE_SENTRY_ENVIRONMENT: "macos_ci_runner"
+    steps:
+       - name: Checkout the PR
+         uses: actions/checkout@v4.1.1
+         with:
+          ref: ${{ github.head_ref }}
+
+       - name: Run test
+         uses: ./.github/actions/test_macos
+         with:  
+            test_name: ${{ matrix.test_name }}
+            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+
 # Upload the installer and sentry artifacts
   upload-to-kDrive-and-sentry:
-    needs: [get-version, build-Linux-amd, build-Linux-arm, test-Linux, build-Windows, test-Windows]
+    needs: [get-version, test-Linux, test-Windows, test-macOS]
     runs-on: [self-hosted, Windows]
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
