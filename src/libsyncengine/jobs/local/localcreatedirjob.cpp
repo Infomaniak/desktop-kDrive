@@ -17,6 +17,8 @@
  */
 
 #include "localcreatedirjob.h"
+
+#include "io/permissionsholder.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
@@ -25,8 +27,9 @@
 
 namespace KDC {
 
-LocalCreateDirJob::LocalCreateDirJob(const SyncPath &destFilepath) :
-    _destFilePath(destFilepath) {}
+LocalCreateDirJob::LocalCreateDirJob(const SyncPath &destFilepath, bool readOnly /*= false*/) :
+    _destFilePath(destFilepath),
+    _readOnly(readOnly) {}
 
 bool LocalCreateDirJob::canRun() {
     if (bypassCheck()) {
@@ -61,48 +64,52 @@ void LocalCreateDirJob::runJob() {
         return;
     }
 
+    // Make sure we are allowed to propagate the change
+    PermissionsHolder _(_destFilePath.parent_path());
+
     IoError ioError = IoError::Success;
     if (IoHelper::createDirectory(_destFilePath, false, ioError) && ioError == IoError::Success) {
         if (isExtendedLog()) {
             LOGW_DEBUG(_logger, L"Directory: " << Utility::formatSyncPath(_destFilePath) << L" created");
         }
-        _exitInfo = ExitCode::Ok;
     }
-
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Search permission missing: =" << Utility::formatSyncPath(_destFilePath));
         _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         return;
     }
-
     if (ioError != IoError::Success) { // Unexpected error
         LOGW_WARN(_logger, L"Failed to create directory: " << Utility::formatIoError(_destFilePath, ioError));
         _exitInfo = ExitCode::SystemError;
         return;
     }
 
-    if (_exitInfo.code() == ExitCode::Ok) {
-        FileStat filestat;
-        if (!IoHelper::getFileStat(_destFilePath, &filestat, ioError)) {
-            LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_destFilePath, ioError));
-            _exitInfo = ExitCode::SystemError;
-            return;
-        }
-
-        if (ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_destFilePath));
-            _exitInfo = {ExitCode::DataError, ExitCause::InvalidSize};
-            return;
-        } else if (ioError == IoError::AccessDenied) {
-            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_destFilePath));
-            _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-            return;
-        }
-
-        _nodeId = std::to_string(filestat.inode);
-        _modtime = filestat.modificationTime;
-        _creationTime = filestat.creationTime;
+    FileStat filestat;
+    if (!IoHelper::getFileStat(_destFilePath, &filestat, ioError)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_destFilePath, ioError));
+        _exitInfo = ExitCode::SystemError;
+        return;
     }
+    if (ioError == IoError::NoSuchFileOrDirectory) {
+        LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_destFilePath));
+        _exitInfo = {ExitCode::DataError, ExitCause::InvalidSize};
+        return;
+    } else if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_destFilePath));
+        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
+        return;
+    }
+
+    if (_readOnly) {
+        if (IoHelper::setReadOnly(_destFilePath) != IoError::Success) {
+            LOGW_WARN(_logger, L"Failed to set read-only rights: " << Utility::formatSyncPath(_destFilePath));
+        }
+    }
+
+    _nodeId = std::to_string(filestat.inode);
+    _modtime = filestat.modificationTime;
+    _creationTime = filestat.creationTime;
+    _exitInfo = ExitCode::Ok;
 }
 
 } // namespace KDC

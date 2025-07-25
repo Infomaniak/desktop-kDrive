@@ -17,6 +17,8 @@
  */
 
 #include "localcopyjob.h"
+
+#include "io/permissionsholder.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
@@ -79,6 +81,9 @@ void LocalCopyJob::runJob() {
     if (!canRun()) {
         return;
     }
+
+    // Make sure we are allowed to propagate the change
+    PermissionsHolder _(_dest.parent_path());
 
     try {
         std::filesystem::copy(_source, _dest);
