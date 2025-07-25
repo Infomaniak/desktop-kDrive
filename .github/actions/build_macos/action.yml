@@ -9,6 +9,10 @@ inputs:
     description: 'If true, run the release build script'
     required: false
     default: 'false'
+  release_build_altool_username:
+    description: 'Username for altool upload'
+    required: false
+    default: ''
 
 runs:
     using: "composite"
@@ -31,6 +35,7 @@ runs:
 
       - name: Grant building script execute permission
         run : |
+            export ALTOOL_USERNAME="${{ inputs.release_build_altool_username }}"
             if [ "${{ inputs.release_build }}" = "true" ]; then
                 chmod +x ./infomaniak-build-tools/macos/build-release.sh
             else
