@@ -296,7 +296,7 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoErro
 
 bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError) noexcept {
     ioError = getRights(path, read, write, exec);
-    return isExpectedError(ioError);
+    return ioError == IoError::Success || isExpectedError(ioError);
 }
 
 IoError IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec) noexcept {
@@ -1038,7 +1038,7 @@ void IoHelper::DirectoryIterator::disableRecursionPending() {
 // See iohelper_win.cpp for the Windows implementation
 bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept {
     ioError = setRights(path, read, write, exec);
-    return isExpectedError(ioError);
+    return ioError == IoError::Success || isExpectedError(ioError);
 }
 
 IoError IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec) noexcept {

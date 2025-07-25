@@ -425,10 +425,18 @@ struct IoHelper {
          \param read is a boolean indicating whether the item is readable.
          \param write is a boolean indicating whether the item is writable.
          \param exec is a boolean indicating whether the item is executable.
-         \param exists is a boolean indicating whether the item exists.
+         \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
         static bool getRights(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError) noexcept;
+        //! Get the rights of the item indicated by `path`.
+        /*!
+         \param path is the file system path of the item.
+         \param read is a boolean indicating whether the item is readable.
+         \param write is a boolean indicating whether the item is writable.
+         \param exec is a boolean indicating whether the item is executable.
+         \return An ioError representing the success or failure of the underlying OS API call.
+         */
         static IoError getRights(const SyncPath &path, bool &read, bool &write, bool &exec) noexcept;
 
         //! Set the rights of the item indicated by `path`.
