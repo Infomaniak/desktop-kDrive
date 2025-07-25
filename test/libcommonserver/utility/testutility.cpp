@@ -72,29 +72,6 @@ void TestUtility::testIsCreationDateValid(void) {
                            _testObj->isCreationDateValid(futureTimestamp));
 }
 
-
-void TestUtility::testS2ws() {
-    CPPUNIT_ASSERT(_testObj->s2ws("abcd") == L"abcd");
-    CPPUNIT_ASSERT(_testObj->s2ws("éèêà") == L"éèêà");
-}
-
-void TestUtility::testWs2s() {
-    CPPUNIT_ASSERT(_testObj->ws2s(L"abcd") == "abcd");
-    CPPUNIT_ASSERT(_testObj->ws2s(L"éèêà") == "éèêà");
-}
-
-void TestUtility::testLtrim() {
-    CPPUNIT_ASSERT(_testObj->ltrim("    ab    cd    ") == "ab    cd    ");
-}
-
-void TestUtility::testRtrim() {
-    CPPUNIT_ASSERT(_testObj->rtrim("    ab    cd    ") == "    ab    cd");
-}
-
-void TestUtility::testTrim() {
-    CPPUNIT_ASSERT(_testObj->trim("    ab    cd    ") == "ab    cd");
-}
-
 void TestUtility::testMsSleep() {
     auto start = std::chrono::high_resolution_clock::now();
     _testObj->msleep(1000);
@@ -121,39 +98,6 @@ void TestUtility::testV2ws() {
 
     dbtype stringValue("hello");
     CPPUNIT_ASSERT(_testObj->v2ws(stringValue) == L"hello");
-}
-
-void TestUtility::testFileSystemName() {
-#if defined(KD_MACOS)
-    CPPUNIT_ASSERT(_testObj->fileSystemName("/") == "apfs");
-    CPPUNIT_ASSERT(_testObj->fileSystemName("/bin") == "apfs");
-#elif defined(KD_WINDOWS)
-    CPPUNIT_ASSERT(_testObj->fileSystemName(std::filesystem::temp_directory_path()) == "NTFS");
-    // CPPUNIT_ASSERT(_testObj->fileSystemName(R"(C:\)") == "NTFS");
-    // CPPUNIT_ASSERT(_testObj->fileSystemName(R"(C:\windows)") == "NTFS");
-#endif
-}
-
-void TestUtility::testStartsWith() {
-    CPPUNIT_ASSERT(_testObj->startsWith(SyncName(Str("abcdefg")), SyncName(Str("abcd"))));
-    CPPUNIT_ASSERT(!_testObj->startsWith(SyncName(Str("abcdefg")), SyncName(Str("ABCD"))));
-}
-
-void TestUtility::testStartsWithInsensitive() {
-    CPPUNIT_ASSERT(_testObj->startsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("aBcD"))));
-    CPPUNIT_ASSERT(_testObj->startsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("ABCD"))));
-}
-
-void TestUtility::testEndsWith() {
-    CPPUNIT_ASSERT(_testObj->endsWith(SyncName(Str("abcdefg")), SyncName(Str("defg"))));
-    CPPUNIT_ASSERT(!_testObj->endsWith(SyncName(Str("abcdefg")), SyncName(Str("abc"))));
-    CPPUNIT_ASSERT(!_testObj->endsWith(SyncName(Str("abcdefg")), SyncName(Str("dEfG"))));
-}
-
-void TestUtility::testEndsWithInsensitive() {
-    CPPUNIT_ASSERT(_testObj->endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("defg"))));
-    CPPUNIT_ASSERT(!_testObj->endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("abc"))));
-    CPPUNIT_ASSERT(_testObj->endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("dEfG"))));
 }
 
 void TestUtility::testIsEqualUpToCaseAndEnc(void) {
@@ -291,17 +235,6 @@ void TestUtility::testXxHash() {
     CPPUNIT_ASSERT(contentHash == "5dcc477e35136516");
 }
 
-void TestUtility::testToUpper() {
-    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), _testObj->toUpper("abc"));
-    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), _testObj->toUpper("ABC"));
-    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), _testObj->toUpper("AbC"));
-    CPPUNIT_ASSERT_EQUAL(std::string(""), _testObj->toUpper(""));
-    CPPUNIT_ASSERT_EQUAL(std::string("123"), _testObj->toUpper("123"));
-
-    CPPUNIT_ASSERT_EQUAL(std::string("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"),
-                         _testObj->toUpper("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"));
-}
-
 void TestUtility::testErrId() {
     CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), errId());
 }
@@ -398,7 +331,7 @@ void TestUtility::testFormatStdError() {
                            result.find(L"error: 0") != std::wstring::npos || result.find(L"code: 0") != std::wstring::npos);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", (result.length() - path.native().length()) > 20);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.",
-                           result.find(Utility::s2ws(path.string())) != std::wstring::npos);
+                           result.find(CommonUtility::s2ws(path.string())) != std::wstring::npos);
 }
 
 void TestUtility::testFormatIoError() {
@@ -411,7 +344,7 @@ void TestUtility::testFormatIoError() {
         CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.",
                                (result.length() - path.native().length()) > 20);
         CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.",
-                               result.find(Utility::s2ws(path.string())) != std::wstring::npos);
+                               result.find(CommonUtility::s2ws(path.string())) != std::wstring::npos);
     }
 
     {
@@ -439,7 +372,7 @@ void TestUtility::testFormatPath() {
 
 void TestUtility::testFormatSyncPath() {
     const SyncPath path = "A/AA";
-    CPPUNIT_ASSERT(Utility::formatSyncPath(path).find(Utility::s2ws(path.string())) != std::wstring::npos);
+    CPPUNIT_ASSERT(Utility::formatSyncPath(path).find(CommonUtility::s2ws(path.string())) != std::wstring::npos);
 }
 
 void TestUtility::testFormatRequest() {
@@ -504,22 +437,6 @@ bool TestUtility::checkNfcAndNfdNamesEqual(const SyncName &name, bool &equal) {
     }
     equal = (nfcNormalized == nfdNormalized);
     return true;
-}
-
-void TestUtility::testIsSameOrParentPath() {
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("", "a"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a", "a/b"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a", "a/b/c"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b", "a/b/c"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b/c", "a/b/c1"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b/c1", "a/b/c"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("/a/b/c", "a/b/c"));
-
-    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("", ""));
-    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a/b/c"));
-    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a", ""));
-    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a/b"));
-    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a"));
 }
 
 void TestUtility::testUserName() {

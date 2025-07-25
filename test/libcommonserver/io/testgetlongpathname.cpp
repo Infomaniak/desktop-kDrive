@@ -18,7 +18,7 @@
 
 #include "testio.h"
 
-#include "libcommonserver/utility/utility.h" // Path2Str
+#include "libcommon/utility/utility.h" // Path2Str
 
 #include <windows.h>
 

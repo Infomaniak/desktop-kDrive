@@ -343,7 +343,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
 
     itemType.ioError = stdError2ioError(ec);
 #if defined(KD_WINDOWS)
-    const bool fsSupportsSymlinks = Utility::isNtfs(path);
+    const bool fsSupportsSymlinks = CommonUtility::isNTFS(path);
 #else
     const bool fsSupportsSymlinks =
             itemType.ioError != IoError::InvalidArgument; // If true, we assume that the file system in use does support symlinks.
@@ -754,7 +754,7 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
     // found but located on a FAT32 disk. If the file is not found, it works as expected. This behavior is fixed when
     // compiling with VS2022, see
     // https://developercommunity.visualstudio.com/t/std::filesystem::is_symlink-is-broken-on/1638272
-    if (ioError == IoError::InvalidArgument && !Utility::isNtfs(path)) {
+    if (ioError == IoError::InvalidArgument && !CommonUtility::isNTFS(path)) {
         (void) std::filesystem::status(
                 path, ec); // Symlink are only supported on NTFS on Windows, there is no risk to follow a symlink.
         ioError = stdError2ioError(ec);

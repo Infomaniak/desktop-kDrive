@@ -2924,7 +2924,7 @@ void AppServer::logUsefulInformation() const {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
     }
     for (const auto &user: userList) {
-        LOGW_INFO(Log::instance()->getLogger(), L"User ID: " << user.userId() << L", email: " << Utility::s2ws(user.email()));
+        LOGW_INFO(Log::instance()->getLogger(), L"User ID: " << user.userId() << L", email: " << CommonUtility::s2ws(user.email()));
     }
 
     // Log drive IDs
@@ -3905,7 +3905,7 @@ void AppServer::addError(const Error &error) {
         std::unordered_set<int64_t> toBeRemovedErrorIds;
         for (const Error &parentError: errorList) {
             for (const Error &childError: errorList) {
-                if (Utility::isDescendantOrEqual(childError.path(), parentError.path()) &&
+                if (CommonUtility::isDescendantOrEqual(childError.path(), parentError.path()) &&
                     childError.dbId() != parentError.dbId()) {
                     toBeRemovedErrorIds.insert(childError.dbId());
                 }

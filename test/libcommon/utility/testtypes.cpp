@@ -37,7 +37,7 @@ void TestTypes::testStreamConversion() {
     CPPUNIT_ASSERT_EQUAL(std::string("File(1)"), toStringWithCode(NodeType::File));
     CPPUNIT_ASSERT_EQUAL(std::string("Directory(2)"), toStringWithCode(NodeType::Directory));
     CPPUNIT_ASSERT_EQUAL(std::string("Directory(2)"), toStringWithCode(fromInt<NodeType>(2)));
-    CPPUNIT_ASSERT(Utility::startsWith(toStringWithCode(fromInt<NodeType>(3)), noConversionStr));
+    CPPUNIT_ASSERT(CommonUtility::startsWith(toStringWithCode(fromInt<NodeType>(3)), noConversionStr));
 
     CPPUNIT_ASSERT_EQUAL(std::string("None(0)"), toStringWithCode(OperationType::None));
     CPPUNIT_ASSERT_EQUAL(std::string("Create(1)"), toStringWithCode(OperationType::Create));
@@ -45,8 +45,8 @@ void TestTypes::testStreamConversion() {
     CPPUNIT_ASSERT_EQUAL(std::string("Edit(4)"), toStringWithCode(OperationType::Edit));
     CPPUNIT_ASSERT_EQUAL(std::string("Delete(8)"), toStringWithCode(OperationType::Delete));
     CPPUNIT_ASSERT_EQUAL(std::string("Rights(16)"), toStringWithCode(OperationType::Rights));
-    CPPUNIT_ASSERT(Utility::startsWith(toStringWithCode(fromInt<OperationType>(0x09)), noConversionStr));
-    CPPUNIT_ASSERT(Utility::startsWith(toStringWithCode(OperationType::Create | OperationType::Delete), noConversionStr));
+    CPPUNIT_ASSERT(CommonUtility::startsWith(toStringWithCode(fromInt<OperationType>(0x09)), noConversionStr));
+    CPPUNIT_ASSERT(CommonUtility::startsWith(toStringWithCode(OperationType::Create | OperationType::Delete), noConversionStr));
 
     // Test stream operator for enum class without unicode
     std::ostringstream os;

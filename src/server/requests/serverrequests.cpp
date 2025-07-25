@@ -1517,8 +1517,7 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
     sync.setPaused(false);
 
     // Check vfs support
-    const QString fsName(CommonUtility::fileSystemName(Path2QStr(sync.localPath())));
-    const auto supportVfs = (fsName == "NTFS" || fsName == "apfs");
+    const bool supportVfs = CommonUtility::isNTFS(sync.localPath()) || CommonUtility::isAPFS(sync.localPath());
     sync.setSupportVfs(supportVfs);
 
 #if defined(KD_MACOS)

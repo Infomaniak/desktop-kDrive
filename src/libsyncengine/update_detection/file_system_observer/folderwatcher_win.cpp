@@ -49,7 +49,7 @@ ExitInfo FolderWatcher_win::changeDetected(const SyncPath &path, OperationType o
 
 void FolderWatcher_win::startWatching() {
     LOGW_DEBUG(_logger, L"Start watching folder: " << _folder.wstring());
-    LOG_DEBUG(_logger, "File system format: " << Utility::fileSystemName(_folder));
+    LOG_DEBUG(_logger, "File system format: " << CommonUtility::fileSystemName(_folder));
 
     _resultEventHandle = CreateEvent(nullptr, true, false, nullptr);
     _stopEventHandle = CreateEvent(nullptr, true, false, nullptr);

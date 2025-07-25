@@ -44,7 +44,7 @@ SyncPath FolderWatcher_linux::makeSyncPath(const SyncPath &watchedFolderPath, co
 
 void FolderWatcher_linux::startWatching() {
     LOGW_DEBUG(_logger, L"Start watching folder " << Utility::formatSyncPath(_folder));
-    LOG_DEBUG(_logger, "File system format: " << Utility::fileSystemName(_folder));
+    LOG_DEBUG(_logger, "File system format: " << CommonUtility::fileSystemName(_folder));
 
     _fileDescriptor = inotify_init();
     if (_fileDescriptor == -1) {
@@ -235,7 +235,7 @@ ExitInfo FolderWatcher_linux::addFolderRecursive(const SyncPath &path) {
         } else {
             if (ec) {
                 LOGW_WARN(_logger, L"Failed to check if path exists " << Utility::formatSyncPath(path) << L": "
-                                                                      << Utility::s2ws(ec.message()) << L" (" << ec.value()
+                                                                      << CommonUtility::s2ws(ec.message()) << L" (" << ec.value()
                                                                       << L")");
             }
             LOGW_DEBUG(_logger, L"    `-> discarded: " << Utility::formatSyncPath(subDirPath));
@@ -258,7 +258,7 @@ void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {
     // Remove the entry and all subentries
     while (it != _pathToWatch.end()) {
         auto itPath = it->first;
-        if (!Utility::isDescendantOrEqual(itPath, dirPath)) {
+        if (!CommonUtility::isDescendantOrEqual(itPath, dirPath)) {
             break;
         }
 

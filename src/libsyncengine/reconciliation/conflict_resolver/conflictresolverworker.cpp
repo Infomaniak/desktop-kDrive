@@ -55,9 +55,9 @@ void ConflictResolverWorker::execute() {
 ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bool &continueSolving) {
     LOGW_SYNCPAL_INFO(_logger, L"Solving " << conflict.type() << L" conflict for items "
                                            << Utility::formatSyncName(conflict.node()->name()) << L" ("
-                                           << Utility::s2ws(*conflict.node()->id()) << L") and "
+                                           << CommonUtility::s2ws(*conflict.node()->id()) << L") and "
                                            << Utility::formatSyncName(conflict.otherNode()->name()) << L" ("
-                                           << Utility::s2ws(*conflict.otherNode()->id()) << L")");
+                                           << CommonUtility::s2ws(*conflict.otherNode()->id()) << L")");
 
     continueSolving = false;
     auto res = handleConflictOnDehydratedPlaceholder(conflict, continueSolving);
@@ -416,12 +416,12 @@ std::wstring ConflictResolverWorker::getLogString(SyncOpPtr op, bool omit /*= fa
     std::wstringstream ss;
     if (omit) {
         ss << L"Operation " << op->type() << L" to be propagated on DB only for item "
-       << Utility::formatSyncName(op->correspondingNode()->name()) << L" (" << Utility::s2ws(*op->correspondingNode()->id())
+       << Utility::formatSyncName(op->correspondingNode()->name()) << L" (" << CommonUtility::s2ws(*op->correspondingNode()->id())
        << L")";
     }
     else {
         ss << L"Operation " << op->type() << L" to be propagated on " << op->targetSide() << L" replica for item "
-       << Utility::formatSyncName(op->correspondingNode()->name()) << L" (" << Utility::s2ws(*op->correspondingNode()->id())
+       << Utility::formatSyncName(op->correspondingNode()->name()) << L" (" << CommonUtility::s2ws(*op->correspondingNode()->id())
        << L")";
     }
     return ss.str();

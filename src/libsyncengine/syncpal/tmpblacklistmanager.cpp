@@ -37,7 +37,7 @@ TmpBlacklistManager::~TmpBlacklistManager() {
 
 void TmpBlacklistManager::logMessage(const std::wstring &msg, const NodeId &id, const ReplicaSide side,
                                      const SyncPath &path) const {
-    LOGW_SYNCPAL_INFO(Log::instance()->getLogger(), msg << L" - node ID='" << Utility::s2ws(id) << L"' - side='" << side
+    LOGW_SYNCPAL_INFO(Log::instance()->getLogger(), msg << L" - node ID='" << CommonUtility::s2ws(id) << L"' - side='" << side
                                                         << (path.empty() ? L"'" : (L"' - " + Utility::formatSyncPath(path))));
 }
 
@@ -78,7 +78,7 @@ void TmpBlacklistManager::blacklistItem(const NodeId &nodeId, const SyncPath &re
 
     std::list<NodeId> toBeRemoved;
     for (const auto &[id, errorInfo]: errors) {
-        if (Utility::isDescendantOrEqual(errorInfo.path, relativePath) && id != nodeId) {
+        if (CommonUtility::isDescendantOrEqual(errorInfo.path, relativePath) && id != nodeId) {
             toBeRemoved.push_back(id);
         }
     }
@@ -120,14 +120,14 @@ void TmpBlacklistManager::removeItemFromTmpBlacklist(const SyncPath &relativePat
 
     // Find the node id of the item to be removed
     for (const auto &[nodeId, tmpInfo]: _localErrors) {
-        if (Utility::isDescendantOrEqual(tmpInfo.path, relativePath)) {
+        if (CommonUtility::isDescendantOrEqual(tmpInfo.path, relativePath)) {
             localId = nodeId;
             break;
         }
     }
 
     for (const auto &[nodeId, tmpInfo]: _remoteErrors) {
-        if (Utility::isDescendantOrEqual(tmpInfo.path, relativePath)) {
+        if (CommonUtility::isDescendantOrEqual(tmpInfo.path, relativePath)) {
             remotedId = nodeId;
             break;
         }
@@ -150,7 +150,7 @@ void TmpBlacklistManager::removeItemFromTmpBlacklist(const NodeId &nodeId, const
 
 bool TmpBlacklistManager::isTmpBlacklisted(const SyncPath &path, const ReplicaSide side) const {
     for (auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors; const auto &errorInfo: errors) {
-        if (Utility::isDescendantOrEqual(path, errorInfo.second.path)) return true;
+        if (CommonUtility::isDescendantOrEqual(path, errorInfo.second.path)) return true;
     }
 
     return false;

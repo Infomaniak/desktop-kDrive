@@ -92,7 +92,7 @@ void LocalMoveJob::runJob() {
 
     if (ec.value() != 0) { // We consider this as a permission denied error
         LOGW_WARN(_logger, L"Failed to rename " << Path2WStr(_source) << L" to " << Path2WStr(_dest) << L": "
-                                                << Utility::s2ws(ec.message()) << L" (" << ec.value() << L")");
+                                                << CommonUtility::s2ws(ec.message()) << L" (" << ec.value() << L")");
         _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         return;
     }

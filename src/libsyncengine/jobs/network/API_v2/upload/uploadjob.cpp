@@ -255,7 +255,7 @@ ExitInfo UploadJob::readLink() {
             }
 
             LOGW_WARN(_logger, L"Failed to read symlink - path=" << Path2WStr(_absoluteFilePath) << L": "
-                                                                 << Utility::s2ws(ec.message()) << L" (" << ec.value() << L")");
+                                                                 << CommonUtility::s2ws(ec.message()) << L" (" << ec.value() << L")");
             return ExitCode::SystemError;
         }
 
