@@ -307,7 +307,7 @@ endif()
 if(UNIX AND NOT APPLE)
     if (DEFINED CONAN_DEP_DIR)
         # Copy .so files to the conan dependency directory
-        include(ConanGetLibDirs)
+        include(GeneralizeConanLibraryDirs)
         get_library_dirs("log4cplus" "log4cplus")
         get_library_dirs("OpenSSL" "openssl")
         get_library_dirs("xxHash" "xxhash")

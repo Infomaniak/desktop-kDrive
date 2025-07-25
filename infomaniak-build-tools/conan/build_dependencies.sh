@@ -21,11 +21,11 @@
 # It will use conan to install the dependencies.
 
 
-
 # Default values
 build_type="Debug"
 output_dir=""
 use_release_profile=false
+ci_mode=false
 # Preserve original arguments for output_dir resolution
 all_args=("$@")
 
@@ -41,9 +41,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     -h|--help)
       cat << EOF >&2
-Usage: $0 [Debug|Release] [--output-dir=<output_dir>] [--make-release] [--help]
+Usage: $0 [Debug|Release] [--output-dir=<output_dir>] [--ci] [--make-release] [--help]
   --help               Display this help message.
   --output-dir=<dir>   Set the output directory for the Conan packages.
+  --ci                 Enable CI mode
   --make-release       Use the 'infomaniak_release' Conan profile.
 
 There are three ways to set the output directory (in descending order of priority):
@@ -58,12 +59,33 @@ EOF
     --output-dir=*) # Used by get_output_dir function
       shift
       ;;
+    --ci)
+      ci_mode=true
+      shift
+      ;;
     *)
       error "Unknown option: $1"
       ;;
   esac
 done
 
+
+
+
+if [[ "${1:-}" =~ ^-h|--help$ ]]; then
+    cat << EOF >&2
+Usage: $0 [Debug|Release] [--output-dir=<output_dir>]
+  There are three ways to set the output directory (in descending order of priority):
+    1. --output-dir=<output_dir> argument
+    2. KDRIVE_OUTPUT_DIR environment variable
+    3. Default directory based on the system (macOS: build-macos/client, Linux: build-linux/build)
+EOF
+    exit 0
+fi
+
+
+
+set -euox pipefail
 
 log(){ echo "[INFO] $*"; }
 error(){ echo "[ERROR] $*" >&2; exit 1; }
@@ -80,7 +102,7 @@ function get_architecture {
        architecture="-s:a=arch=armv8|x86_64" # Making universal binary. See https://docs.conan.io/2/reference/tools/cmake/cmaketoolchain.html#conan-tools-cmaketoolchain-universal-binaries
     fi
 
-    echo $architecture
+    echo "$architecture"
 }
 
 function get_arg_value {
@@ -112,12 +134,15 @@ function get_default_output_dir {
 }
 
 output_dir="$(get_arg_value '--output-dir')"
-if [[ -z "$output_dir" ]]; then
-  output_dir="$(get_env_var_value 'KDRIVE_OUTPUT_DIR')"
-  log "Using environment variable 'KDRIVE_OUTPUT_DIR' as conan output_dir : '$KDRIVE_OUTPUT_DIR'" >&2
-fi
-if [[ -z "$output_dir" ]]; then
-  output_dir="$(get_default_output_dir)"
+if [[ -z "${output_dir}" ]]; then
+  env_output_dir="$(get_env_var_value 'KDRIVE_OUTPUT_DIR')"
+  if [[ -n "${env_output_dir}" ]]; then
+    output_dir="${env_output_dir}"
+    log "Using environment variable 'KDRIVE_OUTPUT_DIR' as conan output_dir : '${output_dir}'" >&2
+  else
+    log "No output directory specified. Using default output directory." >&2
+    output_dir="$(get_default_output_dir)"
+  fi
 fi
 
 
@@ -191,7 +216,14 @@ log "- Platform: '$platform'"
 log "- Architecture option: '$architecture'"
 log "- Build type: '$build_type'"
 log "- Output directory: '$output_dir'"
+log "- CI Mode: '$($ci_mode && echo "enabled" || echo "disabled")'"
 echo
+
+
+qt_login_type_param="ini" # By default, use ini file for QT installer login type
+if [[ $ci_mode == true ]]; then
+    qt_login_type_param="envvars" # Use environment variables for CI mode
+fi
 
 # Create the conan package for xxHash.
 conan_recipes_folder="$conan_remote_base_folder/recipes"
@@ -200,12 +232,15 @@ conan create "$conan_recipes_folder/xxhash/all/" --build=missing $architecture -
 
 if [ "$platform" = "darwin" ]; then
   log "Creating openssl package..."
-  conan create "$conan_recipes_folder/openssl-universal/3.2.4/" --build=missing -s:a=build_type="$build_type" --profile:all="$conan_profile" -r="$local_recipe_remote_name" -r=conancenter
+  conan create "$conan_recipes_folder/openssl-universal/all/" --build=missing -s:a=build_type="$build_type" --profile:all="$conan_profile" -r="$local_recipe_remote_name" -r=conancenter
 fi
+
+log "Creating package Qt..."
+conan create "$conan_recipes_folder/qt/all/" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter -o "&:qt_login_type=$qt_login_type_param"
 
 log "Installing dependencies..."
 # Install this packet in the build folder.
-conan install . --output-folder="$output_dir" --build=missing $architecture -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter
+conan install . --output-folder="$output_dir" --build=missing $architecture -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter -o "qt/*:qt_login_type=$qt_login_type_param"
 
 if [ $? -ne 0 ]; then
   error "Failed to install Conan dependencies."
