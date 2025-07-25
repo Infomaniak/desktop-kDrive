@@ -389,10 +389,14 @@ class QtConan(ConanFile):
         if find_modules:
             self.cpp_info.set_property("cmake_build_modules", find_modules)
 
+        self._setup_environment()
+
+
 
 
     def package_id(self):
         self.info.settings.clear()
+        
     def _check_integrity(self):
         expected_paths = [
             os.path.join(self.package_folder, "bin"),
@@ -404,3 +408,34 @@ class QtConan(ConanFile):
         for path in expected_paths:
             if not os.path.exists(path):
                 raise ConanException(f"Missing expected file or directory: {path}")
+
+    def _setup_environment(self):
+        bin_path = os.path.join(self.package_folder, "bin")
+        libexec_path = os.path.join(self.package_folder, "libexec")
+        qt_plugins = os.path.join(self.package_folder, "plugins")
+        platforms_path = os.path.join(qt_plugins, "platforms")
+
+        # PATH
+        self.buildenv_info.prepend_path("PATH", bin_path)
+        self.buildenv_info.prepend_path("PATH", libexec_path)
+        self.runenv_info.prepend_path("PATH", bin_path)
+        self.runenv_info.prepend_path("PATH", libexec_path)
+
+        # Qt plugin paths
+        self.buildenv_info.define("QT_PLUGIN_PATH", qt_plugins)
+        self.runenv_info.define("QT_PLUGIN_PATH", qt_plugins)
+        self.buildenv_info.define("QT_QPA_PLATFORM_PLUGIN_PATH", platforms_path)
+        self.runenv_info.define("QT_QPA_PLATFORM_PLUGIN_PATH", platforms_path)
+
+        # Optionnel pour tooling ou override
+        self.buildenv_info.define_path("QT_TOOLS_PATH", bin_path)
+        self.buildenv_info.define_path("QT_LIBEXEC_PATH", libexec_path)
+        self.buildenv_info.define_path("QT_LIB_DIR", os.path.join(self.package_folder, "lib"))
+        self.buildenv_info.define_path("QT_INCLUDE_DIR", os.path.join(self.package_folder, "include"))
+        self.buildenv_info.define_path("QT_HOST_PATH", self.package_folder)
+
+        # Pour aider CMake à trouver Qt
+        self.buildenv_info.prepend_path("CMAKE_PREFIX_PATH", self.package_folder)
+
+        # Pour le debug des plugins Qt
+        self.runenv_info.define("QT_DEBUG_PLUGINS", "1")
