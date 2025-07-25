@@ -22,14 +22,6 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 
-#if defined(KD_MACOS)
-#include "utility_mac.cpp"
-#elif defined(KD_LINUX)
-#include "utility_linux.cpp"
-#elif defined(KD_WINDOWS)
-#include "utility_win.cpp"
-#endif
-
 #include "utility/utility_base.h"
 
 #if defined(KD_MACOS)

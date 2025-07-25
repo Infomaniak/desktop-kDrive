@@ -318,7 +318,7 @@ bool Utility::hasSystemLaunchOnStartup(const std::string &appName) {
         return false;
     }
 
-    return map.contains(Utility::s2ws(appName));
+    return map.contains(CommonUtility::s2ws(appName));
 }
 
 static const wchar_t runPath[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
@@ -330,20 +330,20 @@ bool Utility::hasLaunchOnStartup(const std::string &appName) {
         return false;
     }
 
-    return map.contains(Utility::s2ws(appName));
+    return map.contains(CommonUtility::s2ws(appName));
 }
 
 bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &guiName, bool enable) {
     if (enable) {
         SyncPath serverFilePath = KDC::CommonUtility::getAppWorkingDir() / (appName + ".exe");
-        if (const auto result = setRegistryStringValue(HKEY_CURRENT_USER, runPath, Utility::s2ws(appName),
+        if (const auto result = setRegistryStringValue(HKEY_CURRENT_USER, runPath, CommonUtility::s2ws(appName),
                                                        serverFilePath.make_preferred().native());
             result != ERROR_SUCCESS) {
             LOGW_WARN(logger(), L"Failed to set registry value for: " << systemRunPath << L", error: " << result);
             return false;
         }
     } else {
-        if (const auto result = deleteRegistryValue(HKEY_CURRENT_USER, runPath, Utility::s2ws(appName));
+        if (const auto result = deleteRegistryValue(HKEY_CURRENT_USER, runPath, CommonUtility::s2ws(appName));
             result != ERROR_SUCCESS) {
             LOGW_WARN(logger(), L"Failed to remove registry value for: " << systemRunPath << L", error: " << result);
             return false;
@@ -433,7 +433,7 @@ void Utility::addLegacySyncRootKeys(const std::wstring &clsid, const SyncPath &f
     // For us, to later be able to iterate and find our own namespace entries and associated CLSID.
     // Use the macro instead of the theme to make sure it matches with the uninstaller.
     (void) Utility::registrySetKeyValue(HKEY_CURRENT_USER, namespacePath, L"ApplicationName", REG_SZ,
-                                        Utility::s2ws(APPLICATION_NAME), error);
+                                        CommonUtility::s2ws(APPLICATION_NAME), error);
 }
 
 // Remove legacy sync root keys

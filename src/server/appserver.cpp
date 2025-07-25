@@ -3643,14 +3643,14 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
     tmpSync.setNavigationPaneClsid(_vfsMap[sync.dbId()]->namespaceCLSID());
 
     if (tmpSync.virtualFileMode() == KDC::VirtualFileMode::Win) {
-        Utility::setFolderPinState(Utility::s2ws(tmpSync.navigationPaneClsid()),
+        Utility::setFolderPinState(CommonUtility::s2ws(tmpSync.navigationPaneClsid()),
                                    _navigationPaneHelper->showInExplorerNavigationPane());
     } else {
         if (tmpSync.navigationPaneClsid().empty()) {
             tmpSync.setNavigationPaneClsid(QUuid::createUuid().toString().toStdString());
             _vfsMap[sync.dbId()]->setNamespaceCLSID(tmpSync.navigationPaneClsid());
         }
-        Utility::addLegacySyncRootKeys(Utility::s2ws(sync.navigationPaneClsid()), sync.localPath(),
+        Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(),
                                        _navigationPaneHelper->showInExplorerNavigationPane());
     }
 
@@ -3742,7 +3742,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
 #if defined(KD_WINDOWS)
         if (newMode == VirtualFileMode::Win) {
             // Remove legacy sync root keys
-            Utility::removeLegacySyncRootKeys(Utility::s2ws(sync.navigationPaneClsid()));
+            Utility::removeLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()));
             sync.setNavigationPaneClsid(std::string());
         } else if (sync.virtualFileMode() == VirtualFileMode::Win) {
             // Add legacy sync root keys
@@ -3750,7 +3750,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
             if (sync.navigationPaneClsid().empty()) {
                 sync.setNavigationPaneClsid(QUuid::createUuid().toString().toStdString());
             }
-            Utility::addLegacySyncRootKeys(Utility::s2ws(sync.navigationPaneClsid()), sync.localPath(), show);
+            Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(), show);
         }
 #endif
 
