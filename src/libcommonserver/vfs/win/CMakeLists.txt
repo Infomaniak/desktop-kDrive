@@ -2,8 +2,6 @@ find_package(Qt6)
 
 set(libcommonserver_vfs_win_SRCS
     vfs_win.h vfs_win.cpp
-    ../../../common/filepermissionholder.h ../../../common/filepermissionholder.cpp
-    ../../../common/filesystembase.h ../../../common/filesystembase.cpp
 )
 
 add_library("${libcommonserver_NAME}_vfs_win" SHARED

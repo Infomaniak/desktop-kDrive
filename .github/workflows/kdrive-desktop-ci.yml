@@ -1,7 +1,6 @@
 name: kDrive desktop CI
 
 on:
-  workflow_dispatch:  
   pull_request:
     branches-ignore:
         - 'release/**'
@@ -35,7 +34,7 @@ jobs:
       - name: Build Windows
         uses: ./.github/actions/build_windows
         with:  
-          virtual_cert_id: ${{ secrets.WINDOWS_VIRTUAL_CERT }}
+          virtual_cert: ${{ secrets.WINDOWS_VIRTUAL_CERT }}
           virtual_cert_pass: ${{ secrets.WINDOWS_VIRTUAL_CERT_PASSWORD }}
     
 
@@ -92,7 +91,7 @@ jobs:
       fail-fast: false
       matrix:
         test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
-    runs-on: [ self-hosted,  Linux, X64  ]
+    runs-on: [ self-hosted, Linux, X64 ]
     env:
       KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
       KDRIVE_SENTRY_ENVIRONMENT: "linux_ci_runner"

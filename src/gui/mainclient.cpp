@@ -19,7 +19,6 @@
 #include "appclient.h"
 #include "config.h"
 #include "version.h"
-#include "common/utility.h"
 #include "cocoainitializer.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
@@ -51,7 +50,7 @@ void warnSystray() {
                                           "If you are running XFCE, please follow "
                                           "<a href=\"http://docs.xfce.org/xfce/xfce4-panel/systray\">these instructions</a>. "
                                           "Otherwise, please install a system tray application such as 'trayer' and try again.")
-                                  .arg(KDC::Theme::instance()->appNameGUI()));
+                                  .arg(QString::fromStdString(KDC::Theme::instance()->appName())));
 }
 
 void signalHandler(int signum) {

@@ -26,6 +26,8 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "utility/utility_base.h"
 
+
+#include <QLocale>
 #include <iostream>
 #include <regex>
 

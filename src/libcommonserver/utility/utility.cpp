@@ -344,370 +344,328 @@ void Utility::restartFinderExtension() {
 #if defined(KD_MACOS)
     restartFinderExtension_private();
 #endif
-}
-
-void Utility::str2hexstr(const std::string &str, std::string &hexstr, bool capital) {
-    hexstr.resize(str.size() * 2);
-    const char a = capital ? 'A' - 1 : 'a' - 1;
-
-    size_t i;
-    int c;
-    for (i = 0, c = str[0] & 0xFF; i < hexstr.size(); c = str[i / 2] & 0xFF) {
-        hexstr[i++] = c > 0x9F ? static_cast<char>(c / 16 - 9) | a : static_cast<char>(c / 16) | '0';
-        hexstr[i++] = (c & 0xF) > 9 ? static_cast<char>(c % 16 - 9) | a : static_cast<char>(c % 16) | '0';
+    bool Utility::isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path) {
+        if (path == potentialDescendant) return true;
+        for (auto it = potentialDescendant.begin(), it2 = path.begin(); it != potentialDescendant.end(); ++it, ++it2) {
+            if (it2 == path.end()) {
+                return true;
+            }
+            if (*it != *it2) {
+                return false;
+            }
+        }
+        return false;
     }
-}
 
-// Convert string of hex numbers to its equivalent char-stream
-void Utility::strhex2str(const std::string &hexstr, std::string &str) {
-    str.resize((hexstr.size() + 1) / 2);
-
-    for (size_t i = 0, j = 0; i < str.size(); i++, j++) {
-        str[i] = static_cast<char>((hexstr[j] & '@' ? hexstr[j] + 9 : hexstr[j]) << 4), j++;
-        str[i] |= static_cast<char>((hexstr[j] & '@' ? hexstr[j] + 9 : hexstr[j]) & 0xF);
+    bool Utility::isStrictDescendant(const SyncPath &potentialDescendant, const SyncPath &path) {
+        if (path == potentialDescendant) return false;
+        return isDescendantOrEqual(potentialDescendant, path);
     }
-}
 
-std::vector<std::string> Utility::splitStr(const std::string &str, char sep) {
-    std::vector<std::string> strings;
-    std::istringstream ss(str);
-    std::string s;
-    while (getline(ss, s, sep)) {
-        strings.push_back(s);
-    }
-    return strings;
-}
+    void Utility::str2hexstr(const std::string &str, std::string &hexstr, bool capital) {
+        hexstr.resize(str.size() * 2);
+        const char a = capital ? 'A' - 1 : 'a' - 1;
 
-std::string Utility::joinStr(const std::vector<std::string> &strList, char sep /*= 0*/) {
-    std::string str;
-    for (std::vector<std::string>::const_iterator it = strList.begin(); it != strList.end();) {
-        str += *it;
-        it++;
-        if (sep > 0 && it != strList.end()) {
-            str += sep;
+        size_t i;
+        int c;
+        for (i = 0, c = str[0] & 0xFF; i < hexstr.size(); c = str[i / 2] & 0xFF) {
+            hexstr[i++] = c > 0x9F ? static_cast<char>(c / 16 - 9) | a : static_cast<char>(c / 16) | '0';
+            hexstr[i++] = (c & 0xF) > 9 ? static_cast<char>(c % 16 - 9) | a : static_cast<char>(c % 16) | '0';
         }
     }
-    return str;
-}
 
-std::string Utility::nodeSet2str(const NodeSet &set) {
-    bool first = true;
-    std::string out;
-    for (const auto &nodeId: set) {
-        if (!first) {
-            out += ",";
-        }
-        if (!nodeId.empty()) {
-            out += nodeId;
-            first = false;
+    // Convert string of hex numbers to its equivalent char-stream
+    void Utility::strhex2str(const std::string &hexstr, std::string &str) {
+        str.resize((hexstr.size() + 1) / 2);
+
+        for (size_t i = 0, j = 0; i < str.size(); i++, j++) {
+            str[i] = static_cast<char>((hexstr[j] & '@' ? hexstr[j] + 9 : hexstr[j]) << 4), j++;
+            str[i] |= static_cast<char>((hexstr[j] & '@' ? hexstr[j] + 9 : hexstr[j]) & 0xF);
         }
     }
-    return out;
-}
 
-std::string Utility::computeMd5Hash(const std::string &in) {
-    Poco::MD5Engine md5;
-    md5.update(in);
-    return Poco::DigestEngine::digestToHex(md5.digest());
-}
+    std::vector<std::string> Utility::splitStr(const std::string &str, char sep) {
+        std::vector<std::string> strings;
+        std::istringstream ss(str);
+        std::string s;
+        while (getline(ss, s, sep)) {
+            strings.push_back(s);
+        }
+        return strings;
+    }
 
-std::string Utility::computeMd5Hash(const char *in, std::size_t length) {
-    Poco::MD5Engine md5;
-    md5.update(in, length);
-    return Poco::DigestEngine::digestToHex(md5.digest());
-}
+    std::string Utility::joinStr(const std::vector<std::string> &strList, char sep /*= 0*/) {
+        std::string str;
+        for (std::vector<std::string>::const_iterator it = strList.begin(); it != strList.end();) {
+            str += *it;
+            it++;
+            if (sep > 0 && it != strList.end()) {
+                str += sep;
+            }
+        }
+        return str;
+    }
 
-std::string Utility::computeXxHash(const std::string &in) {
-    return computeXxHash(in.data(), in.size());
-}
+    std::string Utility::nodeSet2str(const NodeSet &set) {
+        bool first = true;
+        std::string out;
+        for (const auto &nodeId: set) {
+            if (!first) {
+                out += ",";
+            }
+            if (!nodeId.empty()) {
+                out += nodeId;
+                first = false;
+            }
+        }
+        return out;
+    }
 
-std::string Utility::computeXxHash(const char *in, std::size_t length) {
-    XXH64_hash_t hash = XXH3_64bits(in, length);
-    return xxHashToStr(hash);
-}
+    std::string Utility::computeMd5Hash(const std::string &in) {
+        Poco::MD5Engine md5;
+        md5.update(in);
+        return Poco::DigestEngine::digestToHex(md5.digest());
+    }
+
+    std::string Utility::computeMd5Hash(const char *in, std::size_t length) {
+        Poco::MD5Engine md5;
+        md5.update(in, length);
+        return Poco::DigestEngine::digestToHex(md5.digest());
+    }
+
+    std::string Utility::computeXxHash(const std::string &in) {
+        return computeXxHash(in.data(), in.size());
+    }
+
+    std::string Utility::computeXxHash(const char *in, std::size_t length) {
+        XXH64_hash_t hash = XXH3_64bits(in, length);
+        return xxHashToStr(hash);
+    }
 
 #define BUF_SIZE 32
 
-std::string Utility::xxHashToStr(XXH64_hash_t hash) {
-    XXH64_canonical_t canonical;
-    XXH64_canonicalFromHash(&canonical, hash);
-    std::string output;
-    char buf[BUF_SIZE];
-    for (unsigned int i = 0; i < sizeof(canonical.digest); ++i) {
-        std::snprintf(buf, BUF_SIZE, "%02x", canonical.digest[i]);
-        output.append(buf);
+    std::string Utility::xxHashToStr(XXH64_hash_t hash) {
+        XXH64_canonical_t canonical;
+        XXH64_canonicalFromHash(&canonical, hash);
+        std::string output;
+        char buf[BUF_SIZE];
+        for (unsigned int i = 0; i < sizeof(canonical.digest); ++i) {
+            std::snprintf(buf, BUF_SIZE, "%02x", canonical.digest[i]);
+            output.append(buf);
+        }
+        return output;
     }
-    return output;
-}
 
 #if defined(KD_MACOS)
-SyncName Utility::getExcludedAppFilePath(bool test /*= false*/) {
-    return (test ? excludedAppFileName : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedAppFileName).native());
-}
+    SyncName Utility::getExcludedAppFilePath(bool test /*= false*/) {
+        return (test ? excludedAppFileName
+                     : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedAppFileName).native());
+    }
 #endif
 
-SyncName Utility::getExcludedTemplateFilePath(bool test /*= false*/) {
-    return (test ? excludedTemplateFileName
-                 : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedTemplateFileName).native());
-}
+    SyncName Utility::getExcludedTemplateFilePath(bool test /*= false*/) {
+        return (test ? excludedTemplateFileName
+                     : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedTemplateFileName).native());
+    }
 
-SyncPath Utility::binRelativePath() {
-    SyncPath path(resourcesPath);
-    return path;
-}
+    SyncPath Utility::binRelativePath() {
+        SyncPath path(resourcesPath);
+        return path;
+    }
 
-SyncName Utility::logFileName() {
-    SyncName name = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName(LOGFILE_EXT));
-    return name;
-}
+    SyncName Utility::logFileName() {
+        SyncName name = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName(LOGFILE_EXT));
+        return name;
+    }
 
-SyncName Utility::logFileNameWithTime() {
-    std::time_t now = std::time(nullptr);
-    std::tm tm = *std::localtime(&now);
-    OStringStream woss;
-    woss << std::put_time(&tm, SyncName(Str2SyncName(LOGFILE_TIME_FORMAT)).c_str()) << Str("_") << logFileName();
-    return woss.str();
-}
+    SyncName Utility::logFileNameWithTime() {
+        std::time_t now = std::time(nullptr);
+        std::tm tm = *std::localtime(&now);
+        OStringStream woss;
+        woss << std::put_time(&tm, SyncName(Str2SyncName(LOGFILE_TIME_FORMAT)).c_str()) << Str("_") << logFileName();
+        return woss.str();
+    }
 
-std::string Utility::_errId(const char *file, int line) {
-    std::string err = CommonUtility::toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" +
-                      std::to_string(line);
-    return err;
-}
+    std::string Utility::_errId(const char *file, int line) {
+        std::string err = CommonUtility::toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" +
+                          std::to_string(line);
+        return err;
+    }
 
-// Be careful, some characters have 2 different encodings in Unicode
-// For example 'é' can be coded as 0x65 + 0xcc + 0x81  or 0xc3 + 0xa9
-bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
-                                 const UnicodeNormalization normalization) noexcept {
-    bool success = CommonUtility::normalizedSyncName(name, normalizedName, normalization);
-    std::wstring errorMessage = L"Failed to normalize " + formatSyncName(name);
-    if (!success) {
+    // Be careful, some characters have 2 different encodings in Unicode
+    // For example 'é' can be coded as 0x65 + 0xcc + 0x81  or 0xc3 + 0xa9
+    bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
+                                     const UnicodeNormalization normalization) noexcept {
+        bool success = CommonUtility::normalizedSyncName(name, normalizedName, normalization);
+        std::wstring errorMessage = L"Failed to normalize " + formatSyncName(name);
+        if (!success) {
 #if defined(KD_WINDOWS)
-        const DWORD dwError = GetLastError();
-        errorMessage += L" (" + utility_base::getErrorMessage(dwError) + L")";
+            const DWORD dwError = GetLastError();
+            errorMessage += L" (" + utility_base::getErrorMessage(dwError) + L")";
 #endif
-        LOGW_DEBUG(logger(), L"Failed to normalize " << errorMessage);
-    }
-
-    return success;
-}
-
-bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
-                                 const UnicodeNormalization normalization /*= UnicodeNormalization::NFC*/) noexcept {
-    auto segmentIt = path.begin();
-    if (segmentIt == path.end()) return true;
-
-    auto segment = *segmentIt;
-    if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
-        SyncName normalizedName;
-        if (!normalizedSyncName(segment, normalizedName, normalization)) {
-            LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << formatSyncName(segment));
-            return false;
+            LOGW_DEBUG(logger(), L"Failed to normalize " << errorMessage);
         }
-        segment = normalizedName;
+
+        return success;
     }
 
-    normalizedPath = SyncPath(segment);
-    ++segmentIt;
-    for (; segmentIt != path.end(); ++segmentIt) {
+    bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
+                                     const UnicodeNormalization normalization /*= UnicodeNormalization::NFC*/) noexcept {
+        auto segmentIt = path.begin();
+        if (segmentIt == path.end()) return true;
+
+        auto segment = *segmentIt;
         if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
             SyncName normalizedName;
-            if (!normalizedSyncName(*segmentIt, normalizedName, normalization)) {
-                LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << formatSyncName(*segmentIt));
+            if (!normalizedSyncName(segment, normalizedName, normalization)) {
+                LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << formatSyncName(segment));
                 return false;
             }
-            normalizedPath /= normalizedName;
+            segment = normalizedName;
         }
-    }
 
-    return true;
-}
+        normalizedPath = SyncPath(segment);
+        ++segmentIt;
+        for (; segmentIt != path.end(); ++segmentIt) {
+            if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
+                SyncName normalizedName;
+                if (!normalizedSyncName(*segmentIt, normalizedName, normalization)) {
+                    LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << formatSyncName(*segmentIt));
+                    return false;
+                }
+                normalizedPath /= normalizedName;
+            }
+        }
 
-bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, IoError &ioError,
-                                       const ItemType &itemType) {
-    isManaged = true;
-    ioError = IoError::Success;
-    if (dirEntry.path().native().length() > CommonUtility::maxPathLength()) {
-        LOGW_WARN(logger(),
-                  L"Ignore " << formatSyncPath(dirEntry.path()) << L" because size > " << CommonUtility::maxPathLength());
-        isManaged = false;
         return true;
     }
 
-    if (!dirEntry.is_regular_file() && !dirEntry.is_directory()) {
-        auto tmpItemType = itemType;
-        if (tmpItemType == ItemType()) {
-            bool result = IoHelper::getItemType(dirEntry.path(), tmpItemType);
-            ioError = tmpItemType.ioError;
-            if (!result) {
-                LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
-                return false;
-            }
-
-            if (ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
-                LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
-                return true;
-            }
-        }
-        if (tmpItemType.linkType == LinkType::None) {
-            LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirEntry.path())
-                                           << L" because it is not a directory, a regular file or a symlink");
+    bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, IoError &ioError,
+                                           const ItemType &itemType) {
+        isManaged = true;
+        ioError = IoError::Success;
+        if (dirEntry.path().native().length() > CommonUtility::maxPathLength()) {
+            LOGW_WARN(logger(),
+                      L"Ignore " << formatSyncPath(dirEntry.path()) << L" because size > " << CommonUtility::maxPathLength());
             isManaged = false;
             return true;
         }
-    }
+
+        if (!dirEntry.is_regular_file() && !dirEntry.is_directory()) {
+            auto tmpItemType = itemType;
+            if (tmpItemType == ItemType()) {
+                bool result = IoHelper::getItemType(dirEntry.path(), tmpItemType);
+                ioError = tmpItemType.ioError;
+                if (!result) {
+                    LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
+                    return false;
+                }
+
+                if (ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
+                    LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
+                    return true;
+                }
+            }
+            if (tmpItemType.linkType == LinkType::None) {
+                LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirEntry.path())
+                                               << L" because it is not a directory, a regular file or a symlink");
+                isManaged = false;
+                return true;
+            }
+        }
 
 
-    return true;
-}
-
-bool Utility::getLinuxDesktopType(std::string &currentDesktop) {
-    const std::string xdgCurrentDesktop = CommonUtility::envVarValue("XDG_CURRENT_DESKTOP");
-    if (xdgCurrentDesktop.empty()) {
-        return false;
-    }
-
-    // ':' is the separator in the env variable, like "ubuntu:GNOME"
-    size_t colon_pos = xdgCurrentDesktop.find(':');
-
-    if (colon_pos != std::string::npos) {
-        currentDesktop = xdgCurrentDesktop.substr(colon_pos + 1);
         return true;
     }
 
-    return false;
-}
+    bool Utility::getLinuxDesktopType(std::string & currentDesktop) {
+        const std::string xdgCurrentDesktop = CommonUtility::envVarValue("XDG_CURRENT_DESKTOP");
+        if (xdgCurrentDesktop.empty()) {
+            return false;
+        }
+
+        // ':' is the separator in the env variable, like "ubuntu:GNOME"
+        size_t colon_pos = xdgCurrentDesktop.find(':');
+
+        if (colon_pos != std::string::npos) {
+            currentDesktop = xdgCurrentDesktop.substr(colon_pos + 1);
+            return true;
+        }
+
+        return false;
+    }
 
 #if defined(KD_WINDOWS)
-bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound) {
-    int length = GetLongPathNameW(shortPathIn.native().c_str(), 0, 0);
-    if (!length) {
-        const bool exists = !utility_base::isLikeFileNotFoundError(GetLastError());
-        if (!exists) {
-            notFound = true;
+    bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound) {
+        int length = GetLongPathNameW(shortPathIn.native().c_str(), 0, 0);
+        if (!length) {
+            const bool exists = !utility_base::isLikeFileNotFoundError(GetLastError());
+            if (!exists) {
+                notFound = true;
+            }
+            return false;
         }
-        return false;
-    }
 
-    SyncChar *buffer = new SyncChar[length + 1];
-    if (!buffer) {
-        return false;
-    }
-
-    length = GetLongPathNameW(shortPathIn.native().c_str(), buffer, length);
-    if (!length) {
-        const bool exists = !utility_base::isLikeFileNotFoundError(GetLastError());
-        if (!exists) {
-            notFound = true;
+        SyncChar *buffer = new SyncChar[length + 1];
+        if (!buffer) {
+            return false;
         }
+
+        length = GetLongPathNameW(shortPathIn.native().c_str(), buffer, length);
+        if (!length) {
+            const bool exists = !utility_base::isLikeFileNotFoundError(GetLastError());
+            if (!exists) {
+                notFound = true;
+            }
+            delete[] buffer;
+            return false;
+        }
+
+        buffer[length] = 0;
+        longPathOut = SyncPath(buffer);
         delete[] buffer;
-        return false;
+
+        return true;
     }
 
-    buffer[length] = 0;
-    longPathOut = SyncPath(buffer);
-    delete[] buffer;
+    bool Utility::runDetachedProcess(std::wstring cmd) {
+        PROCESS_INFORMATION pinfo;
+        STARTUPINFOW startupInfo = {sizeof(STARTUPINFO),
+                                    0,
+                                    0,
+                                    0,
+                                    (ulong) CW_USEDEFAULT,
+                                    (ulong) CW_USEDEFAULT,
+                                    (ulong) CW_USEDEFAULT,
+                                    (ulong) CW_USEDEFAULT,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    0};
+        bool success = success = CreateProcess(0, cmd.data(), 0, 0, FALSE, CREATE_UNICODE_ENVIRONMENT | CREATE_NEW_CONSOLE, 0, 0,
+                                               &startupInfo, &pinfo);
 
-    return true;
-}
-
-bool Utility::runDetachedProcess(std::wstring cmd) {
-    PROCESS_INFORMATION pinfo;
-    STARTUPINFOW startupInfo = {sizeof(STARTUPINFO),
-                                0,
-                                0,
-                                0,
-                                (ulong) CW_USEDEFAULT,
-                                (ulong) CW_USEDEFAULT,
-                                (ulong) CW_USEDEFAULT,
-                                (ulong) CW_USEDEFAULT,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0};
-    bool success = success = CreateProcess(0, cmd.data(), 0, 0, FALSE, CREATE_UNICODE_ENVIRONMENT | CREATE_NEW_CONSOLE, 0, 0,
-                                           &startupInfo, &pinfo);
-
-    if (success) {
-        CloseHandle(pinfo.hThread);
-        CloseHandle(pinfo.hProcess);
+        if (success) {
+            CloseHandle(pinfo.hThread);
+            CloseHandle(pinfo.hProcess);
+        }
+        return success;
     }
-    return success;
-}
 
 #endif
 
-
-bool Utility::totalRamAvailable(uint64_t &ram, int &errorCode) {
-    if (totalRamAvailable_private(ram, errorCode)) {
-        return true;
+    SyncPath Utility::commonDocumentsFolderName() {
+        return Str2SyncName(COMMON_DOC_FOLDER);
     }
-    // log errorCode;
-    return false;
-}
 
-bool Utility::ramCurrentlyUsed(uint64_t &ram, int &errorCode) {
-    if (ramCurrentlyUsed_private(ram, errorCode)) {
-        return true;
+    SyncPath Utility::sharedFolderName() {
+        return Str2SyncName(SHARED_FOLDER);
     }
-    // log errorCode;
-    return false;
-}
-
-bool Utility::ramCurrentlyUsedByProcess(uint64_t &ram, int &errorCode) {
-    if (ramCurrentlyUsedByProcess_private(ram, errorCode)) {
-        return true;
-    }
-    // log errorCode;
-    return false;
-}
-
-
-bool Utility::cpuUsage(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint64_t &lastTotalSys, uint64_t &lastTotalIdle,
-                       double &percent) {
-#if defined(KD_LINUX)
-    return cpuUsage_private(lastTotalUser, lastTotalUserLow, lastTotalSys, lastTotalIdle, percent);
-#else
-    (void) (lastTotalUser);
-    (void) (lastTotalUserLow);
-    (void) (lastTotalSys);
-    (void) (lastTotalIdle);
-    (void) (percent);
-#endif
-    return false;
-}
-
-bool Utility::cpuUsage(uint64_t &previousTotalTicks, uint64_t &previousIdleTicks, double &percent) {
-#if defined(KD_MACOS)
-    return cpuUsage_private(previousTotalTicks, previousIdleTicks, percent);
-#else
-    (void) (previousTotalTicks);
-    (void) (previousIdleTicks);
-    (void) (percent);
-#endif
-    return false;
-}
-
-bool Utility::cpuUsageByProcess(double &percent) {
-    return cpuUsageByProcess_private(percent);
-}
-
-SyncPath Utility::commonDocumentsFolderName() {
-    return Str2SyncName(COMMON_DOC_FOLDER);
-}
-
-SyncPath Utility::sharedFolderName() {
-    return Str2SyncName(SHARED_FOLDER);
-}
-
-std::string Utility::userName() {
-    return userName_private();
-}
 
 } // namespace KDC
