@@ -135,20 +135,4 @@ IoError IoHelper::isLocked(const SyncPath &path, bool &locked) noexcept {
     return IoError::Success;
 }
 
-IoError IoHelper::setReadOnly(const SyncPath &path) {
-    if (IoError ioError = IoError::Unknown; !setRights(path, true, false, true, ioError) || ioError != IoError::Success) {
-        LOGW_ERROR(logger(), L"IoHelper::setReadOnly : " << Utility::formatSyncPath(path));
-        return ioError;
-    }
-    return IoError::Success;
-}
-
-IoError IoHelper::setFullAccess(const SyncPath &path) {
-    if (IoError ioError = IoError::Unknown; !setRights(path, true, true, true, ioError) || ioError != IoError::Success) {
-        LOGW_ERROR(logger(), L"IoHelper::setReadOnly : " << Utility::formatSyncPath(path));
-        return ioError;
-    }
-    return IoError::Success;
-}
-
 } // namespace KDC
