@@ -373,12 +373,11 @@ class QtConan(ConanFile):
         concerned_modules = list(modules.keys())
         concerned_modules.append("Core")
         if os.path.isdir(cmake_folder):
-            for module_name in modules:
-                path = os.path.join("lib", "cmake", f"Qt6{module_name}", module_name)
-                for cmake_files in glob.glob(os.path.join(cmake_folder, f"{path}*.cmake")):
+            for module_name in concerned_modules:
+                for cmake_files in glob.glob(os.path.join(cmake_folder, f"Qt6{module_name}", f"*.cmake")):
                     if os.path.isfile(cmake_files):
                         find_modules.append(cmake_files)
-                        self.output.highlight("Found CMake module: " + cmake_files)
+                        self.output.highlight(f"Found CMake module: {cmake_files}")
         if find_modules:
             self.cpp_info.set_property("cmake_build_modules", find_modules)
         else:
