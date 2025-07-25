@@ -97,11 +97,18 @@ class QtConan(ConanFile):
         except OSError:
             return None
 
-        return {
-            "Windows": f"C:/Users/{user}/AppData/Roaming/Qt/qtaccount.ini",
-            "Macos": f"/Users/{user}/Library/Application Support/Qt/qtaccount.ini",
-            "Linux": f"/home/{user}/.local/share/Qt/qtaccount.ini"
-        }.get(str(self.settings.os), None)
+        if user == "root":
+            return {
+                "Windows": "C:/Users/root/AppData/Roaming/Qt/qtaccount.ini",
+                "Macos": "/var/root/Library/Application Support/Qt/qtaccount.ini",
+                "Linux": "/root/.local/share/Qt/qtaccount.ini"
+            }.get(str(self.settings.os), None)
+        else:
+            return {
+                "Windows": f"C:/Users/{user}/AppData/Roaming/Qt/qtaccount.ini",
+                "Macos": f"/Users/{user}/Library/Application Support/Qt/qtaccount.ini",
+                "Linux": f"/home/{user}/.local/share/Qt/qtaccount.ini"
+            }.get(str(self.settings.os), None)
 
     def requirements(self):
         self.requires("zlib/[>=1.2.11 <2]", options={ "shared": True }) # From https://conan.io/center/recipes/zlib
