@@ -29,6 +29,7 @@
 #include <unistd.h>
 #endif
 
+#include "io/permissionsholder.h"
 #include "utility/timerutility.h"
 
 
@@ -488,6 +489,9 @@ bool DownloadJob::moveTmpFile() {
 #endif
         static const bool forceCopy = CommonUtility::envVarValue("KDRIVE_PRESERVE_PERMISSIONS_ON_CREATE") == "1";
         if (_isCreate && !forceCopy) {
+            // Make sure we are allowed to propagate the change
+            PermissionsHolder _(_localpath.parent_path());
+
             // Move file
             IoError ioError = IoError::Success;
             IoHelper::moveItem(_tmpPath, _localpath, ioError);
@@ -503,6 +507,9 @@ bool DownloadJob::moveTmpFile() {
         }
 
         if (!_isCreate || crossDeviceLinkError || forceCopy) {
+            // Make sure we are allowed to propagate the change
+            PermissionsHolder _(_localpath.parent_path());
+
             // Copy file content (i.e. when the target exists, do not change its node id).
             std::error_code ec;
             std::filesystem::copy(_tmpPath, _localpath, std::filesystem::copy_options::overwrite_existing, ec);
