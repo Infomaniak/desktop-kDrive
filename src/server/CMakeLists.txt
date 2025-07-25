@@ -46,6 +46,7 @@ set(server_SRCS
     appserver.h appserver.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
+    requests/offlinefilessizeestimator.h requests/offlinefilessizeestimator.cpp
     app_resources.rc
 )
 
