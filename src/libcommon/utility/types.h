@@ -311,6 +311,7 @@ enum class ExitCause {
     ServiceUnavailable,
     BadGateway,
     NotEnoughINotifyWatches,
+    FileOrDirectoryCorrupted,
     EnumEnd
 };
 std::string toString(ExitCause e);
@@ -638,6 +639,7 @@ enum class IoError {
     NoSuchFileOrDirectory,
     ResultOutOfRange,
     CrossDeviceLink,
+    FileOrDirectoryCorrupted,
     Unknown,
     EnumEnd
 };

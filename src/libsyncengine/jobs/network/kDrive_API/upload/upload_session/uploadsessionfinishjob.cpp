@@ -60,12 +60,14 @@ bool UploadSessionFinishJob::handleResponse(std::istream &is) {
         return false;
     }
 
-    UploadJobReplyHandler replyHandler(_absoluteFilePath, false, _creationTimeIn, _modificationTimeIn);
-    if (!replyHandler.extractData(jsonRes())) return false;
-    _nodeId = replyHandler.nodeId();
-    _creationTimeOut = replyHandler.creationTime();
-    _modificationTimeOut = replyHandler.modificationTime();
-    _sizeOut = replyHandler.size();
+    if (getApiType() == ApiType::Drive) {
+        UploadJobReplyHandler replyHandler(_absoluteFilePath, false, _creationTimeIn, _modificationTimeIn);
+        if (!replyHandler.extractData(jsonRes())) return false;
+        _nodeId = replyHandler.nodeId();
+        _creationTimeOut = replyHandler.creationTime();
+        _modificationTimeOut = replyHandler.modificationTime();
+        _sizeOut = replyHandler.size();
+    }
 
     return true;
 }

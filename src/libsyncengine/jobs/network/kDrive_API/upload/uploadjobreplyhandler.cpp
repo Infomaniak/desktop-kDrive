@@ -21,8 +21,8 @@
 
 namespace KDC {
 
-UploadJobReplyHandler::UploadJobReplyHandler(const SyncPath &absoluteFilePath, bool isLink, const SyncTime creationTime,
-                                             SyncTime modificationTime) :
+UploadJobReplyHandler::UploadJobReplyHandler(const SyncPath &absoluteFilePath, const bool isLink, const SyncTime creationTime,
+                                             const SyncTime modificationTime) :
     _absoluteFilePath(absoluteFilePath),
     _isLink(isLink),
     _creationTimeIn(creationTime),
@@ -41,12 +41,16 @@ bool UploadJobReplyHandler::extractData(const Poco::JSON::Object::Ptr jsonRes) {
 
     if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeIdOut)) return false;
     if (!JsonParserUtility::extractValue(dataObj, createdAtKey, _creationTimeOut)) return false;
+    if (!_creationTimeOut) {
+        // Creation time might be `null` on remote side. In that case, keep the input creation time.
+        _creationTimeOut = _creationTimeIn;
+    }
     if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modificationTimeOut)) return false;
     if (!JsonParserUtility::extractValue(dataObj, sizeKey, _sizeOut)) return false;
 
     if (_creationTimeIn != _creationTimeOut || _modificationTimeIn != _modificationTimeOut) {
         // The backend refused the creation/modification time(s). To avoid further EDIT operations, we apply the backend's times
-        // on local file.
+        // on the local file.
         LOGW_INFO(Log::instance()->getLogger(), L"Applying backend creation/modification times."
                                                         << L" Sent values: " << _creationTimeIn << L"/" << _modificationTimeIn
                                                         << L" Returned values: " << _creationTimeOut << L"/"

@@ -74,7 +74,7 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
 
     // Check that the directory iterator is valid when the path is an empty directory and return EOF
     {
-        IoError error;
+        IoError error = IoError::Unknown;
 
         IoHelper::DirectoryIterator it(emptyDir, false, error);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, error);

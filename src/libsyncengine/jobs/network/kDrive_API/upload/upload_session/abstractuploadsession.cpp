@@ -430,6 +430,7 @@ bool AbstractUploadSession::closeSession() {
     }
 
     if (const auto exitInfo = finishJob->runSynchronously(); exitInfo.code() != ExitCode::Ok || finishJob->hasHttpError()) {
+        _exitInfo = exitInfo;
         LOGW_WARN(_logger, L"Error in UploadSessionFinishJob::runSynchronously: " << exitInfo << L" file="
                                                                                   << Path2WStr(_filePath.filename()));
         return false;
