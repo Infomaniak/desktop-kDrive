@@ -219,8 +219,17 @@ IoError IoHelper::isLocked(const SyncPath &path, bool &locked) noexcept {
 }
 
 IoError IoHelper::setReadOnly(const SyncPath &path) noexcept {
+    // Retrieve `exec` rights. It is not modified by this method.
+    bool dummyRead = false;
+    bool dummyWrite = false;
+    bool exec = false;
+    if (IoError ioError = IoHelper::getRights(path, dummyRead, dummyWrite, exec); ioError != IoError::Success) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to set rights for: " << Utility::formatSyncPath(path));
+        return IoError::Unknown;
+    }
+
     // Remove write right.
-    if (IoError ioError = IoHelper::setRights(path, true, false, true); ioError != IoError::Success) {
+    if (IoError ioError = IoHelper::setRights(path, true, false, exec); ioError != IoError::Success) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to set rights for: " << Utility::formatSyncPath(path));
         return ioError;
     }
@@ -230,13 +239,22 @@ IoError IoHelper::setReadOnly(const SyncPath &path) noexcept {
 }
 
 IoError IoHelper::setFullAccess(const SyncPath &path) noexcept {
+    // Retrieve `exec` rights. It is not modified by this method.
+    bool dummyRead = false;
+    bool dummyWrite = false;
+    bool exec = false;
+    if (IoError ioError = IoHelper::getRights(path, dummyRead, dummyWrite, exec); ioError != IoError::Success) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to set rights for: " << Utility::formatSyncPath(path));
+        return IoError::Unknown;
+    }
+
     // The file must be unlocked before changing its access rights.
     if (const auto ioError = unlock(path); ioError != IoError::Success) {
         return ioError;
     }
 
     // Set full access rights.
-    if (IoError ioError = IoHelper::setRights(path, true, true, true); ioError != IoError::Success) {
+    if (IoError ioError = IoHelper::setRights(path, true, true, exec); ioError != IoError::Success) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to set rights for: " << Utility::formatSyncPath(path));
         return IoError::Unknown;
     }
