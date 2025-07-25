@@ -89,8 +89,8 @@ using OStringStream = std::wostringstream;
 #define Str(s) L##s
 #define SyncName2QStr(s) QString::fromStdWString(s)
 #define QStr2SyncName(s) s.toStdWString()
-#define Str2SyncName(s) CommonUtility::s2ws(s)
-#define SyncName2Str(s) CommonUtility::ws2s(s)
+#define Str2SyncName(s) KDC::CommonUtility::s2ws(s)
+#define SyncName2Str(s) KDC::CommonUtility::ws2s(s)
 #define WStr2SyncName(s) SyncName(s)
 #define SyncName2WStr(s) s
 #else

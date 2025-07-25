@@ -277,7 +277,7 @@ std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
     }
 #endif
 
-    return "Error";
+    return "UNIDENTIFIED";
 }
 
 void CommonUtility::resetTranslations() {
