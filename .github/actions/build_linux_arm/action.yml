@@ -1,24 +1,11 @@
 name: Build ARM64 Linux
 description: 'Build ARM64 Version of the Linux app'
 
-inputs:
-  release_build:
-    description: 'If true, run the release build script'
-    required: false
-    default: 'false'
-
 runs:
     using: "composite"
     steps:
       - name: Clean the log directory
         run : rm -rf /tmp/kDrive-logdir/*
-        shell: bash
-
-      - name: Fail if not release_build
-        if: ${{ inputs.release_build != 'true' }}
-        run: |
-          echo "This action is only for release builds. Set the input 'release_build' to 'true'."
-          exit 1
         shell: bash
 
       - name: Run the build script
