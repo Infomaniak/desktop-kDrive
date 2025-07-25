@@ -238,7 +238,8 @@ function CMake-Build-And-Install {
     param (
         [string] $path,
         [string] $installPath,
-        [string] $vfsDir
+        [string] $vfsDir,
+        [string] $buildType
     )
     Write-Host "1) Installing Conan dependencies…"
     $conanFolder = Join-Path $buildPath "conan"
@@ -248,9 +249,9 @@ function CMake-Build-And-Install {
     }
     Write-Host "Conan folder: $conanFolder"
     if ($ci) {
-        & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder -Ci
+        & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" $buildType -OutputDir $conanFolder -Ci
     } else {
-        & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder -MakeRelease
+        & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" $buildType -OutputDir $conanFolder -MakeRelease
     }
 
     $conanToolchainFile = Get-ChildItem -Path $conanFolder -Filter "conan_toolchain.cmake" -Recurse -File |
@@ -711,7 +712,7 @@ if (!(Test-Path "$vfsDir\vfs.dll") -or $ext) {
 #                                                                                               #
 #################################################################################################
 
-CMake-Build-And-Install $path $installPath $vfsDir
+CMake-Build-And-Install $path $installPath $vfsDir $buildType
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "CMake build failed. Aborting." -f Red

@@ -18,7 +18,9 @@
 
 #pragma once
 
+#include "testincludes.h"
 #include "test_utility/testbase.h"
+
 
 namespace KDC {
 

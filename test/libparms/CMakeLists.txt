@@ -7,6 +7,7 @@ endif()
 find_package(SQLite3 3.8.0 REQUIRED)
 find_package(Poco REQUIRED Foundation)
 find_package(log4cplus 2.1.2 REQUIRED)
+find_package(cppunit REQUIRED)
 
 set(testparms_NAME ${APPLICATION_NAME}_test_parms)
 
@@ -23,9 +24,7 @@ if(USE_OUR_OWN_SQLITE3)
     list(APPEND testparms_SRCS ${SQLITE3_SOURCE})
 endif()
 
-if(WIN32)
-    include_directories("C:/Program Files (x86)/cppunit/include")
-else()
+if(NOT WIN32)
     include_directories("/usr/local/include")
 endif()
 
@@ -35,23 +34,24 @@ set_target_properties(${testparms_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY} )
 
 target_link_libraries(${testparms_NAME}
-    ${libparms_NAME}
-    ${SQLITE3_LIBRARIES}
+        ${libparms_NAME}
+        ${SQLITE3_LIBRARIES}
 )
 
-if(WIN32)
-    target_link_libraries(${testparms_NAME}
-        debug
-        "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"
-        optimized
-        "C:/Program Files (x86)/cppunit/lib/cppunit_dll.lib")
-elseif(APPLE)
-    target_link_libraries(${testparms_NAME}
-        "/usr/local/lib/libcppunit.dylib")
+include(ConanGetLibDirs)
+get_include_and_library_dirs("cppunit" "cppunit")
+include_directories("${_cppunit_INCLUDE_DIRS}")
+if(APPLE)
+    set(lib_prefix "lib")
+    set(lib_suffix ".dylib")
+elseif(WIN32)
+    set(lib_prefix "")
+    set(lib_suffix ".lib")
 else()
-    target_link_libraries(${testparms_NAME}
-        "/usr/local/lib/libcppunit.so")
+    set(lib_prefix "lib")
+    set(lib_suffix ".so")
 endif()
+target_link_libraries(${testparms_NAME} "${_cppunit_LIB_DIRS}/${lib_prefix}cppunit${lib_suffix}")
 
 if(APPLE)
     # Default sync exclude list

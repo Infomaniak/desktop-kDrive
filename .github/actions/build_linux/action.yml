@@ -97,7 +97,6 @@ runs:
           cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Svg.* ./dependencies/
           mkdir dependencies/platforms
           cp /home/runner/Qt/6.2.3/gcc_64/plugins/platforms/libqoffscreen.so ./dependencies/platforms/
-          cp /usr/local/lib/libcppunit-1.15.so.2 ./dependencies/ 
           cp /usr/local/lib/libPocoUtil* ./dependencies/
           cp /usr/local/lib/libPocoJSON* ./dependencies/
           cp /usr/local/lib/libPocoXML* ./dependencies/
@@ -127,6 +126,7 @@ runs:
                 \( -iname 'libxxhash*.so*' \
                 -o -iname 'liblog4cplus*.so.*' \
                 -o -iname 'libssl*.so*' \
+                -o -iname 'libcppunit*.so*' \
                 -o -iname 'libcrypto*.so*' \) \
                 -exec cp {} ./dependencies/ \; \
                 -exec echo "Conan dependency found -> " {} \;

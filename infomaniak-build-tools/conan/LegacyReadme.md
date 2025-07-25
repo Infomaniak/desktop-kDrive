@@ -186,3 +186,66 @@ Then follow their [installation instructions](https://github.com/openssl/openssl
 Note that installing `NASM` is not required.
 
 </details>
+
+<details>
+<summary>CPPUnit 1.15.1</summary>
+
+### macOS
+Download and build `CPPUnit`:
+
+You will probably need to install `automake` and `libtool`:
+```
+brew install automake
+brew install libtool
+```
+
+CPPUnit must be build in single architecture. Replace with `x86_64` or `arm64` in the following command:
+```bash
+cd ~/Projects
+git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
+cd cppunit
+./autogen.sh
+./configure CXXFLAGS="-arch <your_arch> -mmacosx-version-min=10.15"
+make
+sudo make install
+```
+
+If the server does not reply to the `git clone` command, you can download the source from https://www.freedesktop.org/wiki/Software/cppunit/.
+
+### Linux
+```bash
+sudo apt-get install -y autotools-dev
+sudo apt-get install -y automake
+sudo apt-get install -y libtool m4 automake
+cd ~/Projects
+git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
+cd cppunit
+./autogen.sh
+./configure
+make
+sudo make install
+```
+
+If the server does not reply to the `git clone` command, you can download the source from https://www.freedesktop.org/wiki/Software/cppunit/.
+
+You can also download cppunit version 1.15.1 using the ["Wayback Machine"](https://web.archive.org/) here: https://web.archive.org/web/20231118010938/http://dev-www.libreoffice.org/src/cppunit-1.15.1.tar.gz
+
+### Windows
+Clone `CPPUnit`:
+
+```powershell
+cd F:\Projects
+git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
+```
+
+If the server does not reply to the `git clone` command, you can download the source from https://www.freedesktop.org/wiki/Software/cppunit/.
+
+Then open `src/CppUnitLibrariesXXXX.sln` workspace in Visual Studio to configure as follows:
+- Select all projects then right click to access `Properties`.
+- Select `All configurations` and `All plateforms`,  then add `_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH` in `C/C++ > Preprocessor > Preprocessor Definitions`.
+- In the `Build` menu, select `Batch Build...`.
+- Select all projects in `x64` version and click on `build`.
+
+Copy `lib` and `include` folders from F:\Projects\cppunit\` to `C:\Program Files (x86)\cppunit`.
+
+</details>

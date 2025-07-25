@@ -71,7 +71,7 @@ if [ -n "$TEAM_IDENTIFIER" ] && [ -n "$SIGN_IDENTITY" ]; then
 	CMAKE_PARAMS+=(-DSOCKETAPI_TEAM_IDENTIFIER_PREFIX="$TEAM_IDENTIFIER.")
 fi
 
-build_type="Release"
+build_type="Release" # If this change, you must also change the path in the `execute test` inside the macos.yml gh action file
 
 bash infomaniak-build-tools/conan/build_dependencies.sh "$build_type" "--output-dir=$conan_folder"
 

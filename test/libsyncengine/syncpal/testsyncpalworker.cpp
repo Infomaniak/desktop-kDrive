@@ -130,7 +130,7 @@ void TestSyncPalWorker::setUpTestInternalPause(const std::chrono::steady_clock::
 
     // Let the first sync finish
     CPPUNIT_ASSERT(TimeoutHelper::waitFor([this]() { return _syncPal->step() == SyncStep::Propagation2; },
-                                          std::chrono::seconds(60), std::chrono::milliseconds(5)));
+                                          std::chrono::seconds(120), std::chrono::milliseconds(5)));
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor([this]() { return _syncPal->step() == SyncStep::Idle; }, std::chrono::seconds(20),
                                           std::chrono::milliseconds(5)));

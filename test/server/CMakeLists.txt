@@ -6,6 +6,7 @@ endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Svg)
 find_package(Poco 1.13.3 REQUIRED XML Net)
+find_package(cppunit REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 
@@ -89,7 +90,6 @@ if(APPLE)
 endif()
 
 if(WIN32)
-    include_directories("C:/Program Files (x86)/cppunit/include")
     include_directories("C:/Program Files (x86)/Sentry-Native/include")
     include_directories("C:/Program Files (x86)/libzip/include")
 else()
@@ -122,20 +122,6 @@ if(APPLE)
     target_link_libraries(${testserver_NAME} ${SERVICE_MANAGEMENT_LIBRARY})
 endif()
 
-if(WIN32)
-    target_link_libraries(${testserver_NAME}
-            debug
-            "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"
-            optimized
-            "C:/Program Files (x86)/cppunit/lib/cppunit_dll.lib")
-elseif(APPLE)
-    target_link_libraries(${testserver_NAME}
-            "/usr/local/lib/libcppunit.dylib")
-else()
-    target_link_libraries(${testserver_NAME}
-            "/usr/local/lib/libcppunit.so")
-endif()
-
 if(APPLE)
     target_link_libraries(${testserver_NAME}
         "${libcommonserver_NAME}_vfs_mac"
@@ -151,6 +137,21 @@ if(UNIX AND NOT APPLE)
     pkg_check_modules(LIBSECRET IMPORTED_TARGET libsecret-1)
     target_link_libraries(${testserver_NAME} PkgConfig::LIBSECRET)
 endif()
+
+include(ConanGetLibDirs)
+get_include_and_library_dirs("cppunit" "cppunit")
+include_directories("${_cppunit_INCLUDE_DIRS}")
+if(APPLE)
+    set(lib_prefix "lib")
+    set(lib_suffix ".dylib")
+elseif(WIN32)
+    set(lib_prefix "")
+    set(lib_suffix ".lib")
+else()
+    set(lib_prefix "lib")
+    set(lib_suffix ".so")
+endif()
+target_link_libraries(${testserver_NAME} "${_cppunit_LIB_DIRS}/${lib_prefix}cppunit${lib_suffix}")
 
 # Install
 if(APPLE)

@@ -41,7 +41,7 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture, public TestBas
         CPPUNIT_TEST(testLnkFileAlreadySynchronized);
         CPPUNIT_TEST(testDifferentEncoding_NFC_NFD);
         CPPUNIT_TEST(testDifferentEncoding_NFD_NFC);
-        CPPUNIT_TEST(testDifferentEncoding_NFD_NFD);
+        CPPUNIT_TEST(testDifferentEncoding_NFD_NFD); // TODO COMMENT OTHERS
         CPPUNIT_TEST(testDifferentEncoding_NFC_NFC);
         CPPUNIT_TEST(testCreateDuplicateNamesWithDistinctEncodings);
         CPPUNIT_TEST(testDeletionOfNestedFolders);
