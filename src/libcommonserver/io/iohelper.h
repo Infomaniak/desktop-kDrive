@@ -428,6 +428,7 @@ struct IoHelper {
          \return true if no unexpected error occurred, false otherwise.
          */
         static bool getRights(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError) noexcept;
+        static IoError getRights(const SyncPath &path, bool &read, bool &write, bool &exec) noexcept;
 
         //! Set the rights of the item indicated by `path`.
         /*!
@@ -439,6 +440,10 @@ struct IoHelper {
          \return true if no unexpected error occurred, false otherwise.
         */
         static bool setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
+        static IoError setRights(const SyncPath &path, bool read, bool write, bool exec) noexcept;
+
+        static IoError setReadOnly(const SyncPath &path);
+        static IoError unsetReadOnly(const SyncPath &path);
 
         /**
          * @brief Set the dates using native API.
@@ -504,7 +509,7 @@ struct IoHelper {
         static bool _setTargetType(ItemType &itemType) noexcept;
         static bool _checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError &ioError) noexcept;
 
-        static bool _setRightsStd(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
+        static IoError _setRightsStd(const SyncPath &path, bool read, bool write, bool exec) noexcept;
 
 #if defined(KD_WINDOWS)
         static bool _setRightsWindowsApiInheritance; // For windows tests only

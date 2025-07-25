@@ -1009,4 +1009,7 @@ bool IoHelper::getShortPathName(const SyncPath &path, SyncPath &shortPathName, I
     return true;
 }
 
+IoError IoHelper::setReadOnly(const SyncPath &path) {}
+IoError IoHelper::unsetReadOnly(const SyncPath &path) {}
+
 } // namespace KDC
