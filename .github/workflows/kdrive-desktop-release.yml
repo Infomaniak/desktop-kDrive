@@ -24,7 +24,6 @@ env:
   QT_QPA_PLATFORM: offscreen
 
 jobs:
-
   get-version:
     runs-on: [ self-hosted ]
     outputs:
@@ -52,6 +51,7 @@ jobs:
             core.info(`kDrive version is ${full_version}`);
             core.summary.addHeading('kDrive Desktop Version', 1);
             core.summary.addHeading(`${full_version}`, 3).write();
+
 # Check translation files
   check-translations:
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui ]
@@ -134,8 +134,6 @@ jobs:
         with:
           release_build: true
       
-          release_build: true    
-
   build-MacOS:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
     steps:

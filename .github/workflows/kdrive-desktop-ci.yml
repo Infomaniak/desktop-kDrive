@@ -37,7 +37,6 @@ jobs:
           virtual_cert: ${{ secrets.WINDOWS_VIRTUAL_CERT }}
           virtual_cert_pass: ${{ secrets.WINDOWS_VIRTUAL_CERT_PASSWORD }}
     
-
   build-Linux:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     steps:
