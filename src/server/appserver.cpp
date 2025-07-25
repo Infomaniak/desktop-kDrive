@@ -376,8 +376,6 @@ void AppServer::init() {
         return;
     }
 
-    sentry::Handler::captureMessage(sentry::Level::Info, "kDrive started", "kDrive started");
-
     // Start syncs
     QTimer::singleShot(0, [=, this]() { startSyncsAndRetryOnError(); });
 
@@ -1989,7 +1987,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UTILITY_DISPLAY_CLIENT_REPORT: {
-            using namespace std::chrono;
             if (_clientManuallyRestarted) {
                 // If the client initially started by the server never sends the UTILITY_DISPLAY_CLIENT_REPORT,
                 // we consider the client's startup aborted, and the user was forced to manually start the client again.
@@ -1997,8 +1994,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     sentry::pTraces::basic::AppStart().stop(sentry::PTraceStatus::Aborted);
                     _appStartPTraceStopped = true;
                 }
-                sentry::Handler::captureMessage(sentry::Level::Info, "kDrive client restarted by user",
-                                                "A user has restarted the kDrive client");
             }
 
             if (!_appStartPTraceStopped) {
