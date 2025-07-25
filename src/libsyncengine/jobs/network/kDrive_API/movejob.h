@@ -18,27 +18,30 @@
 
 #pragma once
 
-#include "abstracttokennetworkjob.h"
-#include "../networkjobsparams.h"
+#include "libcommon/utility/types.h"
+#include "jobs/network/abstracttokennetworkjob.h"
+#include "libcommonserver/vfs/vfs.h"
 
 namespace KDC {
 
-class DeleteJob : public AbstractTokenNetworkJob {
+class MoveJob : public AbstractTokenNetworkJob {
     public:
-        DeleteJob(int driveDbId, const NodeId &remoteItemId, const NodeId &localItemId, const SyncPath &absoluteLocalFilepath,
-                  NodeType nodeType);
-        DeleteJob(int driveDbId, const NodeId &remoteItemId); // To be used in tests only.
-        virtual bool canRun() override;
+        MoveJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &destFilepath, const NodeId &fileId,
+                const NodeId &destDirId, const SyncName &name = Str(""));
+        ~MoveJob() override;
+
+        bool canRun() override;
 
     private:
-        virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &, bool &) override {}
-        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
+        std::string getSpecificUrl() override;
+        void setQueryParameters(Poco::URI &uri, bool &canceled) override;
+        ExitInfo setData() override;
 
-        const NodeId _remoteItemId;
-        const NodeId _localItemId;
-        SyncPath _absoluteLocalFilepath;
-        NodeType _nodeType;
+        SyncPath _destFilepath;
+        std::string _fileId;
+        std::string _destDirId;
+        SyncName _name;
+        const std::shared_ptr<Vfs> _vfs;
 };
 
 } // namespace KDC

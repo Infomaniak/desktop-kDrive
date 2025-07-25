@@ -17,10 +17,10 @@
  */
 
 #include "testintegration.h"
-#include "jobs/network/API_v2/createdirjob.h"
-#include "jobs/network/API_v2/deletejob.h"
-#include "jobs/network/API_v2/renamejob.h"
-#include "jobs/network/API_v2/upload/uploadjob.h"
+#include "jobs/network/kDrive_API/createdirjob.h"
+#include "jobs/network/kDrive_API/deletejob.h"
+#include "jobs/network/kDrive_API/renamejob.h"
+#include "jobs/network/kDrive_API/upload/uploadjob.h"
 #include "propagation/executor/filerescuer.h"
 #include "test_utility/testhelpers.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"

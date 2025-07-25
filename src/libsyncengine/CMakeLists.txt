@@ -33,45 +33,45 @@ set(syncengine_SRCS
     jobs/network/login/gettokenjob.h jobs/network/login/gettokenjob.cpp
     jobs/network/login/refreshtokenjob.h jobs/network/login/refreshtokenjob.cpp
     jobs/network/login/gettokenfromapppasswordjob.h jobs/network/login/gettokenfromapppasswordjob.cpp
-    jobs/network/getappversionjob.h jobs/network/getappversionjob.cpp
+    jobs/network/infomaniak_API/getappversionjob.h jobs/network/infomaniak_API/getappversionjob.cpp
     jobs/network/directdownloadjob.h jobs/network/directdownloadjob.cpp
     ### API v2 jobs
-    jobs/network/API_v2/abstracttokennetworkjob.h jobs/network/API_v2/abstracttokennetworkjob.cpp
-    jobs/network/API_v2/getrootfilelistjob.h jobs/network/API_v2/getrootfilelistjob.cpp
-    jobs/network/API_v2/getfilelistjob.h jobs/network/API_v2/getfilelistjob.cpp
-    jobs/network/API_v2/initfilelistwithcursorjob.h jobs/network/API_v2/initfilelistwithcursorjob.cpp
-    jobs/network/API_v2/listing/abstractlistingjob.h jobs/network/API_v2/listing/abstractlistingjob.cpp
-    jobs/network/API_v2/listing/csvfullfilelistwithcursorjob.h jobs/network/API_v2/listing/csvfullfilelistwithcursorjob.cpp
-    jobs/network/API_v2/listing/snapshotitemhandler.h jobs/network/API_v2/listing/snapshotitemhandler.cpp
-    jobs/network/API_v2/listing/continuefilelistwithcursorjob.h jobs/network/API_v2/listing/continuefilelistwithcursorjob.cpp
-    jobs/network/API_v2/listing/longpolljob.h jobs/network/API_v2/listing/longpolljob.cpp
-    jobs/network/API_v2/getfileinfojob.h jobs/network/API_v2/getfileinfojob.cpp
-    jobs/network/API_v2/deletejob.h jobs/network/API_v2/deletejob.cpp
-    jobs/network/API_v2/createdirjob.h jobs/network/API_v2/createdirjob.cpp
-    jobs/network/API_v2/movejob.h jobs/network/API_v2/movejob.cpp
-    jobs/network/API_v2/renamejob.h jobs/network/API_v2/renamejob.cpp
-    jobs/network/API_v2/duplicatejob.h jobs/network/API_v2/duplicatejob.cpp
-    jobs/network/API_v2/copytodirectoryjob.h jobs/network/API_v2/copytodirectoryjob.cpp
-    jobs/network/API_v2/downloadjob.h jobs/network/API_v2/downloadjob.cpp
-    jobs/network/API_v2/upload/upload_session/abstractuploadsession.h jobs/network/API_v2/upload/upload_session/abstractuploadsession.cpp
-    jobs/network/API_v2/upload/upload_session/driveuploadsession.h jobs/network/API_v2/upload/upload_session/driveuploadsession.cpp
-    jobs/network/API_v2/upload/upload_session/loguploadsession.h jobs/network/API_v2/upload/upload_session/loguploadsession.cpp
-    jobs/network/API_v2/upload/upload_session/abstractuploadsessionjob.h jobs/network/API_v2/upload/upload_session/abstractuploadsessionjob.cpp
-    jobs/network/API_v2/upload/upload_session/uploadsessionstartjob.h jobs/network/API_v2/upload/upload_session/uploadsessionstartjob.cpp
-    jobs/network/API_v2/upload/upload_session/uploadsessionchunkjob.h jobs/network/API_v2/upload/upload_session/uploadsessionchunkjob.cpp
-    jobs/network/API_v2/upload/upload_session/uploadsessionfinishjob.h jobs/network/API_v2/upload/upload_session/uploadsessionfinishjob.cpp
-    jobs/network/API_v2/upload/upload_session/uploadsessioncanceljob.h jobs/network/API_v2/upload/upload_session/uploadsessioncanceljob.cpp
-    jobs/network/API_v2/upload/uploadjob.h jobs/network/API_v2/upload/uploadjob.cpp
-    jobs/network/API_v2/upload/loguploadjob.h jobs/network/API_v2/upload/loguploadjob.cpp
-    jobs/network/API_v2/upload/uploadjobreplyhandler.h jobs/network/API_v2/upload/uploadjobreplyhandler.cpp
-    jobs/network/API_v2/getinfodrivejob.h jobs/network/API_v2/getinfodrivejob.cpp
-    jobs/network/API_v2/getinfodriveuserjob.h jobs/network/API_v2/getinfodriveuserjob.cpp
-    jobs/network/API_v2/getdriveslistjob.h jobs/network/API_v2/getdriveslistjob.cpp
-    jobs/network/API_v2/getinfouserjob.h jobs/network/API_v2/getinfouserjob.cpp
-    jobs/network/API_v2/getthumbnailjob.h jobs/network/API_v2/getthumbnailjob.cpp
-    jobs/network/API_v2/postfilelinkjob.h jobs/network/API_v2/postfilelinkjob.cpp
-    jobs/network/API_v2/getfilelinkjob.h jobs/network/API_v2/getfilelinkjob.cpp
-    jobs/network/API_v2/getsizejob.h jobs/network/API_v2/getsizejob.cpp
+    jobs/network/abstracttokennetworkjob.h jobs/network/abstracttokennetworkjob.cpp
+    jobs/network/kDrive_API/getrootfilelistjob.h jobs/network/kDrive_API/getrootfilelistjob.cpp
+    jobs/network/kDrive_API/getfilelistjob.h jobs/network/kDrive_API/getfilelistjob.cpp
+    jobs/network/kDrive_API/initfilelistwithcursorjob.h jobs/network/kDrive_API/initfilelistwithcursorjob.cpp
+    jobs/network/kDrive_API/listing/abstractlistingjob.h jobs/network/kDrive_API/listing/abstractlistingjob.cpp
+    jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.cpp
+    jobs/network/kDrive_API/listing/snapshotitemhandler.h jobs/network/kDrive_API/listing/snapshotitemhandler.cpp
+    jobs/network/kDrive_API/listing/continuefilelistwithcursorjob.h jobs/network/kDrive_API/listing/continuefilelistwithcursorjob.cpp
+    jobs/network/kDrive_API/listing/longpolljob.h jobs/network/kDrive_API/listing/longpolljob.cpp
+    jobs/network/kDrive_API/getfileinfojob.h jobs/network/kDrive_API/getfileinfojob.cpp
+    jobs/network/kDrive_API/deletejob.h jobs/network/kDrive_API/deletejob.cpp
+    jobs/network/kDrive_API/createdirjob.h jobs/network/kDrive_API/createdirjob.cpp
+    jobs/network/kDrive_API/movejob.h jobs/network/kDrive_API/movejob.cpp
+    jobs/network/kDrive_API/renamejob.h jobs/network/kDrive_API/renamejob.cpp
+    jobs/network/kDrive_API/duplicatejob.h jobs/network/kDrive_API/duplicatejob.cpp
+    jobs/network/kDrive_API/copytodirectoryjob.h jobs/network/kDrive_API/copytodirectoryjob.cpp
+    jobs/network/kDrive_API/downloadjob.h jobs/network/kDrive_API/downloadjob.cpp
+    jobs/network/kDrive_API/upload/upload_session/abstractuploadsession.h jobs/network/kDrive_API/upload/upload_session/abstractuploadsession.cpp
+    jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h jobs/network/kDrive_API/upload/upload_session/driveuploadsession.cpp
+    jobs/network/kDrive_API/upload/upload_session/loguploadsession.h jobs/network/kDrive_API/upload/upload_session/loguploadsession.cpp
+    jobs/network/kDrive_API/upload/upload_session/abstractuploadsessionjob.h jobs/network/kDrive_API/upload/upload_session/abstractuploadsessionjob.cpp
+    jobs/network/kDrive_API/upload/upload_session/uploadsessionstartjob.h jobs/network/kDrive_API/upload/upload_session/uploadsessionstartjob.cpp
+    jobs/network/kDrive_API/upload/upload_session/uploadsessionchunkjob.h jobs/network/kDrive_API/upload/upload_session/uploadsessionchunkjob.cpp
+    jobs/network/kDrive_API/upload/upload_session/uploadsessionfinishjob.h jobs/network/kDrive_API/upload/upload_session/uploadsessionfinishjob.cpp
+    jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.cpp
+    jobs/network/kDrive_API/upload/uploadjob.h jobs/network/kDrive_API/upload/uploadjob.cpp
+    jobs/network/kDrive_API/upload/loguploadjob.h jobs/network/kDrive_API/upload/loguploadjob.cpp
+    jobs/network/kDrive_API/upload/uploadjobreplyhandler.h jobs/network/kDrive_API/upload/uploadjobreplyhandler.cpp
+    jobs/network/kDrive_API/getinfodrivejob.h jobs/network/kDrive_API/getinfodrivejob.cpp
+    jobs/network/kDrive_API/getinfodriveuserjob.h jobs/network/kDrive_API/getinfodriveuserjob.cpp
+    jobs/network/kDrive_API/getdriveslistjob.h jobs/network/kDrive_API/getdriveslistjob.cpp
+    jobs/network/infomaniak_API/getinfouserjob.h jobs/network/infomaniak_API/getinfouserjob.cpp
+    jobs/network/kDrive_API/getthumbnailjob.h jobs/network/kDrive_API/getthumbnailjob.cpp
+    jobs/network/kDrive_API/postfilelinkjob.h jobs/network/kDrive_API/postfilelinkjob.cpp
+    jobs/network/kDrive_API/getfilelinkjob.h jobs/network/kDrive_API/getfilelinkjob.cpp
+    jobs/network/kDrive_API/getsizejob.h jobs/network/kDrive_API/getsizejob.cpp
     ## Local jobs
     jobs/local/localmovejob.h jobs/local/localmovejob.cpp
     jobs/local/localcopyjob.h jobs/local/localcopyjob.cpp

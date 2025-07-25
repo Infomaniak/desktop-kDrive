@@ -52,8 +52,8 @@
 #include <windows.h>
 #endif
 
-#include "jobs/network/API_v2/upload/loguploadjob.h"
-#include "jobs/network/API_v2/upload/upload_session/uploadsessioncanceljob.h"
+#include "jobs/network/kDrive_API/upload/loguploadjob.h"
+#include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
 #include "updater/updatemanager.h"
 
 #include <QDesktopServices>
