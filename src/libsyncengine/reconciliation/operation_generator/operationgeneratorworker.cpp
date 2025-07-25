@@ -157,7 +157,7 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
             LOGW_SYNCPAL_DEBUG(_logger, L"Create operation "
                                                 << op->id() << L" to be propagated on " << op->targetSide()
                                                 << L" replica for item " << Utility::formatSyncPath(currentNode->getPath())
-                                                << L" (" << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1")
+                                                << L" (" << CommonUtility::s2ws(currentNode->id() ? currentNode->id().value() : "-1")
                                                 << L")");
         }
 
@@ -212,7 +212,7 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
             LOGW_SYNCPAL_DEBUG(_logger, L"Edit operation " << op->id() << L" to be propagated on " << op->targetSide()
                                                            << L" replica for item "
                                                            << Utility::formatSyncPath(currentNode->getPath()) << L"(ID: "
-                                                           << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1")
+                                                           << CommonUtility::s2ws(currentNode->id() ? currentNode->id().value() : "-1")
                                                            << L")");
         }
 
@@ -267,7 +267,7 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
                                                 << op->id() << L" to be propagated on " << op->targetSide() << L" replica from "
                                                 << Utility::formatSyncPath(currentNode->moveOriginInfos().path()) << L" to "
                                                 << Utility::formatSyncPath(currentNode->getPath()) << L" (ID: "
-                                                << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1") << L")");
+                                                << CommonUtility::s2ws(currentNode->id() ? currentNode->id().value() : "-1") << L")");
         }
     }
 }
@@ -316,7 +316,7 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
             LOGW_SYNCPAL_DEBUG(_logger, L"Delete operation "
                                                 << op->id() << L" to be propagated on " << op->targetSide()
                                                 << L" replica for item " << Utility::formatSyncPath(currentNode->getPath())
-                                                << L" (" << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1")
+                                                << L" (" << CommonUtility::s2ws(currentNode->id() ? currentNode->id().value() : "-1")
                                                 << L")");
         }
     }

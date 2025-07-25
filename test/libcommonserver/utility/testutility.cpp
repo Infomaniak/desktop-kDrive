@@ -72,29 +72,6 @@ void TestUtility::testIsCreationDateValid(void) {
                            Utility::isCreationDateValid(futureTimestamp));
 }
 
-
-void TestUtility::testS2ws() {
-    CPPUNIT_ASSERT(Utility::s2ws("abcd") == L"abcd");
-    CPPUNIT_ASSERT(Utility::s2ws("éèêà") == L"éèêà");
-}
-
-void TestUtility::testWs2s() {
-    CPPUNIT_ASSERT(Utility::ws2s(L"abcd") == "abcd");
-    CPPUNIT_ASSERT(Utility::ws2s(L"éèêà") == "éèêà");
-}
-
-void TestUtility::testLtrim() {
-    CPPUNIT_ASSERT(Utility::ltrim("    ab    cd    ") == "ab    cd    ");
-}
-
-void TestUtility::testRtrim() {
-    CPPUNIT_ASSERT(Utility::rtrim("    ab    cd    ") == "    ab    cd");
-}
-
-void TestUtility::testTrim() {
-    CPPUNIT_ASSERT(Utility::trim("    ab    cd    ") == "ab    cd");
-}
-
 void TestUtility::testMsSleep() {
     auto start = std::chrono::high_resolution_clock::now();
     Utility::msleep(1000);
@@ -121,39 +98,6 @@ void TestUtility::testV2ws() {
 
     dbtype stringValue("hello");
     CPPUNIT_ASSERT(Utility::v2ws(stringValue) == L"hello");
-}
-
-void TestUtility::testFileSystemName() {
-#if defined(KD_MACOS)
-    CPPUNIT_ASSERT(Utility::fileSystemName("/") == "apfs");
-    CPPUNIT_ASSERT(Utility::fileSystemName("/bin") == "apfs");
-#elif defined(KD_WINDOWS)
-    CPPUNIT_ASSERT(Utility::fileSystemName(std::filesystem::temp_directory_path()) == "NTFS");
-    // CPPUNIT_ASSERT(Utility::fileSystemName(R"(C:\)") == "NTFS");
-    // CPPUNIT_ASSERT(Utility::fileSystemName(R"(C:\windows)") == "NTFS");
-#endif
-}
-
-void TestUtility::testStartsWith() {
-    CPPUNIT_ASSERT(Utility::startsWith(SyncName(Str("abcdefg")), SyncName(Str("abcd"))));
-    CPPUNIT_ASSERT(!Utility::startsWith(SyncName(Str("abcdefg")), SyncName(Str("ABCD"))));
-}
-
-void TestUtility::testStartsWithInsensitive() {
-    CPPUNIT_ASSERT(Utility::startsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("aBcD"))));
-    CPPUNIT_ASSERT(Utility::startsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("ABCD"))));
-}
-
-void TestUtility::testEndsWith() {
-    CPPUNIT_ASSERT(Utility::endsWith(SyncName(Str("abcdefg")), SyncName(Str("defg"))));
-    CPPUNIT_ASSERT(!Utility::endsWith(SyncName(Str("abcdefg")), SyncName(Str("abc"))));
-    CPPUNIT_ASSERT(!Utility::endsWith(SyncName(Str("abcdefg")), SyncName(Str("dEfG"))));
-}
-
-void TestUtility::testEndsWithInsensitive() {
-    CPPUNIT_ASSERT(Utility::endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("defg"))));
-    CPPUNIT_ASSERT(!Utility::endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("abc"))));
-    CPPUNIT_ASSERT(Utility::endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("dEfG"))));
 }
 
 void TestUtility::testIsEqualUpToCaseAndEnc(void) {
@@ -291,17 +235,6 @@ void TestUtility::testXxHash() {
     CPPUNIT_ASSERT(contentHash == "5dcc477e35136516");
 }
 
-void TestUtility::testToUpper() {
-    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), Utility::toUpper("abc"));
-    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), Utility::toUpper("ABC"));
-    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), Utility::toUpper("AbC"));
-    CPPUNIT_ASSERT_EQUAL(std::string(""), Utility::toUpper(""));
-    CPPUNIT_ASSERT_EQUAL(std::string("123"), Utility::toUpper("123"));
-
-    CPPUNIT_ASSERT_EQUAL(std::string("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"),
-                         Utility::toUpper("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"));
-}
-
 void TestUtility::testErrId() {
     CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), errId());
 }
@@ -398,7 +331,7 @@ void TestUtility::testFormatStdError() {
                            result.find(L"error: 0") != std::wstring::npos || result.find(L"code: 0") != std::wstring::npos);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", (result.length() - path.native().length()) > 20);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.",
-                           result.find(Utility::s2ws(path.string())) != std::wstring::npos);
+                           result.find(CommonUtility::s2ws(path.string())) != std::wstring::npos);
 }
 
 void TestUtility::testFormatIoError() {
@@ -411,7 +344,7 @@ void TestUtility::testFormatIoError() {
         CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.",
                                (result.length() - path.native().length()) > 20);
         CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.",
-                               result.find(Utility::s2ws(path.string())) != std::wstring::npos);
+                               result.find(CommonUtility::s2ws(path.string())) != std::wstring::npos);
     }
 
     {
@@ -439,7 +372,7 @@ void TestUtility::testFormatPath() {
 
 void TestUtility::testFormatSyncPath() {
     const SyncPath path = "A/AA";
-    CPPUNIT_ASSERT(Utility::formatSyncPath(path).find(Utility::s2ws(path.string())) != std::wstring::npos);
+    CPPUNIT_ASSERT(Utility::formatSyncPath(path).find(CommonUtility::s2ws(path.string())) != std::wstring::npos);
 }
 
 void TestUtility::testFormatRequest() {
@@ -504,22 +437,6 @@ bool TestUtility::checkNfcAndNfdNamesEqual(const SyncName &name, bool &equal) {
     }
     equal = (nfcNormalized == nfdNormalized);
     return true;
-}
-
-void TestUtility::testIsSameOrParentPath() {
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("", "a"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a", "a/b"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a", "a/b/c"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b", "a/b/c"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b/c", "a/b/c1"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b/c1", "a/b/c"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("/a/b/c", "a/b/c"));
-
-    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("", ""));
-    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a/b/c"));
-    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a", ""));
-    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a/b"));
-    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a"));
 }
 
 void TestUtility::testUserName() {

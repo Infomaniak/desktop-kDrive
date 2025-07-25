@@ -19,7 +19,7 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/iohelper_win.h"
 
-#include "libcommonserver/utility/utility.h" // Path2WStr
+#include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/utility.h"
 
 #include "log/log.h"
@@ -257,10 +257,8 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError 
                                            FileIdFullDirectoryInformation, true, &fn, TRUE);
 
     DWORD dwError = GetLastError();
-    const bool isNtfs = Utility::isNtfs(path);
-    if ((isNtfs && !NT_SUCCESS(status)) ||
-        (!isNtfs && dwError != 0)) { // On FAT32 file system, NT_SUCCESS will return false even if it is a success, therefore we
-                                     // also check GetLastError
+    // On FAT32 file system, NT_SUCCESS will return false even if it is a success, therefore we also check GetLastError
+    if ((CommonUtility::isNTFS(path) && !NT_SUCCESS(status)) || (CommonUtility::isFAT(path) && dwError != 0)) {
         CloseHandle(hParent);
 
         if (!NT_SUCCESS(status)) {

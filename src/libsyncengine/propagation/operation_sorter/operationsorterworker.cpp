@@ -381,7 +381,7 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
         normalizedPath = path;
     }
 
-    if (!Utility::isDescendantOrEqual(normalizedPath, node->moveOriginInfos().normalizedPath())) {
+    if (!CommonUtility::isDescendantOrEqual(normalizedPath, node->moveOriginInfos().normalizedPath())) {
         return std::nullopt; // firstOp is possible
     }
 
@@ -389,7 +389,7 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     const auto correspondingSourceNode = correspondingNodeInOtherTree(node);
     if (correspondingDestinationParentNode == nullptr || correspondingSourceNode == nullptr) {
         LOGW_SYNCPAL_ERROR(_logger, L"Missing corresponding nodes for node " << Utility::formatSyncName(node->name()) << L" ("
-                                                                             << Utility::s2ws(*node->id()) << L")");
+                                                                             << CommonUtility::s2ws(*node->id()) << L")");
         return std::nullopt; // Should never happen
     }
 
