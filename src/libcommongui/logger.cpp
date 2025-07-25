@@ -215,7 +215,7 @@ void Logger::setLogDebug(bool debug) {
 }
 
 QString Logger::temporaryFolderLogDirPath() const {
-    QString dirName = APPLICATION_SHORTNAME + QString("-logdir");
+    QString dirName = APPLICATION_NAME + QString("-logdir");
     return QDir::temp().filePath(dirName);
 }
 

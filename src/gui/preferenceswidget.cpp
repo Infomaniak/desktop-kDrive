@@ -28,7 +28,6 @@
 #include "aboutdialog.h"
 #include "custommessagebox.h"
 #include "guiutility.h"
-#include "common/utility.h"
 #include "languagechangefilter.h"
 #include "config.h"
 #include "litesyncdialog.h"
@@ -215,7 +214,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
 
     // Dark theme activation
     CustomSwitch *darkThemeSwitch = nullptr;
-    if (!OldUtility::isMac()) {
+    if (!CommonUtility::isMac()) {
         QBoxLayout *darkThemeBox = generalBloc->addLayout(QBoxLayout::Direction::LeftToRight);
 
         _darkThemeLabel = new QLabel();
@@ -329,7 +328,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
 #ifdef Q_OS_WIN
     // Drive shortcuts
     CustomSwitch *shortcutsSwitch = nullptr;
-    if (OldUtility::isWindows()) {
+    if (CommonUtility::isWindows()) {
         QBoxLayout *shortcutsBox = generalBloc->addLayout(QBoxLayout::Direction::LeftToRight);
 
         _shortcutsLabel = new QLabel(this);
