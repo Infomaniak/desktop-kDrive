@@ -20,7 +20,6 @@
 #include "menuitemwidget.h"
 #include "guiutility.h"
 #include "languagechangefilter.h"
-#include "common/utility.h"
 #include "clientgui.h"
 
 #include <QVBoxLayout>

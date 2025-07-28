@@ -1,5 +1,11 @@
-name: Build Linux
-description: 'Build Linux app'
+name: Build AMD64 Linux
+description: 'Build AMD64 Version of the Linux app'
+
+inputs:
+  release_build:
+    description: 'If true, run the release build script'
+    required: false
+    default: 'false'
 
 runs:
     using: "composite"
@@ -8,18 +14,75 @@ runs:
         run : rm -rf /tmp/kDrive-logdir/*
         shell: bash
 
-      - name: Grant building script execute permission
-        run : chmod +x ./infomaniak-build-tools/linux/build-ci-amd64.sh
-        shell: bash
-
-
-      - name: Build kDrive desktop
+      - name: Run the build script
         id: build
-        run: ./infomaniak-build-tools/linux/build-ci-amd64.sh -u -t release
+        run: |
+          if [[ "${{ inputs.release_build }}" == "true" ]]; then
+            SCRIPT="${{ github.workspace }}/infomaniak-build-tools/linux/build-release-amd64.sh"
+            ARGS="-u"
+          else
+            SCRIPT="${{ github.workspace }}/infomaniak-build-tools/linux/build-ci-amd64.sh"
+            ARGS="-u -t release"
+          fi
+          
+          /usr/bin/env bash "$SCRIPT" $ARGS
         shell: bash
+
+      - name: Upload app AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-release-artifacts-appimage-amd64
+          path: ${{ github.workspace }}/build-linux/install/kDrive-*-amd64.AppImage # kDrive-<full_version>-amd64.AppImage
+          retention-days: 1
+        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+
+      - name: Download sentry-cli for Linux
+        if: ${{ steps.build.outcome == 'success' &&  inputs.release_build == 'true' }}
+        run: |
+          curl -L https://github.com/getsentry/sentry-cli/releases/download/2.46.0/sentry-cli-Linux-x86_64 -o sentry-cli \
+          && chmod +x ./sentry-cli
+        shell: bash
+
+      - name: Create sentry server artifacts
+        if: ${{ steps.build.outcome == 'success' &&  inputs.release_build == 'true' }}
+        run: |
+          DBG_FILE="${{ github.workspace }}/build-linux/kDrive.dbg"
+          ./sentry-cli debug-files bundle-sources "$DBG_FILE"
+          mkdir "${{ github.workspace }}/build-linux/sentry-server-artifacts"
+          mv "${{ github.workspace }}/build-linux/kDrive.src.zip" "${{ github.workspace }}/build-linux/sentry-server-artifacts"
+          mv "$DBG_FILE" "${{ github.workspace }}/build-linux/sentry-server-artifacts"
+        shell: bash
+
+      - name: Create sentry client artifacts
+        if: ${{ steps.build.outcome == 'success' &&  inputs.release_build == 'true' }}
+        run: |
+          DBG_FILE="${{ github.workspace }}/build-linux/kDrive_client.dbg"
+          ./sentry-cli debug-files bundle-sources "$DBG_FILE"
+          mkdir "${{ github.workspace }}/build-linux/sentry-client-artifacts"
+          mv "${{ github.workspace }}/build-linux/kDrive_client.src.zip" "${{ github.workspace }}/build-linux/sentry-client-artifacts"
+          mv "$DBG_FILE" "${{ github.workspace }}/build-linux/sentry-client-artifacts"
+        shell: bash
+
+      - name: Upload sentry server artifacts
+        if: ${{ steps.build.outcome == 'success' &&  inputs.release_build == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-release-artifacts-server-debug-amd64
+          path: ${{ github.workspace }}/build-linux/sentry-server-artifacts
+          retention-days: 1
+          compression-level: 0
+
+      - name: Upload sentry client artifacts
+        if: ${{ steps.build.outcome == 'success' &&  inputs.release_build == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-release-artifacts-client-debug-amd64
+          path: ${{ github.workspace }}/build-linux/sentry-client-artifacts
+          retention-days: 1
+          compression-level: 0
 
       - name: Fetch dependencies
-        run: |
+        run: | 
           mkdir dependencies
           cp ${{ github.workspace }}/build-linux/build/bin/sync-exclude.lst ./dependencies/
           cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Widgets.* ./dependencies/ 

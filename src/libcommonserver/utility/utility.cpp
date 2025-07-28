@@ -23,14 +23,6 @@
 #include "libcommonserver/io/iohelper.h"
 
 #if defined(KD_MACOS)
-#include "utility_mac.cpp"
-#elif defined(KD_LINUX)
-#include "utility_linux.cpp"
-#elif defined(KD_WINDOWS)
-#include "utility_win.cpp"
-#endif
-
-#if defined(KD_MACOS)
 #include <sys/statvfs.h>
 #include <sys/mount.h>
 #elif defined(KD_LINUX)
@@ -540,22 +532,6 @@ bool Utility::isStrictDescendant(const SyncPath &potentialDescendant, const Sync
     return isDescendantOrEqual(potentialDescendant, path);
 }
 
-bool Utility::moveItemToTrash(const SyncPath &itemPath) {
-    return moveItemToTrash_private(itemPath);
-}
-
-#if defined(KD_MACOS)
-bool Utility::preventSleeping(bool enable) {
-    return preventSleeping_private(enable);
-}
-#endif
-
-void Utility::restartFinderExtension() {
-#if defined(KD_MACOS)
-    restartFinderExtension_private();
-#endif
-}
-
 void Utility::str2hexstr(const std::string &str, std::string &hexstr, bool capital) {
     hexstr.resize(str.size() * 2);
     const char a = capital ? 'A' - 1 : 'a' - 1;
@@ -682,9 +658,32 @@ SyncName Utility::logFileNameWithTime() {
 std::string Utility::toUpper(const std::string &str) {
     std::string upperStr(str);
     // std::ranges::transform(str, upperStr.begin(), [](unsigned char c) { return std::toupper(c); });   // Needs gcc-11
-    std::transform(str.begin(), str.end(), upperStr.begin(), [](unsigned char c) { return std::toupper(c); });
+    std::transform(str.begin(), str.end(), upperStr.begin(), [](auto c) { return std::toupper(c); });
     return upperStr;
 }
+
+std::string Utility::toLower(const std::string &str) {
+    std::string lowerStr(str);
+    // std::ranges::transform(str, lowerStr.begin(), [](unsigned char c) { return std::tolower(c); });   // Needs gcc-11
+    std::transform(str.begin(), str.end(), lowerStr.begin(), [](auto c) { return std::tolower(c); });
+    return lowerStr;
+}
+
+#ifndef _WIN32
+std::wstring Utility::toUpper(const std::wstring &str) {
+    std::wstring upperStr(str);
+    // std::ranges::transform(str, upperStr.begin(), [](unsigned auto c) { return std::towupper(c); });   // Needs gcc-11
+    std::transform(str.begin(), str.end(), upperStr.begin(), [](auto c) { return std::towupper(c); });
+    return upperStr;
+}
+
+std::wstring Utility::toLower(const std::wstring &str) {
+    std::wstring lowerStr(str);
+    // std::ranges::transform(str, lowerStr.begin(), [](unsigned char c) { return std::tolower(c); });   // Needs gcc-11
+    std::transform(str.begin(), str.end(), lowerStr.begin(), [](auto c) { return std::towlower(c); });
+    return lowerStr;
+}
+#endif
 
 std::string Utility::_errId(const char *file, int line) {
     std::string err = toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" + std::to_string(line);
@@ -859,71 +858,12 @@ bool Utility::runDetachedProcess(std::wstring cmd) {
 
 #endif
 
-
-bool Utility::totalRamAvailable(uint64_t &ram, int &errorCode) {
-    if (totalRamAvailable_private(ram, errorCode)) {
-        return true;
-    }
-    // log errorCode;
-    return false;
-}
-
-bool Utility::ramCurrentlyUsed(uint64_t &ram, int &errorCode) {
-    if (ramCurrentlyUsed_private(ram, errorCode)) {
-        return true;
-    }
-    // log errorCode;
-    return false;
-}
-
-bool Utility::ramCurrentlyUsedByProcess(uint64_t &ram, int &errorCode) {
-    if (ramCurrentlyUsedByProcess_private(ram, errorCode)) {
-        return true;
-    }
-    // log errorCode;
-    return false;
-}
-
-
-bool Utility::cpuUsage(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint64_t &lastTotalSys, uint64_t &lastTotalIdle,
-                       double &percent) {
-#if defined(KD_LINUX)
-    return cpuUsage_private(lastTotalUser, lastTotalUserLow, lastTotalSys, lastTotalIdle, percent);
-#else
-    (void) (lastTotalUser);
-    (void) (lastTotalUserLow);
-    (void) (lastTotalSys);
-    (void) (lastTotalIdle);
-    (void) (percent);
-#endif
-    return false;
-}
-
-bool Utility::cpuUsage(uint64_t &previousTotalTicks, uint64_t &previousIdleTicks, double &percent) {
-#if defined(KD_MACOS)
-    return cpuUsage_private(previousTotalTicks, previousIdleTicks, percent);
-#else
-    (void) (previousTotalTicks);
-    (void) (previousIdleTicks);
-    (void) (percent);
-#endif
-    return false;
-}
-
-bool Utility::cpuUsageByProcess(double &percent) {
-    return cpuUsageByProcess_private(percent);
-}
-
 SyncPath Utility::commonDocumentsFolderName() {
     return Str2SyncName(COMMON_DOC_FOLDER);
 }
 
 SyncPath Utility::sharedFolderName() {
     return Str2SyncName(SHARED_FOLDER);
-}
-
-std::string Utility::userName() {
-    return userName_private();
 }
 
 } // namespace KDC

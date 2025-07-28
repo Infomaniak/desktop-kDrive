@@ -67,13 +67,13 @@ static const QList<QString> fontFiles = QList<QString>() << QString(":/client/re
 // static const QString defaultFontFamily("Suisse Int'l");
 
 AppClient::AppClient(int &argc, char **argv) :
-    SharedTools::QtSingleApplication(Theme::instance()->appClientName(), argc, argv) {
+    SharedTools::QtSingleApplication(QString::fromStdString(Theme::instance()->appClientName()), argc, argv) {
     _startedAt.start();
 
     setOrganizationDomain(QLatin1String(APPLICATION_REV_DOMAIN));
-    setApplicationName(_theme->appClientName());
+    setApplicationName(QString::fromStdString(_theme->appClientName()));
     setWindowIcon(_theme->applicationIcon());
-    setApplicationVersion(_theme->version());
+    setApplicationVersion(QString::fromStdString(_theme->version()));
     setStyle(new KDC::CustomProxyStyle);
 
     // Load fonts
@@ -595,10 +595,10 @@ void AppClient::setupLogging() {
     connect(logger, &KDC::Logger::showNotification, this, &AppClient::showNotification);
 
     qCInfo(lcAppClient) << QString::fromLatin1("################## %1 locale:[%2] ui_lang:[%3] version:[%4] os:[%5]")
-                                   .arg(_theme->appClientName())
+                                   .arg(QString::fromStdString(_theme->appClientName()))
                                    .arg(QLocale::system().name())
                                    .arg(property("ui_lang").toString())
-                                   .arg(_theme->version())
+                                   .arg(QString::fromStdString(_theme->version()))
                                    .arg(KDC::CommonUtility::platformName());
 }
 

@@ -46,7 +46,7 @@ jobs:
         with:
           submodules: recursive
       - name: Build Linux
-        uses: ./.github/actions/build_linux
+        uses: ./.github/actions/build_linux_amd
 
   build-MacOS:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
@@ -91,7 +91,7 @@ jobs:
       fail-fast: false
       matrix:
         test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
-    runs-on: [ self-hosted,  Linux, X64  ]
+    runs-on: [ self-hosted, Linux, X64 ]
     env:
       KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
       KDRIVE_SENTRY_ENVIRONMENT: "linux_ci_runner"

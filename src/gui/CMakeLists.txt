@@ -43,7 +43,6 @@ set(client_UI_SRCS
 
 set(client_SRCS
     ../libcommongui/commclient.h ../libcommongui/commclient.cpp
-    ../common/filesystembase.h ../common/filesystembase.cpp
     ../libcommongui/logger.h ../libcommongui/logger.cpp
     clientgui.h clientgui.cpp
     debugreporter.h debugreporter.cpp
