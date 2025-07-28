@@ -137,6 +137,10 @@ class QtConan(ConanFile):
             raise ConanInvalidConfiguration("To be able to use the 'envvars' login type, you must set the environment variable 'QT_INSTALLER_JWT_TOKEN' with your Qt account JWT token. See https://doc.qt.io/qt-6/get-and-install-qt-cli.html#providing-login-information")
 
     def validate(self):
+
+        if not self.version.startswith("6."):
+            raise ConanInvalidConfiguration("This recipe only supports Qt 6.x versions.")
+
         valid_operating_systems = ["Macos", "Linux", "Windows"]
         if self.settings.os not in valid_operating_systems:
             raise ConanInvalidConfiguration(f"Unsupported OS for Qt installation. Supported OS are: {', '.join(valid_operating_systems)}.")
