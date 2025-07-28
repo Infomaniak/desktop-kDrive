@@ -138,7 +138,6 @@ class QtConan(ConanFile):
             raise ConanInvalidConfiguration("To be able to use the 'envvars' login type, you must set the environment variable 'QT_INSTALLER_JWT_TOKEN' with your Qt account JWT token. See https://doc.qt.io/qt-6/get-and-install-qt-cli.html#providing-login-information")
 
     def validate(self):
-
         if not self.version.startswith("6."):
             raise ConanInvalidConfiguration("This recipe only supports Qt 6.x versions.")
 
@@ -185,13 +184,12 @@ class QtConan(ConanFile):
         import io
         output = io.StringIO()
         self.output.highlight("Mounting Qt installer DMG...")
-        mount_target = pjoin(self.source_folder, "mnt")
-        os.makedirs(mount_target, exist_ok=True)
+        mount_point = pjoin(self.source_folder, "mnt")
+        os.makedirs(mount_point, exist_ok=False)
         self.run(
-            f"hdiutil attach '{downloaded_file_name}' -mountpoint '{mount_target}' -nobrowse -readonly -noautoopen",
+            f"hdiutil attach '{downloaded_file_name}' -mountpoint '{mount_point}' -nobrowse -readonly -noautoopen",
             stdout=output
         )
-        mount_point = mount_target
 
         self.output.highlight("Qt installer DMG mounted at: " + mount_point)
         app_bundles = glob.glob(pjoin(mount_point, "*.app"))
@@ -201,12 +199,13 @@ class QtConan(ConanFile):
 
         app_bundle = pjoin(self.build_folder, "qt-online-installer-macOS.app")
         from shutil import copytree
+        # Copy the bundle from the mounted DMG to the build folder so we can umount the DMG.
         copytree(src=mounted_bundle, dst=app_bundle)
         self._detach_on_macos(mount_point)
         os.rmdir(mount_point)
 
         exec_folder = pjoin(app_bundle, "Contents", "MacOS")
-        exec_files = glob.glob(pjoin(exec_folder, "qt-online-installer-macOS*"))
+        exec_files = glob.glob(pjoin(exec_folder, "qt-online-installer-macOS*")) # Find the executable file in the MacOS folder of the app bundle.
         if not exec_files:
             raise ConanException("Failed to find executable for Qt installation")
 
@@ -218,13 +217,13 @@ class QtConan(ConanFile):
         :param mount_point: The mount point of the DMG file.
         :return: None
         """
-        if mount_point is None:
+        if mount_point is None or self.settings.os != "Macos":
             return
         self.output.highlight("Unounting Qt installer DMG...")
         self.run(f"hdiutil detach '{mount_point}'")
 
     def source(self):
-        self.output.highlight("Downloading Qt installer via Python urllib...")
+        self.output.highlight("Downloading Qt installer...")
         downloaded_file_name = self._get_distant_name()
         url = f"https://download.qt.io/official_releases/online_installers/{downloaded_file_name}"
         self.output.info(f"Downloading from: {url}")
@@ -232,45 +231,52 @@ class QtConan(ConanFile):
         urlretrieve(url, pjoin(self.source_folder, downloaded_file_name))
 
     def build(self):
-        installer_path = self._get_executable_path(pjoin(self.source_folder, self._get_distant_name()))
-        if not os.path.exists(installer_path):
-            raise ConanException("Failed to find installer for Qt installation")
-        if not os.access(installer_path, os.X_OK):
-            raise ConanException(f"The installer ({installer_path}) is not executable.")
-
-        if self.settings.os != "Windows":
-            installer_path = f"'{installer_path}'" # On Windows, we can't use quotes around the path of the executable.
-
         self.output.highlight("Launching Qt installer...")
-        # Run the installer
-        # --confirm-command: Confirms starting of installation
-        # --accept-obligations: Accepts Qt Open Source usage obligations without user input
-        # --accept-licenses: Accepts all licenses without user input.
-        # --default-answer: Automatically answers to message queries with their default values.
-        process_args =      [ "--confirm-command", "--accept-obligations", "--accept-licenses", "--default-answer" ]
-        install_directory = [ "--root", f"{self.build_folder}/install" ]
-        process_args = install_directory + process_args
+        installer_path = self._get_executable_path(pjoin(self.source_folder, self._get_distant_name()))
+
+        args = [
+            "--confirm-command",     # Confirms starting of installation
+            "--accept-obligations",  # Accepts Qt Open Source usage obligations without user input
+            "--accept-licenses",     # Accepts all licenses without user input.
+            "--default-answer"       # Automatically answers to message queries with their default values.
+        ]
+
+        args = ["--root", f"{self.build_folder}/install"] + args
 
         if self.options.qt_login_type == "envvars":
-            _, email = self._get_email_from_envvars()
-            process_args = [ "--email", f"'{email}'" ] + process_args
+            args = ["--email", self._get_email_from_envvars()[1]] + args
 
-        process_args += [ "install" ] + self._get_qt_submodules(self.version)
+        args += ["install"] + self._get_qt_submodules(self.version)
 
-        self.run(f"{installer_path} {' '.join(process_args)}")
+        quoted_installer = f"'{installer_path}'" if self.settings.os != "Windows" else installer_path
+        self.run(f"{quoted_installer} {' '.join(args)}")
 
-        self.output.highlight("Patching Qt installation...")
-        find_wrap_open_gl = pjoin(self.build_folder, "install", self.version, self._subfolder_install(), "lib", "cmake", "Qt6", "FindWrapOpenGL.cmake")
-        if os.path.exists(find_wrap_open_gl):
-            from conan.tools.files import replace_in_file
-            replace_in_file(
-                self, find_wrap_open_gl,
-                "target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_fw_path})",
-                "target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_fw_path}/OpenGL.framework)"
-            )
+        # self.output.highlight("Patching Qt installation...")
+        # find_wrap_open_gl = pjoin(self.build_folder, "install", self.version, self._subfolder_install(), "lib", "cmake", "Qt6", "FindWrapOpenGL.cmake")
+        # if os.path.exists(find_wrap_open_gl):
+        #     from conan.tools.files import replace_in_file
+        #     """
+        #
+        #     """
+        #     replace_in_file(
+        #         self, find_wrap_open_gl,
+        #         "target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_fw_path})",
+        #         "target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_fw_path}/OpenGL.framework)"
+        #     )
+
+    @staticmethod
+    def _validate_installer_path(path):
+        if not os.path.exists(path):
+            raise ConanException(f"Installer not found: {path}")
+        if not os.access(path, os.X_OK):
+            raise ConanException(f"The installer is not executable: {path}")
 
 
     def _subfolder_install(self):
+        """
+        Get the subfolder name where the Qt installation is done, based on the OS.
+        :return: The subfolder name where the Qt installation is done, e.g. 'macos', 'gcc_64' or 'msvc2019_64'.
+        """
         subfolder_map = {
             "Macos": "macos",
             "Linux": "gcc_64",
@@ -281,16 +287,22 @@ class QtConan(ConanFile):
     def package(self):
         self.output.highlight("This step can take a while, please be patient...")
 
+        src_path = pjoin(self.build_folder, "install", self.version, self._subfolder_install()) # "./install/6.2.3/gcc_64" or "./install/6.2.3/msvc2019_64" or "./install/6.2.3/macos"
+        dst_path = self.package_folder
 
-        src_path = pjoin(self.build_folder, "install", self.version, self._subfolder_install())
-        copy(self, "*", src=src_path, dst=self.package_folder)
+        copy(self, "*", src=src_path, dst=dst_path)
 
-
-        rmdir(self, pjoin(self.package_folder, "doc"))
-        rmdir(self, pjoin(self.package_folder, "modules"))
+        for folder in ("doc", "modules"):
+            rmdir(self, pjoin(dst_path, folder))
 
 
     def package_info(self):
+        """
+        Sets the package information for Qt, including CMake configuration and environment variables.
+        Here, we do not set up detailed package information. Since Qt is installed using the online installer,
+        it provides the necessary CMake configuration files to locate the package, its submodules, and components.
+        We only specify the main CMake configuration file so that CMake can find the package.
+        """
         self.cpp_info.set_property("cmake_file_name", "Qt6")
         self.cpp_info.set_property("cmake_build_modules", [ pjoin(self.package_folder, "lib", "cmake", "Qt6", "Qt6Config.cmake") ])
         self.cpp_info.set_property("cmake_find_mode", "none")
