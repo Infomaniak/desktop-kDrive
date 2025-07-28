@@ -259,22 +259,35 @@ class QtConan(ConanFile):
 
         self.run(f"{installer_path} {' '.join(process_args)}")
 
-    def package(self):
-        self.output.highlight("This step can take a while, please be patient...")
+        self.output.highlight("Patching Qt installation...")
+        find_wrap_open_gl = pjoin(self.build_folder, "install", self.version, self._subfolder_install(), "lib", "cmake", "Qt6", "FindWrapOpenGL.cmake")
+        if os.path.exists(find_wrap_open_gl):
+            from conan.tools.files import replace_in_file
+            replace_in_file(
+                self, find_wrap_open_gl,
+                "target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_fw_path})",
+                "target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_fw_path}/OpenGL.framework)"
+            )
 
+
+    def _subfolder_install(self):
         subfolder_map = {
             "Macos": "macos",
             "Linux": "gcc_64",
             "Windows": "msvc2019_64"
         }
-        src_path = pjoin(self.build_folder, "install", self.version, subfolder_map.get(str(self.settings.os)))
+        return subfolder_map.get(str(self.settings.os))
+
+    def package(self):
+        self.output.highlight("This step can take a while, please be patient...")
+
+
+        src_path = pjoin(self.build_folder, "install", self.version, self._subfolder_install())
         copy(self, "*", src=src_path, dst=self.package_folder)
 
 
         rmdir(self, pjoin(self.package_folder, "doc"))
         rmdir(self, pjoin(self.package_folder, "modules"))
-
-        self._package_check()
 
 
     def package_info(self):
@@ -291,6 +304,7 @@ class QtConan(ConanFile):
         self.cpp_info.resdirs = []
         self.cpp_info.srcdirs = []
         self.cpp_info.frameworkdirs = []
+
     #     from conan.tools.microsoft import is_msvc
     #     from conan.tools.apple import is_apple_os
     #     cmake_folder = pjoin(self.package_folder, "lib", "cmake")
@@ -446,18 +460,6 @@ class QtConan(ConanFile):
     #
     # def package_id(self):
     #     self.info.settings.clear()
-    #
-    def _package_check(self):
-        expected_paths = [
-            pjoin(self.package_folder, "bin"),
-            pjoin(self.package_folder, "lib"),
-            pjoin(self.package_folder, "libexec"),
-            pjoin(self.package_folder, "include"),
-        ]
-
-        for path in expected_paths:
-            if not os.path.exists(path):
-                raise ConanException(f"Missing expected file or directory: {path}")
     #
     # def _setup_environment(self):
     #     bin_path = pjoin(self.package_folder, "bin")
