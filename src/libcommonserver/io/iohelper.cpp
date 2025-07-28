@@ -1036,16 +1036,18 @@ void IoHelper::DirectoryIterator::disableRecursionPending() {
 #ifndef KD_WINDOWS
 // See iohelper_win.cpp for the Windows implementation
 bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept {
-    ioError = setRights(path, read, write, exec);
-    return ioError == IoError::Success || isExpectedError(ioError);
+    return _setRightsStd(path, read, write, exec, ioError);
 }
 
-IoError IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec) noexcept {
-    return _setRightsStd(path, read, write, exec);
+IoError IoHelper::setRights(const SyncPath &path, const bool read, const bool write, const bool exec) noexcept {
+    IoError ioError = IoError::Unknown;
+    (void) setRights(path, read, write, exec);
+    return ioError;
 }
 #endif
 
-IoError IoHelper::_setRightsStd(const SyncPath &path, bool read, bool write, bool exec) noexcept {
+bool IoHelper::_setRightsStd(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept {
+    ioError = IoError::Success;
     std::filesystem::perms perms = std::filesystem::perms::none;
     if (read) {
         perms |= std::filesystem::perms::owner_read;
@@ -1060,10 +1062,11 @@ IoError IoHelper::_setRightsStd(const SyncPath &path, bool read, bool write, boo
     std::error_code ec;
     std::filesystem::permissions(path, perms, ec);
     if (ec) {
-        return posixError2ioError(ec.value());
+        ioError = posixError2ioError(ec.value());
+        return isExpectedError(ioError);
     }
 
-    return IoError::Success;
+    return true;
 }
 
 IoError IoHelper::setReadOnly(const SyncPath &path) noexcept {
@@ -1071,13 +1074,13 @@ IoError IoHelper::setReadOnly(const SyncPath &path) noexcept {
     bool dummyRead = false;
     bool dummyWrite = false;
     bool exec = false;
-    if (IoError ioError = IoHelper::getRights(path, dummyRead, dummyWrite, exec); ioError != IoError::Success) {
+    if (const auto ioError = IoHelper::getRights(path, dummyRead, dummyWrite, exec); ioError != IoError::Success) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to set rights for: " << Utility::formatSyncPath(path));
         return IoError::Unknown;
     }
 
     // Remove write right.
-    if (IoError ioError = IoHelper::setRights(path, true, false, exec); ioError != IoError::Success) {
+    if (const auto ioError = IoHelper::setRights(path, true, false, exec); ioError != IoError::Success) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to set rights for: " << Utility::formatSyncPath(path));
         return ioError;
     }
@@ -1091,7 +1094,7 @@ IoError IoHelper::setFullAccess(const SyncPath &path) noexcept {
     bool dummyRead = false;
     bool dummyWrite = false;
     bool exec = false;
-    if (IoError ioError = IoHelper::getRights(path, dummyRead, dummyWrite, exec); ioError != IoError::Success) {
+    if (const auto ioError = IoHelper::getRights(path, dummyRead, dummyWrite, exec); ioError != IoError::Success) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to set rights for: " << Utility::formatSyncPath(path));
         return IoError::Unknown;
     }
@@ -1102,7 +1105,7 @@ IoError IoHelper::setFullAccess(const SyncPath &path) noexcept {
     }
 
     // Set full access rights.
-    if (IoError ioError = IoHelper::setRights(path, true, true, exec); ioError != IoError::Success) {
+    if (const auto ioError = IoHelper::setRights(path, true, true, exec); ioError != IoError::Success) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to set rights for: " << Utility::formatSyncPath(path));
         return IoError::Unknown;
     }

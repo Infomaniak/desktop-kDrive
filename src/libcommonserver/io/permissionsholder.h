@@ -24,7 +24,7 @@ namespace KDC {
 
 class PermissionsHolder {
     public:
-        PermissionsHolder(const SyncPath &path);
+        explicit PermissionsHolder(const SyncPath &path);
         ~PermissionsHolder();
 
     private:

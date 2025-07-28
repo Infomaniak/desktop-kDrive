@@ -677,6 +677,12 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     return true;
 }
 
+IoError IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec) noexcept {
+    IoError ioError = IoError::Unknown;
+    (void) IoHelper::getRights(path, read, write, exec, ioError);
+    return ioError;
+}
+
 bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept {
     if (_getAndSetRightsMethod == -1) initRightsWindowsApi();
     // Preferred method
@@ -724,6 +730,12 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
         _getAndSetRightsMethod = 1;
     }
     return _setRightsStd(path, read, write, exec, ioError);
+}
+
+IoError IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec) noexcept {
+    IoError ioError = IoError::Unknown;
+    (void) IoHelper::setRights(path, read, write, exec, ioError);
+    return ioError;
 }
 
 IoError IoHelper::lock(const SyncPath &path) noexcept {

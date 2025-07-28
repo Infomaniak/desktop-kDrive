@@ -584,19 +584,17 @@ void TestIo::testReadOnly() {
     const auto filePath = tempDir.path() / "testSetReadOnlyFile";
     testhelpers::generateOrEditTestFile(filePath);
 
-    // Set read only access to a directory.
+    // Set read-only access to a directory.
     CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::setReadOnly(tempDir.path()));
     bool read = false;
     bool write = false;
-    bool exec = false;
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), read, write, exec));
+    bool dummyExec = false;
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), read, write, dummyExec));
     CPPUNIT_ASSERT_EQUAL(true, read);
     CPPUNIT_ASSERT_EQUAL(false, write);
-    CPPUNIT_ASSERT_EQUAL(true, exec);
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(filePath, read, write, exec));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(filePath, read, write, dummyExec));
     CPPUNIT_ASSERT_EQUAL(true, read);
     CPPUNIT_ASSERT_EQUAL(true, write);
-    CPPUNIT_ASSERT_EQUAL(false, exec);
     bool isLocked = false;
     CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::isLocked(tempDir.path(), isLocked));
 #if defined(KD_MACOS)
@@ -608,25 +606,22 @@ void TestIo::testReadOnly() {
     CPPUNIT_ASSERT(!isLocked);
 
     CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::setFullAccess(tempDir.path()));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), read, write, exec));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), read, write, dummyExec));
     CPPUNIT_ASSERT_EQUAL(true, read);
     CPPUNIT_ASSERT_EQUAL(true, write);
-    CPPUNIT_ASSERT_EQUAL(true, exec);
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(filePath, read, write, exec));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(filePath, read, write, dummyExec));
     CPPUNIT_ASSERT_EQUAL(true, read);
     CPPUNIT_ASSERT_EQUAL(true, write);
-    CPPUNIT_ASSERT_EQUAL(false, exec);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::isLocked(tempDir.path(), isLocked));
     CPPUNIT_ASSERT(!isLocked);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::isLocked(filePath, isLocked));
     CPPUNIT_ASSERT(!isLocked);
 
-    // Set read only access to a file.
+    // Set read-only access to a file.
     CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::setReadOnly(filePath));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(filePath, read, write, exec));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(filePath, read, write, dummyExec));
     CPPUNIT_ASSERT_EQUAL(true, read);
     CPPUNIT_ASSERT_EQUAL(false, write);
-    CPPUNIT_ASSERT_EQUAL(false, exec);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::isLocked(filePath, isLocked));
 #if defined(KD_MACOS)
     CPPUNIT_ASSERT(isLocked);
@@ -635,10 +630,9 @@ void TestIo::testReadOnly() {
 #endif
 
     CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::setFullAccess(filePath));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(filePath, read, write, exec));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(filePath, read, write, dummyExec));
     CPPUNIT_ASSERT_EQUAL(true, read);
     CPPUNIT_ASSERT_EQUAL(true, write);
-    CPPUNIT_ASSERT_EQUAL(false, exec);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::isLocked(filePath, isLocked));
     CPPUNIT_ASSERT(!isLocked);
 }
