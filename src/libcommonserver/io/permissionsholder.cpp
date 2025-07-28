@@ -29,23 +29,16 @@ struct AccessRights {
 static std::unordered_map<SyncPath, std::pair<uint64_t, AccessRights>, PathHashFunction> heldPermissions;
 static std::mutex mutex;
 
-namespace {
-log4cplus::Logger _logger;
-log4cplus::Logger logger() {
-    return Log::isSet() ? Log::instance()->getLogger() : _logger;
-}
-} // namespace
-
-PermissionsHolder::PermissionsHolder(const SyncPath &path) :
+PermissionsHolder::PermissionsHolder(const SyncPath &path, log4cplus::Logger *_logger /*= nullptr*/) :
     _path(path) {
     AccessRights accessRights;
     if (const auto ioError = IoHelper::getRights(path, accessRights.read, accessRights.write, accessRights.exec);
         ioError != IoError::Success) {
-        LOGW_DEBUG(logger(), L"Fail to get rights for: " << Utility::formatSyncPath(path));
+        log(std::wstringstream() << L"Fail to get rights for: " << Utility::formatSyncPath(path), LogLevel::Error);
         return;
     }
     if (const auto ioError = IoHelper::isLocked(path, accessRights.locked); ioError != IoError::Success) {
-        LOGW_DEBUG(logger(), L"Fail to check if file is locked for: " << Utility::formatSyncPath(path));
+        log(std::wstringstream() << L"Fail to check if file is locked for: " << Utility::formatSyncPath(path), LogLevel::Error);
         return;
     }
 
@@ -57,12 +50,13 @@ PermissionsHolder::PermissionsHolder(const SyncPath &path) :
     }
 
     if (IoHelper::setFullAccess(_path) != IoError::Success) {
-        LOGW_WARN(logger(), L"Failed to set full access rights: " << Utility::formatSyncPath(_path));
+        log(std::wstringstream() << L"Failed to set full access rights: " << Utility::formatSyncPath(_path), LogLevel::Error);
     }
     heldPermissions.try_emplace(_path, 0, accessRights);
     heldPermissions[_path].first++;
-    LOGW_DEBUG(logger(), L"PermissionsHolder set full access rights: " << Utility::formatSyncPath(_path) << L" / count:"
-                                                                       << heldPermissions[_path].first);
+    log(std::wstringstream() << L"PermissionsHolder set full access rights: " << Utility::formatSyncPath(_path) << L" / count:"
+                             << heldPermissions[_path].first,
+        LogLevel::Debug);
 }
 
 PermissionsHolder::~PermissionsHolder() {
@@ -71,21 +65,47 @@ PermissionsHolder::~PermissionsHolder() {
 
     auto &[count, accessRights] = heldPermissions[_path];
     count--;
-    LOGW_DEBUG(logger(), L"PermissionsHolder value: " << Utility::formatSyncPath(_path) << L" / count:" << count);
+    log(std::wstringstream() << L"PermissionsHolder value: " << Utility::formatSyncPath(_path) << L" / count:" << count,
+        LogLevel::Debug);
     if (count > 0) return; // Do not put back read-only rights yet.
 
-    LOGW_DEBUG(logger(),
-               L"PermissionsHolder set back initial rights: " << Utility::formatSyncPath(_path) << L" / count:" << count);
+    log(std::wstringstream() << L"PermissionsHolder set back initial rights: " << Utility::formatSyncPath(_path) << L" / count:"
+                             << count,
+        LogLevel::Debug);
     if (accessRights.locked) {
         if (const auto ioError = IoHelper::lock(_path); ioError != IoError::Success) {
-            LOGW_ERROR(logger(), L"Failed to lock item for: " << Utility::formatSyncPath(_path) << L" / count:" << count);
+            log(std::wstringstream() << L"Failed to lock item for: " << Utility::formatSyncPath(_path) << L" / count:" << count,
+                LogLevel::Error);
         }
     }
     if (const auto ioError = IoHelper::setRights(_path, accessRights.read, accessRights.write, accessRights.exec);
         ioError != IoError::Success) {
-        LOGW_ERROR(logger(), L"Failed to set rights for: " << Utility::formatSyncPath(_path));
+        log(std::wstringstream() << L"Failed to set rights for: " << Utility::formatSyncPath(_path), LogLevel::Error);
     }
     (void) heldPermissions.erase(_path);
+}
+
+void PermissionsHolder::log(const std::wstringstream &ss, LogLevel logLevel /*= LogLevel::Debug*/) {
+    if (!_logger) return;
+    switch (logLevel) {
+        case LogLevel::Debug:
+            LOGW_DEBUG(*_logger, ss.str());
+            break;
+        case LogLevel::Info:
+            LOGW_INFO(*_logger, ss.str());
+            break;
+        case LogLevel::Warning:
+            LOGW_WARN(*_logger, ss.str());
+            break;
+        case LogLevel::Error:
+            LOGW_ERROR(*_logger, ss.str());
+            break;
+        case LogLevel::Fatal:
+            LOGW_FATAL(*_logger, ss.str());
+            break;
+        default:
+            break;
+    }
 }
 
 } // namespace KDC
