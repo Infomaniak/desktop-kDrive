@@ -27,7 +27,6 @@ namespace KDC {
 class GuiCommChannel : public SocketCommChannel {
     public:
         GuiCommChannel();
-        uint64_t writeData(const char *data, uint64_t len) override;
 };
 
 class GuiCommServer : public SocketCommServer {

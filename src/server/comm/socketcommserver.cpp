@@ -52,7 +52,7 @@ SocketCommServer::~SocketCommServer() {}
 
 void SocketCommServer::close() {}
 
-bool SocketCommServer::listen(const SyncPath &) {
+bool SocketCommServer::listen(const KDC::SyncPath &) {
     return true;
 }
 

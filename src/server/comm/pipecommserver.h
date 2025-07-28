@@ -20,14 +20,14 @@
 
 #include "abstractcommserver.h"
 
-#include <Poco/Net/ServerSocket.h>
+#include <thread>
 
 namespace KDC {
 
-class SocketCommChannel : public AbstractCommChannel {
+class PipeCommChannel : public AbstractCommChannel {
     public:
-        SocketCommChannel();
-        ~SocketCommChannel();
+        PipeCommChannel();
+        ~PipeCommChannel();
 
         uint64_t readData(char *data, uint64_t maxlen) override;
         virtual uint64_t writeData(const char *data, uint64_t len) override;
@@ -36,26 +36,33 @@ class SocketCommChannel : public AbstractCommChannel {
         std::string id() const override;
 
     private:
-        Poco::Net::ServerSocket _socket;
 };
 
-class SocketCommServer : public AbstractCommServer {
+class PipeCommServer : public AbstractCommServer {
     public:
-        SocketCommServer(const std::string &name);
-        ~SocketCommServer();
+        PipeCommServer(const std::string &name);
+        ~PipeCommServer();
 
         void close() override;
-        bool listen(const KDC::SyncPath &) override;
+        bool listen(const KDC::SyncPath &pipePath) override;
         std::shared_ptr<KDC::AbstractCommChannel> nextPendingConnection() override;
         std::list<std::shared_ptr<KDC::AbstractCommChannel>> connections() override;
 
         static bool removeServer(const KDC::SyncPath &path) {
-#ifdef __linux__
-            std::error_code ec;
-            std::filesystem::remove(path, ec);
-#endif
             return true;
         }
+
+    private:
+        SyncPath _pipePath;
+        std::unique_ptr<std::thread> _thread;
+        bool _isRunning{false};
+        bool _stopAsked{false};
+
+        static void executeFunc(PipeCommServer *server);
+
+        void execute();
+        void stop();
+        void waitForExit();
 };
 
 } // namespace KDC

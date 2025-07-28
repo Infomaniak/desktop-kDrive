@@ -23,10 +23,6 @@ namespace KDC {
 GuiCommChannel::GuiCommChannel() :
     SocketCommChannel() {}
 
-uint64_t GuiCommChannel::writeData(const char *data, uint64_t len) {
-    return 0;
-}
-
 GuiCommServer::GuiCommServer(const std::string &name) :
     SocketCommServer(name) {}
 

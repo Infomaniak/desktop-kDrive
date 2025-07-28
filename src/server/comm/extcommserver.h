@@ -18,17 +18,16 @@
 
 #pragma once
 
-#include "socketcommserver.h"
+#include "pipecommserver.h"
 
 namespace KDC {
 
-class ExtCommChannel : public SocketCommChannel {
+class ExtCommChannel : public PipeCommChannel {
     public:
         ExtCommChannel();
-        uint64_t writeData(const char *data, uint64_t len) override;
 };
 
-class ExtCommServer : public SocketCommServer {
+class ExtCommServer : public PipeCommServer {
     public:
         ExtCommServer(const std::string &name);
 };

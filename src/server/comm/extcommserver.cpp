@@ -21,13 +21,9 @@
 namespace KDC {
 
 ExtCommChannel::ExtCommChannel() :
-    SocketCommChannel() {}
-
-uint64_t ExtCommChannel::writeData(const char *data, uint64_t len) {
-    return 0;
-}
+    PipeCommChannel() {}
 
 ExtCommServer::ExtCommServer(const std::string &name) :
-    SocketCommServer(name) {}
+    PipeCommServer(name) {}
 
 } // namespace KDC
