@@ -101,7 +101,7 @@ jobs:
 
 # Build apps
   build-Windows:
-    needs: [check-release-notes, check-translations]
+    needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, Windows, desktop-kdrive-with-gui ] #with-gui is required for the build_windows action to unlock the release signing certificate
     outputs:
       kDrive_version: ${{ steps.build-windows-step.outputs.kDrive_version }}
@@ -121,7 +121,7 @@ jobs:
           release_build: true
 
 
-  build-Linux:
+  build-Linux-amd:
     needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     steps:
@@ -130,11 +130,26 @@ jobs:
         with:
           submodules: recursive
       - name: Build Linux
-        uses: ./.github/actions/build_linux
+        uses: ./.github/actions/build_linux_amd
         with:
           release_build: true
-      
-# Tests Windows
+
+  build-Linux-arm:
+    needs: [ check-release-notes, check-translations ]
+    runs-on: [ self-hosted, macOS, ARM64, desktop-kdrive ]
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build Linux
+        uses: ./.github/actions/build_linux_arm
+        with:
+          release_build: true
+
+  # TODO: build macOS apps
+
+  # Tests Windows
   test-Windows:
     needs: build-Windows
     strategy:
@@ -158,7 +173,7 @@ jobs:
            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
   test-Linux:
-    needs: build-Linux
+    needs: build-Linux-amd
     strategy:
       fail-fast: false
       matrix:
@@ -181,7 +196,7 @@ jobs:
 
 # Upload the installer and sentry artifacts
   upload-to-kDrive-and-sentry:
-    needs: [get-version, build-Linux, test-Linux, build-Windows, test-Windows]
+    needs: [get-version, build-Linux-amd, build-Linux-arm, test-Linux, build-Windows, test-Windows]
     runs-on: [self-hosted, Windows]
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
@@ -200,18 +215,25 @@ jobs:
           pattern: win-release-artifacts-*
           merge-multiple: true
 
-      #- name: Download macOS artifacts
+      #- name: Download macOS artifacts # TODO
       #  uses: actions/download-artifact@v4
       #  with:
       #    path: build-macos
       #    pattern: mac-release-artifacts-*
       #    merge-multiple: true
 
-      - name: Download Linux artifacts
+      - name: Download Linux ARM64 artifacts
         uses: actions/download-artifact@v4
         with:
-          path: build-linux
-          pattern: linux-release-artifacts-*
+          path: build-linux-arm64
+          pattern: linux-release-artifacts-*-arm64
+          merge-multiple: true
+
+      - name: Download Linux AMD64 artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: build-linux-amd64
+          pattern: linux-release-artifacts-*-amd64
           merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
@@ -238,4 +260,3 @@ jobs:
           .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-linux\kDrive.src.zip
           .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\build-linux\kDrive_client.src.zip
         shell: powershell
-

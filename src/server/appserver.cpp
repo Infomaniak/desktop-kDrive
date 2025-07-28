@@ -54,6 +54,7 @@
 
 #include "jobs/network/kDrive_API/upload/loguploadjob.h"
 #include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
+#include "requests/offlinefilessizeestimator.h"
 #include "updater/updatemanager.h"
 
 #include <QDesktopServices>
@@ -1012,7 +1013,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             int driveDbId = 0;
             ArgsWriter(params).write(driveDbId);
 
-            // Get syncs do delete
+            // Get syncs to delete
             std::vector<int> syncDbIdList;
             for (const auto &syncPalMapElt: _syncPalMap) {
                 if (!syncPalMapElt.second) continue;
@@ -1029,6 +1030,21 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 #if defined(__APPLE__)
             Utility::restartFinderExtension();
 #endif
+            break;
+        }
+        case RequestNum::DRIVE_GET_OFFLINE_FILES_TOTAL_SIZE: {
+            int driveDbId = 0;
+            ArgsWriter(params).write(driveDbId);
+
+            std::vector<std::shared_ptr<SyncPal>> syncPals;
+            for (const auto &[_, syncpal]: _syncPalMap) {
+                if (!syncpal || syncpal->driveDbId() != driveDbId || !syncpal->vfs()) continue;
+                (void) syncPals.emplace_back(syncpal);
+            }
+
+            OfflineFilesSizeEstimator estimator(syncPals);
+            resultStream << estimator.runSynchronously().code(); // Run synchronously for now.
+            resultStream << static_cast<quint64>(estimator.offlineFilesTotalSize());
             break;
         }
         case RequestNum::SYNC_INFOLIST: {
