@@ -663,7 +663,7 @@ bool LiteSyncExtConnectorPrivate::setThumbnail(const QString &filePath, const QP
         return false;
     }
 
-    PermissionsHolder permsHolder(QStr2Path(filePath).parent_path());
+    PermissionsHolder permsHolder(QStr2Path(filePath));
 
     // Source image
     bool error = false;
@@ -1160,7 +1160,7 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
             SyncTime modificationDate = filestat.modificationTime;
             SyncTime creationDate = filestat.creationTime;
 
-            PermissionsHolder permsHolder(stdFilePath.parent_path());
+            PermissionsHolder permsHolder(stdFilePath);
 
             // Copy tmp file content to file
             @try {
@@ -1319,7 +1319,7 @@ bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, co
     }
 
     std::string stdPath = absoluteFilePath.toStdString();
-    PermissionsHolder permsHolder(QStr2Path(absoluteFilePath).parent_path());
+    PermissionsHolder permsHolder(QStr2Path(absoluteFilePath));
 
     // Check status
     VfsStatus vfsStatus;
@@ -1512,7 +1512,7 @@ bool LiteSyncExtConnector::vfsProcessDirStatus(const QString &path, const QStrin
 }
 
 void LiteSyncExtConnector::vfsClearFileAttributes(const QString &path) {
-    PermissionsHolder permsHolder(QStr2Path(path).parent_path());
+    PermissionsHolder permsHolder(QStr2Path(path));
     removexattr(path.toStdString().c_str(), litesync_attrs::status.data(), 0);
     removexattr(path.toStdString().c_str(), litesync_attrs::pinState.data(), 0);
 }

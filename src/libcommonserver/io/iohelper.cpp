@@ -100,6 +100,7 @@ IoError IoHelper::posixError2ioError(int error) noexcept {
     switch (error) {
         case 0:
             return IoError::Success;
+        case EPERM:
         case EACCES:
             return IoError::AccessDenied;
         case EEXIST:
