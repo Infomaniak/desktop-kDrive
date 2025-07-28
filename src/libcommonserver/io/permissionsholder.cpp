@@ -26,18 +26,18 @@ struct AccessRights {
         bool exec{false};
         bool locked{false};
 };
-static std::unordered_map<SyncPath, std::pair<uint64_t, AccessRights>> heldPermissions;
+static std::unordered_map<SyncPath, std::pair<uint64_t, AccessRights>, PathHashFunction> heldPermissions;
 static std::mutex mutex;
 
 PermissionsHolder::PermissionsHolder(const SyncPath &path) :
     _path(path) {
     AccessRights accessRights;
-    if (IoError ioError = IoHelper::getRights(path, accessRights.read, accessRights.write, accessRights.exec);
+    if (const auto ioError = IoHelper::getRights(path, accessRights.read, accessRights.write, accessRights.exec);
         ioError != IoError::Success) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to get rights for: " << Utility::formatSyncPath(path));
         return;
     }
-    if (IoError ioError = IoHelper::isLocked(path, accessRights.locked); ioError != IoError::Success) {
+    if (const auto ioError = IoHelper::isLocked(path, accessRights.locked); ioError != IoError::Success) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to check if file is locked for: " << Utility::formatSyncPath(path));
         return;
     }
@@ -46,8 +46,10 @@ PermissionsHolder::PermissionsHolder(const SyncPath &path) :
         return;
     }
 
-    std::scoped_lock scopedLock(mutex);
-    IoHelper::setFullAccess(_path);
+    const std::scoped_lock scopedLock(mutex);
+    if (IoHelper::setFullAccess(_path) != IoError::Success) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to set full access rights: " << Utility::formatSyncPath(_path));
+    }
     heldPermissions.try_emplace(_path, 0, accessRights);
     heldPermissions[_path].first++;
     LOGW_DEBUG(Log::instance()->getLogger(),
@@ -55,13 +57,13 @@ PermissionsHolder::PermissionsHolder(const SyncPath &path) :
 }
 
 PermissionsHolder::~PermissionsHolder() {
-    std::scoped_lock scopedLock(mutex);
+    const std::scoped_lock scopedLock(mutex);
     if (!heldPermissions.contains(_path)) return;
 
     auto &[count, accessRights] = heldPermissions[_path];
     count--;
     LOGW_DEBUG(Log::instance()->getLogger(), L"PermissionsHolder value: " << Utility::formatSyncPath(_path) << L" / " << count);
-    if (count > 0) return; // Do not put back read only rights yet.
+    if (count > 0) return; // Do not put back read-only rights yet.
 
     LOGW_DEBUG(Log::instance()->getLogger(),
                L"PermissionsHolder setReadOnly: " << Utility::formatSyncPath(_path) << L" / " << count);
@@ -71,11 +73,11 @@ PermissionsHolder::~PermissionsHolder() {
                        L"PermissionsHolder setReadOnly: " << Utility::formatSyncPath(_path) << L" / " << count);
         }
     }
-    if (IoError ioError = IoHelper::setRights(_path, accessRights.read, accessRights.write, accessRights.exec);
+    if (const auto ioError = IoHelper::setRights(_path, accessRights.read, accessRights.write, accessRights.exec);
         ioError != IoError::Success) {
         LOGW_ERROR(Log::instance()->getLogger(), L"Fail to set rights for: " << Utility::formatSyncPath(_path));
     }
-    heldPermissions.erase(_path);
+    (void) heldPermissions.erase(_path);
 }
 
 } // namespace KDC
