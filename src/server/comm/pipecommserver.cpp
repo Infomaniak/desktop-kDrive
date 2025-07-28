@@ -106,54 +106,7 @@ void PipeCommServer::executeFunc(PipeCommServer *server) {
 
 void PipeCommServer::execute() {
 #ifdef _WIN32
-    BOOL fConnected = FALSE;
-    DWORD dwThreadId = 0;
-    HANDLE hPipe = INVALID_HANDLE_VALUE;
-    HANDLE hThread = NULL;
-
-    for (;;) {
-        hPipe = CreateNamedPipe(_pipePath.native().c_str(), // pipe name
-                                PIPE_ACCESS_DUPLEX, // read/write access
-                                PIPE_TYPE_MESSAGE | // message type pipe
-                                        PIPE_READMODE_MESSAGE | // message-read mode
-                                        PIPE_WAIT, // blocking mode
-                                PIPE_UNLIMITED_INSTANCES, // max. instances
-                                BUFSIZE, // output buffer size
-                                BUFSIZE, // input buffer size
-                                0, // client time-out
-                                NULL); // default security attribute
-
-        if (hPipe == INVALID_HANDLE_VALUE) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in CreateNamedPipe: err=" << GetLastError());
-            return;
-        }
-
-        // Wait for the client to connect; if it succeeds,
-        // the function returns a nonzero value. If the function
-        // returns zero, GetLastError returns ERROR_PIPE_CONNECTED.
-
-        fConnected = ConnectNamedPipe(hPipe, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
-
-        if (fConnected) {
-            LOG_INFO(Log::instance()->getLogger(), "Client connected, creating a processing thread.");
-
-            // Create a thread for this client.
-            hThread = CreateThread(NULL, // no security attribute
-                                   0, // default stack size
-                                   InstanceThread, // thread proc
-                                   (LPVOID) hPipe, // thread parameter
-                                   0, // not suspended
-                                   &dwThreadId); // returns thread ID
-
-            if (hThread == NULL) {
-                LOG_WARN(Log::instance()->getLogger(), "Error in CreateThread: err=" << GetLastError());
-                return;
-            } else
-                CloseHandle(hThread);
-        } else
-            // The client could not connect, so close the pipe.
-            CloseHandle(hPipe);
-    }
+    // TODO: See https://learn.microsoft.com/en-us/windows/win32/ipc/using-pipes
 #endif
 }
 
