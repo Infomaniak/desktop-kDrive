@@ -153,7 +153,7 @@ class QtConan(ConanFile):
 
 
     def configure(self):
-        if self.options.qt_login_type == "ini" and self._get_default_login_ini_location() is None:
+        if self.options.qt_login_type == "ini" and (self._get_default_login_ini_location() is None or not os.path.isfile(self._get_default_login_ini_location())):
             self.output.warning("The file 'qtaccount.ini' was not found in the default location. Falling back to 'envvars' login type")
             self.options.qt_login_type = "envvars"
             self._check_envvars_login_type()
