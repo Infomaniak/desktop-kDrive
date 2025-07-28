@@ -261,13 +261,19 @@ class QtConan(ConanFile):
     def package(self):
         self.output.highlight("This step can take a while, please be patient...")
 
-        subfolder = "macos" if self.settings.os == "Macos" else ("gcc_64" if self.settings.os == "Linux" else "msvc2019_64")
+        subfolder_map = {
+            "Macos": "macos",
+            "Linux": "gcc_64",
+            "Windows": "msvc2019_64"
+        }
+        src_path = pjoin(self.build_folder, "install", self.version, subfolder_map.get(str(self.settings.os)))
+        copy(self, "*", src=src_path, dst=self.package_folder)
 
-        copy(self, "*", src=os.path.join(self.build_folder, f"install/{self.version}/{subfolder}/"), dst=self.package_folder)
 
-        rmdir(self, os.path.join(self.package_folder, "doc"))
-        rmdir(self, os.path.join(self.package_folder, "modules"))
-        self._check_integrity()
+        rmdir(self, pjoin(self.package_folder, "doc"))
+        rmdir(self, pjoin(self.package_folder, "modules"))
+
+        self._package_check()
 
 
     def package_info(self):
