@@ -1,5 +1,6 @@
 import glob
 import os
+from os.path import join as pjoin
 
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration, ConanException
@@ -184,7 +185,7 @@ class QtConan(ConanFile):
         import io
         output = io.StringIO()
         self.output.highlight("Mounting Qt installer DMG...")
-        mount_target = os.path.join(self.source_folder, "mnt")
+        mount_target = pjoin(self.source_folder, "mnt")
         os.makedirs(mount_target, exist_ok=True)
         self.run(
             f"hdiutil attach '{downloaded_file_name}' -mountpoint '{mount_target}' -nobrowse -readonly -noautoopen",
@@ -193,19 +194,19 @@ class QtConan(ConanFile):
         mount_point = mount_target
 
         self.output.highlight("Qt installer DMG mounted at: " + mount_point)
-        app_bundles = glob.glob(os.path.join(mount_point, "*.app"))
+        app_bundles = glob.glob(pjoin(mount_point, "*.app"))
         if not app_bundles:
             raise ConanException("Failed to find app folder for DMG file")
         mounted_bundle = app_bundles[0]
 
-        app_bundle = os.path.join(self.build_folder, "qt-online-installer-macOS.app")
+        app_bundle = pjoin(self.build_folder, "qt-online-installer-macOS.app")
         from shutil import copytree
         copytree(src=mounted_bundle, dst=app_bundle)
         self._detach_on_macos(mount_point)
         os.rmdir(mount_point)
 
-        exec_folder = os.path.join(app_bundle, "Contents", "MacOS")
-        exec_files = glob.glob(os.path.join(exec_folder, "qt-online-installer-macOS*"))
+        exec_folder = pjoin(app_bundle, "Contents", "MacOS")
+        exec_files = glob.glob(pjoin(exec_folder, "qt-online-installer-macOS*"))
         if not exec_files:
             raise ConanException("Failed to find executable for Qt installation")
 
@@ -228,10 +229,10 @@ class QtConan(ConanFile):
         url = f"https://download.qt.io/official_releases/online_installers/{downloaded_file_name}"
         self.output.info(f"Downloading from: {url}")
         from urllib.request import urlretrieve
-        urlretrieve(url, os.path.join(self.source_folder, downloaded_file_name))
+        urlretrieve(url, pjoin(self.source_folder, downloaded_file_name))
 
     def build(self):
-        installer_path = self._get_executable_path(os.path.join(self.source_folder, self._get_distant_name()))
+        installer_path = self._get_executable_path(pjoin(self.source_folder, self._get_distant_name()))
         if not os.path.exists(installer_path):
             raise ConanException("Failed to find installer for Qt installation")
         if not os.access(installer_path, os.X_OK):
