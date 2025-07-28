@@ -17,6 +17,7 @@
  */
 
 #include "testio.h"
+#include "io/permissionsholder.h"
 #include "test_utility/testhelpers.h"
 
 #include <filesystem>
@@ -635,6 +636,53 @@ void TestIo::testReadOnly() {
     CPPUNIT_ASSERT_EQUAL(true, write);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::isLocked(filePath, isLocked));
     CPPUNIT_ASSERT(!isLocked);
+}
+
+void TestIo::testPermissionsHolder() {
+    const LocalTemporaryDirectory tempDir("testPermissionsHolderDir");
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::setReadOnly(tempDir.path()));
+
+    const auto filePath = tempDir.path() / "testPermissionsHolderFile";
+    testhelpers::generateOrEditTestFile(filePath);
+    CPPUNIT_ASSERT(!std::filesystem::exists(filePath));
+
+    {
+        PermissionsHolder permsHolder(tempDir.path());
+        testhelpers::generateOrEditTestFile(filePath);
+        CPPUNIT_ASSERT(std::filesystem::exists(filePath));
+    }
+
+    const auto filePath2 = tempDir.path() / "testPermissionsHolderFile2";
+    testhelpers::generateOrEditTestFile(filePath2);
+    CPPUNIT_ASSERT(!std::filesystem::exists(filePath2));
+
+    // Test with several instance of perms holder on the same folder
+    bool dummyRead = false;
+    bool write = false;
+    bool dummyExec = false;
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
+    CPPUNIT_ASSERT_EQUAL(false, write);
+    {
+        PermissionsHolder permsHolder(tempDir.path());
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
+        CPPUNIT_ASSERT_EQUAL(true, write);
+        {
+            PermissionsHolder permsHolder2(tempDir.path());
+            CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
+            CPPUNIT_ASSERT_EQUAL(true, write);
+            {
+                PermissionsHolder permsHolder3(tempDir.path());
+                CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
+                CPPUNIT_ASSERT_EQUAL(true, write);
+            }
+            CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
+            CPPUNIT_ASSERT_EQUAL(true, write);
+        }
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
+        CPPUNIT_ASSERT_EQUAL(true, write);
+    }
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
+    CPPUNIT_ASSERT_EQUAL(false, write);
 }
 
 } // namespace KDC
