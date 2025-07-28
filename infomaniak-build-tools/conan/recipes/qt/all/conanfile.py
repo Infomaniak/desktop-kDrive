@@ -278,164 +278,220 @@ class QtConan(ConanFile):
 
 
     def package_info(self):
-        from conan.tools.microsoft import is_msvc
-        from conan.tools.apple import is_apple_os
-
-        # --- Global properties ---
         self.cpp_info.set_property("cmake_file_name", "Qt6")
-        self.cpp_info.set_property("pkg_config_name", "qt6")
+        self.cpp_info.set_property("cmake_build_modules", [ pjoin(self.package_folder, "lib", "cmake", "Qt6", "Qt6Config.cmake") ])
+        self.cpp_info.set_property("cmake_find_mode", "none")
 
-        # --- Internal helpers ---
-        def _fix_requires(reqs):
-            corrected = []
-            for r in reqs:
-                if "::" in r:
-                    corrected.append(r)
-                else:
-                    comp = f"qt{r}"
-                    assert comp in self.cpp_info.components, f"Component '{comp}' not found in Qt components."
-                    corrected.append(comp)
-            return corrected
+        self.buildenv_info.prepend_path("CMAKE_PREFIX_PATH", self.package_folder)
+        self.runenv_info.prepend_path("CMAKE_PREFIX_PATH", self.package_folder)
 
-        def _add_module(name, requires=None, has_include=True):
-            requires = requires or []
-            comp_name = f"qt{name}"
-            comp = self.cpp_info.components[comp_name]
-            # CMake & pkg-config
-            comp.set_property("cmake_target_name", f"Qt6::{name}")
-            comp.set_property("pkg_config_name", f"qt6{name.lower()}")
-            # Frameworks, bin and libexec directories
-            comp.frameworks = [ f"Qt{name}" ]
-            comp.frameworkdirs = [ "lib" ]
-            # Includes
-            if has_include:
-                comp.includedirs = [
-                    os.path.join("include"),
-                    os.path.join("lib", f"Qt{name}.framework", "Headers")
-                ]
-            # Macro & flags
-            comp.defines = [f"QT_{name.upper()}_LIB"]
-            # internal dependencies (e.g. QtCore always required)
-            deps = (["Core"] if name != "Core" else []) + requires
-            comp.requires = _fix_requires(deps)
-
-        def _add_plugin(name, libname, folder, requires=None):
-            requires = requires or []
-            comp_name = f"qt{name}"
-            comp = self.cpp_info.components[comp_name]
-            comp.set_property("cmake_target_name", f"Qt6::{name}")
-            comp.set_property("pkg_config_name", f"qt6{name.lower()}")
-            comp.libs = [libname]
-            comp.libdirs = [os.path.join("plugins", folder)]
-            comp.requires = _fix_requires(["Core"] + requires)
-
-        _add_module("Core", requires=["zlib::zlib"])
-        if is_msvc(self):
-            core = self.cpp_info.components["qtCore"]
-            core.cxxflags.extend(["-permissive-", "-Zc:__cplusplus"])
-            core.system_libs.extend(["synchronization", "runtimeobject"])
-
-        modules = {
-            # Here, the order of the modules is important, the dependencies must be declared before the modules that depend on them.
-            "DBus": [],
-            "Gui": ["DBus"] if self.settings.os == "Linux" else [],
-            "Widgets": ["Gui"],
-            "Network": [],
-            "Sql": [],
-            "Svg": ["Widgets", "Gui"],
-            "SvgWidgets": ["Svg", "Widgets", "Gui"],
-            "Qml": ["Network"],
-            "QmlModels": ["Qml", "Network"],
-            "OpenGL": ["Gui"],
-            "Quick": ["QmlModels", "OpenGL", "Gui"],
-            "WebChannel": ["Qml", "Network"],
-            "Positioning": [],
-            "WebEngineCore": ["Quick", "QmlModels", "OpenGL", "Gui", "WebChannel", "Qml", "Network", "Positioning"],
-            "WebEngineWidgets": ["WebEngineCore"],
-        }
-        for mod, reqs in modules.items():
-            _add_module(mod, requires=reqs)
-
-        if self.settings.os == "Windows":
-            self.cpp_info.components["qtDBus"].system_libs += ["advapi32", "netapi32", "user32", "ws2_32"]
-            self.cpp_info.components["qtGui"].system_libs += [
-                "advapi32", "gdi32", "ole32", "shell32", "user32",
-                "d3d11", "dxgi", "dxguid", "d2d1", "dwrite"
-            ]
-
-        if is_apple_os(self):
-            gui = self.cpp_info.components["qtGui"]
-            gui.frameworks += ["CoreFoundation", "CoreGraphics", "CoreText", "Foundation", "ImageIO"]
-
-            _add_plugin("QCocoaIntegrationPlugin", "qcocoa", "platforms", requires=["Gui"])
-            cocoa = self.cpp_info.components["qtQCocoaIntegrationPlugin"]
-            cocoa.frameworks = [
-                "AppKit", "Carbon", "CoreServices", "CoreVideo",
-                "IOKit", "IOSurface", "Metal", "QuartzCore"
-            ]
-            cocoa.frameworkdirs = ["lib"]
-
-        self.cpp_info.bindirs = ["bin", "libexec"]
-        self.cpp_info.libdirs = self.cpp_info.frameworkdirs = ["lib"]
-        self.cpp_info.includedirs = ["include"]
-
-        cmake_folder = os.path.join(self.package_folder, "lib", "cmake")
-        find_modules = []
-        concerned_modules = list(modules.keys())
-        concerned_modules.append("Core")
-        if os.path.isdir(cmake_folder):
-            for module_name in concerned_modules:
-                for cmake_files in glob.glob(os.path.join(cmake_folder, f"Qt6{module_name}", f"*.cmake")):
-                    if os.path.isfile(cmake_files):
-                        find_modules.append(cmake_files)
-                        self.output.highlight(f"Found CMake module: {cmake_files}")
-        if find_modules:
-            self.cpp_info.set_property("cmake_build_modules", find_modules)
-        else:
-            raise ConanException(f"Could not find CMake module in '{cmake_folder}'.")
-
-        self._setup_environment()
-
-
-
-
-    def package_id(self):
-        self.info.settings.clear()
-
-    def _check_integrity(self):
+        self.cpp_info.includedirs = []
+        self.cpp_info.libdirs = []
+        self.cpp_info.bindirs = []
+        self.cpp_info.resdirs = []
+        self.cpp_info.srcdirs = []
+        self.cpp_info.frameworkdirs = []
+    #     from conan.tools.microsoft import is_msvc
+    #     from conan.tools.apple import is_apple_os
+    #     cmake_folder = pjoin(self.package_folder, "lib", "cmake")
+    #
+    #     # --- Global properties ---
+    #     self.cpp_info.set_property("cmake_file_name", "Qt6")
+    #     self.cpp_info.set_property("pkg_config_name", "qt6")
+    #
+    #     # --- Internal helpers ---
+    #     def _fix_requires(reqs): # From https://github.com/conan-io/conan-center-index/blob/b4dbaf64c861c70d5b4e558dd67fe5fe704799b6/recipes/qt/6.x.x/conanfile.py#L999-L1008
+    #         corrected = []
+    #         for r in reqs:
+    #             if "::" in r:
+    #                 corrected.append(r)
+    #             else:
+    #                 comp = f"qt{r}"
+    #                 assert comp in self.cpp_info.components, f"Component '{comp}' not found in Qt components."
+    #                 corrected.append(comp)
+    #         return corrected
+    #
+    #     def _add_module(name, requires=None, has_include=True):
+    #         requires = requires or []
+    #         comp_name = f"qt{name}"
+    #         comp = self.cpp_info.components[comp_name]
+    #         # CMake & pkg-config
+    #         comp.set_property("cmake_target_name", f"Qt6::{name}")
+    #         comp.set_property("pkg_config_name", f"qt6{name.lower()}")
+    #         # Frameworks, bin and libexec directories
+    #         comp.frameworks = [ f"Qt{name}" ]
+    #         comp.frameworkdirs = [ "lib" ]
+    #         # Includes
+    #         if has_include:
+    #             comp.includedirs = [
+    #                 pjoin("include"),
+    #                 pjoin("lib", f"Qt{name}.framework", "Headers")
+    #             ]
+    #         # Macro & flags
+    #         comp.defines = [f"QT_{name.upper()}_LIB"]
+    #         # internal dependencies (e.g. QtCore always required)
+    #         deps = (["Core"] if name != "Core" else []) + requires
+    #         comp.requires = _fix_requires(deps)
+    #
+    #     def _add_plugin(name, libname, folder, requires=None):
+    #         requires = requires or []
+    #         comp_name = f"qt{name}"
+    #         comp = self.cpp_info.components[comp_name]
+    #         comp.set_property("cmake_target_name", f"Qt6::{name}")
+    #         comp.set_property("pkg_config_name", f"qt6{name.lower()}")
+    #         comp.libs = [libname]
+    #         comp.libdirs = [pjoin("plugins", folder)]
+    #         comp.requires = _fix_requires(["Core"] + requires)
+    #
+    #     _add_module("Core", requires=["zlib::zlib"])
+    #     core = self.cpp_info.components["qtCore"]
+    #     if is_msvc(self):
+    #         core.cxxflags.extend(["-permissive-", "-Zc:__cplusplus"])
+    #         core.system_libs.extend(["synchronization", "runtimeobject"])
+    #     pkg_config_vars = [
+    #         "bindir=${prefix}/bin",
+    #         "libexecdir=${prefix}/libexec",
+    #         "exec_prefix=${prefix}",
+    #     ]
+    #     core.set_property("pkg_config_custom_content", "\n".join(pkg_config_vars))
+    #
+    #     modules = {
+    #         # Here, the order of the modules is important, the dependencies must be declared before the modules that depend on them.
+    #         "DBus": [],
+    #         "Gui": ["DBus"] if self.settings.os == "Linux" else [],
+    #         "Widgets": ["Gui"],
+    #         "Network": [],
+    #         "Sql": [],
+    #         "Svg": ["Widgets", "Gui"],
+    #         "SvgWidgets": ["Svg", "Widgets", "Gui"],
+    #         "Qml": ["Network"],
+    #         "QmlModels": ["Qml", "Network"],
+    #         "OpenGL": ["Gui"],
+    #         "Quick": ["QmlModels", "OpenGL", "Gui"],
+    #         "WebChannel": ["Qml", "Network"],
+    #         "Positioning": [],
+    #         "WebEngineCore": ["Quick", "QmlModels", "OpenGL", "Gui", "WebChannel", "Qml", "Network", "Positioning"],
+    #         "WebEngineWidgets": ["WebEngineCore"],
+    #         "Core5Compat": [],
+    #     }
+    #     for mod, reqs in modules.items():
+    #         _add_module(mod, requires=reqs)
+    #
+    #
+    #     linguist_cmake_dir = pjoin(cmake_folder, "Qt6LinguistTools")
+    #     if os.path.isdir(linguist_cmake_dir):
+    #         self.cpp_info.components["linguisttools"].set_property("cmake_module_file_name", "Qt6LinguistTools")
+    #         self.cpp_info.components["linguisttools"].set_property("cmake_module_target_name", "Qt6::LinguistTools")
+    #         self.cpp_info.components["linguisttools"].set_property("cmake_target_name", "Qt6::LinguistTools")
+    #         self.cpp_info.components["linguisttools"].set_property("cmake_find_mode", "module")
+    #         self.cpp_info.components["linguisttools"].builddirs.append(pjoin("lib", "cmake", "Qt6LinguistTools"))
+    #
+    #     if self.settings.os == "Windows":
+    #         self.cpp_info.components["qtDBus"].system_libs += ["advapi32", "netapi32", "user32", "ws2_32"]
+    #         self.cpp_info.components["qtGui"].system_libs += [
+    #             "advapi32", "gdi32", "ole32", "shell32", "user32",
+    #             "d3d11", "dxgi", "dxguid", "d2d1", "dwrite"
+    #         ]
+    #
+    #     if is_apple_os(self):
+    #         gui = self.cpp_info.components["qtGui"]
+    #         gui.frameworks += ["CoreFoundation", "CoreGraphics", "CoreText", "Foundation", "ImageIO"]
+    #
+    #         _add_plugin("QCocoaIntegrationPlugin", "qcocoa", "platforms", requires=["Gui"])
+    #         cocoa = self.cpp_info.components["qtQCocoaIntegrationPlugin"]
+    #         cocoa.frameworks = [
+    #             "AppKit", "Carbon", "CoreServices", "CoreVideo",
+    #             "IOKit", "IOSurface", "Metal", "QuartzCore"
+    #         ]
+    #         cocoa.frameworkdirs = ["lib"]
+    #
+    #     self.cpp_info.bindirs = ["bin", "libexec"]
+    #     self.cpp_info.libdirs = self.cpp_info.frameworkdirs = ["lib"]
+    #     self.cpp_info.includedirs = ["include"]
+    #
+    #     build_modules = []
+    #     concerned_modules = list(modules.keys())
+    #     concerned_modules.append("Core")
+    #
+    #     # Add the file Qt6QmlBuildInternals.cmake if Qml is in the concerned modules
+    #     if "Qml" in concerned_modules:
+    #         qml_internals = pjoin(cmake_folder, "Qt6Qml", "Qt6QmlBuildInternals.cmake")
+    #         if os.path.isfile(qml_internals):
+    #             build_modules.append(qml_internals)
+    #
+    #     qt6_global_build_modules = [
+    #         pjoin(cmake_folder, "Qt6", "Qt6Config.cmake")]  #glob.glob(pjoin(cmake_folder, "Qt6", "Qt*Helpers.cmake"))
+    #     if qt6_global_build_modules:
+    #         build_modules.extend(qt6_global_build_modules)
+    #
+    #     if self.cpp_info.components["linguisttools"] is not None:
+    #         linguist_files = glob.glob(pjoin(cmake_folder, "Qt6LinguistTools", "Qt6LinguistTools*.cmake"))
+    #         build_modules.extend(linguist_files)
+    #
+    #     # Add all the Qt6<ModuleName>Macros.cmake files for the concerned modules
+    #     if os.path.isdir(cmake_folder):
+    #         for module_name in concerned_modules:
+    #             macro_file = pjoin(cmake_folder, f"Qt6{module_name}", f"Qt6{module_name}Macros.cmake")
+    #             if os.path.isfile(macro_file):
+    #                 build_modules.append(macro_file)
+    #     # Add lrelease target module
+    #     # lrelease_module = pjoin(cmake_folder, "Qt6LinguistTools", "Qt6lreleaseTargets.cmake")
+    #     # build_modules.append(lrelease_module)
+    #     if build_modules:
+    #         self.cpp_info.set_property("cmake_build_modules", build_modules)
+    #     else:
+    #         raise ConanException(f"Could not find CMake module in '{cmake_folder}'.")
+    #
+    #     self._setup_environment()
+    #
+    # def package_id(self):
+    #     self.info.settings.clear()
+    #
+    def _package_check(self):
         expected_paths = [
-            os.path.join(self.package_folder, "bin"),
-            os.path.join(self.package_folder, "lib"),
-            os.path.join(self.package_folder, "libexec"),
-            os.path.join(self.package_folder, "include"),
+            pjoin(self.package_folder, "bin"),
+            pjoin(self.package_folder, "lib"),
+            pjoin(self.package_folder, "libexec"),
+            pjoin(self.package_folder, "include"),
         ]
 
         for path in expected_paths:
             if not os.path.exists(path):
                 raise ConanException(f"Missing expected file or directory: {path}")
-
-    def _setup_environment(self):
-        bin_path = os.path.join(self.package_folder, "bin")
-        libexec_path = os.path.join(self.package_folder, "libexec")
-        qt_plugins = os.path.join(self.package_folder, "plugins")
-        platforms_path = os.path.join(qt_plugins, "platforms")
-
-        # PATH
-        self.buildenv_info.prepend_path("PATH", bin_path)
-        self.buildenv_info.prepend_path("PATH", libexec_path)
-        self.runenv_info.prepend_path("PATH", bin_path)
-        self.runenv_info.prepend_path("PATH", libexec_path)
-
-        # Qt plugin paths
-        self.buildenv_info.define("QT_PLUGIN_PATH", qt_plugins)
-        self.runenv_info.define("QT_PLUGIN_PATH", qt_plugins)
-        self.buildenv_info.define("QT_QPA_PLATFORM_PLUGIN_PATH", platforms_path)
-        self.runenv_info.define("QT_QPA_PLATFORM_PLUGIN_PATH", platforms_path)
-
-        self.buildenv_info.define_path("QT_TOOLS_PATH", bin_path)
-        self.buildenv_info.define_path("QT_LIBEXEC_PATH", libexec_path)
-        self.buildenv_info.define_path("QT_LIB_DIR", os.path.join(self.package_folder, "lib"))
-        self.buildenv_info.define_path("QT_INCLUDE_DIR", os.path.join(self.package_folder, "include"))
-        self.buildenv_info.define_path("QT_HOST_PATH", self.package_folder)
-
-        self.buildenv_info.prepend_path("CMAKE_PREFIX_PATH", self.package_folder)
+    #
+    # def _setup_environment(self):
+    #     bin_path = pjoin(self.package_folder, "bin")
+    #     libexec_path = pjoin(self.package_folder, "libexec")
+    #     qt_plugins = pjoin(self.package_folder, "plugins")
+    #     platforms_path = pjoin(qt_plugins, "platforms")
+    #     lib_path = pjoin(self.package_folder, "lib")
+    #     include_path = pjoin(self.package_folder, "include")
+    #
+    #     # Inject into environment variables for build and run
+    #     self.buildenv_info.prepend_path("PATH", bin_path)
+    #     self.buildenv_info.prepend_path("PATH", libexec_path)
+    #     self.runenv_info.prepend_path("PATH", bin_path)
+    #     self.runenv_info.prepend_path("PATH", libexec_path)
+    #
+    #     self.buildenv_info.define("QT_PLUGIN_PATH", qt_plugins)
+    #     self.runenv_info.define("QT_PLUGIN_PATH", qt_plugins)
+    #     self.buildenv_info.define("QT_QPA_PLATFORM_PLUGIN_PATH", platforms_path)
+    #     self.runenv_info.define("QT_QPA_PLATFORM_PLUGIN_PATH", platforms_path)
+    #
+    #     self.buildenv_info.define_path("QT_TOOLS_PATH", bin_path)
+    #     self.buildenv_info.define_path("QT_LIBEXEC_PATH", libexec_path)
+    #     self.buildenv_info.define_path("QT_LIB_DIR", lib_path)
+    #     self.buildenv_info.define_path("QT_INCLUDE_DIR", include_path)
+    #     self.buildenv_info.define_path("QT_HOST_PATH", self.package_folder)
+    #
+    #     self.buildenv_info.prepend_path("CMAKE_PREFIX_PATH", self.package_folder)
+    #
+    #     extra_vars = {
+    #         "QT_PLUGIN_PATH": pjoin(self.package_folder, "plugins"),
+    #         "QT_QPA_PLATFORM_PLUGIN_PATH": pjoin(self.package_folder, "plugins", "platforms"),
+    #         "QT_LIBEXEC_PATH": pjoin(self.package_folder, "libexec"),
+    #         "QT_TOOLS_PATH": pjoin(self.package_folder, "bin"),
+    #     }
+    #
+    #     self.conf_info.define("tools.cmake.cmaketoolchain:extra_variables", extra_vars)
+    #     self.conf_info.define("user.qt:tools_directory", os.path.join(self.package_folder, "bin" if self.settings.os == "Windows" else "libexec"))
