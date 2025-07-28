@@ -1041,7 +1041,7 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
 
 IoError IoHelper::setRights(const SyncPath &path, const bool read, const bool write, const bool exec) noexcept {
     IoError ioError = IoError::Unknown;
-    (void) setRights(path, read, write, exec);
+    (void) setRights(path, read, write, exec, ioError);
     return ioError;
 }
 #endif
