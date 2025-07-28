@@ -16,18 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "extcommserver.h"
+#pragma once
+
+#include "socketcommserver.h"
+
+#include <string>
 
 namespace KDC {
 
-ExtCommChannel::ExtCommChannel() :
-    SocketCommChannel() {}
+class GuiCommChannel : public SocketCommChannel {
+    public:
+        GuiCommChannel();
+        uint64_t writeData(const char *data, uint64_t len) override;
+};
 
-uint64_t ExtCommChannel::writeData(const char *data, uint64_t len) {
-    return 0;
-}
-
-ExtCommServer::ExtCommServer(const std::string &name) :
-    SocketCommServer(name) {}
+class GuiCommServer : public SocketCommServer {
+    public:
+        GuiCommServer(const std::string &name);
+};
 
 } // namespace KDC

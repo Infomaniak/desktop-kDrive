@@ -18,21 +18,18 @@
 
 #pragma once
 
-#include "abstractcommserver.h"
+#include "socketcommserver.h"
 
 namespace KDC {
 
-class ExtCommServer : public AbstractCommServer {
+class ExtCommChannel : public SocketCommChannel {
     public:
-        ExtCommServer(const std::string &name);
-        ~ExtCommServer();
-
-        void close() override;
-        bool listen(const SyncPath &name) override;
-        std::shared_ptr<AbstractCommChannel> nextPendingConnection() override;
-        std::list<std::shared_ptr<AbstractCommChannel>> connections() override;
-
-        static bool removeServer(const SyncPath &);
+        ExtCommChannel();
+        uint64_t writeData(const char *data, uint64_t len) override;
 };
 
+class ExtCommServer : public SocketCommServer {
+    public:
+        ExtCommServer(const std::string &name);
+};
 } // namespace KDC

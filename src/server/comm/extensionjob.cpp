@@ -23,6 +23,7 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libparms/db/parmsdb.h"
 
+#include <QApplication>
 #include <QFileInfo>
 #include <QDir>
 #include <QClipboard>
@@ -426,13 +427,13 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
     std::unordered_map<int, std::shared_ptr<Vfs>>::const_iterator vfsMapIt;
     if (sync.dbId()) {
         syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
-        if (syncPalMapIt == _syncPalMap.end()) {
+        if (syncPalMapIt == _commManager->_syncPalMap.end()) {
             channel->sendMessage(response);
             return;
         }
 
         vfsMapIt = retrieveVfsMapIt(sync.dbId());
-        if (vfsMapIt == _vfsMap.end()) {
+        if (vfsMapIt == _commManager->_vfsMap.end()) {
             channel->sendMessage(response);
             return;
         }
@@ -534,7 +535,7 @@ void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_p
     }
 
     auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
-    if (syncPalMapIt == _syncPalMap.end()) return;
+    if (syncPalMapIt == _commManager->_syncPalMap.end()) return;
 
     // Get NodeId
     NodeId nodeId;
@@ -546,7 +547,7 @@ void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_p
 
     // Get thumbnail
     std::string thumbnail;
-    exitCode = _getThumbnail(fileData.driveDbId, nodeId, 256, thumbnail);
+    exitCode = _commManager->_getThumbnail(fileData.driveDbId, nodeId, 256, thumbnail);
     if (exitCode != ExitCode::Ok) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in getThumbnail - " << Utility::formatSyncPath(filePath));
         return;

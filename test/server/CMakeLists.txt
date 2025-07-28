@@ -59,11 +59,15 @@ if(APPLE)
         list(APPEND updater_DEPS ${SPARKLE_LIBRARY})
     endif()
 elseif(WIN32)
+    list(APPEND server_SRCS ${server_srcs_path}/comm/socketcommserver.h ${server_srcs_path}/comm/socketcommserver.cpp)
+    list(APPEND server_SRCS ${server_srcs_path}/comm/guicommserver.h ${server_srcs_path}/comm/guicommserver.cpp)
+    list(APPEND server_SRCS ${server_srcs_path}/comm/extcommserver.h ${server_srcs_path}/comm/extcommserver.cpp)
     list(APPEND server_SRCS ${server_srcs_path}/updater/windowsupdater.h ${server_srcs_path}/updater/windowsupdater.cpp ${server_srcs_path}/../common/utility_win.cpp)
-    list(APPEND server_SRCS ${server_srcs_path}/comm/extcommserver.h ${server_srcs_path}/comm/extcommserver.cpp)
 else()
-    list(APPEND server_SRCS ${server_srcs_path}/updater/linuxupdater.h ${server_srcs_path}/updater/linuxupdater.cpp ${server_srcs_path}/../common/utility_linux.cpp)
+    list(APPEND server_SRCS ${server_srcs_path}/comm/socketcommserver.h ${server_srcs_path}/comm/socketcommserver.cpp)
+    list(APPEND server_SRCS ${server_srcs_path}/comm/guicommserver.h ${server_srcs_path}/comm/guicommserver.cpp)
     list(APPEND server_SRCS ${server_srcs_path}/comm/extcommserver.h ${server_srcs_path}/comm/extcommserver.cpp)
+    list(APPEND server_SRCS ${server_srcs_path}/updater/linuxupdater.h ${server_srcs_path}/updater/linuxupdater.cpp ${server_srcs_path}/../common/utility_linux.cpp)
 endif()
 
 set(3rdparty_SRC
@@ -129,7 +133,6 @@ target_include_directories(${testserver_NAME} PRIVATE
 
 # Link
 target_link_libraries(${testserver_NAME}
-    Qt6::Svg
     updater
 )
 
@@ -140,16 +143,16 @@ endif()
 
 if(WIN32)
     target_link_libraries(${testserver_NAME}
-            debug
-            "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"
-            optimized
-            "C:/Program Files (x86)/cppunit/lib/cppunit_dll.lib")
+        debug
+        "C:/Program Files (x86)/cppunit/lib/cppunitd_dll.lib"
+        optimized
+        "C:/Program Files (x86)/cppunit/lib/cppunit_dll.lib")
 elseif(APPLE)
     target_link_libraries(${testserver_NAME}
-            "/usr/local/lib/libcppunit.dylib")
+        "/usr/local/lib/libcppunit.dylib")
 else()
     target_link_libraries(${testserver_NAME}
-            "/usr/local/lib/libcppunit.so")
+        "/usr/local/lib/libcppunit.so")
 endif()
 
 if(APPLE)
@@ -165,7 +168,8 @@ if(UNIX AND NOT APPLE)
     # For migrationparams
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(LIBSECRET IMPORTED_TARGET libsecret-1)
-    target_link_libraries(${testserver_NAME} PkgConfig::LIBSECRET)
+    target_link_libraries(${testserver_NAME}
+        PkgConfig::LIBSECRET)
 endif()
 
 # Install

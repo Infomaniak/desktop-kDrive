@@ -18,11 +18,9 @@
 
 #pragma once
 
-#include "libcommonserver/vfs/win/syncenginevfslib.h"
+#include "server/vfs/win/vfslib.h"
 #include "libcommonserver/vfs/vfs.h"
 #include "libcommonserver/vfs/plugin.h"
-
-#include <deque>
 
 #include <windows.h>
 
@@ -32,7 +30,7 @@
 
 namespace KDC {
 
-class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
+class VFS_EXPORT VfsWin : public Vfs {
         Q_OBJECT
         Q_INTERFACES(KDC::Vfs)
 
@@ -43,7 +41,7 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
 
         VirtualFileMode mode() const override;
 
-        bool socketApiPinStateActionsShown() const override { return false; }
+        bool showPinStateActions() const override { return false; }
 
         ExitInfo updateMetadata(const SyncPath &filePath, time_t creationTime, time_t modtime, int64_t size,
                                 const NodeId &fileId) override;

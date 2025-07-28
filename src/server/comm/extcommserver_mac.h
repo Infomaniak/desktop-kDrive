@@ -21,7 +21,6 @@
 #include "xpccommserver_mac.h"
 
 #include <string>
-#include <functional>
 
 class ExtCommServerPrivate;
 class ExtCommChannelPrivate;

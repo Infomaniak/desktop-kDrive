@@ -26,7 +26,6 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
-#include <unordered_map>
 #include <shobjidl_core.h>
 
 #include <QCoreApplication>

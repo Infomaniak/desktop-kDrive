@@ -16,18 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "extcommserver.h"
+#include "guicommserver.h"
 
 namespace KDC {
 
-ExtCommChannel::ExtCommChannel() :
+GuiCommChannel::GuiCommChannel() :
     SocketCommChannel() {}
 
-uint64_t ExtCommChannel::writeData(const char *data, uint64_t len) {
+uint64_t GuiCommChannel::writeData(const char *data, uint64_t len) {
     return 0;
 }
 
-ExtCommServer::ExtCommServer(const std::string &name) :
+GuiCommServer::GuiCommServer(const std::string &name) :
     SocketCommServer(name) {}
 
 } // namespace KDC

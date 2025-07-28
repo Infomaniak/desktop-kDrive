@@ -35,6 +35,7 @@
 #include "guicommserver_mac.h"
 #else
 #include "extcommserver.h"
+#include "guicommserver.h"
 #endif
 
 #include <QByteArray>
@@ -47,10 +48,10 @@
 
 #include <log4cplus/loggingmacros.h>
 
-namespace KDC {
+#define finderExtQuerySeparator Str("\\/")
+#define guiArgSeparator Str(";")
 
-static constexpr CommString finderExtQuerySeparator(Str("\\/"));
-static constexpr CommString guiArgSeparator(Str(";"));
+namespace KDC {
 
 CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<SyncPal>> &syncPalMap,
                          const std::unordered_map<int, std::shared_ptr<Vfs>> &vfsMap) :
@@ -225,7 +226,7 @@ SyncPath CommManager::createSocket() {
     name.append("-");
     name.append(Utility::userName());
     name.append("-");
-    name.append(generateRandomStringAlphaNum());
+    name.append(CommonUtility::generateRandomStringAlphaNum(5));
 
     SyncPath socketPath;
 #ifdef _WIN32
@@ -236,7 +237,7 @@ SyncPath CommManager::createSocket() {
 #endif
 
     // Delete/create socket file
-    CommServer::removeServer(socketPath);
+    SocketCommServer::removeServer(socketPath);
     if (const QFileInfo info(Path2QStr(socketPath)); !info.dir().exists()) {
         if (info.dir().mkpath(".")) {
             QFile::setPermissions(Path2QStr(socketPath),

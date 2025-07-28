@@ -142,10 +142,9 @@ using CommString = std::filesystem::path::string_type;
 #define CommString2QStr(s) QString::fromStdString(s)
 #endif
 
-static constexpr CommString messageCdeSeparator(Str(":"));
-static constexpr CommString messageArgSeparator(Str("\x1e"));
-
-static constexpr CommString responseToFinderArgSeparator(Str(":"));
+#define messageCdeSeparator Str(":")
+#define messageArgSeparator Str("\x1e")
+#define responseToFinderArgSeparator Str(":")
 
 namespace event_dump_files {
 static constexpr std::string_view serverCrashFileName(
