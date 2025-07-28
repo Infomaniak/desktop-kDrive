@@ -123,8 +123,6 @@ build_release() {
     exit 1
   fi
 
-
-
   source "$conan_generator_folder/conanbuild.sh"
 
   # Set defaults

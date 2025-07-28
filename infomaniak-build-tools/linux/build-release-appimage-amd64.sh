@@ -67,6 +67,8 @@ if [ ! -f "$conan_toolchain_file" ]; then
   exit 1
 fi
 
+source "$(dirname "$conan_toolchain_file")/conanbuild.sh"
+
 cd "$build_folder"
 
 cmake -DCMAKE_PREFIX_PATH="$QT_BASE_DIR" \

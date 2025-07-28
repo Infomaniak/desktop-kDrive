@@ -107,7 +107,6 @@ conan_dependencies_folder="$BUILD_DIR/conan/dependencies"
 bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" --output-dir="$conan_build_folder" --ci
 
 conan_toolchain_file="$(find "$conan_build_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
-conan_generator_folder="$(dirname "$conan_toolchain_file")"
 
 if [ ! -f "$conan_toolchain_file" ]; then
   echo "Conan toolchain file not found: $conan_toolchain_file"
@@ -117,7 +116,7 @@ fi
 # Build client
 cd "$BUILD_DIR"
 
-source "$conan_generator_folder/conanbuild.sh"
+source "$(dirname "$conan_toolchain_file")/conanbuild.sh"
 
 export KDRIVE_DEBUG=0
 
