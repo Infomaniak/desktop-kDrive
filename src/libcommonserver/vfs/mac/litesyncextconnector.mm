@@ -25,6 +25,7 @@
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
+#include "io/permissionsholder.h"
 
 #include <QDir>
 #include <QPixmap>
@@ -662,6 +663,8 @@ bool LiteSyncExtConnectorPrivate::setThumbnail(const QString &filePath, const QP
         return false;
     }
 
+    PermissionsHolder permsHolder(QStr2Path(filePath).parent_path());
+
     // Source image
     bool error = false;
     CGImageRef imageRef = pixmap.toImage().toCGImage();
@@ -876,6 +879,7 @@ bool LiteSyncExtConnector::vfsDehydratePlaceHolder(const QString &absoluteFilepa
     }
 
     const SyncPath stdPath = QStr2Path(absoluteFilepath);
+    PermissionsHolder permsHolder(stdPath);
 
     struct stat fileStat;
     if (stat(stdPath.c_str(), &fileStat) == -1) {
@@ -1029,6 +1033,7 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
     }
 
     QString path = localSyncPath + "/" + relativePath;
+    PermissionsHolder permsHolder(QStr2Path(path).parent_path());
 
     if (fileStat->st_mode == S_IFDIR) {
         SyncPath dirPath{QStr2Path(path)};
@@ -1138,21 +1143,24 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
             // Get file dates
             IoError ioError = IoError::Success;
             FileStat filestat;
-            if (!IoHelper::getFileStat(QStr2Path(filePath), &filestat, ioError)) {
-                LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(QStr2Path(filePath), ioError));
+            const auto stdFilePath = QStr2Path(filePath);
+            if (!IoHelper::getFileStat(stdFilePath, &filestat, ioError)) {
+                LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(stdFilePath, ioError));
                 return false;
             }
 
             if (ioError == IoError::NoSuchFileOrDirectory) {
-                LOGW_WARN(_logger, L"Item doesn't exist: " << Utility::formatSyncPath(QStr2Path(filePath)));
+                LOGW_WARN(_logger, L"Item doesn't exist: " << Utility::formatSyncPath(stdFilePath));
                 return false;
             } else if (ioError == IoError::AccessDenied) {
-                LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(QStr2Path(filePath)));
+                LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(stdFilePath));
                 return false;
             }
 
             SyncTime modificationDate = filestat.modificationTime;
             SyncTime creationDate = filestat.creationTime;
+
+            PermissionsHolder permsHolder(stdFilePath.parent_path());
 
             // Copy tmp file content to file
             @try {
@@ -1213,7 +1221,7 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
             }
 
             // Set file dates
-            if (const IoError ioError = IoHelper::setFileDates(QStr2Path(filePath), creationDate, modificationDate, false);
+            if (ioError = IoHelper::setFileDates(QStr2Path(filePath), creationDate, modificationDate, false);
                 ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_DEBUG(_logger, L"Item doesn't exist: " << Utility::formatPath(filePath));
                 return false;
@@ -1311,6 +1319,7 @@ bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, co
     }
 
     std::string stdPath = absoluteFilePath.toStdString();
+    PermissionsHolder permsHolder(QStr2Path(absoluteFilePath).parent_path());
 
     // Check status
     VfsStatus vfsStatus;
@@ -1503,6 +1512,7 @@ bool LiteSyncExtConnector::vfsProcessDirStatus(const QString &path, const QStrin
 }
 
 void LiteSyncExtConnector::vfsClearFileAttributes(const QString &path) {
+    PermissionsHolder permsHolder(QStr2Path(path).parent_path());
     removexattr(path.toStdString().c_str(), litesync_attrs::status.data(), 0);
     removexattr(path.toStdString().c_str(), litesync_attrs::pinState.data(), 0);
 }
