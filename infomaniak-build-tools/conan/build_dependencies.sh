@@ -25,7 +25,6 @@
 build_type="Debug"
 output_dir=""
 use_release_profile=false
-ci_mode=false
 # Preserve original arguments for output_dir resolution
 all_args=("$@")
 
@@ -44,7 +43,6 @@ while [[ $# -gt 0 ]]; do
 Usage: $0 [Debug|Release] [--output-dir=<output_dir>] [--ci] [--make-release] [--help]
   --help               Display this help message.
   --output-dir=<dir>   Set the output directory for the Conan packages.
-  --ci                 Enable CI mode
   --make-release       Use the 'infomaniak_release' Conan profile.
 
 There are three ways to set the output directory (in descending order of priority):
@@ -57,10 +55,6 @@ EOF
       exit 0
       ;;
     --output-dir=*) # Used by get_output_dir function
-      shift
-      ;;
-    --ci)
-      ci_mode=true
       shift
       ;;
     *)
@@ -216,14 +210,10 @@ log "- Platform: '$platform'"
 log "- Architecture option: '$architecture'"
 log "- Build type: '$build_type'"
 log "- Output directory: '$output_dir'"
-log "- CI Mode: '$($ci_mode && echo "enabled" || echo "disabled")'"
 echo
 
 
 qt_login_type_param="ini" # By default, use ini file for QT installer login type
-if [[ $ci_mode == true ]]; then
-    qt_login_type_param="envvars" # Use environment variables for CI mode
-fi
 
 # Create the conan package for xxHash.
 conan_recipes_folder="$conan_remote_base_folder/recipes"
@@ -236,11 +226,11 @@ if [ "$platform" = "darwin" ]; then
 fi
 
 log "Creating package Qt..."
-conan create "$conan_recipes_folder/qt/all/" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter -o "&:qt_login_type=$qt_login_type_param"
+conan create "$conan_recipes_folder/qt/all/" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter
 
 log "Installing dependencies..."
 # Install this packet in the build folder.
-conan install . --output-folder="$output_dir" --build=missing $architecture -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter -o "qt/*:qt_login_type=$qt_login_type_param"
+conan install . --output-folder="$output_dir" --build=missing $architecture -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter
 
 if [ $? -ne 0 ]; then
   error "Failed to install Conan dependencies."

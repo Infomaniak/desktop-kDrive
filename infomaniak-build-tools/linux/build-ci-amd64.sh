@@ -104,7 +104,7 @@ export SUFFIX=""
 conan_build_folder="$BUILD_DIR/conan"
 conan_dependencies_folder="$BUILD_DIR/conan/dependencies"
 
-bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" --output-dir="$conan_build_folder" --ci
+bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" --output-dir="$conan_build_folder"
 
 conan_toolchain_file="$(find "$conan_build_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
 
