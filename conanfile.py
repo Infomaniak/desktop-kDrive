@@ -15,8 +15,6 @@ class KDriveDesktop(ConanFile):
     generators = "CMakeDeps", "VirtualRunEnv"
 
     def generate(self):
-        # Forcer la génération du script PowerShell
-        self.conf.set("tools.env.virtualenv:powershell", "powershell")
         """
         Generate the CMake toolchain file.
         Removes the "generic_system" block from the toolchain file to avoid conflicts with msvc on windows.
