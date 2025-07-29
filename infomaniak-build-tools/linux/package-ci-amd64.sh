@@ -18,29 +18,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-app_dir="$PWD/build-linux/app"
 base_dir="$PWD"
+build_dir="$base_dir/build-linux"
+app_dir="$build_dir/app"
 
 cd "$app_dir"
 
-#
-find_qt_conan_path() {
-  IFS=':' read -ra path_dirs <<< "$CMAKE_PREFIX_PATH"
-  for dir in "${path_dirs[@]}"; do
-    if [[ "$dir" =~ ^/home/.*/\.conan2/p/b/qt[^/]*/p$ ]]; then # We find the path to the Qt Conan package from the CMAKE_PREFIX_PATH, the path is like `/home/$USER/.conan2/p/b/qt<some hash>/p`
-      echo "$dir"
-        return 0
-      fi
-  done
-  return 1
-}
+source "$base_dir/infomaniak-build-tools/linux/common-utils.sh"
 
-export QT_BASE_DIR="$(find_qt_conan_path)"
-export QTDIR="$QT_BASE_DIR"
-export QMAKE="$QT_BASE_DIR/bin/qmake"
-export PATH="$QT_BASE_DIR/bin:$QT_BASE_DIR/libexec:$PATH"
-export LD_LIBRARY_PATH="$QT_BASE_DIR/lib:$app_dir/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
-export PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
+QTDIR="$(find_qt_conan_path "$build_dir")"
+export QTDIR
+export QMAKE="$QTDIR/bin/qmake"
+export PATH="$QTDIR/bin:$QTDIR/libexec:$PATH"
+export LD_LIBRARY_PATH="$QTDIR/lib:$app_dir/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
+export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 mkdir -p "$app_dir/usr/plugins"
 
@@ -63,7 +54,7 @@ cp "$app_dir/usr/share/icons/hicolor/512x512/apps/kdrive-win.png" "$app_dir"
 cp -P /usr/local/lib64/libssl.so* "$app_dir/usr/lib/"
 cp -P /usr/local/lib64/libcrypto.so* "$app_dir/usr/lib/"
 cp -P -r /usr/lib/x86_64-linux-gnu/nss/ "$app_dir/usr/lib/"
-cp "$HOME/Qt/Tools/QtCreator/lib/Qt/lib/libQt6SerialPort.so.6" "$app_dir/usr/lib/"
+cp "$QTDIR/lib/libQt6SerialPort.so.6" "$app_dir/usr/lib/"
 
 "$HOME/desktop-setup/linuxdeploy-x86_64.AppImage" --appdir "$app_dir" -e "$app_dir/usr/bin/kDrive" -i "$app_dir/kdrive-win.png" -d "$app_dir/usr/share/applications/kDrive_client.desktop" --plugin qt --output appimage -v0
 

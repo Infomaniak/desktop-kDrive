@@ -158,7 +158,10 @@ build_release() {
 } 
 
 package_release() {
-  export QT_BASE_DIR="$HOME/Qt/6.2.3/gcc_64"
+  source "$src_dir/infomaniak-build-tools/linux/common-utils.sh"
+
+  QT_BASE_DIR="$(find_qt_conan_path "$build_dir")"
+  export QT_BASE_DIR
   export QTDIR="$QT_BASE_DIR"
   export QMAKE="$QT_BASE_DIR/bin/qmake"
   export PATH="$QT_BASE_DIR/bin:$QT_BASE_DIR/libexec:$PATH"
@@ -188,7 +191,7 @@ package_release() {
   cp "$src_dir/sync-exclude-linux.lst" "$app_dir/usr/bin/sync-exclude.lst"
   cp "$app_dir/usr/share/icons/hicolor/512x512/apps/kdrive-win.png" "$app_dir"
 
-  cp "$HOME/Qt/Tools/QtCreator/lib/Qt/lib/libQt6SerialPort.so.6" "$app_dir/usr/lib/"
+  cp "$QT_BASE_DIR/lib/libQt6SerialPort.so.6" "$app_dir/usr/lib/"
 
   "$HOME/desktop-setup/linuxdeploy-x86_64.AppImage" --appdir "$app_dir" -e "$app_dir/usr/bin/kDrive" -i "$app_dir/kdrive-win.png" -d "$app_dir/usr/share/applications/kDrive_client.desktop" --plugin qt --output appimage -v0
 

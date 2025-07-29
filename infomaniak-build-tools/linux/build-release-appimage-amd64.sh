@@ -25,14 +25,6 @@ set -xe
 mkdir -p /app
 mkdir -p /build
 
-# Set Qt-6.2
-export QT_BASE_DIR=/opt/qt6.2.3
-export QTDIR="$QT_BASE_DIR"
-export QMAKE="$QT_BASE_DIR/bin/qmake"
-export PATH="$QT_BASE_DIR/bin:$QT_BASE_DIR/libexec:$PATH"
-export LD_LIBRARY_PATH="$QT_BASE_DIR/lib:$LD_LIBRARY_PATH"
-export PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
-
 # Build client
 cd /build
 mkdir -p client
@@ -69,6 +61,17 @@ fi
 
 source "$(dirname "$conan_toolchain_file")/conanbuild.sh"
 
+source /src/infomaniak-build-tools/linux/common-utils.sh
+
+# Set Qt-6.2
+QT_BASE_DIR=$(find_qt_conan_path "/build")
+export QT_BASE_DIR
+export QTDIR="$QT_BASE_DIR"
+export QMAKE="$QT_BASE_DIR/bin/qmake"
+export PATH="$QT_BASE_DIR/bin:$QT_BASE_DIR/libexec:$PATH"
+export LD_LIBRARY_PATH="$QT_BASE_DIR/lib:$LD_LIBRARY_PATH"
+export PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
+
 cd "$build_folder"
 
 cmake -DCMAKE_PREFIX_PATH="$QT_BASE_DIR" \
@@ -97,11 +100,11 @@ make DESTDIR=/app install
 cd /app
 
 mkdir -p ./usr/plugins
-cp -P -r /opt/qt6.2.3/plugins/* ./usr/plugins/
+cp -P -r "$QTDIR"/plugins/* ./usr/plugins/
 
-cp -P -r /opt/qt6.2.3/libexec ./usr
-cp -P -r /opt/qt6.2.3/resources ./usr
-cp -P -r /opt/qt6.2.3/translations ./usr
+cp -P -r "$QTDIR"/libexec ./usr
+cp -P -r "$QTDIR"/resources ./usr
+cp -P -r "$QTDIR"/translations ./usr
 
 mv ./usr/lib/x86_64-linux-gnu/* ./usr/lib/ || echo "The folder /app/usr/lib/x86_64-linux-gnu/ might not exist." >&2
 
@@ -110,8 +113,8 @@ cp -P /usr/local/lib/libcrypto.so* ./usr/lib/
 
 cp -P -r /usr/lib/x86_64-linux-gnu/nss ./usr/lib/
 
-cp -P /opt/qt6.2.3/lib/libQt6WaylandClient.so* ./usr/lib
-cp -P /opt/qt6.2.3/lib/libQt6WaylandEglClientHwIntegration.so* ./usr/lib
+cp -P "$QTDIR"/lib/libQt6WaylandClient.so* ./usr/lib
+cp -P "$QTDIR"/lib/libQt6WaylandEglClientHwIntegration.so* ./usr/lib
 
 cp -P ./build/client/conan_dependencies/* ./usr/lib
 
@@ -133,7 +136,7 @@ rm -rf ./etc
 cp ./usr/share/icons/hicolor/512x512/apps/kdrive-win.png . # Workaround for linuxeployqt bug, FIXME
 
 # Build AppImage
-export LD_LIBRARY_PATH="/app/usr/lib/:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="/app/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
 
 /deploy/linuxdeploy/build/bin/linuxdeploy --appdir /app -e /app/usr/bin/kDrive -i /app/kdrive-win.png -d /app/usr/share/applications/kDrive_client.desktop --plugin qt --output appimage -v0
 
