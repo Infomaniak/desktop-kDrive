@@ -29,7 +29,7 @@ $runScript = Get-ChildItem -Path $BuildDir -Recurse -File -ErrorAction SilentlyC
 if (-not $runScript) {
     Err "Unable to find conanrun.ps1 in '$BuildDir' recursively."
 }
-& $runScript 2>$null
+& $runScript *> $null
 
 $pathEntries = $env:PATH -split ';'
 $conanEntries = $pathEntries | Where-Object { $_ -match '\\.conan2\\p\\' }
@@ -52,4 +52,4 @@ $deactivateRunScript = Get-ChildItem -Path $BuildDir -Recurse -File -ErrorAction
         Where-Object { $_.Name -ieq 'deactivate_conanrun.ps1' } |
         Select-Object -First 1 -ExpandProperty FullName
 # the script print Restoring environment, how to avoid this ?
-& $deactivateRunScript 2>$null
+& $deactivateRunScript *> $null
