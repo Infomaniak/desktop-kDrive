@@ -42,14 +42,12 @@ if ($runScript -like '*.ps1') {
 }
 
 $pathEntries = $env:PATH -split ';'
-Log "PATH: $($pathEntries -join ';')"
 $conanEntries = $pathEntries | Where-Object { $_ -match '\\.conan2\\p\\b\\' }
 if (-not $conanEntries) { Err "No directories in PATH contain '.conan2/p/b/'." }
-
+Log "PATH: $($conanEntries -join ';')"
 $pkgValue = if ($Package.Length -ge 5) { $Package.Substring(0,5) } else { $Package }
 $matchingDirs = $conanEntries | Where-Object {
-    $dirName = [IO.Path]::GetFileName($_)
-    $dirName -like "$pkgValue*"
+    (Split-Path (Split-Path (Split-Path $_ -Parent) -Parent) -Leaf) -like "$pkgValue*"
 }
 if (-not $matchingDirs) {
     Err "No directories found in PATH matching the package '$Package' (prefix '$pkgValue')."
