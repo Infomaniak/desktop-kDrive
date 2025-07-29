@@ -36,9 +36,6 @@ class KDriveDesktop(ConanFile):
             tc.variables["CMAKE_MACOSX_DEPLOYMENT_TARGET"] = "10.15"
         tc.generate()
 
-        vre = VirtualRunEnv(self)
-        vre.generate()
-
     def layout(self):
         cmake_layout(self)
 
