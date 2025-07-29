@@ -23,7 +23,19 @@ base_dir="$PWD"
 
 cd "$app_dir"
 
-export QT_BASE_DIR="$HOME/Qt/6.2.3/gcc_64"
+#
+find_qt_conan_path() {
+  IFS=':' read -ra path_dirs <<< "$CMAKE_PREFIX_PATH"
+  for dir in "${path_dirs[@]}"; do
+    if [[ "$dir" =~ ^/home/.*/\.conan2/p/b/qt[^/]*/p$ ]]; then # We find the path to the Qt Conan package from the CMAKE_PREFIX_PATH, the path is like `/home/$USER/.conan2/p/b/qt<some hash>/p`
+      echo "$dir"
+        return 0
+      fi
+  done
+  return 1
+}
+
+export QT_BASE_DIR="$(find_qt_conan_path)"
 export QTDIR="$QT_BASE_DIR"
 export QMAKE="$QT_BASE_DIR/bin/qmake"
 export PATH="$QT_BASE_DIR/bin:$QT_BASE_DIR/libexec:$PATH"
