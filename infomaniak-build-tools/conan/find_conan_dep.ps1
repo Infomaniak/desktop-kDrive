@@ -23,22 +23,12 @@ param(
 function Log { Write-Host "[INFO] $($args -join ' ')" }
 function Err { Write-Error "[ERROR] $($args -join ' ')" ; exit 1 }
 
-# Search for conanrun script in BuildDir
-Write-Host "[INFO] Searching for conanrun script in $BuildDir"
-$runScript = $null
-$possibleScripts = @('conanrun.ps1','conanrun.bat')
-foreach ($scriptName in $possibleScripts) {
-    $scriptPath = Join-Path $BuildDir $scriptName
-    if (Test-Path $scriptPath) {
-        $runScript = $scriptPath
-        break
-    }
-}
+$runScript = Get-ChildItem -Path "$BuildDir\*" -Recurse -Include 'conanrun.ps1','conanrun.bat' -File -ErrorAction SilentlyContinue |
+             Select-Object -First 1 -ExpandProperty FullName
 if (-not $runScript) {
     Err "Unable to find conanrun.ps1 or conanrun.bat in '$BuildDir'."
 }
 Write-Host "[INFO] Found conanrun script at $runScript"
-# Run the conanrun script with appropriate runner
 if ($runScript -like '*.ps1') {
     Log "Executing PowerShell script: $runScript"
     & $runScript
@@ -66,4 +56,3 @@ if ($matchingDirs.Count -gt 1) {
 }
 $packageDir = $matchingDirs[0]
 Write-Host "[INFO] Found package directory: $packageDir"
-
