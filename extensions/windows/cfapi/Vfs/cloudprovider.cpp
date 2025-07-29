@@ -117,7 +117,7 @@ bool CloudProvider::stop() {
         TRACE_ERROR(L"Error in CloudProviderRegistrar::Unregister!");
     }
 
-    TRACE_DEBUG(L"Cloud provider stoped");
+    TRACE_DEBUG(L"Cloud provider stopped");
 
     return true;
 }
