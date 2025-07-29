@@ -89,6 +89,9 @@ class QtConan(ConanFile):
                 "qt.tools.vcredist_msvc2019_x86"
             ])
 
+        if self.settings.os == "Linux":
+            modules.append("qt.tools.qtcreator_gui")
+
         return modules
 
     def _get_default_login_ini_location(self):
