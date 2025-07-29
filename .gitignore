@@ -197,3 +197,5 @@ cmake-build-debug*
 .venv/
 /infomaniak-build-tools/windows/ksigntool/.vs/ksigntool
 /src/new_gui/kDrive_client/.vs/kDrive_client
+/src/new_gui/kDrive client/.vs/kDrive client
+/src/new_gui/kDrive client/.vs/ProjectEvaluation
