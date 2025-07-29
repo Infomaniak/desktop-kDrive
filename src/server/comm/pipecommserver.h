@@ -22,6 +22,13 @@
 
 #include <thread>
 
+#ifdef _WIN32
+#include <windows.h>
+
+#define BUFSIZE 4096
+#define INSTANCES 4
+#endif
+
 namespace KDC {
 
 class PipeCommChannel : public AbstractCommChannel {
@@ -35,7 +42,16 @@ class PipeCommChannel : public AbstractCommChannel {
         bool canReadLine() const override;
         std::string id() const override;
 
-    private:
+#ifdef _WIN32
+        OVERLAPPED _oOverlap;
+        HANDLE _hPipeInst;
+        TCHAR _chRequest[BUFSIZE];
+        DWORD _cbRead;
+        TCHAR _chReply[BUFSIZE];
+        DWORD _cbToWrite;
+        BOOL _dwState;
+        BOOL _fPendingIO;
+#endif
 };
 
 class PipeCommServer : public AbstractCommServer {
@@ -44,25 +60,32 @@ class PipeCommServer : public AbstractCommServer {
         ~PipeCommServer();
 
         void close() override;
-        bool listen(const KDC::SyncPath &pipePath) override;
-        std::shared_ptr<KDC::AbstractCommChannel> nextPendingConnection() override;
-        std::list<std::shared_ptr<KDC::AbstractCommChannel>> connections() override;
+        bool listen(const SyncPath &pipePath) override;
+        std::shared_ptr<AbstractCommChannel> nextPendingConnection() override;
+        std::list<std::shared_ptr<AbstractCommChannel>> connections() override;
 
-        static bool removeServer(const KDC::SyncPath &path) {
-            return true;
-        }
+        static bool removeServer(const SyncPath &path) { return true; }
 
     private:
         SyncPath _pipePath;
         std::unique_ptr<std::thread> _thread;
         bool _isRunning{false};
         bool _stopAsked{false};
+        ExitInfo _exitInfo;
 
         static void executeFunc(PipeCommServer *server);
 
         void execute();
         void stop();
         void waitForExit();
+
+#ifdef _WIN32
+        std::vector<std::shared_ptr<PipeCommChannel>> _channels;
+
+        void disconnectAndReconnect(std::shared_ptr<PipeCommChannel> channel);
+        bool connectToNewClient(HANDLE, LPOVERLAPPED);
+        void getAnswerToRequest(std::shared_ptr<PipeCommChannel> channel);
+#endif
 };
 
 } // namespace KDC
