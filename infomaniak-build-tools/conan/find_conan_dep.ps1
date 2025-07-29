@@ -16,7 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #>
 param(
-    [Parameter(Mandatory=$true)][switch]$BuildDir = "",
+    [Parameter(Mandatory=$true)][switch]$BuildDir,
     [Parameter(Mandatory=$true)][string]$Package
 )
 
