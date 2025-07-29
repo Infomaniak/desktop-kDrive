@@ -181,8 +181,11 @@ ExitInfo FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
     if (std::error_code ec; !std::filesystem::exists(path, ec)) {
         if (ec) {
             LOGW_WARN(_logger, L"Failed to check if path exists for " << Utility::formatStdError(path, ec));
+            return {ExitCode::SystemError, ExitCause::Unknown};
         }
-        return {ExitCode::SystemError, ExitCause::Unknown};
+        LOGW_DEBUG(_logger, L"Folder " << Utility::formatSyncPath(path) << L" does not exist anymore. Registration aborted.");
+
+        return ExitCode::Ok;
     }
 
     const auto outcome = inotifyAddWatch(path);
