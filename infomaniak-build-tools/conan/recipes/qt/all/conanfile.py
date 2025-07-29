@@ -13,8 +13,8 @@ class QtConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
 
     options = {
-        # ini:       Read the qtaccount.ini file from the user's home directory to get the email and JWT token (default option; if the file does not exist, fallback to envvars)
-        # envvars:   Use the environment variable QT_INSTALLER_LOGIN_EMAIL to provide the email to the installer with the --email parameter. The JWT token must be set in the environment variable QT_INSTALLER_JWT_TOKEN.
+        # ini:       Read the qtaccount.ini file from the user's home directory to get the email and JWT token (default option; if the file does not exist)
+        # envvars:   Use the environment variable QT_INSTALLER_JWT_TOKEN to provide the JWT Token to the installer. You can find this token in an existing Qt installation in the file qtaccount.ini inside the folders described in the _get_default_login_ini_location func.
         # cli:   If the qtaccount.ini file exists, the online installer will use it; otherwise, it will prompt the user for their Qt account email and password. This cannot be used in CI/CD pipelines.
         "qt_login_type": ["ini", "envvars", "cli"],
     }
@@ -114,26 +114,9 @@ class QtConan(ConanFile):
     def requirements(self):
         self.requires("zlib/[>=1.2.11 <2]", options={ "shared": True }) # From https://conan.io/center/recipes/zlib
 
-    def _get_email_from_envvars(self):
-        """
-        Get the key and email from the environment variables.
-        :return: a tuple containing the environment variable key and the email.
-        """
-        from typing import Final
-        qt_email_env_var_key: Final = "QT_INSTALLER_LOGIN_EMAIL"
-        email = os.getenv(qt_email_env_var_key)
-        if self.options.qt_login_type != "envvars":
-            raise ConanInvalidConfiguration(f"Login type '{self.options.qt_login_type}' does not support environment variables. Please use 'envvars' login type.")
-        if email is None:
-            raise ConanException(f"Environment variable '{qt_email_env_var_key}' is not set. Please set it to your Qt account email.")
-        return qt_email_env_var_key, email
-
     def _check_envvars_login_type(self):
         if self.options.qt_login_type != "envvars":
             return
-        key, _ = self._get_email_from_envvars()
-        if os.getenv(key) is None:
-            raise ConanInvalidConfiguration(f"To be able to use the 'envvars' login type, you must set the environment variable '{key}' with your Qt account email.")
         if os.getenv("QT_INSTALLER_JWT_TOKEN") is None:
             raise ConanInvalidConfiguration("To be able to use the 'envvars' login type, you must set the environment variable 'QT_INSTALLER_JWT_TOKEN' with your Qt account JWT token. See https://doc.qt.io/qt-6/get-and-install-qt-cli.html#providing-login-information")
 
@@ -238,8 +221,7 @@ class QtConan(ConanFile):
 
         args = ["--root", f"{self.build_folder}/install"] + args
 
-        if self.options.qt_login_type == "envvars":
-            args = ["--email", self._get_email_from_envvars()[1]] + args
+        self._check_envvars_login_type() # If the login type is 'envvars', ensure that the required environment variable is set; otherwise, raise an error.
 
         args += ["install"] + self._get_qt_submodules(self.version)
 
@@ -290,13 +272,22 @@ class QtConan(ConanFile):
     def package(self):
         self.output.highlight("This step can take a while, please be patient...")
 
-        src_path = pjoin(self.build_folder, "install", self.version, self._subfolder_install()) # "./install/6.2.3/gcc_64" or "./install/6.2.3/msvc2019_64" or "./install/6.2.3/macos"
-        dst_path = self.package_folder
+        install_path = pjoin(self.build_folder, "install", self.version, self._subfolder_install()) # "./install/6.2.3/gcc_64" or "./install/6.2.3/msvc2019_64" or "./install/6.2.3/macos"
 
-        copy(self, "*", src=src_path, dst=dst_path)
+        copy(self, "*",
+             src=pjoin(self.build_folder, "install", self.version, self._subfolder_install()),
+             dst=self.package_folder
+             )
+
+        qtcreator_lib_path = pjoin(self.build_folder, "Tools", "QtCreator", "lib", "Qt", "lib")
+        if os.path.exists(qtcreator_lib_path):
+            copy(self, "libQt6SerialPort.so.6",
+                 src=qtcreator_lib_path,
+                 dst=pjoin(self.package_folder, "lib")
+                 )
 
         for folder in ("doc", "modules"):
-            rmdir(self, pjoin(dst_path, folder))
+            rmdir(self, pjoin(self.package_folder, folder))
 
 
     def package_info(self):
