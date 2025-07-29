@@ -116,7 +116,7 @@ fi
 # Build client
 cd "$BUILD_DIR"
 
-source "$(dirname "$conan_toolchain_file")/conanbuild.sh"
+source "$(dirname "$conan_toolchain_file")/conanrun.sh"
 
 export KDRIVE_DEBUG=0
 

@@ -81,7 +81,7 @@ if [ ! -f "$conan_toolchain_file" ]; then
   exit 1
 fi
 
-source "$(dirname "$conan_toolchain_file")/conanbuild.sh" # Load conan build script
+source "$(dirname "$conan_toolchain_file")/conanrun.sh" # Load conan build script
 
 # Configure
 pushd "$build_dir"
