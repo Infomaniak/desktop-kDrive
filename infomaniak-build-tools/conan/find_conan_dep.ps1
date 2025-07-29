@@ -34,7 +34,6 @@ if (-not $runScript) {
 $pathEntries = $env:PATH -split ';'
 $conanEntries = $pathEntries | Where-Object { $_ -match '\\.conan2\\p\\' }
 if (-not $conanEntries) { Err "No directories in PATH contain '.conan2/p/'." }
-Log "PATH: $($conanEntries -join ';')"
 $pkgValue = if ($Package.Length -ge 5) { $Package.Substring(0,5) } else { $Package }
 $matchingDirs = $conanEntries | Where-Object {
     (Split-Path (Split-Path (Split-Path $_ -Parent) -Parent) -Leaf) -like "$pkgValue*"
@@ -45,8 +44,9 @@ if (-not $matchingDirs) {
 if ($matchingDirs.Count -gt 1) {
     Err "Multiple directories found in PATH matching the package '$Package' (prefix '$pkgValue'). Please specify a more precise package name."
 }
-$packageDir = $matchingDirs[0]
-Write-Host "[INFO] Found package directory: $packageDir"
+
+$packageDir = $matchingDirs
+Write-Output $packageDir
 
 $deactivateRunScript = Get-ChildItem -Path $BuildDir -Recurse -File -ErrorAction SilentlyContinue |
         Where-Object { $_.Name -ieq 'deactivate_conanrun.ps1' } |
