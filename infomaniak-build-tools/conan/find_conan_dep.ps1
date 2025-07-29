@@ -27,7 +27,7 @@ $runScript = Get-ChildItem -Path $BuildDir -Recurse -File -ErrorAction SilentlyC
         Where-Object { $_.Name -ieq 'conanrun.ps1' } |
         Select-Object -First 1 -ExpandProperty FullName
 if (-not $runScript) {
-    Err "Unable to find conanrun.ps1 in '$BuildDir' recursively."
+    Err "Unable to recursively find conanrun.ps1 in '$BuildDir'."
 }
 & $runScript *> $null
 
