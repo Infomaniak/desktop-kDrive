@@ -3,6 +3,7 @@ import textwrap
 from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, cmake_layout
 from conan.tools.cmake.toolchain.blocks import VSRuntimeBlock
+from conan.tools.env import VirtualRunEnv
 
 
 class KDriveDesktop(ConanFile):
@@ -11,9 +12,11 @@ class KDriveDesktop(ConanFile):
     url = "https://github.com/Infomaniak/desktop-kdrive"
 
     settings = "os", "compiler", "build_type", "arch"
-    generators = "CMakeDeps"
+    generators = "CMakeDeps", "VirtualRunEnv"
 
     def generate(self):
+        # Forcer la génération du script PowerShell
+        self.conf.set("tools.env.virtualenv:powershell", "powershell")
         """
         Generate the CMake toolchain file.
         Removes the "generic_system" block from the toolchain file to avoid conflicts with msvc on windows.
@@ -34,6 +37,9 @@ class KDriveDesktop(ConanFile):
             tc.variables["CMAKE_OSX_ARCHITECTURES"] = "x86_64;arm64"
             tc.variables["CMAKE_MACOSX_DEPLOYMENT_TARGET"] = "10.15"
         tc.generate()
+
+        vre = VirtualRunEnv(self)
+        vre.generate()
 
     def layout(self):
         cmake_layout(self)
