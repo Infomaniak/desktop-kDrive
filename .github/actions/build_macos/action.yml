@@ -81,7 +81,6 @@ runs:
                    -o -iname 'libcrypto*.dylib' ')' \
                 -exec cp {} ./dependencies/ \; \
                 -exec echo "Conan dependency found -> " {} \;
-                if [[  ]]
             fi
           done
         shell: bash
