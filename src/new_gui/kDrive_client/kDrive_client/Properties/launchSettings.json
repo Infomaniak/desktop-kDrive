@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "kDrive_client (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "kDrive_client (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
