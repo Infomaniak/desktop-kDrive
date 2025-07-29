@@ -430,23 +430,27 @@ function Prepare-Archive {
     Write-Host "Copying dependencies to the folder $archivePath"
     foreach ($file in $dependencies) {
         if (($buildType -eq "Debug") -and (Test-Path -Path $file"d.dll")) {
-            Copy-Item -Path $file"d.dll" -Destination "$archivePath"
+            Copy-Item -Path "${file}d.dll" -Destination "$archivePath"
         } else {
-            Copy-Item -Path $file".dll" -Destination "$archivePath"
+            Copy-Item -Path "$file.dll" -Destination "$archivePath"
         }
     }
     $find_dep_script = "$path/infomaniak-build-tools/conan/find_conan_dep.ps1"
     $packages = @(
-        @{ Name = "xxhash";    Dlls = @("xxhash.dll") },
-        @{ Name = "log4cplus"; Dlls = @("log4cplus.dll") },
-        @{ Name = "openssl";   Dlls = @("libcrypto-3-x64.dll", "libssl-3-x64.dll") }
+        @{ Name = "xxhash";    Dlls = @("xxhash") },
+        @{ Name = "log4cplus"; Dlls = @("log4cplus") },
+        @{ Name = "openssl";   Dlls = @("libcrypto-3-x64", "libssl-3-x64") }
     )
 
     foreach ($pkg in $packages) {
         $args = @{ Package = $pkg.Name; BuildDir = $buildPath }
         $binFolder = & $find_dep_script @args
         foreach ($dll in $pkg.Dlls) {
-            Copy-Item -Path "$binFolder/$dll" -Destination "$archivePath"
+            if (($buildType -eq "Debug") -and (Test-Path -Path $file"d.dll")) {
+                Copy-Item -Path "$binFolder/${dll}d.dll" -Destination "$archivePath"
+            } else {
+                Copy-Item -Path "$binFolder/$dll.dll" -Destination "$archivePath"
+            }
         }
     }
 
