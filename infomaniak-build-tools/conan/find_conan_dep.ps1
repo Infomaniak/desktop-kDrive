@@ -23,10 +23,12 @@ param(
 function Log { Write-Host "[INFO] $($args -join ' ')" }
 function Err { Write-Error "[ERROR] $($args -join ' ')" ; exit 1 }
 
-$runScript = Get-ChildItem -Path "$BuildDir\*" -Recurse -Include 'conanrun.ps1','conanrun.bat' -File -ErrorAction SilentlyContinue |
-             Select-Object -First 1 -ExpandProperty FullName
+    # Recherche récursive de conanrun scripts dans BuildDir
+$runScript = Get-ChildItem -Path $BuildDir -Recurse -File -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -ieq 'conanrun.ps1' -or $_.Name -ieq 'conanrun.bat' } |
+        Select-Object -First 1 -ExpandProperty FullName
 if (-not $runScript) {
-    Err "Unable to find conanrun.ps1 or conanrun.bat in '$BuildDir'."
+    Err "Unable to find conanrun.ps1 or conanrun.bat in '$BuildDir' recursively."
 }
 Write-Host "[INFO] Found conanrun script at $runScript"
 if ($runScript -like '*.ps1') {
