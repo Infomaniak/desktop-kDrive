@@ -81,6 +81,15 @@ export CONTENTDIR="$BASEPATH/build-linux"
 export BUILD_DIR="$CONTENTDIR/build"
 export APPDIR="$CONTENTDIR/app"
 
+bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" --output-dir="$conan_build_folder"
+
+conan_toolchain_file="$(find "$conan_build_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
+
+if [ ! -f "$conan_toolchain_file" ]; then
+  echo "Conan toolchain file not found: $conan_toolchain_file"
+  exit 1
+fi
+
 conan_build_folder="$BUILD_DIR/conan"
 conan_dependencies_folder="$BUILD_DIR/conan/dependencies"
 
@@ -106,15 +115,6 @@ export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 # Set defaults
 export SUFFIX=""
-
-bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" --output-dir="$conan_build_folder"
-
-conan_toolchain_file="$(find "$conan_build_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
-
-if [ ! -f "$conan_toolchain_file" ]; then
-  echo "Conan toolchain file not found: $conan_toolchain_file"
-  exit 1
-fi
 
 # Build client
 cd "$BUILD_DIR"
