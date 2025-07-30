@@ -25,7 +25,6 @@ runs:
             ARGS="-u -t release"
           fi
           
-          export PATH="$HOME/.local/bin:$PATH"
           /usr/bin/env bash "$SCRIPT" $ARGS
         shell: bash
 

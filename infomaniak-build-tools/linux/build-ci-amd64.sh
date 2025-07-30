@@ -80,9 +80,11 @@ export BASEPATH="$PWD"
 export CONTENTDIR="$BASEPATH/build-linux"
 export BUILD_DIR="$CONTENTDIR/build"
 export APPDIR="$CONTENTDIR/app"
+conan_build_folder="$BUILD_DIR/conan"
+conan_dependencies_folder="$BUILD_DIR/conan/dependencies"
 
+export PATH="$HOME/.local/bin:$PATH" # the conan executable is located in ~/.local/bin on the ci runner
 bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" --output-dir="$conan_build_folder"
-
 conan_toolchain_file="$(find "$conan_build_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
 
 if [ ! -f "$conan_toolchain_file" ]; then
@@ -90,11 +92,8 @@ if [ ! -f "$conan_toolchain_file" ]; then
   exit 1
 fi
 
-conan_build_folder="$BUILD_DIR/conan"
-conan_dependencies_folder="$BUILD_DIR/conan/dependencies"
 
 source "$BASEPATH/infomaniak-build-tools/linux/common-utils.sh"
-
 QTDIR="$(find_qt_conan_path "$conan_build_folder")"
 export QTDIR
 
@@ -109,7 +108,7 @@ mkdir -p "$APPDIR"
 mkdir -p "$BUILD_DIR"
 
 export QMAKE="$QTDIR/bin/qmake"
-export PATH="$QTDIR/bin:$QTDIR/libexec:/home/runner/.local/bin:$PATH"
+export PATH="$QTDIR/bin:$QTDIR/libexec:$PATH"
 export LD_LIBRARY_PATH="$QTDIR/lib:$LD_LIBRARY_PATH"
 export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
