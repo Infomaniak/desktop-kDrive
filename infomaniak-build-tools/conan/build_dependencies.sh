@@ -144,7 +144,8 @@ if [ ! -d "infomaniak-build-tools/conan" ]; then
 fi
 
 if ! command -v conan >/dev/null 2>&1; then
-    error "Conan is not installed. Please install it first."
+  log "PATH: $PATH"
+  error "Conan is not installed. Please install it first."
 fi
 
 # Check if a conan profile exists
