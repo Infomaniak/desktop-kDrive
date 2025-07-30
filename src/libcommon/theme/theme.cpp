@@ -40,19 +40,15 @@ Theme *Theme::instance() {
 
 Theme::~Theme() {}
 
-QString Theme::appNameGUI() const {
+std::string Theme::appName() const {
     return APPLICATION_NAME;
 }
 
-QString Theme::appName() const {
-    return APPLICATION_SHORTNAME;
+std::string Theme::appClientName() const {
+    return std::string(APPLICATION_NAME) + "_client";
 }
 
-QString Theme::appClientName() const {
-    return QString(APPLICATION_SHORTNAME) + "_client";
-}
-
-QString Theme::version() const {
+std::string Theme::version() const {
     return KDRIVE_VERSION_STRING;
 }
 
@@ -77,7 +73,7 @@ QIcon Theme::themeIcon(const QString &name, bool sysTray, bool sysTrayMenuVisibl
                 QOperatingSystemVersion::current() > QOperatingSystemVersion::MacOSCatalina) {
                 flavor = QString("black");
             } else {
-                flavor = KDC::CommonUtility::hasDarkSystray() ? QString("white") : QString("black");
+                flavor = CommonUtility::hasDarkSystray() ? QString("white") : QString("black");
             }
         } else {
             flavor = QString("colored");
@@ -166,10 +162,6 @@ QString Theme::conflictHelpUrl() const {
 #endif
 }
 
-QString Theme::defaultClientFolder() const {
-    return appName();
-}
-
 void Theme::setSystrayUseMonoIcons(bool mono) {
     _mono = mono;
     emit systrayUseMonoIconsChanged(mono);
@@ -237,7 +229,7 @@ bool Theme::userGroupSharing() const {
 QString Theme::versionSwitchOutput() const {
     QString helpText;
     QTextStream stream(&helpText);
-    stream << appName() << QLatin1String(" version ") << version() << Qt::endl;
+    stream << QString::fromStdString(appName()) << QLatin1String(" version ") << QString::fromStdString(version()) << Qt::endl;
     stream << "Using Qt " << qVersion() << ", built against Qt " << QT_VERSION_STR << Qt::endl;
     stream << "Using '" << QSslSocket::sslLibraryVersionString() << "'" << Qt::endl;
     return helpText;

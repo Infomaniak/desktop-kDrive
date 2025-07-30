@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.16)
 if(APPLE)
     project(testsyncengine LANGUAGES C CXX OBJC OBJCXX)
 else()
@@ -7,7 +6,7 @@ endif()
 
 find_package(SQLite3 3.8.0 REQUIRED)
 find_package(Poco REQUIRED Foundation)
-find_package(log4cplus 2.1.0 REQUIRED)
+find_package(log4cplus 2.1.2 REQUIRED)
 
 set(testsyncengine_NAME ${APPLICATION_NAME}_test_syncengine)
 
@@ -60,9 +59,11 @@ set(testsyncengine_SRCS
         reconciliation/operation_generator/testoperationgeneratorworker.h reconciliation/operation_generator/testoperationgeneratorworker.cpp
         # Propagation
         propagation/operation_sorter/testoperationsorterworker.h propagation/operation_sorter/testoperationsorterworker.cpp
-        propagation/executor/testintegration.h propagation/executor/testintegration.cpp
         propagation/executor/testexecutorworker.h propagation/executor/testexecutorworker.cpp
         propagation/executor/testfilerescuer.h propagation/executor/testfilerescuer.cpp
+        integration/testintegration.h integration/testintegration.cpp
+        integration/testintegration_conflicts.cpp
+        integration/testintegration_basics.cpp
         # SyncPal
         syncpal/testsyncpal.h syncpal/testsyncpal.cpp
         syncpal/testsyncpalworker.h syncpal/testsyncpalworker.cpp

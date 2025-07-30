@@ -20,7 +20,45 @@
 
 set -ex
 
-build_dir="$PWD/build-linux"
+[[ "$(uname -s)" != "Darwin" ]] && echo "This script is intended to be run on macOS only." && exit 1
+
+src_dir="$HOME/Projects/desktop-kDrive"
+
+# Display help message
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") [options]
+
+Options:
+  --src-dir <dir>    Specify the host directory mapped to /src (default: \$HOME/Projects/desktop-kDrive)
+  -h, --help         Show this help message and exit
+EOF
+  }
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    --src-dir)
+      if [[ -n "$2" ]]; then
+        src_dir="$2"
+        shift 2
+      else
+        echo "Error: --src-dir requires a non-empty argument." >&2
+        exit 1
+      fi
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+
+
+build_dir="$src_dir/build-linux"
 client_dir="$build_dir/client"
 install_dir="$build_dir/install"
 
@@ -38,14 +76,24 @@ mkdir -p "$local_recipes_index"
 podman machine stop build_kdrive
 ulimit -n unlimited
 podman machine start build_kdrive
+
+# Volumes:
+# - "$HOME/Projects/desktop-kDrive" is the source code of the kDrive client.
+# - "$build_dir" is the build directory where the build will take place.
+# - "$install_dir" is the directory where the final AppImage will be placed.
+# - "$conan_cache_folder" is the conan cache folder.
+# - "$local_recipes_index" is the local recipes index for conan.
+# - "$HOME/Library/Application Support/Qt/" is the Qt login directory, which is used to store Qt settings and configurations.
+#   We need to mount it to give the container access to the login method used on the host machine.
 podman run --rm -it \
 	--privileged \
 	--ulimit nofile=4000000:4000000 \
-	--volume "$HOME/Projects/desktop-kDrive:/src" \
+	--volume "$src_dir:/src" \
 	--volume "$build_dir:/build" \
 	--volume "$install_dir:/install" \
 	--volume "$conan_cache_folder:/root/.conan2/p" \
 	--volume "$local_recipes_index:/root/.conan2/.local_recipes_index/" \
+	--volume "$HOME/Library/Application Support/Qt/:/root/.local/share/Qt/" \
 	--workdir "/src" \
 	--env APPLICATION_SERVER_URL="$APPLICATION_SERVER_URL" \
 	--env KDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \

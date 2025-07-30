@@ -164,7 +164,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
 }
 
 bool VirtualFilesCleaner::folderCanBeProcessed(std::filesystem::recursive_directory_iterator &dirIt) {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     // skip_permission_denied doesn't work on Windows
     try {
         bool dummy = dirIt->exists();
@@ -175,7 +175,8 @@ bool VirtualFilesCleaner::folderCanBeProcessed(std::filesystem::recursive_direct
 #endif
 
     if (dirIt->path().native().length() > CommonUtility::maxPathLength()) {
-        LOGW_WARN(_logger, L"Ignore " << Utility::formatSyncPath(dirIt->path()) << L" because size > " << CommonUtility::maxPathLength());
+        LOGW_WARN(_logger,
+                  L"Ignore " << Utility::formatSyncPath(dirIt->path()) << L" because size > " << CommonUtility::maxPathLength());
         return false;
     }
 

@@ -57,8 +57,8 @@ std::string RenameJob::getSpecificUrl() {
 
 ExitInfo RenameJob::setData() {
     Poco::JSON::Object json;
-    SyncName name = _absoluteFinalPath.filename().native();
-    json.set("name", name);
+    const SyncName name = _absoluteFinalPath.filename().native();
+    (void) json.set("name", name);
 
     std::stringstream ss;
     json.stringify(ss);

@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.16)
 if(APPLE)
     project(testparms LANGUAGES C CXX OBJC OBJCXX)
 else()
@@ -7,7 +6,7 @@ endif()
 
 find_package(SQLite3 3.8.0 REQUIRED)
 find_package(Poco REQUIRED Foundation)
-find_package(log4cplus 2.1.0 REQUIRED)
+find_package(log4cplus 2.1.2 REQUIRED)
 
 set(testparms_NAME ${APPLICATION_NAME}_test_parms)
 
@@ -61,3 +60,4 @@ if(APPLE)
     # Default Lite Sync app exclude list
     install(FILES ${CMAKE_SOURCE_DIR}/litesync-exclude.lst DESTINATION ${BIN_OUTPUT_DIRECTORY})
 endif()
+

@@ -52,7 +52,7 @@ void TestIo::testCheckSetAndGetRights() {
         bool isWritable = false;
         bool isExecutable = false;
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         // Test for a directory without any Explicit ACE (ie no inherited rights)
         CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError));
         CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
@@ -77,14 +77,14 @@ void TestIo::testCheckSetAndGetRights() {
          *  |  0   |   0   |    0    | v
          *  ...
          */
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         IoHelper::_getAndSetRightsMethod = 0; // Set the method to use the windows API
         for (int i = 0; i < 2; i++) { // Test Windows API and fallback method
 #endif
             for (int baseRights = 0; baseRights < 7; baseRights++) {
                 for (int targetRights = baseRights + 1; targetRights < 8; targetRights++) {
                     auto rightsSet = RightsSet(baseRights);
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
                     if (IoHelper::_getAndSetRightsMethod == 1 && (!rightsSet.execute || !rightsSet.read)) {
                         continue; // Skip the test if the rights are not supported by the current method
                     }
@@ -109,7 +109,7 @@ void TestIo::testCheckSetAndGetRights() {
                     }
 
                     rightsSet = RightsSet(targetRights);
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
                     if (IoHelper::_getAndSetRightsMethod == 1 && (!rightsSet.execute || !rightsSet.read)) {
                         continue; // Skip the test if the rights are not supported by the current method
                     }
@@ -134,7 +134,7 @@ void TestIo::testCheckSetAndGetRights() {
                     }
                 }
             }
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
             if (i == 0) {
                 CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod); // Check that no error occurred with the windows API
             }
@@ -163,7 +163,7 @@ void TestIo::testCheckSetAndGetRights() {
         bool isWritable = false;
         bool isExecutable = false;
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         // Test for a file without any Explicit ACE (ie no inherited rights)
         CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(filepath, isReadable, isWritable, isExecutable, ioError));
         CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
@@ -188,7 +188,7 @@ void TestIo::testCheckSetAndGetRights() {
          *  |  0   |   0   |    0    | v
          *  ...
          */
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 
         IoHelper::_getAndSetRightsMethod = 0; // Set the method to use the windows API
         for (int i = 0; i < 2; i++) { // Test Windows API and fallback method
@@ -197,7 +197,7 @@ void TestIo::testCheckSetAndGetRights() {
                  baseRights++) { // Test all the possible rights and the all the possible order of rights modification
                 for (int targetRights = baseRights + 1; targetRights < 8; targetRights++) {
                     auto rightsSet = RightsSet(baseRights);
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
                     if (IoHelper::_getAndSetRightsMethod == 1 && (!rightsSet.execute || !rightsSet.read)) {
                         continue; // Skip the test if the rights are not supported by the current method
                     }
@@ -221,7 +221,7 @@ void TestIo::testCheckSetAndGetRights() {
                     }
 
                     rightsSet = RightsSet(targetRights);
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
                     if (IoHelper::_getAndSetRightsMethod == 1 && (!rightsSet.execute || !rightsSet.read)) {
                         continue; // Skip the test if the rights are not supported by the current method
                     }
@@ -245,7 +245,7 @@ void TestIo::testCheckSetAndGetRights() {
                     }
                 }
             }
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
             if (i == 0) {
                 CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod); // Check that no error occurred with the windows API
             }
@@ -315,14 +315,14 @@ void TestIo::testCheckSetAndGetRights() {
 
         // Restore the rights
         IoHelper::setRights(path, true, true, true, ioError); // Restore the rights for delete
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod); // Check that no error occurred with the windows API
 #endif
     }
 
     // Test with inherited permissions on a directory
     {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         const LocalTemporaryDirectory temporaryDirectory("io_rights");
         const SyncPath path = temporaryDirectory.path() / "testCheckSetAndGetRights";
         const SyncPath subFolderPath = path / "subFolder";
@@ -417,7 +417,7 @@ void TestIo::testCheckSetAndGetRights() {
 
     // Test with inherited permissions on a file
     {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         const LocalTemporaryDirectory temporaryDirectory("io_rights");
         const SyncPath path = temporaryDirectory.path() / "testCheckSetAndGetRights";
         const SyncPath filePath = path / "file.txt";
@@ -525,7 +525,7 @@ void TestIo::testCheckSetAndGetRights() {
 
         CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::setRights(path, true, true, true, ioError));
         CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod); // Check that no error occurred with the wndows API
         IoHelper::_getAndSetRightsMethod = 1; // Set the method to use the std::filesystem method (fallback)
         CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError));
@@ -536,7 +536,7 @@ void TestIo::testCheckSetAndGetRights() {
 
 #endif
     }
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     IoHelper::_getAndSetRightsMethod = 0; // Set the method to use the std::filesystem method (fallback)
 #endif
 }

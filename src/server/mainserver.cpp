@@ -19,7 +19,6 @@
 #include "appserver.h"
 #include "config.h"
 #include "version.h"
-#include "common/utility.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/handler.h"
@@ -69,7 +68,7 @@ int main(int argc, char **argv) {
 
     // Working dir;
     KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
-#ifdef __unix__
+#if defined(KD_LINUX)
     const std::string value = KDC::CommonUtility::envVarValue("APPIMAGE");
     if (!value.empty()) {
         KDC::CommonUtility::_workingDirPath /= "usr/bin";

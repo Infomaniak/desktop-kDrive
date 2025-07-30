@@ -39,6 +39,9 @@
 #include <AclAPI.h>
 #include <AccCtrl.h>
 #define SECURITY_WIN32
+#include "utility/utility_base.h"
+
+
 #include <security.h>
 #include <winioctl.h>
 #include <winsock2.h>
@@ -71,9 +74,12 @@ IoError dWordError2ioError(DWORD error, log4cplus::Logger logger) noexcept {
             return IoError::NoSuchFileOrDirectory;
         case ERROR_NOT_SAME_DEVICE:
             return IoError::CrossDeviceLink;
+        case ERROR_FILE_CORRUPT:
+        case ERROR_DISK_CORRUPT:
+            return IoError::FileOrDirectoryCorrupted;
         default:
             if (Log::isSet()) {
-                LOGW_WARN(logger, L"Unhandled DWORD error: " << CommonUtility::getErrorMessage(error));
+                LOGW_WARN(logger, L"Unhandled DWORD error: " << utility_base::getErrorMessage(error));
             }
             return IoError::Unknown;
     }
@@ -145,7 +151,7 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
 
     if (hParent == INVALID_HANDLE_VALUE) {
         LOGW_INFO(logger(), L"Error in CreateFileW: " << Utility::formatSyncPath(path.parent_path()) << L", "
-                                                      << CommonUtility::getLastErrorMessage());
+                                                      << utility_base::getLastErrorMessage());
         return false;
     }
 
@@ -169,7 +175,7 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
 
     if (zwQueryDirectoryFile == 0) {
         LOGW_WARN(logger(), L"Error in GetProcAddress: " << Utility::formatSyncPath(path.parent_path()) << L", "
-                                                         << CommonUtility::getLastErrorMessage());
+                                                         << utility_base::getLastErrorMessage());
         return false;
     }
 
@@ -203,7 +209,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError 
                               FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
         if (hParent == INVALID_HANDLE_VALUE) {
             DWORD dwError = GetLastError();
-            if (CommonUtility::isLikeFileNotFoundError(dwError)) {
+            if (utility_base::isLikeFileNotFoundError(dwError)) {
                 ioError = IoError::NoSuchFileOrDirectory;
                 return true;
             }
@@ -890,26 +896,18 @@ static void UnixTimevalToFileTime(timeval t, LPFILETIME pft) {
 IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime creationDate, const SyncTime modificationDate,
                                const bool) noexcept {
     FILETIME creationTime;
-    if (creationDate) {
-        // Set creation time
-        timeval times[1];
-        times[0].tv_sec = creationDate;
-        times[0].tv_usec = 0;
-        UnixTimevalToFileTime(times[0], &creationTime);
-    } else {
-        GetSystemTimeAsFileTime(&creationTime);
-    }
+
+    // Set creation time
+    timeval times[1];
+    times[0].tv_sec = creationDate;
+    times[0].tv_usec = 0;
+    UnixTimevalToFileTime(times[0], &creationTime);
 
     FILETIME modificationTime;
-    if (modificationDate) {
-        // Set creation time
-        timeval times[1];
-        times[0].tv_sec = modificationDate;
-        times[0].tv_usec = 0;
-        UnixTimevalToFileTime(times[0], &modificationTime);
-    } else {
-        GetSystemTimeAsFileTime(&modificationTime);
-    }
+    // Set modification time
+    times[0].tv_sec = modificationDate;
+    times[0].tv_usec = 0;
+    UnixTimevalToFileTime(times[0], &modificationTime);
 
     HANDLE hFile = INVALID_HANDLE_VALUE;
     for (bool isDirectory: {false, true}) {
@@ -922,7 +920,7 @@ IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime creation
                 continue;
             }
 
-            if (CommonUtility::isLikeFileNotFoundError(dwError)) {
+            if (utility_base::isLikeFileNotFoundError(dwError)) {
                 return IoError::NoSuchFileOrDirectory;
             }
 
@@ -942,7 +940,7 @@ IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime creation
     if (!SetFileTime(hFile, &creationTime, NULL, &modificationTime)) {
         auto ioError = IoError::Unknown;
         DWORD dwError = GetLastError();
-        if (CommonUtility::isLikeFileNotFoundError(dwError)) {
+        if (utility_base::isLikeFileNotFoundError(dwError)) {
             ioError = IoError::NoSuchFileOrDirectory;
         }
         if (dwError == ERROR_ACCESS_DENIED) {
@@ -974,7 +972,7 @@ bool IoHelper::getLongPathName(const SyncPath &path, SyncPath &longPathName, IoE
     ioError = dWordError2ioError(GetLastError(), logger());
 
     if (ioError != IoError::Success && ioError != IoError::FileExists) {
-        LOGW_WARN(logger(), L"Error in GetLongPathNameW: " << CommonUtility::getLastErrorMessage());
+        LOGW_WARN(logger(), L"Error in GetLongPathNameW: " << utility_base::getLastErrorMessage());
         return false;
     }
 
@@ -1001,7 +999,7 @@ bool IoHelper::getShortPathName(const SyncPath &path, SyncPath &shortPathName, I
     ioError = dWordError2ioError(GetLastError(), logger());
 
     if (ioError != IoError::Success && ioError != IoError::FileExists) {
-        LOGW_WARN(logger(), L"Error in GetShortPathNameW: " << CommonUtility::getLastErrorMessage());
+        LOGW_WARN(logger(), L"Error in GetShortPathNameW: " << utility_base::getLastErrorMessage());
         return false;
     }
 

@@ -38,7 +38,7 @@ fi
 dir="$1"
 tester="$2"
 
-echo "${YELLOW}---------- Running $($tester) ----------${NC}"
+echo "${YELLOW}---------- Running $tester ----------${NC}"
 pushd "$dir" 1>/dev/null
 
 if [ ! -f "$tester" ]; then
@@ -47,13 +47,14 @@ if [ ! -f "$tester" ]; then
 fi
 
 chmod +x "$tester"
+export DYLD_LIBRARY_PATH="$PWD:/usr/local/lib:/usr/lib:$DYLD_LIBRARY_PATH"
 "./$tester"
 
 if [ $? -ne 0 ]; then
-    echo "${RED}---------- Failure: $($tester) ----------${NC}"
+    echo "${RED}---------- Failure: $tester ----------${NC}"
     exit 1
 else
-    echo "${GREEN}---------- Success: $($tester) ----------${NC}"
+    echo "${GREEN}---------- Success: $tester ----------${NC}"
 fi
 
 popd 1>/dev/null

@@ -84,7 +84,7 @@ void JobManager::queueAsyncJob(const std::shared_ptr<AbstractJob> job,
 }
 
 bool JobManager::isJobFinished(const UniqueId jobId) const {
-    return _data.isManaged(jobId);
+    return !_data.isManaged(jobId);
 }
 
 std::shared_ptr<AbstractJob> JobManager::getJob(const UniqueId jobId) const {
@@ -92,8 +92,11 @@ std::shared_ptr<AbstractJob> JobManager::getJob(const UniqueId jobId) const {
 }
 
 void JobManager::setPoolCapacity(const int nbThread) {
-    _maxNbThread = std::max(nbThread, 2); // Poco::ThreadPool throw an exception if the capacity is set to a value less than then
-                                          // minimum capacity (2 by default)
+    // Poco::ThreadPool throws an exception if the capacity is set to a
+    // value less than then minimum capacity (2 by default).
+    static_assert(threadPoolMinCapacity >= 2 && "Thread pool min capacity is too low.");
+
+    _maxNbThread = std::max(nbThread, threadPoolMinCapacity);
     Poco::ThreadPool::defaultPool().addCapacity(_maxNbThread - Poco::ThreadPool::defaultPool().capacity());
     LOG_DEBUG(_logger, "Max number of thread changed to " << _maxNbThread << " threads");
 }

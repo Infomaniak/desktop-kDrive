@@ -357,12 +357,44 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
 
     _syncPal->syncOps()->clear();
     {
-        // Case : DA DAA DAB D DB
+        // Case : DA DAA DAB D DB but operations are omitted.
+        opDA->setOmit(true);
         (void) _syncPal->syncOps()->pushOp(opDA);
+        opDAA->setOmit(true);
+        (void) _syncPal->syncOps()->pushOp(opDAA);
+        opDAB->setOmit(true);
+        (void) _syncPal->syncOps()->pushOp(opDAB);
+        opD->setOmit(true);
+        (void) _syncPal->syncOps()->pushOp(opD);
+        opDB->setOmit(true);
+        (void) _syncPal->syncOps()->pushOp(opDB);
+
+        do {
+            _syncPal->_operationsSorterWorker->_hasOrderChanged = false;
+            _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
+        } while (_syncPal->_operationsSorterWorker->_hasOrderChanged);
+
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opDA, opD));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opD, opDB));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opDA, opDAA));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opDA, opDAB));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opDAB, opDB));
+
+        opDA->setOmit(false);
+        opDAA->setOmit(false);
+        opDAB->setOmit(false);
+        opD->setOmit(false);
+        opDB->setOmit(false);
+    }
+
+    _syncPal->syncOps()->clear();
+    {
+        // Case : D DA DB DAA DAB
+        (void) _syncPal->syncOps()->pushOp(opD);
+        (void) _syncPal->syncOps()->pushOp(opDA);
+        (void) _syncPal->syncOps()->pushOp(opDB);
         (void) _syncPal->syncOps()->pushOp(opDAA);
         (void) _syncPal->syncOps()->pushOp(opDAB);
-        (void) _syncPal->syncOps()->pushOp(opD);
-        (void) _syncPal->syncOps()->pushOp(opDB);
 
         do {
             _syncPal->_operationsSorterWorker->_hasOrderChanged = false;
@@ -406,6 +438,30 @@ void TestOperationSorterWorker::testFixEditBeforeMove() {
 
     // Edit AAA
     (void) _testSituationGenerator.editNode(ReplicaSide::Local, *nodeAAA->id());
+    const auto editOp = generateSyncOperation(OperationType::Edit, nodeAAA);
+
+    (void) _syncPal->syncOps()->pushOp(editOp);
+    (void) _syncPal->syncOps()->pushOp(moveOp);
+
+    _syncPal->_operationsSorterWorker->_filter.filterOperations();
+    _syncPal->_operationsSorterWorker->fixEditBeforeMove();
+
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
+    std::unordered_map<UniqueId, uint32_t> mapIndex = {{editOp->id(), 0}, {moveOp->id(), 0}};
+    findIndexesInOpList(mapIndex);
+    CPPUNIT_ASSERT_LESS(mapIndex[editOp->id()], mapIndex[moveOp->id()]);
+}
+
+// edit before move, e.g. user moves an object "x" to "y" and edit "x/a" on the other side
+void TestOperationSorterWorker::testFixEditBeforeMove2() {
+    generateLotsOfDummySyncOperations(OperationType::Move, OperationType::Edit);
+
+    // Move A/AA to AA
+    const auto nodeAA = _testSituationGenerator.moveNode(ReplicaSide::Local, "aa", {});
+    const auto moveOp = generateSyncOperation(OperationType::Move, nodeAA);
+
+    // Edit A/AA/AAA
+    const auto nodeAAA = _testSituationGenerator.editNode(ReplicaSide::Remote, "aaa");
     const auto editOp = generateSyncOperation(OperationType::Edit, nodeAAA);
 
     (void) _syncPal->syncOps()->pushOp(editOp);
@@ -524,8 +580,9 @@ void TestOperationSorterWorker::testCheckAllMethods() {
 
 void TestOperationSorterWorker::testDifferentEncodings() {
     // Generate a MoveBeforeCreate situation but with different encodings
-    const auto nodeNfc = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "nfc", "", false);
-    nodeNfc->setName(testhelpers::makeNfcSyncName());
+    _testSituationGenerator.addItem(NodeType::File, "nfc", "");
+    const auto nodeNfc = _testSituationGenerator.getNode(ReplicaSide::Local, "nfc");
+    nodeNfc->setName(testhelpers::makeNfcSyncName()); // Rename node to "ééé" (NFC encoded)
 
     // Move "ééé" to B/"ééé"
     (void) _testSituationGenerator.moveNode(ReplicaSide::Local, nodeNfc->id().value(), "b");

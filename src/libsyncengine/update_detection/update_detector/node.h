@@ -96,7 +96,7 @@ class Node {
         inline InconsistencyType inconsistencyType() const { return _inconsistencyType; }
         inline OperationType changeEvents() const { return _changeEvents; }
         inline std::optional<SyncTime> createdAt() const { return _createdAt; }
-        inline std::optional<SyncTime> lastmodified() const { return _lastModified; }
+        inline std::optional<SyncTime> modificationTime() const { return _lastModified; }
         inline int64_t size() const { return _size; }
         inline std::optional<NodeId> id() const { return _id; }
         inline std::optional<NodeId> previousId() const { return _previousId; }
@@ -113,10 +113,10 @@ class Node {
         inline void setInconsistencyType(InconsistencyType newInconsistencyType) { _inconsistencyType = newInconsistencyType; }
         inline void addInconsistencyType(InconsistencyType newInconsistencyType) { _inconsistencyType |= newInconsistencyType; }
         inline void setCreatedAt(const std::optional<SyncTime> &createdAt) { _createdAt = createdAt; }
-        inline void setLastModified(const std::optional<SyncTime> &lastmodified) { _lastModified = lastmodified; }
+        inline void setModificationTime(const std::optional<SyncTime> &lastmodified) { _lastModified = lastmodified; }
         inline void setSize(int64_t size) { _size = size; }
         inline void setPreviousId(const std::optional<NodeId> &previousNodeId) { _previousId = previousNodeId; }
-        bool setParentNode(const std::shared_ptr<Node> &parentNode);
+        bool setParentNode(std::shared_ptr<Node> parentNode);
         inline void setMoveOriginInfos(const MoveOriginInfos &moveOriginInfos) { _moveOriginInfos = moveOriginInfos; }
         inline void clearMoveOriginInfos() { _moveOriginInfos.clear(); }
         inline void setStatus(const NodeStatus &status) { _status = status; }
@@ -148,6 +148,8 @@ class Node {
 
         bool isEditFromDeleteCreate() const;
 
+        void clear();
+
         [[nodiscard]] bool isRoot() const;
         [[nodiscard]] bool isCommonDocumentsFolder() const;
         [[nodiscard]] bool isSharedFolder() const;
@@ -163,6 +165,7 @@ class Node {
         // The node id should not be changed without also changing the map in the UpdateTree and the parent/child relationship in
         // other nodes
         inline void setId(const std::optional<NodeId> &nodeId) { _id = nodeId; }
+        [[nodiscard]] bool isParentValid(std::shared_ptr<const Node> parentNode) const;
 
         std::optional<DbNodeId> _idb = std::nullopt;
         ReplicaSide _side = ReplicaSide::Unknown;
@@ -186,7 +189,6 @@ class Node {
 
         bool _isTmp = false;
 
-        [[nodiscard]] bool isParentValid(std::shared_ptr<const Node> parentNode) const;
         friend class TestNode;
 };
 

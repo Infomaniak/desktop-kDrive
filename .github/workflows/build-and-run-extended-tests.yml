@@ -22,7 +22,7 @@ env:
   KDRIVE_TEST_CI_USER_ID: ${{ vars.KDRIVE_TEST_CI_USER_ID }}
   KDRIVE_TEST_CI_DRIVE_ID: ${{ vars.KDRIVE_TEST_CI_DRIVE_ID }}
   KDRIVE_TEST_CI_REMOTE_DIR_ID: ${{ vars.KDRIVE_TEST_CI_REMOTE_DIR_ID }}
-  KDRIVE_TEST_CI_LOCAL_PATH: ${{ vars.KDRIVE_TEST_CI_LOCAL_PATH }}
+  KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
   KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
   KDRIVE_TEST_CI_EXTENDED_TEST : true
@@ -198,7 +198,7 @@ jobs:
 
       - name: Clean-up generated code
         run : rm -rf build-linux
-
+  
   kChat_notification:
     if: ((github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && always())
     needs: [ Windows-extended-tests, MacOS-extended-tests, Linux-extended-tests ]
@@ -211,7 +211,7 @@ jobs:
         uses: actions/checkout@v4.1.1
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'develop' }}
-  
+
       - name: Notify kChat (Success or Failure)
         run:
           ./infomaniak-build-tools/notify_kchat.ps1 "[![Build and run extended tests](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/build-and-run-extended-tests.yml/badge.svg?branch=${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'develop' }})](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/build-and-run-extended-tests.yml)"

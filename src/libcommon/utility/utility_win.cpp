@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "libcommon/utility/utility.h"
-#include "libcommon/utility/types.h"
+#include "utility.h"
+#include "log/sentry/handler.h"
 
 #include <shlobj.h>
 #include <winbase.h>
@@ -41,23 +41,23 @@ static const char lightThemeKeyC[] = "SystemUsesLightTheme";
 
 namespace KDC {
 
-static SyncPath getAppSupportDir_private() {
+SyncPath CommonUtility::getGenericAppSupportDir() {
     if (PWSTR path = nullptr; SUCCEEDED(SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_NO_ALIAS, nullptr, &path))) {
         SyncPath appDataPath = path;
         CoTaskMemFree(path);
         return appDataPath;
     }
-    sentry::Handler::captureMessage(sentry::Level::Warning, "Utility_win::getAppSupportDir_private",
+    sentry::Handler::captureMessage(sentry::Level::Warning, "Utility_win::getGenericAppSupportDir",
                                     "Fail to get AppSupportDir through SHGetKnownFolderPath, using fallback method");
 
     return std::filesystem::temp_directory_path().parent_path().parent_path().native();
 }
 
-static KDC::SyncPath getAppDir_private() {
+SyncPath CommonUtility::getAppDir() {
     return "";
 }
 
-static inline bool hasDarkSystray_private() {
+bool CommonUtility::hasDarkSystray() {
     const QString themePath = QLatin1String(themePathC);
     const QSettings settings(themePath, QSettings::NativeFormat);
 
@@ -108,6 +108,11 @@ bool CommonUtility::normalizedSyncName(const SyncName &name, SyncName &normalize
     (void) normalizedName.assign(strResult, iSizeEstimated - 1);
     (void) HeapFree(hHeap, 0, strResult);
     return true;
+}
+
+std::string CommonUtility::toUnsafeStr(const SyncName &name) {
+    std::string unsafeName(name.begin(), name.end());
+    return unsafeName;
 }
 
 } // namespace KDC

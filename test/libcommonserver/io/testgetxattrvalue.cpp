@@ -20,7 +20,7 @@
 
 #include <filesystem>
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include <windows.h>
 #endif
 
@@ -29,7 +29,7 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestIo::testGetXAttrValue() {
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     // A regular file without any extended attributes
     {
         const SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg";
@@ -335,7 +335,7 @@ void TestIo::testGetXAttrValue() {
         CPPUNIT_ASSERT(ioError == IoError::AttrNotFound);
         CPPUNIT_ASSERT(value.empty());
     }
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
     // A regular file
     {
         const SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg";

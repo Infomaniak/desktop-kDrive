@@ -36,10 +36,6 @@ export CODE_SIGN_INJECT_BASE_ENTITLEMENTS="NO"
 src_dir="${1-$PWD}"
 app_name="kDrive"
 
-# define Qt6 directory
-QT_DIR="${QT_DIR-$HOME/Qt/6.2.3/macos}"
-export PATH="$QT_DIR/bin:$PATH"
-
 # Set Infomaniak Theme
 kdrive_dir="$src_dir/infomaniak"
 
@@ -78,7 +74,7 @@ if [ -n "$TEAM_IDENTIFIER" ] && [ -n "$SIGN_IDENTITY" ]; then
 	CMAKE_PARAMS+=(-DSOCKETAPI_TEAM_IDENTIFIER_PREFIX="$TEAM_IDENTIFIER.")
 fi
 
-bash infomaniak-build-tools/conan/build_dependencies.sh Release --output-dir="$conan_folder"
+bash infomaniak-build-tools/conan/build_dependencies.sh Release --output-dir="$conan_folder" --make-release
 
 conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
 
@@ -86,6 +82,15 @@ if [ ! -f "$conan_toolchain_file" ]; then
   echo "Conan toolchain file not found: $conan_toolchain_file"
   exit 1
 fi
+conan_build_folder="$(dirname "$conan_toolchain_file")"
+
+source "./infomaniak-build-tools/conan/common-utils.sh"
+QTDIR="$(find_qt_conan_path "$conan_build_folder")"
+export QTDIR
+export PATH="$QT_DIR/bin:$PATH"
+
+
+source "$conan_build_folder/conanbuild.sh"
 
 # Configure
 pushd "$build_dir"
@@ -132,7 +137,7 @@ if [ -n "$sign_files" ]; then
 	rm -rf "$install_dir/notorization" "$install_dir/notarization/"
 	mkdir -p "$install_dir/notarization"
 
-	for file in sign_files[@]; do
+	for file in "${sign_files[@]}"; do
 		cp -a "$file" "$install_dir/notarization"
 	done
 

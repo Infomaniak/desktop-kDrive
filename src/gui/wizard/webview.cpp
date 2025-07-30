@@ -140,13 +140,7 @@ void WebView::loadFinished(bool ok) {
         const QString host = _webview->url().host();
 
         if (host.contains("login.infomaniak.com", Qt::CaseSensitive)) { // Login Webview
-            MatomoClient::sendVisit(MatomoNameField::VW_LoginPage);
-#ifdef Q_OS_WIN
-        } else if (host.contains(QUrl(APPLICATION_STORAGE_URL).host(),
-                                 Qt::CaseSensitive)) { // Release Notes Webview (only on windows, see
-                                                       // 'src/gui/updater/updatedialog.cpp')
-            MatomoClient::sendVisit(MatomoNameField::WV_ReleaseNotes);
-#endif
+            MatomoClient::sendVisit(MatomoNameField::WV_LoginPage);
         } else { // Other Webview, shouldn't happen, there is no other Qt webview in the codebase.
             MatomoClient::sendVisit(MatomoNameField::Unknown);
         }

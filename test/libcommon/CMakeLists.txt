@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.16)
 if(APPLE)
     project(testcommon LANGUAGES C CXX OBJC OBJCXX)
 else()
@@ -6,7 +5,7 @@ else()
 endif()
 
 find_package(Poco REQUIRED Foundation)
-find_package(log4cplus 2.1.0 REQUIRED)
+find_package(log4cplus 2.1.2 REQUIRED)
 
 set(testcommon_NAME ${APPLICATION_NAME}_test_common)
 
@@ -21,6 +20,7 @@ set(testcommon_SRCS
         utility/testutility.cpp utility/testutility.h
         utility/testtypes.cpp utility/testtypes.h
         utility/testurlhelper.h utility/testurlhelper.cpp
+        utility/testjsonparserutility.h utility/testjsonparserutility.cpp
         log/sentry/testsentryhandler.h log/sentry/testsentryhandler.cpp
 )
 

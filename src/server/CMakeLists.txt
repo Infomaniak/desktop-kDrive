@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.16)
 if(APPLE)
     project(server LANGUAGES C CXX OBJC OBJCXX)
 else()
@@ -47,6 +46,7 @@ set(server_SRCS
     appserver.h appserver.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
+    requests/offlinefilessizeestimator.h requests/offlinefilessizeestimator.cpp
     app_resources.rc
 )
 
@@ -57,7 +57,6 @@ set(updater_SRCS
 )
 
 if(APPLE)
-    list(APPEND server_SRCS ../common/utility_mac.cpp)
     list(APPEND server_SRCS socketapisocket_mac.mm)
     set_property(SOURCE socketapisocket_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
@@ -77,10 +76,8 @@ if(APPLE)
                 DESTINATION "${KDRIVE_OSX_BUNDLE}/Contents/Frameworks" USE_SOURCE_PERMISSIONS)
     endif()
 elseif(WIN32)
-    list(APPEND server_SRCS ../common/utility_win.cpp)
     list(APPEND updater_SRCS updater/windowsupdater.h updater/windowsupdater.cpp)
 else()
-    list(APPEND server_SRCS ../common/utility_linux.cpp)
     list(APPEND updater_SRCS updater/linuxupdater.h updater/linuxupdater.cpp)
 endif()
 
@@ -257,7 +254,7 @@ endif()
 
 if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
     set(ENV_DEPLOY_LIBS_MANUALLY $ENV{DEPLOY_LIBS_MANUALLY})
-    if (NOT ENV_DEPLOY_LIBS_MANUALLY)
+    if (NOT ENV_DEPLOY_LIBS_MANUALLY OR NOT CMAKE_BUILD_TYPE MATCHES "Debug")
         set(ENV_QTDIR $ENV{QTDIR})
         set(ENV_DESTDIR $ENV{DESTDIR})
         set(ENV_DYLD_LIBRARY_PATH $ENV{DYLD_LIBRARY_PATH})

@@ -34,7 +34,6 @@
 #include "enablestateholder.h"
 #include "guirequests.h"
 #include "clientgui.h"
-#include "common/filesystembase.h"
 #include "libcommongui/matomoclient.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
@@ -399,7 +398,7 @@ void DrivePreferencesWidget::askEnableLiteSync(const std::function<void(bool)> &
         virtualFileMode == VirtualFileMode::Suffix) {
         CustomMessageBox msgBox(QMessageBox::Question, tr("Do you really want to turn on Lite Sync?"),
                                 tr("This operation may take from a few seconds to a few minutes depending on the size of the "
-                                   "folder to be converted."),
+                                   "folder."),
                                 false, QMessageBox::NoButton, this);
         msgBox.addButton(tr("CONFIRM"), QMessageBox::Yes);
         msgBox.addButton(tr("CANCEL"), QMessageBox::No);
@@ -431,7 +430,7 @@ void DrivePreferencesWidget::askDisableLiteSync(const std::function<void(bool, b
                                          " If you turn off Lite Sync, you need to select which folders to sync on your computer."
                                          " In the meantime, the synchronization of your kDrive will be paused.")
                                               .arg(KDC::CommonGuiUtility::octetsToString(diskSpaceMissing))
-                                    : tr("If you turn off Lite Sync, all files will sync locally on your computer."),
+                                    : tr("If you turn off Lite Sync, all files will be downloaded to your computer."),
                             diskSpaceWarning, QMessageBox::NoButton, this);
     msgBox.addButton(tr("CONFIRM"), QMessageBox::Yes);
     msgBox.addButton(tr("CANCEL"), QMessageBox::No);
@@ -657,7 +656,6 @@ bool DrivePreferencesWidget::addSync(const QString &localFolderPath, bool liteSy
                                      const QString &serverFolderNodeId, QSet<QString> blackSet, QSet<QString> whiteSet) {
     QString localFolderPathNormalized = QDir::fromNativeSeparators(localFolderPath);
 
-    FileSystem::setFolderMinimumPermissions(localFolderPathNormalized);
     KDC::CommonGuiUtility::setupFavLink(localFolderPathNormalized);
 
     int syncDbId;
@@ -900,8 +898,8 @@ void DrivePreferencesWidget::onAddLocalFolder(bool checked) {
                     }
 
                     serverFolderSize = serverFoldersDialog.selectionSize();
-                    blackList = serverFoldersDialog.createBlackList();
-                    whiteList = serverFoldersDialog.createWhiteList();
+                    blackList = serverFoldersDialog.getBlacklist();
+                    whiteList = serverFoldersDialog.getWhiteList();
                     qCDebug(lcDrivePreferencesWidget) << "Server subfolders selected";
                 }
             }
@@ -933,7 +931,6 @@ void DrivePreferencesWidget::onAddLocalFolder(bool checked) {
             // Setup local folder
             const QDir localFolderDir(localFolderPath);
             if (localFolderDir.exists()) {
-                FileSystem::setFolderMinimumPermissions(localFolderPath);
                 KDC::CommonGuiUtility::setupFavLink(localFolderPath);
                 qCDebug(lcDrivePreferencesWidget) << "Local folder setup: " << localFolderPath;
             } else {
@@ -975,13 +972,12 @@ void DrivePreferencesWidget::onLiteSyncSwitchSyncChanged(int syncDbId, bool acti
                 auto syncInfoMapIt = _gui->syncInfoMap().find(syncDbId);
                 if (syncInfoMapIt != _gui->syncInfoMap().end()) {
                     if (switchVfsOn(syncInfoMapIt->first)) {
-                        CustomMessageBox msgBox(QMessageBox::Information, tr("The conversion of the folder has succeeded."),
-                                                QMessageBox::Ok, this);
+                        CustomMessageBox msgBox(QMessageBox::Information, tr("Lite Sync activated."), QMessageBox::Ok, this);
                         msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
                     } else {
                         qCWarning(lcDrivePreferencesWidget()) << "Error when switching vfs on";
-                        CustomMessageBox msgBox(QMessageBox::Information, tr("The conversion of the folder has failed."),
-                                                QMessageBox::Ok, this);
+                        CustomMessageBox msgBox(QMessageBox::Information, tr("Lite Sync activation failed."), QMessageBox::Ok,
+                                                this);
                         msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
                     }
                 }
@@ -994,15 +990,13 @@ void DrivePreferencesWidget::onLiteSyncSwitchSyncChanged(int syncDbId, bool acti
                         auto syncInfoMapIt = _gui->syncInfoMap().find(syncDbId);
                         if (syncInfoMapIt != _gui->syncInfoMap().end()) {
                             if (switchVfsOff(syncInfoMapIt->first, diskSpaceWarning)) {
-                                CustomMessageBox msgBox(
-                                        QMessageBox::Information,
-                                        tr("The conversion of the folder has succeeded, it will now be synchronized"),
-                                        QMessageBox::Ok, this);
-                                msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
+                                CustomMessageBox msgBox(QMessageBox::Information, tr("Lite Sync deactivated."), QMessageBox::Ok,
+                                                        this);
+                                (void) msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
                             } else {
-                                CustomMessageBox msgBox(QMessageBox::Information, tr("The conversion of the folder has failed."),
+                                CustomMessageBox msgBox(QMessageBox::Information, tr("Lite Sync deactivation failed."),
                                                         QMessageBox::Ok, this);
-                                msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
+                                (void) msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
                             }
                         }
                     }
@@ -1217,15 +1211,16 @@ void DrivePreferencesWidget::onValidateUpdate(int syncDbId) {
             return;
         }
 
-        // Update the black list
-        QSet<QString> blackSet = treeItemWidget->createBlackSet();
+        // Update the blacklist
+        const QSet<QString> blackSet = treeItemWidget->createBlackSet();
+        if (!GuiUtility::checkBlacklistSize(blackSet.size(), this)) return;
         exitCode = GuiRequests::setSyncIdSet(syncDbId, SyncNodeType::BlackList, blackSet);
         if (exitCode != ExitCode::Ok) {
             qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::setSyncIdSet";
             return;
         }
 
-        // Update the white list
+        // Update the whitelist
         QSet<QString> whiteSet = (oldUndecidedSet + oldBlackSet) - blackSet;
         exitCode = GuiRequests::setSyncIdSet(syncDbId, SyncNodeType::WhiteList, whiteSet);
         if (exitCode != ExitCode::Ok) {

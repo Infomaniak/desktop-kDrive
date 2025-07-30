@@ -19,13 +19,12 @@
 #include "testhelpers.h"
 
 #include "libcommon/utility/utility.h"
-#include "libsyncengine/jobs/network/networkjobsparams.h"
 
 #include <fstream>
 #include <Poco/JSON/Object.h>
 
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include <sys/utime.h>
@@ -95,33 +94,4 @@ std::string loadEnvVariable(const std::string &key, const bool mandatory) {
     return val;
 }
 
-#ifdef _WIN32
-void setModificationDate(const SyncPath &path, const std::chrono::time_point<std::chrono::system_clock> &timePoint) {
-    struct _utimbuf timeBuffer;
-    const std::time_t timeInSeconds = std::chrono::system_clock::to_time_t(timePoint);
-
-    IoError ioError = IoError::Success;
-    FileStat fileStat;
-    ::KDC::IoHelper::getFileStat(path, &fileStat, ioError);
-
-    timeBuffer.actime = fileStat.creationTime;
-    timeBuffer.modtime = timeInSeconds;
-    _wutime(path.wstring().c_str(), &timeBuffer);
-}
-
-#else
-void setModificationDate(const SyncPath &path, const std::chrono::time_point<std::chrono::system_clock> &timePoint) {
-    struct stat fileStat;
-    struct utimbuf newTime;
-
-    const auto fileNameStr = path.string();
-    const auto fileName = fileNameStr.c_str();
-
-    stat(fileName, &fileStat);
-
-    const std::time_t timeInSeconds = std::chrono::system_clock::to_time_t(timePoint);
-    newTime.modtime = timeInSeconds;
-    utime(fileName, &newTime);
-}
-#endif
 } // namespace KDC::testhelpers

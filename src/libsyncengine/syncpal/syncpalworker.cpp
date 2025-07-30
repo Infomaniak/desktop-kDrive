@@ -82,7 +82,7 @@ void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
     LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " started");
     if (_syncPal->vfsMode() != VirtualFileMode::Off) {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         auto resetFunc = std::function<void()>([this]() { resetVfsFilesStatus(); });
         _resetVfsFilesStatusThread = StdLoggingThread(resetFunc);
 #else
@@ -122,7 +122,7 @@ void SyncPalWorker::execute() {
                         continue;
                     }
 
-                    syncDirChanged = fsoWorkers[index]->exitCode() == ExitCode::SystemError &&
+                    syncDirChanged = fsoWorkers[index]->exitCode() == ExitCode::DataError &&
                                      fsoWorkers[index]->exitCause() == ExitCause::SyncDirChanged;
                     if (syncDirChanged) {
                         break;
@@ -144,8 +144,8 @@ void SyncPalWorker::execute() {
             LOG_SYNCPAL_INFO(_logger,
                              "Sync dir changed and we are unable to automaticaly fix syncDb, stopping all workers and exiting");
             stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
-            exitCode = ExitCode::FatalError;
-            setExitCause(ExitCause::WorkerExited);
+            exitCode = ExitCode::DataError;
+            setExitCause(ExitCause::SyncDirChanged);
             break;
         }
 
@@ -211,7 +211,7 @@ void SyncPalWorker::execute() {
 
                 // Stop the step workers and restart a full sync
                 stopAndWaitForExitOfWorkers(stepWorkers);
-                _syncPal->invalideSnapshots();
+                _syncPal->tryToInvalidateSnapshots();
                 initStepFirst(stepWorkers, inputSharedObject, true);
                 continue;
             } else if (shouldBeStopped(stepWorkers[0], stepWorkers[1])) {
@@ -390,8 +390,8 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             _syncPal->stopEstimateUpdates();
-            _syncPal->resetSnapshotInvalidationCounters();
             if (!_syncPal->restart()) {
+                _syncPal->resetSnapshotInvalidationCounters();
                 _syncPal->setSyncHasFullyCompletedInParms(true);
             }
             sentry::pTraces::basic::Sync(syncDbId()).stop();
@@ -581,7 +581,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
             }
             SyncPath absolutePath;
             try {
-                if (dirIt->is_directory()) {
+                if (dirIt->is_directory() && !dirIt->is_symlink()) {
                     continue;
                 }
                 absolutePath = dirIt->path();
@@ -632,7 +632,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
             if (!vfsStatus.isPlaceholder) continue;
 
             const PinState pinState = _syncPal->vfs()->pinState(dirIt->path());
-#ifndef _WIN32 // Handle by the API on windows.
+#ifndef KD_WINDOWS // Handle by the API on windows.
             if (vfsStatus.isSyncing) {
                 // Force status to dehydrate
                 if (const ExitInfo exitInfo = _syncPal->vfs()->forceStatus(dirIt->path(), VfsStatus()); !exitInfo) {

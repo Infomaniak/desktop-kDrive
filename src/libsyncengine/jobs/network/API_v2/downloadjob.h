@@ -37,6 +37,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
         inline const NodeId &localNodeId() const { return _localNodeId; }
         inline SyncTime creationTime() const { return _creationTimeOut; }
         inline SyncTime modificationTime() const { return _modificationTimeOut; }
+        [[nodiscard]] inline int64_t size() const { return _sizeOut; }
 
         [[nodiscard]] int64_t expectedSize() const { return _expectedSize; }
 
@@ -70,7 +71,8 @@ class DownloadJob : public AbstractTokenNetworkJob {
                            bool &fetchError);
         //! Create a tmp file from a std::string
         bool createTmpFile(const std::string &data, bool &writeError);
-        bool hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace);
+        static bool hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace,
+                                   SyncPath &lowDiskSpacePath, log4cplus::Logger logger);
 
         NodeId _remoteFileId;
         SyncPath _localpath;
@@ -87,6 +89,8 @@ class DownloadJob : public AbstractTokenNetworkJob {
         SyncTime _creationTimeOut = 0; // The effective creation time of the file on the local filesystem, it may differ from
                                        // _creationTimeIn if we fail to set it locally
         SyncTime _modificationTimeOut = 0;
+        int64_t _sizeOut = -1; // Do not use 0 here as it is a valid size.
+
         const std::shared_ptr<Vfs> _vfs;
         bool _isHydrated{true};
 

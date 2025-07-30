@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.16)
 if(APPLE)
     project(gui LANGUAGES C CXX OBJC OBJCXX)
 else()
@@ -44,7 +43,6 @@ set(client_UI_SRCS
 
 set(client_SRCS
     ../libcommongui/commclient.h ../libcommongui/commclient.cpp
-    ../common/filesystembase.h ../common/filesystembase.cpp
     ../libcommongui/logger.h ../libcommongui/logger.cpp
     clientgui.h clientgui.cpp
     debugreporter.h debugreporter.cpp
@@ -405,7 +403,7 @@ endif()
 
 if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
     set(ENV_DEPLOY_LIBS_MANUALLY $ENV{DEPLOY_LIBS_MANUALLY})
-    if (NOT ENV_DEPLOY_LIBS_MANUALLY)
+    if (NOT ENV_DEPLOY_LIBS_MANUALLY OR NOT CMAKE_BUILD_TYPE MATCHES "Debug")
         set(ENV_QTDIR $ENV{QTDIR})
         set(ENV_DESTDIR $ENV{DESTDIR})
         set(ENV_DYLD_LIBRARY_PATH $ENV{DYLD_LIBRARY_PATH})

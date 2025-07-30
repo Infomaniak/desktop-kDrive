@@ -160,7 +160,7 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
             // Node exists
             currentNodeIt->second->insertChangeEvent(OperationType::Delete);
             currentNodeIt->second->setCreatedAt(deleteOp->createdAt());
-            currentNodeIt->second->setLastModified(deleteOp->lastModified());
+            currentNodeIt->second->setModificationTime(deleteOp->lastModified());
             currentNodeIt->second->setSize(deleteOp->size());
             currentNodeIt->second->setIsTmp(false);
             if (ParametersCache::isExtendedLogEnabled()) {
@@ -216,7 +216,7 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
                     return ExitCode::DataError;
                 }
                 newNode->setCreatedAt(deleteOp->createdAt());
-                newNode->setLastModified(deleteOp->lastModified());
+                newNode->setModificationTime(deleteOp->lastModified());
                 newNode->setSize(deleteOp->size());
                 newNode->insertChangeEvent(OperationType::Delete);
                 newNode->setIsTmp(false);
@@ -346,7 +346,7 @@ bool UpdateTreeWorker::updateTmpFileNode(std::shared_ptr<Node> newNode, const FS
         return false;
     }
     newNode->setCreatedAt(op->createdAt());
-    newNode->setLastModified(op->lastModified());
+    newNode->setModificationTime(op->lastModified());
     newNode->setSize(op->size());
     newNode->insertChangeEvent(opType);
     newNode->setIsTmp(false);
@@ -414,7 +414,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
                 return ExitCode::DataError;
             }
             currentNode->setCreatedAt(op->createdAt());
-            currentNode->setLastModified(op->lastModified());
+            currentNode->setModificationTime(op->lastModified());
             currentNode->setSize(op->size());
             currentNode->insertChangeEvent(opType);
             currentNode->setIsTmp(false);
@@ -549,7 +549,7 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
         }
 
         currentNode->setCreatedAt(createOp->createdAt());
-        currentNode->setLastModified(createOp->lastModified());
+        currentNode->setModificationTime(createOp->lastModified());
         currentNode->setSize(createOp->size());
         currentNode->insertChangeEvent(createOp->operationType());
         currentNode->setIsTmp(false);
@@ -592,7 +592,7 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
                     return ExitCode::DataError;
                 }
                 newNode->setCreatedAt(operation->createdAt());
-                newNode->setLastModified(operation->lastModified());
+                newNode->setModificationTime(operation->lastModified());
                 newNode->setSize(operation->size());
                 newNode->insertChangeEvent(operation->operationType());
                 newNode->setIsTmp(false);
@@ -667,7 +667,7 @@ ExitCode UpdateTreeWorker::step7EditFile() {
         if (newNode != nullptr) {
             // Node already exists, update it
             newNode->setCreatedAt(editOp->createdAt());
-            newNode->setLastModified(editOp->lastModified());
+            newNode->setModificationTime(editOp->lastModified());
             newNode->setSize(editOp->size());
             newNode->insertChangeEvent(editOp->operationType());
             if (!_updateTree->updateNodeId(newNode, editOp->nodeId())) {
@@ -890,8 +890,8 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
         if (currentNodeIt != _updateTree->nodes().end()) {
             // verify if the same node exist
             const std::shared_ptr<Node> currentNode = currentNodeIt->second;
-            const std::shared_ptr<Node> alreadyExistNode = _updateTree->getNodeByPath(moveOp->destinationPath());
-            if (alreadyExistNode && alreadyExistNode->isTmp()) {
+            if (const std::shared_ptr<Node> alreadyExistNode = _updateTree->getNodeByPath(moveOp->destinationPath());
+                alreadyExistNode && alreadyExistNode->isTmp()) {
                 // merging nodes we keep currentNode
                 if (!mergingTempNodeToRealNode(alreadyExistNode, currentNode)) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::mergingTempNodeToRealNode");
@@ -899,20 +899,21 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
                 }
             }
 
-            // create node if not exist
+            currentNode->setMoveOriginInfos({moveOp->path(), moveOriginParentId.value()});
+            currentNode->insertChangeEvent(OperationType::Move);
+            currentNode->setCreatedAt(moveOp->createdAt());
+            currentNode->setModificationTime(moveOp->lastModified());
+            currentNode->setSize(moveOp->size());
+            currentNode->setName(moveOp->destinationPath().filename().native());
+            currentNode->setIsTmp(false);
+
+            // Create the parent node if it does not exist
             std::shared_ptr<Node> parentNode;
             if (const auto exitCode = getOrCreateNodeFromExistingPath(moveOp->destinationPath().parent_path(), parentNode);
                 exitCode != ExitCode::Ok) {
                 LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getOrCreateNodeFromExistingPath");
                 return exitCode;
             }
-
-            currentNode->setMoveOriginInfos({moveOp->path(), moveOriginParentId.value()});
-            currentNode->insertChangeEvent(OperationType::Move);
-            currentNode->setCreatedAt(moveOp->createdAt());
-            currentNode->setLastModified(moveOp->lastModified());
-            currentNode->setSize(moveOp->size());
-            currentNode->setIsTmp(false);
 
             // delete the current Node from children list of old parent
             if (!currentNode->parentNode()->deleteChildren(currentNode)) {
@@ -923,7 +924,6 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
                 return ExitCode::DataError;
             }
 
-            currentNode->setName(moveOp->destinationPath().filename().native());
 
             // set new parent
             if (!currentNode->setParentNode(parentNode)) {
@@ -1212,8 +1212,8 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
         if (!node->createdAt().has_value()) {
             node->setCreatedAt(dbNode.created());
         }
-        if (!node->lastmodified().has_value()) {
-            node->setLastModified(_side == ReplicaSide::Local ? dbNode.lastModifiedLocal() : dbNode.lastModifiedRemote());
+        if (!node->modificationTime().has_value()) {
+            node->setModificationTime(_side == ReplicaSide::Local ? dbNode.lastModifiedLocal() : dbNode.lastModifiedRemote());
         }
         if (node->size() == 0) {
             node->setSize(dbNode.size());

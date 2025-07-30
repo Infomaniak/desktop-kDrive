@@ -20,13 +20,12 @@
 
 #include "libcommon/libcommon.h"
 #include "types.h"
-#include "utility_base.h"
 
 #include <string>
 #include <thread>
 #include <random>
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include <strsafe.h>
 #endif
 
@@ -52,11 +51,11 @@ struct COMMON_EXPORT CommonUtility {
         static const int logsPurgeRate; // Delay after which the logs are purged, expressed in days
         static const int logMaxSize;
 
-        static QString getIconPath(IconType iconType);
+        static std::string getIconPath(IconType iconType);
         static SyncPath _workingDirPath;
 
         static bool hasDarkSystray();
-        static bool setFolderCustomIcon(const QString &folderPath, IconType iconType);
+        static bool setFolderCustomIcon(const SyncPath &folderPath, IconType iconType);
 
         static std::string generateRandomStringAlphaNum(int length = 10);
         static std::string generateRandomStringPKCE(int length = 10);
@@ -115,15 +114,21 @@ struct COMMON_EXPORT CommonUtility {
         static size_t maxPathLength();
 
         static bool isSubDir(const SyncPath &path1, const SyncPath &path2);
-        static bool isDiskRootFolder(const SyncPath &absolutePath);
-
+        /**
+         * @brief Determines if the given path is the root folder of a disk and optionally suggests a corrected path.
+         * @param absolutePath The absolute path to check for being a disk root folder.
+         * @param suggestedPath Reference to a path variable where a suggested corrected path may be stored if the input is not a
+         * disk root.
+         * @return True if the given path is a disk root folder; otherwise, false.
+         */
+        static bool isDiskRootFolder(const SyncPath &absolutePath, SyncPath &suggestedPath);
         static const std::string dbVersionNumber(const std::string &dbVersion);
         static bool isVersionLower(const std::string &currentVersion, const std::string &targetVersion);
 
         static bool dirNameIsValid(const SyncName &name);
         static bool fileNameIsValid(const SyncName &name);
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         static const std::string loginItemAgentId();
         static const std::string liteSyncExtBundleId();
         static bool isLiteSyncExtEnabled();
@@ -137,19 +142,12 @@ struct COMMON_EXPORT CommonUtility {
         static void writeSignalFile(AppType appType, SignalType signalType) noexcept;
         static void clearSignalFile(AppType appType, SignalCategory signalCategory, SignalType &signalType) noexcept;
 
-        static bool isLikeFileNotFoundError(const std::error_code &ec) noexcept {
-            return utility_base::isLikeFileNotFoundError(ec);
-        };
 
-
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         // Converts a std::wstring to std::string assuming that it contains only mono byte chars
         static std::string toUnsafeStr(const SyncName &name);
-
-        static std::wstring getErrorMessage(DWORD errorMessageId) { return utility_base::getErrorMessage(errorMessageId); }
-        static std::wstring getLastErrorMessage() { return utility_base::getLastErrorMessage(); };
-        static bool isLikeFileNotFoundError(DWORD dwError) noexcept { return utility_base::isLikeFileNotFoundError(dwError); };
 #endif
+        static bool isLikeFileNotFoundError(const std::error_code &ec) noexcept;
 
         static QString truncateLongLogMessage(const QString &message);
 
@@ -198,7 +196,6 @@ struct COMMON_EXPORT CommonUtility {
         static SyncName preferredPathSeparator();
 
 
-        //
         //! Computes and returns the NFC and NFD normalizations of `name`.
         /*!
           \param name is the string the normalizations of which are queried.
@@ -206,18 +203,21 @@ struct COMMON_EXPORT CommonUtility {
           The returned set contains additionally the SyncName name in any case.
         */
         static SyncNameSet computeSyncNameNormalizations(const SyncName &name);
-
-        //
         //! Computes and returns all possible NFC and NFD normalizations of `path` segments
         //! interpreted as a file system path.
         /*!
           \param templateString is the path string the normalizations of which are queried.
           \return a set of SyncNames containing the NFC and NFD normalizations of path, when those are successful.
-          The returned set contains additionally the string path in any case.
+          The returned set additionally contains the string path in any case.
         */
         static SyncNameSet computePathNormalizations(const SyncName &path);
 
         static ReplicaSide syncNodeTypeSide(SyncNodeType type);
+
+        // Convenience OS detection methods
+        static bool isWindows();
+        static bool isMac();
+        static bool isLinux();
 
     private:
         static std::mutex _generateRandomStringMutex;
@@ -227,7 +227,6 @@ struct COMMON_EXPORT CommonUtility {
 
         static void extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion);
 
-        //
         //! Computes recursively and returns all possible NFC and NFD normalizations of `pathSegments` segments
         //! interpreted as a file system path.
         /*!
@@ -240,7 +239,6 @@ struct COMMON_EXPORT CommonUtility {
         */
         static SyncNameSet computePathNormalizations(const std::vector<SyncName> &pathSegments, const int64_t lastIndex);
 
-        //
         //! Computes recursively and returns all possible NFC and NFD normalizations of `pathSegments` segments
         //! interpreted as a file system path.
         /*!
@@ -249,6 +247,8 @@ struct COMMON_EXPORT CommonUtility {
           The returned set contains additionally the concatenated pathSegments in any case.
         */
         static SyncNameSet computePathNormalizations(const std::vector<SyncName> &pathSegments);
+
+        static SyncPath getGenericAppSupportDir();
 };
 
 struct COMMON_EXPORT StdLoggingThread : public std::thread {

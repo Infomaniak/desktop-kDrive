@@ -384,7 +384,7 @@ void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydra
             return;
         }
         for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
             // skip_permission_denied doesn't work on Windows
             try {
                 bool dummy = dirIt->exists();
@@ -481,6 +481,14 @@ ExitInfo VfsMac::updateFetchStatus(const SyncPath &tmpPathStd, const SyncPath &p
         return handleVfsError(fullPath);
     }
 
+    return ExitCode::Ok;
+}
+
+ExitInfo VfsMac::updateFetchStatus(const SyncPath &absolutePath, const std::string &status) {
+    if (!_connector->vfsUpdateFetchStatus(Path2QStr(absolutePath), QString::fromStdString(status))) {
+        LOG_WARN(logger(), "Error in vfsUpdateFetchStatus!");
+        return handleVfsError(absolutePath);
+    }
     return ExitCode::Ok;
 }
 

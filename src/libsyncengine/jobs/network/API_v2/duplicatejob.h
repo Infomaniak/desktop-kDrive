@@ -27,18 +27,18 @@ class DuplicateJob : public AbstractTokenNetworkJob {
     public:
         DuplicateJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId,
                      const SyncPath &absoluteFinalPath);
-        ~DuplicateJob();
+        ~DuplicateJob() override;
 
         inline const NodeId &nodeId() const { return _nodeId; }
         inline SyncTime modtime() const { return _modtime; }
 
     protected:
-        virtual bool handleResponse(std::istream &is) override;
+        bool handleResponse(std::istream &is) override;
 
     private:
-        virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &, bool &) override {}
-        virtual ExitInfo setData() override;
+        std::string getSpecificUrl() override;
+        void setQueryParameters(Poco::URI &, bool &) override { /* No query parameters */ }
+        ExitInfo setData() override;
 
         NodeId _remoteFileId;
         SyncPath _absoluteFinalPath;

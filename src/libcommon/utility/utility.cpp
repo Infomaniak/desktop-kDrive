@@ -35,17 +35,20 @@
 #include <sstream>
 #include <signal.h>
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include <Poco/Util/WinRegistryKey.h>
 #endif
 
-#ifndef _WIN32
+#ifndef KD_WINDOWS
 #include <utf8proc.h>
 #endif
 
 #ifdef ZLIB_FOUND
 #include <zlib.h>
 #endif
+
+#include "utility_base.h"
+
 
 #include <QDir>
 #include <QTranslator>
@@ -58,13 +61,8 @@
 #include <QSqlQuery>
 #include <QOperatingSystemVersion>
 
-#if defined(Q_OS_WIN)
-#include "utility_win.cpp"
-#elif defined(Q_OS_MAC)
-#include "utility_mac.cpp"
+#if defined(Q_OS_MAC)
 #include <mach-o/dyld.h>
-#else
-#include "utility_linux.cpp"
 #endif
 
 #define MAX_PATH_LENGTH_WIN_LONG 32767
@@ -72,7 +70,7 @@
 #define MAX_PATH_LENGTH_MAC 1023
 #define MAX_PATH_LENGTH_LINUX 4096
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 constexpr char liteSyncExtBundleIdStr[] = "com.infomaniak.drive.desktopclient.LiteSyncExt";
 constexpr char loginItemAgentIdStr[] = "864VDCS2QY.com.infomaniak.drive.desktopclient.LoginItemAgent";
 #endif
@@ -165,7 +163,7 @@ const std::string &CommonUtility::userAgentString() {
     static std::string str;
     if (str.empty()) {
         std::stringstream ss;
-        ss << APPLICATION_SHORTNAME << " / " << KDRIVE_VERSION_STRING << " (" << platformName().toStdString() << ")";
+        ss << APPLICATION_NAME << " / " << KDRIVE_VERSION_STRING << " (" << platformName().toStdString() << ")";
         str = ss.str();
     }
     return str;
@@ -210,7 +208,7 @@ void CommonUtility::resetTranslations() {
     }
 }
 
-QString CommonUtility::getIconPath(const IconType iconType) {
+std::string CommonUtility::getIconPath(const IconType iconType) {
     switch (iconType) {
         case KDC::CommonUtility::MAIN_FOLDER_ICON:
             return "../Resources/kdrive-mac.icns"; // TODO : To be changed to a specific incs file
@@ -228,21 +226,7 @@ QString CommonUtility::getIconPath(const IconType iconType) {
             break;
     }
 
-    return QString();
-}
-
-bool CommonUtility::setFolderCustomIcon(const QString &folderPath, IconType iconType) {
-#ifdef Q_OS_MAC
-    if (!setFolderCustomIcon_private(folderPath, getIconPath(iconType))) {
-        return false;
-    }
-    return true;
-#else
-    Q_UNUSED(folderPath)
-    Q_UNUSED(iconType)
-
-    return true;
-#endif
+    return {};
 }
 
 qint64 CommonUtility::freeDiskSpace(const QString &path) {
@@ -407,7 +391,7 @@ bool CommonUtility::compressFile(const QString &originalName, const QString &tar
 }
 
 QString applicationTrPath() {
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     QString devTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../../../../src/gui/");
 #else
     QString devTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../src/gui/");
@@ -417,9 +401,9 @@ QString applicationTrPath() {
         qWarning() << "Running from build location! Translations may be incomplete!";
         return devTrPath;
     }
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
     return QCoreApplication::applicationDirPath() + QLatin1String("/i18n/");
-#elif defined(__APPLE__)
+#elif defined(KD_MACOS)
 
 #ifdef QT_NO_DEBUG
     return QCoreApplication::applicationDirPath() + QLatin1String("/../Resources/Translations"); // path defaults to app dir.
@@ -533,23 +517,14 @@ QString CommonUtility::languageCode(const Language language) {
     return englishCode;
 }
 
-SyncPath CommonUtility::getAppDir() {
-    const KDC::SyncPath dirPath(KDC::getAppDir_private());
-    return dirPath;
-}
-
-bool CommonUtility::hasDarkSystray() {
-    return KDC::hasDarkSystray_private();
-}
-
 SyncPath CommonUtility::getAppSupportDir() {
-    SyncPath dirPath(getAppSupportDir_private());
+    SyncPath dirPath(getGenericAppSupportDir());
 
     dirPath.append(APPLICATION_NAME);
     std::error_code ec;
     if (!std::filesystem::is_directory(dirPath, ec)) {
         bool exists = false;
-        exists = !CommonUtility::isLikeFileNotFoundError(ec);
+        exists = !utility_base::isLikeFileNotFoundError(ec);
         if (exists) return SyncPath();
         if (!std::filesystem::create_directory(dirPath, ec)) return SyncPath();
     }
@@ -624,7 +599,7 @@ bool CommonUtility::isFileSizeMismatchDetectionEnabled() {
 }
 
 size_t CommonUtility::maxPathLength() {
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
     static size_t _maxPathWin = 0;
     if (_maxPathWin == 0) {
         Poco::Util::WinRegistryKey key(R"(HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem)", true);
@@ -641,7 +616,7 @@ size_t CommonUtility::maxPathLength() {
     // If the path length of a folder is > MAX_PATH - 12 and the path length of a file in this folder is between MAX_PATH - 12 and
     // MAX_PATH. It would lead to a synced file in a folder that is not synced (hence excluded because of its path length).
     return (_maxPathWin == MAX_PATH_LENGTH_WIN_LONG) ? MAX_PATH_LENGTH_WIN_LONG : MAX_PATH_LENGTH_WIN_SHORT - 12;
-#elif defined(__APPLE__)
+#elif defined(KD_MACOS)
     return MAX_PATH_LENGTH_MAC;
 #else
     return MAX_PATH_LENGTH_LINUX;
@@ -664,23 +639,41 @@ bool CommonUtility::isSubDir(const SyncPath &path1, const SyncPath &path2) {
     return (it1 == it1End);
 }
 
-bool CommonUtility::isDiskRootFolder(const SyncPath &absolutePath) {
-    bool isRoot = absolutePath == absolutePath.root_path();
-#if defined(__APPLE__)
-    // on macOS, external drive appears under "/Volumes/<drivename>"
-    isRoot |= absolutePath.parent_path() == "/Volumes";
-#elif defined(__unix__)
-    // on Linux, external drive appears under "/media/<username>/<drivename>"
-    isRoot |= absolutePath == "/media" || absolutePath.parent_path() == "/media" ||
-              absolutePath.parent_path().parent_path() == "/media";
+bool CommonUtility::isDiskRootFolder(const SyncPath &absolutePath, SyncPath &suggestedPath) {
+    suggestedPath = SyncPath();
+    if (absolutePath == absolutePath.root_path()) {
+        // We cannot suggest a path if the absolutePath is "/" or "C:/", etc.
+        return true;
+    }
+#if defined(KD_MACOS)
+    // On macOS, external drives appears under "/Volumes/<drivename>"
+    if (absolutePath.parent_path() == "/Volumes") {
+        suggestedPath = absolutePath / "kDrive"; // i.e., /Volumes/<drivename>/kDrive
+        return true;
+    }
+#elif defined(KD_LINUX)
+    // On Linux, external drives usually appears under  "/media/<username>/<drivename>" or "/media/<drivename>"
+    if (absolutePath == "/media") {
+        // If the absolutePath is "/media", we cannot suggest a path
+        return true;
+    }
+
+    if (absolutePath.parent_path() == "/media") {
+        suggestedPath = absolutePath / "myDocuments" / "kDrive"; // i.e., /media/<drivename>/myDocuments/kDrive
+        return true;
+    }
+    if (absolutePath.parent_path().parent_path() == "/media") {
+        suggestedPath = absolutePath / "kDrive"; // i.e., /media/<username>/<drivename>/kDrive
+        return true;
+    }
 #endif
-    return isRoot;
+    return false;
 }
 
 const std::string CommonUtility::dbVersionNumber(const std::string &dbVersion) {
 #if defined(NDEBUG)
     // Release mode
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
     // Version format = "X.Y.Z (build yyyymmdd)"
     size_t sepPosition = dbVersion.find(" ");
     return dbVersion.substr(0, sepPosition);
@@ -754,7 +747,7 @@ static std::string tmpDirName = "kdrive_" + CommonUtility::generateRandomStringA
 
 // Check if dir name is valid by trying to create a tmp dir
 bool CommonUtility::dirNameIsValid(const SyncName &name) {
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     std::error_code ec;
 
     SyncPath tmpDirPath = std::filesystem::temp_directory_path() / tmpDirName;
@@ -802,7 +795,7 @@ bool CommonUtility::fileNameIsValid(const SyncName &name) {
     return true;
 }
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 const std::string CommonUtility::loginItemAgentId() {
     return loginItemAgentIdStr;
 }
@@ -818,7 +811,7 @@ std::string CommonUtility::envVarValue(const std::string &name) {
 }
 
 std::string CommonUtility::envVarValue(const std::string &name, bool &isSet) {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     char *value = nullptr;
     isSet = false;
     if (size_t sz = 0; _dupenv_s(&value, &sz, name.c_str()) == 0 && value != nullptr) {
@@ -897,14 +890,13 @@ void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory 
     }
 }
 
-#ifdef _WIN32
-std::string CommonUtility::toUnsafeStr(const SyncName &name) {
-    std::string unsafeName(name.begin(), name.end());
-    return unsafeName;
+#if defined(KD_MACOS) || defined(KD_LINUX)
+bool CommonUtility::isLikeFileNotFoundError(const std::error_code &ec) noexcept {
+    return ec.value() == static_cast<int>(std::errc::no_such_file_or_directory);
 }
 #endif
 
-#ifdef __APPLE__
+#ifdef KD_MACOS
 bool CommonUtility::isLiteSyncExtEnabled() {
     QProcess *process = new QProcess();
     process->start(
@@ -978,27 +970,36 @@ QString CommonUtility::truncateLongLogMessage(const QString &message) {
     return message;
 }
 
+namespace {
+void getApplicationPath(std::vector<SyncChar> &pathStr, const size_t maxPathLength, bool &isValid) {
+    isValid = false;
+#if defined(KD_WINDOWS)
+    const auto pathLength = static_cast<DWORD>(maxPathLength);
+    const auto count = GetModuleFileNameW(nullptr, pathStr.data(), pathLength);
+    isValid = static_cast<bool>(count);
+#elif defined(KD_MACOS)
+    auto pathLength = static_cast<uint32_t>(maxPathLength);
+    const auto ret = _NSGetExecutablePath(pathStr.data(), &pathLength);
+    isValid = !ret;
+#else
+    const auto count = readlink("/proc/self/exe", pathStr.data(), maxPathLength);
+    isValid = count != -1;
+#endif
+}
+} // namespace
+
 SyncPath CommonUtility::applicationFilePath() {
     const auto maxPathLength = CommonUtility::maxPathLength();
     std::vector<SyncChar> pathStr(maxPathLength + 1, '\0');
 
-#if defined(_WIN32)
-    const auto pathLength = static_cast<DWORD>(maxPathLength);
-    const auto count = GetModuleFileNameW(nullptr, pathStr.data(), pathLength);
-    assert(count);
-#elif defined(__APPLE__)
-    auto pathLength = static_cast<uint32_t>(maxPathLength);
-    const auto ret = _NSGetExecutablePath(pathStr.data(), &pathLength);
-    assert(!ret);
-#else
-    const auto count = readlink("/proc/self/exe", pathStr.data(), maxPathLength);
-    assert(count != -1);
-#endif
+    bool isValid = false;
+    getApplicationPath(pathStr, maxPathLength, isValid);
+    assert(isValid);
 
     return SyncPath(pathStr.data());
 }
 
-#if defined(__APPLE__) || defined(__unix__)
+#if defined(KD_MACOS) || defined(KD_LINUX)
 // Be careful, some characters have 2 different encodings in Unicode
 // For example 'é' can be coded as 0x65 + 0xcc + 0x81  or 0xc3 + 0xa9
 bool CommonUtility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
@@ -1132,4 +1133,29 @@ ReplicaSide CommonUtility::syncNodeTypeSide(SyncNodeType type) {
             return ReplicaSide::Unknown;
     }
 }
+
+bool CommonUtility::isWindows() {
+#ifdef _WIN32
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool CommonUtility::isMac() {
+#ifdef __APPLE__
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool CommonUtility::isLinux() {
+#if defined(__unix__)
+    return true;
+#else
+    return false;
+#endif
+}
+
 } // namespace KDC

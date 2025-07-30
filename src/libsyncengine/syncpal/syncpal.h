@@ -147,7 +147,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         inline int userId() const { return _syncInfo.userId; }
         inline const std::string &driveName() const { return _syncInfo.driveName; }
         inline VirtualFileMode vfsMode() const { return _syncInfo.vfsMode; }
-        inline SyncPath localPath() const { return _syncInfo.localPath; }
+        inline const SyncPath &localPath() const { return _syncInfo.localPath; }
         inline const NodeId &localNodeId() const { return _syncInfo.localNodeId; }
         inline bool restart() const { return _syncInfo.restart; }
         inline bool isAdvancedSync() const { return _syncInfo.isAdvancedSync(); }
@@ -218,7 +218,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         void resetSnapshotInvalidationCounters();
 
-        ExitCode addDlDirectJob(const SyncPath &relativePath, const SyncPath &localPath);
+        ExitCode addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath,
+                                const SyncPath &parentFolderPath);
+        void monitorFolderHydration(const SyncPath &absoluteLocalPath);
         ExitCode cancelDlDirectJobs(const std::list<SyncPath> &fileList);
         ExitCode cancelAllDlDirectJobs(bool quit);
         ExitCode cleanOldUploadSessionTokens();
@@ -251,7 +253,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
         void freeSnapshotsCopies();
-        void invalideSnapshots();
+        void tryToInvalidateSnapshots();
+        void forceInvalidateSnapshots();
 
         // Workers
         std::shared_ptr<ComputeFSOperationWorker> computeFSOperationsWorker() const { return _computeFSOperationsWorker; }
@@ -278,7 +281,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
          * as the underlying data may not be initialized or may have already been released.
          *
          * The live snapshot is intended to be modified only by the FSO workers.
-         * Workers should always retreive information from a ConstSnapshot (see SyncPal::snapshot(ReplicaSide side))
+         * Workers should always retrieve information from a ConstSnapshot (see SyncPal::snapshot(ReplicaSide side))
          * There are a few exceptions where reading directly from the liveSnapshot is necessary:
          * - To check if the filesystem has changed (liveSnapshot().updated()).
          * - To create a ConstSnapshot (ConstSnapshot(liveSnapshot())).
@@ -299,6 +302,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<ConflictingFilesCorrector> _conflictingFilesCorrector = nullptr;
 
         std::unordered_map<UniqueId, std::shared_ptr<DownloadJob>> _directDownloadJobsMap;
+        std::unordered_map<SyncPath, std::unordered_set<SyncPath, PathHashFunction>, PathHashFunction>
+                _folderHydrationInProgress; // key: bundle path, value: bundle children paths
         std::unordered_map<SyncPath, UniqueId, PathHashFunction> _syncPathToDownloadJobMap;
         std::mutex _directDownloadJobsMapMutex;
 
@@ -360,7 +365,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void updateEstimates();
         [[nodiscard]] bool initProgress(const SyncFileItem &item);
         [[nodiscard]] bool setProgress(const SyncPath &relativePath, int64_t current);
-        [[nodiscard]] bool setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status);
+        [[nodiscard]] bool setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status,
+                                               const NodeId &newRemoteNodeId = {});
 
         // Direct download callback
         void directDownloadCallback(UniqueId jobId);
