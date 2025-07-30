@@ -64,10 +64,10 @@ runs:
 
       - name: Fetch Conan dependencies
         run: |
-          echo "Sourcing conanrun.sh to get DYLD_LIBRARY_PATH..."
+          echo "Sourcing conanrun.sh to get DYLD_LIBRARY_PATH & PATH..."
           source $(find "${{ github.workspace }}/build-macos" -name conanrun.sh | head -n 1)
-          echo "DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH"
           
+          echo "\nSearching dylibs in DYLD_LIBRARY_PATH..."
           IFS=':' read -ra dirs <<< "$DYLD_LIBRARY_PATH"
           for dir in "${dirs[@]}"; do
             if [[ "$dir" == *".conan2/p"* ]]; then
@@ -75,6 +75,7 @@ runs:
               find "$dir" \
                   '(' -iname 'libxxhash.0.dylib' \
                    -o -iname 'liblog4cplus*.dylib' \
+                   -o -iname 'libsentry.dylib' \
                    -o -iname 'libssl*.dylib' \
                    -o -iname 'libcrypto*.dylib' ')' \
                 -exec cp {} ./dependencies/ \; \
@@ -88,6 +89,20 @@ runs:
               fi
             fi
           done
+          
+          echo "\nSearching executables in PATH..."
+          IFS=':' read -ra dirs <<< "$PATH
+          for dir in "${dirs[@]}"; do
+            if [[ "$dir" == *".conan2/p"* ]]; then
+              echo "Looking in $dir"
+              find "$dir" \
+                  '(' -iname 'crashpad_handler'  ')' \
+                -exec cp {} ${{ github.workspace }}/build-macos/client/bin/ \; \
+                -exec echo "Conan executable found -> " {} \;
+            fi
+          done
+          
+          source $(find "${{ github.workspace }}/build-macos" -name deactivate_conanrun.sh | head -n 1)
         shell: bash
         if: steps.build.outcome == 'success'
 
