@@ -229,6 +229,7 @@ else()
 
     set(QM_DIR ${KDRIVE_OSX_BUNDLE}/Contents/Resources/Translations)
     install(FILES ${client_I18N} DESTINATION ${QM_DIR})
+    get_target_property(_qmake Qt6::qmake LOCATION)
     execute_process(COMMAND ${_qmake} -query QT_INSTALL_TRANSLATIONS
         OUTPUT_VARIABLE QT_TRANSLATIONS_DIR
         OUTPUT_STRIP_TRAILING_WHITESPACE

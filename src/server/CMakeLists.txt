@@ -142,6 +142,7 @@ else()
     # we must add MACOSX_BUNDLE only if building a bundle
     add_executable(${APPLICATION_EXECUTABLE} WIN32 MACOSX_BUNDLE mainserver.cpp ${final_src})
 
+    get_target_property(_qmake Qt6::qmake LOCATION)
     execute_process(COMMAND ${_qmake} -query QT_INSTALL_TRANSLATIONS
         OUTPUT_VARIABLE QT_TRANSLATIONS_DIR
         OUTPUT_STRIP_TRAILING_WHITESPACE
