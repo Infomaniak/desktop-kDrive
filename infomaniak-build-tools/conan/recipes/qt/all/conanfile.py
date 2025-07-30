@@ -4,7 +4,7 @@ from os.path import join as pjoin
 
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration, ConanException
-from conan.tools.files import copy, rmdir
+from conan.tools.files import copy, rmdir, mkdir
 
 
 class QtConan(ConanFile):
@@ -278,8 +278,6 @@ class QtConan(ConanFile):
     def package(self):
         self.output.highlight("This step can take a while, please be patient...")
 
-        install_path = pjoin(self.build_folder, "install", self.version, self._subfolder_install()) # "./install/6.2.3/gcc_64" or "./install/6.2.3/msvc2019_64" or "./install/6.2.3/macos"
-
         copy(self, "*",
              src=pjoin(self.build_folder, "install", self.version, self._subfolder_install()),
              dst=self.package_folder
@@ -292,7 +290,11 @@ class QtConan(ConanFile):
                  keep_path=False
                  )
         elif self.settings.os == "Windows":
-            pass# copy(self, "*",)
+            tools_folder = pjoin(self.package_folder, "tools")
+            mkdir(self, tools_folder)
+            copy(self, "*",
+                 pjoin(self.build_folder, "Tools"),
+                 tools_folder)
 
         for folder in ("doc", "modules"):
             rmdir(self, pjoin(self.package_folder, folder))
