@@ -282,11 +282,11 @@ class QtConan(ConanFile):
              dst=self.package_folder
              )
 
-        qtcreator_lib_path = pjoin(self.build_folder, "Tools", "QtCreator", "lib", "Qt", "lib")
-        if os.path.exists(qtcreator_lib_path):
-            copy(self, "libQt6SerialPort.so.6",
-                 src=qtcreator_lib_path,
-                 dst=pjoin(self.package_folder, "lib")
+        if self.settings.os == "Linux":
+            copy(self, "*SerialPort*",
+                 src=pjoin(self.build_folder, "Tools", "QtCreator", "lib", "Qt", "lib"),
+                 dst=pjoin(self.package_folder, "lib"),
+                 keep_path=False
                  )
 
         for folder in ("doc", "modules"):
