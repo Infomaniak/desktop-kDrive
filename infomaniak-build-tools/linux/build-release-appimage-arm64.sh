@@ -61,7 +61,7 @@ fi
 
 source "$(dirname "$conan_toolchain_file")/conanbuild.sh"
 
-source /src/infomaniak-build-tools/linux/common-utils.sh
+source /src/infomaniak-build-tools/conan/common-utils.sh
 
 # Set Qt-6.2
 QTDIR=$(find_qt_conan_path "/build")

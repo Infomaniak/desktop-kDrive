@@ -27,14 +27,30 @@ find_conan_dependency_path() {
   fi
 
   local conan_package_folder_regex="\.conan2/p/(b/)?${dep_name}[^/]*/p/lib$"
-  IFS=':' read -ra path_dirs <<< "$LD_LIBRARY_PATH"
-  for dir in "${path_dirs[@]}"; do
-    if [[ "$dir" =~ $conan_package_folder_regex ]]; then
-      echo "${dir:0:-4}" # Remove the trailing "/lib" from the path
-      [[ $sourced -eq 1 ]] && [[ -f "$conan_path/deactivate_conanrun.sh" ]] && source "$conan_path/deactivate_conanrun.sh" > /dev/null 2>&1
-      return 0
-    fi
-  done
+  if [[ "$(bash --version | awk 'NR==1 {print $4}' | cut -d'.' -f1)" -lt 5 ]]; then # Check for bash version < 5
+    # On macOS, bash default version is 3.x which does not support the substring removal syntax / read -a
+    OLD_IFS="$IFS"
+    IFS=':'
+    for dir in $LD_LIBRARY_PATH; do
+      if [[ "$dir" =~ $conan_package_folder_regex ]]; then
+        echo "${dir%/lib}" # Supprime le suffixe "/lib"
+        [[ $sourced -eq 1 ]] && [[ -f "$conan_path/deactivate_conanrun.sh" ]] && source "$conan_path/deactivate_conanrun.sh" > /dev/null 2>&1
+        IFS="$OLD_IFS"
+        return 0
+      fi
+    done
+    IFS="$OLD_IFS"
+  else
+      IFS=':' read -ra path_dirs <<< "$LD_LIBRARY_PATH"
+      for dir in "${path_dirs[@]}"; do
+        if [[ "$dir" =~ $conan_package_folder_regex ]]; then
+          echo "${dir:0:-4}" # Remove the trailing "/lib" from the path
+          [[ $sourced -eq 1 ]] && [[ -f "$conan_path/deactivate_conanrun.sh" ]] && source "$conan_path/deactivate_conanrun.sh" > /dev/null 2>&1
+          return 0
+        fi
+      done
+  fi
+
 
   echo "Error: Could not find the $origin_dep_name($dep_name...)Conan package path in LD_LIBRARY_PATH='$LD_LIBRARY_PATH'." >&2
   [[ $sourced -eq 1 ]] && [[ -f "$conan_path/deactivate_conanrun.sh" ]] && source "$conan_path/deactivate_conanrun.sh" > /dev/null 2>&1

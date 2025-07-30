@@ -93,7 +93,7 @@ if [ ! -f "$conan_toolchain_file" ]; then
 fi
 
 
-source "$BASEPATH/infomaniak-build-tools/linux/common-utils.sh"
+source "$BASEPATH/infomaniak-build-tools/conan/common-utils.sh"
 QTDIR="$(find_qt_conan_path "$conan_build_folder")"
 export QTDIR
 

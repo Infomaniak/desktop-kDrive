@@ -24,7 +24,7 @@ app_dir="$build_dir/app"
 
 cd "$app_dir"
 
-source "$base_dir/infomaniak-build-tools/linux/common-utils.sh"
+source "$base_dir/infomaniak-build-tools/conan/common-utils.sh"
 
 QTDIR="$(find_qt_conan_path "$build_dir")"
 export QTDIR

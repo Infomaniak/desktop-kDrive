@@ -87,7 +87,7 @@ app_dir="$build_dir/install"
 build_type="RelWithDebInfo"
 
 conan_dependencies_folder="$build_dir/conan/dependencies"
-source "$src_dir/infomaniak-build-tools/linux/common-utils.sh"
+source "$src_dir/infomaniak-build-tools/conan/common-utils.sh"
 
 echo
 echo "Build type: $build_type"
