@@ -45,6 +45,7 @@ SyncPath FolderWatcher_linux::makeSyncPath(const SyncPath &watchedFolderPath, co
 void FolderWatcher_linux::startWatching() {
     LOGW_DEBUG(_logger, L"Start watching folder " << Utility::formatSyncPath(_folder));
     LOG_DEBUG(_logger, "File system format: " << Utility::fileSystemName(_folder));
+    LOG_DEBUG(_logger, "Free space on disk: " << Utility::getFreeDiskSpace(_folder) << " bytes.");
 
     _fileDescriptor = inotify_init();
     if (_fileDescriptor == -1) {
