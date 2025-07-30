@@ -86,7 +86,10 @@ class QtConan(ConanFile):
                 "qt.tools.vcredist",
                 "qt.tools.vcredist_64",
                 "qt.tools.vcredist_msvc2019_x64",
-                "qt.tools.vcredist_msvc2019_x86"
+                "qt.tools.vcredist_msvc2019_x86",
+
+                "qt.tools.cmake",
+                "qt.tools.ninja"
             ])
 
         if self.settings.os == "Linux":
@@ -288,6 +291,8 @@ class QtConan(ConanFile):
                  dst=pjoin(self.package_folder, "lib"),
                  keep_path=False
                  )
+        elif self.settings.os == "Windows":
+            pass# copy(self, "*",)
 
         for folder in ("doc", "modules"):
             rmdir(self, pjoin(self.package_folder, folder))
