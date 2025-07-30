@@ -133,4 +133,16 @@
     <value>Ouvrir kDrive</value>
     <comment>Name of the open button in the TrayIcon menu</comment>
   </data>
+  <data name="NavHome.Content" xml:space="preserve">
+    <value>Accueil</value>
+  </data>
+  <data name="NavActivity.Content" xml:space="preserve">
+    <value>Activité</value>
+  </data>
+  <data name="NavStorage.Content" xml:space="preserve">
+    <value>Stockage</value>
+  </data>
+  <data name="NavFolder.Content" xml:space="preserve">
+    <value>Dossier kDrive</value>
+  </data>
 </root>

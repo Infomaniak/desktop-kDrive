@@ -129,4 +129,16 @@
   <data name="TrayIconOpenApplicationCommand.Label" xml:space="preserve">
     <value>Open kDrive</value>
   </data>
+  <data name="NavHome.Content" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="NavActivity.Content" xml:space="preserve">
+    <value>Activity</value>
+  </data>
+  <data name="NavStorage.Content" xml:space="preserve">
+    <value>Storage</value>
+  </data>
+  <data name="NavFolder.Content" xml:space="preserve">
+    <value>kDrive folder</value>
+  </data>
 </root>

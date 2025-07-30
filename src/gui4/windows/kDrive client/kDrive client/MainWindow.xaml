@@ -48,10 +48,10 @@
                 </StackPanel>
             </NavigationView.PaneCustomContent>
             <NavigationView.MenuItems>
-                <NavigationViewItem Icon="Home" Content="Accueil" Tag="SamplePage1" MinHeight="50"/>
-                <NavigationViewItem Icon="Sync" Content="Activité" Tag="SamplePage2" MinHeight="50" IsEnabled="False"/>
-                <NavigationViewItem Icon="MapDrive" Content="Stockage" Tag="SamplePage3" MinHeight="50" IsEnabled="False"/>
-                <NavigationViewItem Icon="Folder" Content="Dossier kDrive" Tag="SamplePage4" MinHeight="50" IsEnabled="False"/>
+                <NavigationViewItem x:Uid="NavHome" Icon="Home" Tag="SamplePage1" MinHeight="50" IsSelected="True"/>
+                <NavigationViewItem x:Uid="NavActivity" Icon="Sync" Tag="SamplePage2" MinHeight="50" IsEnabled="False"/>
+                <NavigationViewItem x:Uid="NavStorage" Icon="MapDrive" Tag="SamplePage3" MinHeight="50" IsEnabled="False"/>
+                <NavigationViewItem x:Uid="NavFolder" Icon="Folder" Tag="SamplePage4" MinHeight="50" IsEnabled="False"/>
             </NavigationView.MenuItems>
             <Frame x:Name="contentFrame"/>
         </NavigationView>
