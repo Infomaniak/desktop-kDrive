@@ -14,6 +14,23 @@
     </Window.SystemBackdrop>
 
     <Grid>
-
+        <InfoBar
+                x:Name="LanguageSelectionRestartNeededInfoBar"
+                x:Uid="LanguageSelectionRestartNeeded"
+                IsOpen="False">
+            <InfoBar.ActionButton>
+                <Button Content="Action" Click="InfoBarRestartButton_Click" />
+            </InfoBar.ActionButton>
+        </InfoBar>
+        <DropDownButton Content="Language">
+            <DropDownButton.Flyout>
+                <MenuFlyout Placement="Bottom">
+                    <MenuFlyoutItem Text="Auto" Click="AutoSelected"/>
+                    <MenuFlyoutItem Text="English" Click="EnglishSelected"/>
+                    <MenuFlyoutItem Text="German" Click="GermanSelected"/>
+                    <MenuFlyoutItem Text="French" Click="FrenchSelected"/>
+                </MenuFlyout>
+            </DropDownButton.Flyout>
+        </DropDownButton>
     </Grid>
 </Window>
