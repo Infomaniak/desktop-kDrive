@@ -260,6 +260,14 @@ function CMake-Build-And-Install {
         Write-Error "Conan toolchain file not found. Abort."
         exit 1
     }
+
+    $conanGeneratorsFolder = Split-Path -Parent $conanToolchainFile
+    $env:QTDIR = & "$path\infomaniak-build-tools\conan\find_conan_dep.ps1" -Package "qt" -BuildDir "$conanGeneratorsFolder"
+    if (-not $env:QTDIR -or -not (Test-Path $env:QTDIR)) {
+        Write-Error "Qt not found in Conan dependencies. Abort."
+        exit 1
+    }
+
     Write-Host "Conan toolchain file used: $conanToolchainFile"
 
     Write-Host "2) Configuring and building with CMake ..."
@@ -281,8 +289,8 @@ function CMake-Build-And-Install {
     $flags = @(
         "'-DCMAKE_TOOLCHAIN_FILE=$conanToolchainFile'",
         "'-DCMAKE_EXPORT_COMPILE_COMMANDS=1'",
-        "'-DCMAKE_MAKE_PROGRAM=C:\Qt\Tools\Ninja\ninja.exe'",
-        "'-DQT_QMAKE_EXECUTABLE:STRING=C:\Qt\Tools\CMake_64\bin\cmake.exe'",
+        "'-DCMAKE_MAKE_PROGRAM=$env:QTDIR\tools\Ninja\ninja.exe'",
+        "'-DQT_QMAKE_EXECUTABLE:STRING=$env:QTDIR\tools\CMake_64\bin\cmake.exe'",
         "'-DCMAKE_C_COMPILER:STRING=$compiler'",
         "'-DCMAKE_CXX_COMPILER:STRING=$compiler'",
         "'-DAPPLICATION_VIRTUALFILE_SUFFIX:STRING=kdrive'",
