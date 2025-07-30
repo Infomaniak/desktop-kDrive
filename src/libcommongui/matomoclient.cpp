@@ -71,7 +71,7 @@ MatomoClient::MatomoClient(QCoreApplication *app, const QString &clientId) :
          *
          */
         piwikNAM->setTransferTimeout(matomoTimeout);
-        connect(piwikNAM, &QNetworkAccessManager::finished, this, [this](const QNetworkReply* reply) {
+        connect(piwikNAM, &QNetworkAccessManager::finished, this, [](const QNetworkReply* reply) {
             if (reply->error() == QNetworkReply::TimeoutError              // Error given by the TransferTimeout
                 || reply->error() == QNetworkReply::ConnectionRefusedError // Error given when MATOMO_URL is blocked and return :: in ipv6 or 0.0.0.0 in ipv4
                 ) {
