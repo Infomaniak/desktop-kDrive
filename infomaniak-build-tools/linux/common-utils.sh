@@ -14,7 +14,6 @@ find_conan_dependency_path() {
 
   local sourced=0
   local conan_path=""
-  local dep_path=""
 
   if [[ "$LD_LIBRARY_PATH" != *"/.conan2/"* ]]; then
     conan_path="$(dirname "$(find "$build_dir" -iname "conanbuild.sh" -type f | head -n 1)")"
@@ -31,8 +30,8 @@ find_conan_dependency_path() {
   IFS=':' read -ra path_dirs <<< "$LD_LIBRARY_PATH"
   for dir in "${path_dirs[@]}"; do
     if [[ "$dir" =~ $conan_package_folder_regex ]]; then
-      echo "${dep_path:0:-4}" # Remove the trailing "/lib" from the path
       [[ $sourced -eq 1 ]] && [[ -f "$conan_path/deactivate_conanbuild.sh" ]] && source "$conan_path/deactivate_conanbuild.sh" > /dev/null 2>&1
+      echo "${dir:0:-4}" # Remove the trailing "/lib" from the path
       return 0
     fi
   done
