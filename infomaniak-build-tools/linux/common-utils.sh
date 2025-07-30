@@ -3,18 +3,20 @@ if [ "${BASH_SOURCE[0]}" -ef "$0" ]; then
     exit 1
 fi
 
-find_qt_conan_path() {
+find_conan_dependency_path() {
   local build_dir="$1"
-  if [[ -z "$build_dir" ]]; then
-    echo "Error: No build directory specified to the 'find_qt_conan_path' function." >&2
-    exit 1
-  fi
+  local origin_dep_name="${2}"
+  local dep_name="${origin_dep_name:0:5}" # Crop the name of the dependency to the first 5 characters to match the Conan package naming convention (folder ex: /home/user/.conan2/p/log4c6abc1234def/p for the dependency log4cplus)
+
+  [[ -z "$build_dir" ]] && { echo "Error: No build directory specified to the 'find_conan_dependency_path' function." >&2; exit 1; }
+  [[ ! -d "$build_dir" ]] && { echo "Error: The specified build directory '$build_dir' does not exist." >&2; exit 1; }
+  [[ -z "$origin_dep_name" ]] && { echo "Error: No dependency name specified to the 'find_conan_dependency_path' function." >&2; exit 1; }
 
   local sourced=0
   local conan_path=""
-  local qt_path=""
+  local dep_path=""
 
-  if [[ -z "$CMAKE_PREFIX_PATH" ]]; then
+  if [[ "$LD_LIBRARY_PATH" != *"/.conan2/"* ]]; then
     conan_path="$(dirname "$(find "$build_dir" -iname "conanbuild.sh" -type f | head -n 1)")"
     if [[ -n "$conan_path" && -f "$conan_path/conanbuild.sh" ]]; then
       source "$conan_path/conanbuild.sh"
@@ -25,21 +27,21 @@ find_qt_conan_path() {
     fi
   fi
 
-  IFS=':' read -ra path_dirs <<< "$CMAKE_PREFIX_PATH"
+  local conan_package_folder_regex="\.conan2/p/(b/)?${dep_name}[^/]*/p/lib$"
+  IFS=':' read -ra path_dirs <<< "$LD_LIBRARY_PATH"
   for dir in "${path_dirs[@]}"; do
-    if [[ "$dir" =~ ^/home/.*/\.conan2/p/b/qt[^/]*/p$ ]]; then
-      qt_path="$dir"
-      break
+    if [[ "$dir" =~ $conan_package_folder_regex ]]; then
+      echo "${dep_path:0:-4}" # Remove the trailing "/lib" from the path
+      [[ $sourced -eq 1 ]] && [[ -f "$conan_path/deactivate_conanbuild.sh" ]] && source "$conan_path/deactivate_conanbuild.sh" > /dev/null 2>&1
+      return 0
     fi
   done
 
-  if [[ -n "$qt_path" ]]; then
-    echo "$qt_path"
-    [[ $sourced -eq 1 ]] && [[ -f "$conan_path/deactivate_conanbuild.sh" ]] && source "$conan_path/deactivate_conanbuild.sh"
-    return 0
-  else
-    echo "Error: Could not find the Qt Conan package path in CMAKE_PREFIX_PATH='$CMAKE_PREFIX_PATH'." >&2
-    [[ $sourced -eq 1 ]] && [[ -f "$conan_path/deactivate_conanbuild.sh" ]] && source "$conan_path/deactivate_conanbuild.sh"
-    return 1
-  fi
+  echo "Error: Could not find the $origin_dep_name($dep_name...)Conan package path in LD_LIBRARY_PATH='$LD_LIBRARY_PATH'." >&2
+  [[ $sourced -eq 1 ]] && [[ -f "$conan_path/deactivate_conanbuild.sh" ]] && source "$conan_path/deactivate_conanbuild.sh" > /dev/null 2>&1
+  return 1
+}
+
+find_qt_conan_path() {
+  find_conan_dependency_path "$1" "qt"
 }
