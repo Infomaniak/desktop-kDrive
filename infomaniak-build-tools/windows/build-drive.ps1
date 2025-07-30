@@ -430,39 +430,29 @@ function Prepare-Archive {
     Write-Host "Copying dependencies to the folder $archivePath"
     foreach ($file in $dependencies) {
         if (($buildType -eq "Debug") -and (Test-Path -Path $file"d.dll")) {
-            Copy-Item -Path $file"d.dll" -Destination "$archivePath"
-        }
-        else {
-            Copy-Item -Path $file".dll" -Destination "$archivePath"
+            Copy-Item -Path "${file}d.dll" -Destination "$archivePath"
+        } else {
+            Copy-Item -Path "$file.dll" -Destination "$archivePath"
         }
     }
     $find_dep_script = "$path/infomaniak-build-tools/conan/find_conan_dep.ps1"
+    $packages = @(
+        @{ Name = "xxhash";    Dlls = @("xxhash") },
+        @{ Name = "log4cplus"; Dlls = @("log4cplus") },
+        @{ Name = "openssl";   Dlls = @("libcrypto-3-x64", "libssl-3-x64") }
+    )
 
-    $xxhash_args = @{
-        Package = "xxhash"
-        Version = "0.8.2"
+    foreach ($pkg in $packages) {
+        $args = @{ Package = $pkg.Name; BuildDir = $buildPath }
+        $binFolder = & $find_dep_script @args
+        foreach ($dll in $pkg.Dlls) {
+            if (($buildType -eq "Debug") -and (Test-Path -Path $file"d.dll")) {
+                Copy-Item -Path "$binFolder/${dll}d.dll" -Destination "$archivePath"
+            } else {
+                Copy-Item -Path "$binFolder/$dll.dll" -Destination "$archivePath"
+            }
+        }
     }
-    $log4cplus_args = @{
-        Package = "log4cplus"
-        Version = "2.1.2"
-    }
-    $openssl_args = @{
-        Package = "openssl"
-        Version = "3.2.4"
-    }
-    if ($ci) {
-        $xxhash_args["Ci"]       = $true
-        $log4cplus_args["Ci"]    = $true
-        $openssl_args["Ci"]      = $true
-    }
-    $xxhash_folder = & $find_dep_script @xxhash_args
-    $log4cplus_folder = & $find_dep_script @log4cplus_args
-    $openssl_folder = & $find_dep_script @openssl_args
-    
-    Copy-Item -Path "$xxhash_folder/bin/xxhash.dll" -Destination "$archivePath"
-    Copy-Item -Path "$log4cplus_folder/bin/log4cplus.dll" -Destination "$archivePath"
-    Copy-Item -Path "$openssl_folder/bin/libcrypto-3-x64.dll" -Destination "$archivePath"
-    Copy-Item -Path "$openssl_folder/bin/libssl-3-x64.dll" -Destination "$archivePath"
 
     Copy-Item -Path "$path/sync-exclude-win.lst" -Destination "$archivePath/sync-exclude.lst"
 
