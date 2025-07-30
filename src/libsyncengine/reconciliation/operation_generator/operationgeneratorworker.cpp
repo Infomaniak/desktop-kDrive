@@ -171,7 +171,7 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
 void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> currentNode, std::shared_ptr<Node> correspondingNode) {
     const auto op = std::make_shared<SyncOperation>();
 
-    assert(correspondingNode); // Node must exist on both replica (except for create operations)
+    assert(correspondingNode); // Node must exists on both replica (except for create operations)
 
     // Check for Edit-Edit pseudo conflict
     if (isPseudoConflict(currentNode, correspondingNode)) {
@@ -318,11 +318,6 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
                                                 << L" replica for item " << Utility::formatSyncPath(currentNode->getPath())
                                                 << L" (" << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1")
                                                 << L")");
-        }
-
-        if (_syncPal->vfsMode() == VirtualFileMode::Off && op->targetSide() == ReplicaSide::Local &&
-            currentNode->type() == NodeType::File) {
-            _bytesToDownload -= currentNode->size();
         }
     }
 
