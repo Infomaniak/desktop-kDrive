@@ -89,14 +89,21 @@ void TestFolderWatcherLinux::testInotifyRegisterPath() {
     FolderWatcherLinuxMock testObj(nullptr, "");
     const auto tempDir = LocalTemporaryDirectory("testInotifyRegisterPath");
 
+    // ENOSPC
     auto expectedExitInfo = ExitInfo{ExitCode::SystemError, ExitCause::NotEnoughINotifyWatches};
     CPPUNIT_ASSERT_EQUAL(expectedExitInfo, testObj.inotifyRegisterPath(tempDir.path()));
 
+    // ENOMEM
     expectedExitInfo = ExitInfo{ExitCode::SystemError, ExitCause::NotEnoughMemory};
     CPPUNIT_ASSERT_EQUAL(expectedExitInfo, testObj.inotifyRegisterPath(tempDir.path()));
 
-    expectedExitInfo = ExitInfo{ExitCode::SystemError, ExitCause::Unknown};
+    // EINVAL
+    expectedExitInfo = ExitCode::Ok; // Errors different form ENOSPC and ENOMEM are ignored for now.
     CPPUNIT_ASSERT_EQUAL(expectedExitInfo, testObj.inotifyRegisterPath(tempDir.path()));
+
+    // Deleted folders are harmless, hence ignored.
+    expectedExitInfo = ExitCode::Ok;
+    CPPUNIT_ASSERT_EQUAL(expectedExitInfo, testObj.inotifyRegisterPath(SyncPath{"this-path-does-not-exist"}));
 }
 
 void TestFolderWatcherLinux::testFindSubFolders() {
