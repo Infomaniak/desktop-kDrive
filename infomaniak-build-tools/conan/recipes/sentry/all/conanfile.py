@@ -2,6 +2,7 @@ from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
 from conan.tools.cmake import CMake, CMakeToolchain
 from conan.tools.scm import Git
+from os.path import join as pjoin
 
 required_conan_version = ">=2.1"
 
@@ -65,7 +66,20 @@ class SentryNativeConan(ConanFile):
 
     def package(self):
         cmake = CMake(self)
-        cmake.install(build_type="RelWithDebInfo")
+        cmake.install(build_type="RelWithDebInfo" if self.settings.os == "Windows" else None)
+
 
     def package_info(self):
-        pass
+        self.cpp_info.set_property("cmake_file_name", "sentry")
+        self.cpp_info.set_property("cmake_build_modules", [ pjoin(self.package_folder, "lib", "cmake", "sentry", "sentry-config.cmake") ])
+        self.cpp_info.set_property("cmake_find_mode", "none")
+
+        for env in (self.runenv_info, self.buildenv_info):
+            env.prepend_path("CMAKE_PREFIX_PATH", self.package_folder)
+            env.prepend_path("LD_LIBRARY_PATH", pjoin(self.package_folder, "lib"))
+            env.prepend_path("DYLD_LIBRARY_PATH", pjoin(self.package_folder, "lib"))
+
+        self.cpp_info.includedirs = []
+        self.cpp_info.resdirs = []
+        self.cpp_info.srcdirs = []
+        self.cpp_info.frameworkdirs = []
