@@ -72,6 +72,11 @@ class KDriveDesktop(ConanFile):
         else:
             self.requires("openssl/3.2.4", options={ "shared": True }) # From https://conan.io/center/recipes/openssl
 
+        sentry_version = "0.7.10"
+        if self.settings.os == "Linux":
+            sentry_version = "0.6.4"
+        self.requires(f"sentry/{sentry_version}")
+
 class OverrideVSRuntimeBlock(VSRuntimeBlock):
     def __init__(self, conanfile, toolchain, name):
         super().__init__(conanfile, toolchain, name)
