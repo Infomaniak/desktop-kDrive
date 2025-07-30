@@ -63,7 +63,7 @@ namespace kDrive_client.TrayIcon
         {
             if (_window == null)
             {
-                _window = new Window();
+                _window = new MainWindow();
                 _window.Closed += (sender, args) =>
                 {
                     if (_handleClosedEvents)
