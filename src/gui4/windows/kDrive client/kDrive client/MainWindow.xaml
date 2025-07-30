@@ -14,23 +14,46 @@
     </Window.SystemBackdrop>
 
     <Grid>
-        <InfoBar
-                x:Name="LanguageSelectionRestartNeededInfoBar"
-                x:Uid="LanguageSelectionRestartNeeded"
-                IsOpen="False">
-            <InfoBar.ActionButton>
-                <Button Content="Action" Click="InfoBarRestartButton_Click" />
-            </InfoBar.ActionButton>
-        </InfoBar>
-        <DropDownButton Content="Language">
-            <DropDownButton.Flyout>
-                <MenuFlyout Placement="Bottom">
-                    <MenuFlyoutItem Text="Auto" Click="AutoSelected"/>
-                    <MenuFlyoutItem Text="English" Click="EnglishSelected"/>
-                    <MenuFlyoutItem Text="German" Click="GermanSelected"/>
-                    <MenuFlyoutItem Text="French" Click="FrenchSelected"/>
-                </MenuFlyout>
-            </DropDownButton.Flyout>
-        </DropDownButton>
+        <NavigationView x:Name="nvSample" IsPaneToggleButtonVisible="False" IsBackButtonVisible="Collapsed">
+            <NavigationView.PaneCustomContent>
+                <StackPanel>
+                    <Image Source="/Assets/logo/logo-with-text.png" MaxWidth="200" HorizontalAlignment="Left" Margin="10,20,0,0" />
+                    <DropDownButton Margin="10" Visibility="Visible" Background="Transparent" BorderBrush="Transparent">
+                        <DropDownButton.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <ImageIcon Source="/Assets/kdrive.png" Height="20" />
+                                <TextBlock Text="kDrive d'Infomaniak" Margin="10.0"/>
+                            </StackPanel>
+                        </DropDownButton.Content>
+                        <DropDownButton.Flyout>
+                            <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                <MenuFlyoutItem Text="kDrive d'Hervé">
+                                    <MenuFlyoutItem.Icon>
+                                        <ImageIcon Source="/Assets/kdrive.png" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Text="kDrive de Clément">
+                                    <MenuFlyoutItem.Icon>
+                                        <ImageIcon Source="/Assets/kdrive.png" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Text="kDrive desktop test">
+                                    <MenuFlyoutItem.Icon>
+                                        <ImageIcon Source="/Assets/kdrive.png" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
+                </StackPanel>
+            </NavigationView.PaneCustomContent>
+            <NavigationView.MenuItems>
+                <NavigationViewItem Icon="Home" Content="Accueil" Tag="SamplePage1" MinHeight="50"/>
+                <NavigationViewItem Icon="Sync" Content="Activité" Tag="SamplePage2" MinHeight="50" IsEnabled="False"/>
+                <NavigationViewItem Icon="MapDrive" Content="Stockage" Tag="SamplePage3" MinHeight="50" IsEnabled="False"/>
+                <NavigationViewItem Icon="Folder" Content="Dossier kDrive" Tag="SamplePage4" MinHeight="50" IsEnabled="False"/>
+            </NavigationView.MenuItems>
+            <Frame x:Name="contentFrame"/>
+        </NavigationView>
     </Grid>
 </Window>
