@@ -76,14 +76,16 @@ fi
 echo "Build type: $build_type"
 echo "Unit tests build flag: $unit_tests"
 
-source "$base_dir/infomaniak-build-tools/linux/common-utils.sh"
-
-QTDIR="$(find_qt_conan_path "$build_dir")"
-export QTDIR
 export BASEPATH="$PWD"
 export CONTENTDIR="$BASEPATH/build-linux"
 export BUILD_DIR="$CONTENTDIR/build"
 export APPDIR="$CONTENTDIR/app"
+
+source "$BASEPATH/infomaniak-build-tools/linux/common-utils.sh"
+
+QTDIR="$(find_qt_conan_path "$CONTENTDIR")"
+export QTDIR
+
 
 extract_debug () {
     objcopy --only-keep-debug "$1/$2" "$CONTENTDIR/$2-amd64.dbg"
