@@ -32,13 +32,17 @@ class SentryNativeConan(ConanFile):
     def requirements(self):
         self.requires("qt/6.2.3")
 
+    @property
+    def build_type(self):
+        return "Release" # Force the build type to Release since we don't need to debug Sentry
+
     def source(self):
         git = Git(self)
         git.clone(url="https://github.com/getsentry/sentry-native.git", target=".", hide_url=False, args=["-b", f"{self.version}", "--recurse-submodules"])
 
     def _cache_variables(self, qt_package_folder):
         cache_variables = {
-            "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+            "CMAKE_BUILD_TYPE": self.build_type,
             "SENTRY_INTEGRATION_QT": "YES",
         }
         if self.settings.os == "Macos":
@@ -66,20 +70,10 @@ class SentryNativeConan(ConanFile):
 
     def package(self):
         cmake = CMake(self)
-        cmake.install(build_type="RelWithDebInfo" if self.settings.os == "Windows" else None)
+        cmake.install(build_type=self.build_type if self.settings.os == "Windows" else None)
 
 
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "sentry")
         self.cpp_info.set_property("cmake_build_modules", [ pjoin(self.package_folder, "lib", "cmake", "sentry", "sentry-config.cmake") ])
         self.cpp_info.set_property("cmake_find_mode", "none")
-
-        for env in (self.runenv_info, self.buildenv_info):
-            env.prepend_path("CMAKE_PREFIX_PATH", self.package_folder)
-            env.prepend_path("LD_LIBRARY_PATH", pjoin(self.package_folder, "lib"))
-            env.prepend_path("DYLD_LIBRARY_PATH", pjoin(self.package_folder, "lib"))
-
-        self.cpp_info.includedirs = []
-        self.cpp_info.resdirs = []
-        self.cpp_info.srcdirs = []
-        self.cpp_info.frameworkdirs = []
