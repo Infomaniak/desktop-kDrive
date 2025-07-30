@@ -83,11 +83,6 @@ class QtConan(ConanFile):
 
         if self.settings.os == "Windows":
             modules.extend([
-                "qt.tools.vcredist",
-                "qt.tools.vcredist_64",
-                "qt.tools.vcredist_msvc2019_x64",
-                "qt.tools.vcredist_msvc2019_x86",
-
                 "qt.tools.cmake",
                 "qt.tools.ninja"
             ])
