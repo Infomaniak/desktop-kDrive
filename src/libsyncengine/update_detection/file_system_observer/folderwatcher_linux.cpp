@@ -181,13 +181,16 @@ ExitInfo FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
     if (std::error_code ec; !std::filesystem::exists(path, ec)) {
         if (ec) {
             LOGW_WARN(_logger, L"Failed to check if path exists for " << Utility::formatStdError(path, ec));
+            return {ExitCode::SystemError, ExitCause::Unknown};
         }
-        return {ExitCode::SystemError, ExitCause::Unknown};
+        LOGW_DEBUG(_logger, L"Folder " << Utility::formatSyncPath(path) << L" does not exist anymore. Registration aborted.");
+
+        return ExitCode::Ok;
     }
 
     const auto outcome = inotifyAddWatch(path);
     if (outcome.returnValue == -1) {
-        switch (outcome.errorNumber) {
+        switch (outcome.errorNumber) { // Errors are documented at https://man7.org/linux/man-pages/man2/inotify_add_watch.2.html
             case ENOMEM:
                 LOG_ERROR(_logger, "Error in FolderWatcher_linux::inotifyAddWatch: Out of memory.");
                 return {ExitCode::SystemError, ExitCause::NotEnoughMemory};
@@ -198,9 +201,10 @@ ExitInfo FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
                 LOG_ERROR(_logger, "Limit number of inotify watches reached. The latter can be raised by the user.");
                 return {ExitCode::SystemError, ExitCause::NotEnoughINotifyWatches};
             default:
-                LOGW_ERROR(_logger, L"Error in FolderWatcher_linux::inotifyAddWatch: " << Utility::formatSyncPath(path)
-                                                                                       << L" errno=" << outcome.errorNumber);
-                return {ExitCode::SystemError, ExitCause::Unknown};
+                LOGW_ERROR(_logger, L"Unhandled error in FolderWatcher_linux::inotifyAddWatch: "
+                                            << Utility::formatSyncPath(path) << L" errno=" << outcome.errorNumber
+                                            << L". Folder registration failure. Ignoring it.");
+                return ExitCode::Ok;
         }
     }
 
