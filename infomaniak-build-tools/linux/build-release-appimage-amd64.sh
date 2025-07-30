@@ -64,18 +64,16 @@ source "$(dirname "$conan_toolchain_file")/conanbuild.sh"
 source /src/infomaniak-build-tools/linux/common-utils.sh
 
 # Set Qt-6.2
-QT_BASE_DIR=$(find_qt_conan_path "/build")
-export QT_BASE_DIR
-export QTDIR="$QT_BASE_DIR"
-export QMAKE="$QT_BASE_DIR/bin/qmake"
-export PATH="$QT_BASE_DIR/bin:$QT_BASE_DIR/libexec:$PATH"
-export LD_LIBRARY_PATH="$QT_BASE_DIR/lib:$LD_LIBRARY_PATH"
-export PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
+QTDIR=$(find_qt_conan_path "/build")
+export QTDIR
+export QMAKE="$QTDIR/bin/qmake"
+export PATH="$QTDIR/bin:$QTDIR/libexec:$PATH"
+export LD_LIBRARY_PATH="$QTDIR/lib:$LD_LIBRARY_PATH"
+export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 cd "$build_folder"
 
-cmake -DCMAKE_PREFIX_PATH="$QT_BASE_DIR" \
-    -DCMAKE_INSTALL_PREFIX=/usr \
+cmake -DCMAKE_INSTALL_PREFIX=/usr \
     -DQT_FEATURE_neon=OFF \
     -DCMAKE_BUILD_TYPE=$build_type \
     -DKDRIVE_THEME_DIR="/src/infomaniak" \

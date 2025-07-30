@@ -76,9 +76,10 @@ fi
 echo "Build type: $build_type"
 echo "Unit tests build flag: $unit_tests"
 
+source "$base_dir/infomaniak-build-tools/linux/common-utils.sh"
 
-export QT_BASE_DIR="$HOME/Qt/6.2.3"
-export QTDIR="$QT_BASE_DIR/gcc_64"
+QTDIR="$(find_qt_conan_path "$build_dir")"
+export QTDIR
 export BASEPATH="$PWD"
 export CONTENTDIR="$BASEPATH/build-linux"
 export BUILD_DIR="$CONTENTDIR/build"

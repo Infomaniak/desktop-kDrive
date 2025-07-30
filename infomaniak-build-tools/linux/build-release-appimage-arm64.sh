@@ -64,18 +64,16 @@ source "$(dirname "$conan_toolchain_file")/conanbuild.sh"
 source /src/infomaniak-build-tools/linux/common-utils.sh
 
 # Set Qt-6.2
-QT_BASE_DIR=$(find_qt_conan_path "/build")
-export QT_BASE_DIR
-export QTDIR="$QT_BASE_DIR"
-export QMAKE="$QT_BASE_DIR/bin/qmake"
-export PATH="$QT_BASE_DIR/bin:$QT_BASE_DIR/libexec:$PATH"
-export LD_LIBRARY_PATH="$QT_BASE_DIR/lib:$LD_LIBRARY_PATH"
-export PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
+QTDIR=$(find_qt_conan_path "/build")
+export QTDIR
+export QMAKE="$QTDIR/bin/qmake"
+export PATH="$QTDIR/bin:$QTDIR/libexec:$PATH"
+export LD_LIBRARY_PATH="$QTDIR/lib:$LD_LIBRARY_PATH"
+export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 cd "$build_folder"
 
-cmake -DCMAKE_PREFIX_PATH="$QT_BASE_DIR" \
-    -DCMAKE_INSTALL_PREFIX=/usr \
+cmake -DCMAKE_INSTALL_PREFIX=/usr \
     -DQT_FEATURE_neon=ON \
     -DCMAKE_BUILD_TYPE=$build_type \
     -DKDRIVE_THEME_DIR="/src/infomaniak" \
@@ -100,11 +98,11 @@ make DESTDIR=/app install
 cd /app
 
 mkdir -p ./usr/plugins
-cp -P -r $QTDIR/plugins/* ./usr/plugins/
+cp -P -r "$QTDIR"/plugins/* ./usr/plugins/
 
-cp -P -r $QTDIR/libexec ./usr
-cp -P -r $QTDIR/resources ./usr
-cp -P -r $QTDIR/translations ./usr
+cp -P -r "$QTDIR"/libexec ./usr
+cp -P -r "$QTDIR"/resources ./usr
+cp -P -r "$QTDIR"/translations ./usr
 
 mv ./usr/lib/aarch64-linux-gnu/* ./usr/lib/ || echo "The folder /app/usr/lib/aarch64-linux-gnu/ might not exist." >&2
 
@@ -113,8 +111,8 @@ cp -P /usr/local/lib/libcrypto.so* ./usr/lib/
 
 cp -P -r /usr/lib/aarch64-linux-gnu/nss ./usr/lib/
 
-cp -P $QTDIR/lib/libQt6WaylandClient.so* ./usr/lib
-cp -P $QTDIR/lib/libQt6WaylandEglClientHwIntegration.so* ./usr/lib
+cp -P "$QTDIR"/lib/libQt6WaylandClient.so* ./usr/lib
+cp -P "$QTDIR"/lib/libQt6WaylandEglClientHwIntegration.so* ./usr/lib
 
 cp -P ./build/client/conan_dependencies/* ./usr/lib
 

@@ -41,7 +41,7 @@ cp -P -r "$QTDIR/resources" "$app_dir/usr"
 cp -P -r "$QTDIR/translations" "$app_dir/usr"
 
 mv "$app_dir/usr/lib/x86_64-linux-gnu/"* "$app_dir/usr/lib/" || echo "The folder $app_dir/usr/lib/aarch64-linux-gnu/ might not exist." >&2
-cp -P "$PWD/build-linux/build/conan/dependencies/*" "$app_dir/usr/lib"
+cp -P "$build_dir/build/conan/dependencies/*" "$app_dir/usr/lib"
 
 mkdir -p "$app_dir/usr/qml"
 
@@ -58,12 +58,12 @@ cp "$QTDIR/lib/libQt6SerialPort.so.6" "$app_dir/usr/lib/"
 
 "$HOME/desktop-setup/linuxdeploy-x86_64.AppImage" --appdir "$app_dir" -e "$app_dir/usr/bin/kDrive" -i "$app_dir/kdrive-win.png" -d "$app_dir/usr/share/applications/kDrive_client.desktop" --plugin qt --output appimage -v0
 
-version=$(grep "KDRIVE_VERSION_FULL" "$base_dir/build-linux/build/version.h" | awk '{print $3}')
+version=$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')
 app_name="kDrive-$version-amd64.AppImage"
 
 mv kDrive*.AppImage "../$app_name"
 
-cd "$base_dir/build-linux"
+cd "$build_dir"
 
 if [ -z ${KDRIVE_TOKEN+x} ]; then
 	echo "No kDrive token found, AppImage will not be uploaded."
