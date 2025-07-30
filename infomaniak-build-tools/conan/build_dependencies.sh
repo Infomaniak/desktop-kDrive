@@ -64,17 +64,15 @@ EOF
 done
 
 
-
-
 if [[ "${1:-}" =~ ^-h|--help$ ]]; then
-    cat << EOF >&2
+  cat << EOF >&2
 Usage: $0 [Debug|Release] [--output-dir=<output_dir>]
   There are three ways to set the output directory (in descending order of priority):
     1. --output-dir=<output_dir> argument
     2. KDRIVE_OUTPUT_DIR environment variable
     3. Default directory based on the system (macOS: build-macos/client, Linux: build-linux/build)
 EOF
-    exit 0
+  exit 0
 fi
 
 
@@ -85,18 +83,18 @@ log(){ echo "[INFO] $*"; }
 error(){ echo "[ERROR] $*" >&2; exit 1; }
 
 function get_platform {
-    platform="$(uname | tr '[:upper:]' '[:lower:]')"
-    echo "$platform"
+  platform="$(uname | tr '[:upper:]' '[:lower:]')"
+  echo "$platform"
 }
 
 function get_architecture {
-    platform=$1
-    architecture="" # Left empty for Linux systems.
-    if [[ "$platform" = "darwin" ]]; then
-       architecture="-s:a=arch=armv8|x86_64" # Making universal binary. See https://docs.conan.io/2/reference/tools/cmake/cmaketoolchain.html#conan-tools-cmaketoolchain-universal-binaries
-    fi
+  platform=$1
+  architecture="" # Left empty for Linux systems.
+  if [[ "$platform" = "darwin" ]]; then
+    architecture="-s:a=arch=armv8|x86_64" # Making universal binary. See https://docs.conan.io/2/reference/tools/cmake/cmaketoolchain.html#conan-tools-cmaketoolchain-universal-binaries
+  fi
 
-    echo "$architecture"
+  echo "$architecture"
 }
 
 function get_arg_value {
@@ -142,7 +140,7 @@ fi
 
 # check if we launched this in the right folder.
 if [ ! -d "infomaniak-build-tools/conan" ]; then
-    error "Please run this script from the root of the repository."
+  error "Please run this script from the root of the repository."
 fi
 
 if ! command -v conan >/dev/null 2>&1; then
