@@ -16,12 +16,12 @@ find_conan_dependency_path() {
   local conan_path=""
 
   if [[ "$LD_LIBRARY_PATH" != *"/.conan2/"* ]]; then
-    conan_path="$(dirname "$(find "$build_dir" -iname "conanbuild.sh" -type f | head -n 1)")"
-    if [[ -n "$conan_path" && -f "$conan_path/conanbuild.sh" ]]; then
-      source "$conan_path/conanbuild.sh"
+    conan_path="$(dirname "$(find "$build_dir" -iname "conanrun.sh" -type f | head -n 1)")"
+    if [[ -n "$conan_path" && -f "$conan_path/conanrun.sh" ]]; then
+      source "$conan_path/conanrun.sh"
       sourced=1
     else
-      echo "Error: Could not find 'conanbuild.sh' in the build directory '$build_dir'." >&2
+      echo "Error: Could not find 'conanrun.sh' in the build directory '$build_dir'." >&2
       exit 1
     fi
   fi
@@ -30,14 +30,14 @@ find_conan_dependency_path() {
   IFS=':' read -ra path_dirs <<< "$LD_LIBRARY_PATH"
   for dir in "${path_dirs[@]}"; do
     if [[ "$dir" =~ $conan_package_folder_regex ]]; then
-      [[ $sourced -eq 1 ]] && [[ -f "$conan_path/deactivate_conanbuild.sh" ]] && source "$conan_path/deactivate_conanbuild.sh" > /dev/null 2>&1
       echo "${dir:0:-4}" # Remove the trailing "/lib" from the path
+      [[ $sourced -eq 1 ]] && [[ -f "$conan_path/deactivate_conanrun.sh" ]] && source "$conan_path/deactivate_conanrun.sh" > /dev/null 2>&1
       return 0
     fi
   done
 
   echo "Error: Could not find the $origin_dep_name($dep_name...)Conan package path in LD_LIBRARY_PATH='$LD_LIBRARY_PATH'." >&2
-  [[ $sourced -eq 1 ]] && [[ -f "$conan_path/deactivate_conanbuild.sh" ]] && source "$conan_path/deactivate_conanbuild.sh" > /dev/null 2>&1
+  [[ $sourced -eq 1 ]] && [[ -f "$conan_path/deactivate_conanrun.sh" ]] && source "$conan_path/deactivate_conanrun.sh" > /dev/null 2>&1
   return 1
 }
 
