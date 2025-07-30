@@ -81,9 +81,12 @@ export CONTENTDIR="$BASEPATH/build-linux"
 export BUILD_DIR="$CONTENTDIR/build"
 export APPDIR="$CONTENTDIR/app"
 
+conan_build_folder="$BUILD_DIR/conan"
+conan_dependencies_folder="$BUILD_DIR/conan/dependencies"
+
 source "$BASEPATH/infomaniak-build-tools/linux/common-utils.sh"
 
-QTDIR="$(find_qt_conan_path "$CONTENTDIR")"
+QTDIR="$(find_qt_conan_path "$conan_build_folder")"
 export QTDIR
 
 
@@ -103,9 +106,6 @@ export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 # Set defaults
 export SUFFIX=""
-
-conan_build_folder="$BUILD_DIR/conan"
-conan_dependencies_folder="$BUILD_DIR/conan/dependencies"
 
 bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" --output-dir="$conan_build_folder"
 
