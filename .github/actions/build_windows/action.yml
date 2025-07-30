@@ -84,13 +84,6 @@ runs:
           cp "${{ github.workspace }}/build-windows/install/bin/*.dll" ./dependencies/
           cp "${{ github.workspace }}/build-windows/install/bin/sync-exclude.lst" ./dependencies/
           cp "${{ github.workspace }}/build-windows/install/bin/*.dll" ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Widgets.dll" ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Gui.dll" ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Network.dll" ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Sql.dll" ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Core.dll" ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6DBus.dll" ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Svg.dll" ./dependencies/
           cp "C:\Program Files (x86)\Sentry-Native\bin\crashpad_handler.exe" ./dependencies/
           mkdir .\dependencies\platforms
           cp "C:\Qt\6.2.3\msvc2019_64\plugins\platforms\qoffscreen.dll" .\dependencies\platforms
@@ -109,14 +102,19 @@ runs:
             cmd /c `"$($conanRunBat.FullName)`"  # modifie l'environnement du shell cmd
           }
           
-          $patterns = @("libxxhash*.dll", "liblog4cplus*.dll", "libssl*.dll", "libcrypto*.dll")
+          $patterns = @("libxxhash*.dll", "liblog4cplus*.dll", "libssl*.dll", "libcrypto*.dll", "Qt6Widgets.dll", "Qt6Gui.dll", "Qt6Network.dll", "Qt6Sql.dll", "Qt6Core.dll", "Qt6DBus.dll", "Qt6Svg.dll", "qoffscreen.dll")
           $paths = $env:PATH -split ';' | Where-Object { $_ -like '*\.conan2\p*' }
           foreach ($dir in $paths) {
             if (Test-Path $dir) {
               Write-Host "Looking in $dir"
               foreach ($pattern in $patterns) {
                 Get-ChildItem -Path $dir -Recurse -Filter $pattern -ErrorAction SilentlyContinue | ForEach-Object {
-                  Copy-Item -Path $_.FullName -Destination ./dependencies/ -Force
+                  if ($pattern -eq "qoffscreen.dll") {
+                    $destination = "./dependencies/platforms/"
+                  } else {
+                    $destination = "./dependencies/"
+                  }
+                  Copy-Item -Path $_.FullName -Destination $destination -Force
                   Write-Host "Conan dependency found -> $($_.FullName)"
                 }
               }
