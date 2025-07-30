@@ -288,13 +288,21 @@ class QtConan(ConanFile):
                  src=pjoin(self.build_folder, "Tools", "QtCreator", "lib", "Qt", "lib"),
                  dst=pjoin(self.package_folder, "lib"),
                  keep_path=False
-                 )
+            )
         elif self.settings.os == "Windows":
             tools_folder = pjoin(self.package_folder, "tools")
-            mkdir(self, tools_folder)
+            vcredist_folder = pjoin(tools_folder, "vcredist")
+            mkdir(self, vcredist_folder)
             copy(self, "*",
-                 pjoin(self.build_folder, "Tools"),
-                 tools_folder)
+                 pjoin(self.build_folder, "install", "Tools"),
+                 tools_folder
+            )
+            copy(self, "vcredist_msvc*",
+                 pjoin(self.build_folder, "install", "vcredist"),
+                 vcredist_folder,
+                 keep_path=False
+            )
+
 
         for folder in ("doc", "modules"):
             rmdir(self, pjoin(self.package_folder, folder))
