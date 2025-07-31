@@ -84,7 +84,9 @@ class QtConan(ConanFile):
         if self.settings.os == "Windows":
             modules.extend([
                 "qt.tools.cmake",
-                "qt.tools.ninja"
+                "qt.tools.ninja",
+
+                f"qt.qt{major}.{compact}.{compiler}.debug_information" # Qt Debug Information Files for Windows
             ])
 
         if self.settings.os == "Linux":
