@@ -5,26 +5,19 @@
     >
     <XamlUICommand
         x:Key="ShowWindowCommand"
-        Label="Open kDrive"
-        Description="Show Window"
+        x:Uid="TrayIconOpenApplicationCommand"
         >
-        <XamlUICommand.IconSource>
-            <SymbolIconSource Symbol="OpenPane" />
-        </XamlUICommand.IconSource>
     </XamlUICommand>
     <XamlUICommand
         x:Key="ExitApplicationCommand"
-        Label="Exit"
-        Description="Exit"
+        x:Uid="TrayIconExitApplicationCommand"
         >
-        <XamlUICommand.IconSource>
-            <SymbolIconSource Symbol="ClosePane" />
-        </XamlUICommand.IconSource>
     </XamlUICommand>
     <tb:TaskbarIcon
         x:Key="TrayIcon"
         Visibility="Visible"
         ToolTipText="kDrive"
+        ContextMenuMode="SecondWindow"
         LeftClickCommand="{StaticResource ShowWindowCommand}"
         NoLeftClickDelay="True"
         >
