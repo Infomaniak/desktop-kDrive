@@ -43,6 +43,7 @@ static const std::vector<std::string> rejectedFiles = {
         "testfile_conflict_test_20220913_130102_abcdefghij.txt",
         "_conflict___",
         "testfile_blacklisted_20220913_130102_abcdefghij.txt",
+        "A\n_blacklisted_20240824_081432_s2L5tFynHP_blacklisted_20240824_180957.eml",
 #if defined(KD_MACOS)
         ".DS_Store",
 #elif defined(KD_WINDOWS)

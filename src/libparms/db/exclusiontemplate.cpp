@@ -49,7 +49,7 @@ void ExclusionTemplate::evaluateComplexity() {
         // Variable part at beginning, check if there is another one
         n = _templ.find('*', n + 1);
         if (n == _templ.length() - 1 || n == std::string::npos) {
-            // OK, variable part is at beggining and/or end only, do not use regex
+            // OK, variable part is at beginning and/or end only, do not use regex
             _complexity = ExclusionTemplateComplexity::Simple;
             return;
         }
