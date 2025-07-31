@@ -42,7 +42,7 @@ if (-not $matchingDirs) {
     Err "No directories found in PATH matching the package '$Package' (prefix '$pkgValue'). PATH entries: \n$($conanEntries -join '\n   ')"
 }
 if ($matchingDirs.Count -gt 1) {
-    Err "Multiple directories found in PATH matching the package '$Package' (prefix '$pkgValue'). Please specify a more precise package name. PATH entries: \n$($conanEntries -join '\n   "
+    Err "Multiple directories found in PATH matching the package '$Package' (prefix '$pkgValue'). Please specify a more precise package name. PATH entries: \n$($conanEntries -join '\n   ')"
 }
 
 $packageDir = $matchingDirs
