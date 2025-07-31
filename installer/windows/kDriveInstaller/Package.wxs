@@ -1,0 +1,11 @@
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Id="Infomaniak_Network_SA.kDriveInstaller" Name="kDrive" Manufacturer="Infomaniak Network SA" Version="3.7.3.31072025">
+    <MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeError)" />
+    <MediaTemplate EmbedCab="yes" />
+    <Feature Id="Main">
+      <ComponentGroupRef Id="DLLComponents" />
+      <ComponentGroupRef Id="thirdPartyExeComponents" />
+      <ComponentGroupRef Id="SyncExcludeComponents" />
+    </Feature>
+  </Package>
+</Wix>

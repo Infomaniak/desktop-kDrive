@@ -1,0 +1,10 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <ComponentGroup Id="thirdPartyExeComponents" Directory="INSTALLFOLDER">
+      <Component Guid="A48CFB93-825E-4F75-ACAD-2DFB7A9FFF4E">
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/crashpad_handler.exe" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/QtWebEngineProcess.exe" />     
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>
