@@ -202,7 +202,6 @@ if ($LASTEXITCODE -ne 0) {
     Err "Failed to create xxHash Conan package."
 }
 
-# Si $CI, mettre le paramètre de la recette 'qt_login_type' à 'envvars'
 if ($CI) {
     & $ConanExe create "$RecipesFolder/qt/all/" --build=missing -s build_type=$BuildType --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter -o qt_login_type=envvars
 } else {
