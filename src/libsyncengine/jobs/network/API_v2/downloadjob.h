@@ -72,7 +72,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
         //! Create a tmp file from a std::string
         bool createTmpFile(const std::string &data, bool &writeError);
         static bool hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace,
-                                   SyncPath &lowDiskSpacePath, log4cplus::Logger logger);
+                                   log4cplus::Logger logger);
 
         NodeId _remoteFileId;
         SyncPath _localpath;
