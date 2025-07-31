@@ -11,10 +11,6 @@ on:
         type: boolean
         description: Skip unit tests
         default: false
-  pull_request:
-    branches-ignore:
-        - 'release/**'
-    types: [synchronize, review_requested, opened]
 
 concurrency:
   group: kDrive-desktop-release-${{ github.head_ref }}
