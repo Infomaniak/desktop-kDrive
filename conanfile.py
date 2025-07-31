@@ -3,6 +3,7 @@ import textwrap
 from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, cmake_layout
 from conan.tools.cmake.toolchain.blocks import VSRuntimeBlock
+from conan.tools.env import VirtualRunEnv
 
 
 class KDriveDesktop(ConanFile):
@@ -11,7 +12,7 @@ class KDriveDesktop(ConanFile):
     url = "https://github.com/Infomaniak/desktop-kdrive"
 
     settings = "os", "compiler", "build_type", "arch"
-    generators = "CMakeDeps"
+    generators = "CMakeDeps", "VirtualRunEnv"
 
     def generate(self):
         """
