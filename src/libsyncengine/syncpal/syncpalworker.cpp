@@ -259,7 +259,7 @@ void SyncPalWorker::execute() {
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
 
-    LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " stoped");
+    LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " stopped");
     setDone(exitCode);
 }
 

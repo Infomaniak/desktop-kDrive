@@ -220,9 +220,13 @@ std::wstring Utility::v2ws(const dbtype &v) {
     return std::visit(VariantPrinter{}, v);
 }
 
+std::wstring Utility::quotedSyncName(const SyncName &name) {
+    return L"'" + SyncName2WStr(name) + L"'";
+}
+
 std::wstring Utility::formatSyncName(const SyncName &name) {
     std::wstringstream ss;
-    ss << L"name='" << SyncName2WStr(name) << L"'";
+    ss << L"name='" << quotedSyncName(name);
 
     return ss.str();
 }

@@ -364,9 +364,10 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         if (_liveSnapshot.updateItem(item)) {
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in remote snapshot: name:"
-                                                    << SyncName2WStr(item.name()) << L", inode:" << Utility::s2ws(item.id())
-                                                    << L", parent inode:" << Utility::s2ws(item.parentId()) << L", createdAt:"
-                                                    << item.createdAt() << L", modtime:" << item.lastModified() << L", isDir:"
+                                                    << Utility::quotedSyncName(item.name()) << L", inode:"
+                                                    << Utility::s2ws(item.id()) << L", parent inode:"
+                                                    << Utility::s2ws(item.parentId()) << L", createdAt:" << item.createdAt()
+                                                    << L", modtime:" << item.lastModified() << L", isDir:"
                                                     << (item.type() == NodeType::Directory) << L", size:" << item.size()
                                                     << L", isLink:" << item.isLink());
             }
