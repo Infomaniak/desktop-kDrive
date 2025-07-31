@@ -117,11 +117,24 @@ class QtConan(ConanFile):
     def requirements(self):
         self.requires("zlib/[>=1.2.11 <2]", options={ "shared": True }) # From https://conan.io/center/recipes/zlib
 
-    def _check_envvars_login_type(self):
-        if self.options.qt_login_type != "envvars":
-            return
+    def _check_envvars_login_type(self, check_option=True, raise_error=True):
+        if check_option and self.options.qt_login_type != "envvars":
+            return False
         if os.getenv("QT_INSTALLER_JWT_TOKEN") is None:
-            raise ConanInvalidConfiguration("To be able to use the 'envvars' login type, you must set the environment variable 'QT_INSTALLER_JWT_TOKEN' with your Qt account JWT token. See https://doc.qt.io/qt-6/get-and-install-qt-cli.html#providing-login-information")
+            if raise_error:
+                raise ConanInvalidConfiguration("To be able to use the 'envvars' login type, you must set the environment variable 'QT_INSTALLER_JWT_TOKEN' with your Qt account JWT token. See https://doc.qt.io/qt-6/get-and-install-qt-cli.html#providing-login-information")
+            else:
+                return False
+        return True
+
+    def config_options(self):
+        if self.options.qt_login_type == "ini" and (self._get_default_login_ini_location() is None or not os.path.isfile(self._get_default_login_ini_location())):
+            self.output.warning("The file 'qtaccount.ini' is not found at the default location.")
+            if self._check_envvars_login_type(check_option=False, raise_error=False):
+                self.output.warning("Falling back to 'envvars' login type.")
+                self.options.qt_login_type = "envvars"
+            else:
+                self.options.qt_login_type = "cli"
 
     def validate(self):
         if not self.version.startswith("6."):
@@ -134,10 +147,7 @@ class QtConan(ConanFile):
         if self.options.qt_login_type == "cli":
             return
 
-        if self.options.qt_login_type == "ini" and (self._get_default_login_ini_location() is None or not os.path.isfile(self._get_default_login_ini_location())):
-            self.output.warning("The file 'qtaccount.ini' is not found at the default location. If the installation fails due to authentication issues, consider switching to the 'envvars' login type.")
-
-        self._check_envvars_login_type()
+        self._check_envvars_login_type(check_option=True, raise_error=True)
 
     def _get_executable_path(self, downloaded_file_name: str) -> str:
         """
@@ -224,7 +234,7 @@ class QtConan(ConanFile):
 
         args = ["--root", f"{self.build_folder}/install"] + args
 
-        self._check_envvars_login_type() # If the login type is 'envvars', ensure that the required environment variable is set; otherwise, raise an error.
+        self._check_envvars_login_type(check_option=True, raise_error=True) # If the login type is 'envvars', ensure that the required environment variable is set; otherwise, raise an error.
 
         args += ["install"] + self._get_qt_submodules(self.version)
 
