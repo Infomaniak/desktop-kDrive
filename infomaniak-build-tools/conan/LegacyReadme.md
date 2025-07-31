@@ -188,6 +188,75 @@ Note that installing `NASM` is not required.
 </details>
 
 <details>
+<summary>Qt 6.2.3</summary>
+
+### macOS
+From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4),
+tick the **Archive** box and then press the `Refresh` button to see earlier `Qt` versions.  
+In `QT 6.2.3`, select:
+- macOS
+- Sources
+- QT 5 Compatibility Module
+
+In `Qt 6.2.3 Additional Libraries`, select:
+- Qt WebEngine
+- Qt Positioning
+- Qt WebChannel
+- Qt WebView
+
+Add `CMake` in `PATH` by appending the following lines to your `.zshrc`:
+
+```bash
+export PATH=$PATH:~/Qt/Tools/CMake/CMake.app/Contents/bin
+export ALTOOL_USERNAME=<email address>
+export QTDIR=~/Qt/6.2.3/macos
+```
+
+### Linux
+From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4),
+tick the **Archive** box and then press the `Refresh` button to see earlier `Qt` versions.  
+In QT 6.2.3, select :
+- Desktop gcc 64-bits
+- Qt 5 Compatibility Module
+
+In Qt 6.2.3 Additional Libraries, select :
+- Qt WebEngine
+- Qt Positioning
+- Qt WebChannel
+- Qt WebView
+
+If, following the installation, you cannot load the Qt platform plugin xcb, you can run the following command :
+```bash
+sudo apt install libxcb-cursor0
+```
+
+### Windows
+From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4),
+tick the **Archive** box and then press the `Refresh` button to see earlier `Qt` versions.  
+In `Qt 6.2.3`, select:
+- MSVC 2019 64-bit
+- Sources
+- Qt 5 Compatibility Module
+
+In `Qt 6.2.3 Additional Libraries`, select :
+- Qt WebEngine
+- Qt Positioning
+- Qt WebChannel
+- Qt WebView
+- Qt Debug Information Files (only if you want to use a debugger)
+
+In `Developer and Designer Tools` (should be selected by default):
+- CMake
+- Ninja
+
+Add an environment variable named `QTDIR`, set with the path of your Qt msvc folder (which defaults to `C:\Qt\6.2.3\msvc2019_64`).
+Add to the following paths to your `PATH` or adapt them to the actual location of your Qt folder if needed:
+- `C:\Qt\6.2.3\msvc2019_64\bin`
+- `C:\Qt\Tools\CMake_64\bin`
+
+</details>
+
+<details>
 <summary>Sentry - 0.7.9 (0.6.4 on Linux for Ubuntu 20.04)</summary>
 
 ### macOS
