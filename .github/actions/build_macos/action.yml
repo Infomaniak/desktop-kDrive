@@ -108,7 +108,7 @@ runs:
       - name: Download sentry-cli for macOS
         run: curl -sL https://sentry.io/get-cli/ | sh || true
         shell: bash
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name : Create sentry server artifacts
         run: |
@@ -117,7 +117,7 @@ runs:
           cp -r ${{ github.workspace }}/build-macos/client/install/kDrive.dSYM ${{ github.workspace }}/build-macos/sentry-server-artifacts/kDrive.dSYM
           cp ${{ github.workspace }}/build-macos/client/install/kDrive.src.zip ${{ github.workspace }}/build-macos/sentry-server-artifacts/kDrive.src.zip
         shell: bash
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name : Create sentry client artifacts
         run: |
@@ -126,7 +126,7 @@ runs:
           cp -r ${{ github.workspace }}/build-macos/client/install/kDrive.dSYM ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.dSYM
           cp ${{ github.workspace }}/build-macos/client/install/kDrive_client.src.zip ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.src.zip
         shell: bash
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name: Get kDrive version
         id: get-version
@@ -153,7 +153,7 @@ runs:
             exit 1
           fi
         shell: bash
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build }} == 'true'
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name: Upload build common files
         uses: actions/upload-artifact@v4
@@ -215,7 +215,7 @@ runs:
           name: macos-release-artifacts-server-debug
           path: ${{ github.workspace }}/build-macos/sentry-server-artifacts
           retention-days: 1
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name: Upload sentry client artifacts
         uses: actions/upload-artifact@v4
@@ -223,7 +223,7 @@ runs:
           name: macos-release-artifacts-client-debug
           path: ${{ github.workspace }}/build-macos/sentry-client-artifacts
           retention-days: 1
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
 
       - name: Upload kDrive Package
@@ -232,7 +232,7 @@ runs:
           name: macos-release-artifacts-package
           path: ${{ github.workspace }}/build-macos/client/install/*.pkg
           retention-days: 1
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build }} == 'true'
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name: Upload Sparkle artifacts
         uses: actions/upload-artifact@v4
@@ -240,7 +240,7 @@ runs:
           name: macos-release-artifacts-sparkle
           path: ${{ github.workspace }}/build-macos/client/install/sparkle/
           retention-days: 1
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build }} == 'true'
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name: Clean-up generated code
         run : rm -rf build-macos

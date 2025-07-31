@@ -34,7 +34,7 @@ runs:
           name: linux-release-artifacts-appimage-amd64
           path: ${{ github.workspace }}/build-linux/install/kDrive-*-amd64.AppImage # kDrive-<full_version>-amd64.AppImage
           retention-days: 1
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name: Download sentry-cli for Linux
         if: ${{ steps.build.outcome == 'success' &&  inputs.release_build == 'true' }}
