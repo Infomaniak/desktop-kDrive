@@ -241,9 +241,9 @@ class QtConan(ConanFile):
         quoted_installer = f"'{installer_path}'" if self.settings.os != "Windows" else installer_path
         self.run(f"{quoted_installer} {' '.join(args)}")
 
-        self.output.highlight("Patching Qt installation...")
         find_wrap_open_gl = pjoin(self.build_folder, "install", self.version, self._subfolder_install(), "lib", "cmake", "Qt6", "FindWrapOpenGL.cmake")
         if os.path.exists(find_wrap_open_gl) and self.settings.os == "Macos":
+            self.output.highlight("Patching Qt installation...")
             from conan.tools.files import replace_in_file
             """
             Fixes spam of this kind of CMake warning on macOS:            
