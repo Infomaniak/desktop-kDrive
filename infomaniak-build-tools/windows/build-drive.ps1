@@ -262,7 +262,7 @@ function CMake-Build-And-Install {
     }
 
     $conanGeneratorsFolder = Split-Path -Parent $conanToolchainFile
-    $env:QTDIR = & "$path\infomaniak-build-tools\conan\find_conan_dep.ps1" -Package "qt" -BuildDir "$conanGeneratorsFolder"
+    $env:QTDIR = (& "$path\infomaniak-build-tools\conan\find_conan_dep.ps1" -Package "qt" -BuildDir "$conanGeneratorsFolder") -replace '/lib$', ''
     if (-not $env:QTDIR -or -not (Test-Path $env:QTDIR)) {
         Write-Error "Qt not found in Conan dependencies. Abort."
         exit 1
