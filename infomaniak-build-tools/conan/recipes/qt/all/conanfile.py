@@ -330,7 +330,7 @@ class QtConan(ConanFile):
             env.prepend_path("CMAKE_PREFIX_PATH", self.package_folder)
             env.prepend_path("LD_LIBRARY_PATH", pjoin(self.package_folder, "lib"))
             env.prepend_path("DYLD_LIBRARY_PATH", pjoin(self.package_folder, "lib"))
-            env.prepend_path("PATH", pjoin(self.package_folder, "lib"))
+            env.prepend_path("PATH", pjoin(self.package_folder, "bin"))
 
         self.cpp_info.includedirs = []
         self.cpp_info.bindirs = [ "bin" ]
