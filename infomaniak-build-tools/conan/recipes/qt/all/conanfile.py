@@ -331,11 +331,10 @@ class QtConan(ConanFile):
             env.prepend_path("LD_LIBRARY_PATH", pjoin(self.package_folder, "lib"))
             env.prepend_path("DYLD_LIBRARY_PATH", pjoin(self.package_folder, "lib"))
             env.prepend_path("PATH", pjoin(self.package_folder, "bin"))
+            if self.settings.os in ("Macos", "Linux"):
+                env.prepend_path("PATH", pjoin(self.package_folder, "libexec"))
 
         self.cpp_info.includedirs = []
         self.cpp_info.bindirs = [ "bin" ]
         if self.settings.os in ("Macos", "Linux"):
             self.cpp_info.bindirs.append("libexec")
-        self.cpp_info.resdirs = []
-        self.cpp_info.srcdirs = []
-        self.cpp_info.frameworkdirs = []
