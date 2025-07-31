@@ -18,7 +18,7 @@
 
 #include "localcopyjob.h"
 
-#include "io/permissionsholder.h"
+#include "libcommonserver/io/permissionsholder.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 

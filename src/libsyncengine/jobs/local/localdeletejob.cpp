@@ -18,7 +18,7 @@
 
 #include "localdeletejob.h"
 #include "../network/API_v2/getfileinfojob.h"
-#include "io/permissionsholder.h"
+#include "libcommonserver/io/permissionsholder.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"

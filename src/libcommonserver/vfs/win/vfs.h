@@ -33,7 +33,8 @@ typedef enum {
     VFS_PIN_STATE_PINNED = 1,
     VFS_PIN_STATE_UNPINNED = 2,
     VFS_PIN_STATE_EXCLUDED = 3,
-    VFS_PIN_STATE_INHERIT = 4
+    VFS_PIN_STATE_INHERIT = 4,
+    VFS_PIN_STATE_UNKNOWN
 } VfsPinState;
 
 DLL_EXP int __cdecl vfsInit(TraceCbk debugCallback, const wchar_t *appName, DWORD processId, const wchar_t *version,

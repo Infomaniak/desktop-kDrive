@@ -24,6 +24,7 @@
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
+#include "libcommonserver/io/permissionsholder.h"
 
 #include <unordered_map>
 #include <shobjidl_core.h>
@@ -189,6 +190,7 @@ ExitInfo VfsWin::updateMetadata(const SyncPath &filePathStd, time_t creationTime
     }
 
     // Update placeholder
+    PermissionsHolder permsHolder(fullPath);
     WIN32_FIND_DATA findData;
     findData.nFileSizeHigh = (DWORD) (size >> 32);
     findData.nFileSizeLow = (DWORD) (size & 0xFFFFFFFF);
@@ -227,6 +229,7 @@ ExitInfo VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
     }
 
     // Create placeholder
+    PermissionsHolder permsHolder(fullPath);
     WIN32_FIND_DATA findData;
     findData.nFileSizeHigh = (DWORD) (item.size() >> 32);
     findData.nFileSizeLow = (DWORD) (item.size() & 0xFFFFFFFF);
@@ -268,6 +271,7 @@ ExitInfo VfsWin::dehydratePlaceholder(const SyncPath &path) {
     }
 
     LOGW_DEBUG(logger(), L"Dehydrate file: " << Utility::formatSyncPath(fullPath));
+    PermissionsHolder permsHolder(fullPath);
     auto dehydrateFct = [=]() { dehydrate(fullPath.lexically_normal().native()); };
     std::thread dehydrateTask(dehydrateFct);
     dehydrateTask.detach();
@@ -285,6 +289,7 @@ ExitInfo VfsWin::convertToPlaceholder(const SyncPath &pathStd, const SyncFileIte
     }
 
     SyncPath fullPath(QStr2Path(path));
+    PermissionsHolder permsHolder(fullPath);
     DWORD dwAttrs = GetFileAttributesW(fullPath.lexically_normal().native().c_str());
     if (dwAttrs == INVALID_FILE_ATTRIBUTES) {
         DWORD errorCode = GetLastError();
@@ -298,7 +303,7 @@ ExitInfo VfsWin::convertToPlaceholder(const SyncPath &pathStd, const SyncFileIte
     }
 
     // Check if the file is already a placeholder
-    bool isPlaceholder;
+    bool isPlaceholder = false;
     if (vfsGetPlaceHolderStatus(fullPath.lexically_normal().native().c_str(), &isPlaceholder, nullptr, nullptr) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsGetPlaceHolderStatus: " << Utility::formatSyncPath(fullPath));
         return handleVfsError(fullPath);
@@ -362,10 +367,13 @@ void VfsWin::convertDirContentToPlaceholder(const QString &filePath, bool isHydr
             }
 
             // Convert to placeholder
-            if (vfsConvertToPlaceHolder(std::to_wstring(fileStat.inode).c_str(), fullPath.lexically_normal().native().c_str()) !=
-                S_OK) {
-                LOGW_WARN(logger(), L"Error in vfsConvertToPlaceHolder: " << Utility::formatSyncPath(fullPath));
-                break;
+            {
+                PermissionsHolder permsHolder(fullPath);
+                if (vfsConvertToPlaceHolder(std::to_wstring(fileStat.inode).c_str(),
+                                            fullPath.lexically_normal().native().c_str()) != S_OK) {
+                    LOGW_WARN(logger(), L"Error in vfsConvertToPlaceHolder: " << Utility::formatSyncPath(fullPath));
+                    break;
+                }
             }
 
             if (tmpInfo.isDir()) {
@@ -376,6 +384,7 @@ void VfsWin::convertDirContentToPlaceholder(const QString &filePath, bool isHydr
 }
 
 void VfsWin::clearFileAttributes(const SyncPath &fullPath) {
+    PermissionsHolder permsHolder(fullPath);
     if (vfsRevertPlaceHolder(fullPath.lexically_normal().native().c_str()) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsRevertPlaceHolder: " << Utility::formatSyncPath(fullPath));
     }
@@ -404,12 +413,13 @@ ExitInfo VfsWin::updateFetchStatus(const SyncPath &tmpPathStd, const SyncPath &p
     }
 
     // Check if the file is a placeholder
-    bool isPlaceholder;
+    bool isPlaceholder = false;
     if (vfsGetPlaceHolderStatus(fullPath.lexically_normal().native().c_str(), &isPlaceholder, nullptr, nullptr) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsGetPlaceHolderStatus: " << Utility::formatSyncPath(fullPath));
         return handleVfsError(fullPath);
     }
 
+    PermissionsHolder permsHolder(fullPath);
     if (vfsUpdateFetchStatus(std::to_wstring(_vfsSetupParams.driveId).c_str(), std::to_wstring(_vfsSetupParams.syncDbId).c_str(),
                              fullPath.lexically_normal().native().c_str(), fullTmpPath.lexically_normal().native().c_str(),
                              received, &canceled, &finished) != S_OK) {
@@ -444,7 +454,7 @@ ExitInfo VfsWin::forceStatus(const SyncPath &absolutePathStd, const VfsStatus &v
         return handleVfsError(absolutePathStd);
     }
 
-    // Some editors (notepad++) seems to remove the file attributes, therfore we need to verify that the file is still a
+    // Some editors (notepad++) seems to remove the file attributes, therefore we need to verify that the file is still a
     // placeholder
     if (!isPlaceholder) {
         FileStat filestat;
@@ -464,6 +474,7 @@ ExitInfo VfsWin::forceStatus(const SyncPath &absolutePathStd, const VfsStatus &v
         NodeId localNodeId = std::to_string(filestat.inode);
 
         // Convert to placeholder
+        PermissionsHolder permsHolder(absolutePathStd);
         if (vfsConvertToPlaceHolder(Utility::s2ws(localNodeId).c_str(), absolutePathStd.native().c_str()) != S_OK) {
             LOGW_WARN(logger(), L"Error in vfsConvertToPlaceHolder: " << Utility::formatSyncPath(absolutePathStd));
             return handleVfsError(absolutePathStd);
@@ -473,6 +484,7 @@ ExitInfo VfsWin::forceStatus(const SyncPath &absolutePathStd, const VfsStatus &v
     // Set status
     LOGW_DEBUG(logger(), L"Setting syncing status to: " << vfsStatus.isSyncing << L" for file: "
                                                         << Utility::formatSyncPath(absolutePathStd));
+    PermissionsHolder permsHolder(absolutePathStd);
     if (ExitInfo exitInfo = setPlaceholderStatus(absolutePathStd.native(), vfsStatus.isSyncing); !exitInfo) {
         LOGW_WARN(logger(), L"Error in setPlaceholderStatus: " << Utility::formatSyncPath(absolutePathStd) << L" " << exitInfo);
         return exitInfo;
@@ -527,6 +539,7 @@ ExitInfo VfsWin::setPinState(const SyncPath &relativePathStd, PinState state) {
             break;
     }
 
+    PermissionsHolder permsHolder(fullPath);
     if (vfsSetPinState(fullPath.lexically_normal().native().c_str(), vfsState) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsSetPinState: " << Utility::formatSyncPath(fullPath));
         return handleVfsError(fullPath);
@@ -538,9 +551,9 @@ ExitInfo VfsWin::setPinState(const SyncPath &relativePathStd, PinState state) {
 PinState VfsWin::pinState(const SyncPath &relativePathStd) {
     //  Read pin state from file attributes
     SyncPath fullPath(_vfsSetupParams.localPath / relativePathStd.native());
-    VfsPinState vfsPinState;
+    VfsPinState vfsPinState = VFS_PIN_STATE_UNKNOWN;
     vfsGetPinState(fullPath.lexically_normal().native().c_str(), &vfsPinState);
-    PinState state;
+    PinState state = PinState::Unknown;
     switch (vfsPinState) {
         case VFS_PIN_STATE_PINNED:
             state = PinState::AlwaysLocal;
@@ -566,6 +579,7 @@ PinState VfsWin::pinState(const SyncPath &relativePathStd) {
 
 ExitInfo VfsWin::status(const SyncPath &filePath, VfsStatus &vfsStatus) {
     // Check if the file is a placeholder
+    PermissionsHolder permsHolder(filePath);
     bool isDehydrated = false;
     if (vfsGetPlaceHolderStatus(filePath.lexically_normal().native().c_str(), &vfsStatus.isPlaceholder, &isDehydrated, nullptr) !=
         S_OK) {
