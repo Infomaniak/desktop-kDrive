@@ -61,6 +61,12 @@ class ComputeFSOperationWorker : public ISyncWorker {
 
         ExitCode checkFileIntegrity(const DbNode &dbNode);
 
+        /**
+         * Look for files that are still being written to by comparing their size when the operation has been created and the
+         * current size on the filesystem. If those sizes are different, the synchronization of this item is postponed.
+         */
+        void checkIfFileStillBeingWritten();
+
         bool isExcludedFromSync(const std::shared_ptr<const Snapshot> snapshot, const ReplicaSide side, const NodeId &nodeId,
                                 const SyncPath &path, NodeType type, int64_t size);
         /**
