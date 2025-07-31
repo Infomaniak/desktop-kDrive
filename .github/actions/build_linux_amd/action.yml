@@ -116,6 +116,7 @@ runs:
                 -o -iname 'liblog4cplus*.so.*' \
                 -o -iname 'libssl*.so*' \
                 -o -iname 'libcrypto*.so*' \
+                -o -iname 'libsentry.*' \
                 -o -iname 'libQt6Widgets.*' \
                 -o -iname 'libQt6Gui.*' \
                 -o -iname 'libQt6Network.*' \
@@ -137,6 +138,8 @@ runs:
               fi
             fi
           done
+
+          source $(find "${{ github.workspace }}/build-macos" -name deactivate_conanrun.sh | head -n 1)
         shell: bash
         if: steps.build.outcome == 'success'
 
