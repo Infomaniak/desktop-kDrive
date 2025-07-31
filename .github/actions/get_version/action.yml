@@ -1,0 +1,31 @@
+name: Get the kDrive version of the current commit
+description: 'Get the kDrive version of the current commit'
+
+outputs:
+  kDrive_version:
+    description: 'The kDrive version of the current commit'
+    value: ${{ steps.get-version-step.outputs.kDrive_version }}
+
+runs:
+    using: "composite"
+    steps:
+      - name: Read VERSION.cmake from repo
+        id: get-version-step
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const file = await github.rest.repos.getContent({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path: 'VERSION.cmake',
+              ref: context.sha
+            });
+            const content = Buffer.from(file.data.content, file.data.encoding).toString();
+            const major = content.match(/KDRIVE_VERSION_MAJOR\s+(\d+)/)?.[1];
+            const minor = content.match(/KDRIVE_VERSION_MINOR\s+(\d+)/)?.[1];
+            const patch = content.match(/KDRIVE_VERSION_PATCH\s+(\d+)/)?.[1];
+            const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+            
+            const full_version = `${major}.${minor}.${patch}.${date}`;
+            core.setOutput("kDrive_version", `${full_version}`);
+            core.info(`kDrive version is ${full_version}`);
