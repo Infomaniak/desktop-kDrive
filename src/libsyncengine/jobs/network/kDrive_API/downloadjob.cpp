@@ -182,18 +182,6 @@ void DownloadJob::runJob() noexcept {
     AbstractTokenNetworkJob::runJob();
 }
 
-namespace {
-std::wstring notEnoughPlaceMessage(const UniqueId jobId, const SyncPath &lowDiskSpacePath, const int64_t expectedSizeInBytes) {
-    std::wstringstream wss;
-    const auto requiredFreeSpaceInBytes = expectedSizeInBytes + Utility::freeDiskSpaceLimit();
-
-    wss << L"Request " << jobId << L": not enough place at " << Utility::formatSyncPath(lowDiskSpacePath)
-        << L". Required free space: " << requiredFreeSpaceInBytes << " bytes. Download cancelled.";
-
-    return wss.str();
-}
-} // namespace
-
 bool DownloadJob::handleResponse(std::istream &is) {
     // Get Mime type
     std::string contentType;
@@ -279,8 +267,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
                                _resHttp.getContentLength() == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH
                                        ? BUF_SIZE
                                        : (_resHttp.getContentLength() - getProgress());
-                       !hasEnoughPlace(_tmpPath, _localpath, neededPlace, lowDiskSpacePath, _logger)) {
-                LOGW_WARN(_logger, notEnoughPlaceMessage(jobId(), lowDiskSpacePath, neededPlace));
+                       !hasEnoughPlace(_tmpPath, _localpath, neededPlace, _logger)) {
                 _exitInfo = {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
                 return false;
             } else {
@@ -568,15 +555,17 @@ bool DownloadJob::moveTmpFile() {
 }
 
 bool DownloadJob::hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace,
-                                 SyncPath &lowDiskSpacePath, log4cplus::Logger logger) {
-    lowDiskSpacePath = SyncPath{};
-
+                                 log4cplus::Logger logger) {
     auto tmpDirSize = Utility::Utility::getFreeDiskSpace(tmpDirPath);
     auto destDirSize = Utility::Utility::getFreeDiskSpace(destDirPath);
 
     if (const auto &freeBytes = std::min(tmpDirSize, destDirSize); freeBytes >= 0) {
-        if (freeBytes < neededPlace + Utility::freeDiskSpaceLimit()) {
-            lowDiskSpacePath = tmpDirSize < destDirSize ? tmpDirPath : destDirPath;
+        const auto totalNeededSpace = neededPlace + Utility::freeDiskSpaceLimit();
+        if (freeBytes < totalNeededSpace) {
+            const auto lowDiskSpacePath = tmpDirSize < destDirSize ? tmpDirPath : destDirPath;
+            LOGW_WARN(logger, L"Not enough place at " << Utility::formatSyncPath(lowDiskSpacePath) << L". Required free space: "
+                                                      << totalNeededSpace << L" bytes. Available free space: " << freeBytes
+                                                      << L" bytes. Download cancelled.")
             return false;
         }
     } else {
@@ -625,9 +614,7 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
         expectedSize = _resHttp.getContentLength();
         setProgress(0);
         if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH) {
-            SyncPath lowDiskSpacePath;
-            if (!hasEnoughPlace(_tmpPath, _localpath, expectedSize, lowDiskSpacePath, _logger)) {
-                LOGW_WARN(_logger, notEnoughPlaceMessage(jobId(), lowDiskSpacePath, expectedSize));
+            if (!hasEnoughPlace(_tmpPath, _localpath, expectedSize, _logger)) {
                 writeError = true;
             }
             if (expectedSize < 0) {

@@ -2916,6 +2916,7 @@ void AppServer::logUsefulInformation() const {
         LOGW_WARN(_logger, L"Error getting cache directory");
     }
     LOGW_INFO(_logger, L"cache " << Utility::formatSyncPath(cachePath));
+    LOGW_INFO(_logger, L"free space for cache: " << Utility::getFreeDiskSpace(cachePath) << L" bytes");
 
     // Log app ID
     AppStateValue appStateValue = "";
