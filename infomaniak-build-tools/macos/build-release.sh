@@ -141,5 +141,5 @@ if [ -n "$sign_files" ]; then
 	/usr/bin/ditto -c -k --keepParent "$install_dir/notarization" "$install_dir/InfomaniakDrive.zip"
 	# Send to notarization
 	echo "Sending notarization request"
-	# TODO re enable when tests are done -> xcrun notarytool submit --apple-id "$ALTOOL_USERNAME" --keychain-profile "notarytool" "$install_dir/InfomaniakDrive.zip" --progress --wait
+	xcrun notarytool submit --apple-id "$ALTOOL_USERNAME" --keychain-profile "notarytool" "$install_dir/InfomaniakDrive.zip" --progress --wait
 fi
