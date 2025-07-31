@@ -4,7 +4,6 @@
 - [Installation Requirements](#installation-requirements)
 	- [SIP](#sip)
 	- [Xcode](#xcode)
-	- [Qt 6.2.3](#qt-623)
 	- [Sentry](#sentry)
 	- [cppunit](#cppunit)
 	- [Poco](#poco)
@@ -54,29 +53,6 @@ Once installed, run the following command :
 
 ```bash
 sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-```
-
-## QT 6.2.3
-
-From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4), 
-tick the **Archive** box and then press the `Refresh` button to see earlier `Qt` versions.  
-In `QT 6.2.3`, select:
-- macOS
-- Sources
-- QT 5 Compatibility Module
-
-In `Qt 6.2.3 Additional Libraries`, select:
-- Qt WebEngine
-- Qt Positioning
-- Qt WebChannel
-- Qt WebView
-
-Add `CMake` in `PATH` by appending the following lines to your `.zshrc`:
-
-```bash
-export PATH=$PATH:~/Qt/Tools/CMake/CMake.app/Contents/bin
-export ALTOOL_USERNAME=<email address>
-export QTDIR=~/Qt/6.2.3/macos
 ```
 
 ## Sentry
@@ -249,7 +225,6 @@ The project requires additional CMake variables for a correct build. To inject t
    set(KDRIVE_THEME_DIR "$ENV{HOME}/Projects/desktop-kDrive/infomaniak")
    set(BUILD_UNIT_TESTS "ON")      # Set to "OFF" to skip tests
    set(SOCKETAPI_TEAM_IDENTIFIER_PREFIX "864VDCS2QY")
-   set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.2.3/macos")
    set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/Projects/CLion-build-debug/build/Debug/install")
    ```
 
@@ -297,7 +272,9 @@ The project requires additional CMake variables for a correct build. To inject t
 
 Dependencies are deployed using utilitary tool `macdeployqt` provided with the Qt binaries:
 
-`/Users/<user_name>/Qt/6.2.3/macos/bin/macdeployqt /Users/<user_name>/Projects/CLion-build-debug/install/kDrive.app -libpath=$DYLD_LIBRARY_PATH -no-strip -executable=/Users/<user_name>/Projects/CLion-build-debug/install/kDrive.app/Contents/MacOS/kDrive`.
+```bash
+$(source $HOME/Projects/desktop-kDrive/infomaniak-build-tools/conan/common-utils.sh && find_qt_conan_path $HOME/Projects/CLion-build-debug qt)/bin/macdeployqt $HOME/Projects/CLion-build-debug/install/kDrive.app -libpath=$DYLD_LIBRARY_PATH -no-strip -executable=$HOME/Projects/CLion-build-debug/install/kDrive.app/Contents/MacOS/kDrive
+```
 
 This command is run each time we build. However, since it takes some time to find all dependencies, it is possible to disable it by setting the variable DEPLOY_LIBS_MANUALLY.
 
@@ -322,7 +299,6 @@ CMake options:
 -DKDRIVE_THEME_DIR=/Users/<user_name>/Projects/desktop-kDrive/infomaniak
 -DCMAKE_INSTALL_PREFIX=/Users/<user_name>/Projects/CLion-build-debug/install
 -DBUILD_UNIT_TESTS:BOOL=ON
--DCMAKE_PREFIX_PATH:STRING=/Users/<user_name>/Qt/6.2.3/macos
 -DSOCKETAPI_TEAM_IDENTIFIER_PREFIX:STRING=864VDCS2QY
 -DCMAKE_TOOLCHAIN_FILE=/Users/<user_name>/Projects/CLion-build-debug/conan_toolchain.cmake
 ```
@@ -378,8 +354,6 @@ In the project build settings, paste the following lines in the `Initial Configu
 -GUnix Makefiles
 -DCMAKE_BUILD_TYPE:STRING=Debug
 -DCMAKE_PROJECT_INCLUDE_BEFORE:PATH=%{IDE:ResourcePath}/package-manager/auto-setup.cmake
--DQT_QMAKE_EXECUTABLE:STRING=%{Qt:qmakeExecutable}
--DCMAKE_PREFIX_PATH:STRING=%{Qt:QT_INSTALL_PREFIX}
 -DCMAKE_C_COMPILER:STRING=%{Compiler:Executable:C}
 -DCMAKE_CXX_COMPILER:STRING=%{Compiler:Executable:Cxx}
 -DAPPLICATION_CLIENT_EXECUTABLE=kdrive
