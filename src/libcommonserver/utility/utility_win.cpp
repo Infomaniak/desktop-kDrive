@@ -66,11 +66,11 @@ bool Utility::moveItemToTrash(const SyncPath &itemPath) {
         // Couldn't CoCreateInstance - clean up and return
         LOGW_WARN(Log::instance()->getLogger(), L"Error in CoCreateInstance - path="
                                                         << Path2WStr(itemPath) << L" err="
-                                                        << Utility::s2ws(std::system_category().message(hr)));
+                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
 
         std::wstringstream errorStream;
         errorStream << L"Move to trash failed for item with " << Utility::formatSyncPath(itemPath)
-                    << L" - CoCreateInstance failed with error: " << Utility::s2ws(std::system_category().message(hr));
+                    << L" - CoCreateInstance failed with error: " << CommonUtility::s2ws(std::system_category().message(hr));
         std::wstring errorStr = errorStream.str();
         LOGW_WARN(Log::instance()->getLogger(), errorStr);
         sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "CoCreateInstance failed");
@@ -83,11 +83,11 @@ bool Utility::moveItemToTrash(const SyncPath &itemPath) {
         // Couldn't add flags - clean up and return
         LOGW_WARN(Log::instance()->getLogger(), L"Error in SetOperationFlags path="
                                                         << Path2WStr(itemPath) << L" err="
-                                                        << Utility::s2ws(std::system_category().message(hr)));
+                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
 
         std::wstringstream errorStream;
         errorStream << L"Move to trash failed for item " << Path2WStr(itemPath) << L" - SetOperationFlags failed with error: "
-                    << Utility::s2ws(std::system_category().message(hr));
+                    << CommonUtility::s2ws(std::system_category().message(hr));
         std::wstring errorStr = errorStream.str();
         LOGW_WARN(Log::instance()->getLogger(), errorStr);
 
@@ -105,11 +105,12 @@ bool Utility::moveItemToTrash(const SyncPath &itemPath) {
         // Couldn't get file into an item - cleanup and return (maybe the file doesn't exist?)
         LOGW_WARN(Log::instance()->getLogger(), L"Error in SHCreateItemFromParsingName - path="
                                                         << Path2WStr(itemPath) << L" err="
-                                                        << Utility::s2ws(std::system_category().message(hr)));
+                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
 
         std::wstringstream errorStream;
         errorStream << L"Move to trash failed for item " << Path2WStr(itemPath)
-                    << L" - SHCreateItemFromParsingName failed with error: " << Utility::s2ws(std::system_category().message(hr));
+                    << L" - SHCreateItemFromParsingName failed with error: "
+                    << CommonUtility::s2ws(std::system_category().message(hr));
         std::wstring errorStr = errorStream.str();
         LOGW_WARN(Log::instance()->getLogger(), errorStr);
 
@@ -124,11 +125,11 @@ bool Utility::moveItemToTrash(const SyncPath &itemPath) {
         // Failed to mark file/folder item for deletion - cleanup and return
         LOGW_WARN(Log::instance()->getLogger(), L"Error in DeleteItem - path="
                                                         << Path2WStr(itemPath) << L" err="
-                                                        << Utility::s2ws(std::system_category().message(hr)));
+                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
 
         std::wstringstream errorStream;
         errorStream << L"Move to trash failed for item " << Path2WStr(itemPath) << L" - DeleteItem failed with error: "
-                    << Utility::s2ws(std::system_category().message(hr));
+                    << CommonUtility::s2ws(std::system_category().message(hr));
         std::wstring errorStr = errorStream.str();
         LOGW_WARN(Log::instance()->getLogger(), errorStr);
         sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "DeleteItem failed");
@@ -144,11 +145,11 @@ bool Utility::moveItemToTrash(const SyncPath &itemPath) {
         // failed to carry out delete - return
         LOGW_WARN(Log::instance()->getLogger(), L"Error in PerformOperations - path="
                                                         << Path2WStr(itemPath) << L" err="
-                                                        << Utility::s2ws(std::system_category().message(hr)));
+                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
 
         std::wstringstream errorStream;
         errorStream << L"Move to trash failed for item " << Path2WStr(itemPath) << L" - PerformOperations failed with error: "
-                    << Utility::s2ws(std::system_category().message(hr));
+                    << CommonUtility::s2ws(std::system_category().message(hr));
         std::wstring errorStr = errorStream.str();
         LOGW_WARN(Log::instance()->getLogger(), errorStr);
 
@@ -165,7 +166,7 @@ bool Utility::moveItemToTrash(const SyncPath &itemPath) {
         // failed to carry out delete - return
         LOGW_WARN(Log::instance()->getLogger(), L"Error in GetAnyOperationsAborted - path="
                                                         << Path2WStr(itemPath) << L" err="
-                                                        << Utility::s2ws(std::system_category().message(hr)));
+                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
 
         std::wstringstream errorStream;
         errorStream << L"Move to trash aborted for item " << Path2WStr(itemPath);
@@ -210,7 +211,7 @@ std::string Utility::userName() {
     DWORD len = userNameBufLen;
     wchar_t userName[userNameBufLen];
     GetUserName(userName, &len);
-    return Utility::ws2s(std::wstring(userName));
+    return CommonUtility::ws2s(std::wstring(userName));
 }
 
 namespace {
@@ -317,7 +318,7 @@ bool Utility::hasSystemLaunchOnStartup(const std::string &appName) {
         return false;
     }
 
-    return map.contains(Utility::s2ws(appName));
+    return map.contains(CommonUtility::s2ws(appName));
 }
 
 static const wchar_t runPath[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
@@ -329,20 +330,20 @@ bool Utility::hasLaunchOnStartup(const std::string &appName) {
         return false;
     }
 
-    return map.contains(Utility::s2ws(appName));
+    return map.contains(CommonUtility::s2ws(appName));
 }
 
 bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &guiName, bool enable) {
     if (enable) {
         SyncPath serverFilePath = KDC::CommonUtility::getAppWorkingDir() / (appName + ".exe");
-        if (const auto result = setRegistryStringValue(HKEY_CURRENT_USER, runPath, Utility::s2ws(appName),
+        if (const auto result = setRegistryStringValue(HKEY_CURRENT_USER, runPath, CommonUtility::s2ws(appName),
                                                        serverFilePath.make_preferred().native());
             result != ERROR_SUCCESS) {
             LOGW_WARN(logger(), L"Failed to set registry value for: " << systemRunPath << L", error: " << result);
             return false;
         }
     } else {
-        if (const auto result = deleteRegistryValue(HKEY_CURRENT_USER, runPath, Utility::s2ws(appName));
+        if (const auto result = deleteRegistryValue(HKEY_CURRENT_USER, runPath, CommonUtility::s2ws(appName));
             result != ERROR_SUCCESS) {
             LOGW_WARN(logger(), L"Failed to remove registry value for: " << systemRunPath << L", error: " << result);
             return false;
@@ -432,7 +433,7 @@ void Utility::addLegacySyncRootKeys(const std::wstring &clsid, const SyncPath &f
     // For us, to later be able to iterate and find our own namespace entries and associated CLSID.
     // Use the macro instead of the theme to make sure it matches with the uninstaller.
     (void) Utility::registrySetKeyValue(HKEY_CURRENT_USER, namespacePath, L"ApplicationName", REG_SZ,
-                                        Utility::s2ws(APPLICATION_NAME), error);
+                                        CommonUtility::s2ws(APPLICATION_NAME), error);
 }
 
 // Remove legacy sync root keys

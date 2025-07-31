@@ -277,9 +277,9 @@ void AddDriveLocalFolderWidget::updateUI() {
 
         if (virtualFileMode == VirtualFileMode::Win || virtualFileMode == VirtualFileMode::Mac) {
             // Check file system
-            const QString fsName(KDC::CommonUtility::fileSystemName(_localFolderPath));
-            _folderCompatibleWithLiteSync = (virtualFileMode == VirtualFileMode::Win && fsName == "NTFS") ||
-                                            (virtualFileMode == VirtualFileMode::Mac && fsName == "apfs");
+            _folderCompatibleWithLiteSync =
+                    (virtualFileMode == VirtualFileMode::Win && CommonUtility::isNTFS(QStr2Path(_localFolderPath))) ||
+                    (virtualFileMode == VirtualFileMode::Mac && CommonUtility::isAPFS(QStr2Path(_localFolderPath)));
             if (!_folderCompatibleWithLiteSync) {
                 _warningLabel->setText(tr(R"(This folder is not compatible with Lite Sync.<br> 
 Please select another folder. If you continue Lite Sync will be disabled.<br> 

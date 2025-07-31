@@ -41,7 +41,7 @@ SqliteQuery::SqliteQuery(std::shared_ptr<sqlite3> sqlite3Db) :
     _sqlite3Db(sqlite3Db) {}
 
 int SqliteQuery::prepare(const std::string &sql, bool allow_failure) {
-    _sql = Utility::trim(sql);
+    _sql = CommonUtility::trim(sql);
     if (_stmt) {
         sqlite3_finalize(_stmt.get());
     }
@@ -240,15 +240,15 @@ int SqliteQuery::blobSize(int index) const {
 }
 
 bool SqliteQuery::isSelect() const {
-    return Utility::startsWithInsensitive(_sql, "SELECT");
+    return CommonUtility::startsWithInsensitive(_sql, "SELECT");
 }
 
 bool SqliteQuery::isInsert() const {
-    return Utility::startsWithInsensitive(_sql, "INSERT");
+    return CommonUtility::startsWithInsensitive(_sql, "INSERT");
 }
 
 bool SqliteQuery::isPragma() const {
-    return Utility::startsWithInsensitive(_sql, "PRAGMA");
+    return CommonUtility::startsWithInsensitive(_sql, "PRAGMA");
 }
 
 } // namespace KDC

@@ -16,8 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QString> // setFileHidden uses a QString
-
 #define UMDF_USING_NTSTATUS
 #include <windows.h>
 
@@ -26,7 +24,7 @@
 
 using NTSTATUS = LONG;
 #define NT_SUCCESS(Status) (((NTSTATUS) (Status)) >= 0)
-#define NT_STATUS(x) ((NTSTATUS){x})
+#define NT_STATUS(x) ((NTSTATUS) {x})
 #define STATUS_SUCCESS ((NTSTATUS) 0x00000000L)
 #define STATUS_NO_MORE_FILES ((NTSTATUS) 0x80000006L)
 #define STATUS_INVALID_INFO_CLASS ((NTSTATUS) 0xC0000003L)

@@ -48,6 +48,19 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
 #if defined(KD_WINDOWS)
         CPPUNIT_TEST(testGetLastErrorMessage);
 #endif
+        CPPUNIT_TEST(testStartsWith);
+        CPPUNIT_TEST(testStartsWithInsensitive);
+        CPPUNIT_TEST(testEndsWith);
+        CPPUNIT_TEST(testEndsWithInsensitive);
+        CPPUNIT_TEST(testToUpper);
+        CPPUNIT_TEST(testToLower);
+        CPPUNIT_TEST(testIsSameOrParentPath);
+        CPPUNIT_TEST(testFileSystemName);
+        CPPUNIT_TEST(testS2ws);
+        CPPUNIT_TEST(testWs2s);
+        CPPUNIT_TEST(testLtrim);
+        CPPUNIT_TEST(testRtrim);
+        CPPUNIT_TEST(testTrim);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -77,6 +90,19 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
 #if defined(KD_WINDOWS)
         void testGetLastErrorMessage();
 #endif
+        void testStartsWith();
+        void testStartsWithInsensitive();
+        void testEndsWith();
+        void testEndsWithInsensitive();
+        void testToUpper();
+        void testToLower();
+        void testIsSameOrParentPath();
+        void testFileSystemName();
+        void testS2ws();
+        void testWs2s();
+        void testLtrim();
+        void testRtrim();
+        void testTrim();
 
     private:
         /* Generate all the possible path for a set of items and separators

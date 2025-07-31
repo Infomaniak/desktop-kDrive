@@ -516,7 +516,7 @@ bool SyncPal::createOrOpenDb(const SyncPath &syncDbPath, const std::string &vers
     try {
         _syncDb = std::shared_ptr<SyncDb>(new SyncDb(syncDbPath.string(), version, targetNodeId));
     } catch (std::exception const &e) {
-        const auto exceptionMsg = Utility::s2ws(std::string(e.what()));
+        const auto exceptionMsg = CommonUtility::s2ws(std::string(e.what()));
         LOGW_SYNCPAL_WARN(
                 _logger, L"Error in SyncDb::SyncDb: " << Utility::formatSyncPath(syncDbPath) << L", Exception: " << exceptionMsg);
         return false;
@@ -680,7 +680,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << Utility::s2ws(*localNodeId));
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << CommonUtility::s2ws(*localNodeId));
         return ExitCode::DataError;
     }
 
@@ -690,7 +690,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << Utility::s2ws(*localNodeId));
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << CommonUtility::s2ws(*localNodeId));
         return ExitCode::DataError;
     }
 
@@ -1394,7 +1394,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
     }
 
     LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Utility::formatSyncPath(relativeLocalPath) << L" (NodeId: "
-                                         << Utility::s2ws(localNodeId)
+                                         << CommonUtility::s2ws(localNodeId)
                                          << L" is blacklisted temporarily because of a denied access.");
 
     NodeId remoteNodeId = liveSnapshot(ReplicaSide::Remote).itemId(relativeLocalPath);
