@@ -138,7 +138,7 @@ void TestIo::testRemoveXAttr() {
         std::filesystem::permissions(path, std::filesystem::perms::owner_write, std::filesystem::perm_options::remove);
 
         CPPUNIT_ASSERT(_testObj->removeXAttrs(path, {"status"}, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::AccessDenied);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError); // `removeXAttrs` grant write permissions temporarily
 
         std::filesystem::permissions(path, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
     }
