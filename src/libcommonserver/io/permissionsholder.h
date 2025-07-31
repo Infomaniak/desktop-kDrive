@@ -24,14 +24,14 @@ namespace KDC {
 
 class PermissionsHolder {
     public:
-        explicit PermissionsHolder(const SyncPath &path, log4cplus::Logger *_logger = nullptr);
+        explicit PermissionsHolder(const SyncPath &path, const log4cplus::Logger *logger = nullptr);
         ~PermissionsHolder();
 
     private:
-        void log(const std::wstringstream &ss, LogLevel logLevel = LogLevel::Debug);
+        void log(const std::wstringstream &ss, LogLevel logLevel = LogLevel::Debug) const noexcept;
 
         SyncPath _path;
-        log4cplus::Logger *_logger{nullptr};
+        const log4cplus::Logger *_logger{nullptr};
 };
 
 } // namespace KDC

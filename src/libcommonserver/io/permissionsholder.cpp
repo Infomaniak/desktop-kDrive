@@ -29,8 +29,9 @@ struct AccessRights {
 static std::unordered_map<SyncPath, std::pair<uint64_t, AccessRights>, PathHashFunction> heldPermissions;
 static std::mutex mutex;
 
-PermissionsHolder::PermissionsHolder(const SyncPath &path, log4cplus::Logger *_logger /*= nullptr*/) :
-    _path(path) {
+PermissionsHolder::PermissionsHolder(const SyncPath &path, const log4cplus::Logger *logger /*= nullptr*/) :
+    _path(path),
+    _logger(logger) {
     AccessRights accessRights;
     if (const auto ioError = IoHelper::getRights(path, accessRights.read, accessRights.write, accessRights.exec);
         ioError != IoError::Success) {
@@ -52,7 +53,7 @@ PermissionsHolder::PermissionsHolder(const SyncPath &path, log4cplus::Logger *_l
     if (IoHelper::setFullAccess(_path) != IoError::Success) {
         log(std::wstringstream() << L"Failed to set full access rights: " << Utility::formatSyncPath(_path), LogLevel::Error);
     }
-    heldPermissions.try_emplace(_path, 0, accessRights);
+    (void) heldPermissions.try_emplace(_path, 0, accessRights);
     heldPermissions[_path].first++;
     log(std::wstringstream() << L"PermissionsHolder set full access rights: " << Utility::formatSyncPath(_path) << L" / count:"
                              << heldPermissions[_path].first,
@@ -63,7 +64,18 @@ PermissionsHolder::~PermissionsHolder() {
     const std::scoped_lock scopedLock(mutex);
     if (!heldPermissions.contains(_path)) return;
 
-    auto &[count, accessRights] = heldPermissions[_path];
+    uint64_t count = 0;
+    AccessRights accessRights;
+    try {
+        const auto &[countTmp, accessRightsTmp] = heldPermissions[_path];
+        count = countTmp;
+        accessRights = accessRightsTmp;
+    } catch (...) {
+        log(std::wstringstream() << L"PermissionsHolder failed to get value for: " << Utility::formatSyncPath(_path),
+            LogLevel::Error);
+        return;
+    }
+
     count--;
     log(std::wstringstream() << L"PermissionsHolder value: " << Utility::formatSyncPath(_path) << L" / count:" << count,
         LogLevel::Debug);
@@ -85,7 +97,7 @@ PermissionsHolder::~PermissionsHolder() {
     (void) heldPermissions.erase(_path);
 }
 
-void PermissionsHolder::log(const std::wstringstream &ss, LogLevel logLevel /*= LogLevel::Debug*/) {
+void PermissionsHolder::log(const std::wstringstream &ss, const LogLevel logLevel /*= LogLevel::Debug*/) const noexcept {
     if (!_logger) return;
     switch (logLevel) {
         case LogLevel::Debug:
