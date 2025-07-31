@@ -212,7 +212,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Log "Installing Conan dependencies..."
-& $ConanExe install . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter -c tools.env.virtualenv:powershell=powershell
+& $ConanExe install . --output-folder="$OutputDir" --build=missing -c tools.cmake.cmaketoolchain:generator=Ninja -s build_type=$BuildType --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter -c tools.env.virtualenv:powershell=powershell
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to install Conan dependencies."
 }

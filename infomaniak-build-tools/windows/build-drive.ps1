@@ -430,7 +430,6 @@ function Prepare-Archive {
         "${env:ProgramFiles(x86)}/Poco/bin/PocoNetSSL",
         "${env:ProgramFiles(x86)}/Poco/bin/PocoUtil",
         "${env:ProgramFiles(x86)}/Poco/bin/PocoXML",
-        "${env:ProgramFiles(x86)}/Sentry-Native/bin/sentry",
         "$vfsDir/Vfs",
         "$buildPath/bin/kDrivecommonserver_vfs_win"
     )
@@ -448,6 +447,7 @@ function Prepare-Archive {
         @{ Name = "xxhash";    Dlls = @("xxhash") },
         @{ Name = "log4cplus"; Dlls = @("log4cplus") },
         @{ Name = "openssl";   Dlls = @("libcrypto-3-x64", "libssl-3-x64") }
+        @{ Name = "sentry";   Dlls = @("libsentry") }
     )
 
     foreach ($pkg in $packages) {
@@ -476,8 +476,10 @@ function Prepare-Archive {
         Copy-Item -Path "$iconPath" -Destination $archivePath
     }
 
+    $crashpad_folder = & $find_dep_script -Name sentry -BuildDir $buildPath
+
     $binaries = @(
-        "${env:ProgramFiles(x86)}/Sentry-Native/bin/crashpad_handler.exe",
+        "$crashpad_folder/crashpad_handler.exe",
         "kDrive.exe",
         "kDrive_client.exe"
     )

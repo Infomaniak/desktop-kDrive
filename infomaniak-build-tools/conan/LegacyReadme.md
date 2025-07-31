@@ -3,7 +3,7 @@
 > **Note:** This file contains the old instructions used to compile and use the dependencies that are now managed by Conan.
 
 <details>
-<summary>xxHash 0.8.2</summary>
+<summary>xxHash - 0.8.2</summary>
 
 ### macOS
 ```bash
@@ -46,7 +46,7 @@ cmake --build . --target install --config Release
 </details>
 
 <details>
-<summary>log4cplus</summary>
+<summary>log4cplus - 2.1.0</summary>
 
 ### macOS
 
@@ -115,7 +115,7 @@ git checkout v2.x
 </details>
 
 <details>
-<summary>OpenSSL</summary>
+<summary>OpenSSL - 3.2.4</summary>
 
 ### macOS
 Download and build `OpenSSL`:
@@ -253,5 +253,55 @@ Add an environment variable named `QTDIR`, set with the path of your Qt msvc fol
 Add to the following paths to your `PATH` or adapt them to the actual location of your Qt folder if needed:
 - `C:\Qt\6.2.3\msvc2019_64\bin`
 - `C:\Qt\Tools\CMake_64\bin`
+
+</details>
+
+<details>
+<summary>Sentry - 0.7.9 (0.6.4 on Linux for Ubuntu 20.04)</summary>
+
+### macOS
+
+Download [Sentry Sources](https://github.com/getsentry/sentry-native/releases) (you can download the released zip and extract it to `~/Projects`):
+
+```bash
+cd ~/Projects/sentry-native
+cmake -B build -DSENTRY_BACKEND=crashpad -DSENTRY_INTEGRATION_QT=YES -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -DCMAKE_PREFIX_PATH=$QTDIR/lib/cmake
+cmake --build build --parallel
+sudo cmake --install build
+```
+
+### Linux
+
+You will need to install the dev libcurl package to build sentry-native
+
+```bash
+sudo apt install -y libcurl4-openssl-dev
+cd ~/Projects
+git clone https://github.com/getsentry/sentry-native.git
+cd sentry-native
+git checkout tags/0.7.9
+git submodule init
+git submodule update --recursive
+cd external/crashpad
+git submodule init
+git submodule update --recursive
+cd ../..
+cmake -B build -DSENTRY_INTEGRATION_QT=YES -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_PREFIX_PATH=~/Qt/6.2.3/gcc_64
+cmake --build build --parallel
+sudo cmake --install build
+```
+
+
+### Windows
+
+Download the [Sentry sources (`sentry-native.zip`)](https://github.com/getsentry/sentry-native/releases) and extract them to `F:\Projects`.
+After successful extraction, run:
+
+```cmd
+cd F:\Projects\sentry-native
+cmake -B build -DSENTRY_INTEGRATION_QT=YES -DCMAKE_PREFIX_PATH=%QTDIR%
+cmake --build build --config RelWithDebInfo
+cmake --install build --config RelWithDebInfo
+```
 
 </details>
