@@ -86,7 +86,7 @@ class QtConan(ConanFile):
                 "qt.tools.cmake",
                 "qt.tools.ninja",
 
-                f"qt.qt{major}.{compact}.debug_information" # Qt Debug Information Files for Windows
+                f"qt.qt{major}.{compact}.debug_info" # Qt Debug Information Files for Windows
             ])
 
         if self.settings.os == "Linux":
