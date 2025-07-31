@@ -87,6 +87,7 @@ app_dir="$build_dir/install"
 build_type="RelWithDebInfo"
 
 conan_dependencies_folder="$build_dir/conan/dependencies"
+source "$src_dir/infomaniak-build-tools/conan/common-utils.sh"
 
 echo
 echo "Build type: $build_type"
@@ -102,8 +103,8 @@ extract_debug () {
 }
 
 build_release() {
-  export QT_BASE_DIR="$HOME/Qt/6.2.3"
-  export QTDIR="$QT_BASE_DIR/gcc_64"
+  QTDIR="$(find_qt_conan_path "$build_dir")"
+  export QTDIR
   export QMAKE="$QTDIR/bin/qmake"
   export PATH="$QTDIR/bin:$QTDIR/libexec:/home/runner/.local/bin:$PATH"
   export LD_LIBRARY_PATH="$QTDIR/lib:$LD_LIBRARY_PATH"
@@ -122,8 +123,6 @@ build_release() {
     echo "Conan toolchain file not found: $conan_toolchain_file"
     exit 1
   fi
-
-
 
   source "$conan_generator_folder/conanbuild.sh"
 
@@ -160,12 +159,12 @@ build_release() {
 } 
 
 package_release() {
-  export QT_BASE_DIR="$HOME/Qt/6.2.3/gcc_64"
-  export QTDIR="$QT_BASE_DIR"
-  export QMAKE="$QT_BASE_DIR/bin/qmake"
-  export PATH="$QT_BASE_DIR/bin:$QT_BASE_DIR/libexec:$PATH"
-  export LD_LIBRARY_PATH="$QT_BASE_DIR/lib:$app_dir/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
-  export PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
+  QTDIR="$(find_qt_conan_path "$build_dir")"
+  export QTDIR
+  export QMAKE="$QTDIR/bin/qmake"
+  export PATH="$QTDIR/bin:$QTDIR/libexec:$PATH"
+  export LD_LIBRARY_PATH="$QTDIR/lib:$app_dir/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
+  export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
   mkdir -p "$app_dir/usr/plugins"
   cd "$app_dir"
@@ -190,7 +189,7 @@ package_release() {
   cp "$src_dir/sync-exclude-linux.lst" "$app_dir/usr/bin/sync-exclude.lst"
   cp "$app_dir/usr/share/icons/hicolor/512x512/apps/kdrive-win.png" "$app_dir"
 
-  cp "$HOME/Qt/Tools/QtCreator/lib/Qt/lib/libQt6SerialPort.so.6" "$app_dir/usr/lib/"
+  cp "$QT_BASE_DIR/lib/libQt6SerialPort.so.6" "$app_dir/usr/lib/"
 
   "$HOME/desktop-setup/linuxdeploy-x86_64.AppImage" --appdir "$app_dir" -e "$app_dir/usr/bin/kDrive" -i "$app_dir/kdrive-win.png" -d "$app_dir/usr/share/applications/kDrive_client.desktop" --plugin qt --output appimage -v0
 
