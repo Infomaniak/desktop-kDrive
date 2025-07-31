@@ -582,20 +582,20 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     try {
         IoHelper::DirectoryIterator dirIt;
         if (!IoHelper::getDirectoryIterator(absoluteParentDirPath, true, ioError, dirIt)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getDirectoryIterator: "
+            LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getDirectoryIterator: Local "
                                                << Utility::formatIoError(absoluteParentDirPath, ioError));
+
+            if (ioError == IoError::NoSuchFileOrDirectory) {
+                return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
+            }
+
+            if (ioError == IoError::AccessDenied) {
+                return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
+            }
+
             return ExitCode::SystemError;
         }
 
-        if (ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_SYNCPAL_WARN(_logger, L"Local " << Utility::formatIoError(absoluteParentDirPath, ioError));
-            return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
-        }
-
-        if (ioError == IoError::AccessDenied) {
-            LOGW_SYNCPAL_WARN(_logger, L"Local " << Utility::formatIoError(absoluteParentDirPath, ioError));
-            return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
-        }
         DirectoryEntry entry;
         bool endOfDirectory = false;
         sentry::pTraces::counterScoped::LFSOExploreItem perfMonitor(fromChangeDetected, syncDbId());
