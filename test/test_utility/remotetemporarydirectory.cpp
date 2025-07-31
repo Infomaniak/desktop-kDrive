@@ -19,8 +19,8 @@
 #include "testincludes.h"
 #include "remotetemporarydirectory.h"
 
-#include "jobs/network/API_v2/createdirjob.h"
-#include "jobs/network/API_v2/deletejob.h"
+#include "jobs/network/kDrive_API/createdirjob.h"
+#include "jobs/network/kDrive_API/deletejob.h"
 #include "libsyncengine/jobs/network/networkjobsparams.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/utility.h"

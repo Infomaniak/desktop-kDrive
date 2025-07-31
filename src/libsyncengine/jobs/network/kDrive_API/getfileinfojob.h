@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "abstracttokennetworkjob.h"
+#include "jobs/network/abstracttokennetworkjob.h"
 
 namespace KDC {
 

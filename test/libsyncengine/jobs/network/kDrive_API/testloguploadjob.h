@@ -43,6 +43,7 @@ class TestLogUploadJob : public CppUnit::TestFixture, public TestBase {
         void testLogUploadJobArchiveNotDeletedInCaseOfUploadError();
         void testLogUploadSingleConcurrentJob();
         void testLogUploadJobWithoutConnectedUser();
+
     private:
         void checkArchiveContent(const SyncPath &archivePath, const std::set<SyncPath> &expectedFiles);
         void getLogDirInfo(std::set<SyncPath> &activeSessionFiles, std::set<SyncPath> &archivedSessionFiles,
@@ -52,6 +53,5 @@ class TestLogUploadJob : public CppUnit::TestFixture, public TestBase {
         void createFakeActiveSessionFile(int newNbActiveSessionFiles);
         void createFakeOldSessionFile(int newNbOldSessionFiles);
         void deleteFakeFiles();
-
 };
 } // namespace KDC

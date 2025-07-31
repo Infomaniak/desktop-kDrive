@@ -21,7 +21,7 @@
 #include "db/parmsdb.h"
 #include "jobs/jobmanager.h"
 #include "jobs/network/abstractnetworkjob.h"
-#include "jobs/network/getappversionjob.h"
+#include "jobs/network/infomaniak_API/getappversionjob.h"
 #include "libcommon/utility/utility.h"
 #include "log/log.h"
 #include "utility/utility.h"

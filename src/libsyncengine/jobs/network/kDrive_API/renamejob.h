@@ -18,25 +18,25 @@
 
 #pragma once
 
-#include "abstracttokennetworkjob.h"
+#include "libcommon/utility/types.h"
+#include "jobs/network/abstracttokennetworkjob.h"
+#include "libcommonserver/vfs/vfs.h"
 
 namespace KDC {
 
-class GetRootFileListJob : public AbstractTokenNetworkJob {
+class RenameJob : public AbstractTokenNetworkJob {
     public:
-        GetRootFileListJob(int userDbId, int driveId, uint64_t page = 1, bool dirOnly = false);
-        explicit GetRootFileListJob(int driveDbId, uint64_t page = 1, bool dirOnly = false);
-
-        void setWithPath(const bool val) { _withPath = val; }
+        RenameJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &absoluteFinalPath);
+        ~RenameJob();
 
     private:
-        std::string getSpecificUrl() override;
-        void setQueryParameters(Poco::URI &uri, bool &canceled) override;
-        ExitInfo setData() override { return ExitCode::Ok; }
+        virtual std::string getSpecificUrl() override;
+        virtual void setQueryParameters(Poco::URI &, bool &canceled) override { canceled = false; }
+        virtual ExitInfo setData() override;
 
-        uint64_t _page;
-        bool _dirOnly;
-        bool _withPath = false;
+        std::string _remoteFileId;
+        SyncPath _absoluteFinalPath;
+        const std::shared_ptr<Vfs> _vfs;
 };
 
 } // namespace KDC
