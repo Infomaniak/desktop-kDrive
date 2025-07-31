@@ -44,7 +44,7 @@ find_conan_dependency_path() {
   local conan_package_folder_regex="\.conan2/p/(b/)?${dep_name}[^/]*/p/lib$"
   for dir in "${path_dirs[@]}"; do
     if echo "$dir" | grep -qE "$conan_package_folder_regex"; then
-      echo "${dir:0:-4}" # Remove the trailing "/lib" from the path
+      echo "${dir%/lib}" # Remove the trailing "/lib" from the path
       [[ $sourced -eq 1 ]] && [[ -f "$conan_path/deactivate_conanrun.sh" ]] && source "$conan_path/deactivate_conanrun.sh" > /dev/null 2>&1
       return 0
     fi
