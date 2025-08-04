@@ -104,15 +104,17 @@ runs:
           $patterns = @("libxxhash*.dll", "liblog4cplus*.dll", "libssl*.dll", "libcrypto*.dll", "Qt6Widgets.dll", "Qt6Gui.dll", "Qt6Network.dll", "Qt6Sql.dll", "Qt6Core.dll", "Qt6DBus.dll", "Qt6Svg.dll", "qoffscreen.dll")
           $paths = $env:PATH -split ';' | Where-Object { $_ -like '*\.conan2\p*' }
           foreach ($dir in $paths) {
-            if (Test-Path $dir) {
-              Write-Host "Looking in $dir"
+            if ($pattern -eq "qoffscreen.dll") {
+              $searchDir = Split-Path -Parent $dir
+              $destination = "./dependencies/platforms/"
+            } else {
+              $searchDir = $dir
+              $destination = "./dependencies/"
+            }
+            if (Test-Path $searchDir) {
+              Write-Host "Looking in $searchDir"
               foreach ($pattern in $patterns) {
-                Get-ChildItem -Path $dir -Recurse -Filter $pattern -ErrorAction SilentlyContinue | ForEach-Object {
-                  if ($pattern -eq "qoffscreen.dll") {
-                    $destination = "./dependencies/platforms/"
-                  } else {
-                    $destination = "./dependencies/"
-                  }
+                Get-ChildItem -Path $searchDir -Recurse -Filter $pattern -ErrorAction SilentlyContinue | ForEach-Object {
                   Copy-Item -Path $_.FullName -Destination $destination -Force
                   Write-Host "Conan dependency found -> $($_.FullName)"
                 }
