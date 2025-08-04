@@ -448,8 +448,8 @@ function Prepare-Archive {
     $packages = @(
         @{ Name = "xxhash";    Dlls = @("xxhash") },
         @{ Name = "log4cplus"; Dlls = @("log4cplus") },
-        @{ Name = "openssl";   Dlls = @("libcrypto-3-x64", "libssl-3-x64") },
-        @{ Name = "qt";        Dlls = @("log4cplus") }
+        @{ Name = "openssl";   Dlls = @("libcrypto-3-x64", "libssl-3-x64") }
+#        @{ Name = "qt";        Dlls = @("Qt6Widgets.dll", "Qt6Gui.dll", "Qt6Network.dll", "Qt6Sql.dll", "Qt6Core.dll", "Qt6DBus.dll", "Qt6Svg.dll") }, # Why don't we copy these files?
     )
 
     foreach ($pkg in $packages) {
