@@ -22,14 +22,13 @@
 
 #include <QCoreApplication>
 
-inline Q_LOGGING_CATEGORY(lcMatomoClient, "gui.matomo", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcMatomoClient, "gui.matomo", QtInfoMsg)
 
 namespace KDC {
-
-constexpr int matomoTimeout = 10000;     // Timeout for Matomo requests in milliseconds
-constexpr int matomoTimeoutMax = 2;      // Max number of Matomo timeout request before disabling Matomo tracking
-int matomoTimeoutCounter = 0;            // Number of Matomo timeout requests
-bool matomoDisabled = false;             // if true, Matomo is disabled and no events / page visit will be sent.
+constexpr int matomoTimeout = 10000; // Timeout for Matomo requests in milliseconds
+constexpr int matomoTimeoutMax = 2; // Max number of Matomo timeout request before disabling Matomo tracking
+int matomoTimeoutCounter = 0; // Number of Matomo timeout requests
+bool matomoDisabled = false; // if true, Matomo is disabled and no events / page visit will be sent.
 
 /**
  * Singleton instance of MatomoClient.
@@ -55,10 +54,9 @@ MatomoClient &MatomoClient::instance(const QString &clientId) {
 MatomoClient::MatomoClient(QCoreApplication *app, const QString &clientId) :
     PiwikTracker(app, QUrl(MATOMO_URL), MATOMO_SITE_ID, clientId) {
     initNameFieldMap();
-    qDebug(lcMatomoClient) << "MatomoClient initialized with URL:" << MATOMO_URL
-                      << "and site ID:" << MATOMO_SITE_ID;
+    qDebug(lcMatomoClient) << "MatomoClient initialized with URL:" << MATOMO_URL << "and site ID:" << MATOMO_SITE_ID;
 
-    const auto children = this->findChildren<QNetworkAccessManager*>();
+    const auto children = this->findChildren<QNetworkAccessManager *>();
     if (!children.isEmpty()) {
         QNetworkAccessManager *piwikNAM = children.first();
         /**
@@ -71,10 +69,11 @@ MatomoClient::MatomoClient(QCoreApplication *app, const QString &clientId) :
          *
          */
         piwikNAM->setTransferTimeout(matomoTimeout);
-        connect(piwikNAM, &QNetworkAccessManager::finished, this, [](const QNetworkReply* reply) {
-            if (reply->error() == QNetworkReply::TimeoutError              // Error given by the TransferTimeout
-                || reply->error() == QNetworkReply::ConnectionRefusedError // Error given when MATOMO_URL is blocked and return :: in ipv6 or 0.0.0.0 in ipv4
-                ) {
+        (void) connect(piwikNAM, &QNetworkAccessManager::finished, this, [](const QNetworkReply *reply) {
+            if (reply->error() == QNetworkReply::TimeoutError // Error given by the TransferTimeout
+                || reply->error() == QNetworkReply::ConnectionRefusedError // Error given when MATOMO_URL is blocked and
+                                                                           // return :: in ipv6 or 0.0.0.0 in ipv4
+            ) {
                 matomoTimeoutCounter++;
                 qWarning(lcMatomoClient) << "Timeout #" << matomoTimeoutCounter;
                 if (matomoTimeoutCounter >= matomoTimeoutMax && !matomoDisabled) {
@@ -87,7 +86,6 @@ MatomoClient::MatomoClient(QCoreApplication *app, const QString &clientId) :
             qDebug(lcMatomoClient) << "Transfer timeout set to" << matomoTimeout << "ms.";
         }
     }
-
 }
 
 /**
@@ -101,7 +99,8 @@ void MatomoClient::sendVisit(const MatomoNameField page) {
     instance().getPathAndAction(page, path, action);
 
     if (ParametersCache::instance()->parametersInfo().extendedLog()) {
-        qCDebug(lcMatomoClient()) << "MatomoClient::sendVisit(path=" << path << ", action=" << action << ")" << (matomoDisabled ? " => Trigger but not sent, tracking disabled" : "");
+        qCDebug(lcMatomoClient()) << "MatomoClient::sendVisit(path=" << path << ", action=" << action << ")"
+                                  << (matomoDisabled ? " => Trigger but not sent, tracking disabled" : "");
     }
     if (matomoDisabled) return; // If Matomo is disabled, do not send the visit.
 
@@ -132,7 +131,8 @@ void MatomoClient::sendEvent(const QString &category, const MatomoEventAction ac
 
     if (ParametersCache::instance()->parametersInfo().extendedLog()) {
         qCDebug(lcMatomoClient()) << "MatomoClient::sendEvent(category=" << category << ", action=" << actionStr
-                                  << ", name=" << name << ", value=" << value << ")" << (matomoDisabled ? " => Trigger but not sent, tracking disabled" : "");
+                                  << ", name=" << name << ", value=" << value << ")"
+                                  << (matomoDisabled ? " => Trigger but not sent, tracking disabled" : "");
     }
     if (matomoDisabled) return; // If Matomo is disabled, do not send the event.
 
