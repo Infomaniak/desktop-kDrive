@@ -22,10 +22,9 @@ add_definitions(-D_UNICODE)
 
 # Sources
 set(libcommon_SRCS
-    ../common/utility.h ../common/utility.cpp
     comm.h
     utility/types.h utility/types.cpp
-    utility/utility_base.h utility/utility.h utility/utility.cpp
+    utility/utility.h utility/utility.cpp
     utility/filename.h utility/commonmacros.h utility/coveragemacros.h
     utility/logiffail.h utility/qlogiffail.h
     utility/jsonparserutility.h
@@ -60,6 +59,10 @@ set(libcommon_SRCS
 if(APPLE)
     list(APPEND libcommon_SRCS utility/utility_mac.mm)
     set_property(SOURCE utility/utility_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+elseif (WIN32)
+    list(APPEND libcommon_SRCS utility/utility_win.cpp)
+else ()
+    list(APPEND libcommon_SRCS utility/utility_linux.cpp)
 endif()
 
 # Target
@@ -125,8 +128,12 @@ target_link_libraries(${libcommon_NAME}
     log4cplus::log4cplus
     sentry::sentry
     keychain
-    libzip::zip
-    )
+    libzip::zip)
+
+if(UNIX)
+    target_link_libraries(${libcommon_NAME}
+        utf8proc)
+endif()
 
 if(APPLE)
     # For utility_mac.mm
@@ -140,24 +147,7 @@ if(APPLE)
         ${APPKIT_LIBRARY})
 endif()
 
-if(UNIX)
-    target_link_libraries(${libcommon_NAME} utf8proc)
-
-    if(NOT APPLE)
-        # Copy .so files to the conan dependency directory
-        include(ConanGetLibDirs)
-        get_library_dirs("log4cplus" "log4cplus")
-        file(INSTALL
-                "${_log4cplus_LIB_DIRS}/liblog4cplus.so"
-                "${_log4cplus_LIB_DIRS}/liblog4cplus.so.9"
-                DESTINATION "${CONAN_DEP_DIR}"
-                PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
-        )
-    endif()
-endif()
-
 if(ZLIB_FOUND)
     target_link_libraries("${libcommon_NAME}"
         ZLIB::ZLIB)
 endif(ZLIB_FOUND)
-
