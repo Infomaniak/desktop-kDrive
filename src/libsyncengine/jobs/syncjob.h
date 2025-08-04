@@ -29,8 +29,7 @@ namespace KDC {
 
 class SyncJob : public AbstractJob {
     public:
-        SyncJob() :
-            AbstractJob(){};
+        using AbstractJob::AbstractJob;
 
         [[nodiscard]] const SyncPath &affectedFilePath() const { return _affectedFilePath; }
         void setAffectedFilePath(const SyncPath &newAffectedFilePath) { _affectedFilePath = newAffectedFilePath; }
@@ -38,7 +37,29 @@ class SyncJob : public AbstractJob {
         [[nodiscard]] bool bypassCheck() const { return _bypassCheck; }
         void setBypassCheck(bool newBypassCheck) { _bypassCheck = newBypassCheck; }
 
+        void setProgressExpectedFinalValue(const int64_t newExpectedFinishProgress) {
+            _expectedFinishProgress = newExpectedFinishProgress;
+        }
+        void setProgressPercentCallback(const std::function<void(UniqueId, int)> &newCallback) {
+            _progressPercentCallback = newCallback;
+        }
+        virtual int64_t getProgress() { return _progress; }
+        void setProgress(int64_t newProgress);
+        void addProgress(int64_t progressToAdd);
+        bool progressChanged();
+        [[nodiscard]] bool isProgressTracked() const { return _progress > -1; }
+
+    protected:
+        void run() override;
+
     private:
+        int64_t _expectedFinishProgress =
+                expectedFinishProgressNotSetValue; // Expected progress value when the job is finished. -2 means it is not set.
+        int64_t _progress = -1; // Progress is -1 when it is not relevant for the current job
+        int64_t _lastProgress = -1; // Progress last time it was checked using progressChanged()
+        std::function<void(UniqueId id, int progress)> _progressPercentCallback =
+                nullptr; // Used by the caller to be notified of job progress.
+
         SyncPath _affectedFilePath; // The file path associated to _progress
         bool _bypassCheck = false;
 };

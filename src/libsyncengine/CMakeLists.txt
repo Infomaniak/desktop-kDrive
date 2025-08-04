@@ -24,7 +24,8 @@ set(syncengine_SRCS
     jobs/jobmanager.h jobs/jobmanager.cpp
     jobs/syncjobmanager.h jobs/syncjobmanager.cpp
     jobs/jobmanagerdata.h jobs/jobmanagerdata.cpp 
-    jobs/abstractjob.h jobs/abstractjob.cpp jobs/syncjob.h
+    jobs/abstractjob.h jobs/abstractjob.cpp
+    jobs/syncjob.h jobs/syncjob.cpp
     jobs/abstractpropagatorjob.h
     ## Network jobs
     jobs/network/networkjobsparams.h jobs/network/networkjobsparams.cpp

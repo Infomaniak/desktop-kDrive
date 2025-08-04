@@ -142,7 +142,6 @@ void TestNetworkJobs::tearDown() {
     ParametersCache::reset();
     SyncJobManager::instance()->stop();
     SyncJobManager::clear();
-    SyncJobManager::instance().reset();
     IoHelperTestUtilities::resetFunctions();
     TestBase::stop();
 }

@@ -20,6 +20,7 @@
 
 #include "network/proxy.h"
 #include "jobs/network/networkjobsparams.h"
+#include "jobs/syncjob.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "utility/jsonparserutility.h"
