@@ -112,7 +112,7 @@ runs:
           done
           
           echo "Searching executables in PATH..."
-          IFS=':' read -ra dirs <<< "$PATH
+          IFS=':' read -ra dirs <<< "$PATH"
           for dir in "${dirs[@]}"; do
             if [[ "$dir" == *".conan2/p"* ]]; then
               echo "Looking in $dir"
