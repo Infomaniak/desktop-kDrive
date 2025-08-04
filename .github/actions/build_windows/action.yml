@@ -125,8 +125,12 @@ runs:
               }
             }
           }
-          ls ./dependencies/ | ForEach-Object { Write-Host "Dependency: $($_.Name)" }
-          ls ./dependencies/platforms/ | ForEach-Object { Write-Host "Platform Dependency: $($_.Name)" }
+          
+          ls -Recursive ./dependencies | ForEach-Object {
+            if ($_.Name -like "*.dll") {
+              Write-Host "Dependency found: $($_.FullName)"
+            }
+          }
       - name: Upload build common files
         uses: actions/upload-artifact@v4
         with:
