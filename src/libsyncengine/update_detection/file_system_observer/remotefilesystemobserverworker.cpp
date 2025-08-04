@@ -364,9 +364,10 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         if (_liveSnapshot.updateItem(item)) {
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in remote snapshot: name:"
-                                                    << SyncName2WStr(item.name()) << L", inode:" << CommonUtility::s2ws(item.id())
-                                                    << L", parent inode:" << CommonUtility::s2ws(item.parentId()) << L", createdAt:"
-                                                    << item.createdAt() << L", modtime:" << item.lastModified() << L", isDir:"
+                                                    << Utility::quotedSyncName(item.name()) << L", inode:"
+                                                    << CommonUtility::s2ws(item.id()) << L", parent inode:"
+                                                    << CommonUtility::s2ws(item.parentId()) << L", createdAt:" << item.createdAt()
+                                                    << L", modtime:" << item.lastModified() << L", isDir:"
                                                     << (item.type() == NodeType::Directory) << L", size:" << item.size()
                                                     << L", isLink:" << item.isLink());
             }
@@ -721,9 +722,9 @@ ExitInfo RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
             return ExitCode::Ok;
         }
 
-        LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: " << SyncName2WStr(snapshotItem.name())
-                                                                                      << L" (" << CommonUtility::s2ws(snapshotItem.id())
-                                                                                      << L")");
+        LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
+                                           << SyncName2WStr(snapshotItem.name()) << L" ("
+                                           << CommonUtility::s2ws(snapshotItem.id()) << L")");
         tryToInvalidateSnapshot();
         return ExitCode::BackError;
     }

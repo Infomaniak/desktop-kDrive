@@ -22,27 +22,26 @@
 
 @implementation XPCService
 
-- (instancetype)init
-{
-	self = [super init];
+- (instancetype)init {
+    self = [super init];
 
     _registeredFoldersMap = [[NSMutableDictionary alloc] init];
     _fetchThumbnailMap = [[NSMutableDictionary alloc] init];
     _fetchMap = [[NSMutableDictionary alloc] init];
     _userBlackListMap = [[NSMutableDictionary alloc] init];
     _fetchingAppArray = [[NSMutableArray alloc] init];
-    
+
     [self initOpenWhiteListThumbnailSet];
     [self initOpenWhiteListSet];
     [self initOpenBlackListSet];
 
-	NSBundle *extBundle = [NSBundle bundleForClass:[self class]];
-	NSString *machServiceName = [extBundle objectForInfoDictionaryKey:@"NSEndpointSecurityMachServiceName"];
-	_xpcServiceProxy = [[XPCServiceProxy alloc] initWithDelegate:self serviceName:machServiceName];
- 
-	[_xpcServiceProxy start];
+    NSBundle *extBundle = [NSBundle bundleForClass:[self class]];
+    NSString *machServiceName = [extBundle objectForInfoDictionaryKey:@"NSEndpointSecurityMachServiceName"];
+    _xpcServiceProxy = [[XPCServiceProxy alloc] initWithDelegate:self serviceName:machServiceName];
 
-	return self;
+    [_xpcServiceProxy start];
+
+    return self;
 }
 
 - (BOOL)isFileMonitored:(NSString *)filePath {
@@ -54,92 +53,81 @@
     return FALSE;
 }
 
-- (void)initOpenWhiteListThumbnailSet
-{
-    _defaultOpenWhiteListThumbnailSet = [NSSet setWithObjects:
-                                     @"com.apple.quicklook.QuickLookUIService",                 // Quicklook
-                                     @"com.apple.quicklook.satellite",                          // Quicklook
-                                     @"com.apple.quicklook.thumbnail.ImageExtension",           // Quicklook Thumbnail
-                                     @"com.apple.quicklook.thumbnail.AudiovisualExtension",     // Quicklook Thumbnail
-                                  nil
-    ];
+- (void)initOpenWhiteListThumbnailSet {
+    _defaultOpenWhiteListThumbnailSet =
+            [NSSet setWithObjects:@"com.apple.quicklook.QuickLookUIService", // Quicklook
+                                  @"com.apple.quicklook.satellite", // Quicklook
+                                  @"com.apple.quicklook.thumbnail.ImageExtension", // Quicklook Thumbnail
+                                  @"com.apple.quicklook.thumbnail.AudiovisualExtension", // Quicklook Thumbnail
+                                  nil];
 }
 
-- (void)initOpenWhiteListSet
-{
-    _defaultOpenWhiteListSet = [NSSet setWithObjects:
-                            @"com.apple.QuickLookDaemon",                       // Quicklook
-                            @"com.apple.DesktopServicesHelper",                 // DesktopServicesHelper
-                            nil
-    ];
+- (void)initOpenWhiteListSet {
+    _defaultOpenWhiteListSet = [NSSet setWithObjects:@"com.apple.QuickLookDaemon", // Quicklook
+                                                     @"com.apple.DesktopServicesHelper", // DesktopServicesHelper
+                                                     nil];
 }
 
-- (void)initOpenBlackListSet
-{
-    _defaultOpenBlackListSet = [NSSet setWithObjects:
-                            @"com.infomaniak.drive.desktopclient",
-                            @"kDrive_client",
-                            @"com.apple.finder",                                // Finder
-                            @"com.apple.mdworker",                              // Spotlight
-                            @"com.apple.mdworker_shared",                       // Spotlight
-                            @"com.apple.mds",                                   // Spotlight
-                            @"com.apple.mdsync",                                // Spotlight
-                            @"com.apple.Spotlight",                             // Spotlight
-                            @"com.apple.quicklook.ThumbnailsAgent",             // Quicklook
-                            @"com.apple.quicklook.externalSatellite.arm64",     // Quicklook satellite
-                            @"com.apple.quicklook.externalSatellite.x86_64",    // Quicklook satellite
-                            @"com.apple.iconservicesagent",                     // iconservicesagent
-                            @"com.apple.ScopedBookmarkAgent",                   // ScopedBookmarkAgent
-                            @"com.apple.XprotectFramework.AnalysisService",     // Xprotect
-                            @"com.apple.coreservices.uiagent",                  // CoreServicesUIAgent
-                            @"com.apple.ls",                                    // Commands
-                            @"com.apple.lsd",                                   // Commands
-                            @"com.apple.fgrep",                                 // Commands
-                            @"com.apple.find",                                  // Commands
-                            @"com.apple.bsdtar",                                // Commands
-                            @"com.apple.zip",                                   // Commands
-                            @"com.apple.git",                                   // Commands
-                            @"com.apple.xattr",                                 // Commands
-                            @"com.apple.bash",                                  // Commands
-                            @"com.apple.rm",                                    // Commands
-                            @"com.apple.filecoordinationd",                     // System-wide file access coordination
-                            @"com.apple.appkit.xpc.openAndSavePanelService",    // openAndSavePanelService
-                            @"com.apple.appkit.xpc.documentPopoverViewService", // documentPopoverViewService
-                            @"com.apple.QuickLookThumbnailing.extension.ThumbnailExtension-macOS",  // QuickLookThumbnailing
-                            @"com.apple.quicklook.thumbnail",                   // Quicklook Thumbnail
-                            @"com.apple.Terminal",                              // Terminal
-                            @"com.apple.system_profiler",                       // System profiler
-                            @"com.apple.path_helper",                           // help manage the PATH environment variable,
-                            @"com.apple.mediaanalysisd-access",                 // MediaAnalysis
-                            @"com.apple.mediaanalysisd",                        // MediaAnalysis
-                            @"com.apple.osascript",                             // osascript
-                            @"com.apple.AMPLibraryAgent",                       // AMPLibraryAgent
-                            @"com.apple.SceneKitQLThumbnailExtension",          // SceneKit
-                            @"com.apple.ModelIO.AssetLoader",                   // Model I/O
-                            @"com.apple.security.codesign",                     // codesign
-                            @"com.apple.mdmclient",                             // MDM
-                            @"com.apple.warmd_agent",                           // Warmd
-                            @"com.apple.apfsd",                                 // Apfsd
-                            nil
-    ];
+- (void)initOpenBlackListSet {
+    _defaultOpenBlackListSet =
+            [NSSet setWithObjects:@"com.infomaniak.drive.desktopclient", @"kDrive_client",
+                                  @"com.apple.finder", // Finder
+                                  @"com.apple.mdworker", // Spotlight
+                                  @"com.apple.mdworker_shared", // Spotlight
+                                  @"com.apple.mds", // Spotlight
+                                  @"com.apple.mdsync", // Spotlight
+                                  @"com.apple.Spotlight", // Spotlight
+                                  @"com.apple.quicklook.ThumbnailsAgent", // Quicklook
+                                  @"com.apple.quicklook.externalSatellite.arm64", // Quicklook satellite
+                                  @"com.apple.quicklook.externalSatellite.x86_64", // Quicklook satellite
+                                  @"com.apple.iconservicesagent", // iconservicesagent
+                                  @"com.apple.ScopedBookmarkAgent", // ScopedBookmarkAgent
+                                  @"com.apple.XprotectFramework.AnalysisService", // Xprotect
+                                  @"com.apple.coreservices.uiagent", // CoreServicesUIAgent
+                                  @"com.apple.ls", // Commands
+                                  @"com.apple.lsd", // Commands
+                                  @"com.apple.fgrep", // Commands
+                                  @"com.apple.find", // Commands
+                                  @"com.apple.bsdtar", // Commands
+                                  @"com.apple.zip", // Commands
+                                  @"com.apple.git", // Commands
+                                  @"com.apple.xattr", // Commands
+                                  @"com.apple.bash", // Commands
+                                  @"com.apple.rm", // Commands
+                                  @"com.apple.filecoordinationd", // System-wide file access coordination
+                                  @"com.apple.appkit.xpc.openAndSavePanelService", // openAndSavePanelService
+                                  @"com.apple.appkit.xpc.documentPopoverViewService", // documentPopoverViewService
+                                  @"com.apple.QuickLookThumbnailing.extension.ThumbnailExtension-macOS", // QuickLookThumbnailing
+                                  @"com.apple.quicklook.thumbnail", // Quicklook Thumbnail
+                                  @"com.apple.Terminal", // Terminal
+                                  @"com.apple.system_profiler", // System profiler
+                                  @"com.apple.path_helper", // help manage the PATH environment variable,
+                                  @"com.apple.mediaanalysisd-access", // MediaAnalysis
+                                  @"com.apple.mediaanalysisd", // MediaAnalysis
+                                  @"com.apple.osascript", // osascript
+                                  @"com.apple.AMPLibraryAgent", // AMPLibraryAgent
+                                  @"com.apple.SceneKitQLThumbnailExtension", // SceneKit
+                                  @"com.apple.ModelIO.AssetLoader", // Model I/O
+                                  @"com.apple.security.codesign", // codesign
+                                  @"com.apple.mdmclient", // MDM
+                                  @"com.apple.warmd_agent", // Warmd
+                                  @"com.apple.apfsd", // Apfsd
+                                  nil];
 }
 
-- (BOOL)isAppInOpenWhiteListThumbnail:(NSString *)appSigningId
-{
+- (BOOL)isAppInOpenWhiteListThumbnail:(NSString *)appSigningId {
     assert(_defaultOpenWhiteListThumbnailSet);
-    
+
     return [_defaultOpenWhiteListThumbnailSet containsObject:appSigningId];
 }
 
-- (BOOL)isAppInOpenWhiteList:(NSString *)appSigningId
-{
+- (BOOL)isAppInOpenWhiteList:(NSString *)appSigningId {
     assert(_defaultOpenWhiteListSet);
-    
+
     return [_defaultOpenWhiteListSet containsObject:appSigningId];
 }
 
-- (BOOL)matchGlob:(NSString *)string globToMatch:(NSString *)glob
-{
+- (BOOL)matchGlob:(NSString *)string globToMatch:(NSString *)glob {
     if ([string isEqualToString:glob]) {
         return true;
     } else if ([glob hasSuffix:@"*"]) {
@@ -152,11 +140,11 @@
     return false;
 }
 
-- (BOOL)isAppInDefaultBlackList:(NSString *)appSigningId
-{
+- (BOOL)isAppInDefaultBlackList:(NSString *)appSigningId {
     assert(_defaultOpenBlackListSet);
 
-    // Check if the app id belongs to the default blacklist list where prohibited ids are full app identifiers (e.g., "com.apple.finder").
+    // Check if the app id belongs to the default blacklist list where prohibited ids are full app identifiers (e.g.,
+    // "com.apple.finder").
     const BOOL isBlacklisted = [_defaultOpenBlackListSet containsObject:appSigningId];
     if (isBlacklisted) {
         return true;
@@ -165,8 +153,7 @@
     return false;
 }
 
-- (BOOL)isAppInOpenBlackList:(NSString *)appSigningId filePath:(NSString *)filePath
-{
+- (BOOL)isAppInOpenBlackList:(NSString *)appSigningId filePath:(NSString *)filePath {
     // Check if app id belongs to default prohibition list
     BOOL forbidden = [self isAppInDefaultBlackList:appSigningId];
 
@@ -201,8 +188,7 @@
     return forbidden;
 }
 
-- (void)addAppToFetchList:(NSString *)appSigningId
-{
+- (void)addAppToFetchList:(NSString *)appSigningId {
     assert(_fetchingAppArray);
 
     @synchronized(_fetchingAppArray) {
@@ -213,8 +199,7 @@
     }
 }
 
-- (void)sendMessage:(NSString *)filePath query:(NSString *)verb oneApp:(BOOL)one
-{
+- (void)sendMessage:(NSString *)filePath query:(NSString *)verb oneApp:(BOOL)one {
     assert(_registeredFoldersMap);
 
     NSLog(@"[KD] Send message %@:%@", verb, filePath);
@@ -235,8 +220,7 @@
     }
 }
 
-- (BOOL)fetchFile:(NSString *)filePath pid:(pid_t)pid
-{
+- (BOOL)fetchFile:(NSString *)filePath pid:(pid_t)pid {
     assert(_fetchMap);
 
     @synchronized(_fetchMap) {
@@ -258,8 +242,7 @@
     return TRUE;
 }
 
-- (BOOL)fetchThumbnail:(NSString *)filePath pid:(pid_t)pid
-{
+- (BOOL)fetchThumbnail:(NSString *)filePath pid:(pid_t)pid {
     assert(_fetchThumbnailMap);
 
     @synchronized(_fetchThumbnailMap) {
@@ -282,8 +265,7 @@
 }
 
 // XPCServiceProxyDelegate protocol implementation
-- (void)registerFolder:(NSString *)appId folderPath:(NSString *)path
-{
+- (void)registerFolder:(NSString *)appId folderPath:(NSString *)path {
     assert(_registeredFoldersMap);
 
     NSLog(@"[KD] Register folder %@", path);
@@ -296,8 +278,7 @@
     }
 }
 
-- (void)unregisterFolder:(NSString *)appId folderPath:(NSString *)path
-{
+- (void)unregisterFolder:(NSString *)appId folderPath:(NSString *)path {
     assert(_registeredFoldersMap);
 
     NSLog(@"[KD] Unregister folder %@", path);
@@ -315,8 +296,7 @@
     }
 }
 
-- (void)setAppExcludeList:(NSString *)appId appList:(NSString *)list
-{
+- (void)setAppExcludeList:(NSString *)appId appList:(NSString *)list {
     assert(_userBlackListMap);
 
     NSLog(@"[KD] Set App exclude list %@", list);
@@ -325,8 +305,7 @@
     }
 }
 
-- (void)updateFetchStatus:(NSString *)appId filePath:(NSString *)filePath fileStatus:(NSString *)fileStatus
-{
+- (void)updateFetchStatus:(NSString *)appId filePath:(NSString *)filePath fileStatus:(NSString *)fileStatus {
     assert(_fetchMap);
 
     NSLog(@"[KD] updateFetchStatus %@ %@", filePath, fileStatus);
@@ -336,7 +315,7 @@
             return;
         }
 
-        // Resume the stoped processes
+        // Resume the stopped processes
         for (NSNumber *pidNumber in _fetchMap[filePath]) {
             NSLog(@"[KD] Resume process %@ opening file %@", pidNumber, filePath);
             kill([pidNumber intValue], SIGCONT);
@@ -347,8 +326,7 @@
     }
 }
 
-- (void)updateThumbnailFetchStatus:(NSString *)appId filePath:(NSString *)filePath fileStatus:(NSString *)fileStatus
-{
+- (void)updateThumbnailFetchStatus:(NSString *)appId filePath:(NSString *)filePath fileStatus:(NSString *)fileStatus {
     assert(_fetchThumbnailMap);
 
     NSLog(@"[KD] updateThumbnailFetchStatus %@ %@", filePath, fileStatus);
@@ -358,7 +336,7 @@
             return;
         }
 
-        // Resume the stoped processes
+        // Resume the stopped processes
         for (NSNumber *pidNumber in _fetchThumbnailMap[filePath]) {
             NSLog(@"[KD] Resume process %@ opening thumbnail %@", pidNumber, filePath);
             kill([pidNumber intValue], SIGCONT);
@@ -369,8 +347,7 @@
     }
 }
 
-- (void)connectionEnded:(NSString *)appId
-{
+- (void)connectionEnded:(NSString *)appId {
     assert(_registeredFoldersMap);
 
     NSLog(@"[KD] Connection ended");
@@ -387,8 +364,7 @@
     }
 }
 
-- (NSMutableString *)getFetchingAppList
-{
+- (NSMutableString *)getFetchingAppList {
     assert(_fetchingAppArray);
 
     NSLog(@"[KD] Fetching app list");
@@ -405,8 +381,7 @@
     return appList;
 }
 
-- (BOOL)isDirectory:(NSString *)path error:(NSError *_Nullable *)error
-{
+- (BOOL)isDirectory:(NSString *)path error:(NSError *_Nullable *)error {
     NSDictionary *fileAttribs = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:error];
     if (!fileAttribs) {
         return false;

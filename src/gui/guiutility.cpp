@@ -631,7 +631,7 @@ QString GuiUtility::getDateForCurrentLanguage(const QDateTime &dateTime, const Q
     return languageToQLocale(lang).toString(dateTime, dateFormat);
 }
 
-bool GuiUtility::checkBlacklistSize(const size_t blacklistSize, QWidget *parent) {
+bool GuiUtility::checkBlacklistSize(const qsizetype blacklistSize, QWidget *parent) {
     if (blacklistSize > 50) {
         (void) CustomMessageBox(
                 QMessageBox::Warning,

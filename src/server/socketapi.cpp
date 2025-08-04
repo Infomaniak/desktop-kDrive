@@ -625,7 +625,8 @@ void SocketApi::command_MAKE_AVAILABLE_LOCALLY_DIRECT(const QString &filesArg) {
         }
         // Update the status of empty folders.
         if (fileData.isDirectory) {
-            auto tmpStatus = vfsStatus;
+            VfsStatus tmpStatus;
+            tmpStatus = vfsStatus;
             tmpStatus.isSyncing = false;
             tmpStatus.isHydrated = true;
             if (!forceStatus(fileData, tmpStatus)) {

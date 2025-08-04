@@ -732,14 +732,13 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                                     fileStat.modificationTime, itemType.nodeType, fileStat.size, isLink, true, true);
             if (_liveSnapshot.updateItem(item)) {
                 if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: "
-                                                        << Utility::formatSyncPath(absolutePath.filename()) << L" inode:"
-                                                        << CommonUtility::s2ws(nodeId) << L" parent inode:"
-                                                        << CommonUtility::s2ws(parentNodeId) << L" createdAt:"
-                                                        << fileStat.creationTime << L" modificationTime:"
-                                                        << fileStat.modificationTime << L" isDir:"
-                                                        << (itemType.nodeType == NodeType::Directory) << L" size:"
-                                                        << fileStat.size << L" isLink:" << isLink);
+                    LOGW_SYNCPAL_DEBUG(
+                            _logger, L"Item inserted in local snapshot: "
+                                             << Utility::formatSyncPath(absolutePath) << L" inode:" << CommonUtility::s2ws(nodeId)
+                                             << L" parent inode:" << CommonUtility::s2ws(parentNodeId) << L" createdAt:"
+                                             << fileStat.creationTime << L" modificationTime:" << fileStat.modificationTime
+                                             << L" isDir:" << (itemType.nodeType == NodeType::Directory) << L" size:"
+                                             << fileStat.size << L" isLink:" << isLink);
                 }
             } else {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to insert item: " << Utility::formatSyncPath(absolutePath.filename())

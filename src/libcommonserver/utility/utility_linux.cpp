@@ -294,8 +294,11 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
         IoError ioError = IoError::Unknown;
         if (!IoHelper::deleteItem(userAutoStartFilePath, ioError)) {
             LOGW_WARN(logger(), L"Could not remove autostart desktop file." << Utility::formatIoError(ioError));
+            return false;
         }
     }
+
+    return true;
 }
 
 bool Utility::hasSystemLaunchOnStartup(const std::string &) {

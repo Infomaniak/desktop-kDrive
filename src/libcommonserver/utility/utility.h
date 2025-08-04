@@ -73,6 +73,7 @@ struct COMMONSERVER_EXPORT Utility {
         static std::wstring formatIoError(const QString &path, IoError ioError);
         static std::wstring formatErrno(const SyncPath &path, long cError);
         static std::wstring formatErrno(const QString &path, long cError);
+        static std::wstring quotedSyncName(const SyncName &name);
         static std::wstring formatSyncName(const SyncName &name);
         static std::wstring formatSyncPath(const SyncPath &path);
         static std::wstring formatPath(const QString &path);
@@ -131,9 +132,9 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string xxHashToStr(XXH64_hash_t hash);
 
 #if defined(KD_MACOS)
-        static SyncName getExcludedAppFilePath(bool test = false);
+        static SyncPath getExcludedAppFilePath(bool test = false);
 #endif
-        static SyncName getExcludedTemplateFilePath(bool test = false);
+        static SyncPath getExcludedTemplateFilePath(bool test = false);
         static SyncPath binRelativePath();
         static SyncPath resourcesRelativePath();
         static SyncName logFileName();
