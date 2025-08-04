@@ -97,12 +97,16 @@ runs:
           if ($conanRunBat) {
             Write-Host "Sourcing $($conanRunBat.FullName)"
             cmd /c `"$($conanRunBat.FullName)`"  # modifie l'environnement du shell cmd
+          } else {
+            Write-Host "No conanrun.bat found, skipping Conan dependencies fetch."
+            exit 1
           }
           
           New-Item -ItemType Directory -Path "./dependencies/platforms" -Force
           
           $patterns = @("libxxhash*.dll", "liblog4cplus*.dll", "libssl*.dll", "libcrypto*.dll", "Qt6Widgets.dll", "Qt6Gui.dll", "Qt6Network.dll", "Qt6Sql.dll", "Qt6Core.dll", "Qt6DBus.dll", "Qt6Svg.dll", "qoffscreen.dll")
           $paths = $env:PATH -split ';' | Where-Object { $_ -like '*\.conan2\p*' }
+          Write-Host "Conan paths found: $($paths -join ', ')" # TODO delete
           foreach ($dir in $paths) {
             if ($pattern -eq "qoffscreen.dll") {
               $searchDir = Split-Path -Parent $dir
