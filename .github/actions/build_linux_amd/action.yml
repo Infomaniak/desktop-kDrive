@@ -139,7 +139,7 @@ runs:
             fi
           done
 
-          source $(find "${{ github.workspace }}/build-macos" -name deactivate_conanrun.sh | head -n 1)
+          source $(find "${{ github.workspace }}/build-linux" -name deactivate_conanrun.sh | head -n 1)
         shell: bash
         if: steps.build.outcome == 'success'
 
