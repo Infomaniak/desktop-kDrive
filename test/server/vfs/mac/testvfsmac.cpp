@@ -42,12 +42,20 @@ void TestVfsMac::testStatus() {
             ofs.close();
         }
         // Convert file to placeholder
+        std::cerr << "init  LiteSyncExtConnector " << std::endl;
+
         const auto extConnector = LiteSyncExtConnector::instance(Log::instance()->getLogger(), ExecuteCommand());
+
+
+        std::cerr << "Call  LiteSyncExtConnector::vfsConvertToPlaceHolder " << std::endl;
         extConnector->vfsConvertToPlaceHolder(Path2QStr(path), true);
 
         VfsStatus vfsStatus;
+
+        std::cerr << "Call  status " << std::endl;
         vfs->status(path, vfsStatus);
 
+        std::cerr << "Check output " << std::endl;
         CPPUNIT_ASSERT(vfsStatus.isPlaceholder);
         CPPUNIT_ASSERT(vfsStatus.isHydrated);
         CPPUNIT_ASSERT(!vfsStatus.isSyncing);
@@ -132,11 +140,11 @@ void TestVfsMac::testStatus() {
     }
 }
 
-void mockSyncFileStatus([[maybe_unused]]int syncDbId, [[maybe_unused]]const SyncPath &path, SyncFileStatus &status) {
+void mockSyncFileStatus([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &path, SyncFileStatus &status) {
     status = SyncFileStatus::Success;
 }
 
-void mockSetSyncFileSyncing([[maybe_unused]]int syncDbId, [[maybe_unused]]const SyncPath &path, [[maybe_unused]]bool syncing) {
+void mockSetSyncFileSyncing([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &path, [[maybe_unused]] bool syncing) {
     // Do nothing
 }
 
