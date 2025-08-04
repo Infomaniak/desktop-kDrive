@@ -220,9 +220,13 @@ std::wstring Utility::v2ws(const dbtype &v) {
     return std::visit(VariantPrinter{}, v);
 }
 
+std::wstring Utility::quotedSyncName(const SyncName &name) {
+    return L"'" + SyncName2WStr(name) + L"'";
+}
+
 std::wstring Utility::formatSyncName(const SyncName &name) {
     std::wstringstream ss;
-    ss << L"name='" << SyncName2WStr(name) << L"'";
+    ss << L"name='" << quotedSyncName(name);
 
     return ss.str();
 }
@@ -627,14 +631,21 @@ std::string Utility::xxHashToStr(XXH64_hash_t hash) {
 }
 
 #if defined(KD_MACOS)
-SyncName Utility::getExcludedAppFilePath(bool test /*= false*/) {
-    return (test ? excludedAppFileName : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedAppFileName).native());
+SyncPath Utility::getExcludedAppFilePath(const bool test /*= false*/) {
+    if (test) return excludedAppFileName;
+
+    auto canonicalPath =
+            std::filesystem::weakly_canonical(CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} / excludedAppFileName);
+
+    return canonicalPath.make_preferred();
 }
 #endif
 
-SyncName Utility::getExcludedTemplateFilePath(bool test /*= false*/) {
-    return (test ? excludedTemplateFileName
-                 : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedTemplateFileName).native());
+SyncPath Utility::getExcludedTemplateFilePath(const bool test /*= false*/) {
+    if (test) return excludedTemplateFileName;
+    auto canonicalPath = std::filesystem::weakly_canonical(CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} /
+                                                           excludedTemplateFileName);
+    return canonicalPath.make_preferred();
 }
 
 SyncPath Utility::binRelativePath() {

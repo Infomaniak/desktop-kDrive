@@ -297,11 +297,11 @@ void AppServer::init() {
 #if defined(KD_LINUX)
     // On Linux, override the auto startup file on every app launch to make sure it points to the correct executable.
     if (ParametersCache::instance()->parameters().autoStart()) {
-        Utility::setLaunchOnStartup(_theme->appName(), _theme->appName(), true);
+        (void) Utility::setLaunchOnStartup(_theme->appName(), _theme->appName(), true);
     }
 #else
     if (ParametersCache::instance()->parameters().autoStart() && !Utility::hasLaunchOnStartup(_theme->appName())) {
-        Utility::setLaunchOnStartup(_theme->appName(), _theme->appClientName(), true);
+        (void) Utility::setLaunchOnStartup(_theme->appName(), _theme->appClientName(), true);
     }
 #endif
 #endif
@@ -2433,13 +2433,14 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
-            {&MigrationParams::migrateSelectiveSyncs, "migrateSelectiveSyncs"}};
+        {&MigrationParams::migrateSelectiveSyncs, "migrateSelectiveSyncs"}
+    };
 
     for (const auto &migrate: migrateArr) {
         ExitCode functionExitCode = (mp.*migrate.first)();
@@ -2916,6 +2917,7 @@ void AppServer::logUsefulInformation() const {
         LOGW_WARN(_logger, L"Error getting cache directory");
     }
     LOGW_INFO(_logger, L"cache " << Utility::formatSyncPath(cachePath));
+    LOGW_INFO(_logger, L"free space for cache: " << Utility::getFreeDiskSpace(cachePath) << L" bytes");
 
     // Log app ID
     AppStateValue appStateValue = "";
