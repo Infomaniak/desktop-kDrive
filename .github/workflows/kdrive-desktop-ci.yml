@@ -84,7 +84,7 @@ jobs:
          uses: ./.github/actions/test_windows
          with:  
             test_name: ${{ matrix.test_name }}
-            test_dependencies_version: qt_v1 # TODO reenable envvars dependencies version and increase when reviewed. # ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+            test_dependencies_version: qt_v2 # TODO reenable envvars dependencies version and increase when reviewed. # ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
 # Tests Linux
   Test-Linux:
@@ -107,7 +107,7 @@ jobs:
          uses: ./.github/actions/test_linux
          with:  
             test_name: ${{ matrix.test_name }}
-            test_dependencies_version: qt_v1 # TODO reenable envvars dependencies version and increase when reviewed. # ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+            test_dependencies_version: qt_v2 # TODO reenable envvars dependencies version and increase when reviewed. # ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
 # Tests macOS
   Test-macOS:
@@ -130,7 +130,7 @@ jobs:
          uses: ./.github/actions/test_macos
          with:  
             test_name: ${{ matrix.test_name }}
-            test_dependencies_version: qt_v1 # TODO reenable envvars dependencies version and increase when reviewed. # ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+            test_dependencies_version: qt_v2 # TODO reenable envvars dependencies version and increase when reviewed. # ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
   Unit-Tests:
     runs-on: [self-hosted, Windows]
