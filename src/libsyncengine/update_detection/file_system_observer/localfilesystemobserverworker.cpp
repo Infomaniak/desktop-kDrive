@@ -582,18 +582,16 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     try {
         IoHelper::DirectoryIterator dirIt;
         if (!IoHelper::getDirectoryIterator(absoluteParentDirPath, true, ioError, dirIt)) {
+            assert(ioError != IoError::Success && "Unexpected IoHelper::getDirectoryIterator return value.");
             LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getDirectoryIterator: Local "
                                                << Utility::formatIoError(absoluteParentDirPath, ioError));
-
-            if (ioError == IoError::NoSuchFileOrDirectory) {
-                return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
+            switch (ioError) {
+                case IoError::NoSuchFileOrDirectory:
+                case IoError::AccessDenied:
+                    return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
+                default:
+                    return ExitCode::SystemError;
             }
-
-            if (ioError == IoError::AccessDenied) {
-                return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
-            }
-
-            return ExitCode::SystemError;
         }
 
         DirectoryEntry entry;
