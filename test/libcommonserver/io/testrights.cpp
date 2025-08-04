@@ -647,7 +647,7 @@ void TestIo::testPermissionsHolder() {
     CPPUNIT_ASSERT(!std::filesystem::exists(filePath));
 
     {
-        PermissionsHolder permsHolder(tempDir.path());
+        const PermissionsHolder permsHolder(tempDir.path());
         testhelpers::generateOrEditTestFile(filePath);
         CPPUNIT_ASSERT(std::filesystem::exists(filePath));
     }
@@ -663,15 +663,15 @@ void TestIo::testPermissionsHolder() {
     CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
     CPPUNIT_ASSERT_EQUAL(false, write);
     {
-        PermissionsHolder permsHolder(tempDir.path());
+        const PermissionsHolder permsHolder(tempDir.path());
         CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
         CPPUNIT_ASSERT_EQUAL(true, write);
         {
-            PermissionsHolder permsHolder2(tempDir.path());
+            const PermissionsHolder permsHolder2(tempDir.path());
             CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
             CPPUNIT_ASSERT_EQUAL(true, write);
             {
-                PermissionsHolder permsHolder3(tempDir.path());
+                const PermissionsHolder permsHolder3(tempDir.path());
                 CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
                 CPPUNIT_ASSERT_EQUAL(true, write);
             }

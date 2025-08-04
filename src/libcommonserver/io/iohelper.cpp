@@ -329,7 +329,7 @@ IoError IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool 
     read = ((perms & std::filesystem::perms::owner_read) != std::filesystem::perms::none);
 #if defined(KD_MACOS)
     bool isLocked = false;
-    if (IoError ioError = IoHelper::isLocked(path, isLocked); ioError != IoError::Success) {
+    if (const auto ioError = IoHelper::isLocked(path, isLocked); ioError != IoError::Success) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to check if file is locked for: " << Utility::formatSyncPath(path));
         return ioError;
     }

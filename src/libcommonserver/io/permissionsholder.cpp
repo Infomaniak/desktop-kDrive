@@ -29,9 +29,8 @@ struct AccessRights {
 static std::unordered_map<SyncPath, std::pair<uint64_t, AccessRights>, PathHashFunction> heldPermissions;
 static std::mutex mutex;
 
-PermissionsHolder::PermissionsHolder(const SyncPath &path, const log4cplus::Logger *logger /*= nullptr*/) :
-    _path(path),
-    _logger(logger) {
+PermissionsHolder::PermissionsHolder(const SyncPath &path) :
+    _path(path) {
     AccessRights accessRights;
     if (const auto ioError = IoHelper::getRights(path, accessRights.read, accessRights.write, accessRights.exec);
         ioError != IoError::Success) {
@@ -67,7 +66,8 @@ PermissionsHolder::~PermissionsHolder() {
     uint64_t count = 0;
     AccessRights accessRights;
     try {
-        const auto &[countTmp, accessRightsTmp] = heldPermissions[_path];
+        auto &[countTmp, accessRightsTmp] = heldPermissions[_path];
+        countTmp--;
         count = countTmp;
         accessRights = accessRightsTmp;
     } catch (...) {
@@ -76,44 +76,44 @@ PermissionsHolder::~PermissionsHolder() {
         return;
     }
 
-    count--;
     log(std::wstringstream() << L"PermissionsHolder value: " << Utility::formatSyncPath(_path) << L" / count:" << count,
         LogLevel::Debug);
     if (count > 0) return; // Do not put back read-only rights yet.
 
-    log(std::wstringstream() << L"PermissionsHolder set back initial rights: " << Utility::formatSyncPath(_path) << L" / count:"
-                             << count,
+    log(std::wstringstream() << L"PermissionsHolder setting back initial rights: " << Utility::formatSyncPath(_path),
         LogLevel::Debug);
-    if (accessRights.locked) {
-        if (const auto ioError = IoHelper::lock(_path); ioError != IoError::Success) {
-            log(std::wstringstream() << L"Failed to lock item for: " << Utility::formatSyncPath(_path) << L" / count:" << count,
-                LogLevel::Error);
-        }
-    }
     if (const auto ioError = IoHelper::setRights(_path, accessRights.read, accessRights.write, accessRights.exec);
         ioError != IoError::Success) {
-        log(std::wstringstream() << L"Failed to set rights for: " << Utility::formatSyncPath(_path), LogLevel::Error);
+        log(std::wstringstream() << L"Failed to set rights for: " << Utility::formatSyncPath(_path) << L" - "
+                                 << Utility::formatIoError(ioError),
+            LogLevel::Error);
+    }
+    if (accessRights.locked) {
+        if (const auto ioError = IoHelper::lock(_path); ioError != IoError::Success) {
+            log(std::wstringstream() << L"Failed to lock item for: " << Utility::formatSyncPath(_path) << L" - "
+                                     << Utility::formatIoError(ioError),
+                LogLevel::Error);
+        }
     }
     (void) heldPermissions.erase(_path);
 }
 
 void PermissionsHolder::log(const std::wstringstream &ss, const LogLevel logLevel /*= LogLevel::Debug*/) const noexcept {
-    if (!_logger) return;
     switch (logLevel) {
         case LogLevel::Debug:
-            LOGW_DEBUG(*_logger, ss.str());
+            LOGW_DEBUG(_logger, ss.str())
             break;
         case LogLevel::Info:
-            LOGW_INFO(*_logger, ss.str());
+            LOGW_INFO(_logger, ss.str())
             break;
         case LogLevel::Warning:
-            LOGW_WARN(*_logger, ss.str());
+            LOGW_WARN(_logger, ss.str())
             break;
         case LogLevel::Error:
-            LOGW_ERROR(*_logger, ss.str());
+            LOGW_ERROR(_logger, ss.str())
             break;
         case LogLevel::Fatal:
-            LOGW_FATAL(*_logger, ss.str());
+            LOGW_FATAL(_logger, ss.str())
             break;
         default:
             break;
