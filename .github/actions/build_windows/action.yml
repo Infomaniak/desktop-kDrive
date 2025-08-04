@@ -83,10 +83,7 @@ runs:
           mkdir dependencies
           cp "${{ github.workspace }}/build-windows/install/bin/*.dll" ./dependencies/
           cp "${{ github.workspace }}/build-windows/install/bin/sync-exclude.lst" ./dependencies/
-          cp "${{ github.workspace }}/build-windows/install/bin/*.dll" ./dependencies/
           cp "C:\Program Files (x86)\Sentry-Native\bin\crashpad_handler.exe" ./dependencies/
-          mkdir .\dependencies\platforms
-          cp "C:\Qt\6.2.3\msvc2019_64\plugins\platforms\qoffscreen.dll" .\dependencies\platforms
           cp "C:\Program Files (x86)\cppunit\lib\cppunit_dll.dll" ./dependencies/
         shell: powershell
         if: steps.build.outcome == 'success'
@@ -95,29 +92,41 @@ runs:
         if: steps.build.outcome == 'success'
         shell: powershell
         run: |
-          $conanRunBat = Get-ChildItem -Path "${{ github.workspace }}" -Recurse -Filter "conanrun.bat" | Select-Object -First 1
-          
+          $conanRunBat = Get-ChildItem -Path "${{ github.workspace }}" -Recurse -Filter "conanrun.ps1" | Select-Object -First 1
           if ($conanRunBat) {
             Write-Host "Sourcing $($conanRunBat.FullName)"
-            cmd /c `"$($conanRunBat.FullName)`"  # modifie l'environnement du shell cmd
+            & $conanRunBat.FullName *> $null
+          } else {
+            Write-Host "No conanrun.ps1 found, skipping Conan dependencies fetch."
+            exit 0
           }
+          
+          New-Item -ItemType Directory -Path "./dependencies/platforms" -Force
           
           $patterns = @("libxxhash*.dll", "liblog4cplus*.dll", "libssl*.dll", "libcrypto*.dll", "Qt6Widgets.dll", "Qt6Gui.dll", "Qt6Network.dll", "Qt6Sql.dll", "Qt6Core.dll", "Qt6DBus.dll", "Qt6Svg.dll", "qoffscreen.dll")
           $paths = $env:PATH -split ';' | Where-Object { $_ -like '*\.conan2\p*' }
           foreach ($dir in $paths) {
+            Write-Host "Searching in $dir for patterns: $($patterns -join ', ')"
             if (Test-Path $dir) {
-              Write-Host "Looking in $dir"
               foreach ($pattern in $patterns) {
-                Get-ChildItem -Path $dir -Recurse -Filter $pattern -ErrorAction SilentlyContinue | ForEach-Object {
-                  if ($pattern -eq "qoffscreen.dll") {
-                    $destination = "./dependencies/platforms/"
-                  } else {
-                    $destination = "./dependencies/"
-                  }
+                if ($pattern -eq "qoffscreen.dll") {
+                  $searchDir = Split-Path -Parent $dir
+                  $destination = "./dependencies/platforms/"
+                } else {
+                  $searchDir = $dir
+                  $destination = "./dependencies/"
+                }
+                Get-ChildItem -Path $searchDir -Recurse -Filter $pattern -ErrorAction SilentlyContinue | ForEach-Object {
                   Copy-Item -Path $_.FullName -Destination $destination -Force
-                  Write-Host "Conan dependency found -> $($_.FullName)"
+                  Write-Host "`tConan dependency found -> $($_.FullName)"
                 }
               }
+            }
+          }
+          
+          ls -Recurse ./dependencies | ForEach-Object {
+            if ($_.Name -like "*.dll") {
+              Write-Host "Dependency found: $($_.FullName)"
             }
           }
       - name: Upload build common files

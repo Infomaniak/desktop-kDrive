@@ -40,7 +40,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     -h|--help)
       cat << EOF >&2
-Usage: $0 [Debug|Release] [--output-dir=<output_dir>] [--ci] [--make-release] [--help]
+Usage: $0 [Debug|Release] [--output-dir=<output_dir>] [--make-release] [--help]
   --help               Display this help message.
   --output-dir=<dir>   Set the output directory for the Conan packages.
   --make-release       Use the 'infomaniak_release' Conan profile.
@@ -62,18 +62,6 @@ EOF
       ;;
   esac
 done
-
-
-if [[ "${1:-}" =~ ^-h|--help$ ]]; then
-  cat << EOF >&2
-Usage: $0 [Debug|Release] [--output-dir=<output_dir>]
-  There are three ways to set the output directory (in descending order of priority):
-    1. --output-dir=<output_dir> argument
-    2. KDRIVE_OUTPUT_DIR environment variable
-    3. Default directory based on the system (macOS: build-macos/client, Linux: build-linux/build)
-EOF
-  exit 0
-fi
 
 
 

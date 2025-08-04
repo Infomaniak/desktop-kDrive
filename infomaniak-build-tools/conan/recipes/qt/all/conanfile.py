@@ -79,12 +79,14 @@ class QtConan(ConanFile):
             f"qt.qt{major}.{compact}.addons.qtwebchannel",
             f"qt.qt{major}.{compact}.addons.qtwebengine",
             f"qt.qt{major}.{compact}.addons.qtwebview",
-        ] # TODO add Qt Debug Information Files on debug
+        ]
 
         if self.settings.os == "Windows":
             modules.extend([
                 "qt.tools.cmake",
-                "qt.tools.ninja"
+                "qt.tools.ninja",
+
+                f"qt.qt{major}.{compact}.debug_info" # Qt Debug Information Files for Windows
             ])
 
         if self.settings.os == "Linux":
@@ -115,11 +117,24 @@ class QtConan(ConanFile):
     def requirements(self):
         self.requires("zlib/[>=1.2.11 <2]", options={ "shared": True }) # From https://conan.io/center/recipes/zlib
 
-    def _check_envvars_login_type(self):
-        if self.options.qt_login_type != "envvars":
-            return
+    def _check_envvars_login_type(self, check_option=True, raise_error=True):
+        if check_option and self.options.qt_login_type != "envvars":
+            return False
         if os.getenv("QT_INSTALLER_JWT_TOKEN") is None:
-            raise ConanInvalidConfiguration("To be able to use the 'envvars' login type, you must set the environment variable 'QT_INSTALLER_JWT_TOKEN' with your Qt account JWT token. See https://doc.qt.io/qt-6/get-and-install-qt-cli.html#providing-login-information")
+            if raise_error:
+                raise ConanInvalidConfiguration("To be able to use the 'envvars' login type, you must set the environment variable 'QT_INSTALLER_JWT_TOKEN' with your Qt account JWT token. See https://doc.qt.io/qt-6/get-and-install-qt-cli.html#providing-login-information")
+            else:
+                return False
+        return True
+
+    def config_options(self):
+        if self.options.qt_login_type == "ini" and (self._get_default_login_ini_location() is None or not os.path.isfile(self._get_default_login_ini_location())):
+            self.output.warning("The file 'qtaccount.ini' is not found at the default location and the login method is 'ini'.")
+            if self._check_envvars_login_type(check_option=False, raise_error=False):
+                self.output.warning("Falling back to 'envvars' login type.")
+                self.options.qt_login_type = "envvars"
+            else:
+                self.options.qt_login_type = "cli"
 
     def validate(self):
         if not self.version.startswith("6."):
@@ -132,10 +147,7 @@ class QtConan(ConanFile):
         if self.options.qt_login_type == "cli":
             return
 
-        if self.options.qt_login_type == "ini" and (self._get_default_login_ini_location() is None or not os.path.isfile(self._get_default_login_ini_location())):
-            self.output.warning("The file 'qtaccount.ini' is not found at the default location. If the installation fails due to authentication issues, consider switching to the 'envvars' login type.")
-
-        self._check_envvars_login_type()
+        self._check_envvars_login_type(check_option=True, raise_error=True)
 
     def _get_executable_path(self, downloaded_file_name: str) -> str:
         """
@@ -174,6 +186,8 @@ class QtConan(ConanFile):
         app_bundles = glob.glob(pjoin(mount_point, "*.app"))
         if not app_bundles:
             raise ConanException("Failed to find app folder for DMG file")
+        if len(app_bundles) > 1:
+            raise ConanException(f"Found multiple app bundles in the DMG file: {', '.join(app_bundles)}. Please ensure there is only one app bundle in the DMG file.")
         mounted_bundle = app_bundles[0]
 
         app_bundle = pjoin(self.build_folder, "qt-online-installer-macOS.app")
@@ -222,16 +236,19 @@ class QtConan(ConanFile):
 
         args = ["--root", f"{self.build_folder}/install"] + args
 
-        self._check_envvars_login_type() # If the login type is 'envvars', ensure that the required environment variable is set; otherwise, raise an error.
+        self._check_envvars_login_type(check_option=True, raise_error=True) # If the login type is 'envvars', ensure that the required environment variable is set; otherwise, raise an error.
 
         args += ["install"] + self._get_qt_submodules(self.version)
 
         quoted_installer = f"'{installer_path}'" if self.settings.os != "Windows" else installer_path
+
+        self.output.highlight(f"Login method: '{self.options.qt_login_type}'")
+
         self.run(f"{quoted_installer} {' '.join(args)}")
 
-        self.output.highlight("Patching Qt installation...")
         find_wrap_open_gl = pjoin(self.build_folder, "install", self.version, self._subfolder_install(), "lib", "cmake", "Qt6", "FindWrapOpenGL.cmake")
         if os.path.exists(find_wrap_open_gl) and self.settings.os == "Macos":
+            self.output.highlight("Patching Qt installation...")
             from conan.tools.files import replace_in_file
             """
             Fixes spam of this kind of CMake warning on macOS:            
@@ -318,11 +335,11 @@ class QtConan(ConanFile):
             env.prepend_path("CMAKE_PREFIX_PATH", self.package_folder)
             env.prepend_path("LD_LIBRARY_PATH", pjoin(self.package_folder, "lib"))
             env.prepend_path("DYLD_LIBRARY_PATH", pjoin(self.package_folder, "lib"))
+            env.prepend_path("PATH", pjoin(self.package_folder, "bin"))
+            if self.settings.os in ("Macos", "Linux"):
+                env.prepend_path("PATH", pjoin(self.package_folder, "libexec"))
 
         self.cpp_info.includedirs = []
         self.cpp_info.bindirs = [ "bin" ]
         if self.settings.os in ("Macos", "Linux"):
             self.cpp_info.bindirs.append("libexec")
-        self.cpp_info.resdirs = []
-        self.cpp_info.srcdirs = []
-        self.cpp_info.frameworkdirs = []

@@ -262,7 +262,7 @@ function CMake-Build-And-Install {
     }
 
     $conanGeneratorsFolder = Split-Path -Parent $conanToolchainFile
-    $env:QTDIR = & "$path\infomaniak-build-tools\conan\find_conan_dep.ps1" -Package "qt" -BuildDir "$conanGeneratorsFolder"
+    $env:QTDIR = (& "$path\infomaniak-build-tools\conan\find_conan_dep.ps1" -Package "qt" -BuildDir "$conanGeneratorsFolder") -replace '\\bin$', ''
     if (-not $env:QTDIR -or -not (Test-Path $env:QTDIR)) {
         Write-Error "Qt not found in Conan dependencies. Abort."
         exit 1
@@ -298,8 +298,6 @@ function CMake-Build-And-Install {
         "'-DVFS_DIRECTORY:PATH=$vfsDir'",
         "'-DKDRIVE_THEME_DIR:STRING=$path/infomaniak'",
         "'-DPLUGINDIR:STRING=C:/Program Files (x86)/kDrive/lib/kDrive/plugins'",
-        "'-DZLIB_INCLUDE_DIR:PATH=C:/Program Files (x86)/zlib-1.2.11/include'",
-        "'-DZLIB_LIBRARY_RELEASE:FILEPATH=C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib'",
         "'-DAPPLICATION_NAME:STRING=kDrive'",
         "'-DKDRIVE_VERSION_BUILD=$buildVersion'"
     )
@@ -454,7 +452,7 @@ function Prepare-Archive {
         $args = @{ Package = $pkg.Name; BuildDir = $buildPath }
         $binFolder = & $find_dep_script @args
         foreach ($dll in $pkg.Dlls) {
-            if (($buildType -eq "Debug") -and (Test-Path -Path $file"d.dll")) {
+            if (($buildType -eq "Debug") -and (Test-Path -Path "$binFolder/${dll}d.dll")) {
                 Copy-Item -Path "$binFolder/${dll}d.dll" -Destination "$archivePath"
             } else {
                 Copy-Item -Path "$binFolder/$dll.dll" -Destination "$archivePath"

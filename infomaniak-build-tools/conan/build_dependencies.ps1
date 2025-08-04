@@ -202,13 +202,14 @@ if ($LASTEXITCODE -ne 0) {
     Err "Failed to create xxHash Conan package."
 }
 
-& $ConanExe create "$RecipesFolder/qt/all/"
+$qt_login_type = if ($CI) { "envvars" } else { "ini" }
+& $ConanExe create "$RecipesFolder/qt/all/" --build=missing -s build_type=$BuildType --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter -o "&:qt_login_type=$qt_login_type"
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to create qt Conan package."
 }
 
 Log "Installing Conan dependencies..."
-& $ConanExe install . --output-folder="$OutputDir" --build=missing -c tools.cmake.cmaketoolchain:generator=Ninja -s build_type=$BuildType --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter -c tools.env.virtualenv:powershell=powershell
+& $ConanExe install . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter  -c tools.cmake.cmaketoolchain:generator=Ninja -c tools.env.virtualenv:powershell=powershell -o "qt/*:qt_login_type=$qt_login_type"
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to install Conan dependencies."
 }

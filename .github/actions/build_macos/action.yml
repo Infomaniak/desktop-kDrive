@@ -81,9 +81,9 @@ runs:
                 -exec cp {} ./dependencies/ \; \
                 -exec echo "Conan dependency found -> " {} \;
               if [[ "$dir" == *"/qt"* ]]; then
-                mkdir dependencies/platforms
-                find "$dir" \
+                find "$(dirname $dir)" \
                     '(' -iname 'libqoffscreen.dylib' ')' \
+                    -exec mkdir -p ./dependencies/platforms \; \
                     -exec cp {} ./dependencies/platforms/ \; \
                     -exec echo "Conan Qt dependency found -> " {} \;
               fi
