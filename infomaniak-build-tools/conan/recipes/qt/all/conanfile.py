@@ -73,7 +73,6 @@ class QtConan(ConanFile):
             f"qt.qt{major}.{compact}.{compiler}",
 
             f"qt.qt{major}.{compact}.qt5compat",
-            f"qt.qt{major}.{compact}.src",
 
             f"qt.qt{major}.{compact}.addons.qtpositioning",
             f"qt.qt{major}.{compact}.addons.qtwebchannel",
