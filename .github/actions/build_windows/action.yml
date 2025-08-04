@@ -121,6 +121,8 @@ runs:
               }
             }
           }
+          ls ./dependencies/ | ForEach-Object { Write-Host "Dependency: $($_.Name)" }
+          ls ./dependencies/platforms/ | ForEach-Object { Write-Host "Platform Dependency: $($_.Name)" }
       - name: Upload build common files
         uses: actions/upload-artifact@v4
         with:
