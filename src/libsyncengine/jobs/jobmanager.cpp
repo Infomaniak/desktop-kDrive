@@ -173,7 +173,7 @@ int JobManager::availableThreadsInPool() const {
 }
 
 bool JobManager::canRunjob(const std::shared_ptr<AbstractJob> job) const {
-    if (job->canRunOnlyOneInstance()) {
+    if (job->isConstrainedByOtherJobs()) {
         for (const auto &runningJobId: _data.runningJobs()) {
             if (job->isExclusiveOf(getJob(runningJobId))) {
                 return false;

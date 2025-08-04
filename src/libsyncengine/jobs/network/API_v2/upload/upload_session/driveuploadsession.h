@@ -41,7 +41,7 @@ class DriveUploadSession : public AbstractUploadSession {
         SyncTime modificationTime() const { return _modificationTimeOut; }
         int64_t size() const { return _sizeOut; }
         bool isExclusiveOf(std::shared_ptr<AbstractJob>) const override;
-        bool canRunOnlyOneInstance() const noexcept override { return true; };
+        bool isConstrainedByOtherJobs() const noexcept override { return true; };
 
     protected:
         bool handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob,
