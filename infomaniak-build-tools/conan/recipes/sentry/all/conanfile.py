@@ -46,6 +46,10 @@ class SentryNativeConan(ConanFile):
             "SENTRY_INTEGRATION_QT": "YES",
             "SENTRY_BACKEND": "crashpad",
             "CMAKE_PREFIX_PATH": qt_package_folder,
+            "SENTRY_BUILD_TESTS": "OFF",
+            "SENTRY_BUILD_EXAMPLES": "OFF",
+            "SENTRY_BUILD_BENCHMARKS": "OFF",
+
         }
         if self.settings.os == "Macos":
             cache_variables["CMAKE_OSX_DEPLOYMENT_TARGET"] = "10.15"
