@@ -73,7 +73,6 @@ class QtConan(ConanFile):
             f"qt.qt{major}.{compact}.{compiler}",
 
             f"qt.qt{major}.{compact}.qt5compat",
-            f"qt.qt{major}.{compact}.src",
 
             f"qt.qt{major}.{compact}.addons.qtpositioning",
             f"qt.qt{major}.{compact}.addons.qtwebchannel",
@@ -331,8 +330,9 @@ class QtConan(ConanFile):
         self.cpp_info.set_property("cmake_build_modules", [ pjoin(self.package_folder, "lib", "cmake", "Qt6", "Qt6Config.cmake") ])
         self.cpp_info.set_property("cmake_find_mode", "none")
 
+        self.buildenv_info.prepend_path("CMAKE_PREFIX_PATH", self.package_folder)
+
         for env in (self.runenv_info, self.buildenv_info):
-            env.prepend_path("CMAKE_PREFIX_PATH", self.package_folder)
             env.prepend_path("LD_LIBRARY_PATH", pjoin(self.package_folder, "lib"))
             env.prepend_path("DYLD_LIBRARY_PATH", pjoin(self.package_folder, "lib"))
             env.prepend_path("PATH", pjoin(self.package_folder, "bin"))
