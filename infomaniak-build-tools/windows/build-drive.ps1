@@ -298,8 +298,6 @@ function CMake-Build-And-Install {
         "'-DVFS_DIRECTORY:PATH=$vfsDir'",
         "'-DKDRIVE_THEME_DIR:STRING=$path/infomaniak'",
         "'-DPLUGINDIR:STRING=C:/Program Files (x86)/kDrive/lib/kDrive/plugins'",
-        "'-DZLIB_INCLUDE_DIR:PATH=C:/Program Files (x86)/zlib-1.2.11/include'",
-        "'-DZLIB_LIBRARY_RELEASE:FILEPATH=C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib'",
         "'-DAPPLICATION_NAME:STRING=kDrive'",
         "'-DKDRIVE_VERSION_BUILD=$buildVersion'"
     )
