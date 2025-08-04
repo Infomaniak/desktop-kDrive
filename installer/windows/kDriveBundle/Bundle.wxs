@@ -1,0 +1,12 @@
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal">
+  <Bundle Id="Infomaniak.kDriveInstallerBundle" Name="kDriveInstallerBundle" Manufacturer="Infomaniak Network SA" Version="3.7.3.0">
+    <BootstrapperApplication>
+      <bal:WixStandardBootstrapperApplication LicenseUrl="https://www.infomaniak.com/" Theme="hyperlinkLicense" />
+    </BootstrapperApplication>
+    <Chain>
+      <PackageGroupRef Id="VCRedistComponents"/>
+      <MsiPackage SourceFile="..\kDriveInstaller\bin\x64\Release\en-US\kDriveInstaller.msi"/> 
+    </Chain>
+  </Bundle>
+</Wix>

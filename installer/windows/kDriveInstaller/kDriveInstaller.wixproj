@@ -4,4 +4,11 @@
     <VerboseOutput>true</VerboseOutput>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
+  <PropertyGroup>
+    <OutputType>Package</OutputType>
+    <UserSecretsId>3821c68b-8a2a-49a7-8e78-f7810232e10d</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="WixToolset.BootstrapperApplications.wixext" Version="6.0.1" />
+  </ItemGroup>
 </Project>

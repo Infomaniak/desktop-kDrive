@@ -1,0 +1,90 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <ComponentGroup Id="QTDLL" Directory="INSTALLFOLDER">
+      <Component Guid="8E9E11E1-667E-4EA1-AA52-3A43B2D80C26">
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/Qt6Core.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/Qt6Gui.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/Qt6Network.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/Qt6OpenGL.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/Qt6Positioning.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/Qt6PrintSupport.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/Qt6Qml.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/Qt6QmlModels.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/Qt6Quick.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/Qt6QuickWidgets.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/Qt6Svg.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/Qt6SvgWidgets.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/Qt6WebChannel.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/Qt6WebEngineCore.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/Qt6WebEngineWidgets.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/Qt6Widgets.dll" />
+      </Component>
+    </ComponentGroup>
+    <ComponentGroup Id="I18NComponents" Directory="I18NFOLDER">
+      <Component Guid="2A32788C-9367-42EA-9838-DC779D2C9973">
+        <File Source="$(desktop-kDriveDir)/build-windows/install/i18n/client_de.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/i18n/client_es.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/i18n/client_fr.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/i18n/client_it.qm" />
+      </Component>
+    </ComponentGroup>
+    <ComponentGroup Id="ImageFormatsComponents" Directory="IMAGEFORMATSFOLDER">
+      <Component Guid="4134B33B-4853-4885-934E-170FD00A34AB">
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/imageformats/qgif.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/imageformats/qjpeg.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/imageformats/qico.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/imageformats/qsvg.dll" />
+      </Component>
+    </ComponentGroup>
+    <ComponentGroup Id="IconEnginesComponents" Directory="ICONENGINESFOLDER">
+      <Component>
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/iconengines/qsvgicon.dll" />
+      </Component>
+    </ComponentGroup>
+    <ComponentGroup Id="NetworkInformationComponents" Directory="NETWORKINFORMATIONFOLDER">
+      <Component Guid="B8900841-D71A-4AA7-9982-99175272844F">
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/networkinformation/qnetworklistmanager.dll" />
+      </Component>
+    </ComponentGroup>
+    <ComponentGroup Id="PlatformsComponents" Directory="PLATFORMSFOLDER">
+      <Component Guid="936F7CCD-DF62-46C6-8EE3-B3139B6F847C">
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/platforms/qwindows.dll" />
+      </Component>
+    </ComponentGroup>
+    <ComponentGroup Id="TLSComponents" Directory="TLSFOLDER">
+      <Component Guid="1C1AD7E8-6298-412E-84BF-CAD372561772">
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/tls/qcertonlybackend.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/tls/qopensslbackend.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/tls/qschannelbackend.dll" />
+      </Component>
+    </ComponentGroup>
+    <ComponentGroup Id="TranslationsComponents" Directory="TRANSLATIONSFOLDER">
+      <Component Guid="C1757675-3E9C-40C3-8E87-37A706D26527">
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/tls/qcertonlybackend.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/tls/qopensslbackend.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/tls/qschannelbackend.dll" />
+      </Component>
+    </ComponentGroup>
+    <ComponentGroup Id="StyleComponents" Directory="STYLEFOLDER">
+      <Component Guid="5B4DBA6B-B232-442D-A862-6B05B742B6F3">
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/styles/qwindowsvistastyle.dll" />
+      </Component>
+    </ComponentGroup>
+    <ComponentGroup Id="RessourcesComponents" Directory="RESSOURCESFOLDER">
+      <Component Guid="036D567E-F605-4525-A690-0CF6FEFB0684">
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/resources/icudtl.dat" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/resources/qtwebengine_devtools_resources.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/resources/qtwebengine_resources.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/resources/qtwebengine_resources_100p.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/resources/qtwebengine_resources_200p.pak" />
+      </Component>
+    </ComponentGroup>
+    <ComponentGroup Id="PositionComponents" Directory="POSITIONFOLDER">
+      <Component Guid="D4ABAAC3-61D0-46E4-B4A9-FD199981EA82">
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/position/qtposition_nmea.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/position/qtposition_positionpoll.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/position/qtposition_winrt.dll" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>
