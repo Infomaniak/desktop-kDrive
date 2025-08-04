@@ -186,6 +186,8 @@ class QtConan(ConanFile):
         app_bundles = glob.glob(pjoin(mount_point, "*.app"))
         if not app_bundles:
             raise ConanException("Failed to find app folder for DMG file")
+        if len(app_bundles) > 1:
+            raise ConanException(f"Found multiple app bundles in the DMG file: {', '.join(app_bundles)}. Please ensure there is only one app bundle in the DMG file.")
         mounted_bundle = app_bundles[0]
 
         app_bundle = pjoin(self.build_folder, "qt-online-installer-macOS.app")
