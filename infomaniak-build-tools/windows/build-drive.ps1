@@ -286,8 +286,6 @@ function CMake-Build-And-Install {
 
     $buildVersion = Get-Date -Format "yyyyMMdd"
 
-    # QT DIR POINT INTO ./p/lib, so we need to go up one level, and set it to $QT_ROOT
-
 
     $flags = @(
         "'-DCMAKE_TOOLCHAIN_FILE=$conanToolchainFile'",
