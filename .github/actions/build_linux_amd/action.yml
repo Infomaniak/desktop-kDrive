@@ -130,7 +130,7 @@ runs:
                 -exec echo "Conan dependency found -> " {} \;
               if [[ "$dir" == *"/qt"* ]]; then
                 mkdir -p ./dependencies/platforms
-                find "$dir/../plugins/platforms" \
+                find "$(dirname $dir)" \
                   '(' -iname 'libqoffscreen.so' ')' \
                   -exec cp {} ./dependencies/platforms/ \; \
                   -exec echo "Conan Qt dependency found -> " {} \;
