@@ -45,13 +45,11 @@ class SentryNativeConan(ConanFile):
             "CMAKE_BUILD_TYPE": self.build_type,
             "SENTRY_INTEGRATION_QT": "YES",
             "SENTRY_BACKEND": "crashpad",
+            "CMAKE_PREFIX_PATH": qt_package_folder,
         }
         if self.settings.os == "Macos":
             cache_variables["CMAKE_OSX_DEPLOYMENT_TARGET"] = "10.15"
             cache_variables["CMAKE_OSX_ARCHITECTURES"] = "x86_64;arm64"
-            cache_variables["CMAKE_PREFIX_PATH"] = f"{qt_package_folder}/lib/cmake/"
-        else:
-            cache_variables["CMAKE_PREFIX_PATH"] = qt_package_folder
         return cache_variables
 
     def generate(self):

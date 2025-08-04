@@ -75,7 +75,7 @@ runs:
           mkdir dependencies
           cp "${{ github.workspace }}/build-windows/install/bin/*.dll" ./dependencies/
           cp "${{ github.workspace }}/build-windows/install/bin/sync-exclude.lst" ./dependencies/
-          cp "C:\Program Files (x86)\Sentry-Native\bin\crashpad_handler.exe" ./dependencies/
+          cp "C:\Program Files (x86)\Sentry-Native\bin\crashpad_handler.exe" ./dependencies/ # TODO
           cp "C:\Program Files (x86)\cppunit\lib\cppunit_dll.dll" ./dependencies/
         shell: powershell
         if: steps.build.outcome == 'success'
