@@ -627,7 +627,7 @@ std::string Utility::xxHashToStr(XXH64_hash_t hash) {
 }
 
 #if defined(KD_MACOS)
-SyncPath Utility::getExcludedAppFilePath(bool test /*= false*/) {
+SyncPath Utility::getExcludedAppFilePath(const bool test /*= false*/) {
     if (test) return excludedAppFileName;
 
     auto canonicalPath =
@@ -637,7 +637,7 @@ SyncPath Utility::getExcludedAppFilePath(bool test /*= false*/) {
 }
 #endif
 
-SyncPath Utility::getExcludedTemplateFilePath(bool test /*= false*/) {
+SyncPath Utility::getExcludedTemplateFilePath(const bool test /*= false*/) {
     if (test) return excludedTemplateFileName;
     auto canonicalPath = std::filesystem::weakly_canonical(CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} /
                                                            excludedTemplateFileName);

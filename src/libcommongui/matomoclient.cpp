@@ -69,7 +69,7 @@ inline Q_LOGGING_CATEGORY(lcMatomoClient, "gui.matomo", QtInfoMsg)
              *
              */
             piwikNAM->setTransferTimeout(matomoTimeout);
-            connect(piwikNAM, &QNetworkAccessManager::finished, this, [](const QNetworkReply *reply) {
+            (void) connect(piwikNAM, &QNetworkAccessManager::finished, this, [](const QNetworkReply *reply) {
                 if (reply->error() == QNetworkReply::TimeoutError // Error given by the TransferTimeout
                     || reply->error() == QNetworkReply::ConnectionRefusedError // Error given when MATOMO_URL is blocked and
                                                                                // return :: in ipv6 or 0.0.0.0 in ipv4
