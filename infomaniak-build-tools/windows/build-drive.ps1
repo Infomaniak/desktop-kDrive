@@ -456,7 +456,7 @@ function Prepare-Archive {
         $args = @{ Package = $pkg.Name; BuildDir = $buildPath }
         $binFolder = & $find_dep_script @args
         foreach ($dll in $pkg.Dlls) {
-            if (($buildType -eq "Debug") -and (Test-Path -Path $file"d.dll")) {
+            if (($buildType -eq "Debug") -and (Test-Path -Path "$binFolder/${dll}d.dll")) {
                 Copy-Item -Path "$binFolder/${dll}d.dll" -Destination "$archivePath"
             } else {
                 Copy-Item -Path "$binFolder/$dll.dll" -Destination "$archivePath"
