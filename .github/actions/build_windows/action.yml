@@ -101,12 +101,11 @@ runs:
             exit 0
           }
           
-          New-Item -ItemType Directory -Path "./dependencies/platforms" -Force
+          New-Item -ItemType Directory -Path "./dependencies/platforms" -Force *> $null
           
           $patterns = @("libxxhash*.dll", "liblog4cplus*.dll", "libssl*.dll", "libcrypto*.dll", "Qt6Widgets.dll", "Qt6Gui.dll", "Qt6Network.dll", "Qt6Sql.dll", "Qt6Core.dll", "Qt6DBus.dll", "Qt6Svg.dll", "qoffscreen.dll")
           $paths = $env:PATH -split ';' | Where-Object { $_ -like '*\.conan2\p*' }
           foreach ($dir in $paths) {
-            Write-Host "Searching in $dir for patterns: $($patterns -join ', ')"
             if (Test-Path $dir) {
               foreach ($pattern in $patterns) {
                 if ($pattern -eq "qoffscreen.dll") {
@@ -121,12 +120,6 @@ runs:
                   Write-Host "`tConan dependency found -> $($_.FullName)"
                 }
               }
-            }
-          }
-          
-          ls -Recurse ./dependencies | ForEach-Object {
-            if ($_.Name -like "*.dll") {
-              Write-Host "Dependency found: $($_.FullName)"
             }
           }
       - name: Upload build common files
