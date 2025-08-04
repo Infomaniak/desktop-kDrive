@@ -627,14 +627,21 @@ std::string Utility::xxHashToStr(XXH64_hash_t hash) {
 }
 
 #if defined(KD_MACOS)
-SyncName Utility::getExcludedAppFilePath(bool test /*= false*/) {
-    return (test ? excludedAppFileName : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedAppFileName).native());
+SyncPath Utility::getExcludedAppFilePath(bool test /*= false*/) {
+    if (test) return excludedAppFileName;
+
+    auto canonicalPath =
+            std::filesystem::weakly_canonical(CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} / excludedAppFileName);
+
+    return canonicalPath.make_preferred();
 }
 #endif
 
-SyncName Utility::getExcludedTemplateFilePath(bool test /*= false*/) {
-    return (test ? excludedTemplateFileName
-                 : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedTemplateFileName).native());
+SyncPath Utility::getExcludedTemplateFilePath(bool test /*= false*/) {
+    if (test) return excludedTemplateFileName;
+    auto canonicalPath = std::filesystem::weakly_canonical(CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} /
+                                                           excludedTemplateFileName);
+    return canonicalPath.make_preferred();
 }
 
 SyncPath Utility::binRelativePath() {

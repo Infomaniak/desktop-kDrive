@@ -157,9 +157,9 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string xxHashToStr(XXH64_hash_t hash);
 
 #if defined(KD_MACOS)
-        static SyncName getExcludedAppFilePath(bool test = false);
+        static SyncPath getExcludedAppFilePath(bool test = false);
 #endif
-        static SyncName getExcludedTemplateFilePath(bool test = false);
+        static SyncPath getExcludedTemplateFilePath(bool test = false);
         static SyncPath binRelativePath();
         static SyncPath resourcesRelativePath();
         static SyncName logFileName();

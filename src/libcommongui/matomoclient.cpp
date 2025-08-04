@@ -85,9 +85,6 @@ inline Q_LOGGING_CATEGORY(lcMatomoClient, "gui.matomo", QtInfoMsg)
             if (ParametersCache::instance()->parametersInfo().extendedLog()) {
                 qDebug(lcMatomoClient) << "Transfer timeout set to" << matomoTimeout << "ms.";
             }
-        });
-        if (ParametersCache::instance()->parametersInfo().extendedLog()) {
-            qDebug(lcMatomoClient) << "Transfer timeout set to" << matomoTimeout << "ms.";
         }
     }
 
@@ -109,7 +106,6 @@ inline Q_LOGGING_CATEGORY(lcMatomoClient, "gui.matomo", QtInfoMsg)
 
         instance().PiwikTracker::sendVisit(path, action);
     }
-    if (matomoDisabled) return; // If Matomo is disabled, do not send the visit.
 
     /**
      * Sends an Event request to Matomo.
@@ -142,7 +138,6 @@ inline Q_LOGGING_CATEGORY(lcMatomoClient, "gui.matomo", QtInfoMsg)
 
         instance().PiwikTracker::sendEvent(category, category, actionStr, name, value);
     }
-    if (matomoDisabled) return; // If Matomo is disabled, do not send the event.
 
     /**
      * Initializes the name field map for Matomo tracking.
@@ -198,6 +193,5 @@ inline Q_LOGGING_CATEGORY(lcMatomoClient, "gui.matomo", QtInfoMsg)
             path = action = "unknown";
         }
     }
-
 
 } // namespace KDC
