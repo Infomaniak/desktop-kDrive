@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="kDrive_client.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:kDrive_client"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="kDrive client">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid>
+        <NavigationView x:Name="nvSample" IsPaneToggleButtonVisible="False" IsBackButtonVisible="Collapsed">
+            <NavigationView.PaneCustomContent>
+                <StackPanel>
+                    <Image Source="/Assets/logo/logo-with-text.png" MaxWidth="200" HorizontalAlignment="Left" Margin="10,20,0,0" />
+                    <DropDownButton Margin="10" Visibility="Visible" Background="Transparent" BorderBrush="Transparent">
+                        <DropDownButton.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <ImageIcon Source="/Assets/kdrive.png" Height="20" />
+                                <TextBlock Text="kDrive d'Infomaniak" Margin="10.0"/>
+                            </StackPanel>
+                        </DropDownButton.Content>
+                        <DropDownButton.Flyout>
+                            <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                <MenuFlyoutItem Text="kDrive d'Hervé">
+                                    <MenuFlyoutItem.Icon>
+                                        <ImageIcon Source="/Assets/kdrive.png" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Text="kDrive de Clément">
+                                    <MenuFlyoutItem.Icon>
+                                        <ImageIcon Source="/Assets/kdrive.png" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Text="kDrive desktop test">
+                                    <MenuFlyoutItem.Icon>
+                                        <ImageIcon Source="/Assets/kdrive.png" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
+                </StackPanel>
+            </NavigationView.PaneCustomContent>
+            <NavigationView.MenuItems>
+                <NavigationViewItem x:Uid="NavHome" Icon="Home" Tag="SamplePage1" MinHeight="50" IsSelected="True"/>
+                <NavigationViewItem x:Uid="NavActivity" Icon="Sync" Tag="SamplePage2" MinHeight="50" IsEnabled="False"/>
+                <NavigationViewItem x:Uid="NavStorage" Icon="MapDrive" Tag="SamplePage3" MinHeight="50" IsEnabled="False"/>
+                <NavigationViewItem x:Uid="NavFolder" Icon="Folder" Tag="SamplePage4" MinHeight="50" IsEnabled="False"/>
+            </NavigationView.MenuItems>
+            <Frame x:Name="contentFrame"/>
+        </NavigationView>
+    </Grid>
+</Window>

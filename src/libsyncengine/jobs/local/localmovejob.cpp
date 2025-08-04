@@ -91,13 +91,13 @@ void LocalMoveJob::runJob() {
     std::filesystem::rename(_source, _dest, ec);
 
     if (ec.value() != 0) { // We consider this as a permission denied error
-        LOGW_WARN(_logger, L"Failed to rename " << Path2WStr(_source) << L" to " << Path2WStr(_dest) << L": "
-                                                << Utility::s2ws(ec.message()) << L" (" << ec.value() << L")");
+        LOGW_WARN(_logger, L"Failed to rename " << Utility::formatSyncPath(_source) << L" to " << Utility::formatSyncPath(_dest)
+                                                << L": " << Utility::s2ws(ec.message()) << L" (" << ec.value() << L")");
         _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         return;
     }
 
-    LOGW_INFO(_logger, L"Item " << Path2WStr(_source) << L" moved to " << Path2WStr(_dest));
+    LOGW_INFO(_logger, L"Item with " << Utility::formatSyncPath(_source) << L" moved to " << Utility::formatSyncPath(_dest));
     _exitInfo = ExitCode::Ok;
 }
 
