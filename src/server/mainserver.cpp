@@ -61,7 +61,7 @@ void signalHandler(int signum) {
     exit(signum);
 }
 
-int init(int argc, char **argv, std::unique_ptr<KDC::AppServer> &appPtr) {
+std::int32_t init(int argc, char **argv, std::unique_ptr<KDC::AppServer> &appPtr) {
     // KDC::CommonUtility::handleSignals(signalHandler); // !!! The signal handler interferes with Sentry !!!
 
     std::cout << "kDrive server starting" << std::endl;
@@ -126,7 +126,7 @@ void increaseFileSystemCapacity() {
 }
 #endif
 
-int exec(std::unique_ptr<KDC::AppServer> &appPtr) {
+std::int32_t exec(std::unique_ptr<KDC::AppServer> &appPtr) {
     if (appPtr->helpAsked()) {
         appPtr->showHelp();
         return 0;
@@ -197,7 +197,7 @@ int main(int argc, char **argv) {
     std::unique_ptr<KDC::AppServer> appPtr = nullptr;
     if (auto result = init(argc, argv, appPtr); result != 0) return result;
 
-    int execResult = 0;
+    std::int32_t execResult = 0;
 
     try {
         execResult = exec(appPtr);
