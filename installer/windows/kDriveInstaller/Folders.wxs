@@ -1,7 +1,18 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <Fragment>
     <StandardDirectory Id="ProgramFiles6432Folder">
-      <Directory Id="INSTALLFOLDER" Name="!(bind.Property.ProductName)" />
+      <Directory Id="INSTALLFOLDER" Name="!(bind.Property.ProductName)">
+        <Directory Id="I18NFOLDER" Name="i18n" />
+        <Directory Id="ICONENGINESFOLDER" Name="iconengines" />
+        <Directory Id="IMAGEFORMATSFOLDER" Name="imageformats" />
+        <Directory Id="NETWORKINFORMATIONFOLDER" Name="networkinformation" />
+        <Directory Id="PLATFORMSFOLDER" Name="platforms" />
+        <Directory Id="POSITIONFOLDER" Name="position" />
+        <Directory Id="TLSFOLDER" Name="tls" />
+        <Directory Id="TRANSLATIONSFOLDER" Name="translations" />
+        <Directory Id="RESSOURCESFOLDER" Name="ressources"/>
+        <Directory Id="STYLEFOLDER" Name="style"/>
+      </Directory>        
     </StandardDirectory>
   </Fragment>
 </Wix>
