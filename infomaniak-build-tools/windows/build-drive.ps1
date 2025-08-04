@@ -289,8 +289,8 @@ function CMake-Build-And-Install {
     $flags = @(
         "'-DCMAKE_TOOLCHAIN_FILE=$conanToolchainFile'",
         "'-DCMAKE_EXPORT_COMPILE_COMMANDS=1'",
-        "'-DCMAKE_MAKE_PROGRAM=$env:QTDIR\tools\Ninja\ninja.exe'",
-        "'-DQT_QMAKE_EXECUTABLE:STRING=$env:QTDIR\tools\CMake_64\bin\cmake.exe'",
+        "'-DCMAKE_MAKE_PROGRAM=$env:QTDIR\..\tools\Ninja\ninja.exe'",
+        "'-DQT_QMAKE_EXECUTABLE:STRING=$env:QTDIR\..\tools\CMake_64\bin\cmake.exe'",
         "'-DCMAKE_C_COMPILER:STRING=$compiler'",
         "'-DCMAKE_CXX_COMPILER:STRING=$compiler'",
         "'-DAPPLICATION_VIRTUALFILE_SUFFIX:STRING=kdrive'",
