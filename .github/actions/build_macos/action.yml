@@ -83,7 +83,7 @@ runs:
                 
                 find "$dir/../plugins/platforms" \
                     '(' -iname 'libqoffscreen.dylib' ')' \
-                    -exec mkdir -p .dependencies/platforms \; \
+                    -exec mkdir -p ./dependencies/platforms \; \
                     -exec cp {} ./dependencies/platforms/ \; \
                     -exec echo "Conan Qt dependency found -> " {} \;
               fi
