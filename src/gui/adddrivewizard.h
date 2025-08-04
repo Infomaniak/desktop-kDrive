@@ -73,7 +73,6 @@ class AddDriveWizard : public CustomDialog {
         QString _loginUrl;
         bool _liteSync{false};
         QString _serverFolderPath;
-        qint64 _selectionSize{0};
         QSet<QString> _blackList;
         QSet<QString> _whiteList;
         QString _localFolderPath;

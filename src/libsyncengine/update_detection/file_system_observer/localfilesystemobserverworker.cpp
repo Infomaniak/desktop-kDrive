@@ -730,7 +730,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             if (_liveSnapshot.updateItem(item)) {
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: "
-                                                        << Utility::formatSyncPath(absolutePath.filename()) << L" inode:"
+                                                        << Utility::formatSyncPath(absolutePath) << L" inode:"
                                                         << Utility::s2ws(nodeId) << L" parent inode:"
                                                         << Utility::s2ws(parentNodeId) << L" createdAt:" << fileStat.creationTime
                                                         << L" modificationTime:" << fileStat.modificationTime << L" isDir:"

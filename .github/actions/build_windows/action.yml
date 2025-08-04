@@ -70,14 +70,6 @@ runs:
           )
         shell: cmd
 
-      - name: Set version output
-        id: set_version
-        run: |
-            $version = (Select-String -Path .\build-windows\build\version.h KDRIVE_VERSION_FULL | foreach-object { $data = $_ -split " "; echo $data[3]})
-            "kDrive_version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            "kDrive version: $version built successfully :rocket:" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-        shell: powershell
-
       - name: Fetch dependencies
         run: |
           mkdir dependencies
@@ -101,12 +93,11 @@ runs:
             exit 0
           }
           
-          New-Item -ItemType Directory -Path "./dependencies/platforms" -Force
+          New-Item -ItemType Directory -Path "./dependencies/platforms" -Force *> $null
           
           $patterns = @("libxxhash*.dll", "liblog4cplus*.dll", "libssl*.dll", "libcrypto*.dll", "Qt6Widgets.dll", "Qt6Gui.dll", "Qt6Network.dll", "Qt6Sql.dll", "Qt6Core.dll", "Qt6DBus.dll", "Qt6Svg.dll", "qoffscreen.dll")
           $paths = $env:PATH -split ';' | Where-Object { $_ -like '*\.conan2\p*' }
           foreach ($dir in $paths) {
-            Write-Host "Searching in $dir for patterns: $($patterns -join ', ')"
             if (Test-Path $dir) {
               foreach ($pattern in $patterns) {
                 if ($pattern -eq "qoffscreen.dll") {
@@ -121,12 +112,6 @@ runs:
                   Write-Host "`tConan dependency found -> $($_.FullName)"
                 }
               }
-            }
-          }
-          
-          ls -Recurse ./dependencies | ForEach-Object {
-            if ($_.Name -like "*.dll") {
-              Write-Host "Dependency found: $($_.FullName)"
             }
           }
       - name: Upload build common files
@@ -188,7 +173,7 @@ runs:
         run: |
           Invoke-WebRequest -Uri https://github.com/getsentry/sentry-cli/releases/download/2.46.0/sentry-cli-Windows-x86_64.exe -OutFile sentry-cli.exe
         shell: powershell
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name : Create sentry server artifacts
         run: |
@@ -197,7 +182,7 @@ runs:
           Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive.src.zip -Destination ${{ github.workspace }}/build-windows/sentry-server-artifacts/kDrive.src.zip
           Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive.pdb -Destination ${{ github.workspace }}/build-windows/sentry-server-artifacts/kDrive.pdb
         shell: powershell
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name : Create sentry client artifacts
         run: |
@@ -206,7 +191,7 @@ runs:
           Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive_client.src.zip -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts/kDrive_client.src.zip
           Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive_client.pdb -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts/kDrive_client.pdb
         shell: powershell
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name: Upload sentry server artifacts
         uses: actions/upload-artifact@v4
@@ -215,7 +200,7 @@ runs:
           path: ${{ github.workspace }}/build-windows/sentry-server-artifacts
           retention-days: 1
           compression-level: 0
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name: Upload sentry client artifacts
         uses: actions/upload-artifact@v4
@@ -224,7 +209,7 @@ runs:
           path: ${{ github.workspace }}/build-windows/sentry-client-artifacts
           retention-days: 1
           compression-level: 0
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name: Upload app installer
         uses: actions/upload-artifact@v4
@@ -232,7 +217,7 @@ runs:
           name: win-release-artifacts-installer
           path: ${{ github.workspace }}\build-windows\kDrive-* # kDrive-x.x.x.yyyymmdd.exe
           retention-days: 1
-        if: steps.build.outcome == 'success' && ${{ inputs.release_build == 'true' }}
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name: Clean-up generated code
         run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all

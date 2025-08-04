@@ -663,7 +663,7 @@ bool ParmsDb::updateExclusionTemplates() {
     // Load default exclusion templates from the template configuration file
     std::vector<std::string> fileDefaultExclusionTemplates;
     if (const auto &excludeListFileName = Utility::getExcludedTemplateFilePath(_test);
-        !getDefaultExclusionTemplatesFromFile(excludeListFileName, fileDefaultExclusionTemplates)) {
+        !getDefaultExclusionTemplatesFromFile(excludeListFileName.c_str(), fileDefaultExclusionTemplates)) {
         LOGW_WARN(_logger, L"Cannot open exclusion templates file " << Utility::formatSyncName(excludeListFileName));
         return false;
     }
@@ -799,32 +799,31 @@ bool ParmsDb::updateExclusionApps() {
 
     // Load exclusion app in configuration file
     std::vector<std::pair<std::string, std::string>> exclusionAppFileList;
-    std::ifstream exclusionFile(Utility::getExcludedAppFilePath(_test));
+    std::ifstream exclusionFile(Utility::getExcludedAppFilePath(_test).c_str());
     if (exclusionFile.is_open()) {
         std::string line;
         while (std::getline(exclusionFile, line)) {
             // Remove end of line
-            if (line.size() > 0 && line[line.size() - 1] == '\n') {
+            if (!line.empty() && line.back() == '\n') {
                 line.pop_back();
             }
-            if (line.size() > 0 && line[line.size() - 1] == '\r') {
+            if (!line.empty() && line.back() == '\r') {
                 line.pop_back();
             }
 
             size_t pos = line.find(';');
             std::string appId = line.substr(0, pos);
-            std::string descr = line.substr(pos + 1);
-            exclusionAppFileList.push_back(std::make_pair(appId, descr));
+            std::string description = line.substr(pos + 1);
+            (void) exclusionAppFileList.emplace_back(std::make_pair(appId, description));
         }
     } else {
-        LOG_WARN(_logger, "Cannot open exclusion app file with " << Utility::getExcludedAppFilePath(_test));
+        LOGW_WARN(_logger,
+                  L"Cannot open exclusion app file with " << Utility::formatSyncPath(Utility::getExcludedAppFilePath(_test)));
         return false;
     }
 
     for (const auto &templDb: exclusionAppDbList) {
-        if (templDb.def() == false) {
-            continue;
-        }
+        if (!templDb.def()) continue;
 
         bool exists = false;
         for (const auto &templFile: exclusionAppFileList) {

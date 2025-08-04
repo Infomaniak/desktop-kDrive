@@ -35,13 +35,6 @@ class KDriveDesktop(ConanFile):
             tc.variables["CMAKE_OSX_ARCHITECTURES"] = "x86_64;arm64"
             tc.variables["CMAKE_MACOSX_DEPLOYMENT_TARGET"] = "10.15"
 
-        # # Here, we prepend CMAKE_PREFIX_PATH with the Qt package folder to ensure that CMake finds the Qt libraries and headers.
-        # # Even if the consumer does not source the conanbuild.sh script
-        # tc.variables["CMAKE_PREFIX_PATH"] = ";".join(
-        #     [self.dependencies["qt"].package_folder] +
-        #     ([tc.variables["CMAKE_PREFIX_PATH"]] if "CMAKE_PREFIX_PATH" in tc.variables else [])
-        # )
-
         tc.generate()
 
     def layout(self):
