@@ -116,16 +116,16 @@ runs:
                 -o -iname 'liblog4cplus*.so.*' \
                 -o -iname 'libssl*.so*' \
                 -o -iname 'libcrypto*.so*' \
-                -o -iname 'libQt6Widgets.*' \
-                -o -iname 'libQt6Gui.*' \
-                -o -iname 'libQt6Network.*' \
-                -o -iname 'libQt6Sql.*' \
-                -o -iname 'libQt6Core.*' \
-                -o -iname 'libQt6DBus.*' \
-                -o -iname 'libicui18n.*' \
-                -o -iname 'libicuuc.*' \
-                -o -iname 'libicudata.*' \
-                -o -iname 'libQt6Svg.*' \) \
+                -o -iname 'libQt6Widgets*.so*' \
+                -o -iname 'libQt6Gui*.so*' \
+                -o -iname 'libQt6Network*.so*' \
+                -o -iname 'libQt6Sql*.so*' \
+                -o -iname 'libQt6Core*.so*' \
+                -o -iname 'libQt6DBus*.so*' \
+                -o -iname 'libicui18n*.so*' \
+                -o -iname 'libicuuc*.so*' \
+                -o -iname 'libicudata*.so*' \
+                -o -iname 'libQt6Svg*.so*' \) \
                 -exec cp {} ./dependencies/ \; \
                 -exec echo "Conan dependency found -> " {} \;
               if [[ "$dir" == *"/qt"* ]]; then
