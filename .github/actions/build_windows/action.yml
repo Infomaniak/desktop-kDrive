@@ -92,13 +92,13 @@ runs:
         if: steps.build.outcome == 'success'
         shell: powershell
         run: |
-          $conanRunBat = Get-ChildItem -Path "${{ github.workspace }}" -Recurse -Filter "conanrun.bat" | Select-Object -First 1
+          $conanRunBat = Get-ChildItem -Path "${{ github.workspace }}" -Recurse -Filter "conanrun.ps1" | Select-Object -First 1
           if ($conanRunBat) {
             Write-Host "Sourcing $($conanRunBat.FullName)"
-            cmd /c `"$($conanRunBat.FullName)`"  # modifie l'environnement du shell cmd
+            & $conanRunBat.FullName *> $null
           } else {
-            Write-Host "No conanrun.bat found, skipping Conan dependencies fetch."
-            exit 1
+            Write-Host "No conanrun.ps1 found, skipping Conan dependencies fetch."
+            exit 0
           }
           
           New-Item -ItemType Directory -Path "./dependencies/platforms" -Force
