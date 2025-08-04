@@ -129,7 +129,7 @@ class QtConan(ConanFile):
 
     def config_options(self):
         if self.options.qt_login_type == "ini" and (self._get_default_login_ini_location() is None or not os.path.isfile(self._get_default_login_ini_location())):
-            self.output.warning("The file 'qtaccount.ini' is not found at the default location.")
+            self.output.warning("The file 'qtaccount.ini' is not found at the default location and the login method is 'ini'.")
             if self._check_envvars_login_type(check_option=False, raise_error=False):
                 self.output.warning("Falling back to 'envvars' login type.")
                 self.options.qt_login_type = "envvars"
@@ -239,6 +239,9 @@ class QtConan(ConanFile):
         args += ["install"] + self._get_qt_submodules(self.version)
 
         quoted_installer = f"'{installer_path}'" if self.settings.os != "Windows" else installer_path
+
+        self.output.highlight(f"Login method: '{self.options.qt_login_type}'")
+
         self.run(f"{quoted_installer} {' '.join(args)}")
 
         find_wrap_open_gl = pjoin(self.build_folder, "install", self.version, self._subfolder_install(), "lib", "cmake", "Qt6", "FindWrapOpenGL.cmake")
