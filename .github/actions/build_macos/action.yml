@@ -72,7 +72,6 @@ runs:
           cp /usr/local/lib/libPocoNet.103.dylib ./dependencies/
           cp /usr/local/lib/libPocoCrypto.103.dylib ./dependencies/
           cp /usr/local/lib/libcppunit-1.15.2.dylib ./dependencies/
-          cp /usr/local/lib/libsentry.dylib ./dependencies/
           cp /usr/local/lib/libzip.5.dylib ./dependencies/
           cp /usr/local/lib/libzstd.1.dylib ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/crashpad_handler ./dependencies/
@@ -108,18 +107,6 @@ runs:
                     -exec cp {} ./dependencies/platforms/ \; \
                     -exec echo "Conan Qt dependency found -> " {} \;
               fi
-            fi
-          done
-          
-          echo "Searching executables in PATH..."
-          IFS=':' read -ra dirs <<< "$PATH"
-          for dir in "${dirs[@]}"; do
-            if [[ "$dir" == *".conan2/p"* ]]; then
-              echo "Looking in $dir"
-              find "$dir" \
-                  '(' -iname 'crashpad_handler'  ')' \
-                -exec cp {} ${{ github.workspace }}/build-macos/client/bin/ \; \
-                -exec echo "Conan executable found -> " {} \;
             fi
           done
           
