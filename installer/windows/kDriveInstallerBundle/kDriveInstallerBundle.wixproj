@@ -1,0 +1,15 @@
+﻿<Project Sdk="WixToolset.Sdk/6.0.1">
+  <PropertyGroup>
+    <OutputType>Package</OutputType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <DefineConstants>
+    </DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="WixToolset.BootstrapperApplications.wixext" Version="6.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\kDriveInstaller\kDriveInstaller.wixproj" />
+  </ItemGroup>
+</Project>
