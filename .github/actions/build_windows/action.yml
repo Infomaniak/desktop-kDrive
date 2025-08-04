@@ -125,7 +125,7 @@ runs:
             }
           }
           
-          ls -Recursive ./dependencies | ForEach-Object {
+          ls -Recurse ./dependencies | ForEach-Object {
             if ($_.Name -like "*.dll") {
               Write-Host "Dependency found: $($_.FullName)"
             }
