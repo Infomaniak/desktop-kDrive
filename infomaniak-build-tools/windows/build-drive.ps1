@@ -262,7 +262,7 @@ function CMake-Build-And-Install {
     }
 
     $conanGeneratorsFolder = Split-Path -Parent $conanToolchainFile
-    $env:QTDIR = (& "$path\infomaniak-build-tools\conan\find_conan_dep.ps1" -Package "qt" -BuildDir "$conanGeneratorsFolder") -replace '/lib$', ''
+    $env:QTDIR = (& "$path\infomaniak-build-tools\conan\find_conan_dep.ps1" -Package "qt" -BuildDir "$conanGeneratorsFolder") -replace '/bin$', ''
     if (-not $env:QTDIR -or -not (Test-Path $env:QTDIR)) {
         Write-Error "Qt not found in Conan dependencies. Abort."
         exit 1
@@ -286,11 +286,14 @@ function CMake-Build-And-Install {
 
     $buildVersion = Get-Date -Format "yyyyMMdd"
 
+    # QT DIR POINT INTO ./p/lib, so we need to go up one level, and set it to $QT_ROOT
+
+
     $flags = @(
         "'-DCMAKE_TOOLCHAIN_FILE=$conanToolchainFile'",
         "'-DCMAKE_EXPORT_COMPILE_COMMANDS=1'",
-        "'-DCMAKE_MAKE_PROGRAM=$env:QTDIR\..\tools\Ninja\ninja.exe'",
-        "'-DQT_QMAKE_EXECUTABLE:STRING=$env:QTDIR\..\tools\CMake_64\bin\cmake.exe'",
+        "'-DCMAKE_MAKE_PROGRAM=$env:QTDIR\tools\Ninja\ninja.exe'",
+        "'-DQT_QMAKE_EXECUTABLE:STRING=$env:QTDIR\tools\CMake_64\bin\cmake.exe'",
         "'-DCMAKE_C_COMPILER:STRING=$compiler'",
         "'-DCMAKE_CXX_COMPILER:STRING=$compiler'",
         "'-DAPPLICATION_VIRTUALFILE_SUFFIX:STRING=kdrive'",
@@ -445,7 +448,8 @@ function Prepare-Archive {
     $packages = @(
         @{ Name = "xxhash";    Dlls = @("xxhash") },
         @{ Name = "log4cplus"; Dlls = @("log4cplus") },
-        @{ Name = "openssl";   Dlls = @("libcrypto-3-x64", "libssl-3-x64") }
+        @{ Name = "openssl";   Dlls = @("libcrypto-3-x64", "libssl-3-x64") },
+        @{ Name = "qt";        Dlls = @("log4cplus") }
     )
 
     foreach ($pkg in $packages) {
