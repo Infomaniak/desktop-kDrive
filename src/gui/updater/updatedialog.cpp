@@ -61,7 +61,7 @@ void UpdateDialog::initUi(const VersionInfo &versionInfo) {
     QString txt = tr("<p>The new version <b>%1</b> of the %2 Client is available and has been downloaded.</p>"
                      "<p>The installed version is %3.</p>")
                           .arg(KDC::CommonUtility::escape(versionInfo.beautifulVersion().c_str()),
-                               KDC::CommonUtility::escape(Theme::instance()->appNameGUI()),
+                               KDC::CommonUtility::escape(Theme::instance()->appName()),
                                KDC::CommonUtility::escape(CommonUtility::currentVersion().c_str()));
 
     lbl->setText(txt);
