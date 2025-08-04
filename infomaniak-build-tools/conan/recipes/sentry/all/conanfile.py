@@ -64,7 +64,7 @@ class SentryNativeConan(ConanFile):
 
         cmake = CMake(self)
         cmake.configure(variables=self._cache_variables(qt_package_folder))
-        cmake.build()
+        cmake.build(build_type=self.build_type if self.settings.os == "Windows" else None)
 
     def package(self):
         cmake = CMake(self)
@@ -76,3 +76,4 @@ class SentryNativeConan(ConanFile):
         # Here we use the same hack we used for Qt to ensure the link between the Qt package and the Sentry package is done correctly.
         self.cpp_info.set_property("cmake_build_modules", [ pjoin(self.package_folder, "lib", "cmake", "sentry", "sentry-config.cmake") ])
         self.cpp_info.set_property("cmake_find_mode", "none")
+        self.buildenv_info.prepend_path("CMAKE_PREFIX_PATH", self.package_folder)
