@@ -79,7 +79,7 @@ class QtConan(ConanFile):
             f"qt.qt{major}.{compact}.addons.qtwebchannel",
             f"qt.qt{major}.{compact}.addons.qtwebengine",
             f"qt.qt{major}.{compact}.addons.qtwebview",
-        ] # TODO add Qt Debug Information Files on debug
+        ]
 
         if self.settings.os == "Windows":
             modules.extend([
