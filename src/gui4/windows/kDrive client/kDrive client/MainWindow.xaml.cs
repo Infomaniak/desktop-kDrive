@@ -1,8 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
+using kDrive_client.DataModel;
+using kDrive_client.ServerCommunication;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -10,6 +8,12 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -18,67 +22,57 @@ using Windows.Foundation.Collections;
 
 namespace kDrive_client
 {
-    /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class MainWindow : Window
     {
+        internal DataModel.AppModel ViewModel => ((App)Application.Current).Data;
         public MainWindow()
         {
             InitializeComponent();
-            
-        }
-        private void EnglishSelected(object sender, RoutedEventArgs e)
-        {
-            var selectedLanguageCode = "en-US";
-            showLanguageSelectionInfoBarIfNeeded(selectedLanguageCode);
-            Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = selectedLanguageCode;
+            DataModel.AppModel.UIThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(); ;
+            this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
+            this.SetTitleBar(AppTitleBar);
+
+
+            // For testing Purpose only: Simulate live changes in the data model to check if UI updates correctly
+            _ = Task.Run(async () => // Task.Run will run this code in a background thread != UI thread
+           {
+               Random rand = new Random();
+               int counter = 50;
+               while (true)
+               {
+                   await Task.Delay(1000);
+                   User user;
+                   // Choose a random user
+                   if (ViewModel.Users.Count > 0)
+                   {
+                       user = ViewModel.Users[rand.Next(0, ViewModel.Users.Count)];
+                       // Add a new drive to this user
+                       Drive drive = new Drive(counter++);
+                       drive.Name = "Drive " + counter;
+                       DispatcherQueue.TryEnqueue(() =>
+                       {
+                           // Those action must be done on the UI thread because they modify observable collections bound to the UI
+                           user.Drives.Add(drive);
+                           user.Drives[0].Name = "Changed name " + rand.Next(0, 100);
+                       });
+
+                   }
+               }
+           });
         }
 
-        private void GermanSelected(object sender, RoutedEventArgs e)
+        private void nvSample_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            var selectedLanguageCode = "de-De";
-            showLanguageSelectionInfoBarIfNeeded(selectedLanguageCode);
-            Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = selectedLanguageCode;
-        }
-
-        private void FrenchSelected(object sender, RoutedEventArgs e)
-        {
-            var selectedLanguageCode = "fr-FR";
-            showLanguageSelectionInfoBarIfNeeded(selectedLanguageCode);
-            Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = selectedLanguageCode;
-        }
-
-        private void InfoBarRestartButton_Click(object sender, RoutedEventArgs e)
-        {
-            LanguageSelectionRestartNeededInfoBar.IsOpen = false;
-            // Restart the application
-            var currentProcess = System.Diagnostics.Process.GetCurrentProcess();
-            var startInfo = new System.Diagnostics.ProcessStartInfo
+            var selectedItem = args.SelectedItem as NavigationViewItem;
+            if (selectedItem != null)
             {
-                FileName = currentProcess.MainModule.FileName,
-                UseShellExecute = true
-            };
-            System.Diagnostics.Process.Start(startInfo);
-            // Close the current process
-            currentProcess.CloseMainWindow();
-            currentProcess.Kill();
-            Application.Current.Exit();
-            // Note: The application will restart with the new language setting.
-
-        }
-
-        private void AutoSelected(object sender, RoutedEventArgs e)
-        {
-            Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = string.Empty;
-            LanguageSelectionRestartNeededInfoBar.IsOpen = true;
-        }
-
-        private void showLanguageSelectionInfoBarIfNeeded(string language)
-        {
-            if (language != Windows.Globalization.ApplicationLanguages.Languages.FirstOrDefault())
-            {
-                LanguageSelectionRestartNeededInfoBar.IsOpen = true;
+                // Navigate to the selected page
+                switch (selectedItem.Tag)
+                {
+                    default:
+                        contentFrame.Navigate(typeof(HomePage));
+                        break;
+                }
             }
         }
     }

@@ -1,0 +1,248 @@
+﻿using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.ComponentModel.DataAnnotations;
+using System.IO;
+using System.Linq;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Windows.Media.Core;
+using WinRT;
+
+
+// This first implementation is a basic one, it just connects to the server and reads incoming messages.
+// A final implementation should be done once the new communication layer on the server side is ready.
+namespace kDrive_client.ServerCommunication
+{
+    internal class CommClient
+    {
+        readonly TcpClient? client;
+        readonly Dictionary<int, Func<int/*Id*/, ImmutableArray<byte>/*parms*/, bool>> signalHandlers = new();
+        private long idCounter = 0;
+
+        private readonly ConcurrentDictionary<long, CommData?> pendingRequests = new ConcurrentDictionary<long, CommData?>();
+        private long NextId
+        {
+            get => ++idCounter;
+        }
+
+        public CommClient()
+        {
+            // Initialize signal handlers
+            signalHandlers[15] = (id, parms) => { return OnSyncProgressInfo(id, parms); };
+
+
+            // Fetch the port from the .comm file
+            string homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + Path.DirectorySeparatorChar + ".comm";
+            int port = Int32.Parse(File.ReadAllText(homePath).Trim());
+
+            Logger.LogInfo($"Connecting to port {port}");
+            // Prefer a using declaration to ensure the instance is Disposed later.
+            try
+            {
+                client = new TcpClient("localhost", port);
+                Logger.LogInfo("Connected to server.");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Socket connection error: {ex.Message}");
+                client = null;
+            }
+
+            if (client != null && client.Connected)
+            {
+                Task.Run(async () =>
+                {
+                    while (true)
+                    {
+                        try
+                        {
+                            while (client.GetStream().DataAvailable)
+                            {
+                                OnReadyRead();
+                            }
+                            await Task.Delay(100).ConfigureAwait(false); // Polling interval
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError($"Error in read loop: {ex.Message}");
+                            break;
+                        }
+                    }
+                });
+            }
+        }
+
+        ~CommClient()
+        {
+            client?.Dispose();
+        }
+
+        public async Task<CommData> SendRequest(int num, ImmutableArray<byte> parms)
+        {
+            try
+            {
+                if (client == null)
+                {
+                    Logger.LogWarning("Unable to send request: client is null.");
+                    return new CommData();
+                }
+
+                if (!client.Connected)
+                {
+                    Logger.LogWarning("Unable to send request: client is not connected.");
+                    return new CommData();
+                }
+
+                long requestId = NextId;
+                pendingRequests[requestId] = null;
+
+                // Create the JSON object
+                var requestObj = new Dictionary<string, object>
+                {
+                    ["type"] = 0,
+                    ["id"] = requestId,
+                    ["num"] = num,
+                    ["params"] = Convert.ToBase64String(parms.ToArray())
+                };
+
+                // Convert to JSON
+                string jsonString = System.Text.Json.JsonSerializer.Serialize(requestObj);
+                byte[] jsonBytes = System.Text.Encoding.UTF8.GetBytes(jsonString);
+
+                // Get the size as bytes (4-byte integer)
+                byte[] sizeBytes = BitConverter.GetBytes(jsonBytes.Length).Reverse().ToArray(); // Convert to big-endian
+
+                // Write size followed by JSON data
+                NetworkStream stream = client.GetStream();
+                await stream.WriteAsync(sizeBytes, 0, sizeBytes.Length).ConfigureAwait(false);
+                await stream.WriteAsync(jsonBytes, 0, jsonBytes.Length).ConfigureAwait(false);
+
+                Logger.LogInfo($"Sent request: {jsonString}");
+                CommData reply = await WaitForReplyAsync(requestId).ConfigureAwait(false);
+                return reply;
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.LogError("Request timed out.");
+                return new CommData();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Socket write error: {ex.Message}");
+                return new CommData();
+            }
+        }
+        public async Task<CommData> WaitForReplyAsync(long requestId)
+        {
+            // Ensure the slot exists
+            pendingRequests[requestId] = null;
+
+            while (true)
+            {
+                if (pendingRequests.TryGetValue(requestId, out var reply))
+                {
+                    if (reply != null)
+                    {
+                        pendingRequests.Remove(requestId, out _);
+                        return reply;
+                    }
+                    else
+                    {
+                        Logger.LogDebug($"Found request(Id) {requestId}, but the respons is not available yet null");
+                    }
+                }
+                else
+                {
+                    Logger.LogDebug($"No request(Id) found for {requestId}");
+                }
+                await Task.Delay(10).ConfigureAwait(false);
+            }
+        }
+
+
+        private void OnReadyRead()
+        {
+            if (client == null || !client.Connected)
+            {
+                Logger.LogWarning("Unable to read: client is not connected.");
+                return;
+            }
+            NetworkStream stream = client.GetStream();
+            Logger.LogDebug("Data is ready to be read from the server.");
+
+            // Read the size of the incoming message (4 bytes)
+            byte[] sizeBytes = new byte[4];
+            int bytesRead = stream.Read(sizeBytes, 0, sizeBytes.Length);
+            if (bytesRead < 4)
+            {
+                Logger.LogWarning("Incomplete size header received.");
+                return;
+            }
+            int messageSize = BitConverter.ToInt32(sizeBytes.Reverse().ToArray(), 0); // Convert from big-endian
+            Logger.LogDebug($"Message size: {messageSize} bytes.");
+
+            // Read the JSON message
+            byte[] jsonBytes = new byte[messageSize];
+            bytesRead = stream.Read(jsonBytes, 0, jsonBytes.Length);
+            if (bytesRead < messageSize)
+            {
+                Logger.LogWarning("Incomplete message received.");
+                return;
+            }
+            string jsonString = System.Text.Encoding.UTF8.GetString(jsonBytes);
+            Logger.LogDebug($"Received message: {jsonString}");
+
+            // Parse JSON
+            var messageObj = System.Text.Json.JsonSerializer.Deserialize<CommData>(jsonString);
+            if (messageObj == null)
+            {
+                Logger.LogWarning("Invalid message format.");
+                return;
+            }
+            handleServerMessage(messageObj);
+        }
+
+        private void handleServerMessage(CommData data)
+        {
+            Logger.LogInfo($"Message type: {data.type}, id: {data.id}, num: {data.num}");
+            switch (data.type)
+            {
+                case 0:
+                    Logger.LogWarning("Received a request from server.");
+                    // TODO: Handle requests
+                    break;
+                case 1:
+                    Logger.LogInfo($"Received a reply for id {data.id} with result size: {data.ResultByteArray.Length} bytes.");
+                    pendingRequests[data.id] = data;
+                    break;
+                case 2:
+                    // Signal
+                    if (signalHandlers.ContainsKey(data.num))
+                    {
+                        bool res = signalHandlers[data.num](data.id, data.ParmsByteArray);
+                        Logger.LogInfo($"Signal handler for id {data.id} executed with result: {res}");
+                    }
+                    else
+                    {
+                        Logger.LogWarning($"No handler registered for signal num {data.num}");
+                    }
+                    break;
+                default:
+                    Logger.LogWarning($"Unknown message type: {data.type}");
+                    break;
+            }
+        }
+
+        private bool OnSyncProgressInfo(int id, ImmutableArray<byte> parms)
+        {
+            Logger.LogDebug("Sync progress info signal received.");
+            // TODO: Implement actual handling logic here
+            return true;
+        }
+    }
+}

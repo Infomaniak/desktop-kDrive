@@ -17,7 +17,7 @@ namespace kDrive_client.TrayIcon
         private Window? _window;
         private bool _handleClosedEvents = true;
 
-        public void Initialize(Window? window)
+        public void Initialize(Window window)
         {
             _window = window;
 
@@ -42,6 +42,15 @@ namespace kDrive_client.TrayIcon
                 // Set initial icon
                 SetIcon_ok();
             }
+
+            _window.Closed += (sender, args) =>
+            {
+                if (_handleClosedEvents)
+                {
+                    args.Handled = true;
+                    _window.Hide();
+                }
+            };
         }
         public void SetIcon_ok()
         {
@@ -61,33 +70,21 @@ namespace kDrive_client.TrayIcon
         }
         private void ShowWindowCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
         {
-            if (_window == null)
-            {
-                _window = new MainWindow();
-                _window.Closed += (sender, args) =>
-                {
-                    if (_handleClosedEvents)
-                    {
-                        args.Handled = true;
-                        _window.Hide();
-                    }
-                };
-                _window.Show();
-                return;
-            }
-
             // Bring to front
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(_window);
             var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
             var appWindow = AppWindow.GetFromWindowId(windowId);
+            appWindow.Resize(new Windows.Graphics.SizeInt32(1200, 668));
             if (appWindow.Presenter is OverlappedPresenter presenter)
             {
-
+                presenter.IsMaximizable = false;
+                presenter.IsMinimizable = true;
+                presenter.IsResizable = false;
                 presenter.Minimize();
                 presenter.Restore();
             }
-            _window.Show();
-            _window.Activate();
+            _window?.Show();
+            _window?.Activate();
             SetIcon_ok();
 
         }
@@ -121,12 +118,6 @@ namespace kDrive_client.TrayIcon
             {
                 System.Diagnostics.Debug.WriteLine($"Failed to set tray icon: {ex.Message}");
             }
-        }
-
-        public void Dispose()
-        {
-            _trayIcon?.Dispose();
-            _trayIcon = null;
         }
     }
 }

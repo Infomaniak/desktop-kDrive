@@ -5,54 +5,135 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:kDrive_client"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:dataModel="using:kDrive_client.DataModel"
     mc:Ignorable="d"
     Title="kDrive client">
 
     <Window.SystemBackdrop>
-        <MicaBackdrop />
+        <!--<DesktopAcrylicBackdrop/>-->
+        <MicaBackdrop Kind="BaseAlt"/>
+        <!--<MicaBackdrop Kind="Base"/>-->
     </Window.SystemBackdrop>
-
     <Grid>
-        <NavigationView x:Name="nvSample" IsPaneToggleButtonVisible="False" IsBackButtonVisible="Collapsed">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Title bar -->
+            <RowDefinition Height="*"/>
+            <!-- Remaining space for NavigationView -->
+        </Grid.RowDefinitions>
+
+        <!-- Title bar -->
+        <Border x:Name="AppTitleBar" 
+                Grid.Row="0" 
+                VerticalAlignment="Top"
+                >
+            <Grid Height="40" VerticalAlignment="Top" Margin="16,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <!-- Left: Logo + Text -->
+                    <ColumnDefinition Width="*"/>
+                    <!-- Middle: Search Box (centered) -->
+                    <ColumnDefinition Width="Auto"/>
+                    <!-- Right: Profile Picture -->
+                </Grid.ColumnDefinitions>
+
+                <!-- Left: Logo + App Name -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
+                    <Image Source="/Assets/kdrive.png" Height="28" Width="28" />
+                    <TextBlock x:Name="AppTitle"
+                        Text="kDrive"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        VerticalAlignment="Center"/>
+                    <TextBlock x:Name="AppTitle_preview"
+                        Text="preview"
+                        FontSize="10"
+                        FontWeight="Light"
+                        VerticalAlignment="Center"
+                        Foreground="OrangeRed"
+                               />
+                </StackPanel>
+
+                <!-- Middle: Search Box (centered in its column, which takes remaining space) -->
+                <AutoSuggestBox
+                    x:Uid="SearchBox"
+                    x:Name="SearchBox"
+                    Grid.Column="1"
+                    QueryIcon="Find"
+                    Width="300"
+                    Height="32"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    CornerRadius="3"
+                    BorderThickness="1"
+                    />
+            </Grid>
+        </Border>
+
+        <!-- NavigationView -->
+        <NavigationView x:Name="nvSample" 
+                        Grid.Row="1"
+                        IsBackButtonVisible="Collapsed"
+                        PaneDisplayMode="Left"
+                        SelectionChanged="nvSample_SelectionChanged"
+                        >
+
             <NavigationView.PaneCustomContent>
                 <StackPanel>
-                    <Image Source="/Assets/logo/logo-with-text.png" MaxWidth="200" HorizontalAlignment="Left" Margin="10,20,0,0" />
-                    <DropDownButton Margin="10" Visibility="Visible" Background="Transparent" BorderBrush="Transparent">
-                        <DropDownButton.Content>
-                            <StackPanel Orientation="Horizontal">
-                                <ImageIcon Source="/Assets/kdrive.png" Height="20" />
-                                <TextBlock Text="kDrive d'Infomaniak" Margin="10.0"/>
-                            </StackPanel>
-                        </DropDownButton.Content>
-                        <DropDownButton.Flyout>
-                            <MenuFlyout Placement="BottomEdgeAlignedLeft">
-                                <MenuFlyoutItem Text="kDrive d'Hervé">
-                                    <MenuFlyoutItem.Icon>
-                                        <ImageIcon Source="/Assets/kdrive.png" />
-                                    </MenuFlyoutItem.Icon>
-                                </MenuFlyoutItem>
-                                <MenuFlyoutItem Text="kDrive de Clément">
-                                    <MenuFlyoutItem.Icon>
-                                        <ImageIcon Source="/Assets/kdrive.png" />
-                                    </MenuFlyoutItem.Icon>
-                                </MenuFlyoutItem>
-                                <MenuFlyoutItem Text="kDrive desktop test">
-                                    <MenuFlyoutItem.Icon>
-                                        <ImageIcon Source="/Assets/kdrive.png" />
-                                    </MenuFlyoutItem.Icon>
-                                </MenuFlyoutItem>
-                            </MenuFlyout>
-                        </DropDownButton.Flyout>
-                    </DropDownButton>
+                    <ComboBox 
+                        x:Name="DriveComboBox" 
+                        Margin="10" Width="200" 
+                        Background="Transparent" 
+                        BorderBrush="Transparent" 
+                        ItemsSource="{x:Bind ViewModel.ActiveDrives}"
+                        SelectedItem="{x:Bind ViewModel.SelectedDrive, Mode=TwoWay}"
+                        IsEnabled="{x:Bind ViewModel.IsInitialized, Mode=OneWay}"
+                        >
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="dataModel:Drive">
+                                <StackPanel Orientation="Horizontal">
+                                    <PersonPicture
+                                        Grid.Column="2"
+                                        ProfilePicture="https://learn.microsoft.com/windows/uwp/contacts-and-calendar/images/shoulder-tap-static-payload.png"
+                                        Height="24" Width="24"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Right"/>
+                                    <TextBlock Text="{x:Bind Name}" Margin="10,0"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
                 </StackPanel>
             </NavigationView.PaneCustomContent>
+
             <NavigationView.MenuItems>
-                <NavigationViewItem x:Uid="NavHome" Icon="Home" Tag="SamplePage1" MinHeight="50" IsSelected="True"/>
-                <NavigationViewItem x:Uid="NavActivity" Icon="Sync" Tag="SamplePage2" MinHeight="50" IsEnabled="False"/>
-                <NavigationViewItem x:Uid="NavStorage" Icon="MapDrive" Tag="SamplePage3" MinHeight="50" IsEnabled="False"/>
-                <NavigationViewItem x:Uid="NavFolder" Icon="Folder" Tag="SamplePage4" MinHeight="50" IsEnabled="False"/>
+                <NavigationViewItem x:Uid="NavHome" Tag="HomePage" MinHeight="30" IsSelected="True">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Home" Foreground="{ThemeResource AccentAAFillColorDefaultBrush}"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Uid="NavActivity" Tag="SamplePage2" MinHeight="30">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Sync" Foreground="{ThemeResource AccentAAFillColorDefaultBrush}"/>
+                    </NavigationViewItem.Icon>
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge x:Name="infoBadge1" Value="4"/>
+                    </NavigationViewItem.InfoBadge>
+                </NavigationViewItem>
+                <NavigationViewItem x:Uid="NavStorage" Tag="SamplePage3" MinHeight="30" IsEnabled="False">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="MapDrive" Foreground="{ThemeResource AccentAAFillColorDefaultBrush}"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Uid="NavFolder" Tag="SamplePage4" MinHeight="30" IsEnabled="False">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Folder" Foreground="{ThemeResource AccentAAFillColorDefaultBrush}"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
             </NavigationView.MenuItems>
+
             <Frame x:Name="contentFrame"/>
         </NavigationView>
     </Grid>
