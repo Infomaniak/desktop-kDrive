@@ -26,7 +26,7 @@ export TEAM_IDENTIFIER="864VDCS2QY"
 export APP_DOMAIN="com.infomaniak.drive.desktopclient"
 export SIGN_IDENTITY="Developer ID Application: Infomaniak Network SA (864VDCS2QY)"
 export INSTALLER_SIGN_IDENTITY="Developer ID Installer: Infomaniak Network SA (864VDCS2QY)"
-export QT_DIR="$HOME/Qt/6.2.3/macos"
+export QTDIR="$HOME/Qt/6.2.3/macos"
 
 # Uncomment to build for testing
 # export KDRIVE_DEBUG=1
@@ -96,7 +96,7 @@ cmake \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DSPARKLE_LIBRARY="$sparkle_dir/Sparkle.framework" \
 	-DKDRIVE_THEME_DIR="$kdrive_dir" \
-	-DBUILD_UNIT_TESTS=0 \
+	-DBUILD_UNIT_TESTS=1 \
 	-DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
 	"${CMAKE_PARAMS[@]}" \
 	"$src_dir"

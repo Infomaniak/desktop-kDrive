@@ -544,10 +544,10 @@ bool checkIoErrorAndLogIfNeeded(IoError ioError, const std::string &itemType, co
 
     std::wstring message;
     if (ioError == IoError::NoSuchFileOrDirectory) {
-        message = Utility::s2ws(itemType + " doesn't exist: ");
+        message = CommonUtility::s2ws(itemType + " doesn't exist: ");
     }
     if (ioError == IoError::AccessDenied) {
-        message = Utility::s2ws(itemType + " or some containing directory, misses a permission: ");
+        message = CommonUtility::s2ws(itemType + " or some containing directory, misses a permission: ");
     }
 
     switch (mode) {
@@ -1198,7 +1198,7 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
             } @catch (NSException *e) {
                 LOGW_WARN(_logger, L"Could not copy tmp file from " << Utility::formatPath(tmpFilePath) << L" to "
                                                                     << Utility::formatPath(filePath) << L" err="
-                                                                    << Utility::s2ws(std::string([e.name UTF8String])));
+                                                                    << CommonUtility::s2ws(std::string([e.name UTF8String])));
                 return false;
             }
 

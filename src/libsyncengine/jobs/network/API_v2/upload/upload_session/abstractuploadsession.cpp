@@ -45,26 +45,26 @@ AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const Syn
     if (!IoHelper::getFileSize(_filePath, _filesize, ioError)) {
         const std::wstring exceptionMessage = L"Error in IoHelper::getFileSize for " + Utility::formatIoError(_filePath, ioError);
         LOGW_WARN(_logger, exceptionMessage);
-        throw std::runtime_error(Utility::ws2s(exceptionMessage).c_str());
+        throw std::runtime_error(CommonUtility::ws2s(exceptionMessage).c_str());
     }
 
     if (ioError == IoError::NoSuchFileOrDirectory) {
         const std::wstring exceptionMessage = L"File does not exist: " + Utility::formatSyncPath(_filePath);
         LOGW_WARN(_logger, exceptionMessage);
-        throw std::runtime_error(Utility::ws2s(exceptionMessage).c_str());
+        throw std::runtime_error(CommonUtility::ws2s(exceptionMessage).c_str());
     }
 
     if (ioError == IoError::AccessDenied) {
         const std::wstring exceptionMessage = L"File search permission missing: " + Utility::formatSyncPath(_filePath);
         LOGW_WARN(_logger, exceptionMessage);
-        throw std::runtime_error(Utility::ws2s(exceptionMessage).c_str());
+        throw std::runtime_error(CommonUtility::ws2s(exceptionMessage).c_str());
     }
 
     assert(ioError == IoError::Success);
     if (ioError != IoError::Success) {
         const std::wstring exceptionMessage = L"Unable to read file size for " + Utility::formatSyncPath(_filePath);
         LOGW_WARN(_logger, exceptionMessage);
-        throw std::runtime_error(Utility::ws2s(exceptionMessage).c_str());
+        throw std::runtime_error(CommonUtility::ws2s(exceptionMessage).c_str());
     }
 
     _isAsynchronous = _nbParallelThread > 1;
