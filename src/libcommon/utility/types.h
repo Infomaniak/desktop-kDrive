@@ -308,8 +308,7 @@ enum class ExitCause {
     InvalidDestination,
     DriveAsleep,
     DriveWakingUp,
-    ServiceUnavailable,
-    BadGateway,
+    Http5xx,
     NotEnoughINotifyWatches,
     FileOrDirectoryCorrupted,
     EnumEnd

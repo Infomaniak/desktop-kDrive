@@ -440,11 +440,6 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
 
             if (notifyJob->exitInfo() == ExitInfo(ExitCode::NetworkError, ExitCause::NetworkTimeout)) {
                 _syncPal->addError(Error(errId(), notifyJob->exitInfo()));
-            } else if (notifyJob->exitInfo() == ExitInfo(ExitCode::NetworkError, ExitCause::BadGateway)) {
-                // Ignore this error and check for changes anyway
-                LOG_SYNCPAL_INFO(_logger, "Bad gateway error, check for changes anyway.");
-                changes = true; // TODO: perhaps not a good idea... what if longpoll crashed and not reachable for a long time???
-                return ExitCode::Ok;
             }
 
             return notifyJob->exitInfo();
