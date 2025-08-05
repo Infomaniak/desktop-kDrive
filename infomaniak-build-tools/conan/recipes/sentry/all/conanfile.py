@@ -70,7 +70,6 @@ class SentryNativeConan(ConanFile):
     def package(self):
         cmake = CMake(self)
         cmake.install(build_type="RelWithDebInfo" if self.settings.os == "Windows" else None)
-        rm(self, "sentry-(config(-version)?|targets(-relwithdebinfo)?).cmake", pjoin(self.package_folder, "lib", "cmake", "sentry"), recursive=False)
         if self.settings.os == "Macos":
             rmdir(self, pjoin(self.package_folder, "lib", "libsentry.dylib.dSYM"))
         if self.settings.os == "Windows":
