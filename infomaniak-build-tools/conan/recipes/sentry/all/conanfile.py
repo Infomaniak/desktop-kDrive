@@ -102,8 +102,7 @@ class SentryNativeConan(ConanFile):
         if not self.options.shared:
             comp_sentry.defines = ["SENTRY_BUILD_STATIC"]
 
-        comp_crashpad = self.cpp_info.components["crashpad_handler"]
-        comp_crashpad.build_modules = [ pjoin(self.package_folder, "lib", "cmake", "sentry_crashpad-targets.cmake") ]
+        self.cpp_info.set_property("cmake_build_modules", [pjoin(self.package_folder, "lib", "cmake", "sentry", "sentry_crashpad-targets.cmake")])
 
 
         for env in ( self.buildenv_info, self.runenv_info ):

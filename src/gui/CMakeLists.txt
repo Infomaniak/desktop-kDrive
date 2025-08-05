@@ -396,7 +396,10 @@ endif()
 
 if(BUILD_KDRIVE_OSX_BUNDLE)
     # Crashpad_handler
-    find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
+    get_target_property(CRASHPAD_HANDLER_PROGRAM
+            sentry_crashpad::crashpad_handler
+            IMPORTED_LOCATION_RELWITHDEBINFO
+    )
     message(STATUS "crashpad_handler exe found in ${CRASHPAD_HANDLER_PROGRAM}")
     install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${BIN_OUTPUT_DIRECTORY})
 endif()
