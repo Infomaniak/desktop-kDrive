@@ -1,9 +1,10 @@
+from os.path import join as pjoin
+
 from conan import ConanFile, Version
 from conan.errors import ConanInvalidConfiguration
 from conan.tools.cmake import CMake, CMakeToolchain
 from conan.tools.files import rmdir, rm
 from conan.tools.scm import Git
-from os.path import join as pjoin
 
 required_conan_version = ">=2"
 
