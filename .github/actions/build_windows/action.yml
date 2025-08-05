@@ -73,6 +73,7 @@ runs:
       - name: Fetch dependencies
         run: |
           mkdir dependencies
+          # kDrivecommonserver_vfs_win lib is not cached and therefore is uploaded as a separate artifact
           Get-ChildItem -Path ${{ github.workspace }}/build-windows/install/bin/ -Filter "*.dll" |
            Where-Object { $_.Name -ne "kDrivecommonserver_vfs_win.dll" } |
            Copy-Item -Destination ./dependencies/
