@@ -47,7 +47,7 @@ bool DeleteJob::canRun() {
 
     if (_remoteItemId.empty() || _localItemId.empty() || _absoluteLocalFilepath.empty()) {
         LOGW_WARN(_logger, L"Error in DeleteJob::canRun: missing required input, remote ID:"
-                                   << Utility::s2ws(_remoteItemId) << L", local ID: " << Utility::s2ws(_localItemId) << L", "
+                                   << CommonUtility::s2ws(_remoteItemId) << L", local ID: " << CommonUtility::s2ws(_localItemId) << L", "
                                    << Utility::formatSyncPath(_absoluteLocalFilepath));
         _exitInfo = ExitCode::DataError;
         return false;
@@ -99,8 +99,8 @@ bool DeleteJob::canRun() {
         return false;
     } else if (!otherNodeId.empty() && _localItemId != otherNodeId) {
         LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath)
-                                      << L" exists on local replica with another ID (" << Utility::s2ws(_localItemId) << L"/"
-                                      << Utility::s2ws(otherNodeId) << L")");
+                                      << L" exists on local replica with another ID (" << CommonUtility::s2ws(_localItemId) << L"/"
+                                      << CommonUtility::s2ws(otherNodeId) << L")");
 
         std::stringstream ss;
         ss << "File exists with another ID (" << _localItemId << "/" << otherNodeId << ")";

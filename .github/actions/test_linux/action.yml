@@ -38,6 +38,12 @@ runs:
             cp -r ${{ github.workspace }}/build-linux/cache/* ${{ github.workspace }}/build-linux/test/
         shell: bash
 
+      - name: Download uncached common files
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-common-files-uncached
+          path: ${{ github.workspace }}/build-linux/test/
+
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:

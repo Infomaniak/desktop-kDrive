@@ -78,6 +78,9 @@ void ExclusionTemplateCache::populateUndeletedExclusionTemplates() {
 }
 
 void ExclusionTemplateCache::updateRegexPatterns() {
+    static const std::string anyCharacter =
+            "(.|\n)*?"; // The question mark `?` is used for lazy matching, i.e. it matches as few characters as possible.
+
     const std::lock_guard<std::mutex> lock(_mutex);
     _regexPatterns.clear();
 
@@ -85,16 +88,16 @@ void ExclusionTemplateCache::updateRegexPatterns() {
         std::string templateTest = exclPattern.templ();
         escapeRegexSpecialChar(templateTest);
 
-        // Replace all * by .*? to accept any characters. ? for lazy matching (matches as few characters as possible)
+        // Replace every asterisk `*` by `anyCharacter` to accept lazily every character, including line breaks.
         std::string regexPattern;
-        if (templateTest[0] == '*') {
-            regexPattern += ".*?";
+        if (templateTest.front() == '*') {
+            regexPattern += anyCharacter;
         } else {
             regexPattern += "^"; // Start of string
         }
 
-        std::vector<std::string> splitStr = Utility::splitStr(templateTest, '*');
-        for (auto it = splitStr.begin(); it != splitStr.end();) {
+        const auto &splitStr = Utility::splitStr(templateTest, '*');
+        for (auto it = splitStr.cbegin(); it != splitStr.cend();) {
             if (it->empty()) {
                 ++it;
                 continue;
@@ -103,12 +106,12 @@ void ExclusionTemplateCache::updateRegexPatterns() {
 
             ++it;
             if (it != splitStr.end()) {
-                regexPattern += ".*?";
+                regexPattern += anyCharacter;
             }
         }
 
-        if (templateTest[templateTest.size() - 1] == '*') {
-            regexPattern += ".*?";
+        if (templateTest.back() == '*') {
+            regexPattern += anyCharacter;
         } else {
             regexPattern += "$"; // End of string
         }
@@ -207,7 +210,7 @@ bool ExclusionTemplateCache::isExcluded(const SyncPath &relativePath, bool &isWa
                     if (ParametersCache::isExtendedLogEnabled()) {
                         LOGW_INFO(Log::instance()->getLogger(), L"Item \"" << Utility::formatSyncPath(relativePath)
                                                                            << L"\" rejected because of rule \""
-                                                                           << Utility::s2ws(exclusionTemplate.templ()) << L"\"");
+                                                                           << CommonUtility::s2ws(exclusionTemplate.templ()) << L"\"");
                     }
                     return true; // Filename match exactly the pattern
                 }
@@ -229,17 +232,17 @@ bool ExclusionTemplateCache::isExcluded(const SyncPath &relativePath, bool &isWa
                     exclude = fileName.find(tmpStr) != std::string::npos;
                 } else if (atBeginning) {
                     // Must be at the end only
-                    exclude = Utility::endsWith(fileName, tmpStr);
+                    exclude = CommonUtility::endsWith(fileName, tmpStr);
                 } else {
                     // Must be at the beginning only
-                    exclude = Utility::startsWith(fileName, tmpStr);
+                    exclude = CommonUtility::startsWith(fileName, tmpStr);
                 }
 
                 if (exclude) {
                     if (ParametersCache::isExtendedLogEnabled()) {
                         LOGW_INFO(Log::instance()->getLogger(), L"Item \"" << Utility::formatSyncPath(relativePath)
                                                                            << L"\" rejected because of rule \""
-                                                                           << Utility::s2ws(exclusionTemplate.templ()) << L"\"");
+                                                                           << CommonUtility::s2ws(exclusionTemplate.templ()) << L"\"");
                     }
                     return true; // Filename contains the pattern
                 }
@@ -251,7 +254,7 @@ bool ExclusionTemplateCache::isExcluded(const SyncPath &relativePath, bool &isWa
                     if (ParametersCache::isExtendedLogEnabled()) {
                         LOGW_INFO(Log::instance()->getLogger(), L"Item \"" << Utility::formatSyncPath(relativePath)
                                                                            << L"\" rejected because of rule \""
-                                                                           << Utility::s2ws(exclusionTemplate.templ()) << L"\"");
+                                                                           << CommonUtility::s2ws(exclusionTemplate.templ()) << L"\"");
                     }
                     return true;
                 }

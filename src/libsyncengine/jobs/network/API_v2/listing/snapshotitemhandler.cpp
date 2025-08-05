@@ -30,8 +30,8 @@ SnapshotItemHandler::SnapshotItemHandler(const log4cplus::Logger &logger) :
 void SnapshotItemHandler::logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
                                    const std::exception &exc) {
     const std::wstring header = L"Error in SnapshotItem::" + methodName;
-    const std::wstring strStr = L"str='" + Utility::s2ws(str) + L"', ";
-    const std::wstring excStr = L"exc='" + stdErrorType + L"', " + L"err=" + Utility::s2ws(exc.what()) + L"'.";
+    const std::wstring strStr = L"str='" + CommonUtility::s2ws(str) + L"', ";
+    const std::wstring excStr = L"exc='" + stdErrorType + L"', " + L"err=" + CommonUtility::s2ws(exc.what()) + L"'.";
 
     const std::wstring msg = header + strStr + excStr;
 
@@ -79,7 +79,7 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, const CsvIn
             }
 
             if (item.size() < 0) {
-                LOGW_WARN(_logger, L"Error in setSize, got a negative value - str='" << Utility::s2ws(str) << L"'");
+                LOGW_WARN(_logger, L"Error in setSize, got a negative value - str='" << CommonUtility::s2ws(str) << L"'");
                 return false;
             }
 
@@ -144,7 +144,7 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
             state.readingDoubleQuotedValue = false;
             state.prevCharDoubleQuotes = false;
             if (!updateSnapshotItem(state.tmp, state.index, item)) {
-                LOGW_WARN(_logger, L"Error in readSnapshotItemFields - line='" << Utility::s2ws(line) << L"'.");
+                LOGW_WARN(_logger, L"Error in readSnapshotItemFields - line='" << CommonUtility::s2ws(line) << L"'.");
                 error = true;
                 return;
             }
@@ -208,7 +208,7 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
 
         // Ignore the lines containing escaped double quotes
         if (line.find(R"(\")") != std::string::npos) {
-            LOGW_WARN(_logger, L"Line containing an escaped double quotes, ignored it - line=" << Utility::s2ws(line));
+            LOGW_WARN(_logger, L"Line containing an escaped double quotes, ignored it - line=" << CommonUtility::s2ws(line));
             ignore = true;
             return true;
         }
@@ -238,7 +238,7 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
 
     // Update last value
     if (!updateSnapshotItem(state.tmp, state.index, item)) {
-        LOGW_WARN(_logger, L"Error in updateSnapshotItem - line=" << Utility::s2ws(line));
+        LOGW_WARN(_logger, L"Error in updateSnapshotItem - line=" << CommonUtility::s2ws(line));
         error = true;
         return true;
     }

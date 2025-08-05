@@ -187,7 +187,7 @@ void SocketApi::executeCommand(const QString &commandLine, const SocketListener 
         staticMetaObject.method(indexOfMethod).invoke(this, Q_ARG(QString, argument));
     } else {
         LOGW_WARN(KDC::Log::instance()->getLogger(), L"The command is not supported by this version of the client - cmd="
-                                                             << KDC::Utility::s2ws(command.toStdString()) << L" arg="
+                                                             << KDC::CommonUtility::s2ws(command.toStdString()) << L" arg="
                                                              << argument.toStdWString());
     }
 }
@@ -1448,8 +1448,8 @@ FileData FileData::get(const KDC::SyncPath &path) {
             } else {
                 LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to check if the path is a directory - "
                                                                      << Utility::formatPath(data.absoluteLocalPath) << L" err="
-                                                                     << KDC::Utility::s2ws(ec.message()) << L" (" << ec.value()
-                                                                     << L")");
+                                                                     << KDC::CommonUtility::s2ws(ec.message()) << L" ("
+                                                                     << ec.value() << L")");
             }
             return FileData();
         }

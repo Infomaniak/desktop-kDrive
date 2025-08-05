@@ -28,11 +28,6 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestUtility);
         CPPUNIT_TEST(testFreeDiskSpace);
         CPPUNIT_TEST(testIsCreationDateValid);
-        CPPUNIT_TEST(testS2ws);
-        CPPUNIT_TEST(testWs2s);
-        CPPUNIT_TEST(testLtrim);
-        CPPUNIT_TEST(testRtrim);
-        CPPUNIT_TEST(testTrim);
         CPPUNIT_TEST(testMsSleep);
         CPPUNIT_TEST(testV2ws);
         CPPUNIT_TEST(testFormatStdError);
@@ -41,11 +36,6 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testFormatPath);
         CPPUNIT_TEST(testFormatSyncPath);
         CPPUNIT_TEST(testFormatRequest);
-        CPPUNIT_TEST(testFileSystemName);
-        CPPUNIT_TEST(testStartsWith);
-        CPPUNIT_TEST(testStartsWithInsensitive);
-        CPPUNIT_TEST(testEndsWith);
-        CPPUNIT_TEST(testEndsWithInsensitive);
         CPPUNIT_TEST(testIsEqualUpToCaseAndEnc);
         CPPUNIT_TEST(testMoveItemToTrash);
         CPPUNIT_TEST(testStr2HexStr);
@@ -55,14 +45,12 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testPathDepth);
         CPPUNIT_TEST(testComputeMd5Hash);
         CPPUNIT_TEST(testXxHash);
-        CPPUNIT_TEST(testToUpper);
         CPPUNIT_TEST(testErrId);
         CPPUNIT_TEST(testCheckIfDirEntryIsManaged);
         CPPUNIT_TEST(testIsSubDir);
         CPPUNIT_TEST(testIsDiskRootFolder);
         CPPUNIT_TEST(testNormalizedSyncName);
         CPPUNIT_TEST(testNormalizedSyncPath);
-        CPPUNIT_TEST(testIsSameOrParentPath);
         CPPUNIT_TEST(testUserName);
         CPPUNIT_TEST_SUITE_END();
 
@@ -73,11 +61,6 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
     protected:
         void testFreeDiskSpace();
         void testIsCreationDateValid();
-        void testS2ws();
-        void testWs2s();
-        void testLtrim();
-        void testRtrim();
-        void testTrim();
         void testMsSleep();
         void testV2ws();
         void testFormatStdError();
@@ -86,11 +69,6 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testFormatSyncName();
         void testFormatSyncPath();
         void testFormatRequest();
-        void testFileSystemName();
-        void testStartsWith();
-        void testStartsWithInsensitive();
-        void testEndsWith();
-        void testEndsWithInsensitive();
         void testIsEqualUpToCaseAndEnc();
         void testMoveItemToTrash();
         void testGetLinuxDesktopType();
@@ -102,14 +80,12 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testPathDepth();
         void testComputeMd5Hash();
         void testXxHash();
-        void testToUpper();
         void testErrId();
         void testIsSubDir();
         void testIsDiskRootFolder();
         void testCheckIfDirEntryIsManaged();
         void testNormalizedSyncName();
         void testNormalizedSyncPath();
-        void testIsSameOrParentPath();
         void testUserName();
 
     private:
