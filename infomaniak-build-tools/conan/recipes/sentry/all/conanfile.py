@@ -1,7 +1,7 @@
 from conan import ConanFile, Version
 from conan.errors import ConanInvalidConfiguration
 from conan.tools.cmake import CMake, CMakeToolchain
-from conan.tools.files import rmdir
+from conan.tools.files import rmdir, rm
 from conan.tools.scm import Git
 from os.path import join as pjoin
 
@@ -69,14 +69,18 @@ class SentryNativeConan(ConanFile):
     def package(self):
         cmake = CMake(self)
         cmake.install(build_type="RelWithDebInfo" if self.settings.os == "Windows" else None)
-        rmdir(self, pjoin(self.package_folder, "lib", "libsentry.dylib.dSYM"))
+        if self.settings.os == "Macos":
+            rmdir(self, pjoin(self.package_folder, "lib", "libsentry.dylib.dSYM"))
+        if self.settings.os == "Windows":
+            rm(self, "*.pdb", self.package_folder, recursive=True)
+
 
 
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "sentry")
         # Here we use the same hack we used for Qt to ensure the link between the Qt package and the Sentry package is done correctly.
         self.cpp_info.set_property("cmake_build_modules", [ pjoin(self.package_folder, "lib", "cmake", "sentry", "sentry-config.cmake") ])
-        self.cpp_info.set_property("cmake_find_mode", "none")
+        self.cpp_info.set_property("cmake_find_mode", "config")
         for env in ( self.buildenv_info, self.runenv_info ):
             env.prepend_path("PATH", pjoin(self.package_folder, "bin"))
             env.prepend_path("CMAKE_PREFIX_PATH", self.package_folder)

@@ -30,6 +30,12 @@ add_subdirectory(src/3rdparty/keychain)
 
 #####
 
+# Create an alias for the Qt6::Core target, used by sentry
+find_package(Qt6 COMPONENTS Core)
+add_library(qt::qt ALIAS Qt6::Core)
+
+####
+
 if(CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     # Use fallback library types for imported dependencies
     set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO "RelWithDebInfo;Release;")
