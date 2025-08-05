@@ -19,7 +19,7 @@
 #pragma once
 
 
-#ifdef _WIN32
+#ifdef KD_WINDOWS
 #include <shlobj.h>
 #include <winbase.h>
 #include <windows.h>
@@ -34,7 +34,7 @@
 
 namespace KDC::utility_base {
 
-#ifdef _WIN32
+#ifdef KD_WINDOWS
 inline std::wstring getErrorMessage(DWORD errorMessageID) {
     LPWSTR messageBuffer = nullptr;
     const size_t size =
@@ -65,7 +65,7 @@ inline bool isLikeFileNotFoundError(const std::error_code &ec) noexcept {
 
 #endif
 
-#if defined(__APPLE__) || defined(__unix__)
+#if defined(KD_MACOS) || defined(KD_LINUX)
 inline bool isLikeFileNotFoundError(const std::error_code &ec) noexcept {
     return ec.value() == static_cast<int>(std::errc::no_such_file_or_directory);
 }

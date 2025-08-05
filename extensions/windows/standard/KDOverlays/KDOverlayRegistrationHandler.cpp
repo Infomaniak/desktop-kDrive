@@ -25,7 +25,63 @@
 
 using namespace std;
 
-HRESULT KDOverlayRegistrationHandler::MakeRegistryEntries(const CLSID& clsid, PCWSTR friendlyName) {
+HRESULT KDOverlayRegistrationHandler::GetRegistryEntriesPrefix(PWSTR prefix) {
+    if (prefix == nullptr) {
+        return E_INVALIDARG;
+    }
+    // Reset the prefix to an empty string
+    if (wcsncpy_s(prefix, MAX_PATH, L"", 0) != 0) {
+        return E_FAIL;
+    }
+    HRESULT hResult = S_OK;
+    HKEY shellOverlayKey = nullptr;
+    // the key may not exist yet
+    hResult = HRESULT_FROM_WIN32(RegOpenKeyEx(HKEY_LOCAL_MACHINE, REGISTRY_OVERLAY_KEY, 0, KEY_READ, &shellOverlayKey));
+    if (!SUCCEEDED(hResult)) {
+        if (hResult == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) {
+            // If the key does not exist, we return S_OK with an empty prefix
+            return S_OK;
+        }
+        return hResult;
+    }
+
+    // Get the name of the first subkey
+    wchar_t subKeyName[MAX_PATH];
+    if (wcsncpy_s(subKeyName, MAX_PATH, L"", 0) != 0) {
+        return E_FAIL;
+    }
+    DWORD index = 0;
+    DWORD dwSize = sizeof(subKeyName) / sizeof(wchar_t);
+    hResult = HRESULT_FROM_WIN32(RegEnumKeyEx(shellOverlayKey, index, subKeyName, &dwSize, nullptr, nullptr, nullptr, nullptr));
+    if (hResult != ERROR_SUCCESS) {
+        // If there are no subkeys, we return S_OK with an empty prefix
+        return S_OK;
+    }
+
+    // Count the numbre of ' ' characters at the beginning of the subkey name
+    std::wstring subKeyNameW(subKeyName);
+    size_t pos = subKeyNameW.find_first_not_of(L' ');
+    if (pos == std::wstring::npos || pos > 30) {
+        // If the subkey name is empty, contains only spaces or has more than 30 spaces at the beginning,
+        // we return S_OK with an empty prefix
+        return S_OK;
+    }
+
+    std::wstring spaces = subKeyNameW.substr(0, pos);
+    // If the first key isn't a kDrive overlay add a space to the prefix
+    if (subKeyNameW.find(OVERLAY_APP_NAME) == std::wstring::npos) {
+        spaces += L" ";
+        ++pos;
+    }
+
+    if (wcsncpy_s(prefix, MAX_PATH, spaces.c_str(), pos) != 0) {
+        return E_FAIL;
+    }
+
+    return hResult;
+}
+
+HRESULT KDOverlayRegistrationHandler::MakeRegistryEntries(const CLSID &clsid, PCWSTR friendlyName) {
     HRESULT hResult;
     HKEY shellOverlayKey = nullptr;
     // the key may not exist yet
@@ -39,8 +95,18 @@ HRESULT KDOverlayRegistrationHandler::MakeRegistryEntries(const CLSID& clsid, PC
     }
 
     HKEY syncExOverlayKey = nullptr;
-    hResult = HRESULT_FROM_WIN32(RegCreateKeyEx(shellOverlayKey, friendlyName, 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_WRITE,
-                                                nullptr, &syncExOverlayKey, nullptr));
+
+    wchar_t prefix[MAX_PATH];
+    hResult = GetRegistryEntriesPrefix(prefix);
+    if (!SUCCEEDED(hResult)) {
+        return hResult;
+    }
+
+    // Append the friendly name to the prefix
+    std::wstring friendlyNameWithPrefix = std::wstring(prefix) + std::wstring(OVERLAY_APP_NAME) + std::wstring(friendlyName);
+
+    hResult = HRESULT_FROM_WIN32(RegCreateKeyEx(shellOverlayKey, friendlyNameWithPrefix.c_str(), 0, nullptr,
+                                                REG_OPTION_NON_VOLATILE, KEY_WRITE, nullptr, &syncExOverlayKey, nullptr));
 
     if (!SUCCEEDED(hResult)) {
         return hResult;
@@ -60,22 +126,30 @@ HRESULT KDOverlayRegistrationHandler::MakeRegistryEntries(const CLSID& clsid, PC
 HRESULT KDOverlayRegistrationHandler::RemoveRegistryEntries(PCWSTR friendlyName) {
     HRESULT hResult;
     HKEY shellOverlayKey = nullptr;
-    hResult = HRESULT_FROM_WIN32(RegOpenKeyEx(HKEY_LOCAL_MACHINE, REGISTRY_OVERLAY_KEY, 0, KEY_WRITE, &shellOverlayKey));
+    hResult =
+            HRESULT_FROM_WIN32(RegOpenKeyEx(HKEY_LOCAL_MACHINE, REGISTRY_OVERLAY_KEY, 0, KEY_WRITE | KEY_READ, &shellOverlayKey));
 
     if (!SUCCEEDED(hResult)) {
         return hResult;
     }
 
-    HKEY syncExOverlayKey = nullptr;
-    hResult = HRESULT_FROM_WIN32(RegDeleteKey(shellOverlayKey, friendlyName));
-    if (!SUCCEEDED(hResult)) {
-        return hResult;
+    wchar_t subKeyName[MAX_PATH];
+    DWORD index = 0;
+    DWORD dwSize = sizeof(subKeyName);
+    while (RegEnumKeyEx(shellOverlayKey, index, subKeyName, &dwSize, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS) {
+        std::wstring friendlyNameW = std::wstring(OVERLAY_APP_NAME) + std::wstring(friendlyName);
+        std::wstring subKeyNameW(subKeyName);
+        if (subKeyNameW.ends_with(friendlyNameW)) {
+            HKEY syncExOverlayKey = nullptr;
+            hResult = HRESULT_FROM_WIN32(RegDeleteKey(shellOverlayKey, subKeyName));
+        }
+        index++;
+        dwSize = sizeof(subKeyName);
     }
-
     return hResult;
 }
 
-HRESULT KDOverlayRegistrationHandler::RegisterCOMObject(PCWSTR modulePath, PCWSTR friendlyName, const CLSID& clsid) {
+HRESULT KDOverlayRegistrationHandler::RegisterCOMObject(PCWSTR modulePath, PCWSTR friendlyName, const CLSID &clsid) {
     if (modulePath == nullptr) {
         return E_FAIL;
     }
@@ -127,7 +201,7 @@ HRESULT KDOverlayRegistrationHandler::RegisterCOMObject(PCWSTR modulePath, PCWST
     return S_OK;
 }
 
-HRESULT KDOverlayRegistrationHandler::UnregisterCOMObject(const CLSID& clsid) {
+HRESULT KDOverlayRegistrationHandler::UnregisterCOMObject(const CLSID &clsid) {
     wchar_t stringCLSID[MAX_PATH];
 
     StringFromGUID2(clsid, stringCLSID, ARRAYSIZE(stringCLSID));

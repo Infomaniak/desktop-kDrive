@@ -412,7 +412,7 @@ SqliteDb::CheckDbResult SqliteDb::checkDb() {
 namespace details {
 
 SyncName makeSyncName(sqlite3_value *value) {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     auto wvalue = (wchar_t *) sqlite3_value_text16(value);
     return wvalue ? reinterpret_cast<const wchar_t *>(wvalue) : SyncName();
 #else
@@ -431,7 +431,7 @@ static void normalizeSyncName(sqlite3_context *context, int argc, sqlite3_value 
         }
 
         if (!normalizedName.empty()) {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
             sqlite3_result_text16(context, normalizedName.c_str(), -1, SQLITE_TRANSIENT);
 #else
             sqlite3_result_text(context, normalizedName.c_str(), -1, SQLITE_TRANSIENT);

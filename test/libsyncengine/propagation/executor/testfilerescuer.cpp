@@ -126,4 +126,23 @@ void TestFileRescuer::testFileRescuer() {
             true, std::filesystem::exists(_localTempDir.path() / FileRescuer::rescueFolderName() / (fileName + Str(" (1)"))));
 }
 
+void TestFileRescuer::testGetDestinationPath() {
+    FileRescuer fileRescuer(_syncPal);
+
+    // Test with a simple file name
+    SyncName fileName = WStr2SyncName(L"test.txt");
+    SyncPath res = fileRescuer.getDestinationPath(fileName);
+    CPPUNIT_ASSERT(res.filename().native() == Str2SyncName("test.txt"));
+    res = fileRescuer.getDestinationPath(fileName, 1);
+    CPPUNIT_ASSERT(res.filename().native() == Str2SyncName("test (1).txt"));
+
+#ifdef _WIN32
+    // Test with a file name with special characters
+    fileName = WStr2SyncName(L"°.txt");
+    res = fileRescuer.getDestinationPath(fileName);
+    CPPUNIT_ASSERT(res.filename().native() == L"°.txt");
+    res = fileRescuer.getDestinationPath(fileName, 1);
+    CPPUNIT_ASSERT(res.filename().native() == L"° (1).txt");
+#endif // _WIN32
+}
 } // namespace KDC

@@ -104,7 +104,7 @@ export SUFFIX=""
 mkdir -p "$build_dir/client"
 
 conan_build_folder="$build_dir/conan"
-conan_dependencies_folder="$build_dir/conan/dependencies"
+conan_dependencies_folder="$build_dir/conan_dependencies"
 
 bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" --output-dir="$conan_build_folder"
 

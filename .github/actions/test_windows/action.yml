@@ -1,0 +1,73 @@
+name: Test Windows
+description: 'Build windows app'
+
+inputs:
+  test_dependencies_version:
+    description: 'The version of the kDrive tests dependencies'
+    required: true
+  test_name:
+    description: 'The name of the test executable'
+    required: true
+
+runs:
+    using: "composite"
+    steps:
+      - name: Clean up log directory
+        run: powershell -ExecutionPolicy Bypass -Command "if (Test-Path '$env:TEMP\kDrive-logdir') { Remove-Item -Path '$env:TEMP\kDrive-logdir\*' -Recurse -Force }"
+        shell: powershell
+
+      - name: Load cached dependencies
+        id: cache
+        uses: herve-er/local-cache@v2
+        with:
+          path: build-windows/cache
+          base: ${{ github.workspace }}/../local-cache
+          key: ${{ inputs.test_dependencies_version }}
+          clean-key: true        
+
+      - name: Download common files
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build-common-files
+          path: ${{ github.workspace }}/build-windows/cache/
+
+      - name: Copy the cache to the test directory
+        run: cp -r ${{ github.workspace }}/build-windows/cache/ ${{ github.workspace }}/build-windows/test/
+        shell: powershell
+
+      - name: Download test executable
+        uses: actions/download-artifact@v4
+        with:
+          name: win-${{ inputs.test_name }}
+          path: ${{ github.workspace }}/build-windows/test/
+
+      - name: Execute tests
+        run: powershell ./infomaniak-build-tools/run-test.ps1 ./build-windows/test/ ${{ inputs.test_name }}.exe
+        shell: powershell
+
+      - name: Copy logs to workspace
+        run: |
+            $logSource = "$env:TEMP\kDrive-logdir"
+            $logDest = "${{ github.workspace }}\build-windows\logs"
+
+            if (Test-Path $logSource) {
+              New-Item -ItemType Directory -Force -Path $logDest | Out-Null
+              Copy-Item -Path "$logSource\*" -Destination $logDest -Recurse -Force
+            } else {
+              Write-Output "No logs found to copy."
+            }
+        shell: powershell
+        if: always()
+
+      - name: Upload tests logs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: win-logs-${{ inputs.test_name }}
+          path: ${{ github.workspace }}\build-windows\logs\*
+          retention-days: 1
+        if: always()
+
+      - name: Clean up
+        run : rm -r -force ${{ github.workspace }}/build-windows/test/
+        shell: powershell

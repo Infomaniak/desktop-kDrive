@@ -83,7 +83,7 @@ using StrSet = std::unordered_set<std::string, StringHashFunction, std::equal_to
 
 using SigValueType = std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring>;
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 using StringStream = std::wstringstream;
 using OStringStream = std::wostringstream;
 #define Str(s) L##s
@@ -91,7 +91,7 @@ using OStringStream = std::wostringstream;
 #define QStr2SyncName(s) s.toStdWString()
 #define Str2SyncName(s) Utility::s2ws(s)
 #define SyncName2Str(s) Utility::ws2s(s)
-#define WStr2SyncName(s) s
+#define WStr2SyncName(s) SyncName(s)
 #define SyncName2WStr(s) s
 #else
 using StringStream = std::stringstream;
@@ -99,7 +99,7 @@ using OStringStream = std::ostringstream;
 #define Str(s) s
 #define SyncName2QStr(s) QString::fromStdString(s)
 #define QStr2SyncName(s) s.toStdString()
-#define Str2SyncName(s) s
+#define Str2SyncName(s) SyncName(s)
 #define SyncName2Str(s) s
 #define WStr2SyncName(s) Utility::ws2s(s)
 #define SyncName2WStr(s) Utility::s2ws(s)
@@ -308,8 +308,7 @@ enum class ExitCause {
     InvalidDestination,
     DriveAsleep,
     DriveWakingUp,
-    ServiceUnavailable,
-    BadGateway,
+    Http5xx,
     NotEnoughINotifyWatches,
     EnumEnd
 };

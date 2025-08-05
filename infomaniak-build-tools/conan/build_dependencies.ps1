@@ -38,6 +38,9 @@
 
 .PARAMETER OutputDir
     Custom output directory for Conan installation. If not provided, defaults to ./build-windows\build in the repo root.
+
+.PARAMETER MakeRelease
+    Use the 'infomaniak_release' Conan profile.
 #>
 
 param(
@@ -52,10 +55,13 @@ param(
     [switch]$CI,
 
     [Parameter(Mandatory = $false, HelpMessage = "Output directory for Conan installation")]
-    [string]$OutputDir
+    [string]$OutputDir,
+
+    [Parameter(Mandatory = $false, HelpMessage = "Use the 'infomaniak_release' Conan profile.")]
+    [switch]$MakeRelease
 )
 
-function Show-Help { Write-Host "Usage: $($MyInvocation.MyCommand.Name) [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>]" ; exit 0 }
+function Show-Help { Write-Host "Usage: $($MyInvocation.MyCommand.Name) [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease]" ; exit 0 }
 if ($Help) { Show-Help }
 
 $ErrorActionPreference = "Stop"
@@ -135,6 +141,15 @@ if (-not $ConanExe) {
     Err "Conan executable not found. Please ensure Conan is installed and accessible."
 }
 
+function Has-Profile {
+    param(
+        [string]$ProfileName
+    )
+    $profiles = & $ConanExe profile list
+    return $profiles -match "^\s*$ProfileName\s*$"
+}
+
+
 if (-not (Test-Path -Path "infomaniak-build-tools/conan" -PathType Container)) {
     Err "Please run this script from the repository root."
 }
@@ -146,11 +161,29 @@ $RecipesFolder         = Join-Path $ConanRemoteBaseFolder "recipes"
 Log "Current conan home configuration:"
 & $ConanExe config home
 
+if ($MakeRelease) {
+    $ConanProfile = "infomaniak_release"
+    if (-not (Has-Profile -ProfileName $ConanProfile)) {
+        Err "Profile '$ConanProfile' does not exist. Please create it."
+    }
+    $profilePath = & $ConanExe profile path $ConanProfile
+    if (-not (Get-Content $profilePath | Select-String -Pattern 'build_type=(Release|RelWithDebInfo)')) {
+        Err "Profile '$ConanProfile' must set build_type to Release or RelWithDebInfo."
+    }
+    if (Get-Content $profilePath | Select-String -Pattern 'tools.cmake.cmaketoolchain:user_toolchain') {
+        Err "Profile '$ConanProfile' must not set tools.cmake.cmaketoolchain:user_toolchain."
+    }
+    Log "Using '$ConanProfile' profile for Conan."
+} else {
+    $ConanProfile = "default"
+    Log "Using '$ConanProfile' profile for Conan."
+}
+
 # Define a Conan "Remote" pointing at the on-disk recipe folder.
 $remotes = & $ConanExe remote list
 if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
     Log "Adding Conan remote '$LocalRemoteName' at '$ConanRemoteBaseFolder'."
-    & $ConanExe remote add $LocalRemoteName $ConanRemoteBaseFolder
+    & $ConanExe remote add $LocalRemoteName $ConanRemoteBaseFolder --profile:all="$ConanProfile"
     if ($LASTEXITCODE -ne 0) {
         Err "Failed to add local Conan remote."
     }
@@ -162,13 +195,13 @@ if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null # mkdir
 
 Log "Creating xxHash Conan package..."
-& $ConanExe create "$RecipesFolder/xxhash/all/" --build=missing -s build_type=Release -r $LocalRemoteName -r conancenter
+& $ConanExe create "$RecipesFolder/xxhash/all/" --build=missing -s build_type=Release --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to create xxHash Conan package."
 }
 
 Log "Installing Conan dependencies..."
-& $ConanExe install . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType -r $LocalRemoteName -r conancenter
+& $ConanExe install . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to install Conan dependencies."
 }

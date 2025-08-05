@@ -99,4 +99,32 @@ void TestFolderWatcherLinux::testInotifyRegisterPath() {
     CPPUNIT_ASSERT_EQUAL(expectedExitInfo, testObj.inotifyRegisterPath(tempDir.path()));
 }
 
+void TestFolderWatcherLinux::testFindSubFolders() {
+    // Directory
+    const LocalTemporaryDirectory temporaryDirectory;
+    const SyncPath dir1Path = temporaryDirectory.path() / "dir1";
+    CPPUNIT_ASSERT(std::filesystem::create_directories(dir1Path));
+
+    // Symlink to directory
+    const SyncPath dir1SymlinkPath = temporaryDirectory.path() / "dir1Symlink";
+    std::error_code ec;
+    std::filesystem::create_directory_symlink(dir1Path, dir1SymlinkPath, ec);
+    CPPUNIT_ASSERT(!ec);
+
+    // File
+    const SyncPath file1Path = dir1Path / "file1.txt";
+    { std::ofstream file1(file1Path); }
+
+    // Symlink to file
+    const SyncPath file1SymlinkPath = temporaryDirectory.path() / "file1Symlink";
+    std::filesystem::create_directory_symlink(file1Path, file1SymlinkPath, ec);
+    CPPUNIT_ASSERT(!ec);
+
+    FolderWatcher_linux testObj(nullptr, "");
+    std::list<SyncPath> fullList;
+    CPPUNIT_ASSERT(testObj.findSubFolders(temporaryDirectory.path(), fullList));
+    CPPUNIT_ASSERT(fullList.size() == 1);
+    CPPUNIT_ASSERT(fullList.back() == dir1Path);
+}
+
 } // namespace KDC

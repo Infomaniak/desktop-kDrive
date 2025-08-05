@@ -5,7 +5,6 @@ com.sophos.macendpoint.SophosServiceManager;Sophos
 com.acronis.backup.sh-inventory;Acronis
 com.acronis.backup.service_process-bin;Acronis
 com.google.GoogleDrive;Google Drive
-org.libreoffice.script;LibreOffice
 com.parallels.vm;Parallels
 atuin-*;Atuin
 starship-*;Starship

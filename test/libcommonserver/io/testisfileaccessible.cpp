@@ -47,7 +47,7 @@ void TestIo::testIsFileAccessible() {
     IoError ioError = IoError::Unknown;
     bool res = IoHelper::isFileAccessible(destPath, ioError);
     // IoHelper::isFileAccessible returns instantly `true` on MacOSX and Linux.
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     CPPUNIT_ASSERT(!res);
 #else
     (void) res;

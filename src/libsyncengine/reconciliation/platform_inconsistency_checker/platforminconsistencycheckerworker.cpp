@@ -198,7 +198,7 @@ bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> 
 }
 
 void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std::shared_ptr<Node> &remoteParentNode) {
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
     std::unordered_map<SyncName, std::shared_ptr<Node>> processedNodesByName; // key: lowercase name
     auto childrenCopy = remoteParentNode->children();
     auto it = childrenCopy.begin();

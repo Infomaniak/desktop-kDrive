@@ -44,6 +44,7 @@ class ProgressInfo {
         [[nodiscard]] bool initProgress(const SyncFileItem &item);
         [[nodiscard]] bool setProgress(const SyncPath &path, int64_t completed);
         [[nodiscard]] bool setProgressComplete(const SyncPath &path, SyncFileStatus status);
+        [[nodiscard]] bool setSyncFileItemRemoteId(const SyncPath &path, const NodeId& remoteId);
         [[nodiscard]] bool getSyncFileItem(const SyncPath &path, SyncFileItem &item);
 
         [[nodiscard]] int64_t totalFiles() const { return _fileProgress.total(); }

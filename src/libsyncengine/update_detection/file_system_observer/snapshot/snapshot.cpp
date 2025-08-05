@@ -76,11 +76,11 @@ NodeId Snapshot::itemId(const SyncPath &path) const {
 
     auto item = rootItemIt->second;
     for (auto pathIt = path.begin(); pathIt != path.end(); pathIt++) {
-#ifndef _WIN32
+#ifndef KD_WINDOWS
         if (pathIt->lexically_normal() == SyncPath(Str("/")).lexically_normal()) {
             continue;
         }
-#endif // _WIN32
+#endif
 
         bool idFound = false;
         for (const auto &child: item->children()) {

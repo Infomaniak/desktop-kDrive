@@ -21,14 +21,12 @@
 
 #include "3rdparty/qt-piwik-tracker/piwiktracker.h"
 
-inline Q_LOGGING_CATEGORY(lcMatomoClient, "gui.matomo", QtInfoMsg)
-
-        namespace KDC {
+namespace KDC {
     using matomo_enum_t = uint8_t;
 
     enum class MatomoNameField : matomo_enum_t {
         /* WebView names*/
-        VW_LoginPage, // Login
+        WV_LoginPage, // Login
 
         /* Pages */
         PG_SynthesisPopover,

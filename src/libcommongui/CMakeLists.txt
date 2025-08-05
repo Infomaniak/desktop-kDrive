@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.16)
 project(libcommongui LANGUAGES C CXX)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Network)

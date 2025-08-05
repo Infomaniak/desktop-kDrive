@@ -68,6 +68,7 @@ void FileSystemObserverWorker::init() {
     ISyncWorker::init();
     _updating = false;
     _initializing = true;
+    invalidateSnapshot();
 }
 
 } // namespace KDC

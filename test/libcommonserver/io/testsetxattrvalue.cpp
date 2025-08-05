@@ -20,7 +20,7 @@
 
 #include <filesystem>
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include <windows.h>
 #endif
 
@@ -29,7 +29,7 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestIo::testSetXAttrValue() {
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     // A regular file
     {
         const LocalTemporaryDirectory temporaryDirectory;
@@ -97,7 +97,7 @@ void TestIo::testSetXAttrValue() {
     }
 #endif
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     // A regular file
     {
         const LocalTemporaryDirectory temporaryDirectory;

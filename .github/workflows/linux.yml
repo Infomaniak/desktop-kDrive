@@ -1,11 +1,12 @@
 name: Linux kDrive desktop CI on x64 Arch
 
 on:
-  pull_request:
-    branches-ignore:
-      - 'release/**'
-    types: [ synchronize, review_requested ]
-
+  workflow_dispatch: 
+  # Legacy CI
+  #pull_request:
+  #  branches-ignore:
+  #    - 'release/**'
+  #  types: [ synchronize, review_requested ]	
 concurrency:
   group: linux-${{ github.head_ref }}
   cancel-in-progress: true
@@ -16,7 +17,6 @@ env:
   KDRIVE_TEST_CI_USER_ID: ${{ vars.KDRIVE_TEST_CI_USER_ID }}
   KDRIVE_TEST_CI_DRIVE_ID: ${{ vars.KDRIVE_TEST_CI_DRIVE_ID }}
   KDRIVE_TEST_CI_REMOTE_DIR_ID: ${{ vars.KDRIVE_TEST_CI_REMOTE_DIR_ID }}
-  KDRIVE_TEST_CI_LOCAL_PATH: ${{ vars.KDRIVE_TEST_CI_LOCAL_PATH }}
   KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
   KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
@@ -27,7 +27,8 @@ env:
 jobs:
   build-kDrive:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
-
+    env:
+      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1

@@ -192,7 +192,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     {
         LOG_DEBUG(_logger, "***** test move file *****");
 
-        MoveJob job(nullptr, _driveDbId, testhelpers::localTestDirPath, _testFileId, nestedRemoteTmpDir.id());
+        MoveJob job(nullptr, _driveDbId, testhelpers::localTestDirPath(), _testFileId, nestedRemoteTmpDir.id());
         job.runSynchronously();
 
         // Get activity from the server

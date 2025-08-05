@@ -157,7 +157,7 @@ class ConflictResolverWorker : public OperationProcessor {
 
         ExitCode undoMove(std::shared_ptr<Node> moveNode, SyncOpPtr moveOp);
 
-        static std::wstring getLogString(SyncOpPtr op);
+        static std::wstring getLogString(SyncOpPtr op, bool omit = false);
 
         friend class TestConflictResolverWorker;
 };

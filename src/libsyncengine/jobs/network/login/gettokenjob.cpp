@@ -27,7 +27,7 @@ GetTokenJob::GetTokenJob(const std::string &authorizationCode, const std::string
     AbstractLoginJob(),
     _authorizationCode(authorizationCode),
     _codeVerifier(codeVerifier) {
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     if (!Utility::preventSleeping(true)) {
         LOG_WARN(_logger, "Error in Utility::preventSleeping");
     }
@@ -35,7 +35,7 @@ GetTokenJob::GetTokenJob(const std::string &authorizationCode, const std::string
 }
 
 GetTokenJob::~GetTokenJob() {
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     if (!Utility::preventSleeping(false)) {
         LOG_WARN(_logger, "Error in Utility::preventSleeping");
     }

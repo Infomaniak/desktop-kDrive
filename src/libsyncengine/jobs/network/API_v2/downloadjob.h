@@ -40,6 +40,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
         [[nodiscard]] inline int64_t size() const { return _sizeOut; }
 
         [[nodiscard]] int64_t expectedSize() const { return _expectedSize; }
+
     private:
         virtual std::string getSpecificUrl() override;
         virtual void setQueryParameters(Poco::URI &, bool &) override {}
@@ -70,7 +71,8 @@ class DownloadJob : public AbstractTokenNetworkJob {
                            bool &fetchError);
         //! Create a tmp file from a std::string
         bool createTmpFile(const std::string &data, bool &writeError);
-        bool hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace);
+        static bool hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace,
+                                   SyncPath &lowDiskSpacePath, log4cplus::Logger logger);
 
         NodeId _remoteFileId;
         SyncPath _localpath;

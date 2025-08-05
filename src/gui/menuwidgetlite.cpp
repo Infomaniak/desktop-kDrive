@@ -29,7 +29,7 @@ MenuWidgetLite::MenuWidgetLite(QPushButton *button, QWidget *parent) :
     b(button) {}
 
 void MenuWidgetLite::showEvent(QShowEvent *) {
-#ifndef _WIN32
+#ifndef KD_WINDOWS
     QPoint bp = b->mapToGlobal(b->pos());
     QPoint p(pos().x(), bp.y() + b->height() / 2); // I do not understand why b->pos().y() seems to return the vertical center
                                                    // instead of the y position of the top left corner...

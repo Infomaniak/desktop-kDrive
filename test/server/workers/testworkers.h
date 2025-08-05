@@ -19,9 +19,9 @@
 #include "testincludes.h"
 #include "socketapi.h"
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
 #include "libcommonserver/vfs/mac/vfs_mac.h"
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
 #include "libcommonserver/vfs/win/vfs_win.h"
 #else
 #include "libcommonserver/vfs/vfs.h"
@@ -56,9 +56,9 @@ class TestWorkers : public CppUnit::TestFixture, public TestBase {
 
         std::unique_ptr<SocketApi> _socketApi;
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
         static std::shared_ptr<VfsMac> _vfsPtr;
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
         static std::shared_ptr<VfsWin> _vfsPtr;
 #else
         static std::shared_ptr<VfsOff> _vfsPtr;

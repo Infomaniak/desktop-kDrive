@@ -49,13 +49,12 @@ bool hasSuccessfullyFinished(const std::shared_ptr<ISyncWorker> w1, const std::s
 bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
     const auto networkIssue =
             (w1 && w1->exitCode() == ExitCode::NetworkError) || (w2 && w2->exitCode() == ExitCode::NetworkError);
-    const auto serviceUnavailable =
-            (w1 && w1->exitCode() == ExitCode::BackError && w1->exitCause() == ExitCause::ServiceUnavailable) ||
-            (w2 && w2->exitCode() == ExitCode::BackError && w2->exitCause() == ExitCause::ServiceUnavailable);
+    const auto http500error = (w1 && w1->exitCode() == ExitCode::BackError && w1->exitCause() == ExitCause::Http5xx) ||
+                              (w2 && w2->exitCode() == ExitCode::BackError && w2->exitCause() == ExitCause::Http5xx);
     const auto syncDirNotAccessible =
             (w1 && w1->exitCode() == ExitCode::SystemError && w1->exitCause() == ExitCause::SyncDirAccessError) ||
             (w2 && w2->exitCode() == ExitCode::SystemError && w2->exitCause() == ExitCause::SyncDirAccessError);
-    return networkIssue || serviceUnavailable || syncDirNotAccessible;
+    return networkIssue || http500error || syncDirNotAccessible;
 }
 
 bool shouldBeStoppedAndRestarted(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
@@ -82,7 +81,7 @@ void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
     LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " started");
     if (_syncPal->vfsMode() != VirtualFileMode::Off) {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         auto resetFunc = std::function<void()>([this]() { resetVfsFilesStatus(); });
         _resetVfsFilesStatusThread = StdLoggingThread(resetFunc);
 #else
@@ -385,7 +384,6 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             _syncPal->syncDb()->cache().clear(); // Cache is not needed anymore, free resources
             break;
         case SyncStep::Done:
-            LOG_SYNCPAL_DEBUG(_logger, "Sync " << _syncCounter++ << " finished")
             workers[0] = nullptr;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
@@ -582,7 +580,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
             }
             SyncPath absolutePath;
             try {
-                if (dirIt->is_directory()) {
+                if (dirIt->is_directory() && !dirIt->is_symlink()) {
                     continue;
                 }
                 absolutePath = dirIt->path();
@@ -633,7 +631,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
             if (!vfsStatus.isPlaceholder) continue;
 
             const PinState pinState = _syncPal->vfs()->pinState(dirIt->path());
-#ifndef _WIN32 // Handle by the API on windows.
+#ifndef KD_WINDOWS // Handle by the API on windows.
             if (vfsStatus.isSyncing) {
                 // Force status to dehydrate
                 if (const ExitInfo exitInfo = _syncPal->vfs()->forceStatus(dirIt->path(), VfsStatus()); !exitInfo) {

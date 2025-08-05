@@ -144,7 +144,7 @@ class ExecutorWorker : public OperationProcessor {
 
         bool deleteOpNodes(SyncOpPtr syncOp);
 
-        void setProgressComplete(SyncOpPtr syncOp, SyncFileStatus status);
+        void setProgressComplete(SyncOpPtr syncOp, SyncFileStatus status, const NodeId &newRemoteNodeId = "");
 
         static void getNodeIdsFromOp(SyncOpPtr syncOp, NodeId &localNodeId, NodeId &remoteNodeId);
 

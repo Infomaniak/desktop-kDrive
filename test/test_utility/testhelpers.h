@@ -29,45 +29,22 @@
 #include <chrono>
 
 namespace KDC::testhelpers {
+std::string loadEnvVariable(const std::string &key, bool mandatory);
 
-const SyncPath localTestDirPath(Utility::s2ws(TEST_DIR) + L"/test_ci");
+inline const SyncPath localTestDirPath() {
+    static SyncPath localTestDirPath;
+    if (!localTestDirPath.empty()) return localTestDirPath;
+    localTestDirPath = Utility::s2ws(loadEnvVariable("KDRIVE_TEST_CI_LOCAL_PATH", true));
+    LOGW_INFO(Log::instance()->getLogger(), L"test_ci dir is: " << Utility::formatSyncPath(localTestDirPath));
+    return localTestDirPath;
+}
+
 const SyncTime defaultTime = std::time(nullptr);
 constexpr int64_t defaultFileSize = 123;
 constexpr int64_t defaultDirSize = 0;
 
 SyncName makeNfdSyncName();
 SyncName makeNfcSyncName();
-
-std::string loadEnvVariable(const std::string &key, bool mandatory);
-struct TestVariables {
-        std::string userId;
-        std::string accountId;
-        std::string driveId;
-        std::string remoteDirId;
-        std::string remotePath;
-        std::string apiToken;
-        SyncPath local8MoPartitionPath;
-
-        TestVariables() {
-            userId = loadEnvVariable("KDRIVE_TEST_CI_USER_ID", true);
-            accountId = loadEnvVariable("KDRIVE_TEST_CI_ACCOUNT_ID", true);
-            driveId = loadEnvVariable("KDRIVE_TEST_CI_DRIVE_ID", true);
-            remoteDirId = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_DIR_ID", true);
-            remotePath = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_PATH", true);
-            apiToken = loadEnvVariable("KDRIVE_TEST_CI_API_TOKEN", true);
-            local8MoPartitionPath = loadEnvVariable("KDRIVE_TEST_CI_8MO_PARTITION_PATH", true);
-        }
-};
-
-void generateOrEditTestFile(const SyncPath &path);
-/**
- * @brief Generate test files.
- * @param dirPath Directory in which the files will be created.
- * @param size The size of each file in MB.
- * @param count The number of file to generate.
- */
-void generateBigFiles(const SyncPath &dirPath, uint16_t size, uint16_t count);
-SyncPath generateBigFile(const SyncPath &dirPath, uint16_t size);
 
 inline bool isRunningOnCI(bool print = true) {
     static const bool isRunningOnCI = !loadEnvVariable("KDRIVE_TEST_CI_RUNNING_ON_CI", false).empty();
@@ -86,5 +63,37 @@ inline bool isExtendedTest(bool print = true) {
     }
     return isExtended;
 }
+
+struct TestVariables {
+        std::string userId;
+        std::string accountId;
+        std::string driveId;
+        std::string remoteDirId;
+        std::string remotePath;
+        std::string apiToken;
+        SyncPath local8MoPartitionPath;
+
+        TestVariables() {
+            userId = loadEnvVariable("KDRIVE_TEST_CI_USER_ID", true);
+            accountId = loadEnvVariable("KDRIVE_TEST_CI_ACCOUNT_ID", true);
+            driveId = loadEnvVariable("KDRIVE_TEST_CI_DRIVE_ID", true);
+            remoteDirId = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_DIR_ID", true);
+            remotePath = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_PATH", true);
+            apiToken = loadEnvVariable("KDRIVE_TEST_CI_API_TOKEN", true);
+            local8MoPartitionPath = loadEnvVariable("KDRIVE_TEST_CI_8MO_PARTITION_PATH", isExtendedTest(false));
+        }
+};
+
+void generateOrEditTestFile(const SyncPath &path);
+/**
+ * @brief Generate test files.
+ * @param dirPath Directory in which the files will be created.
+ * @param size The size of each file in MB.
+ * @param count The number of file to generate.
+ */
+void generateBigFiles(const SyncPath &dirPath, uint16_t size, uint16_t count);
+SyncPath generateBigFile(const SyncPath &dirPath, uint16_t size);
+
+void setModificationDate(const SyncPath &path, const std::chrono::time_point<std::chrono::system_clock> &timePoint);
 
 } // namespace KDC::testhelpers

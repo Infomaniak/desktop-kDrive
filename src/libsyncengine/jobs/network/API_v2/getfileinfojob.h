@@ -30,27 +30,27 @@ class GetFileInfoJob : public AbstractTokenNetworkJob {
         inline const NodeId &nodeId() const { return _nodeId; }
         inline const NodeId &parentNodeId() const { return _parentNodeId; }
         inline SyncTime creationTime() const { return _creationTime; }
-        inline SyncTime modtime() const { return _modtime; }
+        inline SyncTime modificationTime() const { return _modificationTime; }
         inline bool isLink() const { return _isLink; }
         inline int64_t size() const { return _size; }
 
-        inline void setWithPath(bool val) { _withPath = val; }
+        inline void setWithPath(const bool val) { _withPath = val; }
         inline SyncPath path() const { return _path; }
 
     protected:
-        virtual bool handleResponse(std::istream &is) override;
-        virtual bool handleError(std::istream &is, const Poco::URI &uri) override;
+        bool handleResponse(std::istream &is) override;
+        bool handleError(std::istream &is, const Poco::URI &uri) override;
 
     private:
-        virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &, bool &) override;
-        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
+        std::string getSpecificUrl() override;
+        void setQueryParameters(Poco::URI &, bool &) override;
+        inline ExitInfo setData() override { return ExitCode::Ok; }
 
         NodeId _nodeId;
         NodeId _parentNodeId;
         std::string _name;
         SyncTime _creationTime{0};
-        SyncTime _modtime{0};
+        SyncTime _modificationTime{0};
         bool _isLink{false};
         bool _withPath{false};
         int64_t _size{-1};

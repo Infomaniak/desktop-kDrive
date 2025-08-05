@@ -26,15 +26,15 @@
 
 #include "test_utility/testhelpers.h"
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include <combaseapi.h>
 #endif
 
 namespace KDC {
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
 std::shared_ptr<VfsMac> TestWorkers::_vfsPtr = nullptr;
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
 std::shared_ptr<VfsWin> TestWorkers::_vfsPtr = nullptr;
 #else
 std::shared_ptr<VfsOff> TestWorkers::_vfsPtr = nullptr;
@@ -44,7 +44,7 @@ bool TestWorkers::_vfsInstallationDone = false;
 bool TestWorkers::_vfsActivationDone = false;
 bool TestWorkers::_vfsConnectionDone = false;
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 // TODO: On macOS, SIP should be deactivated and LiteSync extension signed to be able to install the Lite Sync extension.
 // Set to true if the Login Item Agent and the Lite Sync extensions are already installed on the test machine.
 constexpr bool connectorsAreAlreadyInstalled = false;
@@ -86,9 +86,9 @@ void TestWorkers::setUp() {
     (void) ParmsDb::instance()->insertDrive(drive);
 
     _sync = Sync(1, drive.dbId(), localPathStr, "", testVariables.remotePath);
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     _sync.setVirtualFileMode(VirtualFileMode::Mac);
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
     _sync.setVirtualFileMode(VirtualFileMode::Win);
 #else
     _sync.setVirtualFileMode(VirtualFileMode::Off);
@@ -105,7 +105,7 @@ void TestWorkers::setUp() {
     // Create VFS instance
     VfsSetupParams vfsSetupParams;
     vfsSetupParams.syncDbId = _sync.dbId();
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     vfsSetupParams.driveId = drive.driveId();
     vfsSetupParams.userId = user.userId();
 #endif
@@ -115,15 +115,15 @@ void TestWorkers::setUp() {
     vfsSetupParams.sentryHandler = sentry::Handler::instance();
     vfsSetupParams.executeCommand = [](const char *) {};
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     _vfsPtr = std::shared_ptr<VfsMac>(new VfsMac(vfsSetupParams));
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
     _vfsPtr = std::shared_ptr<VfsWin>(new VfsWin(vfsSetupParams));
 #else
     _vfsPtr = std::shared_ptr<VfsOff>(new VfsOff(vfsSetupParams));
 #endif
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     _vfsPtr->setExclusionAppListCallback([](QString &) {});
 #endif
 
@@ -141,13 +141,13 @@ void TestWorkers::setUp() {
     vfsMap[_sync.dbId()] = _vfsPtr;
     _socketApi = std::make_unique<SocketApi>(syncPalMap, vfsMap);
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     // Initializes the COM library
     CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 #endif
 
     // Start Vfs
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     if (connectorsAreAlreadyInstalled) {
         _vfsInstallationDone = true;
         _vfsActivationDone = true;
@@ -175,7 +175,7 @@ void TestWorkers::tearDown() {
 
 void TestWorkers::testStartVfs() {
     if (!testhelpers::isExtendedTest()) return;
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     if (connectorsAreAlreadyInstalled) {
         // Make sure that Vfs is installed/activated/connected
         CPPUNIT_ASSERT(_vfsInstallationDone);
@@ -188,7 +188,7 @@ void TestWorkers::testStartVfs() {
         CPPUNIT_ASSERT(_vfsActivationDone);
         CPPUNIT_ASSERT(_vfsConnectionDone);
     }
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
     // Try to start Vfs another time
     // => WinRT error caught : hr 8007017a - The cloud sync root is already connected with another cloud sync provider.
     CPPUNIT_ASSERT(!startVfs());
@@ -213,7 +213,7 @@ void TestWorkers::testCreatePlaceholder() {
         syncItem.setPath(relativeFolderPath);
         syncItem.setType(NodeType::Directory);
         syncItem.setDirection(SyncDirection::Down);
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         syncItem.setRemoteNodeId("1");
 #endif
 
@@ -223,7 +223,7 @@ void TestWorkers::testCreatePlaceholder() {
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFolderPath);
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
 
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         // Folder already exists
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFolderPath);
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileExists), exitInfo);
@@ -237,13 +237,13 @@ void TestWorkers::testCreatePlaceholder() {
         syncItem.setPath(relativeFilePath);
         syncItem.setType(NodeType::File);
         syncItem.setDirection(SyncDirection::Down);
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         syncItem.setRemoteNodeId("2");
 #endif
 
         CPPUNIT_ASSERT(_syncPal->initProgress(syncItem));
 
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         // Folder access denied
         IoError ioError{IoError::Unknown};
         CPPUNIT_ASSERT_MESSAGE(toString(ioError),
@@ -251,7 +251,7 @@ void TestWorkers::testCreatePlaceholder() {
                                        ioError == IoError::Success);
 
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFilePath);
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
         CPPUNIT_ASSERT_EQUAL(ExitCause::FileAccessError, exitInfo.cause());
 #else
@@ -280,7 +280,7 @@ void TestWorkers::testCreatePlaceholder() {
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
         CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, exitInfo.cause());
 
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         // File already exists
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFilePath);
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileExists), exitInfo);
@@ -307,7 +307,7 @@ void TestWorkers::testConvertToPlaceholder() {
         syncItem.setDirection(SyncDirection::Down);
         CPPUNIT_ASSERT(_syncPal->initProgress(syncItem));
 
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         // Folder doesn't exist
         exitInfo = _syncPal->_executorWorker->convertToPlaceholder(relativeFolderPath, true);
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::NotFound), exitInfo);
@@ -331,7 +331,7 @@ void TestWorkers::testConvertToPlaceholder() {
         syncItem.setRemoteNodeId("1");
         CPPUNIT_ASSERT(_syncPal->initProgress(syncItem));
 
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         // Folder access denied
         IoError ioError{IoError::Unknown};
         CPPUNIT_ASSERT_MESSAGE(toString(ioError),
@@ -339,7 +339,7 @@ void TestWorkers::testConvertToPlaceholder() {
                                        ioError == IoError::Success);
 
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFilePath);
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError), exitInfo);
 #else
         // Strangely (bug?), the Windows api is able to create a placeholder in a folder for which the user does not have

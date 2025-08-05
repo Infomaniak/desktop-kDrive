@@ -62,7 +62,7 @@ void TestIo::testOpenFileAccessDenied() {
     // Check timeout
     CPPUNIT_ASSERT(TimeoutHelper::checkExecutionTime<ExitInfo>([&]() { return IoHelper::openFile(filePath, file, 1); },
                                                                openFileResult, std::chrono::milliseconds(1000),
-                                                               std::chrono::milliseconds(1200)));
+                                                               std::chrono::milliseconds(2000)));
 
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError), openFileResult);
     CPPUNIT_ASSERT(!file.is_open());

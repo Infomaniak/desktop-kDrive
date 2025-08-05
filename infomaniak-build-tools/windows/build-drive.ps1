@@ -211,7 +211,7 @@ function CMake-Build-And-Install {
     if ($ci) {
         & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder -Ci
     } else {
-        & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder
+        & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder -MakeRelease
     }
 
     $conanToolchainFile = Get-ChildItem -Path $conanFolder -Filter "conan_toolchain.cmake" -Recurse -File |

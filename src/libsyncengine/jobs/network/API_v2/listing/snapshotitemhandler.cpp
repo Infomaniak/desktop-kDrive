@@ -50,7 +50,7 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, const CsvIn
         }
         case CsvIndexName: {
             SyncName name = Str2SyncName(str);
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
             SyncName newName;
             if (PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(name, newName)) {
                 name = newName;

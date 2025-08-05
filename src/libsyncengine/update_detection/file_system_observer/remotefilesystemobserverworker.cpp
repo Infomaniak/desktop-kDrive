@@ -22,7 +22,7 @@
 #include "jobs/network/API_v2/listing/csvfullfilelistwithcursorjob.h"
 #include "jobs/network/API_v2/listing/longpolljob.h"
 #include "jobs/network/API_v2/getfileinfojob.h"
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #endif
 #include "libcommon/log/sentry/ptraces.h"
@@ -33,7 +33,7 @@
 #include "requests/exclusiontemplatecache.h"
 #include "utility/jsonparserutility.h"
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 #include "utility/utility.h"
 #endif
 
@@ -439,11 +439,6 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
 
             if (notifyJob->exitInfo() == ExitInfo(ExitCode::NetworkError, ExitCause::NetworkTimeout)) {
                 _syncPal->addError(Error(errId(), notifyJob->exitInfo()));
-            } else if (notifyJob->exitInfo() == ExitInfo(ExitCode::NetworkError, ExitCause::BadGateway)) {
-                // Ignore this error and check for changes anyway
-                LOG_SYNCPAL_INFO(_logger, "Bad gateway error, check for changes anyway.");
-                changes = true; // TODO: perhaps not a good idea... what if longpoll crashed and not reachable for a long time???
-                return ExitCode::Ok;
             }
 
             return notifyJob->exitInfo();
@@ -501,7 +496,7 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
             continue;
         }
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         SyncName newName;
         if (PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(actionInfo.snapshotItem.name(), newName)) {
             actionInfo.snapshotItem.setName(newName);
@@ -729,7 +724,7 @@ ExitInfo RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
     }
 
     snapshotItem.setCreatedAt(job->creationTime());
-    snapshotItem.setLastModified(job->modtime());
+    snapshotItem.setLastModified(job->modificationTime());
     snapshotItem.setSize(job->size());
     snapshotItem.setIsLink(job->isLink());
 
@@ -738,7 +733,7 @@ ExitInfo RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
 }
 
 bool RemoteFileSystemObserverWorker::hasUnsupportedCharacters(const SyncName &name, const NodeId &nodeId, NodeType type) {
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     // Check that the name doesn't contain a character not yet supported by the filesystem (ex: U+1FA77 on pre macOS 13.4)
     bool valid = false;
     if (type == NodeType::File) {

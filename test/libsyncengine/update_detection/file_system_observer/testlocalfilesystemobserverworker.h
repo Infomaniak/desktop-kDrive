@@ -21,7 +21,7 @@
 #include "testincludes.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "syncpal/syncpal.h"
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
 #include "libsyncengine/update_detection/file_system_observer/localfilesystemobserverworker_win.h"
 #else
 #include "libsyncengine/update_detection/file_system_observer/localfilesystemobserverworker_unix.h"
@@ -33,7 +33,7 @@ using namespace CppUnit;
 namespace KDC {
 
 class LocalFileSystemObserverWorker;
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
 class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_win {
     public:
         MockLocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,

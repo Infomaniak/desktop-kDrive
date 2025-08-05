@@ -225,7 +225,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
             }
 
             if (!changed) {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
                 VfsStatus vfsStatus;
                 if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, vfsStatus); !exitInfo) {
                     LOGW_SYNCPAL_WARN(_logger,
@@ -344,7 +344,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
 
         if (fileStat.modificationTime > _liveSnapshot.lastModified(nodeId)) {
             // This is an edit operation
-#ifdef __APPLE__
+#if defined(KD_MACOS)
             if (_syncPal->vfsMode() == VirtualFileMode::Mac) {
                 // Exclude spurious operations (for example setIcon)
                 bool valid = true;
@@ -498,7 +498,7 @@ bool LocalFileSystemObserverWorker::canComputeChecksum(const SyncPath &absoluteP
     return !vfsStatus.isPlaceholder || (vfsStatus.isHydrated && !vfsStatus.isSyncing);
 }
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 
 ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const SyncPath &path, SyncTime lastModifiedLocal,
                                                     bool &valid) const {
@@ -733,7 +733,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                                                         << Utility::formatSyncPath(absolutePath.filename()) << L" inode:"
                                                         << Utility::s2ws(nodeId) << L" parent inode:"
                                                         << Utility::s2ws(parentNodeId) << L" createdAt:" << fileStat.creationTime
-                                                        << L" modtime:" << fileStat.modificationTime << L" isDir:"
+                                                        << L" modificationTime:" << fileStat.modificationTime << L" isDir:"
                                                         << (itemType.nodeType == NodeType::Directory) << L" size:"
                                                         << fileStat.size << L" isLink:" << isLink);
                 }

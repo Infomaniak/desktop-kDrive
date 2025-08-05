@@ -258,9 +258,9 @@ void FolderTreeItemWidget::insertNode(QTreeWidgetItem *parent, const NodeInfo &n
 }
 
 QSet<QString> FolderTreeItemWidget::createBlackSet() {
-    QSet<QString> newBlackset = _oldBlackList.unite(_oldUndecidedList);
-    createBlackSet(nullptr, newBlackset);
-    return newBlackset;
+    QSet<QString> newBlackSet = _oldBlackList.unite(_oldUndecidedList);
+    createBlackSet(nullptr, newBlackSet);
+    return newBlackSet;
 }
 
 void FolderTreeItemWidget::createBlackSet(QTreeWidgetItem *parentItem, QSet<QString> &blackset) {

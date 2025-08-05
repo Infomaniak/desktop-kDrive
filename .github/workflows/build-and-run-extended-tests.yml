@@ -22,7 +22,7 @@ env:
   KDRIVE_TEST_CI_USER_ID: ${{ vars.KDRIVE_TEST_CI_USER_ID }}
   KDRIVE_TEST_CI_DRIVE_ID: ${{ vars.KDRIVE_TEST_CI_DRIVE_ID }}
   KDRIVE_TEST_CI_REMOTE_DIR_ID: ${{ vars.KDRIVE_TEST_CI_REMOTE_DIR_ID }}
-  KDRIVE_TEST_CI_LOCAL_PATH: ${{ vars.KDRIVE_TEST_CI_LOCAL_PATH }}
+  KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
   KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
   KDRIVE_TEST_CI_EXTENDED_TEST : true
@@ -69,25 +69,23 @@ jobs:
         shell: cmd
 
       - name: Execute tests
-        run: |
-          & "cov01.exe" "-1" # coverage on
-          & "cov01.exe" "-s" # show status
+        run: powershell ./infomaniak-build-tools/run-tests.ps1
+          # & "cov01.exe" "-1" # coverage on
+          # & "cov01.exe" "-s" # show status
 
-          ./infomaniak-build-tools/run-tests.ps1
+      # - name: Compute code coverage
+      #   run : |          
+      #     & "covselect.exe" "--add" 'exclude folder c:/'
+      #     & "covselect.exe" "--add" 'exclude folder ../'
+      #     & "covselect.exe" "--add" 'exclude folder 3rdparty/'
+      #     & "covselect.exe" "--add" 'exclude folder gui/'
+      #     & "cov01.exe" "-0" # coverage off
+      #     & "cov01.exe" "-s" # show status
+      #     & "covhtml.exe" "coverage_html"
 
-      - name: Compute code coverage
-        run : |          
-          & "covselect.exe" "--add" 'exclude folder c:/'
-          & "covselect.exe" "--add" 'exclude folder ../'
-          & "covselect.exe" "--add" 'exclude folder 3rdparty/'
-          & "covselect.exe" "--add" 'exclude folder gui/'
-          & "cov01.exe" "-0" # coverage off
-          & "cov01.exe" "-s" # show status
-          & "covhtml.exe" "coverage_html"
-
-      - name: Deactivate code coverage
-        run : "cov01.exe -0" # coverage off
-        if: always()
+      # - name: Deactivate code coverage
+      #   run : "cov01.exe -0" # coverage off
+      #   if: always()
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4

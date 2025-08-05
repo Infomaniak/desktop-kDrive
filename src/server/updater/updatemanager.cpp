@@ -18,9 +18,9 @@
 
 #include "updatemanager.h"
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
 #include "sparkleupdater.h"
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
 #include "windowsupdater.h"
 #else
 #include "linuxupdater.h"
@@ -95,7 +95,7 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
         case UpdateState::Ready: {
             if (AbstractUpdater::isVersionSkipped(_updater->versionInfo(_currentChannel).fullVersion())) break;
                 // The new version is ready to be installed
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
             emit showUpdateDialog();
 #endif
             break;

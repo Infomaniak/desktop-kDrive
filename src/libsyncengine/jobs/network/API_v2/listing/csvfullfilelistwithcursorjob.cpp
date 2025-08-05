@@ -18,7 +18,7 @@
 
 #include "csvfullfilelistwithcursorjob.h"
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #endif
 

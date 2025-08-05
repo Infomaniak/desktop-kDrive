@@ -88,13 +88,13 @@ void PerformanceWatcher::run() {
 }
 
 bool PerformanceWatcher::updateCpuUsage() {
-#ifdef __unix__
+#if defined(KD_LINUX)
     double cpuUsage = 0;
     if (Utility::cpuUsage(_lastTotalUser, _lastTotalUserLow, _lastTotalSys, _lastTotalIdle, cpuUsage)) {
         _cpuUsagePercent = (int) cpuUsage;
         return true;
     }
-#elif defined(__APPLE__)
+#elif defined(KD_MACOS)
     double cpuUsage = 0;
     if (Utility::cpuUsage(_previousTotalTicks, _previousIdleTicks, cpuUsage)) {
         _cpuUsagePercent = (int) cpuUsage;

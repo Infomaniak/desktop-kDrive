@@ -24,7 +24,7 @@ namespace KDC {
 
 class TestLiteSyncExtConnector : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestLiteSyncExtConnector);
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         CPPUNIT_TEST(testGetVfsStatus);
 #endif
         CPPUNIT_TEST_SUITE_END();
@@ -35,7 +35,7 @@ class TestLiteSyncExtConnector : public CppUnit::TestFixture, public TestBase {
         void tearDown(void);
 
     protected:
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         void testGetVfsStatus(void);
 #endif
 };

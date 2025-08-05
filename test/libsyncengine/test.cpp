@@ -48,9 +48,9 @@
 #include "requests/testexclusiontemplatecache.h"
 #include "update_detection/update_detector/benchupdatetreeworker.h"
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 #include "update_detection/file_system_observer/testfolderwatchermac.h"
-#elif __unix__
+#elif defined(KD_LINUX)
 #include "update_detection/file_system_observer/testfolderwatcherlinux.h"
 #endif
 
@@ -68,9 +68,9 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshot);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFsOperation);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFsOperationSet);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalFileSystemObserverWorker);
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcher_mac);
-#elif __unix__
+#elif defined(KD_LINUX)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcherLinux);
 #endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshotItemHandler);
@@ -83,7 +83,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTreeWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestPlatformInconsistencyCheckerWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictFinderWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictResolverWorker);
-// CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationGeneratorWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationGeneratorWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationSorterWorker);
 
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestOldSyncDb); // Needs a pre 3.3.4 DB

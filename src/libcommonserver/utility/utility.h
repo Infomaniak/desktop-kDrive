@@ -35,7 +35,7 @@
 #include <Poco/DOM/Document.h>
 #include <Poco/Net/HTTPResponse.h>
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include <windows.h>
 #include <Accctrl.h>
 #endif
@@ -68,7 +68,7 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string ltrim(const std::string &s);
         static std::string rtrim(const std::string &s);
         static std::string trim(const std::string &s);
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         static SyncName ltrim(const SyncName &s);
         static SyncName rtrim(const SyncName &s);
         static SyncName trim(const SyncName &s);
@@ -93,7 +93,7 @@ struct COMMONSERVER_EXPORT Utility {
         static void logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle,
                                           std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         static bool isNtfs(const SyncPath &targetPath);
 #endif
         static std::string fileSystemName(const SyncPath &targetPath);
@@ -102,7 +102,7 @@ struct COMMONSERVER_EXPORT Utility {
         static bool endsWith(const std::string &str, const std::string &suffix);
         static bool endsWithInsensitive(const std::string &str, const std::string &suffix);
         static bool contains(const std::string &str, const std::string &substr);
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         static bool startsWithInsensitive(const SyncName &str, const SyncName &prefix);
         static bool startsWith(const SyncName &str, const SyncName &prefix);
         static bool endsWith(const SyncName &str, const SyncName &suffix);
@@ -136,7 +136,7 @@ struct COMMONSERVER_EXPORT Utility {
         static bool checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame);
 
         static bool moveItemToTrash(const SyncPath &itemPath);
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         static bool preventSleeping(bool enable);
 #endif
         static void restartFinderExtension();
@@ -156,7 +156,7 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string computeXxHash(const char *in, std::size_t length);
         static std::string xxHashToStr(XXH64_hash_t hash);
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         static SyncName getExcludedAppFilePath(bool test = false);
 #endif
         static SyncName getExcludedTemplateFilePath(bool test = false);
@@ -176,7 +176,7 @@ struct COMMONSERVER_EXPORT Utility {
         static bool normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
                                        UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);
         static bool runDetachedProcess(std::wstring cmd);
 #endif
@@ -194,6 +194,8 @@ struct COMMONSERVER_EXPORT Utility {
         static SyncPath commonDocumentsFolderName();
         static SyncPath sharedFolderName();
         static std::string userName();
+
+        static bool isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode);
 
     private:
         static log4cplus::Logger _logger;

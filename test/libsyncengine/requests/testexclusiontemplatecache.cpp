@@ -43,9 +43,9 @@ static const std::vector<std::string> rejectedFiles = {
         "testfile_conflict_test_20220913_130102_abcdefghij.txt",
         "_conflict___",
         "testfile_blacklisted_20220913_130102_abcdefghij.txt",
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
         ".DS_Store",
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
         "System Volume Information",
 #else
         ".fuse_hidden1",
@@ -60,10 +60,10 @@ static const std::vector<std::string> acceptedFiles = {"~test",
                                                        "testfile_conflict_130102_abcdefghij.txt",
                                                        "conflict_20220913_130102_abcdefghij.txt",
                                                        "testfile_blacklisted_130102_abcdefghij.txt",
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
                                                        "test.apdisk",
                                                        "test_Icon\rtest"
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
                                                        "test.testkate-swp",
                                                        "system volume information",
                                                        "System test Volume Information"
@@ -104,10 +104,10 @@ void TestExclusionTemplateCache::testIsExcluded() {
         CPPUNIT_ASSERT(!isWarning);
     }
 
-#ifndef _WIN32
+#ifndef KD_WINDOWS
     {
         // Test hidden file
-        const SyncPath testPath = testhelpers::localTestDirPath / ".my_hidden_file.txt";
+        const SyncPath testPath = testhelpers::localTestDirPath() / ".my_hidden_file.txt";
         bool isWarning = true;
         CPPUNIT_ASSERT_MESSAGE(testPath.string() + " should not be excluded",
                                !ExclusionTemplateCache::instance()->isExcluded(testPath, isWarning));
@@ -115,7 +115,7 @@ void TestExclusionTemplateCache::testIsExcluded() {
 
     {
         // Test hidden folder
-        const SyncPath testPath = testhelpers::localTestDirPath / ".my_hidden_folder/AA/my_file.txt";
+        const SyncPath testPath = testhelpers::localTestDirPath() / ".my_hidden_folder/AA/my_file.txt";
         bool isWarning = true;
         CPPUNIT_ASSERT_MESSAGE(testPath.string() + " should not be excluded",
                                !ExclusionTemplateCache::instance()->isExcluded(testPath, isWarning));

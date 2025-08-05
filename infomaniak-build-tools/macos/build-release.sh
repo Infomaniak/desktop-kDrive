@@ -78,7 +78,7 @@ if [ -n "$TEAM_IDENTIFIER" ] && [ -n "$SIGN_IDENTITY" ]; then
 	CMAKE_PARAMS+=(-DSOCKETAPI_TEAM_IDENTIFIER_PREFIX="$TEAM_IDENTIFIER.")
 fi
 
-bash infomaniak-build-tools/conan/build_dependencies.sh Release --output-dir="$conan_folder"
+bash infomaniak-build-tools/conan/build_dependencies.sh Release --output-dir="$conan_folder" --make-release
 
 conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
 

@@ -24,7 +24,8 @@ namespace KDC {
 
 class MockAppServer : public AppServer {
     public:
-        explicit MockAppServer(int &argc, char **argv) : AppServer(argc, argv) {}
+        explicit MockAppServer(int &argc, char **argv) :
+            AppServer(argc, argv) {}
         std::filesystem::path makeDbName() override;
         std::shared_ptr<ParmsDb> initParmsDB(const std::filesystem::path &dbPath, const std::string &version) override;
         bool startClient() override { return true; }

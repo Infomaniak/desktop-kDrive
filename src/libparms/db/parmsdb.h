@@ -25,7 +25,7 @@
 #include "drive.h"
 #include "sync.h"
 #include "exclusiontemplate.h"
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 #include "exclusionapp.h"
 #endif
 #include "error.h"
@@ -114,7 +114,7 @@ class PARMS_EXPORT ParmsDb : public Db {
             return updateAllExclusionTemplates(false, exclusionTemplateList);
         };
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         bool insertExclusionApp(const ExclusionApp &exclusionApp, bool &constraintError);
         bool updateExclusionApp(const ExclusionApp &exclusionApp, bool &found);
         bool deleteExclusionApp(const std::string &appId, bool &found);
@@ -163,11 +163,11 @@ class PARMS_EXPORT ParmsDb : public Db {
                                                   std::vector<std::string> &fileDefaultExclusionTemplates);
         bool insertUserTemplateNormalizations(const std::string &fromVersion);
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         bool updateExclusionApps();
 #endif
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         bool replaceShortDbPathsWithLongPaths();
 #endif
 #

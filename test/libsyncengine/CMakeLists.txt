@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.16)
 if(APPLE)
     project(testsyncengine LANGUAGES C CXX OBJC OBJCXX)
 else()
@@ -60,9 +59,11 @@ set(testsyncengine_SRCS
         reconciliation/operation_generator/testoperationgeneratorworker.h reconciliation/operation_generator/testoperationgeneratorworker.cpp
         # Propagation
         propagation/operation_sorter/testoperationsorterworker.h propagation/operation_sorter/testoperationsorterworker.cpp
-        integration/testintegration.h integration/testintegration.cpp
         propagation/executor/testexecutorworker.h propagation/executor/testexecutorworker.cpp
         propagation/executor/testfilerescuer.h propagation/executor/testfilerescuer.cpp
+        integration/testintegration.h integration/testintegration.cpp
+        integration/testintegration_conflicts.cpp
+        integration/testintegration_basics.cpp
         # SyncPal
         syncpal/testsyncpal.h syncpal/testsyncpal.cpp
         syncpal/testsyncpalworker.h syncpal/testsyncpalworker.cpp

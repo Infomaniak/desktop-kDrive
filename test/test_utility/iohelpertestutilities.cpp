@@ -44,7 +44,7 @@ void IoHelperTestUtilities::setCacheDirectoryPath(const SyncPath &newPath) {
     IoHelper::setCacheDirectoryPath(newPath);
 }
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 void IoHelperTestUtilities::setReadAliasFunction(
         std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> f) {
     _readAlias = f;
@@ -53,13 +53,14 @@ void IoHelperTestUtilities::setReadAliasFunction(
 
 void IoHelperTestUtilities::resetFunctions() {
     // Reset to default std::filesytem implementation.
+    setRename(static_cast<void (*)(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)>(&std::filesystem::rename));
     setIsDirectoryFunction(static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_directory));
     setIsSymlinkFunction(static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_symlink));
     setReadSymlinkFunction(static_cast<SyncPath (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::read_symlink));
     setFileSizeFunction(static_cast<std::uintmax_t (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::file_size));
     setTempDirectoryPathFunction(static_cast<SyncPath (*)(std::error_code &ec)>(&std::filesystem::temp_directory_path));
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     // Default Utility::readAlias implementation
     setReadAliasFunction([](const SyncPath &path, SyncPath &targetPath, IoError &ioError) -> bool {
         std::string data;

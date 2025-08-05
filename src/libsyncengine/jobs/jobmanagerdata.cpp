@@ -102,6 +102,10 @@ void JobManagerData::clear() {
     while (!_queuedJobs.empty()) {
         _queuedJobs.pop();
     }
+
+    for (const auto &[_, job]: _managedJobs) {
+        job->setMainCallback(nullptr);
+    }
     _managedJobs.clear();
     _runningJobs.clear();
 }

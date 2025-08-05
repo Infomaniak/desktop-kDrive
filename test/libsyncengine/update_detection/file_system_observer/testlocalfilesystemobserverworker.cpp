@@ -20,7 +20,7 @@
 #include "test_classes/syncpaltest.h"
 
 #include "config.h"
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
 #include "update_detection/file_system_observer/localfilesystemobserverworker_win.h"
 #else
 #include "update_detection/file_system_observer/localfilesystemobserverworker_unix.h"
@@ -102,7 +102,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
     _syncPal->createWorkers();
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
     _syncPal->_localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
             new LocalFileSystemObserverWorker_win(_syncPal, "Local File System Observer", "LFSO"));
 #else
@@ -254,10 +254,10 @@ void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
 void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
     // Create two files with the same name, up to encoding (NFC vs NFD).
     // On Windows and Linux systems, we expect to find two distinct items. But we will only consider one in the local snapshot and
-    // we do not guarantee that it will always be the same one. However, durring a synchronisation, we should always synchronize
+    // we do not guarantee that it will always be the same one. However, during a synchronisation, we should always synchronize
     // the item for wich we detected a change last time. On MacOSX, a single item is expected as the system creates a single file
     // (overwrite).
-#ifndef __APPLE__ // Duplicate file names are not allowed.
+#ifndef KD_MACOS // Duplicate file names are not allowed.
     using namespace testhelpers;
     _syncPal->_localFSObserverWorker->stop();
     _syncPal->_localFSObserverWorker->waitForExit();

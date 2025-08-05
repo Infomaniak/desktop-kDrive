@@ -47,16 +47,16 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testFileChanged);
         CPPUNIT_TEST(testCheckIfIsHiddenFile);
         CPPUNIT_TEST(testCheckDirectoryIterator);
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_TEST(testGetXAttrValue);
         CPPUNIT_TEST(testSetXAttrValue);
 #endif
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
         CPPUNIT_TEST(testRemoveXAttr);
         CPPUNIT_TEST(testCreateAlias);
 #endif
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
         CPPUNIT_TEST(testCreateJunction);
         CPPUNIT_TEST(testGetLongPathName);
         CPPUNIT_TEST(testGetShortPathName);
@@ -92,14 +92,14 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testIsFileAccessible(void);
         void testFileChanged(void);
         void testCheckIfIsHiddenFile(void);
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         void testGetXAttrValue(void);
         void testSetXAttrValue(void);
 #endif
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
         void testRemoveXAttr(void);
         void testCreateAlias(void);
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
         void testCreateJunction();
         void testGetLongPathName();
         void testGetShortPathName();
@@ -127,6 +127,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testCheckDirectoryRecursive();
         void testCheckDirectoryIteratorUnexpectedDelete();
         void testCheckDirectoryPermissionLost();
+        void testCheckDirectoryIteratorSymlinkEntry();
         void testAccesDeniedOnLockedFiles();
         void testOpenFileSuccess();
         void testOpenFileAccessDenied();

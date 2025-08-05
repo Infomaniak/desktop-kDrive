@@ -200,7 +200,7 @@ bool SqliteQuery::nullValue(int index) const {
 }
 
 std::string SqliteQuery::stringValue(const int index) const {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     auto value = reinterpret_cast<const char *>(sqlite3_column_text(_stmt.get(), index));
     return value ? value : std::string();
 #else
@@ -210,7 +210,7 @@ std::string SqliteQuery::stringValue(const int index) const {
 }
 
 SyncName SqliteQuery::syncNameValue(int index) const {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     auto value = static_cast<const wchar_t *>(sqlite3_column_text16(_stmt.get(), index));
     return value ? value : SyncName();
 #else

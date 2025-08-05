@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.16)
 if(APPLE)
     project(testparms LANGUAGES C CXX OBJC OBJCXX)
 else()
@@ -61,3 +60,4 @@ if(APPLE)
     # Default Lite Sync app exclude list
     install(FILES ${CMAKE_SOURCE_DIR}/litesync-exclude.lst DESTINATION ${BIN_OUTPUT_DIRECTORY})
 endif()
+

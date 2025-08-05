@@ -76,7 +76,7 @@ namespace {
 long const LOG4CPLUS_FILE_NOT_FOUND = ENOENT;
 
 static long file_rename(tstring const &src, tstring const &target) {
-#if defined(UNICODE) && defined(_WIN32)
+#if defined(UNICODE) && defined(KD_WINDOWS)
     if (_wrename(src.c_str(), target.c_str()) == 0)
         return 0;
     else
@@ -90,7 +90,7 @@ static long file_rename(tstring const &src, tstring const &target) {
 }
 
 static long file_remove(tstring const &src) {
-#if defined(UNICODE) && defined(_WIN32)
+#if defined(UNICODE) && defined(KD_WINDOWS)
     if (_wremove(src.c_str()) == 0)
         return 0;
     else
@@ -154,7 +154,7 @@ static void rolloverFiles(const log4cplus::tstring &filename, int maxBackupIndex
         log4cplus::tstring const source(source_oss.str());
         log4cplus::tstring const target(target_oss.str());
 
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
         // Try to remove the target first. It seems it is not
         // possible to rename over existing file.
         ret = log4cplus::file_remove(target);
@@ -240,7 +240,7 @@ void CustomRollingFileAppender::customRollover(bool alreadyLocked) {
 
         long ret = 0;
 
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
         // Try to remove the target first. It seems it is not
         // possible to rename over existing file.
         ret = log4cplus::file_remove(target);

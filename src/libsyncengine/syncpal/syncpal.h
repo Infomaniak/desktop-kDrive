@@ -290,8 +290,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
          */
         const LiveSnapshot &liveSnapshot(ReplicaSide side) const;
 
-        uint64_t syncCount() const;
-
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
 
@@ -363,7 +361,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void updateEstimates();
         [[nodiscard]] bool initProgress(const SyncFileItem &item);
         [[nodiscard]] bool setProgress(const SyncPath &relativePath, int64_t current);
-        [[nodiscard]] bool setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status);
+        [[nodiscard]] bool setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status,
+                                               const NodeId &newRemoteNodeId = {});
 
         // Direct download callback
         void directDownloadCallback(UniqueId jobId);

@@ -88,9 +88,9 @@ void VersionWidget::showAboutDialog() {
 
 void VersionWidget::showReleaseNotes() const {
     QString os;
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     os = "macos";
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
     os = "win";
 #else
     os = "linux";
@@ -132,7 +132,7 @@ void VersionWidget::onLinkActivated(const QString &link) {
 }
 
 void VersionWidget::onUpdateButtonClicked() {
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     GuiRequests::startInstaller();
 #else
     VersionInfo versionInfo;
@@ -285,7 +285,7 @@ void VersionWidget::initVersionInfoBloc(PreferencesBlocWidget *prefBloc) {
 }
 
 void VersionWidget::initBetaBloc(PreferencesBlocWidget *prefBloc) {
-#if defined(__unix__) && !defined(__APPLE__)
+#if defined(KD_LINUX)
     return; // Beta program is not available on Linux for now
 #endif
 

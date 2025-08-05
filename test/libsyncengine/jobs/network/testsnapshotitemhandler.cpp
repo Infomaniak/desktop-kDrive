@@ -491,6 +491,23 @@ void TestSnapshotItemHandler::testGetItem() {
             CPPUNIT_ASSERT_MESSAGE(message, !success);
         }
     }
+
+    // The creation_at value is missing: should be interpreted as 0.
+    {
+        SnapshotItem item;
+        bool ignore = false;
+        bool error = false;
+        bool eof = false;
+        std::stringstream ss;
+        ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
+           << "0,1," << toCsvString("kDrive2") << ",dir,1000,,124,0,1";
+        SnapshotItemHandler handler(Log::instance()->getLogger());
+        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
+        CPPUNIT_ASSERT(!ignore);
+        CPPUNIT_ASSERT(!error);
+
+        CPPUNIT_ASSERT_EQUAL(SyncTime{0}, item.createdAt());
+    }
 }
 
 } // namespace KDC

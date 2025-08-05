@@ -29,7 +29,7 @@ struct IoHelperTestUtilities : public IoHelper {
         static void setTempDirectoryPathFunction(std::function<SyncPath(std::error_code &ec)> f);
         static void setCacheDirectoryPath(const SyncPath &newPath);
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         static void setReadAliasFunction(std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> f);
 #endif
 
