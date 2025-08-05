@@ -81,12 +81,7 @@ class QtConan(ConanFile):
         ]
 
         if self.settings.os == "Windows":
-            modules.extend([
-                # "qt.tools.cmake",
-                # "qt.tools.ninja",
-
-                f"qt.qt{major}.{compact}.debug_info" # Qt Debug Information Files for Windows
-            ])
+            modules.append(f"qt.qt{major}.{compact}.debug_info") # Qt Debug Information Files for Windows
 
         if self.settings.os == "Linux":
             modules.append("qt.tools.qtcreator_gui")
@@ -337,6 +332,7 @@ class QtConan(ConanFile):
             env.prepend_path("PATH", pjoin(self.package_folder, "bin"))
             if self.settings.os in ("Macos", "Linux"):
                 env.prepend_path("PATH", pjoin(self.package_folder, "libexec"))
+
 
         self.cpp_info.includedirs = []
         self.cpp_info.bindirs = [ "bin" ]
