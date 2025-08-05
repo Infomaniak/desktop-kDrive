@@ -135,7 +135,7 @@ runs:
         shell: bash
         if: steps.build.outcome == 'success'
 
-      - name:  Fetch kDrive dependencies (.lst)
+      - name: Fetch kDrive dependencies (.lst)
         run: | 
           mkdir uncached_dependencies
           cp ${{ github.workspace }}/build-linux/build/bin/sync-exclude.lst ./uncached_dependencies/

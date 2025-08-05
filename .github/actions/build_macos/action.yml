@@ -53,7 +53,7 @@ runs:
             fi
         shell: bash
 
-      - name: Fetch lib dependencies
+      - name: Fetch dependencies
         run: |
           mkdir dependencies
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtWidgets.framework ./dependencies/
@@ -112,7 +112,6 @@ runs:
           cp ${{ github.workspace }}/build-macos/client/bin/kDrivecommonserver_vfs_mac.dylib ./uncached_dependencies/
         shell: bash
         if: ${{ steps.build.outcome == 'success' }}
-
 
       - name: Download sentry-cli for macOS
         run: curl -sL https://sentry.io/get-cli/ | sh || true
