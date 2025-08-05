@@ -70,6 +70,7 @@ class SentryNativeConan(ConanFile):
     def package(self):
         cmake = CMake(self)
         cmake.install(build_type="RelWithDebInfo" if self.settings.os == "Windows" else None)
+        rm(self, "sentry-(config(-version)?|targets(-relwithdebinfo)?).cmake", pjoin(self.package_folder, "lib", "cmake", "sentry"), recursive=False)
         if self.settings.os == "Macos":
             rmdir(self, pjoin(self.package_folder, "lib", "libsentry.dylib.dSYM"))
         if self.settings.os == "Windows":
@@ -80,8 +81,31 @@ class SentryNativeConan(ConanFile):
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "sentry")
         # Here we use the same hack we used for Qt to ensure the link between the Qt package and the Sentry package is done correctly.
-        self.cpp_info.set_property("cmake_build_modules", [ pjoin(self.package_folder, "lib", "cmake", "sentry", "sentry-config.cmake") ])
-        self.cpp_info.set_property("cmake_find_mode", "config")
+        # self.cpp_info.set_property("cmake_build_modules", [ pjoin(self.package_folder, "lib", "cmake", "sentry", "sentry-config.cmake") ])
+        self.cpp_info.set_property("cmake_find_mode", "both")
+
+        comp_sentry = self.cpp_info.components["sentry"]
+        comp_sentry.set_property("cmake_target_name", "sentry::sentry")
+        comp_sentry.libs = ["sentry"]
+
+        if self.settings.os == "Linux":
+            comp_sentry.exelinkflags = ["-Wl,-E,--build-id=sha1"]
+            comp_sentry.sharedlinkflags = ["-Wl,-E,--build-id=sha1"]
+            comp_sentry.system_libs = [ "pthread", "dl" ]
+
+        if self.settings.os == "Windows":
+            comp_sentry.system_libs = [ "dbghelp", "shlwapi", "version", "winhttp" ]
+
+        if self.settings.os == "Macos":
+            comp_sentry.frameworks = [ "CoreGraphics", "CoreText" ]
+
+        if not self.options.shared:
+            comp_sentry.defines = ["SENTRY_BUILD_STATIC"]
+
+        comp_crashpad = self.cpp_info.components["crashpad_handler"]
+        comp_crashpad.build_modules = [ pjoin(self.package_folder, "lib", "cmake", "sentry_crashpad-targets.cmake") ]
+
+
         for env in ( self.buildenv_info, self.runenv_info ):
             env.prepend_path("PATH", pjoin(self.package_folder, "bin"))
             env.prepend_path("CMAKE_PREFIX_PATH", self.package_folder)

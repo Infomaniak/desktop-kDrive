@@ -26,7 +26,6 @@ set(testcommon_SRCS
 
 if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
-    include_directories("C:/Program Files (x86)/Sentry-Native/include")
 else()
     include_directories("/usr/local/include")
 endif()
