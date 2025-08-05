@@ -290,7 +290,6 @@ void AddDriveWizard::onStepTerminated(bool next) {
     } else if (_currentStep == RemoteFolders) {
         MatomoClient::sendVisit(MatomoNameField::PG_AddNewDrive_SelectRemoteFolder);
         if (next) {
-            _selectionSize = _addDriveServerFoldersWidget->selectionSize();
             _blackList = _addDriveServerFoldersWidget->createBlackList();
             if (!GuiUtility::checkBlacklistSize(_blackList.size(), this)) return;
             _whiteList = _addDriveServerFoldersWidget->createWhiteList();

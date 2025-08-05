@@ -297,11 +297,11 @@ void AppServer::init() {
 #if defined(KD_LINUX)
     // On Linux, override the auto startup file on every app launch to make sure it points to the correct executable.
     if (ParametersCache::instance()->parameters().autoStart()) {
-        Utility::setLaunchOnStartup(_theme->appName(), _theme->appName(), true);
+        (void) Utility::setLaunchOnStartup(_theme->appName(), _theme->appName(), true);
     }
 #else
     if (ParametersCache::instance()->parameters().autoStart() && !Utility::hasLaunchOnStartup(_theme->appName())) {
-        Utility::setLaunchOnStartup(_theme->appName(), _theme->appClientName(), true);
+        (void) Utility::setLaunchOnStartup(_theme->appName(), _theme->appClientName(), true);
     }
 #endif
 #endif
@@ -2964,7 +2964,8 @@ void AppServer::logUsefulInformation() const {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
     }
     for (const auto &user: userList) {
-        LOGW_INFO(Log::instance()->getLogger(), L"User ID: " << user.userId() << L", email: " << Utility::s2ws(user.email()));
+        LOGW_INFO(Log::instance()->getLogger(),
+                  L"User ID: " << user.userId() << L", email: " << CommonUtility::s2ws(user.email()));
     }
 
     // Log drive IDs
@@ -3687,14 +3688,14 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
     tmpSync.setNavigationPaneClsid(_vfsMap[sync.dbId()]->namespaceCLSID());
 
     if (tmpSync.virtualFileMode() == KDC::VirtualFileMode::Win) {
-        Utility::setFolderPinState(Utility::s2ws(tmpSync.navigationPaneClsid()),
+        Utility::setFolderPinState(CommonUtility::s2ws(tmpSync.navigationPaneClsid()),
                                    _navigationPaneHelper->showInExplorerNavigationPane());
     } else {
         if (tmpSync.navigationPaneClsid().empty()) {
             tmpSync.setNavigationPaneClsid(QUuid::createUuid().toString().toStdString());
             _vfsMap[sync.dbId()]->setNamespaceCLSID(tmpSync.navigationPaneClsid());
         }
-        Utility::addLegacySyncRootKeys(Utility::s2ws(sync.navigationPaneClsid()), sync.localPath(),
+        Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(),
                                        _navigationPaneHelper->showInExplorerNavigationPane());
     }
 
@@ -3786,7 +3787,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
 #if defined(KD_WINDOWS)
         if (newMode == VirtualFileMode::Win) {
             // Remove legacy sync root keys
-            Utility::removeLegacySyncRootKeys(Utility::s2ws(sync.navigationPaneClsid()));
+            Utility::removeLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()));
             sync.setNavigationPaneClsid(std::string());
         } else if (sync.virtualFileMode() == VirtualFileMode::Win) {
             // Add legacy sync root keys
@@ -3794,7 +3795,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
             if (sync.navigationPaneClsid().empty()) {
                 sync.setNavigationPaneClsid(QUuid::createUuid().toString().toStdString());
             }
-            Utility::addLegacySyncRootKeys(Utility::s2ws(sync.navigationPaneClsid()), sync.localPath(), show);
+            Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(), show);
         }
 #endif
 
@@ -3944,7 +3945,7 @@ void AppServer::addError(const Error &error) {
         std::unordered_set<int64_t> toBeRemovedErrorIds;
         for (const Error &parentError: errorList) {
             for (const Error &childError: errorList) {
-                if (Utility::isDescendantOrEqual(childError.path(), parentError.path()) &&
+                if (CommonUtility::isDescendantOrEqual(childError.path(), parentError.path()) &&
                     childError.dbId() != parentError.dbId()) {
                     toBeRemovedErrorIds.insert(childError.dbId());
                 }

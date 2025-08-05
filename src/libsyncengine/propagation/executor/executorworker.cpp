@@ -353,7 +353,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
 
                 if (const std::shared_ptr<UpdateTree> sourceUpdateTree = affectedUpdateTree(syncOp);
                     !sourceUpdateTree->deleteNode(syncOp->affectedNode())) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node "
                                                        << Utility::formatSyncName(syncOp->affectedNode()->name()));
                     return ExitCode::DataError;
                 }
@@ -570,7 +570,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                                                             syncOp->affectedNode()->modificationTime().value_or(0), true);
                     } catch (std::exception const &e) {
                         LOGW_SYNCPAL_WARN(_logger, L"Error in DownloadJob::DownloadJob for driveDbId="
-                                                           << _syncPal->driveDbId() << L" : " << Utility::s2ws(e.what()));
+                                                           << _syncPal->driveDbId() << L" : " << CommonUtility::s2ws(e.what()));
                         return ExitCode::DataError;
                     }
 
@@ -603,7 +603,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                                                      newCorrespondingParentNode->id().value_or(""), syncOp->newName());
             } catch (std::exception const &e) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in CreateDirJob::CreateDirJob for driveDbId="
-                                                   << _syncPal->driveDbId() << L" : " << Utility::s2ws(e.what()));
+                                                   << _syncPal->driveDbId() << L" : " << CommonUtility::s2ws(e.what()));
                 return ExitCode::DataError;
             }
         } else {
@@ -634,7 +634,8 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                                                                syncOp->affectedNode()->modificationTime().value_or(0),
                                                                isLiteSyncActivated(), uploadSessionParallelJobs);
                 } catch (std::exception const &e) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in DriveUploadSession::DriveUploadSession: " << Utility::s2ws(e.what()));
+                    LOGW_SYNCPAL_WARN(_logger,
+                                      L"Error in DriveUploadSession::DriveUploadSession: " << CommonUtility::s2ws(e.what()));
                     return ExitCode::DataError;
                 }
             } else {
@@ -645,7 +646,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                             syncOp->affectedNode()->modificationTime().value_or(0));
                 } catch (std::exception const &e) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in UploadJob::UploadJob for driveDbId=" << _syncPal->driveDbId() << L" : "
-                                                                                               << Utility::s2ws(e.what()));
+                                                                                               << CommonUtility::s2ws(e.what()));
                     return ExitCode::DataError;
                 }
             }
@@ -814,7 +815,7 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
                                                 syncOp->affectedNode()->modificationTime().value_or(0), false);
         } catch (std::exception const &e) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in DownloadJob::DownloadJob for driveDbId=" << _syncPal->driveDbId() << L" : "
-                                                                                           << Utility::s2ws(e.what()));
+                                                                                           << CommonUtility::s2ws(e.what()));
             return ExitCode::DataError;
         }
 
@@ -847,7 +848,7 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
                                                            syncOp->affectedNode()->modificationTime().value_or(0),
                                                            isLiteSyncActivated(), uploadSessionParallelJobs);
             } catch (std::exception const &e) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in DriveUploadSession::DriveUploadSession: " << Utility::s2ws(e.what()));
+                LOGW_SYNCPAL_WARN(_logger, L"Error in DriveUploadSession::DriveUploadSession: " << CommonUtility::s2ws(e.what()));
                 return ExitCode::DataError;
             };
         } else {
@@ -857,7 +858,7 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
                                                   syncOp->affectedNode()->modificationTime().value_or(0));
             } catch (std::exception const &e) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in UploadJob::UploadJob for driveDbId=" << _syncPal->driveDbId() << L" : "
-                                                                                           << Utility::s2ws(e.what()));
+                                                                                           << CommonUtility::s2ws(e.what()));
                 return ExitCode::DataError;
             }
         }
@@ -870,7 +871,7 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
 ExitInfo ExecutorWorker::fixModificationDate(SyncOpPtr syncOp, const SyncPath &absolutePath) {
     const auto id = syncOp->affectedNode()->id().value_or("");
     LOGW_SYNCPAL_DEBUG(_logger, L"Do not upload dehydrated placeholders: " << Utility::formatSyncPath(absolutePath) << L" ("
-                                                                           << Utility::s2ws(id) << L")");
+                                                                           << CommonUtility::s2ws(id) << L")");
 
     // Update last modification date in order to avoid generating more EDIT operations.
     bool found = false;
@@ -1043,7 +1044,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
                                                   absoluteDestLocalFilePath);
             } catch (std::exception const &e) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in RenameJob::RenameJob for driveDbId=" << _syncPal->driveDbId() << L" : "
-                                                                                           << Utility::s2ws(e.what()));
+                                                                                           << CommonUtility::s2ws(e.what()));
                 return ExitCode::DataError;
             }
         } else {
@@ -1191,7 +1192,7 @@ ExitInfo ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool
                                               syncOp->affectedNode()->type());
         } catch (std::exception const &e) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in DeleteJob::DeleteJob for driveDbId=" << _syncPal->driveDbId() << L" : "
-                                                                                       << Utility::s2ws(e.what()));
+                                                                                       << CommonUtility::s2ws(e.what()));
             return ExitCode::DataError;
         }
     }
@@ -1710,10 +1711,10 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
                   syncOp->omit() ? SyncFileStatus::Success : SyncFileStatus::Unknown);
 
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_SYNCPAL_DEBUG(_logger, L"Inserting in DB: " << L" localName=" << Utility::formatSyncName(localName)
-                                                         << L" / remoteName=" << Utility::formatSyncName(remoteName)
-                                                         << L" / localId=" << Utility::s2ws(localId) << L" / remoteId="
-                                                         << Utility::s2ws(remoteId) << L" / parent DB ID="
+        LOGW_SYNCPAL_DEBUG(_logger, L"Inserting in DB: " << L" localName=" << Utility::quotedSyncName(localName)
+                                                         << L" / remoteName=" << Utility::quotedSyncName(remoteName)
+                                                         << L" / localId=" << CommonUtility::s2ws(localId) << L" / remoteId="
+                                                         << CommonUtility::s2ws(remoteId) << L" / parent DB ID="
                                                          << newCorrespondingParentNode->idb().value_or(-1) << L" / createdAt="
                                                          << newCreationTime.value_or(-1) << L" / lastModTime="
                                                          << newLastModificationTime.value_or(-1) << L" / type="
@@ -1730,11 +1731,12 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
     DbNodeId newDbNodeId;
     bool constraintError = false;
     if (!_syncPal->syncDb()->insertNode(dbNode, newDbNodeId, constraintError)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Failed to insert node into DB:"
-                                           << L" local ID: " << Utility::s2ws(localId) << L", remote ID: "
-                                           << Utility::s2ws(remoteId) << L", local name: " << Utility::formatSyncName(localName)
-                                           << L", remote name: " << Utility::formatSyncName(remoteName) << L", parent DB ID: "
-                                           << (newCorrespondingParentNode->idb().value_or(-1)));
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to insert node into DB:" << L" local ID: " << CommonUtility::s2ws(localId)
+                                                                     << L", remote ID: " << CommonUtility::s2ws(remoteId)
+                                                                     << L", local name: " << Utility::quotedSyncName(localName)
+                                                                     << L", remote name: " << Utility::quotedSyncName(remoteName)
+                                                                     << L", parent DB ID: "
+                                                                     << (newCorrespondingParentNode->idb().value_or(-1)));
 
         if (!constraintError) {
             return {ExitCode::DbError, ExitCause::DbAccessError};
@@ -1794,8 +1796,8 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
         updateTree->insertNode(node);
 
         if (!newCorrespondingParentNode->insertChildren(node)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
-                                               << Utility::formatSyncName(node->name()) << L" parent node name="
+            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node "
+                                               << Utility::formatSyncName(node->name()) << L" parent node "
                                                << Utility::formatSyncName(newCorrespondingParentNode->name()));
             return ExitCode::DataError;
         }
@@ -1851,28 +1853,30 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
     }
 
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_SYNCPAL_DEBUG(_logger, L"Updating DB: " << L" / localName=" << Utility::formatSyncName(localName)
-                                                     << L" / remoteName=" << Utility::formatSyncName(remoteName) << L" / localId="
-                                                     << Utility::s2ws(localId) << L" / remoteId=" << Utility::s2ws(remoteId)
-                                                     << L" / parent DB ID=" << dbNode.parentNodeId().value_or(-1)
-                                                     << L" / createdAt=" << newCreationTime.value_or(-1) << L" / lastModTime="
+        LOGW_SYNCPAL_DEBUG(_logger, L"Updating DB: " << L" / localName=" << Utility::quotedSyncName(localName)
+                                                     << L" / remoteName=" << Utility::quotedSyncName(remoteName) << L" / localId="
+                                                     << CommonUtility::s2ws(localId) << L" / remoteId="
+                                                     << CommonUtility::s2ws(remoteId) << L" / parent DB ID="
+                                                     << dbNode.parentNodeId().value_or(-1) << L" / createdAt="
+                                                     << newCreationTime.value_or(-1) << L" / lastModTime="
                                                      << newLastModificationTime.value_or(-1) << L" / type="
                                                      << syncOp->affectedNode()->type() << L" / size=" << size);
     }
 
     if (!_syncPal->syncDb()->updateNode(dbNode, found)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Failed to update node into DB: "
-                                           << L"local ID: " << Utility::s2ws(localId) << L", remote ID: "
-                                           << Utility::s2ws(remoteId) << L", local name: " << Utility::formatSyncName(localName)
-                                           << L", remote name: " << Utility::formatSyncName(remoteName) << L", parent DB ID: "
-                                           << dbNode.parentNodeId().value_or(-1));
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to update node into DB: " << L"local ID: " << CommonUtility::s2ws(localId)
+                                                                      << L", remote ID: " << CommonUtility::s2ws(remoteId)
+                                                                      << L", local name: " << Utility::quotedSyncName(localName)
+                                                                      << L", remote name: " << Utility::quotedSyncName(remoteName)
+                                                                      << L", parent DB ID: "
+                                                                      << dbNode.parentNodeId().value_or(-1));
         return {ExitCode::DbError, ExitCause::DbAccessError};
     }
     if (!found) {
         return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
-    // 3. If the omit flag is False, update the updatetreeY structure to ensure
+    // 3. If the omit flag is `false`, update the updatetreeY structure to ensure
     // that follow-up operations can execute correctly, as they are based on the
     // information in this structure
     if (!syncOp->omit()) {
@@ -1941,10 +1945,10 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
     }
 
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_SYNCPAL_DEBUG(_logger, L"Updating DB: " << L" localName=" << Utility::formatSyncName(syncOp->newName())
-                                                     << L" / remoteName=" << Utility::formatSyncName(syncOp->newName())
-                                                     << L" / localId=" << Utility::s2ws(localId) << L" / remoteId="
-                                                     << Utility::s2ws(remoteId) << L" / parent DB ID="
+        LOGW_SYNCPAL_DEBUG(_logger, L"Updating DB: " << L" localName=" << Utility::quotedSyncName(syncOp->newName())
+                                                     << L" / remoteName=" << Utility::quotedSyncName(syncOp->newName())
+                                                     << L" / localId=" << CommonUtility::s2ws(localId) << L" / remoteId="
+                                                     << CommonUtility::s2ws(remoteId) << L" / parent DB ID="
                                                      << dbNode.parentNodeId().value_or(-1) << L" / createdAt="
                                                      << syncOp->affectedNode()->createdAt().value_or(-1) << L" / lastModTime="
                                                      << syncOp->affectedNode()->modificationTime().value_or(-1) << L" / type="
@@ -1953,10 +1957,10 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
 
     if (!_syncPal->syncDb()->updateNode(dbNode, found)) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to update node into DB: "
-                                           << L"local ID: " << Utility::s2ws(localId) << L", remote ID: "
-                                           << Utility::s2ws(remoteId) << L", local name: "
-                                           << Utility::formatSyncName(syncOp->newName()) << L", remote name: "
-                                           << Utility::formatSyncName(syncOp->newName()) << L", parent DB ID: "
+                                           << L"local ID: " << CommonUtility::s2ws(localId) << L", remote ID: "
+                                           << CommonUtility::s2ws(remoteId) << L", local name: "
+                                           << Utility::quotedSyncName(syncOp->newName()) << L", remote name: "
+                                           << Utility::quotedSyncName(syncOp->newName()) << L", parent DB ID: "
                                            << dbNode.parentNodeId().value_or(-1));
         return {ExitCode::DbError, ExitCause::DbAccessError};
     }

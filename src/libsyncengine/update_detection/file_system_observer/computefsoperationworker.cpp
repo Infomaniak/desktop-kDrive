@@ -297,7 +297,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
             return ExitCode::Ok;
         }
         LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve path from snapshot for item " << SyncName2WStr(dbName) << L" ("
-                                                                                      << Utility::s2ws(nodeId) << L")");
+                                                                                      << CommonUtility::s2ws(nodeId) << L")");
         setExitCause(ExitCause::InvalidSnapshot);
         return ExitCode::DataError;
     }
@@ -499,7 +499,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const N
                 // Ignore orphans
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Ignoring orphan node " << SyncName2WStr(snapshot->name(nodeId)) << L" ("
-                                                                         << Utility::s2ws(nodeId) << L")");
+                                                                         << CommonUtility::s2ws(nodeId) << L")");
                 }
                 continue;
             }
@@ -549,7 +549,7 @@ void ComputeFSOperationWorker::logOperationGeneration(const ReplicaSide side, co
     } else {
         ss << L", " << Utility::formatSyncPath(fsOp->path());
     }
-    ss << L", id=" << Utility::s2ws(fsOp->nodeId());
+    ss << L", id=" << CommonUtility::s2ws(fsOp->nodeId());
     ss << L", last modification time=" << fsOp->lastModified();
     ss << L", created at=" << fsOp->createdAt();
     ss << L", size=" << fsOp->size();
@@ -605,7 +605,7 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
 
             LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve path from snapshot for item "
                                                << SyncName2WStr(dbNode.nameLocal()) << L" ("
-                                               << Utility::s2ws(dbNode.nodeIdLocal().value()) << L")");
+                                               << CommonUtility::s2ws(dbNode.nodeIdLocal().value()) << L")");
             setExitCause(ExitCause::InvalidSnapshot);
             return ExitCode::DataError;
         }
@@ -629,7 +629,7 @@ bool ComputeFSOperationWorker::isExcludedFromSync(const std::shared_ptr<const Sn
                                                   const NodeId &nodeId, const SyncPath &path, NodeType type, int64_t size) {
     if (isInUnsyncedListParentSearchInSnapshot(snapshot, nodeId, side)) {
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Ignoring item " << Path2WStr(path) << L" (" << Utility::s2ws(nodeId)
+            LOGW_SYNCPAL_DEBUG(_logger, L"Ignoring item " << Path2WStr(path) << L" (" << CommonUtility::s2ws(nodeId)
                                                           << L") because it is not synced");
         }
         return true;
@@ -644,7 +644,8 @@ bool ComputeFSOperationWorker::isExcludedFromSync(const std::shared_ptr<const Sn
         if (type == NodeType::Directory && isTooBig(snapshot, nodeId, size)) {
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Blacklisting item with " << Utility::formatSyncPath(path) << L" ("
-                                                                       << Utility::s2ws(nodeId) << L") because it is too big");
+                                                                       << CommonUtility::s2ws(nodeId)
+                                                                       << L") because it is too big");
             }
             return true;
         }
@@ -807,8 +808,8 @@ void ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const D
     if (snapshot->type(localNodeId) != NodeType::Unknown && dbNode.type() != NodeType::Unknown &&
         snapshot->type(localNodeId) != dbNode.type()) {
         isReused = true;
-        LOGW_SYNCPAL_DEBUG(_logger, L"Node type has changed for " << Utility::s2ws(localNodeId) << L" from " << dbNode.type()
-                                                                  << L" to " << snapshot->type(localNodeId));
+        LOGW_SYNCPAL_DEBUG(_logger, L"Node type has changed for " << CommonUtility::s2ws(localNodeId) << L" from "
+                                                                  << dbNode.type() << L" to " << snapshot->type(localNodeId));
         return;
     }
 
@@ -838,7 +839,7 @@ void ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const D
                                             << dbNode.created().value() << L" / new: " << snapshot->createdAt(localNodeId)
                                             << L") and name (old: " << Utility::formatSyncName(dbNode.nameLocal()) << L" / new: "
                                             << Utility::formatSyncName(snapshot->name(localNodeId)) << L") changed for"
-                                            << Utility::s2ws(localNodeId) << L". Node is reused.");
+                                            << CommonUtility::s2ws(localNodeId) << L". Node is reused.");
         return;
     }
 
@@ -859,7 +860,7 @@ void ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const D
                                         << snapshot->createdAt(localNodeId) << L" | " << snapshot->lastModified(localNodeId)
                                         << L") and name (old: " << Utility::formatSyncName(dbNode.nameLocal()) << L" / new: "
                                         << Utility::formatSyncName(snapshot->name(localNodeId)) << L") have all changed for "
-                                        << Utility::s2ws(localNodeId) << L". Node is reused.");
+                                        << CommonUtility::s2ws(localNodeId) << L". Node is reused.");
     isReused = true;
 }
 #endif

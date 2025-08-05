@@ -101,9 +101,9 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
                                                               checkError) &&
                     !existsWithSameId) {
                     if (_liveSnapshot.removeItem(prevNodeId)) {
-                        LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath)
-                                                                                          << L" (" << Utility::s2ws(prevNodeId)
-                                                                                          << L")");
+                        LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: "
+                                                            << Utility::formatSyncPath(absolutePath) << L" ("
+                                                            << CommonUtility::s2ws(prevNodeId) << L")");
                     }
                     continue;
                 }
@@ -185,10 +185,11 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
 
             if (_liveSnapshot.removeItem(itemId)) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath)
-                                                                                  << L" (" << Utility::s2ws(itemId) << L")");
+                                                                                  << L" (" << CommonUtility::s2ws(itemId)
+                                                                                  << L")");
             } else {
                 LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << Utility::formatSyncPath(absolutePath) << L" ("
-                                                                    << Utility::s2ws(itemId) << L")");
+                                                                    << CommonUtility::s2ws(itemId) << L")");
                 tryToInvalidateSnapshot();
                 return ExitCode::DataError;
             }
@@ -252,8 +253,8 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
 #else
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Ignoring spurious edit notification on file: "
-                                                        << Utility::formatSyncPath(absolutePath) << L" (" << Utility::s2ws(nodeId)
-                                                        << L")");
+                                                        << Utility::formatSyncPath(absolutePath) << L" ("
+                                                        << CommonUtility::s2ws(nodeId) << L")");
                 }
 #endif
 
@@ -271,10 +272,11 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
                 NodeId itemId = _liveSnapshot.itemId(relativePath);
                 if (!itemId.empty() && _liveSnapshot.removeItem(itemId)) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath)
-                                                                                      << L" (" << Utility::s2ws(itemId) << L")");
+                                                                                      << L" (" << CommonUtility::s2ws(itemId)
+                                                                                      << L")");
                 } else {
                     LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item: " << Utility::formatSyncPath(absolutePath) << L" ("
-                                                                          << Utility::s2ws(itemId) << L")");
+                                                                          << CommonUtility::s2ws(itemId) << L")");
                     tryToInvalidateSnapshot();
                     return ExitCode::DataError;
                 }
@@ -287,12 +289,12 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
                 // the file has been downloaded in the tmp folder then moved to override the existing one). The item will be
                 // inserted below anyway.
                 if (!previousItemId.empty() && _liveSnapshot.removeItem(previousItemId)) {
-                    LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath)
-                                                                                      << L" (" << Utility::s2ws(previousItemId)
-                                                                                      << L")");
+                    LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: "
+                                                        << Utility::formatSyncPath(absolutePath) << L" ("
+                                                        << CommonUtility::s2ws(previousItemId) << L")");
                 } else {
                     LOGW_SYNCPAL_WARN(_logger, L"Failed to delete item: " << Utility::formatSyncPath(absolutePath) << L" ("
-                                                                          << Utility::s2ws(previousItemId) << L")");
+                                                                          << CommonUtility::s2ws(previousItemId) << L")");
                     tryToInvalidateSnapshot();
                     return ExitCode::DataError;
                 }
@@ -304,14 +306,14 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
 
             if (!_liveSnapshot.updateItem(item)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to insert item: " << Utility::formatSyncPath(absolutePath) << L" ("
-                                                                      << Utility::s2ws(nodeId) << L")");
+                                                                      << CommonUtility::s2ws(nodeId) << L")");
                 tryToInvalidateSnapshot();
                 return ExitCode::DataError;
             }
 
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: " << Utility::formatSyncPath(absolutePath) << L" ("
-                                                                                 << Utility::s2ws(nodeId) << L") at "
+                                                                                 << CommonUtility::s2ws(nodeId) << L") at "
                                                                                  << fileStat.modificationTime);
 
                 //                if (nodeType == NodeType::File) {
@@ -366,8 +368,9 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
         if (_liveSnapshot.updateItem(SnapshotItem(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime,
                                                   fileStat.modificationTime, nodeType, fileStat.size, isLink, true, true))) {
             if (ParametersCache::isExtendedLogEnabled()) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absolutePath) << L" (" << Utility::s2ws(nodeId)
-                                                      << L") updated in local snapshot at " << fileStat.modificationTime);
+                LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absolutePath) << L" ("
+                                                      << CommonUtility::s2ws(nodeId) << L") updated in local snapshot at "
+                                                      << fileStat.modificationTime);
             }
 
             if (nodeType == NodeType::File) {
@@ -378,7 +381,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
             }
         } else {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to update item: " << Utility::formatSyncPath(absolutePath) << L" ("
-                                                                  << Utility::s2ws(nodeId) << L")");
+                                                                  << CommonUtility::s2ws(nodeId) << L")");
             tryToInvalidateSnapshot();
             return ExitCode::DataError;
         }
@@ -518,7 +521,7 @@ ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const 
             return ExitCode::DbError;
         }
         if (!found) {
-            LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for nodeId=" << Utility::s2ws(nodeId));
+            LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for nodeId=" << CommonUtility::s2ws(nodeId));
             return ExitCode::DataError;
         }
 
@@ -528,7 +531,7 @@ ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const 
             return ExitCode::DbError;
         }
         if (!found) {
-            LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table: nodeId=" << Utility::s2ws(nodeId));
+            LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table: nodeId=" << CommonUtility::s2ws(nodeId));
             return ExitCode::DataError;
         }
 
@@ -729,13 +732,13 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                                     fileStat.modificationTime, itemType.nodeType, fileStat.size, isLink, true, true);
             if (_liveSnapshot.updateItem(item)) {
                 if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: "
-                                                        << Utility::formatSyncPath(absolutePath.filename()) << L" inode:"
-                                                        << Utility::s2ws(nodeId) << L" parent inode:"
-                                                        << Utility::s2ws(parentNodeId) << L" createdAt:" << fileStat.creationTime
-                                                        << L" modificationTime:" << fileStat.modificationTime << L" isDir:"
-                                                        << (itemType.nodeType == NodeType::Directory) << L" size:"
-                                                        << fileStat.size << L" isLink:" << isLink);
+                    LOGW_SYNCPAL_DEBUG(
+                            _logger, L"Item inserted in local snapshot: "
+                                             << Utility::formatSyncPath(absolutePath) << L" inode:" << CommonUtility::s2ws(nodeId)
+                                             << L" parent inode:" << CommonUtility::s2ws(parentNodeId) << L" createdAt:"
+                                             << fileStat.creationTime << L" modificationTime:" << fileStat.modificationTime
+                                             << L" isDir:" << (itemType.nodeType == NodeType::Directory) << L" size:"
+                                             << fileStat.size << L" isLink:" << isLink);
                 }
             } else {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to insert item: " << Utility::formatSyncPath(absolutePath.filename())

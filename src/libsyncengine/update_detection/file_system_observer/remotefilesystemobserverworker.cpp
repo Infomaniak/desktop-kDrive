@@ -205,7 +205,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents() {
             } else {
                 std::ostringstream os;
                 resObj->stringify(os);
-                LOGW_SYNCPAL_WARN(_logger, L"Continue cursor listing request failed: " << Utility::s2ws(os.str()));
+                LOGW_SYNCPAL_WARN(_logger, L"Continue cursor listing request failed: " << CommonUtility::s2ws(os.str()));
                 exitInfo = ExitCode::BackError;
                 break;
             }
@@ -364,9 +364,10 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         if (_liveSnapshot.updateItem(item)) {
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in remote snapshot: name:"
-                                                    << SyncName2WStr(item.name()) << L", inode:" << Utility::s2ws(item.id())
-                                                    << L", parent inode:" << Utility::s2ws(item.parentId()) << L", createdAt:"
-                                                    << item.createdAt() << L", modtime:" << item.lastModified() << L", isDir:"
+                                                    << Utility::quotedSyncName(item.name()) << L", inode:"
+                                                    << CommonUtility::s2ws(item.id()) << L", parent inode:"
+                                                    << CommonUtility::s2ws(item.parentId()) << L", createdAt:" << item.createdAt()
+                                                    << L", modtime:" << item.lastModified() << L", isDir:"
                                                     << (item.type() == NodeType::Directory) << L", size:" << item.size()
                                                     << L", isLink:" << item.isLink());
             }
@@ -388,7 +389,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     while (nodeIdIt != nodeIds.end()) {
         if (_liveSnapshot.isOrphan(*nodeIdIt)) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Node '" << SyncName2WStr(_liveSnapshot.name(*nodeIdIt)) << L"' ("
-                                                  << Utility::s2ws(*nodeIdIt) << L") is orphan. Removing it from "
+                                                  << CommonUtility::s2ws(*nodeIdIt) << L") is orphan. Removing it from "
                                                   << _liveSnapshot.side() << L" snapshot.");
             _liveSnapshot.removeItem(*nodeIdIt);
         }
@@ -675,7 +676,7 @@ ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
         case ActionCode::ActionCodeTrash:
             if (!_liveSnapshot.removeItem(actionInfo.snapshotItem.id())) {
                 LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(actionInfo.snapshotItem.name()) << L" ("
-                                                                    << Utility::s2ws(actionInfo.snapshotItem.id()) << L")");
+                                                                    << CommonUtility::s2ws(actionInfo.snapshotItem.id()) << L")");
                 tryToInvalidateSnapshot();
                 return ExitCode::BackError;
             }
@@ -694,7 +695,7 @@ ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
         default:
             LOGW_SYNCPAL_DEBUG(_logger, L"Unknown operation received on item: "
                                                 << SyncName2WStr(actionInfo.snapshotItem.name()) << L" ("
-                                                << Utility::s2ws(actionInfo.snapshotItem.id()) << L")");
+                                                << CommonUtility::s2ws(actionInfo.snapshotItem.id()) << L")");
     }
 
 
@@ -721,9 +722,9 @@ ExitInfo RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
             return ExitCode::Ok;
         }
 
-        LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: " << SyncName2WStr(snapshotItem.name())
-                                                                                      << L" (" << Utility::s2ws(snapshotItem.id())
-                                                                                      << L")");
+        LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
+                                           << SyncName2WStr(snapshotItem.name()) << L" ("
+                                           << CommonUtility::s2ws(snapshotItem.id()) << L")");
         tryToInvalidateSnapshot();
         return ExitCode::BackError;
     }
