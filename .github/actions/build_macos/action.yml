@@ -79,7 +79,10 @@ runs:
           cp /usr/local/lib/libzstd.1.dylib ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/crashpad_handler ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/*.lst ./dependencies/
-          cp ${{ github.workspace }}/build-macos/client/bin/*.dylib ./dependencies/
+          # kDrivecommonserver_vfs_mac lib is not cached and therefore is uploaded as a separate artifact
+          find "${{ github.workspace }}/build-macos/client/bin" -name "*.dylib" \
+            -not -name "kDrivecommonserver_vfs_mac.dylib" \
+            -exec cp {} ./dependencies/ \;
         shell: bash
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }} # Only copy dependencies for debug builds, release builds will have them in the app bundle
 
@@ -104,6 +107,14 @@ runs:
           done
         shell: bash
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
+
+      - name: Fetch kDrive dependencies (lst and vfs lib)
+        run: |
+          mkdir uncached_dependencies
+          cp ${{ github.workspace }}/build-macos/client/bin/*.lst ./uncached_dependencies/
+          cp ${{ github.workspace }}/build-macos/client/bin/kDrivecommonserver_vfs_mac.dylib ./uncached_dependencies/
+        shell: bash
+        if: ${{ steps.build.outcome == 'success' }}
 
       - name: Download sentry-cli for macOS
         run: curl -sL https://sentry.io/get-cli/ | sh || true
@@ -163,6 +174,14 @@ runs:
           retention-days: 1
           compression-level: 0
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
+
+      - name: Upload uncached build common files
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build-common-files-uncached
+          path: ./uncached_dependencies
+          retention-days: 1
+        if: ${{ steps.build.outcome == 'success' }}
 
       - name: Upload build test common executable
         uses: actions/upload-artifact@v4
