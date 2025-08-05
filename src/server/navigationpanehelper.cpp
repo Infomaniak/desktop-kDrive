@@ -56,7 +56,7 @@ void NavigationPaneHelper::setShowInExplorerNavigationPane(bool show) {
 
     // Set pin state
     for (const Sync &sync: syncList) {
-        Utility::setFolderPinState(Utility::s2ws(sync.navigationPaneClsid()), show);
+        Utility::setFolderPinState(CommonUtility::s2ws(sync.navigationPaneClsid()), show);
     }
 }
 
@@ -74,7 +74,7 @@ void NavigationPaneHelper::updateCloudStorageRegistry() {
                                         [&entriesToRemove](const HKEY key, const std::wstring &subKey) {
                                             auto appName = Utility::registryGetKeyValue(key, subKey, L"ApplicationName");
                                             try {
-                                                if (std::get<std::wstring>(appName) == Utility::s2ws(APPLICATION_NAME)) {
+                                                if (std::get<std::wstring>(appName) == CommonUtility::s2ws(APPLICATION_NAME)) {
                                                     (void) entriesToRemove.emplace_back(subKey);
                                                 }
                                             } catch (const std::bad_variant_access &) {
@@ -99,7 +99,7 @@ void NavigationPaneHelper::updateCloudStorageRegistry() {
             if (sync.navigationPaneClsid().empty()) {
                 sync.setNavigationPaneClsid(QUuid::createUuid().toString().toStdString());
             }
-            Utility::addLegacySyncRootKeys(Utility::s2ws(sync.navigationPaneClsid()), sync.localPath(),
+            Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(),
                                            _showInExplorerNavigationPane);
         }
     }

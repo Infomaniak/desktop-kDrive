@@ -75,7 +75,7 @@ void RemoteTemporaryDirectory::createDirectory(const int driveDbId, const NodeId
         CPPUNIT_ASSERT_MESSAGE("RemoteTemporaryDirectory() Failed to extract the file id (2).", dataObj);
         _dirId = dataObj->get(idKey).toString();
         LOGW_INFO(Log::instance()->getLogger(), L"RemoteTemporaryDirectory created: " << Utility::formatSyncName(_dirName)
-                                                                                      << L" with ID: " << Utility::s2ws(_dirId));
+                                                                                      << L" with ID: " << CommonUtility::s2ws(_dirId));
         break;
     } while (true);
 }

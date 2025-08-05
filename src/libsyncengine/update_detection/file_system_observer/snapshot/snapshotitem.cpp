@@ -120,7 +120,7 @@ void SnapshotItem::setLastChangedSnapshotVersion(SnapshotRevision snapshotVersio
         LOGW_WARN(Log::instance()->getLogger(),
                   L"SnapshotItem::setLastChangedSnapshotVersion: "
                   L"Trying to set a lower version than the current one. Current version: "
-                          << _lastChangeRevision << L", new version: " << snapshotVersion << L" on " << Utility::s2ws(_id));
+                          << _lastChangeRevision << L", new version: " << snapshotVersion << L" on " << CommonUtility::s2ws(_id));
     }
 }
 

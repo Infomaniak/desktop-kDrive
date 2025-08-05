@@ -89,8 +89,8 @@ using OStringStream = std::wostringstream;
 #define Str(s) L##s
 #define SyncName2QStr(s) QString::fromStdWString(s)
 #define QStr2SyncName(s) s.toStdWString()
-#define Str2SyncName(s) Utility::s2ws(s)
-#define SyncName2Str(s) Utility::ws2s(s)
+#define Str2SyncName(s) KDC::CommonUtility::s2ws(s)
+#define SyncName2Str(s) KDC::CommonUtility::ws2s(s)
 #define WStr2SyncName(s) SyncName(s)
 #define SyncName2WStr(s) s
 #else
@@ -101,8 +101,8 @@ using OStringStream = std::ostringstream;
 #define QStr2SyncName(s) s.toStdString()
 #define Str2SyncName(s) SyncName(s)
 #define SyncName2Str(s) s
-#define WStr2SyncName(s) Utility::ws2s(s)
-#define SyncName2WStr(s) Utility::s2ws(s)
+#define WStr2SyncName(s) KDC::CommonUtility::ws2s(s)
+#define SyncName2WStr(s) KDC::CommonUtility::s2ws(s)
 #endif
 
 #define XMLStr2Str(s) Poco::XML::fromXMLString(s)
@@ -117,13 +117,13 @@ using OStringStream = std::ostringstream;
 // Fixed in next gcc-12 version
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=95048
 #ifdef __GNUC__
-#define Path2WStr(p) KDC::Utility::s2ws(p.native())
+#define Path2WStr(p) KDC::CommonUtility::s2ws(p.native())
 #define Path2Str(p) p.native()
 #define Str2Path(s) std::filesystem::path(s)
 #else
 #define Path2WStr(p) p.native()
-#define Path2Str(p) KDC::Utility::ws2s(p.native())
-#define Str2Path(s) std::filesystem::path(KDC::Utility::s2ws(s))
+#define Path2Str(p) CommonUtility::ws2s(p.native())
+#define Str2Path(s) std::filesystem::path(CommonUtility::s2ws(s))
 #endif
 
 namespace event_dump_files {
