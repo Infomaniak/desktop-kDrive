@@ -3,7 +3,6 @@ import textwrap
 from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, cmake_layout
 from conan.tools.cmake.toolchain.blocks import VSRuntimeBlock
-from conan.tools.env import VirtualRunEnv
 
 
 class KDriveDesktop(ConanFile):
