@@ -74,7 +74,7 @@ set(ENABLE_JSON TRUE)
 
 # For config.h
 include_directories(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
-# Allows includes based on src/ like #include "common/utility.h"
+# Allows includes based on src/ like #include "libcommon/utility.h"
 include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_BINARY_DIR}/src

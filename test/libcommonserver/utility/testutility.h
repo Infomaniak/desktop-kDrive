@@ -89,8 +89,6 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testUserName();
 
     private:
-        std::unique_ptr<Utility> _testObj;
-
         bool checkNfcAndNfdNamesEqual(const SyncName &name, bool &equal);
 };
 

@@ -81,7 +81,7 @@ export QT_BASE_DIR="$HOME/Qt/6.2.3"
 export QTDIR="$QT_BASE_DIR/gcc_64"
 export BASEPATH="$PWD"
 export CONTENTDIR="$BASEPATH/build-linux"
-export build_dir="$CONTENTDIR/build"
+export BUILD_DIR="$CONTENTDIR/build"
 export APPDIR="$CONTENTDIR/app"
 
 extract_debug () {
@@ -91,7 +91,7 @@ extract_debug () {
 }
 
 mkdir -p "$APPDIR"
-mkdir -p "$build_dir"
+mkdir -p "$BUILD_DIR"
 
 export QMAKE="$QTDIR/bin/qmake"
 export PATH="$QTDIR/bin:$QTDIR/libexec:/home/runner/.local/bin:$PATH"
@@ -101,10 +101,8 @@ export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 # Set defaults
 export SUFFIX=""
 
-mkdir -p "$build_dir/client"
-
-conan_build_folder="$build_dir/conan"
-conan_dependencies_folder="$build_dir/conan_dependencies"
+conan_build_folder="$BUILD_DIR/conan"
+conan_dependencies_folder="$BUILD_DIR/conan/dependencies"
 
 bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" --output-dir="$conan_build_folder"
 
@@ -117,18 +115,18 @@ if [ ! -f "$conan_toolchain_file" ]; then
 fi
 
 # Build client
-cd "$build_dir"
+cd "$BUILD_DIR"
 
 source "$conan_generator_folder/conanbuild.sh"
 
 export KDRIVE_DEBUG=0
 
-cmake -B"$build_dir" -H"$BASEPATH" \
+cmake -B"$BUILD_DIR" -H"$BASEPATH" \
     -DQT_FEATURE_neon=OFF \
     -DCMAKE_BUILD_TYPE="$build_type" \
     -DCMAKE_PREFIX_PATH="$BASEPATH" \
     -DCMAKE_INSTALL_PREFIX=/usr \
-    -DBIN_INSTALL_DIR="$build_dir/client" \
+    -DBIN_INSTALL_DIR="$BUILD_DIR/bin" \
     -DKDRIVE_VERSION_SUFFIX="$SUFFIX" \
     -DKDRIVE_THEME_DIR="$BASEPATH/infomaniak" \
     -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
@@ -143,4 +141,4 @@ extract_debug ./bin kDrive_client
 
 make DESTDIR="$APPDIR" install
 
-cp "$BASEPATH/sync-exclude-linux.lst" "$build_dir/bin/sync-exclude.lst"
+cp "$BASEPATH/sync-exclude-linux.lst" "$BUILD_DIR/bin/sync-exclude.lst"

@@ -26,6 +26,8 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "utility/utility_base.h"
 
+
+#include <QLocale>
 #include <iostream>
 #include <regex>
 
@@ -778,6 +780,17 @@ void TestUtility::testToUpper() {
     CPPUNIT_ASSERT_EQUAL(std::string("ABC"), CommonUtility::toUpper("AbC"));
     CPPUNIT_ASSERT_EQUAL(std::string(""), CommonUtility::toUpper(""));
     CPPUNIT_ASSERT_EQUAL(std::string("123"), CommonUtility::toUpper("123"));
+
+    CPPUNIT_ASSERT_EQUAL(std::string("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"),
+                         CommonUtility::toUpper("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"));
+}
+
+void TestUtility::testToLower() {
+    CPPUNIT_ASSERT_EQUAL(std::string("abc"), CommonUtility::toLower("abc"));
+    CPPUNIT_ASSERT_EQUAL(std::string("abc"), CommonUtility::toLower("ABC"));
+    CPPUNIT_ASSERT_EQUAL(std::string("abc"), CommonUtility::toLower("AbC"));
+    CPPUNIT_ASSERT_EQUAL(std::string(""), CommonUtility::toLower(""));
+    CPPUNIT_ASSERT_EQUAL(std::string("123"), CommonUtility::toLower("123"));
 
     CPPUNIT_ASSERT_EQUAL(std::string("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"),
                          CommonUtility::toUpper("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"));

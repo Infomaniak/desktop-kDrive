@@ -73,6 +73,7 @@ struct COMMONSERVER_EXPORT Utility {
         static std::wstring formatIoError(const QString &path, IoError ioError);
         static std::wstring formatErrno(const SyncPath &path, long cError);
         static std::wstring formatErrno(const QString &path, long cError);
+        static std::wstring quotedSyncName(const SyncName &name);
         static std::wstring formatSyncName(const SyncName &name);
         static std::wstring formatSyncPath(const SyncPath &path);
         static std::wstring formatPath(const QString &path);
@@ -112,8 +113,8 @@ struct COMMONSERVER_EXPORT Utility {
         static bool moveItemToTrash(const SyncPath &itemPath);
 #if defined(KD_MACOS)
         static bool preventSleeping(bool enable);
-#endif
         static void restartFinderExtension();
+#endif
         static bool getLinuxDesktopType(std::string &currentDesktop);
 
         static void str2hexstr(const std::string &str, std::string &hexstr, bool capital = false);
@@ -131,9 +132,9 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string xxHashToStr(XXH64_hash_t hash);
 
 #if defined(KD_MACOS)
-        static SyncName getExcludedAppFilePath(bool test = false);
+        static SyncPath getExcludedAppFilePath(bool test = false);
 #endif
-        static SyncName getExcludedTemplateFilePath(bool test = false);
+        static SyncPath getExcludedTemplateFilePath(bool test = false);
         static SyncPath binRelativePath();
         static SyncPath resourcesRelativePath();
         static SyncName logFileName();
@@ -155,7 +156,7 @@ struct COMMONSERVER_EXPORT Utility {
 #endif
         static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, IoError &ioError,
                                              const ItemType &itemType = ItemType());
-        /* Resources analyser */
+        /* Resource analyzer */
         static bool totalRamAvailable(uint64_t &ram, int &errorCode);
         static bool ramCurrentlyUsed(uint64_t &ram, int &errorCode);
         static bool ramCurrentlyUsedByProcess(uint64_t &ram, int &errorCode);
@@ -167,6 +168,33 @@ struct COMMONSERVER_EXPORT Utility {
         static SyncPath commonDocumentsFolderName();
         static SyncPath sharedFolderName();
         static std::string userName();
+
+        static bool hasSystemLaunchOnStartup(const std::string &appName);
+        static bool hasLaunchOnStartup(const std::string &appName);
+        static bool setLaunchOnStartup(const std::string &appName, const std::string &guiName, bool enable);
+
+#ifdef _WIN32
+        using kdVariant = std::variant<int, std::wstring>;
+
+        static void setFolderPinState(const std::wstring &clsid, bool show);
+
+        static bool registryExistKeyTree(HKEY hRootKey, const std::wstring &subKey);
+        static bool registryExistKeyValue(HKEY hRootKey, const std::wstring &subKey, const std::wstring &valueName);
+        static kdVariant registryGetKeyValue(HKEY hRootKey, const std::wstring &subKey, const std::wstring &valueName);
+        static bool registrySetKeyValue(HKEY hRootKey, const std::wstring &subKey, const std::wstring &valueName, DWORD type,
+                                        const kdVariant &value, std::wstring &error);
+        static bool registryDeleteKeyTree(HKEY hRootKey, const std::wstring &subKey);
+        static bool registryDeleteKeyValue(HKEY hRootKey, const std::wstring &subKey, const std::wstring &valueName);
+        static bool registryWalkSubKeys(HKEY hRootKey, const std::wstring &subKey,
+                                        const std::function<void(HKEY, const std::wstring &)> &callback);
+
+        // Add/remove legacy sync root keys
+        static void addLegacySyncRootKeys(const std::wstring &clsid, const SyncPath &folderPath, bool show);
+        static void removeLegacySyncRootKeys(const std::wstring &clsid);
+
+        // Possibly refactor to share code with UnixTimevalToFileTime in c_time.c
+        static void unixTimeToFiletime(time_t t, FILETIME *filetime);
+#endif
 
     private:
         static log4cplus::Logger _logger;

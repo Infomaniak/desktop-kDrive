@@ -17,7 +17,6 @@
  */
 
 #include "vfs_win.h"
-#include "common/utility.h"
 #include "libcommon/utility/utility.h"
 #include "version.h"
 #include "config.h"
@@ -45,7 +44,7 @@ VfsWin::VfsWin(const VfsSetupParams &vfsSetupParams, QObject *parent) :
     Utility::setLogger(logger());
     IoHelper::setLogger(logger());
 
-    if (vfsInit(debugCallback, QString(APPLICATION_SHORTNAME).toStdWString().c_str(), (DWORD) _getpid(),
+    if (vfsInit(debugCallback, QString(APPLICATION_NAME).toStdWString().c_str(), (DWORD) _getpid(),
                 KDC::CommonUtility::escape(KDRIVE_VERSION_STRING).toStdWString().c_str(),
                 QString(APPLICATION_TRASH_URL).toStdWString().c_str()) != S_OK) {
         LOG_WARN(logger(), "Error in vfsInit!");
@@ -178,10 +177,11 @@ ExitInfo VfsWin::setPlaceholderStatus(const SyncPath &path, bool syncOngoing) {
     return ExitCode::Ok;
 }
 
-ExitInfo VfsWin::updateMetadata(const SyncPath &filePathStd, time_t creationTime, time_t modtime, int64_t size, const NodeId &) {
+ExitInfo VfsWin::updateMetadata(const SyncPath &filePathStd, time_t creationTime, time_t modificationTime, int64_t size,
+                                const NodeId &) {
     const QString filePath = SyncName2QStr(filePathStd.native());
     LOGW_DEBUG(logger(), L"updateMetadata: " << Utility::formatSyncPath(QStr2Path(filePath)) << L" creationTime=" << creationTime
-                                             << L" modtime=" << modtime);
+                                             << L" modificationTime=" << modificationTime);
 
     SyncPath fullPath(_vfsSetupParams.localPath / QStr2Path(filePath));
     if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
@@ -192,9 +192,9 @@ ExitInfo VfsWin::updateMetadata(const SyncPath &filePathStd, time_t creationTime
     WIN32_FIND_DATA findData;
     findData.nFileSizeHigh = (DWORD) (size >> 32);
     findData.nFileSizeLow = (DWORD) (size & 0xFFFFFFFF);
-    OldUtility::UnixTimeToFiletime(modtime, &findData.ftLastWriteTime);
+    Utility::unixTimeToFiletime(modificationTime, &findData.ftLastWriteTime);
     findData.ftLastAccessTime = findData.ftLastWriteTime;
-    OldUtility::UnixTimeToFiletime(creationTime, &findData.ftCreationTime);
+    Utility::unixTimeToFiletime(creationTime, &findData.ftCreationTime);
     findData.dwFileAttributes = GetFileAttributesW(QStr2Path(filePath).c_str());
 
     if (vfsUpdatePlaceHolder(QStr2Path(QDir::toNativeSeparators(filePath)).c_str(), &findData) != S_OK) {
@@ -230,8 +230,8 @@ ExitInfo VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
     WIN32_FIND_DATA findData;
     findData.nFileSizeHigh = (DWORD) (item.size() >> 32);
     findData.nFileSizeLow = (DWORD) (item.size() & 0xFFFFFFFF);
-    OldUtility::UnixTimeToFiletime(item.creationTime(), &findData.ftCreationTime);
-    OldUtility::UnixTimeToFiletime(item.modTime(), &findData.ftLastWriteTime);
+    Utility::unixTimeToFiletime(item.creationTime(), &findData.ftCreationTime);
+    Utility::unixTimeToFiletime(item.modTime(), &findData.ftLastWriteTime);
     findData.ftLastAccessTime = findData.ftLastWriteTime;
     findData.dwFileAttributes = (item.type() == NodeType::Directory ? FILE_ATTRIBUTE_DIRECTORY : 0);
 

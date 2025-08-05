@@ -48,6 +48,7 @@ class VfsMac : public Vfs {
         ExitInfo convertToPlaceholder(const SyncPath &path, const SyncFileItem &item) override;
         ExitInfo updateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
                                    bool &finished) override;
+        ExitInfo updateFetchStatus(const SyncPath &absolutePath, const std::string &status) override;
         ExitInfo forceStatus(const SyncPath &path, const VfsStatus &vfsStatus) override;
         bool cleanUpStatuses() override;
         void clearFileAttributes(const SyncPath &path) override;

@@ -115,6 +115,8 @@ void AbstractNetworkJob::runJob() noexcept {
 
     Poco::URI uri;
     for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
+        _exitInfo = ExitCode::Ok;
+
         if (trials > 1) {
             Utility::msleep(500); // Sleep for 0.5s
         }
@@ -215,7 +217,6 @@ void AbstractNetworkJob::runJob() noexcept {
         }
 
         if (_exitInfo.code() == ExitCode::TokenRefreshed || _exitInfo.code() == ExitCode::RateLimited) {
-            _exitInfo = ExitCode::Ok;
             _trials++; // Add one more chance
             continue;
         } else if (isManagedError(_exitInfo)) {

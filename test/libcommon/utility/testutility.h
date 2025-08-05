@@ -53,6 +53,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testEndsWith);
         CPPUNIT_TEST(testEndsWithInsensitive);
         CPPUNIT_TEST(testToUpper);
+        CPPUNIT_TEST(testToLower);
         CPPUNIT_TEST(testIsSameOrParentPath);
         CPPUNIT_TEST(testFileSystemName);
         CPPUNIT_TEST(testS2ws);
@@ -94,6 +95,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testEndsWith();
         void testEndsWithInsensitive();
         void testToUpper();
+        void testToLower();
         void testIsSameOrParentPath();
         void testFileSystemName();
         void testS2ws();

@@ -147,7 +147,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         inline int userId() const { return _syncInfo.userId; }
         inline const std::string &driveName() const { return _syncInfo.driveName; }
         inline VirtualFileMode vfsMode() const { return _syncInfo.vfsMode; }
-        inline SyncPath localPath() const { return _syncInfo.localPath; }
+        inline const SyncPath &localPath() const { return _syncInfo.localPath; }
         inline const NodeId &localNodeId() const { return _syncInfo.localNodeId; }
         inline bool restart() const { return _syncInfo.restart; }
         inline bool isAdvancedSync() const { return _syncInfo.isAdvancedSync(); }
@@ -218,7 +218,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         void resetSnapshotInvalidationCounters();
 
-        ExitCode addDlDirectJob(const SyncPath &relativePath, const SyncPath &localPath);
+        ExitCode addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath,
+                                const SyncPath &parentFolderPath);
+        void monitorFolderHydration(const SyncPath &absoluteLocalPath);
         ExitCode cancelDlDirectJobs(const std::list<SyncPath> &fileList);
         ExitCode cancelAllDlDirectJobs(bool quit);
         ExitCode cleanOldUploadSessionTokens();
@@ -300,6 +302,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<ConflictingFilesCorrector> _conflictingFilesCorrector = nullptr;
 
         std::unordered_map<UniqueId, std::shared_ptr<DownloadJob>> _directDownloadJobsMap;
+        std::unordered_map<SyncPath, std::unordered_set<SyncPath, PathHashFunction>, PathHashFunction>
+                _folderHydrationInProgress; // key: bundle path, value: bundle children paths
         std::unordered_map<SyncPath, UniqueId, PathHashFunction> _syncPathToDownloadJobMap;
         std::mutex _directDownloadJobsMapMutex;
 

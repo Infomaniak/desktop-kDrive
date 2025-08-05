@@ -19,7 +19,6 @@
 #pragma once
 
 #include "libcommonserver/commonserverlib.h"
-#include "libcommon/utility/types.h"
 
 #include <log4cplus/logger.h>
 #include <log4cplus/loggingmacros.h>
@@ -27,6 +26,7 @@
 #include "libcommon/log/sentry/handler.h"
 #include "libcommon/log/customlogstreams.h"
 #include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
 
 namespace KDC {
 
@@ -42,15 +42,15 @@ namespace KDC {
         LOG4CPLUS_DEBUG(logger, customLogStreamStr_.c_str());                                     \
     }
 
-#define LOGW_DEBUG(logger, logEvent)                                                                              \
-    {                                                                                                             \
-        CustomLogWStream customLogWStream_;                                                                       \
-        customLogWStream_ << logEvent;                                                                            \
-        const auto &customLogWStreamStr_ = customLogWStream_.str();                                               \
+#define LOGW_DEBUG(logger, logEvent)                                                                                    \
+    {                                                                                                                   \
+        CustomLogWStream customLogWStream_;                                                                             \
+        customLogWStream_ << logEvent;                                                                                  \
+        const auto &customLogWStreamStr_ = customLogWStream_.str();                                                     \
         sentry_value_t crumb = sentry_value_new_breadcrumb(nullptr, CommonUtility::ws2s(customLogWStreamStr_).c_str()); \
-        sentry_value_set_by_key(crumb, "level", sentry_value_new_string("debug"));                                \
-        sentry_add_breadcrumb(crumb);                                                                             \
-        LOG4CPLUS_DEBUG(logger, customLogWStreamStr_.c_str());                                                    \
+        sentry_value_set_by_key(crumb, "level", sentry_value_new_string("debug"));                                      \
+        sentry_add_breadcrumb(crumb);                                                                                   \
+        LOG4CPLUS_DEBUG(logger, customLogWStreamStr_.c_str());                                                          \
     }
 
 #define LOG_INFO(logger, logEvent)                                                                \
@@ -64,15 +64,15 @@ namespace KDC {
         LOG4CPLUS_INFO(logger, customLogStreamStr_.c_str());                                      \
     }
 
-#define LOGW_INFO(logger, logEvent)                                                                               \
-    {                                                                                                             \
-        CustomLogWStream customLogWStream_;                                                                       \
-        customLogWStream_ << logEvent;                                                                            \
-        const auto &customLogWStreamStr_ = customLogWStream_.str();                                               \
+#define LOGW_INFO(logger, logEvent)                                                                                     \
+    {                                                                                                                   \
+        CustomLogWStream customLogWStream_;                                                                             \
+        customLogWStream_ << logEvent;                                                                                  \
+        const auto &customLogWStreamStr_ = customLogWStream_.str();                                                     \
         sentry_value_t crumb = sentry_value_new_breadcrumb(nullptr, CommonUtility::ws2s(customLogWStreamStr_).c_str()); \
-        sentry_value_set_by_key(crumb, "level", sentry_value_new_string("info"));                                 \
-        sentry_add_breadcrumb(crumb);                                                                             \
-        LOG4CPLUS_INFO(logger, customLogWStreamStr_.c_str());                                                     \
+        sentry_value_set_by_key(crumb, "level", sentry_value_new_string("info"));                                       \
+        sentry_add_breadcrumb(crumb);                                                                                   \
+        LOG4CPLUS_INFO(logger, customLogWStreamStr_.c_str());                                                           \
     }
 
 #define LOG_WARN(logger, logEvent)                                                                \
@@ -87,15 +87,15 @@ namespace KDC {
     }
 
 
-#define LOGW_WARN(logger, logEvent)                                                                               \
-    {                                                                                                             \
-        CustomLogWStream customLogWStream_;                                                                       \
-        customLogWStream_ << logEvent;                                                                            \
-        const auto &customLogWStreamStr_ = customLogWStream_.str();                                               \
+#define LOGW_WARN(logger, logEvent)                                                                                     \
+    {                                                                                                                   \
+        CustomLogWStream customLogWStream_;                                                                             \
+        customLogWStream_ << logEvent;                                                                                  \
+        const auto &customLogWStreamStr_ = customLogWStream_.str();                                                     \
         sentry_value_t crumb = sentry_value_new_breadcrumb(nullptr, CommonUtility::ws2s(customLogWStreamStr_).c_str()); \
-        sentry_value_set_by_key(crumb, "level", sentry_value_new_string("warning"));                              \
-        sentry_add_breadcrumb(crumb);                                                                             \
-        LOG4CPLUS_WARN(logger, customLogWStreamStr_.c_str());                                                     \
+        sentry_value_set_by_key(crumb, "level", sentry_value_new_string("warning"));                                    \
+        sentry_add_breadcrumb(crumb);                                                                                   \
+        LOG4CPLUS_WARN(logger, customLogWStreamStr_.c_str());                                                           \
     }
 
 #define LOG_ERROR(logger, logEvent)                                                               \
@@ -109,15 +109,15 @@ namespace KDC {
         LOG4CPLUS_ERROR(logger, customLogStreamStr_.c_str());                                     \
     }
 
-#define LOGW_ERROR(logger, logEvent)                                                                              \
-    {                                                                                                             \
-        CustomLogWStream customLogWStream_;                                                                       \
-        customLogWStream_ << logEvent;                                                                            \
-        const auto &customLogWStreamStr_ = customLogWStream_.str();                                               \
+#define LOGW_ERROR(logger, logEvent)                                                                                    \
+    {                                                                                                                   \
+        CustomLogWStream customLogWStream_;                                                                             \
+        customLogWStream_ << logEvent;                                                                                  \
+        const auto &customLogWStreamStr_ = customLogWStream_.str();                                                     \
         sentry_value_t crumb = sentry_value_new_breadcrumb(nullptr, CommonUtility::ws2s(customLogWStreamStr_).c_str()); \
-        sentry_value_set_by_key(crumb, "level", sentry_value_new_string("error"));                                \
-        sentry_add_breadcrumb(crumb);                                                                             \
-        LOG4CPLUS_ERROR(logger, customLogWStreamStr_.c_str());                                                    \
+        sentry_value_set_by_key(crumb, "level", sentry_value_new_string("error"));                                      \
+        sentry_add_breadcrumb(crumb);                                                                                   \
+        LOG4CPLUS_ERROR(logger, customLogWStreamStr_.c_str());                                                          \
     }
 
 #define LOG_FATAL(logger, logEvent)                                                                    \
@@ -132,16 +132,16 @@ namespace KDC {
         LOG4CPLUS_FATAL(logger, customLogStreamStr_.c_str());                                          \
     }
 
-#define LOGW_FATAL(logger, logEvent)                                                                                   \
-    {                                                                                                                  \
-        CustomLogWStream customLogWStream_;                                                                            \
-        customLogWStream_ << logEvent;                                                                                 \
-        const auto &customLogWStreamStr_ = customLogWStream_.str();                                                    \
+#define LOGW_FATAL(logger, logEvent)                                                                                         \
+    {                                                                                                                        \
+        CustomLogWStream customLogWStream_;                                                                                  \
+        customLogWStream_ << logEvent;                                                                                       \
+        const auto &customLogWStreamStr_ = customLogWStream_.str();                                                          \
         sentry_value_t crumb = sentry_value_new_breadcrumb(nullptr, CommonUtility::ws2s(customLogWStreamStr_).c_str());      \
-        sentry_value_set_by_key(crumb, "level", sentry_value_new_string("fatal"));                                     \
-        sentry_add_breadcrumb(crumb);                                                                                  \
+        sentry_value_set_by_key(crumb, "level", sentry_value_new_string("fatal"));                                           \
+        sentry_add_breadcrumb(crumb);                                                                                        \
         sentry::Handler::captureMessage(sentry::Level::Fatal, "Log fatal error", CommonUtility::ws2s(customLogWStreamStr_)); \
-        LOG4CPLUS_FATAL(logger, customLogWStreamStr_.c_str());                                                         \
+        LOG4CPLUS_FATAL(logger, customLogWStreamStr_.c_str());                                                               \
     }
 #else
 #define LOG_DEBUG(logger, logEvent)                              \

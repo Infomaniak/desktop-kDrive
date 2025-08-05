@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "utility.h"
+
 #include "log/log.h"
 #include "libcommon/utility/utility.h"
 
@@ -35,7 +37,7 @@
 
 namespace KDC {
 
-static int moveItemToTrash_private(const SyncPath &itemPath) {
+bool Utility::moveItemToTrash(const SyncPath &itemPath) {
     std::string xdgDataHome, homePath, trashPath;
 
     const char *xdgDataHomeEnv = std::getenv("XDG_DATA_HOME");
@@ -97,6 +99,7 @@ static int moveItemToTrash_private(const SyncPath &itemPath) {
     return true;
 }
 
+namespace {
 int parseLineForRamStatus(char *line) {
     int i = static_cast<int>(strlen(line));
     const char *p = line;
@@ -106,8 +109,34 @@ int parseLineForRamStatus(char *line) {
     return i;
 }
 
-/* ---- RAM */
-static bool totalRamAvailable_private(uint64_t &ram, int &errorCode) {
+void initCpuUsage(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint64_t &lastTotalSys, uint64_t &lastTotalIdle) {
+    FILE *file = fopen("/proc/stat", "r");
+    if (!file) {
+        return;
+    }
+    if (fscanf(file, "cpu %lu %lu %lu %lu", &lastTotalUser, &lastTotalUserLow, &lastTotalSys, &lastTotalIdle) != 4) {
+        fclose(file);
+        return;
+    }
+    fclose(file);
+}
+
+std::string executeCommand(const std::string &command) {
+    std::array<char, 128> buffer{};
+    std::string result;
+    FILE *pipe = popen(command.c_str(), "r");
+    if (!pipe) {
+        throw std::runtime_error("Erreur lors de l'exécution de la commande");
+    }
+    while (fgets(buffer.data(), buffer.size(), pipe) != nullptr) {
+        result += buffer.data();
+    }
+    pclose(pipe);
+    return result;
+}
+} // namespace
+
+bool Utility::totalRamAvailable(uint64_t &ram, int &errorCode) {
     struct sysinfo memInfo;
 
     if (sysinfo(&memInfo) == 0) {
@@ -119,7 +148,7 @@ static bool totalRamAvailable_private(uint64_t &ram, int &errorCode) {
     return false;
 }
 
-static bool ramCurrentlyUsed_private(uint64_t &ram, int &errorCode) {
+bool Utility::ramCurrentlyUsed(uint64_t &ram, int &errorCode) {
     struct sysinfo memInfo;
 
     if (sysinfo(&memInfo) == 0) {
@@ -131,7 +160,7 @@ static bool ramCurrentlyUsed_private(uint64_t &ram, int &errorCode) {
     return false;
 }
 
-static bool ramCurrentlyUsedByProcess_private(uint64_t &ram, int &errorCode) {
+bool Utility::ramCurrentlyUsedByProcess(uint64_t &ram, int &errorCode) {
     FILE *file = fopen("/proc/self/status", "r");
     if (!file) {
         errorCode = errno;
@@ -149,23 +178,10 @@ static bool ramCurrentlyUsedByProcess_private(uint64_t &ram, int &errorCode) {
     return true;
 }
 
-static void initCpuUsage_private(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint64_t &lastTotalSys,
-                                 uint64_t &lastTotalIdle) {
-    FILE *file = fopen("/proc/stat", "r");
-    if (!file) {
-        return;
-    }
-    if (fscanf(file, "cpu %lu %lu %lu %lu", &lastTotalUser, &lastTotalUserLow, &lastTotalSys, &lastTotalIdle) != 4) {
-        fclose(file);
-        return;
-    }
-    fclose(file);
-}
-
-static bool cpuUsage_private(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint64_t &lastTotalSys, uint64_t &lastTotalIdle,
-                             double &percent) {
+bool Utility::cpuUsage(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint64_t &lastTotalSys, uint64_t &lastTotalIdle,
+                       double &percent) {
     if (lastTotalUser == 0 && lastTotalUser == 0 && lastTotalSys == 0 && lastTotalIdle == 0) {
-        initCpuUsage_private(lastTotalUser, lastTotalUserLow, lastTotalSys, lastTotalIdle);
+        initCpuUsage(lastTotalUser, lastTotalUserLow, lastTotalSys, lastTotalIdle);
     }
 
     FILE *file;
@@ -210,21 +226,7 @@ static bool cpuUsage_private(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow
     return true;
 }
 
-static std::string executeCommand(const std::string &command) {
-    std::array<char, 128> buffer{};
-    std::string result;
-    FILE *pipe = popen(command.c_str(), "r");
-    if (!pipe) {
-        throw std::runtime_error("Erreur lors de l'exécution de la commande");
-    }
-    while (fgets(buffer.data(), buffer.size(), pipe) != nullptr) {
-        result += buffer.data();
-    }
-    pclose(pipe);
-    return result;
-}
-
-static bool cpuUsageByProcess_private(double &percent) {
+bool Utility::cpuUsageByProcess(double &percent) {
     pid_t pid = getpid();
     const std::string getCPUCommand = "top -b -n 1 -p " + std::to_string(pid) + " | tail -1 | awk '{print $9 }'";
     std::string cpuUsageStr = executeCommand(getCPUCommand);
@@ -238,9 +240,69 @@ static bool cpuUsageByProcess_private(double &percent) {
     return true;
 }
 
-static std::string userName_private() {
+std::string Utility::userName() {
     bool isSet = false;
     return CommonUtility::envVarValue("USER", isSet);
+}
+
+namespace {
+// Returns the autostart directory the linux way
+// and respects the XDG_CONFIG_HOME env variable
+SyncPath getUserAutostartDir() {
+    auto configPath = CommonUtility::getAppSupportDir();
+    configPath /= "autostart";
+    return configPath;
+}
+} // namespace
+
+bool Utility::hasLaunchOnStartup(const std::string &appName) {
+    const auto desktopFileLocation = getUserAutostartDir() / (appName + ".desktop");
+    return std::filesystem::exists(desktopFileLocation);
+}
+
+bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &guiName, bool enable) {
+    const auto userAutoStartDirPath = getUserAutostartDir();
+    const auto userAutoStartFilePath = userAutoStartDirPath / (appName + ".desktop");
+    if (enable) {
+        IoError ioError = IoError::Unknown;
+        if (!std::filesystem::exists(userAutoStartDirPath) && !IoHelper::createDirectory(userAutoStartDirPath, false, ioError)) {
+            LOGW_WARN(logger(), L"Could not create autostart folder" << Utility::formatSyncPath(userAutoStartDirPath)
+                                                                     << Utility::formatIoError(ioError));
+            return false;
+        }
+
+        std::wofstream testFile(userAutoStartFilePath, std::ios_base::in);
+        if (!testFile.is_open()) {
+            LOGW_WARN(logger(), L"Could not write auto start entry." << Utility::formatSyncPath(userAutoStartFilePath));
+            return false;
+        }
+        const auto appimageDir = CommonUtility::envVarValue("APPIMAGE");
+        LOG_DEBUG(logger(), "APPIMAGE=" << appimageDir);
+        testFile << L"[Desktop Entry]" << std::endl;
+        testFile << L"Name=" << CommonUtility::s2ws(guiName) << std::endl;
+        testFile << L"GenericName=File Synchronizer" << std::endl;
+        testFile << L"Exec=" << Utility::formatSyncPath(appimageDir) << std::endl;
+        testFile << L"Terminal=false" << std::endl;
+        testFile << L"Icon=" << CommonUtility::s2ws(CommonUtility::toLower(appName)) << std::endl;
+        testFile << L"Categories=Network" << std::endl;
+        testFile << L"Type=Application" << std::endl;
+        testFile << L"StartupNotify=false" << std::endl;
+        testFile << L"X-GNOME-Autostart-enabled=true" << std::endl;
+        testFile << L"X-GNOME-Autostart-Delay=10" << std::endl;
+        testFile.close();
+    } else {
+        IoError ioError = IoError::Unknown;
+        if (!IoHelper::deleteItem(userAutoStartFilePath, ioError)) {
+            LOGW_WARN(logger(), L"Could not remove autostart desktop file." << Utility::formatIoError(ioError));
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool Utility::hasSystemLaunchOnStartup(const std::string &) {
+    return false;
 }
 
 } // namespace KDC

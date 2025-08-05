@@ -606,6 +606,10 @@ void LogUploadJob::handleJobFailure(const ExitInfo &exitInfo, const bool clearTm
                   L"Error in IoHelper::deleteItem: " << Utility::formatIoError(_tmpJobWorkingDir, ioError));
     }
 
+    if (exitInfo.code() != ExitCode::NetworkError) {
+        sentry::Handler::captureMessage(sentry::Level::Error, "Log upload failed",
+                                        "Log upload failed with exitInfo: " + exitInfo.operator std::string());
+    }
     _runningJob.reset();
     _exitInfo = exitInfo;
 }

@@ -2,16 +2,32 @@ name: Build Windows
 description: 'Build windows app'
 
 inputs:
-  virtual_cert_id:
-    description: 'Id of the virtual certificate'
-    required: true
+  virtual_cert:
+    description: 'The virtual certificate, mandatory for non-release builds'
+    required: false
   virtual_cert_pass:
-    description: 'Password of the virtual certificate'
-    required: true
+    description: 'Password of the virtual certificate, mandatory for non-release builds'
+    required: false
+  physical_cert:
+    description: 'The physical certificate, mandatory for release builds'
+    required: false
+  physical_cert_pass:
+    description: 'Password of the physical certificate, mandatory for release builds'
+    required: false
+  release_build:
+    description: 'If true, run the release build script'
+    required: false
+    default: 'false'
+    
+outputs:
+  kDrive_version:
+    description: 'The version of the kDrive app built'
+    value: ${{ steps.set_version.outputs.kDrive_version }}
 
 runs:
     using: "composite"
     steps:
+      
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
@@ -20,23 +36,38 @@ runs:
         run : nuget restore extensions/windows/cfapi/kDriveExt.sln
         shell: powershell
 
-      - name: Import Windows virtual certificate
+      - name: Import Windows certificate
         env:
-          WINDOWS_VIRTUAL_CERT:  ${{ inputs.virtual_cert_id }}
-          WINDOWS_VIRTUAL_CERT_PASSWORD: ${{ inputs.virtual_cert_pass }}
+          WINDOWS_VIRTUAL_CERT:  ${{ inputs.virtual_cert }}
+          WINDOWS_PHYSICAL_CERT: ${{ inputs.physical_cert }}
         run: |
-          New-Item -ItemType directory -Path certificate
-          Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_VIRTUAL_CERT
-          certutil -decode certificate/tempCert.txt certificate/certificate.pfx
-          Remove-Item -path certificate -include tempCert.txt
-          Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $env:WINDOWS_VIRTUAL_CERT_PASSWORD -Force -AsPlainText)
+          if("${{ inputs.release_build }}" -eq "true") {
+            New-Item -ItemType directory -Path certificate
+            Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_PHYSICAL_CERT
+            certutil -decode certificate/tempCert.txt certificate/certificate.cert
+            Remove-Item -path certificate -include tempCert.txt
+            Import-Certificate -Filepath certificate/certificate.cert -CertStoreLocation Cert:\LocalMachine\My
+            Write-Host "Physical certificate imported successfully."
+            } else {
+            New-Item -ItemType directory -Path certificate
+            Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_VIRTUAL_CERT
+            certutil -decode certificate/tempCert.txt certificate/certificate.pfx
+            Remove-Item -path certificate -include tempCert.txt
+            Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\LocalMachine\My -Password (ConvertTo-SecureString -String "${{ inputs.virtual_cert_pass }}" -Force -AsPlainText)
+            Write-Host "Virtual certificate imported successfully."
+            }
         shell: powershell
 
       - name: Build kDrive desktop
         id: build
         run: |
-          call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"          
-          powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
+          call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
+          IF "${{ inputs.release_build }}"=="true" (
+            powershell "certutil -scinfo -Silent"
+            powershell "./infomaniak-build-tools/windows/build-drive.ps1" -ci -ext -clean remake -upload -tokenPass ${{ inputs.physical_cert_pass }}
+          ) ELSE (
+            powershell -File "./infomaniak-build-tools/windows/build-drive.ps1" -ci
+          )
         shell: cmd
 
       - name: Fetch dependencies
@@ -137,6 +168,56 @@ runs:
           retention-days: 1
           compression-level: 0
         if: steps.build.outcome == 'success'
+
+      - name: Download sentry-cli for Windows
+        run: |
+          Invoke-WebRequest -Uri https://github.com/getsentry/sentry-cli/releases/download/2.46.0/sentry-cli-Windows-x86_64.exe -OutFile sentry-cli.exe
+        shell: powershell
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
+
+      - name : Create sentry server artifacts
+        run: |
+          .\sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-windows/build/bin/kDrive.pdb
+          mkdir ${{ github.workspace }}/build-windows/sentry-server-artifacts
+          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive.src.zip -Destination ${{ github.workspace }}/build-windows/sentry-server-artifacts/kDrive.src.zip
+          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive.pdb -Destination ${{ github.workspace }}/build-windows/sentry-server-artifacts/kDrive.pdb
+        shell: powershell
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
+
+      - name : Create sentry client artifacts
+        run: |
+          .\sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-windows/build/bin/kDrive_client.pdb
+          mkdir ${{ github.workspace }}/build-windows/sentry-client-artifacts
+          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive_client.src.zip -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts/kDrive_client.src.zip
+          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive_client.pdb -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts/kDrive_client.pdb
+        shell: powershell
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
+
+      - name: Upload sentry server artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: win-release-artifacts-server-debug
+          path: ${{ github.workspace }}/build-windows/sentry-server-artifacts
+          retention-days: 1
+          compression-level: 0
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
+
+      - name: Upload sentry client artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: win-release-artifacts-client-debug
+          path: ${{ github.workspace }}/build-windows/sentry-client-artifacts
+          retention-days: 1
+          compression-level: 0
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
+
+      - name: Upload app installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: win-release-artifacts-installer
+          path: ${{ github.workspace }}\build-windows\kDrive-* # kDrive-x.x.x.yyyymmdd.exe
+          retention-days: 1
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name: Clean-up generated code
         run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all

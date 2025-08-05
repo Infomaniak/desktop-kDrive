@@ -12,8 +12,8 @@
 
   <Identity
     Name="Infomaniak.kDrive.Extension"
-    Publisher="CN=INFOMANIAK NETWORK SA, O=INFOMANIAK NETWORK SA, S=Genève, C=CH"
-    Version="3.7.1.0" />
+    Publisher="CN=Infomaniak Network SA, O=Infomaniak Network SA, S=Genève, C=CH, OID.2.5.4.15=Private Organization, OID.1.3.6.1.4.1.311.60.2.1.3=CH, SERIALNUMBER=CHE-103.167.648"
+    Version="3.7.2.0" />
 
   <Properties>
     <DisplayName>kDrive Windows Explorer Extension Package</DisplayName>

@@ -34,7 +34,6 @@
 #include "migrationparams.h"
 #include "config.h"
 #include "keychainmanager/keychainmanager.h"
-#include "common/utility.h"
 #include "log/log.h"
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"
@@ -159,8 +158,8 @@ ProxyType intToProxyType(int pTypeInt) {
 }
 
 QDir MigrationParams::configDir() {
-    return QStandardPaths::writableLocation(OldUtility::isWindows() ? QStandardPaths::AppDataLocation
-                                                                    : QStandardPaths::AppConfigLocation);
+    return QStandardPaths::writableLocation(CommonUtility::isWindows() ? QStandardPaths::AppDataLocation
+                                                                       : QStandardPaths::AppConfigLocation);
 }
 
 QString MigrationParams::configFileName() {
@@ -354,7 +353,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
 
         std::string keychainKeyAppPassword;
 #ifdef Q_OS_WIN
-        keychainKeyAppPassword += APPLICATION_SHORTNAME;
+        keychainKeyAppPassword += APPLICATION_NAME;
         keychainKeyAppPassword += "_";
 #endif
         keychainKeyAppPassword +=
@@ -775,7 +774,8 @@ ExitCode MigrationParams::getTokenFromAppPassword(const std::string &email, cons
 
         LOG_DEBUG(_logger, "job.runSynchronously() done");
         if (job.hasErrorApi(&errorCode, &errorDescr)) {
-            LOGW_WARN(_logger, L"Failed to retrieve authentification token. code=" << KDC::CommonUtility::s2ws(errorCode) << L" descr="
+            LOGW_WARN(_logger, L"Failed to retrieve authentification token. code=" << KDC::CommonUtility::s2ws(errorCode)
+                                                                                   << L" descr="
                                                                                    << KDC::CommonUtility::s2ws(errorDescr));
             return ExitCode::BackError;
         }

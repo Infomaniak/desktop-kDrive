@@ -68,13 +68,8 @@
 #include <QOperatingSystemVersion>
 #include <Poco/UnicodeConverter.h>
 
-#if defined(Q_OS_WIN)
-#include "utility_win.cpp"
-#elif defined(Q_OS_MAC)
-#include "utility_mac.cpp"
+#if defined(Q_OS_MAC)
 #include <mach-o/dyld.h>
-#else
-#include "utility_linux.cpp"
 #endif
 
 #define MAX_PATH_LENGTH_WIN_LONG 32767
@@ -175,7 +170,7 @@ const std::string &CommonUtility::userAgentString() {
     static std::string str;
     if (str.empty()) {
         std::stringstream ss;
-        ss << APPLICATION_SHORTNAME << " / " << KDRIVE_VERSION_STRING << " (" << platformName().toStdString() << ")";
+        ss << APPLICATION_NAME << " / " << KDRIVE_VERSION_STRING << " (" << platformName().toStdString() << ")";
         str = ss.str();
     }
     return str;
@@ -282,7 +277,7 @@ std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
     }
 #endif
 
-    return "Error";
+    return "UNIDENTIFIED";
 }
 
 void CommonUtility::resetTranslations() {
@@ -356,6 +351,13 @@ std::string CommonUtility::toUpper(const std::string &str) {
     // std::ranges::transform(str, upperStr.begin(), [](unsigned char c) { return std::toupper(c); });   // Needs gcc-11
     (void) std::transform(str.begin(), str.end(), upperStr.begin(), [](unsigned char c) { return std::toupper(c); });
     return upperStr;
+}
+
+std::string CommonUtility::toLower(const std::string &str) {
+    std::string lowerStr(str);
+    // std::ranges::transform(str, lowerStr.begin(), [](unsigned char c) { return std::tolower(c); });   // Needs gcc-11
+    (void) std::transform(str.begin(), str.end(), lowerStr.begin(), [](unsigned char c) { return std::tolower(c); });
+    return lowerStr;
 }
 
 std::wstring CommonUtility::s2ws(const std::string &str) {
@@ -432,7 +434,7 @@ bool CommonUtility::isStrictDescendant(const SyncPath &potentialDescendant, cons
     return isDescendantOrEqual(potentialDescendant, path);
 }
 
-QString CommonUtility::getIconPath(const IconType iconType) {
+std::string CommonUtility::getIconPath(const IconType iconType) {
     switch (iconType) {
         case KDC::CommonUtility::MAIN_FOLDER_ICON:
             return "../Resources/kdrive-mac.icns"; // TODO : To be changed to a specific incs file
@@ -450,21 +452,7 @@ QString CommonUtility::getIconPath(const IconType iconType) {
             break;
     }
 
-    return QString();
-}
-
-bool CommonUtility::setFolderCustomIcon(const QString &folderPath, IconType iconType) {
-#ifdef Q_OS_MAC
-    if (!setFolderCustomIcon_private(folderPath, getIconPath(iconType))) {
-        return false;
-    }
-    return true;
-#else
-    Q_UNUSED(folderPath)
-    Q_UNUSED(iconType)
-
-    return true;
-#endif
+    return {};
 }
 
 qint64 CommonUtility::freeDiskSpace(const QString &path) {
@@ -755,17 +743,8 @@ QString CommonUtility::languageCode(const Language language) {
     return englishCode;
 }
 
-SyncPath CommonUtility::getAppDir() {
-    const KDC::SyncPath dirPath(KDC::getAppDir_private());
-    return dirPath;
-}
-
-bool CommonUtility::hasDarkSystray() {
-    return KDC::hasDarkSystray_private();
-}
-
 SyncPath CommonUtility::getAppSupportDir() {
-    SyncPath dirPath(getAppSupportDir_private());
+    SyncPath dirPath(getGenericAppSupportDir());
 
     dirPath.append(APPLICATION_NAME);
     std::error_code ec;
@@ -1137,7 +1116,13 @@ void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory 
     }
 }
 
-#if defined(KD_MACOS)
+#if defined(KD_MACOS) || defined(KD_LINUX)
+bool CommonUtility::isLikeFileNotFoundError(const std::error_code &ec) noexcept {
+    return ec.value() == static_cast<int>(std::errc::no_such_file_or_directory);
+}
+#endif
+
+#ifdef KD_MACOS
 bool CommonUtility::isLiteSyncExtEnabled() {
     QProcess *process = new QProcess();
     process->start(
@@ -1374,4 +1359,29 @@ ReplicaSide CommonUtility::syncNodeTypeSide(SyncNodeType type) {
             return ReplicaSide::Unknown;
     }
 }
+
+bool CommonUtility::isWindows() {
+#ifdef _WIN32
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool CommonUtility::isMac() {
+#ifdef __APPLE__
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool CommonUtility::isLinux() {
+#if defined(__unix__)
+    return true;
+#else
+    return false;
+#endif
+}
+
 } // namespace KDC

@@ -54,6 +54,7 @@ build_folder="$PWD"
 cd /src
 
 conan_folder=/build/conan
+conan_dependencies_folder=/app/build/client/conan_dependencies/
 
 build_type="RelWithDebInfo"
 
@@ -75,6 +76,7 @@ cmake -DCMAKE_PREFIX_PATH="$QT_BASE_DIR" \
     -DKDRIVE_THEME_DIR="/src/infomaniak" \
     -DBUILD_UNIT_TESTS=0 \
     -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
+    -DCONAN_DEP_DIR="$conan_dependencies_folder" \
     "${CMAKE_PARAMS[@]}" \
     /src
 make "-j$(nproc)"
