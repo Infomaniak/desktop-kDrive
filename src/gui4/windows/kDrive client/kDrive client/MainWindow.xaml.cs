@@ -1,4 +1,3 @@
-using kDrive_client.Model;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -20,17 +19,17 @@ using Windows.Foundation.Collections;
 
 namespace kDrive_client
 {
+    /// <summary>
+    /// An empty window that can be used on its own or navigated to within a Frame.
+    /// </summary>
     public sealed partial class MainWindow : Window
     {
-        private DriveSelector DriveSelector = new DriveSelector();
         public MainWindow()
         {
             InitializeComponent();
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
             this.SetTitleBar(AppTitleBar);
-            DriveSelector.DriveSelectorFlyout = DriveSelection;
         }
-        static int count = 0;
 
         private void nvSample_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
@@ -47,21 +46,7 @@ namespace kDrive_client
                         contentFrame.Navigate(typeof(HomePage));
                         break;
                 }
-                DriveSelector.SelectedDrive.Name = "Drive A " + count++;
             }
         }
-
-        private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
-        {
-
-        }
     }
-
-    public class DriveSelector
-    {
-        public MenuFlyout? DriveSelectorFlyout { get; set; }
-        internal Drive SelectedDrive { get; set; } = new Drive();
-
-    }
-
 }
