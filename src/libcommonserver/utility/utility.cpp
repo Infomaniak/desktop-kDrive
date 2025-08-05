@@ -348,13 +348,12 @@ void Utility::strhex2str(const std::string &hexstr, std::string &str) {
     }
 }
 
-std::vector<std::string> Utility::splitStr(const std::string &str, char sep) {
+std::vector<std::string> Utility::splitStr(const std::string &str, const char sep) {
     std::vector<std::string> strings;
     std::istringstream ss(str);
     std::string s;
-    while (getline(ss, s, sep)) {
-        strings.push_back(s);
-    }
+    while (getline(ss, s, sep)) strings.push_back(s);
+
     return strings;
 }
 
