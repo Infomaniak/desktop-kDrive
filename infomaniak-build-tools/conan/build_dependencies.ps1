@@ -208,6 +208,11 @@ if ($LASTEXITCODE -ne 0) {
     Err "Failed to create qt Conan package."
 }
 
+& $ConanExe create "$RecipesFolder/sentry/all/" --version=0.7.10 --build=missing -s build_type=$BuildType --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter
+if ($LASTEXITCODE -ne 0) {
+    Err "Failed to create sentry Conan package."
+}
+
 Log "Installing Conan dependencies..."
 & $ConanExe install . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter  -c tools.cmake.cmaketoolchain:generator=Ninja -c tools.env.virtualenv:powershell=powershell -o "qt/*:qt_login_type=$qt_login_type"
 if ($LASTEXITCODE -ne 0) {
