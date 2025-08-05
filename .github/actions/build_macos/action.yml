@@ -53,7 +53,7 @@ runs:
             fi
         shell: bash
 
-      - name: Fetch dependencies
+      - name: Fetch lib dependencies
         run: |
           mkdir dependencies
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtWidgets.framework ./dependencies/
@@ -104,6 +104,15 @@ runs:
           done
         shell: bash
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
+
+      - name: Fetch kDrive dependencies (lst and vfs lib)
+        run: |
+          mkdir uncached_dependencies
+          cp ${{ github.workspace }}/build-macos/client/bin/*.lst ./uncached_dependencies/
+          cp ${{ github.workspace }}/build-macos/client/bin/kDrivecommonserver_vfs_mac.dylib ./uncached_dependencies/
+        shell: bash
+        if: ${{ steps.build.outcome == 'success' }}
+
 
       - name: Download sentry-cli for macOS
         run: curl -sL https://sentry.io/get-cli/ | sh || true
@@ -163,6 +172,14 @@ runs:
           retention-days: 1
           compression-level: 0
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
+
+      - name: Upload uncached build common files
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build-common-files-uncached
+          path: ./uncached_dependencies
+          retention-days: 1
+        if: ${{ steps.build.outcome == 'success' }}
 
       - name: Upload build test common executable
         uses: actions/upload-artifact@v4
