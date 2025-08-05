@@ -40,6 +40,11 @@ class KDriveDesktop(ConanFile):
     def layout(self):
         cmake_layout(self)
 
+    def build_requirements(self):
+        if self.settings.os == "Windows":
+            self.tool_requires("cmake/3.31.7")
+            self.tool_requires("ninja/1.13.1")
+
     def requirements(self):
         """
         Specify the dependencies required for this package.
