@@ -1,11 +1,11 @@
-from conan import ConanFile
+from conan import ConanFile, Version
 from conan.errors import ConanInvalidConfiguration
 from conan.tools.cmake import CMake, CMakeToolchain
+from conan.tools.files import rmdir
 from conan.tools.scm import Git
 from os.path import join as pjoin
 
-required_conan_version = ">=2.1"
-
+required_conan_version = ">=2"
 
 class SentryNativeConan(ConanFile):
     name = "sentry"
@@ -42,17 +42,14 @@ class SentryNativeConan(ConanFile):
 
     def _cache_variables(self, qt_package_folder):
         cache_variables = {
-            "CMAKE_BUILD_TYPE": self.build_type,
+            "CMAKE_BUILD_TYPE": "RelWithDebInfo",
             "SENTRY_INTEGRATION_QT": "YES",
-            "SENTRY_BACKEND": "crashpad",
+            "SENTRY_BACKEND": "breakpad" if Version(self.version) < "0.7.0" else "crashpad",
             "CMAKE_PREFIX_PATH": qt_package_folder,
             "SENTRY_BUILD_TESTS": "OFF",
             "SENTRY_BUILD_EXAMPLES": "OFF",
-            "SENTRY_BUILD_BENCHMARKS": "OFF",
+            "SENTRY_BUILD_SHARED_LIBS": "ON" if self.options.shared else "OFF",
         }
-        if self.settings.os == "Macos":
-            cache_variables["CMAKE_OSX_DEPLOYMENT_TARGET"] = "10.15"
-            cache_variables["CMAKE_OSX_ARCHITECTURES"] = "x86_64;arm64"
         return cache_variables
 
     def generate(self):
@@ -67,11 +64,12 @@ class SentryNativeConan(ConanFile):
 
         cmake = CMake(self)
         cmake.configure(variables=self._cache_variables(qt_package_folder))
-        cmake.build(build_type=self.build_type if self.settings.os == "Windows" else None)
+        cmake.build(build_type="RelWithDebInfo" if self.settings.os == "Windows" else None, target="sentry")
 
     def package(self):
         cmake = CMake(self)
-        cmake.install(build_type=self.build_type if self.settings.os == "Windows" else None)
+        cmake.install(build_type="RelWithDebInfo" if self.settings.os == "Windows" else None)
+        rmdir(self, pjoin(self.package_folder, "lib", "libsentry.dylib.dSYM"))
 
 
     def package_info(self):
@@ -79,4 +77,6 @@ class SentryNativeConan(ConanFile):
         # Here we use the same hack we used for Qt to ensure the link between the Qt package and the Sentry package is done correctly.
         self.cpp_info.set_property("cmake_build_modules", [ pjoin(self.package_folder, "lib", "cmake", "sentry", "sentry-config.cmake") ])
         self.cpp_info.set_property("cmake_find_mode", "none")
-        self.buildenv_info.prepend_path("CMAKE_PREFIX_PATH", self.package_folder)
+        for env in ( self.buildenv_info, self.runenv_info ):
+            env.prepend_path("PATH", pjoin(self.package_folder, "bin"))
+            env.prepend_path("CMAKE_PREFIX_PATH", self.package_folder)
