@@ -36,6 +36,12 @@ runs:
         run: cp -r ${{ github.workspace }}/build-windows/cache/ ${{ github.workspace }}/build-windows/test/
         shell: powershell
 
+      - name: Download uncached common files
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build-common-files-uncached
+          path: ${{ github.workspace }}/build-windows/test/
+
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
