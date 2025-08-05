@@ -84,7 +84,6 @@ runs:
       - name: Fetch dependencies
         run: | 
           mkdir dependencies
-          cp ${{ github.workspace }}/build-linux/build/bin/sync-exclude.lst ./dependencies/
           cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Widgets.* ./dependencies/ 
           cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Gui.* ./dependencies/
           cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Network.* ./dependencies/

@@ -73,9 +73,9 @@ runs:
       - name: Fetch dependencies
         run: |
           mkdir dependencies
-          cp "${{ github.workspace }}/build-windows/install/bin/*.dll" ./dependencies/
-          cp "${{ github.workspace }}/build-windows/install/bin/sync-exclude.lst" ./dependencies/
-          cp "${{ github.workspace }}/build-windows/install/bin/*.dll" ./dependencies/
+          Get-ChildItem -Path ${{ github.workspace }}/build-windows/install/bin/ -Filter "*.dll" |
+           Where-Object { $_.Name -ne "kDrivecommonserver_vfs_win.dll" } |
+           Copy-Item -Destination ./dependencies/
           cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Widgets.dll" ./dependencies/
           cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Gui.dll" ./dependencies/
           cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Network.dll" ./dependencies/

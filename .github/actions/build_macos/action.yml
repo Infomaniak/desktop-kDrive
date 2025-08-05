@@ -79,7 +79,10 @@ runs:
           cp /usr/local/lib/libzstd.1.dylib ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/crashpad_handler ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/*.lst ./dependencies/
-          cp ${{ github.workspace }}/build-macos/client/bin/*.dylib ./dependencies/
+          # This lib is not cached and therefore is uploaded as a separate artifact
+          find "${{ github.workspace }}/build-macos/client/bin" -name "*.dylib" \
+            -not -name "kDrivecommonserver_vfs_mac.dylib" \
+            -exec cp {} ./dependencies/ \;
         shell: bash
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }} # Only copy dependencies for debug builds, release builds will have them in the app bundle
 
