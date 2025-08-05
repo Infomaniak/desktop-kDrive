@@ -61,6 +61,7 @@ namespace kDrive_client.TrayIcon
         }
         private void ShowWindowCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
         {
+
             if (_window == null)
             {
                 _window = new MainWindow();
@@ -72,17 +73,18 @@ namespace kDrive_client.TrayIcon
                         _window.Hide();
                     }
                 };
-                _window.Show();
-                return;
             }
 
             // Bring to front
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(_window);
             var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
             var appWindow = AppWindow.GetFromWindowId(windowId);
+            appWindow.Resize(new Windows.Graphics.SizeInt32(1200, 668));
             if (appWindow.Presenter is OverlappedPresenter presenter)
             {
-
+                presenter.IsMaximizable = false;
+                presenter.IsMinimizable = true;
+                presenter.IsResizable = false;
                 presenter.Minimize();
                 presenter.Restore();
             }
