@@ -238,7 +238,7 @@ In `Qt 6.2.3`, select:
 - Sources
 - Qt 5 Compatibility Module
 
-In `Qt 6.2.3 Additional Libraries`, select :
+In `Qt 6.2.3 Additional Libraries`, select:
 - Qt WebEngine
 - Qt Positioning
 - Qt WebChannel
