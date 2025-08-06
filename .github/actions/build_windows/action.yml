@@ -73,9 +73,10 @@ runs:
       - name: Fetch dependencies
         run: |
           mkdir dependencies
-          cp "${{ github.workspace }}/build-windows/install/bin/*.dll" ./dependencies/
-          cp "${{ github.workspace }}/build-windows/install/bin/sync-exclude.lst" ./dependencies/
-          cp "${{ github.workspace }}/build-windows/install/bin/*.dll" ./dependencies/
+          # kDrivecommonserver_vfs_win lib is not cached and therefore is uploaded as a separate artifact
+          Get-ChildItem -Path ${{ github.workspace }}/build-windows/install/bin/ -Filter "*.dll" |
+           Where-Object { $_.Name -ne "kDrivecommonserver_vfs_win.dll" } |
+           Copy-Item -Destination ./dependencies/
           cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Widgets.dll" ./dependencies/
           cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Gui.dll" ./dependencies/
           cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Network.dll" ./dependencies/
@@ -114,12 +115,31 @@ runs:
               }
             }
           }
+
+      - name:  Fetch kDrive dependencies (lst and vfs lib)
+        run: |
+          mkdir uncached_dependencies
+          cp "${{ github.workspace }}/build-windows/install/bin/sync-exclude.lst" ./uncached_dependencies/
+          cp "${{ github.workspace }}/build-windows/install/bin/kDrivecommonserver_vfs_win.dll" ./uncached_dependencies/
+        shell: powershell
+        if: steps.build.outcome == 'success'
+
       - name: Upload build common files
         uses: actions/upload-artifact@v4
         with:
           name: windows-build-common-files
           path: |
               ./dependencies/*
+          retention-days: 1
+          compression-level: 0
+        if: steps.build.outcome == 'success'
+
+      - name: Upload uncached build common files
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-common-files-uncached
+          path: |
+              ./uncached_dependencies/*
           retention-days: 1
           compression-level: 0
         if: steps.build.outcome == 'success'
