@@ -206,7 +206,7 @@ class QtConan(ConanFile):
         """
         if mount_point is None or self.settings.os != "Macos":
             return
-        self.output.highlight("Unounting Qt installer DMG...")
+        self.output.highlight("Unmounting Qt installer DMG...")
         self.run(f"hdiutil detach '{mount_point}'")
 
     def source(self):
