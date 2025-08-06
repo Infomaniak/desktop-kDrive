@@ -103,13 +103,6 @@ extract_debug () {
 }
 
 build_release() {
-  QTDIR="$(find_qt_conan_path "$build_dir")"
-  export QTDIR
-  export QMAKE="$QTDIR/bin/qmake"
-  export PATH="$QTDIR/bin:$QTDIR/libexec:/home/runner/.local/bin:$PATH"
-  export LD_LIBRARY_PATH="$QTDIR/lib:$LD_LIBRARY_PATH"
-  export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
-
   mkdir -p "$app_dir"
   mkdir -p "$build_dir"
 
@@ -123,6 +116,13 @@ build_release() {
     echo "Conan toolchain file not found: $conan_toolchain_file"
     exit 1
   fi
+
+  QTDIR="$(find_qt_conan_path "$build_dir")"
+  export QTDIR
+  export QMAKE="$QTDIR/bin/qmake"
+  export PATH="$QTDIR/bin:$QTDIR/libexec:/home/runner/.local/bin:$PATH"
+  export LD_LIBRARY_PATH="$QTDIR/lib:$LD_LIBRARY_PATH"
+  export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
   source "$conan_generator_folder/conanbuild.sh"
 
