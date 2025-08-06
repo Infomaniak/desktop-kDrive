@@ -176,7 +176,8 @@ void LocalDeleteJob::runJob() {
     if (!canRun()) return;
 
     // Make sure we are allowed to propagate the change
-    PermissionsHolder _(_absolutePath.parent_path(), _logger);
+    PermissionsHolder permsHolder(_absolutePath.parent_path(), _logger);
+    PermissionsHolder permsHolder2(_absolutePath, _logger);
 
     const bool tryMoveToTrash =
             (ParametersCache::instance()->parameters().moveToTrash() && !_isDehydratedPlaceholder) || _forceToTrash;
