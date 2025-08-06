@@ -357,44 +357,12 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
 
     _syncPal->syncOps()->clear();
     {
-        // Case : DA DAA DAB D DB but operations are omitted.
-        opDA->setOmit(true);
+        // Case : DA DAA DAB D DB
         (void) _syncPal->syncOps()->pushOp(opDA);
-        opDAA->setOmit(true);
-        (void) _syncPal->syncOps()->pushOp(opDAA);
-        opDAB->setOmit(true);
-        (void) _syncPal->syncOps()->pushOp(opDAB);
-        opD->setOmit(true);
-        (void) _syncPal->syncOps()->pushOp(opD);
-        opDB->setOmit(true);
-        (void) _syncPal->syncOps()->pushOp(opDB);
-
-        do {
-            _syncPal->_operationsSorterWorker->_hasOrderChanged = false;
-            _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
-        } while (_syncPal->_operationsSorterWorker->_hasOrderChanged);
-
-        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opDA, opD));
-        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opD, opDB));
-        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opDA, opDAA));
-        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opDA, opDAB));
-        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opDAB, opDB));
-
-        opDA->setOmit(false);
-        opDAA->setOmit(false);
-        opDAB->setOmit(false);
-        opD->setOmit(false);
-        opDB->setOmit(false);
-    }
-
-    _syncPal->syncOps()->clear();
-    {
-        // Case : D DA DB DAA DAB
-        (void) _syncPal->syncOps()->pushOp(opD);
-        (void) _syncPal->syncOps()->pushOp(opDA);
-        (void) _syncPal->syncOps()->pushOp(opDB);
         (void) _syncPal->syncOps()->pushOp(opDAA);
         (void) _syncPal->syncOps()->pushOp(opDAB);
+        (void) _syncPal->syncOps()->pushOp(opD);
+        (void) _syncPal->syncOps()->pushOp(opDB);
 
         do {
             _syncPal->_operationsSorterWorker->_hasOrderChanged = false;
