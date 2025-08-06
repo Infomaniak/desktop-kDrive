@@ -47,7 +47,7 @@ class KDriveDesktop(ConanFile):
 
     def build_requirements(self):
         if self.settings.os == "Windows":
-            self.tool_requires("cmake/3.31.7")
+            self.tool_requires("cmake/[>=3.16.Z]")
             self.tool_requires("ninja/1.13.1")
 
     def requirements(self):
