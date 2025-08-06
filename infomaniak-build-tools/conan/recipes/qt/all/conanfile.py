@@ -91,6 +91,7 @@ class QtConan(ConanFile):
             modules.append(f"qt.qt{major}.{compact}.debug_info") # Qt Debug Information Files for Windows
 
         if self.settings.os == "Linux":
+            modules.append(f"qt.qt{major}.{compact}.addons.qtserialport")
             modules.append("qt.tools.qtcreator_gui")
 
         return modules
