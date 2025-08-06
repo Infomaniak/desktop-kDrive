@@ -225,7 +225,7 @@ In Qt 6.2.3 Additional Libraries, select:
 - Qt WebChannel
 - Qt WebView
 
-If, following the installation, you cannot load the Qt platform plugin xcb, you can run the following command :
+If, following the installation, you cannot load the Qt platform plugin xcb, you can run the following command:
 ```bash
 sudo apt install libxcb-cursor0
 ```
