@@ -212,7 +212,7 @@ if [ "$platform" = "darwin" ]; then
 fi
 
 qt_version="6.2.3"
-if [[ "$platform" == "Linux" ]] && [[ "$(uname -m)" == "arm64" ]]; then
+if [[ "$platform" == "Linux" ]] && [[ "$(uname -m)" == "aarch64" ]]; then
   qt_version="6.7.3"
 fi
 
