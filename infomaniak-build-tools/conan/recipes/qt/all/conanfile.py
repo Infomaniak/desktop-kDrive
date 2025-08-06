@@ -57,7 +57,10 @@ class QtConan(ConanFile):
         if self.settings.os == "Macos":
             return "clang_64"
         elif self.settings.os == "Linux":
-            return "gcc_64"
+            if self._get_real_arch() == "arm64":
+                return "linux_gcc_arm64"
+            else:
+                return "gcc_64"
         elif self.settings.os == "Windows":
             return "win64_msvc2019_64"
         else:
