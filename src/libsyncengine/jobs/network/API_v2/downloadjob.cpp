@@ -477,7 +477,7 @@ bool DownloadJob::moveTmpFile() {
         static const bool forceCopy = CommonUtility::envVarValue("KDRIVE_PRESERVE_PERMISSIONS_ON_CREATE") == "1";
         if (_isCreate && !forceCopy) {
             // Make sure we are allowed to propagate the change
-            PermissionsHolder _(_localpath.parent_path());
+            PermissionsHolder _(_localpath.parent_path(), _logger);
 
             // Move file
             IoError ioError = IoError::Success;
@@ -495,7 +495,7 @@ bool DownloadJob::moveTmpFile() {
 
         if (!_isCreate || crossDeviceLinkError || forceCopy) {
             // Make sure we are allowed to propagate the change
-            PermissionsHolder _(_localpath.parent_path());
+            PermissionsHolder _(_localpath.parent_path(), _logger);
 
             // Copy file content (i.e. when the target exists, do not change its node id).
             std::error_code ec;

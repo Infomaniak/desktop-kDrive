@@ -90,7 +90,7 @@ void LocalMoveJob::runJob() {
     }
 
     // Make sure we are allowed to propagate the change
-    PermissionsHolder _(_dest.parent_path());
+    PermissionsHolder _(_dest.parent_path(), _logger);
 
     std::error_code ec;
     std::filesystem::rename(_source, _dest, ec);

@@ -65,7 +65,7 @@ void LocalCreateDirJob::runJob() {
     }
 
     // Make sure we are allowed to propagate the change
-    PermissionsHolder _(_destFilePath.parent_path());
+    PermissionsHolder _(_destFilePath.parent_path(), _logger);
 
     IoError ioError = IoError::Success;
     if (IoHelper::createDirectory(_destFilePath, false, ioError) && ioError == IoError::Success) {

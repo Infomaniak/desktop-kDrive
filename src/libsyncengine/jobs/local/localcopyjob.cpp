@@ -83,7 +83,7 @@ void LocalCopyJob::runJob() {
     }
 
     // Make sure we are allowed to propagate the change
-    PermissionsHolder _(_dest.parent_path());
+    PermissionsHolder _(_dest.parent_path(), _logger);
 
     try {
         std::filesystem::copy(_source, _dest);

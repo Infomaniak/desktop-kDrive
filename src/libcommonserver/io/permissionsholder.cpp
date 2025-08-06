@@ -29,8 +29,9 @@ struct AccessRights {
 static std::unordered_map<SyncPath, std::pair<uint64_t, AccessRights>, PathHashFunction> heldPermissions;
 static std::mutex mutex;
 
-PermissionsHolder::PermissionsHolder(const SyncPath &path) :
-    _path(path) {
+PermissionsHolder::PermissionsHolder(const SyncPath &path, const log4cplus::Logger logger) :
+    _path(path),
+    _logger(logger) {
     AccessRights accessRights;
     if (const auto ioError = IoHelper::getRights(path, accessRights.read, accessRights.write, accessRights.exec);
         ioError != IoError::Success) {
