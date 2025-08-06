@@ -22,7 +22,7 @@
 #include "requests/parameterscache.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommon/utility/utility.h"
-#include "libsyncengine/jobs/jobmanager.h"
+#include "libsyncengine/jobs/syncjobmanager.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 
 #include "test_utility/testhelpers.h"
@@ -218,7 +218,7 @@ void MockAppServer::cleanup() {
 
     // Reset static variables
     AppServer::reset();
-    JobManager::instance()->clear();
+    SyncJobManager::clear();
     ParmsDb::reset();
     ParametersCache::reset();
 }

@@ -24,7 +24,7 @@
 
 #include "testincludes.h"
 #include "utility/types.h"
-#include "jobs/abstractjob.h"
+#include "jobs/syncjob.h"
 #include "test_utility/testhelpers.h"
 #include "jobs/network/API_v2/upload/uploadjob.h"
 
@@ -79,7 +79,7 @@ class TestJobManager : public CppUnit::TestFixture, public TestBase {
         SyncPath _pict3Path = _localTestDirPath_pictures / "picture-3.jpg";
         SyncPath _pict4Path = _localTestDirPath_pictures / "picture-4.jpg";
         SyncPath _pict5Path = _localTestDirPath_pictures / "picture-5.jpg";
-        std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _ongoingJobs;
+        std::unordered_map<UniqueId, std::shared_ptr<SyncJob>> _ongoingJobs;
         std::recursive_mutex _mutex;
 
         void callback(UniqueId jobId);

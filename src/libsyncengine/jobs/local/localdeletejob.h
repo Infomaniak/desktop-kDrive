@@ -18,13 +18,13 @@
 
 #pragma once
 
-#include "jobs/abstractjob.h"
+#include "jobs/syncjob.h"
 #include "syncpal/syncpal.h"
 
 
 namespace KDC {
 
-class LocalDeleteJob : public AbstractJob {
+class LocalDeleteJob : public SyncJob {
     public:
         LocalDeleteJob(const SyncPalInfo &syncInfo, const SyncPath &relativePath, bool isDehydratedPlaceholder, NodeId remoteId,
                        bool forceToTrash = false); // Check existence of remote counter part and abort if needed.

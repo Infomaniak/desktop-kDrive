@@ -53,7 +53,7 @@ LogUploadJob::LogUploadJob(const bool includeArchivedLog, const std::function<vo
 }
 
 void LogUploadJob::abort() {
-    AbstractJob::abort();
+    SyncJob::abort();
     const LogUploadState logUploadState = getDbUploadState();
 
     if (logUploadState == LogUploadState::CancelRequested || logUploadState == LogUploadState::Canceled) {

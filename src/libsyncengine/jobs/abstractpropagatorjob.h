@@ -18,11 +18,11 @@
 
 #pragma once
 
-#include "abstractjob.h"
+#include "syncjob.h"
 
 namespace KDC {
 
-class AbstractPropagatorJob : public AbstractJob {
+class AbstractPropagatorJob : public SyncJob {
     public:
         inline bool restartSyncPal() const { return _restartSyncPal; }
         inline void setRestartSyncPal(bool newRestartSyncPal) { _restartSyncPal = newRestartSyncPal; }

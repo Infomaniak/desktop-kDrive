@@ -18,13 +18,13 @@
 
 #pragma once
 
-#include "jobs/abstractjob.h"
+#include "jobs/syncjob.h"
 
 #include <chrono>
 
 namespace KDC {
 
-class LogUploadJob : public AbstractJob, public std::enable_shared_from_this<LogUploadJob> {
+class LogUploadJob : public SyncJob, public std::enable_shared_from_this<LogUploadJob> {
     public:
         LogUploadJob(bool includeArchivedLog, const std::function<void(LogUploadState, int)> &progressCallback,
                      const std::function<void(const Error &error)> &addErrorCallback);

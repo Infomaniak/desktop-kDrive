@@ -17,7 +17,7 @@
  */
 
 #include "remotefilesystemobserverworker.h"
-#include "jobs/jobmanager.h"
+#include "jobs/syncjobmanager.h"
 #include "jobs/network/API_v2/listing/continuefilelistwithcursorjob.h"
 #include "jobs/network/API_v2/listing/csvfullfilelistwithcursorjob.h"
 #include "jobs/network/API_v2/listing/longpolljob.h"
@@ -275,8 +275,8 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
-    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_LOW);
-    while (!JobManager::instance()->isJobFinished(job->jobId())) {
+    SyncJobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_LOW);
+    while (!SyncJobManager::instance()->isJobFinished(job->jobId())) {
         if (stopAsked()) {
             return ExitCode::Ok;
         }
@@ -412,8 +412,8 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
             return AbstractTokenNetworkJob::exception2ExitCode(e);
         }
 
-        JobManager::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_LOW);
-        while (!JobManager::instance()->isJobFinished(notifyJob->jobId())) {
+        SyncJobManager::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_LOW);
+        while (!SyncJobManager::instance()->isJobFinished(notifyJob->jobId())) {
             if (stopAsked()) {
                 LOG_DEBUG(_logger, "Request " << notifyJob->jobId() << ": aborting LongPoll job");
                 notifyJob->abort();
