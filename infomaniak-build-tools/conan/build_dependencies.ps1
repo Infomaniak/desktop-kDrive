@@ -203,7 +203,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $qt_login_type = if ($CI) { "envvars" } else { "ini" }
-& $ConanExe create "$RecipesFolder/qt/all/" --build=missing -s build_type=$BuildType --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter -o "&:qt_login_type=$qt_login_type"
+& $ConanExe create "$RecipesFolder/qt/all/" --version="6.2.3" --build=missing -s build_type=$BuildType --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter -o "&:qt_login_type=$qt_login_type"
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to create qt Conan package."
 }

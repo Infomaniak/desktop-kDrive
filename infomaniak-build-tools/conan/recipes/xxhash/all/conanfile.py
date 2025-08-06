@@ -78,7 +78,7 @@ class XxHashConan(ConanFile):
 
     def build_requirements(self):
         if self.settings.os == "Windows":
-            self.tool_requires("ninja/1.13.1")
+            self.tool_requires("ninja/[>=1.11.1]")
 
     def generate(self):
         tc = CMakeToolchain(self)

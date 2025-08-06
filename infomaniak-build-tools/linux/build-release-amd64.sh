@@ -103,13 +103,6 @@ extract_debug () {
 }
 
 build_release() {
-  QTDIR="$(find_qt_conan_path "$build_dir")"
-  export QTDIR
-  export QMAKE="$QTDIR/bin/qmake"
-  export PATH="$QTDIR/bin:$QTDIR/libexec:/home/runner/.local/bin:$PATH"
-  export LD_LIBRARY_PATH="$QTDIR/lib:$LD_LIBRARY_PATH"
-  export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
-
   mkdir -p "$app_dir"
   mkdir -p "$build_dir"
 
@@ -123,6 +116,13 @@ build_release() {
     echo "Conan toolchain file not found: $conan_toolchain_file"
     exit 1
   fi
+
+  QTDIR="$(find_qt_conan_path "$build_dir")"
+  export QTDIR
+  export QMAKE="$QTDIR/bin/qmake"
+  export PATH="$QTDIR/bin:$QTDIR/libexec:/home/runner/.local/bin:$PATH"
+  export LD_LIBRARY_PATH="$QTDIR/lib:$LD_LIBRARY_PATH"
+  export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
   source "$conan_generator_folder/conanbuild.sh"
 
@@ -189,7 +189,7 @@ package_release() {
   cp "$src_dir/sync-exclude-linux.lst" "$app_dir/usr/bin/sync-exclude.lst"
   cp "$app_dir/usr/share/icons/hicolor/512x512/apps/kdrive-win.png" "$app_dir"
 
-  cp "$QT_BASE_DIR/lib/libQt6SerialPort.so.6" "$app_dir/usr/lib/"
+  cp "$QTDIR/lib/libQt6SerialPort.so.6" "$app_dir/usr/lib/"
 
   "$HOME/desktop-setup/linuxdeploy-x86_64.AppImage" --appdir "$app_dir" -e "$app_dir/usr/bin/kDrive" -i "$app_dir/kdrive-win.png" -d "$app_dir/usr/share/applications/kDrive_client.desktop" --plugin qt --output appimage -v0
 

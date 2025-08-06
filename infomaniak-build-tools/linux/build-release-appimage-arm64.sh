@@ -50,6 +50,9 @@ conan_dependencies_folder=/app/build/client/conan_dependencies/
 
 build_type="RelWithDebInfo"
 
+# Dependency needed by libQt6WebEngineCore.so.6.7.3
+apt update && apt install libwebpdemux2 -y # TODO Should be inside the Dockerfile
+
 bash /src/infomaniak-build-tools/conan/build_dependencies.sh $build_type --output-dir="$conan_folder"
 
 conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
@@ -63,7 +66,7 @@ source "$(dirname "$conan_toolchain_file")/conanbuild.sh"
 
 source /src/infomaniak-build-tools/conan/common-utils.sh
 
-# Set Qt-6.2
+# Set Qt
 QTDIR=$(find_qt_conan_path "/build")
 export QTDIR
 export QMAKE="$QTDIR/bin/qmake"

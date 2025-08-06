@@ -28,6 +28,9 @@ use_release_profile=false
 # Preserve original arguments for output_dir resolution
 all_args=("$@")
 
+log(){ echo "[INFO] $*"; }
+error(){ echo "[ERROR] $*" >&2; exit 1; }
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     Debug|Release|RelWithDebInfo)
@@ -66,9 +69,6 @@ done
 
 
 set -euox pipefail
-
-log(){ echo "[INFO] $*"; }
-error(){ echo "[ERROR] $*" >&2; exit 1; }
 
 function get_platform {
   platform="$(uname | tr '[:upper:]' '[:lower:]')"
@@ -200,7 +200,6 @@ log "- Output directory: '$output_dir'"
 echo
 
 
-qt_login_type_param="ini" # By default, use ini file for QT installer login type
 
 # Create the conan package for xxHash.
 conan_recipes_folder="$conan_remote_base_folder/recipes"
@@ -212,8 +211,13 @@ if [ "$platform" = "darwin" ]; then
   conan create "$conan_recipes_folder/openssl-universal/all/" --build=missing -s:a=build_type="$build_type" --profile:all="$conan_profile" -r="$local_recipe_remote_name" -r=conancenter
 fi
 
+qt_version="6.2.3"
+if [[ "$platform" == "linux" ]] && [[ "$(uname -m)" == "aarch64" ]]; then
+  qt_version="6.7.3"
+fi
+
 log "Creating package Qt..."
-conan create "$conan_recipes_folder/qt/all/" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter
+conan create "$conan_recipes_folder/qt/all/" --version="$qt_version" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter
 
 
 log "Creating package sentry..."

@@ -1,6 +1,7 @@
 import glob
 import os
 from os.path import join as pjoin
+import platform
 
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration, ConanException
@@ -9,7 +10,6 @@ from conan.tools.files import copy, rmdir, mkdir
 
 class QtConan(ConanFile):
     name = "qt"
-    version = "6.2.3"
     settings = "os", "arch", "compiler", "build_type"
 
     options = {
@@ -24,13 +24,18 @@ class QtConan(ConanFile):
     }
 
     @staticmethod
+    def _get_real_arch():
+        return "arm64" if str(platform.machine().lower()) in [ "arm64", "aarch64" ] else "x64"
+
+    @staticmethod
     def _get_distant_name(os_key=None):
         """
         Get the name of the installer to download based on the OS and architecture.
         See 'https://download.qt.io/official_releases/online_installers/' for available installers.
         :return: 'qt-online-installer-{os}-{architecture}-online.{ext}' where os is 'mac', 'linux' or 'windows, architecture is 'arm64' or 'x64' on Linux or Windows and 'x64' on macOS, and ext is 'dmg','run' or 'exe.
         """
-        import platform # Here we don't use self.settings.os or self.settings.arch because the settings are not available yet inside the source() method.
+
+        # Here we don't use self.settings.os or self.settings.arch because the settings are not available yet inside the source() method.
         if os_key is None:
             os_key = platform.system().lower()
         data_map = {
@@ -38,14 +43,13 @@ class QtConan(ConanFile):
             "linux": [ "linux", "run"],
             "windows": [ "windows", "exe"]
         }
-        os_name = data_map.get(os_key, "windows")[0]
-        ext = data_map.get(os_key, "exe")[1]
+        os_name, ext = data_map.get(os_key, ("windows", "exe"))
 
         # For macOS, we always use x64 arch because the installer is universal and supports both arm64 and x64.
         if os_name in [ "mac", "windows" ]:
             architecture = "x64"
         else:
-            architecture = "arm64" if str(platform.machine().lower()) in [ "arm64", "aarch64" ] else "x64"
+            architecture = QtConan._get_real_arch()
 
         return f"qt-online-installer-{os_name}-{architecture}-online.{ext}"
 
@@ -53,7 +57,10 @@ class QtConan(ConanFile):
         if self.settings.os == "Macos":
             return "clang_64"
         elif self.settings.os == "Linux":
-            return "gcc_64"
+            if self._get_real_arch() == "arm64":
+                return "linux_gcc_arm64"
+            else:
+                return "gcc_64"
         elif self.settings.os == "Windows":
             return "win64_msvc2019_64"
         else:
@@ -87,6 +94,7 @@ class QtConan(ConanFile):
             modules.append(f"qt.qt{major}.{compact}.debug_info") # Qt Debug Information Files for Windows
 
         if self.settings.os == "Linux":
+            modules.append(f"qt.qt{major}.{compact}.addons.qtserialport")
             modules.append("qt.tools.qtcreator_gui")
 
         return modules
@@ -209,7 +217,7 @@ class QtConan(ConanFile):
         """
         if mount_point is None or self.settings.os != "Macos":
             return
-        self.output.highlight("Unounting Qt installer DMG...")
+        self.output.highlight("Unmounting Qt installer DMG...")
         self.run(f"hdiutil detach '{mount_point}'")
 
     def source(self):
@@ -274,15 +282,22 @@ class QtConan(ConanFile):
 
     def _subfolder_install(self):
         """
-        Get the subfolder name where the Qt installation is done, based on the OS.
-        :return: The subfolder name where the Qt installation is done, e.g. 'macos', 'gcc_64' or 'msvc2019_64'.
+        Get the subfolder name where the Qt installation is done, based on the OS and architecture.
+        :return: The subfolder name, e.g., 'macos', 'gcc_64', or 'msvc2019_64'.
         """
         subfolder_map = {
-            "Macos": "macos",
-            "Linux": "gcc_64",
-            "Windows": "msvc2019_64"
+            ("Macos", "arm64"): "macos",
+            ("Macos", "x64"): "macos",
+            ("Linux", "arm64"): "gcc_arm64",
+            ("Linux", "x64"): "gcc_64",
+            ("Windows", "arm64"): "msvc2019_64",
+            ("Windows", "x64"): "msvc2019_64",
         }
-        return subfolder_map.get(str(self.settings.os))
+        key = (str(self.settings.os), str(self._get_real_arch()))
+        try:
+            return subfolder_map[key]
+        except KeyError:
+            raise ConanInvalidConfiguration(f"Unsupported combination: {key}")
 
     def package(self):
         self.output.highlight("This step can take a while, please be patient...")

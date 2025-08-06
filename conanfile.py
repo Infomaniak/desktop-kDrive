@@ -1,3 +1,4 @@
+import platform
 import textwrap
 
 from conan import ConanFile
@@ -41,8 +42,8 @@ class KDriveDesktop(ConanFile):
 
     def build_requirements(self):
         if self.settings.os == "Windows":
-            self.tool_requires("cmake/3.31.7")
-            self.tool_requires("ninja/1.13.1")
+            self.tool_requires("cmake/[>=3.16.Z]")
+            self.tool_requires("ninja/[>=1.11.1]")
 
     def requirements(self):
         """
@@ -52,7 +53,11 @@ class KDriveDesktop(ConanFile):
         - `log4cplus/2.1.2`: A C++ logging library.
         :return: None
         """
-        self.requires("qt/6.2.3") # From local recipe, using the qt online installer.
+        # From local recipe, using the qt online installer.
+        if self.settings.os == "Linux" and str(platform.machine().lower()) in [ "arm64", "aarch64" ]: # linux arm64
+            self.requires("qt/6.7.3")
+        else:
+            self.requires("qt/6.2.3")
         self.requires("xxhash/0.8.2") # From local recipe
         # log4cplus
         log4cplus_options = { "shared": True, "unicode": True }
