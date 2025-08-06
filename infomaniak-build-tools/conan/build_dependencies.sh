@@ -200,7 +200,6 @@ log "- Output directory: '$output_dir'"
 echo
 
 
-qt_login_type_param="ini" # By default, use ini file for QT installer login type
 
 # Create the conan package for xxHash.
 conan_recipes_folder="$conan_remote_base_folder/recipes"
