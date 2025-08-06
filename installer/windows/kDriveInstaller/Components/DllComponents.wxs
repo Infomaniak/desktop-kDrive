@@ -2,7 +2,6 @@
   <Fragment>
     <ComponentGroup Id="DLLComponents" Directory="INSTALLFOLDER">
       <Component Guid="96EBFD2F-1509-42B6-9768-079D6C989865">
-        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/d3dcompiler_47.dll" />
         <File Source="$(desktop-kDriveDir)/build-windows/install/bin/KDContextMenu.dll" />
         <File Source="$(desktop-kDriveDir)/build-windows/install/bin/KDOverlays.dll" />
         <File Source="$(desktop-kDriveDir)/build-windows/install/bin/kDrivecommonserver_vfs_win.dll" />
