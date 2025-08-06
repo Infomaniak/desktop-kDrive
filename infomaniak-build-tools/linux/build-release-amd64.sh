@@ -189,7 +189,7 @@ package_release() {
   cp "$src_dir/sync-exclude-linux.lst" "$app_dir/usr/bin/sync-exclude.lst"
   cp "$app_dir/usr/share/icons/hicolor/512x512/apps/kdrive-win.png" "$app_dir"
 
-  cp "$QT_BASE_DIR/lib/libQt6SerialPort.so.6" "$app_dir/usr/lib/"
+  cp "$QTDIR/lib/libQt6SerialPort.so.6" "$app_dir/usr/lib/"
 
   "$HOME/desktop-setup/linuxdeploy-x86_64.AppImage" --appdir "$app_dir" -e "$app_dir/usr/bin/kDrive" -i "$app_dir/kdrive-win.png" -d "$app_dir/usr/share/applications/kDrive_client.desktop" --plugin qt --output appimage -v0
 
