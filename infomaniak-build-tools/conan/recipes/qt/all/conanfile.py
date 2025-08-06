@@ -38,8 +38,7 @@ class QtConan(ConanFile):
             "linux": [ "linux", "run"],
             "windows": [ "windows", "exe"]
         }
-        os_name = data_map.get(os_key, "windows")[0]
-        ext = data_map.get(os_key, "exe")[1]
+        os_name, ext = data_map.get(os_key, ("windows", "exe"))
 
         # For macOS, we always use x64 arch because the installer is universal and supports both arm64 and x64.
         if os_name in [ "mac", "windows" ]:
