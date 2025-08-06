@@ -219,7 +219,7 @@ In QT 6.2.3, select :
 - Desktop gcc 64-bits
 - Qt 5 Compatibility Module
 
-In Qt 6.2.3 Additional Libraries, select :
+In Qt 6.2.3 Additional Libraries, select:
 - Qt WebEngine
 - Qt Positioning
 - Qt WebChannel
