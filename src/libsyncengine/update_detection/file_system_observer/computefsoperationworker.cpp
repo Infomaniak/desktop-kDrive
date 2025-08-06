@@ -31,7 +31,11 @@ namespace KDC {
 ComputeFSOperationWorker::ComputeFSOperationWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                    const std::string &shortName) :
     ISyncWorker(syncPal, name, shortName),
-    _syncDbReadOnlyCache(syncPal->syncDb()->cache()) {}
+    _syncDbReadOnlyCache(syncPal->syncDb()->cache()) {
+    // Resolution for the modification time is 2s on FAT filesystems:
+    // https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-filetime
+    if (CommonUtility::isFAT(_syncPal->localPath())) _timeDifferenceThresholdForEdit = 1;
+}
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(SyncDbReadOnlyCache &testSyncDbReadOnlyCache, const std::string &name,
                                                    const std::string &shortName) :
@@ -174,7 +178,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         return ExitCode::DataError;
     }
 
-    const auto dbLastModified = dbNode.lastModified(side);
+    const auto dbModificationTime = dbNode.lastModified(side);
     const auto dbName = dbNode.name(side);
     const auto &dbPath = side == ReplicaSide::Local ? localDbPath : remoteDbPath;
     const auto snapshot = _syncPal->snapshot(side);
@@ -272,7 +276,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         // Delete operation
         const auto fsOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(),
                                                         dbNode.created().has_value() ? dbNode.created().value() : 0,
-                                                        dbLastModified, dbNode.size(), dbPath);
+                                                        dbModificationTime, dbNode.size(), dbPath);
         opSet->insertOp(fsOp);
         logOperationGeneration(snapshot->side(), fsOp);
 
@@ -307,17 +311,19 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     }
 
     // Detect EDIT
-    const SyncTime snapshotLastModified = snapshot->lastModified(nodeId);
+    const SyncTime snapshotModificationTime = snapshot->lastModified(nodeId);
+    // On FAT filesystems, the time resolution for modification time is 2 seconds. Therefor, we ignore EDIT operations if the
+    // difference between modification time in DB and the one on the filesystem is less or equal to 1sec.
+    const bool modifiedTimeDiffIsEnough = abs(snapshotModificationTime - dbModificationTime) > _timeDifferenceThresholdForEdit;
     const SyncTime snapshotCreatedAt = snapshot->createdAt(nodeId);
     const SyncTime dbCreatedAt = dbNode.created().has_value() ? dbNode.created().value() : 0;
+    const auto sameSize = snapshot->isLink(nodeId) || snapshot->size(nodeId) == dbNode.size();
     // Size can differ for links between remote and local replica, do not check it in that case
-    if (const auto sameSize = snapshot->isLink(nodeId) || snapshot->size(nodeId) == dbNode.size();
-        (snapshotLastModified != dbLastModified || !sameSize ||
-         (snapshotCreatedAt != dbCreatedAt && side == ReplicaSide::Local)) &&
-        dbNode.type() == NodeType::File) {
+    if (dbNode.type() == NodeType::File &&
+        (modifiedTimeDiffIsEnough || !sameSize || (snapshotCreatedAt != dbCreatedAt && side == ReplicaSide::Local))) {
         // Edit operation
         const auto fsOp = std::make_shared<FSOperation>(OperationType::Edit, nodeId, NodeType::File, snapshot->createdAt(nodeId),
-                                                        snapshotLastModified, snapshot->size(nodeId), snapshotPath);
+                                                        snapshotModificationTime, snapshot->size(nodeId), snapshotPath);
         opSet->insertOp(fsOp);
         logOperationGeneration(snapshot->side(), fsOp);
     }
@@ -328,11 +334,11 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         if (isInUnsyncedListParentSearchInSnapshot(snapshot, nodeId, side)) {
             // Delete operation
             fsOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(), snapshot->createdAt(nodeId),
-                                                 snapshotLastModified, snapshot->size(nodeId), dbPath);
+                                                 snapshotModificationTime, snapshot->size(nodeId), dbPath);
         } else {
             // Move operation
             fsOp = std::make_shared<FSOperation>(OperationType::Move, nodeId, dbNode.type(), snapshot->createdAt(nodeId),
-                                                 snapshotLastModified, snapshot->size(nodeId), dbPath, snapshotPath);
+                                                 snapshotModificationTime, snapshot->size(nodeId), dbPath, snapshotPath);
         }
 
         opSet->insertOp(fsOp);
@@ -589,12 +595,13 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
 
     int64_t localSnapshotSize = _syncPal->snapshot(ReplicaSide::Local)->size(dbNode.nodeIdLocal().value());
     int64_t remoteSnapshotSize = _syncPal->snapshot(ReplicaSide::Remote)->size(dbNode.nodeIdRemote().value());
-    SyncTime localSnapshotLastModified = _syncPal->snapshot(ReplicaSide::Local)->lastModified(dbNode.nodeIdLocal().value());
-    SyncTime remoteSnapshotLastModified = _syncPal->snapshot(ReplicaSide::Remote)->lastModified(dbNode.nodeIdRemote().value());
+    SyncTime localsnapshotModificationTime = _syncPal->snapshot(ReplicaSide::Local)->lastModified(dbNode.nodeIdLocal().value());
+    SyncTime remotesnapshotModificationTime =
+            _syncPal->snapshot(ReplicaSide::Remote)->lastModified(dbNode.nodeIdRemote().value());
 
     // A mismatch is detected if all timestamps are equal but the sizes in snapshots differ.
-    if (localSnapshotSize != remoteSnapshotSize && localSnapshotLastModified == dbNode.lastModifiedLocal().value() &&
-        localSnapshotLastModified == remoteSnapshotLastModified) {
+    if (localSnapshotSize != remoteSnapshotSize && localsnapshotModificationTime == dbNode.lastModifiedLocal().value() &&
+        localsnapshotModificationTime == remotesnapshotModificationTime) {
         SyncPath localSnapshotPath;
         if (bool ignore = false;
             !_syncPal->snapshot(ReplicaSide::Local)->path(dbNode.nodeIdLocal().value(), localSnapshotPath, ignore)) {
