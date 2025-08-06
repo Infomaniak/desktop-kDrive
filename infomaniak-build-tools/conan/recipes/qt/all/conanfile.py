@@ -278,15 +278,22 @@ class QtConan(ConanFile):
 
     def _subfolder_install(self):
         """
-        Get the subfolder name where the Qt installation is done, based on the OS.
-        :return: The subfolder name where the Qt installation is done, e.g. 'macos', 'gcc_64' or 'msvc2019_64'.
+        Get the subfolder name where the Qt installation is done, based on the OS and architecture.
+        :return: The subfolder name, e.g., 'macos', 'gcc_64', or 'msvc2019_64'.
         """
         subfolder_map = {
-            "Macos": "macos",
-            "Linux": "gcc_64",
-            "Windows": "msvc2019_64"
+            ("Macos", "arm64"): "macos",
+            ("Macos", "x64"): "macos",
+            ("Linux", "arm64"): "gcc_arm64",
+            ("Linux", "x64"): "gcc_64",
+            ("Windows", "arm64"): "msvc2019_64",
+            ("Windows", "x64"): "msvc2019_64",
         }
-        return subfolder_map.get(str(self.settings.os))
+        key = (str(self.settings.os), str(self._get_real_arch()))
+        try:
+            return subfolder_map[key]
+        except KeyError:
+            raise ConanInvalidConfiguration(f"Unsupported combination: {key}")
 
     def package(self):
         self.output.highlight("This step can take a while, please be patient...")
