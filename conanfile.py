@@ -14,6 +14,11 @@ class KDriveDesktop(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "CMakeDeps", "VirtualRunEnv"
 
+    @staticmethod
+    def _get_real_arch():
+        import platform
+        return "arm64" if str(platform.machine().lower()) in [ "arm64", "aarch64" ] else "x64"
+
     def generate(self):
         """
         Generate the CMake toolchain file.
@@ -53,7 +58,11 @@ class KDriveDesktop(ConanFile):
         - `log4cplus/2.1.2`: A C++ logging library.
         :return: None
         """
-        self.requires("qt/6.2.3") # From local recipe, using the qt online installer.
+        # From local recipe, using the qt online installer.
+        if self.settings.os == "Linux" and self._get_real_arch() == "arm64":
+            self.requires("qt/6.7.3")
+        else:
+            self.requires("qt/6.2.3")
         self.requires("xxhash/0.8.2") # From local recipe
         # log4cplus
         log4cplus_options = { "shared": True, "unicode": True }
