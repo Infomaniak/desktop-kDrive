@@ -312,6 +312,8 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
 
     // Detect EDIT
     const SyncTime snapshotModificationTime = snapshot->lastModified(nodeId);
+    // On FAT filesystems, the time resolution for modification time is 2 seconds. Therefor, we ignore EDIT operations if the
+    // difference between modification time in DB and the one on the filesystem is less or equal to 1sec.
     const bool modifiedTimeDiffIsEnough = abs(snapshotModificationTime - dbModificationTime) > _timeDifferenceThresholdForEdit;
     const SyncTime snapshotCreatedAt = snapshot->createdAt(nodeId);
     const SyncTime dbCreatedAt = dbNode.created().has_value() ? dbNode.created().value() : 0;
@@ -649,7 +651,8 @@ bool ComputeFSOperationWorker::isExcludedFromSync(const std::shared_ptr<const Sn
         if (type == NodeType::Directory && isTooBig(snapshot, nodeId, size)) {
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Blacklisting item with " << Utility::formatSyncPath(path) << L" ("
-                                                                       << CommonUtility::s2ws(nodeId) << L") because it is too big");
+                                                                       << CommonUtility::s2ws(nodeId)
+                                                                       << L") because it is too big");
             }
             return true;
         }
@@ -812,8 +815,8 @@ void ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const D
     if (snapshot->type(localNodeId) != NodeType::Unknown && dbNode.type() != NodeType::Unknown &&
         snapshot->type(localNodeId) != dbNode.type()) {
         isReused = true;
-        LOGW_SYNCPAL_DEBUG(_logger, L"Node type has changed for " << CommonUtility::s2ws(localNodeId) << L" from " << dbNode.type()
-                                                                  << L" to " << snapshot->type(localNodeId));
+        LOGW_SYNCPAL_DEBUG(_logger, L"Node type has changed for " << CommonUtility::s2ws(localNodeId) << L" from "
+                                                                  << dbNode.type() << L" to " << snapshot->type(localNodeId));
         return;
     }
 

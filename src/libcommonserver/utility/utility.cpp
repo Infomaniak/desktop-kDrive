@@ -24,8 +24,6 @@
 
 #include "utility/utility_base.h"
 
-#include "utility/utility_base.h"
-
 #if defined(KD_MACOS)
 #include <sys/statvfs.h>
 #include <sys/mount.h>
