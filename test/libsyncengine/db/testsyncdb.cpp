@@ -372,7 +372,29 @@ void TestSyncDb::testSyncNodes() {
     CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeType::BlackList, NodeSet()));
     nodeIdSet3.clear();
     CPPUNIT_ASSERT(_testObj->selectAllSyncNodes(SyncNodeType::BlackList, nodeIdSet3));
-    CPPUNIT_ASSERT_EQUAL(size_t(0), nodeIdSet3.size());
+    CPPUNIT_ASSERT_EQUAL(size_t{0}, nodeIdSet3.size());
+
+    // Testing SyncDb::deleteSyncNode
+    nodeIdSet.clear();
+    nodeIdSet.emplace("1");
+    nodeIdSet.emplace("2");
+    CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeType::WhiteList, nodeIdSet));
+    CPPUNIT_ASSERT(_testObj->selectAllSyncNodes(SyncNodeType::WhiteList, nodeIdSet));
+    CPPUNIT_ASSERT_EQUAL(size_t{2}, nodeIdSet.size());
+
+    bool found = false;
+    CPPUNIT_ASSERT(_testObj->deleteSyncNode("2", found));
+    CPPUNIT_ASSERT(found);
+
+    nodeIdSet.clear();
+    CPPUNIT_ASSERT(_testObj->selectAllSyncNodes(SyncNodeType::WhiteList, nodeIdSet));
+    CPPUNIT_ASSERT_EQUAL(size_t{1}, nodeIdSet.size());
+    CPPUNIT_ASSERT(nodeIdSet.contains("1"));
+
+    // Attempt to delete a non-existing sync node: no error, but `found` is set to `false`.
+    found = false;
+    CPPUNIT_ASSERT(_testObj->deleteSyncNode("2", found));
+    CPPUNIT_ASSERT(!found);
 }
 
 void TestSyncDb::testCorrespondingNodeId() {
