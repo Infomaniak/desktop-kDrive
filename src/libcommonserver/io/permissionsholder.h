@@ -1,7 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2025 Infomaniak Network SA
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,20 +17,21 @@
 
 #pragma once
 
-#include "syncpal/syncpal.h"
+#include "iohelper.h"
+#include "utility/types.h"
 
 namespace KDC {
 
-class OfflineFilesSizeEstimator {
+class PermissionsHolder {
     public:
-        explicit OfflineFilesSizeEstimator(const std::vector<std::shared_ptr<SyncPal>> &syncPals);
-        ExitInfo runSynchronously();
-
-        [[nodiscard]] uint64_t offlineFilesTotalSize() const { return _offlineFilesTotalSize; }
+        explicit PermissionsHolder(const SyncPath &path, const log4cplus::Logger logger);
+        ~PermissionsHolder();
 
     private:
-        std::vector<std::shared_ptr<SyncPal>> _syncPals;
-        uint64_t _offlineFilesTotalSize{0};
+        void log(const std::wstringstream &ss, LogLevel logLevel = LogLevel::Debug) const noexcept;
+
+        SyncPath _path;
+        const log4cplus::Logger _logger;
 };
 
 } // namespace KDC

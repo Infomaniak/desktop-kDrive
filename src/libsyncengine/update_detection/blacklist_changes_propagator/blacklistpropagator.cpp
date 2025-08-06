@@ -228,9 +228,10 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
 
     if (exists) {
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
-                               L"Removing item with " << Utility::formatSyncPath(localPath) << L" (" << CommonUtility::s2ws(localNodeId)
-                                                      << L") on local replica because it is blacklisted.");
+            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Removing item with "
+                                                                     << Utility::formatSyncPath(localPath) << L" ("
+                                                                     << CommonUtility::s2ws(localNodeId)
+                                                                     << L") on local replica because it is blacklisted.");
         }
 
         LocalDeleteJob job(_syncPal->syncInfo(), localPath, liteSyncActivated, remoteNodeId);

@@ -1297,8 +1297,8 @@ bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &n
             LOG_IF_FAIL(queryBindValue(queryId, 1, nodeDbId));
             LOG_IF_FAIL(queryBindValue(queryId, 2, name));
             if (!queryNext(queryId, found)) {
-                LOGW_WARN(_logger, L"Error getting query result: " << CommonUtility::s2ws(queryId) << L" - parentNodeId=" << nodeDbId
-                                                                   << L" and name=" << Utility::formatSyncName(name));
+                LOGW_WARN(_logger, L"Error getting query result: " << CommonUtility::s2ws(queryId) << L" - parentNodeId="
+                                                                   << nodeDbId << L" and name=" << Utility::formatSyncName(name));
                 return false;
             }
             if (!found) {
