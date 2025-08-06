@@ -1,9 +1,9 @@
+import platform
 import textwrap
 
 from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, cmake_layout
 from conan.tools.cmake.toolchain.blocks import VSRuntimeBlock
-from conan.tools.env import VirtualRunEnv
 
 
 class KDriveDesktop(ConanFile):
@@ -13,11 +13,6 @@ class KDriveDesktop(ConanFile):
 
     settings = "os", "compiler", "build_type", "arch"
     generators = "CMakeDeps", "VirtualRunEnv"
-
-    @staticmethod
-    def _get_real_arch():
-        import platform
-        return "arm64" if str(platform.machine().lower()) in [ "arm64", "aarch64" ] else "x64"
 
     def generate(self):
         """
@@ -59,7 +54,7 @@ class KDriveDesktop(ConanFile):
         :return: None
         """
         # From local recipe, using the qt online installer.
-        if self.settings.os == "Linux" and self._get_real_arch() == "arm64":
+        if self.settings.os == "Linux" and str(platform.machine().lower()) in [ "arm64", "aarch64" ]: # linux arm64
             self.requires("qt/6.7.3")
         else:
             self.requires("qt/6.2.3")
