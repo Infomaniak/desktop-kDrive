@@ -1,5 +1,5 @@
 ﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
-  <Package Id="Infomaniak_Network_SA.kDriveInstaller" Name="kDrive" Manufacturer="Infomaniak Network SA" Version="3.7.3.0" InstallerVersion="301">
+  <Package Id="Infomaniak_Network_SA.kDriveInstaller" Name="kDrive" Manufacturer="Infomaniak Network SA" Version="$(shortVersion).0" InstallerVersion="301">
     <MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeError)" />
     <MediaTemplate EmbedCab="yes" />
     <Feature Id="Main">
@@ -17,6 +17,23 @@
       <ComponentGroupRef Id="PositionComponents" />
       <ComponentGroupRef Id="RessourcesComponents" />
       <ComponentGroupRef Id="StyleComponents" />
+      <ComponentGroupRef Id="ShellExtComponents" />
     </Feature>
+    <CustomAction Id="InstallExplorerExtension"
+                  Directory="System64Folder"
+                  ExeCommand="WindowsPowerShell\v1.0\powershell.exe -NoLogo -NonInteractive -InputFormat None -NoProfile -Commande &quot;Add-AppxPackage [SHELLEXTFOLDER]FileExplorerExtensionPackage_$(shortVersion).0_x64_arm64.msixbundle  -ForceApplicationShutdown -ForceUpdateFromAnyVersion&quot;" 
+                  Execute="deferred" 
+                  Impersonate="no" 
+                  Return="asyncWait"/>
+    <CustomAction Id="UninstallExplorerExtension"
+                  Directory="System64Folder"
+                  ExeCommand="WindowsPowerShell\v1.0\powershell.exe -NoLogo -NonInteractive -InputFormat None -NoProfile -File &quot;[SHELLEXTFOLDER]Uninstall.ps1&quot;" 
+                  Execute="deferred"
+                  Impersonate="no"
+                  Return="asyncWait"/>
+    <InstallExecuteSequence>
+      <Custom Action="InstallExplorerExtension" Before="InstallFinalize" Condition="NOT REMOVE=&quot;ALL&quot;"/>
+      <Custom Action="UninstallExplorerExtension" Before="InstallFinalize" Condition="REMOVE=&quot;ALL&quot;"/>
+    </InstallExecuteSequence>
   </Package>
 </Wix>
