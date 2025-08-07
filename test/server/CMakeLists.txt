@@ -91,7 +91,6 @@ endif()
 
 if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
-    include_directories("C:/Program Files (x86)/Sentry-Native/include")
     include_directories("C:/Program Files (x86)/libzip/include")
 else()
     include_directories("/usr/local/include")

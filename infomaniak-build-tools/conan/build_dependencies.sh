@@ -219,6 +219,10 @@ fi
 log "Creating package Qt..."
 conan create "$conan_recipes_folder/qt/all/" --version="$qt_version" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter
 
+
+log "Creating package sentry..."
+conan create "$conan_recipes_folder/sentry/all/" --version=0.7.10 --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter
+
 log "Installing dependencies..."
 # Install this packet in the build folder.
 conan install . --output-folder="$output_dir" --build=missing $architecture -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter

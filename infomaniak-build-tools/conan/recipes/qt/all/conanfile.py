@@ -87,6 +87,9 @@ class QtConan(ConanFile):
             f"qt.qt{major}.{compact}.addons.qtwebview",
         ]
 
+        if self.settings.build_type == "Debug":
+            modules.append(f"qt.qt{major}.{compact}.src") # Add the Qt source files when using debug build type
+
         if self.settings.os == "Windows":
             modules.append(f"qt.qt{major}.{compact}.debug_info") # Qt Debug Information Files for Windows
 

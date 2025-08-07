@@ -23,18 +23,30 @@ param(
 function Log { Write-Host "[INFO] $($args -join ' ')" }
 function Err { Write-Error "[ERROR] $($args -join ' ')" ; exit 1 }
 
-$runScript = Get-ChildItem -Path $BuildDir -Recurse -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -ieq 'conanrun.ps1' } |
-        Select-Object -First 1 -ExpandProperty FullName
-if (-not $runScript) {
-    Err "Unable to recursively find conanrun.ps1 in '$BuildDir'."
-}
-& $runScript *> $null
+$pathEntries = $env:PATH -Split ';'
+$initialConanEntries = $pathEntries | Where-Object { $_ -match '\\.conan2\\p\\' }
 
-$pathEntries = $env:PATH -split ';'
+Write-Host "Path before source:`n   $($env:PATH -Split ';' -join "`n   ")"
+
+if (-not $initialConanEntries) {
+    $runScript = Get-ChildItem -Path $BuildDir -Recurse -Filter 'conanrun.ps1' -File -ErrorAction SilentlyContinue |
+        Select-Object -First 1 -ExpandProperty FullName
+    if (-not $runScript) {
+        Err "Unable to recursively find conanrun.ps1 in '$BuildDir'."
+    }
+    & $runScript *> $null
+    # Refresh PATH entries after running conanrun
+    $pathEntries = $env:PATH -Split ';'
+}
+Write-Host "Path after source:`n   $($env:PATH -Split ';' -join "`n   ")"
+
 $conanEntries = $pathEntries | Where-Object { $_ -match '\\.conan2\\p\\' }
-if (-not $conanEntries) { Err "No directories in PATH contain '.conan2/p/'." }
-$pkgValue = if ($Package.Length -ge 5) { $Package.Substring(0,5) } else { $Package }
+if (-not $conanEntries) {
+    Err "No directories in PATH contain '.conan2/p/'."
+}
+
+# Determine package prefix (first up to 5 characters)
+$pkgValue = $Package.Substring(0, [Math]::Min(5, $Package.Length))
 $matchingDirs = $conanEntries | Where-Object {
     (Split-Path (Split-Path (Split-Path $_ -Parent) -Parent) -Leaf) -like "$pkgValue*"
 }
@@ -48,7 +60,10 @@ if ($matchingDirs.Count -gt 1) {
 $packageDir = $matchingDirs
 Write-Output $packageDir
 
-$deactivateRunScript = Get-ChildItem -Path $BuildDir -Recurse -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -ieq 'deactivate_conanrun.ps1' } |
-        Select-Object -First 1 -ExpandProperty FullName
-& $deactivateRunScript *> $null
+$deactivateRunScript = Get-ChildItem -Path $BuildDir -Recurse -Filter 'deactivate_conanrun.ps1' -File -ErrorAction SilentlyContinue |
+    Select-Object -First 1 -ExpandProperty FullName
+if ($deactivateRunScript) {
+    & $deactivateRunScript *> $null
+} else {
+    Log "No deactivate_conanrun.ps1 found; skipping deactivation."
+}
