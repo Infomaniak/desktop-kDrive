@@ -289,6 +289,7 @@ elseif(BUILD_CLIENT)
                 NO_DEFAULT_PATH
         )
         message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
+        install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # Crashpad_handler
         get_target_property(CRASHPAD_HANDLER_PROGRAM
