@@ -38,7 +38,7 @@ if (-not $initialConanEntries) {
     # Refresh PATH entries after running conanrun
     $pathEntries = $env:PATH -Split ';'
 }
-Write-Host "Path before source:`n   $($env:PATH -Split ';' -join "`n   ")"
+Write-Host "Path after source:`n   $($env:PATH -Split ';' -join "`n   ")"
 
 $conanEntries = $pathEntries | Where-Object { $_ -match '\\.conan2\\p\\' }
 if (-not $conanEntries) {
