@@ -104,8 +104,3 @@ class SentryNativeConan(ConanFile):
             comp_sentry.defines = ["SENTRY_BUILD_STATIC"]
 
         self.cpp_info.set_property("cmake_build_modules", [pjoin(self.package_folder, "lib", "cmake", "sentry", "sentry_crashpad-targets.cmake")])
-
-
-        for env in ( self.buildenv_info, self.runenv_info ):
-            env.prepend_path("PATH", pjoin(self.package_folder, "bin"))
-            env.prepend_path("CMAKE_PREFIX_PATH", self.package_folder)
