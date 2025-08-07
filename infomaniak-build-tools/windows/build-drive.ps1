@@ -260,6 +260,14 @@ function CMake-Build-And-Install {
         Write-Error "Conan toolchain file not found. Abort."
         exit 1
     }
+
+    $conanGeneratorsFolder = Split-Path -Parent $conanToolchainFile
+    $env:QTDIR = (& "$path\infomaniak-build-tools\conan\find_conan_dep.ps1" -Package "qt" -BuildDir "$conanGeneratorsFolder") -replace '\\bin$', ''
+    if (-not $env:QTDIR -or -not (Test-Path $env:QTDIR)) {
+        Write-Error "Qt not found in Conan dependencies. Abort."
+        exit 1
+    }
+
     Write-Host "Conan toolchain file used: $conanToolchainFile"
 
     Write-Host "2) Configuring and building with CMake ..."
@@ -278,11 +286,12 @@ function CMake-Build-And-Install {
 
     $buildVersion = Get-Date -Format "yyyyMMdd"
 
+
     $flags = @(
         "'-DCMAKE_TOOLCHAIN_FILE=$conanToolchainFile'",
         "'-DCMAKE_EXPORT_COMPILE_COMMANDS=1'",
-        "'-DCMAKE_MAKE_PROGRAM=C:\Qt\Tools\Ninja\ninja.exe'",
-        "'-DQT_QMAKE_EXECUTABLE:STRING=C:\Qt\Tools\CMake_64\bin\cmake.exe'",
+        "'-DCMAKE_MAKE_PROGRAM=ninja.exe'",
+        "'-DQT_QMAKE_EXECUTABLE:STRING=cmake.exe'",
         "'-DCMAKE_C_COMPILER:STRING=$compiler'",
         "'-DCMAKE_CXX_COMPILER:STRING=$compiler'",
         "'-DAPPLICATION_VIRTUALFILE_SUFFIX:STRING=kdrive'",
@@ -290,8 +299,6 @@ function CMake-Build-And-Install {
         "'-DVFS_DIRECTORY:PATH=$vfsDir'",
         "'-DKDRIVE_THEME_DIR:STRING=$path/infomaniak'",
         "'-DPLUGINDIR:STRING=C:/Program Files (x86)/kDrive/lib/kDrive/plugins'",
-        "'-DZLIB_INCLUDE_DIR:PATH=C:/Program Files (x86)/zlib-1.2.11/include'",
-        "'-DZLIB_LIBRARY_RELEASE:FILEPATH=C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib'",
         "'-DAPPLICATION_NAME:STRING=kDrive'",
         "'-DKDRIVE_VERSION_BUILD=$buildVersion'"
     )
@@ -436,7 +443,7 @@ function Prepare-Archive {
         }
     }
     $find_dep_script = "$path/infomaniak-build-tools/conan/find_conan_dep.ps1"
-    $packages = @(
+    $packages = @( # Qt dependencies are handled by windeployqt
         @{ Name = "xxhash";    Dlls = @("xxhash") },
         @{ Name = "log4cplus"; Dlls = @("log4cplus") },
         @{ Name = "openssl";   Dlls = @("libcrypto-3-x64", "libssl-3-x64") }
@@ -446,7 +453,7 @@ function Prepare-Archive {
         $args = @{ Package = $pkg.Name; BuildDir = $buildPath }
         $binFolder = & $find_dep_script @args
         foreach ($dll in $pkg.Dlls) {
-            if (($buildType -eq "Debug") -and (Test-Path -Path $file"d.dll")) {
+            if (($buildType -eq "Debug") -and (Test-Path -Path "$binFolder/${dll}d.dll")) {
                 Copy-Item -Path "$binFolder/${dll}d.dll" -Destination "$archivePath"
             } else {
                 Copy-Item -Path "$binFolder/$dll.dll" -Destination "$archivePath"
