@@ -221,12 +221,7 @@ conan create "$conan_recipes_folder/qt/all/" --version="$qt_version" --build=mis
 
 
 log "Creating package sentry..."
-sentry_version="0.6.4"
-if [ "$platform" = "darwin" ]; then
-  # For macOS, we use the universal binary version of sentry.
-  sentry_version="0.7.10"
-fi
-conan create "$conan_recipes_folder/sentry/all/" --version="$sentry_version" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter
+conan create "$conan_recipes_folder/sentry/all/" --version=0.7.10 --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter
 
 log "Installing dependencies..."
 # Install this packet in the build folder.

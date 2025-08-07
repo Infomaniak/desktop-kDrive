@@ -16,7 +16,7 @@ class SentryNativeConan(ConanFile):
         "breadcrumbs and arbitrary custom context to enrich error reports."
     )
     license = "MIT"
-    topics = ("breakpad", "crashpad", "error-reporting", "crash-reporting")
+    topics = ("crashpad", "error-reporting", "crash-reporting")
 
     package_type = "library"
     settings = "os", "arch", "compiler", "build_type"
@@ -45,15 +45,6 @@ class SentryNativeConan(ConanFile):
         git = Git(self)
         git.clone(url="https://github.com/getsentry/sentry-native.git", target=".", hide_url=False, args=["-b", f"{self.version}", "--recurse-submodules"])
 
-    @property
-    def _get_backend(self):
-        import platform
-        real_arch = platform.machine().lower()
-        if Version(self.version) < "0.7.0" and self.settings.os == "Linux" and real_arch in ("aarch64", "arm64"):
-            return "breakpad"
-        else:
-            return "crashpad"
-
     def _cache_variables(self):
         qt = self.dependencies["qt"]
         if qt is None:
@@ -61,7 +52,7 @@ class SentryNativeConan(ConanFile):
         cache_variables = {
             "CMAKE_BUILD_TYPE": self.build_type,
             "SENTRY_INTEGRATION_QT": "YES",
-            "SENTRY_BACKEND": self._get_backend,
+            "SENTRY_BACKEND": "crashpad",
             "CMAKE_PREFIX_PATH": qt.package_folder,
             "SENTRY_BUILD_TESTS": "OFF",
             "SENTRY_BUILD_EXAMPLES": "OFF",
@@ -112,8 +103,7 @@ class SentryNativeConan(ConanFile):
         if not self.options.shared:
             comp_sentry.defines = ["SENTRY_BUILD_STATIC"]
 
-        if self._get_backend == "crashpad":
-            self.cpp_info.set_property("cmake_build_modules", [pjoin(self.package_folder, "lib", "cmake", "sentry", "sentry_crashpad-targets.cmake")])
+        self.cpp_info.set_property("cmake_build_modules", [pjoin(self.package_folder, "lib", "cmake", "sentry", "sentry_crashpad-targets.cmake")])
 
 
         for env in ( self.buildenv_info, self.runenv_info ):

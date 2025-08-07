@@ -305,18 +305,15 @@ elseif(BUILD_CLIENT)
         install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME})
 
         # Crashpad_handler
-        message(STATUS "CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}")
-        if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-            get_target_property(CRASHPAD_HANDLER_PROGRAM
-                    sentry_crashpad::crashpad_handler
-                    IMPORTED_LOCATION_${UPPER_BUILD_TYPE}
-            )
-            message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
-            if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-                file(COPY ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_BINARY_DIR}/bin)
-            else()
-                install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
-            endif()
+        get_target_property(CRASHPAD_HANDLER_PROGRAM
+                sentry_crashpad::crashpad_handler
+                IMPORTED_LOCATION_RELWITHDEBINFO
+        )
+        message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
+        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+            file(COPY ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+        else()
+            install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
         endif()
     endif()
 endif()
