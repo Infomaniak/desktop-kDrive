@@ -49,7 +49,7 @@ class SentryNativeConan(ConanFile):
         cache_variables = {
             "CMAKE_BUILD_TYPE": "RelWithDebInfo",
             "SENTRY_INTEGRATION_QT": "YES",
-            "SENTRY_BACKEND": "breakpad" if Version(self.version) < "0.7.0" else "crashpad",
+            "SENTRY_BACKEND": "breakpad" if Version(self.version) < "0.7.0"  else "crashpad",
             "CMAKE_PREFIX_PATH": qt_package_folder,
             "SENTRY_BUILD_TESTS": "OFF",
             "SENTRY_BUILD_EXAMPLES": "OFF",
@@ -83,8 +83,6 @@ class SentryNativeConan(ConanFile):
 
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "sentry")
-        # Here we use the same hack we used for Qt to ensure the link between the Qt package and the Sentry package is done correctly.
-        # self.cpp_info.set_property("cmake_build_modules", [ pjoin(self.package_folder, "lib", "cmake", "sentry", "sentry-config.cmake") ])
         self.cpp_info.set_property("cmake_find_mode", "both")
 
         comp_sentry = self.cpp_info.components["sentry"]
