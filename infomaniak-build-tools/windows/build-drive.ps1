@@ -302,7 +302,6 @@ function CMake-Build-And-Install {
         "'-DAPPLICATION_NAME:STRING=kDrive'",
         "'-DKDRIVE_VERSION_BUILD=$buildVersion'"
     )
-#        "'-DCMAKE_FIND_DEBUG_MODE=ON'" # TODO : Remove this line when the build is stable
 
     if ($ci) {
         $flags += ("'-DBUILD_UNIT_TESTS:BOOL=TRUE'")
