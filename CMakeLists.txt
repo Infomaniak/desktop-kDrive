@@ -279,14 +279,10 @@ elseif(BUILD_CLIENT)
         install(FILES ${VFS_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # Sentry
-
-        find_library(SENTRY_SHARED_LIBRARY
-                NAMES sentry
-                PATHS ${sentry_LIBRARIES}
-                PATH_SUFFIXES "bin"
-                NO_DEFAULT_PATH
+        get_target_property(SENTRY_SHARED_LIBRARY                sentry::sentry
+                INTERFACE_LINK_DIRECTORIES
         )
-        message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY} (search path: ${sentry_LIBRARIES})")
+        message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
         install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # Crashpad_handler
