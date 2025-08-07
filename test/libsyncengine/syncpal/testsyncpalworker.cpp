@@ -20,7 +20,7 @@
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
-#include "libsyncengine/jobs/network/API_v2/movejob.h"
+#include "libsyncengine/jobs/network/kDrive_API/movejob.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "jobs/jobmanager.h"
 
