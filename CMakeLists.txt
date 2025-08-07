@@ -325,6 +325,7 @@ if(UNIX AND NOT APPLE)
         get_library_dirs("log4cplus" "log4cplus")
         get_library_dirs("OpenSSL" "openssl")
         get_library_dirs("xxHash" "xxhash")
+        get_library_dirs("sentry" "sentry")
         file(COPY
             # log4cplus
             "${_log4cplus_LIB_DIRS}/liblog4cplus.so"
@@ -338,6 +339,8 @@ if(UNIX AND NOT APPLE)
             "${_OpenSSL_LIB_DIRS}/libcrypto.so.3"
             "${_OpenSSL_LIB_DIRS}/libssl.so"
             "${_OpenSSL_LIB_DIRS}/libssl.so.3"
+            # sentry
+            "${_sentry_LIB_DIRS}/libsentry.so"
             DESTINATION "${CONAN_DEP_DIR}"
             FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
     endif()
