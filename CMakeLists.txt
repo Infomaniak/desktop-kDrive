@@ -242,6 +242,8 @@ configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 
 set(QTDIR $ENV{QTDIR})
 
+string(TOUPPER "${CMAKE_BUILD_TYPE}" UPPER_BUILD_TYPE)
+
 if(BUILD_KDRIVE_OSX_BUNDLE)
     # Provision profile
     install(FILES embedded.provisionprofile DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/)
@@ -257,7 +259,7 @@ if(BUILD_KDRIVE_OSX_BUNDLE)
     # Crashpad_handler
     get_target_property(CRASHPAD_HANDLER_PROGRAM
             sentry_crashpad::crashpad_handler
-            IMPORTED_LOCATION_RELWITHDEBINFO
+            IMPORTED_LOCATION_${UPPER_BUILD_TYPE}
     )
     message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
     install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/MacOS/)
@@ -286,7 +288,7 @@ elseif(BUILD_CLIENT)
         # Crashpad_handler
         get_target_property(CRASHPAD_HANDLER_PROGRAM
                 sentry_crashpad::crashpad_handler
-                IMPORTED_LOCATION_RELWITHDEBINFO
+                IMPORTED_LOCATION_${UPPER_BUILD_TYPE}
         )
         message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
         install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -309,7 +311,7 @@ elseif(BUILD_CLIENT)
         if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
             get_target_property(CRASHPAD_HANDLER_PROGRAM
                     sentry_crashpad::crashpad_handler
-                    IMPORTED_LOCATION_RELWITHDEBINFO
+                    IMPORTED_LOCATION_${UPPER_BUILD_TYPE}
             )
             message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
             if(CMAKE_BUILD_TYPE STREQUAL "Debug")

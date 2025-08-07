@@ -395,10 +395,11 @@ if(NOT BUILD_KDRIVE_OSX_BUNDLE AND NOT WIN32)
 endif()
 
 if(BUILD_KDRIVE_OSX_BUNDLE)
+    string(TOUPPER "${CMAKE_BUILD_TYPE}" UPPER_BUILD_TYPE)
     # Crashpad_handler
     get_target_property(CRASHPAD_HANDLER_PROGRAM
             sentry_crashpad::crashpad_handler
-            IMPORTED_LOCATION_RELWITHDEBINFO
+            IMPORTED_LOCATION_${UPPER_BUILD_TYPE}
     )
     message(STATUS "crashpad_handler exe found in ${CRASHPAD_HANDLER_PROGRAM}")
     install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${BIN_OUTPUT_DIRECTORY})
