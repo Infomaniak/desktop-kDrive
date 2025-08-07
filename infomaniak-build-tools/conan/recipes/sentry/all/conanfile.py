@@ -45,6 +45,7 @@ class SentryNativeConan(ConanFile):
         git = Git(self)
         git.clone(url="https://github.com/getsentry/sentry-native.git", target=".", hide_url=False, args=["-b", f"{self.version}", "--recurse-submodules"])
 
+    @property
     def _get_backend(self):
         import platform
         real_arch = platform.machine().lower()
@@ -53,12 +54,15 @@ class SentryNativeConan(ConanFile):
         else:
             return "crashpad"
 
-    def _cache_variables(self, qt_package_folder):
+    def _cache_variables(self):
+        qt = self.dependencies["qt"]
+        if qt is None:
+            raise ConanInvalidConfiguration("The 'qt' dependency is required for the 'sentry' recipe.")
         cache_variables = {
             "CMAKE_BUILD_TYPE": self.build_type,
             "SENTRY_INTEGRATION_QT": "YES",
-            "SENTRY_BACKEND": "breakpad" if Version(self.version) < "0.7.0" else "crashpad",
-            "CMAKE_PREFIX_PATH": qt_package_folder,
+            "SENTRY_BACKEND": self._get_backend,
+            "CMAKE_PREFIX_PATH": qt.package_folder,
             "SENTRY_BUILD_TESTS": "OFF",
             "SENTRY_BUILD_EXAMPLES": "OFF",
             "SENTRY_BUILD_SHARED_LIBS": "ON" if self.options.shared else "OFF",
@@ -67,16 +71,13 @@ class SentryNativeConan(ConanFile):
 
     def generate(self):
         tc = CMakeToolchain(self)
-        qt_package_folder = self.dependencies["qt"].package_folder
-        for key, value in self._cache_variables(qt_package_folder).items():
+        for key, value in self._cache_variables().items():
             tc.cache_variables[key] = value
         tc.generate()
 
     def build(self):
-        qt_package_folder = self.dependencies["qt"].package_folder
-
         cmake = CMake(self)
-        cmake.configure(variables=self._cache_variables(qt_package_folder))
+        cmake.configure(variables=self._cache_variables())
         cmake.build(build_type=self.build_type if self.settings.os == "Windows" else None, target="sentry")
 
     def package(self):
