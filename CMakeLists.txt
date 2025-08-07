@@ -279,7 +279,7 @@ elseif(BUILD_CLIENT)
         install(FILES ${VFS_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # Sentry
-        find_library(SENTRY_SHARED_LIBRARY NAMES sentry NO_CACHE)
+        find_library(SENTRY_SHARED_LIBRARY NAMES sentry PATH_SUFFIXES "../bin" NO_CACHE)
         message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
         install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
