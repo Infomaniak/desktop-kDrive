@@ -285,7 +285,10 @@ elseif(BUILD_CLIENT)
                 PATH_SUFFIXES .
                 NO_DEFAULT_PATH
         )
-        message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
+        set(SENTRY_DLL_PATH "$<TARGET_FILE:sentry::sentry>")
+        message(STATUS "sentry dll found in ${SENTRY_DLL_PATH}")
+        get_target_property(ILUBT sentry::sentry IMPORTED_LOCATION_${UPPER_BUILD_TYPE})
+        message(STATUS "IMPORTED_LOCALTION_${UPPER_BUILD_TYPE} of snetry::sentry=${ILUBT}")
         install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # Crashpad_handler
