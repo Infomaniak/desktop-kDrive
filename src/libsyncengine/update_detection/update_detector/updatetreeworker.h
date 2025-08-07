@@ -138,12 +138,17 @@ class UpdateTreeWorker : public ISyncWorker {
          */
         ExitCode handleCreateOperationsWithSamePath();
 
-        [[nodiscard]] ExitCode getOrCreateNodeFromPath(const SyncPath &path, bool isDeleted, std::shared_ptr<Node> &node);
-        [[nodiscard]] ExitCode getOrCreateNodeFromExistingPath(const SyncPath &path, std::shared_ptr<Node> &node) {
-            return getOrCreateNodeFromPath(path, false, node);
+        [[nodiscard]] ExitCode getNodeFromPath(const SyncPath &path, bool isDeleted, std::shared_ptr<Node> &node,
+                                               bool createNodesIfMissing = true);
+        [[nodiscard]] ExitCode createTmpNode(std::shared_ptr<Node> &tmpNode, const SyncName &name,
+                                             const std::shared_ptr<Node> &parentNode);
+        [[nodiscard]] ExitCode getNodeFromExistingPath(const SyncPath &path, std::shared_ptr<Node> &node,
+                                                       const bool createNodesIfMissing = true) {
+            return getNodeFromPath(path, false, node, createNodesIfMissing);
         }
-        [[nodiscard]] ExitCode getOrCreateNodeFromDeletedPath(const SyncPath &path, std::shared_ptr<Node> &node) {
-            return getOrCreateNodeFromPath(path, true, node);
+        [[nodiscard]] ExitCode getNodeFromDeletedPath(const SyncPath &path, std::shared_ptr<Node> &node,
+                                                      const bool createNodesIfMissing = true) {
+            return getNodeFromPath(path, true, node, createNodesIfMissing);
         }
         bool mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, std::shared_ptr<Node> realNode);
 

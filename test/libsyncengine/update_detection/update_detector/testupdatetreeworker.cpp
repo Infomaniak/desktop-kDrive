@@ -349,7 +349,7 @@ void TestUpdateTreeWorker::testUpdateTmpFileNode() {
                                           testhelpers::defaultTime, testhelpers::defaultFileSize, "Dir 5/File 5.1");
     {
         std::shared_ptr<Node> newNode;
-        CPPUNIT_ASSERT(_localUpdateTreeWorker->getOrCreateNodeFromExistingPath("Dir 5/File 5.1", newNode) == ExitCode::Ok);
+        CPPUNIT_ASSERT(_localUpdateTreeWorker->getNodeFromExistingPath("Dir 5/File 5.1", newNode) == ExitCode::Ok);
         CPPUNIT_ASSERT(newNode->id()->substr(0, 4) == "tmp_");
         CPPUNIT_ASSERT(newNode->isTmp());
 
@@ -368,7 +368,7 @@ void TestUpdateTreeWorker::testUpdateTmpFileNode() {
 
     {
         std::shared_ptr<Node> newNode;
-        CPPUNIT_ASSERT(_localUpdateTreeWorker->getOrCreateNodeFromExistingPath("Dir 5/File 5.1", newNode) == ExitCode::Ok);
+        CPPUNIT_ASSERT(_localUpdateTreeWorker->getNodeFromExistingPath("Dir 5/File 5.1", newNode) == ExitCode::Ok);
         CPPUNIT_ASSERT(newNode->id()->substr(0, 4) == "tmp_");
         CPPUNIT_ASSERT(newNode->isTmp());
 
