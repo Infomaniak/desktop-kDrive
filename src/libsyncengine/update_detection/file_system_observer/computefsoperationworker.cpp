@@ -130,10 +130,9 @@ void ComputeFSOperationWorker::execute() {
 }
 
 // Remove deleted nodes from sync_node table & cache
-ExitCode ComputeFSOperationWorker::updateSyncNode(SyncNodeType syncNodeType) {
+ExitCode ComputeFSOperationWorker::updateSyncNode(const SyncNodeType syncNodeType) {
     NodeSet nodeIdSet;
-    ExitCode exitCode = SyncNodeCache::instance()->syncNodes(syncDbId(), syncNodeType, nodeIdSet);
-    if (exitCode != ExitCode::Ok) {
+    if (auto exitCode = SyncNodeCache::instance()->syncNodes(syncDbId(), syncNodeType, nodeIdSet); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in SyncNodeCache::syncNodes");
         return exitCode;
     }
@@ -143,8 +142,7 @@ ExitCode ComputeFSOperationWorker::updateSyncNode(SyncNodeType syncNodeType) {
         return !ok;
     });
 
-    exitCode = SyncNodeCache::instance()->update(syncDbId(), syncNodeType, nodeIdSet);
-    if (exitCode != ExitCode::Ok) {
+    if (auto exitCode = SyncNodeCache::instance()->update(syncDbId(), syncNodeType, nodeIdSet); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in SyncNodeCache::update");
         return exitCode;
     }
@@ -153,13 +151,12 @@ ExitCode ComputeFSOperationWorker::updateSyncNode(SyncNodeType syncNodeType) {
 }
 
 ExitCode ComputeFSOperationWorker::updateSyncNode() {
-    for (int syncNodeTypeIdx = toInt(SyncNodeType::WhiteList); syncNodeTypeIdx <= toInt(SyncNodeType::UndecidedList);
+    for (auto syncNodeTypeIdx = toInt(SyncNodeType::WhiteList); syncNodeTypeIdx <= toInt(SyncNodeType::UndecidedList);
          syncNodeTypeIdx++) {
-        auto syncNodeType = static_cast<SyncNodeType>(syncNodeTypeIdx);
+        const auto syncNodeType = static_cast<SyncNodeType>(syncNodeTypeIdx);
 
-        ExitCode exitCode = updateSyncNode(syncNodeType);
-        if (exitCode != ExitCode::Ok) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in SyncPal::updateSyncNode for syncNodeType=" << toInt(syncNodeType));
+        if (auto exitCode = updateSyncNode(syncNodeType); exitCode != ExitCode::Ok) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in SyncPal::updateSyncNode for syncNodeType=" << syncNodeType);
             return exitCode;
         }
     }

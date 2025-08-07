@@ -49,6 +49,7 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture, public TestBas
         CPPUNIT_TEST(testExclusion);
         CPPUNIT_TEST(testIsInUnsyncedList);
         CPPUNIT_TEST(testHasChangedSinceLastSeen);
+        CPPUNIT_TEST(testUpdateSyncNode);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -93,6 +94,9 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture, public TestBas
         // Test exclusions
         void testExclusion();
         void testIsInUnsyncedList();
+
+        // Test updates of SyncDb's 'sync_node' table
+        void testUpdateSyncNode();
 
         void testHasChangedSinceLastSeen();
 

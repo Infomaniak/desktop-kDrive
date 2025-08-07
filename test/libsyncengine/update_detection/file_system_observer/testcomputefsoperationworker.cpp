@@ -91,6 +91,9 @@ void TestComputeFSOperationWorker::setUp() {
     /// Insert node "AC" in blacklist
     SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {"r_ac"});
 
+    /// Insert node "AA" in whitelist
+    SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::WhiteList, {"r_aa"});
+
     // Insert items to excluded templates in DB
     std::vector<ExclusionTemplate> templateVec = {ExclusionTemplate("*.lnk", true)};
     ExclusionTemplateCache::instance()->update(true, templateVec);
@@ -521,6 +524,34 @@ void TestComputeFSOperationWorker::testIsInUnsyncedList(const bool expectedResul
     CPPUNIT_ASSERT_EQUAL(expectedResult, _syncPal->computeFSOperationsWorker()->isInUnsyncedListParentSearchInDb(nodeId, side));
     CPPUNIT_ASSERT_EQUAL(expectedResult, _syncPal->computeFSOperationsWorker()->isInUnsyncedListParentSearchInSnapshot(
                                                  _syncPal->snapshot(side), nodeId, side));
+}
+
+void TestComputeFSOperationWorker::testUpdateSyncNode() {
+    _syncPal->copySnapshots();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _syncPal->computeFSOperationsWorker()->updateSyncNode());
+
+    NodeSet syncNodes;
+    (void) SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, syncNodes);
+    CPPUNIT_ASSERT(syncNodes.contains("r_ac"));
+    (void) SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::WhiteList, syncNodes);
+    CPPUNIT_ASSERT(syncNodes.contains("r_aa"));
+
+    // No blacklisted item should reside in the remote snapshot.
+    (void) _syncPal->_remoteFSObserverWorker->_liveSnapshot.removeItem("r_ac");
+
+    // Simulate that the whitelisted item "r_aa" was removed from the remote replica.
+    (void) _syncPal->_remoteFSObserverWorker->_liveSnapshot.removeItem("r_aa");
+
+    _syncPal->copySnapshots();
+
+    // Check that SyncDb's 'sync_node' table is updated accordingly.
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _syncPal->computeFSOperationsWorker()->updateSyncNode());
+    (void) SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, syncNodes);
+    // Blacklisted items are removed from the `sync_node` only when they are known to have been deleted from the remote replica.
+    CPPUNIT_ASSERT(syncNodes.contains("r_ac"));
+
+    (void) SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::WhiteList, syncNodes);
+    CPPUNIT_ASSERT(!syncNodes.contains("r_aa"));
 }
 
 } // namespace KDC
