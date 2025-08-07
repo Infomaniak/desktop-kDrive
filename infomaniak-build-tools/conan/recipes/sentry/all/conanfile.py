@@ -45,6 +45,14 @@ class SentryNativeConan(ConanFile):
         git = Git(self)
         git.clone(url="https://github.com/getsentry/sentry-native.git", target=".", hide_url=False, args=["-b", f"{self.version}", "--recurse-submodules"])
 
+    def _get_backend(self):
+        import platform
+        real_arch = platform.machine().lower()
+        if Version(self.version) < "0.7.0" and self.settings.os == "Linux" and real_arch in ("aarch64", "arm64"):
+            return "breakpad"
+        else:
+            return "crashpad"
+
     def _cache_variables(self, qt_package_folder):
         cache_variables = {
             "CMAKE_BUILD_TYPE": self.build_type,
@@ -103,7 +111,8 @@ class SentryNativeConan(ConanFile):
         if not self.options.shared:
             comp_sentry.defines = ["SENTRY_BUILD_STATIC"]
 
-        self.cpp_info.set_property("cmake_build_modules", [pjoin(self.package_folder, "lib", "cmake", "sentry", "sentry_crashpad-targets.cmake")])
+        if self._get_backend == "crashpad":
+            self.cpp_info.set_property("cmake_build_modules", [pjoin(self.package_folder, "lib", "cmake", "sentry", "sentry_crashpad-targets.cmake")])
 
 
         for env in ( self.buildenv_info, self.runenv_info ):
