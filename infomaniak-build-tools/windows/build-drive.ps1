@@ -300,7 +300,8 @@ function CMake-Build-And-Install {
         "'-DKDRIVE_THEME_DIR:STRING=$path/infomaniak'",
         "'-DPLUGINDIR:STRING=C:/Program Files (x86)/kDrive/lib/kDrive/plugins'",
         "'-DAPPLICATION_NAME:STRING=kDrive'",
-        "'-DKDRIVE_VERSION_BUILD=$buildVersion'"
+        "'-DKDRIVE_VERSION_BUILD=$buildVersion'",
+        "'-DCMAKE_FIND_DEBUG_MODE=ON'" # TODO : Remove this line when the build is stable
     )
 
     if ($ci) {
