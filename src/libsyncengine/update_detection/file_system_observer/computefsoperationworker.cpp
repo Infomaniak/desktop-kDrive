@@ -167,6 +167,95 @@ ExitCode ComputeFSOperationWorker::updateSyncNode() {
     return ExitCode::Ok;
 }
 
+
+ExitInfo ComputeFSOperationWorker::insertDeleteOperation(const ReplicaSide side, const DbNode &dbNode, const SyncPath &dbPath,
+                                                         const bool nodeExistsInSnapshot) {
+    const NodeId &nodeId = dbNode.nodeId(side);
+    const auto dbModificationTime = dbNode.lastModified(side);
+    const auto snapshot = _syncPal->snapshot(side);
+    const auto opSet = _syncPal->operationSet(side);
+
+    bool isInDeletedFolder = false;
+    if (!checkIfPathIsInDeletedFolder(dbPath, isInDeletedFolder)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::checkIfPathIsInDeletedFolder: " << Utility::formatSyncPath(dbPath));
+        return ExitCode::SystemError;
+    }
+
+    if (!isInDeletedFolder) {
+        // Check that the file/directory really does not exist on replica
+        bool isExcluded = false;
+        if (const ExitInfo exitInfo = checkIfOkToDelete(side, dbPath, nodeId, isExcluded); !exitInfo) {
+            // Can happen only on local side
+            return ExitCode::SystemError;
+        }
+
+        if (isExcluded) return {ExitCode::Ok, ExitCause::OperationCanBeIgnored}; // Never generate operation on excluded files.
+    }
+
+    if (isInUnsyncedListParentSearchInSnapshot(snapshot, nodeId, side)) {
+        // Ignore operation
+        return {ExitCode::Ok, ExitCause::OperationCanBeIgnored};
+    }
+
+    bool checkTemplate = side == ReplicaSide::Remote;
+    if (side == ReplicaSide::Local) {
+        const SyncPath localPath = _syncPal->localPath() / dbPath;
+
+        // Do not propagate delete if the path is too long.
+        const size_t pathSize = localPath.native().size();
+        if (PlatformInconsistencyCheckerUtility::instance()->isPathTooLong(pathSize)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Path length too long (" << pathSize << L" characters) for item with "
+                                                                 << Utility::formatSyncPath(localPath) << L". Item is ignored.");
+            return {ExitCode::Ok, ExitCause::OperationCanBeIgnored};
+        }
+
+        if (!nodeExistsInSnapshot) {
+            bool exists = false;
+            IoError ioError = IoError::Success;
+            if (!IoHelper::checkIfPathExists(localPath, exists, ioError) || ioError == IoError::AccessDenied) {
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(localPath, ioError));
+                return ExitCode::SystemError;
+            }
+            checkTemplate = exists;
+        }
+    }
+
+    if (checkTemplate && ExclusionTemplateCache::instance()->isExcluded(dbPath))
+        return {ExitCode::Ok, ExitCause::OperationCanBeIgnored};
+
+    // Delete operation
+    const auto deleteOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(),
+                                                        dbNode.created().has_value() ? dbNode.created().value() : 0,
+                                                        dbModificationTime, dbNode.size(), dbPath);
+    opSet->insertOp(deleteOp);
+    logOperationGeneration(snapshot->side(), deleteOp);
+
+    if (dbNode.type() == NodeType::Directory && !addFolderToDelete(dbPath)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in ComputeFSOperationWorker::addFolderToDelete: " << Utility::formatSyncPath(dbPath));
+        return ExitCode::SystemError;
+    }
+
+    return ExitCode::Ok;
+}
+
+void ComputeFSOperationWorker::insertCreateOperation(const ReplicaSide side, const DbNode &dbNode) {
+    const NodeId &nodeId = dbNode.nodeId(side);
+    const auto snapshot = _syncPal->snapshot(side);
+    const auto opSet = _syncPal->operationSet(side);
+
+    SyncPath localPath;
+    bool ignore = false;
+    snapshot->path(nodeId, localPath, ignore);
+
+    const auto createOp =
+            std::make_shared<FSOperation>(OperationType::Create, nodeId, snapshot->type(nodeId), snapshot->createdAt(nodeId),
+                                          snapshot->lastModified(nodeId), snapshot->size(nodeId), localPath);
+    opSet->insertOp(createOp);
+    logOperationGeneration(snapshot->side(), createOp);
+}
+
+
 ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side, const DbNode &dbNode,
                                                          const SyncPath &localDbPath, const SyncPath &remoteDbPath) {
     assert(side != ReplicaSide::Unknown);
@@ -219,84 +308,12 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     }
 
     if (!nodeExistsInSnapshot || movedIntoUnsyncedFolder || nodeIdReused) {
-        bool isInDeletedFolder = false;
-        if (!checkIfPathIsInDeletedFolder(dbPath, isInDeletedFolder)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::checkIfPathIsInDeletedFolder: " << Utility::formatSyncPath(dbPath));
-            return ExitCode::SystemError;
+        if (auto exitInfo = insertDeleteOperation(side, dbNode, dbPath, nodeExistsInSnapshot);
+            !exitInfo || exitInfo.cause() == ExitCause::OperationCanBeIgnored) {
+            return exitInfo.code();
         }
 
-        if (!isInDeletedFolder) {
-            // Check that the file/directory really does not exist on replica
-            bool isExcluded = false;
-            if (const ExitInfo exitInfo = checkIfOkToDelete(side, dbPath, nodeId, isExcluded); !exitInfo) {
-                // Can happen only on local side
-                return ExitCode::SystemError;
-            }
-
-            if (isExcluded) return ExitCode::Ok; // Never generate operation on excluded file
-        }
-
-        if (isInUnsyncedListParentSearchInSnapshot(snapshot, nodeId, side)) {
-            // Ignore operation
-            return ExitCode::Ok;
-        }
-
-        bool checkTemplate = side == ReplicaSide::Remote;
-        if (side == ReplicaSide::Local) {
-            const SyncPath localPath = _syncPal->localPath() / dbPath;
-
-            // Do not propagate delete if the path is too long.
-            const size_t pathSize = localPath.native().size();
-            if (PlatformInconsistencyCheckerUtility::instance()->isPathTooLong(pathSize)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Path length too long (" << pathSize << L" characters) for item with "
-                                                                     << Utility::formatSyncPath(localPath)
-                                                                     << L". Item is ignored.");
-                return ExitCode::Ok;
-            }
-
-            if (!nodeExistsInSnapshot) {
-                bool exists = false;
-                IoError ioError = IoError::Success;
-                if (!IoHelper::checkIfPathExists(localPath, exists, ioError) || ioError == IoError::AccessDenied) {
-                    LOGW_SYNCPAL_WARN(_logger,
-                                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(localPath, ioError));
-                    return ExitCode::SystemError;
-                }
-                checkTemplate = exists;
-            }
-        }
-
-        if (checkTemplate) {
-            if (ExclusionTemplateCache::instance()->isExcluded(dbPath)) {
-                // The item is excluded
-                return ExitCode::Ok;
-            }
-        }
-
-        // Delete operation
-        const auto deleteOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(),
-                                                            dbNode.created().has_value() ? dbNode.created().value() : 0,
-                                                            dbModificationTime, dbNode.size(), dbPath);
-        opSet->insertOp(deleteOp);
-        logOperationGeneration(snapshot->side(), deleteOp);
-
-        if (dbNode.type() == NodeType::Directory && !addFolderToDelete(dbPath)) {
-            LOGW_SYNCPAL_WARN(_logger,
-                              L"Error in ComputeFSOperationWorker::addFolderToDelete: " << Utility::formatSyncPath(dbPath));
-            return ExitCode::SystemError;
-        }
-
-        if (nodeIdReused) { // Create operation
-            SyncPath localPath;
-            bool ignore = false;
-            snapshot->path(nodeId, localPath, ignore);
-
-            const auto createOp = std::make_shared<FSOperation>(OperationType::Create, nodeId, snapshot->type(nodeId),
-                                                                snapshot->createdAt(nodeId), snapshot->lastModified(nodeId),
-                                                                dbNode.size(), localPath);
-            opSet->insertOp(createOp);
-            logOperationGeneration(snapshot->side(), createOp);
-        }
+        if (nodeIdReused) insertCreateOperation(side, dbNode);
 
         return ExitCode::Ok;
     }

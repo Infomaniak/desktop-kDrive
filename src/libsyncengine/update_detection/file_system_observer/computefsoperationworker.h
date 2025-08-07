@@ -49,6 +49,10 @@ class ComputeFSOperationWorker : public ISyncWorker {
         SnapshotRevision _lastLocalSnapshotSyncedRevision = 0;
         SnapshotRevision _lastRemoteSnapshotSyncedRevision = 0;
 
+        ExitInfo insertDeleteOperation(const ReplicaSide side, const DbNode &dbNode, const SyncPath &dbPath,
+                                       bool nodeExistsInSnapshot);
+        void insertCreateOperation(const ReplicaSide side, const DbNode &dbNode);
+
         // Detect changes based on the database records: delete, move and edit operations
         ExitCode inferChangesFromDb(NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet);
         ExitCode inferChangesFromDb(const NodeType nodeType, NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet,
