@@ -96,7 +96,7 @@ runs:
           }
           
           New-Item -ItemType Directory -Path "./dependencies/platforms" -Force *> $null
-          $patterns = @("lxxhash*.dll", "log4cplus*.dll", "libssl*.dll", "libcrypto*.dll", "Qt6Widgets.dll", "Qt6Gui.dll", "Qt6Network.dll", "Qt6Sql.dll", "Qt6Core.dll", "Qt6DBus.dll", "Qt6Svg.dll", "qoffscreen.dll")
+          $patterns = @("xxhash*.dll", "log4cplus*.dll", "libssl*.dll", "libcrypto*.dll", "Qt6Widgets.dll", "Qt6Gui.dll", "Qt6Network.dll", "Qt6Sql.dll", "Qt6Core.dll", "Qt6DBus.dll", "Qt6Svg.dll", "qoffscreen.dll")
 
           $paths = $env:PATH -split ';' | Where-Object { $_ -like '*\.conan2\p*' }
           foreach ($dir in $paths) {
