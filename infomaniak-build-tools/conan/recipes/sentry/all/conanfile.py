@@ -29,6 +29,10 @@ class SentryNativeConan(ConanFile):
             raise ConanInvalidConfiguration(
                 f"This recipe does not support yet {self.settings.os}."
             )
+        if self.settings.os == "Linux" and self.settings.compiler != "gcc":
+            raise ConanInvalidConfiguration(
+                f"Sentry Crashpad on Linux currently only supports GCC due to use of GCC-specific extensions (e.g., #include_next)."
+            )
 
     def requirements(self):
         self.requires("qt/6.2.3")
