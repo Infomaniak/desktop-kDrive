@@ -446,7 +446,7 @@ function Prepare-Archive {
         @{ Name = "xxhash";    Dlls = @("xxhash") },
         @{ Name = "log4cplus"; Dlls = @("log4cplus") },
         @{ Name = "openssl";   Dlls = @("libcrypto-3-x64", "libssl-3-x64") }
-        @{ Name = "sentry";   Dlls = @("libsentry") }
+        @{ Name = "sentry";   Dlls = @("sentry") }
     )
 
     foreach ($pkg in $packages) {
