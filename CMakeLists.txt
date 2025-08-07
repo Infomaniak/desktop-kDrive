@@ -235,8 +235,6 @@ if(BUILD_UNIT_TESTS)
 endif()
 
 message(STATUS "Configure files")
-message("prefix: ${CMAKE_FIND_LIBRARY_PREFIXES}")
-message("suffix: ${CMAKE_FIND_LIBRARY_SUFFIXES}")
 configure_file(config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 
@@ -288,7 +286,7 @@ elseif(BUILD_CLIENT)
                 PATH_SUFFIXES "bin"
                 NO_DEFAULT_PATH
         )
-        message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
+        message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY} (search path: ${sentry_LIBRARIES})")
         install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # Crashpad_handler
@@ -353,3 +351,6 @@ if(UNIX AND NOT APPLE)
             FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
     endif()
 endif()
+
+message("prefix: ${CMAKE_FIND_LIBRARY_PREFIXES}")
+message("suffix: ${CMAKE_FIND_LIBRARY_SUFFIXES}")
