@@ -74,15 +74,12 @@ class KDriveDesktop(ConanFile):
         else:
             self.requires("openssl/3.2.4", options={ "shared": True }) # From https://conan.io/center/recipes/openssl
 
-        sentry_version = "0.7.10"
-        if self.settings.os == "Linux": # TODO Do we really need to use the 0.6.4 version of sentry on Linux?
-            sentry_version = "0.6.4"
-        self.requires(f"sentry/{sentry_version}")
+        self.requires(f"sentry/0.7.10")
 
 class OverrideVSRuntimeBlock(VSRuntimeBlock):
     def __init__(self, conanfile, toolchain, name):
         super().__init__(conanfile, toolchain, name)
-        build_type = str(conanfile.settings.build_type)
+        build_type = str(conanfile.settings._build_type)
         if build_type == "Debug":
             runtime = "MultiThreadedDebugDLL"
         else:

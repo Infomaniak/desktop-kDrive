@@ -16,7 +16,7 @@ class SentryNativeConan(ConanFile):
         "breadcrumbs and arbitrary custom context to enrich error reports."
     )
     license = "MIT"
-    topics = ("breakpad", "crashpad", "error-reporting", "crash-reporting")
+    topics = ("crashpad", "error-reporting", "crash-reporting")
 
     package_type = "library"
     settings = "os", "arch", "compiler", "build_type"
@@ -45,7 +45,7 @@ class SentryNativeConan(ConanFile):
         cache_variables = {
             "CMAKE_BUILD_TYPE": "RelWithDebInfo",
             "SENTRY_INTEGRATION_QT": "YES",
-            "SENTRY_BACKEND": "breakpad" if Version(self.version) < "0.7.0" else "crashpad",
+            "SENTRY_BACKEND": "crashpad",
             "CMAKE_PREFIX_PATH": qt_package_folder,
             "SENTRY_BUILD_TESTS": "OFF",
             "SENTRY_BUILD_EXAMPLES": "OFF",
