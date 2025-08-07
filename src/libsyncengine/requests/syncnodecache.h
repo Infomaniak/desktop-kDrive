@@ -37,9 +37,9 @@ class SYNCENGINE_EXPORT SyncNodeCache {
         SyncNodeCache(SyncNodeCache const &) = delete;
         void operator=(SyncNodeCache const &) = delete;
 
-        ExitCode syncNodes(const int syncDbId, SyncNodeType type, NodeSet &syncNodes);
+        ExitCode syncNodes(const int syncDbId, const SyncNodeType type, NodeSet &syncNodes);
         ExitInfo deleteSyncNode(const int syncDbId, const NodeId &nodeId);
-        ExitCode update(const int syncDbId, SyncNodeType type, const NodeSet &syncNodes);
+        ExitCode update(const int syncDbId, const SyncNodeType type, const NodeSet &syncNodes);
         ExitCode initCache(const int syncDbId, std::shared_ptr<SyncDb> syncDb);
         ExitCode clear(const int syncDbId);
 

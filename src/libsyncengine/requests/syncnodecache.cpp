@@ -67,7 +67,7 @@ ExitCode SyncNodeCache::checkIfTypeExists(const int syncDbId, const SyncNodeType
     return ExitCode::Ok;
 }
 
-ExitCode SyncNodeCache::syncNodes(const int syncDbId, SyncNodeType type, NodeSet &syncNodes) {
+ExitCode SyncNodeCache::syncNodes(const int syncDbId, const SyncNodeType type, NodeSet &syncNodes) {
     const std::scoped_lock lock(_mutex);
 
     if (auto exitCode = checkIfSyncExists(syncDbId); exitCode != ExitCode::Ok) return exitCode;
@@ -103,7 +103,7 @@ ExitInfo SyncNodeCache::deleteSyncNode(const int syncDbId, const NodeId &nodeId)
     // Remove `nodeId` from cache.
     for (auto &[type, nodeSet]: _syncNodesMap[syncDbId]) {
         if (nodeSet.contains(nodeId)) {
-            nodeSet.erase(nodeId);
+            (void) nodeSet.erase(nodeId);
             break;
         }
     }
@@ -121,7 +121,7 @@ ExitInfo SyncNodeCache::deleteSyncNode(const int syncDbId, const NodeId &nodeId)
     return {ExitCode::Ok, exitCause};
 }
 
-ExitCode SyncNodeCache::update(const int syncDbId, SyncNodeType type, const NodeSet &syncNodes) {
+ExitCode SyncNodeCache::update(const int syncDbId, const SyncNodeType type, const NodeSet &syncNodes) {
     const std::scoped_lock lock(_mutex);
 
     if (auto exitCode = checkIfSyncExists(syncDbId); exitCode != ExitCode::Ok) return exitCode;

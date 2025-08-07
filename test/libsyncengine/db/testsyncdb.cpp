@@ -87,7 +87,7 @@ void TestSyncDb::setUp() {
     const std::filesystem::path syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
 
     // Delete previous DB
-    std::filesystem::remove(syncDbPath);
+    (void) std::filesystem::remove(syncDbPath);
 
     // Create DB
     _testObj = new SyncDbMock(syncDbPath.string(), KDRIVE_VERSION_STRING);
@@ -340,16 +340,16 @@ void TestSyncDb::testSyncNodes() {
     _testObj->prepare();
 
     NodeSet nodeIdSet;
-    nodeIdSet.emplace("1");
-    nodeIdSet.emplace("2");
-    nodeIdSet.emplace("3");
-    nodeIdSet.emplace("4");
-    nodeIdSet.emplace("5");
+    (void) nodeIdSet.emplace("1");
+    (void) nodeIdSet.emplace("2");
+    (void) nodeIdSet.emplace("3");
+    (void) nodeIdSet.emplace("4");
+    (void) nodeIdSet.emplace("5");
 
     NodeSet nodeIdSet2;
-    nodeIdSet2.emplace("11");
-    nodeIdSet2.emplace("12");
-    nodeIdSet2.emplace("13");
+    (void) nodeIdSet2.emplace("11");
+    (void) nodeIdSet2.emplace("12");
+    (void) nodeIdSet2.emplace("13");
 
     CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeType::BlackList, nodeIdSet));
     CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeType::UndecidedList, nodeIdSet2));
@@ -376,8 +376,8 @@ void TestSyncDb::testSyncNodes() {
 
     // Testing SyncDb::deleteSyncNode
     nodeIdSet.clear();
-    nodeIdSet.emplace("1");
-    nodeIdSet.emplace("2");
+    (void) nodeIdSet.emplace("1");
+    (void) nodeIdSet.emplace("2");
     CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeType::WhiteList, nodeIdSet));
     CPPUNIT_ASSERT(_testObj->selectAllSyncNodes(SyncNodeType::WhiteList, nodeIdSet));
     CPPUNIT_ASSERT_EQUAL(size_t{2}, nodeIdSet.size());

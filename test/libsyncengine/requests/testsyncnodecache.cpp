@@ -37,7 +37,7 @@ void TestSyncNodeCache::setUp() {
     const std::filesystem::path syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
 
     // Delete previous DB
-    std::filesystem::remove(syncDbPath);
+    (void) std::filesystem::remove(syncDbPath);
 
     // Create DB
     _testObj = std::make_shared<SyncDb>(syncDbPath.string(), KDRIVE_VERSION_STRING);
@@ -45,8 +45,8 @@ void TestSyncNodeCache::setUp() {
     _testObj->setAutoDelete(true);
 
     NodeSet nodeIdSet;
-    nodeIdSet.emplace("1");
-    nodeIdSet.emplace("2");
+    (void) nodeIdSet.emplace("1");
+    (void) nodeIdSet.emplace("2");
 
     CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeType::BlackList, nodeIdSet));
 }
