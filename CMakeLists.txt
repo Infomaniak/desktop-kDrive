@@ -279,17 +279,9 @@ elseif(BUILD_CLIENT)
         install(FILES ${VFS_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # Sentry
-        find_library(SENTRY_SHARED_LIBRARY
-                NAMES sentry
-                PATHS ${sentry_BIN_DIRS_${UPPER_BUILD_TYPE}}
-                PATH_SUFFIXES .
-                NO_DEFAULT_PATH
-        )
-        set(SENTRY_DLL_PATH "$<TARGET_FILE:sentry::sentry>")
-        message(STATUS "sentry dll found in ${SENTRY_DLL_PATH}")
-        get_target_property(ILUBT sentry::sentry IMPORTED_LOCATION_${UPPER_BUILD_TYPE})
-        message(STATUS "IMPORTED_LOCATION_${UPPER_BUILD_TYPE} of sentry::sentry=${ILUBT}")
-        install(FILES $<TARGET_FILE:sentry::sentry> DESTINATION ${CMAKE_INSTALL_BINDIR})
+        find_library(SENTRY_SHARED_LIBRARY NAMES sentry NO_CACHE)
+        message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
+        install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # Crashpad_handler
         get_target_property(CRASHPAD_HANDLER_PROGRAM
