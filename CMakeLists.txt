@@ -285,7 +285,7 @@ elseif(BUILD_CLIENT)
         find_library(SENTRY_SHARED_LIBRARY
                 NAMES sentry
                 PATHS ${sentry_LIBRARIES}
-                PATH_SUFFIXES .
+                PATH_SUFFIXES "bin"
                 NO_DEFAULT_PATH
         )
         message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
