@@ -281,9 +281,15 @@ elseif(BUILD_CLIENT)
         install(FILES ${VFS_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # Sentry
-        find_library(SENTRY_SHARED_LIBRARY NAMES sentry PATH_SUFFIXES "bin" NO_CACHE)
-        message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
-        install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
+        include(GeneralizeConanLibraryDirs)
+        get_package_folder("sentry") # This setup _sentry_PACKAGE_FOLDER
+        set(CANDIDATE_DLL "${_sentry_PACKAGE_FOLDER}/bin/sentry.dll")
+        if(EXISTS "${CANDIDATE_DLL}")
+            set(SENTRY_SHARED_LIBRARY "${CANDIDATE_DLL}")
+            message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
+        else()
+            message(FATAL_ERROR "sentry.dll not found in ${SENTRY_BIN_DIR}")
+        endif()
 
         # Crashpad_handler
         get_target_property(CRASHPAD_HANDLER_PROGRAM
