@@ -282,13 +282,12 @@ elseif(BUILD_CLIENT)
 
         # Sentry
         include(GeneralizeConanLibraryDirs)
-        get_package_folder("sentry") # This setup _sentry_PACKAGE_FOLDER
-        set(CANDIDATE_DLL "${_sentry_PACKAGE_FOLDER}/bin/sentry.dll")
+        set(CANDIDATE_DLL "${sentry_PACKAGE_FOLDER_${UPPER_BUILD_TYPE}}/bin/sentry.dll")
         if(EXISTS "${CANDIDATE_DLL}")
             set(SENTRY_SHARED_LIBRARY "${CANDIDATE_DLL}")
             message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
         else()
-            message(FATAL_ERROR "sentry.dll not found in ${_sentry_PACKAGE_FOLDER}")
+            message(FATAL_ERROR "${CANDIDATE_DLL} not found")
         endif()
 
         # Crashpad_handler
