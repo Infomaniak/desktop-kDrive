@@ -79,7 +79,7 @@ class KDriveDesktop(ConanFile):
 class OverrideVSRuntimeBlock(VSRuntimeBlock):
     def __init__(self, conanfile, toolchain, name):
         super().__init__(conanfile, toolchain, name)
-        build_type = str(conanfile.settings._build_type)
+        build_type = str(conanfile.settings.build_type)
         if build_type == "Debug":
             runtime = "MultiThreadedDebugDLL"
         else:
