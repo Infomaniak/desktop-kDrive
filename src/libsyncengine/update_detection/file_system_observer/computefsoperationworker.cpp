@@ -274,17 +274,30 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         }
 
         // Delete operation
-        const auto fsOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(),
-                                                        dbNode.created().has_value() ? dbNode.created().value() : 0,
-                                                        dbModificationTime, dbNode.size(), dbPath);
-        opSet->insertOp(fsOp);
-        logOperationGeneration(snapshot->side(), fsOp);
+        const auto deleteOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(),
+                                                            dbNode.created().has_value() ? dbNode.created().value() : 0,
+                                                            dbModificationTime, dbNode.size(), dbPath);
+        opSet->insertOp(deleteOp);
+        logOperationGeneration(snapshot->side(), deleteOp);
 
         if (dbNode.type() == NodeType::Directory && !addFolderToDelete(dbPath)) {
             LOGW_SYNCPAL_WARN(_logger,
                               L"Error in ComputeFSOperationWorker::addFolderToDelete: " << Utility::formatSyncPath(dbPath));
             return ExitCode::SystemError;
         }
+
+        if (nodeIdReused) { // Create operation
+            SyncPath localPath;
+            bool ignore = false;
+            snapshot->path(nodeId, localPath, ignore);
+
+            const auto createOp = std::make_shared<FSOperation>(OperationType::Create, nodeId, snapshot->type(nodeId),
+                                                                snapshot->createdAt(nodeId), snapshot->lastModified(nodeId),
+                                                                dbNode.size(), localPath);
+            opSet->insertOp(createOp);
+            logOperationGeneration(snapshot->side(), createOp);
+        }
+
         return ExitCode::Ok;
     }
 
@@ -845,7 +858,7 @@ void ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const D
         LOGW_SYNCPAL_DEBUG(_logger, L"Creation date (old: "
                                             << dbNode.created().value() << L" / new: " << snapshot->createdAt(localNodeId)
                                             << L") and name (old: " << Utility::formatSyncName(dbNode.nameLocal()) << L" / new: "
-                                            << Utility::formatSyncName(snapshot->name(localNodeId)) << L") changed for"
+                                            << Utility::formatSyncName(snapshot->name(localNodeId)) << L") changed for "
                                             << CommonUtility::s2ws(localNodeId) << L". Node is reused.");
         return;
     }
