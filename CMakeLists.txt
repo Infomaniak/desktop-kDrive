@@ -279,12 +279,9 @@ elseif(BUILD_CLIENT)
         install(FILES ${VFS_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # Sentry
-        get_target_property(SENTRY_LIB_DIR sentry::sentry
-                INTERFACE_LINK_DIRECTORIES
-        )
         find_library(SENTRY_SHARED_LIBRARY
                 NAMES sentry
-                PATHS ${SENTRY_LIB_DIR}
+                PATHS ${sentry_BIN_DIRS_${UPPER_BUILD_TYPE}}
                 PATH_SUFFIXES .
                 NO_DEFAULT_PATH
         )
