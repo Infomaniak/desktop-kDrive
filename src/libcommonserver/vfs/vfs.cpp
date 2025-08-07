@@ -212,7 +212,7 @@ ExitInfo VfsOff::forceStatus(const SyncPath &pathStd, const VfsStatus &vfsStatus
         return exitInfo;
     }
     // Update Finder
-    LOGW_DEBUG(logger(), L"Send status to the Finder extension for file/directory " << Path2WStr(fullPath));
+    LOGW_DEBUG(logger(), L"Send status to the Finder extension for item with " << Utility::formatSyncPath(fullPath));
     QString status = vfsStatus.isSyncing ? "SYNC" : "OK";
     QString path = SyncName2QStr(pathStd.native());
     if (_vfsSetupParams.executeCommand)

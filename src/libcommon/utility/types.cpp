@@ -220,6 +220,8 @@ std::string toString(const ExitCause e) {
             return "NotEnoughINotifyWatches";
         case ExitCause::FileOrDirectoryCorrupted:
             return "FileOrDirectoryCorrupted";
+        case ExitCause::OperationCanBeIgnored:
+            return "OperationCanVeIgnored";
         default:
             return noConversionStr;
     }
