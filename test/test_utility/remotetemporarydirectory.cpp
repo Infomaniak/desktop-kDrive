@@ -19,8 +19,8 @@
 #include "testincludes.h"
 #include "remotetemporarydirectory.h"
 
-#include "jobs/network/API_v2/createdirjob.h"
-#include "jobs/network/API_v2/deletejob.h"
+#include "jobs/network/kDrive_API/createdirjob.h"
+#include "jobs/network/kDrive_API/deletejob.h"
 #include "libsyncengine/jobs/network/networkjobsparams.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/utility.h"
@@ -75,7 +75,8 @@ void RemoteTemporaryDirectory::createDirectory(const int driveDbId, const NodeId
         CPPUNIT_ASSERT_MESSAGE("RemoteTemporaryDirectory() Failed to extract the file id (2).", dataObj);
         _dirId = dataObj->get(idKey).toString();
         LOGW_INFO(Log::instance()->getLogger(), L"RemoteTemporaryDirectory created: " << Utility::formatSyncName(_dirName)
-                                                                                      << L" with ID: " << CommonUtility::s2ws(_dirId));
+                                                                                      << L" with ID: "
+                                                                                      << CommonUtility::s2ws(_dirId));
         break;
     } while (true);
 }

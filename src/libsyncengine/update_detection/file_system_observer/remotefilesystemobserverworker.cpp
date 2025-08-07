@@ -18,10 +18,10 @@
 
 #include "remotefilesystemobserverworker.h"
 #include "jobs/jobmanager.h"
-#include "jobs/network/API_v2/listing/continuefilelistwithcursorjob.h"
-#include "jobs/network/API_v2/listing/csvfullfilelistwithcursorjob.h"
-#include "jobs/network/API_v2/listing/longpolljob.h"
-#include "jobs/network/API_v2/getfileinfojob.h"
+#include "jobs/network/kDrive_API/listing/continuefilelistwithcursorjob.h"
+#include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
+#include "jobs/network/kDrive_API/listing/longpolljob.h"
+#include "jobs/network/kDrive_API/getfileinfojob.h"
 #if defined(KD_WINDOWS)
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #endif
