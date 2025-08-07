@@ -637,4 +637,23 @@ SyncPath Utility::sharedFolderName() {
     return Str2SyncName(SHARED_FOLDER);
 }
 
+bool Utility::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode) {
+    switch (httpErrorCode) {
+        case Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR:
+        case Poco::Net::HTTPResponse::HTTP_NOT_IMPLEMENTED:
+        case Poco::Net::HTTPResponse::HTTP_BAD_GATEWAY:
+        case Poco::Net::HTTPResponse::HTTP_SERVICE_UNAVAILABLE:
+        case Poco::Net::HTTPResponse::HTTP_GATEWAY_TIMEOUT:
+        case Poco::Net::HTTPResponse::HTTP_VERSION_NOT_SUPPORTED:
+        case Poco::Net::HTTPResponse::HTTP_VARIANT_ALSO_NEGOTIATES:
+        case Poco::Net::HTTPResponse::HTTP_INSUFFICIENT_STORAGE:
+        case Poco::Net::HTTPResponse::HTTP_LOOP_DETECTED:
+        case Poco::Net::HTTPResponse::HTTP_NOT_EXTENDED:
+        case Poco::Net::HTTPResponse::HTTP_NETWORK_AUTHENTICATION_REQUIRED:
+            return true;
+        default:
+            return false;
+    }
+}
+
 } // namespace KDC
