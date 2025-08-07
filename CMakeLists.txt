@@ -288,7 +288,7 @@ elseif(BUILD_CLIENT)
             set(SENTRY_SHARED_LIBRARY "${CANDIDATE_DLL}")
             message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
         else()
-            message(FATAL_ERROR "sentry.dll not found in ${SENTRY_BIN_DIR}")
+            message(FATAL_ERROR "sentry.dll not found in ${_sentry_PACKAGE_FOLDER}")
         endif()
 
         # Crashpad_handler
