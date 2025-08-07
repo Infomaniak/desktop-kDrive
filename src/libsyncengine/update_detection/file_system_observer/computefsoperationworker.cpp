@@ -151,7 +151,7 @@ ExitCode ComputeFSOperationWorker::updateSyncNode(const SyncNodeType syncNodeTyp
 }
 
 ExitCode ComputeFSOperationWorker::updateSyncNode() {
-    for (int syncNodeTypeIdx = toInt(SyncNodeType::BlackList); syncNodeTypeIdx <= toInt(SyncNodeType::UndecidedList);
+    for (auto syncNodeTypeIdx = toInt(SyncNodeType::WhiteList); syncNodeTypeIdx <= toInt(SyncNodeType::UndecidedList);
          syncNodeTypeIdx++) {
         const auto syncNodeType = static_cast<SyncNodeType>(syncNodeTypeIdx);
 
