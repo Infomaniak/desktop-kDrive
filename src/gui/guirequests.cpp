@@ -373,6 +373,8 @@ ExitCode GuiRequests::getOfflineFilesTotalSize(const int driveDbId, uint64_t &to
     resultStream >> exitCode;
     resultStream >> tmpSize;
     totalSize = tmpSize;
+
+    return exitCode;
 }
 
 ExitCode GuiRequests::searchItemInDrive(const int driveDbId, const QString &searchString, QList<SearchInfo> &list, bool &hasMore,
