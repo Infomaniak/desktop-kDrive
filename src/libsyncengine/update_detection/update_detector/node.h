@@ -99,7 +99,7 @@ class Node {
         inline std::optional<SyncTime> modificationTime() const { return _lastModified; }
         inline int64_t size() const { return _size; }
 
-        // The id() return value should never be `std::nullopt`. It starts with the "tmp_" prefix if and only if the node is a
+        // The return value should never be `std::nullopt`. It starts with the "tmp_" prefix if and only if the node is a
         // temporary node of the update tree, i.e., if `isTmp()` returns `true`.
         inline std::optional<NodeId> id() const { return _id; }
         inline std::optional<NodeId> previousId() const { return _previousId; }
