@@ -86,9 +86,9 @@ AbstractNetworkJob::~AbstractNetworkJob() {
 
 bool AbstractNetworkJob::isManagedError(const ExitInfo exitInfo) noexcept {
     static const std::set managedExitCauses = {
-            ExitCause::InvalidName,       ExitCause::ApiErr,        ExitCause::FileTooBig, ExitCause::NotFound,
-            ExitCause::FileLocked,        ExitCause::QuotaExceeded, ExitCause::FileExists, ExitCause::ShareLinkAlreadyExists,
-            ExitCause::ServiceUnavailable};
+            ExitCause::InvalidName, ExitCause::ApiErr,        ExitCause::FileTooBig, ExitCause::NotFound,
+            ExitCause::FileLocked,  ExitCause::QuotaExceeded, ExitCause::FileExists, ExitCause::ShareLinkAlreadyExists,
+            ExitCause::Http5xx};
 
     switch (exitInfo.code()) {
         case ExitCode::BackError:
@@ -115,6 +115,8 @@ void AbstractNetworkJob::runJob() noexcept {
 
     Poco::URI uri;
     for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
+        _exitInfo = ExitCode::Ok;
+
         if (trials > 1) {
             Utility::msleep(500); // Sleep for 0.5s
         }
@@ -215,7 +217,6 @@ void AbstractNetworkJob::runJob() noexcept {
         }
 
         if (_exitInfo.code() == ExitCode::TokenRefreshed || _exitInfo.code() == ExitCode::RateLimited) {
-            _exitInfo = ExitCode::Ok;
             _trials++; // Add one more chance
             continue;
         } else if (isManagedError(_exitInfo)) {
@@ -425,6 +426,12 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
     LOG_DEBUG(_logger,
               "Request " << jobId() << " finished with status: " << _resHttp.getStatus() << " / " << _resHttp.getReason());
 
+    if (Utility::isError500(_resHttp.getStatus())) {
+        _exitInfo = {ExitCode::BackError, ExitCause::Http5xx};
+        disableRetry();
+        return true;
+    }
+
     bool res = true;
     switch (_resHttp.getStatus()) {
         case Poco::Net::HTTPResponse::HTTP_OK: {
@@ -465,12 +472,6 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
             // Rate limitation
             _exitInfo = ExitCode::RateLimited;
             LOG_WARN(_logger, "Received HTTP_TOO_MANY_REQUESTS, rate limited");
-            break;
-        }
-        case Poco::Net::HTTPResponse::HTTP_SERVICE_UNAVAILABLE: {
-            _exitInfo = {ExitCode::BackError, ExitCause::ServiceUnavailable};
-            LOG_WARN(_logger, "Service unavailable");
-            disableRetry();
             break;
         }
         default: {
@@ -604,7 +605,7 @@ bool AbstractNetworkJob::extractJson(std::istream &is, Poco::JSON::Object::Ptr &
         jsonObj = Poco::JSON::Parser{}.parse(is).extract<Poco::JSON::Object::Ptr>();
     } catch (const Poco::Exception &exc) {
         LOGW_WARN(_logger, L"Reply " << jobId() << L" received doesn't contain a valid JSON payload: "
-                                     << Utility::s2ws(exc.displayText()));
+                                     << CommonUtility::s2ws(exc.displayText()));
         Utility::logGenericServerError(_logger, "Request error", is, _resHttp);
         _exitInfo = {ExitCode::BackError, ExitCause::ApiErr};
         return false;
@@ -613,7 +614,7 @@ bool AbstractNetworkJob::extractJson(std::istream &is, Poco::JSON::Object::Ptr &
     if (isExtendedLog()) {
         std::ostringstream os;
         jsonObj->stringify(os);
-        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << Utility::s2ws(os.str()));
+        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << CommonUtility::s2ws(os.str()));
     }
     return true;
 }

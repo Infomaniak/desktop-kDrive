@@ -154,11 +154,11 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
         }
     } else {
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Create operation "
-                                                << op->id() << L" to be propagated on " << op->targetSide()
-                                                << L" replica for item " << Utility::formatSyncPath(currentNode->getPath())
-                                                << L" (" << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1")
-                                                << L")");
+            LOGW_SYNCPAL_DEBUG(_logger,
+                               L"Create operation "
+                                       << op->id() << L" to be propagated on " << op->targetSide() << L" replica for item "
+                                       << Utility::formatSyncPath(currentNode->getPath()) << L" ("
+                                       << CommonUtility::s2ws(currentNode->id() ? currentNode->id().value() : "-1") << L")");
         }
 
         if (_syncPal->vfsMode() == VirtualFileMode::Off && op->targetSide() == ReplicaSide::Local &&
@@ -171,7 +171,7 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
 void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> currentNode, std::shared_ptr<Node> correspondingNode) {
     const auto op = std::make_shared<SyncOperation>();
 
-    assert(correspondingNode); // Node must exists on both replica (except for create operations)
+    assert(correspondingNode);
 
     // Check for Edit-Edit pseudo conflict
     if (isPseudoConflict(currentNode, correspondingNode)) {
@@ -209,11 +209,11 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
 
     if (!op->omit()) {
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Edit operation " << op->id() << L" to be propagated on " << op->targetSide()
-                                                           << L" replica for item "
-                                                           << Utility::formatSyncPath(currentNode->getPath()) << L"(ID: "
-                                                           << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1")
-                                                           << L")");
+            LOGW_SYNCPAL_DEBUG(_logger,
+                               L"Edit operation "
+                                       << op->id() << L" to be propagated on " << op->targetSide() << L" replica for item "
+                                       << Utility::formatSyncPath(currentNode->getPath()) << L"(ID: "
+                                       << CommonUtility::s2ws(currentNode->id() ? currentNode->id().value() : "-1") << L")");
         }
 
         if (_syncPal->vfsMode() == VirtualFileMode::Off && op->targetSide() == ReplicaSide::Local &&
@@ -229,7 +229,7 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
 void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> currentNode, std::shared_ptr<Node> correspondingNode) {
     SyncOpPtr op = std::make_shared<SyncOperation>();
 
-    assert(correspondingNode); // Node must exists on both replica (except for create operations)
+    assert(correspondingNode);
 
     // Check for Move-Move (Source) pseudo conflict
     if (isPseudoConflict(currentNode, correspondingNode)) {
@@ -267,7 +267,8 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
                                                 << op->id() << L" to be propagated on " << op->targetSide() << L" replica from "
                                                 << Utility::formatSyncPath(currentNode->moveOriginInfos().path()) << L" to "
                                                 << Utility::formatSyncPath(currentNode->getPath()) << L" (ID: "
-                                                << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1") << L")");
+                                                << CommonUtility::s2ws(currentNode->id() ? currentNode->id().value() : "-1")
+                                                << L")");
         }
     }
 }
@@ -276,7 +277,7 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
                                                        std::shared_ptr<Node> correspondingNode) {
     auto op = std::make_shared<SyncOperation>();
 
-    assert(correspondingNode); // Node must exist on both replica (except for create operations)
+    assert(correspondingNode);
 
     // Do not generate delete operation if parent already deleted
     if (_deletedNodes.contains(*currentNode->parentNode()->id())) {
@@ -313,11 +314,11 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
         // of next sync because nothing has changed but create events are not propagated
     } else {
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Delete operation "
-                                                << op->id() << L" to be propagated on " << op->targetSide()
-                                                << L" replica for item " << Utility::formatSyncPath(currentNode->getPath())
-                                                << L" (" << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1")
-                                                << L")");
+            LOGW_SYNCPAL_DEBUG(_logger,
+                               L"Delete operation "
+                                       << op->id() << L" to be propagated on " << op->targetSide() << L" replica for item "
+                                       << Utility::formatSyncPath(currentNode->getPath()) << L" ("
+                                       << CommonUtility::s2ws(currentNode->id() ? currentNode->id().value() : "-1") << L")");
         }
     }
 

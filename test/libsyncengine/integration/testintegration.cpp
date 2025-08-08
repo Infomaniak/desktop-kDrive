@@ -840,7 +840,7 @@ SyncPath TestIntegration::findLocalFileByNamePrefix(const SyncPath &parentAbsolu
     bool endOfDir = false;
     DirectoryEntry entry;
     while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
-        if (Utility::startsWith(entry.path().filename(), namePrefix)) return entry.path();
+        if (CommonUtility::startsWith(entry.path().filename(), namePrefix)) return entry.path();
     }
     return SyncPath();
 }

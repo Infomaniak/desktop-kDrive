@@ -34,7 +34,6 @@
 #include "enablestateholder.h"
 #include "guirequests.h"
 #include "clientgui.h"
-#include "common/filesystembase.h"
 #include "libcommongui/matomoclient.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
@@ -690,7 +689,6 @@ bool DrivePreferencesWidget::addSync(const QString &localFolderPath, bool liteSy
                                      const QString &serverFolderNodeId, QSet<QString> blackSet, QSet<QString> whiteSet) {
     QString localFolderPathNormalized = QDir::fromNativeSeparators(localFolderPath);
 
-    FileSystem::setFolderMinimumPermissions(localFolderPathNormalized);
     KDC::CommonGuiUtility::setupFavLink(localFolderPathNormalized);
 
     int syncDbId;
@@ -966,7 +964,6 @@ void DrivePreferencesWidget::onAddLocalFolder(bool checked) {
             // Setup local folder
             const QDir localFolderDir(localFolderPath);
             if (localFolderDir.exists()) {
-                FileSystem::setFolderMinimumPermissions(localFolderPath);
                 KDC::CommonGuiUtility::setupFavLink(localFolderPath);
                 qCDebug(lcDrivePreferencesWidget) << "Local folder setup: " << localFolderPath;
             } else {

@@ -276,7 +276,7 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
 
     // Open web version
     auto *driveOpenWebViewAction = new QWidgetAction(this);
-    auto *driveOpenWebViewMenuItemWidget = new MenuItemWidget(tr("Open %1 web version").arg(APPLICATION_SHORTNAME));
+    auto *driveOpenWebViewMenuItemWidget = new MenuItemWidget(tr("Open %1 web version").arg(APPLICATION_NAME));
     driveOpenWebViewMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/webview.svg");
     driveOpenWebViewAction->setDefaultWidget(driveOpenWebViewMenuItemWidget);
     driveOpenWebViewAction->setVisible(_gui->currentDriveDbId() != 0);

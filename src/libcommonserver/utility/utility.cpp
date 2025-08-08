@@ -22,13 +22,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 
-#if defined(KD_MACOS)
-#include "utility_mac.cpp"
-#elif defined(KD_LINUX)
-#include "utility_linux.cpp"
-#elif defined(KD_WINDOWS)
-#include "utility_win.cpp"
-#endif
+#include "utility/utility_base.h"
 
 #if defined(KD_MACOS)
 #include <sys/statvfs.h>
@@ -39,9 +33,6 @@
 #elif defined(KD_WINDOWS)
 #include <fileapi.h>
 #endif
-
-#include "utility/utility_base.h"
-
 
 #include <locale>
 #include <algorithm>
@@ -80,16 +71,12 @@ static const SyncName resourcesPath(Str(""));
 static const SyncName resourcesPath(Str(""));
 #endif
 
-#ifndef KD_MACOS // Not used on macOS
-static const std::string NTFS("NTFS");
-#endif
-
 struct VariantPrinter {
         std::wstring operator()(std::monostate) { return std::wstring(L"NULL"); }
         std::wstring operator()(int value) { return std::to_wstring(value); }
         std::wstring operator()(int64_t value) { return std::to_wstring(value); }
         std::wstring operator()(double value) { return std::to_wstring(value); }
-        std::wstring operator()(const std::string &value) { return Utility::s2ws(value); }
+        std::wstring operator()(const std::string &value) { return CommonUtility::s2ws(value); }
         std::wstring operator()(const std::wstring &value) { return value; }
         std::wstring operator()(std::shared_ptr<std::vector<char>>) { return std::wstring(); }
 };
@@ -163,62 +150,6 @@ bool Utility::isCreationDateValid(int64_t creationDate) {
     return true;
 }
 
-std::wstring Utility::s2ws(const std::string &str) {
-    Poco::UnicodeConverter converter;
-    std::wstring output;
-    converter.convert(str, output);
-    return output;
-}
-
-std::string Utility::ws2s(const std::wstring &wstr) {
-    Poco::UnicodeConverter converter;
-    std::string output;
-    converter.convert(wstr, output);
-    return output;
-}
-
-std::string Utility::ltrim(const std::string &s) {
-    std::string sout(s);
-    const auto it =
-            std::find_if(sout.begin(), sout.end(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
-    sout.erase(sout.begin(), it);
-    return sout;
-}
-
-std::string Utility::rtrim(const std::string &s) {
-    std::string sout(s);
-    const auto it =
-            std::find_if(sout.rbegin(), sout.rend(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
-    sout.erase(it.base(), sout.end());
-    return sout;
-}
-
-std::string Utility::trim(const std::string &s) {
-    return ltrim(rtrim(s));
-}
-
-#if defined(KD_WINDOWS)
-SyncName Utility::ltrim(const SyncName &s) {
-    SyncName sout(s);
-    const auto it =
-            std::find_if(sout.begin(), sout.end(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
-    sout.erase(sout.begin(), it);
-    return sout;
-}
-
-SyncName Utility::rtrim(const SyncName &s) {
-    SyncName sout(s);
-    const auto it =
-            std::find_if(sout.rbegin(), sout.rend(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
-    sout.erase(it.base(), sout.end());
-    return sout;
-}
-
-SyncName Utility::trim(const SyncName &s) {
-    return ltrim(rtrim(s));
-}
-#endif
-
 void Utility::msleep(int msec) {
     std::chrono::milliseconds dura(msec);
     std::this_thread::sleep_for(dura);
@@ -228,9 +159,13 @@ std::wstring Utility::v2ws(const dbtype &v) {
     return std::visit(VariantPrinter{}, v);
 }
 
+std::wstring Utility::quotedSyncName(const SyncName &name) {
+    return L"'" + SyncName2WStr(name) + L"'";
+}
+
 std::wstring Utility::formatSyncName(const SyncName &name) {
     std::wstringstream ss;
-    ss << L"name='" << SyncName2WStr(name) << L"'";
+    ss << L"name='" << quotedSyncName(name);
 
     return ss.str();
 }
@@ -254,13 +189,13 @@ std::wstring Utility::formatStdError(const std::error_code &ec) {
 #if defined(KD_WINDOWS)
     std::stringstream ss;
     ss << ec.message() << " (code: " << ec.value() << ")";
-    return s2ws(ss.str());
+    return CommonUtility::s2ws(ss.str());
 #elif defined(KD_LINUX)
     std::stringstream ss;
     ss << ec.message() << ". (code: " << ec.value() << ")";
-    return s2ws(ss.str());
+    return CommonUtility::s2ws(ss.str());
 #elif defined(KD_MACOS)
-    return s2ws(ec.message());
+    return CommonUtility::s2ws(ec.message());
 #endif
 }
 
@@ -273,7 +208,7 @@ std::wstring Utility::formatStdError(const SyncPath &path, const std::error_code
 
 std::wstring Utility::formatIoError(const IoError ioError) {
     std::wstringstream ss;
-    ss << s2ws(IoHelper::ioError2StdString(ioError));
+    ss << CommonUtility::s2ws(IoHelper::ioError2StdString(ioError));
 
     return ss.str();
 }
@@ -334,109 +269,6 @@ void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::
     LOG_WARN(logger, errorTitle << ": " << errorMsg);
 }
 
-#if defined(KD_WINDOWS)
-static std::unordered_map<std::string, bool> rootFsTypeMap;
-
-bool Utility::isNtfs(const SyncPath &targetPath) {
-    auto it = rootFsTypeMap.find(targetPath.root_name().string());
-    if (it == rootFsTypeMap.end()) {
-        std::string fsType = fileSystemName(targetPath);
-        auto val = rootFsTypeMap.insert({targetPath.root_name().string(), fsType == NTFS});
-        if (!val.second) {
-            // Failed to insert into map
-            return false;
-        }
-        it = val.first;
-    }
-    return it->second;
-}
-#endif
-
-std::string Utility::fileSystemName(const SyncPath &targetPath) {
-#if defined(KD_MACOS)
-    struct statfs stat;
-    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
-        return stat.f_fstypename;
-    }
-#elif defined(KD_WINDOWS)
-    TCHAR szFileSystemName[MAX_PATH + 1];
-    DWORD dwMaxFileNameLength = 0;
-    DWORD dwFileSystemFlags = 0;
-
-    if (GetVolumeInformation(targetPath.root_path().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
-                             szFileSystemName, sizeof(szFileSystemName)) == TRUE) {
-        return ws2s(szFileSystemName);
-    } else {
-        // Not all the requested information is retrieved
-        DWORD dwError = GetLastError();
-        LOGW_WARN(logger(), L"Error in GetVolumeInformation for " << formatSyncName(targetPath.root_name()) << L" ("
-                                                                  << utility_base::getErrorMessage(dwError) << L")");
-
-        // !!! File system name can be OK or not !!!
-        return ws2s(szFileSystemName);
-    }
-#elif defined(KD_LINUX)
-    struct statfs stat;
-    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
-        const auto formatFsName = [](const std::string &prettyName, long fsCode) {
-            std::stringstream stream;
-            stream << std::hex << fsCode;
-            return prettyName + " | 0x" + stream.str();
-        };
-        switch (stat.f_type) {
-            case 0x137d:
-                return formatFsName("EXT(1)", stat.f_type);
-            case 0xef51:
-                return formatFsName("EXT2", stat.f_type);
-            case 0xef53:
-                return formatFsName("EXT2/3/4", stat.f_type);
-            case 0xbad1dea:
-            case 0xa501fcf5:
-            case 0x58465342:
-                return formatFsName("XFS", stat.f_type);
-            case 0x9123683e:
-            case 0x73727279:
-                return formatFsName("BTRFS", stat.f_type);
-            case 0xf15f:
-                return formatFsName("ECRYPTFS", stat.f_type);
-            case 0x4244:
-                return formatFsName("HFS", stat.f_type);
-            case 0x5346544e:
-                return formatFsName(NTFS, stat.f_type);
-            case 0x858458f6:
-                return formatFsName("RAMFS", stat.f_type);
-            default:
-                return formatFsName("Unknown-see corresponding entry at https://man7.org/linux/man-pages/man2/statfs.2.html",
-                                    stat.f_type);
-        }
-    }
-#endif
-
-    return "Error";
-}
-
-bool Utility::startsWith(const std::string &str, const std::string &prefix) {
-    return str.size() >= prefix.size() &&
-           std::equal(prefix.begin(), prefix.end(), str.begin(), [](char c1, char c2) { return c1 == c2; });
-}
-
-bool Utility::startsWithInsensitive(const std::string &str, const std::string &prefix) {
-    return str.size() >= prefix.size() && std::equal(prefix.begin(), prefix.end(), str.begin(), [](char c1, char c2) {
-               return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
-           });
-}
-
-bool Utility::endsWith(const std::string &str, const std::string &suffix) {
-    return str.size() >= suffix.size() && std::equal(str.begin() + static_cast<long>(str.length() - suffix.length()), str.end(),
-                                                     suffix.begin(), [](char c1, char c2) { return c1 == c2; });
-}
-
-bool Utility::endsWithInsensitive(const std::string &str, const std::string &suffix) {
-    return str.size() >= suffix.size() &&
-           std::equal(str.begin() + static_cast<long>(str.length() - suffix.length()), str.end(), suffix.begin(),
-                      [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
-}
-
 bool Utility::checkIfEqualUpToCaseAndEncoding(const SyncPath &a, const SyncPath &b, bool &isEqual) {
     isEqual = false;
 
@@ -463,34 +295,6 @@ bool Utility::checkIfEqualUpToCaseAndEncoding(const SyncPath &a, const SyncPath 
 
     return true;
 }
-
-bool Utility::contains(const std::string &str, const std::string &substr) {
-    return str.find(substr) != std::string::npos;
-}
-
-#if defined(KD_WINDOWS)
-bool Utility::startsWithInsensitive(const SyncName &str, const SyncName &prefix) {
-    return str.size() >= prefix.size() && std::equal(prefix.begin(), prefix.end(), str.begin(), [](SyncChar c1, SyncChar c2) {
-               return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
-           });
-}
-
-bool Utility::startsWith(const SyncName &str, const SyncName &prefix) {
-    return str.size() >= prefix.size() &&
-           std::equal(prefix.begin(), prefix.end(), str.begin(), [](SyncChar c1, SyncChar c2) { return c1 == c2; });
-}
-
-bool Utility::endsWith(const SyncName &str, const SyncName &suffix) {
-    return str.size() >= suffix.size() && std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
-                                                     [](char c1, char c2) { return c1 == c2; });
-}
-
-bool Utility::endsWithInsensitive(const SyncName &str, const SyncName &suffix) {
-    return str.size() >= suffix.size() &&
-           std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
-                      [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
-}
-#endif
 
 bool Utility::checkIfSameNormalization(const SyncName &a, const SyncName &b, bool &areSame) {
     SyncName aNormalized;
@@ -522,40 +326,6 @@ bool Utility::checkIfSameNormalization(const SyncPath &a, const SyncPath &b, boo
     return true;
 }
 
-bool Utility::isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path) {
-    if (path == potentialDescendant) return true;
-    for (auto it = potentialDescendant.begin(), it2 = path.begin(); it != potentialDescendant.end(); ++it, ++it2) {
-        if (it2 == path.end()) {
-            return true;
-        }
-        if (*it != *it2) {
-            return false;
-        }
-    }
-    return false;
-}
-
-bool Utility::isStrictDescendant(const SyncPath &potentialDescendant, const SyncPath &path) {
-    if (path == potentialDescendant) return false;
-    return isDescendantOrEqual(potentialDescendant, path);
-}
-
-bool Utility::moveItemToTrash(const SyncPath &itemPath) {
-    return moveItemToTrash_private(itemPath);
-}
-
-#if defined(KD_MACOS)
-bool Utility::preventSleeping(bool enable) {
-    return preventSleeping_private(enable);
-}
-#endif
-
-void Utility::restartFinderExtension() {
-#if defined(KD_MACOS)
-    restartFinderExtension_private();
-#endif
-}
-
 void Utility::str2hexstr(const std::string &str, std::string &hexstr, bool capital) {
     hexstr.resize(str.size() * 2);
     const char a = capital ? 'A' - 1 : 'a' - 1;
@@ -578,13 +348,12 @@ void Utility::strhex2str(const std::string &hexstr, std::string &str) {
     }
 }
 
-std::vector<std::string> Utility::splitStr(const std::string &str, char sep) {
+std::vector<std::string> Utility::splitStr(const std::string &str, const char sep) {
     std::vector<std::string> strings;
     std::istringstream ss(str);
     std::string s;
-    while (getline(ss, s, sep)) {
-        strings.push_back(s);
-    }
+    while (getline(ss, s, sep)) strings.push_back(s);
+
     return strings;
 }
 
@@ -651,14 +420,21 @@ std::string Utility::xxHashToStr(XXH64_hash_t hash) {
 }
 
 #if defined(KD_MACOS)
-SyncName Utility::getExcludedAppFilePath(bool test /*= false*/) {
-    return (test ? excludedAppFileName : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedAppFileName).native());
+SyncPath Utility::getExcludedAppFilePath(const bool test /*= false*/) {
+    if (test) return excludedAppFileName;
+
+    auto canonicalPath =
+            std::filesystem::weakly_canonical(CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} / excludedAppFileName);
+
+    return canonicalPath.make_preferred();
 }
 #endif
 
-SyncName Utility::getExcludedTemplateFilePath(bool test /*= false*/) {
-    return (test ? excludedTemplateFileName
-                 : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedTemplateFileName).native());
+SyncPath Utility::getExcludedTemplateFilePath(const bool test /*= false*/) {
+    if (test) return excludedTemplateFileName;
+    auto canonicalPath = std::filesystem::weakly_canonical(CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} /
+                                                           excludedTemplateFileName);
+    return canonicalPath.make_preferred();
 }
 
 SyncPath Utility::binRelativePath() {
@@ -679,15 +455,9 @@ SyncName Utility::logFileNameWithTime() {
     return woss.str();
 }
 
-std::string Utility::toUpper(const std::string &str) {
-    std::string upperStr(str);
-    // std::ranges::transform(str, upperStr.begin(), [](unsigned char c) { return std::toupper(c); });   // Needs gcc-11
-    std::transform(str.begin(), str.end(), upperStr.begin(), [](unsigned char c) { return std::toupper(c); });
-    return upperStr;
-}
-
 std::string Utility::_errId(const char *file, int line) {
-    std::string err = toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" + std::to_string(line);
+    std::string err = CommonUtility::toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" +
+                      std::to_string(line);
     return err;
 }
 
@@ -859,61 +629,6 @@ bool Utility::runDetachedProcess(std::wstring cmd) {
 
 #endif
 
-
-bool Utility::totalRamAvailable(uint64_t &ram, int &errorCode) {
-    if (totalRamAvailable_private(ram, errorCode)) {
-        return true;
-    }
-    // log errorCode;
-    return false;
-}
-
-bool Utility::ramCurrentlyUsed(uint64_t &ram, int &errorCode) {
-    if (ramCurrentlyUsed_private(ram, errorCode)) {
-        return true;
-    }
-    // log errorCode;
-    return false;
-}
-
-bool Utility::ramCurrentlyUsedByProcess(uint64_t &ram, int &errorCode) {
-    if (ramCurrentlyUsedByProcess_private(ram, errorCode)) {
-        return true;
-    }
-    // log errorCode;
-    return false;
-}
-
-
-bool Utility::cpuUsage(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint64_t &lastTotalSys, uint64_t &lastTotalIdle,
-                       double &percent) {
-#if defined(KD_LINUX)
-    return cpuUsage_private(lastTotalUser, lastTotalUserLow, lastTotalSys, lastTotalIdle, percent);
-#else
-    (void) (lastTotalUser);
-    (void) (lastTotalUserLow);
-    (void) (lastTotalSys);
-    (void) (lastTotalIdle);
-    (void) (percent);
-#endif
-    return false;
-}
-
-bool Utility::cpuUsage(uint64_t &previousTotalTicks, uint64_t &previousIdleTicks, double &percent) {
-#if defined(KD_MACOS)
-    return cpuUsage_private(previousTotalTicks, previousIdleTicks, percent);
-#else
-    (void) (previousTotalTicks);
-    (void) (previousIdleTicks);
-    (void) (percent);
-#endif
-    return false;
-}
-
-bool Utility::cpuUsageByProcess(double &percent) {
-    return cpuUsageByProcess_private(percent);
-}
-
 SyncPath Utility::commonDocumentsFolderName() {
     return Str2SyncName(COMMON_DOC_FOLDER);
 }
@@ -922,8 +637,23 @@ SyncPath Utility::sharedFolderName() {
     return Str2SyncName(SHARED_FOLDER);
 }
 
-std::string Utility::userName() {
-    return userName_private();
+bool Utility::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode) {
+    switch (httpErrorCode) {
+        case Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR:
+        case Poco::Net::HTTPResponse::HTTP_NOT_IMPLEMENTED:
+        case Poco::Net::HTTPResponse::HTTP_BAD_GATEWAY:
+        case Poco::Net::HTTPResponse::HTTP_SERVICE_UNAVAILABLE:
+        case Poco::Net::HTTPResponse::HTTP_GATEWAY_TIMEOUT:
+        case Poco::Net::HTTPResponse::HTTP_VERSION_NOT_SUPPORTED:
+        case Poco::Net::HTTPResponse::HTTP_VARIANT_ALSO_NEGOTIATES:
+        case Poco::Net::HTTPResponse::HTTP_INSUFFICIENT_STORAGE:
+        case Poco::Net::HTTPResponse::HTTP_LOOP_DETECTED:
+        case Poco::Net::HTTPResponse::HTTP_NOT_EXTENDED:
+        case Poco::Net::HTTPResponse::HTTP_NETWORK_AUTHENTICATION_REQUIRED:
+            return true;
+        default:
+            return false;
+    }
 }
 
 } // namespace KDC

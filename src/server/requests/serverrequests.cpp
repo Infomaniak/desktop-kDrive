@@ -21,7 +21,6 @@
 #endif
 
 #include "serverrequests.h"
-#include "common/utility.h"
 #include "config.h"
 #include "keychainmanager/keychainmanager.h"
 #include "jobs/network/kDrive_API/getrootfilelistjob.h"
@@ -912,6 +911,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                 case ExitCause::MigrationError:
                 case ExitCause::MigrationProxyNotImplemented:
                 case ExitCause::FileExists:
+                case ExitCause::SyncDirChanged:
                     return true;
                 default:
                     return false;
@@ -1517,8 +1517,7 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
     sync.setPaused(false);
 
     // Check vfs support
-    const QString fsName(CommonUtility::fileSystemName(Path2QStr(sync.localPath())));
-    const auto supportVfs = (fsName == "NTFS" || fsName == "apfs");
+    const bool supportVfs = CommonUtility::isNTFS(sync.localPath()) || CommonUtility::isAPFS(sync.localPath());
     sync.setSupportVfs(supportVfs);
 
 #if defined(KD_MACOS)
@@ -1921,8 +1920,8 @@ ExitCode ServerRequests::syncForPath(const std::vector<Sync> &syncList, const QS
     for (const Sync &sync: syncList) {
         const QString localPath = SyncName2QStr(sync.localPath().native()) + QLatin1Char('/');
 
-        if (absolutePath.startsWith(localPath,
-                                    (OldUtility::isWindows() || OldUtility::isMac()) ? Qt::CaseInsensitive : Qt::CaseSensitive)) {
+        if (absolutePath.startsWith(localPath, (CommonUtility::isWindows() || CommonUtility::isMac()) ? Qt::CaseInsensitive
+                                                                                                      : Qt::CaseSensitive)) {
             syncDbId = sync.dbId();
             break;
         }

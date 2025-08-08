@@ -16,9 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "utility.h"
+
 #include "log/log.h"
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/utility/utility.h"
 
 #include <sstream>
 #include <string>
@@ -31,36 +32,7 @@
 
 namespace KDC {
 
-bool moveItemToTrash(const SyncPath &itemPath, std::wstring &errorStr);
-bool preventSleeping(bool enable);
-bool preventSleeping();
-void restartFinderExtension();
-
-static bool moveItemToTrash_private(const SyncPath &itemPath) {
-    if (itemPath.empty()) {
-        LOG_WARN(Log::instance()->getLogger(), "Path is empty");
-        return false;
-    }
-
-    std::wstring errorStr;
-    if (!moveItemToTrash(itemPath, errorStr)) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in moveItemToTrash on " << Utility::formatSyncPath(itemPath) << L" - err='" << errorStr << L"'.");
-        return false;
-    }
-
-    return true;
-}
-
-static bool preventSleeping_private(bool enable) {
-    return preventSleeping(enable);
-}
-
-static void restartFinderExtension_private() {
-    return restartFinderExtension();
-}
-
-static bool totalRamAvailable_private(uint64_t &ram, int &errorCode) {
+bool Utility::totalRamAvailable(uint64_t &ram, int &errorCode) {
     int mib[2];
     mib[0] = CTL_HW;
     mib[1] = HW_MEMSIZE;
@@ -74,7 +46,7 @@ static bool totalRamAvailable_private(uint64_t &ram, int &errorCode) {
     return false;
 }
 
-static bool ramCurrentlyUsed_private(uint64_t &ram, int &errorCode) {
+bool Utility::ramCurrentlyUsed(uint64_t &ram, int &errorCode) {
     vm_size_t page_size;
     mach_port_t mach_port;
     mach_msg_type_number_t count;
@@ -92,7 +64,7 @@ static bool ramCurrentlyUsed_private(uint64_t &ram, int &errorCode) {
     return false;
 }
 
-static bool ramCurrentlyUsedByProcess_private(uint64_t &ram, int &errorCode) {
+bool Utility::ramCurrentlyUsedByProcess(uint64_t &ram, int &errorCode) {
     struct task_basic_info t_info {};
     mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
 
@@ -105,7 +77,7 @@ static bool ramCurrentlyUsedByProcess_private(uint64_t &ram, int &errorCode) {
     return true;
 }
 
-static bool cpuUsage_private(uint64_t &previousTotalTicks, uint64_t &previousIdleTicks, double &percent) {
+bool Utility::cpuUsage(uint64_t &previousTotalTicks, uint64_t &previousIdleTicks, double &percent) {
     host_cpu_load_info_data_t cpuinfo;
     mach_msg_type_number_t count = HOST_CPU_LOAD_INFO_COUNT;
     if (host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, (host_info_t) &cpuinfo, &count) == KERN_SUCCESS) {
@@ -129,12 +101,12 @@ static bool cpuUsage_private(uint64_t &previousTotalTicks, uint64_t &previousIdl
     return false;
 }
 
-static std::string executeCommand(const std::string &command) {
+std::string executeCommand(const std::string &command) {
     std::array<char, 128> buffer{};
     std::string result;
     FILE *pipe = popen(command.c_str(), "r");
     if (!pipe) {
-        throw std::runtime_error("Erreur lors de l'exécution de la commande");
+        throw std::runtime_error("Error while executing command");
     }
     while (fgets(buffer.data(), buffer.size(), pipe) != nullptr) {
         result += buffer.data();
@@ -143,7 +115,7 @@ static std::string executeCommand(const std::string &command) {
     return result;
 }
 
-static bool cpuUsageByProcess_private(double &percent) {
+bool Utility::cpuUsageByProcess(double &percent) {
     percent = 0;
 
     pid_t pid = getpid();
@@ -164,7 +136,7 @@ static bool cpuUsageByProcess_private(double &percent) {
     return true;
 }
 
-static std::string userName_private() {
+std::string Utility::userName() {
     bool isSet = false;
     return CommonUtility::envVarValue("USER", isSet);
 }

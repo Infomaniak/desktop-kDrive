@@ -19,9 +19,6 @@
 #import "litesyncextconnector.h"
 #import "../extensions/MacOSX/kDriveLiteSync/Extension/xpcLiteSyncExtensionProtocol.h"
 #import "../extensions/MacOSX/kDriveLiteSync/kDrive/xpcLiteSyncExtensionRemoteProtocol.h"
-#include "common/filepermissionholder.h"
-#include "common/filesystembase.h"
-#include "common/utility.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
@@ -546,10 +543,10 @@ bool checkIoErrorAndLogIfNeeded(IoError ioError, const std::string &itemType, co
 
     std::wstring message;
     if (ioError == IoError::NoSuchFileOrDirectory) {
-        message = Utility::s2ws(itemType + " doesn't exist: ");
+        message = CommonUtility::s2ws(itemType + " doesn't exist: ");
     }
     if (ioError == IoError::AccessDenied) {
-        message = Utility::s2ws(itemType + " or some containing directory, misses a permission: ");
+        message = CommonUtility::s2ws(itemType + " or some containing directory, misses a permission: ");
     }
 
     switch (mode) {
@@ -851,9 +848,6 @@ bool LiteSyncExtConnector::vfsHydratePlaceHolder(const QString &filePath) {
     }
 
     if (value == litesync_attrs::statusOffline) {
-        // Try to temporarily change the write access right of the file
-        FileSystem::setUserWritePermission(filePath);
-
         // Get file
         LOGW_DEBUG(_logger, L"Get file with " << Utility::formatPath(filePath));
         _private->executeCommand(QString("MAKE_AVAILABLE_LOCALLY_DIRECT:%1").arg(filePath));
@@ -881,8 +875,6 @@ bool LiteSyncExtConnector::vfsDehydratePlaceHolder(const QString &absoluteFilepa
         return false;
     }
 
-    FilePermissionHolder permHolder(absoluteFilepath);
-
     const SyncPath stdPath = QStr2Path(absoluteFilepath);
 
     struct stat fileStat;
@@ -894,9 +886,6 @@ bool LiteSyncExtConnector::vfsDehydratePlaceHolder(const QString &absoluteFilepa
     // Empty file
     int fd = open(stdPath.c_str(), O_WRONLY);
     if (fd == -1) {
-        // Try to temporarily change the write access right of the file
-        FileSystem::setUserWritePermission(absoluteFilepath);
-
         fd = open(stdPath.c_str(), O_WRONLY);
         if (fd == -1) {
             LOGW_WARN(_logger, L"Call to open failed: " << Utility::formatErrno(absoluteFilepath, errno));
@@ -938,11 +927,6 @@ bool LiteSyncExtConnector::vfsDehydratePlaceHolder(const QString &absoluteFilepa
 }
 
 bool LiteSyncExtConnector::vfsSetPinState(const QString &path, const QString &localSyncPath, const std::string_view &pinState) {
-    FilePermissionHolder permHolder(path);
-
-    // Try to temporarily change the write access right of the file
-    FileSystem::setUserWritePermission(path);
-
     IoError ioError = IoError::Success;
     if (!setXAttrValue(path, litesync_attrs::pinState, pinState, ioError)) {
         LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << Utility::formatErrno(path, errno));
@@ -1135,11 +1119,6 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
 
 bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, const QString &filePath, const QString &localSyncPath,
                                                 unsigned long long completed, bool &canceled, bool &finished) {
-    FilePermissionHolder permHolder(filePath);
-
-    // Temporarily change the write access right of the file
-    FileSystem::setUserWritePermission(filePath);
-
     canceled = false;
 
     @autoreleasepool {
@@ -1211,7 +1190,7 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
             } @catch (NSException *e) {
                 LOGW_WARN(_logger, L"Could not copy tmp file from " << Utility::formatPath(tmpFilePath) << L" to "
                                                                     << Utility::formatPath(filePath) << L" err="
-                                                                    << Utility::s2ws(std::string([e.name UTF8String])));
+                                                                    << CommonUtility::s2ws(std::string([e.name UTF8String])));
                 return false;
             }
 
@@ -1254,6 +1233,14 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
         }
     }
 
+    return true;
+}
+
+bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &absolutePath, const QString &status) {
+    if (!_private->updateFetchStatus(absolutePath, status)) {
+        LOGW_WARN(_logger, L"Call to updateFetchStatus failed: " << Utility::formatPath(absolutePath));
+        return false;
+    }
     return true;
 }
 
@@ -1318,8 +1305,6 @@ bool LiteSyncExtConnector::vfsGetFetchingAppList(QHash<QString, QString> &appTab
 }
 
 bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, const struct stat *fileStat) {
-    FilePermissionHolder permHolder(absoluteFilePath);
-
     if (!fileStat) {
         LOG_WARN(_logger, "Bad parameters");
         return false;
@@ -1338,9 +1323,6 @@ bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, co
     // Create sparse file with rights rw-r--r--
     int fd = open(stdPath.c_str(), FWRITE);
     if (fd == -1) {
-        // Try to temporarily change the write access right of the file
-        FileSystem::setUserWritePermission(absoluteFilePath);
-
         fd = open(stdPath.c_str(), FWRITE);
         if (fd == -1) {
             LOGW_WARN(_logger, L"Call to open failed - " << Utility::formatErrno(absoluteFilePath, errno));

@@ -22,10 +22,9 @@ add_definitions(-D_UNICODE)
 
 # Sources
 set(libcommon_SRCS
-    ../common/utility.h ../common/utility.cpp
     comm.h
     utility/types.h utility/types.cpp
-    utility/utility_base.h utility/utility.h utility/utility.cpp
+    utility/utility.h utility/utility.cpp
     utility/filename.h utility/commonmacros.h utility/coveragemacros.h
     utility/logiffail.h utility/qlogiffail.h
     utility/jsonparserutility.h
@@ -60,6 +59,10 @@ set(libcommon_SRCS
 if(APPLE)
     list(APPEND libcommon_SRCS utility/utility_mac.mm)
     set_property(SOURCE utility/utility_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+elseif (WIN32)
+    list(APPEND libcommon_SRCS utility/utility_win.cpp)
+else ()
+    list(APPEND libcommon_SRCS utility/utility_linux.cpp)
 endif()
 
 # Target

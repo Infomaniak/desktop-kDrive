@@ -49,13 +49,12 @@ bool hasSuccessfullyFinished(const std::shared_ptr<ISyncWorker> w1, const std::s
 bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
     const auto networkIssue =
             (w1 && w1->exitCode() == ExitCode::NetworkError) || (w2 && w2->exitCode() == ExitCode::NetworkError);
-    const auto serviceUnavailable =
-            (w1 && w1->exitCode() == ExitCode::BackError && w1->exitCause() == ExitCause::ServiceUnavailable) ||
-            (w2 && w2->exitCode() == ExitCode::BackError && w2->exitCause() == ExitCause::ServiceUnavailable);
+    const auto http500error = (w1 && w1->exitCode() == ExitCode::BackError && w1->exitCause() == ExitCause::Http5xx) ||
+                              (w2 && w2->exitCode() == ExitCode::BackError && w2->exitCause() == ExitCause::Http5xx);
     const auto syncDirNotAccessible =
             (w1 && w1->exitCode() == ExitCode::SystemError && w1->exitCause() == ExitCause::SyncDirAccessError) ||
             (w2 && w2->exitCode() == ExitCode::SystemError && w2->exitCause() == ExitCause::SyncDirAccessError);
-    return networkIssue || serviceUnavailable || syncDirNotAccessible;
+    return networkIssue || http500error || syncDirNotAccessible;
 }
 
 bool shouldBeStoppedAndRestarted(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
@@ -122,7 +121,7 @@ void SyncPalWorker::execute() {
                         continue;
                     }
 
-                    syncDirChanged = fsoWorkers[index]->exitCode() == ExitCode::SystemError &&
+                    syncDirChanged = fsoWorkers[index]->exitCode() == ExitCode::DataError &&
                                      fsoWorkers[index]->exitCause() == ExitCause::SyncDirChanged;
                     if (syncDirChanged) {
                         break;
@@ -144,8 +143,8 @@ void SyncPalWorker::execute() {
             LOG_SYNCPAL_INFO(_logger,
                              "Sync dir changed and we are unable to automaticaly fix syncDb, stopping all workers and exiting");
             stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
-            exitCode = ExitCode::FatalError;
-            setExitCause(ExitCause::WorkerExited);
+            exitCode = ExitCode::DataError;
+            setExitCause(ExitCause::SyncDirChanged);
             break;
         }
 
@@ -259,7 +258,7 @@ void SyncPalWorker::execute() {
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
 
-    LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " stoped");
+    LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " stopped");
     setDone(exitCode);
 }
 

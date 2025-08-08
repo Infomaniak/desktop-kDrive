@@ -362,7 +362,7 @@ bool SqliteDb::openHelper(const std::filesystem::path &dbPath, int sqliteFlags) 
 
     if (_errId != SQLITE_OK) {
         LOGW_WARN(_logger,
-                  L"Opening database failed: " << _errId << L" " << Utility::s2ws(_error) << L" for " << Path2WStr(dbPath));
+                  L"Opening database failed: " << _errId << L" " << CommonUtility::s2ws(_error) << L" for " << Path2WStr(dbPath));
         if (_errId == SQLITE_CANTOPEN) {
             LOG_WARN(_logger, "CANTOPEN extended errcode: " << sqlite3_extended_errcode(_sqlite3Db.get()));
 #if SQLITE_VERSION_NUMBER >= 3012000

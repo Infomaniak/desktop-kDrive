@@ -112,6 +112,8 @@ class ComputeFSOperationWorker : public ISyncWorker {
                                                                    // KDRIVE_ENABLE_FILE_SIZE_MISMATCH_DETECTION is set
         SyncNameSet _ignoredDirectoryNames;
 
+        uint16_t _timeDifferenceThresholdForEdit{0};
+
         bool addFolderToDelete(const SyncPath &path);
         bool checkIfPathIsInDeletedFolder(const SyncPath &path, bool &isInDeletedFolder);
         bool hasChangedSinceLastSeen(const NodeIds &nodeIds) const;

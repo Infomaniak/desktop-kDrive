@@ -516,7 +516,7 @@ bool SyncPal::createOrOpenDb(const SyncPath &syncDbPath, const std::string &vers
     try {
         _syncDb = std::shared_ptr<SyncDb>(new SyncDb(syncDbPath.string(), version, targetNodeId));
     } catch (std::exception const &e) {
-        const auto exceptionMsg = Utility::s2ws(std::string(e.what()));
+        const auto exceptionMsg = CommonUtility::s2ws(std::string(e.what()));
         LOGW_SYNCPAL_WARN(
                 _logger, L"Error in SyncDb::SyncDb: " << Utility::formatSyncPath(syncDbPath) << L", Exception: " << exceptionMsg);
         return false;
@@ -607,28 +607,49 @@ bool SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileSta
 }
 
 void SyncPal::directDownloadCallback(UniqueId jobId) {
-    const std::lock_guard<std::mutex> lock(_directDownloadJobsMapMutex);
+    const std::lock_guard lock(_directDownloadJobsMapMutex);
     auto directDownloadJobsMapIt = _directDownloadJobsMap.find(jobId);
     if (directDownloadJobsMapIt == _directDownloadJobsMap.end()) {
-        // No need to send a warning, the job might have been cancelled and therefor not in the map anymore
+        // No need to send a warning, the job might have been canceled, and therefor not in the map anymore
         return;
     }
 
-    if (directDownloadJobsMapIt->second->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
+    const auto downloadJob = directDownloadJobsMapIt->second;
+    if (downloadJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
         Error error;
         error.setLevel(ErrorLevel::Node);
         error.setSyncDbId(syncDbId());
-        error.setRemoteNodeId(directDownloadJobsMapIt->second->remoteNodeId());
-        error.setPath(directDownloadJobsMapIt->second->localPath());
+        error.setRemoteNodeId(downloadJob->remoteNodeId());
+        error.setPath(downloadJob->localPath());
         error.setExitCode(ExitCode::BackError);
         error.setExitCause(ExitCause::NotFound);
         addError(error);
 
-        vfs()->cancelHydrate(directDownloadJobsMapIt->second->localPath());
+        vfs()->cancelHydrate(downloadJob->localPath());
     }
 
-    _syncPathToDownloadJobMap.erase(directDownloadJobsMapIt->second->affectedFilePath());
-    _directDownloadJobsMap.erase(directDownloadJobsMapIt);
+    (void) _syncPathToDownloadJobMap.erase(downloadJob->affectedFilePath());
+    (void) _directDownloadJobsMap.erase(directDownloadJobsMapIt);
+    for (auto it = _folderHydrationInProgress.begin(); it != _folderHydrationInProgress.end();) {
+        const auto &parentFolderPath = it->first;
+        if (it->second.erase(downloadJob->affectedFilePath())) {
+            LOGW_INFO(_logger, L"Download of item " << Utility::formatSyncPath(downloadJob->affectedFilePath())
+                                                    << L" from parent folder " << Utility::formatSyncPath(parentFolderPath)
+                                                    << L" terminated.");
+        }
+        if (it->second.empty()) {
+            // Notify the LiteSync extension that the hydration of the folder is terminated.
+            if (const auto exitInfo = _vfs->updateFetchStatus(parentFolderPath, "OK"); !exitInfo) {
+                LOGW_WARN(_logger,
+                          L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(parentFolderPath) << L" : " << exitInfo);
+            } else {
+                LOGW_INFO(_logger, L"Hydration of folder: " << Utility::formatSyncPath(parentFolderPath) << L" terminated.");
+            }
+            it = _folderHydrationInProgress.erase(it);
+            continue;
+        }
+        it++;
+    }
 }
 
 bool SyncPal::getSyncFileItem(const SyncPath &path, SyncFileItem &item) {
@@ -640,7 +661,8 @@ void SyncPal::resetSnapshotInvalidationCounters() {
     _remoteFSObserverWorker->resetInvalidateCounter();
 }
 
-ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &localPath) {
+ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath,
+                                 const SyncPath &parentFolderPath) {
     std::optional<NodeId> localNodeId = std::nullopt;
     bool found = false;
     if (!_syncDb->id(ReplicaSide::Local, relativePath, localNodeId, found)) {
@@ -658,7 +680,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << Utility::s2ws(*localNodeId));
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << CommonUtility::s2ws(*localNodeId));
         return ExitCode::DataError;
     }
 
@@ -668,19 +690,19 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << Utility::s2ws(*localNodeId));
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << CommonUtility::s2ws(*localNodeId));
         return ExitCode::DataError;
     }
 
     // Hydration job
     std::shared_ptr<DownloadJob> job = nullptr;
     try {
-        job = std::make_shared<DownloadJob>(vfs(), driveDbId(), remoteNodeId, localPath, expectedSize);
+        job = std::make_shared<DownloadJob>(vfs(), driveDbId(), remoteNodeId, absoluteLocalPath, expectedSize);
         if (!job) {
             LOG_SYNCPAL_WARN(_logger, "Memory allocation error");
             return ExitCode::SystemError;
         }
-        job->setAffectedFilePath(localPath);
+        job->setAffectedFilePath(absoluteLocalPath);
     } catch (const std::exception &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in DownloadJob::DownloadJob: error=" << e.what());
         addError(Error(syncDbId(), errId(), ExitCode::Unknown, ExitCause::Unknown));
@@ -688,29 +710,40 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
     }
 
     // Queue job
-    std::function<void(UniqueId)> callback = std::bind(&SyncPal::directDownloadCallback, this, std::placeholders::_1);
+    std::function<void(UniqueId)> callback = std::bind_front(&SyncPal::directDownloadCallback, this);
     job->setAdditionalCallback(callback);
     JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGH);
 
-    _directDownloadJobsMapMutex.lock();
-    _directDownloadJobsMap.insert({job->jobId(), job});
-    _syncPathToDownloadJobMap.insert({localPath, job->jobId()});
-    _directDownloadJobsMapMutex.unlock();
+    const std::lock_guard lock(_directDownloadJobsMapMutex);
+    (void) _directDownloadJobsMap.try_emplace(job->jobId(), job);
+    (void) _syncPathToDownloadJobMap.try_emplace(absoluteLocalPath, job->jobId());
+    if (!parentFolderPath.empty() && _folderHydrationInProgress.contains(parentFolderPath)) {
+        (void) _folderHydrationInProgress[parentFolderPath].emplace(absoluteLocalPath);
+    }
 
     return ExitCode::Ok;
 }
 
+void SyncPal::monitorFolderHydration(const SyncPath &absoluteLocalPath) {
+    const std::lock_guard lock(_directDownloadJobsMapMutex);
+    (void) _folderHydrationInProgress.try_emplace(absoluteLocalPath);
+    LOGW_INFO(_logger, L"Monitoring folder hydration: " << Utility::formatSyncPath(absoluteLocalPath));
+}
+
 ExitCode SyncPal::cancelDlDirectJobs(const std::list<SyncPath> &fileList) {
     for (const auto &filePath: fileList) {
-        const std::lock_guard<std::mutex> lock(_directDownloadJobsMapMutex);
-        auto itId = _syncPathToDownloadJobMap.find(filePath);
-        if (itId != _syncPathToDownloadJobMap.end()) {
-            auto itJob = _directDownloadJobsMap.find(itId->second);
-            if (itJob != _directDownloadJobsMap.end()) {
+        const std::lock_guard lock(_directDownloadJobsMapMutex);
+
+        if (const auto itId = _syncPathToDownloadJobMap.find(filePath); itId != _syncPathToDownloadJobMap.end()) {
+            if (const auto itJob = _directDownloadJobsMap.find(itId->second); itJob != _directDownloadJobsMap.end()) {
                 itJob->second->abort();
-                _directDownloadJobsMap.erase(itJob);
+                (void) _directDownloadJobsMap.erase(itJob);
             }
-            _syncPathToDownloadJobMap.erase(itId);
+            (void) _syncPathToDownloadJobMap.erase(itId);
+        }
+        if (_folderHydrationInProgress.contains(filePath)) {
+            _vfs->cancelHydrate(filePath);
+            (void) _folderHydrationInProgress.erase(filePath);
         }
     }
 
@@ -731,6 +764,10 @@ ExitCode SyncPal::cancelAllDlDirectJobs(bool quit) {
 
     _directDownloadJobsMap.clear();
     _syncPathToDownloadJobMap.clear();
+    for (const auto &[parentFolderPath, _]: _folderHydrationInProgress) {
+        _vfs->cancelHydrate(parentFolderPath);
+    }
+    _folderHydrationInProgress.clear();
 
     LOG_SYNCPAL_INFO(_logger, "Cancelling all direct download jobs done");
 
@@ -1357,7 +1394,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
     }
 
     LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Utility::formatSyncPath(relativeLocalPath) << L" (NodeId: "
-                                         << Utility::s2ws(localNodeId)
+                                         << CommonUtility::s2ws(localNodeId)
                                          << L" is blacklisted temporarily because of a denied access.");
 
     NodeId remoteNodeId = liveSnapshot(ReplicaSide::Remote).itemId(relativeLocalPath);
