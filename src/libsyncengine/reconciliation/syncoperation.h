@@ -38,7 +38,7 @@ class SyncOperation {
         [[nodiscard]] const std::shared_ptr<Node> &affectedNode() const { return _affectedNode; }
         void setAffectedNode(const std::shared_ptr<Node> &node) { _affectedNode = node; }
 
-        // The node on which we will apply the operation. Left as `nullptr` Create operations.
+        // The node on which we will apply the operation. Left as `nullptr` for Create operations.
         [[nodiscard]] const std::shared_ptr<Node> &correspondingNode() const { return _correspondingNode; }
         void setCorrespondingNode(const std::shared_ptr<Node> &node) { _correspondingNode = node; }
 
