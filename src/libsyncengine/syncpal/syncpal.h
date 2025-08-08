@@ -291,6 +291,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
          *      behind the actual state of the filesystem.
          */
         const LiveSnapshot &liveSnapshot(ReplicaSide side) const;
+        void removeLocalOperation(const NodeId &localNodeId, const OperationType operationType) {
+            _localOperationSet->removeOp(localNodeId, operationType);
+        }
 
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));

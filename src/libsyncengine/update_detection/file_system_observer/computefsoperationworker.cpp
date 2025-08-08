@@ -78,6 +78,7 @@ void ComputeFSOperationWorker::execute() {
     updateUnsyncedList();
 
     _fileSizeMismatchMap.clear();
+    _localReusedIds.clear();
 
     NodeIdSet localIdsSet;
     NodeIdSet remoteIdsSet;
@@ -123,6 +124,19 @@ void ComputeFSOperationWorker::execute() {
         }
         exitCode = ExitCode::Ok;
         LOG_SYNCPAL_INFO(_logger, "FS operation sets generated in: " << elapsedSeconds.count() << "s");
+    }
+
+    // The creation of the local items which reuse the identifiers of deleted items is postponed to the next synchronization.
+    // So is the creation of the descendants of those local items.
+    for (const auto &localId: _localReusedIds) {
+        deleteLocalDescendantOps(localId);
+        SyncPath localPath;
+        bool ignore = false;
+        _syncPal->snapshot(ReplicaSide::Local)->path(localId, localPath, ignore);
+        LOGW_SYNCPAL_DEBUG(_logger,
+                           L"Postponing the creation of item with id='"
+                                   << CommonUtility::s2ws(localId) << L"' and " << Utility::formatSyncPath(localPath)
+                                   << L" because this item or one of its ancestors reused the identifier of a deleted item.");
     }
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
@@ -276,6 +290,10 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
                                                         dbModificationTime, dbNode.size(), dbPath);
         opSet->insertOp(fsOp);
         logOperationGeneration(snapshot->side(), fsOp);
+
+        if (nodeIdReused) {
+            _localReusedIds.insert(nodeId);
+        }
 
         if (dbNode.type() == NodeType::Directory && !addFolderToDelete(dbPath)) {
             LOGW_SYNCPAL_WARN(_logger,
@@ -526,8 +544,8 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const N
             }
 
             // Create operation
-            FSOpPtr fsOp = std::make_shared<FSOperation>(OperationType::Create, nodeId, type, snapshot->createdAt(nodeId),
-                                                         snapshot->lastModified(nodeId), snapshotSize, snapshotPath);
+            auto fsOp = std::make_shared<FSOperation>(OperationType::Create, nodeId, type, snapshot->createdAt(nodeId),
+                                                      snapshot->lastModified(nodeId), snapshotSize, snapshotPath);
             opSet->insertOp(fsOp);
             logOperationGeneration(snapshot->side(), fsOp);
         }
@@ -842,7 +860,7 @@ void ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const D
         LOGW_SYNCPAL_DEBUG(_logger, L"Creation date (old: "
                                             << dbNode.created().value() << L" / new: " << snapshot->createdAt(localNodeId)
                                             << L") and name (old: " << Utility::formatSyncName(dbNode.nameLocal()) << L" / new: "
-                                            << Utility::formatSyncName(snapshot->name(localNodeId)) << L") changed for"
+                                            << Utility::formatSyncName(snapshot->name(localNodeId)) << L") changed for "
                                             << CommonUtility::s2ws(localNodeId) << L". Node is reused.");
         return;
     }
@@ -935,6 +953,13 @@ void ComputeFSOperationWorker::deleteChildOpRecursively(const std::shared_ptr<co
         _syncPal->_remoteOperationSet->removeOp(remoteNodeId, OperationType::Create);
         tmpTooBigList.erase(childId);
     }
+}
+
+void ComputeFSOperationWorker::deleteLocalDescendantOps(const NodeId &localNodeId) {
+    const auto localSnapshot = _syncPal->snapshot(ReplicaSide::Local);
+    const auto descendantIds = localSnapshot->getDescendantIds(localNodeId);
+
+    for (const auto &descendantId: descendantIds) _syncPal->removeLocalOperation(descendantId, OperationType::Create);
 }
 
 void ComputeFSOperationWorker::updateUnsyncedList() {

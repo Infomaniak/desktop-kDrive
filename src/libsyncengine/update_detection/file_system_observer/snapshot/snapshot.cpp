@@ -281,6 +281,27 @@ bool Snapshot::getChildrenIds(const NodeId &itemId, NodeSet &childrenIds) const 
     return true;
 }
 
+NodeSet Snapshot::getDescendantIds(const NodeId &itemId) const {
+    const std::scoped_lock lock(_mutex);
+    NodeSet descendantIds;
+
+    getDescendantIds(itemId, descendantIds);
+
+    return descendantIds;
+}
+
+void Snapshot::getDescendantIds(const NodeId &itemId, NodeSet &descendantIds) const {
+    const std::scoped_lock lock(_mutex);
+
+    std::unordered_set<std::shared_ptr<SnapshotItem>> children;
+    getChildren(itemId, children);
+
+    for (const auto &child: children) {
+        (void) descendantIds.insert(child->id());
+        getDescendantIds(child->id(), descendantIds);
+    }
+}
+
 void Snapshot::ids(NodeSet &ids) const {
     const std::scoped_lock lock(_mutex);
     ids.clear();
