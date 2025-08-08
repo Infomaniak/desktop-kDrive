@@ -19,7 +19,7 @@
 #pragma once
 
 #include "testincludes.h"
-#include "jobs/network/API_v2/upload/loguploadjob.h"
+#include "jobs/network/kDrive_API/upload/loguploadjob.h"
 #include "utility/types.h"
 
 namespace KDC {
