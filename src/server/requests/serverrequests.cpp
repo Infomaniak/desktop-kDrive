@@ -396,7 +396,7 @@ ExitCode ServerRequests::requestToken(QString code, QString codeVerifier, UserIn
     return exitCode;
 }
 
-ExitCode ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo,
+ExitInfo ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo,
                                      bool withPath /*= false*/) {
     std::shared_ptr<GetFileInfoJob> job;
     try {
@@ -409,19 +409,22 @@ ExitCode ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &n
     }
 
     job->setWithPath(withPath);
-    ExitCode exitCode = job->runSynchronously();
-    if (exitCode != ExitCode::Ok) {
+
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileInfoJob::runSynchronously for userDbId="
                                                        << userDbId << " driveId=" << driveId << " nodeId=" << nodeId.toStdString()
-                                                       << " code=" << exitCode);
-        return exitCode;
+                                                       << " exitInfo=" << exitInfo << " status=" << job->getStatusCode());
+        return ExitCode::BackError;
     }
 
     Poco::JSON::Object::Ptr resObj = job->jsonRes();
     if (!resObj) {
         LOG_WARN(Log::instance()->getLogger(), "GetFileInfoJob failed for userDbId=" << userDbId << " driveId=" << driveId
                                                                                      << " nodeId=" << nodeId.toStdString());
-        return ExitCode::BackError;
+        ExitCause exitCause{ExitCause::Unknown};
+        if (job->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) exitCause = ExitCause::NotFound;
+
+        return {ExitCode::BackError, exitCause};
     }
 
     Poco::JSON::Object::Ptr dataObj = resObj->getObject(dataKey);
@@ -705,12 +708,12 @@ ExitCode ServerRequests::getNodeIdByPath(int userDbId, int driveId, const SyncPa
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getPathByNodeId(int userDbId, int driveId, const QString &nodeId, QString &path) {
+ExitInfo ServerRequests::getPathByNodeId(int userDbId, int driveId, const QString &nodeId, QString &path) {
     NodeInfo nodeInfo;
-    ExitCode exitCode = getNodeInfo(userDbId, driveId, nodeId, nodeInfo, true);
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getNodeInfo: code=" << exitCode);
-        return exitCode;
+
+    if (auto exitInfo = getNodeInfo(userDbId, driveId, nodeId, nodeInfo, true); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getNodeInfo: " << exitInfo);
+        return exitInfo;
     }
 
     path = nodeInfo.path();

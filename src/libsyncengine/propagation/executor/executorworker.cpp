@@ -57,6 +57,13 @@ void ExecutorWorker::executorCallback(UniqueId jobId) {
     _terminatedJobs.push(jobId);
 }
 
+void ExecutorWorker::removeSyncNodeFromWhitelistIfSynced(const NodeId &nodeId) {
+    if (SyncNodeCache::instance()->contains(_syncPal->syncDbId(), SyncNodeType::WhiteList, nodeId)) {
+        // This item has been synchronized, it can now be removed from white list
+        (void) SyncNodeCache::instance()->deleteSyncNode(_syncPal->syncDbId(), nodeId);
+    }
+}
+
 void ExecutorWorker::execute() {
     ExitInfo executorExitInfo = ExitCode::Ok;
     _snapshotToInvalidate = false;
@@ -171,41 +178,34 @@ void ExecutorWorker::execute() {
                     }
                 }
 
-                if (syncOp->affectedNode()->id().has_value()) {
-                    NodeSet whiteList;
-                    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::WhiteList, whiteList);
-                    if (whiteList.contains(syncOp->affectedNode()->id().value())) {
-                        // This item has been synchronized, it can now be removed from white list
-                        whiteList.erase(syncOp->affectedNode()->id().value());
-                        SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::WhiteList, whiteList);
-                    }
+                if (syncOp->affectedNode()->id()) removeSyncNodeFromWhitelistIfSynced(*syncOp->affectedNode()->id());
+
+                perfMonitor.stop();
+                sentry::pTraces::scoped::waitForAllJobsToFinish perfMonitorwaitForAllJobsToFinish(syncDbId());
+                if (ExitInfo exitInfo = waitForAllJobsToFinish(); !exitInfo) {
+                    executorExitInfo = exitInfo;
+                    break;
                 }
+                perfMonitorwaitForAllJobsToFinish.stop();
             }
+
+            _syncPal->_syncOps->clear();
+            _syncPal->_remoteFSObserverWorker->forceUpdate();
+
+            if (changesCounter > SNAPSHOT_INVALIDATION_THRESHOLD || _snapshotToInvalidate) {
+                // If there are too many changes on the local filesystem, the OS stops sending events at some point.
+                // Also, on some specific errors, we want to force the snapshot reconstruction.
+                LOG_SYNCPAL_INFO(_logger, "Forcing local snapshot invalidation.");
+                _syncPal->_localFSObserverWorker->invalidateSnapshot();
+            }
+
+            _syncPal->vfs()->cleanUpStatuses();
+
+            setExitCause(executorExitInfo.cause());
+            LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name() << " " << executorExitInfo);
+            setDone(executorExitInfo.code());
         }
-        perfMonitor.stop();
-        sentry::pTraces::scoped::waitForAllJobsToFinish perfMonitorwaitForAllJobsToFinish(syncDbId());
-        if (ExitInfo exitInfo = waitForAllJobsToFinish(); !exitInfo) {
-            executorExitInfo = exitInfo;
-            break;
-        }
-        perfMonitorwaitForAllJobsToFinish.stop();
     }
-
-    _syncPal->_syncOps->clear();
-    _syncPal->_remoteFSObserverWorker->forceUpdate();
-
-    if (changesCounter > SNAPSHOT_INVALIDATION_THRESHOLD || _snapshotToInvalidate) {
-        // If there are too many changes on the local filesystem, the OS stops sending events at some point.
-        // Also, on some specific errors, we want to force the snapshot reconstruction.
-        LOG_SYNCPAL_INFO(_logger, "Forcing local snapshot invalidation.");
-        _syncPal->_localFSObserverWorker->invalidateSnapshot();
-    }
-
-    _syncPal->vfs()->cleanUpStatuses();
-
-    setExitCause(executorExitInfo.cause());
-    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name() << " " << executorExitInfo);
-    setDone(executorExitInfo.code());
 }
 
 void ExecutorWorker::initProgressManager() {
@@ -285,10 +285,10 @@ void ExecutorWorker::setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus 
 ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &ignored, bool &hydrating) {
     // The execution of the create operation consists of three steps:
     // 1. If omit-flag is False, propagate the file or directory to target replica, because the object is missing there.
-    // 2. Insert a new entry into the database, to avoid that the object is detected again by compute_ops() on the next sync
-    // iteration.
-    // 3. Update the update tree structures to ensure that follow-up operations can execute correctly, as they are based on
-    // the information in these structures.
+    // 2. Insert a new entry into the database, to avoid that the object is detected again by compute_ops() on the next
+    // sync iteration.
+    // 3. Update the update tree structures to ensure that follow-up operations can execute correctly, as they are based
+    // on the information in these structures.
     ignored = false;
 
     SyncPath relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
@@ -297,7 +297,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
     if (isLiteSyncActivated() && !syncOp->omit()) {
         bool isDehydratedPlaceholder = false;
         if (ExitInfo exitInfo = checkLiteSyncInfoForCreate(syncOp, absoluteLocalFilePath, isDehydratedPlaceholder); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in checkLiteSyncInfoForCreate" << " " << exitInfo);
+            LOG_SYNCPAL_WARN(_logger, "Error in checkLiteSyncInfoForCreate"
+                                              << " " << exitInfo);
             return exitInfo;
         }
 
@@ -380,8 +381,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
                     if (const ExitInfo exitInfoCheckAlreadyExcluded =
                                 checkAlreadyExcluded(absoluteLocalFilePath, createDirJob->parentDirId());
                         !exitInfoCheckAlreadyExcluded) {
-                        LOG_SYNCPAL_WARN(_logger,
-                                         "Error in ExecutorWorker::checkAlreadyExcluded" << " " << exitInfoCheckAlreadyExcluded);
+                        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::checkAlreadyExcluded"
+                                                          << " " << exitInfoCheckAlreadyExcluded);
                         return exitInfoCheckAlreadyExcluded;
                     }
 
@@ -745,10 +746,10 @@ ExitInfo ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath,
 ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &ignored) {
     // The execution of the edit operation consists of three steps:
     // 1. If omit-flag is False, propagate the file to replicaY, replacing the existing one.
-    // 2. Insert a new entry into the database, to avoid that the object is detected again by compute_ops() on the next sync
-    // iteration.
-    // 3. If the omit flag is False, update the updatetreeY structure to ensure that follow-up operations can execute correctly,
-    // as they are based on the information in this structure.
+    // 2. Insert a new entry into the database, to avoid that the object is detected again by compute_ops() on the next
+    // sync iteration.
+    // 3. If the omit flag is False, update the updatetreeY structure to ensure that follow-up operations can execute
+    // correctly, as they are based on the information in this structure.
 
     ignored = false;
     SyncPath relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
@@ -944,8 +945,8 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
 
 ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete) {
     // The three execution steps are as follows:
-    // 1. If omit-flag is False, move the object on replica Y (where it still needs to be moved) from uY to vY, changing the
-    // name to nameX.
+    // 1. If omit-flag is False, move the object on replica Y (where it still needs to be moved) from uY to vY, changing
+    // the name to nameX.
     // 2. Update the database entry, to avoid detecting the move operation again.
     // 3. If the omit flag is False, update the updatetreeY structure to ensure that follow-up operations can execute
     // correctly, as they are based on the information in this structure.
@@ -981,8 +982,8 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
 ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete) {
     bypassProgressComplete = false;
 
-    // 1. If omit-flag is False, move the object on replica Y (where it still needs to be moved) from uY to vY, changing the
-    // name to nameX.
+    // 1. If omit-flag is False, move the object on replica Y (where it still needs to be moved) from uY to vY, changing
+    // the name to nameX.
     std::shared_ptr<AbstractJob> job = nullptr;
 
     SyncPath relativeDestLocalFilePath;
@@ -1126,8 +1127,8 @@ ExitInfo ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &b
     // 1. If omit-flag is False, delete the file or directory on replicaY, because the objects till exists there
     // 2. Remove the entry from the database. If nX is a directory node, also remove all entries for each node n ∈ S. This
     // avoids that the object(s) are detected again by compute_ops() on the next sync iteration
-    // 3. Update the update tree structures to ensure that follow-up operations can execute correctly, as they are based on
-    // the information in these structures
+    // 3. Update the update tree structures to ensure that follow-up operations can execute correctly, as they are based
+    // on the information in these structures
     ignored = false;
     bypassProgressComplete = false;
 
@@ -1325,17 +1326,7 @@ ExitInfo ExecutorWorker::deleteFinishedAsyncJobs() {
                         setProgressComplete(syncOp, SyncFileStatus::Success);
                     }
 
-
-                    if (syncOp->affectedNode()->id().has_value()) {
-                        NodeSet whiteList;
-                        SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::WhiteList, whiteList);
-                        if (whiteList.find(syncOp->affectedNode()->id().value()) != whiteList.end()) {
-                            // This item has been synchronized, it can now be removed from
-                            // white list
-                            whiteList.erase(syncOp->affectedNode()->id().value());
-                            SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::WhiteList, whiteList);
-                        }
-                    }
+                    if (syncOp->affectedNode()->id()) removeSyncNodeFromWhitelistIfSynced(*syncOp->affectedNode()->id());
                 }
             } else {
                 increaseErrorCount(syncOp, exitInfo);

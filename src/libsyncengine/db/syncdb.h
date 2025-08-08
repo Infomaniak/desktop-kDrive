@@ -89,6 +89,7 @@ class SyncDb : public Db {
         bool syncing(ReplicaSide side, const SyncPath &path, bool &syncing, bool &found);
         bool setSyncing(ReplicaSide side, const SyncPath &path, bool syncing, bool &found);
 
+        bool deleteSyncNode(const NodeId &nodeId, bool &found);
         bool updateAllSyncNodes(SyncNodeType type, const NodeSet &nodeIdSet);
         bool selectAllSyncNodes(SyncNodeType type, NodeSet &nodeIdSet);
 

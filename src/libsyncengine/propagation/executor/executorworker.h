@@ -143,6 +143,7 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo getFileSize(const SyncPath &path, uint64_t &size);
 
         bool deleteOpNodes(SyncOpPtr syncOp);
+        void removeSyncNodeFromWhitelistIfSynced(const NodeId &nodeId);
 
         void setProgressComplete(SyncOpPtr syncOp, SyncFileStatus status, const NodeId &newRemoteNodeId = "");
 
