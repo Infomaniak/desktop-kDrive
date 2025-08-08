@@ -1050,34 +1050,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         }
         case RequestNum::DRIVE_SEARCH: {
             int driveDbId = 0;
-            QList<DriveInfo> list;
-            ArgsWriter(params).write(driveDbId);
-            ArgsWriter(params).write(list);
-
-            // Find drive ID
-            Drive drive;
-            bool found = false;
-            if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
-                LOG_WARN(_logger, "Error in ParmsDb::selectSync");
-                resultStream << ExitCode::DbError;
-                break;
-            }
-            if (!found) {
-                LOG_WARN(_logger, "Drive not found for ID: " << driveDbId);
-                resultStream << ExitCode::DataError;
-                break;
-            }
-
-            // Send search request (synchonously for now)
-
-
-            resultStream << ExitCode::Ok;
-
-
-            break;
-        }
-        case RequestNum::DRIVE_SEARCH: {
-            int driveDbId = 0;
             QString searchString;
             ArgsWriter(params).write(driveDbId, searchString);
 
