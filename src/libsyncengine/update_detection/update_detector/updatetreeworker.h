@@ -138,13 +138,24 @@ class UpdateTreeWorker : public ISyncWorker {
          */
         ExitCode handleCreateOperationsWithSamePath();
 
-        [[nodiscard]] ExitCode getOrCreateNodeFromPath(const SyncPath &path, bool isDeleted, std::shared_ptr<Node> &node);
+        [[nodiscard]] ExitCode getOrCreateNodeFromPath(const SyncPath &path, std::shared_ptr<Node> &node,
+                                                       bool existingBranchOnly = true);
+        [[nodiscard]] ExitCode createTmpNode(std::shared_ptr<Node> &tmpNode, const SyncName &name,
+                                             const std::shared_ptr<Node> &parentNode);
         [[nodiscard]] ExitCode getOrCreateNodeFromExistingPath(const SyncPath &path, std::shared_ptr<Node> &node) {
-            return getOrCreateNodeFromPath(path, false, node);
+            return getOrCreateNodeFromPath(path, node, true);
         }
-        [[nodiscard]] ExitCode getOrCreateNodeFromDeletedPath(const SyncPath &path, std::shared_ptr<Node> &node) {
-            return getOrCreateNodeFromPath(path, true, node);
-        }
+        // [[nodiscard]] ExitCode getOrCreateNodeFromDeletedPath(const SyncPath &path, std::shared_ptr<Node> &node) {
+        //     return getOrCreateNodeFromPath(path, true, node);
+        // }
+        /**
+         * @brief This method get a node from a deleted path recursively. Recursivity here ensure that, even if 2 branches have
+         * nodes with the same names, the deleted branch is retrieved.
+         * @param path The path of the node to be retrieved.
+         * @return A shared pointer to the node. If the node is not found, the shared pointer is invalid.
+         */
+        [[nodiscard]] std::shared_ptr<Node> getNodeFromDeletedPath(const SyncPath &path);
+
         bool mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, std::shared_ptr<Node> realNode);
 
         /**

@@ -81,6 +81,8 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testParentRename();
         void testNegativeModificationTime();
 
+        void testDeleteAndRecreateBranch();
+
         class MockIoHelperFileStat : public IoHelper {
             public:
                 MockIoHelperFileStat() {

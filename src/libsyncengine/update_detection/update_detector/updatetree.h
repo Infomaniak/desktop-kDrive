@@ -60,7 +60,7 @@ class UpdateTree : public SharedObject {
         /**
          * Draw the update tree in the log file for debugging purpose
          */
-        void drawUpdateTree();
+        void drawUpdateTree(uint16_t step = 0);
 
     private:
         void drawUpdateTreeRow(std::shared_ptr<Node> node, SyncName &treeStr, uint64_t depth = 0);

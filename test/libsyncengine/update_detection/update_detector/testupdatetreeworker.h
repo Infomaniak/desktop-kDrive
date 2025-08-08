@@ -57,6 +57,7 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testGetOriginPath5);
         CPPUNIT_TEST(testDeleteMove);
         CPPUNIT_TEST(testDeleteRecreateBranch);
+        CPPUNIT_TEST(testGetNodeFromDeletedPath);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -109,6 +110,8 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
          * re-create it immediately with different IDs but same names.
          */
         void testDeleteRecreateBranch();
+
+        void testGetNodeFromDeletedPath();
 
     private:
         std::shared_ptr<UpdateTreeWorker> _localUpdateTreeWorker;
