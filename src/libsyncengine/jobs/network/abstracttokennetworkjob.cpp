@@ -251,13 +251,13 @@ std::string AbstractTokenNetworkJob::getUrl() {
         case ApiType::Drive:
         case ApiType::DriveByUser:
         case ApiType::Desktop:
-            apiUrl = UrlHelper::kDriveApiUrl();
+            apiUrl = UrlHelper::kDriveApiUrl(_apiVersion);
             break;
         case ApiType::NotifyDrive:
-            apiUrl = UrlHelper::notifyApiUrl();
+            apiUrl = UrlHelper::notifyApiUrl(_apiVersion);
             break;
         case ApiType::Profile:
-            apiUrl = UrlHelper::infomaniakApiUrl();
+            apiUrl = UrlHelper::infomaniakApiUrl(_apiVersion);
             break;
     }
     return apiUrl + getSpecificUrl();
