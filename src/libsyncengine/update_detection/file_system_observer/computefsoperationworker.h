@@ -92,6 +92,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
 
         void deleteChildOpRecursively(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId,
                                       NodeSet &tmpTooBigList);
+        void deleteLocalDescendantOps(const NodeId &localNodeId);
 
         void updateUnsyncedList();
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
@@ -106,6 +107,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
         NodeIdSet _remoteUnsyncedList;
         NodeIdSet _remoteTmpUnsyncedList;
         NodeIdSet _localTmpUnsyncedList;
+        NodeIdSet _localReusedIds;
 
         std::unordered_set<SyncPath, PathHashFunction> _dirPathToDeleteSet;
         std::unordered_map<NodeId, SyncPath> _fileSizeMismatchMap; // File size mismatch checks are only enabled when env var:
