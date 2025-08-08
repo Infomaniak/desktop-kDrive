@@ -1102,15 +1102,25 @@ bool UpdateTreeWorker::mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, 
 bool UpdateTreeWorker::integrityCheck() {
     // TODO : check if this does not slow the process too much
     LOGW_SYNCPAL_INFO(_logger, _side << L" update tree integrity check started");
-    for (const auto &node: _updateTree->nodes()) {
-        if (node.second->isTmp() || CommonUtility::startsWith(*node.second->id(), "tmp_")) {
-            LOGW_SYNCPAL_WARN(_logger,
-                              _side << L" update tree integrity check failed. A temporary node remains in the update tree: "
-                                    << L" (node ID: '" << CommonUtility::s2ws(node.second->id().value_or("")) << L"', DB ID: '"
-                                    << node.second->idb().value_or(-1) << L"', name: '" << SyncName2WStr(node.second->name())
-                                    << L"')");
+    for (const auto &[_, node]: _updateTree->nodes()) {
+        if (!node->id().has_value() || node->id() == NodeId{} || node->isTmp() ||
+            CommonUtility::startsWith(*node->id(), "tmp_")) {
+            std::wstringstream logStream;
+            logStream << L", DB ID: '" << node->idb().value_or(-1) << L"', name: '" << SyncName2WStr(node->name()) << L"')";
+            const auto integrityCheckFailureMsg = L" update tree integrity check failed.";
+
+            if (!node->id().has_value() || node->id() == NodeId{}) {
+                LOGW_SYNCPAL_WARN(_logger, _side << integrityCheckFailureMsg << L" Found a non-temporary node without ID: "
+                                                 << L" (node ID: ''" << logStream.str());
+            } else {
+                LOGW_SYNCPAL_WARN(_logger, _side << integrityCheckFailureMsg << L" A temporary node remains in the update tree: "
+                                                 << L" (node ID: '" << CommonUtility::s2ws(node->id().value_or(""))
+                                                 << logStream.str());
+            }
+
             sentry::Handler::captureMessage(sentry::Level::Warning, "UpdateTreeWorker::integrityCheck",
-                                            "A temporary node remains in the update tree");
+                                            "A node without a valid ID remains in the update tree");
+
             return false;
         }
     }
