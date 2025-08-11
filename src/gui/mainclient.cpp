@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
     // https://doc-snapshots.qt.io/qt5-5.6/highdpi.html#qt-support
     // We do not define it on linux so the behaviour is kept the same
     // as other Qt apps in the desktop environment. (which may or may
-    // not set this envoronment variable)
+    // not set this environment variable)
     if (!qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR")) {
         qputenv("QT_AUTO_SCREEN_SCALE_FACTOR", "1");
     }
@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
         if (!QSystemTrayIcon::isSystemTrayAvailable()) {
             // If the systemtray is not there, we will wait one second for it to maybe start
             // (eg boot time) then we show the settings dialog if there is still no systemtray.
-            // On XFCE however, we show a message box with explainaition how to install a systemtray.
+            // On XFCE however, we show a message box with explanation how to install a systemtray.
             qCInfo(lcMain) << "System tray is not available, waiting...";
             KDC::CommonGuiUtility::sleep(1);
 
