@@ -48,9 +48,9 @@ class SearchInfo {
             return out;
         }
         friend QDataStream &operator>>(QDataStream &in, QList<SearchInfo> &list) {
-            int count = 0;
+            auto count = 0;
             in >> count;
-            for (int i = 0; i < count; i++) {
+            for (auto i = 0; i < count; i++) {
                 SearchInfo info;
                 in >> info;
                 list.push_back(info);
@@ -58,9 +58,9 @@ class SearchInfo {
             return in;
         }
         friend QDataStream &operator<<(QDataStream &out, const QList<SearchInfo> &list) {
-            int count = static_cast<int>(list.size());
+            const auto count = list.size();
             out << count;
-            for (int i = 0; i < count; i++) {
+            for (auto i = 0; i < count; i++) {
                 const SearchInfo &info = list[i];
                 out << info;
             }
