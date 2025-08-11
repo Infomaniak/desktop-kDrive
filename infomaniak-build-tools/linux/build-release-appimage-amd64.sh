@@ -118,7 +118,7 @@ cp -P ./build/client/conan_dependencies/* ./usr/lib
 
 mkdir -p ./usr/qml
 
-rm -rf ./build/client/conan_dependencies
+rm -rf ./build
 rm -rf ./usr/lib/x86_64-linux-gnu/
 rm -rf ./usr/lib/kDrive
 rm -rf ./usr/lib/cmake
