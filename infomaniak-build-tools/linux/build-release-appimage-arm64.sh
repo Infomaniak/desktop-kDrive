@@ -106,9 +106,6 @@ cp -P -r "$QTDIR"/translations ./usr
 
 mv ./usr/lib/aarch64-linux-gnu/* ./usr/lib/ || echo "The folder /app/usr/lib/aarch64-linux-gnu/ might not exist." >&2
 
-cp -P /usr/local/lib/libssl.so* ./usr/lib/
-cp -P /usr/local/lib/libcrypto.so* ./usr/lib/
-
 cp -P -r /usr/lib/aarch64-linux-gnu/nss ./usr/lib/
 
 cp -P "$QTDIR"/lib/libQt6WaylandClient.so* ./usr/lib
