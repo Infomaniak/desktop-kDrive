@@ -1,6 +1,6 @@
 from os.path import join as pjoin
 
-from conan import ConanFile, Version
+from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
 from conan.tools.cmake import CMake, CMakeToolchain
 from conan.tools.files import rmdir, rm
@@ -10,6 +10,7 @@ required_conan_version = ">=2"
 
 class SentryNativeConan(ConanFile):
     name = "sentry"
+    version = "0.7.10"
     description = (
         "The Sentry Native SDK is an error and crash reporting client for native "
         "applications, optimized for C and C++. Sentry allows to add tags, "
@@ -82,8 +83,6 @@ class SentryNativeConan(ConanFile):
             rmdir(self, pjoin(self.package_folder, "lib", "libsentry.dylib.dSYM"))
         if self.settings.os == "Windows":
             rm(self, "*.pdb", self.package_folder, recursive=True)
-
-
 
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "sentry")

@@ -208,7 +208,7 @@ if ($LASTEXITCODE -ne 0) {
     Err "Failed to create qt Conan package."
 }
 
-& $ConanExe create "$RecipesFolder/sentry/all/" --version=0.7.10 --build=missing -s build_type=$BuildType --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter
+& $ConanExe create "$RecipesFolder/sentry/all/" --build=missing -s build_type=$BuildType --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to create sentry Conan package."
 }
