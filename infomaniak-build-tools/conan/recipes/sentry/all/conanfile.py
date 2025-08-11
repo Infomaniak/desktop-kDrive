@@ -36,8 +36,7 @@ class SentryNativeConan(ConanFile):
             )
 
     def requirements(self):
-        import platform
-        if self.settings.os == "Linux" and str(platform.machine().lower()) in [ "arm64", "aarch64" ]: # linux arm64
+        if self.settings.os == "Linux" and str(self.settings.arch).startswith("arm"): # linux arm64
             self.requires("qt/6.7.3")
         else:
             self.requires("qt/6.2.3")
