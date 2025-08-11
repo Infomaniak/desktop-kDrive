@@ -70,6 +70,7 @@ set(testsyncengine_SRCS
         syncpal/testoperationprocessor.h syncpal/testoperationprocessor.cpp
         # Requests
         requests/testexclusiontemplatecache.h requests/testexclusiontemplatecache.cpp
+        requests/testsyncnodecache.h requests/testsyncnodecache.cpp
 
         benchmark/benchmarkparalleljobs.h benchmark/benchmarkparalleljobs.cpp
 )
