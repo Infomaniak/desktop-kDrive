@@ -52,6 +52,7 @@ on:
 jobs:
     dummy:
         runs-on: [ self-hosted, Linux, X64 ]
+        environment: ${{ inputs.environment }}
         steps:
             - name: Dummy step to allow the workflow to be called
               run: echo "This workflow is called to update the kStore for kDrive desktop."
