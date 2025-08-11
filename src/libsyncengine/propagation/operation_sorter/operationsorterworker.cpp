@@ -473,8 +473,8 @@ bool OperationSorterWorker::breakCycle(SyncOperationList &cycle, const SyncOpPtr
     // Find the corresponding node of `matchOp`
     const auto correspondingNode = correspondingNodeInOtherTree(affectedNode);
     if (!correspondingNode) {
-        LOG_SYNCPAL_WARN(_logger, "Error in correspondingNode with id = " << affectedNode->id()->c_str()
-                                                                          << " - idDb = " << *affectedNode->idb());
+        LOG_SYNCPAL_WARN(_logger,
+                         "Error in correspondingNode with id=" << *affectedNode->id() << " - idDb = " << *affectedNode->idb());
         return false;
     }
     renameResolutionOp->setAffectedNode(affectedNode);
