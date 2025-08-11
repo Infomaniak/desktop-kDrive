@@ -42,6 +42,21 @@ ComputeFSOperationWorker::ComputeFSOperationWorker(SyncDbReadOnlyCache &testSync
     ISyncWorker(nullptr, name, shortName, std::chrono::seconds(0), true),
     _syncDbReadOnlyCache(testSyncDbReadOnlyCache) {}
 
+void ComputeFSOperationWorker::postponeCreateOperationsOnReusedIds() {
+    for (const auto &localId: _localReusedIds) {
+        deleteLocalDescendantOps(localId);
+        SyncPath localPath;
+        bool ignore = false;
+        _syncPal->snapshot(ReplicaSide::Local)->path(localId, localPath, ignore);
+        LOGW_SYNCPAL_DEBUG(_logger, L"Postponing the creation of item with id='"
+                                            << CommonUtility::s2ws(localId) << L"' and " << Utility::formatSyncPath(localPath)
+                                            << L" and its descendants because this item, or one of its ancestors, has reused the "
+                                               L"identifier of a deleted item.");
+    }
+
+    _localReusedIds.clear();
+}
+
 void ComputeFSOperationWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
 
@@ -78,7 +93,6 @@ void ComputeFSOperationWorker::execute() {
     updateUnsyncedList();
 
     _fileSizeMismatchMap.clear();
-    _localReusedIds.clear();
 
     NodeIdSet localIdsSet;
     NodeIdSet remoteIdsSet;
@@ -126,18 +140,7 @@ void ComputeFSOperationWorker::execute() {
         LOG_SYNCPAL_INFO(_logger, "FS operation sets generated in: " << elapsedSeconds.count() << "s");
     }
 
-    // The creation of the local items which reuse the identifiers of deleted items is postponed to the next synchronization.
-    // So is the creation of the descendants of those local items.
-    for (const auto &localId: _localReusedIds) {
-        deleteLocalDescendantOps(localId);
-        SyncPath localPath;
-        bool ignore = false;
-        _syncPal->snapshot(ReplicaSide::Local)->path(localId, localPath, ignore);
-        LOGW_SYNCPAL_DEBUG(_logger,
-                           L"Postponing the creation of item with id='"
-                                   << CommonUtility::s2ws(localId) << L"' and " << Utility::formatSyncPath(localPath)
-                                   << L" because this item or one of its ancestors reused the identifier of a deleted item.");
-    }
+    postponeCreateOperationsOnReusedIds();
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
     setDone(exitCode);
@@ -277,12 +280,8 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
             }
         }
 
-        if (checkTemplate) {
-            if (ExclusionTemplateCache::instance()->isExcluded(dbPath)) {
-                // The item is excluded
-                return ExitCode::Ok;
-            }
-        }
+        // Exits if the item is excluded.
+        if (checkTemplate && ExclusionTemplateCache::instance()->isExcluded(dbPath)) return ExitCode::Ok;
 
         // Delete operation
         const auto fsOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(),
@@ -291,9 +290,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         opSet->insertOp(fsOp);
         logOperationGeneration(snapshot->side(), fsOp);
 
-        if (nodeIdReused) {
-            _localReusedIds.insert(nodeId);
-        }
+        if (nodeIdReused) (void) _localReusedIds.insert(nodeId);
 
         if (dbNode.type() == NodeType::Directory && !addFolderToDelete(dbPath)) {
             LOGW_SYNCPAL_WARN(_logger,

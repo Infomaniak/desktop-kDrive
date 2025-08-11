@@ -49,6 +49,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
         SnapshotRevision _lastLocalSnapshotSyncedRevision = 0;
         SnapshotRevision _lastRemoteSnapshotSyncedRevision = 0;
 
+
         // Detect changes based on the database records: delete, move and edit operations
         ExitCode inferChangesFromDb(NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet);
         ExitCode inferChangesFromDb(const NodeType nodeType, NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet,
@@ -100,6 +101,10 @@ class ComputeFSOperationWorker : public ISyncWorker {
         void logOperationGeneration(const ReplicaSide side, const FSOpPtr fsOp);
         void notifyIgnoredItem(const NodeId &nodeId, const SyncPath &relativePath, NodeType nodeType);
         ExitInfo blacklistItem(const SyncPath &relativeLocalPath);
+
+        // The remote propagation of the creation of local items that reuse identifiers of deleted items is postponed to the next
+        // synchronization. So is the propagation of the creation of the descendants of those local items.
+        void postponeCreateOperationsOnReusedIds();
 
         SyncDbReadOnlyCache &_syncDbReadOnlyCache;
         Sync _sync;
