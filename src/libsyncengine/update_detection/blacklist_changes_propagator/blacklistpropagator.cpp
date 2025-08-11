@@ -124,6 +124,22 @@ ExitCode BlacklistPropagator::checkNodes() {
     return exitCode;
 }
 
+namespace {
+bool isFileDehydrated(const bool isLiteSyncActivated, const SyncPath &localPath, log4cplus::Logger logger) {
+    if (!isLiteSyncActivated) return false;
+
+    bool isDehydrated = false;
+    if (auto errorOnHydrationCheck = IoError::Success;
+        !IoHelper::checkIfFileIsDehydrated(localPath, isDehydrated, errorOnHydrationCheck) ||
+        errorOnHydrationCheck != IoError::Success) {
+        LOGW_WARN(logger,
+                  L"Error in IoHelper::checkIfFileIsDehydrated: " << Utility::formatIoError(localPath, errorOnHydrationCheck));
+    }
+
+    return isDehydrated;
+}
+} // namespace
+
 ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId &remoteNodeId, DbNodeId dbId) {
     // Get path from nodeId
     SyncPath localPath;
@@ -234,10 +250,11 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
                                                                      << L") on local replica because it is blacklisted.");
         }
 
-        LocalDeleteJob job(_syncPal->syncInfo(), localPath, liteSyncActivated, remoteNodeId);
+        const bool isDehydrated = isFileDehydrated(liteSyncActivated, localPath, Log::instance()->getLogger());
+        LocalDeleteJob job(_syncPal->syncInfo(), localPath, isDehydrated, remoteNodeId);
         job.setBypassCheck(true);
         job.runSynchronously();
-        if (job.exitInfo().code() != ExitCode::Ok) {
+        if (!job.exitInfo()) {
             LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
                               L"Failed to remove item with " << Utility::formatSyncPath(absolutePath) << L" ("
                                                              << CommonUtility::s2ws(localNodeId)
