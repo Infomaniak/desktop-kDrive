@@ -141,11 +141,6 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         QTimer _refreshErrorListTimer;
         std::map<int, QList<ErrorInfo>> _errorInfoMap;
 
-#ifdef Q_OS_LINUX
-        QAction *_actionSynthesis = nullptr;
-        QAction *_actionPreferences = nullptr;
-        QAction *_actionQuit = nullptr;
-#endif
         /* On some Linux distributions, the tray icon cannot open the synthesis dialog,
          * it is necessary to use a menu to open the synthesis dialog.
          */

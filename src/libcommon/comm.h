@@ -121,6 +121,7 @@ enum class RequestNum {
     UTILITY_CRASH,
     UTILITY_QUIT,
     UTILITY_DISPLAY_CLIENT_REPORT, // Sent by the Client process as soon the UI is visible for the user.
+    UTILITY_UPDATE_SYSTRAY,
     UPDATER_CHANGE_CHANNEL,
     UPDATER_VERSION_INFO,
     UPDATER_STATE,

@@ -1281,4 +1281,17 @@ ExitCode GuiRequests::reportClientDisplayed() {
     return ExitCode::Ok;
 }
 
+ExitCode GuiRequests::updateSystray(const SyncStatus syncStatus, const QString &tooltip, bool alert /*= false*/) {
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << syncStatus;
+    paramsStream << tooltip;
+    paramsStream << alert;
+
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_UPDATE_SYSTRAY, params)) {
+        return ExitCode::SystemError;
+    }
+    return ExitCode::Ok;
+}
+
 } // namespace KDC

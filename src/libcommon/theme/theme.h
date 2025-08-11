@@ -37,10 +37,7 @@ class Theme : public QObject {
         virtual std::string appName() const;
         virtual std::string appClientName() const;
 
-        virtual QIcon syncStateIcon(KDC::SyncStatus status, bool sysTray = false, bool sysTrayMenuVisible = false,
-                                    bool alert = false) const;
-
-        virtual QIcon folderOfflineIcon(bool sysTray = false, bool sysTrayMenuVisible = false) const;
+        virtual QIcon syncStateIcon(KDC::SyncStatus status, bool alert = false) const;
         virtual QIcon applicationIcon() const;
 
         virtual std::string version() const;
@@ -60,7 +57,7 @@ class Theme : public QObject {
         virtual QString versionSwitchOutput() const;
 
     protected:
-        QIcon themeIcon(const QString &name, bool sysTray = false, bool sysTrayMenuVisible = false) const;
+        QIcon themeIcon(const QString &name) const;
         void updateIconWithText(QIcon &icon, QString text) const;
         Theme();
 

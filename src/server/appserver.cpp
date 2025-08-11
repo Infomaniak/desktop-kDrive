@@ -129,6 +129,20 @@ AppServer::~AppServer() {
     LOG_DEBUG(_logger, "~AppServer");
 }
 
+namespace {
+bool osRequireMenuTray() {
+#ifdef Q_OS_LINUX
+    QString type;
+    if (QString version; KDC::GuiUtility::getLinuxDesktopType(type, version)) {
+        if (type.contains("GNOME") && version.toDouble() >= 40) {
+            return true;
+        }
+    }
+#endif
+    return false;
+}
+} // namespace
+
 void AppServer::init() {
     _startedAt.start();
     setOrganizationDomain(QLatin1String(APPLICATION_REV_DOMAIN));
@@ -406,14 +420,12 @@ void AppServer::init() {
     _restartSyncsTimer.start(RESTART_SYNCS_INTERVAL);
 }
 
-void AppServer::resetSystray(bool currentVersionLocked /*= false*/) {
+void AppServer::resetSystray(const bool currentVersionLocked /*= false*/) {
     (void) currentVersionLocked;
     _tray.reset(new Systray());
     _tray->setParent(this);
 
-    // for the beginning, set the offline icon until the account was verified
-    QIcon testIcon = Theme::instance()->folderOfflineIcon(/*systray?*/ true, /*currently visible?*/ false);
-    _tray->setIcon(testIcon);
+    _tray->setIcon(Theme::instance()->syncStateIcon(SyncStatus::Starting));
 
     if (_tray->geometry().width() == 0) {
         _tray->setContextMenu(new QMenu());
@@ -433,16 +445,18 @@ void AppServer::resetSystray(bool currentVersionLocked /*= false*/) {
     }
 
     if (!_tray->contextMenu() || _tray->contextMenu()->isEmpty()) {
-        connect(_tray.get(), &QSystemTrayIcon::activated, this, [=]() { showSynthesis(); });
+        (void) connect(_tray.get(), &QSystemTrayIcon::activated, this, [=]() { showSynthesis(); });
     }
 #ifdef Q_OS_LINUX
     else {
-        connect(_tray->contextMenu(), &QMenu::aboutToShow, this, &ClientGui::retranslateUi);
+        // connect(_tray->contextMenu(), &QMenu::aboutToShow, this, &ClientGui::retranslateUi); // TODO: to be checked if still
+        // needed
 
-        if (_actionSynthesis) connect(_actionSynthesis, &QAction::triggered, this, &ClientGui::onActionSynthesisTriggered);
-        if (_actionQuit) connect(_actionQuit, &QAction::triggered, _app, &AppClient::onQuit);
+        if (_actionSynthesis) connect(_actionSynthesis, &QAction::triggered, this, [=]() { showSynthesis(); });
+        if (_actionQuit) connect(_actionQuit, &QAction::triggered, this, [=]() { sendQuit(); });
         if (_actionPreferences && !currentVersionLocked)
-            connect(_actionPreferences, &QAction::triggered, this, &ClientGui::onActionPreferencesTriggered);
+            connect(_actionPreferences, &QAction::triggered, this, [=]() {
+                showSettings(); };
     }
 #endif
 
@@ -2097,6 +2111,18 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
             break;
         }
+        case RequestNum::UTILITY_UPDATE_SYSTRAY: {
+            SyncStatus syncStatus = SyncStatus::Undefined;
+            QString tooltip;
+            bool alert = false;
+            ArgsWriter(params).write(syncStatus, tooltip, alert);
+
+            _tray->setIcon(Theme::instance()->syncStateIcon(syncStatus, alert));
+            _tray->setToolTip(tooltip);
+
+            resultStream << ExitCode::Ok;
+            break;
+        }
         case RequestNum::SYNC_SETSUPPORTSVIRTUALFILES: {
             int syncDbId = 0;
             bool value = false;
@@ -2512,14 +2538,13 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
-        {&MigrationParams::migrateSelectiveSyncs, "migrateSelectiveSyncs"}
-    };
+            {&MigrationParams::migrateSelectiveSyncs, "migrateSelectiveSyncs"}};
 
     for (const auto &migrate: migrateArr) {
         ExitCode functionExitCode = (mp.*migrate.first)();

@@ -126,6 +126,12 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         static std::unique_ptr<UpdateManager> _updateManager;
 
+#ifdef Q_OS_LINUX
+        QAction *_actionSynthesis = nullptr;
+        QAction *_actionPreferences = nullptr;
+        QAction *_actionQuit = nullptr;
+#endif
+
         QScopedPointer<Systray> _tray;
         void resetSystray(bool lockedAppVersion = false);
 

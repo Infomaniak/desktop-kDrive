@@ -206,82 +206,62 @@ void ClientGui::onActionPreferencesTriggered(bool) {
 }
 
 void ClientGui::computeOverallSyncStatus() {
-    //     if (!_tray) {
-    //         qCDebug(lcClientGui) << "Tray not ready";
-    //         return;
-    //     }
-    //
-    //     bool allDisconnected = true;
-    //     bool allPaused = true;
-    //
-    //     for (const auto &userInfoMapElt: _userInfoMap) {
-    //         if (userInfoMapElt.second.connected()) {
-    //             allDisconnected = false;
-    //             break;
-    //         }
-    //     }
-    //
-    //     if (allDisconnected) {
-    //         _tray->setIcon(Theme::instance()->folderOfflineIcon(true, true));
-    //         _tray->setToolTip(tr("Please sign in"));
-    //         return;
-    //     }
-    //
-    //     for (const auto &syncInfoMapIt: _syncInfoMap) {
-    //         if (!syncInfoMapIt.second.paused()) {
-    //             allPaused = false;
-    //             break;
-    //         }
-    //     }
-    //
-    //     if (allPaused) {
-    //         _tray->setIcon(Theme::instance()->syncStateIcon(KDC::SyncStatus::Paused, true, true));
-    //         _tray->setToolTip(tr("Synchronization is paused"));
-    //         return;
-    //     }
-    //
-    //     // display the info of the least successful sync (eg. do not just display the result of the latest sync)
-    //     SyncStatus overallStatus;
-    //     bool hasUnresolvedConflicts;
-    //     computeTrayOverallStatus(overallStatus, hasUnresolvedConflicts);
-    //
-    //     // If the sync succeeded but there are unresolved conflicts, show the problem icon!
-    //     auto iconStatus = overallStatus;
-    //     if (iconStatus == SyncStatus::Idle && hasUnresolvedConflicts) {
-    //         iconStatus = SyncStatus::Error;
-    //     }
-    //
-    //     // If we don't get a status for whatever reason, that's a Problem
-    //     if (iconStatus == SyncStatus::Undefined) {
-    //         iconStatus = SyncStatus::Error;
-    //     }
-    //
-    //     // Set sytray icon
-    //     QIcon statusIcon = Theme::instance()->syncStateIcon(iconStatus, true, true, false);
-    //     _tray->setIcon(statusIcon);
-    //
-    //     // create the tray blob message, check if we have an defined state
-    //     if (_syncInfoMap.size() > 0) {
-    //         QString trayMessage;
-    // #ifdef Q_OS_WIN
-    //         // Windows has a 128-char tray tooltip length limit.
-    //         trayMessage = trayTooltipStatusString(overallStatus, hasUnresolvedConflicts, false);
-    // #else
-    //         QStringList allStatusStrings;
-    //         for (const auto &syncInfoMapIt: _syncInfoMap) {
-    //             QString syncMessage = trayTooltipStatusString(
-    //                     syncInfoMapIt.second.status(), syncInfoMapIt.second.unresolvedConflicts(),
-    //                     syncInfoMapIt.second.paused());
-    //
-    //             QString shortLocalPath = shortGuiLocalPath(syncInfoMapIt.second.localPath());
-    //             allStatusStrings += tr("Folder %1: %2").arg(shortLocalPath, syncMessage);
-    //         }
-    //         trayMessage = allStatusStrings.join(QLatin1String("\n"));
-    // #endif
-    //         _tray->setToolTip(trayMessage);
-    //     } else {
-    //         _tray->setToolTip(tr("There are no sync folders configured."));
-    //     }
+    bool allDisconnected = true;
+    bool allPaused = true;
+    for (const auto &[_, userInfo]: _userInfoMap) {
+        if (userInfo.connected()) {
+            allDisconnected = false;
+            break;
+        }
+    }
+    if (allDisconnected) {
+        (void) GuiRequests::updateSystray(SyncStatus::PauseAsked, tr("Please sign in"));
+        return;
+    }
+    for (const auto &syncInfoMapIt: _syncInfoMap) {
+        if (!syncInfoMapIt.second.paused()) {
+            allPaused = false;
+            break;
+        }
+    }
+    if (allPaused) {
+        (void) GuiRequests::updateSystray(SyncStatus::PauseAsked, tr("Synchronization is paused"));
+        return;
+    }
+    // display the info of the least successful sync (eg. do not just display the result of the latest sync)
+    SyncStatus overallStatus = SyncStatus::Undefined;
+    bool hasUnresolvedConflicts = false;
+    computeTrayOverallStatus(overallStatus, hasUnresolvedConflicts);
+    // If the sync succeeded but there are unresolved conflicts, show the problem icon!
+    auto iconStatus = overallStatus;
+    if (iconStatus == SyncStatus::Idle && hasUnresolvedConflicts) {
+        iconStatus = SyncStatus::Error;
+    }
+    // If we don't get a status for whatever reason, that's a Problem
+    if (iconStatus == SyncStatus::Undefined) {
+        iconStatus = SyncStatus::Error;
+    }
+    // create the tray blob message, check if we have an defined state
+    QString trayMessage;
+    if (!_syncInfoMap.empty()) {
+#ifdef Q_OS_WIN
+        // Windows has a 128-char tray tooltip length limit.
+        trayMessage = trayTooltipStatusString(overallStatus, hasUnresolvedConflicts, false);
+#else
+        QStringList allStatusStrings;
+        for (const auto &syncInfoMapIt: _syncInfoMap) {
+            QString syncMessage = trayTooltipStatusString(
+                    syncInfoMapIt.second.status(), syncInfoMapIt.second.unresolvedConflicts(), syncInfoMapIt.second.paused());
+
+            QString shortLocalPath = shortGuiLocalPath(syncInfoMapIt.second.localPath());
+            allStatusStrings += tr("Folder %1: %2").arg(shortLocalPath, syncMessage);
+        }
+        trayMessage = allStatusStrings.join(QLatin1String("\n"));
+#endif
+    } else {
+        trayMessage = tr("There are no sync folders configured.");
+    }
+    (void) GuiRequests::updateSystray(iconStatus, trayMessage);
 }
 
 void ClientGui::hideAndShowTray() {
@@ -1448,18 +1428,6 @@ void ClientGui::onShutdown() {
 
     // those do delete on close
     if (!_parametersDialog.isNull()) _parametersDialog->close();
-}
-
-bool ClientGui::osRequireMenuTray() const {
-#ifdef Q_OS_LINUX
-    QString type;
-    if (QString version; KDC::GuiUtility::getLinuxDesktopType(type, version)) {
-        if (type.contains("GNOME") && version.toDouble() >= 40) {
-            return true;
-        }
-    }
-#endif
-    return false;
 }
 
 void ClientGui::raiseDialog(QWidget *raiseWidget) {
