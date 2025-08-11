@@ -23,6 +23,7 @@
 #include "navigationpanehelper.h"
 #include "socketapi.h"
 #include "config.h"
+#include "libcommon/systray/systray.h"
 #include "syncpal/syncpal.h"
 #include "libparms/db/user.h"
 #include "libcommon/info/userinfo.h"
@@ -104,7 +105,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         std::unique_ptr<NavigationPaneHelper> _navigationPaneHelper;
         QScopedPointer<SocketApi> _socketApi;
         bool _appRestartRequired{false};
-        Theme *_theme{nullptr};
         bool _helpAsked{false};
         bool _versionAsked{false};
         bool _clearSyncNodesAsked{false};
@@ -125,6 +125,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         std::unordered_map<int, NodeSet> _undecidedListCacheMap;
 
         static std::unique_ptr<UpdateManager> _updateManager;
+
+        QScopedPointer<Systray> _tray;
+        void resetSystray(bool lockedAppVersion = false);
 
         virtual std::filesystem::path makeDbName();
         virtual std::shared_ptr<ParmsDb> initParmsDB(const std::filesystem::path &dbPath, const std::string &version);

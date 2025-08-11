@@ -211,8 +211,8 @@ AppClient::~AppClient() {
     CommClient::instance()->stop();
 }
 
-void AppClient::showSynthesisDialog() {
-    _gui->showSynthesisDialog();
+void AppClient::showSynthesisDialog(const QRect &geometry) {
+    _gui->showSynthesisDialog(geometry);
 }
 
 void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params) {
@@ -452,7 +452,9 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::UTILITY_SHOW_SYNTHESIS: {
-            showSynthesisDialog();
+            QRect geometry;
+            paramsStream >> geometry;
+            showSynthesisDialog(geometry);
             break;
         }
         case SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED: {
@@ -729,7 +731,7 @@ void AppClient::askUserToLoginAgain(int userDbId, QString userEmail, bool invali
 }
 
 void AppClient::onTryTrayAgain() {
-    qCInfo(lcAppClient) << "Trying tray icon, tray available:" << QSystemTrayIcon::isSystemTrayAvailable();
+    // qCInfo(lcAppClient) << "Trying tray icon, tray available:" << QSystemTrayIcon::isSystemTrayAvailable();
     _gui->hideAndShowTray();
 }
 

@@ -39,4 +39,4 @@ void osxSendNotification(const QString &title, const QString &message) {
     [userNotificationCenter deliverNotification:notification];
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -53,11 +53,15 @@ set(libcommon_SRCS
     log/sentry/ptrace.h log/sentry/utility.h
     log/customlogstreams.h
     theme/theme.h theme/theme.cpp
+    systray/systray.h systray/systray.cpp
 )
 
 if(APPLE)
     list(APPEND libcommon_SRCS utility/utility_mac.mm)
     set_property(SOURCE utility/utility_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+
+    list(APPEND libcommon_SRCS systray/systray.mm)
+    set_property(SOURCE systray/systray.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 elseif (WIN32)
     list(APPEND libcommon_SRCS utility/utility_win.cpp)
 else ()

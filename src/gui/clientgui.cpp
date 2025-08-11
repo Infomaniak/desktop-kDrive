@@ -197,129 +197,109 @@ void ClientGui::onFixConflictingFilesCompleted(int syncDbId, uint64_t nbErrors) 
     onErrorsCleared(syncDbId);
 }
 
-void ClientGui::onTrayClicked(QSystemTrayIcon::ActivationReason reason) {
-    if (_workaroundFakeDoubleClick) {
-        qCDebug(lcClientGui()) << "workaroundFakeDoubleClick";
-        static QElapsedTimer last_click;
-        if (last_click.isValid() && last_click.elapsed() < 200) {
-            return;
-        }
-        last_click.start();
-    }
-
-    // Left click
-    if (reason == QSystemTrayIcon::Trigger) {
-        showSynthesisDialog();
-    }
-}
-
-void ClientGui::onActionSynthesisTriggered(bool) {
-    showSynthesisDialog();
-}
+// void ClientGui::onActionSynthesisTriggered(bool) {
+//     showSynthesisDialog();
+// }
 
 void ClientGui::onActionPreferencesTriggered(bool) {
     onShowParametersDialog();
 }
 
 void ClientGui::computeOverallSyncStatus() {
-    if (!_tray) {
-        qCDebug(lcClientGui) << "Tray not ready";
-        return;
-    }
-
-    bool allDisconnected = true;
-    bool allPaused = true;
-
-    for (const auto &userInfoMapElt: _userInfoMap) {
-        if (userInfoMapElt.second.connected()) {
-            allDisconnected = false;
-            break;
-        }
-    }
-
-    if (allDisconnected) {
-        _tray->setIcon(Theme::instance()->folderOfflineIcon(true, true));
-        _tray->setToolTip(tr("Please sign in"));
-        return;
-    }
-
-    for (const auto &syncInfoMapIt: _syncInfoMap) {
-        if (!syncInfoMapIt.second.paused()) {
-            allPaused = false;
-            break;
-        }
-    }
-
-    if (allPaused) {
-        _tray->setIcon(Theme::instance()->syncStateIcon(KDC::SyncStatus::Paused, true, true));
-        _tray->setToolTip(tr("Synchronization is paused"));
-        return;
-    }
-
-    // display the info of the least successful sync (eg. do not just display the result of the latest sync)
-    SyncStatus overallStatus;
-    bool hasUnresolvedConflicts;
-    computeTrayOverallStatus(overallStatus, hasUnresolvedConflicts);
-
-    // If the sync succeeded but there are unresolved conflicts, show the problem icon!
-    auto iconStatus = overallStatus;
-    if (iconStatus == SyncStatus::Idle && hasUnresolvedConflicts) {
-        iconStatus = SyncStatus::Error;
-    }
-
-    // If we don't get a status for whatever reason, that's a Problem
-    if (iconStatus == SyncStatus::Undefined) {
-        iconStatus = SyncStatus::Error;
-    }
-
-    // Set sytray icon
-    QIcon statusIcon = Theme::instance()->syncStateIcon(iconStatus, true, true, false);
-    _tray->setIcon(statusIcon);
-
-    // create the tray blob message, check if we have an defined state
-    if (_syncInfoMap.size() > 0) {
-        QString trayMessage;
-#ifdef Q_OS_WIN
-        // Windows has a 128-char tray tooltip length limit.
-        trayMessage = trayTooltipStatusString(overallStatus, hasUnresolvedConflicts, false);
-#else
-        QStringList allStatusStrings;
-        for (const auto &syncInfoMapIt: _syncInfoMap) {
-            QString syncMessage = trayTooltipStatusString(
-                    syncInfoMapIt.second.status(), syncInfoMapIt.second.unresolvedConflicts(), syncInfoMapIt.second.paused());
-
-            QString shortLocalPath = shortGuiLocalPath(syncInfoMapIt.second.localPath());
-            allStatusStrings += tr("Folder %1: %2").arg(shortLocalPath, syncMessage);
-        }
-        trayMessage = allStatusStrings.join(QLatin1String("\n"));
-#endif
-        _tray->setToolTip(trayMessage);
-    } else {
-        _tray->setToolTip(tr("There are no sync folders configured."));
-    }
+    //     if (!_tray) {
+    //         qCDebug(lcClientGui) << "Tray not ready";
+    //         return;
+    //     }
+    //
+    //     bool allDisconnected = true;
+    //     bool allPaused = true;
+    //
+    //     for (const auto &userInfoMapElt: _userInfoMap) {
+    //         if (userInfoMapElt.second.connected()) {
+    //             allDisconnected = false;
+    //             break;
+    //         }
+    //     }
+    //
+    //     if (allDisconnected) {
+    //         _tray->setIcon(Theme::instance()->folderOfflineIcon(true, true));
+    //         _tray->setToolTip(tr("Please sign in"));
+    //         return;
+    //     }
+    //
+    //     for (const auto &syncInfoMapIt: _syncInfoMap) {
+    //         if (!syncInfoMapIt.second.paused()) {
+    //             allPaused = false;
+    //             break;
+    //         }
+    //     }
+    //
+    //     if (allPaused) {
+    //         _tray->setIcon(Theme::instance()->syncStateIcon(KDC::SyncStatus::Paused, true, true));
+    //         _tray->setToolTip(tr("Synchronization is paused"));
+    //         return;
+    //     }
+    //
+    //     // display the info of the least successful sync (eg. do not just display the result of the latest sync)
+    //     SyncStatus overallStatus;
+    //     bool hasUnresolvedConflicts;
+    //     computeTrayOverallStatus(overallStatus, hasUnresolvedConflicts);
+    //
+    //     // If the sync succeeded but there are unresolved conflicts, show the problem icon!
+    //     auto iconStatus = overallStatus;
+    //     if (iconStatus == SyncStatus::Idle && hasUnresolvedConflicts) {
+    //         iconStatus = SyncStatus::Error;
+    //     }
+    //
+    //     // If we don't get a status for whatever reason, that's a Problem
+    //     if (iconStatus == SyncStatus::Undefined) {
+    //         iconStatus = SyncStatus::Error;
+    //     }
+    //
+    //     // Set sytray icon
+    //     QIcon statusIcon = Theme::instance()->syncStateIcon(iconStatus, true, true, false);
+    //     _tray->setIcon(statusIcon);
+    //
+    //     // create the tray blob message, check if we have an defined state
+    //     if (_syncInfoMap.size() > 0) {
+    //         QString trayMessage;
+    // #ifdef Q_OS_WIN
+    //         // Windows has a 128-char tray tooltip length limit.
+    //         trayMessage = trayTooltipStatusString(overallStatus, hasUnresolvedConflicts, false);
+    // #else
+    //         QStringList allStatusStrings;
+    //         for (const auto &syncInfoMapIt: _syncInfoMap) {
+    //             QString syncMessage = trayTooltipStatusString(
+    //                     syncInfoMapIt.second.status(), syncInfoMapIt.second.unresolvedConflicts(),
+    //                     syncInfoMapIt.second.paused());
+    //
+    //             QString shortLocalPath = shortGuiLocalPath(syncInfoMapIt.second.localPath());
+    //             allStatusStrings += tr("Folder %1: %2").arg(shortLocalPath, syncMessage);
+    //         }
+    //         trayMessage = allStatusStrings.join(QLatin1String("\n"));
+    // #endif
+    //         _tray->setToolTip(trayMessage);
+    //     } else {
+    //         _tray->setToolTip(tr("There are no sync folders configured."));
+    //     }
 }
 
 void ClientGui::hideAndShowTray() {
-    if (!_tray) {
-        qCDebug(lcClientGui) << "Tray not ready";
-        return;
-    }
-
-    _tray->hide();
-    _tray->show();
+    // if (!_tray) {
+    //     qCDebug(lcClientGui) << "Tray not ready";
+    //     return;
+    // }
+    //
+    // _tray->hide();
+    // _tray->show();
 }
 
-void ClientGui::showSynthesisDialog() {
+void ClientGui::showSynthesisDialog(const QRect &geometry) {
     if (_synthesisPopover) {
         if (_synthesisPopover->isVisible()) {
             _synthesisPopover->done(QDialog::Accepted);
         } else {
-            if (!_tray) {
-                qCDebug(lcClientGui) << "Tray not ready";
-                return;
-            }
-
-            QRect trayIconRect = _tray->geometry();
+            QRect trayIconRect = geometry;
             if (!trayIconRect.isValid()) {
                 trayIconRect = QRect(QCursor::pos(), QSize(0, 0));
             }
@@ -509,24 +489,24 @@ void ClientGui::setupParametersDialog() {
 }
 
 void ClientGui::onUpdateSystray() {
-    if (!_tray) {
-        qCDebug(lcClientGui) << "Tray not ready";
-        return;
-    }
-
-    if (_workaroundShowAndHideTray) {
-        // To make tray menu updates work with these bugs (see setupPopover)
-        // we need to hide and show the tray icon. We don't want to do that
-        // while it's visible!
-        if (!_delayedTrayUpdateTimer.isActive()) {
-            _delayedTrayUpdateTimer.start();
-        }
-        _tray->hide();
-    }
-
-    if (_workaroundShowAndHideTray) {
-        _tray->show();
-    }
+    // if (!_tray) {
+    //     qCDebug(lcClientGui) << "Tray not ready";
+    //     return;
+    // }
+    //
+    // if (_workaroundShowAndHideTray) {
+    //     // To make tray menu updates work with these bugs (see setupPopover)
+    //     // we need to hide and show the tray icon. We don't want to do that
+    //     // while it's visible!
+    //     if (!_delayedTrayUpdateTimer.isActive()) {
+    //         _delayedTrayUpdateTimer.start();
+    //     }
+    //     _tray->hide();
+    // }
+    //
+    // if (_workaroundShowAndHideTray) {
+    //     _tray->show();
+    // }
 }
 
 void ClientGui::updateSystrayNeeded() {
@@ -536,46 +516,49 @@ void ClientGui::updateSystrayNeeded() {
 }
 
 void ClientGui::resetSystray(bool currentVersionLocked) {
-    (void) currentVersionLocked;
-    _tray.reset(new Systray());
-    _tray->setParent(this);
-
-    // for the beginning, set the offline icon until the account was verified
-    QIcon testIcon = Theme::instance()->folderOfflineIcon(/*systray?*/ true, /*currently visible?*/ false);
-    _tray->setIcon(testIcon);
-
-    if (_tray->geometry().width() == 0) {
-        _tray->setContextMenu(new QMenu());
-#ifdef Q_OS_LINUX
-        if (osRequireMenuTray()) {
-            _actionSynthesis =
-                    _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/information.svg"), QString());
-            if (!currentVersionLocked) {
-                _actionPreferences =
-                        _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/parameters.svg"), QString());
-            }
-            _tray->contextMenu()->addSeparator();
-            _actionQuit = _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/error-sync.svg"), QString());
-        }
-
-#endif
-    }
-
-    if (!_tray->contextMenu() || _tray->contextMenu()->isEmpty()) {
-        connect(_tray.get(), &QSystemTrayIcon::activated, this, &ClientGui::onTrayClicked);
-    }
-#ifdef Q_OS_LINUX
-    else {
-        connect(_tray->contextMenu(), &QMenu::aboutToShow, this, &ClientGui::retranslateUi);
-
-        if (_actionSynthesis) connect(_actionSynthesis, &QAction::triggered, this, &ClientGui::onActionSynthesisTriggered);
-        if (_actionQuit) connect(_actionQuit, &QAction::triggered, _app, &AppClient::onQuit);
-        if (_actionPreferences && !currentVersionLocked)
-            connect(_actionPreferences, &QAction::triggered, this, &ClientGui::onActionPreferencesTriggered);
-    }
-#endif
-
-    _tray->show();
+    //     (void) currentVersionLocked;
+    //     _tray.reset(new Systray());
+    //     _tray->setParent(this);
+    //
+    //     // for the beginning, set the offline icon until the account was verified
+    //     QIcon testIcon = Theme::instance()->folderOfflineIcon(/*systray?*/ true, /*currently visible?*/ false);
+    //     _tray->setIcon(testIcon);
+    //
+    //     if (_tray->geometry().width() == 0) {
+    //         _tray->setContextMenu(new QMenu());
+    // #ifdef Q_OS_LINUX
+    //         if (osRequireMenuTray()) {
+    //             _actionSynthesis =
+    //                     _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/information.svg"),
+    //                     QString());
+    //             if (!currentVersionLocked) {
+    //                 _actionPreferences =
+    //                         _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/parameters.svg"),
+    //                         QString());
+    //             }
+    //             _tray->contextMenu()->addSeparator();
+    //             _actionQuit = _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/error-sync.svg"),
+    //             QString());
+    //         }
+    //
+    // #endif
+    //     }
+    //
+    //     if (!_tray->contextMenu() || _tray->contextMenu()->isEmpty()) {
+    //         connect(_tray.get(), &QSystemTrayIcon::activated, this, &ClientGui::onTrayClicked);
+    //     }
+    // #ifdef Q_OS_LINUX
+    //     else {
+    //         connect(_tray->contextMenu(), &QMenu::aboutToShow, this, &ClientGui::retranslateUi);
+    //
+    //         if (_actionSynthesis) connect(_actionSynthesis, &QAction::triggered, this,
+    //         &ClientGui::onActionSynthesisTriggered); if (_actionQuit) connect(_actionQuit, &QAction::triggered, _app,
+    //         &AppClient::onQuit); if (_actionPreferences && !currentVersionLocked)
+    //             connect(_actionPreferences, &QAction::triggered, this, &ClientGui::onActionPreferencesTriggered);
+    //     }
+    // #endif
+    //
+    //     _tray->show();
 }
 
 QString ClientGui::shortGuiLocalPath(const QString &path) {
@@ -762,11 +745,11 @@ void ClientGui::refreshErrorList(int driveDbId) {
 }
 
 void ClientGui::onShowTrayMessage(const QString &title, const QString &msg) {
-    if (_tray) {
-        _tray->showMessage(title, msg);
-    } else {
-        qCWarning(lcClientGui) << "Tray not ready: " << msg;
-    }
+    // if (_tray) {
+    //     _tray->showMessage(title, msg);
+    // } else {
+    //     qCWarning(lcClientGui) << "Tray not ready: " << msg;
+    // }
 }
 
 void ClientGui::onShowOptionalTrayMessage(const QString &title, const QString &msg) {
