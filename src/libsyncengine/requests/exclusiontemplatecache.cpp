@@ -208,9 +208,9 @@ bool ExclusionTemplateCache::isExcluded(const SyncPath &relativePath, bool &isWa
             case ExclusionTemplateComplexity::Simplest: {
                 if (fileName == patternStr) {
                     if (ParametersCache::isExtendedLogEnabled()) {
-                        LOGW_INFO(Log::instance()->getLogger(), L"Item \"" << Utility::formatSyncPath(relativePath)
-                                                                           << L"\" rejected because of rule \""
-                                                                           << CommonUtility::s2ws(exclusionTemplate.templ()) << L"\"");
+                        LOGW_INFO(Log::instance()->getLogger(),
+                                  L"Item \"" << Utility::formatSyncPath(relativePath) << L"\" rejected because of rule \""
+                                             << CommonUtility::s2ws(exclusionTemplate.templ()) << L"\"");
                     }
                     return true; // Filename match exactly the pattern
                 }
@@ -240,9 +240,9 @@ bool ExclusionTemplateCache::isExcluded(const SyncPath &relativePath, bool &isWa
 
                 if (exclude) {
                     if (ParametersCache::isExtendedLogEnabled()) {
-                        LOGW_INFO(Log::instance()->getLogger(), L"Item \"" << Utility::formatSyncPath(relativePath)
-                                                                           << L"\" rejected because of rule \""
-                                                                           << CommonUtility::s2ws(exclusionTemplate.templ()) << L"\"");
+                        LOGW_INFO(Log::instance()->getLogger(),
+                                  L"Item \"" << Utility::formatSyncPath(relativePath) << L"\" rejected because of rule \""
+                                             << CommonUtility::s2ws(exclusionTemplate.templ()) << L"\"");
                     }
                     return true; // Filename contains the pattern
                 }
@@ -252,9 +252,9 @@ bool ExclusionTemplateCache::isExcluded(const SyncPath &relativePath, bool &isWa
             default: {
                 if (std::regex_match(fileName, regex)) {
                     if (ParametersCache::isExtendedLogEnabled()) {
-                        LOGW_INFO(Log::instance()->getLogger(), L"Item \"" << Utility::formatSyncPath(relativePath)
-                                                                           << L"\" rejected because of rule \""
-                                                                           << CommonUtility::s2ws(exclusionTemplate.templ()) << L"\"");
+                        LOGW_INFO(Log::instance()->getLogger(),
+                                  L"Item \"" << Utility::formatSyncPath(relativePath) << L"\" rejected because of rule \""
+                                             << CommonUtility::s2ws(exclusionTemplate.templ()) << L"\"");
                     }
                     return true;
                 }

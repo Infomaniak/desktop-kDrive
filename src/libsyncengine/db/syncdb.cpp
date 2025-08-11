@@ -255,6 +255,11 @@
     "INSERT INTO sync_node (nodeId, type) " \
     "VALUES (?1, ?2);"
 
+#define DELETE_SYNC_NODE_REQUEST_ID "delete_sync_node"
+#define DELETE_SYNC_NODE_REQUEST \
+    "DELETE FROM sync_node "     \
+    "WHERE nodeid=?1;"
+
 #define DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST_ID "delete_all_sync_node_by_type"
 #define DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST \
     "DELETE FROM sync_node "                 \
@@ -422,6 +427,7 @@ bool SyncDb::prepare() {
     if (!createAndPrepareRequest(INSERT_SYNC_NODE_REQUEST_ID, INSERT_SYNC_NODE_REQUEST)) return false;
     if (!createAndPrepareRequest(DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST_ID, DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST)) return false;
     if (!createAndPrepareRequest(SELECT_ALL_SYNC_NODE_REQUEST_ID, SELECT_ALL_SYNC_NODE_REQUEST)) return false;
+    if (!createAndPrepareRequest(DELETE_SYNC_NODE_REQUEST_ID, DELETE_SYNC_NODE_REQUEST)) return false;
 
     // Upload session token table
     if (!createAndPrepareRequest(INSERT_UPLOAD_SESSION_TOKEN_REQUEST_ID, INSERT_UPLOAD_SESSION_TOKEN_REQUEST)) return false;
@@ -1297,8 +1303,8 @@ bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &n
             LOG_IF_FAIL(queryBindValue(queryId, 1, nodeDbId));
             LOG_IF_FAIL(queryBindValue(queryId, 2, name));
             if (!queryNext(queryId, found)) {
-                LOGW_WARN(_logger, L"Error getting query result: " << CommonUtility::s2ws(queryId) << L" - parentNodeId=" << nodeDbId
-                                                                   << L" and name=" << Utility::formatSyncName(name));
+                LOGW_WARN(_logger, L"Error getting query result: " << CommonUtility::s2ws(queryId) << L" - parentNodeId="
+                                                                   << nodeDbId << L" and name=" << Utility::formatSyncName(name));
                 return false;
             }
             if (!found) {
@@ -1759,6 +1765,30 @@ bool SyncDb::correspondingNodeId(ReplicaSide side, const NodeId &nodeIdIn, NodeI
     }
 
     return id(otherSide(side), dbNodeId, nodeIdOut, found);
+}
+
+bool SyncDb::deleteSyncNode(const NodeId &nodeId, bool &found) {
+    const std::scoped_lock lock(_mutex);
+
+    int errId = -1;
+    std::string error;
+
+    const char *requestId = DELETE_SYNC_NODE_REQUEST_ID;
+    LOG_IF_FAIL(queryResetAndClearBindings(requestId));
+    LOG_IF_FAIL(queryBindValue(requestId, 1, nodeId));
+
+    if (!queryExec(DELETE_SYNC_NODE_REQUEST_ID, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << requestId);
+        return false;
+    }
+    if (numRowsAffected() == 1) {
+        found = true;
+    } else {
+        LOG_WARN(_logger, "Error running query: " << requestId << " - num rows affected != 1");
+        found = false;
+    }
+
+    return true;
 }
 
 bool SyncDb::updateAllSyncNodes(SyncNodeType type, const NodeSet &nodeIdSet) {

@@ -21,6 +21,7 @@
 #include "socketapi.h"
 #include "keychainmanager/keychainmanager.h"
 #include "requests/serverrequests.h"
+#include "requests/syncnodecache.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
@@ -52,8 +53,8 @@
 #include <windows.h>
 #endif
 
-#include "jobs/network/API_v2/upload/loguploadjob.h"
-#include "jobs/network/API_v2/upload/upload_session/uploadsessioncanceljob.h"
+#include "jobs/network/kDrive_API/upload/loguploadjob.h"
+#include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
 #include "requests/offlinefilessizeestimator.h"
 #include "updater/updatemanager.h"
 
@@ -1047,6 +1048,34 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << static_cast<quint64>(estimator.offlineFilesTotalSize());
             break;
         }
+        case RequestNum::DRIVE_SEARCH: {
+            int driveDbId = 0;
+            QList<DriveInfo> list;
+            ArgsWriter(params).write(driveDbId);
+            ArgsWriter(params).write(list);
+
+            // Find drive ID
+            Drive drive;
+            bool found = false;
+            if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
+                LOG_WARN(_logger, "Error in ParmsDb::selectSync");
+                resultStream << ExitCode::DbError;
+                break;
+            }
+            if (!found) {
+                LOG_WARN(_logger, "Drive not found for ID: " << driveDbId);
+                resultStream << ExitCode::DataError;
+                break;
+            }
+
+            // Send search request (synchonously for now)
+
+
+            resultStream << ExitCode::Ok;
+
+
+            break;
+        }
         case RequestNum::SYNC_INFOLIST: {
             QList<SyncInfo> list;
             ExitCode exitCode;
@@ -1468,14 +1497,18 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             QString path;
-            ExitCode exitCode = ServerRequests::getPathByNodeId(_syncPalMap[syncDbId]->userDbId(),
+            ExitInfo exitInfo = ServerRequests::getPathByNodeId(_syncPalMap[syncDbId]->userDbId(),
                                                                 _syncPalMap[syncDbId]->driveId(), nodeId, path);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in AppServer::getPathByNodeId: code=" << exitCode);
-                addError(Error(errId(), exitCode, ExitCause::Unknown));
+            if (!exitInfo) {
+                if (exitInfo.cause() == ExitCause::NotFound) {
+                    (void) SyncNodeCache::instance()->deleteSyncNode(syncDbId, QStr2Str(nodeId));
+                } else {
+                    LOG_WARN(_logger, "Error in AppServer::getPathByNodeId: " << exitInfo);
+                    addError(Error(errId(), exitInfo.code(), exitInfo.cause()));
+                }
             }
 
-            resultStream << toInt(exitCode);
+            resultStream << toInt(exitInfo.code());
             resultStream << path;
             break;
         }
@@ -2433,13 +2466,14 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
-            {&MigrationParams::migrateSelectiveSyncs, "migrateSelectiveSyncs"}};
+        {&MigrationParams::migrateSelectiveSyncs, "migrateSelectiveSyncs"}
+    };
 
     for (const auto &migrate: migrateArr) {
         ExitCode functionExitCode = (mp.*migrate.first)();
@@ -4215,10 +4249,10 @@ void AppServer::onUpdateSyncsProgress() {
                     undecidedSetUpdated = true;
 
                     QString path;
-                    if (const auto exitCode = ServerRequests::getPathByNodeId(syncPal->userDbId(), syncPal->driveId(),
+                    if (const auto exitInfo = ServerRequests::getPathByNodeId(syncPal->userDbId(), syncPal->driveId(),
                                                                               QString::fromStdString(nodeId), path);
-                        exitCode != ExitCode::Ok) {
-                        LOG_WARN(_logger, "Error in Requests::getPathByNodeId: code=" << exitCode);
+                        exitInfo.code() != ExitCode::Ok) {
+                        LOG_WARN(_logger, "Error in Requests::getPathByNodeId: " << exitInfo);
                         continue;
                     }
 
