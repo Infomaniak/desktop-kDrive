@@ -141,6 +141,8 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
         bool updateSelectiveSyncList(const QHash<int, QHash<const QString, bool>> &mapUndefinedFolders);
         void updateGuardedFoldersBlocs();
 
+        void initializeSearchBloc();
+
     private slots:
         void onErrorsWidgetClicked();
         void onBigFoldersWarningWidgetClicked();

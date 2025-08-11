@@ -134,34 +134,7 @@ DrivePreferencesWidget::DrivePreferencesWidget(std::shared_ptr<ClientGui> gui, Q
     //
     //  Search bloc
     //
-    bool showSearchBloc = !CommonUtility::envVarValue("KDRIVE_SHOW_SEARCH").empty();
-    _searchLabel = new QLabel(this);
-    _searchLabel->setObjectName("blocLabel");
-    _searchLabel->setVisible(showSearchBloc);
-    _mainVBox->addWidget(_searchLabel);
-
-    auto *searchBloc = new PreferencesBlocWidget(this);
-    searchBloc->setVisible(showSearchBloc);
-    _mainVBox->addWidget(searchBloc);
-
-    auto *searchLayout = searchBloc->addLayout(QBoxLayout::Direction::TopToBottom);
-    _mainVBox->addLayout(searchLayout);
-    auto *searchHLayout = new QHBoxLayout(this);
-    _searchBox = new QLineEdit(this);
-    searchHLayout->addWidget(_searchBox);
-    _searchButton = new QPushButton(this);
-    searchHLayout->addWidget(_searchButton);
-    searchLayout->addLayout(searchHLayout);
-    _searchProgressLabel = new QLabel(this);
-    _searchProgressLabel->setVisible(false);
-    searchLayout->addWidget(_searchProgressLabel);
-    _searchResultView = new QListView(this);
-    _searchResultView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    _searchResultView->setModel(&_searchResultModel);
-    _searchResultView->setVisible(false);
-    searchLayout->addWidget(_searchResultView);
-    connect(_searchButton, &QPushButton::clicked, this, &DrivePreferencesWidget::onSearch);
-    connect(_searchResultView, &QAbstractItemView::doubleClicked, this, &DrivePreferencesWidget::onSearchItemDoubleClicked);
+    initializeSearchBloc();
 
     //
     // Folders blocs
@@ -622,6 +595,37 @@ void DrivePreferencesWidget::updateGuardedFoldersBlocs() {
             connect(folderTreeItemWidget, &FolderTreeItemWidget::needToSave, this, &DrivePreferencesWidget::onNeedToSave);
         }
     }
+}
+
+void DrivePreferencesWidget::initializeSearchBloc() {
+    bool showSearchBloc = !CommonUtility::envVarValue("KDRIVE_SHOW_SEARCH").empty();
+    _searchLabel = new QLabel(this);
+    _searchLabel->setObjectName("blocLabel");
+    _searchLabel->setVisible(showSearchBloc);
+    _mainVBox->addWidget(_searchLabel);
+
+    auto *searchBloc = new PreferencesBlocWidget(this);
+    searchBloc->setVisible(showSearchBloc);
+    _mainVBox->addWidget(searchBloc);
+
+    auto *searchLayout = searchBloc->addLayout(QBoxLayout::Direction::TopToBottom);
+    _mainVBox->addLayout(searchLayout);
+    auto *searchHLayout = new QHBoxLayout(this);
+    _searchBox = new QLineEdit(this);
+    searchHLayout->addWidget(_searchBox);
+    _searchButton = new QPushButton(this);
+    searchHLayout->addWidget(_searchButton);
+    searchLayout->addLayout(searchHLayout);
+    _searchProgressLabel = new QLabel(this);
+    _searchProgressLabel->setVisible(false);
+    searchLayout->addWidget(_searchProgressLabel);
+    _searchResultView = new QListView(this);
+    _searchResultView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    _searchResultView->setModel(&_searchResultModel);
+    _searchResultView->setVisible(false);
+    searchLayout->addWidget(_searchResultView);
+    connect(_searchButton, &QPushButton::clicked, this, &DrivePreferencesWidget::onSearch);
+    connect(_searchResultView, &QAbstractItemView::doubleClicked, this, &DrivePreferencesWidget::onSearchItemDoubleClicked);
 }
 
 void DrivePreferencesWidget::updateFoldersBlocs() {
@@ -1119,15 +1123,16 @@ void DrivePreferencesWidget::onSearchItemDoubleClicked(const QModelIndex &index)
     const auto id = _searchResultModel.id(index.row());
 
     int driveId = 0;
-    ExitCode exitCode = GuiRequests::getDriveIdFromDriveDbId(_driveDbId, driveId);
-    if (exitCode != ExitCode::Ok) {
+
+    if (const auto exitCode = GuiRequests::getDriveIdFromDriveDbId(_driveDbId, driveId); exitCode != ExitCode::Ok) {
         qCWarning(lcDrivePreferencesWidget()) << "Error in GuiRequests::getDriveIdFromDriveDbId";
         return;
     }
 
     NodeInfo nodeInfo;
-    exitCode = GuiRequests::getNodeInfo(_userDbId, driveId, QString::fromStdString(id), nodeInfo, true);
-    if (exitCode != ExitCode::Ok) {
+
+    if (const auto exitCode = GuiRequests::getNodeInfo(_userDbId, driveId, QString::fromStdString(id), nodeInfo, true);
+        exitCode != ExitCode::Ok) {
         qCWarning(lcDrivePreferencesWidget()) << "Error in GuiRequests::getNodeInfo";
     }
 
@@ -1142,8 +1147,8 @@ void DrivePreferencesWidget::onSearchItemDoubleClicked(const QModelIndex &index)
 
     // If not found on local replica, open the web version.
     QString privateLink;
-    exitCode = GuiRequests::getPrivateLinkUrl(_driveDbId, QString::fromStdString(id), privateLink);
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitCode = GuiRequests::getPrivateLinkUrl(_driveDbId, QString::fromStdString(id), privateLink);
+        exitCode != ExitCode::Ok) {
         qCWarning(lcDrivePreferencesWidget()) << "Error in GuiRequests::getPrivateLinkUrl";
     }
 
