@@ -145,9 +145,6 @@ class UpdateTreeWorker : public ISyncWorker {
         [[nodiscard]] ExitCode getOrCreateNodeFromExistingPath(const SyncPath &path, std::shared_ptr<Node> &node) {
             return getOrCreateNodeFromPath(path, node, true);
         }
-        // [[nodiscard]] ExitCode getOrCreateNodeFromDeletedPath(const SyncPath &path, std::shared_ptr<Node> &node) {
-        //     return getOrCreateNodeFromPath(path, true, node);
-        // }
         /**
          * @brief This method get a node from a deleted path recursively. Recursivity here ensure that, even if 2 branches have
          * nodes with the same names, the deleted branch is retrieved.
