@@ -1438,6 +1438,22 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, Syn
     return ExitCode::Ok;
 }
 
+namespace {
+bool isFileDehydrated(const bool isLiteSyncActivated, const SyncPath &localPath, log4cplus::Logger logger) {
+    if (!isLiteSyncActivated) return false;
+
+    bool isDehydrated = false;
+    if (auto errorOnHydrationCheck = IoError::Success;
+        !IoHelper::checkIfFileIsDehydrated(localPath, isDehydrated, errorOnHydrationCheck) ||
+        errorOnHydrationCheck != IoError::Success) {
+        LOGW_WARN(logger,
+                  L"Error in IoHelper::checkIfFileIsDehydrated: " << Utility::formatIoError(localPath, errorOnHydrationCheck));
+    }
+
+    return isDehydrated;
+}
+} // namespace
+
 ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath, bool &ignored) {
     ExitInfo exitInfo = ExitCode::Ok;
     ignored = false;
@@ -1464,7 +1480,8 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
             // Delete the item from local replica
             const NodeId remoteNodeId = syncOp->correspondingNode()->id().value_or("");
             if (!remoteNodeId.empty()) {
-                LocalDeleteJob deleteJob(_syncPal->syncInfo(), relativeLocalPath, isLiteSyncActivated(), remoteNodeId);
+                const bool isHydrated = isFileDehydrated(isLiteSyncActivated(), relativeLocalPath, _logger);
+                LocalDeleteJob deleteJob(_syncPal->syncInfo(), relativeLocalPath, isHydrated, remoteNodeId);
                 deleteJob.setBypassCheck(true);
                 deleteJob.runSynchronously();
             }
