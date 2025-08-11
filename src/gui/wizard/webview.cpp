@@ -82,6 +82,15 @@ WebView::WebView(QWidget *parent) :
     _page = new WebEnginePage(_profile);
     _schemeHandler = new WebViewPageUrlSchemeHandler(this);
 
+#if defined(Q_OS_LINUX) && defined(Q_PROCESSOR_ARM)
+    // On ARM Linux with QT 6.7.3, neither Chromium nor Qt automatically trigger a webview update.
+    // Only certain user actions can refresh the page.
+    // Therefore, we use a timer to force the refresh.
+    auto *repaintTimer = new QTimer(this);
+    connect(repaintTimer, &QTimer::timeout, _webview, QOverload<>::of(&QWidget::update));
+    repaintTimer->start(30);
+#endif
+
     const QString userAgent(CommonUtility::userAgentString().c_str());
     _profile->setHttpUserAgent(userAgent);
     QWebEngineProfile::defaultProfile()->setHttpUserAgent(userAgent);
@@ -144,14 +153,6 @@ void WebView::loadFinished(bool ok) {
         } else { // Other Webview, shouldn't happen, there is no other Qt webview in the codebase.
             MatomoClient::sendVisit(MatomoNameField::Unknown);
         }
-#if defined(Q_OS_LINUX) && defined(Q_PROCESSOR_ARM)
-        // On ARM Linux, neither Chromium nor Qt automatically trigger a webview update.
-        // Only certain user actions can refresh the page.
-        // Therefore, we use a timer to force the refresh.
-        auto *repaintTimer = new QTimer(this);
-        connect(repaintTimer, &QTimer::timeout, _webview, QOverload<>::of(&QWidget::update));
-        repaintTimer->start(30);
-#endif
     }
 }
 
