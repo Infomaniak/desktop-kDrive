@@ -149,10 +149,10 @@ class UpdateTreeWorker : public ISyncWorker {
         //     return getOrCreateNodeFromPath(path, true, node);
         // }
         /**
-         * @brief This method get a node from a deleted path recursively. Recursivity here ensure that, even if 2 branches have
+         * @brief This method gets a node from a deleted path recursively. Recursivity here ensure that, even if 2 branches have
          * nodes with the same names, the deleted branch is retrieved.
          * @param path The path of the node to be retrieved.
-         * @return A shared pointer to the node. If the node is not found, the shared pointer is invalid.
+         * @return A shared pointer to the node. If the node is not found, the shared pointer is a `nullptr`.
          */
         [[nodiscard]] std::shared_ptr<Node> getNodeFromDeletedPath(const SyncPath &path);
 
