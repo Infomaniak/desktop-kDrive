@@ -292,7 +292,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
          */
         const LiveSnapshot &liveSnapshot(ReplicaSide side) const;
         void removeLocalOperation(const NodeId &localNodeId, const OperationType operationType) {
-            _localOperationSet->removeOp(localNodeId, operationType);
+            (void) _localOperationSet->removeOp(localNodeId, operationType);
         }
 
     protected:
