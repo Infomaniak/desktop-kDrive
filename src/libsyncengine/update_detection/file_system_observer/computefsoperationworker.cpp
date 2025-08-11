@@ -47,7 +47,7 @@ void ComputeFSOperationWorker::postponeCreateOperationsOnReusedIds() {
         deleteLocalDescendantOps(localId);
         SyncPath localPath;
         bool ignore = false;
-        _syncPal->snapshot(ReplicaSide::Local)->path(localId, localPath, ignore);
+        (void) _syncPal->snapshot(ReplicaSide::Local)->path(localId, localPath, ignore);
         LOGW_SYNCPAL_DEBUG(_logger, L"Postponing the creation of local item with id='"
                                             << CommonUtility::s2ws(localId) << L"' and " << Utility::formatSyncPath(localPath)
                                             << L" and its descendants because this item, or one of its ancestors, has reused the "
@@ -947,7 +947,7 @@ void ComputeFSOperationWorker::deleteChildOpRecursively(const std::shared_ptr<co
         if (remoteSnapshot->type(childId) == NodeType::Directory) {
             deleteChildOpRecursively(remoteSnapshot, childId, tmpTooBigList);
         }
-        _syncPal->_remoteOperationSet->removeOp(remoteNodeId, OperationType::Create);
+        (void) _syncPal->_remoteOperationSet->removeOp(remoteNodeId, OperationType::Create);
         tmpTooBigList.erase(childId);
     }
 }

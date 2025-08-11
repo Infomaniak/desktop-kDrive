@@ -294,7 +294,7 @@ void Snapshot::getDescendantIds(const NodeId &itemId, NodeSet &descendantIds) co
     const std::scoped_lock lock(_mutex);
 
     std::unordered_set<std::shared_ptr<SnapshotItem>> children;
-    getChildren(itemId, children);
+    (void) getChildren(itemId, children);
 
     for (const auto &child: children) {
         (void) descendantIds.insert(child->id());
