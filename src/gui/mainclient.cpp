@@ -76,6 +76,12 @@ int main(int argc, char **argv) {
     // Bug with multi-screen
     // cf. https://codereview.qt-project.org/c/qt/qtbase/+/200327
     qputenv("QT_RELY_ON_NET_WORKAREA_ATOM", "1");
+
+#ifdef Q_PROCESSOR_ARM
+    // Disable sandbox on ARM Linux,
+    // cf. https://doc.qt.io/qt-6/qtwebengine-platform-notes.html#sandboxing-support
+    qputenv("QTWEBENGINE_DISABLE_SANDBOX", "1");
+#endif
 #endif
 
     // qputenv("QT_AUTO_SCREEN_SCALE_FACTOR", "0");
