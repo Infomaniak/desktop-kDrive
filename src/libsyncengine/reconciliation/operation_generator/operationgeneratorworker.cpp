@@ -280,6 +280,7 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
     assert(correspondingNode);
 
     // Do not generate delete operation if parent already deleted
+    assert(currentNode->parentNode() && currentNode->parentNode()->id().has_value());
     if (_deletedNodes.contains(*currentNode->parentNode()->id())) {
         return;
     }

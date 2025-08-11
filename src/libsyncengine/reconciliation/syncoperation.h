@@ -33,12 +33,19 @@ class SyncOperation {
 
         [[nodiscard]] OperationType type() const { return _type; }
         void setType(const OperationType newType) { _type = newType; }
+
+        // The node on which the original file system operation was performed.
         [[nodiscard]] const std::shared_ptr<Node> &affectedNode() const { return _affectedNode; }
         void setAffectedNode(const std::shared_ptr<Node> &node) { _affectedNode = node; }
+
+        // The node on which we will apply the operation. Left as `nullptr` for Create operations.
         [[nodiscard]] const std::shared_ptr<Node> &correspondingNode() const { return _correspondingNode; }
         void setCorrespondingNode(const std::shared_ptr<Node> &node) { _correspondingNode = node; }
+
+        // The side on which we will apply the operation
         [[nodiscard]] ReplicaSide targetSide() const { return _targetSide; }
         void setTargetSide(const ReplicaSide newSide) { _targetSide = newSide; }
+
         [[nodiscard]] bool omit() const { return _omit; }
         void setOmit(const bool newOmit) { _omit = newOmit; }
         [[nodiscard]] const SyncName &newName() const { return _newName; }
