@@ -55,8 +55,8 @@ ExitCode SyncNodeCache::checkIfSyncExists(const int syncDbId) const noexcept {
 }
 
 
-ExitCode SyncNodeCache::checkIfTypeExists(const int syncDbId, const SyncNodeType type) const {
-    assert(_syncNodesMap.contains(syncDbId) && "Sync not found in SyncNodeCache::checkIfTypeExists.");
+ExitCode SyncNodeCache::checkIfSyncNodeListExists(const int syncDbId, const SyncNodeType type) const {
+    assert(_syncNodesMap.contains(syncDbId) && "Sync not found in SyncNodeCache::checkIfSyncNodeListExists.");
 
     if (!_syncNodesMap.at(syncDbId).contains(type)) {
         LOG_WARN(Log::instance()->getLogger(),
@@ -71,7 +71,7 @@ ExitCode SyncNodeCache::syncNodes(const int syncDbId, const SyncNodeType type, N
     const std::scoped_lock lock(_mutex);
 
     if (auto exitCode = checkIfSyncExists(syncDbId); exitCode != ExitCode::Ok) return exitCode;
-    if (auto exitCode = checkIfTypeExists(syncDbId, type); exitCode != ExitCode::Ok) return exitCode;
+    if (auto exitCode = checkIfSyncNodeListExists(syncDbId, type); exitCode != ExitCode::Ok) return exitCode;
 
     syncNodes = _syncNodesMap[syncDbId][type];
 
@@ -80,7 +80,7 @@ ExitCode SyncNodeCache::syncNodes(const int syncDbId, const SyncNodeType type, N
 
 bool SyncNodeCache::contains(const int syncDbId, const SyncNodeType type, const NodeId &nodeId) const noexcept {
     if (auto exitCode = checkIfSyncExists(syncDbId); exitCode != ExitCode::Ok) return false;
-    if (auto exitCode = checkIfTypeExists(syncDbId, type); exitCode != ExitCode::Ok) return false;
+    if (auto exitCode = checkIfSyncNodeListExists(syncDbId, type); exitCode != ExitCode::Ok) return false;
 
     return _syncNodesMap.at(syncDbId).at(type).contains(nodeId);
 }
@@ -125,7 +125,7 @@ ExitCode SyncNodeCache::update(const int syncDbId, const SyncNodeType type, cons
     const std::scoped_lock lock(_mutex);
 
     if (auto exitCode = checkIfSyncExists(syncDbId); exitCode != ExitCode::Ok) return exitCode;
-    if (auto exitCode = checkIfTypeExists(syncDbId, type); exitCode != ExitCode::Ok) return exitCode;
+    if (auto exitCode = checkIfSyncNodeListExists(syncDbId, type); exitCode != ExitCode::Ok) return exitCode;
 
     _syncNodesMap[syncDbId][type] = syncNodes;
 
@@ -144,7 +144,7 @@ ExitCode SyncNodeCache::initCache(const int syncDbId, std::shared_ptr<SyncDb> sy
     _syncDbMap[syncDbId] = syncDb;
 
     // Load sync nodes for all sync node types
-    for (auto typeInt = toInt(SyncNodeType::BlackList); typeInt <= toInt(SyncNodeType::TmpLocalBlacklist); ++typeInt) {
+    for (auto typeInt = toInt(SyncNodeType::BlackList); typeInt < toInt(SyncNodeType::EnumEnd); ++typeInt) {
         const auto type = fromInt<SyncNodeType>(typeInt);
         NodeSet nodeIdSet;
         if (!syncDb->selectAllSyncNodes(type, nodeIdSet)) {

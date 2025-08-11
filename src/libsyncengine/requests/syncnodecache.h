@@ -55,7 +55,7 @@ class SYNCENGINE_EXPORT SyncNodeCache {
 
         SyncNodeCache();
         ExitCode checkIfSyncExists(const int syncDbId) const noexcept;
-        ExitCode checkIfTypeExists(const int syncDbId, const SyncNodeType type) const;
+        ExitCode checkIfSyncNodeListExists(const int syncDbId, const SyncNodeType type) const;
 };
 
 } // namespace KDC

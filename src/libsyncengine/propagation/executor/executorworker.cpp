@@ -179,33 +179,33 @@ void ExecutorWorker::execute() {
                 }
 
                 if (syncOp->affectedNode()->id()) removeSyncNodeFromWhitelistIfSynced(*syncOp->affectedNode()->id());
-
-                perfMonitor.stop();
-                sentry::pTraces::scoped::waitForAllJobsToFinish perfMonitorwaitForAllJobsToFinish(syncDbId());
-                if (ExitInfo exitInfo = waitForAllJobsToFinish(); !exitInfo) {
-                    executorExitInfo = exitInfo;
-                    break;
-                }
-                perfMonitorwaitForAllJobsToFinish.stop();
             }
-
-            _syncPal->_syncOps->clear();
-            _syncPal->_remoteFSObserverWorker->forceUpdate();
-
-            if (changesCounter > SNAPSHOT_INVALIDATION_THRESHOLD || _snapshotToInvalidate) {
-                // If there are too many changes on the local filesystem, the OS stops sending events at some point.
-                // Also, on some specific errors, we want to force the snapshot reconstruction.
-                LOG_SYNCPAL_INFO(_logger, "Forcing local snapshot invalidation.");
-                _syncPal->_localFSObserverWorker->invalidateSnapshot();
-            }
-
-            _syncPal->vfs()->cleanUpStatuses();
-
-            setExitCause(executorExitInfo.cause());
-            LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name() << " " << executorExitInfo);
-            setDone(executorExitInfo.code());
         }
+
+        perfMonitor.stop();
+        sentry::pTraces::scoped::waitForAllJobsToFinish perfMonitorwaitForAllJobsToFinish(syncDbId());
+        if (ExitInfo exitInfo = waitForAllJobsToFinish(); !exitInfo) {
+            executorExitInfo = exitInfo;
+            break;
+        }
+        perfMonitorwaitForAllJobsToFinish.stop();
     }
+
+    _syncPal->_syncOps->clear();
+    _syncPal->_remoteFSObserverWorker->forceUpdate();
+
+    if (changesCounter > SNAPSHOT_INVALIDATION_THRESHOLD || _snapshotToInvalidate) {
+        // If there are too many changes on the local filesystem, the OS stops sending events at some point.
+        // Also, on some specific errors, we want to force the snapshot reconstruction.
+        LOG_SYNCPAL_INFO(_logger, "Forcing local snapshot invalidation.");
+        _syncPal->_localFSObserverWorker->invalidateSnapshot();
+    }
+
+    _syncPal->vfs()->cleanUpStatuses();
+
+    setExitCause(executorExitInfo.cause());
+    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name() << " " << executorExitInfo);
+    setDone(executorExitInfo.code());
 }
 
 void ExecutorWorker::initProgressManager() {
