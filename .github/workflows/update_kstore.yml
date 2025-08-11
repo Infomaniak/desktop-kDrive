@@ -5,7 +5,7 @@ on:
     inputs:
         environment:
             description: 'The environment to update the kStore for'
-            type: environment
+            type: string
             required: true
             default: 'internal beta'
         tag:
