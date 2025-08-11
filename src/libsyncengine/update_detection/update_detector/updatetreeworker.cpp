@@ -1067,7 +1067,7 @@ ExitCode UpdateTreeWorker::createTmpNode(std::shared_ptr<Node> &tmpNode, const S
 
     if (!parentNode->insertChildren(tmpNode)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node " << Utility::formatSyncName(tmpNode->name())
-                                                                                << L" parent node name="
+                                                                                << L" parent node "
                                                                                 << Utility::formatSyncName(parentNode->name()));
         return ExitCode::DataError;
     }
