@@ -293,14 +293,11 @@ elseif(BUILD_CLIENT)
         if(CMAKE_BUILD_TYPE STREQUAL "Debug")
             file(COPY sync-exclude-linux.lst DESTINATION ${CMAKE_BINARY_DIR}/bin)
             file(RENAME ${CMAKE_BINARY_DIR}/bin/sync-exclude-linux.lst ${CMAKE_BINARY_DIR}/bin/sync-exclude.lst)
-        else()
-            install(FILES sync-exclude-linux.lst DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME} RENAME sync-exclude.lst)
         endif()
 
         # Sentry
         find_library(SENTRY_SHARED_LIBRARY NAMES sentry NO_CACHE)
         message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
-        install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME})
 
         # Crashpad_handler
         get_target_property(CRASHPAD_HANDLER_PROGRAM
