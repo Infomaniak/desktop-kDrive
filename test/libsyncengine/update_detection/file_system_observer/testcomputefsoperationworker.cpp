@@ -554,4 +554,36 @@ void TestComputeFSOperationWorker::testUpdateSyncNode() {
     CPPUNIT_ASSERT(!syncNodes.contains("r_aa"));
 }
 
+void TestComputeFSOperationWorker::testPostponeCreateOperationsOnReusedIds() {
+    // Simulate a Delete operation of the local folder named "A".
+    _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_a");
+    _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_aa"); // Folder "AA" is contained in folder "A".
+    _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_ab"); // Folder "AB" is contained in folder "A".
+    _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem(
+            "l_ac"); // Folder "AC" is contained in folder "A" but is blacklisted.
+
+    // Simulate Create operations for "C" (folder) and "C/CA" (file).
+    const auto &rootLocalId = *_syncPal->syncDb()->rootNode().nodeIdLocal();
+    const auto creationDate = testhelpers::defaultTime + 5;
+    // The newly created folder "C" reuses the identifier "l_a" of the deleted local folder "A".
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(
+            SnapshotItem("l_a", rootLocalId, Str("C"), creationDate, creationDate, NodeType::Directory,
+                         testhelpers::defaultDirSize, false, true, true));
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(
+            SnapshotItem("l_ca", "l_a", Str("CA"), creationDate, creationDate, NodeType::File, testhelpers::defaultFileSize,
+                         false, true, true));
+
+    _syncPal->copySnapshots();
+    _syncPal->computeFSOperationsWorker()->execute();
+
+    CPPUNIT_ASSERT_EQUAL(uint64_t{3},
+                         _syncPal->operationSet(ReplicaSide::Local)
+                                 ->nbOps()); // As the folder "A/AC" is blacklisted, it has no associated DELETE operation.
+    FSOpPtr tmpOp = nullptr;
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_a", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_aa", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_ab", OperationType::Delete, tmpOp));
+    // Create operations have been removed.
+}
+
 } // namespace KDC

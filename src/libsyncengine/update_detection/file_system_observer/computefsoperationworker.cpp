@@ -48,7 +48,7 @@ void ComputeFSOperationWorker::postponeCreateOperationsOnReusedIds() {
         SyncPath localPath;
         bool ignore = false;
         _syncPal->snapshot(ReplicaSide::Local)->path(localId, localPath, ignore);
-        LOGW_SYNCPAL_DEBUG(_logger, L"Postponing the creation of item with id='"
+        LOGW_SYNCPAL_DEBUG(_logger, L"Postponing the creation of local item with id='"
                                             << CommonUtility::s2ws(localId) << L"' and " << Utility::formatSyncPath(localPath)
                                             << L" and its descendants because this item, or one of its ancestors, has reused the "
                                                L"identifier of a deleted item.");
