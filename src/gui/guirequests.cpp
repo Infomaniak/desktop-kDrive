@@ -1288,7 +1288,7 @@ ExitCode GuiRequests::updateSystray(const SyncStatus syncStatus, const QString &
     paramsStream << tooltip;
     paramsStream << alert;
 
-    if (!CommClient::instance()->execute(RequestNum::UTILITY_UPDATE_SYSTRAY, params)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_SYSTRAY_UPDATE, params)) {
         return ExitCode::SystemError;
     }
     return ExitCode::Ok;

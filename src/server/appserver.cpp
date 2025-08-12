@@ -2111,7 +2111,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
             break;
         }
-        case RequestNum::UTILITY_UPDATE_SYSTRAY: {
+        case RequestNum::UTILITY_SYSTRAY_UPDATE: {
             SyncStatus syncStatus = SyncStatus::Undefined;
             QString tooltip;
             bool alert = false;
