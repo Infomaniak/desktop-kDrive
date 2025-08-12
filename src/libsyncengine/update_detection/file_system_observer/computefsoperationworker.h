@@ -93,7 +93,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
 
         void deleteChildOpRecursively(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId,
                                       NodeSet &tmpTooBigList);
-        void deleteLocalDescendantOps(const NodeId &localNodeId);
+        void deleteLocalDescendantCreateOps(const NodeId &localNodeId);
 
         void updateUnsyncedList();
         ExitCode updateSyncNode(SyncNodeType syncNodeType);

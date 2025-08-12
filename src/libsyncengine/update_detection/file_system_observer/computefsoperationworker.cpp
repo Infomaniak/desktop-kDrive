@@ -44,7 +44,8 @@ ComputeFSOperationWorker::ComputeFSOperationWorker(SyncDbReadOnlyCache &testSync
 
 void ComputeFSOperationWorker::postponeCreateOperationsOnReusedIds() {
     for (const auto &localId: _localReusedIds) {
-        deleteLocalDescendantOps(localId);
+        _syncPal->removeLocalOperation(localId, OperationType::Create);
+        deleteLocalDescendantCreateOps(localId);
         SyncPath localPath;
         bool ignore = false;
         (void) _syncPal->snapshot(ReplicaSide::Local)->path(localId, localPath, ignore);
@@ -952,7 +953,7 @@ void ComputeFSOperationWorker::deleteChildOpRecursively(const std::shared_ptr<co
     }
 }
 
-void ComputeFSOperationWorker::deleteLocalDescendantOps(const NodeId &localNodeId) {
+void ComputeFSOperationWorker::deleteLocalDescendantCreateOps(const NodeId &localNodeId) {
     const auto localSnapshot = _syncPal->snapshot(ReplicaSide::Local);
     const auto descendantIds = localSnapshot->getDescendantIds(localNodeId);
 
