@@ -46,7 +46,7 @@ build_folder=$PWD
 cd /src
 
 conan_folder=/build/conan
-conan_dependencies_folder=/app/build/client/conan_dependencies/
+conan_dependencies_folder=$conan_folder/dependencies/
 
 build_type="RelWithDebInfo"
 
@@ -111,9 +111,8 @@ cp -P -r /usr/lib/aarch64-linux-gnu/nss ./usr/lib/
 cp -P "$QTDIR"/lib/libQt6WaylandClient.so* ./usr/lib
 cp -P "$QTDIR"/lib/libQt6WaylandEglClientHwIntegration.so* ./usr/lib
 
-cp -P ./build/client/conan_dependencies/* ./usr/lib
+cp -P $conan_dependencies_folder/* ./usr/lib
 
-rm -rf ./build
 rm -rf ./usr/lib/aarch64-linux-gnu/
 rm -rf ./usr/lib/kDrive
 rm -rf ./usr/lib/cmake
