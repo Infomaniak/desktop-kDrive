@@ -21,6 +21,7 @@
 #include "socketapi.h"
 #include "keychainmanager/keychainmanager.h"
 #include "requests/serverrequests.h"
+#include "requests/syncnodecache.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
@@ -1496,14 +1497,18 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             QString path;
-            ExitCode exitCode = ServerRequests::getPathByNodeId(_syncPalMap[syncDbId]->userDbId(),
+            ExitInfo exitInfo = ServerRequests::getPathByNodeId(_syncPalMap[syncDbId]->userDbId(),
                                                                 _syncPalMap[syncDbId]->driveId(), nodeId, path);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in AppServer::getPathByNodeId: code=" << exitCode);
-                addError(Error(errId(), exitCode, ExitCause::Unknown));
+            if (!exitInfo) {
+                if (exitInfo.cause() == ExitCause::NotFound) {
+                    (void) SyncNodeCache::instance()->deleteSyncNode(syncDbId, QStr2Str(nodeId));
+                } else {
+                    LOG_WARN(_logger, "Error in AppServer::getPathByNodeId: " << exitInfo);
+                    addError(Error(errId(), exitInfo.code(), exitInfo.cause()));
+                }
             }
 
-            resultStream << toInt(exitCode);
+            resultStream << toInt(exitInfo.code());
             resultStream << path;
             break;
         }
@@ -4243,10 +4248,10 @@ void AppServer::onUpdateSyncsProgress() {
                     undecidedSetUpdated = true;
 
                     QString path;
-                    if (const auto exitCode = ServerRequests::getPathByNodeId(syncPal->userDbId(), syncPal->driveId(),
+                    if (const auto exitInfo = ServerRequests::getPathByNodeId(syncPal->userDbId(), syncPal->driveId(),
                                                                               QString::fromStdString(nodeId), path);
-                        exitCode != ExitCode::Ok) {
-                        LOG_WARN(_logger, "Error in Requests::getPathByNodeId: code=" << exitCode);
+                        exitInfo.code() != ExitCode::Ok) {
+                        LOG_WARN(_logger, "Error in Requests::getPathByNodeId: " << exitInfo);
                         continue;
                     }
 
