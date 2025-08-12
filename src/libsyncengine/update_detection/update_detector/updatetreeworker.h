@@ -146,7 +146,7 @@ class UpdateTreeWorker : public ISyncWorker {
             return getOrCreateNodeFromPath(path, node, true);
         }
         /**
-         * @brief This method gets a node from a deleted path recursively. Recursivity here ensure that, even if 2 branches have
+         * @brief This method gets a node from a deleted path recursively. Recursion here ensures that, even if 2 branches have
          * nodes with the same names, the deleted branch is retrieved.
          * @param path The path of the node to be retrieved.
          * @return A shared pointer to the node. If the node is not found, the shared pointer is a `nullptr`.
