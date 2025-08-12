@@ -564,7 +564,7 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
                           << L"') inserted. Operation " << createOp->operationType() << L" inserted in change events.");
         }
 
-        // Verify that the same path does not exist on a deleted branch
+        // Verify if the same path exists on a deleted branch
         const std::shared_ptr<Node> alreadyExistingNode = getNodeFromDeletedPath(createOp->path());
         if (alreadyExistingNode && alreadyExistingNode->isTmp()) {
             LOG_SYNCPAL_DEBUG(_logger,
