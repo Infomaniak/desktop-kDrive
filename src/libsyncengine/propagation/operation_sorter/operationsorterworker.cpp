@@ -491,7 +491,7 @@ bool OperationSorterWorker::breakCycle(SyncOperationList &cycle, const SyncOpPtr
                                                                                << L" to "
                                                                                << SyncName2WStr(renameResolutionOp->newName()));
     // After breaking a cycle, the update tree is not up to date anymore and needs to be rebuilt.
-    _syncPal->setClearUpdateTrees(true);
+    _syncPal->setUpdateTreesNeedToBeCleared(true);
     return true;
 }
 

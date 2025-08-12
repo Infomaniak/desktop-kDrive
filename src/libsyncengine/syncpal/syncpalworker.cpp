@@ -393,11 +393,11 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
                 _syncPal->resetSnapshotInvalidationCounters();
                 _syncPal->setSyncHasFullyCompletedInParms(true);
             }
-            if (_syncPal->clearUpdateTrees()) {
+            if (_syncPal->updateTreesNeedToBeCleared()) {
                 LOG_SYNCPAL_DEBUG(_logger, "Clearing update trees");
                 _syncPal->_localUpdateTree->clear();
                 _syncPal->_remoteUpdateTree->clear();
-                _syncPal->setClearUpdateTrees(false);
+                _syncPal->setUpdateTreesNeedToBeCleared(false);
             }
             sentry::pTraces::basic::Sync(syncDbId()).stop();
             break;

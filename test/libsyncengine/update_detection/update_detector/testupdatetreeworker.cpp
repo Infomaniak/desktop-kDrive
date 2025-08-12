@@ -1160,34 +1160,34 @@ void TestUpdateTreeWorker::testGetNodeFromDeletedPath() {
         (void) updateTreeWorker->getOrCreateNodeFromExistingPath(SyncPath("/A/AA/AAA"), node);
         CPPUNIT_ASSERT_EQUAL(nodeAAAcreate->id().value(), node->id().value());
     }
+}
 
-    void TestUpdateTreeWorker::testIntegrityCheck() {
-        std::shared_ptr<Node> newNode;
-        CPPUNIT_ASSERT(_localUpdateTreeWorker->getOrCreateNodeFromExistingPath("Dir 5/File 5.1", newNode) == ExitCode::Ok);
-        CPPUNIT_ASSERT(newNode->id()->substr(0, 4) == "tmp_");
-        CPPUNIT_ASSERT(newNode->isTmp());
+void TestUpdateTreeWorker::testIntegrityCheck() {
+    std::shared_ptr<Node> newNode;
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->getOrCreateNodeFromExistingPath("Dir 5/File 5.1", newNode) == ExitCode::Ok);
+    CPPUNIT_ASSERT(newNode->id()->substr(0, 4) == "tmp_");
+    CPPUNIT_ASSERT(newNode->isTmp());
 
-        CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
 
-        const auto createOp =
-                std::make_shared<FSOperation>(OperationType::Create, "id51", NodeType::File, testhelpers::defaultTime,
-                                              testhelpers::defaultTime, testhelpers::defaultFileSize, "Dir 5/File 5.1");
-        const auto deleteOp =
-                std::make_shared<FSOperation>(OperationType::Delete, "id51bis", NodeType::File, testhelpers::defaultTime,
-                                              testhelpers::defaultTime, testhelpers::defaultFileSize, "Dir 5/File 5.1");
-        CPPUNIT_ASSERT(_localUpdateTreeWorker->updateTmpFileNode(newNode, createOp, deleteOp, OperationType::Edit));
-        CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    const auto createOp = std::make_shared<FSOperation>(OperationType::Create, "id51", NodeType::File, testhelpers::defaultTime,
+                                                        testhelpers::defaultTime, testhelpers::defaultFileSize, "Dir 5/File 5.1");
+    const auto deleteOp =
+            std::make_shared<FSOperation>(OperationType::Delete, "id51bis", NodeType::File, testhelpers::defaultTime,
+                                          testhelpers::defaultTime, testhelpers::defaultFileSize, "Dir 5/File 5.1");
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->updateTmpFileNode(newNode, createOp, deleteOp, OperationType::Edit));
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
 
-        CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
 
-        newNode->setId(std::nullopt);
-        CPPUNIT_ASSERT(!_localUpdateTreeWorker->integrityCheck());
+    newNode->setId(std::nullopt);
+    CPPUNIT_ASSERT(!_localUpdateTreeWorker->integrityCheck());
 
-        newNode->setId(NodeId{});
-        CPPUNIT_ASSERT(!_localUpdateTreeWorker->integrityCheck());
+    newNode->setId(NodeId{});
+    CPPUNIT_ASSERT(!_localUpdateTreeWorker->integrityCheck());
 
-        newNode->setId(NodeId{"123"});
-        CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
-    }
+    newNode->setId(NodeId{"123"});
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+}
 
 } // namespace KDC
