@@ -42,7 +42,7 @@ fi
 
 export KDRIVE_DEBUG=0
 
-build_folder=$PWD
+build_folder="$PWD"
 cd /src
 
 conan_folder=/build/conan
