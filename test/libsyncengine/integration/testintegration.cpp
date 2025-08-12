@@ -599,10 +599,10 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseDir", 2);
     IoHelper::createDirectory(absoluteLocalWorkingDir / "testNodeIdReuseDir", false, ioError);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     // Create a child file within "testNodeIdReuseDir".
     { const std::ofstream childFile(absoluteLocalWorkingDir / "testNodeIdReuseDir" / "childFile.txt"); }
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     _syncPal->unpause();
     waitForSyncToBeIdle(SourceLocation::currentLoc());
@@ -628,8 +628,8 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     }
     IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseDir", ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
     { const std::ofstream file(absoluteLocalWorkingDir / "testNodeIdReuseFile"); }
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     _syncPal->unpause();
     waitForSyncToBeIdle(SourceLocation::currentLoc());
