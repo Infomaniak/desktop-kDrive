@@ -116,8 +116,6 @@ cp -P "$QTDIR"/lib/libQt6WaylandEglClientHwIntegration.so* ./usr/lib
 
 cp -P ./build/client/conan_dependencies/* ./usr/lib
 
-mkdir -p ./usr/qml
-
 rm -rf ./build
 rm -rf ./usr/lib/x86_64-linux-gnu/
 rm -rf ./usr/lib/kDrive
@@ -129,13 +127,12 @@ rm -rf ./usr/mkspecs
 rm -rf ./usr/bin/kDrivecmd
 
 # Move sync exclude to right location
-cp /src/sync-exclude-linux.lst ./usr/bin/sync-exclude.lst
 rm -rf ./etc
 
 cp ./usr/share/icons/hicolor/512x512/apps/kdrive-win.png . # Workaround for linuxeployqt bug, FIXME
 
 # Build AppImage
-export LD_LIBRARY_PATH="/app/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="/app/usr/lib:$LD_LIBRARY_PATH:/usr/local/lib:/usr/local/lib64"
 
 /deploy/linuxdeploy/build/bin/linuxdeploy --appdir /app -e /app/usr/bin/kDrive -i /app/kdrive-win.png -d /app/usr/share/applications/kDrive_client.desktop --plugin qt --output appimage -v0
 
