@@ -293,6 +293,8 @@ elseif(BUILD_CLIENT)
         if(CMAKE_BUILD_TYPE STREQUAL "Debug")
             file(COPY sync-exclude-linux.lst DESTINATION ${CMAKE_BINARY_DIR}/bin)
             file(RENAME ${CMAKE_BINARY_DIR}/bin/sync-exclude-linux.lst ${CMAKE_BINARY_DIR}/bin/sync-exclude.lst)
+        else()
+            install(FILES sync-exclude-linux.lst DESTINATION ${SYSCONFDIR}/usr/bin/ RENAME sync-exclude.lst)
         endif()
 
         # Sentry
