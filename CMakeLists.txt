@@ -22,6 +22,7 @@ endif()
 
 # utf8proc
 if(UNIX)
+    set(UTF8PROC_INSTALL OFF CACHE BOOL "Disable installation of utf8proc" FORCE)
     add_subdirectory(src/3rdparty/utf8proc)
 endif()
 
