@@ -106,7 +106,7 @@ cp -P -r "$QTDIR"/translations ./usr
 
 mv ./usr/lib/x86_64-linux-gnu/* ./usr/lib/ || echo "The folder /app/usr/lib/x86_64-linux-gnu/ might not exist." >&2
 
-cp -P /usr/local/lib/libssl.so* ./usr/lib/
+cp -P /usr/local/lib/libssl.so* ./usr/lib/ # If we bump the version of Qt, we need to remove these copies, (Qt 6.2.3 is linked against lib(ssl|crypto).so.1.1)
 cp -P /usr/local/lib/libcrypto.so* ./usr/lib/
 
 cp -P -r /usr/lib/x86_64-linux-gnu/nss ./usr/lib/
@@ -116,6 +116,7 @@ cp -P "$QTDIR"/lib/libQt6WaylandEglClientHwIntegration.so* ./usr/lib
 
 cp -P $conan_dependencies_folder/* ./usr/lib
 
+rm -rf ./usr/lib/libkeychain.a
 rm -rf ./usr/lib/x86_64-linux-gnu/
 rm -rf ./usr/lib/kDrive
 rm -rf ./usr/lib/cmake

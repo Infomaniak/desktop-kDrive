@@ -42,7 +42,7 @@ fi
 
 export KDRIVE_DEBUG=0
 
-build_folder=$PWD
+build_folder="$PWD"
 cd /src
 
 conan_folder=/build/conan
@@ -113,6 +113,7 @@ cp -P "$QTDIR"/lib/libQt6WaylandEglClientHwIntegration.so* ./usr/lib
 
 cp -P $conan_dependencies_folder/* ./usr/lib
 
+rm -rf ./usr/lib/libkeychain.a
 rm -rf ./usr/lib/aarch64-linux-gnu/
 rm -rf ./usr/lib/kDrive
 rm -rf ./usr/lib/cmake
@@ -128,7 +129,7 @@ rm -rf ./etc
 cp ./usr/share/icons/hicolor/512x512/apps/kdrive-win.png . # Workaround for linuxeployqt bug, FIXME
 
 # Build AppImage
-export LD_LIBRARY_PATH="/app/usr/lib/:$LD_LIBRARY_PATH:/usr/local/lib:/usr/local/lib64:"
+export LD_LIBRARY_PATH="/app/usr/lib:$LD_LIBRARY_PATH:/usr/local/lib:/usr/local/lib64"
 
 /deploy/linuxdeploy/build/bin/linuxdeploy --appdir /app -e /app/usr/bin/kDrive -i /app/kdrive-win.png -d /app/usr/share/applications/kDrive_client.desktop --plugin qt --output appimage -v0
 
