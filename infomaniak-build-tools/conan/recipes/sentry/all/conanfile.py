@@ -43,7 +43,7 @@ class SentryNativeConan(ConanFile):
 
     @property
     def build_type(self):
-        return "RelWithDebInfo" # Force the build type to RelWithDebInfo since we don't need to debug Sentry
+        return "Release" # Force the build type to Release since we don't need to debug Sentry
 
     def source(self):
         git = Git(self)
@@ -54,7 +54,6 @@ class SentryNativeConan(ConanFile):
         if qt is None:
             raise ConanInvalidConfiguration("The 'qt' dependency is required for the 'sentry' recipe.")
         cache_variables = {
-            "CMAKE_BUILD_TYPE": self.build_type,
             "SENTRY_INTEGRATION_QT": "YES",
             "SENTRY_BACKEND": "crashpad",
             "CMAKE_PREFIX_PATH": qt.package_folder,
@@ -62,6 +61,8 @@ class SentryNativeConan(ConanFile):
             "SENTRY_BUILD_EXAMPLES": "OFF",
             "SENTRY_BUILD_SHARED_LIBS": "ON" if self.options.shared else "OFF",
         }
+        if self.settings.os != "Windows":
+            cache_variables["CMAKE_BUILD_TYPE"] = self.build_type
         return cache_variables
 
     def generate(self):
@@ -78,10 +79,6 @@ class SentryNativeConan(ConanFile):
     def package(self):
         cmake = CMake(self)
         cmake.install(build_type=self.build_type if self.settings.os == "Windows" else None)
-        if self.settings.os == "Macos":
-            rmdir(self, pjoin(self.package_folder, "lib", "libsentry.dylib.dSYM"))
-        if self.settings.os == "Windows":
-            rm(self, "*.pdb", self.package_folder, recursive=True)
 
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "sentry")
