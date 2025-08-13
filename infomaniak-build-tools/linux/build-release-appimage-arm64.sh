@@ -46,7 +46,7 @@ build_folder="$PWD"
 cd /src
 
 conan_folder=/build/conan
-conan_dependencies_folder=/app/build/client/conan_dependencies/
+conan_dependencies_folder=$conan_folder/dependencies/
 
 build_type="RelWithDebInfo"
 
@@ -111,11 +111,9 @@ cp -P -r /usr/lib/aarch64-linux-gnu/nss ./usr/lib/
 cp -P "$QTDIR"/lib/libQt6WaylandClient.so* ./usr/lib
 cp -P "$QTDIR"/lib/libQt6WaylandEglClientHwIntegration.so* ./usr/lib
 
-cp -P ./build/client/conan_dependencies/* ./usr/lib
+cp -P $conan_dependencies_folder/* ./usr/lib
 
-mkdir -p ./usr/qml
-
-rm -rf ./build/client/conan_dependencies
+rm -rf ./usr/lib/libkeychain.a
 rm -rf ./usr/lib/aarch64-linux-gnu/
 rm -rf ./usr/lib/kDrive
 rm -rf ./usr/lib/cmake
@@ -126,13 +124,12 @@ rm -rf ./usr/mkspecs
 rm -rf ./usr/bin/kDrivecmd
 
 # Move sync exclude to right location
-cp /src/sync-exclude-linux.lst ./usr/bin/sync-exclude.lst
 rm -rf ./etc
 
 cp ./usr/share/icons/hicolor/512x512/apps/kdrive-win.png . # Workaround for linuxeployqt bug, FIXME
 
 # Build AppImage
-export LD_LIBRARY_PATH="/app/usr/lib/:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="/app/usr/lib:$LD_LIBRARY_PATH:/usr/local/lib:/usr/local/lib64"
 
 /deploy/linuxdeploy/build/bin/linuxdeploy --appdir /app -e /app/usr/bin/kDrive -i /app/kdrive-win.png -d /app/usr/share/applications/kDrive_client.desktop --plugin qt --output appimage -v0
 
