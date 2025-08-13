@@ -686,4 +686,62 @@ void Utility::unixTimeToFiletime(time_t t, FILETIME *filetime) {
     filetime->dwHighDateTime = ll >> 32;
 }
 
+namespace {
+HRESULT BindToCsidl(int csidl, REFIID riid, void **ppv) {
+    HRESULT hr;
+    PIDLIST_ABSOLUTE pidl;
+    hr = SHGetSpecialFolderLocation(NULL, csidl, &pidl);
+    if (SUCCEEDED(hr)) {
+        IShellFolder *psfDesktop;
+        hr = SHGetDesktopFolder(&psfDesktop);
+        if (SUCCEEDED(hr)) {
+            if (pidl->mkid.cb) {
+                hr = psfDesktop->BindToObject(pidl, NULL, riid, ppv);
+            } else {
+                hr = psfDesktop->QueryInterface(riid, ppv);
+            }
+            psfDesktop->Release();
+        }
+        CoTaskMemFree(pidl);
+    }
+    return hr;
+}
+} // namespace
+
+bool Utility::isInTrash(const SyncPath &path) {
+    bool found = false;
+
+    HRESULT hr = CoInitialize(NULL);
+    if (SUCCEEDED(hr)) {
+        IShellFolder2 *psfRecycleBin;
+        hr = BindToCsidl(CSIDL_BITBUCKET, IID_PPV_ARGS(&psfRecycleBin));
+        if (SUCCEEDED(hr)) {
+            IEnumIDList *peidl;
+            hr = psfRecycleBin->EnumObjects(NULL, SHCONTF_FOLDERS | SHCONTF_NONFOLDERS, &peidl);
+            if (hr == S_OK) {
+                PITEMID_CHILD pidlItem;
+                while (peidl->Next(1, &pidlItem, NULL) == S_OK) {
+                    CComPtr<IShellItem> pItem;
+                    hr = SHCreateItemFromIDList(pidlItem, IID_PPV_ARGS(&pItem));
+                    if (FAILED(hr)) {
+                        CoTaskMemFree(pidlItem);
+                        continue;
+                    }
+
+                    LPWSTR displayName;
+                    hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &displayName);
+                    if (SyncPath(displayName) == path) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            psfRecycleBin->Release();
+        }
+        CoUninitialize();
+    }
+
+    return found;
+}
+
 } // namespace KDC
