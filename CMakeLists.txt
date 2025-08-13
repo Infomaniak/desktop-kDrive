@@ -278,7 +278,10 @@ elseif(BUILD_CLIENT)
         install(FILES ${VFS_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # Sentry
-        find_library(SENTRY_SHARED_LIBRARY NAMES sentry PATH_SUFFIXES "../bin" NO_CACHE)
+        # Convert CMAKE_BUILD_TYPE to uppercase because Conan provides variables like sentry_BIN_DIRS_RELEASE,
+        # where the build type (e.g., DEBUG, RELEASE) is always in uppercase.
+        string(TOUPPER "${CMAKE_BUILD_TYPE}" UPPER_BUILD_TYPE)
+        find_library(SENTRY_SHARED_LIBRARY NAMES sentry PATH "${sentry_BIN_DIRS_${UPPER_BUILD_TYPE}}" NO_CACHE)
         message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
         install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
