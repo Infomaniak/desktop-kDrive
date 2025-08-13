@@ -26,8 +26,6 @@ function Err { Write-Error "[ERROR] $($args -join ' ')" ; exit 1 }
 $pathEntries = $env:PATH -Split ';'
 $initialConanEntries = $pathEntries | Where-Object { $_ -match '\\.conan2\\p\\' }
 
-Write-Host "Path before source:`n   $($env:PATH -Split ';' -join "`n   ")"
-
 if (-not $initialConanEntries) {
     $runScript = Get-ChildItem -Path $BuildDir -Recurse -Filter 'conanrun.ps1' -File -ErrorAction SilentlyContinue |
         Select-Object -First 1 -ExpandProperty FullName
@@ -38,7 +36,6 @@ if (-not $initialConanEntries) {
     # Refresh PATH entries after running conanrun
     $pathEntries = $env:PATH -Split ';'
 }
-Write-Host "Path after source:`n   $($env:PATH -Split ';' -join "`n   ")"
 
 $conanEntries = $pathEntries | Where-Object { $_ -match '\\.conan2\\p\\' }
 if (-not $conanEntries) {
