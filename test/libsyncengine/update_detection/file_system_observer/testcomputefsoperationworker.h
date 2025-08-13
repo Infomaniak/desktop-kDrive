@@ -50,6 +50,9 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture, public TestBas
         CPPUNIT_TEST(testIsInUnsyncedList);
         CPPUNIT_TEST(testHasChangedSinceLastSeen);
         CPPUNIT_TEST(testUpdateSyncNode);
+#if defined(KD_LINUX)
+        CPPUNIT_TEST(testPostponeCreateOperationsOnReusedIds);
+#endif
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -99,6 +102,12 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture, public TestBas
         void testUpdateSyncNode();
 
         void testHasChangedSinceLastSeen();
+
+#if defined(KD_LINUX)
+        // Create operations on local items that reused the identifiers deleted local items are removed from the computed
+        // operation list. This also holds for every descendants of such items.
+        void testPostponeCreateOperationsOnReusedIds();
+#endif
 
     private:
         void testIsInUnsyncedList(bool expectedResult, const NodeId &nodeId, ReplicaSide side) const;

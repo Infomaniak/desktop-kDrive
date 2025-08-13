@@ -131,7 +131,7 @@ void TestIntegration::setUp() {
 }
 
 void TestIntegration::tearDown() {
-    _syncPal->stop(false, true, false);
+    if (_syncPal) _syncPal->stop(false, true, false);
     _remoteSyncDir.deleteDirectory();
 
     ParmsDb::instance()->close();
@@ -580,7 +580,7 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     MockIoHelperFileStat mockIoHelper;
     // Create a file with a custom inode on the local side
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile", 2);
-    { const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string()); }
+    { const std::ofstream file(absoluteLocalWorkingDir / "testNodeIdReuseFile"); }
     waitForSyncToBeIdle(SourceLocation::currentLoc());
     CPPUNIT_ASSERT_EQUAL(NodeId("2"),
                          _syncPal->liveSnapshot(ReplicaSide::Local).itemId(relativeWorkingDirPath / "testNodeIdReuseFile"));
@@ -601,10 +601,13 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     IoHelper::createDirectory(absoluteLocalWorkingDir / "testNodeIdReuseDir", false, ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
+    // Create a child file within "testNodeIdReuseDir".
+    { const std::ofstream childFile(absoluteLocalWorkingDir / "testNodeIdReuseDir" / "childFile.txt"); }
+
     _syncPal->unpause();
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
-    // Check that the file has been replaced by a directory on the remote with a different ID
+    // Check that the file has been replaced by a directory on the remote replica with a different ID.
     const NodeId newRemoteDirId =
             _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseDir");
     CPPUNIT_ASSERT(!newRemoteDirId.empty());
@@ -612,20 +615,26 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     CPPUNIT_ASSERT_EQUAL(NodeType::Directory, _syncPal->liveSnapshot(ReplicaSide::Remote).type(newRemoteDirId));
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(remoteFileId));
 
-    // Replace the directory with a file on the local side with the same id
+    // Check that the new directory contains the file "childFile.txt" that was created locally.
+    const NodeId newRemoteChildFileId =
+            _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseDir" / "childFile.txt");
+    CPPUNIT_ASSERT(!newRemoteChildFileId.empty());
+    CPPUNIT_ASSERT_EQUAL(NodeType::File, _syncPal->liveSnapshot(ReplicaSide::Remote).type(newRemoteChildFileId));
+
+    // Replace the directory with a file on the local side with the same ID.
     _syncPal->pause();
     while (!_syncPal->isPaused()) {
         Utility::msleep(100);
     }
     IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseDir", ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    { const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string()); }
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+    { const std::ofstream file(absoluteLocalWorkingDir / "testNodeIdReuseFile"); }
 
     _syncPal->unpause();
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
-    // Check that the directory has been replaced by a file on the remote with a different ID
+    // Check that the directory has been replaced by a file on the remote with a different ID.
     const NodeId newRemoteFileId =
             _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
     CPPUNIT_ASSERT(newRemoteFileId != "");
@@ -652,7 +661,7 @@ void TestIntegration::testNodeIdReuseFile2File() {
 
     MockIoHelperFileStat mockIoHelper;
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile", 2);
-    { const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string()); }
+    { const std::ofstream file(absoluteLocalWorkingDir / "testNodeIdReuseFile"); }
     waitForSyncToBeIdle(SourceLocation::currentLoc());
     CPPUNIT_ASSERT_EQUAL(NodeId("2"),
                          _syncPal->liveSnapshot(ReplicaSide::Local).itemId(relativeWorkingDirPath / "testNodeIdReuseFile"));
