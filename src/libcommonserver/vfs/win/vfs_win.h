@@ -28,7 +28,7 @@
 
 // Vfs dll
 #include "debug.h"
-#include "vfs.h"
+#include "../extensions/windows/cfapi/Vfs/vfs.h"
 
 namespace KDC {
 
