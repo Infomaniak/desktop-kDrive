@@ -45,6 +45,9 @@ class SentryNativeConan(ConanFile):
     def forced_build_type(self):
         return "Release" # Force the build type to Release since we don't need to debug Sentry
 
+    def package_id(self):
+        self.info.settings.rm_safe("build_type") # Since we force the build type to Release, we can remove it from the package ID to avoid creating multiple packages for the same configuration
+
     def source(self):
         git = Git(self)
         git.clone(url="https://github.com/getsentry/sentry-native.git", target=".", hide_url=False, args=["-b", f"{self.version}", "--recurse-submodules"])
