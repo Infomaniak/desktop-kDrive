@@ -292,10 +292,6 @@ elseif(BUILD_CLIENT)
                 PATHS ${CONAN_RUNTIME_LIB_DIRS}
                 NO_DEFAULT_PATH NO_CACHE
         )
-#        get_target_property(CRASHPAD_HANDLER_PROGRAM
-#                sentry_crashpad::crashpad_handler
-#                IMPORTED_LOCATION_RELWITHDEBINFO
-#        )
         message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
         install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
     else()
