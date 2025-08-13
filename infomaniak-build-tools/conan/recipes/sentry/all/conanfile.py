@@ -75,7 +75,7 @@ class SentryNativeConan(ConanFile):
 
     def build(self):
         cmake = CMake(self)
-        cmake.configure(variables=self._cache_variables())
+        cmake.configure()
         cmake.build(build_type=self.forced_build_type if self.settings.os == "Windows" else None, target="sentry")
 
     def package(self):
