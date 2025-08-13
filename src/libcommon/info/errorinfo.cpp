@@ -87,9 +87,9 @@ QDataStream &operator>>(QDataStream &in, QList<ErrorInfo> &list) {
     int count = 0;
     in >> count;
     for (int i = 0; i < count; i++) {
-        ErrorInfo *errorInfo = new ErrorInfo();
-        in >> *errorInfo;
-        list.push_back(*errorInfo);
+        ErrorInfo errorInfo;
+        in >> errorInfo;
+        list.push_back(errorInfo);
     }
     return in;
 }
