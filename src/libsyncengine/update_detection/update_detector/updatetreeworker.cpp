@@ -91,10 +91,8 @@ void UpdateTreeWorker::execute() {
         }
     }
 
-    if (exitCode == ExitCode::Ok) {
-        if (!integrityCheck()) {
-            exitCode = ExitCode::DataError;
-        }
+    if (exitCode == ExitCode::Ok && !integrityCheck()) {
+        exitCode = ExitCode::DataError;
     }
 
     if (exitCode == ExitCode::Ok) {
@@ -529,7 +527,7 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
         // find node by path because it may have been created before
         std::shared_ptr<Node> currentNode;
         if (const auto exitCode = getOrCreateNodeFromExistingPath(createOp->path(), currentNode); exitCode != ExitCode::Ok) {
-            LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker:: getOrCreateNodeFromExistingPath");
+            LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getOrCreateNodeFromExistingPath");
             return exitCode;
         }
 
@@ -1018,7 +1016,7 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
 }
 
 ExitCode UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &path, std::shared_ptr<Node> &node,
-                                                   bool existingBranchOnly /*= true*/) {
+                                                   const bool existingBranchOnly /*= true*/) {
     node = nullptr;
 
     if (path.empty()) {

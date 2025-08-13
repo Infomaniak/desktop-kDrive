@@ -58,7 +58,8 @@ class UpdateTree : public SharedObject {
         inline void setRootFolderId(const NodeId &nodeId) { _rootNode->setId(std::make_optional<NodeId>(nodeId)); }
 
         /**
-         * Draw the update tree in the log file for debugging purpose
+         * @brief Draw the update tree in the log file for debugging purpose.
+         * @param step If not 0, add the step of the update tree worker algorithm in the log.
          */
         void drawUpdateTree(uint16_t step = 0);
 

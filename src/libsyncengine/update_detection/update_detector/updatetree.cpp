@@ -231,7 +231,11 @@ void UpdateTree::drawUpdateTree(const uint16_t step /*= 0*/) {
 
     SyncName treeStr;
     drawUpdateTreeRow(rootNode(), treeStr);
-    LOGW_INFO(Log::instance()->getLogger(), _side << L" update tree (step " << step << L"):\n" << SyncName2WStr(treeStr));
+    if (step) {
+        LOGW_INFO(Log::instance()->getLogger(), _side << L" update tree (step " << step << L"):\n" << SyncName2WStr(treeStr));
+    } else {
+        LOGW_INFO(Log::instance()->getLogger(), _side << L" update tree:\n" << SyncName2WStr(treeStr));
+    }
 }
 
 void UpdateTree::drawUpdateTreeRow(const std::shared_ptr<Node> node, SyncName &treeStr, uint64_t depth /*= 0*/) {
