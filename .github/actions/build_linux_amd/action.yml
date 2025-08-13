@@ -136,7 +136,7 @@ runs:
               fi
             fi
           done
-
+          # Restore the original environment variables set before running conanrun.sh
           source $(find "${{ github.workspace }}/build-linux" -name deactivate_conanrun.sh | head -n 1)
         shell: bash
         if: steps.build.outcome == 'success'
