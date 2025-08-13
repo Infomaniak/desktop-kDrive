@@ -256,7 +256,7 @@ if(BUILD_KDRIVE_OSX_BUNDLE)
     # Crashpad_handler
     get_target_property(CRASHPAD_HANDLER_PROGRAM
             sentry_crashpad::crashpad_handler
-            IMPORTED_LOCATION_RELWITHDEBINFO
+            IMPORTED_LOCATION_RELEASE
     )
     message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
     install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/MacOS/)
@@ -310,7 +310,7 @@ elseif(BUILD_CLIENT)
         # Crashpad_handler
         get_target_property(CRASHPAD_HANDLER_PROGRAM
                 sentry_crashpad::crashpad_handler
-                IMPORTED_LOCATION_RELWITHDEBINFO
+                IMPORTED_LOCATION_RELEASE
         )
         message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
         if(CMAKE_BUILD_TYPE STREQUAL "Debug")
