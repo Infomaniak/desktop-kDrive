@@ -42,7 +42,7 @@ class SentryNativeConan(ConanFile):
             self.requires("qt/6.2.3")
 
     @property
-    def build_type(self):
+    def forced_build_type(self):
         return "Release" # Force the build type to Release since we don't need to debug Sentry
 
     def source(self):
@@ -62,7 +62,7 @@ class SentryNativeConan(ConanFile):
             "SENTRY_BUILD_SHARED_LIBS": "ON" if self.options.shared else "OFF",
         }
         if self.settings.os != "Windows":
-            cache_variables["CMAKE_BUILD_TYPE"] = self.build_type
+            cache_variables["CMAKE_BUILD_TYPE"] = self.forced_build_type
         return cache_variables
 
     def generate(self):
@@ -74,11 +74,11 @@ class SentryNativeConan(ConanFile):
     def build(self):
         cmake = CMake(self)
         cmake.configure(variables=self._cache_variables())
-        cmake.build(build_type=self.build_type if self.settings.os == "Windows" else None, target="sentry")
+        cmake.build(build_type=self.forced_build_type if self.settings.os == "Windows" else None, target="sentry")
 
     def package(self):
         cmake = CMake(self)
-        cmake.install(build_type=self.build_type if self.settings.os == "Windows" else None)
+        cmake.install(build_type=self.forced_build_type if self.settings.os == "Windows" else None)
 
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "sentry")
