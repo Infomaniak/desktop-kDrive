@@ -353,3 +353,13 @@ class QtConan(ConanFile):
         self.cpp_info.bindirs = [ "bin" ]
         if self.settings.os in ("Macos", "Linux"):
             self.cpp_info.bindirs.append("libexec")
+
+    def package_id(self):
+        """
+        Modify the package ID to exclude settings and options that do not affect the final Qt installation.
+        This is done to cache the package and avoid unnecessary reinstalls.
+        :return: None
+        """
+        self.info.settings.rm_safe("build_type")
+        self.info.settings.rm_safe("compiler")
+        self.info.options.rm_safe("qt_login_type")
