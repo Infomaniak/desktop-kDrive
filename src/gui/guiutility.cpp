@@ -631,16 +631,18 @@ QString GuiUtility::getDateForCurrentLanguage(const QDateTime &dateTime, const Q
     return languageToQLocale(lang).toString(dateTime, dateFormat);
 }
 
-bool GuiUtility::checkBlacklistSize(const qsizetype blacklistSize, QWidget *parent) {
-    if (blacklistSize > 50) {
-        (void) CustomMessageBox(
-                QMessageBox::Warning,
-                QCoreApplication::translate("utility",
-                                            "You cannot blacklist more than 50 folders. Please uncheck higher-level folders."),
-                QMessageBox::Ok, parent)
-                .exec();
-        return false;
-    }
+bool GuiUtility::checkBlacklistSize(const size_t blacklistSize, QWidget *parent) {
+    // TODO : to be removed completely once a definitive solution has been implemented to limit URL length and/or number of item
+    // in blacklist
+    // if (blacklistSize > 50) {
+    //     (void) CustomMessageBox(
+    //             QMessageBox::Warning,
+    //             QCoreApplication::translate("utility",
+    //                                         "You cannot blacklist more than 50 folders. Please uncheck higher-level folders."),
+    //             QMessageBox::Ok, parent)
+    //             .exec();
+    //     return false;
+    // }
     return true;
 }
 
