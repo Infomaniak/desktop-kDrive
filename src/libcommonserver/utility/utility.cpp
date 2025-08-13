@@ -656,4 +656,17 @@ bool Utility::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode
     }
 }
 
+#if defined(KD_MACOS) || defined(KD_LINUX)
+bool Utility::isInTrash(const SyncPath &path) {
+    if (std::error_code ec; !std::filesystem::exists(getTrashPath() / path, ec) || ec) {
+        if (ec) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::exists - " << Utility::formatStdError(ec));
+        }
+        return false;
+    }
+
+    return true;
+}
+#endif
+
 } // namespace KDC

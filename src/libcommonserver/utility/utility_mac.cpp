@@ -141,4 +141,14 @@ std::string Utility::userName() {
     return CommonUtility::envVarValue("USER", isSet);
 }
 
+SyncPath Utility::getTrashPath() {
+    const char *homePathEnv = std::getenv("HOME");
+    if (!homePathEnv) {
+        LOG_WARN(Log::instance()->getLogger(), "Path to HOME not found.");
+        return {};
+    }
+
+    return SyncPath(homePathEnv) / ".Trash";
+}
+
 } // namespace KDC
