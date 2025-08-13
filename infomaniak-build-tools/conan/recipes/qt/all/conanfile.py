@@ -54,6 +54,10 @@ class QtConan(ConanFile):
         return f"qt-online-installer-{os_name}-{architecture}-online.{ext}"
 
     def _get_compiler(self):
+        """
+        Get the compiler name on QT installer based on the OS and architecture.
+        :return: The compiler name, e.g. 'clang_64', 'gcc_64', 'linux_gcc_arm64', or 'win64_msvc2019_64'.
+        """
         if self.settings.os == "Macos":
             return "clang_64"
         elif self.settings.os == "Linux":
@@ -100,6 +104,11 @@ class QtConan(ConanFile):
         return modules
 
     def _get_default_login_ini_location(self):
+        """
+        Get the default location of the 'qtaccount.ini' file based on the OS and user.
+        This file is used to store the Qt account email and JWT token.
+        :return: The default location of the 'qtaccount.ini' file, or None if the OS is not supported.
+        """
         from getpass import getuser
         try:
             user = getuser()
@@ -123,6 +132,12 @@ class QtConan(ConanFile):
         self.requires("zlib/[>=1.2.11 <2]", options={ "shared": True }) # From https://conan.io/center/recipes/zlib
 
     def _check_envvars_login_type(self, check_option=True, raise_error=True):
+        """
+        Check if the environment variable `QT_INSTALLER_JWT_TOKEN` is set, which is required for the 'envvars' login type.
+        :param check_option: return false if the recipe option `qt_login_type` is not set to 'envvars'.
+        :param raise_error: raise an error if the environment variable is not set and the recipe option `qt_login_type` is set to 'envvars'.
+        :return: True if the environment variable is set and the recipe option `qt_login_type` is set to 'envvars', False otherwise.
+        """
         if check_option and self.options.qt_login_type != "envvars":
             return False
         if os.getenv("QT_INSTALLER_JWT_TOKEN") is None:
@@ -133,6 +148,12 @@ class QtConan(ConanFile):
         return True
 
     def config_options(self):
+        """
+        Set the right login type based on the options and the existence of the `qtaccount.ini` file.
+        If the `qtaccount.ini` file is not found at the default location and the login type is set to 'ini',
+        it will try to fall back to 'envvars' login type and if that is not possible, it will set the login type to 'cli'.
+        :return: None
+        """
         if self.options.qt_login_type == "ini" and (self._get_default_login_ini_location() is None or not os.path.isfile(self._get_default_login_ini_location())):
             self.output.warning("The file 'qtaccount.ini' is not found at the default location and the login method is 'ini'.")
             if self._check_envvars_login_type(check_option=False, raise_error=False):
@@ -221,6 +242,10 @@ class QtConan(ConanFile):
         self.run(f"hdiutil detach '{mount_point}'")
 
     def source(self):
+        """
+        Download the Qt installer based on the OS and architecture.
+        :return: None
+        """
         self.output.highlight("Downloading Qt installer...")
         downloaded_file_name = self._get_distant_name()
         url = f"https://download.qt.io/official_releases/online_installers/{downloaded_file_name}"
@@ -356,3 +381,13 @@ class QtConan(ConanFile):
         self.cpp_info.bindirs = [ "bin" ]
         if self.settings.os in ("Macos", "Linux"):
             self.cpp_info.bindirs.append("libexec")
+
+    def package_id(self):
+        """
+        Modify the package ID to exclude settings and options that do not affect the final Qt installation.
+        This is done to cache the package and avoid unnecessary reinstalls.
+        :return: None
+        """
+        self.info.settings.rm_safe("build_type")
+        self.info.settings.rm_safe("compiler")
+        self.info.options.rm_safe("qt_login_type")
