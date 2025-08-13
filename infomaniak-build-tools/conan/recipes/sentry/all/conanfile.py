@@ -3,6 +3,7 @@ from os.path import join as pjoin
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
 from conan.tools.cmake import CMake, CMakeToolchain
+from conan.tools.files import copy
 from conan.tools.scm import Git
 
 required_conan_version = ">=2"
@@ -79,6 +80,7 @@ class SentryNativeConan(ConanFile):
         cmake.build(build_type=self.forced_build_type if self.settings.os == "Windows" else None, target="sentry")
 
     def package(self):
+        copy(self, "LICENSE*", src=self.source_folder, dst=pjoin(self.package_folder, "licenses"))
         cmake = CMake(self)
         cmake.install(build_type=self.forced_build_type if self.settings.os == "Windows" else None)
 
