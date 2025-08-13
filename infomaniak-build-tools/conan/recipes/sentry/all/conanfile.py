@@ -29,9 +29,9 @@ class SentryNativeConan(ConanFile):
             raise ConanInvalidConfiguration(
                 f"This recipe does not support yet {self.settings.os}."
             )
-        if self.settings.os == "Linux" and self.settings.compiler != "gcc":
+        if self.settings.os == "Linux" and self.settings.compiler not in ("gcc", "clang"):
             raise ConanInvalidConfiguration(
-                f"Sentry Crashpad on Linux currently only supports GCC due to use of GCC-specific extensions (e.g., #include_next)."
+                "On Linux, this recipe requires GCC or Clang because the Sentry/Crashpad build uses GCC/Clang-specific preprocessor extensions such as #include_next."
             )
 
     def requirements(self):
