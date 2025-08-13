@@ -49,6 +49,7 @@ class Snapshot {
         bool isLink(const NodeId &itemId) const;
         SnapshotRevision lastChangeRevision(const NodeId &itemId) const;
         bool getChildrenIds(const NodeId &itemId, NodeSet &childrenIds) const;
+        NodeSet getDescendantIds(const NodeId &itemId) const;
 
         void ids(NodeSet &ids) const;
         /** Checks if ancestorItem is an ancestor of item.
@@ -88,6 +89,7 @@ class Snapshot {
     private:
         SnapshotRevision _revision = 0;
         bool getChildren(const NodeId &itemId, std::unordered_set<std::shared_ptr<SnapshotItem>> &children) const;
+        void getDescendantIds(const NodeId &itemId, NodeSet &descendantIds) const;
 
         ReplicaSide _side = ReplicaSide::Unknown;
         NodeId _rootFolderId;

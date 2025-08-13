@@ -18,18 +18,31 @@
 
 #pragma once
 
-#include "abstracttokennetworkjob.h"
+#include "jobs/network/abstracttokennetworkjob.h"
 
 namespace KDC {
 
-class GetDrivesListJob : public AbstractTokenNetworkJob {
+class CopyToDirectoryJob : public AbstractTokenNetworkJob {
     public:
-        GetDrivesListJob(int userDbId);
+        CopyToDirectoryJob(int driveDbId, const NodeId &remoteFileId, const NodeId &remoteDestId, const SyncName &newName);
+
+        inline const NodeId &nodeId() const { return _nodeId; }
+        inline SyncTime modtime() const { return _modtime; }
+
+    protected:
+        virtual bool handleResponse(std::istream &is) override;
 
     private:
-        virtual void setQueryParameters(Poco::URI &uri, bool &) override;
-        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
         virtual std::string getSpecificUrl() override;
+        virtual void setQueryParameters(Poco::URI &, bool &) override {}
+        virtual ExitInfo setData() override;
+
+        NodeId _remoteFileId;
+        NodeId _remoteDestId;
+        SyncName _newName;
+
+        NodeId _nodeId;
+        SyncTime _modtime = 0;
 };
 
 } // namespace KDC

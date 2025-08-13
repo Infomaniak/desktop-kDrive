@@ -42,6 +42,22 @@ ComputeFSOperationWorker::ComputeFSOperationWorker(SyncDbReadOnlyCache &testSync
     ISyncWorker(nullptr, name, shortName, std::chrono::seconds(0), true),
     _syncDbReadOnlyCache(testSyncDbReadOnlyCache) {}
 
+void ComputeFSOperationWorker::postponeCreateOperationsOnReusedIds() {
+    for (const auto &localId: _localReusedIds) {
+        _syncPal->removeLocalOperation(localId, OperationType::Create);
+        deleteLocalDescendantCreateOps(localId);
+        SyncPath localPath;
+        bool ignore = false;
+        (void) _syncPal->snapshot(ReplicaSide::Local)->path(localId, localPath, ignore);
+        LOGW_SYNCPAL_DEBUG(_logger, L"Postponing the creation of local item with id='"
+                                            << CommonUtility::s2ws(localId) << L"' and " << Utility::formatSyncPath(localPath)
+                                            << L" and its descendants because this item, or one of its ancestors, has reused the "
+                                               L"identifier of a deleted item.");
+    }
+
+    _localReusedIds.clear();
+}
+
 void ComputeFSOperationWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
 
@@ -125,15 +141,16 @@ void ComputeFSOperationWorker::execute() {
         LOG_SYNCPAL_INFO(_logger, "FS operation sets generated in: " << elapsedSeconds.count() << "s");
     }
 
+    postponeCreateOperationsOnReusedIds();
+
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
     setDone(exitCode);
 }
 
 // Remove deleted nodes from sync_node table & cache
-ExitCode ComputeFSOperationWorker::updateSyncNode(SyncNodeType syncNodeType) {
+ExitCode ComputeFSOperationWorker::updateSyncNode(const SyncNodeType syncNodeType) {
     NodeSet nodeIdSet;
-    ExitCode exitCode = SyncNodeCache::instance()->syncNodes(syncDbId(), syncNodeType, nodeIdSet);
-    if (exitCode != ExitCode::Ok) {
+    if (auto exitCode = SyncNodeCache::instance()->syncNodes(syncDbId(), syncNodeType, nodeIdSet); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in SyncNodeCache::syncNodes");
         return exitCode;
     }
@@ -143,8 +160,7 @@ ExitCode ComputeFSOperationWorker::updateSyncNode(SyncNodeType syncNodeType) {
         return !ok;
     });
 
-    exitCode = SyncNodeCache::instance()->update(syncDbId(), syncNodeType, nodeIdSet);
-    if (exitCode != ExitCode::Ok) {
+    if (auto exitCode = SyncNodeCache::instance()->update(syncDbId(), syncNodeType, nodeIdSet); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in SyncNodeCache::update");
         return exitCode;
     }
@@ -153,13 +169,12 @@ ExitCode ComputeFSOperationWorker::updateSyncNode(SyncNodeType syncNodeType) {
 }
 
 ExitCode ComputeFSOperationWorker::updateSyncNode() {
-    for (int syncNodeTypeIdx = toInt(SyncNodeType::WhiteList); syncNodeTypeIdx <= toInt(SyncNodeType::UndecidedList);
+    for (auto syncNodeTypeIdx = toInt(SyncNodeType::WhiteList); syncNodeTypeIdx <= toInt(SyncNodeType::UndecidedList);
          syncNodeTypeIdx++) {
-        auto syncNodeType = static_cast<SyncNodeType>(syncNodeTypeIdx);
+        const auto syncNodeType = static_cast<SyncNodeType>(syncNodeTypeIdx);
 
-        ExitCode exitCode = updateSyncNode(syncNodeType);
-        if (exitCode != ExitCode::Ok) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in SyncPal::updateSyncNode for syncNodeType=" << toInt(syncNodeType));
+        if (auto exitCode = updateSyncNode(syncNodeType); exitCode != ExitCode::Ok) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in SyncPal::updateSyncNode for syncNodeType=" << syncNodeType);
             return exitCode;
         }
     }
@@ -266,12 +281,8 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
             }
         }
 
-        if (checkTemplate) {
-            if (ExclusionTemplateCache::instance()->isExcluded(dbPath)) {
-                // The item is excluded
-                return ExitCode::Ok;
-            }
-        }
+        // Exits if the item is excluded.
+        if (checkTemplate && ExclusionTemplateCache::instance()->isExcluded(dbPath)) return ExitCode::Ok;
 
         // Delete operation
         const auto fsOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(),
@@ -279,6 +290,8 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
                                                         dbModificationTime, dbNode.size(), dbPath);
         opSet->insertOp(fsOp);
         logOperationGeneration(snapshot->side(), fsOp);
+
+        if (nodeIdReused) (void) _localReusedIds.insert(nodeId);
 
         if (dbNode.type() == NodeType::Directory && !addFolderToDelete(dbPath)) {
             LOGW_SYNCPAL_WARN(_logger,
@@ -529,8 +542,8 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const N
             }
 
             // Create operation
-            FSOpPtr fsOp = std::make_shared<FSOperation>(OperationType::Create, nodeId, type, snapshot->createdAt(nodeId),
-                                                         snapshot->lastModified(nodeId), snapshotSize, snapshotPath);
+            auto fsOp = std::make_shared<FSOperation>(OperationType::Create, nodeId, type, snapshot->createdAt(nodeId),
+                                                      snapshot->lastModified(nodeId), snapshotSize, snapshotPath);
             opSet->insertOp(fsOp);
             logOperationGeneration(snapshot->side(), fsOp);
         }
@@ -845,7 +858,7 @@ void ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const D
         LOGW_SYNCPAL_DEBUG(_logger, L"Creation date (old: "
                                             << dbNode.created().value() << L" / new: " << snapshot->createdAt(localNodeId)
                                             << L") and name (old: " << Utility::formatSyncName(dbNode.nameLocal()) << L" / new: "
-                                            << Utility::formatSyncName(snapshot->name(localNodeId)) << L") changed for"
+                                            << Utility::formatSyncName(snapshot->name(localNodeId)) << L") changed for "
                                             << CommonUtility::s2ws(localNodeId) << L". Node is reused.");
         return;
     }
@@ -935,9 +948,16 @@ void ComputeFSOperationWorker::deleteChildOpRecursively(const std::shared_ptr<co
         if (remoteSnapshot->type(childId) == NodeType::Directory) {
             deleteChildOpRecursively(remoteSnapshot, childId, tmpTooBigList);
         }
-        _syncPal->_remoteOperationSet->removeOp(remoteNodeId, OperationType::Create);
+        (void) _syncPal->_remoteOperationSet->removeOp(remoteNodeId, OperationType::Create);
         tmpTooBigList.erase(childId);
     }
+}
+
+void ComputeFSOperationWorker::deleteLocalDescendantCreateOps(const NodeId &localNodeId) {
+    const auto localSnapshot = _syncPal->snapshot(ReplicaSide::Local);
+    const auto descendantIds = localSnapshot->getDescendantIds(localNodeId);
+
+    for (const auto &descendantId: descendantIds) _syncPal->removeLocalOperation(descendantId, OperationType::Create);
 }
 
 void ComputeFSOperationWorker::updateUnsyncedList() {

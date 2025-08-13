@@ -91,6 +91,9 @@ void TestComputeFSOperationWorker::setUp() {
     /// Insert node "AC" in blacklist
     SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {"r_ac"});
 
+    /// Insert node "AA" in whitelist
+    SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::WhiteList, {"r_aa"});
+
     // Insert items to excluded templates in DB
     std::vector<ExclusionTemplate> templateVec = {ExclusionTemplate("*.lnk", true)};
     ExclusionTemplateCache::instance()->update(true, templateVec);
@@ -123,11 +126,11 @@ void TestComputeFSOperationWorker::testNoOps() {
 
 void TestComputeFSOperationWorker::testDeletionOfNestedFolders() {
     // Delete operations
-    _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_aa"); // Folder "AA" is contained in folder "A".
-    _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_ab"); // Folder "AB" is contained in folder "A".
-    _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem(
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_aa"); // Folder "AA" is contained in folder "A".
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_ab"); // Folder "AB" is contained in folder "A".
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem(
             "l_ac"); // Folder "AC" is contained in folder "A" but is blacklisted.
-    _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_a");
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_a");
 
     _syncPal->copySnapshots();
     _syncPal->computeFSOperationsWorker()->execute();
@@ -147,7 +150,7 @@ void TestComputeFSOperationWorker::testAccessDenied() {
         // BB (child of B) is deleted
         // B access is denied
         // Causes an Access Denied error in checkIfPathExists
-        _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_bb");
+        (void) _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_bb");
 
         SyncPath bNodePath = "B";
         std::error_code ec;
@@ -274,23 +277,23 @@ void TestComputeFSOperationWorker::testMultipleOps() {
     // Edit operation
     _syncPal->_localFSObserverWorker->_liveSnapshot.setLastModified("l_aa", testhelpers::defaultTime + 60);
     // Move operation
-    _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_ab");
-    _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(SnapshotItem(
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_ab");
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(SnapshotItem(
             "l_ab", "l_b", Str("AB"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, false, true, true));
 
     // Rename operation
     _syncPal->_localFSObserverWorker->_liveSnapshot.setName("l_ba", Str("BA-renamed"));
     // Delete operation
-    _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_bb");
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_bb");
 
     // Create operation on a too big directory
-    _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(SnapshotItem("r_af", "r_a", Str("AF_too_big"),
-                                                                            testhelpers::defaultTime, testhelpers::defaultTime,
-                                                                            NodeType::Directory, 0, false, true, true));
-    _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(SnapshotItem("r_afa", "r_af", Str("AFA"), testhelpers::defaultTime,
-                                                                            testhelpers::defaultTime, NodeType::File,
-                                                                            550 * 1024 * 1024, false, true,
-                                                                            true)); // File size: 550MB
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(
+            SnapshotItem("r_af", "r_a", Str("AF_too_big"), testhelpers::defaultTime, testhelpers::defaultTime,
+                         NodeType::Directory, 0, false, true, true));
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(
+            SnapshotItem("r_afa", "r_af", Str("AFA"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                         550 * 1024 * 1024, false, true,
+                         true)); // File size: 550MB
     // Rename operation on a blacklisted directory
     _syncPal->_localFSObserverWorker->_liveSnapshot.setName("r_ac", Str("AC-renamed"));
 
@@ -339,7 +342,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFD() {
     bool constraintError = false;
     _syncPal->syncDb()->insertNode(nodeTest, dbNodeIdTest, constraintError);
 
-    _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(
             SnapshotItem("l_test", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"), testhelpers::defaultTime,
                          testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize, false, true, true));
 
@@ -359,7 +362,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFC() {
     bool constraintError = false;
     _syncPal->syncDb()->insertNode(nodeTest, dbNodeIdTest, constraintError);
 
-    _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(
             SnapshotItem("l_test", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"), testhelpers::defaultTime,
                          testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize, false, true, true));
 
@@ -379,7 +382,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFD() {
     bool constraintError = false;
     _syncPal->syncDb()->insertNode(nodeTest, dbNodeIdTest, constraintError);
 
-    _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(
             SnapshotItem("l_test", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"), testhelpers::defaultTime,
                          testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize, false, true, true));
 
@@ -400,7 +403,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFC() {
     bool constraintError = false;
     _syncPal->syncDb()->insertNode(nodeTest, dbNodeIdTest, constraintError);
 
-    _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(
             SnapshotItem("l_test", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"), testhelpers::defaultTime,
                          testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize, false, true, true));
 
@@ -522,5 +525,67 @@ void TestComputeFSOperationWorker::testIsInUnsyncedList(const bool expectedResul
     CPPUNIT_ASSERT_EQUAL(expectedResult, _syncPal->computeFSOperationsWorker()->isInUnsyncedListParentSearchInSnapshot(
                                                  _syncPal->snapshot(side), nodeId, side));
 }
+
+void TestComputeFSOperationWorker::testUpdateSyncNode() {
+    _syncPal->copySnapshots();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _syncPal->computeFSOperationsWorker()->updateSyncNode());
+
+    NodeSet syncNodes;
+    (void) SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, syncNodes);
+    CPPUNIT_ASSERT(syncNodes.contains("r_ac"));
+    (void) SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::WhiteList, syncNodes);
+    CPPUNIT_ASSERT(syncNodes.contains("r_aa"));
+
+    // No blacklisted item should reside in the remote snapshot.
+    (void) _syncPal->_remoteFSObserverWorker->_liveSnapshot.removeItem("r_ac");
+
+    // Simulate that the whitelisted item "r_aa" was removed from the remote replica.
+    (void) _syncPal->_remoteFSObserverWorker->_liveSnapshot.removeItem("r_aa");
+
+    _syncPal->copySnapshots();
+
+    // Check that SyncDb's 'sync_node' table is updated accordingly.
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _syncPal->computeFSOperationsWorker()->updateSyncNode());
+    (void) SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, syncNodes);
+    // Blacklisted items are removed from the `sync_node` only when they are known to have been deleted from the remote replica.
+    CPPUNIT_ASSERT(syncNodes.contains("r_ac"));
+
+    (void) SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::WhiteList, syncNodes);
+    CPPUNIT_ASSERT(!syncNodes.contains("r_aa"));
+}
+
+#if defined(KD_LINUX)
+void TestComputeFSOperationWorker::testPostponeCreateOperationsOnReusedIds() {
+    // Simulate a Delete operation of the local folder named "A".
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_a");
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_aa"); // Folder "AA" is contained in folder "A".
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_ab"); // Folder "AB" is contained in folder "A".
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem(
+            "l_ac"); // Folder "AC" is contained in folder "A" but is blacklisted.
+
+    // Simulate Create operations for "C" (folder) and "C/CA" (file).
+    const auto &rootLocalId = *_syncPal->syncDb()->rootNode().nodeIdLocal();
+    const auto creationDate = testhelpers::defaultTime + 5;
+    // The newly created folder "C" reuses the identifier "l_a" of the deleted local folder "A".
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(
+            SnapshotItem("l_a", rootLocalId, Str("C"), creationDate, creationDate, NodeType::Directory,
+                         testhelpers::defaultDirSize, false, true, true));
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(
+            SnapshotItem("l_ca", "l_a", Str("CA"), creationDate, creationDate, NodeType::File, testhelpers::defaultFileSize,
+                         false, true, true));
+
+    _syncPal->copySnapshots();
+    _syncPal->computeFSOperationsWorker()->execute();
+
+    CPPUNIT_ASSERT_EQUAL(uint64_t{3},
+                         _syncPal->operationSet(ReplicaSide::Local)
+                                 ->nbOps()); // As the folder "A/AC" is blacklisted, it has no associated DELETE operation.
+    FSOpPtr tmpOp = nullptr;
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_a", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_aa", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_ab", OperationType::Delete, tmpOp));
+    // Create operations have been removed.
+}
+#endif
 
 } // namespace KDC

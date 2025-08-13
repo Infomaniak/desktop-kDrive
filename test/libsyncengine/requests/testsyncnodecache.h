@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2025 Infomaniak Network SA
  *
@@ -16,22 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "testincludes.h"
+#include "db/syncdb.h"
 
-#include "abstracttokennetworkjob.h"
+using namespace CppUnit;
 
 namespace KDC {
 
-class InitFileListWithCursorJob : public AbstractTokenNetworkJob {
+class TestSyncNodeCache : public CppUnit::TestFixture, public TestBase {
+        CPPUNIT_TEST_SUITE(TestSyncNodeCache);
+        CPPUNIT_TEST(testContainsSyncNode);
+        CPPUNIT_TEST(testDeleteSyncNode);
+        CPPUNIT_TEST_SUITE_END();
+
     public:
-        InitFileListWithCursorJob(int driveDbId, const NodeId &dirId);
+        void setUp() override;
+        void tearDown() override;
+
+    protected:
+        void testContainsSyncNode();
+        void testDeleteSyncNode();
 
     private:
-        virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &uri, bool &canceled) override;
-        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
-
-        NodeId _dirId;
+        std::shared_ptr<SyncDb> _testObj;
 };
-
 } // namespace KDC
