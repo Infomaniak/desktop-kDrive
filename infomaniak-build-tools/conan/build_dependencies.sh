@@ -223,7 +223,7 @@ log "Creating package sentry..."
 conan create "$conan_recipes_folder/sentry/all/" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter
 
 log "Creating package Poco..."
-conan create "$conan_recipes_folder/poco/all/" --version=1.13.3 --build=missing $architecture -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter
+conan create "$conan_recipes_folder/poco/all/" --build=missing $architecture -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter
 
 log "Installing dependencies..."
 # Install this packet in the build folder.

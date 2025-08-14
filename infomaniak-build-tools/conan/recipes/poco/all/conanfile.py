@@ -1,19 +1,20 @@
+import os
+from collections import namedtuple
+
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
+from conan.tools.build import check_min_cppstd
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
-from conan.tools.env import VirtualRunEnv
 from conan.tools.files import apply_conandata_patches, copy, export_conandata_patches, get, rm, rmdir
 from conan.tools.microsoft import is_msvc, is_msvc_static_runtime, msvc_runtime_flag
-from conan.tools.build import check_min_cppstd
-from conan.tools.scm import Version
-from collections import namedtuple
-import os
+from conan.tools.scm import Version, Git
 
 required_conan_version = ">=2.1"
 
 
 class PocoConan(ConanFile):
     name = "poco"
+    version = "1.13.3"
     description = (
         "Modern, powerful open source C++ class libraries for building "
         "network- and internet-based applications that run on desktop, server, "
@@ -115,8 +116,7 @@ class PocoConan(ConanFile):
 
         foundation_external_dependencies = self._poco_component_tree["Foundation"].external_dependencies
         self._poco_component_tree["Foundation"] = self._poco_component_tree["Foundation"]._replace(external_dependencies = list(map(lambda x: 'pcre2::pcre2' if x == 'pcre::pcre' else x, foundation_external_dependencies)))
-        if Version(self.version) >= "1.14.0":
-            self._poco_component_tree["Foundation"].external_dependencies.append("utf8proc::utf8proc")
+
 
     def layout(self):
         cmake_layout(self, src_folder="src")
@@ -157,8 +157,8 @@ class PocoConan(ConanFile):
             raise ConanInvalidConfiguration("Conflicting enable_netssl[_win] settings")
 
     def source(self):
-        get(self, **self.conan_data["sources"][self.version], strip_root=True)
-        apply_conandata_patches(self)
+        git = Git(self)
+        git.clone(url="https://github.com/pocoproject/poco.git", target=".", hide_url=False, args=["-b", f"poco-{self.version}-release"])
 
     def generate(self):
         tc = CMakeToolchain(self)
@@ -170,13 +170,6 @@ class PocoConan(ConanFile):
         tc.variables["CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP"] = True
         if is_msvc(self):
             tc.variables["POCO_MT"] = is_msvc_static_runtime(self)
-        if not self.options.enable_apacheconnector:
-            tc.cache_variables["CMAKE_DISABLE_FIND_PACKAGE_APR"] = True
-            tc.cache_variables["CMAKE_DISABLE_FIND_PACKAGE_APRUTIL"] = True
-            tc.cache_variables["CMAKE_DISABLE_FIND_PACKAGE_Apache2"] = True
-        # Disable fork
-        if not self.options.get_safe("enable_fork", True):
-            tc.variables["POCO_NO_FORK_EXEC"] = True
         if self.options.get_safe("with_sql_parser", None) is False:
             tc.variables["POCO_DATA_NO_SQL_PARSER"] = True
         # Disable automatic linking on MSVC
@@ -193,15 +186,12 @@ class PocoConan(ConanFile):
         deps.set_property("expat", "cmake_target_name", "EXPAT::EXPAT")
         deps.set_property("expat", "cmake_find_mode", "config")
         deps.set_property("pcre2::pcre2-8", "cmake_target_name", "Pcre2::Pcre2")
-        deps.set_property("utf8proc", "cmake_target_name", "Utf8Proc::Utf8Proc")
         deps.generate()
 
     def build(self):
         cmake = CMake(self)
         cmake.configure(variables={
-            "OPENSSL_ROOT_DIR": self.dependencies["openssl"].package_folder,
-            "OPENSSL_FOUND": "TRUE", # Fix FindOpenSSL.cmake
-            "POCO_ENABLE_CPP20": True
+            "OPENSSL_FOUND": "TRUE" # Fix FindOpenSSL.cmake
         })
         cmake.build()
 
