@@ -20,13 +20,23 @@
 
 program_name="$(basename "$0")"
 
+function get_host_arch() {
+    case "$(uname -m)" in
+    x86_64) architecture="amd64" ;;
+    arm64)  architecture="arm64" ;;
+    *) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
+    esac
+
+    echo $architecture
+}
+
 function display_help {
   echo "$program_name [-h] [-d architecture]"
   echo "  Build the Linux release AppImage for desktop-kDrive."
   echo "where:"
   echo "-h  Show this help text."
   echo "-a <architecture>" 
-  echo "  Set the target architecture. Either 'arm64' or 'amd64'."
+  echo "  Set the target architecture. Either 'arm64' or 'amd64'. Defaults to host architecture '$(get_host_arch)'."
 }
 
 function get_arch() {
@@ -77,9 +87,14 @@ function build_client_via_cmake() {
 
   cd "$build_folder"
 
+  qt_neon_activation="ON"
+  if [[ "$architecture" == "amd64" ]]; then
+    qt_neon_activation="OFF"
+  fi
+
   cmake -DCMAKE_PREFIX_PATH="$QT_BASE_DIR" \
       -DCMAKE_INSTALL_PREFIX=/usr \
-      -DQT_FEATURE_neon=ON \
+      -DQT_FEATURE_neon="$qt_neon_activation" \
       -DCMAKE_BUILD_TYPE=$build_type \
       -DKDRIVE_THEME_DIR="/src/infomaniak" \
       -DBUILD_UNIT_TESTS=0 \
@@ -165,7 +180,7 @@ function setup_build() {
   export PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 }
 
-architecture=""
+architecture="$(get_host_arch)"
 while :
 do
     case "$1" in
@@ -193,7 +208,7 @@ done
 
 if [[ "$architecture" != "amd64" && "$architecture" != "arm64" ]]; then
     echo "Invalid architecture argument: '$architecture'"
-    echo "Choose either 'arm64' or 'amd64'."
+    echo "Use the default host architecture or choose between 'arm64' and 'amd64'."
     echo
     display_help
     exit 1
@@ -206,6 +221,7 @@ set -e
 setup_build
 
 echo
+
 build_type="RelWithDebInfo"
 conan_dependencies_folder="/build/conan/dependencies"
 echo "Building desktop-kDrive application with type ${build_type} via CMake for architecture ${architecture} ..."
