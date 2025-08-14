@@ -1,7 +1,6 @@
 - [kDrive files](#kdrive-files)
 - [Installation Requirements](#installation-requirements)
     - [Packages](#packages)
-    - [Qt 6.2.3](#qt-623)
     - [Poco](#poco)
     - [CPPUnit](#cppunit)
     - [Sentry](#sentry)
@@ -65,25 +64,6 @@ sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/lib/llvm-18/bin
 ```
 
 Check the version again with `clang --version` to ensure that the version is now 18 or higher.
-
-## Qt 6.2.3
-
-From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4), 
-tick the **Archive** box and then press the `Refresh` button to see earlier `Qt` versions.  
-In QT 6.2.3, select :
-- Desktop gcc 64-bits
-- Qt 5 Compatibility Module
-
-In Qt 6.2.3 Additional Libraries, select :
-- Qt WebEngine
-- Qt Positioning
-- Qt WebChannel
-- Qt WebView
-
-If, following the installation, you cannot load the Qt platform plugin xcb, you can run the following command :
-```bash
-sudo apt install libxcb-cursor0
-```
 
 ## Poco
 
@@ -235,7 +215,6 @@ The project requires additional CMake variables for a correct build. To inject t
    set(KDRIVE_THEME_DIR "$ENV{HOME}/Projects/desktop-kDrive/infomaniak")
    set(BUILD_UNIT_TESTS "ON")      # Set to "OFF" to skip tests
    set(SOCKETAPI_TEAM_IDENTIFIER_PREFIX "864VDCS2QY")
-   set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.7.2/gcc_arm64")
    set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/Projects/CLion-build-debug/bin")
    ```
 
@@ -259,7 +238,7 @@ This profile must not contain a `tools.cmake.cmaketoolchain:user_toolchain` entr
 ./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release] [--output-dir=<output_dir>]
 ```
 
-> **Note:** Currently only **xxHash**, **log4cplus**, **OpenSSL** and **zlib** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** Currently only **xxHash**, **log4cplus**, **Qt**, **OpenSSL** and **zlib** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
 
 ---
 # Build in Debug
@@ -307,9 +286,7 @@ CMake options:
 -DKDRIVE_THEME_DIR=/home/<user>/Projects/desktop-kDrive/infomaniak
 -DCMAKE_INSTALL_PREFIX=/home/<user>/Projects/CLion-build-debug/bin
 -DBUILD_UNIT_TESTS:BOOL=ON
--DCMAKE_PREFIX_PATH:STRING=/home/<user>/Qt/6.7.2/gcc_arm64
 -DSOCKETAPI_TEAM_IDENTIFIER_PREFIX:STRING=864VDCS2QY
--DQT_DEBUG_FIND_PACKAGE=ON
 -DCMAKE_TOOLCHAIN_FILE=/home/<user>/Projects/CLion-build-debug/conan_toolchain.cmake
 ```
 
@@ -324,8 +301,6 @@ In the project build settings, paste the following lines in the Initial Configur
 -GUnix Makefiles
 -DCMAKE_BUILD_TYPE:STRING=Debug
 -DCMAKE_PROJECT_INCLUDE_BEFORE:PATH=%{IDE:ResourcePath}/package-manager/auto-setup.cmake
--DQT_QMAKE_EXECUTABLE:STRING=%{Qt:qmakeExecutable}
--DCMAKE_PREFIX_PATH:STRING=%{Qt:QT_INSTALL_PREFIX}
 -DCMAKE_C_COMPILER:STRING=%{Compiler:Executable:C}
 -DCMAKE_CXX_COMPILER:STRING=%{Compiler:Executable:Cxx}
 -DAPPLICATION_CLIENT_EXECUTABLE=kdrive

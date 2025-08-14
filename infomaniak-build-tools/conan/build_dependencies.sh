@@ -21,13 +21,15 @@
 # It will use conan to install the dependencies.
 
 
-
 # Default values
 build_type="Debug"
 output_dir=""
 use_release_profile=false
 # Preserve original arguments for output_dir resolution
 all_args=("$@")
+
+log(){ echo "[INFO] $*"; }
+error(){ echo "[ERROR] $*" >&2; exit 1; }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -65,22 +67,22 @@ EOF
 done
 
 
-log(){ echo "[INFO] $*"; }
-error(){ echo "[ERROR] $*" >&2; exit 1; }
+
+set -euox pipefail
 
 function get_platform {
-    platform="$(uname | tr '[:upper:]' '[:lower:]')"
-    echo "$platform"
+  platform="$(uname | tr '[:upper:]' '[:lower:]')"
+  echo "$platform"
 }
 
 function get_architecture {
-    platform=$1
-    architecture="" # Left empty for Linux systems.
-    if [[ "$platform" = "darwin" ]]; then
-       architecture="-s:a=arch=armv8|x86_64" # Making universal binary. See https://docs.conan.io/2/reference/tools/cmake/cmaketoolchain.html#conan-tools-cmaketoolchain-universal-binaries
-    fi
+  platform=$1
+  architecture="" # Left empty for Linux systems.
+  if [[ "$platform" = "darwin" ]]; then
+    architecture="-s:a=arch=armv8|x86_64" # Making universal binary. See https://docs.conan.io/2/reference/tools/cmake/cmaketoolchain.html#conan-tools-cmaketoolchain-universal-binaries
+  fi
 
-    echo $architecture
+  echo "$architecture"
 }
 
 function get_arg_value {
@@ -112,22 +114,26 @@ function get_default_output_dir {
 }
 
 output_dir="$(get_arg_value '--output-dir')"
-if [[ -z "$output_dir" ]]; then
-  output_dir="$(get_env_var_value 'KDRIVE_OUTPUT_DIR')"
-  log "Using environment variable 'KDRIVE_OUTPUT_DIR' as conan output_dir : '$KDRIVE_OUTPUT_DIR'" >&2
-fi
-if [[ -z "$output_dir" ]]; then
-  output_dir="$(get_default_output_dir)"
+if [[ -z "${output_dir}" ]]; then
+  env_output_dir="$(get_env_var_value 'KDRIVE_OUTPUT_DIR')"
+  if [[ -n "${env_output_dir}" ]]; then
+    output_dir="${env_output_dir}"
+    log "Using environment variable 'KDRIVE_OUTPUT_DIR' as conan output_dir : '${output_dir}'" >&2
+  else
+    log "No output directory specified. Using default output directory." >&2
+    output_dir="$(get_default_output_dir)"
+  fi
 fi
 
 
 # check if we launched this in the right folder.
 if [ ! -d "infomaniak-build-tools/conan" ]; then
-    error "Please run this script from the root of the repository."
+  error "Please run this script from the root of the repository."
 fi
 
 if ! command -v conan >/dev/null 2>&1; then
-    error "Conan is not installed. Please install it first."
+  log "PATH: $PATH"
+  error "Conan is not installed. Please install it first."
 fi
 
 # Check if a conan profile exists
@@ -193,6 +199,8 @@ log "- Build type: '$build_type'"
 log "- Output directory: '$output_dir'"
 echo
 
+
+
 # Create the conan package for xxHash.
 conan_recipes_folder="$conan_remote_base_folder/recipes"
 log "Creating package xxHash..."
@@ -200,8 +208,16 @@ conan create "$conan_recipes_folder/xxhash/all/" --build=missing $architecture -
 
 if [ "$platform" = "darwin" ]; then
   log "Creating openssl package..."
-  conan create "$conan_recipes_folder/openssl-universal/3.2.4/" --build=missing -s:a=build_type="$build_type" --profile:all="$conan_profile" -r="$local_recipe_remote_name" -r=conancenter
+  conan create "$conan_recipes_folder/openssl-universal/all/" --build=missing -s:a=build_type="$build_type" --profile:all="$conan_profile" -r="$local_recipe_remote_name" -r=conancenter
 fi
+
+qt_version="6.2.3"
+if [[ "$platform" == "linux" ]] && [[ "$(uname -m)" == "aarch64" ]]; then
+  qt_version="6.7.3"
+fi
+
+log "Creating package Qt..."
+conan create "$conan_recipes_folder/qt/all/" --version="$qt_version" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter
 
 log "Installing dependencies..."
 # Install this packet in the build folder.
