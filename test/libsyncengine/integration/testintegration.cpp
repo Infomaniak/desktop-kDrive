@@ -299,6 +299,7 @@ void TestIntegration::testBlacklist() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath / filename));
+    CPPUNIT_ASSERT(Utility::isInTrash(filename));
 
     // Move a file from inside a blacklisted directory to a synchronized directory.
     moveRemoteFile(_driveDbId, fileId, _remoteSyncDir.id());

@@ -114,7 +114,7 @@ struct COMMONSERVER_EXPORT Utility {
 #if defined(KD_MACOS) || defined(KD_LINUX)
         static SyncPath getTrashPath();
 #endif
-        inline bool isInTrash(const SyncPath &path);
+        static bool isInTrash(const SyncPath &path);
 #if defined(KD_MACOS)
         static bool preventSleeping(bool enable);
         static void restartFinderExtension();
