@@ -395,7 +395,6 @@ if(NOT BUILD_KDRIVE_OSX_BUNDLE AND NOT WIN32)
 endif()
 
 if(BUILD_KDRIVE_OSX_BUNDLE)
-    string(TOUPPER "${CMAKE_BUILD_TYPE}" UPPER_BUILD_TYPE)
     # Crashpad_handler
     get_target_property(CRASHPAD_HANDLER_PROGRAM
             sentry_crashpad::crashpad_handler
