@@ -22,6 +22,7 @@ endif()
 
 # utf8proc
 if(UNIX)
+    set(UTF8PROC_INSTALL OFF CACHE BOOL "Disable installation of utf8proc" FORCE) # Disable installation of the libutf8proc.a static library
     add_subdirectory(src/3rdparty/utf8proc)
 endif()
 
@@ -29,6 +30,10 @@ endif()
 add_subdirectory(src/3rdparty/keychain)
 
 #####
+
+# Create an alias for the Qt6::Core target, used by the sentry recipe
+find_package(Qt6 COMPONENTS Core)
+add_library(qt::qt ALIAS Qt6::Core)
 
 if(CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     # Use fallback library types for imported dependencies
@@ -57,7 +62,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 IF (WIN32)
     SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
         "C:/Program Files (x86)/Poco"
-        "C:/Program Files (x86)/Sentry-Native"
         "C:/Program Files (x86)/libzip"
     )
 ENDIF ()
@@ -230,8 +234,6 @@ if(BUILD_UNIT_TESTS)
 endif()
 
 message(STATUS "Configure files")
-message("prefix: ${CMAKE_FIND_LIBRARY_PREFIXES}")
-message("suffix: ${CMAKE_FIND_LIBRARY_SUFFIXES}")
 configure_file(config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 
@@ -247,11 +249,17 @@ if(BUILD_KDRIVE_OSX_BUNDLE)
     # Default Lite Sync app exclude list
     install(FILES litesync-exclude.lst DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Resources/)
 
+    find_package(sentry REQUIRED)
+
     # Crashpad_handler
-    find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
+    get_target_property(CRASHPAD_HANDLER_PROGRAM
+            sentry_crashpad::crashpad_handler
+            IMPORTED_LOCATION_RELEASE
+    )
     message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
     install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/MacOS/)
 elseif(BUILD_CLIENT)
+    find_package(sentry REQUIRED)
     if(WIN32)
         # NSIS
         configure_file(cmake/modules/NSIS.template.nsi.in ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.nsi @ONLY)
@@ -268,12 +276,20 @@ elseif(BUILD_CLIENT)
         install(FILES ${VFS_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # Sentry
-        find_library(SENTRY_SHARED_LIBRARY NAMES sentry PATH_SUFFIXES "bin" NO_CACHE)
+        find_library(SENTRY_SHARED_LIBRARY
+                NAMES sentry
+                PATHS ${CONAN_RUNTIME_LIB_DIRS}
+                NO_DEFAULT_PATH NO_CACHE
+        )
         message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
         install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # Crashpad_handler
-        find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
+        find_program(CRASHPAD_HANDLER_PROGRAM
+                NAMES crashpad_handler
+                PATHS ${CONAN_RUNTIME_LIB_DIRS}
+                NO_DEFAULT_PATH NO_CACHE
+        )
         message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
         install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
     else()
@@ -282,24 +298,23 @@ elseif(BUILD_CLIENT)
             file(COPY sync-exclude-linux.lst DESTINATION ${CMAKE_BINARY_DIR}/bin)
             file(RENAME ${CMAKE_BINARY_DIR}/bin/sync-exclude-linux.lst ${CMAKE_BINARY_DIR}/bin/sync-exclude.lst)
         else()
-            install(FILES sync-exclude-linux.lst DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME} RENAME sync-exclude.lst)
+            install(FILES sync-exclude-linux.lst DESTINATION ${SYSCONFDIR}/usr/bin/ RENAME sync-exclude.lst)
         endif()
 
         # Sentry
         find_library(SENTRY_SHARED_LIBRARY NAMES sentry NO_CACHE)
         message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
-        install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME})
 
         # Crashpad_handler
-        message(STATUS "CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}")
-        if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-            find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
-            message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
-            if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-                file(COPY ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_BINARY_DIR}/bin)
-            else()
-                install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
-            endif()
+        get_target_property(CRASHPAD_HANDLER_PROGRAM
+                sentry_crashpad::crashpad_handler
+                IMPORTED_LOCATION_RELEASE
+        )
+        message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
+        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+            file(COPY ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+        else()
+            install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
         endif()
     endif()
 endif()
@@ -311,6 +326,7 @@ if(UNIX AND NOT APPLE)
         get_library_dirs("log4cplus" "log4cplus")
         get_library_dirs("OpenSSL" "openssl")
         get_library_dirs("xxHash" "xxhash")
+        get_library_dirs("sentry" "sentry")
         file(COPY
             # log4cplus
             "${_log4cplus_LIB_DIRS}/liblog4cplus.so"
@@ -324,7 +340,12 @@ if(UNIX AND NOT APPLE)
             "${_OpenSSL_LIB_DIRS}/libcrypto.so.3"
             "${_OpenSSL_LIB_DIRS}/libssl.so"
             "${_OpenSSL_LIB_DIRS}/libssl.so.3"
+            # sentry
+            "${_sentry_LIB_DIRS}/libsentry.so"
             DESTINATION "${CONAN_DEP_DIR}"
             FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
     endif()
 endif()
+
+message("prefix: ${CMAKE_FIND_LIBRARY_PREFIXES}")
+message("suffix: ${CMAKE_FIND_LIBRARY_SUFFIXES}")

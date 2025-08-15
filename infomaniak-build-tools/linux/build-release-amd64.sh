@@ -181,12 +181,10 @@ package_release() {
   cp -P "$QTDIR/lib/libQt6WaylandClient.so"* "$app_dir/usr/lib"
   cp -P "$QTDIR/lib/libQt6WaylandEglClientHwIntegration.so"* "$app_dir/usr/lib"
 
-  mkdir -p "$app_dir/usr/qml"
-
+  rm "$app_dir/usr/lib/libkeychain.a"
   rm -rf "$app_dir/usr/lib/x86_64-linux-gnu/"
   rm -rf "$app_dir/usr/include/"
 
-  cp "$src_dir/sync-exclude-linux.lst" "$app_dir/usr/bin/sync-exclude.lst"
   cp "$app_dir/usr/share/icons/hicolor/512x512/apps/kdrive-win.png" "$app_dir"
 
   cp "$QTDIR/lib/libQt6SerialPort.so.6" "$app_dir/usr/lib/"

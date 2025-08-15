@@ -54,7 +54,7 @@ class KDriveDesktop(ConanFile):
         :return: None
         """
         # From local recipe, using the qt online installer.
-        if self.settings.os == "Linux" and str(platform.machine().lower()) in [ "arm64", "aarch64" ]: # linux arm64
+        if self.settings.os == "Linux" and str(self.settings.arch).startswith("arm"): # linux arm64
             self.requires("qt/6.7.3")
         else:
             self.requires("qt/6.2.3")
@@ -73,6 +73,8 @@ class KDriveDesktop(ConanFile):
             self.requires("openssl-universal/3.2.4")
         else:
             self.requires("openssl/3.2.4", options={ "shared": True }) # From https://conan.io/center/recipes/openssl
+
+        self.requires(f"sentry/0.7.10")
 
 class OverrideVSRuntimeBlock(VSRuntimeBlock):
     def __init__(self, conanfile, toolchain, name):

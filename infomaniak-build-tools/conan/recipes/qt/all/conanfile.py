@@ -5,7 +5,7 @@ import platform
 
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration, ConanException
-from conan.tools.files import copy, rmdir, mkdir
+from conan.tools.files import copy, rmdir, mkdir, download
 
 
 class QtConan(ConanFile):
@@ -90,6 +90,9 @@ class QtConan(ConanFile):
             f"qt.qt{major}.{compact}.addons.qtwebengine",
             f"qt.qt{major}.{compact}.addons.qtwebview",
         ]
+
+        if self.settings.build_type == "Debug":
+            modules.append(f"qt.qt{major}.{compact}.src") # Add the Qt source files when using debug build type
 
         if self.settings.os == "Windows":
             modules.append(f"qt.qt{major}.{compact}.debug_info") # Qt Debug Information Files for Windows
@@ -247,8 +250,8 @@ class QtConan(ConanFile):
         downloaded_file_name = self._get_distant_name()
         url = f"https://download.qt.io/official_releases/online_installers/{downloaded_file_name}"
         self.output.info(f"Downloading from: {url}")
-        from urllib.request import urlretrieve
-        urlretrieve(url, pjoin(self.source_folder, downloaded_file_name))
+        dst = pjoin(self.source_folder, downloaded_file_name)
+        download(self, url=url, filename=dst)
 
     def build(self):
         self.output.highlight("Launching Qt installer...")
