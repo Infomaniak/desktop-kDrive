@@ -42,7 +42,7 @@ if (-not $conanEntries) {
     Err "No directories in PATH contain '.conan2/p/'."
 }
 
-$PackagePrefixLength = 5 # Conan use a prefix of 5 characters for packages
+$PackagePrefixLength = 5 # Conan uses a prefix of 5 characters for packages
 # Determine package prefix (first up to 5 characters)
 $pkgValue = $Package.Substring(0, [Math]::Min($PackagePrefixLength, $Package.Length))
 $matchingDirs = $conanEntries | Where-Object {
