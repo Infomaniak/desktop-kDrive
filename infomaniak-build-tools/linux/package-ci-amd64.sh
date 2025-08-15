@@ -18,17 +18,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-app_dir="$PWD/build-linux/app"
 base_dir="$PWD"
+build_dir="$base_dir/build-linux"
+app_dir="$build_dir/app"
 
 cd "$app_dir"
 
-export QT_BASE_DIR="$HOME/Qt/6.2.3/gcc_64"
-export QTDIR="$QT_BASE_DIR"
-export QMAKE="$QT_BASE_DIR/bin/qmake"
-export PATH="$QT_BASE_DIR/bin:$QT_BASE_DIR/libexec:$PATH"
-export LD_LIBRARY_PATH="$QT_BASE_DIR/lib:$app_dir/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
-export PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
+source "$base_dir/infomaniak-build-tools/conan/common-utils.sh"
+
+QTDIR="$(find_qt_conan_path "$build_dir")"
+export QTDIR
+export QMAKE="$QTDIR/bin/qmake"
+export PATH="$QTDIR/bin:$QTDIR/libexec:$PATH"
+export LD_LIBRARY_PATH="$QTDIR/lib:$app_dir/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
+export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 mkdir -p "$app_dir/usr/plugins"
 
@@ -38,7 +41,7 @@ cp -P -r "$QTDIR/resources" "$app_dir/usr"
 cp -P -r "$QTDIR/translations" "$app_dir/usr"
 
 mv "$app_dir/usr/lib/x86_64-linux-gnu/"* "$app_dir/usr/lib/" || echo "The folder $app_dir/usr/lib/aarch64-linux-gnu/ might not exist." >&2
-cp -P "$PWD/build-linux/build/conan/dependencies/*" "$app_dir/usr/lib"
+cp -P "$build_dir/build/conan/dependencies/*" "$app_dir/usr/lib"
 
 mkdir -p "$app_dir/usr/qml"
 
@@ -48,19 +51,17 @@ rm -rf "$app_dir/usr/include/"
 cp "$base_dir/sync-exclude-linux.lst" "$app_dir/usr/bin/sync-exclude.lst"
 cp "$app_dir/usr/share/icons/hicolor/512x512/apps/kdrive-win.png" "$app_dir"
 
-cp -P /usr/local/lib64/libssl.so* "$app_dir/usr/lib/"
-cp -P /usr/local/lib64/libcrypto.so* "$app_dir/usr/lib/"
 cp -P -r /usr/lib/x86_64-linux-gnu/nss/ "$app_dir/usr/lib/"
-cp "$HOME/Qt/Tools/QtCreator/lib/Qt/lib/libQt6SerialPort.so.6" "$app_dir/usr/lib/"
+cp "$QTDIR/lib/libQt6SerialPort.so.6" "$app_dir/usr/lib/"
 
 "$HOME/desktop-setup/linuxdeploy-x86_64.AppImage" --appdir "$app_dir" -e "$app_dir/usr/bin/kDrive" -i "$app_dir/kdrive-win.png" -d "$app_dir/usr/share/applications/kDrive_client.desktop" --plugin qt --output appimage -v0
 
-version=$(grep "KDRIVE_VERSION_FULL" "$base_dir/build-linux/build/version.h" | awk '{print $3}')
+version=$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')
 app_name="kDrive-$version-amd64.AppImage"
 
 mv kDrive*.AppImage "../$app_name"
 
-cd "$base_dir/build-linux"
+cd "$build_dir"
 
 if [ -z ${KDRIVE_TOKEN+x} ]; then
 	echo "No kDrive token found, AppImage will not be uploaded."

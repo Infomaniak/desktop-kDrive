@@ -23,7 +23,6 @@ set -x
 
 export TEAM_IDENTIFIER="864VDCS2QY"
 export SIGN_IDENTITY="Developer ID Application: Infomaniak Network SA (864VDCS2QY)"
-export QTDIR="$HOME/Qt/6.2.3/macos"
 
 # Uncomment to build for testing
 # export KDRIVE_DEBUG=1
@@ -33,9 +32,6 @@ export CODE_SIGN_INJECT_BASE_ENTITLEMENTS="NO"
 src_dir="${1-$PWD}"
 app_name="kDrive"
 
-# define Qt6 directory
-QTDIR="${QTDIR-$HOME/Qt/6.2.3/macos}"
-export PATH=/usr/local/bin:"$QTDIR/bin:$PATH"
 
 # Set Infomaniak Theme
 kdrive_dir="$src_dir/infomaniak"
@@ -76,12 +72,18 @@ build_type="Release"
 bash infomaniak-build-tools/conan/build_dependencies.sh "$build_type" "--output-dir=$conan_folder"
 
 conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
-
 if [ ! -f "$conan_toolchain_file" ]; then
   echo "Conan toolchain file not found: $conan_toolchain_file"
   exit 1
 fi
+conan_build_folder="$(dirname "$conan_toolchain_file")"
 
+source "./infomaniak-build-tools/conan/common-utils.sh"
+QTDIR="$(find_qt_conan_path "$conan_build_folder")"
+export QTDIR
+export PATH=/usr/local/bin:"$QTDIR/bin:$PATH"
+
+source "$conan_build_folder/conanrun.sh" # Load conan build script
 # Configure
 pushd "$build_dir"
 
