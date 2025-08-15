@@ -216,7 +216,7 @@ if [[ "$platform" == "linux" ]] && [[ "$(uname -m)" == "aarch64" ]]; then
   qt_version="6.7.3"
 fi
 
-log "Creating package Qt..."
+log "Creating Qt package..."
 conan create "$conan_recipes_folder/qt/all/" --version="$qt_version" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter
 
 
