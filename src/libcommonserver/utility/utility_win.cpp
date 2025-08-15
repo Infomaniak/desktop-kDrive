@@ -744,4 +744,7 @@ bool Utility::isInTrash(const SyncPath &path) {
     return found;
 }
 
+
+void Utility::removeFromTrash(const KDC::SyncPath &) {}
+
 } // namespace KDC

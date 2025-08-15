@@ -667,6 +667,10 @@ bool Utility::isInTrash(const SyncPath &path) {
 
     return true;
 }
+
+void Utility::removeFromTrash(const KDC::SyncPath &path) {
+    (void) std::filesystem::remove(getTrashPath() / path);
+}
 #endif
 
 } // namespace KDC
