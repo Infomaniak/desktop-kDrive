@@ -63,5 +63,5 @@ $deactivateRunScript = Get-ChildItem -Path $BuildDir -Recurse -Filter 'deactivat
 if ($deactivateRunScript) {
     & $deactivateRunScript *> $null
 } else {
-    Log "No deactivate_conanrun.ps1 found; skipping deactivation."
+    Log "No 'deactivate_conanrun.ps1' found; skipping deactivation."
 }
