@@ -47,7 +47,6 @@ set(client_SRCS
     clientgui.h clientgui.cpp
     debugreporter.h debugreporter.cpp
     guiutility.h guiutility.cpp
-    systray.h systray.cpp
     wizard/webview.h wizard/webview.cpp
 
     # KDrive V3
@@ -143,9 +142,6 @@ set(client_SRCS
 if( APPLE )
     list(APPEND client_SRCS cocoainitializer_mac.mm ../libcommongui/utility/utility_mac.cpp)
     set_property(SOURCE cocoainitializer_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
-
-    list(APPEND client_SRCS systray.mm)
-    set_property(SOURCE systray.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
 elseif( UNIX )
     list(APPEND client_SRCS ../libcommongui/utility/utility_linux.cpp)

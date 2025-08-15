@@ -56,8 +56,7 @@ QIcon Theme::applicationIcon() const {
     return themeIcon(QStringLiteral(APPLICATION_ICON_NAME "-icon"));
 }
 
-QIcon Theme::themeIcon(const QString &name, bool sysTray, bool sysTrayMenuVisible) const {
-    Q_UNUSED(sysTrayMenuVisible)
+QIcon Theme::themeIcon(const QString &name) const {
     QString osType;
     QString flavor;
 
@@ -67,20 +66,18 @@ QIcon Theme::themeIcon(const QString &name, bool sysTray, bool sysTrayMenuVisibl
         osType = "windows";
     }
 
-    if (sysTray) {
-        if (_mono) {
-            if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS &&
-                QOperatingSystemVersion::current() > QOperatingSystemVersion::MacOSCatalina) {
-                flavor = QString("black");
-            } else {
-                flavor = CommonUtility::hasDarkSystray() ? QString("white") : QString("black");
-            }
+
+    if (_mono) {
+        if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS &&
+            QOperatingSystemVersion::current() > QOperatingSystemVersion::MacOSCatalina) {
+            flavor = QString("black");
         } else {
-            flavor = QString("colored");
+            flavor = CommonUtility::hasDarkSystray() ? QString("white") : QString("black");
         }
     } else {
         flavor = QString("colored");
     }
+
 
     QString key = name + "," + flavor;
     QIcon &cached = _iconCache[key];
@@ -98,7 +95,7 @@ QIcon Theme::themeIcon(const QString &name, bool sysTray, bool sysTrayMenuVisibl
 #ifdef Q_OS_MAC
     // This defines the icon as a template and enables automatic macOS color handling
     // See https://bugreports.qt.io/browse/QTBUG-42109
-    cached.setIsMask(_mono && sysTray);
+    cached.setIsMask(_mono);
 #endif
 
     return cached;
@@ -175,7 +172,7 @@ QString Theme::debugReporterUrl() const {
     return DEBUGREPORTER_SUBMIT_URL;
 }
 
-QIcon Theme::syncStateIcon(KDC::SyncStatus status, bool sysTray, bool sysTrayMenuVisible, bool alert) const {
+QIcon Theme::syncStateIcon(const SyncStatus status, const bool alert /*= false*/) const {
     // FIXME: Mind the size!
     QString statusIcon;
 
@@ -204,18 +201,13 @@ QIcon Theme::syncStateIcon(KDC::SyncStatus status, bool sysTray, bool sysTrayMen
             statusIcon = QLatin1String("state-error");
     }
 
-    QIcon icon = themeIcon(statusIcon, sysTray, sysTrayMenuVisible);
+    QIcon icon = themeIcon(statusIcon);
 
-    if (sysTray && alert) {
+    if (alert) {
         updateIconWithText(icon, QString("!"));
     }
 
     return icon;
-}
-
-
-QIcon Theme::folderOfflineIcon(bool sysTray, bool sysTrayMenuVisible) const {
-    return themeIcon(QLatin1String("state-pause"), sysTray, sysTrayMenuVisible);
 }
 
 bool Theme::linkSharing() const {

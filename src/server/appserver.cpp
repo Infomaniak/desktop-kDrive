@@ -63,6 +63,7 @@
 #include <QFileInfo>
 #include <QFileOpenEvent>
 #include <QIcon>
+#include <QMenu>
 #include <QMessageBox>
 #include <QProcess>
 #include <QStandardPaths>
@@ -122,19 +123,32 @@ static void displayHelpText(const QString &t) {
 AppServer::AppServer(int &argc, char **argv) :
     SharedTools::QtSingleApplication(QString::fromStdString(Theme::instance()->appName()), argc, argv) {
     _arguments = arguments();
-    _theme = Theme::instance();
 }
 
 AppServer::~AppServer() {
     LOG_DEBUG(_logger, "~AppServer");
 }
 
+namespace {
+bool osRequireMenuTray() {
+#ifdef Q_OS_LINUX
+    QString type;
+    if (QString version; KDC::GuiUtility::getLinuxDesktopType(type, version)) {
+        if (type.contains("GNOME") && version.toDouble() >= 40) {
+            return true;
+        }
+    }
+#endif
+    return false;
+}
+} // namespace
+
 void AppServer::init() {
     _startedAt.start();
     setOrganizationDomain(QLatin1String(APPLICATION_REV_DOMAIN));
-    setApplicationName(QString::fromStdString(_theme->appName()));
-    setWindowIcon(_theme->applicationIcon());
-    setApplicationVersion(QString::fromStdString(_theme->version()));
+    setApplicationName(QString::fromStdString(Theme::instance()->appName()));
+    setWindowIcon(Theme::instance()->applicationIcon());
+    setApplicationVersion(QString::fromStdString(Theme::instance()->version()));
 
     // Setup logging with default parameters
     if (!initLogging()) {
@@ -157,6 +171,9 @@ void AppServer::init() {
 
     // Setup single application: show the Settings or Synthesis window if the application is running.
     connect(this, &QtSingleApplication::messageReceived, this, &AppServer::onMessageReceivedFromAnotherProcess);
+
+    // Init system tray icon
+    resetSystray();
 
     // Remove the files that keep a record of former crash or kill events
     SignalType signalType = SignalType::None;
@@ -196,7 +213,7 @@ void AppServer::init() {
     LOGW_INFO(_logger, L"Old config exists : " << Path2WStr(pre334ConfigFilePath) << L" => " << oldConfigExists);
 
     // Init ParmsDb instance
-    if (!initParmsDB(parmsDbPath, _theme->version())) {
+    if (!initParmsDB(parmsDbPath, Theme::instance()->version())) {
         LOG_WARN(_logger, "Error in AppServer::initParmsDB");
         throw std::runtime_error("Unable to initialize ParmsDb.");
     }
@@ -298,11 +315,11 @@ void AppServer::init() {
 #if defined(KD_LINUX)
     // On Linux, override the auto startup file on every app launch to make sure it points to the correct executable.
     if (ParametersCache::instance()->parameters().autoStart()) {
-        (void) Utility::setLaunchOnStartup(_theme->appName(), _theme->appName(), true);
+        (void) Utility::setLaunchOnStartup(Theme::instance()->appName(), Theme::instance()->appName(), true);
     }
 #else
-    if (ParametersCache::instance()->parameters().autoStart() && !Utility::hasLaunchOnStartup(_theme->appName())) {
-        (void) Utility::setLaunchOnStartup(_theme->appName(), _theme->appClientName(), true);
+    if (ParametersCache::instance()->parameters().autoStart() && !Utility::hasLaunchOnStartup(Theme::instance()->appName())) {
+        (void) Utility::setLaunchOnStartup(Theme::instance()->appName(), Theme::instance()->appClientName(), true);
     }
 #endif
 #endif
@@ -401,6 +418,49 @@ void AppServer::init() {
     // Restart paused syncs
     connect(&_restartSyncsTimer, &QTimer::timeout, this, &AppServer::onRestartSyncs);
     _restartSyncsTimer.start(RESTART_SYNCS_INTERVAL);
+}
+
+void AppServer::resetSystray(const bool currentVersionLocked /*= false*/) {
+    (void) currentVersionLocked;
+    _tray.reset(new Systray());
+    _tray->setParent(this);
+
+    _tray->setIcon(Theme::instance()->syncStateIcon(SyncStatus::Starting));
+
+    if (_tray->geometry().width() == 0) {
+        _tray->setContextMenu(new QMenu());
+#ifdef Q_OS_LINUX
+        if (osRequireMenuTray()) {
+            _actionSynthesis =
+                    _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/information.svg"), QString());
+            if (!currentVersionLocked) {
+                _actionPreferences =
+                        _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/parameters.svg"), QString());
+            }
+            _tray->contextMenu()->addSeparator();
+            _actionQuit = _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/error-sync.svg"), QString());
+        }
+
+#endif
+    }
+
+    if (!_tray->contextMenu() || _tray->contextMenu()->isEmpty()) {
+        (void) connect(_tray.get(), &QSystemTrayIcon::activated, this, [=]() { showSynthesis(); });
+    }
+#ifdef Q_OS_LINUX
+    else {
+        // connect(_tray->contextMenu(), &QMenu::aboutToShow, this, &ClientGui::retranslateUi); // TODO: to be checked if still
+        // needed
+
+        if (_actionSynthesis) connect(_actionSynthesis, &QAction::triggered, this, [=]() { showSynthesis(); });
+        if (_actionQuit) connect(_actionQuit, &QAction::triggered, this, [=]() { sendQuit(); });
+        if (_actionPreferences && !currentVersionLocked)
+            connect(_actionPreferences, &QAction::triggered, this, [=]() {
+                showSettings(); };
+    }
+#endif
+
+    _tray->show();
 }
 
 void AppServer::cleanup() {
@@ -2051,6 +2111,18 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
             break;
         }
+        case RequestNum::UTILITY_SYSTRAY_UPDATE: {
+            SyncStatus syncStatus = SyncStatus::Undefined;
+            QString tooltip;
+            bool alert = false;
+            ArgsWriter(params).write(syncStatus, tooltip, alert);
+
+            _tray->setIcon(Theme::instance()->syncStateIcon(syncStatus, alert));
+            _tray->setToolTip(tooltip);
+
+            resultStream << ExitCode::Ok;
+            break;
+        }
         case RequestNum::SYNC_SETSUPPORTSVIRTUALFILES: {
             int syncDbId = 0;
             bool value = false;
@@ -2936,7 +3008,7 @@ bool AppServer::initLogging() noexcept {
 void AppServer::logUsefulInformation() const {
     LOG_INFO(_logger, "***** APP INFO *****");
 
-    LOG_INFO(_logger, "version: " << _theme->version());
+    LOG_INFO(_logger, "version: " << Theme::instance()->version());
     LOG_INFO(_logger, "os: " << CommonUtility::platformName().toStdString());
     LOG_INFO(_logger, "kernel version : " << QSysInfo::kernelVersion().toStdString());
     LOG_INFO(_logger, "kernel type : " << QSysInfo::kernelType().toStdString());
@@ -3193,8 +3265,8 @@ void AppServer::parseOptions(const QStringList &options) {
 void AppServer::showHelp() {
     QString helpText;
     QTextStream stream(&helpText);
-    stream << QString::fromStdString(_theme->appName()) << QLatin1String(" version ") << QString::fromStdString(_theme->version())
-           << Qt::endl;
+    stream << QString::fromStdString(Theme::instance()->appName()) << QLatin1String(" version ")
+           << QString::fromStdString(Theme::instance()->version()) << Qt::endl;
 
     stream << QLatin1String("File synchronisation desktop utility.") << Qt::endl << Qt::endl << QLatin1String(optionsC);
 
@@ -3216,7 +3288,7 @@ void AppServer::clearSyncNodes() {
         throw std::runtime_error("Unable to get ParmsDb path.");
     }
 
-    if (!ParmsDb::instance(parmsDbPath, _theme->version())) {
+    if (!ParmsDb::instance(parmsDbPath, Theme::instance()->version())) {
         LOG_WARN(_logger, "Error in ParmsDb::instance");
         throw std::runtime_error("Unable to initialize ParmsDb.");
     }
@@ -3231,7 +3303,7 @@ void AppServer::clearSyncNodes() {
     // Clear node tables
     for (const auto &sync: syncList) {
         SyncPath dbPath = sync.dbPath();
-        auto syncDbPtr = std::make_shared<SyncDb>(dbPath.string(), _theme->version());
+        auto syncDbPtr = std::make_shared<SyncDb>(dbPath.string(), Theme::instance()->version());
         syncDbPtr->clearNodes();
     }
 }
@@ -3255,7 +3327,12 @@ void AppServer::showSettings() {
 
 void AppServer::showSynthesis() {
     int id = 0;
-    CommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_SYNTHESIS, QByteArray(), id);
+
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << _tray->geometry();
+
+    (void) CommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_SYNTHESIS, params, id);
 }
 
 void AppServer::clearKeychainKeys() {
@@ -3266,7 +3343,7 @@ void AppServer::clearKeychainKeys() {
         throw std::runtime_error("Unable to get ParmsDb path.");
     }
 
-    if (!ParmsDb::instance(parmsDbPath, _theme->version())) {
+    if (!ParmsDb::instance(parmsDbPath, Theme::instance()->version())) {
         LOG_WARN(_logger, "Error in ParmsDb::instance");
         throw std::runtime_error("Unable to initialize ParmsDb.");
     }
@@ -3459,7 +3536,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, cons
 
         // Create SyncPal
         try {
-            _syncPalMap[sync.dbId()] = std::make_shared<SyncPal>(vfsPtr, sync.dbId(), _theme->version());
+            _syncPalMap[sync.dbId()] = std::make_shared<SyncPal>(vfsPtr, sync.dbId(), Theme::instance()->version());
         } catch (std::exception const &) {
             LOG_WARN(_logger, "Error in SyncPal::SyncPal for syncDbId=" << sync.dbId());
             return {ExitCode::DbError, ExitCause::Unknown};

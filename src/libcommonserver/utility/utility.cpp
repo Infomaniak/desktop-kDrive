@@ -547,7 +547,7 @@ bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isM
     return true;
 }
 
-bool Utility::getLinuxDesktopType(std::string &currentDesktop) {
+bool Utility::getLinuxDesktopType(std::string &currentDesktop) { // TODO: to be moved in libcommon
     const std::string xdgCurrentDesktop = CommonUtility::envVarValue("XDG_CURRENT_DESKTOP");
     if (xdgCurrentDesktop.empty()) {
         return false;

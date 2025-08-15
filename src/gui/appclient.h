@@ -50,7 +50,7 @@ class AppClient : public SharedTools::QtSingleApplication {
         bool debugCrash() const;
 
         void showParametersDialog();
-        void showSynthesisDialog();
+        void showSynthesisDialog(const QRect &geometry);
         void updateSystrayIcon();
         void askUserToLoginAgain(int userDbId, QString userEmail, bool invalidTokenError);
 

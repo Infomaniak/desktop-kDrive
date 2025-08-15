@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "systray.h"
 #include "synthesispopover.h"
 #include "parametersdialog.h"
 #include "adddrivewizard.h"
@@ -53,7 +52,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void init();
         bool isConnected();
         void hideAndShowTray();
-        void showSynthesisDialog();
+        void showSynthesisDialog(const QRect &geometry);
         int driveErrorsCount(int driveDbId, bool unresolved) const;
         inline int generalErrorsCount() const { return _generalErrorsCounter; }
         inline int hasGeneralErrors() const { return _generalErrorsCounter > 0; }
@@ -119,7 +118,6 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void onAppVersionLocked(bool currentVersionLocked);
 
     private:
-        QScopedPointer<Systray> _tray;
         QScopedPointer<SynthesisPopover> _synthesisPopover;
         QScopedPointer<ParametersDialog> _parametersDialog;
         std::unique_ptr<AddDriveWizard> _addDriveWizard;
@@ -143,11 +141,6 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         QTimer _refreshErrorListTimer;
         std::map<int, QList<ErrorInfo>> _errorInfoMap;
 
-#ifdef Q_OS_LINUX
-        QAction *_actionSynthesis = nullptr;
-        QAction *_actionPreferences = nullptr;
-        QAction *_actionQuit = nullptr;
-#endif
         /* On some Linux distributions, the tray icon cannot open the synthesis dialog,
          * it is necessary to use a menu to open the synthesis dialog.
          */
@@ -169,10 +162,8 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void onShowTrayMessage(const QString &title, const QString &msg);
         void onUpdateSystray();
         void onShowOptionalTrayMessage(const QString &title, const QString &msg);
-        void onActionSynthesisTriggered(bool checked = false);
+        // void onActionSynthesisTriggered(bool checked = false);
         void onActionPreferencesTriggered(bool checked = false);
-        void onTrayClicked(QSystemTrayIcon::ActivationReason reason);
-        // void onRemoveDestroyedShareDialogs();
         void onDisableNotifications(NotificationsDisabled type, QDateTime value);
         void onApplyStyle();
         void onSetStyle(bool darkTheme);
