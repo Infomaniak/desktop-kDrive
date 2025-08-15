@@ -111,6 +111,11 @@ struct COMMONSERVER_EXPORT Utility {
 
 
         static bool moveItemToTrash(const SyncPath &itemPath);
+#if defined(KD_MACOS) || defined(KD_LINUX)
+        static SyncPath getTrashPath();
+#endif
+        static bool isInTrash(const SyncPath &path);
+        static void removeFromTrash(const SyncPath &path);
 #if defined(KD_MACOS)
         static bool preventSleeping(bool enable);
         static void restartFinderExtension();

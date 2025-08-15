@@ -37,28 +37,28 @@
 
 namespace KDC {
 
-bool Utility::moveItemToTrash(const SyncPath &itemPath) {
-    std::string xdgDataHome, homePath, trashPath;
-
-    const char *xdgDataHomeEnv = std::getenv("XDG_DATA_HOME");
+SyncPath Utility::getTrashPath() {
     const char *homePathEnv = std::getenv("HOME");
-
-    if (xdgDataHomeEnv) {
-        xdgDataHome = std::string(xdgDataHomeEnv);
-    }
     if (!homePathEnv) {
         LOG_WARN(Log::instance()->getLogger(), "Path to HOME not found");
-        return false;
+        return {};
     }
 
-    homePath = std::string(homePathEnv);
+    std::string trashPath;
+    const char *xdgDataHomeEnv = std::getenv("XDG_DATA_HOME");
 
-    if (xdgDataHome.empty()) {
-        trashPath = homePath + "/.local/share/Trash/files/";
-    } else {
+    if (xdgDataHomeEnv) {
+        auto xdgDataHome = std::string(xdgDataHomeEnv);
         trashPath = xdgDataHome + "/Trash/files/";
+    } else {
+        auto homePath = std::string(homePathEnv);
+        trashPath = homePath + "/.local/share/Trash/files/";
     }
 
+    return trashPath;
+}
+
+bool Utility::moveItemToTrash(const SyncPath &itemPath) {
     std::string desktopType;
     if (!Utility::getLinuxDesktopType(desktopType)) {
         desktopType = "GNOME";
@@ -74,28 +74,26 @@ bool Utility::moveItemToTrash(const SyncPath &itemPath) {
         return true;
     }
 
-    std::filesystem::path trash_path(trashPath);
+    const SyncPath trashPath = Utility::getTrashPath();
 
     // Check if the trash/files & trash/info path exists and create it if needed
-    std::error_code ec;
-    if (!std::filesystem::exists(trash_path, ec)) {
-        if (ec.value() != 0) {
-            LOG_WARN(Log::instance()->getLogger(),
-                     "Error in std::filesystem::exists - err=" << ec.message() << " (" << std::to_string(ec.value()) << ")");
+    if (std::error_code ec; !std::filesystem::exists(trashPath, ec)) {
+        if (ec) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::exists - " << Utility::formatStdError(ec));
             return false;
         }
 
-        if (!std::filesystem::create_directories(trash_path)) {
-            LOG_WARN(Log::instance()->getLogger(), "Failed to create directory - path=" << trash_path.string());
+        if (!std::filesystem::create_directories(trashPath)) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Failed to create directory - " << Utility::formatSyncPath(trashPath));
             return false;
         }
     }
 
-    int result = system(command.c_str());
-    if (result != 0) {
+    if (const auto result = system(command.c_str()); result) {
         LOG_WARN(Log::instance()->getLogger(), "Failed to move item to trash - err=" << std::to_string(result));
         return false;
     }
+
     return true;
 }
 
