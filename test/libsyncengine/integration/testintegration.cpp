@@ -160,6 +160,7 @@ void TestIntegration::testAll() {
     testEncoding();
     testParentRename();
     testNegativeModificationTime();
+    testDeleteAndRecreateBranch();
 }
 
 void TestIntegration::inconsistencyTests() {
@@ -560,6 +561,69 @@ void TestIntegration::testNegativeModificationTime() {
     }
 
     logStep("testNegativeModificationTime");
+}
+
+void TestIntegration::testDeleteAndRecreateBranch() {
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    // Setup initial situation
+    // .
+    // └── A(a)
+    //     └── AA(aa)
+    //         └── AAA(aaa)
+    //             └── AAAA(aaaa)
+    _syncPal->pause(); // We need to pause the sync because the back might take some time to notify all the events.
+    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+    NodeId nodeIdA;
+    NodeId nodeIdAA;
+    NodeId nodeIdAAA;
+    NodeId nodeIdAAAA;
+    const SyncPath filename = "AAAA";
+    const auto filepath = _syncPal->localPath() / tmpRemoteDir.name() / filename;
+    {
+        CreateDirJob jobA(nullptr, _driveDbId, tmpRemoteDir.id(), Str("A"));
+        (void) jobA.runSynchronously();
+        nodeIdA = jobA.nodeId();
+        CreateDirJob jobAA(nullptr, _driveDbId, jobA.nodeId(), Str("AA"));
+        (void) jobAA.runSynchronously();
+        nodeIdAA = jobAA.nodeId();
+        CreateDirJob jobAAA(nullptr, _driveDbId, nodeIdAA, Str("AAA"));
+        (void) jobAAA.runSynchronously();
+        nodeIdAAA = jobAAA.nodeId();
+
+        nodeIdAAAA = duplicateRemoteFile(_driveDbId, _testFileRemoteId, filename);
+        moveRemoteFile(_driveDbId, nodeIdAAAA, nodeIdAAA);
+    }
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+    _syncPal->unpause();
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    _syncPal->pause();
+
+    {
+        // Move test file outside deleted directory
+        moveRemoteFile(_driveDbId, nodeIdAAAA, tmpRemoteDir.id());
+
+        // Delete A/AA
+        deleteRemoteFile(_driveDbId, nodeIdAA);
+
+        // Create A/AA/AAA1
+        CreateDirJob jobAA(nullptr, _driveDbId, nodeIdA, Str("AA"));
+        (void) jobAA.runSynchronously();
+        nodeIdAA = jobAA.nodeId();
+        CreateDirJob jobAAA(nullptr, _driveDbId, nodeIdAA, Str("AAA1"));
+        (void) jobAAA.runSynchronously();
+
+        // Move back test file
+        moveRemoteFile(_driveDbId, nodeIdAAAA, jobAAA.nodeId());
+    }
+
+    _syncPal->unpause();
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA" / "AAA1"));
+
+    logStep("testDeleteAndRecreateBranch");
 }
 
 #if defined(KD_LINUX)
