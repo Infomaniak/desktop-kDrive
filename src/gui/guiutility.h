@@ -146,6 +146,7 @@ void setEnabledRecursively(C *root, bool enabled) {
         setEnabledRecursively(child, enabled);
     }
 }
+bool checkBlacklistSize(const size_t blacklistSize, QWidget *parent);
 } // namespace GuiUtility
 
 } // namespace KDC

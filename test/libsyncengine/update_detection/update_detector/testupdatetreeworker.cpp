@@ -1052,6 +1052,116 @@ void TestUpdateTreeWorker::testDeleteRecreateBranch() {
     CPPUNIT_ASSERT(node1111new->parentNode() == node111new);
 }
 
+void TestUpdateTreeWorker::testGetNodeFromDeletedPath() {
+    {
+        // Simple case where a branch is deleted and re-created.
+        auto updateTree = std::make_shared<UpdateTree>(ReplicaSide::Local, SyncDb::driveRootNode());
+        const auto updateTreeWorker = std::make_shared<UpdateTreeWorker>(_syncDb->cache(), _operationSet, updateTree,
+                                                                         "Test Update Tree Worker", "TUT", ReplicaSide::Local);
+
+        const auto nodeA = std::make_shared<Node>(ReplicaSide::Local, Str("A"), NodeType::Directory, OperationType::None,
+                                                  CommonUtility::generateRandomStringAlphaNum(), testhelpers::defaultTime,
+                                                  testhelpers::defaultTime, testhelpers::defaultDirSize, updateTree->rootNode());
+        updateTree->insertNode(nodeA);
+        (void) updateTree->rootNode()->insertChildren(nodeA);
+
+        // Created branch
+        const auto nodeAAcreate = std::make_shared<Node>(ReplicaSide::Local, Str("AA"), NodeType::Directory, nodeA);
+        updateTree->insertNode(nodeAAcreate);
+        (void) nodeA->insertChildren(nodeAAcreate);
+
+        const auto nodeAAAcreate =
+                std::make_shared<Node>(ReplicaSide::Local, Str("AAA"), NodeType::Directory, OperationType::Create,
+                                       CommonUtility::generateRandomStringAlphaNum(), testhelpers::defaultTime,
+                                       testhelpers::defaultTime, testhelpers::defaultDirSize, nodeAAcreate);
+        updateTree->insertNode(nodeAAAcreate);
+        (void) nodeAAcreate->insertChildren(nodeAAAcreate);
+
+        // Deleted branch
+        const auto nodeAAdelete =
+                std::make_shared<Node>(ReplicaSide::Local, Str("AA"), NodeType::Directory, OperationType::Delete,
+                                       CommonUtility::generateRandomStringAlphaNum(), testhelpers::defaultTime,
+                                       testhelpers::defaultTime, testhelpers::defaultDirSize, nodeA);
+        updateTree->insertNode(nodeAAdelete);
+        (void) nodeA->insertChildren(nodeAAdelete);
+
+        const auto nodeAAAdelete =
+                std::make_shared<Node>(ReplicaSide::Local, Str("AAA"), NodeType::Directory, OperationType::Delete,
+                                       CommonUtility::generateRandomStringAlphaNum(), testhelpers::defaultTime,
+                                       testhelpers::defaultTime, testhelpers::defaultDirSize, nodeAAdelete);
+        updateTree->insertNode(nodeAAAdelete);
+        (void) nodeAAdelete->insertChildren(nodeAAAdelete);
+
+        updateTree->drawUpdateTree(0);
+
+        std::shared_ptr<Node> node = updateTreeWorker->getNodeFromDeletedPath(SyncPath("/A/AA/AAA"));
+        CPPUNIT_ASSERT_EQUAL(nodeAAAdelete->id().value(), node->id().value());
+        (void) updateTreeWorker->getOrCreateNodeFromExistingPath(SyncPath("/A/AA/AAA"), node);
+        CPPUNIT_ASSERT_EQUAL(nodeAAAcreate->id().value(), node->id().value());
+    }
+    {
+        // More complex case where a branch is deleted and re-created, and a file is moved inside the newly created branch.
+        auto updateTree = std::make_shared<UpdateTree>(ReplicaSide::Local, SyncDb::driveRootNode());
+        const auto updateTreeWorker = std::make_shared<UpdateTreeWorker>(_syncDb->cache(), _operationSet, updateTree,
+                                                                         "Test Update Tree Worker", "TUT", ReplicaSide::Local);
+
+        const auto nodeA = std::make_shared<Node>(ReplicaSide::Local, Str("A"), NodeType::Directory, OperationType::None,
+                                                  CommonUtility::generateRandomStringAlphaNum(), testhelpers::defaultTime,
+                                                  testhelpers::defaultTime, testhelpers::defaultDirSize, updateTree->rootNode());
+        updateTree->insertNode(nodeA);
+        (void) updateTree->rootNode()->insertChildren(nodeA);
+
+        // Created branch
+        const auto nodeAAcreate = std::make_shared<Node>(ReplicaSide::Local, Str("AA"), NodeType::Directory, nodeA);
+        updateTree->insertNode(nodeAAcreate);
+        (void) nodeA->insertChildren(nodeAAcreate);
+
+        const auto nodeAAAcreate =
+                std::make_shared<Node>(ReplicaSide::Local, Str("AAA"), NodeType::Directory, OperationType::Create,
+                                       CommonUtility::generateRandomStringAlphaNum(), testhelpers::defaultTime,
+                                       testhelpers::defaultTime, testhelpers::defaultDirSize, nodeAAcreate);
+        updateTree->insertNode(nodeAAAcreate);
+        (void) nodeAAcreate->insertChildren(nodeAAAcreate);
+
+        // Deleted branch
+        const auto nodeAAdelete =
+                std::make_shared<Node>(ReplicaSide::Local, Str("AA"), NodeType::Directory, OperationType::Delete,
+                                       CommonUtility::generateRandomStringAlphaNum(), testhelpers::defaultTime,
+                                       testhelpers::defaultTime, testhelpers::defaultDirSize, nodeA);
+        updateTree->insertNode(nodeAAdelete);
+        (void) nodeA->insertChildren(nodeAAdelete);
+
+        const auto nodeAAAdelete =
+                std::make_shared<Node>(ReplicaSide::Local, Str("AAA"), NodeType::Directory, OperationType::Delete,
+                                       CommonUtility::generateRandomStringAlphaNum(), testhelpers::defaultTime,
+                                       testhelpers::defaultTime, testhelpers::defaultDirSize, nodeAAdelete);
+        updateTree->insertNode(nodeAAAdelete);
+        (void) nodeAAdelete->insertChildren(nodeAAAdelete);
+
+        const auto nodeAAA1delete = std::make_shared<Node>(ReplicaSide::Local, Str("AAA1"), NodeType::Directory, nodeAAdelete);
+        updateTree->insertNode(nodeAAA1delete);
+        (void) nodeAAdelete->insertChildren(nodeAAA1delete);
+
+        const auto nodeAAAAdelete =
+                std::make_shared<Node>(ReplicaSide::Local, Str("AAAA"), NodeType::File, OperationType::None,
+                                       CommonUtility::generateRandomStringAlphaNum(), testhelpers::defaultTime,
+                                       testhelpers::defaultTime, testhelpers::defaultDirSize, nodeAAA1delete);
+        nodeAAAAdelete->setMoveOriginInfos({SyncPath("/A/AA/AAA"), nodeAAA1delete->id().value()});
+        nodeAAAAdelete->setChangeEvents(OperationType::Move);
+        updateTree->insertNode(nodeAAAAdelete);
+        (void) nodeAAA1delete->insertChildren(nodeAAAAdelete);
+
+        updateTree->drawUpdateTree(0);
+
+        std::shared_ptr<Node> node = updateTreeWorker->getNodeFromDeletedPath(SyncPath("/A/AA/AAA"));
+        CPPUNIT_ASSERT_EQUAL(nodeAAAdelete->id().value(), node->id().value());
+        node = updateTreeWorker->getNodeFromDeletedPath(SyncPath("/A/AA/AAA1"));
+        CPPUNIT_ASSERT_EQUAL(nodeAAA1delete->id().value(), node->id().value());
+        (void) updateTreeWorker->getOrCreateNodeFromExistingPath(SyncPath("/A/AA/AAA"), node);
+        CPPUNIT_ASSERT_EQUAL(nodeAAAcreate->id().value(), node->id().value());
+    }
+}
+
 void TestUpdateTreeWorker::testIntegrityCheck() {
     std::shared_ptr<Node> newNode;
     CPPUNIT_ASSERT(_localUpdateTreeWorker->getOrCreateNodeFromExistingPath("Dir 5/File 5.1", newNode) == ExitCode::Ok);

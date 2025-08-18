@@ -467,15 +467,17 @@ bool OperationSorterWorker::breakCycle(SyncOperationList &cycle, const SyncOpPtr
     // A cycle must contain a Delete or a Move operation
     // Generate a rename resolution operation
     renameResolutionOp->setType(OperationType::Move);
+    const auto affectedNode = matchOp->affectedNode();
+    affectedNode->setMoveOriginInfos({affectedNode->getPath(), affectedNode->parentNode()->id().value()});
     renameResolutionOp->setOmit(matchOp->omit());
     // Find the corresponding node of `matchOp`
-    const auto correspondingNode = correspondingNodeInOtherTree(matchOp->affectedNode());
+    const auto correspondingNode = correspondingNodeInOtherTree(affectedNode);
     if (!correspondingNode) {
-        LOG_SYNCPAL_WARN(_logger, "Error in correspondingNode with id = " << matchOp->affectedNode()->id()->c_str()
-                                                                          << " - idDb = " << *matchOp->affectedNode()->idb());
+        LOG_SYNCPAL_WARN(_logger,
+                         "Error in correspondingNode with id=" << *affectedNode->id() << " - idDb = " << *affectedNode->idb());
         return false;
     }
-    renameResolutionOp->setAffectedNode(matchOp->affectedNode());
+    renameResolutionOp->setAffectedNode(affectedNode);
     renameResolutionOp->setCorrespondingNode(correspondingNode);
     renameResolutionOp->setNewParentNode(correspondingNode->parentNode()); // Parent not changed but needed in Executor
     renameResolutionOp->setIsBreakingCycleOp(true);
@@ -488,6 +490,8 @@ bool OperationSorterWorker::breakCycle(SyncOperationList &cycle, const SyncOpPtr
     LOGW_SYNCPAL_INFO(_logger, L"Breaking cycle by renaming temporarily item " << SyncName2WStr(correspondingNode->name())
                                                                                << L" to "
                                                                                << SyncName2WStr(renameResolutionOp->newName()));
+    // After breaking a cycle, the update tree is not up to date anymore and needs to be rebuilt.
+    _syncPal->setUpdateTreesNeedToBeCleared(true);
     return true;
 }
 
