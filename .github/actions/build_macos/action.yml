@@ -95,7 +95,7 @@ runs:
               echo "Looking in $dir"
               # We skip the dSYM directories to avoid copying debug symbols and copy only the necessary libraries (Ex: '/Users/runner/.conan2/p/b/sentr<hash>/p/lib/libsentry.dylib.dSYM/Contents/Resources/DWARF/libsentry.dylib')
               find "$dir" \
-                  -path '*/.dSYM/*' -prune -o \
+                  -path '*/*.dSYM/*' -prune -o \
                   '(' -iname 'libxxhash.0.dylib' \
                    -o -iname 'liblog4cplus*.dylib' \
                    -o -iname 'libsentry.dylib' \

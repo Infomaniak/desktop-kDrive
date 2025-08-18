@@ -96,6 +96,7 @@ struct SyncPalInfo {
         SyncPath targetPath;
         VirtualFileMode vfsMode{VirtualFileMode::Off};
         bool restart{false};
+        bool updateTreesNeedToBeCleared{false};
         bool isPaused{false};
         bool syncHasFullyCompleted{false};
 
@@ -150,13 +151,15 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         inline const SyncPath &localPath() const { return _syncInfo.localPath; }
         inline const NodeId &localNodeId() const { return _syncInfo.localNodeId; }
         inline bool restart() const { return _syncInfo.restart; }
+        inline bool updateTreesNeedToBeCleared() const { return _syncInfo.updateTreesNeedToBeCleared; }
         inline bool isAdvancedSync() const { return _syncInfo.isAdvancedSync(); }
 
         void setLocalPath(const SyncPath &path) { _syncInfo.localPath = path; }
         ExitInfo isRootFolderValid();
         ExitInfo setLocalNodeId(const NodeId &localNodeId);
-        void setSyncHasFullyCompleted(bool completed) { _syncInfo.syncHasFullyCompleted = completed; }
-        void setRestart(bool shouldRestart) { _syncInfo.restart = shouldRestart; }
+        void setSyncHasFullyCompleted(const bool completed) { _syncInfo.syncHasFullyCompleted = completed; }
+        void setRestart(const bool shouldRestart) { _syncInfo.restart = shouldRestart; }
+        void setUpdateTreesNeedToBeCleared(const bool reset) { _syncInfo.updateTreesNeedToBeCleared = reset; }
         void setVfsMode(const VirtualFileMode mode) { _syncInfo.vfsMode = mode; }
         void setIsPaused(const bool paused) { _syncInfo.isPaused = paused; }
 
