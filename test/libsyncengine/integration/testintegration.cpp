@@ -151,7 +151,16 @@ void TestIntegration::testAll() {
     logStep("initialization");
 
     // Run test cases
+    basicTests();
+    inconsistencyTests();
+    conflictTests();
+    testBreakCycle();
     testBlacklist();
+    testExclusionTemplates();
+    testEncoding();
+    testParentRename();
+    testNegativeModificationTime();
+    testDeleteAndRecreateBranch();
 }
 
 void TestIntegration::inconsistencyTests() {
@@ -284,7 +293,9 @@ void TestIntegration::testBlacklist() {
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath));
     CPPUNIT_ASSERT(Utility::isInTrash(dirpath.filename()));
+#if defined(KD_MACOS) || defined(KD_LINUX)
     Utility::removeFromTrash(dirpath.filename());
+#endif
 
     // Move a file inside a blacklisted directory.
     moveRemoteFile(_driveDbId, fileId, tmpRemoteDir.id());
@@ -293,7 +304,9 @@ void TestIntegration::testBlacklist() {
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath / filename));
     CPPUNIT_ASSERT(Utility::isInTrash(filename));
+#if defined(KD_MACOS) || defined(KD_LINUX)
     Utility::removeFromTrash(filename);
+#endif
 
     // Move a file from inside a blacklisted directory to a synchronized directory.
     moveRemoteFile(_driveDbId, fileId, _remoteSyncDir.id());

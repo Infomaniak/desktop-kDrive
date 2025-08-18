@@ -687,7 +687,7 @@ void Utility::unixTimeToFiletime(time_t t, FILETIME *filetime) {
 }
 
 namespace {
-HRESULT BindToCsidl(int csidl, REFIID riid, void **ppv) {
+HRESULT bindToCsidl(int csidl, REFIID riid, void **ppv) {
     HRESULT hr;
     PIDLIST_ABSOLUTE pidl;
     hr = SHGetSpecialFolderLocation(NULL, csidl, &pidl);
@@ -711,19 +711,16 @@ HRESULT BindToCsidl(int csidl, REFIID riid, void **ppv) {
 bool Utility::isInTrash(const SyncPath &path) {
     bool found = false;
 
-    HRESULT hr = CoInitialize(NULL);
-    if (SUCCEEDED(hr)) {
+    if (const auto coInitializeHr = CoInitialize(NULL); SUCCEEDED(coInitializeHr)) {
         IShellFolder2 *psfRecycleBin;
-        hr = BindToCsidl(CSIDL_BITBUCKET, IID_PPV_ARGS(&psfRecycleBin));
-        if (SUCCEEDED(hr)) {
+        if (const auto bindingHr = bindToCsidl(CSIDL_BITBUCKET, IID_PPV_ARGS(&psfRecycleBin)); SUCCEEDED(bindingHr)) {
             IEnumIDList *peidl;
-            hr = psfRecycleBin->EnumObjects(NULL, SHCONTF_FOLDERS | SHCONTF_NONFOLDERS, &peidl);
-            if (hr == S_OK) {
+
+            if (auto enumHr = psfRecycleBin->EnumObjects(NULL, SHCONTF_FOLDERS | SHCONTF_NONFOLDERS, &peidl); SUCCEEDED(enumHr)) {
                 PITEMID_CHILD pidlItem;
                 while (peidl->Next(1, &pidlItem, NULL) == S_OK) {
                     CComPtr<IShellItem> pItem;
-                    hr = SHCreateItemFromIDList(pidlItem, IID_PPV_ARGS(&pItem));
-                    if (FAILED(hr)) {
+                    if (const auto createItemHr = SHCreateItemFromIDList(pidlItem, IID_PPV_ARGS(&pItem)); FAILED(createItemHr)) {
                         CoTaskMemFree(pidlItem);
                         continue;
                     }
@@ -732,15 +729,15 @@ bool Utility::isInTrash(const SyncPath &path) {
                     ZeroMemory(&strRet, sizeof(strRet));
                     strRet.uType = STRRET_WSTR;
 
-                    hr = psfRecycleBin->GetDisplayNameOf(pidlItem, SHGDN_FORADDRESSBAR | SHGDN_INFOLDER, &strRet);
-                    if (FAILED(hr)) {
+                    if (const auto displayNameHr =
+                                psfRecycleBin->GetDisplayNameOf(pidlItem, SHGDN_FORADDRESSBAR | SHGDN_INFOLDER, &strRet);
+                        FAILED(displayNameHr)) {
                         CoTaskMemFree(pidlItem);
                         continue;
                     }
 
                     LPTSTR lptstr;
-                    hr = StrRetToStr(&strRet, pidlItem, &lptstr);
-                    if (FAILED(hr)) {
+                    if (const auto stringReturnToStrHr = StrRetToStr(&strRet, pidlItem, &lptstr); FAILED(stringReturnToStrHr)) {
                         CoTaskMemFree(pidlItem);
                         CoTaskMemFree(lptstr);
                         continue;
@@ -748,6 +745,8 @@ bool Utility::isInTrash(const SyncPath &path) {
 
                     if (SyncPath(lptstr) == path) {
                         found = true;
+                        CoTaskMemFree(pidlItem);
+                        CoTaskMemFree(lptstr);
                         break;
                     }
                 }
@@ -759,8 +758,5 @@ bool Utility::isInTrash(const SyncPath &path) {
 
     return found;
 }
-
-
-void Utility::removeFromTrash(const KDC::SyncPath &) {}
 
 } // namespace KDC
