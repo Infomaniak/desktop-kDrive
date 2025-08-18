@@ -322,26 +322,21 @@ endif()
 if(UNIX AND NOT APPLE)
     if (DEFINED CONAN_DEP_DIR)
         # Copy .so files to the conan dependency directory
-        include(GeneralizeConanLibraryDirs)
-        get_library_dirs("log4cplus" "log4cplus")
-        get_library_dirs("OpenSSL" "openssl")
-        get_library_dirs("xxHash" "xxhash")
-        get_library_dirs("sentry" "sentry")
         file(COPY
             # log4cplus
-            "${_log4cplus_LIB_DIRS}/liblog4cplus.so"
-            "${_log4cplus_LIB_DIRS}/liblog4cplus.so.9"
+            "${log4cplus_LIB_DIRS_RELEASE}/liblog4cplus.so"
+            "${log4cplus_LIB_DIRS_RELEASE}/liblog4cplus.so.9"
             # xxHash
-            "${_xxHash_LIB_DIRS}/libxxhash.so"
-            "${_xxHash_LIB_DIRS}/libxxhash.so.0"
-            "${_xxHash_LIB_DIRS}/libxxhash.so.0.8.2"
+            "${xxHash_LIB_DIRS_RELEASE}/libxxhash.so"
+            "${xxHash_LIB_DIRS_RELEASE}/libxxhash.so.0"
+            "${xxHash_LIB_DIRS_RELEASE}/libxxhash.so.0.8.2"
             # OpenSSL
-            "${_OpenSSL_LIB_DIRS}/libcrypto.so"
-            "${_OpenSSL_LIB_DIRS}/libcrypto.so.3"
-            "${_OpenSSL_LIB_DIRS}/libssl.so"
-            "${_OpenSSL_LIB_DIRS}/libssl.so.3"
+            "${openssl-universal_LIB_DIRS_RELEASE}/libcrypto.so"
+            "${openssl-universal_LIB_DIRS_RELEASE}/libcrypto.so.3"
+            "${openssl-universal_LIB_DIRS_RELEASE}/libssl.so"
+            "${openssl-universal_LIB_DIRS_RELEASE}/libssl.so.3"
             # sentry
-            "${_sentry_LIB_DIRS}/libsentry.so"
+            "${sentry_LIB_DIRS_RELEASE}/libsentry.so"
             DESTINATION "${CONAN_DEP_DIR}"
             FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
     endif()
