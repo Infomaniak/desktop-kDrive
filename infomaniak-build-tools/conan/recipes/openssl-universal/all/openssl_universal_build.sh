@@ -45,14 +45,14 @@ cp -R openssl.x86_64 openssl.arm64
 # Building the x86_64 version
 log "Building OpenSSL for x86_64..."
 pushd openssl.x86_64
-./Configure darwin64-x86_64-cc shared -release -mmacosx-version-min=$minimum_macos_version
+./Configure darwin64-x86_64-cc shared -mmacosx-version-min=$minimum_macos_version
 make -j"$(sysctl -n hw.ncpu)"
 popd
 
 # Building the arm64 version
 log "Building OpenSSL for arm64..."
 pushd openssl.arm64
-./Configure darwin64-arm64-cc shared enable-rc5 zlib no-asm -release -mmacosx-version-min=$minimum_macos_version
+./Configure darwin64-arm64-cc shared enable-rc5 zlib no-asm -mmacosx-version-min=$minimum_macos_version
 make -j"$(sysctl -n hw.ncpu)"
 popd
 
