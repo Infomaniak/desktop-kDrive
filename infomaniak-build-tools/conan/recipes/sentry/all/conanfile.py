@@ -43,7 +43,7 @@ class SentryNativeConan(ConanFile):
 
     @property
     def forced_build_type(self):
-        return "Release" # Force the build type to Release since we don't need to debug Sentry
+        return "Release" # Force the build type to Release since we don't need to debug symbols
 
     def package_id(self):
         self.info.settings.rm_safe("build_type") # Since we force the build type to Release, we can remove it from the package ID to avoid creating multiple packages for the same configuration
