@@ -47,7 +47,7 @@ class OpenSSLUniversalConan(ConanFile):
         )
 
     def requirements(self):
-        self.requires("zlib/[>=1.2.11 <2]", options={"shared": self.options.shared})
+        self.requires("zlib/[>=1.2.11 <2]", transitive_headers=True, options={"shared": self.options.shared})
 
 
     def _create_cmake_module_variables(self, module_file):
