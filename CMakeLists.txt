@@ -322,6 +322,7 @@ endif()
 if(UNIX AND NOT APPLE)
     if (DEFINED CONAN_DEP_DIR)
         # Copy .so files to the conan dependency directory
+        find_package(log4cplus 2.1.2 REQUIRED) # used to get the variable log4cplus_LIB_DIRS_RELEASE
         file(COPY
             # log4cplus
             "${log4cplus_LIB_DIRS_RELEASE}/liblog4cplus.so"
