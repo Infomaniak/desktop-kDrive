@@ -125,9 +125,6 @@ class QtConan(ConanFile):
                 "Linux": f"/home/{user}/.local/share/Qt/qtaccount.ini"
             }.get(str(self.settings.os), None)
 
-    def requirements(self):
-        self.requires("zlib/[>=1.2.11 <2]", options={ "shared": True }) # From https://conan.io/center/recipes/zlib
-
     def _check_envvars_login_type(self, check_option=True, raise_error=True):
         """
         Check if the environment variable `QT_INSTALLER_JWT_TOKEN` is set, which is required for the 'envvars' login type.
