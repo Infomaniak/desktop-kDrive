@@ -19,8 +19,6 @@
 #include "utility.h"
 
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/io/iohelper_win.h"
 #include "log/log.h"
 
 #include <filesystem>
@@ -31,6 +29,8 @@
 #include <windows.h>
 #include <Shobjidl.h> //Required for IFileOperation Interface
 #include <shellapi.h> //Required for Flags set in "SetOperationFlags"
+#include <shlobj_core.h> // SHCreateItemFromIDList
+#include <atlbase.h> // CComPtr
 #include <objbase.h>
 #include <objidl.h>
 #include <shlguid.h>
@@ -728,9 +728,25 @@ bool Utility::isInTrash(const SyncPath &path) {
                         continue;
                     }
 
-                    LPWSTR displayName;
-                    hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &displayName);
-                    if (SyncPath(displayName) == path) {
+                    STRRET strRet;
+                    ZeroMemory(&strRet, sizeof(strRet));
+                    strRet.uType = STRRET_WSTR;
+
+                    hr = psfRecycleBin->GetDisplayNameOf(pidlItem, SHGDN_FORADDRESSBAR | SHGDN_INFOLDER, &strRet);
+                    if (FAILED(hr)) {
+                        CoTaskMemFree(pidlItem);
+                        continue;
+                    }
+
+                    LPTSTR lptstr;
+                    hr = StrRetToStr(&strRet, pidlItem, &lptstr);
+                    if (FAILED(hr)) {
+                        CoTaskMemFree(pidlItem);
+                        CoTaskMemFree(lptstr);
+                        continue;
+                    }
+
+                    if (SyncPath(lptstr) == path) {
                         found = true;
                         break;
                     }
