@@ -38,8 +38,6 @@ pushd "$build_folder"
 # Get the right path for zlib
 source ./conanrun.sh || error "Failed to source conanrun.sh. Please ensure it exists and is executable."
 
-echo $DYLD_LIBRARY_PATH
-
 log "Cloning OpenSSL sources..."
 git clone --depth 1 --branch "$openssl_git_tag" "$src_url" openssl
 
