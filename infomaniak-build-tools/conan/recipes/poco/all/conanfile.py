@@ -90,9 +90,6 @@ class PocoConan(ConanFile):
     def _is_mingw(self):
         return self.settings.os == "Windows" and self.settings.compiler == "gcc"
 
-    def export_sources(self):
-        export_conandata_patches(self)
-
     def config_options(self):
         if self.settings.os == "Windows":
             del self.options.fPIC
@@ -190,9 +187,7 @@ class PocoConan(ConanFile):
 
     def build(self):
         cmake = CMake(self)
-        cmake.configure(variables={
-            "OPENSSL_FOUND": "TRUE" # Fix FindOpenSSL.cmake
-        })
+        cmake.configure()
         cmake.build()
 
     def package(self):
