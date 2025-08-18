@@ -171,7 +171,7 @@ int main(int argc, char **argv) {
 
         if (QSystemTrayIcon::isSystemTrayAvailable()) {
             appPtr->onTryTrayAgain();
-        } else if (desktopSession != "ubuntu") {
+        } else if (!desktopSession.startsWith("ubuntu")) {
             qCInfo(lcMain) << "System tray still not available, showing window and trying again later";
             appPtr->showParametersDialog();
             QTimer::singleShot(10000, appPtr.get(), &KDC::AppClient::onTryTrayAgain);
