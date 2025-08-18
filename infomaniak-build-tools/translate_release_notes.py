@@ -20,6 +20,7 @@
 #
 
 import argparse
+from bs4 import BeautifulSoup
 import deepl
 import os
 from pathlib import Path
@@ -27,6 +28,12 @@ import re
 import shutil
 import subprocess
 import sys
+
+def prettify_html(html_filepath):
+    with open(html_filepath, "r") as f:
+        soup = BeautifulSoup(f.read(), "html.parser")
+    with open(html_filepath, "w") as f:
+        f.write(soup.prettify())
 
 def version_regex(arg_value, pattern=re.compile(r'^(\d+\.)?(\d+\.)?(\*|\d+)')):
     if not pattern.match(arg_value):
@@ -99,6 +106,9 @@ def split_os(lang, fullName):
                         f.write(f"\t\t<li>{line[line.find('-') + 2:]}")
                 else:
                     f.write(line)
+
+        prettify_html(f"{fullName}-{os_ext}-{lang_ext}.html") 
+        
 
 print(f"Generating Release Notes for kDrive-{args.version}")
 Path(dirPath).mkdir(mode=0o755, exist_ok=True)
