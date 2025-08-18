@@ -67,7 +67,6 @@ class KDriveDesktop(ConanFile):
 
         # openssl depends on zlib, which is already inside the conanfile.py of openssl
         # but since we build openssl two times (for x86_64 and arm64) in single arch and then merge them, we need to add zlib in 'armv8|x86_64' arch mode.
-        self.requires("zlib/[>=1.2.11 <2]", options={ "shared": True }) # From https://conan.io/center/recipes/zlib
         self.requires("openssl/3.2.4", options={ "shared": True }) # on MacOS => Using the local recipe, using the openssl universal build script. Otherwise, using the conan center recipe.
 
         self.requires("sentry/0.7.10")
