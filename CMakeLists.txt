@@ -337,8 +337,8 @@ if(UNIX AND NOT APPLE)
             "${openssl_LIB_DIRS_RELEASE}/libcrypto.so.3"
             "${openssl_LIB_DIRS_RELEASE}/libssl.so"
             "${openssl_LIB_DIRS_RELEASE}/libssl.so.3"
-#            # sentry
-#            "${sentry_LIB_DIRS_RELEASE}/libsentry.so"
+            # sentry
+            "${sentry_LIB_DIRS_RELEASE}/libsentry.so"
             DESTINATION "${CONAN_DEP_DIR}"
             FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
         )
