@@ -239,6 +239,7 @@ configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 
 set(QTDIR $ENV{QTDIR})
 
+find_package(sentry REQUIRED) # Used here to find the sentry_crashpad::crashpad_handler target
 if(BUILD_KDRIVE_OSX_BUNDLE)
     # Provision profile
     install(FILES embedded.provisionprofile DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/)
@@ -322,7 +323,6 @@ if(UNIX AND NOT APPLE)
         find_package(log4cplus 2.1.2 REQUIRED) # used to get the variable log4cplus_LIB_DIRS_RELEASE
         find_package(xxHash 0.8.2 REQUIRED)
         find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
-        find_package(sentry REQUIRED)
         # We use <lib>_LIB_DIRS_RELEASE because every dependency is built in release mode.+
         file(COPY
             # log4cplus
