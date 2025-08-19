@@ -227,7 +227,7 @@ conan create "$conan_recipes_folder/sentry/all/" --build=missing $architecture -
 
 log "Installing dependencies..."
 # Install this packet in the build folder.
-#                                                       Here: -s:b set the build type for the app itself, -s:h set the build type for the host (dependencies).
+# Here: -s:b set the build type for the app itself, -s:h set the build type for the host (dependencies).
 conan install . --output-folder="$output_dir" --build=missing $architecture -s:b=build_type="$build_type" -s:h=build_type="Release" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter
 
 if [ $? -ne 0 ]; then
