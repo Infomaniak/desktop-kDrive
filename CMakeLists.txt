@@ -326,6 +326,7 @@ if(UNIX AND NOT APPLE)
         get_library_dirs("OpenSSL" "openssl")
         get_library_dirs("xxHash" "xxhash")
         get_library_dirs("sentry" "sentry")
+        get_library_dirs("Poco" "poco") # poco_LIB_DIRS_RELWITHDEBINFO
         file(COPY
             # log4cplus
             "${_log4cplus_LIB_DIRS}/liblog4cplus.so"
@@ -341,6 +342,21 @@ if(UNIX AND NOT APPLE)
             "${_OpenSSL_LIB_DIRS}/libssl.so.3"
             # sentry
             "${_sentry_LIB_DIRS}/libsentry.so"
+            # Poco
+            "${_Poco_LIB_DIRS}/libPocoCrypto.so"
+            "${_Poco_LIB_DIRS}/libPocoCrypto.so.103"
+            "${_Poco_LIB_DIRS}/libPocoFoundation.so"
+            "${_Poco_LIB_DIRS}/libPocoFoundation.so.103"
+            "${_Poco_LIB_DIRS}/libPocoJSON.so"
+            "${_Poco_LIB_DIRS}/libPocoJSON.so.103"
+            "${_Poco_LIB_DIRS}/libPocoNet.so"
+            "${_Poco_LIB_DIRS}/libPocoNet.so.103"
+            "${_Poco_LIB_DIRS}/libPocoNetSSL.so"
+            "${_Poco_LIB_DIRS}/libPocoNetSSL.so.103"
+            "${_Poco_LIB_DIRS}/libPocoUtil.so"
+            "${_Poco_LIB_DIRS}/libPocoUtil.so.103"
+            "${_Poco_LIB_DIRS}/libPocoXML.so"
+            "${_Poco_LIB_DIRS}/libPocoXML.so.103"
             DESTINATION "${CONAN_DEP_DIR}"
             FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
     endif()
