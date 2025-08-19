@@ -5,7 +5,6 @@
 	- [SIP](#sip)
 	- [Xcode](#xcode)
 	- [cppunit](#cppunit)
-	- [Poco](#poco)
 	- [libzip](#libzip)
 	- [Sparkle](#sparkle)
 	- [Packages](#packages)
@@ -76,26 +75,6 @@ sudo make install
 ```
 
 If the server does not reply to the `git clone` command, you can download the source from https://www.freedesktop.org/wiki/Software/cppunit/.
-
-## Poco
-
-> :warning: **`Poco` requires OpenSSL to be installed.**
->
-> You **must follow** the [Conan](#conan) section first to install `OpenSSL`.
-
-Download and build `Poco`:
-
-```bash
-cd ~/Projects
-source "$(find ./desktop-kdrive/ -name "conanrun.sh")" || exit 1 # This will prepend the path to the conan-managed dependencies to the 'DYLD_LIBRARY_PATH' environment variable
-git clone https://github.com/pocoproject/poco.git
-cd poco
-git checkout tags/poco-1.13.3-release
-mkdir build
-cd build
-cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -DENABLE_DATA_ODBC=OFF 
-sudo cmake --build . --target install
-```
 
 ## libzip
 
@@ -251,7 +230,7 @@ The project requires additional CMake variables for a correct build. To inject t
 ./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release] [--output-dir=<output_dir>] [--make-release] [--help] 
 ```
 
-> **Note:** Currently only **xxHash**, **log4cplus**, **OpenSSL** and **libzip** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** Currently only **xxHash**, **log4cplus**, **OpenSSL**, **libzip**, **Sentry** and **Poco**are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
 
 ---
 # Build in Debug

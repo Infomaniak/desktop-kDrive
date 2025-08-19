@@ -305,3 +305,76 @@ cmake --install build --config RelWithDebInfo
 ```
 
 </details>
+
+<details>
+<summary>Poco - 1.13.3</summary>
+
+### macOS
+
+> :warning: **`Poco` requires OpenSSL to be installed.**
+>
+> You **must follow** the [Conan](#conan) section first to install `OpenSSL`.
+
+Download and build `Poco`:
+
+```bash
+cd ~/Projects
+source "$(find ./desktop-kdrive/ -name "conanrun.sh")" || exit 1 # This will prepend the path to the conan-managed dependencies to the 'DYLD_LIBRARY_PATH' environment variable
+git clone https://github.com/pocoproject/poco.git
+cd poco
+git checkout tags/poco-1.13.3-release
+mkdir build
+cd build
+cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -DENABLE_DATA_ODBC=OFF 
+sudo cmake --build . --target install
+```
+
+### Linux
+
+> :warning: **`Poco` requires OpenSSL to be installed.**
+>
+> You **must follow** the [Conan](#conan) section first to install `OpenSSL`.
+
+```bash
+cd ~/Projects
+source "$(find ./desktop-kdrive/ -name "conanrun.sh")" || exit 1 # This will prepend the path to the conan-managed dependencies to the 'LD_LIBRARY_PATH' environment variable
+git clone https://github.com/pocoproject/poco.git
+cd poco
+git checkout tags/poco-1.13.3-release
+mkdir cmake-build
+cd cmake-build
+cmake ..
+sudo cmake --build . --target install
+```
+
+### Windows
+
+## Poco
+
+> :warning: **`Poco` requires OpenSSL to be installed.**
+
+Clone and build `Poco`:
+
+```powershell
+cd F:\Projects
+git clone https://github.com/pocoproject/poco.git
+cd poco
+git checkout tags/poco-1.13.3-release
+mkdir build
+cd build
+cmake -G "Visual Studio 16 2019" .. -DOPENSSL_ROOT_DIR="C:\Program Files\OpenSSL" -DOPENSSL_INCLUDE_DIR="C:\Program Files\OpenSSL\include" -DOPENSSL_CRYPTO_LIBRARY=libcrypto.lib -DOPENSSL_SSL_LIBRARY=libssl.lib
+```
+
+Open the `poco.sln` solution in Visual Studio 2019 and add `C:\Program Files\OpenSSL-Win64\lib` to the `Additional Library Directories` for the following projects:
+- Crypto
+- JWT
+- NetSSL
+
+While still in the `build` directory, issue the following commands:
+
+```powershell
+cmake --build . --target install --config Debug
+cmake --build . --target install --config Release
+```
+
+</details>

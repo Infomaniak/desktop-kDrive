@@ -1,7 +1,6 @@
 - [kDrive files](#kdrive-files)
 - [Installation Requirements](#installation-requirements)
     - [Packages](#packages)
-    - [Poco](#poco)
     - [CPPUnit](#cppunit)
     - [libzip](#libzip)
     - [Conan](#conan)
@@ -63,24 +62,6 @@ sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/lib/llvm-18/bin
 ```
 
 Check the version again with `clang --version` to ensure that the version is now 18 or higher.
-
-## Poco
-
-> :warning: **`Poco` requires OpenSSL to be installed.**
->
-> You **must follow** the [Conan](#conan) section first to install `OpenSSL`.
-
-```bash
-cd ~/Projects
-source "$(find ./desktop-kdrive/ -name "conanrun.sh")" || exit 1 # This will prepend the path to the conan-managed dependencies to the 'LD_LIBRARY_PATH' environment variable
-git clone https://github.com/pocoproject/poco.git
-cd poco
-git checkout tags/poco-1.13.3-release
-mkdir cmake-build
-cd cmake-build
-cmake ..
-sudo cmake --build . --target install
-```
 
 ## CPPUnit
 
@@ -216,7 +197,7 @@ This profile must not contain a `tools.cmake.cmaketoolchain:user_toolchain` entr
 ./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release] [--output-dir=<output_dir>]
 ```
 
-> **Note:** Currently only **xxHash**, **log4cplus**, **Qt**, **OpenSSL**, **zlib** and **Sentry** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** Currently only **xxHash**, **log4cplus**, **Qt**, **OpenSSL**, **zlib**, **Sentry** and **Poco** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
 
 ---
 # Build in Debug
