@@ -197,24 +197,24 @@ if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null # mkdir
 
 Log "Creating xxHash Conan package..."
-& $ConanExe create "$RecipesFolder/xxhash/all/" --build=missing -s build_type=Release --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter
+& $ConanExe create "$RecipesFolder/xxhash/all/" --build=missing -s:a=build_type=Release --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to create xxHash Conan package."
 }
 
 $qt_login_type = if ($CI) { "envvars" } else { "ini" }
-& $ConanExe create "$RecipesFolder/qt/all/" --version="6.2.3" --build=missing -s build_type=$BuildType --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter -o "&:qt_login_type=$qt_login_type"
+& $ConanExe create "$RecipesFolder/qt/all/" --version="6.2.3" --build=missing -s:a=build_type=Release --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter -o "&:qt_login_type=$qt_login_type"
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to create qt Conan package."
 }
 
-& $ConanExe create "$RecipesFolder/sentry/all/" --build=missing -s build_type=$BuildType --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter
+& $ConanExe create "$RecipesFolder/sentry/all/" --build=missing -s:a=build_type=Release --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to create sentry Conan package."
 }
 
 Log "Installing Conan dependencies..."
-& $ConanExe install . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter  -c tools.cmake.cmaketoolchain:generator=Ninja -c tools.env.virtualenv:powershell=powershell -o "qt/*:qt_login_type=$qt_login_type"
+& $ConanExe install . --output-folder="$OutputDir" --build=missing -s:b=build_type="$BuildType" -s:h=build_type="Release" --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter -c tools.cmake.cmaketoolchain:generator=Ninja -c tools.env.virtualenv:powershell=powershell -o "qt/*:qt_login_type=$qt_login_type"
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to install Conan dependencies."
 }

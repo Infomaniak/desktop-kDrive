@@ -239,6 +239,7 @@ configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 
 set(QTDIR $ENV{QTDIR})
 
+find_package(sentry REQUIRED) # Used here to find the sentry_crashpad::crashpad_handler target
 if(BUILD_KDRIVE_OSX_BUNDLE)
     # Provision profile
     install(FILES embedded.provisionprofile DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/)
@@ -249,8 +250,6 @@ if(BUILD_KDRIVE_OSX_BUNDLE)
     # Default Lite Sync app exclude list
     install(FILES litesync-exclude.lst DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Resources/)
 
-    find_package(sentry REQUIRED)
-
     # Crashpad_handler
     get_target_property(CRASHPAD_HANDLER_PROGRAM
             sentry_crashpad::crashpad_handler
@@ -259,7 +258,6 @@ if(BUILD_KDRIVE_OSX_BUNDLE)
     message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
     install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/MacOS/)
 elseif(BUILD_CLIENT)
-    find_package(sentry REQUIRED)
     if(WIN32)
         # NSIS
         configure_file(cmake/modules/NSIS.template.nsi.in ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.nsi @ONLY)
@@ -322,28 +320,29 @@ endif()
 if(UNIX AND NOT APPLE)
     if (DEFINED CONAN_DEP_DIR)
         # Copy .so files to the conan dependency directory
-        include(GeneralizeConanLibraryDirs)
-        get_library_dirs("log4cplus" "log4cplus")
-        get_library_dirs("OpenSSL" "openssl")
-        get_library_dirs("xxHash" "xxhash")
-        get_library_dirs("sentry" "sentry")
+        find_package(log4cplus 2.1.2 REQUIRED) # used to get the variable log4cplus_LIB_DIRS_RELEASE
+        find_package(xxHash 0.8.2 REQUIRED)
+        find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
+        # We use <lib>_LIB_DIRS_RELEASE because every dependency is built in release mode.+
         file(COPY
             # log4cplus
-            "${_log4cplus_LIB_DIRS}/liblog4cplus.so"
-            "${_log4cplus_LIB_DIRS}/liblog4cplus.so.9"
+            "${log4cplus_LIB_DIRS_RELEASE}/liblog4cplus.so"
+            "${log4cplus_LIB_DIRS_RELEASE}/liblog4cplus.so.9"
             # xxHash
-            "${_xxHash_LIB_DIRS}/libxxhash.so"
-            "${_xxHash_LIB_DIRS}/libxxhash.so.0"
-            "${_xxHash_LIB_DIRS}/libxxhash.so.0.8.2"
+            "${xxhash_LIB_DIRS_RELEASE}/libxxhash.so"
+            "${xxhash_LIB_DIRS_RELEASE}/libxxhash.so.0"
+            "${xxhash_LIB_DIRS_RELEASE}/libxxhash.so.0.8.2"
             # OpenSSL
-            "${_OpenSSL_LIB_DIRS}/libcrypto.so"
-            "${_OpenSSL_LIB_DIRS}/libcrypto.so.3"
-            "${_OpenSSL_LIB_DIRS}/libssl.so"
-            "${_OpenSSL_LIB_DIRS}/libssl.so.3"
+            "${openssl_LIB_DIRS_RELEASE}/libcrypto.so"
+            "${openssl_LIB_DIRS_RELEASE}/libcrypto.so.3"
+            "${openssl_LIB_DIRS_RELEASE}/libssl.so"
+            "${openssl_LIB_DIRS_RELEASE}/libssl.so.3"
             # sentry
-            "${_sentry_LIB_DIRS}/libsentry.so"
+            "${sentry_LIB_DIRS_RELEASE}/libsentry.so"
             DESTINATION "${CONAN_DEP_DIR}"
-            FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+            FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+        )
+        message(STATUS "Copied libraries to ${CONAN_DEP_DIR}")
     endif()
 endif()
 

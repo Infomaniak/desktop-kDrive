@@ -1,4 +1,5 @@
 from os.path import join as pjoin
+import os
 
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
@@ -43,7 +44,7 @@ class SentryNativeConan(ConanFile):
 
     @property
     def forced_build_type(self):
-        return "Release" # Force the build type to Release since we don't need to debug Sentry
+        return "Release" # Force the build type to Release since we don't need to debug symbols
 
     def package_id(self):
         self.info.settings.rm_safe("build_type") # Since we force the build type to Release, we can remove it from the package ID to avoid creating multiple packages for the same configuration
@@ -83,6 +84,18 @@ class SentryNativeConan(ConanFile):
         copy(self, "LICENSE*", src=self.source_folder, dst=pjoin(self.package_folder, "licenses"))
         cmake = CMake(self)
         cmake.install()
+        if self.settings.os == "Macos":
+            import shutil
+            dsym_path = os.path.join(self.package_folder, "lib", "libsentry.dylib.dSYM")
+            if os.path.exists(dsym_path):
+                shutil.rmtree(dsym_path)
+
+        # Remove CMake config files
+        cmake_dir = os.path.join(self.package_folder, "lib", "cmake", "sentry")
+        for fname in ["sentry-targets.cmake", "sentry-targets-release.cmake", "sentry-config.cmake", "sentry-config-version.cmake"]:
+            fpath = os.path.join(cmake_dir, fname)
+            if os.path.exists(fpath):
+                os.remove(fpath)
 
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "sentry")
