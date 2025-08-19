@@ -340,7 +340,9 @@ if(UNIX AND NOT APPLE)
 #            # sentry
 #            "${sentry_LIB_DIRS_RELEASE}/libsentry.so"
             DESTINATION "${CONAN_DEP_DIR}"
-            FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+            FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+        )
+        message(STATUS "Copied libraries to ${CONAN_DEP_DIR}")
     endif()
 endif()
 
