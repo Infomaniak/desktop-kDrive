@@ -600,7 +600,14 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
         DirectoryEntry entry;
         bool endOfDirectory = false;
         sentry::pTraces::counterScoped::LFSOExploreItem perfMonitor(fromChangeDetected, syncDbId());
-        while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoError::Success) {
+        while (true) {
+            bool nextEntryIsValid = false;
+            try {
+                nextEntryIsValid = dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoError::Success;
+            } catch (std::filesystem::filesystem_error &e) {}
+
+            if (!nextEntryIsValid) break;
+
             auto entryIoError = IoError::Success;
             perfMonitor.start();
 
@@ -740,15 +747,15 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 }
             } else {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to insert item: " << Utility::formatSyncPath(absolutePath.filename())
-                                                                      << L" into local snapshot!!!");
+                                                                      << L" into local snapshot.");
             }
         }
     } catch (std::filesystem::filesystem_error &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                         "Error caught in LocalFileSystemObserverWorker::exploreDir: code=" << e.code() << " error=" << e.what());
+                         "Exception caught in LocalFileSystemObserverWorker::exploreDir: " << e.code() << " error=" << e.what());
         return ExitCode::SystemError;
     } catch (...) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error caught in LocalFileSystemObserverWorker::exploreDir");
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Exception caught in LocalFileSystemObserverWorker::exploreDir");
         return ExitCode::SystemError;
     }
 
