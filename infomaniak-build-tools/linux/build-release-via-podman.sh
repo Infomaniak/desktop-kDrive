@@ -18,6 +18,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+script_directory_path="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+source "$script_directory_path/../build-utils.sh"
+
 program_name="$(basename "$0")"
 
 function display_help {
@@ -25,19 +28,11 @@ function display_help {
   echo "  Build the Linux release AppImage for desktop-kDrive via Podman."
   echo "where:"
   echo "-h  Show this help text."
-  echo "-a <architecture>"
-  echo "  Set the target architecture. Either 'arm64' or 'amd64'."
 }
-
-architecture=""
 
 while :
 do
     case "$1" in
-      -a | --architecture)
-          architecture="$2"
-          shift 2
-          ;;
       -h | --help)
           display_help
           exit 0
@@ -56,14 +51,6 @@ do
     esac
 done
 
-if [[ "$architecture" != "amd64" && "$architecture" != "arm64" ]]; then
-    echo "Invalid architecture argument: '$architecture'"
-    echo "Choose either 'arm64' or 'amd64'."
-    echo
-    display_help
-    exit 1
-fi
-
 build_dir="$PWD/build-linux"
 client_dir="$build_dir/client"
 install_dir="$build_dir/install"
@@ -80,6 +67,7 @@ mkdir -p "$conan_cache_folder"
 mkdir -p "$local_recipes_index"
 
 echo "Using temporary build folder '${build_dir}'."
+architecture=$(get_host_arch)
 echo "Building desktop-kDrive AppImage for architecture ${architecture} via Podman ..."
 echo
 
@@ -100,7 +88,7 @@ podman run --rm -it \
 	--env APPLICATION_SERVER_URL="$APPLICATION_SERVER_URL" \
 	--env KDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
 	--arch ${architecture} \
-	ghcr.io/infomaniak/kdrive-desktop-linux:${architecture} /bin/bash -c "/src/infomaniak-build-tools/linux/build-release-appimage.sh -a ${architecture}"
+	ghcr.io/infomaniak/kdrive-desktop-linux:${architecture} /bin/bash -c "/src/infomaniak-build-tools/linux/build-release-appimage.sh"
 podman machine stop build_kdrive
 
 version=$(grep "KDRIVE_VERSION_FULL" "$build_dir/client/version.h" | awk '{print $3}')

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#! /bin/bash
 
 #
 # Infomaniak kDrive - Desktop
@@ -18,6 +18,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+function get_host_arch() {
+    case "$(uname -m)" in
+    x86_64) architecture="amd64" ;;
+    arm64)  architecture="arm64" ;;
+    aarch64)  architecture="arm64" ;;
+    *) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
+    esac
 
-script_directory_path="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-bash "$script_directory_path/build-release-via-podman.sh" -a "arm64"
+    echo $architecture
+}

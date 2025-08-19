@@ -18,26 +18,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+script_directory_path="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+source "$script_directory_path/../build-utils.sh"
+
 program_name="$(basename "$0")"
-
-function get_host_arch() {
-    case "$(uname -m)" in
-    x86_64) architecture="amd64" ;;
-    arm64)  architecture="arm64" ;;
-    aarch64)  architecture="arm64" ;;
-    *) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
-    esac
-
-    echo $architecture
-}
 
 function display_help {
   echo "$program_name [-h] [-d architecture]"
   echo "  Build the Linux release AppImage for desktop-kDrive."
   echo "where:"
   echo "-h  Show this help text."
-  echo "-a <architecture>" 
-  echo "  Set the target architecture. Either 'arm64' or 'amd64'. Defaults to host architecture '$(get_host_arch)'."
 }
 
 function get_arch() {
@@ -88,7 +78,9 @@ function build_client_via_cmake() {
 
   cd "$build_folder"
 
+  architecture=$(get_host_arch)
   qt_neon_activation="ON"
+
   if [[ "$architecture" == "amd64" ]]; then
     qt_neon_activation="OFF"
   fi
@@ -181,14 +173,9 @@ function setup_build() {
   export PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 }
 
-architecture="$(get_host_arch)"
 while :
 do
     case "$1" in
-      -a | --architecture)
-          architecture="$2"
-          shift 2
-          ;;
       -h | --help)
           display_help 
           exit 0
@@ -207,34 +194,50 @@ do
     esac
 done
 
-if [[ "$architecture" != "amd64" && "$architecture" != "arm64" ]]; then
-    echo "Invalid architecture argument: '$architecture'"
-    echo "Use the default host architecture or choose between 'arm64' and 'amd64'."
-    echo
-    display_help
-    exit 1
-fi
-
 ulimit -n 4000000
-
-set -e
 
 setup_build
 
+if [ ! "$?" -eq "0" ]; then
+    echo
+    echo "Build setup failed."
+    exit 1
+fi
+
 echo
 
+architecture="$(get_host_arch)"
 build_type="RelWithDebInfo"
 conan_dependencies_folder="/build/conan/dependencies"
+
 echo "Building desktop-kDrive application with type ${build_type} via CMake for architecture ${architecture} ..."
 build_client_via_cmake "$build_type" "$conan_dependencies_folder"
+
+if [ ! "$?" -eq "0" ]; then
+    echo
+    echo "CMake build failed."
+    exit 1
+fi
 
 echo
 
 echo "Moving dependencies ..."
 move_dependencies "$architecture" "$conan_dependencies_folder"
 
+if [ ! "$?" -eq "0" ]; then
+    echo
+    echo "Move of dependencies failed."
+    exit 1
+fi
+
 echo "Building AppImage ..."
 build_app_image "$architecture"
+
+if [ ! "$?" -eq "0" ]; then
+    echo
+    echo "Build of the AppImage failed."
+    exit 1
+fi
 
 echo "Build of AppImage successfully completed for architecture ${architecture}."
 
