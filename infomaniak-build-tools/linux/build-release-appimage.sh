@@ -24,6 +24,7 @@ function get_host_arch() {
     case "$(uname -m)" in
     x86_64) architecture="amd64" ;;
     arm64)  architecture="arm64" ;;
+    aarch64)  architecture="arm64" ;;
     *) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
     esac
 
