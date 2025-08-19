@@ -323,6 +323,8 @@ if(UNIX AND NOT APPLE)
     if (DEFINED CONAN_DEP_DIR)
         # Copy .so files to the conan dependency directory
         find_package(log4cplus 2.1.2 REQUIRED) # used to get the variable log4cplus_LIB_DIRS_RELEASE
+        find_package(xxHash 0.8.2 REQUIRED)
+        find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
         file(COPY
             # log4cplus
             "${log4cplus_LIB_DIRS_RELEASE}/liblog4cplus.so"
