@@ -298,13 +298,13 @@ void FolderTreeItemWidget::createBlackSet(const QTreeWidgetItem *parentItem, QSe
 
 void FolderTreeItemWidget::removeChildNodeFromSet(const QString &parentId, QSet<QString> &blackset) {
     const auto parentPath = _blacklistCache[parentId];
-    for (auto it = _blacklistCache.begin(); it != _blacklistCache.end(); it++) {
-        const auto &id = it.key();
-        const auto &path = it.value();
-        if (path.startsWith(parentPath + "/")) {
-            (void) blackset.remove(id);
-            (void) _blacklistCache.remove(id);
+    for (auto it = _blacklistCache.begin(); it != _blacklistCache.end();) {
+        if (const auto &path = it.value(); path.startsWith(parentPath + "/")) {
+            (void) blackset.remove(it.key());
+            it = _blacklistCache.erase(it);
+            continue;
         }
+        it++;
     }
 }
 
