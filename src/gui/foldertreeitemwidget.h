@@ -77,7 +77,9 @@ class FolderTreeItemWidget : public QTreeWidget {
         static const QColor _sizeTextColor;
         bool _inserting;
         QHash<QString, QTreeWidgetItem *> _subFoldersMap;
-        QHash<QString, QString> _blacklistCache;
+        using GuiNodeId = QString;
+        using GuiPath = QString;
+        QHash<GuiNodeId, GuiPath> _blacklistCache;
         CustomTreeWidgetItem *_root = nullptr;
 
         // The set of items newly blacklisted by the user; they were
@@ -99,7 +101,8 @@ class FolderTreeItemWidget : public QTreeWidget {
         void insertNode(QTreeWidgetItem *parent, const NodeInfo &nodeInfo);
         void updateDirectories(QTreeWidgetItem *item, const QString &nodeId, QList<NodeInfo> list);
         ExitCode updateBlackUndecidedSet();
-        void createBlackSet(QTreeWidgetItem *parentItem, QSet<QString> &blackset);
+        void createBlackSet(const QTreeWidgetItem *parentItem, QSet<QString> &blackset);
+        void removeChildNodeFromSet(const QString &nodeId, QSet<QString> &blackset);
         void createWhiteSet(QTreeWidgetItem *parentItem, QSet<QString> &whiteSet);
         void updateBlacklistPathMap();
         void addTreeWidgetItemToQueue(const QString &nodeId, QTreeWidgetItem *item);
