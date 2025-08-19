@@ -323,6 +323,7 @@ if(UNIX AND NOT APPLE)
         find_package(log4cplus 2.1.2 REQUIRED) # used to get the variable log4cplus_LIB_DIRS_RELEASE
         find_package(xxHash 0.8.2 REQUIRED)
         find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
+        # We use <lib>_LIB_DIRS_RELEASE because every dependency is built in release mode.+
         file(COPY
             # log4cplus
             "${log4cplus_LIB_DIRS_RELEASE}/liblog4cplus.so"
@@ -332,10 +333,10 @@ if(UNIX AND NOT APPLE)
             "${xxhash_LIB_DIRS_RELEASE}/libxxhash.so.0"
             "${xxhash_LIB_DIRS_RELEASE}/libxxhash.so.0.8.2"
             # OpenSSL
-            "${openssl-universal_LIB_DIRS_RELEASE}/libcrypto.so"
-            "${openssl-universal_LIB_DIRS_RELEASE}/libcrypto.so.3"
-            "${openssl-universal_LIB_DIRS_RELEASE}/libssl.so"
-            "${openssl-universal_LIB_DIRS_RELEASE}/libssl.so.3"
+            "${openssl_LIB_DIRS_RELEASE}/libcrypto.so"
+            "${openssl_LIB_DIRS_RELEASE}/libcrypto.so.3"
+            "${openssl_LIB_DIRS_RELEASE}/libssl.so"
+            "${openssl_LIB_DIRS_RELEASE}/libssl.so.3"
 #            # sentry
 #            "${sentry_LIB_DIRS_RELEASE}/libsentry.so"
             DESTINATION "${CONAN_DEP_DIR}"
