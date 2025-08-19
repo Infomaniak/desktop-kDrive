@@ -7,7 +7,7 @@ from conan.tools.apple import fix_apple_shared_install_name, is_apple_os
 import os
 
 class OpenSSLUniversalConan(ConanFile):
-    name = "openssl-universal"
+    name = "openssl"
     version = "3.2.4"
     package_type = "library"
     settings = "os", "arch", "compiler", "build_type"
@@ -21,14 +21,18 @@ class OpenSSLUniversalConan(ConanFile):
 
 
     def validate(self):
-        if not is_apple_os(self):
-            raise ConanInvalidConfiguration("openssl-universal is only supported on Apple platforms (macOS, iOS, etc.)")
+        if str(self.settings.os) != "Macos":
+            raise ConanInvalidConfiguration("This recipe is only supported on macOS.")
+
+    def config_option(self):
+        if not self.options.shared:
+            self.options.shared = True
+            self.output.warning("This recipe only supports shared libraries on Apple platforms. The 'shared' option has been overwritten to True.")
 
     def build(self):
         script = os.path.join(self.build_folder, "openssl_universal_build.sh")
 
-        self.run(f"chmod +x {script}")
-        self.run(f"bash {script} --build-folder {self.build_folder}")
+        self.run(f"/usr/bin/env bash {script} --build-folder {self.build_folder}")
 
     def package(self):
         copy(self, "*.h", src=os.path.join(self.build_folder, "openssl.multi", "include"), dst=os.path.join(self.package_folder, "include"))
@@ -43,7 +47,7 @@ class OpenSSLUniversalConan(ConanFile):
         )
 
     def requirements(self):
-        self.requires("zlib/[>=1.2.11 <2]", options={"shared": self.options.shared})
+        self.requires("zlib/[>=1.2.11 <2]", transitive_headers=True, options={"shared": True})
 
 
     def _create_cmake_module_variables(self, module_file):
@@ -119,5 +123,14 @@ class OpenSSLUniversalConan(ConanFile):
         self.cpp_info.components["crypto"].set_property("cmake_target_name", "OpenSSL::Crypto")
         self.cpp_info.components["crypto"].set_property("pkg_config_name", "libcrypto")
 
+        self.cpp_info.set_property("cmake_build_modules", [self._module_file_rel_path])
+
         openssl_modules_dir = os.path.join(self.package_folder, "lib", "ossl-modules")
         self.runenv_info.define_path("OPENSSL_MODULES", openssl_modules_dir)
+
+    def package_id(self):
+        self.info.settings.rm_safe("arch")
+        self.info.settings.rm_safe("compiler")
+        self.info.settings.rm_safe("build_type")
+        self.info.options.rm_safe("shared")
+        self.info.requires.clear()

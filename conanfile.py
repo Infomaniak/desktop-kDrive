@@ -53,6 +53,7 @@ class KDriveDesktop(ConanFile):
         - `log4cplus/2.1.2`: A C++ logging library.
         :return: None
         """
+        self.requires("zlib/[>=1.2.11 <2]", transitive_headers=True, options={"shared": True})
         # From local recipe, using the qt online installer.
         if self.settings.os == "Linux" and str(self.settings.arch).startswith("arm"): # linux arm64
             self.requires("qt/6.7.3")
@@ -65,16 +66,14 @@ class KDriveDesktop(ConanFile):
             log4cplus_options["thread_pool"] = False
         self.requires("log4cplus/2.1.2", options=log4cplus_options) # From https://conan.io/center/recipes/log4cplus
 
-        # openssl depends on zlib, which is already inside the conanfile.py of openssl-universal
-        # but since we build openssl-universal two times (for x86_64 and arm64) in single arch and then merge them, we need to add zlib in 'armv8|x86_64' arch mode.
-        self.requires("zlib/[>=1.2.11 <2]", options={ "shared": True }) # From https://conan.io/center/recipes/zlib
-        if self.settings.os == "Macos":
-            # On macOS, we need to use the universal version of OpenSSL
-            self.requires("openssl-universal/3.2.4")
-        else:
-            self.requires("openssl/3.2.4", options={ "shared": True }) # From https://conan.io/center/recipes/openssl
+        # openssl depends on zlib, which is already inside the conanfile.py of openssl
+        # but since we build openssl two times (for x86_64 and arm64) in single arch and then merge them, we need to add zlib in 'armv8|x86_64' arch mode.
+        self.requires("openssl/3.2.4", options={ "shared": True }) # on MacOS => Using the local recipe, using the openssl universal build script. Otherwise, using the conan center recipe.
 
-        self.requires(f"sentry/0.7.10")
+        self.requires("sentry/0.7.10")
+        self.requires("poco/1.13.3", options={
+            "shared": True
+        })
 
 class OverrideVSRuntimeBlock(VSRuntimeBlock):
     def __init__(self, conanfile, toolchain, name):

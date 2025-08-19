@@ -61,7 +61,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 IF (WIN32)
     SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
-        "C:/Program Files (x86)/Poco"
         "C:/Program Files (x86)/libzip"
     )
 ENDIF ()
@@ -323,6 +322,7 @@ if(UNIX AND NOT APPLE)
         find_package(log4cplus 2.1.2 REQUIRED) # used to get the variable log4cplus_LIB_DIRS_RELEASE
         find_package(xxHash 0.8.2 REQUIRED)
         find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
+        find_package(Poco 1.13.3 REQUIRED)
         # We use <lib>_LIB_DIRS_RELEASE because every dependency is built in release mode.+
         file(COPY
             # log4cplus
@@ -339,6 +339,21 @@ if(UNIX AND NOT APPLE)
             "${openssl_LIB_DIRS_RELEASE}/libssl.so.3"
             # sentry
             "${sentry_LIB_DIRS_RELEASE}/libsentry.so"
+            # Poco
+            "${poco_LIB_DIRS_RELEASE}/libPocoCrypto.so"
+            "${poco_LIB_DIRS_RELEASE}/libPocoCrypto.so.103"
+            "${poco_LIB_DIRS_RELEASE}/libPocoFoundation.so"
+            "${poco_LIB_DIRS_RELEASE}/libPocoFoundation.so.103"
+            "${poco_LIB_DIRS_RELEASE}/libPocoJSON.so"
+            "${poco_LIB_DIRS_RELEASE}/libPocoJSON.so.103"
+            "${poco_LIB_DIRS_RELEASE}/libPocoNet.so"
+            "${poco_LIB_DIRS_RELEASE}/libPocoNet.so.103"
+            "${poco_LIB_DIRS_RELEASE}/libPocoNetSSL.so"
+            "${poco_LIB_DIRS_RELEASE}/libPocoNetSSL.so.103"
+            "${poco_LIB_DIRS_RELEASE}/libPocoUtil.so"
+            "${poco_LIB_DIRS_RELEASE}/libPocoUtil.so.103"
+            "${poco_LIB_DIRS_RELEASE}/libPocoXML.so"
+            "${poco_LIB_DIRS_RELEASE}/libPocoXML.so.103"
             DESTINATION "${CONAN_DEP_DIR}"
             FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
         )

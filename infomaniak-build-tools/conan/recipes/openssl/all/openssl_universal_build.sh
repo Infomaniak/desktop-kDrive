@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euox pipefail
+set -eox pipefail
 
 openssl_version="3.2.4"
 
@@ -34,6 +34,10 @@ if ! conan profile show 2>/dev/null | grep "arch=" | head -n 1 | cut -d'=' -f 2 
 fi
 
 pushd "$build_folder"
+
+# Get the right path for zlib
+source ./conanrun.sh || error "Failed to source conanrun.sh. Please ensure it exists and is executable."
+
 log "Cloning OpenSSL sources..."
 git clone --depth 1 --branch "$openssl_git_tag" "$src_url" openssl
 

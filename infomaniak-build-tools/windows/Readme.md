@@ -2,7 +2,6 @@
 
 - [kDrive files](#kdrive-files)
 - [Installation Requirements](#installation-requirements)
-    - [Poco](#poco)
     - [CPPUnit](#cppunit)
     - [Zlib](#zlib)
     - [libzip](#libzip)
@@ -57,34 +56,6 @@ When installing `Visual Studio 2019`, select the following components:
 - Windows 11 SDK (10.0.22000.0)
 - Windows 10 SDK (10.0.17763.0)
 - Windows 10 SDK (10.0.20348.0)
-
-## Poco
-
-> :warning: **`Poco` requires OpenSSL to be installed.**
-
-Clone and build `Poco`:
-
-```powershell
-cd F:\Projects
-git clone https://github.com/pocoproject/poco.git
-cd poco
-git checkout tags/poco-1.13.3-release
-mkdir build
-cd build
-cmake -G "Visual Studio 16 2019" .. -DOPENSSL_ROOT_DIR="C:\Program Files\OpenSSL" -DOPENSSL_INCLUDE_DIR="C:\Program Files\OpenSSL\include" -DOPENSSL_CRYPTO_LIBRARY=libcrypto.lib -DOPENSSL_SSL_LIBRARY=libssl.lib
-```
-
-Open the `poco.sln` solution in Visual Studio 2019 and add `C:\Program Files\OpenSSL-Win64\lib` to the `Additional Library Directories` for the following projects:
-- Crypto
-- JWT
-- NetSSL
-
-While still in the `build` directory, issue the following commands:
-
-```powershell
-cmake --build . --target install --config Debug
-cmake --build . --target install --config Release
-```
 
 ## CPPUnit
 
@@ -288,7 +259,7 @@ You can create a copy of the previously defined profile, but this profile **must
 powershell ./infomaniak-build-tools/conan/build_dependencies.ps1 [Debug|Release] [-OutputDir <output_dir>]
 ```
 
-> **Note:** Currently only **xxHash**, **log4cplus**, **OpenSSL**, **zlib** and **Sentry** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** Currently only **xxHash**, **log4cplus**, **OpenSSL**, **zlib**, **Sentry** and **Poco** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
 
 ---
 # Build in Debug
@@ -299,7 +270,6 @@ To build in `Debug` mode, you will need to build and deploy the Windows extensio
 
 In order for CMake to be able to find all dependencies, add all libraries installation folder in the `PATH` environment variable:
 ```
-C:\Program Files (x86)\Poco\bin
 C:\Program Files (x86)\libzip\bin
 C:\Program Files (x86)\cppunit\bin
 ```
@@ -386,15 +356,7 @@ Open `Visual Studio 2019` and select `Open local folder`. Then choose `F:\Projec
     -DZLIB_INCLUDE_DIR:PATH="C:/Program Files (x86)/zlib-1.2.11/include" 
     -DZLIB_LIBRARY_RELEASE:FILEPATH="C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib" 
     -DVFS_STATIC_LIBRARY:FILEPATH=F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug/Vfs.lib 
-    -DVFS_DIRECTORY:PATH=F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug 
-    -DPocoCrypto_DIR:PATH="C:/Program Files (x86)/Poco/cmake" 
-    -DPocoFoundation_DIR:PATH="C:/Program Files (x86)/Poco/cmake" 
-    -DPocoJSON_DIR:PATH="C:/Program Files (x86)/Poco/cmake" 
-    -DPocoNetSSL_DIR:PATH="C:/Program Files (x86)/Poco/cmake" 
-    -DPocoNet_DIR:PATH="C:/Program Files (x86)/Poco/cmake" 
-    -DPocoUtil_DIR:PATH="C:/Program Files (x86)/Poco/cmake" 
-    -DPocoXML_DIR:PATH="C:/Program Files (x86)/Poco/cmake" 
-    -DPoco_DIR:PATH="C:/Program Files (x86)/Poco/cmake"
+    -DVFS_DIRECTORY:PATH=F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug
     ```
    You may need to adjust paths based on your installation.
    
@@ -417,7 +379,6 @@ Once done, right-click on the `kDrive_client` executable and then on `Install`.
 ### DLL Copy
 
 During the next step, you may encounter missing DLL errors. If so, copy the required DLLs into the `bin` folder of your output directory. The DLLs are located in:
-- `C:\Program Files (x86)\Poco\bin`
 - `C:\Program Files (x86)\NSIS\Bin`
 - `C:\Program Files (x86)\zlib-1.2.11`
 - `C:\Program Files\OpenSSL\bin`

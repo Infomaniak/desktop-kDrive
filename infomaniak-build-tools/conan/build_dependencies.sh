@@ -75,13 +75,35 @@ function get_platform {
   echo "$platform"
 }
 
-function get_architecture {
+
+
+function get_target_architecture {
   platform=$1
   architecture="" # Left empty for Linux systems.
+
+  function get_real_architecture {
+    real_architecture="$(uname -m)"
+    if echo "$real_architecture" | grep -qE "(arm|aarch)64"; then
+      real_architecture="armv8"
+    elif [[ "$real_architecture" == "x86_64" ]]; then
+      real_architecture="x86_64"
+    else
+      error "Unsupported architecture: $real_architecture. Supported architectures: armv8, x86_64."
+    fi
+    echo "$real_architecture"
+  }
+
   if [[ "$platform" = "darwin" ]]; then
-    architecture="-s:a=arch=armv8|x86_64" # Making universal binary. See https://docs.conan.io/2/reference/tools/cmake/cmaketoolchain.html#conan-tools-cmaketoolchain-universal-binaries
+    if [[ "$build_type" = "Debug" ]]; then
+      architecture="$(get_real_architecture)"
+    else
+      architecture="armv8|x86_64" # Making universal binary. See https://docs.conan.io/2/reference/tools/cmake/cmaketoolchain.html#conan-tools-cmaketoolchain-universal-binaries
+    fi
+  else
+    architecture="$(get_real_architecture)"
   fi
 
+  log "platform: $platform, build_type: $build_type => architecture: $architecture" >&2
   echo "$architecture"
 }
 
@@ -141,7 +163,6 @@ has_profile() {
   conan profile list 2>/dev/null | grep -v '\.cmake$' | grep -qx "$1"
 }
 
-
 if [[ $use_release_profile == true ]]; then
   release_profile="infomaniak_release"
   if has_profile "$release_profile"; then
@@ -166,7 +187,6 @@ else
   conan_profile="default"
 fi
 
-
 set -euox pipefail
 conan_remote_base_folder="$PWD/infomaniak-build-tools/conan"
 local_recipe_remote_name="localrecipes"
@@ -188,7 +208,7 @@ if [[ "$platform" == "darwin" ]]; then
     log "Building universal binary for macOS."
 fi
 
-architecture=$(get_architecture "$platform")
+architecture="-s:a=arch=$(get_target_architecture "$platform")"
 
 mkdir -p "$output_dir"
 
@@ -210,7 +230,9 @@ conan create "$conan_recipes_folder/xxhash/all/" --build=missing $architecture -
 
 if [ "$platform" = "darwin" ]; then
   log "Creating openssl package..."
-  conan create "$conan_recipes_folder/openssl-universal/all/" --build=missing -s:a=build_type=Release --profile:all="$conan_profile" -r="$local_recipe_remote_name" -r=conancenter
+  conan create "$conan_recipes_folder/openssl/all/" --build=missing -s:a=build_type=Release --profile:all="$conan_profile" -r="$local_recipe_remote_name" -r=conancenter
+else
+  conan download -r=conancenter "openssl/3.2.4" --only-recipe
 fi
 
 qt_version="6.2.3"
@@ -221,9 +243,11 @@ fi
 log "Creating Qt package..."
 conan create "$conan_recipes_folder/qt/all/" --version="$qt_version" --build=missing $architecture -s:a=build_type=Release -r=$local_recipe_remote_name -r=conancenter
 
-
 log "Creating sentry package..."
 conan create "$conan_recipes_folder/sentry/all/" --build=missing $architecture -s:a=build_type=Release -r=$local_recipe_remote_name -r=conancenter
+
+log "Creating package Poco..."
+conan create "$conan_recipes_folder/poco/all/" --build=missing $architecture -s:a=build_type=Release --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter
 
 log "Installing dependencies..."
 # Install this packet in the build folder.

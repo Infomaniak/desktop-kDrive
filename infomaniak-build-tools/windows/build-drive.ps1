@@ -422,13 +422,6 @@ function Prepare-Archive {
     $dependencies = @(
         "${env:ProgramFiles(x86)}/zlib-1.2.11/bin/zlib1",
         "${env:ProgramFiles(x86)}/libzip/bin/zip",
-        "${env:ProgramFiles(x86)}/Poco/bin/PocoCrypto",
-        "${env:ProgramFiles(x86)}/Poco/bin/PocoFoundation",
-        "${env:ProgramFiles(x86)}/Poco/bin/PocoJSON",
-        "${env:ProgramFiles(x86)}/Poco/bin/PocoNet",
-        "${env:ProgramFiles(x86)}/Poco/bin/PocoNetSSL",
-        "${env:ProgramFiles(x86)}/Poco/bin/PocoUtil",
-        "${env:ProgramFiles(x86)}/Poco/bin/PocoXML",
         "$vfsDir/Vfs",
         "$buildPath/bin/kDrivecommonserver_vfs_win"
     )
@@ -445,8 +438,9 @@ function Prepare-Archive {
     $packages = @( # Qt dependencies are handled by windeployqt
         @{ Name = "xxhash";    Dlls = @("xxhash") },
         @{ Name = "log4cplus"; Dlls = @("log4cplus") },
-        @{ Name = "openssl";   Dlls = @("libcrypto-3-x64", "libssl-3-x64") }
-        @{ Name = "sentry";   Dlls = @("sentry") }
+        @{ Name = "openssl";   Dlls = @("libcrypto-3-x64", "libssl-3-x64") },
+        @{ Name = "sentry";   Dlls = @("sentry") },
+        @{ Name = "poco";     DLLs = @("PocoCrypto", "PocoFoundation", "PocoJSON", "PocoNet", "PocoNetSSL", "PocoUtil", "PocoXML") }
     )
 
     foreach ($pkg in $packages) {

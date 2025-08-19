@@ -100,7 +100,15 @@ runs:
                    -o -iname 'liblog4cplus*.dylib' \
                    -o -iname 'libsentry.dylib' \
                    -o -iname 'libssl*.dylib' \
-                   -o -iname 'libcrypto*.dylib' ')' \
+                   -o -iname 'libcrypto*.dylib' \
+                   -o -iname 'libPocoNetSSL*.dylib' \
+                   -o -iname 'libPocoUtil*.dylib' \
+                   -o -iname 'libPocoJSON*.dylib' \
+                   -o -iname 'libPocoXML*.dylib' \
+                   -o -iname 'libPocoFoundation*.dylib' \
+                   -o -iname 'libPocoNet*.dylib' \
+                   -o -iname 'libPocoCrypto*.dylib' \
+          ')' \
                 -exec cp {} ./dependencies/ \; \
                 -exec echo "Conan dependency found -> " {} \;
               if [[ "$dir" == *"/qt"* ]]; then
