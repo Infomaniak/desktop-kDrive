@@ -77,7 +77,9 @@ class FolderTreeItemWidget : public QTreeWidget {
         static const QColor _sizeTextColor;
         bool _inserting;
         QHash<QString, QTreeWidgetItem *> _subFoldersMap;
-        QHash<QString, QString> _blacklistCache; // nodeId / path
+        using GuiNodeId = QString;
+        using GuiPath = QString;
+        QHash<GuiNodeId, GuiPath> _blacklistCache;
         CustomTreeWidgetItem *_root = nullptr;
 
         // The set of items newly blacklisted by the user; they were
