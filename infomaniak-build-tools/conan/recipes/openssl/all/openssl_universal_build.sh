@@ -68,6 +68,14 @@ lipo -create -output openssl.multi/lib/libcrypto.3.dylib  openssl.x86_64/libcryp
 install_name_tool -id "@rpath/libssl.3.dylib" openssl.multi/lib/libssl.3.dylib
 install_name_tool -id "@rpath/libcrypto.3.dylib" openssl.multi/lib/libcrypto.3.dylib
 
+install_name_tool -add_rpath "@loader_path" openssl.multi/lib/libssl.3.dylib
+install_name_tool -add_rpath "@loader_path" openssl.multi/lib/libcrypto.3.dylib
+
+## Fixing dependencies for the merged libraries
+install_name_tool -change "/usr/local/lib/libcrypto.3.dylib" "@rpath/libcrypto.3.dylib" openssl.multi/lib/libssl.3.dylib
+install_name_tool -change "/usr/lib/libz.1.dylib"            "@rpath/libz.1.dylib"      openssl.multi/lib/libssl.3.dylib
+install_name_tool -change "/usr/lib/libz.1.dylib"            "@rpath/libz.1.dylib"      openssl.multi/lib/libcrypto.3.dylib
+
 cp -R openssl.x86_64/include openssl.multi/include
 
 popd
