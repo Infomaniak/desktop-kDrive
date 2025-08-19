@@ -175,7 +175,7 @@ class QtConan(ConanFile):
     def _get_executable_path(self, downloaded_file_name: str) -> str:
         """
         On macOS, the downloaded file is a DMG, a disk image. We have to mount it and then find the executable inside.
-        Here, we mount the DMG file, and then find the path to the executable inside the mounted DMG, copy the exectable
+        Here, we mount the DMG file, and then find the path to the executable inside the mounted DMG, copy the executable
             to the build folder, unmount the DMG and then return the path to the executable.
 
         On Linux, the downloaded file is a `.run` file. We `chmod +x` it and can run it directly.
@@ -382,7 +382,7 @@ class QtConan(ConanFile):
     def package_id(self):
         """
         Modify the package ID to exclude settings and options that do not affect the final Qt installation.
-        This is done to cache the package and avoid unnecessary reinstalls.
+        This is done to cache the package and avoid unnecessary reinstallations.
         :return: None
         """
         self.info.settings.rm_safe("build_type")

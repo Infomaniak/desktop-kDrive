@@ -94,8 +94,15 @@ class XxHashConan(ConanFile):
 
     def build(self):
         cmake = CMake(self)
-        cmake.configure(build_script_folder=os.path.join(self.source_folder, "cmake_unofficial"))
+        cmake.configure(build_script_folder=os.path.join(self.source_folder, "cmake_unofficial"), variables={ "CMAKE_BUILD_TYPE": self.forced_build_type } if self.settings.os != "Windows" else None)
         cmake.build()
+
+    @property
+    def forced_build_type(self):
+        return "Release" # Force the build type to Release since we don't need to debug symbols
+
+    def package_id(self):
+        self.info.settings.rm_safe("build_type")
 
     def package(self):
         copy(self, "LICENSE", src=self.source_folder, dst=os.path.join(self.package_folder, "licenses"))

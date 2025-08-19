@@ -226,11 +226,11 @@ echo
 # Create the conan package for xxHash.
 conan_recipes_folder="$conan_remote_base_folder/recipes"
 log "Creating package xxHash..."
-conan create "$conan_recipes_folder/xxhash/all/" --build=missing $architecture -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=$local_recipe_remote_name
+conan create "$conan_recipes_folder/xxhash/all/" --build=missing $architecture -s:a=build_type=Release --profile:all="$conan_profile" -r=$local_recipe_remote_name
 
 if [ "$platform" = "darwin" ]; then
   log "Creating openssl package..."
-  conan create "$conan_recipes_folder/openssl/all/" --build=missing -s:a=build_type="$build_type" --profile:all="$conan_profile" -r="$local_recipe_remote_name" -r=conancenter
+  conan create "$conan_recipes_folder/openssl/all/" --build=missing -s:a=build_type=Release --profile:all="$conan_profile" -r="$local_recipe_remote_name" -r=conancenter
 else
   conan download -r=conancenter "openssl/3.2.4" --only-recipe
 fi
@@ -241,17 +241,18 @@ if [[ "$platform" == "linux" ]] && [[ "$(uname -m)" == "aarch64" ]]; then
 fi
 
 log "Creating Qt package..."
-conan create "$conan_recipes_folder/qt/all/" --version="$qt_version" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter
+conan create "$conan_recipes_folder/qt/all/" --version="$qt_version" --build=missing $architecture -s:a=build_type=Release -r=$local_recipe_remote_name -r=conancenter
 
 log "Creating sentry package..."
-conan create "$conan_recipes_folder/sentry/all/" --build=missing $architecture -s:a=build_type="$build_type" -r=$local_recipe_remote_name -r=conancenter
+conan create "$conan_recipes_folder/sentry/all/" --build=missing $architecture -s:a=build_type=Release -r=$local_recipe_remote_name -r=conancenter
 
 log "Creating package Poco..."
 conan create "$conan_recipes_folder/poco/all/" --build=missing $architecture -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter
 
 log "Installing dependencies..."
 # Install this packet in the build folder.
-conan install . --output-folder="$output_dir" --build=missing $architecture -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=conancenter -r=$local_recipe_remote_name
+# Here: -s:b set the build type for the app itself, -s:h set the build type for the host (dependencies).
+conan install . --output-folder="$output_dir" --build=missing $architecture -s:b=build_type="$build_type" -s:h=build_type="Release" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter
 
 if [ $? -ne 0 ]; then
   error "Failed to install Conan dependencies."
