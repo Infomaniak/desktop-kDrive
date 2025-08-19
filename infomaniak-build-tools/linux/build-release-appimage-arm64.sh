@@ -20,6 +20,9 @@
 
 ulimit -n 4000000
 
+# TODO Remove this line when a new Image on ghcr.io is pushed # This guarantees that the Poco used is the one from Conan
+rm -rf /usr/local/include/Poco /usr/local/lib/cmake/Poco /usr/local/lib/libPoco*
+
 set -xe
 
 mkdir -p /app
