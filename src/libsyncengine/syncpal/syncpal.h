@@ -148,7 +148,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         inline int userId() const { return _syncInfo.userId; }
         inline const std::string &driveName() const { return _syncInfo.driveName; }
         inline VirtualFileMode vfsMode() const { return _syncInfo.vfsMode; }
-        inline SyncPath localPath() const { return _syncInfo.localPath; }
+        inline const SyncPath &localPath() const { return _syncInfo.localPath; }
         inline const NodeId &localNodeId() const { return _syncInfo.localNodeId; }
         inline bool restart() const { return _syncInfo.restart; }
         inline bool updateTreesNeedToBeCleared() const { return _syncInfo.updateTreesNeedToBeCleared; }
