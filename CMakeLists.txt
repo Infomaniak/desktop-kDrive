@@ -238,7 +238,6 @@ configure_file(config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 
 set(QTDIR $ENV{QTDIR})
-find_package(sentry REQUIRED) # used to get
 
 if(BUILD_KDRIVE_OSX_BUNDLE)
     # Provision profile
@@ -323,6 +322,7 @@ if(UNIX AND NOT APPLE)
         find_package(log4cplus 2.1.2 REQUIRED) # used to get the variable log4cplus_LIB_DIRS_RELEASE
         find_package(xxHash 0.8.2 REQUIRED)
         find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
+        find_package(sentry REQUIRED)
         # We use <lib>_LIB_DIRS_RELEASE because every dependency is built in release mode.+
         file(COPY
             # log4cplus
