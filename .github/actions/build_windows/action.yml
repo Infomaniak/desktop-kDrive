@@ -114,7 +114,7 @@ runs:
               "PocoNet.dll",
               "PocoNetSSL.dll",
               "PocoUtil.dll",
-              "PocoXML.dll",
+              "PocoXML.dll"
           )
 
           $paths = $env:PATH -split ';' | Where-Object { $_ -like '*\.conan2\p*' }
