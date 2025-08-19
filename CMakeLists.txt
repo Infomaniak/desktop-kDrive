@@ -328,9 +328,9 @@ if(UNIX AND NOT APPLE)
             "${log4cplus_LIB_DIRS_RELEASE}/liblog4cplus.so"
             "${log4cplus_LIB_DIRS_RELEASE}/liblog4cplus.so.9"
             # xxHash
-            "${xxHash_LIB_DIRS_RELEASE}/libxxhash.so"
-            "${xxHash_LIB_DIRS_RELEASE}/libxxhash.so.0"
-            "${xxHash_LIB_DIRS_RELEASE}/libxxhash.so.0.8.2"
+            "${xxhash_LIB_DIRS_RELEASE}/libxxhash.so"
+            "${xxhash_LIB_DIRS_RELEASE}/libxxhash.so.0"
+            "${xxhash_LIB_DIRS_RELEASE}/libxxhash.so.0.8.2"
             # OpenSSL
             "${openssl-universal_LIB_DIRS_RELEASE}/libcrypto.so"
             "${openssl-universal_LIB_DIRS_RELEASE}/libcrypto.so.3"
