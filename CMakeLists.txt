@@ -61,7 +61,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 IF (WIN32)
     SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
-        "C:/Program Files (x86)/Poco"
         "C:/Program Files (x86)/libzip"
     )
 ENDIF ()
