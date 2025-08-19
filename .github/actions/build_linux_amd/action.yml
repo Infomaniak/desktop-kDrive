@@ -85,13 +85,6 @@ runs:
         run: | 
           mkdir dependencies
           cp /usr/local/lib/libcppunit-1.15.so.2 ./dependencies/ 
-          cp /usr/local/lib/libPocoUtil* ./dependencies/
-          cp /usr/local/lib/libPocoJSON* ./dependencies/
-          cp /usr/local/lib/libPocoXML* ./dependencies/
-          cp /usr/local/lib/libPocoFoundation* ./dependencies/
-          cp /usr/local/lib/libPocoNetSSL* ./dependencies/
-          cp /usr/local/lib/libPocoCrypto* ./dependencies/
-          cp /usr/local/lib/libPocoNet* ./dependencies/
           cp /usr/local/lib/libzip* ./dependencies/
           cp /usr/lib/x86_64-linux-gnu/libglib* ./dependencies/
           cp /usr/lib/x86_64-linux-gnu/libsecret* ./dependencies/
@@ -121,10 +114,17 @@ runs:
                 -o -iname 'libQt6Sql*.so*' \
                 -o -iname 'libQt6Core*.so*' \
                 -o -iname 'libQt6DBus*.so*' \
-                -o -iname 'libicui18n*.so*' \
+                -o -iname 'libQt6Svg*.so* \
                 -o -iname 'libicuuc*.so*' \
                 -o -iname 'libicudata*.so*' \
-                -o -iname 'libQt6Svg*.so*' \) \
+                -o -iname 'libicui18n*.so*' \
+                -o -iname 'libPocoUtil*' \
+                -o -iname 'libPocoJSON*' \
+                -o -iname 'libPocoXML*' \
+                -o -iname 'libPocoFoundation*' \
+                -o -iname 'libPocoNetSSL*' \
+                -o -iname 'libPocoCrypto*' \
+                -o -iname 'libPocoNet*' \) \
                 -exec cp {} ./dependencies/ \; \
                 -exec echo "Conan dependency found -> " {} \;
               if [[ "$dir" == *"/qt"* ]]; then
