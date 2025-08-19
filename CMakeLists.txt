@@ -238,6 +238,7 @@ configure_file(config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 
 set(QTDIR $ENV{QTDIR})
+find_package(sentry REQUIRED) # used to get
 
 if(BUILD_KDRIVE_OSX_BUNDLE)
     # Provision profile
@@ -249,8 +250,6 @@ if(BUILD_KDRIVE_OSX_BUNDLE)
     # Default Lite Sync app exclude list
     install(FILES litesync-exclude.lst DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Resources/)
 
-    find_package(sentry REQUIRED)
-
     # Crashpad_handler
     get_target_property(CRASHPAD_HANDLER_PROGRAM
             sentry_crashpad::crashpad_handler
@@ -259,7 +258,6 @@ if(BUILD_KDRIVE_OSX_BUNDLE)
     message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
     install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/MacOS/)
 elseif(BUILD_CLIENT)
-    find_package(sentry REQUIRED)
     if(WIN32)
         # NSIS
         configure_file(cmake/modules/NSIS.template.nsi.in ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.nsi @ONLY)
@@ -338,8 +336,8 @@ if(UNIX AND NOT APPLE)
             "${openssl-universal_LIB_DIRS_RELEASE}/libcrypto.so.3"
             "${openssl-universal_LIB_DIRS_RELEASE}/libssl.so"
             "${openssl-universal_LIB_DIRS_RELEASE}/libssl.so.3"
-            # sentry
-            "${sentry_LIB_DIRS_RELEASE}/libsentry.so"
+#            # sentry
+#            "${sentry_LIB_DIRS_RELEASE}/libsentry.so"
             DESTINATION "${CONAN_DEP_DIR}"
             FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
     endif()
