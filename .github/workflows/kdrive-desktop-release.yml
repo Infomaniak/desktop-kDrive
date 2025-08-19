@@ -63,7 +63,11 @@ jobs:
 
       - name: Check release notes
         run: |
-          VERSION_NUMBER="${{ steps.get-version.outputs.kDrive_version }}"
+          VERSION_NUMBER="${{ steps.get-version.outputs.kDrive_version }}"  # Example: 3.9.20.20250820
+          version_size=${#VERSION_NUMBER}
+          end_position=$((size - 9))
+          VERSION_NUMBER=${VERSION_NUMBER:0:$end_position}  # Removes the date, e.g., 20250820
+
           BASE_NAME="kDrive-${VERSION_NUMBER}"
           BASE_PATH="./release_notes/${BASE_NAME}"
           OS=( "win" "linux" "macos" )
