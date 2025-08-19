@@ -2,7 +2,6 @@
 
 - [kDrive files](#kdrive-files)
 - [Installation Requirements](#installation-requirements)
-    - [Sentry](#sentry)
     - [Poco](#poco)
     - [CPPUnit](#cppunit)
     - [Zlib](#zlib)
@@ -58,18 +57,6 @@ When installing `Visual Studio 2019`, select the following components:
 - Windows 11 SDK (10.0.22000.0)
 - Windows 10 SDK (10.0.17763.0)
 - Windows 10 SDK (10.0.20348.0)
-
-## Sentry
-
-Download the [Sentry sources (`sentry-native.zip`)](https://github.com/getsentry/sentry-native/releases) and extract them to `F:\Projects`.
-After successful extraction, run:
-
-```cmd
-cd F:\Projects\sentry-native
-cmake -B build -DSENTRY_INTEGRATION_QT=YES -DCMAKE_PREFIX_PATH=%QTDIR%
-cmake --build build --config RelWithDebInfo
-cmake --install build --config RelWithDebInfo
-```
 
 ## Poco
 
@@ -301,7 +288,7 @@ You can create a copy of the previously defined profile, but this profile **must
 powershell ./infomaniak-build-tools/conan/build_dependencies.ps1 [Debug|Release] [-OutputDir <output_dir>]
 ```
 
-> **Note:** Currently only **xxHash**, **log4cplus**, **OpenSSL** and **zlib** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** Currently only **xxHash**, **log4cplus**, **OpenSSL**, **zlib** and **Sentry** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
 
 ---
 # Build in Debug
@@ -314,11 +301,10 @@ In order for CMake to be able to find all dependencies, add all libraries instal
 ```
 C:\Program Files (x86)\Poco\bin
 C:\Program Files (x86)\libzip\bin
-C:\Program Files (x86)\Sentry-Native\bin
 C:\Program Files (x86)\cppunit\bin
 ```
 
-Since some dependencies are now managed by Conan, you may also need to run the `conanrun.bat` script to append the paths of the Conan-installed dependencies to the `PATH` environment variable.
+> **:warning: Since some dependencies are now managed by Conan, you may also need to run the `conanrun.bat` script to append the paths of the Conan-installed dependencies to the `PATH` environment variable.**
 
 ## Using CLion
 

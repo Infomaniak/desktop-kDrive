@@ -72,7 +72,6 @@ runs:
           cp /usr/local/lib/libPocoNet.103.dylib ./dependencies/
           cp /usr/local/lib/libPocoCrypto.103.dylib ./dependencies/
           cp /usr/local/lib/libcppunit-1.15.2.dylib ./dependencies/
-          cp /usr/local/lib/libsentry.dylib ./dependencies/
           cp /usr/local/lib/libzip.5.dylib ./dependencies/
           cp /usr/local/lib/libzstd.1.dylib ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/crashpad_handler ./dependencies/
@@ -86,17 +85,20 @@ runs:
 
       - name: Fetch Conan dependencies
         run: |
-          echo "Sourcing conanrun.sh to get DYLD_LIBRARY_PATH..."
+          echo "Sourcing conanrun.sh to get DYLD_LIBRARY_PATH & PATH..."
           source $(find "${{ github.workspace }}/build-macos" -name conanrun.sh | head -n 1)
-          echo "DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH"
           
+          echo "\nSearching dylibs in DYLD_LIBRARY_PATH..."
           IFS=':' read -ra dirs <<< "$DYLD_LIBRARY_PATH"
           for dir in "${dirs[@]}"; do
             if [[ "$dir" == *".conan2/p"* ]]; then
               echo "Looking in $dir"
+              # We skip the dSYM directories to avoid copying debug symbols and copy only the necessary libraries (Ex: '/Users/runner/.conan2/p/b/sentr<hash>/p/lib/libsentry.dylib.dSYM/Contents/Resources/DWARF/libsentry.dylib')
               find "$dir" \
+                  -path '*/*.dSYM/*' -prune -o \
                   '(' -iname 'libxxhash.0.dylib' \
                    -o -iname 'liblog4cplus*.dylib' \
+                   -o -iname 'libsentry.dylib' \
                    -o -iname 'libssl*.dylib' \
                    -o -iname 'libcrypto*.dylib' ')' \
                 -exec cp {} ./dependencies/ \; \
@@ -110,6 +112,8 @@ runs:
               fi
             fi
           done
+          # Restore the original environment variables set before running conanrun.sh
+          source $(find "${{ github.workspace }}/build-macos" -name deactivate_conanrun.sh | head -n 1)
         shell: bash
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 

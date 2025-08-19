@@ -5,7 +5,7 @@ import platform
 
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration, ConanException
-from conan.tools.files import copy, rmdir, mkdir
+from conan.tools.files import copy, rmdir, mkdir, download
 
 
 class QtConan(ConanFile):
@@ -91,6 +91,9 @@ class QtConan(ConanFile):
             f"qt.qt{major}.{compact}.addons.qtwebview",
         ]
 
+        if self.settings.build_type == "Debug":
+            modules.append(f"qt.qt{major}.{compact}.src") # Add the Qt source files when using debug build type
+
         if self.settings.os == "Windows":
             modules.append(f"qt.qt{major}.{compact}.debug_info") # Qt Debug Information Files for Windows
 
@@ -172,7 +175,7 @@ class QtConan(ConanFile):
     def _get_executable_path(self, downloaded_file_name: str) -> str:
         """
         On macOS, the downloaded file is a DMG, a disk image. We have to mount it and then find the executable inside.
-        Here, we mount the DMG file, and then find the path to the executable inside the mounted DMG, copy the exectable
+        Here, we mount the DMG file, and then find the path to the executable inside the mounted DMG, copy the executable
             to the build folder, unmount the DMG and then return the path to the executable.
 
         On Linux, the downloaded file is a `.run` file. We `chmod +x` it and can run it directly.
@@ -244,8 +247,8 @@ class QtConan(ConanFile):
         downloaded_file_name = self._get_distant_name()
         url = f"https://download.qt.io/official_releases/online_installers/{downloaded_file_name}"
         self.output.info(f"Downloading from: {url}")
-        from urllib.request import urlretrieve
-        urlretrieve(url, pjoin(self.source_folder, downloaded_file_name))
+        dst = pjoin(self.source_folder, downloaded_file_name)
+        download(self, url=url, filename=dst)
 
     def build(self):
         self.output.highlight("Launching Qt installer...")
@@ -379,7 +382,7 @@ class QtConan(ConanFile):
     def package_id(self):
         """
         Modify the package ID to exclude settings and options that do not affect the final Qt installation.
-        This is done to cache the package and avoid unnecessary reinstalls.
+        This is done to cache the package and avoid unnecessary reinstallations.
         :return: None
         """
         self.info.settings.rm_safe("build_type")

@@ -4,7 +4,6 @@
 - [Installation Requirements](#installation-requirements)
 	- [SIP](#sip)
 	- [Xcode](#xcode)
-	- [Sentry](#sentry)
 	- [cppunit](#cppunit)
 	- [Poco](#poco)
 	- [libzip](#libzip)
@@ -53,17 +52,6 @@ Once installed, run the following command :
 
 ```bash
 sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-```
-
-## Sentry
-
-Download [Sentry Sources](https://github.com/getsentry/sentry-native/releases) (you can download the released zip and extract it to `~/Projects`):
-
-```bash
-cd ~/Projects/sentry-native
-cmake -B build -DSENTRY_BACKEND=crashpad -DSENTRY_INTEGRATION_QT=YES -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -DCMAKE_PREFIX_PATH=$QTDIR/lib/cmake
-cmake --build build --parallel
-sudo cmake --install build
 ```
 
 ## CPPUnit

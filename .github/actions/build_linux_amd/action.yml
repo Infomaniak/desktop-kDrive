@@ -92,7 +92,6 @@ runs:
           cp /usr/local/lib/libPocoNetSSL* ./dependencies/
           cp /usr/local/lib/libPocoCrypto* ./dependencies/
           cp /usr/local/lib/libPocoNet* ./dependencies/
-          cp /usr/local/lib/libsentry* ./dependencies/
           cp /usr/local/lib/libzip* ./dependencies/
           cp /usr/lib/x86_64-linux-gnu/libglib* ./dependencies/
           cp /usr/lib/x86_64-linux-gnu/libsecret* ./dependencies/
@@ -115,6 +114,7 @@ runs:
                 -o -iname 'liblog4cplus*.so.*' \
                 -o -iname 'libssl*.so*' \
                 -o -iname 'libcrypto*.so*' \
+                -o -iname 'libsentry*.so*' \
                 -o -iname 'libQt6Widgets*.so*' \
                 -o -iname 'libQt6Gui*.so*' \
                 -o -iname 'libQt6Network*.so*' \
@@ -136,6 +136,8 @@ runs:
               fi
             fi
           done
+          # Restore the original environment variables set before running conanrun.sh
+          source $(find "${{ github.workspace }}/build-linux" -name deactivate_conanrun.sh | head -n 1)
         shell: bash
         if: steps.build.outcome == 'success'
 
