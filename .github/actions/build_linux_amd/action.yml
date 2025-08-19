@@ -114,7 +114,7 @@ runs:
                 -o -iname 'libQt6Sql*.so*' \
                 -o -iname 'libQt6Core*.so*' \
                 -o -iname 'libQt6DBus*.so*' \
-                -o -iname 'libQt6Svg*.so* \
+                -o -iname 'libQt6Svg*.so*' \
                 -o -iname 'libicuuc*.so*' \
                 -o -iname 'libicudata*.so*' \
                 -o -iname 'libicui18n*.so*' \
