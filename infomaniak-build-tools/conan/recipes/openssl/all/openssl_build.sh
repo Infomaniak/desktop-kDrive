@@ -35,7 +35,7 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     --help|-h)
-      echo "Usage: $0 --version <openssl_version> --build-folder <build_folder> --zlib-include <zlib_include_path> --zlib-lib <zlib_lib_path>"
+      echo "Usage: $0 --version <openssl_version> --build-folder <build_folder> --zlib-include <zlib_include_path> --zlib-lib <zlib_lib_path> --conan-arch <conan_arch>"
       exit 0
       ;;
     *)
@@ -48,6 +48,7 @@ done
 [[ -z "$build_folder" ]]    && error "The --build-folder parameter is required."
 [[ -z "$zlib_include" ]]    && error "The --zlib-include parameter is required."
 [[ -z "$zlib_lib" ]]        && error "The --zlib-lib parameter is required."
+[[ -z "$conan_arch" ]]      && error "The --conan-arch parameter is required."
 [[ ! -d "$build_folder" || \
    ! -d "$zlib_include" || \
    ! -d "$zlib_lib" ]]      && error "The folder '$build_folder' does not exist." # Check if the folders build_folder, zlib_include, and zlib_lib exist
