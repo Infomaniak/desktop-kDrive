@@ -1,11 +1,6 @@
 #!/bin/bash
 
-set -eox pipefail
-
-openssl_version="3.2.4"
-
-openssl_git_tag="openssl-${openssl_version}"
-src_url="https://github.com/openssl/openssl.git"
+set -eo pipefail
 
 minimum_macos_version="10.15"
 
@@ -63,15 +58,27 @@ fi
 
 pushd "$build_folder"
 
-# Get the right path for zlib
-source ./conanrun.sh || error "Failed to source conanrun.sh. Please ensure it exists."
+openssl_git_tag="openssl-${openssl_version}"
+archive_name="$openssl_git_tag.tar.gz"
 
-log "Cloning OpenSSL sources..."
-git clone --depth 1 --branch "$openssl_git_tag" "$src_url" openssl
+release_url="https://github.com/openssl/openssl/releases/download/$openssl_git_tag/$archive_name"
+sha256_release_url="https://github.com/openssl/openssl/releases/download/$openssl_git_tag/$archive_name.sha256"
+
+log "Downloading OpenSSL $openssl_version sources ('$archive_name' and '$archive_name.sha256')..."
+curl -L -o "$archive_name" "$release_url" # Download the .tar.gz archive
+curl -L -o "$archive_name.sha256" "$sha256_release_url" # Download the .sha256 file to verify the archive
+
+log "Verifying archive checksum..."
+sha256sum --check "$archive_name.sha256" || error "Checksum verification failed for $archive_name"
+
+log "Extracting archive..."
+tar -xzf "$archive_name"
+
+rm "$archive_name" "$archive_name.sha256"
 
 # Creating two versions of openssl, one for each architecture
 log "Preparing source trees for architectures..."
-mv openssl openssl.x86_64
+mv "$openssl_git_tag" openssl.x86_64
 cp -R openssl.x86_64 openssl.arm64
 
 # Building the x86_64 version
