@@ -65,68 +65,93 @@ log "---------------------------------------"
 log "OpenSSL version: $openssl_version"
 log "Build folder: $build_folder"
 log
-log "Zlib include path: $zlib_include"
-log "Zlib lib path: $zlib_lib"
+log "Zlib:"
+log "\t- Include path:\t$zlib_include"
+log "\t- Lib path:\t$zlib_lib"
 log "---------------------------------------"
 echo
 
 
 pushd "$build_folder"
 
+# -----------------------------------------------------------------------------
+# Download and extract OpenSSL sources
+# -----------------------------------------------------------------------------
+
 openssl_git_tag="openssl-${openssl_version}"
-archive_name="$openssl_git_tag.tar.gz"
+base_url="https://github.com/openssl/openssl/releases/download/${openssl_git_tag}"
 
-release_url="https://github.com/openssl/openssl/releases/download/$openssl_git_tag/$archive_name"
-sha256_release_url="https://github.com/openssl/openssl/releases/download/$openssl_git_tag/$archive_name.sha256"
+archive="${openssl_git_tag}.tar.gz" # Ex: openssl-3.2.4.tar.gz
+archive_sha="${archive}.sha256"     # Ex: openssl-3.2.4.tar.gz.sha256
 
-log "Downloading OpenSSL $openssl_version sources ('$archive_name' and '$archive_name.sha256')..."
-curl -L -o "$archive_name" "$release_url" # Download the .tar.gz archive
-curl -L -o "$archive_name.sha256" "$sha256_release_url" # Download the .sha256 file to verify the archive
+log "Downloading OpenSSL ${openssl_version} sources (${archive} / ${archive_sha})..."
+curl --silent -L -o "${archive}"     "${base_url}/${archive}"
+curl --silent -L -o "${archive_sha}" "${base_url}/${archive_sha}"
+log "OK"
 
 log "Verifying archive checksum..."
-sha256sum --check "$archive_name.sha256" || error "Checksum verification failed for $archive_name"
+sha256sum --check --status "${archive_sha}" || error "Checksum verification failed for ${archive}"
+log "OK"
 
 log "Extracting archive..."
-tar -xzf "$archive_name"
+tar -xzf "${archive}"
+log "OK"
 
-rm "$archive_name" "$archive_name.sha256"
+# Cleanup downloaded archive and checksum file
+rm "${archive}" "${archive_sha}"
 
 # Creating two versions of openssl, one for each architecture
 log "Preparing source trees for architectures..."
 mv "$openssl_git_tag" openssl.x86_64
 cp -R openssl.x86_64 openssl.arm64
 
+common_opts=(
+  --release
+  shared
+  --prefix=/ --libdir=lib
+  -mmacosx-version-min="$minimum_macos_version"
+  no-apps
+  no-docs
+)
+
 # Building the x86_64 version
 log "Building OpenSSL for x86_64..."
 pushd openssl.x86_64
-./Configure darwin64-x86_64-cc shared -mmacosx-version-min=$minimum_macos_version --prefix=/ --libdir=lib zlib --with-zlib-include="$zlib_include" --with-zlib-lib="$zlib_lib"
+./Configure darwin64-x86_64-cc "${common_opts[@]}"
 make -j"$(sysctl -n hw.ncpu)"
 popd
 
 # Building the arm64 version
 log "Building OpenSSL for arm64..."
 pushd openssl.arm64
-./Configure darwin64-arm64-cc shared enable-rc5 no-asm -mmacosx-version-min=$minimum_macos_version --prefix=/ --libdir=lib zlib --with-zlib-include="$zlib_include" --with-zlib-lib="$zlib_lib"
+./Configure darwin64-arm64-cc enable-rc5 no-asm "${common_opts[@]}" zlib --with-zlib-include="$zlib_include" --with-zlib-lib="$zlib_lib"
 make -j"$(sysctl -n hw.ncpu)"
 popd
 
 mkdir -p openssl.multi/lib
 log "Merging shared libs with lipo..."
-lipo -create -output openssl.multi/lib/libssl.3.dylib     openssl.x86_64/libssl.3.dylib     openssl.arm64/libssl.3.dylib
-lipo -create -output openssl.multi/lib/libcrypto.3.dylib  openssl.x86_64/libcrypto.3.dylib  openssl.arm64/libcrypto.3.dylib
 
-install_name_tool -id "@rpath/libssl.3.dylib" openssl.multi/lib/libssl.3.dylib
-install_name_tool -id "@rpath/libcrypto.3.dylib" openssl.multi/lib/libcrypto.3.dylib
+for lib in libssl.3.dylib libcrypto.3.dylib; do
+  if [[ ! -f "openssl.x86_64/${lib}" ]]; then
+    error "File openssl.x86_64/${lib} does not exist."
+  fi
+  if [[ ! -f "openssl.arm64/${lib}" ]]; then
+    error "File openssl.arm64/${lib} does not exist."
+  fi
 
-# We add the `@loader_path` to the rpath because the utility macdeployqt will try to find the libraries relative to the loader, and libss.3.dylib load libcrypto.3.dylib.
-# If @loader_path is not set, it will fail to find the libcrypto.3.dylib and will replace it to /usr/local/lib/libcrypto.3.dylib which could not exists on the user's system.
-install_name_tool -add_rpath "@loader_path" openssl.multi/lib/libssl.3.dylib
-install_name_tool -add_rpath "@loader_path" openssl.multi/lib/libcrypto.3.dylib
+  # Merge the libraries using lipo and create a universal binary
+  lipo -create -output "openssl.multi/lib/$lib" "openssl.x86_64/$lib" "openssl.arm64/$lib"
+
+  # Set the install name for the merged library
+  install_name_tool -id "@rpath/$lib" "openssl.multi/lib/$lib"
+
+  # We add the `@loader_path` to the rpath because the utility macdeployqt will try to find the libraries relative to the loader, and libss.3.dylib load libcrypto.3.dylib.
+  # If @loader_path is not set, it will fail to find the libcrypto.3.dylib and will replace it to /usr/local/lib/libcrypto.3.dylib which could not exists on the user's system.
+  install_name_tool -add_rpath "@loader_path" "openssl.multi/lib/$lib"
+done
 
 # Fixing dependencies for the merged libraries
-install_name_tool -change "/usr/local/lib/libcrypto.3.dylib" "@rpath/libcrypto.3.dylib" openssl.multi/lib/libssl.3.dylib
-install_name_tool -change "/usr/lib/libz.1.dylib"            "@rpath/libz.1.dylib"      openssl.multi/lib/libssl.3.dylib
-install_name_tool -change "/usr/lib/libz.1.dylib"            "@rpath/libz.1.dylib"      openssl.multi/lib/libcrypto.3.dylib
+install_name_tool -change "/lib/libcrypto.3.dylib" "@rpath/libcrypto.3.dylib" openssl.multi/lib/libssl.3.dylib
 
 cp -R openssl.x86_64/include openssl.multi/include
 
