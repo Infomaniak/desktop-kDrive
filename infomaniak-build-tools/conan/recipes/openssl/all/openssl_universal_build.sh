@@ -55,6 +55,16 @@ conan_arch_value="$(conan profile show --format json | jq -r '.host.settings.arc
 if [[ "$conan_arch_value" != "armv8|x86_64" && "$conan_arch_value" != "x86_64|armv8" ]]; then
   error "Conan profile arch must be set to 'armv8|x86_64' or 'x86_64|armv8'. Current value: $conan_arch_value"
 fi
+echo
+log "---------------------------------------"
+log "OpenSSL version: $openssl_version"
+log "Build folder: $build_folder"
+log
+log "Zlib include path: $zlib_include"
+log "Zlib lib path: $zlib_lib"
+log "---------------------------------------"
+echo
+
 
 pushd "$build_folder"
 
