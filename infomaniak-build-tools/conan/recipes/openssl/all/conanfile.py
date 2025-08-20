@@ -41,7 +41,7 @@ class OpenSSLUniversalConan(ConanFile):
 
         script = os.path.join(self.build_folder, "openssl_universal_build.sh")
 
-        self.run(f"/usr/bin/env bash {script} --version {self.version} --build-folder {self.build_folder} --zlib-include {unix_path(self, zlib_include)} --zlib-lib {unix_path(self, zlib_lib)}")
+        self.run(f"/usr/bin/env bash {script} --version {self.version} --build-folder {self.build_folder} --zlib-include {unix_path(self, zlib_include)} --zlib-lib {unix_path(self, zlib_lib)} --conan-arch {self.settings.arch}")
 
     def package(self):
         copy(self, "*.h", src=os.path.join(self.build_folder, "openssl.multi", "include"), dst=os.path.join(self.package_folder, "include"))

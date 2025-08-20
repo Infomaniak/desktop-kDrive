@@ -7,10 +7,11 @@ minimum_macos_version="10.15"
 log() { echo -e "[INFO] $*"; }
 error() { echo -e "[ERROR] $*" >&2; exit 1; }
 
+openssl_version=""
 build_folder=""
 zlib_include=""
 zlib_lib=""
-openssl_version=""
+conan_arch=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --version)
@@ -27,6 +28,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --zlib-lib)
       zlib_lib="$2"
+      shift 2
+      ;;
+    --conan-arch)
+      conan_arch="$2"
       shift 2
       ;;
     --help|-h)
@@ -51,9 +56,8 @@ if ! command -v conan >/dev/null 2>&1; then
   error "Conan is not installed. Please install it first."
 fi
 
-conan_arch_value="$(conan profile show --format json | jq -r '.host.settings.arch')"
-if [[ "$conan_arch_value" != "armv8|x86_64" && "$conan_arch_value" != "x86_64|armv8" ]]; then
-  error "Conan profile arch must be set to 'armv8|x86_64' or 'x86_64|armv8'. Current value: $conan_arch_value"
+if [[ "$conan_arch" != "armv8|x86_64" && "$conan_arch" != "x86_64|armv8" ]]; then
+  error "Conan profile arch must be set to 'armv8|x86_64' or 'x86_64|armv8'. Current value: $conan_arch"
 fi
 echo
 log "---------------------------------------"
