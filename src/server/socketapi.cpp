@@ -1329,16 +1329,17 @@ void SocketApi::processFileList(const QStringList &inFileList, std::list<SyncPat
             continue;
         }
 
-        const QFileInfoList infoList = QDir(path).entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
+        IoError ioError(IoError::Unknown);
+        IoHelper::DirectoryIterator dirIt(QStr2Path(path), false, ioError);
+        bool endOfDir = false;
+        DirectoryEntry entry;
         QStringList fileList;
-        for (const auto &tmpInfo: infoList) {
-            const QString tmpPath(tmpInfo.filePath());
-            const FileData tmpFileData = FileData::get(tmpPath);
-
+        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+            const FileData tmpFileData = FileData::get(entry.path());
             auto status = SyncFileStatus::Unknown;
             if (VfsStatus vfsStatus; !syncFileStatus(tmpFileData, status, vfsStatus)) {
                 LOGW_WARN(KDC::Log::instance()->getLogger(),
-                          L"Error in SocketApi::syncFileStatus - " << Utility::formatPath(tmpPath));
+                          L"Error in SocketApi::syncFileStatus - " << Utility::formatSyncPath(entry.path()));
                 continue;
             }
 
@@ -1346,10 +1347,10 @@ void SocketApi::processFileList(const QStringList &inFileList, std::list<SyncPat
                 continue;
             }
 
-            fileList.append(tmpPath);
+            fileList.append(tmpFileData.absoluteLocalPath);
         }
 
-        if (fileList.size() > 0) {
+        if (!fileList.empty()) {
             processFileList(fileList, outFileList);
         } else {
             // Empty folders need to appear in `outFileList` so that their status can be updated.
