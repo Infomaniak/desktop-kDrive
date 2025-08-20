@@ -38,19 +38,19 @@ class LiteSyncExtConnector {
         LiteSyncExtConnector(LiteSyncExtConnector &other) = delete;
         void operator=(const LiteSyncExtConnector &) = delete;
         static LiteSyncExtConnector *instance(log4cplus::Logger logger, ExecuteCommand executeCommand);
-        static bool vfsGetStatus(const QString &absoluteFilePath, VfsStatus &vfsStatus, log4cplus::Logger &logger) noexcept;
+        static bool vfsGetStatus(const SyncPath &absoluteFilePath, VfsStatus &vfsStatus, log4cplus::Logger &logger) noexcept;
 
         ~LiteSyncExtConnector();
 
         bool install(bool &activationDone);
         bool connect();
 
-        bool vfsStart(int syncDbId, const QString &folderPath, bool &isPlaceholder, bool &isSyncing);
+        bool vfsStart(int syncDbId, const SyncPath &folderPath, bool &isPlaceholder, bool &isSyncing);
         bool vfsStop(int syncDbId);
         bool vfsDehydratePlaceHolder(const QString &absoluteFilepath, const QString &localSyncPath);
-        bool vfsHydratePlaceHolder(const QString &filePath);
+        bool vfsHydratePlaceHolder(const SyncPath &filePath);
         bool vfsSetPinState(const QString &path, const QString &localSyncPath, const std::string_view &pinState);
-        bool vfsGetPinState(const QString &path, std::string &pinState);
+        bool vfsGetPinState(const SyncPath &path, std::string &pinState);
         bool vfsConvertToPlaceHolder(const QString &filePath, bool isHydrated);
         bool vfsCreatePlaceHolder(const QString &relativePath, const QString &localSyncPath, const struct stat *fileStat);
         bool vfsUpdateFetchStatus(const QString &tmpFilePath, const QString &filePath, const QString &localSyncPath,
@@ -60,7 +60,7 @@ class LiteSyncExtConnector {
         bool vfsSetThumbnail(const QString &absoluteFilePath, const QPixmap &pixmap);
         bool vfsSetStatus(const QString &path, const QString &localSyncPath, const VfsStatus &vfsStatus);
         bool vfsCleanUpStatuses(const QString &localSyncPath);
-        bool vfsGetStatus(const QString &absoluteFilePath, VfsStatus &vfsStatus) noexcept {
+        bool vfsGetStatus(const SyncPath &absoluteFilePath, VfsStatus &vfsStatus) noexcept {
             return vfsGetStatus(absoluteFilePath, vfsStatus, _logger);
         }
         bool vfsSetAppExcludeList(const QString &appList);
@@ -81,7 +81,7 @@ class LiteSyncExtConnector {
     private:
         log4cplus::Logger _logger;
         LiteSyncExtConnectorPrivate *_private{nullptr};
-        QMap<int, QString> _folders;
+        QMap<int, SyncPath> _folders;
 
         /**
          * Keeps track of folder with `syncing` status.
