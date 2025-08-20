@@ -1,10 +1,12 @@
+import os
 import textwrap
 
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
+from conan.tools.apple import fix_apple_shared_install_name
 from conan.tools.files import copy, save
-from conan.tools.apple import fix_apple_shared_install_name, is_apple_os
-import os
+from conan.tools.microsoft import unix_path
+
 
 class OpenSSLUniversalConan(ConanFile):
     name = "openssl"
@@ -30,9 +32,16 @@ class OpenSSLUniversalConan(ConanFile):
             self.output.warning("This recipe only supports shared libraries on Apple platforms. The 'shared' option has been overwritten to True.")
 
     def build(self):
+
+        zlib_cpp_info = self.dependencies["zlib"].cpp_info.aggregated_components()
+        if not zlib_cpp_info.libs:
+            raise ConanInvalidConfiguration("zlib is required to build OpenSSL, but no libraries were found in the zlib package.")
+        zlib_include = zlib_cpp_info.includedirs[0]
+        zlib_lib = zlib_cpp_info.libdirs[0]
+
         script = os.path.join(self.build_folder, "openssl_universal_build.sh")
 
-        self.run(f"/usr/bin/env bash {script} --build-folder {self.build_folder}")
+        self.run(f"/usr/bin/env bash {script} --version {self.version} --build-folder {self.build_folder} --zlib-include {unix_path(self, zlib_include)} --zlib-lib {unix_path(self, zlib_lib)}")
 
     def package(self):
         copy(self, "*.h", src=os.path.join(self.build_folder, "openssl.multi", "include"), dst=os.path.join(self.package_folder, "include"))

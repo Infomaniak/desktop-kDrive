@@ -13,17 +13,44 @@ log() { echo -e "[INFO] $*"; }
 error() { echo -e "[ERROR] $*" >&2; exit 1; }
 
 build_folder=""
+zlib_include=""
+zlib_lib=""
+openssl_version=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --version)
+      openssl_version="$2"
+      shift 2
+      ;;
     --build-folder)
       build_folder="$2"
       shift 2
+      ;;
+    --zlib-include)
+      zlib_include="$2"
+      shift 2
+      ;;
+    --zlib-lib)
+      zlib_lib="$2"
+      shift 2
+      ;;
+    --help|-h)
+      echo "Usage: $0 --version <openssl_version> --build-folder <build_folder> --zlib-include <zlib_include_path> --zlib-lib <zlib_lib_path>"
+      exit 0
       ;;
     *)
       error "Unknown parameter : $1"
       ;;
   esac
 done
+
+[[ -z "$openssl_version" ]] && error "The --version parameter is required."
+[[ -z "$build_folder" ]]    && error "The --build-folder parameter is required."
+[[ -z "$zlib_include" ]]    && error "The --zlib-include parameter is required."
+[[ -z "$zlib_lib" ]]        && error "The --zlib-lib parameter is required."
+[[ ! -d "$build_folder" || \
+   ! -d "$zlib_include" || \
+   ! -d "$zlib_lib" ]]      && error "The folder '$build_folder' does not exist." # Check if the folders build_folder, zlib_include, and zlib_lib exist
 
 if ! command -v conan >/dev/null 2>&1; then
   error "Conan is not installed. Please install it first."
@@ -49,14 +76,14 @@ cp -R openssl.x86_64 openssl.arm64
 # Building the x86_64 version
 log "Building OpenSSL for x86_64..."
 pushd openssl.x86_64
-./Configure darwin64-x86_64-cc shared -mmacosx-version-min=$minimum_macos_version
+./Configure darwin64-x86_64-cc shared -mmacosx-version-min=$minimum_macos_version --prefix=/ --libdir=lib zlib --with-zlib-include="$zlib_include" --with-zlib-lib="$zlib_lib"
 make -j"$(sysctl -n hw.ncpu)"
 popd
 
 # Building the arm64 version
 log "Building OpenSSL for arm64..."
 pushd openssl.arm64
-./Configure darwin64-arm64-cc shared enable-rc5 zlib no-asm -mmacosx-version-min=$minimum_macos_version
+./Configure darwin64-arm64-cc shared enable-rc5 no-asm -mmacosx-version-min=$minimum_macos_version --prefix=/ --libdir=lib zlib --with-zlib-include="$zlib_include" --with-zlib-lib="$zlib_lib"
 make -j"$(sysctl -n hw.ncpu)"
 popd
 
