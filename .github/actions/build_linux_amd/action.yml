@@ -89,45 +89,38 @@ runs:
           lib_x86_64="/usr/lib/x86_64-linux-gnu"
           
           deps_patterns=(
-            "$qt_dir/libQt6Widgets.so"
-            "$qt_dir/libQt6Gui.so"
-            "$qt_dir/libQt6Network.so"
-            "$qt_dir/libQt6Sql.so"
-            "$qt_dir/libQt6Core.so"
-            "$qt_dir/libQt6DBus.so"
-            "$qt_dir/libQt6Svg.so"
+            "$qt_dir/libQt6Widgets.so.6.2.3"
+            "$qt_dir/libQt6Gui.so.6.2.3"
+            "$qt_dir/libQt6Network.so.6.2.3"
+            "$qt_dir/libQt6Sql.so.6.2.3"
+            "$qt_dir/libQt6Core.so.6.2.3"
+            "$qt_dir/libQt6DBus.so.6.2.3"
+            "$qt_dir/libQt6Svg.so.6.2.3"
           
-            "$qt_dir/libicui18n.so"
-            "$qt_dir/libicuuc.so"
-            "$qt_dir/libicudata.so"
+            "$qt_dir/libicui18n.so.56.1"
+            "$qt_dir/libicuuc.so.56.1"
+            "$qt_dir/libicudata.so.56.1"
           
             "$local_lib/libcppunit-1.15.so.2"
-            "$local_lib/libPocoUtil.so"
-            "$local_lib/libPocoJSON.so"
-            "$local_lib/libPocoXML.so"
-            "$local_lib/libPocoFoundation.so"
-            "$local_lib/libPocoNetSSL.so"
-            "$local_lib/libPocoCrypto.so"
-            "$local_lib/libPocoNet.so"
+            "$local_lib/libPocoUtil.so.103"
+            "$local_lib/libPocoJSON.so.103"
+            "$local_lib/libPocoXML.so.103"
+            "$local_lib/libPocoFoundation.so.103"
+            "$local_lib/libPocoNetSSL.so.103"
+            "$local_lib/libPocoCrypto.so.103"
+            "$local_lib/libPocoNet.so.103"
           
-            "$local_lib/libsentry*"
-            "$local_lib/libzip*"
+            "$local_lib/libsentry.so"
+            "$local_lib/libzip.5.5"
           
-            "$lib_x86_64/libglib*.so*"
-            "$lib_x86_64/libsecret*.so*"
-            "$lib_x86_64/libgthread*.so*"
+            "$lib_x86_64/libglib-2.0.so.0.7200.4"
+            "$lib_x86_64/libsecret-1.so.0.0.0"
+            "$lib_x86_64/libgthread-2.0.so.0.7200.4"
             "$lib_x86_64/libdbus-1.so.3"
           )
           
           for pattern in "${deps_patterns[@]}"; do
-            for file in $pattern; do
-              if [ -L "$file" ]; then
-                cp -P "$file" ./dependencies/
-                cp "$(readlink -f "$file")" ./dependencies/
-              else
-                cp "$file" ./dependencies/
-              fi
-            done
+            cp "$file" ./dependencies/
           done
           cp /home/runner/Qt/6.2.3/gcc_64/plugins/platforms/libqoffscreen.so ./dependencies/platforms/
         shell: bash
@@ -143,10 +136,10 @@ runs:
             if [[ "$dir" == *".conan2/p"* ]]; then
               echo "Looking in $dir"
               find "$dir" \
-                \( -iname 'libxxhash.so*' \
-                -o -iname 'liblog4cplus.so*' \
-                -o -iname 'libssl.so*' \
-                -o -iname 'libcrypto.so*' \) \
+                \( -iname 'libxxhash.so.0.8.2' \
+                -o -iname 'liblog4cplus.so.9' \
+                -o -iname 'libssl.so.3' \
+                -o -iname 'libcrypto.so.3' \) \
                 -exec cp -a {} ./dependencies/ \; \
                 -exec echo "Conan dependency found -> " {} \;
             fi
