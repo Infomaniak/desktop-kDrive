@@ -75,7 +75,6 @@ runs:
           cp /usr/local/lib/libzip.5.dylib ./dependencies/
           cp /usr/local/lib/libzstd.1.dylib ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/crashpad_handler ./dependencies/
-          cp ${{ github.workspace }}/build-macos/client/bin/*.lst ./dependencies/
           # kDrivecommonserver_vfs_mac lib is not cached and therefore is uploaded as a separate artifact
           find "${{ github.workspace }}/build-macos/client/bin" -name "*.dylib" \
             -not -name "kDrivecommonserver_vfs_mac.dylib" \

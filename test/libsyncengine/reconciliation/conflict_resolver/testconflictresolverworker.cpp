@@ -221,6 +221,42 @@ void TestConflictResolverWorker::testOmitEditDelete() {
     CPPUNIT_ASSERT_EQUAL(rNodeAAA, op->correspondingNode());
 }
 
+void TestConflictResolverWorker::testOmitEditDeleteDehydratedPlaceholder() {
+    // Simulate edit of file A/AA/AAA on local replica
+    const auto lNodeAAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aaa");
+    lNodeAAA->setCreatedAt(testhelpers::defaultTime + 1); // Editing only the creation time is considered an omit edit.
+    lNodeAAA->setChangeEvents(OperationType::Edit);
+
+    // and delete of file A/AA/AAA on remote replica
+    const auto rNodeAAA = _testSituationGenerator.getNode(ReplicaSide::Remote, "aaa");
+    rNodeAAA->setChangeEvents(OperationType::Delete);
+
+    // Since the methods needed for tests are mocked, we can put any VirtualFileMode type. It just needs to be different from
+    // VirtualFileMode::off
+    _syncPal->setVfsMode(VirtualFileMode::Mac);
+    // Simulate a local dehydrate placeholder
+    auto mockStatus = []([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) -> ExitInfo {
+        vfsStatus.isPlaceholder = true;
+        vfsStatus.isHydrated = false;
+        vfsStatus.isSyncing = false;
+        vfsStatus.progress = 0;
+        return ExitCode::Ok;
+    };
+    _mockVfs->setMockStatus(mockStatus);
+
+    const Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::EditDelete);
+    _syncPal->_conflictQueue->push(conflict);
+    _syncPal->_conflictResolverWorker->execute();
+
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
+    const auto opId = _syncPal->_syncOps->opSortedList().front();
+    const auto op = _syncPal->_syncOps->getOp(opId);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, op->targetSide());
+    CPPUNIT_ASSERT_EQUAL(OperationType::Delete, op->type());
+    CPPUNIT_ASSERT(!op->omit());
+    CPPUNIT_ASSERT_EQUAL(rNodeAAA, op->affectedNode());
+    CPPUNIT_ASSERT_EQUAL(lNodeAAA, op->correspondingNode());
+}
 
 void TestConflictResolverWorker::testEditDelete1() {
     std::function<SyncOpPtr(ReplicaSide editSide)> generateAndResolveConflict = [&](ReplicaSide editSide) {
