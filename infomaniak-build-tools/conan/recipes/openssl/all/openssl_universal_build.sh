@@ -56,8 +56,9 @@ if ! command -v conan >/dev/null 2>&1; then
   error "Conan is not installed. Please install it first."
 fi
 
-if ! conan profile show 2>/dev/null | grep "arch=" | head -n 1 | cut -d'=' -f 2 | grep "armv8" | grep "x86_64" >/dev/null 2>&1; then
-  error "This script should be run with a Conan profile that has multi-architecture support enabled (arch=armv8|x86_64)."
+conan_arch_value="$(conan profile show --format json | jq -r '.host.settings.arch')"
+if [[ "$conan_arch_value" != "armv8|x86_64" && "$conan_arch_value" != "x86_64|armv8" ]]; then
+  error "Conan profile arch must be set to 'armv8|x86_64' or 'x86_64|armv8'. Current value: $conan_arch_value"
 fi
 
 pushd "$build_folder"
