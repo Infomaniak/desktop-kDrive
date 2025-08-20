@@ -511,38 +511,52 @@ bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
 
 bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, IoError &ioError,
                                        const ItemType &itemType) {
-    isManaged = true;
+    isManaged = false;
     ioError = IoError::Success;
     if (dirEntry.path().native().length() > CommonUtility::maxPathLength()) {
         LOGW_WARN(logger(),
                   L"Ignore " << formatSyncPath(dirEntry.path()) << L" because size > " << CommonUtility::maxPathLength());
-        isManaged = false;
         return true;
     }
 
-    if (!dirEntry.is_regular_file() && !dirEntry.is_directory()) {
-        auto tmpItemType = itemType;
-        if (tmpItemType == ItemType()) {
-            bool result = IoHelper::getItemType(dirEntry.path(), tmpItemType);
-            ioError = tmpItemType.ioError;
-            if (!result) {
-                LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
-                return false;
-            }
+    bool isSymLinkWithTooManyLevels = false;
+    bool isSpecialItem = false;
 
-            if (ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
-                LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
-                return true;
-            }
+    try {
+        isSpecialItem = !dirEntry.is_regular_file() && !dirEntry.is_directory();
+    } catch (const std::filesystem::filesystem_error &e) {
+        isSymLinkWithTooManyLevels = std::errc::too_many_symbolic_link_levels == e.code();
+        if (!isSymLinkWithTooManyLevels) throw;
+    }
+
+    if (isSymLinkWithTooManyLevels) {
+        LOGW_DEBUG(logger(), L"Synchronizing invalid symbolic link " << formatSyncPath(dirEntry.path())
+                                                                     << L" with too many levels of indirections.")
+    }
+
+    if (isSymLinkWithTooManyLevels || !isSpecialItem) {
+        isManaged = true;
+        return true;
+    }
+
+    auto tmpItemType = itemType;
+    if (tmpItemType == ItemType()) {
+        bool result = IoHelper::getItemType(dirEntry.path(), tmpItemType);
+        ioError = tmpItemType.ioError;
+        if (!result) {
+            LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
+            return false;
         }
-        if (tmpItemType.linkType == LinkType::None) {
-            LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirEntry.path())
-                                           << L" because it is not a directory, a regular file or a symlink");
-            isManaged = false;
+
+        if (ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
+            LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
             return true;
         }
     }
-
+    if (tmpItemType.linkType == LinkType::None) {
+        LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirEntry.path())
+                                       << L" because it is not a directory, a regular file or a symlink");
+    }
 
     return true;
 }

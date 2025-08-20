@@ -601,10 +601,8 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
         bool endOfDirectory = false;
         sentry::pTraces::counterScoped::LFSOExploreItem perfMonitor(fromChangeDetected, syncDbId());
         while (true) {
-            bool nextEntryIsValid = false;
-            try {
-                nextEntryIsValid = dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoError::Success;
-            } catch (std::filesystem::filesystem_error &e) {}
+            const bool nextEntryIsValid =
+                    dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoError::Success;
 
             if (!nextEntryIsValid) break;
 
