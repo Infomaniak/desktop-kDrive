@@ -285,7 +285,7 @@ void TestIntegration::testBlacklist() {
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath));
     CPPUNIT_ASSERT(Utility::isInTrash(dirpath.filename()));
 #if defined(KD_MACOS) || defined(KD_LINUX)
-    Utility::removeFromTrash(dirpath.filename());
+    Utility::eraseFromTrash(dirpath.filename());
 #endif
 
     // Move a file inside a blacklisted directory.
@@ -296,7 +296,7 @@ void TestIntegration::testBlacklist() {
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath / filename));
     CPPUNIT_ASSERT(Utility::isInTrash(filename));
 #if defined(KD_MACOS) || defined(KD_LINUX)
-    Utility::removeFromTrash(filename);
+    Utility::eraseFromTrash(filename);
 #endif
 
     // Move a file from inside a blacklisted directory to a synchronized directory.

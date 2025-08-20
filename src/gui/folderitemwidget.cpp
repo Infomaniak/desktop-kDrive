@@ -478,13 +478,11 @@ void FolderItemWidget::retranslateUi() {
     if (ParametersCache::instance()->parametersInfo().moveToTrash()) {
         if (_liteSyncActivated) {
             _saveLabel->setText(
-                    tr("Unselected folders will be moved to trash provided they contain hydrated items. Folders synced to kDrive "
-                       "will remain available "
-                       "online."));
+                    tr("Unselected folders will be moved to trash provided they contain offline items. Folders synced to kDrive "
+                       "will remain available online."));
         } else {
             _saveLabel->setText(
-                    tr("Unselected folders will be moved to trash. Folders synced to kDrive will remain available "
-                       "online."));
+                    tr("Unselected folders will be moved to trash. Folders synced to kDrive will remain available online."));
         }
     } else {
         _saveLabel->setText(tr(

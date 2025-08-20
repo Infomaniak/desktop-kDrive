@@ -113,7 +113,7 @@ struct COMMONSERVER_EXPORT Utility {
         static bool moveItemToTrash(const SyncPath &itemPath);
 #if defined(KD_MACOS) || defined(KD_LINUX)
         static SyncPath getTrashPath();
-        static void removeFromTrash(const SyncPath &path);
+        static void eraseFromTrash(const SyncPath &path);
 #endif
         static bool isInTrash(const SyncPath &path);
 #if defined(KD_MACOS)
