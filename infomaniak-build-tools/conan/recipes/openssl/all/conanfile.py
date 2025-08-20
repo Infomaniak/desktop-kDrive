@@ -44,10 +44,8 @@ class OpenSSLUniversalConan(ConanFile):
 
     def package(self):
         copy(self, "*.h", src=os.path.join(self.build_folder, "openssl.multi", "include"), dst=os.path.join(self.package_folder, "include"))
-        if self.options.shared:
-            copy(self, "*.dylib", src=os.path.join(self.build_folder, "openssl.multi", "lib"), dst=os.path.join(self.package_folder, "lib"))
-        else:
-            copy(self, "*.a", src=os.path.join(self.build_folder, "openssl.multi", "lib"), dst=os.path.join(self.package_folder, "lib"))
+        copy(self, "*.dylib", src=os.path.join(self.build_folder, "openssl.multi", "lib"), dst=os.path.join(self.package_folder, "lib"))
+        copy(self, "*.pc", src=os.path.join(self.build_folder, "openssl.x86_64"), dst=self.package_folder)
         fix_apple_shared_install_name(self)
 
         self._create_cmake_module_variables(
