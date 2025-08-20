@@ -53,9 +53,10 @@ done
    ! -d "$zlib_include" || \
    ! -d "$zlib_lib" ]]      && error "The folder '$build_folder' does not exist." # Check if the folders build_folder, zlib_include, and zlib_lib exist
 
-if ! command -v conan >/dev/null 2>&1; then
-  error "Conan is not installed. Please install it first."
-fi
+command -v conan >/dev/null 2>&1 || error "Conan is not installed. Please install it first."
+command -v curl >/dev/null 2>&1 || error "curl is not installed. Please install it first."
+command -v lipo >/dev/null 2>&1 || error "lipo is not installed. Please install the Xcode command line tools."
+command -v install_name_tool >/dev/null 2>&1 || error "install_name_tool is not installed. Please install the Xcode command line tools."
 
 if [[ "$conan_arch" != "armv8|x86_64" && "$conan_arch" != "x86_64|armv8" ]]; then
   error "Conan profile arch must be set to 'armv8|x86_64' or 'x86_64|armv8'. Current value: $conan_arch"
@@ -90,7 +91,7 @@ curl --silent -L -o "${archive_sha}" "${base_url}/${archive_sha}"
 log "OK"
 
 log "Verifying archive checksum..."
-sha256sum --check --status "${archive_sha}" || error "Checksum verification failed for ${archive}"
+shasum -a 256 -c "${archive_sha}" || error "Checksum verification failed for ${archive}"
 log "OK"
 
 log "Extracting archive..."
