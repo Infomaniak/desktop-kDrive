@@ -82,34 +82,54 @@ runs:
           compression-level: 0
 
       - name: Fetch dependencies
-        run: | 
-          mkdir dependencies
-          cp -a /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Widgets.so ./dependencies/ 
-          cp -a /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Gui.so ./dependencies/
-          cp -a /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Network.so ./dependencies/
-          cp -a /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Sql.so ./dependencies/
-          cp -a /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Core.so ./dependencies/
-          cp -a /home/runner/Qt/6.2.3/gcc_64/lib/libQt6DBus.so ./dependencies/
-          cp -a /home/runner/Qt/6.2.3/gcc_64/lib/libicui18n.so ./dependencies/
-          cp -a /home/runner/Qt/6.2.3/gcc_64/lib/libicuuc.so ./dependencies/
-          cp -a /home/runner/Qt/6.2.3/gcc_64/lib/libicudata.so ./dependencies/
-          cp -a /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Svg.so ./dependencies/
-          mkdir dependencies/platforms
+        run: |
+          mkdir -p dependencies/platforms
+          qt_dir="/home/runner/Qt/6.2.3/gcc_64/lib"
+          local_lib="/usr/local/lib"
+          lib_x86_64="/usr/lib/x86_64-linux-gnu"
+          
+          deps_patterns=(
+            "$qt_dir/libQt6Widgets.so"
+            "$qt_dir/libQt6Gui.so"
+            "$qt_dir/libQt6Network.so"
+            "$qt_dir/libQt6Sql.so"
+            "$qt_dir/libQt6Core.so"
+            "$qt_dir/libQt6DBus.so"
+            "$qt_dir/libQt6Svg.so"
+          
+            "$qt_dir/libicui18n.so"
+            "$qt_dir/libicuuc.so"
+            "$qt_dir/libicudata.so"
+          
+            "$local_lib/libcppunit-1.15.so.2"
+            "$local_lib/libPocoUtil.so"
+            "$local_lib/libPocoJSON.so"
+            "$local_lib/libPocoXML.so"
+            "$local_lib/libPocoFoundation.so"
+            "$local_lib/libPocoNetSSL.so"
+            "$local_lib/libPocoCrypto.so"
+            "$local_lib/libPocoNet.so"
+          
+            "$local_lib/libsentry*"
+            "$local_lib/libzip*"
+          
+            "$lib_x86_64/libglib*.so*"
+            "$lib_x86_64/libsecret*.so*"
+            "$lib_x86_64/libgthread*.so*"
+            "$lib_x86_64/libdbus-1.so.3"
+          )
+          
+          for pattern in "${deps_patterns[@]}"; do
+            for file in $pattern; do
+              if [ -L "$file" ]; then
+                cp -P "$file" ./dependencies/
+                cp "$(readlink -f "$file")" ./dependencies/
+              else
+                cp "$file" ./dependencies/
+              fi
+            done
+          done
           cp /home/runner/Qt/6.2.3/gcc_64/plugins/platforms/libqoffscreen.so ./dependencies/platforms/
-          cp /usr/local/lib/libcppunit-1.15.so.2 ./dependencies/ 
-          cp /usr/local/lib/libPocoUtil.so ./dependencies/
-          cp /usr/local/lib/libPocoJSON.so ./dependencies/
-          cp /usr/local/lib/libPocoXML.so ./dependencies/
-          cp /usr/local/lib/libPocoFoundation.so ./dependencies/
-          cp /usr/local/lib/libPocoNetSSL.so ./dependencies/
-          cp /usr/local/lib/libPocoCrypto.so ./dependencies/
-          cp /usr/local/lib/libPocoNet.so ./dependencies/
-          cp /usr/local/lib/libsentry.so ./dependencies/
-          cp /usr/local/lib/libzip.so ./dependencies/
-          cp /usr/lib/x86_64-linux-gnu/libglib-2.0.so ./dependencies/
-          cp /usr/lib/x86_64-linux-gnu/libsecret-1.so ./dependencies/
-          cp /usr/lib/x86_64-linux-gnu/libgthread-2.0.so ./dependencies/
-          cp /usr/lib/x86_64-linux-gnu/libdbus-1.so.3 ./dependencies/
         shell: bash
         if: steps.build.outcome == 'success'
 
@@ -123,10 +143,10 @@ runs:
             if [[ "$dir" == *".conan2/p"* ]]; then
               echo "Looking in $dir"
               find "$dir" \
-                \( -iname 'libxxhash*.so*' \
-                -o -iname 'liblog4cplus*.so.*' \
-                -o -iname 'libssl*.so*' \
-                -o -iname 'libcrypto*.so*' \) \
+                \( -iname 'libxxhash.so*' \
+                -o -iname 'liblog4cplus.so*' \
+                -o -iname 'libssl.so*' \
+                -o -iname 'libcrypto.so*' \) \
                 -exec cp -a {} ./dependencies/ \; \
                 -exec echo "Conan dependency found -> " {} \;
             fi
