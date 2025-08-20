@@ -84,31 +84,31 @@ runs:
       - name: Fetch dependencies
         run: | 
           mkdir dependencies
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Widgets.* ./dependencies/ 
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Gui.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Network.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Sql.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Core.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6DBus.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libicui18n.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libicuuc.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libicudata.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Svg.* ./dependencies/
+          cp -a /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Widgets.* ./dependencies/ 
+          cp -a /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Gui.* ./dependencies/
+          cp -a /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Network.* ./dependencies/
+          cp -a /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Sql.* ./dependencies/
+          cp -a /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Core.* ./dependencies/
+          cp -a /home/runner/Qt/6.2.3/gcc_64/lib/libQt6DBus.* ./dependencies/
+          cp -a /home/runner/Qt/6.2.3/gcc_64/lib/libicui18n.* ./dependencies/
+          cp -a /home/runner/Qt/6.2.3/gcc_64/lib/libicuuc.* ./dependencies/
+          cp -a /home/runner/Qt/6.2.3/gcc_64/lib/libicudata.* ./dependencies/
+          cp -a /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Svg.* ./dependencies/
           mkdir dependencies/platforms
           cp /home/runner/Qt/6.2.3/gcc_64/plugins/platforms/libqoffscreen.so ./dependencies/platforms/
           cp /usr/local/lib/libcppunit-1.15.so.2 ./dependencies/ 
-          cp /usr/local/lib/libPocoUtil* ./dependencies/
-          cp /usr/local/lib/libPocoJSON* ./dependencies/
-          cp /usr/local/lib/libPocoXML* ./dependencies/
-          cp /usr/local/lib/libPocoFoundation* ./dependencies/
-          cp /usr/local/lib/libPocoNetSSL* ./dependencies/
-          cp /usr/local/lib/libPocoCrypto* ./dependencies/
-          cp /usr/local/lib/libPocoNet* ./dependencies/
-          cp /usr/local/lib/libsentry* ./dependencies/
-          cp /usr/local/lib/libzip* ./dependencies/
-          cp /usr/lib/x86_64-linux-gnu/libglib* ./dependencies/
-          cp /usr/lib/x86_64-linux-gnu/libsecret* ./dependencies/
-          cp /usr/lib/x86_64-linux-gnu/libgthread* ./dependencies/
+          cp -a /usr/local/lib/libPocoUtil* ./dependencies/
+          cp -a /usr/local/lib/libPocoJSON* ./dependencies/
+          cp -a /usr/local/lib/libPocoXML* ./dependencies/
+          cp -a /usr/local/lib/libPocoFoundation* ./dependencies/
+          cp -a /usr/local/lib/libPocoNetSSL* ./dependencies/
+          cp -a /usr/local/lib/libPocoCrypto* ./dependencies/
+          cp -a /usr/local/lib/libPocoNet* ./dependencies/
+          cp -a /usr/local/lib/libsentry* ./dependencies/
+          cp -a /usr/local/lib/libzip* ./dependencies/
+          cp -a /usr/lib/x86_64-linux-gnu/libglib* ./dependencies/
+          cp -a /usr/lib/x86_64-linux-gnu/libsecret* ./dependencies/
+          cp -a /usr/lib/x86_64-linux-gnu/libgthread* ./dependencies/
           cp /usr/lib/x86_64-linux-gnu/libdbus-1.so.3 ./dependencies/
         shell: bash
         if: steps.build.outcome == 'success'
@@ -127,7 +127,7 @@ runs:
                 -o -iname 'liblog4cplus*.so.*' \
                 -o -iname 'libssl*.so*' \
                 -o -iname 'libcrypto*.so*' \) \
-                -exec cp {} ./dependencies/ \; \
+                -exec cp -a {} ./dependencies/ \; \
                 -exec echo "Conan dependency found -> " {} \;
             fi
           done

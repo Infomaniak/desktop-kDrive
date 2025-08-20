@@ -101,7 +101,7 @@ runs:
                    -o -iname 'liblog4cplus*.dylib' \
                    -o -iname 'libssl*.dylib' \
                    -o -iname 'libcrypto*.dylib' ')' \
-                -exec cp {} ./dependencies/ \; \
+                -exec cp -a {} ./dependencies/ \; \
                 -exec echo "Conan dependency found -> " {} \;
             fi
           done
