@@ -140,7 +140,6 @@ class OpenSSLUniversalConan(ConanFile):
         self.cpp_info.set_property("cmake_build_modules", [self._module_file_rel_path])
 
     def package_id(self):
-        self.info.settings.rm_safe("arch")
         self.info.settings.rm_safe("compiler")
         self.info.settings.rm_safe("build_type")
         self.info.options.rm_safe("shared")
