@@ -126,7 +126,9 @@ AppServer::AppServer(int &argc, char **argv) :
 }
 
 AppServer::~AppServer() {
-    LOG_DEBUG(_logger, "~AppServer");
+    if (Log::isSet()) {
+        LOG_DEBUG(_logger, "~AppServer");
+    }
 }
 
 void AppServer::init() {
@@ -136,20 +138,20 @@ void AppServer::init() {
     setWindowIcon(_theme->applicationIcon());
     setApplicationVersion(QString::fromStdString(_theme->version()));
 
-    // Setup logging with default parameters
-    if (!initLogging()) {
-        throw std::runtime_error("Unable to init logging.");
-    }
-
     parseOptions(_arguments);
     if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
-        LOG_INFO(_logger, "Command line options processed");
+        std::cout << "Command line options processed" << std::endl;
         return;
     }
 
     if (isRunning()) {
-        LOG_INFO(_logger, "AppServer already running");
+        std::cout << "AppServer already running" << std::endl;
         return;
+    }
+
+    // Setup logging with default parameters
+    if (!initLogging()) {
+        throw std::runtime_error("Unable to init logging.");
     }
 
     // Cleanup at quit

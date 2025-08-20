@@ -168,10 +168,10 @@ std::int32_t exec(std::unique_ptr<KDC::AppServer> &appPtr) {
 
     // If the application is already running, notify it.
     if (appPtr->isRunning()) {
-        LOG_INFO(KDC::Log::instance()->getLogger(), "Server already running");
+        std::cout << "Server already running" << std::endl;
         if (appPtr->isSessionRestored()) {
             // This call is mirrored with the one in Application::slotParseMessage
-            LOG_DEBUG(KDC::Log::instance()->getLogger(), "Session was restored, don't notify app!");
+            std::cout << "Session was restored, don't notify app!" << std::endl;
             return -1;
         }
 
@@ -185,7 +185,7 @@ std::int32_t exec(std::unique_ptr<KDC::AppServer> &appPtr) {
             return 0;
         }
 
-        LOG_INFO(KDC::Log::instance()->getLogger(), "Asking the running server to start a newClient.");
+        std::cout << "Asking the running server to start a newClient." << std::endl;
         appPtr->sendRestartClientMsg();
         return 0;
     }
