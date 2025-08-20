@@ -68,10 +68,12 @@ lipo -create -output openssl.multi/lib/libcrypto.3.dylib  openssl.x86_64/libcryp
 install_name_tool -id "@rpath/libssl.3.dylib" openssl.multi/lib/libssl.3.dylib
 install_name_tool -id "@rpath/libcrypto.3.dylib" openssl.multi/lib/libcrypto.3.dylib
 
+# We add the `@loader_path` to the rpath because the utility macdeployqt will try to find the libraries relative to the loader, and libss.3.dylib load libcrypto.3.dylib.
+# If @loader_path is not set, it will fail to find the libcrypto.3.dylib and will replace it to /usr/local/lib/libcrypto.3.dylib which could not exists on the user's system.
 install_name_tool -add_rpath "@loader_path" openssl.multi/lib/libssl.3.dylib
 install_name_tool -add_rpath "@loader_path" openssl.multi/lib/libcrypto.3.dylib
 
-## Fixing dependencies for the merged libraries
+# Fixing dependencies for the merged libraries
 install_name_tool -change "/usr/local/lib/libcrypto.3.dylib" "@rpath/libcrypto.3.dylib" openssl.multi/lib/libssl.3.dylib
 install_name_tool -change "/usr/lib/libz.1.dylib"            "@rpath/libz.1.dylib"      openssl.multi/lib/libssl.3.dylib
 install_name_tool -change "/usr/lib/libz.1.dylib"            "@rpath/libz.1.dylib"      openssl.multi/lib/libcrypto.3.dylib
