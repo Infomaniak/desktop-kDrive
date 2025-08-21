@@ -25,6 +25,8 @@ public enum AppTab: String, Sendable, Identifiable {
     case storage
     case kDriveFolder
 
+    static let allTabs: [AppTab] = [.home, .activity, .storage, .kDriveFolder]
+
     public var id: String { rawValue }
 
     public var title: LocalizedStringResource {

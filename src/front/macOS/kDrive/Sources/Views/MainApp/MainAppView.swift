@@ -16,16 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCore
+import kDriveCoreUI
 import SwiftUI
 
-@main
-struct kDriveApp: App {
-    private let dependencyInjectionHook = TargetAssembly()
+struct MainAppView: View {
+    @EnvironmentObject private var mainAppViewModel: MainAppViewModel
 
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
+    private let tabs: [AppTab] = [.home, .activity, .storage, .kDriveFolder]
+
+    var body: some View {
+        NavigationSplitView {
+            SidebarView(currentTab: $mainAppViewModel.currentTab)
+        } detail: {
+            NavigationStack {
+                Text(verbatim: "!Detail")
+                    .navigationTitle(mainAppViewModel.currentTab?.title ?? "kDrive")
+            }
         }
+        .ikBackport.searchable(text: $mainAppViewModel.search, isPresented: $mainAppViewModel.isFocusingSearch)
     }
+}
+
+#Preview {
+    MainAppView()
+        .environmentObject(MainAppViewModel())
 }

@@ -17,11 +17,21 @@
  */
 
 import SwiftUI
+import kDriveCoreUI
 
-public struct IKBackport<Content: View> {
-    public let view: Content
+struct SidebarView: View {
+    @Binding var currentTab: AppTab?
+
+    var body: some View {
+        List(AppTab.allTabs, selection: $currentTab) { tab in
+            NavigationLink(value: tab) {
+                Label { Text(tab.title) } icon: { tab.icon }
+            }
+        }
+        .ikBackport.toolbar(removing: .sidebarToggle)
+    }
 }
 
-public extension View {
-    var ikBackport: IKBackport<Self> { .init(view: self) }
+#Preview {
+    SidebarView(currentTab: .constant(.home))
 }
