@@ -76,6 +76,10 @@ function get_platform {
 }
 
 
+# Get the target cpu architecture (Conan format) based on the platform and build type
+# On macOS and the build_type is Release, we build a universal binary (arm64 and x86_64).
+# Otherwise, we build for the current architecture (arm64 or x86_64).
+# Possible values: 'armv8', 'x86_64', and 'armv8|x86_64' (universal binary).
 function get_target_architecture {
   local platform="$1"
   local target="$2"
