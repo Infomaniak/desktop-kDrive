@@ -94,4 +94,24 @@ std::string loadEnvVariable(const std::string &key, const bool mandatory) {
     return val;
 }
 
+void createSymLinkLoop(const SyncPath &filepath1, const SyncPath &filepath2, const NodeType nodeType) {
+    switch (nodeType) {
+        case NodeType::File: {
+            std::ofstream ofs(filepath1);
+            break;
+        }
+        case NodeType::Directory: {
+            std::filesystem::create_directories(filepath1);
+            break;
+        }
+        default:
+            throw std::invalid_argument(
+                    "Invalid argument NodeType argument in createSymLinkLoop. Expected: either NodeType::File or "
+                    "NodeType::Directory.");
+    }
+    std::filesystem::create_symlink(filepath1, filepath2); // filepath2 -> filepath1
+    std::filesystem::remove_all(filepath1);
+    std::filesystem::create_symlink(filepath2, filepath1); // filepath1 -> filepath2
+}
+
 } // namespace KDC::testhelpers

@@ -96,4 +96,9 @@ SyncPath generateBigFile(const SyncPath &dirPath, uint16_t size);
 
 void setModificationDate(const SyncPath &path, const std::chrono::time_point<std::chrono::system_clock> &timePoint);
 
+// Create two symbolic links that refer to each other:
+// filepath1 -> filepath2,
+// filepath2 -> filepath1
+void createSymLinkLoop(const SyncPath &filepath1, const SyncPath &filepath2, const NodeType nodeType = NodeType::File);
+
 } // namespace KDC::testhelpers
