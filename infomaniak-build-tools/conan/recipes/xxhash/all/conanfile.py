@@ -56,9 +56,6 @@ class XxHashConan(ConanFile):
         "utility": True,
     }
 
-    def export_sources(self):
-        export_conandata_patches(self)
-
     def config_options(self):
         if self.settings.os == "Windows":
             del self.options.fPIC
