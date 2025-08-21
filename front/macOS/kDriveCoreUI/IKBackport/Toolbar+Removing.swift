@@ -16,16 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCore
 import SwiftUI
 
-@main
-struct kDriveApp: App {
-    private let dependencyInjectionHook = TargetAssembly()
+public extension IKBackport {
+    enum ToolbarDefaultItemKind {
+        case sidebarToggle
 
-    var body: some Scene {
-        WindowGroup {
-            RootView()
+        @available(macOS 14.0, *)
+        var originalType: SwiftUI.ToolbarDefaultItemKind {
+            switch self {
+            case .sidebarToggle:
+                return .sidebarToggle
+            }
+        }
+    }
+
+    @ViewBuilder func toolbar(removing defaultItemKind: IKBackport.ToolbarDefaultItemKind?) -> some View {
+        if #available(macOS 14.0, *) {
+            view.toolbar(removing: defaultItemKind?.originalType)
+        } else {
+            view
         }
     }
 }

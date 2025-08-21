@@ -16,20 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCoreUI
 import SwiftUI
 
-struct MainAppView: View {
+struct RootView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        NavigationSplitView {
+            Text("Sidebar")
+                .ikBackport.toolbar(removing: .sidebarToggle)
+        } detail: {
+            NavigationStack {
+                Text("Detail")
+                    .searchable(text: .constant(""))
+                    .navigationTitle("Home")
+            }
         }
-        .padding()
     }
 }
 
 #Preview {
-    MainAppView()
+    RootView()
 }
