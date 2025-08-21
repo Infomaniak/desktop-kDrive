@@ -76,25 +76,26 @@ function get_platform {
 }
 
 
-
 function get_target_architecture {
+  local platform
+  local target
+  local architecture
   platform=$1
+  target=$2 #
   architecture="" # Left empty for Linux systems.
 
   function get_real_architecture {
+    local real_architecture
     real_architecture="$(uname -m)"
-    if echo "$real_architecture" | grep -qE "(arm|aarch)64"; then
-      real_architecture="armv8"
-    elif [[ "$real_architecture" == "x86_64" ]]; then
-      real_architecture="x86_64"
-    else
-      error "Unsupported architecture: $real_architecture. Supported architectures: armv8, x86_64."
-    fi
-    echo "$real_architecture"
+    case "$real_architecture" in
+      arm64|aarch64) echo "armv8" ;;
+      x86_64) echo "x86_64" ;;
+      *) error "Unsupported architecture: $real_architecture. Supported architectures: armv8, x86_64." ;;
+    esac
   }
 
   if [[ "$platform" = "darwin" ]]; then
-    if [[ "$build_type" = "Debug" ]]; then
+    if [[ "$build_type" = "Debug" && $target = "build" ]]; then
       architecture="$(get_real_architecture)"
     else
       architecture="armv8|x86_64" # Making universal binary. See https://docs.conan.io/2/reference/tools/cmake/cmaketoolchain.html#conan-tools-cmaketoolchain-universal-binaries
@@ -208,7 +209,7 @@ if [[ "$platform" == "darwin" ]]; then
     log "Building universal binary for macOS."
 fi
 
-architecture="-s:a=arch=$(get_target_architecture "$platform")"
+architecture="-s:b=arch=$(get_target_architecture "$platform" "build") -s:h=arch=$(get_target_architecture "$platform" "host")"
 
 mkdir -p "$output_dir"
 
