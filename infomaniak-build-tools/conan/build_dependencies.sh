@@ -182,7 +182,6 @@ if [[ $use_release_profile == true ]]; then
       error "Profile '$release_profile' must not set tools.cmake.cmaketoolchain:user_toolchain"
     fi
 
-
     log "Using '$release_profile' profile for Conan."
     conan_profile="$release_profile"
   else
