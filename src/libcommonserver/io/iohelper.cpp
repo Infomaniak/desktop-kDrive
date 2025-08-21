@@ -553,7 +553,7 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     ioError = IoError::Success;
     bool endOfDirectory = false;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-        if (entry.is_directory() && !entry.is_symlink()) {
+        if (!entry.is_symlink() || entry.is_directory()) {
             if (maxDepth == 0) {
                 LOGW_WARN(logger(), L"Max depth reached in getDirectorySize, skipping deeper directories for "
                                             << Utility::formatSyncPath(path));

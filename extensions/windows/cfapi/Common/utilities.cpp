@@ -385,8 +385,9 @@ bool Utilities::checkIfIsDirectory(const wchar_t *path, bool &isDirectory, bool 
 
     std::error_code ec;
     isDirectory = std::filesystem::is_directory(std::filesystem::path(path), ec);
-    if (!isDirectory && ec.value() != 0) {
-        exists = !KDC::utility_base::isLikeFileNotFoundError(ec);
+    if (!isDirectory && ec) {
+        exists = !KDC::utility_base::isLikeFileNotFoundError(ec) ||
+                 (static_cast<int>(std::errc::too_many_symbolic_link_levels) == ec.value());
         if (!exists) {
             return true;
         }
