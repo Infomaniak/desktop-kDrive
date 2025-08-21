@@ -506,6 +506,10 @@ struct IoHelper {
 
         static bool _setRightsStd(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
 
+#if defined(KD_MACOS) || defined(KD_LINUX)
+        static void setTargetNodeType(const SyncPath &path, const bool isSymLink, NodeType &nodeType);
+#endif
+
 #if defined(KD_WINDOWS)
         static bool _setRightsWindowsApiInheritance; // For windows tests only
         static int _getAndSetRightsMethod;
