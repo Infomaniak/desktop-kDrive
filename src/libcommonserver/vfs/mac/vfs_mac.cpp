@@ -170,10 +170,11 @@ void VfsMac::dehydrate(const SyncPath &absoluteFilepathStd) {
     _setSyncFileSyncing(_vfsSetupParams.syncDbId, QStr2Path(relativePath), false);
 }
 
-void VfsMac::hydrate(const SyncPath &path) {
-    LOGW_DEBUG(logger(), L"hydrate - " << Utility::formatSyncPath(path));
+void VfsMac::hydrate(const SyncPath &pathStd) {
+    QString path = SyncName2QStr(pathStd.native());
+    LOGW_DEBUG(logger(), L"hydrate - " << Utility::formatPath(path));
 
-    if (!_connector->vfsHydratePlaceHolder(path.native())) {
+    if (!_connector->vfsHydratePlaceHolder(QDir::toNativeSeparators(path))) {
         LOG_WARN(logger(), "Error in vfsHydratePlaceHolder!");
     }
 
