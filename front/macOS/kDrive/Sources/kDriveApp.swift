@@ -27,5 +27,9 @@ struct kDriveApp: App {
         WindowGroup {
             RootView()
         }
+
+        Settings {
+            Text("!Todo")
+        }
     }
 }

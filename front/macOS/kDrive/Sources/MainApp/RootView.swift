@@ -21,16 +21,23 @@ import SwiftUI
 
 struct RootView: View {
     @State private var search = ""
+    @State private var selectedTab: AppTab? = .home
+
+    let tabs: [AppTab] = [.home, .activity, .storage, .kDriveFolder]
 
     var body: some View {
         NavigationSplitView {
-            Text("!Sidebar")
-                .ikBackport.toolbar(removing: .sidebarToggle)
+            List(tabs, selection: $selectedTab) { tab in
+                NavigationLink(value: tab) {
+                    Label { Text(tab.title) } icon: { tab.icon }
+                }
+            }
+            .ikBackport.toolbar(removing: .sidebarToggle)
         } detail: {
             NavigationStack {
                 Text("!Detail")
                     .searchable(text: $search)
-                    .navigationTitle(.tabTitleHome)
+                    .navigationTitle(selectedTab?.title ?? "kDrive")
             }
         }
     }
