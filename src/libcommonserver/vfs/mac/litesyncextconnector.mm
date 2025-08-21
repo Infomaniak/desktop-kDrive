@@ -840,8 +840,7 @@ bool LiteSyncExtConnector::vfsHydratePlaceHolder(const SyncPath &filePath) {
     if (value == litesync_attrs::statusOffline) {
         // Get file
         LOGW_DEBUG(_logger, L"Get file with " << Utility::formatSyncPath(filePath));
-        const std::string msg = std::vformat("MAKE_AVAILABLE_LOCALLY_DIRECT:{}", std::make_format_args(Path2Str(filePath)));
-        _private->executeCommand(msg);
+        _private->executeCommand("MAKE_AVAILABLE_LOCALLY_DIRECT:" + Path2Str(filePath));
     }
 
     return true;
@@ -1501,8 +1500,7 @@ bool LiteSyncExtConnector::sendStatusToFinder(const SyncPath &path, const VfsSta
     std::string status;
     if (vfsStatus.isSyncing) {
         int stepWidth = 100 / SYNC_STEPS;
-        const auto strPercent = std::to_string(ceil(float(vfsStatus.progress) / stepWidth) * stepWidth);
-        status = std::vformat("SYNC_{}", std::make_format_args(strPercent));
+        status = "SYNC_" + std::to_string(ceil(float(vfsStatus.progress) / stepWidth) * stepWidth);
     } else if (vfsStatus.isHydrated) {
         status = "OK";
     } else {
@@ -1511,7 +1509,7 @@ bool LiteSyncExtConnector::sendStatusToFinder(const SyncPath &path, const VfsSta
 
     // Update Finder
     LOGW_DEBUG(_logger, L"Send status to the Finder extension: " << Utility::formatSyncPath(path));
-    const std::string msg = std::vformat("STATUS:{}:{}", std::make_format_args(status, Path2Str(path)));
+    const std::string msg = "STATUS:" + status + ":" + Path2Str(path);
     return _private->executeCommand(msg);
 }
 
