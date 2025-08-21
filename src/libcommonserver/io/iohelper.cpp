@@ -859,20 +859,36 @@ bool IoHelper::checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError
 }
 
 bool IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoError &ioError) noexcept {
+    // isDirectory = false;
+    //
+    // ItemType itemType;
+    // const bool success = getItemType(path, itemType);
+    // ioError = itemType.ioError;
+    //
+    // if (!success) {
+    //     LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(path, ioError));
+    //     return false;
+    // }
+    //
+    // isDirectory = itemType.nodeType == NodeType::Directory;
+    //
+    // return true;
+
+    ioError = checkIfIsDirectory(path, isDirectory);
+    return ioError == IoError::Success;
+}
+
+IoError IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory) noexcept {
     isDirectory = false;
 
     ItemType itemType;
-    const bool success = getItemType(path, itemType);
-    ioError = itemType.ioError;
-
-    if (!success) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(path, ioError));
-        return false;
+    if (const bool success = getItemType(path, itemType); !success) {
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(path, itemType.ioError));
+        return itemType.ioError;
     }
 
     isDirectory = itemType.nodeType == NodeType::Directory;
-
-    return true;
+    return IoError::Success;
 }
 
 bool IoHelper::createDirectory(const SyncPath &path, const bool recursive, IoError &ioError) noexcept {

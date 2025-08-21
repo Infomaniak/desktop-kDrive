@@ -44,8 +44,8 @@ class VfsMac : public Vfs {
                                 const NodeId &fileId) override;
 
         ExitInfo createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) override;
-        ExitInfo dehydratePlaceholder(const SyncPath &path) override;
-        ExitInfo convertToPlaceholder(const SyncPath &path, const SyncFileItem &item) override;
+        ExitInfo dehydratePlaceholder(const SyncPath &relativePath) override;
+        ExitInfo convertToPlaceholder(const SyncPath &absolutePath, const SyncFileItem &item) override;
         ExitInfo updateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
                                    bool &finished) override;
         ExitInfo updateFetchStatus(const SyncPath &absolutePath, const std::string &status) override;
@@ -53,7 +53,7 @@ class VfsMac : public Vfs {
         bool cleanUpStatuses() override;
         void clearFileAttributes(const SyncPath &path) override;
 
-        ExitInfo isDehydratedPlaceholder(const SyncPath &filePath, bool &isDehydrated) override;
+        ExitInfo isDehydratedPlaceholder(const SyncPath &relativeFilePath, bool &isDehydrated) override;
 
         ExitInfo setPinState(const SyncPath &fileRelativePath, PinState state) override;
         PinState pinState(const SyncPath &relativePath) override;
@@ -81,7 +81,7 @@ class VfsMac : public Vfs {
         LiteSyncExtConnector *_connector{nullptr};
 
         void resetLiteSyncConnector();
-        const QString _localSyncPath;
+        // const QString _localSyncPath;
 };
 
 class MacVfsPluginFactory : public QObject, public DefaultPluginFactory<VfsMac> {

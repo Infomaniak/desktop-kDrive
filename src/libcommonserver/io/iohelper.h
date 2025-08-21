@@ -273,6 +273,7 @@ struct IoHelper {
          false.
          */
         static bool checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoError &ioError) noexcept;
+        static IoError checkIfIsDirectory(const SyncPath &path, bool &isDirectory) noexcept;
 
         //! Create a directory located under the specified path.
         /*!
