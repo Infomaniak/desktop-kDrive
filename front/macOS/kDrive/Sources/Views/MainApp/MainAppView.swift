@@ -19,15 +19,14 @@
 import kDriveCoreUI
 import SwiftUI
 
-struct RootView: View {
-    @State private var search = ""
-    @State private var selectedTab: AppTab? = .home
+struct MainAppView: View {
+    @EnvironmentObject private var mainAppViewModel: MainAppViewModel
 
-    let tabs: [AppTab] = [.home, .activity, .storage, .kDriveFolder]
+    private let tabs: [AppTab] = [.home, .activity, .storage, .kDriveFolder]
 
     var body: some View {
         NavigationSplitView {
-            List(tabs, selection: $selectedTab) { tab in
+            List(tabs, selection: $mainAppViewModel.currentTab) { tab in
                 NavigationLink(value: tab) {
                     Label { Text(tab.title) } icon: { tab.icon }
                 }
@@ -35,14 +34,15 @@ struct RootView: View {
             .ikBackport.toolbar(removing: .sidebarToggle)
         } detail: {
             NavigationStack {
-                Text("!Detail")
-                    .searchable(text: $search)
-                    .navigationTitle(selectedTab?.title ?? "kDrive")
+                Text(verbatim: "!Detail")
+                    .navigationTitle(mainAppViewModel.currentTab?.title ?? "kDrive")
             }
         }
+        .ikBackport.searchable(text: $mainAppViewModel.search, isPresented: $mainAppViewModel.isFocusingSearch)
     }
 }
 
 #Preview {
-    RootView()
+    MainAppView()
+        .environmentObject(MainAppViewModel())
 }

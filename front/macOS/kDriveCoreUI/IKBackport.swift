@@ -18,6 +18,16 @@
 
 import SwiftUI
 
+public struct IKBackport<Content: View> {
+    public let view: Content
+}
+
+public extension View {
+    var ikBackport: IKBackport<Self> { .init(view: self) }
+}
+
+// MARK: - toolbar(removing:)
+
 public extension IKBackport {
     enum ToolbarDefaultItemKind {
         case sidebarToggle
@@ -36,6 +46,18 @@ public extension IKBackport {
             view.toolbar(removing: defaultItemKind?.originalType)
         } else {
             view
+        }
+    }
+}
+
+// MARK: - searchable
+
+public extension IKBackport {
+    @ViewBuilder func searchable(text: Binding<String>, isPresented: Binding<Bool>, placement: SearchFieldPlacement = .automatic, prompt: Text? = nil) -> some View {
+        if #available(macOS 14.0, *) {
+            view.searchable(text: text, isPresented: isPresented, placement: placement, prompt: prompt)
+        } else {
+            view.searchable(text: text, placement: placement, prompt: prompt)
         }
     }
 }

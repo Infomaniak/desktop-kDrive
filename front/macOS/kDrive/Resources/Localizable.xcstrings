@@ -1,14 +1,43 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "!Detail" : {
-
-    },
-    "!Todo" : {
-
-    },
     "kDrive" : {
 
+    },
+    "menuItemSearch" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suche"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar en"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recherche"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricerca"
+          }
+        }
+      }
     },
     "tabTitleActivity" : {
       "extractionState" : "manual",

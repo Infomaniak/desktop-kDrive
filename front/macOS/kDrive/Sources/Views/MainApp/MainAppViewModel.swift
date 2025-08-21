@@ -16,12 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import SwiftUI
+import Foundation
+import Combine
 
-public struct IKBackport<Content: View> {
-    public let view: Content
-}
+@MainActor
+public final class MainAppViewModel: ObservableObject {
+    @Published public var currentTab: AppTab? = .home
 
-public extension View {
-    var ikBackport: IKBackport<Self> { .init(view: self) }
+    @Published public var search = ""
+    @Published public var isFocusingSearch = false
 }
