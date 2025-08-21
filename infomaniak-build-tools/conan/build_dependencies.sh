@@ -77,12 +77,9 @@ function get_platform {
 
 
 function get_target_architecture {
-  local platform
-  local target
+  local platform="$1"
+  local target="$2"
   local architecture
-  platform=$1
-  target=$2 #
-  architecture="" # Left empty for Linux systems.
 
   function get_real_architecture {
     local real_architecture
@@ -94,15 +91,21 @@ function get_target_architecture {
     esac
   }
 
-  if [[ "$platform" = "darwin" ]]; then
-    if [[ "$build_type" = "Debug" && $target = "build" ]]; then
+  case "$platform" in
+    darwin)
+      if [[ "$build_type" = "Debug" && "$target" = "build" ]]; then
+        architecture="$(get_real_architecture)"
+      else
+        architecture="armv8|x86_64" # Universal binary
+      fi
+      ;;
+    linux)
       architecture="$(get_real_architecture)"
-    else
-      architecture="armv8|x86_64" # Making universal binary. See https://docs.conan.io/2/reference/tools/cmake/cmaketoolchain.html#conan-tools-cmaketoolchain-universal-binaries
-    fi
-  else
-    architecture="$(get_real_architecture)"
-  fi
+      ;;
+    *)
+      error "Unsupported platform: $platform. Supported platforms: darwin, linux."
+      ;;
+  esac
 
   log "platform: $platform, build_type: $build_type => architecture: $architecture" >&2
   echo "$architecture"
