@@ -181,9 +181,7 @@ if [[ $use_release_profile == true ]]; then
     if grep -q 'tools.cmake.cmaketoolchain:user_toolchain' "$profile_path"; then
       error "Profile '$release_profile' must not set tools.cmake.cmaketoolchain:user_toolchain"
     fi
-    if grep -q 'os=Macos' "$profile_path" && ! grep -q 'arch=armv8|x86_64' "$profile_path"; then
-      error "Profile '$release_profile' must set arch=armv8|x86_64 for MacOS"
-    fi
+
 
     log "Using '$release_profile' profile for Conan."
     conan_profile="$release_profile"
