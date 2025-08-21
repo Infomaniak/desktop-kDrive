@@ -16,20 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCore
 import SwiftUI
 
-struct MainAppView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
-    }
-}
+@main
+struct kDriveApp: App {
+    private let dependencyInjectionHook = TargetAssembly()
 
-#Preview {
-    MainAppView()
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
 }
