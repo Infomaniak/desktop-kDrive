@@ -1439,19 +1439,19 @@ FileData FileData::get(const KDC::SyncPath &path) {
     } else {
         std::error_code ec;
         data.isDirectory = std::filesystem::is_directory(tmpPath, ec);
-        if (!data.isDirectory && ec.value() != 0) {
-            const bool exists = !utility_base::isLikeFileNotFoundError(ec);
+        if (!data.isDirectory && ec) {
+            const bool exists = !utility_base::isLikeFileNotFoundError(ec) ||
+                                (static_cast<int>(std::errc::too_many_symbolic_link_levels) == ec.value());
             if (!exists) {
-                // Item doesn't exist anymore
+                // Item does not exist anymore.
                 LOGW_DEBUG(KDC::Log::instance()->getLogger(),
-                           L"Item doesn't exist - " << Utility::formatPath(data.absoluteLocalPath));
+                           L"Item does not exist - " << Utility::formatPath(data.absoluteLocalPath));
             } else {
                 LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to check if the path is a directory - "
-                                                                     << Utility::formatPath(data.absoluteLocalPath) << L" err="
-                                                                     << KDC::CommonUtility::s2ws(ec.message()) << L" ("
-                                                                     << ec.value() << L")");
+                                                                     << Utility::formatPath(data.absoluteLocalPath) << L", "
+                                                                     << Utility::formatStdError(ec));
             }
-            return FileData();
+            return {};
         }
     }
 
