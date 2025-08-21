@@ -1471,7 +1471,6 @@ bool LiteSyncExtConnector::vfsProcessDirStatus(const QString &path, const QStrin
     IoHelper::DirectoryIterator dirIt(QStr2Path(path), false, ioError);
     bool endOfDir = false;
     DirectoryEntry entry;
-    QStringList fileList;
     bool hasASyncingChild = false;
     bool hasADehydratedChild = false;
     while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
@@ -1535,7 +1534,6 @@ bool LiteSyncExtConnector::checkFilesAttributes(const QString &path, const QStri
     IoHelper::DirectoryIterator dirIt(QStr2Path(path), false, ioError);
     bool endOfDir = false;
     DirectoryEntry entry;
-    QStringList fileList;
     bool atLeastOneChanged = false;
     while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
         QFileInfo fileinfo(Path2QStr(entry.path()));

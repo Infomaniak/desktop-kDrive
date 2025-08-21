@@ -1318,8 +1318,7 @@ QString SocketApi::buildRegisterPathMessage(const QString &path) {
 void SocketApi::processFileList(const QStringList &inFileList, std::list<SyncPath> &outFileList) {
     // Process all files
     for (const QString &path: qAsConst(inFileList)) {
-        const FileData fileData = FileData::get(path);
-        if (fileData.virtualFileMode != VirtualFileMode::Mac) {
+        if (const auto fileData = FileData::get(path); fileData.virtualFileMode != VirtualFileMode::Mac) {
             (void) outFileList.emplace_back(QStr2Path(path));
             continue;
         }
@@ -1335,9 +1334,9 @@ void SocketApi::processFileList(const QStringList &inFileList, std::list<SyncPat
         DirectoryEntry entry;
         QStringList fileList;
         while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
-            const FileData tmpFileData = FileData::get(entry.path());
+            const auto fileData = FileData::get(entry.path());
             auto status = SyncFileStatus::Unknown;
-            if (VfsStatus vfsStatus; !syncFileStatus(tmpFileData, status, vfsStatus)) {
+            if (VfsStatus vfsStatus; !syncFileStatus(fileData, status, vfsStatus)) {
                 LOGW_WARN(KDC::Log::instance()->getLogger(),
                           L"Error in SocketApi::syncFileStatus - " << Utility::formatSyncPath(entry.path()));
                 continue;
@@ -1347,7 +1346,7 @@ void SocketApi::processFileList(const QStringList &inFileList, std::list<SyncPat
                 continue;
             }
 
-            fileList.append(tmpFileData.absoluteLocalPath);
+            fileList.append(fileData.absoluteLocalPath);
         }
 
         if (!fileList.empty()) {
