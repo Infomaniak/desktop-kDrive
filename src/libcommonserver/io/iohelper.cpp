@@ -336,6 +336,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
 }
 #endif
 
+
 bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     itemType = ItemType{};
 
@@ -1067,4 +1068,20 @@ bool IoHelper::_setRightsStd(const SyncPath &path, bool read, bool write, bool e
 
     return true;
 }
+
+void IoHelper::setTargetNodeType(const SyncPath &path, const bool isSymLink, NodeType &nodeType) {
+    if (!S_ISLNK(isSymLink)) return;
+
+    if (struct stat sbTarget; stat(path.string().c_str(), &sbTarget) >= 0) {
+        nodeType = S_ISDIR(sbTarget.st_mode) ? NodeType::Directory : NodeType::File;
+    } else {
+        nodeType = NodeType::Unknown;
+        if (errno == static_cast<int>(std::errc::too_many_symbolic_link_levels)) {
+            // The following type setting enables the upload of symbolic links with too many levels of indirection.
+            // It is of course inaccurate for these invalid links when they point to a directory.
+            nodeType = NodeType::File;
+        }
+    }
+}
+
 } // namespace KDC

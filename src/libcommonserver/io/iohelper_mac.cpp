@@ -161,21 +161,8 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
     buf->modificationTime = sb.st_mtime;
     buf->size = sb.st_size;
     buf->nodeType = S_ISDIR(sb.st_mode) ? NodeType::Directory : NodeType::File;
-    if (S_ISLNK(sb.st_mode)) { // The item is a symlink.
-        try {
-            if (struct stat sbTarget; stat(path.string().c_str(), &sbTarget) >= 0) {
-                buf->nodeType = S_ISDIR(sbTarget.st_mode) ? NodeType::Directory : NodeType::File;
-            }
-        } catch (const std::filesystem::filesystem_error &e) {
-            // Swallow exceptions raised by invalid links with too many levels of indirections.
-            // Symbolic links, should they be valid or not, are always synchronized.
-            if (std::errc::too_many_symbolic_link_levels != e.code()) {
-                ioError = posixError2ioError(errno);
-                return isExpectedError(ioError);
-            }
-            buf->nodeType = NodeType::File; // Can be inaccurate for a symbolic with too many symbolic levels.
-        }
-    }
+
+    setTargetNodeType(path, S_ISLNK(sb.st_mode), buf->nodeType);
 
     return true;
 }
