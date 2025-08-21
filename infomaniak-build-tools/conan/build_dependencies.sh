@@ -43,7 +43,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     -h|--help)
       cat << EOF >&2
-Usage: $0 [Debug|Release] [--output-dir=<output_dir>] [--make-release] [--help]
+Usage: $0 [Debug|RelWithDebInfo|Release] [--output-dir=<output_dir>] [--make-release] [--help]
   --help               Display this help message.
   --output-dir=<dir>   Set the output directory for the Conan packages.
   --make-release       Use the 'infomaniak_release' Conan profile.
