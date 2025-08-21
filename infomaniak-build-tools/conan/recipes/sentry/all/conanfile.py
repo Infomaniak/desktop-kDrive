@@ -11,7 +11,6 @@ required_conan_version = ">=2"
 
 class SentryNativeConan(ConanFile):
     name = "sentry"
-    version = "0.7.10"
     description = (
         "The Sentry Native SDK is an error and crash reporting client for native "
         "applications, optimized for C and C++. Sentry allows to add tags, "
@@ -51,7 +50,7 @@ class SentryNativeConan(ConanFile):
 
     def source(self):
         git = Git(self)
-        git.clone(url="https://github.com/getsentry/sentry-native.git", target=".", hide_url=False, args=["-b", f"{self.version}", "--recurse-submodules"])
+        git.clone(url="https://github.com/getsentry/sentry-native.git", target=".", hide_url=False, args=["-b", str(self.version), "--recurse-submodules"])
 
     def _cache_variables(self):
         qt = self.dependencies["qt"]

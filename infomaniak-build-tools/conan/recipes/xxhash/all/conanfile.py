@@ -38,7 +38,6 @@ required_conan_version = ">=1.53.0"
 
 class XxHashConan(ConanFile):
     name = "xxhash"
-    version = "0.8.2"
     description = "Extremely fast non-cryptographic hash algorithm"
     license = "BSD-2-Clause"
     url = "https://github.com/conan-io/conan-center-index"
@@ -74,7 +73,7 @@ class XxHashConan(ConanFile):
         cmake_layout(self, src_folder="src")
 
     def source(self):
-        get(self, "https://github.com/Cyan4973/xxHash/archive/v0.8.2.tar.gz", sha256="baee0c6afd4f03165de7a4e67988d16f0f2b257b51d0e3cb91909302a26a79c4", strip_root=True)
+        get(self, f"https://github.com/Cyan4973/xxHash/archive/v{self.version}.tar.gz", strip_root=True)
 
     def build_requirements(self):
         if self.settings.os == "Windows":

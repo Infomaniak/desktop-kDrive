@@ -10,7 +10,6 @@ from conan.tools.microsoft import unix_path
 
 class OpenSSLUniversalConan(ConanFile):
     name = "openssl"
-    version = "3.2.4"
     package_type = "library"
     settings = "os", "arch", "compiler", "build_type"
     options = {
