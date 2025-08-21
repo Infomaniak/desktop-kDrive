@@ -859,21 +859,20 @@ bool IoHelper::checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError
 }
 
 bool IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoError &ioError) noexcept {
-    ioError = checkIfIsDirectory(path, isDirectory);
-    return ioError == IoError::Success;
-}
-
-IoError IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory) noexcept {
     isDirectory = false;
 
     ItemType itemType;
-    if (const bool success = getItemType(path, itemType); !success) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(path, itemType.ioError));
-        return itemType.ioError;
+    const bool success = getItemType(path, itemType);
+    ioError = itemType.ioError;
+
+    if (!success) {
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(path, ioError));
+        return false;
     }
 
     isDirectory = itemType.nodeType == NodeType::Directory;
-    return IoError::Success;
+
+    return true;
 }
 
 bool IoHelper::createDirectory(const SyncPath &path, const bool recursive, IoError &ioError) noexcept {

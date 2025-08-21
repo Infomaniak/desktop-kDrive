@@ -926,9 +926,8 @@ bool LiteSyncExtConnector::vfsSetPinState(const SyncPath &path, const SyncPath &
 
     // Set status if empty directory
     bool isDirectory = false;
-    ioError = IoHelper::checkIfIsDirectory(path, isDirectory);
-    if (ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Call to IoHelper::checkIfIsDirectory failed: " << Utility::formatIoError(path, ioError));
+    if (const bool isDirSuccess = IoHelper::checkIfIsDirectory(path, isDirectory, ioError); !isDirSuccess) {
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfIsDirectory: " << Utility::formatIoError(path, ioError));
         return false;
     }
     if (!isDirectory) return true;
@@ -1538,9 +1537,8 @@ bool LiteSyncExtConnector::checkFilesAttributes(const SyncPath &path, const Sync
 
         if (vfsStatus.isSyncing) {
             bool isDirectory = false;
-            ioError = IoHelper::checkIfIsDirectory(path, isDirectory);
-            if (ioError != IoError::Success) {
-                LOGW_WARN(_logger, L"Call to IoHelper::checkIfIsDirectory failed: " << Utility::formatIoError(path, ioError));
+            if (const bool isDirSuccess = IoHelper::checkIfIsDirectory(path, isDirectory, ioError); !isDirSuccess) {
+                LOGW_WARN(_logger, L"Error in IoHelper::checkIfIsDirectory: " << Utility::formatIoError(path, ioError));
                 continue;
             }
 

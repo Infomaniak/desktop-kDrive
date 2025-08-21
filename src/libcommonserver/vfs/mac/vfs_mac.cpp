@@ -103,9 +103,9 @@ ExitInfo VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &c
         std::unordered_set<SyncPath> dirsToFix;
         for (const auto &filePath: filesToFix) {
             bool isDirectory = false;
-            if (const auto ioError = IoHelper::checkIfIsDirectory(filePath, isDirectory); ioError != IoError::Success) {
-                LOGW_WARN(logger(),
-                          L"Call to IoHelper::checkIfIsDirectory failed: " << Utility::formatIoError(filePath, ioError));
+            auto ioError = IoError::Success;
+            if (const bool isDirSuccess = IoHelper::checkIfIsDirectory(filePath, isDirectory, ioError); !isDirSuccess) {
+                LOGW_WARN(logger(), L"Error in IoHelper::checkIfIsDirectory: " << Utility::formatIoError(filePath, ioError));
                 continue;
             }
 
