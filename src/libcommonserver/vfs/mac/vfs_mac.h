@@ -63,11 +63,11 @@ class VfsMac : public Vfs {
         ExitInfo setThumbnail(const SyncPath &absoluteFilePath, const QPixmap &pixmap) override;
         ExitInfo setAppExcludeList() override;
         ExitInfo getFetchingAppList(QHash<QString, QString> &appTable) override;
-        bool fileStatusChanged(const SyncPath &path, SyncFileStatus status) override;
+        bool fileStatusChanged(const SyncPath &absoluteFilepath, SyncFileStatus status) override;
 
-        void dehydrate(const SyncPath &path) override;
-        void hydrate(const SyncPath &path) override;
-        void cancelHydrate(const SyncPath &path) override;
+        void dehydrate(const SyncPath &absoluteFilepath) override;
+        void hydrate(const SyncPath &absoluteFilepath) override;
+        void cancelHydrate(const SyncPath &absoluteFilepath) override;
 
         void convertDirContentToPlaceholder(const QString &filePath, bool isHydratedIn) override;
 
@@ -81,7 +81,6 @@ class VfsMac : public Vfs {
         LiteSyncExtConnector *_connector{nullptr};
 
         void resetLiteSyncConnector();
-        // const QString _localSyncPath;
 };
 
 class MacVfsPluginFactory : public QObject, public DefaultPluginFactory<VfsMac> {

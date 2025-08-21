@@ -24,11 +24,6 @@
 
 #include <sys/stat.h>
 
-#include <QMap>
-#include <QHash>
-#include <QSet>
-#include <QString>
-
 namespace KDC {
 
 class LiteSyncExtConnectorPrivate;

@@ -26,7 +26,6 @@
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 
-#include <QDir>
 #include <QPixmap>
 
 #import <Cocoa/Cocoa.h>
@@ -448,34 +447,6 @@
 namespace KDC {
 
 LiteSyncExtConnector *LiteSyncExtConnector::_liteSyncExtConnector = nullptr;
-
-// static bool getXAttrValue(const QString &path, const std::string_view &attrName, std::string &value, IoError &ioError) {
-//     bool result = IoHelper::getXAttrValue(SyncPath(path.toStdString()), attrName, value, ioError);
-//     if (!result) {
-//         return false;
-//     }
-//     return true;
-// }static bool getXAttrValue(const QString &path, const std::string_view &attrName, std::string &value, IoError &ioError) {
-////    bool result = IoHelper::getXAttrValue(SyncPath(path.toStdString()), attrName, value, ioError);
-////    if (!result) {
-////        return false;
-////    }
-////    return true;
-////}
-////
-////static bool setXAttrValue(const QString &path, const std::string_view &attrName, const std::string_view &value,
-////                          IoError &ioError) {
-////    bool result = IoHelper::setXAttrValue(QStr2Path(path), attrName, value, ioError);
-////
-////    return result;
-////}
-//
-// static bool setXAttrValue(const QString &path, const std::string_view &attrName, const std::string_view &value,
-//                          IoError &ioError) {
-//    bool result = IoHelper::setXAttrValue(QStr2Path(path), attrName, value, ioError);
-//
-//    return result;
-//}
 
 class LiteSyncExtConnectorPrivate {
     public:
