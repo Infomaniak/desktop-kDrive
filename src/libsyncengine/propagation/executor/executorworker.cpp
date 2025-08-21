@@ -1480,8 +1480,8 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
             // Delete the item from local replica
             const NodeId remoteNodeId = syncOp->correspondingNode()->id().value_or("");
             if (!remoteNodeId.empty()) {
-                const bool isHydrated = isFileDehydrated(isLiteSyncActivated(), relativeLocalPath, _logger);
-                LocalDeleteJob deleteJob(_syncPal->syncInfo(), relativeLocalPath, isHydrated, remoteNodeId);
+                const bool isDehydrated = isFileDehydrated(isLiteSyncActivated(), relativeLocalPath, _logger);
+                LocalDeleteJob deleteJob(_syncPal->syncInfo(), relativeLocalPath, isDehydrated, remoteNodeId);
                 deleteJob.setBypassCheck(true);
                 deleteJob.runSynchronously();
             }
