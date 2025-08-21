@@ -1,0 +1,41 @@
+{
+    "sourceLanguage": "en",
+    "strings": {
+        "tabTitleHome": {
+            "extractionState": "manual",
+            "localizations": {
+                "de": {
+                    "stringUnit": {
+                        "state": "translated",
+                        "value": "Startseite"
+                    }
+                },
+                "en": {
+                    "stringUnit": {
+                        "state": "translated",
+                        "value": "Home"
+                    }
+                },
+                "es": {
+                    "stringUnit": {
+                        "state": "translated",
+                        "value": "Inicio"
+                    }
+                },
+                "fr": {
+                    "stringUnit": {
+                        "state": "translated",
+                        "value": "Accueil"
+                    }
+                },
+                "it": {
+                    "stringUnit": {
+                        "state": "translated",
+                        "value": "Casa"
+                    }
+                }
+            }
+        }
+    },
+    "version": "1.0"
+}

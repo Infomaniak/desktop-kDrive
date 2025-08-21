@@ -20,15 +20,17 @@ import kDriveCoreUI
 import SwiftUI
 
 struct RootView: View {
+    @State private var search = ""
+
     var body: some View {
         NavigationSplitView {
-            Text("Sidebar")
+            Text("!Sidebar")
                 .ikBackport.toolbar(removing: .sidebarToggle)
         } detail: {
             NavigationStack {
-                Text("Detail")
-                    .searchable(text: .constant(""))
-                    .navigationTitle("Home")
+                Text("!Detail")
+                    .searchable(text: $search)
+                    .navigationTitle(.tabTitleHome)
             }
         }
     }
