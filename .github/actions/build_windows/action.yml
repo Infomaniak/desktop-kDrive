@@ -75,23 +75,13 @@ runs:
           mkdir dependencies
           # kDrivecommonserver_vfs_win lib is not cached and therefore is uploaded as a separate artifact
           Get-ChildItem -Path ${{ github.workspace }}/build-windows/install/bin/ -Filter "*.dll" |
-              Where-Object {
+            Where-Object {
                       $_.Name -ne "kDrivecommonserver_vfs_win.dll" -and
                       $_.Name -ne "KDContextMenu.dll" -and
                       $_.Name -ne "KDOverlays.dll" -and
                       $_.Name -ne "Vfs.dll"
               } |
               Copy-Item -Destination ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Widgets.dll" ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Gui.dll" ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Network.dll" ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Sql.dll" ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Core.dll" ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6DBus.dll" ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Svg.dll" ./dependencies/
-          cp "C:\Program Files (x86)\Sentry-Native\bin\crashpad_handler.exe" ./dependencies/
-          mkdir .\dependencies\platforms
-          cp "C:\Qt\6.2.3\msvc2019_64\plugins\platforms\qoffscreen.dll" .\dependencies\platforms
           cp "C:\Program Files (x86)\cppunit\lib\cppunit_dll.dll" ./dependencies/
         shell: powershell
         if: steps.build.outcome == 'success'
@@ -100,22 +90,52 @@ runs:
         if: steps.build.outcome == 'success'
         shell: powershell
         run: |
-          $conanRunBat = Get-ChildItem -Path "${{ github.workspace }}" -Recurse -Filter "conanrun.bat" | Select-Object -First 1
-          
+          $conanRunBat = Get-ChildItem -Path "${{ github.workspace }}" -Recurse -Filter "conanrun.ps1" | Select-Object -First 1
           if ($conanRunBat) {
             Write-Host "Sourcing $($conanRunBat.FullName)"
-            cmd /c `"$($conanRunBat.FullName)`"  # modifie l'environnement du shell cmd
+            & $conanRunBat.FullName *> $null
+          } else {
+            Write-Host "No conanrun.ps1 found, skipping Conan dependencies fetch."
+            exit 0
           }
           
-          $patterns = @("xxhash*.dll", "log4cplus*.dll", "libssl*.dll", "libcrypto*.dll")
+          New-Item -ItemType Directory -Path "./dependencies/platforms" -Force *> $null
+          $patterns = @(
+              "xxhash*.dll",
+              "log4cplus*.dll",
+              "libssl*.dll",
+              "libcrypto*.dll",
+              "Qt6Widgets.dll",
+              "Qt6Gui.dll",
+              "Qt6Network.dll",
+              "Qt6Sql.dll",
+              "Qt6Core.dll",
+              "Qt6DBus.dll",
+              "Qt6Svg.dll",
+              "qoffscreen.dll",
+              "PocoCrypto.dll",
+              "PocoFoundation.dll",
+              "PocoJSON.dll",
+              "PocoNet.dll",
+              "PocoNetSSL.dll",
+              "PocoUtil.dll",
+              "PocoXML.dll"
+          )
+
           $paths = $env:PATH -split ';' | Where-Object { $_ -like '*\.conan2\p*' }
           foreach ($dir in $paths) {
             if (Test-Path $dir) {
-              Write-Host "Looking in $dir"
               foreach ($pattern in $patterns) {
-                Get-ChildItem -Path $dir -Recurse -Filter $pattern -ErrorAction SilentlyContinue | ForEach-Object {
-                  Copy-Item -Path $_.FullName -Destination ./dependencies/ -Force
-                  Write-Host "Conan dependency found -> $($_.FullName)"
+                if ($pattern -eq "qoffscreen.dll") {
+                  $searchDir = Split-Path -Parent $dir
+                  $destination = "./dependencies/platforms/"
+                } else {
+                  $searchDir = $dir
+                  $destination = "./dependencies/"
+                }
+                Get-ChildItem -Path $searchDir -Recurse -Filter $pattern -ErrorAction SilentlyContinue | ForEach-Object {
+                  Copy-Item -Path $_.FullName -Destination $destination -Force
+                  Write-Host "`tConan dependency found -> $($_.FullName)"
                 }
               }
             }

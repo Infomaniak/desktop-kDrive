@@ -38,7 +38,6 @@ required_conan_version = ">=1.53.0"
 
 class XxHashConan(ConanFile):
     name = "xxhash"
-    version = "0.8.2"
     description = "Extremely fast non-cryptographic hash algorithm"
     license = "BSD-2-Clause"
     url = "https://github.com/conan-io/conan-center-index"
@@ -57,9 +56,6 @@ class XxHashConan(ConanFile):
         "utility": True,
     }
 
-    def export_sources(self):
-        export_conandata_patches(self)
-
     def config_options(self):
         if self.settings.os == "Windows":
             del self.options.fPIC
@@ -74,11 +70,11 @@ class XxHashConan(ConanFile):
         cmake_layout(self, src_folder="src")
 
     def source(self):
-        get(self, "https://github.com/Cyan4973/xxHash/archive/v0.8.2.tar.gz", sha256="baee0c6afd4f03165de7a4e67988d16f0f2b257b51d0e3cb91909302a26a79c4", strip_root=True)
+        get(self, f"https://github.com/Cyan4973/xxHash/archive/v{self.version}.tar.gz", strip_root=True)
 
     def build_requirements(self):
         if self.settings.os == "Windows":
-            self.tool_requires("ninja/1.11.1")
+            self.tool_requires("ninja/[>=1.11.1]")
 
     def generate(self):
         tc = CMakeToolchain(self)
@@ -94,8 +90,15 @@ class XxHashConan(ConanFile):
 
     def build(self):
         cmake = CMake(self)
-        cmake.configure(build_script_folder=os.path.join(self.source_folder, "cmake_unofficial"))
+        cmake.configure(build_script_folder=os.path.join(self.source_folder, "cmake_unofficial"), variables={ "CMAKE_BUILD_TYPE": self.forced_build_type } if self.settings.os != "Windows" else None)
         cmake.build()
+
+    @property
+    def forced_build_type(self):
+        return "Release" # Force the build type to Release since we don't need to debug symbols
+
+    def package_id(self):
+        self.info.settings.rm_safe("build_type")
 
     def package(self):
         copy(self, "LICENSE", src=self.source_folder, dst=os.path.join(self.package_folder, "licenses"))

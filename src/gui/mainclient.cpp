@@ -76,6 +76,12 @@ int main(int argc, char **argv) {
     // Bug with multi-screen
     // cf. https://codereview.qt-project.org/c/qt/qtbase/+/200327
     qputenv("QT_RELY_ON_NET_WORKAREA_ATOM", "1");
+
+#ifdef Q_PROCESSOR_ARM
+    // Disable sandbox on ARM Linux,
+    // cf. https://doc.qt.io/qt-6/qtwebengine-platform-notes.html#sandboxing-support
+    qputenv("QTWEBENGINE_DISABLE_SANDBOX", "1");
+#endif
 #endif
 
     // qputenv("QT_AUTO_SCREEN_SCALE_FACTOR", "0");
@@ -89,7 +95,7 @@ int main(int argc, char **argv) {
     // https://doc-snapshots.qt.io/qt5-5.6/highdpi.html#qt-support
     // We do not define it on linux so the behaviour is kept the same
     // as other Qt apps in the desktop environment. (which may or may
-    // not set this envoronment variable)
+    // not set this environment variable)
     if (!qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR")) {
         qputenv("QT_AUTO_SCREEN_SCALE_FACTOR", "1");
     }
@@ -139,41 +145,38 @@ int main(int argc, char **argv) {
         return 0;
     }
 
-    // We can't call isSystemTrayAvailable with appmenu-qt5 begause it hides the systemtray (issue #4693)
-    if (qgetenv("QT_QPA_PLATFORMTHEME") != "appmenu-qt5") {
-        if (!QSystemTrayIcon::isSystemTrayAvailable()) {
-            // If the systemtray is not there, we will wait one second for it to maybe start
-            // (eg boot time) then we show the settings dialog if there is still no systemtray.
-            // On XFCE however, we show a message box with explainaition how to install a systemtray.
-            qCInfo(lcMain) << "System tray is not available, waiting...";
-            KDC::CommonGuiUtility::sleep(1);
+    if (!QSystemTrayIcon::isSystemTrayAvailable()) {
+        // If the systemtray is not there, we will wait one second for it to maybe start
+        // (eg boot time) then we show the settings dialog if there is still no systemtray.
+        // On XFCE however, we show a message box with explanation how to install a systemtray.
+        qCInfo(lcMain) << "System tray is not available, waiting...";
+        KDC::CommonGuiUtility::sleep(1);
 
-            auto desktopSession = qgetenv("XDG_CURRENT_DESKTOP").toLower();
-            if (desktopSession.isEmpty()) {
-                desktopSession = qgetenv("DESKTOP_SESSION").toLower();
-            }
-            if (desktopSession == "xfce") {
-                int attempts = 0;
-                while (!QSystemTrayIcon::isSystemTrayAvailable()) {
-                    attempts++;
-                    if (attempts >= 30) {
-                        qCWarning(lcMain) << "System tray unavailable (xfce)";
-                        warnSystray();
-                        break;
-                    }
-                    KDC::CommonGuiUtility::sleep(1);
+        auto desktopSession = qgetenv("XDG_CURRENT_DESKTOP").toLower();
+        if (desktopSession.isEmpty()) {
+            desktopSession = qgetenv("DESKTOP_SESSION").toLower();
+        }
+        if (desktopSession == "xfce") {
+            int attempts = 0;
+            while (!QSystemTrayIcon::isSystemTrayAvailable()) {
+                attempts++;
+                if (attempts >= 30) {
+                    qCWarning(lcMain) << "System tray unavailable (xfce)";
+                    warnSystray();
+                    break;
                 }
+                KDC::CommonGuiUtility::sleep(1);
             }
+        }
 
-            if (QSystemTrayIcon::isSystemTrayAvailable()) {
-                appPtr->onTryTrayAgain();
-            } else if (desktopSession != "ubuntu") {
-                qCInfo(lcMain) << "System tray still not available, showing window and trying again later";
-                appPtr->showParametersDialog();
-                QTimer::singleShot(10000, appPtr.get(), &KDC::AppClient::onTryTrayAgain);
-            } else {
-                qCInfo(lcMain) << "System tray still not available, but assuming it's fine on 'ubuntu' desktop";
-            }
+        if (QSystemTrayIcon::isSystemTrayAvailable()) {
+            appPtr->onTryTrayAgain();
+        } else if (!desktopSession.startsWith("ubuntu")) {
+            qCInfo(lcMain) << "System tray still not available, showing window and trying again later";
+            appPtr->showParametersDialog();
+            QTimer::singleShot(10000, appPtr.get(), &KDC::AppClient::onTryTrayAgain);
+        } else {
+            qCInfo(lcMain) << "System tray still not available, but assuming it's fine on 'ubuntu' desktop";
         }
     }
 

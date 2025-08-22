@@ -396,7 +396,10 @@ endif()
 
 if(BUILD_KDRIVE_OSX_BUNDLE)
     # Crashpad_handler
-    find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
+    get_target_property(CRASHPAD_HANDLER_PROGRAM
+            sentry_crashpad::crashpad_handler
+            IMPORTED_LOCATION_RELEASE
+    )
     message(STATUS "crashpad_handler exe found in ${CRASHPAD_HANDLER_PROGRAM}")
     install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${BIN_OUTPUT_DIRECTORY})
 endif()
@@ -406,11 +409,12 @@ if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
     if (NOT ENV_DEPLOY_LIBS_MANUALLY OR NOT CMAKE_BUILD_TYPE MATCHES "Debug")
         set(ENV_QTDIR $ENV{QTDIR})
         set(ENV_DESTDIR $ENV{DESTDIR})
-        set(ENV_DYLD_LIBRARY_PATH $ENV{DYLD_LIBRARY_PATH})
 
+        string(JOIN ":" LIB_PATHS ${CONAN_RUNTIME_LIB_DIRS} $ENV{DYLD_LIBRARY_PATH})
+        message(STATUS "LIB_PATHS: ${LIB_PATHS}")
         install(CODE "
             message(STATUS \"Deploying (Qt) dependencies for kdrive_client...\")
-            execute_process(COMMAND ${ENV_QTDIR}/bin/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -libpath=${ENV_DYLD_LIBRARY_PATH} -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_CLIENT_EXECUTABLE})
+            execute_process(COMMAND ${ENV_QTDIR}/bin/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -libpath=${LIB_PATHS} -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_CLIENT_EXECUTABLE})
             " COMPONENT RUNTIME)
     endif()
 endif()

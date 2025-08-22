@@ -82,6 +82,15 @@ WebView::WebView(QWidget *parent) :
     _page = new WebEnginePage(_profile);
     _schemeHandler = new WebViewPageUrlSchemeHandler(this);
 
+#if defined(Q_OS_LINUX) && defined(Q_PROCESSOR_ARM)
+    // On ARM Linux with QT 6.7.3, neither Chromium nor Qt automatically trigger a webview update.
+    // Only certain user actions can refresh the page.
+    // Therefore, we use a timer to force the refresh.
+    auto *redrawTimer = new QTimer(this);
+    connect(redrawTimer, &QTimer::timeout, _webview, QOverload<>::of(&QWidget::update));
+    redrawTimer->start(16); // Approximately 60 fps (1000/16=62.5)
+#endif
+
     const QString userAgent(CommonUtility::userAgentString().c_str());
     _profile->setHttpUserAgent(userAgent);
     QWebEngineProfile::defaultProfile()->setHttpUserAgent(userAgent);

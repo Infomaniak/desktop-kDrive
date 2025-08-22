@@ -19,6 +19,7 @@ env:
   KDRIVE_TEST_CI_LOCAL_PATH: ${{ vars.KDRIVE_TEST_CI_LOCAL_PATH }}
   KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
+  QT_INSTALLER_JWT_TOKEN: ${{ secrets.QT_INSTALLER_JWT_TOKEN }}
   QT_QPA_PLATFORM: offscreen
 
 jobs:
@@ -81,7 +82,7 @@ jobs:
          uses: ./.github/actions/test_windows
          with:  
             test_name: ${{ matrix.test_name }}
-            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+            test_dependencies_version: qt_vreview # ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
 # Tests Linux
   Test-Linux:
@@ -104,7 +105,7 @@ jobs:
          uses: ./.github/actions/test_linux
          with:  
             test_name: ${{ matrix.test_name }}
-            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+            test_dependencies_version: qt_vreview # ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
 # Tests macOS
   Test-macOS:
@@ -127,7 +128,7 @@ jobs:
          uses: ./.github/actions/test_macos
          with:  
             test_name: ${{ matrix.test_name }}
-            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+            test_dependencies_version: qt_vreview # ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
   Unit-Tests:
     runs-on: [self-hosted, Windows]
