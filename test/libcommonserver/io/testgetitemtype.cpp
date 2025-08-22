@@ -264,7 +264,8 @@ void TestIo::testGetItemTypeSimpleCases() {
 
         // Actual test
 #if defined(KD_WINDOWS)
-        const auto result = checker.checkSuccessfullRetrievalOfDanglingLink(path, targetPath, LinkType::Symlink, NodeType::File);
+        const auto result =
+                checker.checkSuccessfullRetrievalOfDanglingLink(filepath1, filepath2, LinkType::Symlink, NodeType::File);
 #else
         const auto result =
                 checker.checkSuccessfullRetrievalOfDanglingLink(filepath1, filepath2, LinkType::Symlink, NodeType::File);
@@ -281,7 +282,8 @@ void TestIo::testGetItemTypeSimpleCases() {
 
         // Actual test
 #if defined(KD_WINDOWS)
-        const auto result = checker.checkSuccessfullRetrievalOfDanglingLink(path, targetPath, LinkType::Symlink, NodeType::File);
+        const auto result =
+                checker.checkSuccessfullRetrievalOfDanglingLink(filepath1, filepath2, LinkType::Symlink, NodeType::File);
 #else
         // The type of the target cannot be deduced by the getItemType method. It defaults in this case to NodeType::File which
         // is inaccurate but allows the synchronization of such an invalid link.
