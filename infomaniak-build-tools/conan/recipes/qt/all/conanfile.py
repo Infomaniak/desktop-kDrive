@@ -17,10 +17,12 @@ class QtConan(ConanFile):
         # envvars:   Use the environment variable QT_INSTALLER_JWT_TOKEN to provide the JWT Token to the installer. You can find this token in an existing Qt installation in the file qtaccount.ini inside the folders described in the _get_default_login_ini_location func.
         # cli:   If the qtaccount.ini file exists, the online installer will use it; otherwise, it will prompt the user for their Qt account email and password. This cannot be used in CI/CD pipelines.
         "qt_login_type": ["ini", "envvars", "cli"],
+        "debug_symbols": [True, False]
     }
 
     default_options = {
         "qt_login_type": "ini",
+        "debug_symbols": False
     }
 
     @staticmethod
@@ -94,7 +96,7 @@ class QtConan(ConanFile):
         if self.settings.build_type == "Debug":
             modules.append(f"qt.qt{major}.{compact}.src") # Add the Qt source files when using debug build type
 
-        if self.settings.os == "Windows":
+        if self.options.debug_symbols:
             modules.append(f"qt.qt{major}.{compact}.debug_info") # Qt Debug Information Files for Windows
 
         if self.settings.os == "Linux":
