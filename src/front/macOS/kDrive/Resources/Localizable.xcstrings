@@ -39,6 +39,12 @@
         }
       }
     },
+    "Synchronisations" : {
+
+    },
+    "tab.title" : {
+
+    },
     "tabTitleActivity" : {
       "extractionState" : "manual",
       "localizations" : {

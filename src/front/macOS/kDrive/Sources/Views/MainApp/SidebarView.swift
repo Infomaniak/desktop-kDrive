@@ -20,13 +20,44 @@ import SwiftUI
 import kDriveCoreUI
 
 struct SidebarView: View {
+    @AppStorage("isSyncSectionExpanded") private var isSyncSectionExpanded = true
+
     @Binding var currentTab: AppTab?
 
     var body: some View {
-        List(AppTab.allTabs, selection: $currentTab) { tab in
-            NavigationLink(value: tab) {
-                Label { Text(tab.title) } icon: { tab.icon }
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(spacing: 8) {
+                Image(.kdriveAppIcon)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 24, height: 24)
+
+                Text(verbatim: "kDrive")
+                    .font(.title3)
             }
+            .scenePadding(.horizontal)
+
+            List(selection: $currentTab) {
+                Section {
+                    ForEach(AppTab.allTabs) { tab in
+                        NavigationLink(value: tab) {
+                            Label { Text(tab.title) } icon: { tab.icon }
+                        }
+                    }
+                }
+
+                if #available(macOS 14.0, *) {
+                    Section("Synchronisations", isExpanded: $isSyncSectionExpanded) {
+                        Label { Text("tab.title") } icon: { Image(.folder) }
+                    }
+                } else {
+                    Section("Synchronisations") {
+                        Label { Text("tab.title") } icon: { Image(.folder) }
+                    }
+                    .collapsible(true)
+                }
+            }
+            .scrollBounceBehavior(.basedOnSize)
         }
         .ikBackport.toolbar(removing: .sidebarToggle)
     }
