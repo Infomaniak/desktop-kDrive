@@ -16,16 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+import SwiftUI
+import Combine
 
-public protocol ServerBridgeable: Sendable {
-    func getSynchronizedFolders() -> AsyncStream<[UIFolder]>
-}
+@MainActor
+public final class SequenceObserver<Element>: ObservableObject {
+    @Published public private(set) var value: Element?
 
-final class ServerBridge: ServerBridgeable {
-    func getSynchronizedFolders() -> AsyncStream<[UIFolder]> {
-        return AsyncStream { continuation in
-            continuation.finish()
+    private let sequence: any AsyncSequence
+
+    public init(sequence: any AsyncSequence) {
+        self.sequence = sequence
+        observeSequence()
+    }
+
+    private func observeSequence() {
+        Task {
+            for try await element in sequence {
+                withAnimation {
+                    value = element as? Element
+                }
+            }
         }
     }
 }

@@ -19,10 +19,11 @@
 import Foundation
 
 public final class MockServerBridge: ServerBridgeable {
-    public func getSynchronizedFolders() async throws -> AsyncStream<[UIFolder]> {
+    public func getSynchronizedFolders() -> AsyncStream<[UIFolder]> {
         let folders = [UIPreview.folder1, UIPreview.folder2]
         return AsyncStream { continuation in
             continuation.yield(folders)
+            continuation.finish()
         }
     }
 }
