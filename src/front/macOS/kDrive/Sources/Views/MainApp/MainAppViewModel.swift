@@ -20,7 +20,7 @@ import Foundation
 import Combine
 
 @MainActor
-public final class MainAppViewModel: ObservableObject {
+final class MainAppViewModel: ObservableObject {
     @Published public var currentTab: AppTab? = .home
 
     @Published public var search = ""

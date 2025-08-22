@@ -16,15 +16,45 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+import SwiftUI
 
 protocol SidebarItem: Identifiable {
     var id: String { get }
+
+    var title: String { get }
+    var icon: Image { get }
 }
 
-extension AppTab: SidebarItem {}
+extension AppTab: @MainActor SidebarItem {}
 
-enum FolderItem: Sendable {
+enum FolderItem: @MainActor SidebarItem {
     case kDrive
     case synchronized(String)
+
+    var id: String {
+        switch self {
+        case .kDrive:
+            return "kDriveFolder"
+        case .synchronized(let folderName):
+            return folderName
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .kDrive:
+            return String(localized: .sidebarItemKDriveTitle)
+        case .synchronized(let folderName):
+            return folderName
+        }
+    }
+
+    var icon: Image {
+        switch self {
+        case .kDrive:
+            return Image(.kdriveFoldersStack)
+        case .synchronized:
+            return Image(.folder)
+        }
+    }
 }

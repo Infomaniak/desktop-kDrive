@@ -1,3 +1,4 @@
+//
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2025 Infomaniak Network SA
@@ -16,37 +17,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
 import SwiftUI
 
-enum AppTab: String, Identifiable {
-    case home
-    case activity
-    case storage
+struct SidebarHeaderView: View {
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(.kdriveAppIcon)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 24, height: 24)
 
-    static let allTabs: [AppTab] = [.home, .activity, .storage]
-
-    var id: String { rawValue }
-
-    var title: String {
-        switch self {
-        case .home:
-            return String(localized: .tabTitleHome)
-        case .activity:
-            return String(localized: .tabTitleActivity)
-        case .storage:
-            return String(localized: .tabTitleStorage)
+            Text(verbatim: "kDrive")
+                .font(.title3.weight(.semibold))
         }
     }
+}
 
-    var icon: Image {
-        switch self {
-        case .home:
-            return Image(.house)
-        case .activity:
-            return Image(.circularArrowsCounterClockwise)
-        case .storage:
-            return Image(.hardDiskDrive)
-        }
-    }
+#Preview {
+    SidebarHeaderView()
 }

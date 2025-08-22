@@ -26,16 +26,8 @@ struct SidebarView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            HStack(spacing: 8) {
-                Image(.kdriveAppIcon)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 24, height: 24)
-
-                Text(verbatim: "kDrive")
-                    .font(.title3.weight(.semibold))
-            }
-            .padding(.horizontal)
+            SidebarHeaderView()
+                .padding(.horizontal)
 
             List(selection: $currentTab) {
                 Section {
@@ -44,6 +36,7 @@ struct SidebarView: View {
                             Label { Text(tab.title) } icon: { tab.icon }
                         }
                     }
+                    Label { Text(FolderItem.kDrive.title) } icon: { FolderItem.kDrive.icon }
                 }
 
                 if #available(macOS 14.0, *) {
