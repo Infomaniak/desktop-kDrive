@@ -39,7 +39,7 @@ class GetFileInfoJob : public AbstractTokenNetworkJob {
 
     protected:
         bool handleResponse(std::istream &is) override;
-        bool handleError(std::istream &is, const Poco::URI &uri) override;
+        bool handleError(const std::string &replyBody, const Poco::URI &uri) override;
 
     private:
         std::string getSpecificUrl() override;

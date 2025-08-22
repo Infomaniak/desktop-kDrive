@@ -186,7 +186,7 @@ bool AbstractTokenNetworkJob::defaultBackErrorHandling(NetworkErrorCode errorCod
 }
 
 
-bool AbstractTokenNetworkJob::handleError(std::istream &is, const Poco::URI &uri) {
+bool AbstractTokenNetworkJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
     switch (_resHttp.getStatus()) {
         case Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED:
             return handleUnauthorizedResponse();
@@ -202,7 +202,7 @@ bool AbstractTokenNetworkJob::handleError(std::istream &is, const Poco::URI &uri
     _exitInfo = ExitCode::BackError;
 
     Poco::JSON::Object::Ptr errorObjPtr = nullptr;
-    if (!extractJsonError(is, errorObjPtr)) return false;
+    if (!extractJsonError(replyBody, errorObjPtr)) return false;
 
     const NetworkErrorCode errorCode = getNetworkErrorCode(_errorCode);
     switch (errorCode) {
@@ -264,12 +264,16 @@ std::string AbstractTokenNetworkJob::getUrl() {
 }
 
 bool AbstractTokenNetworkJob::handleResponse(std::istream &is) {
-    if (_returnJson) return handleJsonResponse(is);
+    if (_returnJson) {
+        std::string replyBody;
+        getStringFromStream(is, replyBody);
+        return handleJsonResponse(replyBody);
+    }
     return handleOctetStreamResponse(is);
 }
 
-bool AbstractTokenNetworkJob::handleJsonResponse(std::istream &is) {
-    if (!AbstractNetworkJob::handleJsonResponse(is)) return false;
+bool AbstractTokenNetworkJob::handleJsonResponse(const std::string &replyBody) {
+    if (!AbstractNetworkJob::handleJsonResponse(replyBody)) return false;
 
     // Check for maintenance error
     if (!jsonRes()) return false;
