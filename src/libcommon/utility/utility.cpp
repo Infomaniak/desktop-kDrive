@@ -768,12 +768,10 @@ SyncPath CommonUtility::getAppSupportDir() {
     SyncPath dirPath(getGenericAppSupportDir());
 
     dirPath.append(APPLICATION_NAME);
-    std::error_code ec;
-    if (!std::filesystem::is_directory(dirPath, ec)) {
-        bool exists = false;
-        exists = !utility_base::isLikeFileNotFoundError(ec);
-        if (exists) return SyncPath();
-        if (!std::filesystem::create_directory(dirPath, ec)) return SyncPath();
+
+    if (std::error_code ec; !std::filesystem::is_directory(dirPath, ec)) {
+        const bool exists = !utility_base::isLikeFileNotFoundError(ec);
+        if (exists || !std::filesystem::create_directory(dirPath, ec)) return {};
     }
 
     return dirPath;

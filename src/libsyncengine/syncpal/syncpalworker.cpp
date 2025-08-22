@@ -588,7 +588,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
             }
             SyncPath absolutePath;
             try {
-                if (dirIt->is_directory() && !dirIt->is_symlink()) {
+                if (!dirIt->is_symlink() && dirIt->is_directory()) {
                     continue;
                 }
                 absolutePath = dirIt->path();
