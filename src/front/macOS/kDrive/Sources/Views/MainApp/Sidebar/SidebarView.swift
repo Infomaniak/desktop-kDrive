@@ -22,18 +22,7 @@ import kDriveCoreUI
 import SwiftUI
 
 struct SidebarView: View {
-    @AppStorage("isSyncSectionExpanded") private var isSyncSectionExpanded = true
-
-    @StateObject private var synchronizedFolders: SequenceObserver<[UIFolder]>
-
     @Binding var currentTab: AppTab?
-
-    init(currentTab: Binding<AppTab?>) {
-        _currentTab = currentTab
-
-        @InjectService var serverBridge: ServerBridgeable
-        _synchronizedFolders = StateObject(wrappedValue: SequenceObserver(sequence: serverBridge.getSynchronizedFolders()))
-    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -50,22 +39,7 @@ struct SidebarView: View {
                     Label { Text(FolderItem.kDrive.title) } icon: { FolderItem.kDrive.icon }
                 }
 
-                if let folders = synchronizedFolders.value, !folders.isEmpty {
-                    if #available(macOS 14.0, *) {
-                        Section(.sidebarSectionAdvancedSync, isExpanded: $isSyncSectionExpanded) {
-                            ForEach(folders) { folder in
-                                Label { Text(folder.title) } icon: { Image(.folder) }
-                            }
-                        }
-                    } else {
-                        Section(.sidebarSectionAdvancedSync) {
-                            ForEach(folders) { folder in
-                                Label { Text(folder.title) } icon: { Image(.folder) }
-                            }
-                        }
-                        .collapsible(true)
-                    }
-                }
+                SynchronizedFoldersSection()
             }
             .scrollBounceBehavior(.basedOnSize)
         }
