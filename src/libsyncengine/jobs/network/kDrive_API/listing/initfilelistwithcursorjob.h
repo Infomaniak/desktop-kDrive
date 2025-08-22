@@ -18,18 +18,17 @@
 
 #pragma once
 
-#include "jobs/network/abstracttokennetworkjob.h"
+#include "abstractlistingjob.h"
 
 namespace KDC {
 
-class InitFileListWithCursorJob : public AbstractTokenNetworkJob {
+class InitFileListWithCursorJob : public AbstractListingJob {
     public:
         InitFileListWithCursorJob(int driveDbId, const NodeId &dirId);
 
     private:
         virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &uri, bool &canceled) override;
-        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
+        void setQueryParameters(Poco::URI &uri, bool &canceled) override;
 
         NodeId _dirId;
 };
