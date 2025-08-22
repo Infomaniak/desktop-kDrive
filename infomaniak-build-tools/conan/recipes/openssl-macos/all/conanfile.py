@@ -8,8 +8,8 @@ from conan.tools.files import copy, save
 from conan.tools.microsoft import unix_path
 
 
-class OpenSSLUniversalConan(ConanFile):
-    name = "openssl"
+class OpenSSLMacos(ConanFile):
+    name = "openssl-macos"
     package_type = "library"
     settings = "os", "arch", "compiler", "build_type"
     options = {

@@ -226,18 +226,11 @@ log "- Build type: '$build_type'"
 log "- Output directory: '$output_dir'"
 echo
 
-if [[ "$platform" = "linux" && -d ./infomaniak-build-tools/conan/recipes/openssl ]]; then # Disable the custom openssl recipe to force conan to use the conancenter one on Linux.
-  mv ./infomaniak-build-tools/conan/recipes/openssl ./infomaniak-build-tools/conan/recipes/openssl-disabled
-fi
-
 log "Installing dependencies..."
 # Install this packet in the build folder.
 # Here: -s:b set the build type for the app itself, -s:h set the build type for the host (dependencies).
 conan install . --output-folder="$output_dir" --build=missing $architecture -s:b=build_type="$build_type" -s:h=build_type="Release" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter
 
-if [[ "$platform" = "linux" && -d ./infomaniak-build-tools/conan/recipes/openssl-disabled ]]; then
-  mv ./infomaniak-build-tools/conan/recipes/openssl-disabled ./infomaniak-build-tools/conan/recipes/openssl
-fi
 
 if [ $? -ne 0 ]; then
   error "Failed to install Conan dependencies."
