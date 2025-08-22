@@ -476,9 +476,14 @@ void FolderItemWidget::retranslateUi() {
     _synchroLabel->setText(tr("Synchronized into <a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle, path));
 
     if (ParametersCache::instance()->parametersInfo().moveToTrash()) {
-        _saveLabel->setText(
-                tr("Unselected folders will be moved to trash. Folders synced to kDrive will remain available "
-                   "online."));
+        if (_liteSyncActivated) {
+            _saveLabel->setText(
+                    tr("Unselected folders will be moved to trash provided they contain offline items. Folders synced to kDrive "
+                       "will remain available online."));
+        } else {
+            _saveLabel->setText(
+                    tr("Unselected folders will be moved to trash. Folders synced to kDrive will remain available online."));
+        }
     } else {
         _saveLabel->setText(tr(
                 "Unselected folders will be <b>permanently</b> deleted from the computer. Folders synced to kDrive will remain "

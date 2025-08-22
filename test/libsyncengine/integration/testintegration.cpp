@@ -292,6 +292,10 @@ void TestIntegration::testBlacklist() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath));
+    CPPUNIT_ASSERT(Utility::isInTrash(dirpath.filename()));
+#if defined(KD_MACOS) || defined(KD_LINUX)
+    Utility::eraseFromTrash(dirpath.filename());
+#endif
 
     // Move a file inside a blacklisted directory.
     moveRemoteFile(_driveDbId, fileId, tmpRemoteDir.id());
@@ -299,6 +303,10 @@ void TestIntegration::testBlacklist() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath / filename));
+    CPPUNIT_ASSERT(Utility::isInTrash(filename));
+#if defined(KD_MACOS) || defined(KD_LINUX)
+    Utility::eraseFromTrash(filename);
+#endif
 
     // Move a file from inside a blacklisted directory to a synchronized directory.
     moveRemoteFile(_driveDbId, fileId, _remoteSyncDir.id());
