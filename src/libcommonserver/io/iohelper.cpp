@@ -949,11 +949,12 @@ bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, b
 
     std::error_code ec;
     if (isFolder) {
-        LOGW_DEBUG(logger(),
-                   L"Create directory symlink: target " << Path2WStr(targetPath) << L", " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(logger(), L"Create directory symlink: target " << Utility::formatSyncPath(targetPath) << L", "
+                                                                  << Utility::formatSyncPath(path));
         std::filesystem::create_directory_symlink(targetPath, path, ec);
     } else {
-        LOGW_DEBUG(logger(), L"Create file symlink: target " << Path2WStr(targetPath) << L", " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(logger(), L"Create file symlink: target " << Utility::formatSyncPath(targetPath) << L", "
+                                                             << Utility::formatSyncPath(path));
         std::filesystem::create_symlink(targetPath, path, ec);
     }
 
@@ -1076,11 +1077,6 @@ void IoHelper::setTargetNodeType(const SyncPath &path, const bool isSymLink, Nod
         nodeType = S_ISDIR(sbTarget.st_mode) ? NodeType::Directory : NodeType::File;
     } else {
         nodeType = NodeType::Unknown;
-        if (errno == static_cast<int>(std::errc::too_many_symbolic_link_levels)) {
-            // The following type setting enables the upload of symbolic links with too many levels of indirection.
-            // It is of course inaccurate for these invalid links when they point to a directory.
-            nodeType = NodeType::File;
-        }
     }
 }
 
