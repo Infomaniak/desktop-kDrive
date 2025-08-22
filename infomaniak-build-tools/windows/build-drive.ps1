@@ -332,6 +332,8 @@ function CMake-Build-And-Install {
     Invoke-Expression $buildCall
 
     Write-Host "CMake build done."
+    & "$conanGeneratorsFolder/deactivate_conanbuild.ps1" # Ensure the cmake used is the one from conan.
+    & "$conanGeneratorsFolder/conanrun.ps1" # Ensure the cmake used is the one from conan.
 }
 
 function Get-Icon-Path {
@@ -441,8 +443,8 @@ function Prepare-Archive {
         @{ Name = "xxhash";    Dlls = @("xxhash") },
         @{ Name = "log4cplus"; Dlls = @("log4cplus") },
         @{ Name = "openssl";   Dlls = @("libcrypto-3-x64", "libssl-3-x64") },
-        @{ Name = "sentry";   Dlls = @("sentry") },
-        @{ Name = "poco";     DLLs = @("PocoCrypto", "PocoFoundation", "PocoJSON", "PocoNet", "PocoNetSSL", "PocoUtil", "PocoXML") }
+        @{ Name = "sentry";    Dlls = @("sentry") },
+        @{ Name = "poco";      DLLs = @("PocoCrypto", "PocoFoundation", "PocoJSON", "PocoNet", "PocoNetSSL", "PocoUtil", "PocoXML") }
     )
 
     foreach ($pkg in $packages) {
@@ -471,7 +473,7 @@ function Prepare-Archive {
         Copy-Item -Path "$iconPath" -Destination $archivePath
     }
 
-    $crashpad_folder = & $find_dep_script -Name sentry -BuildDir $buildPath
+    $crashpad_folder = & $find_dep_script -BuildDir $buildPath -Package sentry
 
     $binaries = @(
         "$crashpad_folder/crashpad_handler.exe",
