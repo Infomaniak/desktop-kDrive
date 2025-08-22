@@ -38,6 +38,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
 #include "libcommon/utility/qlogiffail.h"
+#include "libcommonserver/io/iohelper.h"
 
 #include <QDesktopServices>
 #include <QDir>
@@ -129,6 +130,11 @@ DrivePreferencesWidget::DrivePreferencesWidget(std::shared_ptr<ClientGui> gui, Q
     _displayBigFoldersWarningWidget->setObjectName("displayBigFoldersWarningWidget");
     _displayBigFoldersWarningWidget->setVisible(false);
     _mainVBox->addWidget(_displayBigFoldersWarningWidget);
+
+    //
+    //  Search bloc
+    //
+    initializeSearchBloc();
 
     //
     // Folders blocs
@@ -589,6 +595,37 @@ void DrivePreferencesWidget::updateGuardedFoldersBlocs() {
             connect(folderTreeItemWidget, &FolderTreeItemWidget::needToSave, this, &DrivePreferencesWidget::onNeedToSave);
         }
     }
+}
+
+void DrivePreferencesWidget::initializeSearchBloc() {
+    bool showSearchBloc = !CommonUtility::envVarValue("KDRIVE_SHOW_SEARCH").empty();
+    _searchLabel = new QLabel(this);
+    _searchLabel->setObjectName("blocLabel");
+    _searchLabel->setVisible(showSearchBloc);
+    _mainVBox->addWidget(_searchLabel);
+
+    auto *searchBloc = new PreferencesBlocWidget(this);
+    searchBloc->setVisible(showSearchBloc);
+    _mainVBox->addWidget(searchBloc);
+
+    auto *searchLayout = searchBloc->addLayout(QBoxLayout::Direction::TopToBottom);
+    _mainVBox->addLayout(searchLayout);
+    auto *searchHLayout = new QHBoxLayout(this);
+    _searchBox = new QLineEdit(this);
+    searchHLayout->addWidget(_searchBox);
+    _searchButton = new QPushButton(this);
+    searchHLayout->addWidget(_searchButton);
+    searchLayout->addLayout(searchHLayout);
+    _searchProgressLabel = new QLabel(this);
+    _searchProgressLabel->setVisible(false);
+    searchLayout->addWidget(_searchProgressLabel);
+    _searchResultView = new QListView(this);
+    _searchResultView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    _searchResultView->setModel(&_searchResultModel);
+    _searchResultView->setVisible(false);
+    searchLayout->addWidget(_searchResultView);
+    connect(_searchButton, &QPushButton::clicked, this, &DrivePreferencesWidget::onSearch);
+    connect(_searchResultView, &QAbstractItemView::doubleClicked, this, &DrivePreferencesWidget::onSearchItemDoubleClicked);
 }
 
 void DrivePreferencesWidget::updateFoldersBlocs() {
@@ -1057,6 +1094,74 @@ void DrivePreferencesWidget::onDriveBeingRemoved() {
     update();
 }
 
+void DrivePreferencesWidget::onSearch() {
+    const QString searchString = _searchBox->text();
+    _searchResultModel.clear();
+    _searchResultView->setVisible(false);
+    if (searchString.isEmpty()) {
+        _searchProgressLabel->setVisible(false);
+        return;
+    }
+    _searchProgressLabel->setVisible(true);
+    _searchProgressLabel->setText("Searching...");
+
+    QList<SearchInfo> searchInfos;
+    bool hasMore = false; // To be used for the new UI
+    QString cursor; // To be used for the new UI
+    (void) GuiRequests::searchItemInDrive(_driveDbId, searchString, searchInfos, hasMore, cursor);
+    if (searchInfos.empty()) {
+        _searchProgressLabel->setText("No items found!");
+        return;
+    }
+    _searchProgressLabel->setVisible(false);
+
+    _searchResultModel.setSearchItems(searchInfos);
+    _searchResultView->setVisible(true);
+}
+
+void DrivePreferencesWidget::onSearchItemDoubleClicked(const QModelIndex &index) {
+    const auto id = _searchResultModel.id(index.row());
+
+    int driveId = 0;
+
+    if (const auto exitCode = GuiRequests::getDriveIdFromDriveDbId(_driveDbId, driveId); exitCode != ExitCode::Ok) {
+        qCWarning(lcDrivePreferencesWidget()) << "Error in GuiRequests::getDriveIdFromDriveDbId";
+        return;
+    }
+
+    NodeInfo nodeInfo;
+
+    if (const auto exitCode = GuiRequests::getNodeInfo(_userDbId, driveId, QString::fromStdString(id), nodeInfo, true);
+        exitCode != ExitCode::Ok) {
+        qCWarning(lcDrivePreferencesWidget()) << "Error in GuiRequests::getNodeInfo";
+    }
+
+    for (const auto &[_, sync]: _gui->syncInfoMap()) {
+        // Look for item on local replica.
+        const QString filepath = sync.localPath() + nodeInfo.path();
+        if (QFileInfo::exists(filepath)) {
+            GuiUtility::openFolder(filepath);
+            return;
+        }
+    }
+
+    // If not found on local replica, open the web version.
+    QString privateLink;
+    if (const auto exitCode = GuiRequests::getPrivateLinkUrl(_driveDbId, QString::fromStdString(id), privateLink);
+        exitCode != ExitCode::Ok) {
+        qCWarning(lcDrivePreferencesWidget()) << "Error in GuiRequests::getPrivateLinkUrl";
+    }
+
+    if (privateLink.isEmpty()) {
+        CustomMessageBox msgBox(QMessageBox::Warning, tr("Impossible to open item %1").arg(nodeInfo.path()), QMessageBox::Ok,
+                                this);
+        (void) msgBox.exec();
+        return;
+    }
+
+    QDesktopServices::openUrl(privateLink);
+}
+
 void DrivePreferencesWidget::onUnsyncTriggered(int syncDbId) {
     EnableStateHolder _(this);
 
@@ -1263,6 +1368,8 @@ void DrivePreferencesWidget::retranslateUi() {
             tr("A notification will be displayed as soon as a new folder has been synchronized or modified"));
     _connectedWithLabel->setText(tr("Connected with"));
     _removeDriveButton->setToolTip(tr("Remove all synchronizations"));
+    _searchLabel->setText(tr("Search in your kDrive"));
+    _searchButton->setText(tr("Search"));
 }
 
 

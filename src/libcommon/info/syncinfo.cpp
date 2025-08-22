@@ -57,9 +57,9 @@ QDataStream &operator>>(QDataStream &in, QList<SyncInfo> &list) {
     int count = 0;
     in >> count;
     for (int i = 0; i < count; i++) {
-        SyncInfo *info = new SyncInfo();
-        in >> *info;
-        list.push_back(*info);
+        SyncInfo info;
+        in >> info;
+        list.push_back(info);
     }
     return in;
 }
