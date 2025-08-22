@@ -316,13 +316,15 @@ function CMake-Build-And-Install {
     $args += ("'-B$buildPath'")
     $args += ("'-H$path'")
 
-    $cmake = ('cmake {0}' -f ($args -Join ' '))
+    & "$conanGeneratorsFolder/conanbuild.ps1" # Ensure the cmake used is the one from conan.
+
+    $cmake = ('cmake.exe {0}' -f ($args -Join ' '))
 
     Write-Host $cmake
     Invoke-Expression $cmake
 
     $buildArgs += @('--build', $buildPath, '--target all install')
-    $buildCall = ('cmake {0}' -f ($buildArgs -Join ' '))
+    $buildCall = ('cmake.exe {0}' -f ($buildArgs -Join ' '))
 
     Write-Host "Building and installing executables with CMake ..."
 
