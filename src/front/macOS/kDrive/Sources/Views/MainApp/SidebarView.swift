@@ -33,9 +33,9 @@ struct SidebarView: View {
                     .frame(width: 24, height: 24)
 
                 Text(verbatim: "kDrive")
-                    .font(.title3)
+                    .font(.title3.weight(.semibold))
             }
-            .scenePadding(.horizontal)
+            .padding(.horizontal)
 
             List(selection: $currentTab) {
                 Section {
@@ -47,11 +47,11 @@ struct SidebarView: View {
                 }
 
                 if #available(macOS 14.0, *) {
-                    Section("Synchronisations", isExpanded: $isSyncSectionExpanded) {
+                    Section(.sidebarSectionSync, isExpanded: $isSyncSectionExpanded) {
                         Label { Text("tab.title") } icon: { Image(.folder) }
                     }
                 } else {
-                    Section("Synchronisations") {
+                    Section(.sidebarSectionSync) {
                         Label { Text("tab.title") } icon: { Image(.folder) }
                     }
                     .collapsible(true)

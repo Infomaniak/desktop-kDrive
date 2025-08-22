@@ -19,13 +19,12 @@
 import Foundation
 import SwiftUI
 
-public enum AppTab: String, Sendable, Identifiable {
+public enum AppTab: String, Identifiable {
     case home
     case activity
     case storage
-    case kDriveFolder
 
-    static let allTabs: [AppTab] = [.home, .activity, .storage, .kDriveFolder]
+    static let allTabs: [AppTab] = [.home, .activity, .storage]
 
     public var id: String { rawValue }
 
@@ -37,8 +36,6 @@ public enum AppTab: String, Sendable, Identifiable {
             return .tabTitleActivity
         case .storage:
             return .tabTitleStorage
-        case .kDriveFolder:
-            return .tabTitleKDriveTitle
         }
     }
 
@@ -50,8 +47,6 @@ public enum AppTab: String, Sendable, Identifiable {
             return Image(.circularArrowsCounterClockwise)
         case .storage:
             return Image(.hardDiskDrive)
-        case .kDriveFolder:
-            return Image(.kdriveFolders)
         }
     }
 }

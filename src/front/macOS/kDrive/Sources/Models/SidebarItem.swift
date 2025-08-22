@@ -16,26 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCoreUI
-import SwiftUI
+import Foundation
 
-struct MainAppView: View {
-    @EnvironmentObject private var mainAppViewModel: MainAppViewModel
-
-    var body: some View {
-        NavigationSplitView {
-            SidebarView(currentTab: $mainAppViewModel.currentTab)
-        } detail: {
-            NavigationStack {
-                Text(verbatim: "!Detail")
-                    .navigationTitle(mainAppViewModel.currentTab?.title ?? "kDrive")
-            }
-        }
-        .ikBackport.searchable(text: $mainAppViewModel.search, isPresented: $mainAppViewModel.isFocusingSearch)
-    }
+protocol SidebarItem: Identifiable {
+    var id: String { get }
 }
 
-#Preview {
-    MainAppView()
-        .environmentObject(MainAppViewModel())
+extension AppTab: SidebarItem {}
+
+enum FolderItem: Sendable {
+    case kDrive
+    case synchronized(String)
 }
