@@ -16,11 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import SwiftUI
+import InfomaniakDI
+import kDriveCore
 import kDriveCoreUI
+import SwiftUI
 
 struct SidebarView: View {
     @AppStorage("isSyncSectionExpanded") private var isSyncSectionExpanded = true
+
+    @State private var synchronizedFolders = [UIFolder]()
 
     @Binding var currentTab: AppTab?
 
@@ -39,20 +43,34 @@ struct SidebarView: View {
                     Label { Text(FolderItem.kDrive.title) } icon: { FolderItem.kDrive.icon }
                 }
 
-                if #available(macOS 14.0, *) {
-                    Section(.sidebarSectionSync, isExpanded: $isSyncSectionExpanded) {
-                        Label { Text("tab.title") } icon: { Image(.folder) }
+                if !synchronizedFolders.isEmpty {
+                    if #available(macOS 14.0, *) {
+                        Section(.sidebarSectionAdvancedSync, isExpanded: $isSyncSectionExpanded) {
+                            ForEach(synchronizedFolders) { folder in
+                                Label { Text(folder.title) } icon: { Image(.folder) }
+                            }
+                        }
+                    } else {
+                        Section(.sidebarSectionAdvancedSync) {
+                            ForEach(synchronizedFolders) { folder in
+                                Label { Text(folder.title) } icon: { Image(.folder) }
+                            }
+                        }
+                        .collapsible(true)
                     }
-                } else {
-                    Section(.sidebarSectionSync) {
-                        Label { Text("tab.title") } icon: { Image(.folder) }
-                    }
-                    .collapsible(true)
                 }
             }
             .scrollBounceBehavior(.basedOnSize)
         }
         .ikBackport.toolbar(removing: .sidebarToggle)
+        .task {
+            @InjectService var serverBridge: ServerBridgeable
+            guard let synchronizedFoldersStream = try? await serverBridge.getSynchronizedFolders() else { return }
+
+            for await folders in synchronizedFoldersStream {
+                synchronizedFolders = folders
+            }
+        }
     }
 }
 

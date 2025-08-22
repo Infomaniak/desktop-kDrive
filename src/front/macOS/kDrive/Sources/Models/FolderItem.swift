@@ -18,9 +18,34 @@
 
 import SwiftUI
 
-protocol SidebarItem: Identifiable, Sendable {
-    var id: String { get }
+enum FolderItem: SidebarItem {
+    case kDrive
+    case synchronized(String)
 
-    var title: String { get }
-    var icon: Image { get }
+    var id: String {
+        switch self {
+        case .kDrive:
+            return "kDriveFolder"
+        case .synchronized(let folderName):
+            return folderName
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .kDrive:
+            return String(localized: .sidebarItemKDriveTitle)
+        case .synchronized(let folderName):
+            return folderName
+        }
+    }
+
+    var icon: Image {
+        switch self {
+        case .kDrive:
+            return Image(.kdriveFoldersStack)
+        case .synchronized:
+            return Image(.folder)
+        }
+    }
 }

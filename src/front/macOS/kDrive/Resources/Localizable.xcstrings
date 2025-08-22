@@ -71,43 +71,40 @@
         }
       }
     },
-    "sidebarSectionSync" : {
+    "sidebarSectionAdvancedSync" : {
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Synchronisationen"
+            "value" : "Sync. erweitert"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Synchronization"
+            "value" : "Advanced sync."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sincronización"
+            "value" : "Sincr. avanzadas"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Synchronisations"
+            "value" : "Sync. avancées"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sincronizzazione"
+            "value" : "Sincr. avanzate"
           }
         }
       }
-    },
-    "tab.title" : {
-
     },
     "tabTitleActivity" : {
       "extractionState" : "manual",

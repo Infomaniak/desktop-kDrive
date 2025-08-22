@@ -18,8 +18,8 @@
 
 import Foundation
 
-protocol ServerBridgeable: Sendable {
-    
+public protocol ServerBridgeable: Sendable {
+    func getSynchronizedFolders() async throws -> AsyncStream<[UIFolder]>
 }
 
-final class ServerBridge: ServerBridgeable {}
+//final class ServerBridge: ServerBridgeable {}

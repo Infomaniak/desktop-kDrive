@@ -19,7 +19,7 @@
 import Foundation
 import SwiftUI
 
-enum AppTab: String, Identifiable {
+enum AppTab: String, SidebarItem {
     case home
     case activity
     case storage

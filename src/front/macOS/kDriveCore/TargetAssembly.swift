@@ -35,7 +35,7 @@ open class TargetAssembly {
     open class func getCommonServices() -> [Factory] {
         return [
             Factory(type: ServerBridgeable.self) { _, _ in
-                ServerBridge()
+                MockServerBridge()
             }
         ]
     }

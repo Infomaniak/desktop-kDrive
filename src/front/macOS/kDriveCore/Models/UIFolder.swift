@@ -16,11 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import SwiftUI
+import Foundation
 
-protocol SidebarItem: Identifiable, Sendable {
-    var id: String { get }
-
-    var title: String { get }
-    var icon: Image { get }
+public struct UIFolder: Sendable, Identifiable {
+    public let id: Int
+    public let title: String
 }
