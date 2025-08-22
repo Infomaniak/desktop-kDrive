@@ -530,8 +530,8 @@ bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isM
     }
 
     if (isSymLinkWithTooManyLevels) {
-        LOGW_DEBUG(logger(), L"Synchronizing invalid symbolic link " << formatSyncPath(dirEntry.path())
-                                                                     << L" with too many levels of indirections.")
+        LOGW_DEBUG(logger(), L"Synchronizing invalid symbolic link with " << formatSyncPath(dirEntry.path())
+                                                                          << L" although it has too many levels of indirection.")
     }
 
     if (isSymLinkWithTooManyLevels || !isSpecialItem) {
