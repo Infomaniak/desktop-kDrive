@@ -268,7 +268,7 @@ void TestIo::testGetItemTypeSimpleCases() {
                 checker.checkSuccessfullRetrievalOfDanglingLink(filepath1, filepath2, LinkType::Symlink, NodeType::File);
 #else
         const auto result =
-                checker.checkSuccessfullRetrievalOfDanglingLink(filepath1, filepath2, LinkType::Symlink, NodeType::File);
+                checker.checkSuccessfullRetrievalOfDanglingLink(filepath1, filepath2, LinkType::Symlink, NodeType::Unknown);
 #endif
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
@@ -285,10 +285,8 @@ void TestIo::testGetItemTypeSimpleCases() {
         const auto result =
                 checker.checkSuccessfullRetrievalOfDanglingLink(filepath1, filepath2, LinkType::Symlink, NodeType::File);
 #else
-        // The type of the target cannot be deduced by the getItemType method. It defaults in this case to NodeType::File which
-        // is inaccurate but allows the synchronization of such an invalid link.
         const auto result =
-                checker.checkSuccessfullRetrievalOfDanglingLink(filepath1, filepath2, LinkType::Symlink, NodeType::File);
+                checker.checkSuccessfullRetrievalOfDanglingLink(filepath1, filepath2, LinkType::Symlink, NodeType::Unknown);
 #endif
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
