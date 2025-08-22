@@ -25,12 +25,10 @@
 #include <QFile>
 
 #include <iostream>
-#include <sys/stat.h>
 
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
-
 VfsMac::VfsMac(const VfsSetupParams &vfsSetupParams, QObject *parent) :
     Vfs(vfsSetupParams, parent) {
     // Initialize LiteSync ext connector
@@ -39,7 +37,7 @@ VfsMac::VfsMac(const VfsSetupParams &vfsSetupParams, QObject *parent) :
     Utility::setLogger(logger());
     IoHelper::setLogger(logger());
 
-    _connector = LiteSyncCommClient::instance(logger(), vfsSetupParams.executeCommand);
+    _connector = LiteSyncExtConnector::instance(logger(), vfsSetupParams.executeCommand);
     if (!_connector) {
         LOG_WARN(logger(), "Error in LiteSyncExtConnector::instance");
         throw std::runtime_error("Unable to initialize LiteSyncExtConnector.");
@@ -614,7 +612,7 @@ ExitInfo VfsMac::setAppExcludeList() {
 }
 
 ExitInfo VfsMac::getFetchingAppList(QHash<QString, QString> &appTable) {
-    AppTable tmpTable;
+    std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>> tmpTable;
     for (auto it = appTable.begin(); it != appTable.end(); it++) {
         tmpTable.try_emplace(QStr2Str(it.key()), QStr2Str(it.value()));
     }
