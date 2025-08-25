@@ -24,7 +24,7 @@ struct RootView: View {
     var body: some View {
         switch rootViewModel.state {
         case .onboarding:
-            Text(verbatim: "Onboarding Placeholder")
+            OnboardingView()
         case .mainView(let mainViewModel):
             MainView()
                 .environmentObject(mainViewModel)

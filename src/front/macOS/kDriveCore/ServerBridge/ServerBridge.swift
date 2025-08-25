@@ -19,12 +19,18 @@
 import Foundation
 
 public protocol ServerBridgeable: Sendable {
+    func getConnectedUser() async -> UIUser?
+
     func getDrives() -> AsyncStream<[UIDrive]>
 
     func getSynchronizedFolders() -> AsyncStream<[UIFolder]>
 }
 
 final class ServerBridge: ServerBridgeable {
+    func getConnectedUser() async -> UIUser? {
+        return nil
+    }
+
     func getDrives() -> AsyncStream<[UIDrive]> {
         return AsyncStream { continuation in
             continuation.finish()

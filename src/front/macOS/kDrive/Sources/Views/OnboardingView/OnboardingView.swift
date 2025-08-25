@@ -16,26 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+import InfomaniakDI
+import kDriveCore
+import SwiftUI
 
-public final class MockServerBridge: ServerBridgeable {
-    public func getConnectedUser() async -> UIUser? {
-        return UIUser(
-            name: "Tim Cook"
-        )
+struct OnboardingView: View {
+    @EnvironmentObject private var rootViewModel: RootViewModel
+
+    var body: some View {
+        Text(verbatim: "Onboarding Placeholder")
+            .task {
+                await connectUserIfPossible()
+            }
     }
 
-    public func getDrives() -> AsyncStream<[UIDrive]> {
-        return AsyncStream { continuation in
-            continuation.yield(PreviewHelper.drives)
-            continuation.finish()
+    private func connectUserIfPossible() async {
+        @InjectService var serverBridge: ServerBridgeable
+        if let user = await serverBridge.getConnectedUser() {
+            rootViewModel.state = .mainView(MainViewModel())
         }
     }
+}
 
-    public func getSynchronizedFolders() -> AsyncStream<[UIFolder]> {
-        return AsyncStream { continuation in
-            continuation.yield(PreviewHelper.folders)
-            continuation.finish()
-        }
-    }
+#Preview {
+    OnboardingView()
 }

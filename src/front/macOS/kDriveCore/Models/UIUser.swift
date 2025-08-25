@@ -18,24 +18,6 @@
 
 import Foundation
 
-public final class MockServerBridge: ServerBridgeable {
-    public func getConnectedUser() async -> UIUser? {
-        return UIUser(
-            name: "Tim Cook"
-        )
-    }
-
-    public func getDrives() -> AsyncStream<[UIDrive]> {
-        return AsyncStream { continuation in
-            continuation.yield(PreviewHelper.drives)
-            continuation.finish()
-        }
-    }
-
-    public func getSynchronizedFolders() -> AsyncStream<[UIFolder]> {
-        return AsyncStream { continuation in
-            continuation.yield(PreviewHelper.folders)
-            continuation.finish()
-        }
-    }
+public struct UIUser: Sendable {
+    public let name: String
 }

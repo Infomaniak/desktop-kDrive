@@ -25,5 +25,5 @@ enum RootViewState {
 
 @MainActor
 final class RootViewModel: ObservableObject {
-    @Published private(set) var state = RootViewState.onboarding
+    @Published var state = RootViewState.onboarding
 }
