@@ -285,7 +285,7 @@ Seleccione otra carpeta. Si continúa, Lite Sync se deshabilitará.&lt;br&gt;
 <context>
     <name>KDC::AppServer</name>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3275"/>
+        <location filename="../src/server/appserver.cpp" line="3328"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 y otros %n archivo(s) han sido borrados.</numerusform>
@@ -293,13 +293,13 @@ Seleccione otra carpeta. Si continúa, Lite Sync se deshabilitará.&lt;br&gt;
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3277"/>
+        <location filename="../src/server/appserver.cpp" line="3330"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 ha sido eliminado.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3282"/>
+        <location filename="../src/server/appserver.cpp" line="3335"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 y % otros archivo(s) han sido añadidos.</numerusform>
@@ -307,13 +307,13 @@ Seleccione otra carpeta. Si continúa, Lite Sync se deshabilitará.&lt;br&gt;
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3284"/>
+        <location filename="../src/server/appserver.cpp" line="3337"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 ha sido añadido.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3289"/>
+        <location filename="../src/server/appserver.cpp" line="3342"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 y otros %n archivo(s) han sido actualizados.</numerusform>
@@ -321,13 +321,13 @@ Seleccione otra carpeta. Si continúa, Lite Sync se deshabilitará.&lt;br&gt;
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3291"/>
+        <location filename="../src/server/appserver.cpp" line="3344"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 ha sido actualizado.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3296"/>
+        <location filename="../src/server/appserver.cpp" line="3349"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 ha sido movido a %2 y otros %n archivo(s) han sido movidos.</numerusform>
@@ -335,17 +335,17 @@ Seleccione otra carpeta. Si continúa, Lite Sync se deshabilitará.&lt;br&gt;
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3299"/>
+        <location filename="../src/server/appserver.cpp" line="3352"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 ha sido movido a %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3307"/>
+        <location filename="../src/server/appserver.cpp" line="3360"/>
         <source>Sync Activity</source>
         <translation>Actividad de sincronización</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="4213"/>
+        <location filename="../src/server/appserver.cpp" line="4266"/>
         <source>A new folder larger than %1 MB has been added in the drive %2, you must validate its synchronization: %3.
 </source>
         <translation>Se ha añadido una nueva carpeta mayor a %1 MB en el drive %2, debes validar su sincronización: %3.
@@ -2309,35 +2309,35 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
 <context>
     <name>KDC::SocketApi</name>
     <message>
-        <location filename="../src/server/socketapi.cpp" line="814"/>
-        <location filename="../src/server/socketapi.cpp" line="1021"/>
-        <location filename="../src/server/socketapi.cpp" line="1073"/>
+        <location filename="../src/server/socketapi.cpp" line="815"/>
+        <location filename="../src/server/socketapi.cpp" line="1022"/>
+        <location filename="../src/server/socketapi.cpp" line="1074"/>
         <source>Copy private share link</source>
         <translation>Copiar enlace para compartir privado</translation>
     </message>
     <message>
-        <location filename="../src/server/socketapi.cpp" line="1000"/>
-        <location filename="../src/server/socketapi.cpp" line="1057"/>
+        <location filename="../src/server/socketapi.cpp" line="1001"/>
+        <location filename="../src/server/socketapi.cpp" line="1058"/>
         <source>Resharing this file is not allowed</source>
         <translation>No está permitido volver a compartir este archivo</translation>
     </message>
     <message>
-        <location filename="../src/server/socketapi.cpp" line="1001"/>
-        <location filename="../src/server/socketapi.cpp" line="1058"/>
+        <location filename="../src/server/socketapi.cpp" line="1002"/>
+        <location filename="../src/server/socketapi.cpp" line="1059"/>
         <source>Resharing this folder is not allowed</source>
         <translation>No está permitido volver a compartir esta carpeta</translation>
     </message>
     <message>
-        <location filename="../src/server/socketapi.cpp" line="1012"/>
-        <location filename="../src/server/socketapi.cpp" line="1016"/>
-        <location filename="../src/server/socketapi.cpp" line="1067"/>
-        <location filename="../src/server/socketapi.cpp" line="1069"/>
+        <location filename="../src/server/socketapi.cpp" line="1013"/>
+        <location filename="../src/server/socketapi.cpp" line="1017"/>
+        <location filename="../src/server/socketapi.cpp" line="1068"/>
+        <location filename="../src/server/socketapi.cpp" line="1070"/>
         <source>Copy public share link</source>
         <translation>Copiar enlace para compartir públicamente</translation>
     </message>
     <message>
-        <location filename="../src/server/socketapi.cpp" line="1210"/>
-        <location filename="../src/server/socketapi.cpp" line="1278"/>
+        <location filename="../src/server/socketapi.cpp" line="1211"/>
+        <location filename="../src/server/socketapi.cpp" line="1279"/>
         <source>Open in browser</source>
         <translation>Abrir en navegador</translation>
     </message>
@@ -2634,17 +2634,17 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
         <translation>&lt;p&gt;La nueva versión &lt;b&gt;%1&lt;/b&gt; del Cliente %2 está disponible y ha sido descargada.&lt;/p&gt;&lt;p&gt;La versión instalada es %3.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/updater/updatedialog.cpp" line="96"/>
+        <location filename="../src/gui/updater/updatedialog.cpp" line="95"/>
         <source>Skip this version</source>
         <translation>Omitir esta versión</translation>
     </message>
     <message>
-        <location filename="../src/gui/updater/updatedialog.cpp" line="104"/>
+        <location filename="../src/gui/updater/updatedialog.cpp" line="103"/>
         <source>Remind me later</source>
         <translation>Recordármelo</translation>
     </message>
     <message>
-        <location filename="../src/gui/updater/updatedialog.cpp" line="110"/>
+        <location filename="../src/gui/updater/updatedialog.cpp" line="109"/>
         <source>Install update</source>
         <translation>Instalar actualización</translation>
     </message>
@@ -2673,87 +2673,87 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
 <context>
     <name>KDC::VersionWidget</name>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="271"/>
+        <location filename="../src/gui/versionwidget.cpp" line="270"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%3&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%3&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="158"/>
+        <location filename="../src/gui/versionwidget.cpp" line="157"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Show release note&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Mostrar nota de lanzamiento&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="161"/>
+        <location filename="../src/gui/versionwidget.cpp" line="160"/>
         <source>Version</source>
         <translation>Versión</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="162"/>
+        <location filename="../src/gui/versionwidget.cpp" line="161"/>
         <source>UPDATE</source>
         <translation>ACTUALIZAR</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="177"/>
+        <location filename="../src/gui/versionwidget.cpp" line="176"/>
         <source>%1 is up to date!</source>
         <translation>¡%1 está actualizado!</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="181"/>
+        <location filename="../src/gui/versionwidget.cpp" line="180"/>
         <source>Checking update on server...</source>
         <translation>Comprobando actualización en servidor...</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="185"/>
+        <location filename="../src/gui/versionwidget.cpp" line="184"/>
         <source>An update is available: %1.&lt;br&gt;Please download it from &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;here&lt;/a&gt;.</source>
         <translation>Hay una actualización disponible: %1. Descárgala &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;aquí&lt;/a&gt;.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="192"/>
+        <location filename="../src/gui/versionwidget.cpp" line="191"/>
         <source>An update is available: %1</source>
         <translation>Hay disponible una actualización: %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="198"/>
+        <location filename="../src/gui/versionwidget.cpp" line="197"/>
         <source>Downloading %1. Please wait...</source>
         <translation>Descargando %1. Espera...</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="203"/>
+        <location filename="../src/gui/versionwidget.cpp" line="202"/>
         <source>Could not check for new updates.</source>
         <translation>No se puede comprobar si hay actualizaciones.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="207"/>
+        <location filename="../src/gui/versionwidget.cpp" line="206"/>
         <source>An error occurred during update.</source>
         <translation>Se ha producido un error durante la actualización.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="211"/>
+        <location filename="../src/gui/versionwidget.cpp" line="210"/>
         <source>Could not download update.</source>
         <translation>No se ha podido descargar la actualización.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="227"/>
+        <location filename="../src/gui/versionwidget.cpp" line="226"/>
         <source>Beta program</source>
         <translation>Programa Beta</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="228"/>
+        <location filename="../src/gui/versionwidget.cpp" line="227"/>
         <source>Get early access to new versions of the application</source>
         <translation>Obtenga acceso anticipado a las nuevas versiones de la aplicación</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="232"/>
+        <location filename="../src/gui/versionwidget.cpp" line="231"/>
         <source>Join</source>
         <translation>Contacto</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="235"/>
+        <location filename="../src/gui/versionwidget.cpp" line="234"/>
         <source>Modify</source>
         <translation>Modifique</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="235"/>
+        <location filename="../src/gui/versionwidget.cpp" line="234"/>
         <source>Quit</source>
         <translation>Salir</translation>
     </message>
@@ -2781,37 +2781,37 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
         <translation>No se puede encontrar una ruta válida</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="1837"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="1839"/>
         <source>No valid folder selected!</source>
         <translation>¡No se ha seleccionado una carpeta válida!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="1848"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="1850"/>
         <source>The selected path does not exist!</source>
         <translation>¡La ruta seleccionada no existe!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="1853"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="1855"/>
         <source>The selected path is not a folder!</source>
         <translation>¡La ruta seleccionada no es una carpeta!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="1858"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="1860"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>¡No tienes permiso para escribir en la carpeta seleccionada!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="1888"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="1890"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>La carpeta local %1 contiene una carpeta ya sincronizada.¡Elige otra!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="1896"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="1898"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>La carpeta local %1 está contenida en una carpeta ya sincronizada.¡Elige otra!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="1906"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="1908"/>
         <source>The local folder %1 is already synced on the same drive. Please pick another one!</source>
         <translation>La carpeta local %1 ya está sincronizada en el mismo drive.¡Elige otra!</translation>
     </message>
@@ -2839,7 +2839,7 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
 <context>
     <name>SharedTools::QtSingleApplication</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="100"/>
+        <location filename="../src/server/appserver.cpp" line="102"/>
         <source>kDrive application will close due to a fatal error.</source>
         <translation>La aplicación kDrive se cerrará debido a un error fatal.</translation>
     </message>
@@ -2931,23 +2931,23 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
 <context>
     <name>utility</name>
     <message>
-        <location filename="../src/server/socketapi.cpp" line="1361"/>
+        <location filename="../src/server/socketapi.cpp" line="1362"/>
         <source>Make available locally</source>
         <translation>Poner a disposición localmente</translation>
     </message>
     <message>
-        <location filename="../src/server/socketapi.cpp" line="1369"/>
+        <location filename="../src/server/socketapi.cpp" line="1370"/>
         <source>Cancel free up local space</source>
         <translation>Cancelar liberar espacio local</translation>
     </message>
     <message>
-        <location filename="../src/server/socketapi.cpp" line="1374"/>
-        <location filename="../src/server/socketapi.cpp" line="1376"/>
+        <location filename="../src/server/socketapi.cpp" line="1375"/>
+        <location filename="../src/server/socketapi.cpp" line="1377"/>
         <source>Cancel make available locally</source>
         <translation>Cancelar disponible localmente</translation>
     </message>
     <message>
-        <location filename="../src/server/socketapi.cpp" line="1365"/>
+        <location filename="../src/server/socketapi.cpp" line="1366"/>
         <source>Free up local space</source>
         <translation>Liberar espacio local</translation>
     </message>
@@ -3034,11 +3034,6 @@ quedan %3...</translation>
         <location filename="../src/gui/guiutility.cpp" line="596"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected as sync folder. Please, select another folder. Suggested folder: &lt;b&gt;%2&lt;/b&gt;</source>
         <translation>La carpeta &lt;b&gt;%1&lt;/b&gt; no puede seleccionarse como carpeta de sincronización. Por favor, seleccione otra carpeta. Carpeta sugerida: &lt;b&gt;%2&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/guiutility.cpp" line="638"/>
-        <source>You cannot blacklist more than 50 folders. Please uncheck higher-level folders.</source>
-        <translation>No puede poner en la lista negra más de 50 carpetas. Desmarque las carpetas de nivel superior.</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="347"/>
