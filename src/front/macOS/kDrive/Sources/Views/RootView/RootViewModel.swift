@@ -16,20 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+import Combine
 
-public final class MockServerBridge: ServerBridgeable {
-    public func getDrives() -> AsyncStream<[UIDrive]> {
-        return AsyncStream { continuation in
-            continuation.yield(PreviewHelper.drives)
-            continuation.finish()
-        }
-    }
+enum RootViewState {
+    case onboarding
+    case mainView(MainViewModel)
+}
 
-    public func getSynchronizedFolders() -> AsyncStream<[UIFolder]> {
-        return AsyncStream { continuation in
-            continuation.yield(PreviewHelper.folders)
-            continuation.finish()
-        }
-    }
+@MainActor
+final class RootViewModel: ObservableObject {
+    @Published private(set) var state = RootViewState.onboarding
 }

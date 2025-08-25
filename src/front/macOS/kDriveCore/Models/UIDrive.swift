@@ -17,8 +17,10 @@
  */
 
 import Foundation
+import SwiftUI
 
-public enum UIPreview: Sendable {
-    static let folder1 = UIFolder(id: 1, title: "Téléchargements")
-    static let folder2 = UIFolder(id: 2, title: "Documents")
+public struct UIDrive: Sendable, Identifiable, Hashable {
+    public let id: Int
+    public let name: String
+    public let color: Color
 }

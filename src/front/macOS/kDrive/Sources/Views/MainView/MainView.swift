@@ -16,13 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
-import Combine
+import kDriveCoreUI
+import SwiftUI
 
-@MainActor
-final class MainAppViewModel: ObservableObject {
-    @Published public var currentTab: AppTab? = .home
+struct MainView: View {
+    @EnvironmentObject private var mainAppViewModel: MainViewModel
 
-    @Published public var search = ""
-    @Published public var isFocusingSearch = false
+    var body: some View {
+        NavigationSplitView {
+            SidebarView(currentTab: $mainAppViewModel.selectedTab)
+        } detail: {
+            NavigationStack {
+                Text(verbatim: "!Detail")
+                    .navigationTitle(mainAppViewModel.selectedTab?.title ?? "kDrive")
+            }
+        }
+        .ikBackport.searchable(text: $mainAppViewModel.search, isPresented: $mainAppViewModel.isSearchFocused)
+    }
+}
+
+#Preview {
+    MainView()
+        .environmentObject(MainViewModel())
 }

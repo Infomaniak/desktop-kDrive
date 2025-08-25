@@ -1,3 +1,4 @@
+//
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2025 Infomaniak Network SA
@@ -16,26 +17,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCoreUI
 import SwiftUI
+import kDriveCore
 
-struct MainAppView: View {
-    @EnvironmentObject private var mainAppViewModel: MainAppViewModel
+struct DriveLabel: View {
+    let drive: UIDrive
 
     var body: some View {
-        NavigationSplitView {
-            SidebarView(currentTab: $mainAppViewModel.currentTab)
-        } detail: {
-            NavigationStack {
-                Text(verbatim: "!Detail")
-                    .navigationTitle(mainAppViewModel.currentTab?.title ?? "kDrive")
-            }
+        Label {
+            Text(drive.name)
+        } icon: {
+            Image(.kdriveFoldersStack)
+                .foregroundStyle(drive.color)
         }
-        .ikBackport.searchable(text: $mainAppViewModel.search, isPresented: $mainAppViewModel.isFocusingSearch)
     }
 }
 
 #Preview {
-    MainAppView()
-        .environmentObject(MainAppViewModel())
+    DriveLabel(drive: PreviewHelper.drive1)
 }

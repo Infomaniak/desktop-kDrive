@@ -21,30 +21,32 @@ import SwiftUI
 
 @main
 struct kDriveApp: App {
-    @StateObject private var mainAppViewModel = MainAppViewModel()
+    @StateObject private var rootViewModel = RootViewModel()
 
     private let dependencyInjectionHook = TargetAssembly()
 
     var body: some Scene {
         WindowGroup {
-            MainAppView()
-                .environmentObject(mainAppViewModel)
+            RootView()
+                .environmentObject(rootViewModel)
         }
         .commands {
             CommandGroup(after: .printItem) {
-                if #available(macOS 14.0, *) {
-                    Button {
-                        mainAppViewModel.isFocusingSearch = true
-                    } label: {
-                        Label(.menuItemSearch, systemImage: "magnifyingglass")
+                if case .mainView(let mainAppViewModel) = rootViewModel.state {
+                    if #available(macOS 14.0, *) {
+                        Button {
+                            mainAppViewModel.isSearchFocused = true
+                        } label: {
+                            Label(.menuItemSearch, systemImage: "magnifyingglass")
+                        }
+                        .keyboardShortcut("f", modifiers: .command)
                     }
-                    .keyboardShortcut("f", modifiers: .command)
                 }
             }
         }
 
         Settings {
-            Text(verbatim: "!Todo")
+            SettingsView()
         }
     }
 }

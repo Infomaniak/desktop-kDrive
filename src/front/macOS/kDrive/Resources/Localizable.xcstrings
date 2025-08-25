@@ -1,6 +1,12 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "!Sélectionner un drive" : {
+
+    },
+    "Hello, World!" : {
+
+    },
     "menuItemSearch" : {
       "extractionState" : "manual",
       "localizations" : {

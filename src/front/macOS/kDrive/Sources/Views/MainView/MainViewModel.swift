@@ -17,19 +17,12 @@
  */
 
 import Foundation
+import Combine
 
-public final class MockServerBridge: ServerBridgeable {
-    public func getDrives() -> AsyncStream<[UIDrive]> {
-        return AsyncStream { continuation in
-            continuation.yield(PreviewHelper.drives)
-            continuation.finish()
-        }
-    }
+@MainActor
+final class MainViewModel: ObservableObject {
+    @Published public var selectedTab: AppTab? = .home
 
-    public func getSynchronizedFolders() -> AsyncStream<[UIFolder]> {
-        return AsyncStream { continuation in
-            continuation.yield(PreviewHelper.folders)
-            continuation.finish()
-        }
-    }
+    @Published public var search = ""
+    @Published public var isSearchFocused = false
 }

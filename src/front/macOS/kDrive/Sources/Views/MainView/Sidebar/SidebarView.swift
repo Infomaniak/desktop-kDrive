@@ -22,11 +22,16 @@ import kDriveCoreUI
 import SwiftUI
 
 struct SidebarView: View {
+    @State private var selectedDrive: UIDrive = PreviewHelper.drive1
+
     @Binding var currentTab: AppTab?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             SidebarHeaderView()
+                .padding(.horizontal)
+
+            DriverPicker(selectedDrive: $selectedDrive, drives: PreviewHelper.drives)
                 .padding(.horizontal)
 
             List(selection: $currentTab) {
@@ -44,6 +49,10 @@ struct SidebarView: View {
             .scrollBounceBehavior(.basedOnSize)
         }
         .ikBackport.toolbar(removing: .sidebarToggle)
+    }
+
+    private func switchCurrentDrive() {
+
     }
 }
 

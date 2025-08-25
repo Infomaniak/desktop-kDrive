@@ -16,20 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+import SwiftUI
 
-public final class MockServerBridge: ServerBridgeable {
-    public func getDrives() -> AsyncStream<[UIDrive]> {
-        return AsyncStream { continuation in
-            continuation.yield(PreviewHelper.drives)
-            continuation.finish()
+struct RootView: View {
+    @EnvironmentObject private var rootViewModel: RootViewModel
+
+    var body: some View {
+        switch rootViewModel.state {
+        case .onboarding:
+            Text(verbatim: "Onboarding Placeholder")
+        case .mainView(let mainViewModel):
+            MainView()
+                .environmentObject(mainViewModel)
         }
     }
+}
 
-    public func getSynchronizedFolders() -> AsyncStream<[UIFolder]> {
-        return AsyncStream { continuation in
-            continuation.yield(PreviewHelper.folders)
-            continuation.finish()
-        }
-    }
+#Preview {
+    RootView()
 }
