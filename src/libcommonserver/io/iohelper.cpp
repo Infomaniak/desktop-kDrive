@@ -1072,7 +1072,7 @@ bool IoHelper::_setRightsStd(const SyncPath &path, bool read, bool write, bool e
 
 #if defined(KD_MACOS) || defined(KD_LINUX)
 void IoHelper::setTargetNodeType(const SyncPath &path, const bool isSymLink, NodeType &nodeType) {
-    if (!S_ISLNK(isSymLink)) return;
+    if (!isSymLink) return;
 
     if (struct stat sbTarget; stat(path.string().c_str(), &sbTarget) >= 0) {
         nodeType = S_ISDIR(sbTarget.st_mode) ? NodeType::Directory : NodeType::File;
