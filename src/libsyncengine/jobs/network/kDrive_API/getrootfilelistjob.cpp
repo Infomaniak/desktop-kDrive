@@ -18,6 +18,8 @@
 
 #include "getrootfilelistjob.h"
 
+#include "utility/jsonparserutility.h"
+
 #include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
@@ -45,16 +47,25 @@ std::string GetRootFileListJob::getSpecificUrl() {
 
 void GetRootFileListJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
     uri.addQueryParameter("per_page", nbItemPerPage);
-    if (_page > 1) {
+    if (_page > 0) {
         uri.addQueryParameter("page", std::to_string(_page));
     }
     if (_dirOnly) {
         uri.addQueryParameter("type[]", "dir");
     }
     if (_withPath) {
-        uri.addQueryParameter("with", "path");
+        uri.addQueryParameter("with", "path,total");
+    } else {
+        uri.addQueryParameter("with", "total");
     }
     canceled = false;
+}
+
+bool GetRootFileListJob::handleResponse(std::istream &is) {
+    if (!AbstractTokenNetworkJob::handleResponse(is)) return false;
+    if (!jsonRes()) return false;
+    if (!JsonParserUtility::extractValue(jsonRes(), pagesKey, _totalPages)) return false;
+    return true;
 }
 
 } // namespace KDC
