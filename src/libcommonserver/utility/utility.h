@@ -80,9 +80,9 @@ struct COMMONSERVER_EXPORT Utility {
 
         static std::string formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description);
 
-        static std::string formatGenericServerError(std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
+        static std::string formatGenericServerError(const std::string &replyBody, const Poco::Net::HTTPResponse &httpResponse);
         static void logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle,
-                                          std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
+                                          const std::string &replyBody, const Poco::Net::HTTPResponse &httpResponse);
 
         /**
          * Check if two paths coincide up to case and encoding of file names.

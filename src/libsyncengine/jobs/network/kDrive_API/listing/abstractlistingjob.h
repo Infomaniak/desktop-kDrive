@@ -29,7 +29,7 @@ class AbstractListingJob : public AbstractTokenNetworkJob {
 
         void setQueryParameters(Poco::URI &uri, bool &) final;
         virtual void setSpecificQueryParameters(Poco::URI &uri) = 0;
-        virtual bool handleError(std::istream &is, const Poco::URI &uri) override;
+        virtual bool handleError(const std::string &replyBody, const Poco::URI &uri) override;
 
     private:
         NodeSet _blacklist;

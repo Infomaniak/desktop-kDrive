@@ -42,12 +42,9 @@ std::string GetAvatarJob::getContentType(bool &canceled) {
     return std::string();
 }
 
-bool GetAvatarJob::handleError(std::istream &is, const Poco::URI &uri) {
-    std::string src;
-    getStringFromStream(is, src);
-
+bool GetAvatarJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
     Poco::XML::DOMParser parser;
-    Poco::AutoPtr<Poco::XML::Document> pDoc = parser.parseString(src);
+    Poco::AutoPtr<Poco::XML::Document> pDoc = parser.parseString(replyBody);
     Poco::XML::Node *pNode = pDoc->getNodeByPath(errorCodePathKey);
     if (pNode != nullptr) {
         _errorCode = pNode->innerText();

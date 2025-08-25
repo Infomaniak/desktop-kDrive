@@ -32,13 +32,13 @@ GetInfoDriveJob::GetInfoDriveJob(int driveDbId) :
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-bool GetInfoDriveJob::handleError(std::istream &is, const Poco::URI &uri) {
+bool GetInfoDriveJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
     if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
         _resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
         // The drive is not accessible or doesn't exist
         return true;
     } else {
-        return AbstractTokenNetworkJob::handleError(is, uri);
+        return AbstractTokenNetworkJob::handleError(replyBody, uri);
     }
 }
 

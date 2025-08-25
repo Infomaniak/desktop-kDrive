@@ -78,8 +78,8 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         std::string getContentType(bool &canceled) override;
 
         bool handleResponse(std::istream &is) override;
-        bool handleError(std::istream &is, const Poco::URI &uri) override;
-        bool handleJsonResponse(std::istream &is) override;
+        bool handleError(const std::string &replyBody, const Poco::URI &uri) override;
+        bool handleJsonResponse(const std::string &replyBody) override;
 
         [[nodiscard]] int userId() const { return _userId; }
         [[nodiscard]] int driveId() const { return _driveId; }

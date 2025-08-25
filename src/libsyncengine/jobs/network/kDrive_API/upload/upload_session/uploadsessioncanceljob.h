@@ -33,7 +33,7 @@ class UploadSessionCancelJob : public AbstractUploadSessionJob {
         void setQueryParameters(Poco::URI &, bool &) override { /*No query parameters*/ }
         ExitInfo setData() override { return ExitCode::Ok; }
 
-        bool handleError(std::istream &is, const Poco::URI &uri) override;
+        bool handleError(const std::string &replyBody, const Poco::URI &uri) override;
 };
 
 } // namespace KDC

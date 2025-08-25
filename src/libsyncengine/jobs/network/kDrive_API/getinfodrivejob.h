@@ -28,7 +28,7 @@ class GetInfoDriveJob : public AbstractTokenNetworkJob {
         GetInfoDriveJob(int driveDbId);
 
     protected:
-        virtual bool handleError(std::istream &is, const Poco::URI &uri) override;
+        virtual bool handleError(const std::string &replyBody, const Poco::URI &uri) override;
 
     private:
         virtual void setQueryParameters(Poco::URI &, bool &canceled) override { canceled = false; }
