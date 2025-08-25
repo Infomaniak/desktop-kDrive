@@ -88,7 +88,7 @@ inline bool isLikeTooManySymbolicLinkLevelsError(const std::error_code &ec) noex
 }
 
 inline bool isLikeTooManySymbolicLinkLevelsError(const std::filesystem::filesystem_error &e) noexcept {
-    return return e.code() == static_cast<int>(std::errc::too_many_symbolic_link_levels);
+    return e.code() == std::errc::too_many_symbolic_link_levels;
 }
 #endif
 
