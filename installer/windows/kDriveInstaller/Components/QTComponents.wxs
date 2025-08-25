@@ -58,11 +58,93 @@
         <File Source="$(desktop-kDriveDir)/build-windows/install/bin/tls/qschannelbackend.dll" />
       </Component>
     </ComponentGroup>
+    <ComponentGroup Id="WebEngineLocalesComponents" Directory="QTWEBENGINE_LOCALES">
+      <Component Guid="{A1E5423C-A71D-4009-ACF2-3466A78FBFCB}">
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/am.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/ar.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/bg.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/bn.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/ca.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/cs.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/da.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/de.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/el.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/en-GB.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/en-US.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/es.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/es-419.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/et.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/fa.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/fi.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/fil.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/fr.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/gu.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/he.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/hi.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/hr.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/hu.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/id.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/it.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/ja.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/kn.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/ko.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/lt.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/lv.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/ml.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/mr.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/ms.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/nb.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/nl.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/pl.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/pt-BR.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/pt-PT.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/ro.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/ru.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/sk.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/sl.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/sr.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/sv.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/sw.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/ta.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/te.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/th.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/uk.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/vi.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/zh-CN.pak" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qtwebengine_locales/zh-TW.pak" />
+      </Component>
+    </ComponentGroup>
     <ComponentGroup Id="TranslationsComponents" Directory="TRANSLATIONSFOLDER">
       <Component Guid="C1757675-3E9C-40C3-8E87-37A706D26527">
-        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/tls/qcertonlybackend.dll" />
-        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/tls/qopensslbackend.dll" />
-        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/tls/qschannelbackend.dll" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_ar.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_bg.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_ca.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_cs.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_da.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_de.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_en.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_es.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_fa.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_fi.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_fr.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_gd.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_he.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_hr.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_hu.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_it.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_ja.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_ko.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_lv.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_nl.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_nn.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_pl.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_pt_BR.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_ru.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_sk.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_tr.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_uk.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_zh_CN.qm" />
+        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/translations/qt_zh_TW.qm" />
       </Component>
     </ComponentGroup>
     <ComponentGroup Id="StyleComponents" Directory="STYLEFOLDER">
@@ -70,7 +152,7 @@
         <File Source="$(desktop-kDriveDir)/build-windows/install/bin/styles/qwindowsvistastyle.dll" />
       </Component>
     </ComponentGroup>
-    <ComponentGroup Id="RessourcesComponents" Directory="RESSOURCESFOLDER">
+    <ComponentGroup Id="RessourcesComponents" Directory="RESOURCESFOLDER">
       <Component Guid="036D567E-F605-4525-A690-0CF6FEFB0684">
         <File Source="$(desktop-kDriveDir)/build-windows/install/bin/resources/icudtl.dat" />
         <File Source="$(desktop-kDriveDir)/build-windows/install/bin/resources/qtwebengine_devtools_resources.pak" />

@@ -1,8 +1,6 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <Fragment>
     <ComponentGroup Id="ShellExtComponents" Directory="SHELLEXTFOLDER">
-      <File Id="PowershellExe" Source="C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"/>
-      <File Id="UninstallShellExtScript" Source="$(desktop-kDriveDir)\extensions\windows\cfapi\FileExplorerExtension\Uninstall.ps1"/>
       <Component Guid="C3C85E7E-ED48-4924-9FD0-35FCE680AF73">
         <!-- KD dll -->
         <File Source="$(desktop-kDriveDir)/build-windows/install/bin/KDContextMenu.dll" />
@@ -52,7 +50,7 @@
           <RegistryKey Key="           kDriveOk" ForceDeleteOnUninstall="yes">
             <RegistryValue Action="write" Type="string" Value="$(regKeyOkGUID)" />
           </RegistryKey>
-          <RegistryKey Key="          kDriveSync" ForceDeleteOnUninstall="yes">
+          <RegistryKey Key="           kDriveSync" ForceDeleteOnUninstall="yes">
             <RegistryValue Action="write" Type="string" Value="$(regKeySyncGUID)" />
           </RegistryKey>
         </RegistryKey>
@@ -60,6 +58,7 @@
       <Component Guid="C1733D32-3681-41E5-831A-854C4BB97DB8" Directory="APPXFOLDER">
         <!-- A custom action take care of installing the msix (see Package.wxs) -->
         <File Source="$(desktop-kDriveDir)/extensions/windows/cfapi/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$(shortVersion).0_Test/FileExplorerExtensionPackage_$(shortVersion).0_x64_arm64.msixbundle" />
+        <File Id="UninstallShellExtScript" Source="$(desktop-kDriveDir)\extensions\windows\cfapi\FileExplorerExtension\Uninstall.ps1"/>
       </Component>
       <Component Guid="{04EB66D3-3231-499C-AF87-26EBC013ED83}" Directory="APPXDEPENDENCIESx64FOLDER">
         <File Source="$(desktop-kDriveDir)//extensions/windows/cfapi/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$(shortVersion).0_Test/Dependencies/x64/Microsoft.VCLibs.x64.14.00.Desktop.appx" />

@@ -9,9 +9,11 @@
         <Directory Id="PLATFORMSFOLDER" Name="platforms" />
         <Directory Id="POSITIONFOLDER" Name="position" />
         <Directory Id="TLSFOLDER" Name="tls" />
-        <Directory Id="TRANSLATIONSFOLDER" Name="translations" />
-        <Directory Id="RESSOURCESFOLDER" Name="ressources"/>
-        <Directory Id="STYLEFOLDER" Name="style"/>
+        <Directory Id="TRANSLATIONSFOLDER" Name="translations" >
+          <Directory Id="QTWEBENGINE_LOCALES" Name="qtwebengine_locales" />
+        </Directory>
+        <Directory Id="RESOURCESFOLDER" Name="resources"/>
+        <Directory Id="STYLEFOLDER" Name="styles"/>
         <Directory Id="SHELLEXTFOLDER" Name="shellext">
           <Directory Id="APPXFOLDER" Name="AppX">
             <Directory Id="APPXDEPENDENCIESFOLDER" Name="Dependencies">
