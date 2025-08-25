@@ -423,6 +423,9 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
 
     if (Utility::isError500(_resHttp.getStatus())) {
         _exitInfo = {ExitCode::BackError, ExitCause::Http5xx};
+        std::string replyBody;
+        getStringFromStream(stream[0].get(), replyBody);
+        LOG_WARN(_logger, "Reply " << jobId() << ": " << replyBody);
         disableRetry();
         return false;
     }
@@ -461,6 +464,9 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
         case Poco::Net::HTTPResponse::HTTP_UNPROCESSABLE_ENTITY: {
             _exitInfo = {ExitCode::BackError, ExitCause::HttpErr};
             disableRetry();
+            std::string replyBody;
+            getStringFromStream(stream[0].get(), replyBody);
+            LOG_WARN(_logger, "Reply " << jobId() << ": " << replyBody);
             res = false;
             break;
         }
@@ -504,6 +510,7 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
 bool AbstractNetworkJob::handleError(std::istream &inputStream, const Poco::URI &uri) {
     std::string replyBody;
     getStringFromStream(inputStream, replyBody);
+    LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << CommonUtility::s2ws(replyBody));
     return handleError(replyBody, uri);
 }
 
@@ -515,9 +522,6 @@ void AbstractNetworkJob::getStringFromStream(std::istream &inputStream, std::str
     } else {
         std::string tmp(std::istreambuf_iterator<char>(inputStream), (std::istreambuf_iterator<char>()));
         res = std::move(tmp);
-    }
-    if (isExtendedLog()) {
-        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << CommonUtility::s2ws(res));
     }
 }
 
