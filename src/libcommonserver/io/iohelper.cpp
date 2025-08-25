@@ -1070,6 +1070,7 @@ bool IoHelper::_setRightsStd(const SyncPath &path, bool read, bool write, bool e
     return true;
 }
 
+#if defined(KD_MACOS) || defined(KD_LINUX)
 void IoHelper::setTargetNodeType(const SyncPath &path, const bool isSymLink, NodeType &nodeType) {
     if (!S_ISLNK(isSymLink)) return;
 
@@ -1079,5 +1080,5 @@ void IoHelper::setTargetNodeType(const SyncPath &path, const bool isSymLink, Nod
         nodeType = NodeType::Unknown;
     }
 }
-
+#endif
 } // namespace KDC
