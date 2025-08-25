@@ -23,29 +23,19 @@ namespace kDrive_client
 {
     public partial class App : Application
     {
-        #region Properties
-
         public Window? Window { get; set; }
         public TrayIcon.TrayIconManager TrayIcoManager { get; private set; }
 
-        #endregion
-
-        #region Constructors
-
+        internal Model.App Data { get; set; } = new Model.App();
         public App()
         {
             InitializeComponent();
             TrayIcoManager = new TrayIcon.TrayIconManager();
         }
 
-        #endregion
-
-        #region Event Handlers
-
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             TrayIcoManager.Initialize(Window);
         }
-        #endregion
     }
 }

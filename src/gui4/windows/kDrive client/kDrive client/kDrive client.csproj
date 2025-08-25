@@ -34,8 +34,9 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="H.NotifyIcon.WinUI" Version="2.3.0" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4654" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4948" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250606001" />
   </ItemGroup>
 
@@ -65,5 +66,8 @@
     <PRIResource Update="Strings\fr-FR\Resources.resw">
       <Generator>ResXFileCodeGenerator</Generator>
     </PRIResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Assets\icons\" />
   </ItemGroup>
 </Project>
