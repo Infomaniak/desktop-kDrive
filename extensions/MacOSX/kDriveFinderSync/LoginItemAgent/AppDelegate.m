@@ -63,7 +63,7 @@
             self->_extConnection = nil;
         }
     };
-
+    
     newConnection.invalidationHandler = ^{
         if (self->_srvExtConnection == newConnection) {
             NSLog(@"[KD] Connection with ext server invalidated");
@@ -91,6 +91,13 @@
         if (value == extServer) {
             NSLog(@"[KD] Extension server connected");
             self->_srvExtConnection = newConnection;
+            
+            /* Tests
+            NSLog(@"[KD] Test start");
+            [self performSelectorInBackground:@selector(runFct1) withObject:nil];
+            [self performSelectorInBackground:@selector(runFct2) withObject:nil];
+            NSLog(@"[KD] Test done");
+             */
         } else if (value == guiServer) {
             NSLog(@"[KD] GUI server connected");
             self->_srvGuiConnection = newConnection;
@@ -102,7 +109,7 @@
             self->_extConnection = newConnection;
         }
     }];
-
+    
     return YES;
 }
 
@@ -139,5 +146,23 @@
     NSLog(@"[KD] Server gui endpoint asked %@", _srvGuiEndpoint);
     callback(_srvGuiEndpoint);
 }
+
+/* Tests
+- (void)runFct1 {
+    NSLog(@"[KD] runFct1 - begin %@", [NSThread currentThread]);
+    [[self->_srvExtConnection remoteObjectProxy] fct1:^(int value) {
+        NSLog(@"[KD] fct1 returned %d %@", value, [NSThread currentThread]);
+    }];
+    NSLog(@"[KD] runFct1 - end %@", [NSThread currentThread]);
+}
+
+- (void)runFct2 {
+    NSLog(@"[KD] runFct2 - begin %@", [NSThread currentThread]);
+    [[self->_srvExtConnection remoteObjectProxy] fct2:^(int value) {
+        NSLog(@"[KD] fct2 returned %d %@", value, [NSThread currentThread]);
+    }];
+    NSLog(@"[KD] runFct2 - end %@", [NSThread currentThread]);
+}
+*/
 
 @end

@@ -245,5 +245,15 @@
     [self connectToServer:endpoint];
 }
 
+/* Tests
+- (void)fct1:(void (^)(int))callback
+{
+}
+
+- (void)fct2:(void (^)(int))callback
+{
+}
+*/
+
 @end
 
