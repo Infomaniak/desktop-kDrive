@@ -271,7 +271,7 @@ void TestSnapshot::testPath() {
         bool ignore = false;
         // On Windows, if the file name starts with "X:" pattern, the previous element of the path are overrode
         // (https://en.cppreference.com/w/cpp/filesystem/path/append)
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(!_liveSnapshot->path(id, path, ignore));
         CPPUNIT_ASSERT(ignore);
 #else
@@ -285,7 +285,7 @@ void TestSnapshot::testPath() {
         const SnapshotItem childItem(childId, id, childName, testhelpers::defaultTime, testhelpers::defaultTime,
                                      NodeType::Directory, testhelpers::defaultFileSize, false, true, true);
         _liveSnapshot->updateItem(childItem);
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(!_liveSnapshot->path(childId, path, ignore));
         CPPUNIT_ASSERT(ignore);
 #else
@@ -313,7 +313,7 @@ void TestSnapshot::testPath() {
         bool ignore = false;
         // On Windows, if the file name starts with the "X:" pattern, the previous elements of the path are overrode
         // (https://en.cppreference.com/w/cpp/filesystem/path/append)
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(!snapshot.path(id, path, ignore));
         CPPUNIT_ASSERT(ignore);
 #else
@@ -322,7 +322,7 @@ void TestSnapshot::testPath() {
         CPPUNIT_ASSERT(!ignore);
 #endif
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(!snapshot.path(childId, path, ignore));
         CPPUNIT_ASSERT(ignore);
 #else
@@ -342,7 +342,7 @@ void TestSnapshot::testPath() {
         bool ignore = false;
         // On Windows, if the file name starts with "X:" pattern, the previous element of the path are overrode
         // (https://en.cppreference.com/w/cpp/filesystem/path/append)
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(!_liveSnapshot->path(id, path, ignore));
         CPPUNIT_ASSERT(ignore);
 #else
@@ -363,7 +363,7 @@ void TestSnapshot::testPath() {
         bool ignore = false;
         // On Windows, if the file name starts with "X:" pattern, the previous element of the path are overrode
         // (https://en.cppreference.com/w/cpp/filesystem/path/append)
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(!_liveSnapshot->path(id, path, ignore));
         CPPUNIT_ASSERT(ignore);
 #else

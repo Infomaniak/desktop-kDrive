@@ -1,10 +1,21 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_CXX_STANDARD 20)
 project(client)
 if(APPLE)
     enable_language(OBJC)
     enable_language(OBJCXX)
+endif()
+
+# Redefine compiler predefined macros to uniformize their format.
+# Source:
+# https://web.archive.org/web/20140625123925/http://nadeausoftware.com/articles/2012/01/c_c_tip_how_use_compiler_predefined_macros_detect_operating_system
+if(APPLE)
+    add_compile_definitions(KD_MACOS)
+elseif(WIN32)
+    add_compile_definitions(KD_WINDOWS)
+else()
+    add_compile_definitions(KD_LINUX)
 endif()
 
 ##### Submodules
@@ -51,10 +62,6 @@ IF (WIN32)
     )
 ENDIF ()
 
-if (UNIX)
-    set(CONAN_DEP_DIR "${CMAKE_BINARY_DIR}/conan_dependencies" CACHE PATH "Conan dependencies directory. Used to copy the .so files for the appimage builder.")
-ENDIF ()
-
 set(libcommon_NAME "${APPLICATION_NAME}common")
 set(libcommonserver_NAME "${APPLICATION_NAME}commonserver")
 set(libcommongui_NAME "${APPLICATION_NAME}commongui")
@@ -67,7 +74,7 @@ set(ENABLE_JSON TRUE)
 
 # For config.h
 include_directories(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
-# Allows includes based on src/ like #include "common/utility.h"
+# Allows includes based on src/ like #include "libcommon/utility.h"
 include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_BINARY_DIR}/src
@@ -250,9 +257,15 @@ elseif(BUILD_CLIENT)
         configure_file(cmake/modules/NSIS.template.nsi.in ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.nsi @ONLY)
 
         # Default sync exclude list
-        message(STATUS "sync-exclude-win.lst copied to ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}")
-        file(COPY sync-exclude-win.lst DESTINATION ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE})
-        file(RENAME ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/sync-exclude-win.lst ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/sync-exclude.lst)
+        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+            message(STATUS "sync-exclude-win.lst copied to ${CMAKE_BINARY_DIR}/bin")
+            file(COPY sync-exclude-win.lst DESTINATION ${CMAKE_BINARY_DIR}/bin)
+            file(RENAME ${CMAKE_BINARY_DIR}/bin/sync-exclude-win.lst ${CMAKE_BINARY_DIR}/bin/sync-exclude.lst)
+        else()
+            message(STATUS "sync-exclude-win.lst copied to ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}")
+            file(COPY sync-exclude-win.lst DESTINATION ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE})
+            file(RENAME ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/sync-exclude-win.lst ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/sync-exclude.lst)
+        endif()
 
         # Vfs
         set(CMAKE_FIND_LIBRARY_SUFFIXES .dll)
@@ -294,5 +307,30 @@ elseif(BUILD_CLIENT)
                 install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
             endif()
         endif()
+    endif()
+endif()
+
+if(UNIX AND NOT APPLE)
+    if (DEFINED CONAN_DEP_DIR)
+        # Copy .so files to the conan dependency directory
+        include(ConanGetLibDirs)
+        get_library_dirs("log4cplus" "log4cplus")
+        get_library_dirs("OpenSSL" "openssl")
+        get_library_dirs("xxHash" "xxhash")
+        file(COPY
+            # log4cplus
+            "${_log4cplus_LIB_DIRS}/liblog4cplus.so"
+            "${_log4cplus_LIB_DIRS}/liblog4cplus.so.9"
+            # xxHash
+            "${_xxHash_LIB_DIRS}/libxxhash.so"
+            "${_xxHash_LIB_DIRS}/libxxhash.so.0"
+            "${_xxHash_LIB_DIRS}/libxxhash.so.0.8.2"
+            # OpenSSL
+            "${_OpenSSL_LIB_DIRS}/libcrypto.so"
+            "${_OpenSSL_LIB_DIRS}/libcrypto.so.3"
+            "${_OpenSSL_LIB_DIRS}/libssl.so"
+            "${_OpenSSL_LIB_DIRS}/libssl.so.3"
+            DESTINATION "${CONAN_DEP_DIR}"
+            FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
     endif()
 endif()

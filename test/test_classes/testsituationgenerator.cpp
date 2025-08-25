@@ -20,6 +20,8 @@
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "db/dbnode.h"
 #include "syncpal/syncpal.h"
+
+#include "test_utility/localtemporarydirectory.h"
 #include "test_utility/testhelpers.h"
 
 #include <Poco/JSON/Parser.h>
@@ -35,8 +37,11 @@ class TestSituationGeneratorException final : public std::runtime_error {
             std::runtime_error(what) {}
 };
 
-TestSituationGenerator::TestSituationGenerator() :
-    _syncDb(std::make_shared<SyncDb>("dummySyncDb_" + CommonUtility::generateRandomStringAlphaNum(), "3.6.10")) {
+TestSituationGenerator::TestSituationGenerator() {
+    const LocalTemporaryDirectory temporaryDirectory("TestSituationGenerator");
+
+    const auto syncDbPath = temporaryDirectory.path() / ("dummySyncDb_" + CommonUtility::generateRandomStringAlphaNum());
+    _syncDb = std::make_shared<SyncDb>(syncDbPath.string(), "3.6.10");
     (void) _syncDb->init("3.6.10");
     _syncDb->setAutoDelete(true);
 
@@ -89,6 +94,13 @@ bool TestSituationGenerator::getDbNode(const NodeId &id, DbNode &dbNode) const {
     return found;
 }
 
+std::shared_ptr<Node> TestSituationGenerator::createNode(const ReplicaSide side, const NodeType itemType, const NodeId &id,
+                                                         const NodeId &parentId, const bool setChangeEvent) const {
+    const auto node = insertInUpdateTree(side, itemType, id, parentId, std::nullopt);
+    if (setChangeEvent) node->setChangeEvents(OperationType::Create);
+    return node;
+}
+
 std::shared_ptr<Node> TestSituationGenerator::moveNode(const ReplicaSide side, const NodeId &id, const NodeId &newParentId,
                                                        const SyncName &newName /*= {}*/) const {
     const auto newParentNode =
@@ -113,11 +125,17 @@ std::shared_ptr<Node> TestSituationGenerator::renameNode(const ReplicaSide side,
     return node;
 }
 
-[[maybe_unused]] std::shared_ptr<Node> TestSituationGenerator::editNode(const ReplicaSide side, const NodeId &id) const {
+[[maybe_unused]] std::shared_ptr<Node> TestSituationGenerator::editNode(const ReplicaSide side, const NodeId &id,
+                                                                        const SyncTime timeInput /*= 0*/) const {
     static uint64_t editCounter = 0; // Make sure that 2 consecutive edit operations do not generate the same operation.
     const auto node = updateTree(side)->getNodeById(generateId(side, id));
-    const auto lastModifiedDate = node->lastmodified().value();
-    node->setLastModified(static_cast<SyncTime>(++editCounter) + lastModifiedDate);
+    SyncTime modificationTime = 0;
+    if (timeInput) {
+        modificationTime = timeInput;
+    } else {
+        modificationTime += node->modificationTime().value() + static_cast<SyncTime>(++editCounter);
+    }
+    node->setModificationTime(modificationTime);
     node->insertChangeEvent(OperationType::Edit);
     return node;
 }
@@ -173,8 +191,8 @@ void TestSituationGenerator::insertInAllSnapshot(const NodeType itemType, const 
         if (!(side == ReplicaSide::Local ? _localLiveSnapshot : _remoteLiveSnapshot).has_value()) continue;
         const auto size = itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
         const auto parentFinalId = parentId.empty() ? "1" : generateId(side, parentId);
-        const SnapshotItem item(generateId(side, id), parentFinalId, Str2SyncName(Utility::toUpper(id)), testhelpers::defaultTime,
-                                testhelpers::defaultTime, itemType, size, false, true, true);
+        const SnapshotItem item(generateId(side, id), parentFinalId, Str2SyncName(CommonUtility::toUpper(id)),
+                                testhelpers::defaultTime, testhelpers::defaultTime, itemType, size, false, true, true);
         (void) liveSnapshot(side).updateItem(item);
     }
 }
@@ -194,7 +212,7 @@ DbNodeId TestSituationGenerator::insertInDb(const NodeType itemType, const NodeI
     }
 
     const auto size = itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
-    const DbNode dbNode(parentNode.nodeId(), Str2SyncName(Utility::toUpper(id)), Str2SyncName(Utility::toUpper(id)),
+    const DbNode dbNode(parentNode.nodeId(), Str2SyncName(CommonUtility::toUpper(id)), Str2SyncName(CommonUtility::toUpper(id)),
                         generateId(ReplicaSide::Local, id), generateId(ReplicaSide::Remote, id), testhelpers::defaultTime,
                         testhelpers::defaultTime, testhelpers::defaultTime, itemType, size);
     DbNodeId dbNodeId = 0;
@@ -210,7 +228,7 @@ std::shared_ptr<Node> TestSituationGenerator::insertInUpdateTree(
             parentId.empty() ? updateTree(side)->rootNode() : updateTree(side)->getNodeById(generateId(side, parentId));
     const auto size = itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
     const auto node =
-            std::make_shared<Node>(dbNodeId, side, Str2SyncName(Utility::toUpper(id)), itemType, OperationType::None,
+            std::make_shared<Node>(dbNodeId, side, Str2SyncName(CommonUtility::toUpper(id)), itemType, OperationType::None,
                                    generateId(side, id), testhelpers::defaultTime, testhelpers::defaultTime, size, parentNode);
     updateTree(side)->insertNode(node);
     (void) parentNode->insertChildren(node);

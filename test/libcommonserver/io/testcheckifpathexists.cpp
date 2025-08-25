@@ -130,7 +130,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     // A MacOSX Finder alias on a regular file.
     {
         const LocalTemporaryDirectory temporaryDirectory("TestIo");
@@ -171,7 +171,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
     }
 #endif
 
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
     // A Windows junction on a regular target directory.
     {
         const LocalTemporaryDirectory temporaryDirectory("TestIo");
@@ -358,7 +358,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     // A MacOSX Finder alias on a regular file.
     {
         const LocalTemporaryDirectory temporaryDirectory("TestIo");
@@ -404,7 +404,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
     }
 #endif
 
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
     // A Windows junction on a regular target directory.
     {
         const LocalTemporaryDirectory temporaryDirectory("TestIo");
@@ -495,7 +495,7 @@ void TestIo::testCheckIfPathExistWithDistinctEncodings() {
         IoHelper::getNodeId(nfcPath, nfcNodeId);
         IoHelper::getNodeId(nfdPath, nfdNodeId);
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         CPPUNIT_ASSERT_EQUAL(nfcNodeId, nfdNodeId);
 #else
         CPPUNIT_ASSERT(nfcNodeId != nfdNodeId);
@@ -527,7 +527,7 @@ void TestIo::testCheckIfPathExistWithDistinctEncodings() {
         IoHelper::getNodeId(nfcPath, nfcNodeId);
         IoHelper::getNodeId(nfdPath, nfdNodeId);
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         CPPUNIT_ASSERT_EQUAL(nfcNodeId, nfdNodeId);
 #else
         CPPUNIT_ASSERT(nfcNodeId != nfdNodeId);

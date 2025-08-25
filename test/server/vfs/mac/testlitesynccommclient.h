@@ -35,7 +35,7 @@ class TestLiteSyncCommClient : public CppUnit::TestFixture, public TestBase {
         void tearDown(void);
 
     protected:
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         void testGetVfsStatus(void);
 #endif
 };

@@ -17,7 +17,7 @@
  */
 
 #include "localdeletejob.h"
-#include "../network/API_v2/getfileinfojob.h"
+#include "jobs/network/kDrive_API/getfileinfojob.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
@@ -26,7 +26,7 @@
 
 #include <utility/utility.h>
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include <objbase.h>
 #endif
 

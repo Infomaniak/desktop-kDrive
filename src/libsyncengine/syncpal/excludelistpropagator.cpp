@@ -65,7 +65,7 @@ ExitCode ExcludeListPropagator::checkItems() {
                 LOG_SYNCPAL_INFO(Log::instance()->getLogger(), "ExcludeListPropagator aborted " << jobId());
                 return ExitCode::Ok;
             }
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
             // skip_permission_denied doesn't work on Windows
             try {
                 bool dummy = dirIt->exists();

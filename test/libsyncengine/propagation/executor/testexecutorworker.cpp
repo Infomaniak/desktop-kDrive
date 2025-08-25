@@ -25,10 +25,13 @@
 #include "mocks/libsyncengine/vfs/mockvfs.h"
 #include "network/proxy.h"
 #include "propagation/executor/filerescuer.h"
+#include "jobs/network/kDrive_API/upload/uploadjob.h"
 
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "test_classes/testsituationgenerator.h"
 #include "test_utility/testhelpers.h"
+#include "test_utility/localtemporarydirectory.h"
+#include "test_utility/remotetemporarydirectory.h"
 
 #include <memory>
 
@@ -41,9 +44,12 @@ void TestExecutorWorker::setUp() {
     const std::string localPathStr = _localTempDir.path().string();
 
     // Insert api token into keystore
-    std::string keychainKey("123");
+    ApiToken apiToken;
+    apiToken.setAccessToken(testVariables.apiToken);
+
+    const std::string keychainKey("123");
     (void) KeyChainManager::instance(true);
-    KeyChainManager::instance()->writeToken(keychainKey, testVariables.apiToken);
+    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     bool alreadyExists = false;
@@ -60,9 +66,9 @@ void TestExecutorWorker::setUp() {
     Account account(1, accountId, user.dbId());
     (void) ParmsDb::instance()->insertAccount(account);
 
-    int driveDbId = 1;
+    _driveDbId = 1;
     int driveId = atoi(testVariables.driveId.c_str());
-    Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
+    Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
     _sync = Sync(1, drive.dbId(), localPathStr, "", testVariables.remotePath);
@@ -93,7 +99,7 @@ void TestExecutorWorker::tearDown() {
 }
 
 void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     _executorWorker = std::make_shared<ExecutorWorker>(_syncPal, "Executor", "EXEC");
 
 
@@ -584,6 +590,35 @@ void TestExecutorWorker::testDeleteOpNodes() {
         CPPUNIT_ASSERT(_executorWorker->deleteOpNodes(syncOp));
         CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists(*syncOp->affectedNode()->id()));
     }
+}
+
+void TestExecutorWorker::testCheckAlreadyExcluded() {
+    const testhelpers::TestVariables testVariables;
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, testVariables.remoteDirId, "testCheckAlreadyExcluded");
+
+    const SyncPath localFilePath1 = _localTempDir.path() / "abcd.txt";
+    std::ofstream(localFilePath1).close();
+    const SyncPath localFilePath2 = _localTempDir.path() / "䈀椀爀挀栀 鈁";
+    std::ofstream(localFilePath2).close();
+
+    // Upload file 1
+    UploadJob uploadJob1(nullptr, _driveDbId, localFilePath1, localFilePath1.filename(), remoteTmpDir.id(), 0, 0);
+    uploadJob1.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob1.exitInfo().code());
+
+    ExitInfo exitInfo = _executorWorker->checkAlreadyExcluded(localFilePath1, remoteTmpDir.id());
+    CPPUNIT_ASSERT(exitInfo == ExitInfo(ExitCode::DataError, ExitCause::FileExists));
+
+    exitInfo = _executorWorker->checkAlreadyExcluded(localFilePath2, remoteTmpDir.id());
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
+
+    // Upload file 2
+    UploadJob uploadJob2(nullptr, _driveDbId, localFilePath2, localFilePath2.filename(), remoteTmpDir.id(), 0, 0);
+    uploadJob2.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob2.exitInfo().code());
+
+    exitInfo = _executorWorker->checkAlreadyExcluded(localFilePath2, remoteTmpDir.id());
+    CPPUNIT_ASSERT(exitInfo == ExitInfo(ExitCode::DataError, ExitCause::FileExists));
 }
 
 void TestExecutorWorker::testFixModificationDate() {

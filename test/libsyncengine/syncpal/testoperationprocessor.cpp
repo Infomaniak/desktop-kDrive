@@ -22,7 +22,7 @@
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
-#include "libsyncengine/jobs/network/API_v2/movejob.h"
+#include "libsyncengine/jobs/network/kDrive_API/movejob.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 
 #include "test_utility/testhelpers.h"
@@ -189,47 +189,47 @@ void TestOperationProcessor::testIsPseudoConflict() {
     newRemoteFileNode->setSize(testhelpers::defaultFileSize); // Reset size
 
     // ### Same size and different modtime
-    lNodeAA->setLastModified(testhelpers::defaultTime + 1);
+    lNodeAA->setModificationTime(testhelpers::defaultTime + 1);
     CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(lNodeAA, rNodeAA));
-    lNodeAA->setLastModified(testhelpers::defaultTime); // Reset time
+    lNodeAA->setModificationTime(testhelpers::defaultTime); // Reset time
 
-    rNodeAA->setLastModified(testhelpers::defaultTime + 1);
+    rNodeAA->setModificationTime(testhelpers::defaultTime + 1);
     CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(lNodeAA, rNodeAA));
-    rNodeAA->setLastModified(testhelpers::defaultTime); // Reset time
+    rNodeAA->setModificationTime(testhelpers::defaultTime); // Reset time
 
     // ### Same size and different modtime, but items are links
-    newLocalFileNode->setLastModified(testhelpers::defaultTime + 1);
+    newLocalFileNode->setModificationTime(testhelpers::defaultTime + 1);
     CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(newLocalFileNode, newRemoteFileNode));
-    newLocalFileNode->setLastModified(testhelpers::defaultTime); // Reset time
+    newLocalFileNode->setModificationTime(testhelpers::defaultTime); // Reset time
 
-    newRemoteFileNode->setLastModified(testhelpers::defaultTime + 1);
+    newRemoteFileNode->setModificationTime(testhelpers::defaultTime + 1);
     CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(newLocalFileNode, newRemoteFileNode));
-    newRemoteFileNode->setLastModified(testhelpers::defaultTime); // Reset time
+    newRemoteFileNode->setModificationTime(testhelpers::defaultTime); // Reset time
 
     // ### Different size and different modtime
-    lNodeAA->setLastModified(testhelpers::defaultTime + 1);
+    lNodeAA->setModificationTime(testhelpers::defaultTime + 1);
     lNodeAA->setSize(testhelpers::defaultFileSize + 1);
     CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(lNodeAA, rNodeAA));
-    lNodeAA->setLastModified(testhelpers::defaultTime); // Reset time
+    lNodeAA->setModificationTime(testhelpers::defaultTime); // Reset time
     lNodeAA->setSize(testhelpers::defaultFileSize); // Reset size
 
-    rNodeAA->setLastModified(testhelpers::defaultTime + 1);
+    rNodeAA->setModificationTime(testhelpers::defaultTime + 1);
     rNodeAA->setSize(testhelpers::defaultFileSize + 1);
     CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(lNodeAA, rNodeAA));
-    rNodeAA->setLastModified(testhelpers::defaultTime); // Reset time
+    rNodeAA->setModificationTime(testhelpers::defaultTime); // Reset time
     rNodeAA->setSize(testhelpers::defaultFileSize); // Reset size
 
     // ### Different size and different modtime, but items are links
-    newLocalFileNode->setLastModified(testhelpers::defaultTime + 1);
+    newLocalFileNode->setModificationTime(testhelpers::defaultTime + 1);
     newLocalFileNode->setSize(testhelpers::defaultFileSize + 1);
     CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(newLocalFileNode, newRemoteFileNode));
-    newLocalFileNode->setLastModified(testhelpers::defaultTime); // Reset time
+    newLocalFileNode->setModificationTime(testhelpers::defaultTime); // Reset time
     newLocalFileNode->setSize(testhelpers::defaultFileSize); // Reset size
 
-    newRemoteFileNode->setLastModified(testhelpers::defaultTime + 1);
+    newRemoteFileNode->setModificationTime(testhelpers::defaultTime + 1);
     newRemoteFileNode->setSize(testhelpers::defaultFileSize + 1);
     CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(newLocalFileNode, newRemoteFileNode));
-    newRemoteFileNode->setLastModified(testhelpers::defaultTime); // Reset time
+    newRemoteFileNode->setModificationTime(testhelpers::defaultTime); // Reset time
     newRemoteFileNode->setSize(testhelpers::defaultFileSize); // Reset size
 
     // # Move-Move (Source) conflict

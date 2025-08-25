@@ -30,7 +30,7 @@
 #include <cppunit/CompilerOutputter.h>
 #include "test_utility/testbase.h"
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #define _WINSOCKAPI_ /* Prevent inclusion of winsock.h in windows.h */
 #endif
 

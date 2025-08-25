@@ -157,7 +157,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
                     return ExitCode::Ok;
                 }
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
                 // skip_permission_denied doesn't work on Windows
                 try {
                     bool dummy = dirIt->exists();
@@ -228,9 +228,10 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
 
     if (exists) {
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
-                               L"Removing item with " << Utility::formatSyncPath(localPath) << L" (" << Utility::s2ws(localNodeId)
-                                                      << L") on local replica because it is blacklisted.");
+            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Removing item with "
+                                                                     << Utility::formatSyncPath(localPath) << L" ("
+                                                                     << CommonUtility::s2ws(localNodeId)
+                                                                     << L") on local replica because it is blacklisted.");
         }
 
         LocalDeleteJob job(_syncPal->syncInfo(), localPath, liteSyncActivated, remoteNodeId);
@@ -239,7 +240,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
         if (job.exitInfo().code() != ExitCode::Ok) {
             LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
                               L"Failed to remove item with " << Utility::formatSyncPath(absolutePath) << L" ("
-                                                             << Utility::s2ws(localNodeId)
+                                                             << CommonUtility::s2ws(localNodeId)
                                                              << L") removed from local replica. It will not be blacklisted.");
 
             SyncPath destPath;
@@ -251,7 +252,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
             _syncPal->addError(err);
         } else {
             LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Item with " << Utility::formatSyncPath(absolutePath) << L" ("
-                                                                           << Utility::s2ws(localNodeId)
+                                                                           << CommonUtility::s2ws(localNodeId)
                                                                            << L") removed from local replica.");
         }
     }

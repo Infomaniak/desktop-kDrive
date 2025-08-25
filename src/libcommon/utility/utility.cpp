@@ -24,8 +24,14 @@
 #include <system_error>
 #include <sys/types.h>
 
-#ifdef Q_OS_UNIX
+#if defined(KD_MACOS)
 #include <sys/statvfs.h>
+#include <sys/mount.h>
+#elif defined(KD_LINUX)
+#include <sys/statvfs.h>
+#include <sys/statfs.h>
+#elif defined(KD_WINDOWS)
+#include <fileapi.h>
 #endif
 
 
@@ -35,17 +41,20 @@
 #include <sstream>
 #include <signal.h>
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include <Poco/Util/WinRegistryKey.h>
 #endif
 
-#ifndef _WIN32
+#ifndef KD_WINDOWS
 #include <utf8proc.h>
 #endif
 
 #ifdef ZLIB_FOUND
 #include <zlib.h>
 #endif
+
+#include "utility_base.h"
+
 
 #include <QDir>
 #include <QTranslator>
@@ -57,14 +66,10 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QOperatingSystemVersion>
+#include <Poco/UnicodeConverter.h>
 
-#if defined(Q_OS_WIN)
-#include "utility_win.cpp"
-#elif defined(Q_OS_MAC)
-#include "utility_mac.cpp"
+#if defined(Q_OS_MAC)
 #include <mach-o/dyld.h>
-#else
-#include "utility_linux.cpp"
 #endif
 
 #define MAX_PATH_LENGTH_WIN_LONG 32767
@@ -72,7 +77,7 @@
 #define MAX_PATH_LENGTH_MAC 1023
 #define MAX_PATH_LENGTH_LINUX 4096
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 constexpr std::string_view liteSyncExtBundleIdStr = "com.infomaniak.drive.desktopclient.LiteSyncExt";
 constexpr std::string_view loginItemAgentIdStr = "com.infomaniak.drive.desktopclient.LoginItemAgent";
 #endif
@@ -165,7 +170,7 @@ const std::string &CommonUtility::userAgentString() {
     static std::string str;
     if (str.empty()) {
         std::stringstream ss;
-        ss << APPLICATION_SHORTNAME << " / " << KDRIVE_VERSION_STRING << " (" << platformName().toStdString() << ")";
+        ss << APPLICATION_NAME << " / " << KDRIVE_VERSION_STRING << " (" << platformName().toStdString() << ")";
         str = ss.str();
     }
     return str;
@@ -181,17 +186,98 @@ const std::string &CommonUtility::currentVersion() {
     return str;
 }
 
-QString CommonUtility::fileSystemName(const QString &dirPath) {
-    if (QDir dir(dirPath); dir.exists()) {
-        if (const QStorageInfo info(dirPath); info.isValid()) {
-            return info.fileSystemType();
+static std::unordered_map<std::string, std::string> rootFsTypeMap;
+std::string getRootFsType(const SyncPath &targetPath) {
+    auto it = rootFsTypeMap.find(targetPath.root_name().string());
+    if (it == rootFsTypeMap.end()) {
+        const std::string fsType = CommonUtility::fileSystemName(targetPath);
+        const auto [it2, inserted] = rootFsTypeMap.try_emplace(targetPath.root_name().string(), CommonUtility::toUpper(fsType));
+        if (!inserted) {
+            return {};
         }
-    } else {
-        dir.cdUp();
-        return fileSystemName(dir.path());
+        it = it2;
     }
+    return it->second;
+}
 
-    return {};
+bool CommonUtility::isNTFS(const SyncPath &targetPath) {
+    static const std::string ntfs("NTFS");
+    return getRootFsType(targetPath) == ntfs;
+}
+
+bool CommonUtility::isAPFS(const SyncPath &targetPath) {
+    static const std::string apfs("APFS");
+    return getRootFsType(targetPath) == apfs;
+}
+
+bool CommonUtility::isFAT(const SyncPath &targetPath) {
+    static const std::string fat("FAT");
+    return contains(getRootFsType(targetPath), fat);
+}
+
+std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
+#if defined(KD_MACOS)
+    struct statfs stat;
+    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
+        return stat.f_fstypename;
+    }
+#elif defined(KD_WINDOWS)
+    TCHAR szFileSystemName[MAX_PATH + 1];
+    DWORD dwMaxFileNameLength = 0;
+    DWORD dwFileSystemFlags = 0;
+
+    if (GetVolumeInformation(targetPath.root_path().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
+                             szFileSystemName, sizeof(szFileSystemName)) == TRUE) {
+        return ws2s(szFileSystemName);
+    } else {
+        // Not all the requested information is retrieved
+        DWORD dwError = GetLastError();
+        std::wstringstream message;
+        message << L"Error in GetVolumeInformation for " << Path2WStr(targetPath.root_name()) << L" ("
+                << utility_base::getErrorMessage(dwError) << L")";
+        sentry::Handler::captureMessage(sentry::Level::Warning, "CommonUtility::fileSystemName", ws2s(message.str()));
+
+        // !!! File system name can be OK or not !!!
+        return ws2s(szFileSystemName);
+    }
+#elif defined(KD_LINUX)
+    struct statfs stat;
+    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
+        const auto formatFsName = [](const std::string &prettyName, long fsCode) {
+            std::stringstream stream;
+            stream << std::hex << fsCode;
+            return prettyName + " | 0x" + stream.str();
+        };
+        switch (stat.f_type) {
+            case 0x137d:
+                return formatFsName("EXT(1)", stat.f_type);
+            case 0xef51:
+                return formatFsName("EXT2", stat.f_type);
+            case 0xef53:
+                return formatFsName("EXT2/3/4", stat.f_type);
+            case 0xbad1dea:
+            case 0xa501fcf5:
+            case 0x58465342:
+                return formatFsName("XFS", stat.f_type);
+            case 0x9123683e:
+            case 0x73727279:
+                return formatFsName("BTRFS", stat.f_type);
+            case 0xf15f:
+                return formatFsName("ECRYPTFS", stat.f_type);
+            case 0x4244:
+                return formatFsName("HFS", stat.f_type);
+            case 0x5346544e:
+                return formatFsName("NTFS", stat.f_type);
+            case 0x858458f6:
+                return formatFsName("RAMFS", stat.f_type);
+            default:
+                return formatFsName("Unknown-see corresponding entry at https://man7.org/linux/man-pages/man2/statfs.2.html",
+                                    stat.f_type);
+        }
+    }
+#endif
+
+    return "UNIDENTIFIED";
 }
 
 void CommonUtility::resetTranslations() {
@@ -210,7 +296,145 @@ void CommonUtility::resetTranslations() {
     }
 }
 
-QString CommonUtility::getIconPath(const IconType iconType) {
+bool CommonUtility::startsWith(const std::string &str, const std::string &prefix) {
+    return str.size() >= prefix.size() &&
+           std::equal(prefix.begin(), prefix.end(), str.begin(), [](char c1, char c2) { return c1 == c2; });
+}
+
+bool CommonUtility::startsWithInsensitive(const std::string &str, const std::string &prefix) {
+    return str.size() >= prefix.size() && std::equal(prefix.begin(), prefix.end(), str.begin(), [](char c1, char c2) {
+               return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
+           });
+}
+
+bool CommonUtility::endsWith(const std::string &str, const std::string &suffix) {
+    return str.size() >= suffix.size() && std::equal(str.begin() + static_cast<long>(str.length() - suffix.length()), str.end(),
+                                                     suffix.begin(), [](char c1, char c2) { return c1 == c2; });
+}
+
+bool CommonUtility::endsWithInsensitive(const std::string &str, const std::string &suffix) {
+    return str.size() >= suffix.size() &&
+           std::equal(str.begin() + static_cast<long>(str.length() - suffix.length()), str.end(), suffix.begin(),
+                      [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
+}
+
+#if defined(KD_WINDOWS)
+bool CommonUtility::startsWithInsensitive(const SyncName &str, const SyncName &prefix) {
+    return str.size() >= prefix.size() && std::equal(prefix.begin(), prefix.end(), str.begin(), [](SyncChar c1, SyncChar c2) {
+               return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
+           });
+}
+
+bool CommonUtility::startsWith(const SyncName &str, const SyncName &prefix) {
+    return str.size() >= prefix.size() &&
+           std::equal(prefix.begin(), prefix.end(), str.begin(), [](SyncChar c1, SyncChar c2) { return c1 == c2; });
+}
+
+bool CommonUtility::endsWith(const SyncName &str, const SyncName &suffix) {
+    return str.size() >= suffix.size() && std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
+                                                     [](char c1, char c2) { return c1 == c2; });
+}
+
+bool CommonUtility::endsWithInsensitive(const SyncName &str, const SyncName &suffix) {
+    return str.size() >= suffix.size() &&
+           std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
+                      [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
+}
+#endif
+
+bool CommonUtility::contains(const std::string &str, const std::string &substr) {
+    return str.find(substr) != std::string::npos;
+}
+
+std::string CommonUtility::toUpper(const std::string &str) {
+    std::string upperStr(str);
+    // std::ranges::transform(str, upperStr.begin(), [](unsigned char c) { return std::toupper(c); });   // Needs gcc-11
+    (void) std::transform(str.begin(), str.end(), upperStr.begin(), [](unsigned char c) { return std::toupper(c); });
+    return upperStr;
+}
+
+std::string CommonUtility::toLower(const std::string &str) {
+    std::string lowerStr(str);
+    // std::ranges::transform(str, lowerStr.begin(), [](unsigned char c) { return std::tolower(c); });   // Needs gcc-11
+    (void) std::transform(str.begin(), str.end(), lowerStr.begin(), [](unsigned char c) { return std::tolower(c); });
+    return lowerStr;
+}
+
+std::wstring CommonUtility::s2ws(const std::string &str) {
+    const Poco::UnicodeConverter converter;
+    std::wstring output;
+    (void) converter.convert(str, output);
+    return output;
+}
+
+std::string CommonUtility::ws2s(const std::wstring &wstr) {
+    const Poco::UnicodeConverter converter;
+    std::string output;
+    (void) converter.convert(wstr, output);
+    return output;
+}
+
+std::string CommonUtility::ltrim(const std::string &s) {
+    std::string sout(s);
+    const auto it =
+            std::find_if(sout.begin(), sout.end(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
+    (void) sout.erase(sout.begin(), it);
+    return sout;
+}
+
+std::string CommonUtility::rtrim(const std::string &s) {
+    std::string sout(s);
+    const auto it =
+            std::find_if(sout.rbegin(), sout.rend(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
+    (void) sout.erase(it.base(), sout.end());
+    return sout;
+}
+
+std::string CommonUtility::trim(const std::string &s) {
+    return ltrim(rtrim(s));
+}
+
+#if defined(KD_WINDOWS)
+SyncName CommonUtility::ltrim(const SyncName &s) {
+    SyncName sout(s);
+    const auto it =
+            std::find_if(sout.begin(), sout.end(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
+    sout.erase(sout.begin(), it);
+    return sout;
+}
+
+SyncName CommonUtility::rtrim(const SyncName &s) {
+    SyncName sout(s);
+    const auto it =
+            std::find_if(sout.rbegin(), sout.rend(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
+    sout.erase(it.base(), sout.end());
+    return sout;
+}
+
+SyncName CommonUtility::trim(const SyncName &s) {
+    return ltrim(rtrim(s));
+}
+#endif
+
+bool CommonUtility::isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path) {
+    if (path == potentialDescendant) return true;
+    for (auto it = potentialDescendant.begin(), it2 = path.begin(); it != potentialDescendant.end(); ++it, ++it2) {
+        if (it2 == path.end()) {
+            return true;
+        }
+        if (*it != *it2) {
+            return false;
+        }
+    }
+    return false;
+}
+
+bool CommonUtility::isStrictDescendant(const SyncPath &potentialDescendant, const SyncPath &path) {
+    if (path == potentialDescendant) return false;
+    return isDescendantOrEqual(potentialDescendant, path);
+}
+
+std::string CommonUtility::getIconPath(const IconType iconType) {
     switch (iconType) {
         case KDC::CommonUtility::MAIN_FOLDER_ICON:
             return "../Resources/kdrive-mac.icns"; // TODO : To be changed to a specific incs file
@@ -228,21 +452,7 @@ QString CommonUtility::getIconPath(const IconType iconType) {
             break;
     }
 
-    return QString();
-}
-
-bool CommonUtility::setFolderCustomIcon(const QString &folderPath, IconType iconType) {
-#ifdef Q_OS_MAC
-    if (!setFolderCustomIcon_private(folderPath, getIconPath(iconType))) {
-        return false;
-    }
-    return true;
-#else
-    Q_UNUSED(folderPath)
-    Q_UNUSED(iconType)
-
-    return true;
-#endif
+    return {};
 }
 
 qint64 CommonUtility::freeDiskSpace(const QString &path) {
@@ -407,7 +617,7 @@ bool CommonUtility::compressFile(const QString &originalName, const QString &tar
 }
 
 QString applicationTrPath() {
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     QString devTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../../../../src/gui/");
 #else
     QString devTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../src/gui/");
@@ -417,9 +627,9 @@ QString applicationTrPath() {
         qWarning() << "Running from build location! Translations may be incomplete!";
         return devTrPath;
     }
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
     return QCoreApplication::applicationDirPath() + QLatin1String("/i18n/");
-#elif defined(__APPLE__)
+#elif defined(KD_MACOS)
 
 #ifdef QT_NO_DEBUG
     return QCoreApplication::applicationDirPath() + QLatin1String("/../Resources/Translations"); // path defaults to app dir.
@@ -533,23 +743,14 @@ QString CommonUtility::languageCode(const Language language) {
     return englishCode;
 }
 
-SyncPath CommonUtility::getAppDir() {
-    const SyncPath dirPath(getAppDir_private());
-    return dirPath;
-}
-
-bool CommonUtility::hasDarkSystray() {
-    return hasDarkSystray_private();
-}
-
 SyncPath CommonUtility::getAppSupportDir() {
-    SyncPath dirPath(getAppSupportDir_private());
+    SyncPath dirPath(getGenericAppSupportDir());
 
     dirPath.append(APPLICATION_NAME);
     std::error_code ec;
     if (!std::filesystem::is_directory(dirPath, ec)) {
         bool exists = false;
-        exists = !CommonUtility::isLikeFileNotFoundError(ec);
+        exists = !utility_base::isLikeFileNotFoundError(ec);
         if (exists) return SyncPath();
         if (!std::filesystem::create_directory(dirPath, ec)) return SyncPath();
     }
@@ -560,12 +761,6 @@ SyncPath CommonUtility::getAppSupportDir() {
 SyncPath CommonUtility::getAppWorkingDir() {
     return _workingDirPath;
 }
-
-#ifdef __APPLE__
-SyncPath CommonUtility::getExtensionPath() {
-    return getExtensionPath_private();
-}
-#endif
 
 QString CommonUtility::getFileIconPathFromFileName(const QString &fileName, const NodeType type) {
     if (type == NodeType::Directory) {
@@ -630,7 +825,7 @@ bool CommonUtility::isFileSizeMismatchDetectionEnabled() {
 }
 
 size_t CommonUtility::maxPathLength() {
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
     static size_t _maxPathWin = 0;
     if (_maxPathWin == 0) {
         Poco::Util::WinRegistryKey key(R"(HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem)", true);
@@ -647,7 +842,7 @@ size_t CommonUtility::maxPathLength() {
     // If the path length of a folder is > MAX_PATH - 12 and the path length of a file in this folder is between MAX_PATH - 12 and
     // MAX_PATH. It would lead to a synced file in a folder that is not synced (hence excluded because of its path length).
     return (_maxPathWin == MAX_PATH_LENGTH_WIN_LONG) ? MAX_PATH_LENGTH_WIN_LONG : MAX_PATH_LENGTH_WIN_SHORT - 12;
-#elif defined(__APPLE__)
+#elif defined(KD_MACOS)
     return MAX_PATH_LENGTH_MAC;
 #else
     return MAX_PATH_LENGTH_LINUX;
@@ -676,15 +871,15 @@ bool CommonUtility::isDiskRootFolder(const SyncPath &absolutePath, SyncPath &sug
         // We cannot suggest a path if the absolutePath is "/" or "C:/", etc.
         return true;
     }
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     // On macOS, external drives appears under "/Volumes/<drivename>"
     if (absolutePath.parent_path() == "/Volumes") {
         suggestedPath = absolutePath / "kDrive"; // i.e., /Volumes/<drivename>/kDrive
         return true;
     }
-#elif defined(__unix__)
+#elif defined(KD_LINUX)
     // On Linux, external drives usually appears under  "/media/<username>/<drivename>" or "/media/<drivename>"
-    if(absolutePath == "/media") {
+    if (absolutePath == "/media") {
         // If the absolutePath is "/media", we cannot suggest a path
         return true;
     }
@@ -704,7 +899,7 @@ bool CommonUtility::isDiskRootFolder(const SyncPath &absolutePath, SyncPath &sug
 const std::string CommonUtility::dbVersionNumber(const std::string &dbVersion) {
 #if defined(NDEBUG)
     // Release mode
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
     // Version format = "X.Y.Z (build yyyymmdd)"
     size_t sepPosition = dbVersion.find(" ");
     return dbVersion.substr(0, sepPosition);
@@ -778,7 +973,7 @@ static std::string tmpDirName = "kdrive_" + CommonUtility::generateRandomStringA
 
 // Check if dir name is valid by trying to create a tmp dir
 bool CommonUtility::dirNameIsValid(const SyncName &name) {
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     std::error_code ec;
 
     SyncPath tmpDirPath = std::filesystem::temp_directory_path() / tmpDirName;
@@ -826,7 +1021,7 @@ bool CommonUtility::fileNameIsValid(const SyncName &name) {
     return true;
 }
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 const std::string CommonUtility::loginItemAgentId() {
     return TEAM_IDENTIFIER_PREFIX + std::string(loginItemAgentIdStr);
 }
@@ -842,7 +1037,7 @@ std::string CommonUtility::envVarValue(const std::string &name) {
 }
 
 std::string CommonUtility::envVarValue(const std::string &name, bool &isSet) {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     char *value = nullptr;
     isSet = false;
     if (size_t sz = 0; _dupenv_s(&value, &sz, name.c_str()) == 0 && value != nullptr) {
@@ -921,14 +1116,7 @@ void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory 
     }
 }
 
-#ifdef _WIN32
-std::string CommonUtility::toUnsafeStr(const SyncName &name) {
-    std::string unsafeName(name.begin(), name.end());
-    return unsafeName;
-}
-#endif
-
-#ifdef __APPLE__
+#ifdef KD_MACOS
 bool CommonUtility::isLiteSyncExtEnabled() {
     QProcess *process = new QProcess();
     process->start("bash", QStringList() << "-c"
@@ -993,27 +1181,44 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
 
 #endif
 
+QString CommonUtility::truncateLongLogMessage(const QString &message) {
+    if (static const qsizetype maxLogMessageSize = 2048; message.size() > maxLogMessageSize) {
+        return message.left(maxLogMessageSize) + " (truncated)";
+    }
+
+    return message;
+}
+
+namespace {
+void getApplicationPath(std::vector<SyncChar> &pathStr, const size_t maxPathLength, bool &isValid) {
+    isValid = false;
+#if defined(KD_WINDOWS)
+    const auto pathLength = static_cast<DWORD>(maxPathLength);
+    const auto count = GetModuleFileNameW(nullptr, pathStr.data(), pathLength);
+    isValid = static_cast<bool>(count);
+#elif defined(KD_MACOS)
+    auto pathLength = static_cast<uint32_t>(maxPathLength);
+    const auto ret = _NSGetExecutablePath(pathStr.data(), &pathLength);
+    isValid = !ret;
+#else
+    const auto count = readlink("/proc/self/exe", pathStr.data(), maxPathLength);
+    isValid = count != -1;
+#endif
+}
+} // namespace
+
 SyncPath CommonUtility::applicationFilePath() {
     const auto maxPathLength = CommonUtility::maxPathLength();
     std::vector<SyncChar> pathStr(maxPathLength + 1, '\0');
 
-#if defined(_WIN32)
-    const auto pathLength = static_cast<DWORD>(maxPathLength);
-    const auto count = GetModuleFileNameW(nullptr, pathStr.data(), pathLength);
-    assert(count);
-#elif defined(__APPLE__)
-    auto pathLength = static_cast<uint32_t>(maxPathLength);
-    const auto ret = _NSGetExecutablePath(pathStr.data(), &pathLength);
-    assert(!ret);
-#else
-    const auto count = readlink("/proc/self/exe", pathStr.data(), maxPathLength);
-    assert(count != -1);
-#endif
+    bool isValid = false;
+    getApplicationPath(pathStr, maxPathLength, isValid);
+    assert(isValid);
 
     return SyncPath(pathStr.data());
 }
 
-#if defined(__APPLE__) || defined(__unix__)
+#if defined(KD_MACOS) || defined(KD_LINUX)
 // Be careful, some characters have 2 different encodings in Unicode
 // For example 'é' can be coded as 0x65 + 0xcc + 0x81  or 0xc3 + 0xa9
 bool CommonUtility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
@@ -1156,4 +1361,29 @@ ReplicaSide CommonUtility::syncNodeTypeSide(SyncNodeType type) {
             return ReplicaSide::Unknown;
     }
 }
+
+bool CommonUtility::isWindows() {
+#ifdef _WIN32
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool CommonUtility::isMac() {
+#ifdef __APPLE__
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool CommonUtility::isLinux() {
+#if defined(__unix__)
+    return true;
+#else
+    return false;
+#endif
+}
+
 } // namespace KDC

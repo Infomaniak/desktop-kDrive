@@ -59,6 +59,8 @@ enum class RequestNum {
     DRIVE_DEFAULTCOLOR,
     DRIVE_UPDATE,
     DRIVE_DELETE,
+    DRIVE_GET_OFFLINE_FILES_TOTAL_SIZE,
+    DRIVE_SEARCH,
     SYNC_INFOLIST,
     SYNC_START,
     SYNC_STOP,
@@ -93,7 +95,7 @@ enum class RequestNum {
     EXCLTEMPL_GETLIST,
     EXCLTEMPL_SETLIST,
     EXCLTEMPL_PROPAGATE_CHANGE,
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     EXCLAPP_GETLIST,
     EXCLAPP_SETLIST,
     EXCLAPP_GET_FETCHING_APP_LIST,
@@ -102,7 +104,7 @@ enum class RequestNum {
     PARAMETERS_UPDATE,
     UTILITY_FINDGOODPATHFORNEWSYNC,
     UTILITY_BESTVFSAVAILABLEMODE,
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     UTILITY_SHOWSHORTCUT,
     UTILITY_SETSHOWSHORTCUT,
 #endif
@@ -224,7 +226,7 @@ inline std::string toString(RequestNum e) {
             return "EXCLTEMPL_SETLIST";
         case RequestNum::EXCLTEMPL_PROPAGATE_CHANGE:
             return "EXCLTEMPL_PROPAGATE_CHANGE";
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         case RequestNum::EXCLAPP_GETLIST:
             return "EXCLAPP_GETLIST";
         case RequestNum::EXCLAPP_SETLIST:
@@ -240,7 +242,7 @@ inline std::string toString(RequestNum e) {
             return "UTILITY_FINDGOODPATHFORNEWSYNC";
         case RequestNum::UTILITY_BESTVFSAVAILABLEMODE:
             return "UTILITY_BESTVFSAVAILABLEMODE";
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         case RequestNum::UTILITY_SHOWSHORTCUT:
             return "UTILITY_SHOWSHORTCUT";
         case RequestNum::UTILITY_SETSHOWSHORTCUT:

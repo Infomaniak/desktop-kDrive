@@ -18,7 +18,6 @@
 
 #include "navigationpanehelper.h"
 #include "config.h"
-#include "common/utility.h"
 #include "libparms/db/parmsdb.h"
 #include "libparms/db/parameters.h"
 #include "libcommonserver/log/log.h"
@@ -56,8 +55,8 @@ void NavigationPaneHelper::setShowInExplorerNavigationPane(bool show) {
     scheduleUpdateCloudStorageRegistry();
 
     // Set pin state
-    for (KDC::Sync &sync: syncList) {
-        OldUtility::setFolderPinState(QUuid(QString::fromStdString(sync.navigationPaneClsid())), show);
+    for (const Sync &sync: syncList) {
+        Utility::setFolderPinState(CommonUtility::s2ws(sync.navigationPaneClsid()), show);
     }
 }
 
@@ -69,21 +68,23 @@ void NavigationPaneHelper::scheduleUpdateCloudStorageRegistry() {
 void NavigationPaneHelper::updateCloudStorageRegistry() {
     // Start by looking at every registered namespace extension for the sidebar, and look for an "ApplicationName" value
     // that matches ours when we saved.
-    QVector<QUuid> entriesToRemove;
-    OldUtility::registryWalkSubKeys(
-            HKEY_CURRENT_USER, QStringLiteral("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Desktop\\NameSpace"),
-            [&entriesToRemove](HKEY key, const QString &subKey) {
-                QVariant appName = OldUtility::registryGetKeyValue(key, subKey, QStringLiteral("ApplicationName"));
-                if (appName.toString() == QLatin1String(APPLICATION_NAME)) {
-                    QUuid clsid{subKey};
-                    Q_ASSERT(!clsid.isNull());
-                    entriesToRemove.append(clsid);
-                }
-            });
+    std::vector<std::wstring> entriesToRemove;
+    (void) Utility::registryWalkSubKeys(HKEY_CURRENT_USER,
+                                        L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Desktop\\NameSpace",
+                                        [&entriesToRemove](const HKEY key, const std::wstring &subKey) {
+                                            auto appName = Utility::registryGetKeyValue(key, subKey, L"ApplicationName");
+                                            try {
+                                                if (std::get<std::wstring>(appName) == CommonUtility::s2ws(APPLICATION_NAME)) {
+                                                    (void) entriesToRemove.emplace_back(subKey);
+                                                }
+                                            } catch (const std::bad_variant_access &) {
+                                                // Nothing to do, the key simply does not exist.
+                                            }
+                                        });
 
     // Then remove anything
     foreach (auto &clsid, entriesToRemove) {
-        OldUtility::removeLegacySyncRootKeys(clsid);
+        Utility::removeLegacySyncRootKeys(clsid);
     }
 
     // Then re-save every folder that has a valid navigationPaneClsid to the registry
@@ -98,8 +99,8 @@ void NavigationPaneHelper::updateCloudStorageRegistry() {
             if (sync.navigationPaneClsid().empty()) {
                 sync.setNavigationPaneClsid(QUuid::createUuid().toString().toStdString());
             }
-            OldUtility::addLegacySyncRootKeys(QUuid(QString::fromStdString(sync.navigationPaneClsid())),
-                                              SyncName2QStr(sync.localPath().native()), _showInExplorerNavigationPane);
+            Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(),
+                                           _showInExplorerNavigationPane);
         }
     }
 }

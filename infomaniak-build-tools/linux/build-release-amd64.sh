@@ -33,15 +33,17 @@ function get_default_src_dir() {
      echo "$PWD"
     fi
 }
+build_unit_tests=0
 
 src_dir="$(get_default_src_dir)"
 
 function display_help {
-  echo "$program_name [-h] [-d git-directory]"
-  echo "  Build the Linux Amd64 release executables built inside <git-directory>/build-linux-amd64."
+  echo "$program_name [-h] [-d git-directory] [-u]"
+  echo "  Build the Linux Amd64 release executables built inside <git-directory>/build-linux."
   echo "where:"
   echo "-h  Show this help text."
   echo "-d <git-directory>" 
+  echo "-u  Activate the build of unit tests. Without this flag, unit tests will not be built."
   echo "  Set the path to the desktop-kDrive git directory. Defaults to '$src_dir'."
 }
 
@@ -55,6 +57,10 @@ do
       -h | --help)
           display_help 
           exit 0
+          ;;
+      -u | --unit-tests)
+          build_unit_tests=1
+          shift 1;
           ;;
       --) # End of all options
           shift
@@ -76,11 +82,11 @@ if [ ! -d "$src_dir" ]; then
 fi
 
 
-build_dir="$src_dir/build-linux-amd64"
+build_dir="$src_dir/build-linux"
 app_dir="$build_dir/install"
 build_type="RelWithDebInfo"
 
-conan_dependencies_folder="$build_dir/conan_dependencies"
+conan_dependencies_folder="$build_dir/conan/dependencies"
 
 echo
 echo "Build type: $build_type"
@@ -99,7 +105,7 @@ build_release() {
   export QT_BASE_DIR="$HOME/Qt/6.2.3"
   export QTDIR="$QT_BASE_DIR/gcc_64"
   export QMAKE="$QTDIR/bin/qmake"
-  export PATH="$QTDIR/bin:$QTDIR/libexec:$PATH"
+  export PATH="$QTDIR/bin:$QTDIR/libexec:/home/runner/.local/bin:$PATH"
   export LD_LIBRARY_PATH="$QTDIR/lib:$LD_LIBRARY_PATH"
   export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
@@ -107,7 +113,7 @@ build_release() {
   mkdir -p "$build_dir"
 
   conan_folder="$build_dir/conan"
-  bash "$src_dir/infomaniak-build-tools/conan/build_dependencies.sh" $build_type "--output-dir=$conan_folder"
+  bash "$src_dir/infomaniak-build-tools/conan/build_dependencies.sh" $build_type "--output-dir=$conan_folder" --make-release
 
   conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
   conan_generator_folder="$(dirname "$conan_toolchain_file")"
@@ -125,18 +131,19 @@ build_release() {
   export SUFFIX=""
 
   # Build client
-  mkdir -p "$build_dir/client"
-  cd "$build_dir/client"
+  mkdir -p "$build_dir/build"
+  cd "$build_dir/build"
 
 
   export KDRIVE_DEBUG=0
 
-  cmake -B"$build_dir/client" -H"$src_dir" \
+  cmake -B"$build_dir/build" -H"$src_dir" \
       -DQT_FEATURE_neon=OFF \
       -DCMAKE_BUILD_TYPE=$build_type \
       -DCMAKE_INSTALL_PREFIX=/usr \
-      -DBIN_INSTALL_DIR="$build_dir/client/bin" \
+      -DBIN_INSTALL_DIR="$build_dir/build/bin" \
       -DKDRIVE_VERSION_SUFFIX="$SUFFIX" \
+      -DBUILD_UNIT_TESTS="$build_unit_tests" \
       -DKDRIVE_THEME_DIR="$src_dir/infomaniak" \
       -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
       -DCONAN_DEP_DIR="$conan_dependencies_folder" \
@@ -149,7 +156,7 @@ build_release() {
 
   make DESTDIR="$app_dir" install
 
-  cp "$src_dir/sync-exclude-linux.lst" "$build_dir/client/bin/sync-exclude.lst"
+  cp "$src_dir/sync-exclude-linux.lst" "$build_dir/build/bin/sync-exclude.lst"
 } 
 
 package_release() {
@@ -168,7 +175,6 @@ package_release() {
   cp -P -r "$QTDIR/resources" "$app_dir/usr"
   cp -P -r "$QTDIR/translations" "$app_dir/usr"
 
-  mv "$app_dir/usr/lib/x86_64-linux-gnu/"* "$app_dir/usr/lib/" || echo "The folder $app_dir/usr/lib/x86_64-linux-gnu/ might not exist." >&2
   cp -P "$conan_dependencies_folder/"* "$app_dir/usr/lib"
 
   cp -P -r /usr/lib/x86_64-linux-gnu/nss/ "$app_dir/usr/lib/"
@@ -188,7 +194,7 @@ package_release() {
 
   "$HOME/desktop-setup/linuxdeploy-x86_64.AppImage" --appdir "$app_dir" -e "$app_dir/usr/bin/kDrive" -i "$app_dir/kdrive-win.png" -d "$app_dir/usr/share/applications/kDrive_client.desktop" --plugin qt --output appimage -v0
 
-  full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/client/version.h" | awk '{print $3}')"
+  full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
   app_name="kDrive-${full_version}-amd64.AppImage"
   mv kDrive*.AppImage "$app_dir/$app_name"
 }

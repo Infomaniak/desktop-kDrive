@@ -56,9 +56,9 @@ class TestWorkers : public CppUnit::TestFixture, public TestBase {
 
         std::unique_ptr<CommManager> _commManager;
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
         static std::shared_ptr<VfsMac> _vfsPtr;
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
         static std::shared_ptr<VfsWin> _vfsPtr;
 #else
         static std::shared_ptr<VfsOff> _vfsPtr;

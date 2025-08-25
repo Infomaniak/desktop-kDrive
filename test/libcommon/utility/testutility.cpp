@@ -24,6 +24,10 @@
 #include "libcommon/utility/sourcelocation.h"
 #include "libcommonserver/io/iohelper.h"
 #include "test_utility/localtemporarydirectory.h"
+#include "utility/utility_base.h"
+
+
+#include <QLocale>
 #include <iostream>
 #include <regex>
 
@@ -33,10 +37,10 @@ void TestUtility::testGetAppSupportDir() {
     SyncPath appSupportDir = CommonUtility::getAppSupportDir();
     std::string faillureMessage = "Path: " + appSupportDir.string();
     CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), !appSupportDir.empty());
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), appSupportDir.string().find("AppData") != std::string::npos);
     CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), appSupportDir.string().find("Local") != std::string::npos);
-#elif defined(__APPLE__)
+#elif defined(KD_MACOS)
     CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), appSupportDir.string().find("Library") != std::string::npos);
     CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), appSupportDir.string().find("Application") != std::string::npos);
 #else
@@ -406,20 +410,20 @@ void TestUtility::testIsSupportedLanguage() {
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isSupportedLanguage(""));
 }
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 void TestUtility::testGetLastErrorMessage() {
     // Ensure that the error message is reset.
     SetLastError(0);
 
     // No actual error. Display the expected success message.
     {
-        const std::wstring msg = CommonUtility::getLastErrorMessage();
+        const std::wstring msg = utility_base::getLastErrorMessage();
         CPPUNIT_ASSERT_MESSAGE(SyncName2Str(msg.c_str()), msg.starts_with(L"(0) - "));
     }
     // Display the file-not-found error message.
     {
         GetFileAttributesW(L"this_file_does_not_exist.txt");
-        const std::wstring msg = CommonUtility::getLastErrorMessage();
+        const std::wstring msg = utility_base::getLastErrorMessage();
         CPPUNIT_ASSERT(msg.starts_with(L"(2) - "));
     }
 }
@@ -568,7 +572,7 @@ void TestUtility::testSplitSyncPath() {
     splitting.pop_front();
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("C")}), SyncName2Str(splitting.front()));
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     twoSeparators = Str("A\\B\\C");
     splitting = CommonUtility::splitSyncPath(SyncPath{twoSeparators});
     CPPUNIT_ASSERT_EQUAL(size_t{3}, splitting.size());
@@ -664,7 +668,7 @@ void TestUtility::testSplitPathFromSyncName() {
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("B")}), SyncName2Str(splitting.at(1)));
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("C")}), SyncName2Str(splitting.at(2)));
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     twoSeparators = Str("A/B\\C");
     splitting = CommonUtility::splitPath(twoSeparators);
     CPPUNIT_ASSERT_EQUAL(size_t{3}, splitting.size());
@@ -725,12 +729,105 @@ void TestUtility::testComputePathNormalizations() {
     CPPUNIT_ASSERT_EQUAL(size_t{8}, normalizations.size());
     CPPUNIT_ASSERT(computeExpectedPathNormalizations() == normalizations);
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     const SyncName path4 = Str("é/é\\é");
     normalizations = CommonUtility::computePathNormalizations(path4);
     CPPUNIT_ASSERT_EQUAL(size_t{8}, normalizations.size());
     CPPUNIT_ASSERT(computeExpectedPathNormalizations() == normalizations);
 #endif
+}
+
+void TestUtility::testStartsWith() {
+    CPPUNIT_ASSERT(CommonUtility::startsWith(SyncName(Str("abcdefg")), SyncName(Str("abcd"))));
+    CPPUNIT_ASSERT(!CommonUtility::startsWith(SyncName(Str("abcdefg")), SyncName(Str("ABCD"))));
+}
+
+void TestUtility::testStartsWithInsensitive() {
+    CPPUNIT_ASSERT(CommonUtility::startsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("aBcD"))));
+    CPPUNIT_ASSERT(CommonUtility::startsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("ABCD"))));
+}
+
+void TestUtility::testEndsWith() {
+    CPPUNIT_ASSERT(CommonUtility::endsWith(SyncName(Str("abcdefg")), SyncName(Str("defg"))));
+    CPPUNIT_ASSERT(!CommonUtility::endsWith(SyncName(Str("abcdefg")), SyncName(Str("abc"))));
+    CPPUNIT_ASSERT(!CommonUtility::endsWith(SyncName(Str("abcdefg")), SyncName(Str("dEfG"))));
+}
+
+void TestUtility::testEndsWithInsensitive() {
+    CPPUNIT_ASSERT(CommonUtility::endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("defg"))));
+    CPPUNIT_ASSERT(!CommonUtility::endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("abc"))));
+    CPPUNIT_ASSERT(CommonUtility::endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("dEfG"))));
+}
+
+void TestUtility::testToUpper() {
+    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), CommonUtility::toUpper("abc"));
+    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), CommonUtility::toUpper("ABC"));
+    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), CommonUtility::toUpper("AbC"));
+    CPPUNIT_ASSERT_EQUAL(std::string(""), CommonUtility::toUpper(""));
+    CPPUNIT_ASSERT_EQUAL(std::string("123"), CommonUtility::toUpper("123"));
+
+    CPPUNIT_ASSERT_EQUAL(std::string("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"),
+                         CommonUtility::toUpper("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"));
+}
+
+void TestUtility::testToLower() {
+    CPPUNIT_ASSERT_EQUAL(std::string("abc"), CommonUtility::toLower("abc"));
+    CPPUNIT_ASSERT_EQUAL(std::string("abc"), CommonUtility::toLower("ABC"));
+    CPPUNIT_ASSERT_EQUAL(std::string("abc"), CommonUtility::toLower("AbC"));
+    CPPUNIT_ASSERT_EQUAL(std::string(""), CommonUtility::toLower(""));
+    CPPUNIT_ASSERT_EQUAL(std::string("123"), CommonUtility::toLower("123"));
+
+    CPPUNIT_ASSERT_EQUAL(std::string("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"),
+                         CommonUtility::toUpper("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"));
+}
+
+void TestUtility::testIsSameOrParentPath() {
+    CPPUNIT_ASSERT(!CommonUtility::isDescendantOrEqual("", "a"));
+    CPPUNIT_ASSERT(!CommonUtility::isDescendantOrEqual("a", "a/b"));
+    CPPUNIT_ASSERT(!CommonUtility::isDescendantOrEqual("a", "a/b/c"));
+    CPPUNIT_ASSERT(!CommonUtility::isDescendantOrEqual("a/b", "a/b/c"));
+    CPPUNIT_ASSERT(!CommonUtility::isDescendantOrEqual("a/b/c", "a/b/c1"));
+    CPPUNIT_ASSERT(!CommonUtility::isDescendantOrEqual("a/b/c1", "a/b/c"));
+    CPPUNIT_ASSERT(!CommonUtility::isDescendantOrEqual("/a/b/c", "a/b/c"));
+
+    CPPUNIT_ASSERT(CommonUtility::isDescendantOrEqual("", ""));
+    CPPUNIT_ASSERT(CommonUtility::isDescendantOrEqual("a/b/c", "a/b/c"));
+    CPPUNIT_ASSERT(CommonUtility::isDescendantOrEqual("a", ""));
+    CPPUNIT_ASSERT(CommonUtility::isDescendantOrEqual("a/b/c", "a/b"));
+    CPPUNIT_ASSERT(CommonUtility::isDescendantOrEqual("a/b/c", "a"));
+}
+
+void TestUtility::testFileSystemName() {
+#if defined(KD_MACOS)
+    CPPUNIT_ASSERT(CommonUtility::fileSystemName("/") == "apfs");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemName("/bin") == "apfs");
+#elif defined(KD_WINDOWS)
+    CPPUNIT_ASSERT(CommonUtility::fileSystemName(std::filesystem::temp_directory_path()) == "NTFS");
+    // CPPUNIT_ASSERT(CommonUtility::fileSystemName(R"(C:\)") == "NTFS");
+    // CPPUNIT_ASSERT(CommonUtility::fileSystemName(R"(C:\windows)") == "NTFS");
+#endif
+}
+
+void TestUtility::testS2ws() {
+    CPPUNIT_ASSERT(CommonUtility::s2ws("abcd") == L"abcd");
+    CPPUNIT_ASSERT(CommonUtility::s2ws("éèêà") == L"éèêà");
+}
+
+void TestUtility::testWs2s() {
+    CPPUNIT_ASSERT(CommonUtility::ws2s(L"abcd") == "abcd");
+    CPPUNIT_ASSERT(CommonUtility::ws2s(L"éèêà") == "éèêà");
+}
+
+void TestUtility::testLtrim() {
+    CPPUNIT_ASSERT(CommonUtility::ltrim("    ab    cd    ") == "ab    cd    ");
+}
+
+void TestUtility::testRtrim() {
+    CPPUNIT_ASSERT(CommonUtility::rtrim("    ab    cd    ") == "    ab    cd");
+}
+
+void TestUtility::testTrim() {
+    CPPUNIT_ASSERT(CommonUtility::trim("    ab    cd    ") == "ab    cd");
 }
 
 } // namespace KDC

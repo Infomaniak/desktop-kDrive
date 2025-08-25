@@ -41,7 +41,7 @@ SqliteQuery::SqliteQuery(std::shared_ptr<sqlite3> sqlite3Db) :
     _sqlite3Db(sqlite3Db) {}
 
 int SqliteQuery::prepare(const std::string &sql, bool allow_failure) {
-    _sql = Utility::trim(sql);
+    _sql = CommonUtility::trim(sql);
     if (_stmt) {
         sqlite3_finalize(_stmt.get());
     }
@@ -200,7 +200,7 @@ bool SqliteQuery::nullValue(int index) const {
 }
 
 std::string SqliteQuery::stringValue(const int index) const {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     auto value = reinterpret_cast<const char *>(sqlite3_column_text(_stmt.get(), index));
     return value ? value : std::string();
 #else
@@ -210,7 +210,7 @@ std::string SqliteQuery::stringValue(const int index) const {
 }
 
 SyncName SqliteQuery::syncNameValue(int index) const {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     auto value = static_cast<const wchar_t *>(sqlite3_column_text16(_stmt.get(), index));
     return value ? value : SyncName();
 #else
@@ -240,15 +240,15 @@ int SqliteQuery::blobSize(int index) const {
 }
 
 bool SqliteQuery::isSelect() const {
-    return Utility::startsWithInsensitive(_sql, "SELECT");
+    return CommonUtility::startsWithInsensitive(_sql, "SELECT");
 }
 
 bool SqliteQuery::isInsert() const {
-    return Utility::startsWithInsensitive(_sql, "INSERT");
+    return CommonUtility::startsWithInsensitive(_sql, "INSERT");
 }
 
 bool SqliteQuery::isPragma() const {
-    return Utility::startsWithInsensitive(_sql, "PRAGMA");
+    return CommonUtility::startsWithInsensitive(_sql, "PRAGMA");
 }
 
 } // namespace KDC

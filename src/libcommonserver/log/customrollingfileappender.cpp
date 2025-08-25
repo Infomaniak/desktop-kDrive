@@ -76,7 +76,7 @@ namespace {
 long const LOG4CPLUS_FILE_NOT_FOUND = ENOENT;
 
 static long file_rename(tstring const &src, tstring const &target) {
-#if defined(UNICODE) && defined(_WIN32)
+#if defined(UNICODE) && defined(KD_WINDOWS)
     if (_wrename(src.c_str(), target.c_str()) == 0)
         return 0;
     else
@@ -90,7 +90,7 @@ static long file_rename(tstring const &src, tstring const &target) {
 }
 
 static long file_remove(tstring const &src) {
-#if defined(UNICODE) && defined(_WIN32)
+#if defined(UNICODE) && defined(KD_WINDOWS)
     if (_wremove(src.c_str()) == 0)
         return 0;
     else
@@ -154,7 +154,7 @@ static void rolloverFiles(const log4cplus::tstring &filename, int maxBackupIndex
         log4cplus::tstring const source(source_oss.str());
         log4cplus::tstring const target(target_oss.str());
 
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
         // Try to remove the target first. It seems it is not
         // possible to rename over existing file.
         ret = log4cplus::file_remove(target);
@@ -240,7 +240,7 @@ void CustomRollingFileAppender::customRollover(bool alreadyLocked) {
 
         long ret = 0;
 
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
         // Try to remove the target first. It seems it is not
         // possible to rename over existing file.
         ret = log4cplus::file_remove(target);
@@ -302,7 +302,7 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
             const auto lastModified = std::chrono::system_clock::from_time_t(fileStat.modificationTime); // Only 1s precision.
             const auto expireDateTime = lastModified + std::chrono::seconds(_expire);
             if (expireDateTime < now) {
-                log4cplus::file_remove(Utility::s2ws(entry.path().string()));
+                log4cplus::file_remove(CommonUtility::s2ws(entry.path().string()));
                 continue;
             }
         }
@@ -312,9 +312,9 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
             entry.path().filename().string().find(".gz") == std::string::npos &&
             entry.path().string().find(currentLogName.string()) == std::string::npos) {
             if (CommonUtility::compressFile(entry.path().string(), entry.path().string() + ".gz")) {
-                log4cplus::file_remove(Utility::s2ws(entry.path().string()));
+                log4cplus::file_remove(CommonUtility::s2ws(entry.path().string()));
             } else {
-                log4cplus::file_remove(Utility::s2ws(entry.path().string()) + LOG4CPLUS_TEXT(".gz"));
+                log4cplus::file_remove(CommonUtility::s2ws(entry.path().string()) + LOG4CPLUS_TEXT(".gz"));
             }
         }
     }

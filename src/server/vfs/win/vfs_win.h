@@ -43,7 +43,7 @@ class VFS_EXPORT VfsWin : public Vfs {
 
         bool showPinStateActions() const override { return false; }
 
-        ExitInfo updateMetadata(const SyncPath &filePath, time_t creationTime, time_t modtime, int64_t size,
+        ExitInfo updateMetadata(const SyncPath &filePath, time_t creationTime, time_t modificationTime, int64_t size,
                                 const NodeId &fileId) override;
 
         ExitInfo createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) override;
@@ -54,6 +54,7 @@ class VFS_EXPORT VfsWin : public Vfs {
 
         ExitInfo updateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
                                    bool &finished) final;
+        ExitInfo updateFetchStatus(const SyncPath &, const std::string &) final { return ExitCode::Ok; }
         ExitInfo forceStatus(const SyncPath &absolutePath, const VfsStatus &vfsStatus) final;
 
         ExitInfo isDehydratedPlaceholder(const SyncPath &filePath, bool &isDehydrated) override;

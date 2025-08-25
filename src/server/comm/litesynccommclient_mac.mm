@@ -536,10 +536,10 @@ bool checkIoErrorAndLogIfNeeded(IoError ioError, const std::string &itemType, co
 
     std::wstring message;
     if (ioError == IoError::NoSuchFileOrDirectory) {
-        message = Utility::s2ws(itemType + " doesn't exist: ");
+        message = CommonUtility::s2ws(itemType + " doesn't exist: ");
     }
     if (ioError == IoError::AccessDenied) {
-        message = Utility::s2ws(itemType + " or some containing directory, misses a permission: ");
+        message = CommonUtility::s2ws(itemType + " or some containing directory, misses a permission: ");
     }
 
     switch (mode) {
@@ -842,9 +842,6 @@ bool LiteSyncCommClient::vfsHydratePlaceHolder(const QString &filePath) {
     }
 
     if (value == litesync_attrs::statusOffline) {
-        // Try to temporarily change the write access right of the file
-        FileSystem::setUserWritePermission(filePath);
-
         // Get file
         LOGW_DEBUG(_logger, L"Get file with " << Utility::formatPath(filePath));
         CommString command(Str("MAKE_AVAILABLE_LOCALLY_DIRECT"));
@@ -875,8 +872,6 @@ bool LiteSyncCommClient::vfsDehydratePlaceHolder(const QString &absoluteFilepath
         return false;
     }
 
-    FilePermissionHolder permHolder(absoluteFilepath);
-
     const SyncPath stdPath = QStr2Path(absoluteFilepath);
 
     struct stat fileStat;
@@ -888,9 +883,6 @@ bool LiteSyncCommClient::vfsDehydratePlaceHolder(const QString &absoluteFilepath
     // Empty file
     int fd = open(stdPath.c_str(), O_WRONLY);
     if (fd == -1) {
-        // Try to temporarily change the write access right of the file
-        FileSystem::setUserWritePermission(absoluteFilepath);
-
         fd = open(stdPath.c_str(), O_WRONLY);
         if (fd == -1) {
             LOGW_WARN(_logger, L"Call to open failed: " << Utility::formatErrno(absoluteFilepath, errno));
@@ -950,10 +942,13 @@ bool LiteSyncCommClient::vfsSetPinState(const QString &path, const QString &loca
     // Set status if empty directory
     QFileInfo info(path);
     if (info.isDir()) {
-        const QFileInfoList infoList = QDir(path).entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
+        IoHelper::DirectoryIterator dirIt(QStr2Path(path), false, ioError);
+        bool endOfDir = false;
+        DirectoryEntry entry;
         bool foundChild = false;
-        for (const auto &tmpInfo: qAsConst(infoList)) {
-            QString tmpPath(tmpInfo.filePath());
+        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+            QFileInfo fileinfo(Path2QStr(entry.path()));
+            QString tmpPath(fileinfo.filePath());
 
             std::string tmpPinState;
             if (!vfsGetPinState(tmpPath, tmpPinState)) {
@@ -1205,7 +1200,7 @@ bool LiteSyncCommClient::vfsUpdateFetchStatus(const QString &tmpFilePath, const 
             } @catch (NSException *e) {
                 LOGW_WARN(_logger, L"Could not copy tmp file from " << Utility::formatPath(tmpFilePath) << L" to "
                                                                     << Utility::formatPath(filePath) << L" err="
-                                                                    << Utility::s2ws(std::string([e.name UTF8String])));
+                                                                    << CommonUtility::s2ws(std::string([e.name UTF8String])));
                 return false;
             }
 
@@ -1332,9 +1327,6 @@ bool LiteSyncCommClient::vfsUpdateMetadata(const QString &absoluteFilePath, cons
     // Create sparse file with rights rw-r--r--
     int fd = open(stdPath.c_str(), FWRITE);
     if (fd == -1) {
-        // Try to temporarily change the write access right of the file
-        FileSystem::setUserWritePermission(absoluteFilePath);
-
         fd = open(stdPath.c_str(), FWRITE);
         if (fd == -1) {
             LOGW_WARN(_logger, L"Call to open failed - " << Utility::formatErrno(absoluteFilePath, errno));
@@ -1476,37 +1468,36 @@ bool LiteSyncCommClient::vfsProcessDirStatus(const QString &path, const QString 
         return true;
     }
 
-    QDir dir(path);
-    const QFileInfoList infoList = dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
+    IoError ioError(IoError::Unknown);
+    IoHelper::DirectoryIterator dirIt(QStr2Path(path), false, ioError);
+    bool endOfDir = false;
+    DirectoryEntry entry;
     bool hasASyncingChild = false;
     bool hasADehydratedChild = false;
-    for (const auto &tmpInfo: qAsConst(infoList)) {
-        QString tmpPath(tmpInfo.filePath());
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+        QFileInfo fileinfo(Path2QStr(entry.path()));
+        QString tmpPath(fileinfo.filePath());
         if (!vfsGetPinState(tmpPath, pinState)) {
             continue;
         }
-
         if (pinState == litesync_attrs::pinStateExcluded) {
             continue;
         }
-
         VfsStatus childVfsStatus;
         if (!vfsGetStatus(tmpPath, childVfsStatus)) {
             continue;
         }
-
         if (childVfsStatus.isSyncing) {
             hasASyncingChild = true;
             break;
         }
-
         if (!childVfsStatus.isHydrated) {
             hasADehydratedChild = true;
             break;
         }
     }
 
-    VfsStatus tmpVfsStatus = {.isSyncing = hasASyncingChild, .isHydrated = !hasADehydratedChild, .progress = 100};
+    VfsStatus tmpVfsStatus = {.isHydrated = !hasADehydratedChild, .isSyncing = hasASyncingChild, .progress = 100};
     if (!vfsSetStatus(path, localSyncPath, tmpVfsStatus)) {
         return false;
     }
@@ -1543,8 +1534,9 @@ bool LiteSyncCommClient::checkFilesAttributes(const QString &path, const QString
     const QFileInfoList infoList = dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
 
     bool atLeastOneChanged = false;
-    for (const auto &tmpInfo: qAsConst(infoList)) {
-        QString tmpPath(tmpInfo.filePath());
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+        QFileInfo fileinfo(Path2QStr(entry.path()));
+        QString tmpPath(fileinfo.filePath());
         std::string pinState;
         if (!vfsGetPinState(tmpPath, pinState)) {
             continue;
@@ -1560,7 +1552,7 @@ bool LiteSyncCommClient::checkFilesAttributes(const QString &path, const QString
         }
 
         if (vfsStatus.isSyncing) {
-            if (tmpInfo.isDir()) {
+            if (fileinfo.isDir()) {
                 if (!checkFilesAttributes(tmpPath, localSyncPath, filesToFix)) {
                     // No file has to be changed, but we still need to refresh this directory
                     filesToFix.append(tmpPath);

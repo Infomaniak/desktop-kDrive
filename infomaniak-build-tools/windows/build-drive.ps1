@@ -40,6 +40,9 @@ Param(
     # Upload: Flag to trigger the use of the USB-key signing certificate
     [switch] $upload,
 
+    # tokenPass: The password to use for unlocking the USB-key signing certificate (only used if upload is set)
+    [String] $tokenPass,
+
     # Coverage: Flag to enable or disable the code coverage computation
     [switch] $coverage,
 
@@ -59,8 +62,8 @@ $contentPath = "$path/build-windows"
 $buildPath = "$contentPath/build"
 $installPath = "$contentPath/install"
 
-$extPath = "$path/extensions/windows/cfapi/"
-$vfsDir = $extPath + "x64/Release"
+$extPath = "$path/extensions/windows/cfapi"
+$vfsDir = "$extPath/x64/Release"
 
 # Files to be added to the archive and then packaged
 $archivePath = "$installPath/bin"
@@ -116,16 +119,22 @@ function Clean {
 
 function Get-Thumbprint {
     param (
-        [bool] $upload
+        [bool] $upload,
+        [bool] $ci # On CI build, the certificate are located in local computer store
     )
-
+    if ($ci) {
+        $certStore = "Cert:\LocalMachine\My"
+    } else {
+        $certStore = "Cert:\CurrentUser\My"
+    }
     $thumbprint = 
     If ($upload) {
-        Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -match "EV" } | Select -ExpandProperty Thumbprint
+         Get-ChildItem $certStore | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -match "EV" } | Select -ExpandProperty Thumbprint
     } 
     Else {
-        Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -notmatch "EV" } | Select -ExpandProperty Thumbprint
+        Get-ChildItem $certStore | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -notmatch "EV" } | Select -ExpandProperty Thumbprint
     }
+    Write-Host "Using thumbprint: $thumbprint"
     return $thumbprint
 }
 
@@ -133,8 +142,7 @@ function Get-Aumid {
     param (
         [bool] $upload
     )
-
-    $aumid = if ($upload) { $env:KDC_PHYSICAL_AUMID } else { $env:KDC_VIRTUAL_AUMID }
+   $aumid = if ($upload) { $env:KDC_PHYSICAL_AUMID } else { $env:KDC_VIRTUAL_AUMID }
 
     if (!$aumid) {
         Write-Host "The AUMID value could not be read from env.
@@ -174,21 +182,52 @@ function Build-Extension {
     param (
         [string] $path,
         [string] $extPath,
-        [string] $buildType 
+        [string] $buildType,
+        [string] $thumbprint = ""
     )
 
     Write-Host "Building extension ($buildType) ..."
 
     $configuration = $buildType
     if ($buildType -eq "RelWithDebInfo") { $configuration = "Release" }
+    if($upload) {
+        $publisher = "CN=Infomaniak Network SA, O=Infomaniak Network SA, S=Genève, C=CH, OID.2.5.4.15=Private Organization, OID.1.3.6.1.4.1.311.60.2.1.3=CH, SERIALNUMBER=CHE-103.167.648"
+    }else{
+        $publisher = "CN=INFOMANIAK NETWORK SA, O=INFOMANIAK NETWORK SA, S=Genève, C=CH"
+    }
 
-    msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true
+    $appxManifestPath = "$extPath\FileExplorerExtensionPackage\Package.appxmanifest"
+    if (Test-Path $appxManifestPath) {
+        (Get-Content $appxManifestPath -Raw) -replace 'Publisher="[^"]*"', "Publisher=`"$publisher`"" |
+        Set-Content -Encoding UTF8 -Force $appxManifestPath
+    } else {
+        Write-Host "Package.appxmanifest not found at $appxManifestPath" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "Publisher set to: $publisher" -ForegroundColor Yellow
 
+        
+    $map = @{}
+    Select-String -Path ".\VERSION.cmake" -Pattern 'set\( *KDRIVE_VERSION_(MAJOR|MINOR|PATCH) *(\d+)' | ForEach-Object {
+        if ($_ -match 'KDRIVE_VERSION_(MAJOR|MINOR|PATCH)\s+(\d+)') {
+            $map[$matches[1]] = [int]$matches[2]
+        }
+    }
+
+    $version = "$($map['MAJOR']).$($map['MINOR']).$($map['PATCH'])"
+    (Get-Content $appxManifestPath -Raw) -replace ' Version="[^"]*" />', " Version=`"$version.0`" />" |
+        Set-Content -Encoding UTF8 -Force $appxManifestPath
+    Write-Host "Extension version: $version"
+
+    msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    $srcVfsPath = "$path\src\libcommonserver\vfs\win\."
-    Copy-Item -Path "$extPath\Vfs\..\Common\debug.h" -Destination $srcVfsPath
-    Copy-Item -Path "$extPath\Vfs\Vfs.h" -Destination $srcVfsPath
+    $bundlePath = "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$version.0_Test/FileExplorerExtensionPackage_$version.0_x64_arm64.msixbundle"
+    Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass
+
+    $srcVfsPath = "$path/src/libcommonserver/vfs/win/."
+    Copy-Item -Path "$extPath/Vfs/../Common/debug.h" -Destination $srcVfsPath
+    Copy-Item -Path "$extPath/Vfs/Vfs.h" -Destination $srcVfsPath
 
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
@@ -211,7 +250,7 @@ function CMake-Build-And-Install {
     if ($ci) {
         & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder -Ci
     } else {
-        & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder
+        & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder -MakeRelease
     }
 
     $conanToolchainFile = Get-ChildItem -Path $conanFolder -Filter "conan_toolchain.cmake" -Recurse -File |
@@ -342,6 +381,26 @@ function Set-Up-NSIS {
     Write-Host "NSIS is set up."
 }
 
+function Sign-File{
+    param (
+        [string] $filePath,
+        [bool] $upload = $false,
+        [string] $thumbprint,
+        [String] $tokenPass = ""
+    )
+    Write-Host "Signing the file $filePath with thumbprint $thumbprint" -f Yellow
+    & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm $filePath /password:$tokenPass
+    $res = $LASTEXITCODE
+    Write-Host "Signing exit code: $res" -ForegroundColor Yellow
+    if ($res -ne 0) {
+        Write-Host "Signing failed with exit code $res" -ForegroundColor Red
+        exit $res
+    }
+    else {
+        Write-Host "Signing successful." -ForegroundColor Green
+    }
+}
+
 function Prepare-Archive {
     param (
         [string] $buildType,
@@ -371,45 +430,35 @@ function Prepare-Archive {
     Write-Host "Copying dependencies to the folder $archivePath"
     foreach ($file in $dependencies) {
         if (($buildType -eq "Debug") -and (Test-Path -Path $file"d.dll")) {
-            Copy-Item -Path $file"d.dll" -Destination "$archivePath"
-        }
-        else {
-            Copy-Item -Path $file".dll" -Destination "$archivePath"
+            Copy-Item -Path "${file}d.dll" -Destination "$archivePath"
+        } else {
+            Copy-Item -Path "$file.dll" -Destination "$archivePath"
         }
     }
     $find_dep_script = "$path/infomaniak-build-tools/conan/find_conan_dep.ps1"
+    $packages = @(
+        @{ Name = "xxhash";    Dlls = @("xxhash") },
+        @{ Name = "log4cplus"; Dlls = @("log4cplus") },
+        @{ Name = "openssl";   Dlls = @("libcrypto-3-x64", "libssl-3-x64") }
+    )
 
-    $xxhash_args = @{
-        Package = "xxhash"
-        Version = "0.8.2"
+    foreach ($pkg in $packages) {
+        $args = @{ Package = $pkg.Name; BuildDir = $buildPath }
+        $binFolder = & $find_dep_script @args
+        foreach ($dll in $pkg.Dlls) {
+            if (($buildType -eq "Debug") -and (Test-Path -Path $file"d.dll")) {
+                Copy-Item -Path "$binFolder/${dll}d.dll" -Destination "$archivePath"
+            } else {
+                Copy-Item -Path "$binFolder/$dll.dll" -Destination "$archivePath"
+            }
+        }
     }
-    $log4cplus_args = @{
-        Package = "log4cplus"
-        Version = "2.1.2"
-    }
-    $openssl_args = @{
-        Package = "openssl"
-        Version = "3.2.4"
-    }
-    if ($ci) {
-        $xxhash_args["Ci"]       = $true
-        $log4cplus_args["Ci"]    = $true
-        $openssl_args["Ci"]      = $true
-    }
-    $xxhash_folder = & $find_dep_script @xxhash_args
-    $log4cplus_folder = & $find_dep_script @log4cplus_args
-    $openssl_folder = & $find_dep_script @openssl_args
-    
-    Copy-Item -Path "$xxhash_folder/bin/xxhash.dll" -Destination "$archivePath"
-    Copy-Item -Path "$log4cplus_folder/bin/log4cplus.dll" -Destination "$archivePath"
-    Copy-Item -Path "$openssl_folder/bin/libcrypto-3-x64.dll" -Destination "$archivePath"
-    Copy-Item -Path "$openssl_folder/bin/libssl-3-x64.dll" -Destination "$archivePath"
 
     Copy-Item -Path "$path/sync-exclude-win.lst" -Destination "$archivePath/sync-exclude.lst"
 
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    if ($ci) {
+    if (!$upload) {
         Write-Host "Archive prepared for CI build."
         exit 0
     }
@@ -440,11 +489,7 @@ function Prepare-Archive {
         if (!$thumbprint) {
             $thumbprint = Get-Thumbprint $upload
         }
-
-        & signtool sign /sha1 $thumbprint /fd SHA1 /t http://timestamp.digicert.com /v $archivePath/$filename
-        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-        & signtool sign /sha1 $thumbprint /fd sha256 /tr http://timestamp.digicert.com?td=sha256 /td sha256 /as /v $archivePath/$filename
-        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass
     }
 
     Write-Host "Archive prepared."
@@ -488,8 +533,8 @@ function Create-Archive {
     $installerPath = Get-Installer-Path $buildPath $contentPath
 
     if (Test-Path -Path $installerPath) {
-        & signtool sign /sha1 $thumbprint /fd SHA1 /t http://timestamp.digicert.com /v $installerPath
-        & signtool sign /sha1 $thumbprint /fd sha256 /tr http://timestamp.digicert.com?td=sha256 /td sha256 /as /v $installerPath
+        Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass
+        Write-Host ("$installerPath signed successfully.") -f Green
     }
     else {
         Write-Host ("$installerPath not found. Unable to sign final installer.") -f Red
@@ -610,10 +655,10 @@ Write-Host
 if ($upload) {
     Write-Host "You are about to build kDrive for an upload"
     Write-Host "Once the build is complete, you will need to call the upload script"
-    $confirm = Read-Host "Please make sure you set the correct certificate for the Windows extension. Continue ? (Y/n)"
-    if (!($confirm -match "^y(es)?$")) {
-        exit 1
-    }
+    #$confirm = Read-Host "Please make sure you set the correct certificate for the Windows extension. Continue ? (Y/n)"
+    #if (!($confirm -match "^y(es)?$")) {
+    #    exit 1
+    #}
 
     Write-Host "Preparing for full upload build." -f Green
     Clean $contentPath
@@ -641,7 +686,8 @@ if ($LASTEXITCODE -ne 0) {
 #################################################################################################
 
 if (!(Test-Path "$vfsDir\vfs.dll") -or $ext) {
-    Build-Extension $path $extPath $buildType
+    $thumbprint = Get-Thumbprint $upload -ci $ci
+    Build-Extension $path $extPath $buildType $thumbprint
 
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Failed to build the extension. Aborting." -f Red
@@ -693,10 +739,10 @@ Prepare-Archive $buildType $buildPath $vfsDir $archivePath $upload
 #                                                                                               #
 #################################################################################################
 
-if (!$ci) {
+if ($upload) {
     Create-Archive $path $buildPath $contentPath $installPath $archiveName $archivePath $upload
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "Archive creation failed. Aborting." -f Red
+        Write-Host "Archive creation failed ($LASTEXITCODE) . Aborting." -f Red
         exit $LASTEXITCODE
     }
 }

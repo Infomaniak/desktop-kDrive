@@ -1,18 +1,20 @@
-// Infomaniak kDrive - Desktop
-// Copyright (C) 2023-2025 Infomaniak Network SA
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2025 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "operationsorterfilter.h"
 
@@ -115,7 +117,7 @@ void OperationSorterFilter::filterMoveBeforeDeleteCandidates(const SyncOpPtr &op
             if (op->targetSide() != moveOp->targetSide()) {
                 continue;
             }
-            if (Utility::isDescendantOrEqual(normalizedMovePath, normalizedDeletedPath)) {
+            if (CommonUtility::isDescendantOrEqual(normalizedMovePath, normalizedDeletedPath)) {
                 (void) _fixMoveBeforeDeleteCandidates.emplace_back(op, moveOp);
             }
         }
@@ -130,7 +132,8 @@ void OperationSorterFilter::filterMoveBeforeDeleteCandidates(const SyncOpPtr &op
             if (op->targetSide() != deleteOp->targetSide()) {
                 continue;
             }
-            if (Utility::isDescendantOrEqual(op->affectedNode()->moveOriginInfos().normalizedPath(), normalizedDeletePath)) {
+            if (CommonUtility::isDescendantOrEqual(op->affectedNode()->moveOriginInfos().normalizedPath(),
+                                                   normalizedDeletePath)) {
                 (void) _fixMoveBeforeDeleteCandidates.emplace_back(op, deleteOp);
             }
         }
@@ -157,7 +160,7 @@ void OperationSorterFilter::filterCreateBeforeMoveCandidates(const SyncOpPtr &op
             if (op->targetSide() != moveOp->targetSide()) {
                 continue;
             }
-            if (Utility::isDescendantOrEqual(normalizedMovePath, normalizedCreatedPath)) {
+            if (CommonUtility::isDescendantOrEqual(normalizedMovePath, normalizedCreatedPath)) {
                 (void) _fixCreateBeforeMoveCandidates.emplace_back(op, moveOp);
             }
         }
@@ -178,7 +181,7 @@ void OperationSorterFilter::filterCreateBeforeMoveCandidates(const SyncOpPtr &op
             if (op->targetSide() != createOp->targetSide()) {
                 continue;
             }
-            if (Utility::isDescendantOrEqual(normalizedDestinationPath, normalizedCreatedPath)) {
+            if (CommonUtility::isDescendantOrEqual(normalizedDestinationPath, normalizedCreatedPath)) {
                 (void) _fixCreateBeforeMoveCandidates.emplace_back(op, createOp);
             }
         }
@@ -278,14 +281,14 @@ void OperationSorterFilter::filterMoveBeforeMoveHierarchyFlipCandidates(
 
         const auto &otherOriginPath = otherOp->affectedNode()->moveOriginInfos().normalizedPath();
 
-        if (Utility::isStrictDescendant(normalizedDestinationPath, otherDestinationPath) &&
-            Utility::isStrictDescendant(otherOriginPath, originPath)) {
+        if (CommonUtility::isStrictDescendant(normalizedDestinationPath, otherDestinationPath) &&
+            CommonUtility::isStrictDescendant(otherOriginPath, originPath)) {
             // op must be executed after otherOp
             (void) _fixMoveBeforeMoveHierarchyFlipCandidates.emplace_back(op, otherOp);
             continue;
         }
-        if (Utility::isStrictDescendant(otherDestinationPath, normalizedDestinationPath) &&
-            Utility::isStrictDescendant(originPath, otherOriginPath)) {
+        if (CommonUtility::isStrictDescendant(otherDestinationPath, normalizedDestinationPath) &&
+            CommonUtility::isStrictDescendant(originPath, otherOriginPath)) {
             // otherOp must be executed after op
             (void) _fixMoveBeforeMoveHierarchyFlipCandidates.emplace_back(otherOp, op);
         }

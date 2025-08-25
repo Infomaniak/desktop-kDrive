@@ -372,7 +372,7 @@
 //
 // exclusion_app
 //
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 #define CREATE_EXCLUSION_APP_TABLE_ID "create_exclusion_app"
 #define CREATE_EXCLUSION_APP_TABLE              \
     "CREATE TABLE IF NOT EXISTS exclusion_app(" \
@@ -663,7 +663,7 @@ bool ParmsDb::updateExclusionTemplates() {
     // Load default exclusion templates from the template configuration file
     std::vector<std::string> fileDefaultExclusionTemplates;
     if (const auto &excludeListFileName = Utility::getExcludedTemplateFilePath(_test);
-        !getDefaultExclusionTemplatesFromFile(excludeListFileName, fileDefaultExclusionTemplates)) {
+        !getDefaultExclusionTemplatesFromFile(excludeListFileName.c_str(), fileDefaultExclusionTemplates)) {
         LOGW_WARN(_logger, L"Cannot open exclusion templates file " << Utility::formatSyncName(excludeListFileName));
         return false;
     }
@@ -788,7 +788,7 @@ bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
     return result;
 }
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 bool ParmsDb::updateExclusionApps() {
     // Load exclusion apps in DB
     std::vector<ExclusionApp> exclusionAppDbList;
@@ -799,32 +799,31 @@ bool ParmsDb::updateExclusionApps() {
 
     // Load exclusion app in configuration file
     std::vector<std::pair<std::string, std::string>> exclusionAppFileList;
-    std::ifstream exclusionFile(Utility::getExcludedAppFilePath(_test));
+    std::ifstream exclusionFile(Utility::getExcludedAppFilePath(_test).c_str());
     if (exclusionFile.is_open()) {
         std::string line;
         while (std::getline(exclusionFile, line)) {
             // Remove end of line
-            if (line.size() > 0 && line[line.size() - 1] == '\n') {
+            if (!line.empty() && line.back() == '\n') {
                 line.pop_back();
             }
-            if (line.size() > 0 && line[line.size() - 1] == '\r') {
+            if (!line.empty() && line.back() == '\r') {
                 line.pop_back();
             }
 
             size_t pos = line.find(';');
             std::string appId = line.substr(0, pos);
-            std::string descr = line.substr(pos + 1);
-            exclusionAppFileList.push_back(std::make_pair(appId, descr));
+            std::string description = line.substr(pos + 1);
+            (void) exclusionAppFileList.emplace_back(std::make_pair(appId, description));
         }
     } else {
-        LOG_WARN(_logger, "Cannot open exclusion app file with " << Utility::getExcludedAppFilePath(_test));
+        LOGW_WARN(_logger,
+                  L"Cannot open exclusion app file with " << Utility::formatSyncPath(Utility::getExcludedAppFilePath(_test)));
         return false;
     }
 
     for (const auto &templDb: exclusionAppDbList) {
-        if (templDb.def() == false) {
-            continue;
-        }
+        if (!templDb.def()) continue;
 
         bool exists = false;
         for (const auto &templFile: exclusionAppFileList) {
@@ -936,7 +935,7 @@ bool ParmsDb::create(bool &retry) {
     }
     queryFree(CREATE_EXCLUSION_TEMPLATE_TABLE_ID);
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     // Exclusion App
     if (!createAndPrepareRequest(CREATE_EXCLUSION_APP_TABLE_ID, CREATE_EXCLUSION_APP_TABLE)) return false;
     if (!queryExec(CREATE_EXCLUSION_APP_TABLE_ID, errId, error)) {
@@ -1018,7 +1017,7 @@ bool ParmsDb::prepare() {
     if (!createAndPrepareRequest(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST)) return false;
     if (!createAndPrepareRequest(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST))
         return false;
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     // Exclusion App
     if (!createAndPrepareRequest(INSERT_EXCLUSION_APP_REQUEST_ID, INSERT_EXCLUSION_APP_REQUEST)) return false;
     if (!createAndPrepareRequest(UPDATE_EXCLUSION_APP_REQUEST_ID, UPDATE_EXCLUSION_APP_REQUEST)) return false;
@@ -1061,22 +1060,7 @@ bool ParmsDb::prepare() {
     return true;
 }
 
-bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersion) {
-    if (CommonUtility::isVersionLower(fromVersion, toVersion)) {
-        LOG_INFO(_logger, "Upgrade " << dbType() << " DB from " << fromVersion << " to " << toVersion);
-        if (!insertUserTemplateNormalizations(fromVersion)) {
-            LOG_WARN(_logger, "Insertion of the normalizations of user exclusion file patterns has failed.");
-            return false;
-        }
-#ifdef _WIN32
-        if (!replaceShortDbPathsWithLongPaths()) {
-            LOG_WARN(_logger, "Failed to replace short DB paths with long ones.");
-        }
-#endif
-    } else {
-        LOG_INFO(_logger, "Apply generic upgrade fixes to " << dbType() << " DB version " << fromVersion);
-    }
-
+bool ParmsDb::upgradeTables() {
     const std::string tableName = "parameters";
     std::string columnName = "maxAllowedCpu";
     if (!addIntegerColumnIfMissing(tableName, columnName)) {
@@ -1132,6 +1116,30 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersi
         return false;
     }
 
+    LOG_INFO(_logger, "Columns upgrade in " << dbType() << " successfully completed.");
+
+    return true;
+}
+
+bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersion) {
+    LOG_INFO(_logger, "Apply generic upgrade fixes to " << dbType() << " DB version " << fromVersion);
+    if (!upgradeTables()) {
+        LOG_WARN(_logger, "Failed to insert missing columns.");
+        return false;
+    }
+
+    if (CommonUtility::isVersionLower(fromVersion, toVersion)) {
+        LOG_INFO(_logger, "Upgrade " << dbType() << " DB from " << fromVersion << " to " << toVersion);
+        if (!insertUserTemplateNormalizations(fromVersion)) {
+            LOG_WARN(_logger, "Insertion of the normalizations of user exclusion file patterns has failed.");
+            return false;
+        }
+#ifdef _WIN32
+        if (!replaceShortDbPathsWithLongPaths()) {
+            LOG_WARN(_logger, "Failed to replace short DB paths with long ones.");
+        }
+#endif
+    }
     LOG_INFO(_logger, "Upgrade " << dbType() << " successfully completed.");
 
     return true;
@@ -1166,7 +1174,7 @@ bool ParmsDb::initData() {
         return false;
     }
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     // Update exclusion apps
     if (!updateExclusionApps()) {
         LOG_WARN(_logger, "Error in updateExclusionApps");
@@ -2642,7 +2650,7 @@ bool ParmsDb::updateAllExclusionTemplates(bool defaultTemplates, const std::vect
     return true;
 }
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 bool ParmsDb::insertExclusionApp(const ExclusionApp &exclusionApp, bool &constraintError) {
     const std::scoped_lock lock(_mutex);
 
@@ -3099,9 +3107,9 @@ bool ParmsDb::selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync
     return true;
 }
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 bool ParmsDb::replaceShortDbPathsWithLongPaths() {
-    LOG_INFO(_logger, "Replacing short DB path names wiht long ones in sync table.")
+    LOG_INFO(_logger, "Replacing short DB path names with long ones in sync table.")
 
     if (!createAndPrepareRequest(SELECT_ALL_SYNCS_REQUEST_ID, SELECT_ALL_SYNCS_REQUEST)) return false;
     std::vector<Sync> syncList;

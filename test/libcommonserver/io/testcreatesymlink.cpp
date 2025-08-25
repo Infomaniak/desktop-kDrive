@@ -82,7 +82,7 @@ void TestIo::testCreateSymlink() {
         CPPUNIT_ASSERT(itemType.ioError == IoError::Success); // Although the target path is invalid.
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::File);
         CPPUNIT_ASSERT(itemType.linkType == LinkType::Symlink);
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(itemType.targetType == NodeType::File);
 #else
         CPPUNIT_ASSERT(itemType.targetType == NodeType::Unknown);
@@ -150,7 +150,7 @@ void TestIo::testCreateSymlink() {
 
         IoError ioError;
         CPPUNIT_ASSERT(!IoHelper::createSymlink(targetPath, path, false, ioError));
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
 #else
         CPPUNIT_ASSERT(ioError == IoError::FileNameTooLong);

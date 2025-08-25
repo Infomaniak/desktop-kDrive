@@ -18,17 +18,17 @@
 
 #pragma once
 
-#include "common/utility.h"
 #include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/log/log.h"
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include <AccCtrl.h>
 #endif
 
 namespace KDC {
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 namespace litesync_attrs {
 
 //! Item status
@@ -97,7 +97,7 @@ struct IoHelper {
 
         //! Returns the directory location suitable for temporary files.
         /*!
-         \param directoryPath is a path to a directory suitable for temporary files. Empty if there is a an error.
+         \param directoryPath is a path to a directory suitable for temporary files. Empty if there is an error.
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
@@ -107,14 +107,14 @@ struct IoHelper {
         //! Returns the directory location suitable for temporary files.
         /*! This directory is deleted at the end of the application run.
           ! The location of this folder can be enforce with the env variable: KDRIVE_CACHE_PATH
-         \param directoryPath is a path to a directory suitable for temporary files. Empty if there is a an error.
+         \param directoryPath is a path to a directory suitable for temporary files. Empty if there is an error.
          \return true if no unexpected error occurred, false otherwise.
          */
         static bool cacheDirectoryPath(SyncPath &directoryPath) noexcept;
 
         //! Returns the log directory path of the application.
         /*!
-         \param directoryPath is set with the path of to the log directory of the application. Empty if there is a an error.
+         \param directoryPath is set with the path of to the log directory of the application. Empty if there is an error.
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
@@ -122,7 +122,7 @@ struct IoHelper {
 
         //! Returns the log archiver directory path of the application.
         /*!
-         \param directoryPath is set with the path of to the log directory of the application. Empty if there is a an error.
+         \param directoryPath is set with the path of to the log directory of the application. Empty if there is an error.
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
@@ -177,7 +177,7 @@ struct IoHelper {
         static bool checkIfIsHiddenFile(const SyncPath &path, bool checkAncestors, bool &isHidden, IoError &ioError) noexcept;
         static bool checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError &ioError) noexcept;
 
-#if defined(__APPLE__) || defined(WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         //! Hides or reveals the item indicated by path.
         /*!
          \param path is a file system path to a directory entry (we also call it an item).
@@ -249,7 +249,7 @@ struct IoHelper {
         */
         static bool createSymlink(const SyncPath &targetPath, const SyncPath &path, bool isFolder, IoError &ioError) noexcept;
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         //! Create a Finder alias file for the specified target under the specified path.
         /*!
          \param targetPath is the file system path of the target item.
@@ -268,7 +268,7 @@ struct IoHelper {
          \param path is the file system path of the item to check for.
          \param isDirectory is boolean that is set to true if the type of the item indicated by path is `NodeType::File`, false
          otherwise.
-         \param ioError holds the error returned when an underlying OS API call fails. Defaults to false.
+         \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise. If the return value is false, isDirectory is also set with
          false.
          */
@@ -341,7 +341,7 @@ struct IoHelper {
         static bool copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
 
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         // From `man xattr`:
         // Extended attributes are arbitrary metadata stored with a file, but separate from the
         // filesystem attributes (such as modification time or file size). The metadata is often a null-terminated UTF-8 string,
@@ -395,7 +395,7 @@ struct IoHelper {
         }
 #endif
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #ifndef _WINDEF_
         using DWORD = unsigned long;
 #endif
@@ -455,8 +455,8 @@ struct IoHelper {
 
         static inline bool isLink(LinkType linkType) {
             return linkType == LinkType::Symlink || linkType == LinkType::Hardlink ||
-                   (linkType == LinkType::FinderAlias && OldUtility::isMac()) ||
-                   (linkType == LinkType::Junction && OldUtility::isWindows());
+                   (linkType == LinkType::FinderAlias && CommonUtility::isMac()) ||
+                   (linkType == LinkType::Junction && CommonUtility::isWindows());
         }
 
         static inline bool isLinkFollowedByDefault(LinkType linkType) {
@@ -468,7 +468,7 @@ struct IoHelper {
 
         static bool openFile(const SyncPath &path, std::ifstream &file, IoError &ioError, int timeOut = 10 /*in seconds*/);
         static ExitInfo openFile(const SyncPath &path, std::ifstream &file, int timeOut = 10 /*in seconds*/);
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         static bool getLongPathName(const SyncPath &path, SyncPath &longPathName, IoError &ioError);
         static bool getShortPathName(const SyncPath &path, SyncPath &shortPathName, IoError &ioError);
 #endif
@@ -485,7 +485,7 @@ struct IoHelper {
         static std::function<SyncPath(const SyncPath &path, std::error_code &ec)> _readSymlink;
         static std::function<std::uintmax_t(const SyncPath &path, std::error_code &ec)> _fileSize;
         static std::function<SyncPath(std::error_code &ec)> _tempDirectoryPath;
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         // Can be modified in tests.
         static std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> _readAlias;
 #endif
@@ -498,7 +498,7 @@ struct IoHelper {
         static log4cplus::Logger _logger;
         inline static log4cplus::Logger logger() { return Log::isSet() ? Log::instance()->getLogger() : _logger; }
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         static bool _checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioError) noexcept;
 #endif
         static bool _setTargetType(ItemType &itemType) noexcept;
@@ -506,7 +506,7 @@ struct IoHelper {
 
         static bool _setRightsStd(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         static bool _setRightsWindowsApiInheritance; // For windows tests only
         static int _getAndSetRightsMethod;
         static std::unique_ptr<BYTE[]> _psid;

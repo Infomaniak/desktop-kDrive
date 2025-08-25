@@ -38,7 +38,7 @@ typedef void (TestIntegration::*testFctPtr)();
 class TestIntegration : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestIntegration);
         CPPUNIT_TEST(testAll);
-#ifdef __unix__
+#if defined(KD_LINUX)
         CPPUNIT_TEST(testNodeIdReuseFile2DirAndDir2File);
         CPPUNIT_TEST(testNodeIdReuseFile2File);
 #endif
@@ -55,6 +55,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testLocalChanges();
         void testRemoteChanges();
         void testSimultaneousChanges();
+        void testUploadBigFile();
 
         void inconsistencyTests();
 
@@ -80,6 +81,8 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testParentRename();
         void testNegativeModificationTime();
 
+        void testDeleteAndRecreateBranch();
+
         class MockIoHelperFileStat : public IoHelper {
             public:
                 MockIoHelperFileStat() {
@@ -100,7 +103,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
                 std::map<SyncPath, uint64_t> _pathNodeIdMap;
         };
 
-#ifdef __unix__
+#if defined(KD_LINUX)
         void testNodeIdReuseFile2DirAndDir2File();
         void testNodeIdReuseFile2File();
 #endif

@@ -37,6 +37,8 @@ class FileRescuer {
 
         std::shared_ptr<SyncPal> _syncPal;
         static const SyncPath _rescueFolderName;
+
+        friend class TestFileRescuer;
 };
 
 } // namespace KDC

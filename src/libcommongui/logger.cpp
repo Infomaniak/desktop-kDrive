@@ -50,7 +50,7 @@ static void kdriveLogCatcher(QtMsgType type, const QMessageLogContext &ctx, cons
         const SyncPath filePath(ctx.file);
         fileName = filePath.filename();
     }
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     // For performance purposes, assume that the file name contains only mono byte chars
     std::string unsafeFileName(CommonUtility::toUnsafeStr(fileName));
     const char *fileNamePtr = unsafeFileName.c_str();
@@ -215,7 +215,7 @@ void Logger::setLogDebug(bool debug) {
 }
 
 QString Logger::temporaryFolderLogDirPath() const {
-    QString dirName = APPLICATION_SHORTNAME + QString("-logdir");
+    QString dirName = APPLICATION_NAME + QString("-logdir");
     return QDir::temp().filePath(dirName);
 }
 

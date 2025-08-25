@@ -18,11 +18,11 @@
 
 #include "remotefilesystemobserverworker.h"
 #include "jobs/jobmanager.h"
-#include "jobs/network/API_v2/listing/continuefilelistwithcursorjob.h"
-#include "jobs/network/API_v2/listing/csvfullfilelistwithcursorjob.h"
-#include "jobs/network/API_v2/listing/longpolljob.h"
-#include "jobs/network/API_v2/getfileinfojob.h"
-#ifdef _WIN32
+#include "jobs/network/kDrive_API/listing/continuefilelistwithcursorjob.h"
+#include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
+#include "jobs/network/kDrive_API/listing/longpolljob.h"
+#include "jobs/network/kDrive_API/getfileinfojob.h"
+#if defined(KD_WINDOWS)
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #endif
 #include "libcommon/log/sentry/ptraces.h"
@@ -33,7 +33,7 @@
 #include "requests/exclusiontemplatecache.h"
 #include "utility/jsonparserutility.h"
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 #include "utility/utility.h"
 #endif
 
@@ -205,7 +205,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents() {
             } else {
                 std::ostringstream os;
                 resObj->stringify(os);
-                LOGW_SYNCPAL_WARN(_logger, L"Continue cursor listing request failed: " << Utility::s2ws(os.str()));
+                LOGW_SYNCPAL_WARN(_logger, L"Continue cursor listing request failed: " << CommonUtility::s2ws(os.str()));
                 exitInfo = ExitCode::BackError;
                 break;
             }
@@ -364,9 +364,10 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         if (_liveSnapshot.updateItem(item)) {
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in remote snapshot: name:"
-                                                    << SyncName2WStr(item.name()) << L", inode:" << Utility::s2ws(item.id())
-                                                    << L", parent inode:" << Utility::s2ws(item.parentId()) << L", createdAt:"
-                                                    << item.createdAt() << L", modtime:" << item.lastModified() << L", isDir:"
+                                                    << Utility::quotedSyncName(item.name()) << L", inode:"
+                                                    << CommonUtility::s2ws(item.id()) << L", parent inode:"
+                                                    << CommonUtility::s2ws(item.parentId()) << L", createdAt:" << item.createdAt()
+                                                    << L", modtime:" << item.lastModified() << L", isDir:"
                                                     << (item.type() == NodeType::Directory) << L", size:" << item.size()
                                                     << L", isLink:" << item.isLink());
             }
@@ -388,7 +389,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     while (nodeIdIt != nodeIds.end()) {
         if (_liveSnapshot.isOrphan(*nodeIdIt)) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Node '" << SyncName2WStr(_liveSnapshot.name(*nodeIdIt)) << L"' ("
-                                                  << Utility::s2ws(*nodeIdIt) << L") is orphan. Removing it from "
+                                                  << CommonUtility::s2ws(*nodeIdIt) << L") is orphan. Removing it from "
                                                   << _liveSnapshot.side() << L" snapshot.");
             _liveSnapshot.removeItem(*nodeIdIt);
         }
@@ -439,11 +440,6 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
 
             if (notifyJob->exitInfo() == ExitInfo(ExitCode::NetworkError, ExitCause::NetworkTimeout)) {
                 _syncPal->addError(Error(errId(), notifyJob->exitInfo()));
-            } else if (notifyJob->exitInfo() == ExitInfo(ExitCode::NetworkError, ExitCause::BadGateway)) {
-                // Ignore this error and check for changes anyway
-                LOG_SYNCPAL_INFO(_logger, "Bad gateway error, check for changes anyway.");
-                changes = true; // TODO: perhaps not a good idea... what if longpoll crashed and not reachable for a long time???
-                return ExitCode::Ok;
             }
 
             return notifyJob->exitInfo();
@@ -501,7 +497,7 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
             continue;
         }
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         SyncName newName;
         if (PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(actionInfo.snapshotItem.name(), newName)) {
             actionInfo.snapshotItem.setName(newName);
@@ -675,7 +671,7 @@ ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
         case ActionCode::ActionCodeTrash:
             if (!_liveSnapshot.removeItem(actionInfo.snapshotItem.id())) {
                 LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(actionInfo.snapshotItem.name()) << L" ("
-                                                                    << Utility::s2ws(actionInfo.snapshotItem.id()) << L")");
+                                                                    << CommonUtility::s2ws(actionInfo.snapshotItem.id()) << L")");
                 tryToInvalidateSnapshot();
                 return ExitCode::BackError;
             }
@@ -694,7 +690,7 @@ ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
         default:
             LOGW_SYNCPAL_DEBUG(_logger, L"Unknown operation received on item: "
                                                 << SyncName2WStr(actionInfo.snapshotItem.name()) << L" ("
-                                                << Utility::s2ws(actionInfo.snapshotItem.id()) << L")");
+                                                << CommonUtility::s2ws(actionInfo.snapshotItem.id()) << L")");
     }
 
 
@@ -721,9 +717,9 @@ ExitInfo RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
             return ExitCode::Ok;
         }
 
-        LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: " << SyncName2WStr(snapshotItem.name())
-                                                                                      << L" (" << Utility::s2ws(snapshotItem.id())
-                                                                                      << L")");
+        LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
+                                           << SyncName2WStr(snapshotItem.name()) << L" ("
+                                           << CommonUtility::s2ws(snapshotItem.id()) << L")");
         tryToInvalidateSnapshot();
         return ExitCode::BackError;
     }
@@ -738,7 +734,7 @@ ExitInfo RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
 }
 
 bool RemoteFileSystemObserverWorker::hasUnsupportedCharacters(const SyncName &name, const NodeId &nodeId, NodeType type) {
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     // Check that the name doesn't contain a character not yet supported by the filesystem (ex: U+1FA77 on pre macOS 13.4)
     bool valid = false;
     if (type == NodeType::File) {

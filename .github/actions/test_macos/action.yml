@@ -40,6 +40,12 @@ runs:
             cp -r ${{ github.workspace }}/build-macos/client/cache/* ${{ github.workspace }}/build-macos/client/bin/
         shell: bash
 
+      - name: Download uncached common files
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-common-files-uncached
+          path: ${{ github.workspace }}/build-macos/client/bin/
+
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
@@ -59,7 +65,7 @@ runs:
         shell: bash
 
       - name: Get the path to kDrive-logdir
-        run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
+        run : echo "logdir_path="$(find /private/var/folders -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
         if  : success() || failure()
         shell: bash
 

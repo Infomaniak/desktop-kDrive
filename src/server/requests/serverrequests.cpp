@@ -16,26 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #define _WINSOCKAPI_
 #endif
 
 #include "serverrequests.h"
-#include "common/utility.h"
 #include "config.h"
 #include "keychainmanager/keychainmanager.h"
-#include "jobs/network/API_v2/getrootfilelistjob.h"
-#include "jobs/network/API_v2/getfilelistjob.h"
-#include "jobs/network/API_v2/getfileinfojob.h"
-#include "jobs/network/API_v2/postfilelinkjob.h"
-#include "jobs/network/API_v2/getfilelinkjob.h"
-#include "jobs/network/API_v2/getinfouserjob.h"
-#include "jobs/network/API_v2/getinfodrivejob.h"
-#include "jobs/network/API_v2/getthumbnailjob.h"
+#include "jobs/network/kDrive_API/getrootfilelistjob.h"
+#include "jobs/network/kDrive_API/getfilelistjob.h"
+#include "jobs/network/kDrive_API/getfileinfojob.h"
+#include "jobs/network/kDrive_API/postfilelinkjob.h"
+#include "jobs/network/kDrive_API/getfilelinkjob.h"
+#include "jobs/network/infomaniak_API/getinfouserjob.h"
+#include "jobs/network/kDrive_API/getinfodrivejob.h"
+#include "jobs/network/kDrive_API/getthumbnailjob.h"
 #include "jobs/network/getavatarjob.h"
-#include "jobs/network/API_v2/getdriveslistjob.h"
-#include "jobs/network/API_v2/createdirjob.h"
-#include "jobs/network/API_v2/getsizejob.h"
+#include "jobs/network/kDrive_API/getdriveslistjob.h"
+#include "jobs/network/kDrive_API/createdirjob.h"
+#include "jobs/network/kDrive_API/getsizejob.h"
 #include "utility/jsonparserutility.h"
 #include "libparms/db/parmsdb.h"
 #include "libparms/db/user.h"
@@ -397,7 +396,7 @@ ExitCode ServerRequests::requestToken(QString code, QString codeVerifier, UserIn
     return exitCode;
 }
 
-ExitCode ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo,
+ExitInfo ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo,
                                      bool withPath /*= false*/) {
     std::shared_ptr<GetFileInfoJob> job;
     try {
@@ -410,19 +409,22 @@ ExitCode ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &n
     }
 
     job->setWithPath(withPath);
-    ExitCode exitCode = job->runSynchronously();
-    if (exitCode != ExitCode::Ok) {
+
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileInfoJob::runSynchronously for userDbId="
                                                        << userDbId << " driveId=" << driveId << " nodeId=" << nodeId.toStdString()
-                                                       << " code=" << exitCode);
-        return exitCode;
+                                                       << " exitInfo=" << exitInfo << " status=" << job->getStatusCode());
+        return ExitCode::BackError;
     }
 
     Poco::JSON::Object::Ptr resObj = job->jsonRes();
     if (!resObj) {
         LOG_WARN(Log::instance()->getLogger(), "GetFileInfoJob failed for userDbId=" << userDbId << " driveId=" << driveId
                                                                                      << " nodeId=" << nodeId.toStdString());
-        return ExitCode::BackError;
+        ExitCause exitCause{ExitCause::Unknown};
+        if (job->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) exitCause = ExitCause::NotFound;
+
+        return {ExitCode::BackError, exitCause};
     }
 
     Poco::JSON::Object::Ptr dataObj = resObj->getObject(dataKey);
@@ -706,12 +708,12 @@ ExitCode ServerRequests::getNodeIdByPath(int userDbId, int driveId, const SyncPa
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getPathByNodeId(int userDbId, int driveId, const QString &nodeId, QString &path) {
+ExitInfo ServerRequests::getPathByNodeId(int userDbId, int driveId, const QString &nodeId, QString &path) {
     NodeInfo nodeInfo;
-    ExitCode exitCode = getNodeInfo(userDbId, driveId, nodeId, nodeInfo, true);
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getNodeInfo: code=" << exitCode);
-        return exitCode;
+
+    if (auto exitInfo = getNodeInfo(userDbId, driveId, nodeId, nodeInfo, true); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getNodeInfo: " << exitInfo);
+        return exitInfo;
     }
 
     path = nodeInfo.path();
@@ -912,6 +914,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                 case ExitCause::MigrationError:
                 case ExitCause::MigrationProxyNotImplemented:
                 case ExitCause::FileExists:
+                case ExitCause::SyncDirChanged:
                     return true;
                 default:
                     return false;
@@ -1207,7 +1210,7 @@ ExitCode ServerRequests::setExclusionTemplateList(bool def, const QList<Exclusio
     return ExitCode::Ok;
 }
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 ExitCode ServerRequests::getExclusionAppList(bool def, QList<ExclusionAppInfo> &list) {
     std::vector<ExclusionApp> exclusionList;
     if (!ParmsDb::instance()->selectAllExclusionApps(def, exclusionList)) {
@@ -1502,7 +1505,7 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
     sync.setDbId(syncDbId);
     sync.setDriveDbId(driveDbId);
     auto localPath = QStr2Path(localFolderPath);
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     // On macOS, the special characters in file names are NFD encoded. However, we use QFileDialog::getExistingDirectory to
     // retrieve the selected sync path which return a NFC encoded path.
     (void) Utility::normalizedSyncPath(localFolderPath.toStdString(), localPath, UnicodeNormalization::NFD);
@@ -1513,13 +1516,12 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
     sync.setPaused(false);
 
     // Check vfs support
-    const QString fsName(CommonUtility::fileSystemName(Path2QStr(sync.localPath())));
-    const auto supportVfs = (fsName == "NTFS" || fsName == "apfs");
+    const bool supportVfs = CommonUtility::isNTFS(sync.localPath()) || CommonUtility::isAPFS(sync.localPath());
     sync.setSupportVfs(supportVfs);
 
-#if defined(Q_OS_MAC)
+#if defined(KD_MACOS)
     sync.setVirtualFileMode(liteSync ? VirtualFileMode::Mac : VirtualFileMode::Off);
-#elif defined(Q_OS_WIN32)
+#elif defined(KD_WINDOWS)
     sync.setVirtualFileMode(liteSync ? VirtualFileMode::Win : VirtualFileMode::Off);
 #else
     sync.setVirtualFileMode(VirtualFileMode::Off);
@@ -1917,8 +1919,8 @@ ExitCode ServerRequests::syncForPath(const std::vector<Sync> &syncList, const QS
     for (const Sync &sync: syncList) {
         const QString localPath = SyncName2QStr(sync.localPath().native()) + QLatin1Char('/');
 
-        if (absolutePath.startsWith(localPath,
-                                    (OldUtility::isWindows() || OldUtility::isMac()) ? Qt::CaseInsensitive : Qt::CaseSensitive)) {
+        if (absolutePath.startsWith(localPath, (CommonUtility::isWindows() || CommonUtility::isMac()) ? Qt::CaseInsensitive
+                                                                                                      : Qt::CaseSensitive)) {
             syncDbId = sync.dbId();
             break;
         }

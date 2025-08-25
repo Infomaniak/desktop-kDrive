@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.16)
 if(APPLE)
     project(server LANGUAGES C CXX OBJC OBJCXX)
 else()
@@ -53,6 +52,7 @@ set(server_SRCS
     comm/extensionjob.h comm/extensionjob.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
+    requests/offlinefilessizeestimator.h requests/offlinefilessizeestimator.cpp
     app_resources.rc
 )
 
@@ -280,11 +280,12 @@ endif()
 
 if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
     set(ENV_DEPLOY_LIBS_MANUALLY $ENV{DEPLOY_LIBS_MANUALLY})
-    if (NOT ENV_DEPLOY_LIBS_MANUALLY)
+    if (NOT ENV_DEPLOY_LIBS_MANUALLY OR NOT CMAKE_BUILD_TYPE MATCHES "Debug")
         set(ENV_QTDIR $ENV{QTDIR})
         set(ENV_DESTDIR $ENV{DESTDIR})
         set(ENV_DYLD_LIBRARY_PATH $ENV{DYLD_LIBRARY_PATH})
 
+        message(STATUS "DYLD_LIBRARY_PATH: ${ENV_DYLD_LIBRARY_PATH}")
         install(CODE "
             message(STATUS \"Deploying (Qt) dependencies for kDrive...\")
             execute_process(COMMAND ${ENV_QTDIR}/bin/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -libpath=${ENV_DYLD_LIBRARY_PATH} -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})

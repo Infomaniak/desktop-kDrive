@@ -35,14 +35,14 @@ void TestUrlHelper::testGetUrl() {
     const auto test = distrib(gen);
     const bool usePreprod = test == 1;
     if (usePreprod) {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         _putenv_s("KDRIVE_USE_PREPROD_URL", "1");
 #else
         (void) setenv("KDRIVE_USE_PREPROD_URL", "1", true);
 #endif
         std::cout << " Testing preprod URLs";
     } else {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         _putenv_s("KDRIVE_USE_PREPROD_URL", "0");
 #else
         (void) setenv("KDRIVE_USE_PREPROD_URL", "0", true);
@@ -51,19 +51,19 @@ void TestUrlHelper::testGetUrl() {
     }
 
 
-    CPPUNIT_ASSERT_EQUAL(usePreprod, Utility::contains(UrlHelper::infomaniakApiUrl(), preprodKeyWord));
-    CPPUNIT_ASSERT_EQUAL(false, Utility::contains(UrlHelper::infomaniakApiUrl(2, true), preprodKeyWord));
-    CPPUNIT_ASSERT_EQUAL(usePreprod, Utility::contains(UrlHelper::kDriveApiUrl(), preprodKeyWord));
-    CPPUNIT_ASSERT_EQUAL(usePreprod, Utility::contains(UrlHelper::notifyApiUrl(), preprodKeyWord));
-    CPPUNIT_ASSERT_EQUAL(usePreprod, Utility::contains(UrlHelper::loginApiUrl(), preprodKeyWord));
+    CPPUNIT_ASSERT_EQUAL(usePreprod, CommonUtility::contains(UrlHelper::infomaniakApiUrl(), preprodKeyWord));
+    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::contains(UrlHelper::infomaniakApiUrl(2, true), preprodKeyWord));
+    CPPUNIT_ASSERT_EQUAL(usePreprod, CommonUtility::contains(UrlHelper::kDriveApiUrl(), preprodKeyWord));
+    CPPUNIT_ASSERT_EQUAL(usePreprod, CommonUtility::contains(UrlHelper::notifyApiUrl(), preprodKeyWord));
+    CPPUNIT_ASSERT_EQUAL(usePreprod, CommonUtility::contains(UrlHelper::loginApiUrl(), preprodKeyWord));
 
-    CPPUNIT_ASSERT_EQUAL(true, Utility::endsWith(UrlHelper::infomaniakApiUrl(), "/2"));
-    CPPUNIT_ASSERT_EQUAL(true, Utility::endsWith(UrlHelper::infomaniakApiUrl(123), "/123"));
-    CPPUNIT_ASSERT_EQUAL(true, Utility::endsWith(UrlHelper::infomaniakApiUrl(123, true), "/123"));
-    CPPUNIT_ASSERT_EQUAL(true, Utility::endsWith(UrlHelper::kDriveApiUrl(), "/2"));
-    CPPUNIT_ASSERT_EQUAL(true, Utility::endsWith(UrlHelper::kDriveApiUrl(123), "/123"));
-    CPPUNIT_ASSERT_EQUAL(true, Utility::endsWith(UrlHelper::notifyApiUrl(), "/2"));
-    CPPUNIT_ASSERT_EQUAL(true, Utility::endsWith(UrlHelper::notifyApiUrl(123), "/123"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::endsWith(UrlHelper::infomaniakApiUrl(), "/2"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::endsWith(UrlHelper::infomaniakApiUrl(123), "/123"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::endsWith(UrlHelper::infomaniakApiUrl(123, true), "/123"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::endsWith(UrlHelper::kDriveApiUrl(), "/2"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::endsWith(UrlHelper::kDriveApiUrl(123), "/123"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::endsWith(UrlHelper::notifyApiUrl(), "/2"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::endsWith(UrlHelper::notifyApiUrl(123), "/123"));
 }
 
 } // namespace KDC

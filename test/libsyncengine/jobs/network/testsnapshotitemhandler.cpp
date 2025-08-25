@@ -18,9 +18,10 @@
 
 #include "testsnapshotitemhandler.h"
 
-#include "jobs/network/API_v2/listing/snapshotitemhandler.h"
+#include "jobs/network/kDrive_API/listing/snapshotitemhandler.h"
 #include "libcommonserver/log/log.h"
 #include "update_detection/file_system_observer/snapshot/snapshotitem.h"
+#include "libcommon/utility/utility.h"
 
 using namespace CppUnit;
 
@@ -49,7 +50,7 @@ Result compare(const SnapshotItem &lhs, const SnapshotItem &rhs) noexcept {
         CPPUNIT_ASSERT_EQUAL(lhs.isLink(), rhs.isLink());
     } catch (const CppUnit::Exception &e) {
         return Result{false, makeMessage(e)};
-    };
+    }
 
     return {};
 }
@@ -79,6 +80,9 @@ void TestSnapshotItemHandler::testUpdateItem() {
 
         CPPUNIT_ASSERT(handler.updateSnapshotItem("123", SnapshotItemHandler::CsvIndexCreatedAt, item));
         CPPUNIT_ASSERT_EQUAL(SyncTime(123), item.createdAt());
+
+        CPPUNIT_ASSERT(handler.updateSnapshotItem("-2082841200", SnapshotItemHandler::CsvIndexCreatedAt, item));
+        CPPUNIT_ASSERT_EQUAL(SyncTime(-2082841200), item.createdAt());
 
         CPPUNIT_ASSERT(handler.updateSnapshotItem("124", SnapshotItemHandler::CsvIndexModtime, item));
         CPPUNIT_ASSERT_EQUAL(SyncTime(124), item.lastModified());
@@ -123,11 +127,6 @@ void TestSnapshotItemHandler::testUpdateItem() {
         CPPUNIT_ASSERT(!handler.updateSnapshotItem("Invalid date! Integer representation expected",
                                                    SnapshotItemHandler::CsvIndexCreatedAt, item));
         CPPUNIT_ASSERT_EQUAL(int64_t(0), item.createdAt());
-    }
-    {
-        SnapshotItem item;
-        CPPUNIT_ASSERT(!handler.updateSnapshotItem("-1", SnapshotItemHandler::CsvIndexCreatedAt, item));
-        CPPUNIT_ASSERT_EQUAL(int64_t(-1), item.createdAt());
     }
     {
         SnapshotItem item;

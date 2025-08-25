@@ -63,19 +63,19 @@ class GetSizeJob;
 #define LOG_SYNCDBID std::string("*" + std::to_string(SYNCDBID) + "*")
 
 #define LOG_SYNCPAL_DEBUG(logger, logEvent) LOG_DEBUG(logger, LOG_SYNCDBID << " " << logEvent)
-#define LOGW_SYNCPAL_DEBUG(logger, logEvent) LOGW_DEBUG(logger, Utility::s2ws(LOG_SYNCDBID) << L" " << logEvent)
+#define LOGW_SYNCPAL_DEBUG(logger, logEvent) LOGW_DEBUG(logger, CommonUtility::s2ws(LOG_SYNCDBID) << L" " << logEvent)
 
 #define LOG_SYNCPAL_INFO(logger, logEvent) LOG_INFO(logger, LOG_SYNCDBID << " " << logEvent)
-#define LOGW_SYNCPAL_INFO(logger, logEvent) LOGW_INFO(logger, Utility::s2ws(LOG_SYNCDBID) << L" " << logEvent)
+#define LOGW_SYNCPAL_INFO(logger, logEvent) LOGW_INFO(logger, CommonUtility::s2ws(LOG_SYNCDBID) << L" " << logEvent)
 
 #define LOG_SYNCPAL_WARN(logger, logEvent) LOG_WARN(logger, LOG_SYNCDBID << " " << logEvent)
-#define LOGW_SYNCPAL_WARN(logger, logEvent) LOGW_WARN(logger, Utility::s2ws(LOG_SYNCDBID) << L" " << logEvent)
+#define LOGW_SYNCPAL_WARN(logger, logEvent) LOGW_WARN(logger, CommonUtility::s2ws(LOG_SYNCDBID) << L" " << logEvent)
 
 #define LOG_SYNCPAL_ERROR(logger, logEvent) LOG_ERROR(logger, LOG_SYNCDBID << " " << logEvent)
-#define LOGW_SYNCPAL_ERROR(logger, logEvent) LOGW_ERROR(logger, Utility::s2ws(LOG_SYNCDBID) << L" " << logEvent)
+#define LOGW_SYNCPAL_ERROR(logger, logEvent) LOGW_ERROR(logger, CommonUtility::s2ws(LOG_SYNCDBID) << L" " << logEvent)
 
 #define LOG_SYNCPAL_FATAL(logger, logEvent) LOG_FATAL(logger, LOG_SYNCDBID << " " << logEvent)
-#define LOGW_SYNCPAL_FATAL(logger, logEvent) LOGW_FATAL(logger, Utility::s2ws(LOG_SYNCDBID) << L" " << logEvent)
+#define LOGW_SYNCPAL_FATAL(logger, logEvent) LOGW_FATAL(logger, CommonUtility::s2ws(LOG_SYNCDBID) << L" " << logEvent)
 
 struct SyncPalInfo {
         SyncPalInfo() = default;
@@ -96,6 +96,7 @@ struct SyncPalInfo {
         SyncPath targetPath;
         VirtualFileMode vfsMode{VirtualFileMode::Off};
         bool restart{false};
+        bool updateTreesNeedToBeCleared{false};
         bool isPaused{false};
         bool syncHasFullyCompleted{false};
 
@@ -147,16 +148,18 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         inline int userId() const { return _syncInfo.userId; }
         inline const std::string &driveName() const { return _syncInfo.driveName; }
         inline VirtualFileMode vfsMode() const { return _syncInfo.vfsMode; }
-        inline SyncPath localPath() const { return _syncInfo.localPath; }
+        inline const SyncPath &localPath() const { return _syncInfo.localPath; }
         inline const NodeId &localNodeId() const { return _syncInfo.localNodeId; }
         inline bool restart() const { return _syncInfo.restart; }
+        inline bool updateTreesNeedToBeCleared() const { return _syncInfo.updateTreesNeedToBeCleared; }
         inline bool isAdvancedSync() const { return _syncInfo.isAdvancedSync(); }
 
         void setLocalPath(const SyncPath &path) { _syncInfo.localPath = path; }
         ExitInfo isRootFolderValid();
         ExitInfo setLocalNodeId(const NodeId &localNodeId);
-        void setSyncHasFullyCompleted(bool completed) { _syncInfo.syncHasFullyCompleted = completed; }
-        void setRestart(bool shouldRestart) { _syncInfo.restart = shouldRestart; }
+        void setSyncHasFullyCompleted(const bool completed) { _syncInfo.syncHasFullyCompleted = completed; }
+        void setRestart(const bool shouldRestart) { _syncInfo.restart = shouldRestart; }
+        void setUpdateTreesNeedToBeCleared(const bool reset) { _syncInfo.updateTreesNeedToBeCleared = reset; }
         void setVfsMode(const VirtualFileMode mode) { _syncInfo.vfsMode = mode; }
         void setIsPaused(const bool paused) { _syncInfo.isPaused = paused; }
 
@@ -218,7 +221,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         void resetSnapshotInvalidationCounters();
 
-        ExitCode addDlDirectJob(const SyncPath &relativePath, const SyncPath &localPath);
+        ExitCode addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath,
+                                const SyncPath &parentFolderPath);
+        void monitorFolderHydration(const SyncPath &absoluteLocalPath);
         ExitCode cancelDlDirectJobs(const std::vector<SyncPath> &fileList);
         ExitCode cancelAllDlDirectJobs(bool quit);
         ExitCode cleanOldUploadSessionTokens();
@@ -289,6 +294,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
          *      behind the actual state of the filesystem.
          */
         const LiveSnapshot &liveSnapshot(ReplicaSide side) const;
+        void removeLocalOperation(const NodeId &localNodeId, const OperationType operationType) {
+            (void) _localOperationSet->removeOp(localNodeId, operationType);
+        }
 
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
@@ -300,6 +308,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<ConflictingFilesCorrector> _conflictingFilesCorrector = nullptr;
 
         std::unordered_map<UniqueId, std::shared_ptr<DownloadJob>> _directDownloadJobsMap;
+        std::unordered_map<SyncPath, std::unordered_set<SyncPath, PathHashFunction>, PathHashFunction>
+                _folderHydrationInProgress; // key: bundle path, value: bundle children paths
         std::unordered_map<SyncPath, UniqueId, PathHashFunction> _syncPathToDownloadJobMap;
         std::mutex _directDownloadJobsMapMutex;
 

@@ -76,11 +76,11 @@ NodeId Snapshot::itemId(const SyncPath &path) const {
 
     auto item = rootItemIt->second;
     for (auto pathIt = path.begin(); pathIt != path.end(); pathIt++) {
-#ifndef _WIN32
+#ifndef KD_WINDOWS
         if (pathIt->lexically_normal() == SyncPath(Str("/")).lexically_normal()) {
             continue;
         }
-#endif // _WIN32
+#endif
 
         bool idFound = false;
         for (const auto &child: item->children()) {
@@ -279,6 +279,27 @@ bool Snapshot::getChildrenIds(const NodeId &itemId, NodeSet &childrenIds) const 
         (void) childrenIds.insert(child->id());
     }
     return true;
+}
+
+NodeSet Snapshot::getDescendantIds(const NodeId &itemId) const {
+    const std::scoped_lock lock(_mutex);
+    NodeSet descendantIds;
+
+    getDescendantIds(itemId, descendantIds);
+
+    return descendantIds;
+}
+
+void Snapshot::getDescendantIds(const NodeId &itemId, NodeSet &descendantIds) const {
+    const std::scoped_lock lock(_mutex);
+
+    std::unordered_set<std::shared_ptr<SnapshotItem>> children;
+    (void) getChildren(itemId, children);
+
+    for (const auto &child: children) {
+        (void) descendantIds.insert(child->id());
+        getDescendantIds(child->id(), descendantIds);
+    }
 }
 
 void Snapshot::ids(NodeSet &ids) const {

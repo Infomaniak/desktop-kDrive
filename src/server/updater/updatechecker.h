@@ -73,7 +73,7 @@ class UpdateChecker {
          * @return const reference on a VersionInfo
          */
         const VersionInfo &prodVersionInfo() {
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
             return _versionsInfo.contains(_prodVersionChannel) ? _versionsInfo[_prodVersionChannel] : _defaultVersionInfo;
 #else
             return _versionsInfo.contains(VersionChannel::Prod) ? _versionsInfo[VersionChannel::Prod] : _defaultVersionInfo;

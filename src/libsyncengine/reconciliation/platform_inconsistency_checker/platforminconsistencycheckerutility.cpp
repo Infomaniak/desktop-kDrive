@@ -25,15 +25,15 @@
 #include <log4cplus/loggingmacros.h>
 #include <unordered_set>
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include "libcommonserver/utility/utility.h"
 #include <Poco/Util/WinRegistryKey.h>
 #endif
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 static const char forbiddenFilenameChars[] = {'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\n'};
 #else
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 static const char forbiddenFilenameChars[] = {'/'};
 #else
 static const char forbiddenFilenameChars[] = {'/', '\0'};
@@ -44,7 +44,7 @@ static const int maxNameLengh = 255; // Max filename length is uniformized to 25
 
 namespace KDC {
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 static const std::unordered_set<std::string> reservedWinNames = {
         "CON",  "PRN",  "AUX",  "NUL",  "CON",  "PRN",  "AUX",  "NUL",  "COM1", "COM2", "COM3", "COM4", "COM5",
         "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
@@ -69,7 +69,7 @@ SyncName PlatformInconsistencyCheckerUtility::generateNewValidName(const SyncPat
     SyncName suffix = generateSuffix(suffixType);
     const SyncName sub = name.stem().native().substr(0, maxNameLengh - suffix.size() - name.extension().native().size());
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     SyncName nameStr(name.native());
     // Can't finish with a space or a '.'
     if (nameStr.back() == ' ' || nameStr.back() == '.') {
@@ -102,7 +102,7 @@ bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncPath &
         }
     }
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     // Check for forbidden ascii codes
     for (wchar_t c: name.native()) {
         int asciiCode(c);
@@ -116,11 +116,11 @@ bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncPath &
 }
 
 bool PlatformInconsistencyCheckerUtility::isNameOnlySpaces(const SyncName &name) {
-    return Utility::ltrim(name).empty();
+    return CommonUtility::ltrim(name).empty();
 }
 
 bool PlatformInconsistencyCheckerUtility::nameEndWithForbiddenSpace([[maybe_unused]] const SyncName &name) {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     // Can't finish with a space
     if (SyncName nameStr(name); nameStr[nameStr.size() - 1] == ' ') {
         return true;
@@ -129,7 +129,7 @@ bool PlatformInconsistencyCheckerUtility::nameEndWithForbiddenSpace([[maybe_unus
     return false; // Name ending with a space is only forbidden on Windows.
 }
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 bool PlatformInconsistencyCheckerUtility::fixNameWithBackslash(const SyncName &name, SyncName &newName) {
     size_t pos = name.find('\\');
     while (pos != std::string::npos) {
@@ -160,7 +160,7 @@ bool PlatformInconsistencyCheckerUtility::checkReservedNames(const SyncName &nam
         return true;
     }
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     // Can't have only dots
     if (std::ranges::count(name, '.') == name.size()) {
         return true;
@@ -172,7 +172,7 @@ bool PlatformInconsistencyCheckerUtility::checkReservedNames(const SyncName &nam
     }
 
     for (const auto &reserved: reservedWinNames) {
-        if (Utility::startsWithInsensitive(name, Str2SyncName(reserved)) && name.size() == reserved.size()) {
+        if (CommonUtility::startsWithInsensitive(name, Str2SyncName(reserved)) && name.size() == reserved.size()) {
             return true;
         }
     }

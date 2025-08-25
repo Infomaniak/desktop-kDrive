@@ -29,7 +29,7 @@
 #include <iostream>
 #include <filesystem>
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include <Windows.h>
 #include <ShObjIdl_core.h>
 #include <ShlObj_core.h>
@@ -42,10 +42,10 @@ namespace KDC {
 void TestUtility::testFreeDiskSpace() {
     int64_t freeSpace;
 
-#if defined(__APPLE__) || defined(__unix__)
-    freeSpace = _testObj->getFreeDiskSpace("/");
+#if defined(KD_MACOS) || defined(KD_LINUX)
+    freeSpace = Utility::getFreeDiskSpace("/");
 #elif defined(_WIN32)
-    freeSpace = _testObj->getFreeDiskSpace(R"(C:\)");
+    freeSpace = Utility::getFreeDiskSpace(R"(C:\)");
 #endif
 
     std::cout << " freeSpace=" << freeSpace;
@@ -53,51 +53,28 @@ void TestUtility::testFreeDiskSpace() {
 }
 
 void TestUtility::testIsCreationDateValid(void) {
-    CPPUNIT_ASSERT_MESSAGE("Creation date should not be valid when it is 0.", !_testObj->isCreationDateValid(0));
+    CPPUNIT_ASSERT_MESSAGE("Creation date should not be valid when it is 0.", !Utility::isCreationDateValid(0));
     // 443779200 correspond to "Tuesday 24 January 1984 08:00:00" which is a default date set by macOS
     CPPUNIT_ASSERT_MESSAGE("Creation date should not be valid when it is 443779200 (Default on MacOs).",
-                           !_testObj->isCreationDateValid(443779200));
+                           !Utility::isCreationDateValid(443779200));
     auto currentTime = std::chrono::system_clock::now();
     auto currentTimePoint = std::chrono::time_point_cast<std::chrono::seconds>(currentTime);
     auto currentTimestamp = currentTimePoint.time_since_epoch().count();
 
     for (int64_t i = 10; i < currentTimestamp; i += 2629743) { // step of one month
-        CPPUNIT_ASSERT_MESSAGE("Creation date should be valid.", _testObj->isCreationDateValid(i));
+        CPPUNIT_ASSERT_MESSAGE("Creation date should be valid.", Utility::isCreationDateValid(i));
     }
-    CPPUNIT_ASSERT_MESSAGE("Creation date should be valid.", _testObj->isCreationDateValid(currentTimestamp));
+    CPPUNIT_ASSERT_MESSAGE("Creation date should be valid.", Utility::isCreationDateValid(currentTimestamp));
 
     // This tests do not check the future date because it is not possible to create a file in the future.
     auto futureTimestamp = currentTimestamp + 3600;
     CPPUNIT_ASSERT_MESSAGE("Creation date should be valid when it is in the future. (Handle by the app).",
-                           _testObj->isCreationDateValid(futureTimestamp));
-}
-
-
-void TestUtility::testS2ws() {
-    CPPUNIT_ASSERT(_testObj->s2ws("abcd") == L"abcd");
-    CPPUNIT_ASSERT(_testObj->s2ws("éèêà") == L"éèêà");
-}
-
-void TestUtility::testWs2s() {
-    CPPUNIT_ASSERT(_testObj->ws2s(L"abcd") == "abcd");
-    CPPUNIT_ASSERT(_testObj->ws2s(L"éèêà") == "éèêà");
-}
-
-void TestUtility::testLtrim() {
-    CPPUNIT_ASSERT(_testObj->ltrim("    ab    cd    ") == "ab    cd    ");
-}
-
-void TestUtility::testRtrim() {
-    CPPUNIT_ASSERT(_testObj->rtrim("    ab    cd    ") == "    ab    cd");
-}
-
-void TestUtility::testTrim() {
-    CPPUNIT_ASSERT(_testObj->trim("    ab    cd    ") == "ab    cd");
+                           Utility::isCreationDateValid(futureTimestamp));
 }
 
 void TestUtility::testMsSleep() {
     auto start = std::chrono::high_resolution_clock::now();
-    _testObj->msleep(1000);
+    Utility::msleep(1000);
     auto end = std::chrono::high_resolution_clock::now();
     auto timeSpan = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     std::cout << " timeSpan=" << timeSpan.count();
@@ -108,52 +85,19 @@ void TestUtility::testMsSleep() {
 
 void TestUtility::testV2ws() {
     dbtype nullValue = std::monostate();
-    CPPUNIT_ASSERT(_testObj->v2ws(nullValue) == L"NULL");
+    CPPUNIT_ASSERT(Utility::v2ws(nullValue) == L"NULL");
 
     dbtype intValue(1234);
-    CPPUNIT_ASSERT(_testObj->v2ws(intValue) == L"1234");
+    CPPUNIT_ASSERT(Utility::v2ws(intValue) == L"1234");
 
     dbtype int64Value((int64_t) LLONG_MAX);
-    CPPUNIT_ASSERT(_testObj->v2ws(int64Value) == L"9223372036854775807");
+    CPPUNIT_ASSERT(Utility::v2ws(int64Value) == L"9223372036854775807");
 
     dbtype doubleValue(123.456789);
-    CPPUNIT_ASSERT(_testObj->v2ws(doubleValue) == L"123.456789");
+    CPPUNIT_ASSERT(Utility::v2ws(doubleValue) == L"123.456789");
 
     dbtype stringValue("hello");
-    CPPUNIT_ASSERT(_testObj->v2ws(stringValue) == L"hello");
-}
-
-void TestUtility::testFileSystemName() {
-#if defined(__APPLE__)
-    CPPUNIT_ASSERT(_testObj->fileSystemName("/") == "apfs");
-    CPPUNIT_ASSERT(_testObj->fileSystemName("/bin") == "apfs");
-#elif defined(_WIN32)
-    CPPUNIT_ASSERT(_testObj->fileSystemName(std::filesystem::temp_directory_path()) == "NTFS");
-    // CPPUNIT_ASSERT(_testObj->fileSystemName(R"(C:\)") == "NTFS");
-    // CPPUNIT_ASSERT(_testObj->fileSystemName(R"(C:\windows)") == "NTFS");
-#endif
-}
-
-void TestUtility::testStartsWith() {
-    CPPUNIT_ASSERT(_testObj->startsWith(SyncName(Str("abcdefg")), SyncName(Str("abcd"))));
-    CPPUNIT_ASSERT(!_testObj->startsWith(SyncName(Str("abcdefg")), SyncName(Str("ABCD"))));
-}
-
-void TestUtility::testStartsWithInsensitive() {
-    CPPUNIT_ASSERT(_testObj->startsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("aBcD"))));
-    CPPUNIT_ASSERT(_testObj->startsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("ABCD"))));
-}
-
-void TestUtility::testEndsWith() {
-    CPPUNIT_ASSERT(_testObj->endsWith(SyncName(Str("abcdefg")), SyncName(Str("defg"))));
-    CPPUNIT_ASSERT(!_testObj->endsWith(SyncName(Str("abcdefg")), SyncName(Str("abc"))));
-    CPPUNIT_ASSERT(!_testObj->endsWith(SyncName(Str("abcdefg")), SyncName(Str("dEfG"))));
-}
-
-void TestUtility::testEndsWithInsensitive() {
-    CPPUNIT_ASSERT(_testObj->endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("defg"))));
-    CPPUNIT_ASSERT(!_testObj->endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("abc"))));
-    CPPUNIT_ASSERT(_testObj->endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("dEfG"))));
+    CPPUNIT_ASSERT(Utility::v2ws(stringValue) == L"hello");
 }
 
 void TestUtility::testIsEqualUpToCaseAndEnc(void) {
@@ -190,75 +134,75 @@ void TestUtility::testMoveItemToTrash(void) {
     file << "test";
     file.close();
 
-    CPPUNIT_ASSERT(_testObj->moveItemToTrash(path));
+    CPPUNIT_ASSERT(Utility::moveItemToTrash(path));
     CPPUNIT_ASSERT(!std::filesystem::exists(path));
 
     // Test with a non existing file
-    CPPUNIT_ASSERT(!_testObj->moveItemToTrash(tempDir.path() / "test2.txt"));
+    CPPUNIT_ASSERT(!Utility::moveItemToTrash(tempDir.path() / "test2.txt"));
 
     // Test with a directory
     SyncPath dirPath = tempDir.path() / "testDir";
     std::filesystem::create_directory(dirPath);
-    CPPUNIT_ASSERT(_testObj->moveItemToTrash(dirPath));
+    CPPUNIT_ASSERT(Utility::moveItemToTrash(dirPath));
     CPPUNIT_ASSERT(!std::filesystem::exists(dirPath));
 }
 
 void TestUtility::testGetLinuxDesktopType() {
     std::string currentDesktop;
 
-#ifdef __unix__
-    CPPUNIT_ASSERT(_testObj->getLinuxDesktopType(currentDesktop));
+#if defined(KD_LINUX)
+    CPPUNIT_ASSERT(Utility::getLinuxDesktopType(currentDesktop));
     CPPUNIT_ASSERT(!currentDesktop.empty());
     return;
 #endif
-    CPPUNIT_ASSERT(!_testObj->getLinuxDesktopType(currentDesktop));
+    CPPUNIT_ASSERT(!Utility::getLinuxDesktopType(currentDesktop));
 }
 
 void TestUtility::testStr2HexStr() {
     std::string hexStr;
-    _testObj->str2hexstr("0123[]{}", hexStr);
+    Utility::str2hexstr("0123[]{}", hexStr);
     CPPUNIT_ASSERT(hexStr == "303132335b5d7b7d");
 
-    _testObj->str2hexstr("0123[]{}", hexStr, true);
+    Utility::str2hexstr("0123[]{}", hexStr, true);
     CPPUNIT_ASSERT(hexStr == "303132335B5D7B7D");
 }
 
 void TestUtility::testStrHex2Str() {
     std::string str;
-    _testObj->strhex2str("303132335b5d7b7d", str);
+    Utility::strhex2str("303132335b5d7b7d", str);
     CPPUNIT_ASSERT(str == "0123[]{}");
 
-    _testObj->strhex2str("303132335B5D7B7D", str);
+    Utility::strhex2str("303132335B5D7B7D", str);
     CPPUNIT_ASSERT(str == "0123[]{}");
 }
 
 void TestUtility::testSplitStr() {
-    std::vector<std::string> strList = _testObj->splitStr("01234:abcd:56789", ':');
+    std::vector<std::string> strList = Utility::splitStr("01234:abcd:56789", ':');
     CPPUNIT_ASSERT(strList[0] == "01234" && strList[1] == "abcd" && strList[2] == "56789");
 }
 
 void TestUtility::testJoinStr() {
     std::vector<std::string> strList = {"C'est", " ", "un ", "test!"};
-    CPPUNIT_ASSERT(_testObj->joinStr(strList) == "C'est un test!");
-    CPPUNIT_ASSERT(_testObj->joinStr(strList, '@') == "C'est@ @un @test!");
+    CPPUNIT_ASSERT(Utility::joinStr(strList) == "C'est un test!");
+    CPPUNIT_ASSERT(Utility::joinStr(strList, '@') == "C'est@ @un @test!");
 }
 
 void TestUtility::testPathDepth() {
-    CPPUNIT_ASSERT_EQUAL(0, _testObj->pathDepth({}));
-    CPPUNIT_ASSERT_EQUAL(1, _testObj->pathDepth(SyncPath{"/"}));
-    CPPUNIT_ASSERT_EQUAL(1, _testObj->pathDepth(SyncPath{"A"}));
-    CPPUNIT_ASSERT_EQUAL(2, _testObj->pathDepth(SyncPath{"A/"}));
-    CPPUNIT_ASSERT_EQUAL(2, _testObj->pathDepth(SyncPath{"/A"}));
-    CPPUNIT_ASSERT_EQUAL(3, _testObj->pathDepth(SyncPath{"/A/"}));
-    CPPUNIT_ASSERT_EQUAL(2, _testObj->pathDepth(SyncPath{"A/B"}));
-    CPPUNIT_ASSERT_EQUAL(3, _testObj->pathDepth(SyncPath{"A/B/C"}));
-    CPPUNIT_ASSERT_EQUAL(4, _testObj->pathDepth(SyncPath{"/A/B/C"}));
-    CPPUNIT_ASSERT_EQUAL(5, _testObj->pathDepth(SyncPath{"/A/B/C/"}));
+    CPPUNIT_ASSERT_EQUAL(0, Utility::pathDepth({}));
+    CPPUNIT_ASSERT_EQUAL(1, Utility::pathDepth(SyncPath{"/"}));
+    CPPUNIT_ASSERT_EQUAL(1, Utility::pathDepth(SyncPath{"A"}));
+    CPPUNIT_ASSERT_EQUAL(2, Utility::pathDepth(SyncPath{"A/"}));
+    CPPUNIT_ASSERT_EQUAL(2, Utility::pathDepth(SyncPath{"/A"}));
+    CPPUNIT_ASSERT_EQUAL(3, Utility::pathDepth(SyncPath{"/A/"}));
+    CPPUNIT_ASSERT_EQUAL(2, Utility::pathDepth(SyncPath{"A/B"}));
+    CPPUNIT_ASSERT_EQUAL(3, Utility::pathDepth(SyncPath{"A/B/C"}));
+    CPPUNIT_ASSERT_EQUAL(4, Utility::pathDepth(SyncPath{"/A/B/C"}));
+    CPPUNIT_ASSERT_EQUAL(5, Utility::pathDepth(SyncPath{"/A/B/C/"}));
 
     SyncPath path;
     for (int i = 1; i < 5; i++) {
         path /= "dir";
-        CPPUNIT_ASSERT_EQUAL(i, _testObj->pathDepth(path));
+        CPPUNIT_ASSERT_EQUAL(i, Utility::pathDepth(path));
     }
 }
 
@@ -274,8 +218,8 @@ void TestUtility::testComputeMd5Hash() {
     };
 
     for (const auto &testCase: testCases) {
-        CPPUNIT_ASSERT_EQUAL(testCase.second, _testObj->computeMd5Hash(testCase.first));
-        CPPUNIT_ASSERT_EQUAL(testCase.second, _testObj->computeMd5Hash(testCase.first.c_str(), testCase.first.size()));
+        CPPUNIT_ASSERT_EQUAL(testCase.second, Utility::computeMd5Hash(testCase.first));
+        CPPUNIT_ASSERT_EQUAL(testCase.second, Utility::computeMd5Hash(testCase.first.c_str(), testCase.first.size()));
     }
 }
 
@@ -286,20 +230,9 @@ void TestUtility::testXxHash() {
     ostrm << file.rdbuf();
     std::string data = ostrm.str();
 
-    std::string contentHash = _testObj->computeXxHash(data);
+    std::string contentHash = Utility::computeXxHash(data);
 
     CPPUNIT_ASSERT(contentHash == "5dcc477e35136516");
-}
-
-void TestUtility::testToUpper() {
-    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), _testObj->toUpper("abc"));
-    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), _testObj->toUpper("ABC"));
-    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), _testObj->toUpper("AbC"));
-    CPPUNIT_ASSERT_EQUAL(std::string(""), _testObj->toUpper(""));
-    CPPUNIT_ASSERT_EQUAL(std::string("123"), _testObj->toUpper("123"));
-
-    CPPUNIT_ASSERT_EQUAL(std::string("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"),
-                         _testObj->toUpper("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"));
 }
 
 void TestUtility::testErrId() {
@@ -329,12 +262,12 @@ void TestUtility::testIsDiskRootFolder() {
     CPPUNIT_ASSERT_EQUAL_MESSAGE(suggestedPath.string(), true, CommonUtility::isDiskRootFolder("/", suggestedPath));
     CPPUNIT_ASSERT(suggestedPath.empty() || !CommonUtility::isDiskRootFolder(suggestedPath, dummyPath));
 
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("C:\\Users", suggestedPath));
 
     CPPUNIT_ASSERT_EQUAL_MESSAGE(suggestedPath.string(), true, CommonUtility::isDiskRootFolder("C:\\", suggestedPath));
     CPPUNIT_ASSERT(suggestedPath.empty() || !CommonUtility::isDiskRootFolder(suggestedPath, dummyPath));
-#elif defined(__APPLE__)
+#elif defined(KD_MACOS)
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isDiskRootFolder("/Volumes/drivename/kDrive", suggestedPath));
 
     CPPUNIT_ASSERT_EQUAL_MESSAGE(suggestedPath.string(), true,
@@ -387,37 +320,37 @@ void TestUtility::testCheckIfDirEntryIsManaged() {
 
 void TestUtility::testFormatStdError() {
     const std::error_code ec;
-    std::wstring result = _testObj->formatStdError(ec);
+    std::wstring result = Utility::formatStdError(ec);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'",
                            result.find(L"error: 0") != std::wstring::npos || result.find(L"code: 0") != std::wstring::npos);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", result.length() > 15);
 
     const SyncPath path = "A/AA";
-    result = _testObj->formatStdError(path, ec);
+    result = Utility::formatStdError(path, ec);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'",
                            result.find(L"error: 0") != std::wstring::npos || result.find(L"code: 0") != std::wstring::npos);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", (result.length() - path.native().length()) > 20);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.",
-                           result.find(Utility::s2ws(path.string())) != std::wstring::npos);
+                           result.find(CommonUtility::s2ws(path.string())) != std::wstring::npos);
 }
 
 void TestUtility::testFormatIoError() {
     {
         const IoError ioError = IoError::Success;
         const SyncPath path = "A/AA";
-        const std::wstring result = _testObj->formatIoError(path, ioError);
+        const std::wstring result = Utility::formatIoError(path, ioError);
         CPPUNIT_ASSERT_MESSAGE("The error message should contain 'err='...''",
                                result.find(L"err='Success'") != std::wstring::npos);
         CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.",
                                (result.length() - path.native().length()) > 20);
         CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.",
-                               result.find(Utility::s2ws(path.string())) != std::wstring::npos);
+                               result.find(CommonUtility::s2ws(path.string())) != std::wstring::npos);
     }
 
     {
         const IoError ioError = IoError::Success;
         const QString path = "A/AA";
-        const std::wstring result = _testObj->formatIoError(path, ioError);
+        const std::wstring result = Utility::formatIoError(path, ioError);
         CPPUNIT_ASSERT_MESSAGE("The error message should contain 'err='...''",
                                result.find(L"err='Success'") != std::wstring::npos);
         CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.",
@@ -439,14 +372,14 @@ void TestUtility::testFormatPath() {
 
 void TestUtility::testFormatSyncPath() {
     const SyncPath path = "A/AA";
-    CPPUNIT_ASSERT(Utility::formatSyncPath(path).find(Utility::s2ws(path.string())) != std::wstring::npos);
+    CPPUNIT_ASSERT(Utility::formatSyncPath(path).find(CommonUtility::s2ws(path.string())) != std::wstring::npos);
 }
 
 void TestUtility::testFormatRequest() {
     const std::string uri("http://www.example.com");
     const std::string code = "404";
     const std::string description = "Not Found";
-    const std::string result = _testObj->formatRequest(Poco::URI(uri), code, description);
+    const std::string result = Utility::formatRequest(Poco::URI(uri), code, description);
     CPPUNIT_ASSERT(result.find(uri) != std::string::npos);
     CPPUNIT_ASSERT(result.find(code) != std::string::npos);
     CPPUNIT_ASSERT(result.find(description) != std::string::npos);
@@ -482,7 +415,7 @@ void TestUtility::testNormalizedSyncPath() {
     SyncPath normalizedPath;
     CPPUNIT_ASSERT(Utility::normalizedSyncPath("a/b/c", normalizedPath) && normalizedPath == SyncPath("a/b/c"));
     CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a/b/c", normalizedPath) && normalizedPath == SyncPath("/a/b/c"));
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(a\b\c)", normalizedPath) && normalizedPath == SyncPath("a/b/c"));
     CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(\a\b\c)", normalizedPath) && normalizedPath == SyncPath("/a/b/c"));
     CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a\\b/c", normalizedPath) && normalizedPath == SyncPath("/a/b/c"));
@@ -506,27 +439,11 @@ bool TestUtility::checkNfcAndNfdNamesEqual(const SyncName &name, bool &equal) {
     return true;
 }
 
-void TestUtility::testIsSameOrParentPath() {
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("", "a"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a", "a/b"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a", "a/b/c"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b", "a/b/c"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b/c", "a/b/c1"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b/c1", "a/b/c"));
-    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("/a/b/c", "a/b/c"));
-
-    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("", ""));
-    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a/b/c"));
-    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a", ""));
-    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a/b"));
-    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a"));
-}
-
 void TestUtility::testUserName() {
     std::string userName(Utility::userName());
     LOG_DEBUG(Log::instance()->getLogger(), "userName=" << userName);
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     const char *value = std::getenv("USERPROFILE");
     CPPUNIT_ASSERT(value);
     const SyncPath homeDir(value);

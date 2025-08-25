@@ -16,16 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #define _WINSOCKAPI_
 #endif
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
 #include <Security/Security.h>
-#elif defined(__unix__)
+#elif defined(KD_LINUX)
 #include <libsecret/secret.h>
 #include <Poco/Base64Decoder.h>
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
 #include <memory>
 #include <windows.h>
 #include <wincred.h>
@@ -34,7 +34,6 @@
 #include "migrationparams.h"
 #include "config.h"
 #include "keychainmanager/keychainmanager.h"
-#include "common/utility.h"
 #include "log/log.h"
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"
@@ -159,8 +158,8 @@ ProxyType intToProxyType(int pTypeInt) {
 }
 
 QDir MigrationParams::configDir() {
-    return QStandardPaths::writableLocation(OldUtility::isWindows() ? QStandardPaths::AppDataLocation
-                                                                    : QStandardPaths::AppConfigLocation);
+    return QStandardPaths::writableLocation(CommonUtility::isWindows() ? QStandardPaths::AppDataLocation
+                                                                       : QStandardPaths::AppConfigLocation);
 }
 
 QString MigrationParams::configFileName() {
@@ -354,7 +353,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
 
         std::string keychainKeyAppPassword;
 #ifdef Q_OS_WIN
-        keychainKeyAppPassword += APPLICATION_SHORTNAME;
+        keychainKeyAppPassword += APPLICATION_NAME;
         keychainKeyAppPassword += "_";
 #endif
         keychainKeyAppPassword +=
@@ -435,8 +434,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
             QString vfsModeStr = settings.value(QString(virtualFilesModeC), "off").toString();
 
             // Check vfs support
-            QString fsName(KDC::CommonUtility::fileSystemName(SyncName2QStr(localPath.native())));
-            bool supportVfs = (fsName == "NTFS" || fsName == "apfs");
+            bool supportVfs = CommonUtility::isNTFS(localPath) || CommonUtility::isAPFS(localPath);
             sync.setSupportVfs(supportVfs);
             sync.setVirtualFileMode(modeFromString(vfsModeStr));
             sync.setNavigationPaneClsid(settings.value(QString(navigationPaneClsidC)).toString().toStdString());
@@ -528,7 +526,7 @@ ExitCode MigrationParams::migrateTemplateExclusion() {
     return ExitCode::Ok;
 }
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 ExitCode MigrationParams::migrateAppExclusion() {
     LOG_INFO(Log::instance()->getLogger(), "Migrate app exclusion");
 
@@ -669,7 +667,7 @@ void MigrationParams::deleteUselessConfigFiles() {
 }
 
 ExitCode MigrationParams::getOldAppPwd(const std::string &keychainKey, std::string &appPassword, bool &found) {
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     const std::string serviceName("kDrive");
     void *data;
     uint32 length;
@@ -690,7 +688,7 @@ ExitCode MigrationParams::getOldAppPwd(const std::string &keychainKey, std::stri
         found = true;
         SecKeychainItemFreeContent(nullptr, data);
     }
-#elif defined(__unix__)
+#elif defined(KD_LINUX)
     const std::string package = "kDrive";
 
     const char *userFieldName = "user";
@@ -738,9 +736,9 @@ ExitCode MigrationParams::getOldAppPwd(const std::string &keychainKey, std::stri
         found = true;
         secret_password_free(raw_passwords);
     }
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
     CREDENTIAL *cred;
-    bool result = ::CredRead(Utility::s2ws(keychainKey).c_str(), CRED_TYPE_GENERIC, 0, &cred);
+    bool result = ::CredRead(CommonUtility::s2ws(keychainKey).c_str(), CRED_TYPE_GENERIC, 0, &cred);
 
     if (result == TRUE) {
         LOGW_DEBUG(_logger, L"Application password found");
@@ -776,8 +774,9 @@ ExitCode MigrationParams::getTokenFromAppPassword(const std::string &email, cons
 
         LOG_DEBUG(_logger, "job.runSynchronously() done");
         if (job.hasErrorApi(&errorCode, &errorDescr)) {
-            LOGW_WARN(_logger, L"Failed to retrieve authentification token. code=" << KDC::Utility::s2ws(errorCode) << L" descr="
-                                                                                   << KDC::Utility::s2ws(errorDescr));
+            LOGW_WARN(_logger, L"Failed to retrieve authentification token. code=" << KDC::CommonUtility::s2ws(errorCode)
+                                                                                   << L" descr="
+                                                                                   << KDC::CommonUtility::s2ws(errorDescr));
             return ExitCode::BackError;
         }
 

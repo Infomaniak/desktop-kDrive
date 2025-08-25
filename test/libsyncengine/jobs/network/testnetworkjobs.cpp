@@ -17,30 +17,30 @@
  */
 
 #include "testnetworkjobs.h"
-#include "jobs/network/API_v2/copytodirectoryjob.h"
-#include "jobs/network/API_v2/deletejob.h"
-#include "jobs/network/API_v2/downloadjob.h"
-#include "jobs/network/API_v2/duplicatejob.h"
+#include "jobs/network/kDrive_API/copytodirectoryjob.h"
+#include "jobs/network/kDrive_API/deletejob.h"
+#include "jobs/network/kDrive_API/downloadjob.h"
+#include "jobs/network/kDrive_API/duplicatejob.h"
 #include "jobs/network/getavatarjob.h"
-#include "jobs/network/API_v2/getdriveslistjob.h"
-#include "jobs/network/API_v2/getfileinfojob.h"
-#include "jobs/network/API_v2/getfilelistjob.h"
-#include "jobs/network/API_v2/initfilelistwithcursorjob.h"
-#include "jobs/network/API_v2/getinfouserjob.h"
-#include "jobs/network/API_v2/getinfodrivejob.h"
-#include "jobs/network/API_v2/getthumbnailjob.h"
-#include "jobs/network/API_v2/movejob.h"
-#include "jobs/network/API_v2/renamejob.h"
-#include "jobs/network/API_v2/getsizejob.h"
+#include "jobs/network/kDrive_API/getdriveslistjob.h"
+#include "jobs/network/kDrive_API/getfileinfojob.h"
+#include "jobs/network/kDrive_API/getfilelistjob.h"
+#include "jobs/network/kDrive_API/initfilelistwithcursorjob.h"
+#include "jobs/network/infomaniak_API/getinfouserjob.h"
+#include "jobs/network/kDrive_API/getinfodrivejob.h"
+#include "jobs/network/kDrive_API/getthumbnailjob.h"
+#include "jobs/network/kDrive_API/movejob.h"
+#include "jobs/network/kDrive_API/renamejob.h"
+#include "jobs/network/kDrive_API/getsizejob.h"
 #include "jobs/jobmanager.h"
 #include "network/proxy.h"
 #include "utility/jsonparserutility.h"
 #include "requests/parameterscache.h"
-#include "jobs/network/getappversionjob.h"
+#include "jobs/network/infomaniak_API/getappversionjob.h"
 #include "jobs/network/directdownloadjob.h"
-#include "jobs/network/API_v2/listing/csvfullfilelistwithcursorjob.h"
-#include "jobs/network/API_v2/upload/uploadjob.h"
-#include "jobs/network/API_v2/upload/upload_session/driveuploadsession.h"
+#include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
+#include "jobs/network/kDrive_API/upload/uploadjob.h"
+#include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/filestat.h"
@@ -68,7 +68,7 @@ static const NodeId testFileRemoteId = "97370"; // test_ci/test_networkjobs/test
 static const NodeId testFileRemoteRenameId = "97376"; // test_ci/test_networkjobs/test_rename*.txt
 static const NodeId testFileSymlinkRemoteId = "4284808"; // test_ci/test_networkjobs/test_sl.log
 static const NodeId testFolderSymlinkRemoteId = "4284810"; // test_ci/test_networkjobs/Test_sl
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 static const NodeId testAliasDnDRemoteId = "2023013"; // test_ci/test_networkjobs/test_alias_dnd
 static const NodeId testAliasGoodRemoteId = "2017813"; // test_ci/test_networkjobs/test_alias_good.log
 static const NodeId testAliasCorruptedRemoteId = "2017817"; // test_ci/test_networkjobs/test_alias_corrupted.log
@@ -313,12 +313,11 @@ void TestNetworkJobs::testDownload() {
             IoError ioError = IoError::Success;
             IoHelper::getFileStat(localDestFilePath, &fileStat, ioError);
             CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-#if defined(__APPLE__) or defined(_WIN32)
+#if defined(KD_MACOS) or defined(KD_WINDOWS)
             CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, creationTimeIn.count());
 #endif
             CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, modificationTimeIn.count());
             CPPUNIT_ASSERT_EQUAL(fileStat.size, sizeOut);
-
         }
 
         // Get nodeid
@@ -348,7 +347,7 @@ void TestNetworkJobs::testDownload() {
             IoError ioError = IoError::Success;
             IoHelper::getFileStat(localDestFilePath, &fileStat, ioError);
             CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-#if defined(__APPLE__) or defined(_WIN32)
+#if defined(KD_MACOS) or defined(KD_WINDOWS)
             CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, creationTimeIn.count());
 #endif
             CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, modificationTimeIn.count());
@@ -361,7 +360,7 @@ void TestNetworkJobs::testDownload() {
         CPPUNIT_ASSERT(nodeId == nodeId2);
 
         // Download again but as an EDIT to be propagated on a hydrated placeholder
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         {
             // Set file status
             IoError ioError = IoError::Success;
@@ -397,7 +396,7 @@ void TestNetworkJobs::testDownload() {
             IoError ioError = IoError::Success;
             IoHelper::getFileStat(localDestFilePath, &fileStat, ioError);
             CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-#if defined(__APPLE__) or defined(_WIN32)
+#if defined(KD_MACOS) or defined(KD_WINDOWS)
             CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, creationTimeIn.count());
 #endif
             CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, modificationTimeIn.count());
@@ -408,7 +407,7 @@ void TestNetworkJobs::testDownload() {
         CPPUNIT_ASSERT(IoHelper::getNodeId(localDestFilePath, nodeId2));
         CPPUNIT_ASSERT(nodeId == nodeId2);
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         {
             // Check that the file is still hydrated
             IoError ioError = IoError::Success;
@@ -432,7 +431,7 @@ void TestNetworkJobs::testDownload() {
         };
         std::function<void(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)> MockRename =
                 []([[maybe_unused]] const SyncPath &, [[maybe_unused]] const SyncPath &, std::error_code &ec) {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
                     ec = std::make_error_code(static_cast<std::errc>(ERROR_NOT_SAME_DEVICE));
 #else
                     ec = std::make_error_code(std::errc::cross_device_link);
@@ -440,7 +439,6 @@ void TestNetworkJobs::testDownload() {
                 };
         IoHelperTestUtilities::setRename(MockRename);
         IoHelperTestUtilities::setTempDirectoryPathFunction(MockTempDirectoryPath);
-        int64_t sizeOut = 0;
         // CREATE
         {
             DownloadJob job(nullptr, _driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, true);
@@ -483,7 +481,7 @@ void TestNetworkJobs::testDownload() {
         IoHelperTestUtilities::resetFunctions();
     }
 
-  if (testhelpers::isRunningOnCI() && testhelpers::isExtendedTest(false)) {
+    if (testhelpers::isRunningOnCI() && testhelpers::isExtendedTest(false)) {
         // Not Enough disk space (Only run on CI because it requires a small partition to be set up)
         const SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
         if (smallPartitionPath.empty()) return;
@@ -599,7 +597,7 @@ void TestNetworkJobs::testDownload() {
             IoError ioError = IoError::Success;
             IoHelper::getFileStat(localDestFilePath, &fileStat, ioError);
             CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-#if defined(__APPLE__) or defined(_WIN32)
+#if defined(KD_MACOS) or defined(KD_WINDOWS)
             CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, creationTimeIn.count());
 #endif
             CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, modificationTimeIn.count());
@@ -639,14 +637,14 @@ void TestNetworkJobs::testDownload() {
             IoError ioError = IoError::Success;
             IoHelper::getFileStat(localDestFilePath, &fileStat, ioError);
             CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-#if defined(__APPLE__) or defined(_WIN32)
+#if defined(KD_MACOS) or defined(KD_WINDOWS)
             CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, creationTimeIn.count());
 #endif
             CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, modificationTimeIn.count());
         }
     }
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     {
         const LocalTemporaryDirectory temporaryDirectory("tmp");
         const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
@@ -720,6 +718,30 @@ void TestNetworkJobs::testDownload() {
         CPPUNIT_ASSERT(std::filesystem::is_empty(temporaryDirectory.path()));
     }
 #endif
+}
+
+void TestNetworkJobs::testDownloadHasEnoughSpace() {
+    if (!testhelpers::isRunningOnCI() && testhelpers::isExtendedTest(false)) return;
+
+    // Only run on CI because it requires a small partition to be set up)
+    const SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
+    if (smallPartitionPath.empty()) return;
+
+    // Enough disk space on both paths
+    const LocalTemporaryDirectory temporaryDirectory("tmp");
+    CPPUNIT_ASSERT(DownloadJob::hasEnoughPlace(temporaryDirectory.path(), temporaryDirectory.path(), 9000000,
+                                               Log::instance()->getLogger()));
+
+    // Enough disk space on destination path, but not on tmp path
+    CPPUNIT_ASSERT(
+            !DownloadJob::hasEnoughPlace(temporaryDirectory.path(), smallPartitionPath, 9000000, Log::instance()->getLogger()));
+
+    // Enough disk space on tmp path, but not on destination path
+    CPPUNIT_ASSERT(
+            !DownloadJob::hasEnoughPlace(smallPartitionPath, temporaryDirectory.path(), 9000000, Log::instance()->getLogger()));
+
+    // Not enough disk space on both paths
+    CPPUNIT_ASSERT(!DownloadJob::hasEnoughPlace(smallPartitionPath, smallPartitionPath, 9000000, Log::instance()->getLogger()));
 }
 
 void TestNetworkJobs::testDownloadAborted() {

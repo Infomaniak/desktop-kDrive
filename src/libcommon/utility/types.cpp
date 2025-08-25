@@ -214,12 +214,12 @@ std::string toString(const ExitCause e) {
             return "DriveAsleep";
         case ExitCause::DriveWakingUp:
             return "DriveWakingUp";
-        case ExitCause::ServiceUnavailable:
-            return "ServiceUnavailable";
-        case ExitCause::BadGateway:
-            return "BadGateway";
+        case ExitCause::Http5xx:
+            return "Http5xx";
         case ExitCause::NotEnoughINotifyWatches:
             return "NotEnoughINotifyWatches";
+        case ExitCause::FileOrDirectoryCorrupted:
+            return "FileOrDirectoryCorrupted";
         default:
             return noConversionStr;
     }
@@ -454,21 +454,21 @@ std::string toString(const SyncStep e) {
         case SyncStep::Idle:
             return "Idle";
         case SyncStep::UpdateDetection1:
-            return "UpdateDetection1";
+            return "UpdateDetection1 (Compute FS operations)";
         case SyncStep::UpdateDetection2:
-            return "UpdateDetection2";
+            return "UpdateDetection2 (Update Trees)";
         case SyncStep::Reconciliation1:
-            return "Reconciliation1";
+            return "Reconciliation1 (Platform Inconsistency Checker)";
         case SyncStep::Reconciliation2:
-            return "Reconciliation2";
+            return "Reconciliation2 (Conflict Finder)";
         case SyncStep::Reconciliation3:
-            return "Reconciliation3";
+            return "Reconciliation3 (Conflict Resolver)";
         case SyncStep::Reconciliation4:
-            return "Reconciliation4";
+            return "Reconciliation4 (Operation Generator)";
         case SyncStep::Propagation1:
-            return "Propagation1";
+            return "Propagation1 (Sorter)";
         case SyncStep::Propagation2:
-            return "Propagation2";
+            return "Propagation2 (Executor)";
         case SyncStep::Done:
             return "Done";
         default:
@@ -683,6 +683,8 @@ std::string toString(const IoError e) {
             return "ResultOutOfRange";
         case IoError::CrossDeviceLink:
             return "CrossDeviceLink";
+        case IoError::FileOrDirectoryCorrupted:
+            return "FileOrDirectoryCorrupted";
         case IoError::Unknown:
             return "Unknown";
         default:

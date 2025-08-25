@@ -55,20 +55,26 @@ void ConflictResolverWorker::execute() {
 ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bool &continueSolving) {
     LOGW_SYNCPAL_INFO(_logger, L"Solving " << conflict.type() << L" conflict for items "
                                            << Utility::formatSyncName(conflict.node()->name()) << L" ("
-                                           << Utility::s2ws(*conflict.node()->id()) << L") and "
+                                           << CommonUtility::s2ws(*conflict.node()->id()) << L") and "
                                            << Utility::formatSyncName(conflict.otherNode()->name()) << L" ("
-                                           << Utility::s2ws(*conflict.otherNode()->id()) << L")");
+                                           << CommonUtility::s2ws(*conflict.otherNode()->id()) << L")");
 
     continueSolving = false;
-    auto res = handleConflictOnDehydratedPlaceholder(conflict, continueSolving);
-    if (res != ExitCode::Ok) {
-        return res;
+    if (auto exitCode = handleConflictOnDehydratedPlaceholder(conflict, continueSolving); exitCode != ExitCode::Ok) {
+        LOG_SYNCPAL_WARN(_logger, "Error in handleConflictOnDehydratedPlaceholder: code=" << exitCode);
+        return exitCode;
     }
-
-    handleConflictOnOmittedEdit(conflict, continueSolving);
 
     if (continueSolving) return ExitCode::Ok;
 
+    if (auto exitInfo = handleConflictOnOmittedEdit(conflict, continueSolving); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in handleConflictOnOmittedEdit: " << exitInfo);
+        return exitInfo.code();
+    }
+
+    if (continueSolving) return ExitCode::Ok;
+
+    ExitCode exitCode = ExitCode::Ok;
     switch (conflict.type()) {
         case ConflictType::MoveCreate: {
             generateMoveCreateConflictOperation(conflict, continueSolving);
@@ -76,52 +82,63 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
         }
         case ConflictType::CreateCreate:
         case ConflictType::EditEdit: {
-            res = generateLocalRenameOperation(conflict, continueSolving);
+            exitCode = generateLocalRenameOperation(conflict, continueSolving);
             break;
         }
         case ConflictType::EditDelete: {
-            res = generateEditDeleteConflictOperation(conflict, continueSolving);
+            exitCode = generateEditDeleteConflictOperation(conflict, continueSolving);
             break;
         }
         case ConflictType::MoveDelete: {
-            res = generateMoveDeleteConflictOperation(conflict, continueSolving);
+            exitCode = generateMoveDeleteConflictOperation(conflict, continueSolving);
             break;
         }
         case ConflictType::MoveParentDelete:
         case ConflictType::CreateParentDelete: {
-            res = generateParentDeleteConflictOperation(conflict);
+            exitCode = generateParentDeleteConflictOperation(conflict);
             break;
         }
         case ConflictType::MoveMoveSource:
         case ConflictType::MoveMoveDest:
         case ConflictType::MoveMoveCycle: {
-            res = generateUndoMoveOperation(conflict, conflict.localNode());
+            exitCode = generateUndoMoveOperation(conflict, conflict.localNode());
             break;
         }
         default: {
             LOG_SYNCPAL_WARN(_logger, "Unknown conflict type: " << conflict.type());
-            res = ExitCode::DataError;
+            exitCode = ExitCode::DataError;
             break;
         }
     }
 
-    return res;
+    return exitCode;
 }
 
-void ConflictResolverWorker::handleConflictOnOmittedEdit(const Conflict &conflict, bool &continueSolving) {
-    if (const auto localNode = conflict.localNode();
-        localNode->hasChangeEvent(OperationType::Edit) && !editChangeShouldBePropagated(localNode)) {
-        const auto editOp = std::make_shared<SyncOperation>();
-        editOp->setType(OperationType::Edit);
-        editOp->setAffectedNode(localNode);
-        editOp->setCorrespondingNode(conflict.remoteNode());
-        editOp->setOmit(true);
-        editOp->setTargetSide(ReplicaSide::Remote);
-        editOp->setConflict(conflict);
-        LOGW_SYNCPAL_INFO(_logger, getLogString(editOp));
-        (void) _syncPal->syncOps()->pushOp(editOp);
-        continueSolving = true;
+ExitInfo ConflictResolverWorker::handleConflictOnOmittedEdit(const Conflict &conflict, bool &continueSolving) {
+    if (const auto localNode = conflict.localNode(); localNode->hasChangeEvent(OperationType::Edit)) {
+        bool propagateEdit = true;
+        if (auto exitInfo = editChangeShouldBePropagated(localNode, propagateEdit); !exitInfo) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in OperationProcessor::editChangeShouldBePropagated: "
+                                               << Utility::formatSyncPath(localNode->getPath()) << L" " << exitInfo);
+            _syncPal->addError(Error(errId(), exitInfo));
+            return exitInfo;
+        }
+
+        if (!propagateEdit) {
+            const auto editOp = std::make_shared<SyncOperation>();
+            editOp->setType(OperationType::Edit);
+            editOp->setAffectedNode(localNode);
+            editOp->setCorrespondingNode(conflict.remoteNode());
+            editOp->setOmit(true);
+            editOp->setTargetSide(ReplicaSide::Remote);
+            editOp->setConflict(conflict);
+            LOGW_SYNCPAL_INFO(_logger, getLogString(editOp));
+            (void) _syncPal->syncOps()->pushOp(editOp);
+            continueSolving = true;
+        }
     }
+
+    return ExitCode::Ok;
 }
 
 ExitCode ConflictResolverWorker::handleConflictOnDehydratedPlaceholder(const Conflict &conflict, bool &continueSolving) {
@@ -212,7 +229,7 @@ ExitCode ConflictResolverWorker::generateEditDeleteConflictOperation(const Confl
             // Delete operation wins.
             const auto deleteOp = std::make_shared<SyncOperation>();
             deleteOp->setType(OperationType::Delete);
-            deleteOp->setAffectedNode(deleteNode); 
+            deleteOp->setAffectedNode(deleteNode);
             deleteOp->setCorrespondingNode(editNode);
             deleteOp->setTargetSide(ReplicaSide::Remote);
             deleteOp->setConflict(conflict);
@@ -416,13 +433,12 @@ std::wstring ConflictResolverWorker::getLogString(SyncOpPtr op, bool omit /*= fa
     std::wstringstream ss;
     if (omit) {
         ss << L"Operation " << op->type() << L" to be propagated on DB only for item "
-       << Utility::formatSyncName(op->correspondingNode()->name()) << L" (" << Utility::s2ws(*op->correspondingNode()->id())
-       << L")";
-    }
-    else {
+           << Utility::formatSyncName(op->correspondingNode()->name()) << L" ("
+           << CommonUtility::s2ws(*op->correspondingNode()->id()) << L")";
+    } else {
         ss << L"Operation " << op->type() << L" to be propagated on " << op->targetSide() << L" replica for item "
-       << Utility::formatSyncName(op->correspondingNode()->name()) << L" (" << Utility::s2ws(*op->correspondingNode()->id())
-       << L")";
+           << Utility::formatSyncName(op->correspondingNode()->name()) << L" ("
+           << CommonUtility::s2ws(*op->correspondingNode()->id()) << L")";
     }
     return ss.str();
 }

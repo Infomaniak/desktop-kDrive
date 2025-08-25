@@ -25,7 +25,7 @@
 #include <filesystem>
 #include <system_error>
 
-#if defined(__APPLE__) || defined(__unix__)
+#if defined(KD_MACOS) || defined(KD_LINUX)
 #include <sys/stat.h>
 #endif
 #include <fstream>
@@ -49,7 +49,7 @@ std::function<SyncPath(std::error_code &ec)> IoHelper::_tempDirectoryPath =
 
 std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> IoHelper::_getFileStat = IoHelper::_getFileStatFn;
 bool IoHelper::_unsuportedFSLogged = false;
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> IoHelper::_readAlias =
         [](const SyncPath &path, SyncPath &targetPath, IoError &ioError) -> bool {
     std::string data;
@@ -57,7 +57,7 @@ std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)
 };
 #endif
 
-#ifndef _WIN32
+#ifndef KD_WINDOWS
 IoError IoHelper::stdError2ioError(int error) noexcept {
     switch (error) {
         case 0:
@@ -86,7 +86,7 @@ IoError IoHelper::stdError2ioError(int error) noexcept {
 }
 #endif
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 bool isLocked(const SyncPath &path);
 #endif
 
@@ -110,12 +110,12 @@ IoError IoHelper::posixError2ioError(int error) noexcept {
             return IoError::InvalidArgument;
         case ENAMETOOLONG:
             return IoError::FileNameTooLong;
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         case ESRCH:
 #endif
         case ENOENT:
             return IoError::NoSuchFileOrDirectory;
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         case ENOATTR:
             return IoError::AttrNotFound;
 #endif
@@ -243,7 +243,7 @@ bool IoHelper::_setTargetType(ItemType &itemType) noexcept {
     return true;
 }
 
-#if defined(__APPLE__) || defined(__unix__)
+#if defined(KD_MACOS) || defined(KD_LINUX)
 bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     struct stat sb;
 
@@ -269,7 +269,7 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoErro
         return true;
     }
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     static const std::string VolumesFolder = "/Volumes";
 
     if (path == VolumesFolder) {
@@ -289,7 +289,7 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoErro
     }
 
     isHidden = filestat.isHidden;
-#endif // #ifdef __APPLE__
+#endif
 
     return true;
 }
@@ -326,15 +326,15 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     }
 
     read = ((perms & std::filesystem::perms::owner_read) != std::filesystem::perms::none);
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     write = isLocked(path) ? false : ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
-#elif defined(__unix__)
+#elif defined(KD_LINUX)
     write = ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
 #endif
     exec = ((perms & std::filesystem::perms::owner_exec) != std::filesystem::perms::none);
     return true;
 }
-#endif // #if defined(__APPLE__) || defined(__unix__)
+#endif
 
 bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     // Check whether the item indicated by `path` is a symbolic link.
@@ -342,8 +342,8 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     const bool isSymlink = _isSymlink(path, ec);
 
     itemType.ioError = stdError2ioError(ec);
-#ifdef _WIN32
-    const bool fsSupportsSymlinks = Utility::isNtfs(path);
+#if defined(KD_WINDOWS)
+    const bool fsSupportsSymlinks = CommonUtility::isNTFS(path);
 #else
     const bool fsSupportsSymlinks =
             itemType.ioError != IoError::InvalidArgument; // If true, we assume that the file system in use does support symlinks.
@@ -386,7 +386,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
         return true;
     }
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     // Check whether the item indicated by `path` is an alias.
     bool isAlias = false;
     if (!_checkIfAlias(path, isAlias, itemType.ioError)) {
@@ -420,7 +420,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     }
 #endif
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     // Check whether the item indicated by `path` is a junction.
     if (fsSupportsSymlinks) {
         bool isJunction = false;
@@ -550,7 +550,7 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     ioError = IoError::Success;
     bool endOfDirectory = false;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-        if (entry.is_directory()) {
+        if (entry.is_directory() && !entry.is_symlink()) {
             if (maxDepth == 0) {
                 LOGW_WARN(logger(), L"Max depth reached in getDirectorySize, skipping deeper directories for "
                                             << Utility::formatSyncPath(path));
@@ -644,7 +644,7 @@ class CacheDirectoryHanlder {
             static const SyncName cacheDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName("-cache"));
             if (initDirectoryPathFromEnv("KDRIVE_CACHE_PATH", cacheDirName)) return;
 
-#ifdef __unix__
+#if defined(KD_LINUX)
             if (initDirectoryPathFromEnv("XDG_CACHE_HOME", cacheDirName)) return;
             if (initDirectoryPathFromEnv("HOME", cacheDirName, ".cache")) return;
 #endif
@@ -749,12 +749,12 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
         ioError = IoError::Success;
         return true;
     }
-#ifdef _WIN32 // TODO: Remove this block when migrating the release process to Visual Studio 2022.
+#if defined(KD_WINDOWS) // TODO: Remove this block when migrating the release process to Visual Studio 2022.
     // Prior to Visual Studio 2022, std::filesystem::symlink_status would return a misleading InvalidArgument if the path is
     // found but located on a FAT32 disk. If the file is not found, it works as expected. This behavior is fixed when
     // compiling with VS2022, see
     // https://developercommunity.visualstudio.com/t/std::filesystem::is_symlink-is-broken-on/1638272
-    if (ioError == IoError::InvalidArgument && !Utility::isNtfs(path)) {
+    if (ioError == IoError::InvalidArgument && !CommonUtility::isNTFS(path)) {
         (void) std::filesystem::status(
                 path, ec); // Symlink are only supported on NTFS on Windows, there is no risk to follow a symlink.
         ioError = stdError2ioError(ec);
@@ -967,6 +967,7 @@ IoHelper::DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, bo
 bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDirectory, IoError &ioError) {
     std::error_code ec;
     endOfDirectory = false;
+    ioError = IoError::Success;
 
     if (_invalid) {
         ioError = IoError::InvalidDirectoryIterator;
@@ -980,7 +981,6 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
     const auto dirIteratorEnd = std::filesystem::end(_dirIterator);
     if (_dirIterator == dirIteratorEnd) {
         endOfDirectory = true;
-        ioError = IoError::Success;
         return true;
     }
 
@@ -1003,7 +1003,7 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
     }
 
     if (_dirIterator != dirIteratorEnd) {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         // skip_permission_denied doesn't work on Windows
         try {
             bool dummy = _dirIterator->exists();
@@ -1019,7 +1019,6 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
         nextEntry = *_dirIterator;
         return true;
     } else {
-        ioError = IoError::Success;
         endOfDirectory = true;
         return true;
     }
@@ -1029,7 +1028,7 @@ void IoHelper::DirectoryIterator::disableRecursionPending() {
     _dirIterator.disable_recursion_pending();
 }
 
-#ifndef _WIN32
+#ifndef KD_WINDOWS
 // See iohelper_win.cpp for the Windows implementation
 bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept {
     return _setRightsStd(path, read, write, exec, ioError);

@@ -43,10 +43,10 @@ void PlatformInconsistencyCheckerWorker::execute() {
 
     for (const auto &[remoteId, localId]: _idsToBeRemoved) {
         if (!remoteId.empty() && !_syncPal->updateTree(ReplicaSide::Remote)->deleteNode(remoteId)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << Utility::s2ws(remoteId));
+            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << CommonUtility::s2ws(remoteId));
         }
         if (!localId.empty() && !_syncPal->updateTree(ReplicaSide::Local)->deleteNode(localId)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << Utility::s2ws(localId));
+            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << CommonUtility::s2ws(localId));
         }
     }
 
@@ -198,7 +198,7 @@ bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> 
 }
 
 void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std::shared_ptr<Node> &remoteParentNode) {
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
     std::unordered_map<SyncName, std::shared_ptr<Node>> processedNodesByName; // key: lowercase name
     auto childrenCopy = remoteParentNode->children();
     auto it = childrenCopy.begin();

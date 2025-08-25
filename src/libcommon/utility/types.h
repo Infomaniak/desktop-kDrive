@@ -83,15 +83,15 @@ using StrSet = std::unordered_set<std::string, StringHashFunction, std::equal_to
 
 using SigValueType = std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring>;
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 using StringStream = std::wstringstream;
 using OStringStream = std::wostringstream;
 #define Str(s) L##s
 #define SyncName2QStr(s) QString::fromStdWString(s)
 #define QStr2SyncName(s) s.toStdWString()
-#define Str2SyncName(s) Utility::s2ws(s)
-#define SyncName2Str(s) Utility::ws2s(s)
-#define WStr2SyncName(s) s
+#define Str2SyncName(s) KDC::CommonUtility::s2ws(s)
+#define SyncName2Str(s) KDC::CommonUtility::ws2s(s)
+#define WStr2SyncName(s) SyncName(s)
 #define SyncName2WStr(s) s
 #else
 using StringStream = std::stringstream;
@@ -99,10 +99,10 @@ using OStringStream = std::ostringstream;
 #define Str(s) s
 #define SyncName2QStr(s) QString::fromStdString(s)
 #define QStr2SyncName(s) s.toStdString()
-#define Str2SyncName(s) s
+#define Str2SyncName(s) SyncName(s)
 #define SyncName2Str(s) s
-#define WStr2SyncName(s) Utility::ws2s(s)
-#define SyncName2WStr(s) Utility::s2ws(s)
+#define WStr2SyncName(s) KDC::CommonUtility::ws2s(s)
+#define SyncName2WStr(s) KDC::CommonUtility::s2ws(s)
 #endif
 
 #define XMLStr2Str(s) Poco::XML::fromXMLString(s)
@@ -117,27 +117,27 @@ using OStringStream = std::ostringstream;
 // Fixed in next gcc-12 version
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=95048
 #ifdef __GNUC__
-#define Path2WStr(p) KDC::Utility::s2ws(p.native())
+#define Path2WStr(p) KDC::CommonUtility::s2ws(p.native())
 #define Path2Str(p) p.native()
 #define Str2Path(s) std::filesystem::path(s)
 #else
 #define Path2WStr(p) p.native()
-#define Path2Str(p) KDC::Utility::ws2s(p.native())
-#define Str2Path(s) std::filesystem::path(KDC::Utility::s2ws(s))
+#define Path2Str(p) CommonUtility::ws2s(p.native())
+#define Str2Path(s) std::filesystem::path(CommonUtility::s2ws(s))
 #endif
 
 // CommString macros
 using CommString = std::filesystem::path::string_type;
 #ifdef _WIN32
-#define Str2CommString(s) Utility::s2ws(s)
-#define CommString2Str(s) Utility::ws2s(s)
+#define Str2CommString(s) KDC::CommonUtility::s2ws(s)
+#define CommString2Str(s) KDC::CommonUtility::ws2s(s)
 #define CommString2WStr(s) s
 #define QStr2CommString(s) s.toStdWString()
 #define CommString2QStr(s) QString::fromStdWString(s)
 #else
 #define Str2CommString(s) s
 #define CommString2Str(s) s
-#define CommString2WStr(s) Utility::s2ws(s)
+#define CommString2WStr(s) KDC::CommonUtility::s2ws(s)
 #define QStr2CommString(s) s.toStdString()
 #define CommString2QStr(s) QString::fromStdString(s)
 #endif
@@ -329,9 +329,9 @@ enum class ExitCause {
     InvalidDestination,
     DriveAsleep,
     DriveWakingUp,
-    ServiceUnavailable,
-    BadGateway,
+    Http5xx,
     NotEnoughINotifyWatches,
+    FileOrDirectoryCorrupted,
     EnumEnd
 };
 std::string toString(ExitCause e);
@@ -659,6 +659,7 @@ enum class IoError {
     NoSuchFileOrDirectory,
     ResultOutOfRange,
     CrossDeviceLink,
+    FileOrDirectoryCorrupted,
     Unknown,
     EnumEnd
 };

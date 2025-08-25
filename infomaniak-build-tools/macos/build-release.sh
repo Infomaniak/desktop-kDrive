@@ -26,7 +26,7 @@ export TEAM_IDENTIFIER="864VDCS2QY"
 export APP_DOMAIN="com.infomaniak.drive.desktopclient"
 export SIGN_IDENTITY="Developer ID Application: Infomaniak Network SA (864VDCS2QY)"
 export INSTALLER_SIGN_IDENTITY="Developer ID Installer: Infomaniak Network SA (864VDCS2QY)"
-export QT_DIR="$HOME/Qt/6.2.3/macos"
+export QTDIR="$HOME/Qt/6.2.3/macos"
 
 # Uncomment to build for testing
 # export KDRIVE_DEBUG=1
@@ -78,7 +78,7 @@ if [ -n "$TEAM_IDENTIFIER" ] && [ -n "$SIGN_IDENTITY" ]; then
 	CMAKE_PARAMS+=(-DSOCKETAPI_TEAM_IDENTIFIER_PREFIX="$TEAM_IDENTIFIER.")
 fi
 
-bash infomaniak-build-tools/conan/build_dependencies.sh Release --output-dir="$conan_folder"
+bash infomaniak-build-tools/conan/build_dependencies.sh Release --output-dir="$conan_folder" --make-release
 
 conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
 
@@ -96,7 +96,7 @@ cmake \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DSPARKLE_LIBRARY="$sparkle_dir/Sparkle.framework" \
 	-DKDRIVE_THEME_DIR="$kdrive_dir" \
-	-DBUILD_UNIT_TESTS=0 \
+	-DBUILD_UNIT_TESTS=1 \
 	-DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
 	"${CMAKE_PARAMS[@]}" \
 	"$src_dir"
@@ -132,7 +132,7 @@ if [ -n "$sign_files" ]; then
 	rm -rf "$install_dir/notorization" "$install_dir/notarization/"
 	mkdir -p "$install_dir/notarization"
 
-	for file in sign_files[@]; do
+	for file in "${sign_files[@]}"; do
 		cp -a "$file" "$install_dir/notarization"
 	done
 

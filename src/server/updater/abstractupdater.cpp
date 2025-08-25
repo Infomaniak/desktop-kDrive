@@ -20,9 +20,9 @@
 
 #include "log/log.h"
 #include "requests/parameterscache.h"
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
 #include "sparkleupdater.h"
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
 #include "windowsupdater.h"
 #else
 #include "linuxupdater.h"
@@ -140,9 +140,9 @@ void AbstractUpdater::setState(const UpdateState newState) {
 }
 
 std::unique_ptr<AbstractUpdater> createUpdater() {
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     return std::make_unique<SparkleUpdater>();
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
     return std::make_unique<WindowsUpdater>();
 #else
     // the best we can do is notify about updates

@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.16)
 if(APPLE)
     project(testserver LANGUAGES C CXX OBJC OBJCXX)
 else()

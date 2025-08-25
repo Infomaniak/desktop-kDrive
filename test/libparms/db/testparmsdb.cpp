@@ -364,8 +364,8 @@ void TestParmsDb::testUpdateExclusionTemplates() {
     CPPUNIT_ASSERT(!dbDefaultExclusionTemplates.empty());
 
     std::vector<std::string> fileDefaultExclusionTemplates;
-    const auto &excludeListFileName = Utility::getExcludedTemplateFilePath(true);
-    ParmsDb::instance()->getDefaultExclusionTemplatesFromFile(excludeListFileName, fileDefaultExclusionTemplates);
+    const auto &excludeListFilePath = Utility::getExcludedTemplateFilePath(true);
+    ParmsDb::instance()->getDefaultExclusionTemplatesFromFile(excludeListFilePath.c_str(), fileDefaultExclusionTemplates);
 
     std::vector<ExclusionTemplate> dbUserExclusionTemplates;
     (void) ParmsDb::instance()->selectUserExclusionTemplates(dbUserExclusionTemplates);
@@ -378,6 +378,95 @@ void TestParmsDb::testUpdateExclusionTemplates() {
                           std::inserter(dbDefaults, dbDefaults.begin()), [](const auto &t) { return t.templ(); });
 
     CPPUNIT_ASSERT(dbDefaults == fileDefaults);
+}
+
+// We simulate the absence of mandatory columns in a previous version of the database
+// by deleting them.
+bool TestParmsDb::deleteColumns() {
+    int errId;
+    std::string error;
+
+    auto db = ParmsDb::instance();
+
+    // Sync table
+
+    if (!db->createAndPrepareRequest("delete_sync_local_node_id", "ALTER TABLE sync DROP localNodeId;")) return false;
+    if (!db->queryExec("delete_sync_local_node_id", errId, error)) {
+        db->queryFree("delete_sync_local_node_id");
+        return db->sqlFail("delete_sync_local_node_id", error);
+    }
+    db->queryFree("delete_sync_local_node_id");
+
+
+    // Parameters table
+
+    if (!db->createAndPrepareRequest("delete_parameters_max_allowed_cpu", "ALTER TABLE parameters DROP maxAllowedCpu;"))
+        return false;
+    if (!db->queryExec("delete_parameters_max_allowed_cpu", errId, error)) {
+        db->queryFree("delete_parameters_max_allowed_cpu");
+        return db->sqlFail("delete_parameters_max_allowed_cpu", error);
+    }
+    db->queryFree("delete_parameters_upload_session_parallel_jobs");
+
+    if (!db->createAndPrepareRequest("delete_parameters_upload_session_parallel_jobs",
+                                     "ALTER TABLE parameters DROP uploadSessionParallelJobs;"))
+        return false;
+    if (!db->queryExec("delete_parameters_upload_session_parallel_jobs", errId, error)) {
+        db->queryFree("delete_parameters_upload_session_parallel_jobs");
+        return db->sqlFail("delete_parameters_upload_session_parallel_jobs", error);
+    }
+    db->queryFree("delete_parameters_upload_session_parallel_jobs");
+
+
+    if (!db->createAndPrepareRequest("delete_parameters_job_pool_capacity_factor",
+                                     "ALTER TABLE parameters DROP jobPoolCapacityFactor;"))
+        return false;
+    if (!db->queryExec("delete_parameters_job_pool_capacity_factor", errId, error)) {
+        db->queryFree("delete_parameters_job_pool_capacity_factor");
+        return db->sqlFail("delete_parameters_job_pool_capacity_factor", error);
+    }
+    db->queryFree("delete_parameters_job_pool_capacity_factor");
+
+
+    return true;
+}
+
+void TestParmsDb::testUpgradeOfExclusionTemplates() {
+    const SyncName nfcEncodedName = testhelpers::makeNfcSyncName();
+    ExclusionTemplate exclusionTemplate1(SyncName2Str(nfcEncodedName + Str("/A/") + nfcEncodedName)); // user template
+    bool constraintError = false;
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertExclusionTemplate(exclusionTemplate1, constraintError));
+
+    ExclusionTemplate exclusionTemplate2("o"); // user template
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertExclusionTemplate(exclusionTemplate2, constraintError));
+
+    CPPUNIT_ASSERT(deleteColumns()); // Missing columns should be automatically restored before any SELECT request.
+
+    const std::filesystem::path parmsDbPath = ParmsDb::instance()->dbPath();
+    ParmsDb::reset();
+    (void) ParmsDb::instance(parmsDbPath, "3.7.2", true, true);
+
+    std::vector<ExclusionTemplate> dbUserExclusionTemplates;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectUserExclusionTemplates(dbUserExclusionTemplates));
+    CPPUNIT_ASSERT_EQUAL(size_t{5}, dbUserExclusionTemplates.size());
+
+    const SyncName nfdEncodedName = testhelpers::makeNfdSyncName();
+
+    StrSet expectedTemplateSet;
+    (void) expectedTemplateSet.emplace("o");
+    for (const auto &name1: {nfcEncodedName, nfdEncodedName}) {
+        for (const auto &name2: {nfcEncodedName, nfdEncodedName})
+            (void) expectedTemplateSet.emplace(SyncName2Str(name1 + CommonUtility::preferredPathSeparator() + Str("A") +
+                                                            CommonUtility::preferredPathSeparator() + name2));
+    }
+
+    StrSet actualTemplateSet;
+    for (const auto &template_: dbUserExclusionTemplates) {
+        (void) actualTemplateSet.emplace(template_.templ());
+    }
+
+    CPPUNIT_ASSERT(expectedTemplateSet == actualTemplateSet);
+    CPPUNIT_ASSERT(dbUserExclusionTemplates.at(4).templ() == "o");
 }
 
 void TestParmsDb::testUpgrade() {
@@ -481,7 +570,7 @@ void TestParmsDb::testAppState(void) {
     CPPUNIT_ASSERT_EQUAL(std::string("test1"), std::get<std::string>(value));
 }
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 void TestParmsDb::testExclusionApp() {
     ExclusionApp exclusionApp1("app id 1", "description 1");
     ExclusionApp exclusionApp2("app id 2", "description 2");
@@ -536,7 +625,7 @@ void TestParmsDb::testError() {
     }
 }
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 void TestParmsDb::testUpgradeOfShortPathNames() {
     LocalTemporaryDirectory temporaryDirectory("testUpgrade");
     std::vector<SyncPath> syncDbLongPaths(3, SyncPath{});
@@ -573,6 +662,12 @@ void TestParmsDb::testUpgradeOfShortPathNames() {
         sync.setDbId(i + 1);
         ParmsDb::instance()->insertSync(sync);
     }
+
+    // We simulate the absence of mandatory columns in previous version of the database
+    // by deleting them.
+    // Missing columns should be automatically restored before any SELECT request.
+    CPPUNIT_ASSERT(deleteColumns());
+
     const std::filesystem::path parmsDbPath = ParmsDb::instance()->dbPath();
     ParmsDb::reset();
     (void) ParmsDb::instance(parmsDbPath, "3.7.2", true, true);

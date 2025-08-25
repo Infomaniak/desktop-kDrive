@@ -34,7 +34,6 @@
 #include "enablestateholder.h"
 #include "guirequests.h"
 #include "clientgui.h"
-#include "common/filesystembase.h"
 #include "libcommongui/matomoclient.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
@@ -657,7 +656,6 @@ bool DrivePreferencesWidget::addSync(const QString &localFolderPath, bool liteSy
                                      const QString &serverFolderNodeId, QSet<QString> blackSet, QSet<QString> whiteSet) {
     QString localFolderPathNormalized = QDir::fromNativeSeparators(localFolderPath);
 
-    FileSystem::setFolderMinimumPermissions(localFolderPathNormalized);
     KDC::CommonGuiUtility::setupFavLink(localFolderPathNormalized);
 
     int syncDbId;
@@ -900,8 +898,8 @@ void DrivePreferencesWidget::onAddLocalFolder(bool checked) {
                     }
 
                     serverFolderSize = serverFoldersDialog.selectionSize();
-                    blackList = serverFoldersDialog.createBlackList();
-                    whiteList = serverFoldersDialog.createWhiteList();
+                    blackList = serverFoldersDialog.getBlacklist();
+                    whiteList = serverFoldersDialog.getWhiteList();
                     qCDebug(lcDrivePreferencesWidget) << "Server subfolders selected";
                 }
             }
@@ -933,7 +931,6 @@ void DrivePreferencesWidget::onAddLocalFolder(bool checked) {
             // Setup local folder
             const QDir localFolderDir(localFolderPath);
             if (localFolderDir.exists()) {
-                FileSystem::setFolderMinimumPermissions(localFolderPath);
                 KDC::CommonGuiUtility::setupFavLink(localFolderPath);
                 qCDebug(lcDrivePreferencesWidget) << "Local folder setup: " << localFolderPath;
             } else {
@@ -1214,15 +1211,16 @@ void DrivePreferencesWidget::onValidateUpdate(int syncDbId) {
             return;
         }
 
-        // Update the black list
-        QSet<QString> blackSet = treeItemWidget->createBlackSet();
+        // Update the blacklist
+        const QSet<QString> blackSet = treeItemWidget->createBlackSet();
+        if (!GuiUtility::checkBlacklistSize(blackSet.size(), this)) return;
         exitCode = GuiRequests::setSyncIdSet(syncDbId, SyncNodeType::BlackList, blackSet);
         if (exitCode != ExitCode::Ok) {
             qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::setSyncIdSet";
             return;
         }
 
-        // Update the white list
+        // Update the whitelist
         QSet<QString> whiteSet = (oldUndecidedSet + oldBlackSet) - blackSet;
         exitCode = GuiRequests::setSyncIdSet(syncDbId, SyncNodeType::WhiteList, whiteSet);
         if (exitCode != ExitCode::Ok) {

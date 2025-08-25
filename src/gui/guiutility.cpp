@@ -17,7 +17,6 @@
  */
 
 #include "guiutility.h"
-#include "common/utility.h"
 #include "appclient.h"
 #include "parameterscache.h"
 #include "custommessagebox.h"
@@ -45,7 +44,7 @@
 #include <QScreen>
 #include <QUrlQuery>
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include <fileapi.h>
 #endif
 
@@ -429,10 +428,10 @@ QColor GuiUtility::getShadowColor(bool dialog) {
 
 bool GuiUtility::isDarkTheme() {
     bool darkTheme = false;
-    if (KDC::OldUtility::isMac()) {
-        darkTheme = KDC::CommonUtility::hasDarkSystray();
+    if (CommonUtility::isMac()) {
+        darkTheme = CommonUtility::hasDarkSystray();
     } else {
-        darkTheme = KDC::ParametersCache::instance()->parametersInfo().darkTheme();
+        darkTheme = ParametersCache::instance()->parametersInfo().darkTheme();
     }
 
     return darkTheme;
@@ -474,7 +473,7 @@ qint64 GuiUtility::folderSize(const QString &dirPath) {
 qint64 GuiUtility::folderDiskSize(const QString &dirPath) {
     qint64 total = 0;
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     QDirIterator it(dirPath, QDirIterator::Subdirectories);
     DWORD fileSizeLow, fileSizeHigh;
     while (it.hasNext()) {
@@ -630,6 +629,21 @@ QLocale GuiUtility::languageToQLocale(Language language) {
 QString GuiUtility::getDateForCurrentLanguage(const QDateTime &dateTime, const QString &dateFormat) {
     const Language lang = ParametersCache::instance()->parametersInfo().language();
     return languageToQLocale(lang).toString(dateTime, dateFormat);
+}
+
+bool GuiUtility::checkBlacklistSize(const qsizetype, QWidget *) {
+    // TODO : to be removed completely once a definitive solution has been implemented to limit URL length and/or number of item
+    // in blacklist
+    // if (blacklistSize > 50) {
+    //     (void) CustomMessageBox(
+    //             QMessageBox::Warning,
+    //             QCoreApplication::translate("utility",
+    //                                         "You cannot blacklist more than 50 folders. Please uncheck higher-level folders."),
+    //             QMessageBox::Ok, parent)
+    //             .exec();
+    //     return false;
+    // }
+    return true;
 }
 
 #ifdef Q_OS_LINUX

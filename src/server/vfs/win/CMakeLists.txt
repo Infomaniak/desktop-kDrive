@@ -3,8 +3,6 @@ find_package(Qt6)
 # Target
 add_library("${APPLICATION_EXECUTABLE}_vfs_win" SHARED
     vfs_win.h vfs_win.cpp
-    ../../../common/filepermissionholder.h ../../../common/filepermissionholder.cpp
-    ../../../common/filesystembase.h ../../../common/filesystembase.cpp
 )
 
 set_target_properties("${APPLICATION_EXECUTABLE}_vfs_win" PROPERTIES
