@@ -519,15 +519,9 @@ bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isM
         return true;
     }
 
-    bool isSymLinkWithTooManyLevels = false;
-    bool isSpecialItem = false;
-
-    try {
-        isSpecialItem = !dirEntry.is_regular_file() && !dirEntry.is_directory();
-    } catch (const std::filesystem::filesystem_error &e) {
-        isSymLinkWithTooManyLevels = std::errc::too_many_symbolic_link_levels == e.code();
-        if (!isSymLinkWithTooManyLevels) throw;
-    }
+    std::error_code ec;
+    const bool isSpecialItem = !dirEntry.is_regular_file(ec) && !dirEntry.is_directory(ec);
+    const bool isSymLinkWithTooManyLevels = utility_base::isLikeTooManySymbolicLinkLevelsError(ec);
 
     if (isSymLinkWithTooManyLevels) {
         LOGW_DEBUG(logger(), L"Synchronizing invalid symbolic link with " << formatSyncPath(dirEntry.path())

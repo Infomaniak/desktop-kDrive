@@ -33,7 +33,6 @@
 #include <log4cplus/loggingmacros.h>
 
 #define UPDATE_PROGRESS_DELAY 1
-
 namespace KDC {
 
 SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
@@ -674,10 +673,10 @@ void SyncPalWorker::resetVfsFilesStatus() {
         }
     } catch (std::filesystem::filesystem_error &e) {
         LOG_SYNCPAL_WARN(_logger,
-                         "Error caught in SyncPalWorker::resetVfsFilesStatus: code=" << e.code() << " error=" << e.what());
+                         "Exception caught in SyncPalWorker::resetVfsFilesStatus: code=" << e.code() << " error=" << e.what());
         ok = false;
     } catch (...) {
-        LOG_SYNCPAL_WARN(_logger, "Error caught in SyncPalWorker::resetVfsFilesStatus");
+        LOG_SYNCPAL_WARN(_logger, "Exception caught in SyncPalWorker::resetVfsFilesStatus");
         ok = false;
     }
 

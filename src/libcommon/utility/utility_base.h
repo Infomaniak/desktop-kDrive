@@ -54,7 +54,7 @@ inline std::wstring getErrorMessage(DWORD errorMessageID) {
 inline std::wstring getLastErrorMessage() {
     return getErrorMessage(GetLastError());
 }
-inline bool isLikeFileNotFoundError(DWORD dwError) noexcept {
+inline bool isLikeFileNotFoundError(const DWORD dwError) noexcept {
     return (dwError == ERROR_FILE_NOT_FOUND) || (dwError == ERROR_PATH_NOT_FOUND) || (dwError == ERROR_INVALID_DRIVE) ||
            (dwError == ERROR_BAD_NETPATH);
 }
@@ -63,11 +63,32 @@ inline bool isLikeFileNotFoundError(const std::error_code &ec) noexcept {
     return isLikeFileNotFoundError(static_cast<DWORD>(ec.value()));
 }
 
+
+inline bool isLikeTooManySymbolicLinkLevelsError(const DWORD dwError) noexcept {
+    return (dwError == ERROR_CANT_RESOLVE_FILENAME);
+}
+
+inline bool isLikeTooManySymbolicLinkLevelsError(const std::error_code &ec) noexcept {
+    return isLikeTooManySymbolicLinkLevelsError(static_cast<DWORD>(ec.value()));
+}
+
+inline bool isLikeTooManySymbolicLinkLevelsError(const std::filesystem::filesystem_error &e) noexcept {
+    return isLikeTooManySymbolicLinkLevelsError(static_cast<DWORD>(e.code().value()));
+}
+
 #endif
 
 #if defined(KD_MACOS) || defined(KD_LINUX)
 inline bool isLikeFileNotFoundError(const std::error_code &ec) noexcept {
     return ec.value() == static_cast<int>(std::errc::no_such_file_or_directory);
+}
+
+inline bool isLikeTooManySymbolicLinkLevelsError(const std::error_code &ec) noexcept {
+    return ec.value() == static_cast<int>(std::errc::too_many_symbolic_link_levels);
+}
+
+inline bool isLikeTooManySymbolicLinkLevelsError(const std::filesystem::filesystem_error &e) noexcept {
+    return return e.code() == static_cast<int>(std::errc::too_many_symbolic_link_levels);
 }
 #endif
 
