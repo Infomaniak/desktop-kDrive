@@ -424,7 +424,7 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
     if (Utility::isError500(_resHttp.getStatus())) {
         _exitInfo = {ExitCode::BackError, ExitCause::Http5xx};
         disableRetry();
-        return true;
+        return false;
     }
 
     bool res = true;
@@ -456,6 +456,12 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
                 }
                 return true;
             }
+            break;
+        }
+        case Poco::Net::HTTPResponse::HTTP_UNPROCESSABLE_ENTITY: {
+            _exitInfo = {ExitCode::BackError, ExitCause::HttpErr};
+            disableRetry();
+            res = false;
             break;
         }
         case Poco::Net::HTTPResponse::HTTP_UPGRADE_REQUIRED: {

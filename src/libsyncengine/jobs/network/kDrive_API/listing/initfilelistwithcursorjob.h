@@ -27,7 +27,7 @@ class InitFileListWithCursorJob : public AbstractListingJob {
         InitFileListWithCursorJob(int driveDbId, const NodeId &dirId);
 
     private:
-        virtual std::string getSpecificUrl() override;
+        std::string getSpecificUrl() override;
         void setQueryParameters(Poco::URI &uri, bool &canceled) override;
 
         NodeId _dirId;
