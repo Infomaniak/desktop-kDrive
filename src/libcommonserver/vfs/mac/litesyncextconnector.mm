@@ -878,7 +878,7 @@ bool LiteSyncExtConnector::vfsDehydratePlaceHolder(const QString &absoluteFilepa
     const SyncPath stdPath = QStr2Path(absoluteFilepath);
 
     struct stat fileStat;
-    if (stat(stdPath.c_str(), &fileStat) == -1) {
+    if (lstat(stdPath.c_str(), &fileStat) == -1) {
         LOGW_WARN(_logger, L"Call to stat failed: " << Utility::formatErrno(stdPath, errno));
         return false;
     }

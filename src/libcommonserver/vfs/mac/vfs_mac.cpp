@@ -639,7 +639,7 @@ bool VfsMac::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
     const QString path = SyncName2QStr(pathStd.native());
     SyncPath fullPath(pathStd);
     if (std::error_code ec; !std::filesystem::exists(fullPath, ec)) {
-        if (ec.value() != 0) {
+        if (ec && static_cast<int>(std::errc::too_many_symbolic_link_levels) != ec.value()) {
             LOGW_WARN(logger(), L"Failed to check if path exists : " << Utility::formatStdError(fullPath, ec));
             return false;
         }
