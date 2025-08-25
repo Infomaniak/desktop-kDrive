@@ -16,20 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import SwiftUI
+import Cocoa
 
-struct ContentView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+class AppDelegate: NSObject, NSApplicationDelegate {
+    private var window: NSWindow!
+
+    func applicationDidFinishLaunching(_ aNotification: Notification) {
+        window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 850, height: 530),
+            styleMask: [.titled, .closable, .resizable, .miniaturizable],
+            backing: .buffered,
+            defer: false
+        )
+        window.center()
+        window.title = "kDrive"
+
+        let rootViewController = RootViewController()
+        window.contentView = rootViewController.view
+
+        window.makeKeyAndOrderFront(nil)
     }
-}
 
-#Preview {
-    ContentView()
+    func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
+        return true
+    }
 }

@@ -16,16 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCore
-import SwiftUI
+import Cocoa
 
-@main
-struct kDriveApp: App {
-    private let dependencyInjectionHook = TargetAssembly()
+let kDriveApp = NSApplication.shared
+let delegate = AppDelegate()
+kDriveApp.delegate = delegate
 
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
-    }
-}
+_ = NSApplicationMain(CommandLine.argc, CommandLine.unsafeArgv)

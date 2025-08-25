@@ -41,7 +41,7 @@ open class TargetAssembly {
     }
 
     open class func getTargetServices() -> [Factory] {
-        Logger.general.error("targetServices is not implemented in subclass ? Did you forget to override ?")
+        IKLogger.general.error("targetServices is not implemented in subclass ? Did you forget to override ?")
         return []
     }
 

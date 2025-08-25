@@ -19,12 +19,36 @@
 import Foundation
 import OSLog
 
-public extension Logger {
+public extension IKLogger {
     private static let subsystem = Bundle.main.bundleIdentifier ?? "com.infomaniak.drive"
 
-    static let view = Logger(subsystem: subsystem, category: "view")
+    static let view = IKLogger(subsystem: subsystem, category: "view")
+    static let general = IKLogger(subsystem: subsystem, category: "general")
+    static let debug = IKLogger(subsystem: subsystem, category: "debug")
+}
 
-    static let general = Logger(subsystem: subsystem, category: "general")
+public struct IKLogger: Sendable {
+    let subsystem: String
+    let category: String
 
-    static let debug = Logger(subsystem: subsystem, category: "debug")
+    @available(macOS 11.0, *)
+    private var logger: Logger {
+        Logger.init(subsystem: subsystem, category: category)
+    }
+
+    public func log(_ message: String) {
+        if #available(macOS 11.0, *) {
+            logger.log("\(message)")
+        } else {
+            os_log(.default, "%@", message)
+        }
+    }
+
+    public func error(_ message: String) {
+        if #available(macOS 11.0, *) {
+            logger.error("\(message)")
+        } else {
+            os_log(.error, "%@", message)
+        }
+    }
 }
