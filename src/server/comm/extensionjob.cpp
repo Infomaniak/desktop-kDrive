@@ -18,7 +18,8 @@
 
 #include "extensionjob.h"
 #include "commmanager.h"
-#include "utility/utility_base.h"
+#include "libcommon/utility/types.h"
+#include "libcommon/utility/utility_base.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/theme/theme.h"
 #include "libcommonserver/io/iohelper.h"
@@ -372,7 +373,8 @@ void ExtensionJob::commandForceStatus(const CommString &argument, std::shared_pt
 }
 
 void ExtensionJob::commandGetStrings(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
-    static std::array<std::pair<CommString, CommString>, 1> strings{{{Str("CONTEXT_MENU_TITLE"), Theme::instance()->appName()}}};
+    static std::array<std::pair<CommString, CommString>, 1> strings{
+            {{Str("CONTEXT_MENU_TITLE"), Str2CommString(Theme::instance()->appName())}}};
 
     {
         CommString response(Str("GET_STRINGS"));
@@ -411,7 +413,7 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
 
     CommString response(msgId);
     response.append(responseToFinderArgSeparator);
-    response.append(QStr2CommString(Theme::instance()->appNameGUI()));
+    response.append(Str2CommString(Theme::instance()->appName()));
 
     // Find the common sync
     Sync sync;
