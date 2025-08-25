@@ -105,12 +105,12 @@ CommManager::~CommManager() {
 
 void CommManager::start() {
     // Start Gui CommServer
-    LOGW_INFO(Log::instance()->getLogger(), L"Starting " << Utility::s2ws(_guiCommServer->name()));
+    LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(_guiCommServer->name()));
     if (!_guiCommServer->listen({})) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Can't start " << Utility::s2ws(_guiCommServer->name()));
+        LOGW_WARN(Log::instance()->getLogger(), L"Can't start " << CommonUtility::s2ws(_guiCommServer->name()));
         _addError(Error(errId(), ExitCode::SystemError, ExitCause::Unknown));
     } else {
-        LOGW_INFO(Log::instance()->getLogger(), Utility::s2ws(_guiCommServer->name()) << L" started");
+        LOGW_INFO(Log::instance()->getLogger(), CommonUtility::s2ws(_guiCommServer->name()) << L" started");
     }
 
 #if defined(__APPLE__) || defined(_WIN32)
@@ -121,13 +121,13 @@ void CommManager::start() {
               L"Starting " << Utility::s2ws(_extCommServer->name()) << L": " << Utility::formatSyncPath(pipePath));
     if (!_extCommServer->listen(pipePath)) {
 #else
-    LOGW_INFO(Log::instance()->getLogger(), L"Starting " << Utility::s2ws(_extCommServer->name()));
+    LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(_extCommServer->name()));
     if (!_extCommServer->listen({})) {
 #endif
-        LOGW_WARN(Log::instance()->getLogger(), L"Can't start " << Utility::s2ws(_extCommServer->name()));
+        LOGW_WARN(Log::instance()->getLogger(), L"Can't start " << CommonUtility::s2ws(_extCommServer->name()));
         _addError(Error(errId(), ExitCode::SystemError, ExitCause::Unknown));
     } else {
-        LOGW_INFO(Log::instance()->getLogger(), Utility::s2ws(_extCommServer->name()) << L" started");
+        LOGW_INFO(Log::instance()->getLogger(), CommonUtility::s2ws(_extCommServer->name()) << L" started");
     }
 #endif
 }
@@ -230,15 +230,15 @@ void CommManager::onExtQueryReceived(std::shared_ptr<AbstractCommChannel> channe
             if (!channel->canReadLine()) {
                 LOGW_WARN(Log::instance()->getLogger(), L"Failed to parse Extension message - msg="
                                                                 << CommString2WStr(line) << L" channel="
-                                                                << Utility::s2ws(channel->id()));
+                                                                << CommonUtility::s2ws(channel->id()));
                 return;
             }
             line.append(channel->readLine());
         }
         // Remove the separator
         line.erase(line.find(finderExtQuerySeparator));
-        LOGW_INFO(Log::instance()->getLogger(),
-                  L"Received Extension message - msg=" << CommString2WStr(line) << L" channel=" << Utility::s2ws(channel->id()));
+        LOGW_INFO(Log::instance()->getLogger(), L"Received Extension message - msg=" << CommString2WStr(line) << L" channel="
+                                                                                     << CommonUtility::s2ws(channel->id()));
         executeExtCommand(line, channel);
     }
 }

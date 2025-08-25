@@ -40,7 +40,7 @@ void AbstractCommChannel::close() {
 void AbstractCommChannel::sendMessage(const CommString &message, bool doWait) {
     const CommString truncatedLogMessage = truncateLongLogMessage(message);
     LOGW_INFO(Log::instance()->getLogger(),
-              L"Sending message: " << CommString2WStr(truncatedLogMessage) << L" to: " << Utility::s2ws(id()));
+              L"Sending message: " << CommString2WStr(truncatedLogMessage) << L" to: " << CommonUtility::s2ws(id()));
 
     // Add messages separator if needed
     CommString localMessage = message;

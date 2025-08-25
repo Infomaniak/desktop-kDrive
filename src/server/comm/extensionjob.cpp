@@ -18,6 +18,7 @@
 
 #include "extensionjob.h"
 #include "commmanager.h"
+#include "utility/utility_base.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/theme/theme.h"
 #include "libcommonserver/io/iohelper.h"
@@ -254,7 +255,16 @@ void ExtensionJob::commandOpenPrivateLink(const CommString &argument, std::share
 void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
     const auto fileList = CommonUtility::splitCommString(argument, messageArgSeparator);
 
+    SyncPath parentFolder;
 #ifdef __APPLE__
+    if (fileList.size() == 1) {
+        const auto fileData = FileData::get(fileList[0]);
+        if (fileData.isDirectory) {
+            monitorFolderHydration(fileData);
+            parentFolder = fileData.localPath;
+        }
+    }
+
     std::vector<SyncPath> fileListExpanded;
     processFileList(fileList, fileListExpanded);
 
@@ -304,7 +314,7 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
         }
 #endif
 
-        if (!addDownloadJob(fileData)) {
+        if (!addDownloadJob(fileData, parentFolder)) {
             LOGW_INFO(Log::instance()->getLogger(),
                       L"Error in ExtensionJob::addDownloadJob - " << Utility::formatSyncPath(filePath));
             continue;
@@ -362,8 +372,7 @@ void ExtensionJob::commandForceStatus(const CommString &argument, std::shared_pt
 }
 
 void ExtensionJob::commandGetStrings(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
-    static std::array<std::pair<CommString, CommString>, 1> strings{
-            {{Str("CONTEXT_MENU_TITLE"), QStr2CommString(Theme::instance()->appNameGUI())}}};
+    static std::array<std::pair<CommString, CommString>, 1> strings{{{Str("CONTEXT_MENU_TITLE"), Theme::instance()->appName()}}};
 
     {
         CommString response(Str("GET_STRINGS"));
@@ -746,7 +755,7 @@ void ExtensionJob::executeCommand(const CommString &commandLineStr, std::shared_
 
     if (_commands.find(command) == _commands.end()) {
         LOGW_WARN(Log::instance()->getLogger(), L"The command is not supported by this version of the client - cmd="
-                                                        << Utility::s2ws(command) << L" arg=" << CommString2WStr(argument));
+                                                        << CommonUtility::s2ws(command) << L" arg=" << CommString2WStr(argument));
         return;
     }
 
@@ -910,14 +919,14 @@ ExitInfo ExtensionJob::dehydratePlaceholder(const FileData &fileData) {
     return vfsMapIt->second->dehydratePlaceholder(fileData.relativePath);
 }
 
-bool ExtensionJob::addDownloadJob(const FileData &fileData) {
+bool ExtensionJob::addDownloadJob(const FileData &fileData, const SyncPath &parentFolderPath) {
     if (!fileData.syncDbId) return false;
 
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
     if (syncPalMapIt == _commManager->_syncPalMap.end()) return false;
 
     // Create download job
-    const ExitCode exitCode = syncPalMapIt->second->addDlDirectJob(fileData.relativePath, fileData.localPath);
+    const ExitCode exitCode = syncPalMapIt->second->addDlDirectJob(fileData.relativePath, fileData.localPath, parentFolderPath);
     if (exitCode != ExitCode::Ok) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in SyncPal::addDownloadJob - " << Utility::formatSyncPath(fileData.relativePath));
@@ -1201,6 +1210,15 @@ CommString ExtensionJob::buildMessage(const std::string &verb, const SyncPath &p
     return msg;
 }
 
+void ExtensionJob::monitorFolderHydration(const FileData &fileData) const {
+    if (!fileData.syncDbId) return;
+
+    const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
+    if (syncPalMapIt == _commManager->_syncPalMap.end()) return;
+
+    syncPalMapIt->second->monitorFolderHydration(fileData.localPath);
+}
+
 FileData FileData::get(const SyncPath &path) {
 #ifdef _WIN32
     SyncPath tmpPath;
@@ -1249,14 +1267,15 @@ FileData FileData::get(const SyncPath &path) {
         std::error_code ec;
         data.isDirectory = std::filesystem::is_directory(tmpPath, ec);
         if (!data.isDirectory && ec.value() != 0) {
-            const bool exists = !CommonUtility::isLikeFileNotFoundError(ec);
+            const bool exists = !utility_base::isLikeFileNotFoundError(ec);
             if (!exists) {
                 // Item doesn't exist anymore
                 LOGW_DEBUG(Log::instance()->getLogger(), L"Item doesn't exist - " << Utility::formatSyncPath(data.localPath));
             } else {
                 LOGW_WARN(Log::instance()->getLogger(), L"Failed to check if the path is a directory - "
                                                                 << Utility::formatSyncPath(data.localPath) << L" err="
-                                                                << Utility::s2ws(ec.message()) << L" (" << ec.value() << L")");
+                                                                << CommonUtility::s2ws(ec.message()) << L" (" << ec.value()
+                                                                << L")");
             }
             return FileData();
         }

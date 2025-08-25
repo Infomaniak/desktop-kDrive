@@ -158,7 +158,7 @@ class ExtensionJob : public AbstractJob {
         bool syncFileStatus(const FileData &fileData, SyncFileStatus &status, VfsStatus &vfsStatus);
         ExitInfo setPinState(const FileData &fileData, PinState pinState);
         ExitInfo dehydratePlaceholder(const FileData &fileData);
-        bool addDownloadJob(const FileData &fileData);
+        bool addDownloadJob(const FileData &fileData, const SyncPath &parentFolderPath);
         bool cancelDownloadJobs(int syncDbId, const std::vector<CommString> &fileList);
 
         // Commands texts translated
@@ -183,6 +183,8 @@ class ExtensionJob : public AbstractJob {
         static void copyUrlToClipboard(const std::string &link);
         static void openPrivateLink(const std::string &link);
         static CommString buildMessage(const std::string &verb, const SyncPath &path, const std::string &status = "");
+
+        void monitorFolderHydration(const FileData &fileData) const;
 };
 
 } // namespace KDC

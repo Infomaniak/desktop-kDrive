@@ -24,8 +24,8 @@
 #import <SystemExtensions/SystemExtensions.h>
 #import <Foundation/Foundation.h>
 
-#include "common/filepermissionholder.h"
-#include "common/filesystembase.h"
+#include "../common/filepermissionholder.h"
+#include "../common/filesystembase.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
@@ -1246,6 +1246,14 @@ bool LiteSyncCommClient::vfsUpdateFetchStatus(const QString &tmpFilePath, const 
     return true;
 }
 
+bool LiteSyncCommClient::vfsUpdateFetchStatus(const QString &absolutePath, const QString &status) {
+    if (!_private->updateFetchStatus(absolutePath, status)) {
+        LOGW_WARN(_logger, L"Call to updateFetchStatus failed: " << Utility::formatPath(absolutePath));
+        return false;
+    }
+    return true;
+}
+
 bool LiteSyncCommClient::vfsCancelHydrate(const QString &filePath) {
     if (!_private->updateFetchStatus(filePath, QString("CANCEL"))) {
         LOGW_WARN(_logger, L"Call to updateFetchStatus failed: " << Utility::formatPath(filePath));
@@ -1534,9 +1542,8 @@ bool LiteSyncCommClient::checkFilesAttributes(const QString &path, const QString
     const QFileInfoList infoList = dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
 
     bool atLeastOneChanged = false;
-    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
-        QFileInfo fileinfo(Path2QStr(entry.path()));
-        QString tmpPath(fileinfo.filePath());
+    for (const auto &tmpInfo: qAsConst(infoList)) {
+        QString tmpPath(tmpInfo.filePath());
         std::string pinState;
         if (!vfsGetPinState(tmpPath, pinState)) {
             continue;
@@ -1552,7 +1559,7 @@ bool LiteSyncCommClient::checkFilesAttributes(const QString &path, const QString
         }
 
         if (vfsStatus.isSyncing) {
-            if (fileinfo.isDir()) {
+            if (tmpInfo.isDir()) {
                 if (!checkFilesAttributes(tmpPath, localSyncPath, filesToFix)) {
                     // No file has to be changed, but we still need to refresh this directory
                     filesToFix.append(tmpPath);

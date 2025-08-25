@@ -3,6 +3,8 @@ find_package(Qt6)
 # Target
 add_library("${APPLICATION_EXECUTABLE}_vfs_mac" SHARED
         vfs_mac.h vfs_mac.cpp
+        ../../../common/filepermissionholder.h ../../../common/filepermissionholder.cpp
+        ../../../common/filesystembase.h ../../../common/filesystembase.cpp
         ../../comm/litesynccommclient_mac.h ../../comm/litesynccommclient_mac.mm
 )
 
