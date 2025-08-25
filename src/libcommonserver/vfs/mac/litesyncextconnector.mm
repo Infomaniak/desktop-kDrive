@@ -1457,21 +1457,17 @@ bool LiteSyncExtConnector::vfsProcessDirStatus(const SyncPath &path, const SyncP
         if (!vfsGetPinState(entry.path(), pinState)) {
             continue;
         }
-
         if (pinState == litesync_attrs::pinStateExcluded) {
             continue;
         }
-
         VfsStatus childVfsStatus;
         if (!vfsGetStatus(entry.path(), childVfsStatus)) {
             continue;
         }
-
         if (childVfsStatus.isSyncing) {
             hasASyncingChild = true;
             break;
         }
-
         if (!childVfsStatus.isHydrated) {
             hasADehydratedChild = true;
             break;
