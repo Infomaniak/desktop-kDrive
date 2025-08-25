@@ -29,14 +29,20 @@ class GetRootFileListJob : public AbstractTokenNetworkJob {
 
         void setWithPath(const bool val) { _withPath = val; }
 
+        [[nodiscard]] uint64_t totalPages() const { return _totalPages; }
+
     private:
         std::string getSpecificUrl() override;
         void setQueryParameters(Poco::URI &uri, bool &canceled) override;
         ExitInfo setData() override { return ExitCode::Ok; }
 
-        uint64_t _page;
-        bool _dirOnly;
-        bool _withPath = false;
+        bool handleResponse(std::istream &is) override;
+
+        uint64_t _page{0};
+        bool _dirOnly{false};
+        bool _withPath{false};
+
+        uint64_t _totalPages{0};
 };
 
 } // namespace KDC

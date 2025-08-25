@@ -49,12 +49,14 @@ bool hasSuccessfullyFinished(const std::shared_ptr<ISyncWorker> w1, const std::s
 bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
     const auto networkIssue =
             (w1 && w1->exitCode() == ExitCode::NetworkError) || (w2 && w2->exitCode() == ExitCode::NetworkError);
-    const auto http500error = (w1 && w1->exitCode() == ExitCode::BackError && w1->exitCause() == ExitCause::Http5xx) ||
-                              (w2 && w2->exitCode() == ExitCode::BackError && w2->exitCause() == ExitCause::Http5xx);
+    const auto httpBlockingError = (w1 && w1->exitCode() == ExitCode::BackError &&
+                                    (w1->exitCause() == ExitCause::Http5xx || w1->exitCause() == ExitCause::HttpErr)) ||
+                                   (w2 && w2->exitCode() == ExitCode::BackError &&
+                                    (w2->exitCause() == ExitCause::Http5xx || w2->exitCause() == ExitCause::HttpErr));
     const auto syncDirNotAccessible =
             (w1 && w1->exitCode() == ExitCode::SystemError && w1->exitCause() == ExitCause::SyncDirAccessError) ||
             (w2 && w2->exitCode() == ExitCode::SystemError && w2->exitCause() == ExitCause::SyncDirAccessError);
-    return networkIssue || http500error || syncDirNotAccessible;
+    return networkIssue || httpBlockingError || syncDirNotAccessible;
 }
 
 bool shouldBeStoppedAndRestarted(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {

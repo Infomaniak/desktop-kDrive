@@ -107,7 +107,7 @@ void GetAppVersionJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
     }
 }
 
-bool GetAppVersionJob::handleError(std::istream &, const Poco::URI &uri) {
+bool GetAppVersionJob::handleError(const std::string &, const Poco::URI &uri) {
     LOG_DEBUG(_logger, "Request failed: " << Utility::formatRequest(uri, _errorCode, _errorDescr));
     return false;
 }
@@ -121,7 +121,9 @@ VersionChannel GetAppVersionJob::toDistributionChannel(const std::string &val) c
 }
 
 bool GetAppVersionJob::handleResponse(std::istream &is) {
-    if (!AbstractNetworkJob::handleJsonResponse(is)) return false;
+    std::string replyBody;
+    getStringFromStream(is, replyBody);
+    if (!AbstractNetworkJob::handleJsonResponse(replyBody)) return false;
 
     const Poco::JSON::Object::Ptr dataObj = JsonParserUtility::extractJsonObject(jsonRes(), dataKey);
     if (!dataObj) return false;

@@ -84,13 +84,13 @@ bool GetFileInfoJob::handleResponse(std::istream &is) {
     return true;
 }
 
-bool GetFileInfoJob::handleError(std::istream &is, const Poco::URI &uri) {
+bool GetFileInfoJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
     using namespace Poco::Net;
     if (_resHttp.getStatus() == HTTPResponse::HTTP_FORBIDDEN || _resHttp.getStatus() == HTTPResponse::HTTP_NOT_FOUND) {
         return true; // The file is not accessible or doesn't exist
     }
 
-    return AbstractTokenNetworkJob::handleError(is, uri);
+    return AbstractTokenNetworkJob::handleError(replyBody, uri);
 }
 
 std::string GetFileInfoJob::getSpecificUrl() {
