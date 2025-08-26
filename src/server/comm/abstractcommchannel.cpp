@@ -48,15 +48,11 @@ void AbstractCommChannel::sendMessage(const CommString &message) {
         localMessage.push_back(messageSeparator);
     }
 
-    auto sent = write(localMessage);
+    std::string dataStr = CommString2Str(localMessage);
+    auto sent = writeData(dataStr.c_str(), dataStr.length());
     if (sent != localMessage.size()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Could not send all data on socket for " << CommString2WStr(localMessage));
     }
-}
-
-uint64_t AbstractCommChannel::write(const CommString &data) {
-    std::string dataStr = CommString2Str(data);
-    return writeData(dataStr.c_str(), dataStr.length());
 }
 
 CommString AbstractCommChannel::readLine() {

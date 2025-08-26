@@ -34,8 +34,8 @@ class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChan
 
         bool open();
         void close();
-        void sendMessage(const CommString &message);
-        CommString readLine();
+        virtual void sendMessage(const CommString &message) final;
+        virtual CommString readLine() final;
 
         //! Reads from the device.
         /*!
@@ -92,8 +92,6 @@ class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChan
         std::function<void(std::shared_ptr<AbstractCommChannel>)> _onLostConnectionCbk;
         std::function<void(std::shared_ptr<AbstractCommChannel>)> _onReadyReadCbk;
         std::function<void(std::shared_ptr<AbstractCommChannel>)> _onDestroyedCbk;
-
-        uint64_t write(const CommString &data);
 
         CommString truncateLongLogMessage(const CommString &message);
 };
