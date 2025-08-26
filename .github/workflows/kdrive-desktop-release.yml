@@ -241,6 +241,7 @@ jobs:
 # Upload the installer and sentry artifacts
   upload-to-kDrive-and-sentry:
     needs: [test-Linux, test-Windows, test-macOS]
+    if: ( needs.test-Linux.result == 'failure' || needs.test-Windows.result == 'failure' || needs.test-macOS.result == 'failure' ) == false
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be runing on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
