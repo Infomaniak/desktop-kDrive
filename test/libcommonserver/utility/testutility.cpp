@@ -302,7 +302,7 @@ void TestUtility::testCheckIfDirEntryIsManaged() {
     CPPUNIT_ASSERT(isManaged);
     CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
-    // Check with a simlink (managed)
+    // Check with a symlink (managed)
     const SyncPath simLinkDir = tempDir.path() / "simLinkDir";
     std::filesystem::create_directory(simLinkDir);
     std::filesystem::create_symlink(path, simLinkDir / "testLink.txt");
@@ -316,6 +316,28 @@ void TestUtility::testCheckIfDirEntryIsManaged() {
     CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
     CPPUNIT_ASSERT(isManaged);
     CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+
+    // A symbolic link on a file with too many levels of inderection.
+    testhelpers::createSymLinkLoop(tempDir.path() / "file1.txt", tempDir.path() / "file2.txt", NodeType::File);
+    for (auto it = std::filesystem::recursive_directory_iterator(tempDir.path());
+         it != std::filesystem::recursive_directory_iterator(); ++it) {
+        isManaged = false;
+        ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
+        CPPUNIT_ASSERT(isManaged);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+    }
+
+    // A symbolic link on a folder with too many levels of inderection.
+    testhelpers::createSymLinkLoop(tempDir.path() / "folder1", tempDir.path() / "folder2", NodeType::Directory);
+    for (auto it = std::filesystem::recursive_directory_iterator(tempDir.path());
+         it != std::filesystem::recursive_directory_iterator(); ++it) {
+        isManaged = false;
+        ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
+        CPPUNIT_ASSERT(isManaged);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+    }
 }
 
 void TestUtility::testFormatStdError() {
