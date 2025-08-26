@@ -33,7 +33,7 @@ public struct IKLogger: Sendable {
 
     @available(macOS 11.0, *)
     private var logger: Logger {
-        Logger.init(subsystem: subsystem, category: category)
+        Logger(subsystem: subsystem, category: category)
     }
 
     public func log(_ message: String) {

@@ -18,8 +18,6 @@
 
 import Foundation
 
-protocol ServerBridgeable: Sendable {
-    
-}
+protocol ServerBridgeable: Sendable {}
 
 final class ServerBridge: ServerBridgeable {}

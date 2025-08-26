@@ -74,12 +74,8 @@ class SidebarViewController: NSViewController {
 
 // MARK: - NSOutlineViewDataSource
 
-extension SidebarViewController: NSOutlineViewDataSource {
-
-}
+extension SidebarViewController: NSOutlineViewDataSource {}
 
 // MARK: - NSOutlineViewDelegate
 
-extension SidebarViewController: NSOutlineViewDelegate {
-
-}
+extension SidebarViewController: NSOutlineViewDelegate {}
