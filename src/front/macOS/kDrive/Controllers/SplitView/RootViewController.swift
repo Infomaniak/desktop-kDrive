@@ -18,9 +18,24 @@
 
 import Cocoa
 
-class RootViewController: NSViewController {
+class RootViewController: NSSplitViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do view setup here.
+        setupSplitView()
+    }
+
+    private func setupSplitView() {
+        splitView.autosaveName = "SplitViewAutoSave"
+        splitView.isVertical = true
+
+        let sidebarViewController = SidebarViewController()
+        let sidebarItem = NSSplitViewItem(sidebarWithViewController: sidebarViewController)
+        sidebarItem.minimumThickness = 200
+        sidebarItem.maximumThickness = 300
+        addSplitViewItem(sidebarItem)
+
+        let homeViewController = HomeViewController()
+        let homeDetailItem = NSSplitViewItem(viewController: homeViewController)
+        addSplitViewItem(homeDetailItem)
     }
 }
