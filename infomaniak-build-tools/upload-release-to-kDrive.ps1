@@ -72,7 +72,7 @@ foreach ($os in $os_s)
     foreach ($lang in $languages)
     {
         $fileName = "kDrive-$versionNumber-$os-$lang.html"
-        $filePath = ".\release_notes\$app\$fileName"
+        $filePath = ".\release_notes\kDrive-$versionNumber\$fileName"
         if (-not (Test-Path $filePath)) {
             Write-Host "❌ File $filePath does not exist, aborting upload." -f Red
             exit 1
