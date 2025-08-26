@@ -24,6 +24,7 @@ struct SidebarItem {
         case menu
     }
 
+    let icon: ImageResource
     let title: String
     let type: ItemType
 
@@ -34,10 +35,26 @@ struct SidebarItem {
 
 class SidebarViewController: NSViewController {
     private let items = [
-        SidebarItem(title: "Accueil", type: .navigation),
-        SidebarItem(title: "Activité", type: .navigation),
-        SidebarItem(title: "Stockage", type: .navigation),
-        SidebarItem(title: "Dossier kDrive", type: .menu)
+        SidebarItem(
+            icon: .house,
+            title: KDriveLocalizable.tabTitleHome,
+            type: .navigation
+        ),
+        SidebarItem(
+            icon: .circularArrowsClockwise,
+            title: KDriveLocalizable.tabTitleActivity,
+            type: .navigation
+        ),
+        SidebarItem(
+            icon: .hardDiskDrive,
+            title: KDriveLocalizable.tabTitleStorage,
+            type: .navigation
+        ),
+        SidebarItem(
+            icon: .kdriveFoldersStacked,
+            title: KDriveLocalizable.sidebarSectionAdvancedSync,
+            type: .menu
+        )
     ]
 
     override func viewDidLoad() {
@@ -52,67 +69,17 @@ class SidebarViewController: NSViewController {
         } else {
             outlineView.selectionHighlightStyle = .sourceList
         }
-
-        let column = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("SidebarColumn"))
-        outlineView.addTableColumn(column)
-        outlineView.outlineTableColumn = column
-
-        let scrollView = NSScrollView()
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.hasVerticalScroller = true
-        scrollView.drawsBackground = false
-        scrollView.documentView = outlineView
-        view.addSubview(scrollView)
-
-        NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor)
-        ])
     }
 }
 
 // MARK: - NSOutlineViewDataSource
 
 extension SidebarViewController: NSOutlineViewDataSource {
-    func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
-        guard item == nil else { return 0 }
-        return items[index]
-    }
 
-    func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
-        return false
-    }
-
-    func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
-        guard item == nil else { return 0 }
-        return items.count
-    }
 }
 
 // MARK: - NSOutlineViewDelegate
 
 extension SidebarViewController: NSOutlineViewDelegate {
-    func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
-        guard let sidebarItem = item as? SidebarItem else { return nil }
 
-        let identifier = NSUserInterfaceItemIdentifier("SidebarCell")
-        let cellView = outlineView.makeView(withIdentifier: identifier, owner: self) as? NSTableCellView
-
-        cellView?.textField?.stringValue = sidebarItem.title
-        if #available(macOS 11.0, *) {
-            cellView?.imageView?.image = NSImage(systemSymbolName: "folder", accessibilityDescription: nil)
-        }
-        return cellView
-    }
-
-    func outlineView(_ outlineView: NSOutlineView, shouldSelectItem item: Any) -> Bool {
-        guard let sidebarItem = item as? SidebarItem else { return false }
-        return sidebarItem.canBeSelected
-    }
-
-    func outlineViewSelectionDidChange(_ notification: Notification) {
-        print(notification)
-    }
 }
