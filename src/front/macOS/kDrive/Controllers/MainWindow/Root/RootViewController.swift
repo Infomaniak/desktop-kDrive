@@ -18,6 +18,10 @@
 
 import Cocoa
 
+extension NSToolbarItem.Identifier {
+    static let trackingSplitView = NSToolbarItem.Identifier("TrackingSplitView")
+}
+
 class RootViewController: NSSplitViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -32,10 +36,28 @@ class RootViewController: NSSplitViewController {
         let sidebarItem = NSSplitViewItem(sidebarWithViewController: sidebarViewController)
         sidebarItem.minimumThickness = 200
         sidebarItem.maximumThickness = 300
+        sidebarItem.canCollapse = true
         addSplitViewItem(sidebarItem)
 
         let homeViewController = HomeViewController()
         let homeDetailItem = NSSplitViewItem(viewController: homeViewController)
         addSplitViewItem(homeDetailItem)
+    }
+}
+
+// MARK: - NSToolbarDelegate
+
+extension RootViewController: NSToolbarDelegate {
+    func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
+        return [.trackingSplitView]
+    }
+
+    func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
+        return [.trackingSplitView]
+    }
+
+    func toolbar(_ toolbar: NSToolbar, itemForItemIdentifier itemIdentifier: NSToolbarItem.Identifier, willBeInsertedIntoToolbar flag: Bool) -> NSToolbarItem? {
+        guard itemIdentifier == .trackingSplitView else { return nil }
+        return NSTrackingSeparatorToolbarItem(identifier: .trackingSplitView, splitView: splitView, dividerIndex: 0)
     }
 }
