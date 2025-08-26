@@ -28,18 +28,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             backing: .buffered,
             defer: false
         )
-        window.titlebarAppearsTransparent = true
-        window.titleVisibility = .hidden
         window.toolbarStyle = .unified
-        window.title = "kDrive"
+
+        window.setFrameAutosaveName("kDriveMainWindow")
 
         let rootViewController = RootViewController()
         window.contentView = rootViewController.view
-
-        let toolbar = NSToolbar()
-        toolbar.delegate = rootViewController
-        toolbar.allowsUserCustomization = false
-        window.toolbar = toolbar
 
         window.makeKeyAndOrderFront(nil)
     }

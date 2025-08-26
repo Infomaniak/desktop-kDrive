@@ -19,16 +19,25 @@
 import Cocoa
 
 struct SidebarItem {
+    enum ItemType {
+        case navigation
+        case menu
+    }
+
     let title: String
-    var shouldSelect = true
+    let type: ItemType
+
+    var canBeSelected: Bool {
+        return type == .navigation
+    }
 }
 
 class SidebarViewController: NSViewController {
     private let items = [
-        SidebarItem(title: "Accueil"),
-        SidebarItem(title: "Activité"),
-        SidebarItem(title: "Stockage"),
-        SidebarItem(title: "Dossier kDrive", shouldSelect: false)
+        SidebarItem(title: "Accueil", type: .navigation),
+        SidebarItem(title: "Activité", type: .navigation),
+        SidebarItem(title: "Stockage", type: .navigation),
+        SidebarItem(title: "Dossier kDrive", type: .menu)
     ]
 
     override func viewDidLoad() {
@@ -100,7 +109,7 @@ extension SidebarViewController: NSOutlineViewDelegate {
 
     func outlineView(_ outlineView: NSOutlineView, shouldSelectItem item: Any) -> Bool {
         guard let sidebarItem = item as? SidebarItem else { return false }
-        return sidebarItem.shouldSelect
+        return sidebarItem.canBeSelected
     }
 
     func outlineViewSelectionDidChange(_ notification: Notification) {

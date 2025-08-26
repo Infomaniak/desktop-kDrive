@@ -8,10 +8,12 @@
 import Cocoa
 
 class HomeViewController: NSViewController {
-
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do view setup here.
     }
-    
+
+    override func viewWillAppear() {
+        super.viewWillAppear()
+        view.window?.title = "Home"
+    }
 }

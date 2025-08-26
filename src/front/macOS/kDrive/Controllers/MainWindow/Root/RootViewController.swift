@@ -28,20 +28,32 @@ class RootViewController: NSSplitViewController {
         setupSplitView()
     }
 
+    override func viewWillAppear() {
+        super.viewWillAppear()
+        setupToolbar()
+    }
+
     private func setupSplitView() {
         splitView.autosaveName = "SplitViewAutoSave"
         splitView.isVertical = true
 
         let sidebarViewController = SidebarViewController()
         let sidebarItem = NSSplitViewItem(sidebarWithViewController: sidebarViewController)
-        sidebarItem.minimumThickness = 200
+        sidebarItem.minimumThickness = 150
         sidebarItem.maximumThickness = 300
-        sidebarItem.canCollapse = true
         addSplitViewItem(sidebarItem)
 
         let homeViewController = HomeViewController()
         let homeDetailItem = NSSplitViewItem(viewController: homeViewController)
         addSplitViewItem(homeDetailItem)
+    }
+
+    private func setupToolbar() {
+        let toolbar = NSToolbar()
+        toolbar.delegate = self
+        toolbar.allowsUserCustomization = false
+        toolbar.displayMode = .iconOnly
+        view.window?.toolbar = toolbar
     }
 }
 
