@@ -59,16 +59,33 @@ class SidebarViewController: NSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupOutlineView()
+    }
 
+    private func setupOutlineView() {
         let outlineView = NSOutlineView()
         outlineView.translatesAutoresizingMaskIntoConstraints = false
         outlineView.dataSource = self
         outlineView.delegate = self
+
         if #available(macOS 11.0, *) {
             outlineView.style = .sourceList
         } else {
             outlineView.selectionHighlightStyle = .sourceList
         }
+        outlineView.headerView = nil
+
+        let singleColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("SidebarColumn"))
+        singleColumn.isEditable = false
+        outlineView.addTableColumn(singleColumn)
+
+        view.addSubview(outlineView)
+        NSLayoutConstraint.activate([
+            outlineView.topAnchor.constraint(equalTo: view.topAnchor),
+            outlineView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            outlineView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            outlineView.leadingAnchor.constraint(equalTo: view.leadingAnchor)
+        ])
     }
 }
 
