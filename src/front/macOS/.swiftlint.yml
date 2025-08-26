@@ -37,3 +37,5 @@ included:
  - kDrive
  - kDriveCoreUI
  - kDriveCore
+excluded:
+ - kDrive/Resources/Generated
