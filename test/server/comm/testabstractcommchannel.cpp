@@ -37,14 +37,12 @@ void TestAbstractCommChannel::testAll() {
 
     CommString message1(Str("Hello word"));
     _commChannelTest->sendMessage(message1);
-    CPPUNIT_ASSERT(_commChannelTest->waitForBytesWritten(1000));
     auto bytesWritten = message1.size() + 1; // +1 for message separator
     CPPUNIT_ASSERT(_commChannelTest->bytesAvailable() == bytesWritten);
     CPPUNIT_ASSERT(_commChannelTest->canReadLine());
 
     CommString message2(Str("How are you ?"));
     _commChannelTest->sendMessage(message2);
-    CPPUNIT_ASSERT(_commChannelTest->waitForBytesWritten(1000));
     bytesWritten += message2.size() + 1; // +1 for message separator
     CPPUNIT_ASSERT(_commChannelTest->bytesAvailable() == bytesWritten);
     CPPUNIT_ASSERT(_commChannelTest->canReadLine());
@@ -52,7 +50,6 @@ void TestAbstractCommChannel::testAll() {
     // Write Chinese text
     CommString message3(Str("每个人都有他的作战策略"));
     _commChannelTest->sendMessage(message3);
-    CPPUNIT_ASSERT(_commChannelTest->waitForBytesWritten(1000));
     bytesWritten += message3.size() + 1; // +1 for message separator
     CPPUNIT_ASSERT(_commChannelTest->bytesAvailable() == bytesWritten);
     CPPUNIT_ASSERT(_commChannelTest->canReadLine());
@@ -60,7 +57,6 @@ void TestAbstractCommChannel::testAll() {
     // Write long text (> 1024 chars)
     CommString message4(100000, Str('x'));
     _commChannelTest->sendMessage(message4);
-    CPPUNIT_ASSERT(_commChannelTest->waitForBytesWritten(1000));
     bytesWritten += message4.size() + 1; // +1 for message separator
     CPPUNIT_ASSERT(_commChannelTest->bytesAvailable() == bytesWritten);
     CPPUNIT_ASSERT(_commChannelTest->canReadLine());

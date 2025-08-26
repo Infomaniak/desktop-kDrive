@@ -37,7 +37,7 @@ void AbstractCommChannel::close() {
     _readBuffer.clear();
 }
 
-void AbstractCommChannel::sendMessage(const CommString &message, bool doWait) {
+void AbstractCommChannel::sendMessage(const CommString &message) {
     const CommString truncatedLogMessage = truncateLongLogMessage(message);
     LOGW_INFO(Log::instance()->getLogger(),
               L"Sending message: " << CommString2WStr(truncatedLogMessage) << L" to: " << CommonUtility::s2ws(id()));
@@ -49,10 +49,6 @@ void AbstractCommChannel::sendMessage(const CommString &message, bool doWait) {
     }
 
     auto sent = write(localMessage);
-    if (doWait) {
-        waitForBytesWritten(1000);
-    }
-
     if (sent != localMessage.size()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Could not send all data on socket for " << CommString2WStr(localMessage));
     }
@@ -61,11 +57,6 @@ void AbstractCommChannel::sendMessage(const CommString &message, bool doWait) {
 uint64_t AbstractCommChannel::write(const CommString &data) {
     std::string dataStr = CommString2Str(data);
     return writeData(dataStr.c_str(), dataStr.length());
-}
-
-bool AbstractCommChannel::waitForBytesWritten(int msecs) {
-    (void) msecs;
-    return true;
 }
 
 CommString AbstractCommChannel::readLine() {

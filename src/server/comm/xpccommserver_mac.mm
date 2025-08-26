@@ -34,10 +34,6 @@ uint64_t XPCCommChannel::readData(char *data, uint64_t maxSize) {
     return size;
 }
 
-uint64_t XPCCommChannel::writeData(const char *data, uint64_t len) {
-    return 0;
-}
-
 uint64_t XPCCommChannel::bytesAvailable() const {
     return _privatePtr->_inBuffer.size();
 }
