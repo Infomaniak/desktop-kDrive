@@ -118,7 +118,7 @@ void CommManager::start() {
 #if defined(_WIN32)
     SyncPath pipePath = createPipe();
     LOGW_INFO(Log::instance()->getLogger(),
-              L"Starting " << Utility::s2ws(_extCommServer->name()) << L": " << Utility::formatSyncPath(pipePath));
+              L"Starting " << CommonUtility::s2ws(_extCommServer->name()) << L": " << Utility::formatSyncPath(pipePath));
     if (!_extCommServer->listen(pipePath)) {
 #else
     LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(_extCommServer->name()));
@@ -288,7 +288,7 @@ void CommManager::onLostGuiConnection(std::shared_ptr<AbstractCommChannel> chann
 #if defined(_WIN32)
 SyncPath CommManager::createPipe() {
     // Get pipe file path
-    std::string name(QStr2Str(Theme::instance()->appName()));
+    std::string name(Theme::instance()->appName());
     name.append("-");
     name.append(Utility::userName());
 
