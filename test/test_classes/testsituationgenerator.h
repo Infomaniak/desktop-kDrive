@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "test_utility/localtemporarydirectory.h"
+
 #include "db/dbnode.h"
 #include "update_detection/update_detector/node.h"
 #include "update_detection/file_system_observer/snapshot/livesnapshot.h"
@@ -116,6 +118,8 @@ class TestSituationGenerator {
         std::shared_ptr<UpdateTree> updateTree(const ReplicaSide side) const {
             return side == ReplicaSide::Local ? _localUpdateTree : _remoteUpdateTree;
         }
+
+        LocalTemporaryDirectory _temporaryDirectory;
 
         std::shared_ptr<SyncDb> _syncDb;
         std::optional<std::reference_wrapper<LiveSnapshot>> _localLiveSnapshot;
