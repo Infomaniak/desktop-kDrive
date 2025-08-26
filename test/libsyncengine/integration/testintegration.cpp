@@ -161,6 +161,7 @@ void TestIntegration::testAll() {
     testParentRename();
     testNegativeModificationTime();
     testDeleteAndRecreateBranch();
+    testSymLinkWithTooManySymbolicLevels();
 }
 
 void TestIntegration::inconsistencyTests() {
@@ -948,6 +949,34 @@ SyncPath TestIntegration::findLocalFileByNamePrefix(const SyncPath &parentAbsolu
         if (CommonUtility::startsWith(entry.path().filename(), namePrefix)) return entry.path();
     }
     return SyncPath();
+}
+
+void TestIntegration::testSymLinkWithTooManySymbolicLevels() {
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    testhelpers::createSymLinkLoop(_syncPal->localPath() / tmpRemoteDir.name() / "file_symlink_1.txt",
+                                   _syncPal->localPath() / tmpRemoteDir.name() / "file_symlink_2.txt", NodeType::File);
+
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    auto remoteTestFileInfo1 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("file_symlink_1.txt"));
+    auto remoteTestFileInfo2 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("file_symlink_2.txt"));
+    CPPUNIT_ASSERT(remoteTestFileInfo1.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo2.isValid());
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(2), countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+
+    testhelpers::createSymLinkLoop(_syncPal->localPath() / tmpRemoteDir.name() / "folder_symlink_1",
+                                   _syncPal->localPath() / tmpRemoteDir.name() / "folder_symlink_2", NodeType::Directory);
+
+    remoteTestFileInfo1 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("folder_symlink_1"));
+    remoteTestFileInfo2 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("folder_symlink_2"));
+    CPPUNIT_ASSERT(remoteTestFileInfo1.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo2.isValid());
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(4), countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+
+    logStep("testSymLinkWithTooManySymbolicLevels");
 }
 
 } // namespace KDC

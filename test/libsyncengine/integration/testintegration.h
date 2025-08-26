@@ -83,6 +83,8 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
 
         void testDeleteAndRecreateBranch();
 
+        void testSymLinkWithTooManySymbolicLevels();
+
         class MockIoHelperFileStat : public IoHelper {
             public:
                 MockIoHelperFileStat() {
