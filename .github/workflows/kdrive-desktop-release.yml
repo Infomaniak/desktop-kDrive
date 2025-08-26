@@ -8,9 +8,8 @@ on:
         description: Select the deployment environment
         default: Internal beta
       skip_tests:
-        type: boolean
         description: Skip unit tests
-        default: false
+        default: 'false'
 
 concurrency:
   group: kDrive-desktop-release-${{ github.head_ref }}
@@ -169,7 +168,7 @@ jobs:
 
 # Tests Windows
   test-Windows:
-    if: ${{ github.event.inputs.skip_tests == false }}
+    if: ${{ github.event.inputs.skip_tests == 'false' }}
     needs: build-Windows
     strategy:
       fail-fast: false
@@ -192,7 +191,7 @@ jobs:
            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 # Tests Linux
   test-Linux:
-    if: ${{ github.event.inputs.skip_tests == false }}
+    if: ${{ github.event.inputs.skip_tests == 'false' }}
     needs: [build-Linux-amd, build-Linux-arm]
     strategy:
       fail-fast: false
@@ -216,7 +215,7 @@ jobs:
 
 # Tests macOS
   test-macOS:
-    if: ${{ github.event.inputs.skip_tests == false }}
+    if: ${{ github.event.inputs.skip_tests == 'false' }}
     needs: build-MacOS
     strategy:
       fail-fast: false
