@@ -75,6 +75,10 @@ CommString AbstractCommChannel::readLine() {
     return line;
 }
 
+std::string AbstractCommChannel::id() {
+    return std::to_string(reinterpret_cast<uintptr_t>(this));
+}
+
 CommString AbstractCommChannel::truncateLongLogMessage(const CommString &message) {
     if (static const size_t maxLogMessageSize = 2048; message.size() > maxLogMessageSize) {
         return message.substr(0, maxLogMessageSize) + Str(" (truncated)");

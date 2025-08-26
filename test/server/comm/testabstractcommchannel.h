@@ -37,7 +37,6 @@ class CommChannelTest : public AbstractCommChannel {
         }
         uint64_t bytesAvailable() const override { return _buffer.size(); }
         bool canReadLine() const override { return _buffer.find('\n') != std::string::npos; }
-        std::string id() const override { return std::to_string(reinterpret_cast<uintptr_t>(this)); }
 
     private:
         std::string _buffer; // Write & read to/from the same buffer

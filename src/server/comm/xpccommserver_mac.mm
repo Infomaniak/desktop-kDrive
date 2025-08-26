@@ -42,10 +42,6 @@ bool XPCCommChannel::canReadLine() const {
     return _privatePtr->_inBuffer.find('\n', 0) != std::string::npos;
 }
 
-std::string XPCCommChannel::id() const {
-    return std::to_string(reinterpret_cast<uintptr_t>(this));
-}
-
 // XPCCommServer implementation
 XPCCommServer::XPCCommServer(const std::string &name, AbstractCommServerPrivate *commServerPrivate) :
     KDC::AbstractCommServer(name),

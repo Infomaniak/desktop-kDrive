@@ -69,7 +69,7 @@ class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChan
         /*!
           \return the device ID.
         */
-        virtual std::string id() const = 0;
+        std::string id();
 
         // Callbacks
         void setLostConnectionCbk(const std::function<void(std::shared_ptr<AbstractCommChannel>)> &cbk) {
