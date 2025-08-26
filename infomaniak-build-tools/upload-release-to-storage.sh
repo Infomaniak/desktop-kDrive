@@ -7,7 +7,7 @@
 
 set -e
 
-version="$1"
+version="$1" # Example: '3.7.1.20250820'
 user="$2"
 pass="$3"
 
@@ -34,11 +34,16 @@ if ! ./mc.exe alias set kdrive-storage https://storage5.infomaniak.com "$user" "
     exit 1
 fi
 
+version_size=${#version}
+end_position=$((size - 9))
+# Removes the date suffix, e.g., removes '.20250820' from '3.7.1.20250820'.
+version_number=${version:0:$end_position} # Example: 3.7.1
+
 # Upload release notes
 for os in "${os_list[@]}"; do
     for lang in "${languages[@]}"; do
-        fileName="$app-$os-$lang.html"
-        filePath="./release_notes/$app/$fileName"
+        fileName="kDrive-$version_number-$os-$lang.html"
+        filePath="./release_notes/kDrive-$version_number/$fileName"
         if [[ ! -f "$filePath" ]]; then
             echo "❌ File $filePath does not exist, aborting upload."
             exit 1
