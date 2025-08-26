@@ -4,10 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace kDrive_client.Model
+namespace kDrive_client.DataModel
 {
     internal class Drive : ObservableObject
     {
@@ -55,7 +56,7 @@ namespace kDrive_client.Model
         }
         public List<Sync?> Syncs
         {
-            get { _syncs = _syncs.Where(d => d != null).ToList(); return _syncs; }
+            get { _syncs = _syncs.Where(s => s != null).ToList(); return _syncs; }
             set => SetProperty(ref _syncs, value);
         }
 

@@ -27,7 +27,7 @@
                 Grid.Row="0" 
                 VerticalAlignment="Top"
                 >
-            <Grid Height="40" VerticalAlignment="Top" Margin="16,4" Padding="0,0,120,0">
+            <Grid Height="40" VerticalAlignment="Top" Margin="16,4" Padding="0,0,130,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <!-- Left: Logo + Text -->
@@ -57,6 +57,7 @@
                 <!-- Middle: Search Box (centered in its column, which takes remaining space) -->
                 <AutoSuggestBox
                     x:Uid="SearchBox"
+                    x:Name="SearchBox"
                     Grid.Column="1"
                     QueryIcon="Find"
                     Width="300"
@@ -64,9 +65,10 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     CornerRadius="3"
-                    Background="{ThemeResource TextControlBackground}"
-                    BorderBrush="{ThemeResource TextControlBorderBrush}"
-                    BorderThickness="1" />
+                    BorderThickness="1"
+                    QuerySubmitted="AutoSuggestBox_QuerySubmitted"
+                    TextChanged="SearchBox_TextChanged"
+                    />
 
                 <!-- Right: Profile Picture -->
                 <PersonPicture
@@ -91,20 +93,27 @@
                     <DropDownButton Margin="10" Background="Transparent" BorderBrush="Transparent">
                         <DropDownButton.Content>
                             <StackPanel Orientation="Horizontal">
-                                <ImageIcon Source="/Assets/kdrive.png" Height="20" />
-                                <TextBlock Text="Infomaniak" Margin="10,0"/>
+                                <TextBlock Text="{x:Bind DriveSelector.SelectedDrive.Name, Mode=OneWay}" Margin="10,0"/>
                             </StackPanel>
                         </DropDownButton.Content>
                         <DropDownButton.Flyout>
-                            <MenuFlyout Placement="BottomEdgeAlignedLeft">
-                                <MenuFlyoutItem Text="Hervé">
+                            <MenuFlyout Placement="BottomEdgeAlignedLeft" x:Name="DriveSelection">
+                                <MenuFlyoutItem Text="Drive">
                                     <MenuFlyoutItem.Icon>
-                                        <ImageIcon Source="/Assets/kdrive.png" />
+                                        <ImageIcon>
+                                            <ImageIcon.Source>
+                                                <SvgImageSource UriSource="/Assets/drive.svg" />
+                                            </ImageIcon.Source>
+                                        </ImageIcon>
                                     </MenuFlyoutItem.Icon>
                                 </MenuFlyoutItem>
-                                <MenuFlyoutItem Text="Clément">
+                                <MenuFlyoutItem Text="{x:Bind DriveSelector.SelectedDrive.Name, Mode=OneWay}">
                                     <MenuFlyoutItem.Icon>
-                                        <ImageIcon Source="/Assets/kdrive.png" />
+                                        <ImageIcon>
+                                            <ImageIcon.Source>
+                                                <SvgImageSource UriSource="/Assets/drive.svg" />
+                                            </ImageIcon.Source>
+                                        </ImageIcon>
                                     </MenuFlyoutItem.Icon>
                                 </MenuFlyoutItem>
                                 <MenuFlyoutItem Text="Mathilde">

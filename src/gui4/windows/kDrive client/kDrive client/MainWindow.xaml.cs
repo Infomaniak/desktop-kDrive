@@ -1,3 +1,5 @@
+using kDrive_client.DataModel;
+using kDrive_client.ServerCommunication;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -19,17 +21,17 @@ using Windows.Foundation.Collections;
 
 namespace kDrive_client
 {
-    /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class MainWindow : Window
     {
+        private DriveSelector DriveSelector = new DriveSelector();
         public MainWindow()
         {
             InitializeComponent();
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
             this.SetTitleBar(AppTitleBar);
+            DriveSelector.DriveSelectorFlyout = DriveSelection;
         }
+        static int count = 0;
 
         private void nvSample_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
@@ -46,7 +48,36 @@ namespace kDrive_client
                         contentFrame.Navigate(typeof(HomePage));
                         break;
                 }
+                DriveSelector.SelectedDrive.Name = "Drive A " + count++;
+            }
+        }
+
+        private async void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            
+        }
+
+        private async void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+
+                App app = (App)Application.Current;
+                List<User> userList = await CommRequests.GetUsers();
+                List<string> suggestions = userList
+                    .Where(user => user.Email.StartsWith(sender.Text, StringComparison.OrdinalIgnoreCase))
+                    .Select(user => user.Email)
+                    .ToList();
+                sender.ItemsSource = suggestions;
             }
         }
     }
+
+    public class DriveSelector
+    {
+        public MenuFlyout? DriveSelectorFlyout { get; set; }
+        internal Drive SelectedDrive { get; set; } = new Drive();
+
+    }
+
 }

@@ -3404,11 +3404,11 @@ bool AppServer::startClient() {
         QProcess *clientProcess = new QProcess(this);
         clientProcess->setProgram(pathToExecutable);
         clientProcess->setArguments(arguments);
-        clientProcess->start();
-        if (!clientProcess->waitForStarted()) {
-            LOG_WARN(_logger, "Failed to start kDrive client");
-            return false;
-        }
+        //clientProcess->start();
+        //if (!clientProcess->waitForStarted()) {
+        //    LOG_WARN(_logger, "Failed to start kDrive client");
+        //    return false;
+        //}
     }
 
     return true;

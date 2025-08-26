@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace kDrive_client.Model
+namespace kDrive_client.DataModel
 {
-    internal class App : ObservableObject
+    internal class AppModel : ObservableObject
     {
         /*
         * App Data Structure:
