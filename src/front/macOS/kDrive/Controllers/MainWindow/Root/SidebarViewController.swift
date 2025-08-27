@@ -18,7 +18,7 @@
 
 import Cocoa
 
-struct SidebarItem {
+struct SidebarItem: Equatable, Hashable {
     enum ItemType {
         case navigation
         case menu
@@ -31,36 +31,42 @@ struct SidebarItem {
     var canBeSelected: Bool {
         return type == .navigation
     }
+
+    static let home = SidebarItem(
+        icon: .house,
+        title: KDriveLocalizable.tabTitleHome,
+        type: .navigation
+    )
+    static let activity = SidebarItem(
+        icon: .circularArrowsClockwise,
+        title: KDriveLocalizable.tabTitleActivity,
+        type: .navigation
+    )
+    static let storage = SidebarItem(
+        icon: .hardDiskDrive,
+        title: KDriveLocalizable.tabTitleStorage,
+        type: .navigation
+    )
+    static let kDriveFolder = SidebarItem(
+        icon: .kdriveFoldersStacked,
+        title: KDriveLocalizable.sidebarSectionAdvancedSync,
+        type: .menu
+    )
+}
+
+protocol SidebarViewControllerDelegate: AnyObject {
+    func sidebarViewController(_ controller: SidebarViewController, didSelectItem item: SidebarItem)
 }
 
 class SidebarViewController: NSViewController {
     static let cellIdentifier = NSUserInterfaceItemIdentifier("SidebarCell")
 
+    weak var delegate: SidebarViewControllerDelegate?
+
     private var scrollView: NSScrollView!
     private var outlineView: NSOutlineView!
 
-    private let items = [
-        SidebarItem(
-            icon: .house,
-            title: KDriveLocalizable.tabTitleHome,
-            type: .navigation
-        ),
-        SidebarItem(
-            icon: .circularArrowsClockwise,
-            title: KDriveLocalizable.tabTitleActivity,
-            type: .navigation
-        ),
-        SidebarItem(
-            icon: .hardDiskDrive,
-            title: KDriveLocalizable.tabTitleStorage,
-            type: .navigation
-        ),
-        SidebarItem(
-            icon: .kdriveFoldersStacked,
-            title: KDriveLocalizable.sidebarSectionAdvancedSync,
-            type: .menu
-        )
-    ]
+    private let items: [SidebarItem] = [.home, .activity, .storage, .kDriveFolder]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -155,5 +161,10 @@ extension SidebarViewController: NSOutlineViewDelegate {
         cell?.textField?.stringValue = item.title
 
         return cell
+    }
+
+    func outlineViewSelectionDidChange(_ notification: Notification) {
+        guard let selectedItem = outlineView.item(atRow: outlineView.selectedRow) as? SidebarItem else { return }
+        delegate?.sidebarViewController(self, didSelectItem: selectedItem)
     }
 }

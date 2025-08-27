@@ -18,24 +18,9 @@
 
 import Cocoa
 
-class AppDelegate: NSObject, NSApplicationDelegate {
-    private var window: NSWindow!
-
-    func applicationDidFinishLaunching(_ aNotification: Notification) {
-        window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 850, height: 530),
-            styleMask: [.titled, .closable, .resizable, .miniaturizable, .fullSizeContentView],
-            backing: .buffered,
-            defer: false
-        )
-        
-        window.toolbarStyle = .unified
-        window.setFrameAutosaveName("kDriveMainWindow")
-        window.contentViewController = RootViewController()
-        window.makeKeyAndOrderFront(nil)
-    }
-
-    func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
-        return true
+class StorageViewController: NSViewController {
+    override func viewDidAppear() {
+        super.viewDidAppear()
+        view.window?.title = KDriveLocalizable.tabTitleStorage
     }
 }

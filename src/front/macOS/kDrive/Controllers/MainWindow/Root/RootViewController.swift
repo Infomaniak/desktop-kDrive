@@ -38,6 +38,7 @@ class RootViewController: NSSplitViewController {
         splitView.isVertical = true
 
         let sidebarViewController = SidebarViewController()
+        sidebarViewController.delegate = self
         let sidebarItem = NSSplitViewItem(sidebarWithViewController: sidebarViewController)
         sidebarItem.minimumThickness = 150
         sidebarItem.maximumThickness = 300
@@ -54,6 +55,27 @@ class RootViewController: NSSplitViewController {
         toolbar.allowsUserCustomization = false
         toolbar.displayMode = .iconOnly
         view.window?.toolbar = toolbar
+    }
+}
+
+// MARK: - SidebarViewControllerDelegate
+
+extension RootViewController: SidebarViewControllerDelegate {
+    func sidebarViewController(_ controller: SidebarViewController, didSelectItem item: SidebarItem) {
+        var contentViewController: NSViewController
+        switch item {
+        case .home:
+            contentViewController = HomeViewController()
+        case .activity:
+            contentViewController = ActivityViewController()
+        case .storage:
+            contentViewController = StorageViewController()
+        default:
+            fatalError("Destination not handled")
+        }
+        
+        removeSplitViewItem(splitViewItems[1])
+        addSplitViewItem(NSSplitViewItem(viewController: contentViewController))
     }
 }
 

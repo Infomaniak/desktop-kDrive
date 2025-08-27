@@ -19,8 +19,8 @@
 import Cocoa
 
 class HomeViewController: NSViewController {
-    override func viewWillAppear() {
-        super.viewWillAppear()
+    override func viewDidAppear() {
+        super.viewDidAppear()
         view.window?.title = KDriveLocalizable.tabTitleHome
     }
 }
