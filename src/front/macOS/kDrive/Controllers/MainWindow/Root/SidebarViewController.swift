@@ -34,6 +34,7 @@ struct SidebarItem {
 }
 
 class SidebarViewController: NSViewController {
+    private var scrollView: NSScrollView!
     private var outlineView: NSOutlineView!
 
     private let items = [
@@ -65,9 +66,9 @@ class SidebarViewController: NSViewController {
     }
 
     private func setupOutlineView() {
-        let scrollView = NSScrollView()
+        scrollView = NSScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.hasVerticalScroller = false
+        scrollView.hasVerticalScroller = true
         scrollView.autohidesScrollers = true
         scrollView.drawsBackground = false
         view.addSubview(scrollView)
@@ -77,6 +78,7 @@ class SidebarViewController: NSViewController {
         outlineView.dataSource = self
         outlineView.delegate = self
         outlineView.focusRingType = .none
+        outlineView.rowSizeStyle = .medium
         scrollView.documentView = outlineView
         if #available(macOS 11.0, *) {
             outlineView.style = .sourceList
@@ -88,6 +90,7 @@ class SidebarViewController: NSViewController {
         let singleColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("SidebarColumn"))
         singleColumn.isEditable = false
         outlineView.addTableColumn(singleColumn)
+        outlineView.outlineTableColumn = singleColumn
 
         NSLayoutConstraint.activate([
             scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -100,6 +103,15 @@ class SidebarViewController: NSViewController {
     override func viewWillAppear() {
         super.viewWillAppear()
         outlineView.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false)
+    }
+
+    override func viewDidLayout() {
+        super.viewDidLayout()
+
+        if let documentView = scrollView.documentView {
+            let isOutlineViewSmallerThanScrollView = documentView.bounds.height <= scrollView.documentVisibleRect.height
+            scrollView.verticalScrollElasticity = isOutlineViewSmallerThanScrollView ? .none : .allowed
+        }
     }
 }
 
@@ -115,14 +127,39 @@ extension SidebarViewController: NSOutlineViewDataSource {
     }
 
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
+        guard item == nil else { return 0 }
         return items.count
-    }
-
-    func outlineView(_ outlineView: NSOutlineView, objectValueFor tableColumn: NSTableColumn?, byItem item: Any?) -> Any? {
-        return nil
     }
 }
 
 // MARK: - NSOutlineViewDelegate
 
-extension SidebarViewController: NSOutlineViewDelegate {}
+extension SidebarViewController: NSOutlineViewDelegate {
+    func outlineView(_ outlineView: NSOutlineView, shouldSelectItem item: Any) -> Bool {
+        guard let item = item as? SidebarItem else { return false }
+        return item.canBeSelected
+    }
+
+    func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
+        guard let item = item as? SidebarItem else { return nil }
+
+        var cell = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("SidebarCell"), owner: self) as? NSTableCellView
+        if cell == nil {
+            cell = NSTableCellView()
+
+            let imageView = NSImageView(image: NSImage(resource: item.icon))
+            cell?.imageView = imageView
+            cell?.addSubview(imageView)
+
+            let textField = NSTextField(string: item.title)
+            textField.isBordered = false
+            textField.isSelectable = false
+            textField.backgroundColor = .clear
+            textField.maximumNumberOfLines = 1
+            textField.lineBreakMode = .byTruncatingTail
+            cell?.textField = textField
+            cell?.addSubview(textField)
+        }
+        return cell
+    }
+}
