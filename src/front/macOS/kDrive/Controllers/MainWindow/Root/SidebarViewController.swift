@@ -147,11 +147,11 @@ extension SidebarViewController: NSOutlineViewDelegate {
         if cell == nil {
             cell = NSTableCellView()
 
-            let imageView = NSImageView(image: NSImage(resource: item.icon))
+            let imageView = NSImageView()
             cell?.imageView = imageView
             cell?.addSubview(imageView)
 
-            let textField = NSTextField(string: item.title)
+            let textField = NSTextField()
             textField.isBordered = false
             textField.isSelectable = false
             textField.backgroundColor = .clear
@@ -160,6 +160,10 @@ extension SidebarViewController: NSOutlineViewDelegate {
             cell?.textField = textField
             cell?.addSubview(textField)
         }
+
+        cell?.imageView?.image = NSImage(resource: item.icon)
+        cell?.textField?.stringValue = item.title
+
         return cell
     }
 }

@@ -19,9 +19,16 @@
 import Cocoa
 
 class SidebarHeaderView: NSView {
-    override func draw(_ dirtyRect: NSRect) {
-        super.draw(dirtyRect)
+    init() {
+        super.init(frame: .zero)
+        setupView()
+    }
 
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    private func setupView() {
         let imageView = NSImageView(image: NSImage(resource: .kdriveAppIcon))
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.image?.size = NSSize(width: 24, height: 24)
