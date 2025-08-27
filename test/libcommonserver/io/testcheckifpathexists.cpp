@@ -85,6 +85,17 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
+    // A non-existing file whose name is too long for the OS.
+    {
+        const SyncPath path = std::string(1000, 'a');
+        bool exists = false;
+        IoError ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(!exists);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::FileNameTooLong), IoError::FileNameTooLong,
+                                     ioError);
+    }
+
     // A dangling symbolic link
     {
         const LocalTemporaryDirectory temporaryDirectory("TestIo");
