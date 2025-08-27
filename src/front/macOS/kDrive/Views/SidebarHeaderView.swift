@@ -31,7 +31,7 @@ class SidebarHeaderView: NSView {
     private func setupView() {
         let imageView = NSImageView(image: NSImage(resource: .kdriveAppIcon))
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.image?.size = NSSize(width: 24, height: 24)
+        imageView.imageScaling = .scaleProportionallyUpOrDown
         addSubview(imageView)
 
         let textField = NSTextField(string: "kDrive")
@@ -47,6 +47,8 @@ class SidebarHeaderView: NSView {
             imageView.leadingAnchor.constraint(equalTo: leadingAnchor),
             imageView.topAnchor.constraint(equalTo: topAnchor),
             imageView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            imageView.widthAnchor.constraint(equalToConstant: 24),
+            imageView.heightAnchor.constraint(equalTo: imageView.widthAnchor),
             textField.leadingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: 8),
             textField.centerYAnchor.constraint(equalTo: imageView.centerYAnchor),
             textField.trailingAnchor.constraint(equalTo: trailingAnchor)

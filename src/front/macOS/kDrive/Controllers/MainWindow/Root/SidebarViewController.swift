@@ -146,6 +146,7 @@ extension SidebarViewController: NSOutlineViewDelegate {
         var cell = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("SidebarCell"), owner: self) as? NSTableCellView
         if cell == nil {
             cell = NSTableCellView()
+            cell?.identifier = NSUserInterfaceItemIdentifier("SidebarCell")
 
             let imageView = NSImageView()
             cell?.imageView = imageView
