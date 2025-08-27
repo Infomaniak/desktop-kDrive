@@ -155,13 +155,15 @@ runs:
           source "${{ github.workspace }}/infomaniak-build-tools/macos/venv/bin/activate"
           pip3 install bs4 lxml || true
           python3 "${{ github.workspace }}/infomaniak-build-tools/macos/insert_xml.py" "${{ github.workspace }}/build-macos/client/install/sparkle/update-macos-${{ steps.get-version.outputs.kDrive_version }}.xml" "kDrive-${{ steps.get-version.outputs.kDrive_version }}"
-          deactivate
-          rm -rf "${{ github.workspace }}/infomaniak-build-tools/macos/venv"
           if [ ! "$?" -eq "0" ]; then
             echo "The insertion of the release notes links in the auto-update file failed."
             echo "Check that your python3 virtual environment is activated and that bs4 and lxml are installed." 
+            deactivate
+            rm -rf "${{ github.workspace }}/infomaniak-build-tools/macos/venv"
             exit 1
           fi
+          deactivate
+          rm -rf "${{ github.workspace }}/infomaniak-build-tools/macos/venv"
         shell: bash
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
