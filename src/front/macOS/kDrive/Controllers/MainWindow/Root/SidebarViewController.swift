@@ -34,6 +34,8 @@ struct SidebarItem {
 }
 
 class SidebarViewController: NSViewController {
+    static let cellIdentifier = NSUserInterfaceItemIdentifier("SidebarCell")
+
     private var scrollView: NSScrollView!
     private var outlineView: NSOutlineView!
 
@@ -143,23 +145,10 @@ extension SidebarViewController: NSOutlineViewDelegate {
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
         guard let item = item as? SidebarItem else { return nil }
 
-        var cell = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("SidebarCell"), owner: self) as? NSTableCellView
+        var cell = outlineView.makeView(withIdentifier: Self.cellIdentifier, owner: self) as? SidebarTableCellView
         if cell == nil {
-            cell = NSTableCellView()
-            cell?.identifier = NSUserInterfaceItemIdentifier("SidebarCell")
-
-            let imageView = NSImageView()
-            cell?.imageView = imageView
-            cell?.addSubview(imageView)
-
-            let textField = NSTextField()
-            textField.isBordered = false
-            textField.isSelectable = false
-            textField.backgroundColor = .clear
-            textField.maximumNumberOfLines = 1
-            textField.lineBreakMode = .byTruncatingTail
-            cell?.textField = textField
-            cell?.addSubview(textField)
+            cell = SidebarTableCellView()
+            cell?.identifier = Self.cellIdentifier
         }
 
         cell?.imageView?.image = NSImage(resource: item.icon)
