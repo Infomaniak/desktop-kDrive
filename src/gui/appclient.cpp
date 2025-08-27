@@ -474,6 +474,10 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
     }
+
+    VersionInfo versionInfo;
+    versionInfo.tag = "3.7.6";
+    emit showWindowsUpdateDialog(versionInfo);
 }
 
 void AppClient::onLogTooBig() {
