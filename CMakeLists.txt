@@ -36,7 +36,7 @@ if(CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
 endif()
 
 if(APPLE)
-    if(NOT BUILD_UNIT_TESTS AND CMAKE_BUILD_TYPE MATCHES "Release")
+    if(CMAKE_BUILD_TYPE MATCHES "Release")
         set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for Mac OS X" FORCE)
     else()
         execute_process(COMMAND uname -m OUTPUT_VARIABLE OSX_ARCH)
