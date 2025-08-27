@@ -10,13 +10,19 @@ namespace kDrive_client.DataModel
 {
     internal class Sync : ObservableObject
     {
-        private long _id = -1;
+        private int _dbId = -1;
+        private int _id = -1;
         private string _localPath = "";
         private string _remotePath = "";
         private bool _supportVfs = false;
 
+        public int DbId
+        {
+            get => _dbId;
+            set => SetProperty(ref _dbId, value);
+        }
 
-        public long Id
+        public int Id
         {
             get => _id;
             set => SetProperty(ref _id, value);

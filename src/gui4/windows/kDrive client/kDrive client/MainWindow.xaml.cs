@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -23,15 +24,39 @@ namespace kDrive_client
 {
     public sealed partial class MainWindow : Window
     {
-        private DriveSelector DriveSelector = new DriveSelector();
+        private DriveSelector _driveSelector = new DriveSelector();
+        private DataModel.AppModel _dataModel => ((App)Application.Current).Data;
         public MainWindow()
         {
             InitializeComponent();
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
             this.SetTitleBar(AppTitleBar);
-            DriveSelector.DriveSelectorFlyout = DriveSelection;
+            _driveSelector.DriveSelectorFlyout = DriveSelection;
+
+            _ = Task.Run(async () =>
+            {
+                Random rand = new Random();
+                int counter = 50;
+                while (true)
+                {
+                    await Task.Delay(1000);
+                    if (_dataModel.Drives.Count > 0)
+                    {
+                        var drive = _dataModel.Drives.First();
+                        DispatcherQueue.TryEnqueue(() =>
+                        {
+                            drive.Name = "Drive_" + rand.Next(1000, 9999).ToString();
+                        });
+                    }
+                    DispatcherQueue.TryEnqueue(() =>
+                    {
+                        _dataModel.Drives.Add(new Drive(++counter) { Name = "Drive_" + rand.Next(1000, 9999).ToString() });
+                    });
+                }
+            });
         }
-        static int count = 0;
+
+        internal DataModel.AppModel ViewModel { get => _dataModel; }
 
         private void nvSample_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
@@ -41,34 +66,10 @@ namespace kDrive_client
                 // Navigate to the selected page
                 switch (selectedItem.Tag)
                 {
-                    case "Home":
-                        contentFrame.Navigate(typeof(HomePage));
-                        break;
                     default:
                         contentFrame.Navigate(typeof(HomePage));
                         break;
                 }
-                DriveSelector.SelectedDrive.Name = "Drive A " + count++;
-            }
-        }
-
-        private async void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
-        {
-            
-        }
-
-        private async void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
-        {
-            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
-            {
-
-                App app = (App)Application.Current;
-                List<User> userList = await CommRequests.GetUsers();
-                List<string> suggestions = userList
-                    .Where(user => user.Email.StartsWith(sender.Text, StringComparison.OrdinalIgnoreCase))
-                    .Select(user => user.Email)
-                    .ToList();
-                sender.ItemsSource = suggestions;
             }
         }
     }
@@ -76,8 +77,7 @@ namespace kDrive_client
     public class DriveSelector
     {
         public MenuFlyout? DriveSelectorFlyout { get; set; }
-        internal Drive SelectedDrive { get; set; } = new Drive();
-
+        internal Drive? SelectedDrive { get; set; } = null;
     }
 
 }

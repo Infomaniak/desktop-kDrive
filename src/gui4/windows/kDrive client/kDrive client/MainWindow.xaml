@@ -5,7 +5,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:kDrive_client"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:dataModel="using:kDrive_client.DataModel"
     mc:Ignorable="d"
     Title="kDrive client">
 
@@ -66,8 +67,6 @@
                     VerticalAlignment="Center"
                     CornerRadius="3"
                     BorderThickness="1"
-                    QuerySubmitted="AutoSuggestBox_QuerySubmitted"
-                    TextChanged="SearchBox_TextChanged"
                     />
 
                 <!-- Right: Profile Picture -->
@@ -80,7 +79,7 @@
             </Grid>
         </Border>
 
-        <!-- NavigationView takes remaining space -->
+        <!-- NavigationView -->
         <NavigationView x:Name="nvSample" 
                         Grid.Row="1"
                         IsBackButtonVisible="Collapsed"
@@ -90,10 +89,38 @@
 
             <NavigationView.PaneCustomContent>
                 <StackPanel>
+                    <ComboBox x:Name="DriveComboBox" Margin="10" Width="200" Background="Transparent" BorderBrush="Transparent" ItemsSource="{x:Bind ViewModel.Drives}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="dataModel:Drive">
+                                <StackPanel Orientation="Horizontal">
+                                    <PersonPicture
+                                        Grid.Column="2"
+                                        ProfilePicture="https://learn.microsoft.com/windows/uwp/contacts-and-calendar/images/shoulder-tap-static-payload.png"
+                                        Height="24" Width="24"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Right"/>
+                                    <TextBlock Text="{x:Bind Name}" Margin="10,0"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+
                     <DropDownButton Margin="10" Background="Transparent" BorderBrush="Transparent">
+                        <DropDownButton.Resources>
+                            <MenuFlyoutItem x:Key="DriveSelectionFlyoutItem" Text="Select Drive" IsEnabled="False">
+                                <MenuFlyoutItem.Icon>
+                                    <ImageIcon>
+                                        <ImageIcon.Source>
+                                            <SvgImageSource UriSource="/Assets/drive.svg" />
+                                        </ImageIcon.Source>
+                                    </ImageIcon>
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                        </DropDownButton.Resources>
                         <DropDownButton.Content>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{x:Bind DriveSelector.SelectedDrive.Name, Mode=OneWay}" Margin="10,0"/>
+                                <TextBlock Text="Aucun drive configuré" Margin="10,0"/>
                             </StackPanel>
                         </DropDownButton.Content>
                         <DropDownButton.Flyout>
@@ -107,7 +134,7 @@
                                         </ImageIcon>
                                     </MenuFlyoutItem.Icon>
                                 </MenuFlyoutItem>
-                                <MenuFlyoutItem Text="{x:Bind DriveSelector.SelectedDrive.Name, Mode=OneWay}">
+                                <MenuFlyoutItem Text="{x:Bind _driveSelector.SelectedDrive.Name, Mode=OneWay}">
                                     <MenuFlyoutItem.Icon>
                                         <ImageIcon>
                                             <ImageIcon.Source>

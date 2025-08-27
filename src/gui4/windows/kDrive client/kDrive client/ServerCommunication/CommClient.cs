@@ -55,7 +55,7 @@ namespace kDrive_client.ServerCommunication
 
             if (client != null && client.Connected)
             {
-                Task.Run(() =>
+                Task.Run(async () =>
                 {
                     while (true)
                     {
@@ -65,7 +65,7 @@ namespace kDrive_client.ServerCommunication
                             {
                                 OnReadyRead();
                             }
-                            Task.Delay(100).Wait(); // Polling interval
+                            await Task.Delay(100).ConfigureAwait(false); // Polling interval
                         }
                         catch (Exception ex)
                         {
@@ -160,8 +160,7 @@ namespace kDrive_client.ServerCommunication
                 {
                     Logger.LogDebug($"No request(Id) found for {requestId}");
                 }
-                await Task.Delay(100).ConfigureAwait(false);
-
+                await Task.Delay(10).ConfigureAwait(false);
             }
         }
 

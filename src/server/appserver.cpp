@@ -653,6 +653,7 @@ void AppServer::crash() const {
 void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &params) {
     QByteArray results = QByteArray();
     QDataStream resultStream(&results, QIODevice::WriteOnly);
+    resultStream.setByteOrder(QDataStream::LittleEndian);
 
     switch (num) {
         case RequestNum::LOGIN_REQUESTTOKEN: {

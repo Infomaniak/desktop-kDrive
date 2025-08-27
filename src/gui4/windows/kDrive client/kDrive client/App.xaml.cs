@@ -36,9 +36,10 @@ namespace kDrive_client
             TrayIcoManager = new TrayIcon.TrayIconManager();
         }
 
-        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             TrayIcoManager.Initialize(Window);
+            await Data.InitializeAsync().ConfigureAwait(false);
         }
     }
 }
