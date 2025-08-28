@@ -653,7 +653,11 @@ void AppServer::crash() const {
 void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &params) {
     QByteArray results = QByteArray();
     QDataStream resultStream(&results, QIODevice::WriteOnly);
-    resultStream.setByteOrder(QDataStream::LittleEndian);
+
+    if (CommonUtility::envVarValue("KDRIVE_COMM_USE_LITTLE_ENDIAN") ==
+        "1") { // .NET comm classes use little endian. For dev purpose this var allow to switch endianness.
+        resultStream.setByteOrder(QDataStream::LittleEndian);
+    }
 
     switch (num) {
         case RequestNum::LOGIN_REQUESTTOKEN: {
@@ -3405,11 +3409,11 @@ bool AppServer::startClient() {
         QProcess *clientProcess = new QProcess(this);
         clientProcess->setProgram(pathToExecutable);
         clientProcess->setArguments(arguments);
-        //clientProcess->start();
-        //if (!clientProcess->waitForStarted()) {
-        //    LOG_WARN(_logger, "Failed to start kDrive client");
-        //    return false;
-        //}
+        clientProcess->start();
+        if (!clientProcess->waitForStarted()) {
+            LOG_WARN(_logger, "Failed to start kDrive client");
+            return false;
+        }
     }
 
     return true;
