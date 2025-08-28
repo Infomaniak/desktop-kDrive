@@ -27,7 +27,6 @@ namespace kDrive_client
     {
         public Window? Window { get; set; }
         public TrayIcon.TrayIconManager TrayIcoManager { get; private set; }
-
         internal ServerCommunication.CommClient ComClient { get; set; } = new ServerCommunication.CommClient();
         internal DataModel.AppModel Data { get; set; } = new DataModel.AppModel();
         public App()
@@ -38,6 +37,7 @@ namespace kDrive_client
 
         protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
+            Window = new MainWindow();
             TrayIcoManager.Initialize(Window);
             await Data.InitializeAsync().ConfigureAwait(false);
         }

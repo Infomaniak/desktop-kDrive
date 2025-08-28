@@ -5,6 +5,7 @@ using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -22,7 +23,7 @@ namespace kDrive_client.DataModel
         private Image? _avatar;
         private bool _isConnected = false;
         private bool _isStaff = false;
-        private List<Drive?> _drives = new List<Drive?>();
+        private ObservableCollection<Drive> _drives = new ObservableCollection<Drive>();
 
         public User(int dbId)
         {
@@ -54,11 +55,11 @@ namespace kDrive_client.DataModel
                CommRequests.GetUserAvatar(DbId).ContinueWith(t => { if (t.Result != null) Avatar = t.Result; }),
                CommRequests.GetUserIsConnected(DbId).ContinueWith(t => { if (t.Result != null) IsConnected = t.Result.Value; }),
                CommRequests.GetUserIsStaff(DbId).ContinueWith(t => { if (t.Result != null) IsStaff = t.Result.Value; }),
-                CommRequests.GetUserDrivesDbIds(DbId).ContinueWith(async t =>
+               CommRequests.GetUserDrivesDbIds(DbId).ContinueWith(async t =>
                 {
                      if (t.Result != null)
                      {
-                          List<Drive?> drives = new List<Drive?>();
+                          ObservableCollection<Drive> drives = new ObservableCollection<Drive>();
                           List<Task> driveTasks = new List<Task>();
                           foreach (var driveDbId in t.Result)
                           {
@@ -116,9 +117,9 @@ namespace kDrive_client.DataModel
             set => SetProperty(ref _isStaff, value);
         }
 
-        public List<Drive?> Drives
+        public ObservableCollection<Drive> Drives
         {
-            get { _drives = _drives.Where(a => a != null).ToList(); return _drives; }
+            get { return _drives; }
             set => SetProperty(ref _drives, value);
         }
     }

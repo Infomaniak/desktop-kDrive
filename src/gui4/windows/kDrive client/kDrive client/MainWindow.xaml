@@ -28,7 +28,7 @@
                 Grid.Row="0" 
                 VerticalAlignment="Top"
                 >
-            <Grid Height="40" VerticalAlignment="Top" Margin="16,4" Padding="0,0,130,0">
+            <Grid Height="40" VerticalAlignment="Top" Margin="16,4">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <!-- Left: Logo + Text -->
@@ -68,14 +68,6 @@
                     CornerRadius="3"
                     BorderThickness="1"
                     />
-
-                <!-- Right: Profile Picture -->
-                <PersonPicture
-                    Grid.Column="2"
-                    ProfilePicture="https://learn.microsoft.com/windows/uwp/contacts-and-calendar/images/shoulder-tap-static-payload.png"
-                    Height="24" Width="24"
-                    VerticalAlignment="Center"
-                    HorizontalAlignment="Right"/>
             </Grid>
         </Border>
 
@@ -89,7 +81,15 @@
 
             <NavigationView.PaneCustomContent>
                 <StackPanel>
-                    <ComboBox x:Name="DriveComboBox" Margin="10" Width="200" Background="Transparent" BorderBrush="Transparent" ItemsSource="{x:Bind ViewModel.Drives}">
+                    <ComboBox 
+                        x:Name="DriveComboBox" 
+                        Margin="10" Width="200" 
+                        Background="Transparent" 
+                        BorderBrush="Transparent" 
+                        ItemsSource="{x:Bind ViewModel.ActiveDrives}"
+                        SelectedItem="{x:Bind ViewModel.SelectedDrive, Mode=TwoWay}"
+                        IsEnabled="{x:Bind ViewModel.IsInitialized, Mode=OneWay}"
+                        >
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="dataModel:Drive">
                                 <StackPanel Orientation="Horizontal">
@@ -105,52 +105,6 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
 
-
-                    <DropDownButton Margin="10" Background="Transparent" BorderBrush="Transparent">
-                        <DropDownButton.Resources>
-                            <MenuFlyoutItem x:Key="DriveSelectionFlyoutItem" Text="Select Drive" IsEnabled="False">
-                                <MenuFlyoutItem.Icon>
-                                    <ImageIcon>
-                                        <ImageIcon.Source>
-                                            <SvgImageSource UriSource="/Assets/drive.svg" />
-                                        </ImageIcon.Source>
-                                    </ImageIcon>
-                                </MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
-                        </DropDownButton.Resources>
-                        <DropDownButton.Content>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Aucun drive configuré" Margin="10,0"/>
-                            </StackPanel>
-                        </DropDownButton.Content>
-                        <DropDownButton.Flyout>
-                            <MenuFlyout Placement="BottomEdgeAlignedLeft" x:Name="DriveSelection">
-                                <MenuFlyoutItem Text="Drive">
-                                    <MenuFlyoutItem.Icon>
-                                        <ImageIcon>
-                                            <ImageIcon.Source>
-                                                <SvgImageSource UriSource="/Assets/drive.svg" />
-                                            </ImageIcon.Source>
-                                        </ImageIcon>
-                                    </MenuFlyoutItem.Icon>
-                                </MenuFlyoutItem>
-                                <MenuFlyoutItem Text="{x:Bind _driveSelector.SelectedDrive.Name, Mode=OneWay}">
-                                    <MenuFlyoutItem.Icon>
-                                        <ImageIcon>
-                                            <ImageIcon.Source>
-                                                <SvgImageSource UriSource="/Assets/drive.svg" />
-                                            </ImageIcon.Source>
-                                        </ImageIcon>
-                                    </MenuFlyoutItem.Icon>
-                                </MenuFlyoutItem>
-                                <MenuFlyoutItem Text="Mathilde">
-                                    <MenuFlyoutItem.Icon>
-                                        <ImageIcon Source="/Assets/kdrive.png" />
-                                    </MenuFlyoutItem.Icon>
-                                </MenuFlyoutItem>
-                            </MenuFlyout>
-                        </DropDownButton.Flyout>
-                    </DropDownButton>
                 </StackPanel>
             </NavigationView.PaneCustomContent>
 

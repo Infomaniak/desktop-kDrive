@@ -23,6 +23,8 @@ namespace kDrive_client
     /// </summary>
     public sealed partial class HomePage : Page
     {
+        internal static DataModel.AppModel ViewModel => ((App)Application.Current).Data;
+
         public HomePage()
         {
             InitializeComponent();

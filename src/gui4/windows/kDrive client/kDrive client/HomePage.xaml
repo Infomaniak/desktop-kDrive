@@ -9,6 +9,11 @@
     mc:Ignorable="d">
 
     <Grid>
-        <Image Source="/Assets/dev-placeholders/homePagePlaceHolder.png" />
+        <!-- <Image Source="/Assets/dev-placeholders/homePagePlaceHolder.png" /> -->
+        <StackPanel>
+            <TextBox Text="{x:Bind local:HomePage.ViewModel.SelectedDrive.Name, Mode=OneWay}" Foreground="Black"/>
+            <ToggleButton IsChecked="{x:Bind local:HomePage.ViewModel.SelectedDrive.IsActive, Mode=TwoWay}" Content="IsActive"/>
+        </StackPanel>
+
     </Grid>
 </Page>

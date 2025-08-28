@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using kDrive_client.ServerCommunication;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
@@ -20,7 +21,7 @@ namespace kDrive_client.DataModel
         private long _size = 0;
         private long _usedSize = 0;
         private bool _isActive = true; // Indicates if the user choosed to sync this drive
-        private List<Sync?> _syncs = new List<Sync?>();
+        private ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
 
         public Drive(int dbId)
         {
@@ -80,9 +81,9 @@ namespace kDrive_client.DataModel
             get => _isActive;
             set => SetProperty(ref _isActive, value);
         }
-        public List<Sync?> Syncs
+        public ObservableCollection<Sync> Syncs
         {
-            get { _syncs = _syncs.Where(s => s != null).ToList(); return _syncs; }
+            get { return _syncs; }
             set => SetProperty(ref _syncs, value);
         }
     }
