@@ -191,7 +191,7 @@ runs:
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_common
           retention-days: 1
           compression-level: 0
-        if: steps.build.outcome == 'success'
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Upload build test common server executable
         uses: actions/upload-artifact@v4
@@ -200,7 +200,7 @@ runs:
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_common_server
           retention-days: 1
           compression-level: 0
-        if: steps.build.outcome == 'success'
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Upload build test server executable
         uses: actions/upload-artifact@v4
@@ -209,7 +209,7 @@ runs:
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_server
           retention-days: 1
           compression-level: 0
-        if: steps.build.outcome == 'success'
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Upload build test syncengine executable
         uses: actions/upload-artifact@v4
@@ -227,7 +227,7 @@ runs:
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_parms
           retention-days: 1
           compression-level: 0
-        if: steps.build.outcome == 'success'
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Upload sentry server artifacts
         uses: actions/upload-artifact@v4

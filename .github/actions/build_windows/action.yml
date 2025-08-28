@@ -164,7 +164,7 @@ runs:
           path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_common.exe
           retention-days: 1
           compression-level: 0
-        if: steps.build.outcome == 'success'
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Upload build test common server executable
         uses: actions/upload-artifact@v4
@@ -173,7 +173,7 @@ runs:
           path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_common_server.exe
           retention-days: 1
           compression-level: 0
-        if: steps.build.outcome == 'success'
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Upload build test server executable
         uses: actions/upload-artifact@v4
@@ -182,7 +182,7 @@ runs:
           path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_server.exe
           retention-days: 1
           compression-level: 0
-        if: steps.build.outcome == 'success'
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Upload build test syncengine executable
         uses: actions/upload-artifact@v4
@@ -191,7 +191,7 @@ runs:
           path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_syncengine.exe
           retention-days: 1
           compression-level: 0
-        if: steps.build.outcome == 'success'
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Upload build test parms executable
         uses: actions/upload-artifact@v4
@@ -200,7 +200,7 @@ runs:
           path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_parms.exe
           retention-days: 1
           compression-level: 0
-        if: steps.build.outcome == 'success'
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Download sentry-cli for Windows
         run: |
