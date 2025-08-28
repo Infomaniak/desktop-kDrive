@@ -66,7 +66,7 @@ runs:
             powershell "certutil -scinfo -Silent"
             powershell "./infomaniak-build-tools/windows/build-drive.ps1" -ci -ext -clean remake -upload -tokenPass ${{ inputs.physical_cert_pass }}
           ) ELSE (
-            powershell -File "./infomaniak-build-tools/windows/build-drive.ps1" -ci
+            powershell -File "./infomaniak-build-tools/windows/build-drive.ps1" -ci -unitTests
           )
         shell: cmd
 
