@@ -30,6 +30,7 @@
 #endif
 
 #include <string>
+#include <filesystem>
 #include <system_error>
 
 namespace KDC::utility_base {
