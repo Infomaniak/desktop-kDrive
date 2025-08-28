@@ -96,7 +96,6 @@ cmake \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DSPARKLE_LIBRARY="$sparkle_dir/Sparkle.framework" \
 	-DKDRIVE_THEME_DIR="$kdrive_dir" \
-	-DBUILD_UNIT_TESTS=1 \
 	-DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
 	"${CMAKE_PARAMS[@]}" \
 	"$src_dir"
