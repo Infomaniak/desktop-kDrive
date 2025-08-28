@@ -154,12 +154,24 @@ extension SidebarViewController {
         let menu = NSMenu()
         menu.autoenablesItems = false
 
-        let openInFinder = NSMenuItem(title: KDriveLocalizable.buttonOpenInFinder, action: #selector(openInFinder), keyEquivalent: "")
-        openInFinder.image = NSImage(systemSymbolName: "folder", accessibilityDescription: nil)
+        let openInFinder = NSMenuItem(
+            title: KDriveLocalizable.buttonOpenInFinder,
+            action: #selector(openInFinder),
+            keyEquivalent: ""
+        )
+        if #available(macOS 26.0, *) {
+            openInFinder.image = NSImage(systemSymbolName: "folder", accessibilityDescription: nil)
+        }
         menu.addItem(openInFinder)
 
-        let openInBrowser = NSMenuItem(title: KDriveLocalizable.buttonOpenInBrowser, action: #selector(openInBrowser), keyEquivalent: "")
-        openInBrowser.image = NSImage(systemSymbolName: "network", accessibilityDescription: nil)
+        let openInBrowser = NSMenuItem(
+            title: KDriveLocalizable.buttonOpenInBrowser,
+            action: #selector(openInBrowser),
+            keyEquivalent: ""
+        )
+        if #available(macOS 26.0, *) {
+            openInBrowser.image = NSImage(systemSymbolName: "network", accessibilityDescription: nil)
+        }
         menu.addItem(openInBrowser)
 
         return menu
