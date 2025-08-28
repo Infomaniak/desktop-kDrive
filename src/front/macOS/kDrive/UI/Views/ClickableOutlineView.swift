@@ -18,11 +18,11 @@
 
 import Cocoa
 
-protocol OutlineViewDelegate: NSOutlineViewDelegate {
+protocol ClickableOutlineViewDelegate: NSOutlineViewDelegate {
     func outlineView(_ outlineView: NSOutlineView, didClick item: Any?)
 }
 
-final class OutlineView: NSOutlineView {
+final class ClickableOutlineView: NSOutlineView {
     override func mouseDown(with event: NSEvent) {
         super.mouseDown(with: event)
 
@@ -30,7 +30,7 @@ final class OutlineView: NSOutlineView {
         let targetRow = row(at: locationInView)
 
         if let item = item(atRow: targetRow) {
-            (delegate as? OutlineViewDelegate)?.outlineView(self, didClick: item)
+            (delegate as? ClickableOutlineViewDelegate)?.outlineView(self, didClick: item)
         }
     }
 

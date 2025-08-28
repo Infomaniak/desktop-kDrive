@@ -22,7 +22,7 @@ extension NSToolbarItem.Identifier {
     static let trackingSplitView = NSToolbarItem.Identifier("TrackingSplitView")
 }
 
-final class RootViewController: NSSplitViewController {
+final class SplitViewController: NSSplitViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupSplitView()
@@ -60,7 +60,7 @@ final class RootViewController: NSSplitViewController {
 
 // MARK: - SidebarViewControllerDelegate
 
-extension RootViewController: SidebarViewControllerDelegate {
+extension SplitViewController: SidebarViewControllerDelegate {
     func sidebarViewController(_ controller: SidebarViewController, didSelectItem item: SidebarItem) {
         var contentViewController: NSViewController
         switch item {
@@ -81,7 +81,7 @@ extension RootViewController: SidebarViewControllerDelegate {
 
 // MARK: - NSToolbarDelegate
 
-extension RootViewController: NSToolbarDelegate {
+extension SplitViewController: NSToolbarDelegate {
     func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
         return [.trackingSplitView]
     }

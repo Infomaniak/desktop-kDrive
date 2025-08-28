@@ -31,7 +31,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         window.toolbarStyle = .unified
         window.setFrameAutosaveName("kDriveMainWindow")
-        window.contentViewController = RootViewController()
+        window.contentViewController = SplitViewController()
         window.makeKeyAndOrderFront(nil)
     }
 

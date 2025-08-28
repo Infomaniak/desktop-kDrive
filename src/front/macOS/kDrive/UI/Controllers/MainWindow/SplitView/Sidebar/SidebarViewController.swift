@@ -18,42 +18,6 @@
 
 import Cocoa
 
-struct SidebarItem: Equatable, Hashable {
-    enum ItemType {
-        case navigation
-        case menu
-    }
-
-    let icon: ImageResource
-    let title: String
-    let type: ItemType
-
-    var canBeSelected: Bool {
-        return type == .navigation
-    }
-
-    static let home = SidebarItem(
-        icon: .house,
-        title: KDriveLocalizable.tabTitleHome,
-        type: .navigation
-    )
-    static let activity = SidebarItem(
-        icon: .circularArrowsClockwise,
-        title: KDriveLocalizable.tabTitleActivity,
-        type: .navigation
-    )
-    static let storage = SidebarItem(
-        icon: .hardDiskDrive,
-        title: KDriveLocalizable.tabTitleStorage,
-        type: .navigation
-    )
-    static let kDriveFolder = SidebarItem(
-        icon: .kdriveFoldersStacked,
-        title: KDriveLocalizable.sidebarSectionAdvancedSync,
-        type: .menu
-    )
-}
-
 protocol SidebarViewControllerDelegate: AnyObject {
     func sidebarViewController(_ controller: SidebarViewController, didSelectItem item: SidebarItem)
 }
@@ -64,7 +28,7 @@ final class SidebarViewController: NSViewController {
     weak var delegate: SidebarViewControllerDelegate?
 
     private var scrollView: NSScrollView!
-    private var outlineView: OutlineView!
+    private var outlineView: ClickableOutlineView!
 
     private let items: [SidebarItem] = [.home, .activity, .storage, .kDriveFolder]
 
@@ -81,7 +45,7 @@ final class SidebarViewController: NSViewController {
         scrollView.drawsBackground = false
         view.addSubview(scrollView)
 
-        outlineView = OutlineView()
+        outlineView = ClickableOutlineView()
         outlineView.translatesAutoresizingMaskIntoConstraints = false
         outlineView.dataSource = self
         outlineView.delegate = self
@@ -152,7 +116,7 @@ extension SidebarViewController: NSOutlineViewDataSource {
 
 // MARK: - OutlineViewDelegate
 
-extension SidebarViewController: OutlineViewDelegate {
+extension SidebarViewController: ClickableOutlineViewDelegate {
     func outlineView(_ outlineView: NSOutlineView, shouldSelectItem item: Any) -> Bool {
         guard let item = item as? SidebarItem else { return false }
         return item.canBeSelected
