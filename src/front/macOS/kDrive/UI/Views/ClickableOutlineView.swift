@@ -38,7 +38,7 @@ final class ClickableOutlineView: NSOutlineView {
 
     override func rowView(atRow row: Int, makeIfNecessary: Bool) -> NSTableRowView? {
         let tableRow = super.rowView(atRow: row, makeIfNecessary: makeIfNecessary)
-        if let tableRow {
+        if let tableRow, makeIfNecessary {
             markRowAsActivated(tableRow, isActivated: activatedRowIndexes.contains(row))
         }
 
