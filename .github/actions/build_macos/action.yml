@@ -110,8 +110,14 @@ runs:
       - name: Fetch kDrive dependencies (lst and vfs lib)
         run: |
           mkdir uncached_dependencies
-          cp ${{ github.workspace }}/build-macos/client/bin/*.lst ./uncached_dependencies/
+          if [ "${{ inputs.release_build }}" = "true" ]; then
+                ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Resources/*.lst ./uncached_dependencies/
+          else
+                cp ${{ github.workspace }}/build-macos/client/bin/*.lst ./uncached_dependencies/
+          fi
+
           cp ${{ github.workspace }}/build-macos/client/bin/kDrivecommonserver_vfs_mac.dylib ./uncached_dependencies/
+          
         shell: bash
         if: ${{ steps.build.outcome == 'success' }}
 
