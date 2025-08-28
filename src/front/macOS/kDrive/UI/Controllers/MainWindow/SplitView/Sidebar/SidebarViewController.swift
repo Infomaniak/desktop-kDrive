@@ -143,10 +143,9 @@ extension SidebarViewController: ClickableOutlineViewDelegate {
     }
 
     func outlineView(_ outlineView: NSOutlineView, didClick item: Any?) {
-        guard let item = item as? SidebarItem, item.type == .menu else { return }
+        guard let item = item as? SidebarItem, case .menu(let menuProvider) = item.type else { return }
 
-        if item == .kDriveFolder {
-            showMenu(for: item)
-        }
+        let menu = menuProvider.getMenu()
+        (outlineView as? ClickableOutlineView)?.showMenu(menu, at: item)
     }
 }

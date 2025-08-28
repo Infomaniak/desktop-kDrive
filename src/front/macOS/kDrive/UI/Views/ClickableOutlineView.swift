@@ -23,13 +23,13 @@ protocol ClickableOutlineViewDelegate: NSOutlineViewDelegate {
 }
 
 final class ClickableOutlineView: NSOutlineView {
+    private static let menuTopPadding: CGFloat = 4.0
+
     override func mouseDown(with event: NSEvent) {
         super.mouseDown(with: event)
 
-        let locationInView = convert(event.locationInWindow, from: nil)
-        let targetRow = row(at: locationInView)
-
-        if let item = item(atRow: targetRow) {
+        guard window?.isKeyWindow == true else { return }
+        if let item = detectClickedItem(from: event) {
             (delegate as? ClickableOutlineViewDelegate)?.outlineView(self, didClick: item)
         }
     }
@@ -39,6 +39,15 @@ final class ClickableOutlineView: NSOutlineView {
         guard itemRow != -1 else { return }
         let itemRect = frameOfCell(atColumn: 0, row: itemRow)
 
-        menu.popUp(positioning: nil, at: NSPoint(x: itemRect.minX, y: itemRect.maxY), in: self)
+        print("Present Menu")
+        menu.popUp(positioning: nil, at: NSPoint(x: itemRect.minX, y: itemRect.maxY + Self.menuTopPadding), in: self)
+        print("Did present Menu")
+    }
+
+    private func detectClickedItem(from event: NSEvent) -> Any? {
+        let locationInView = convert(event.locationInWindow, from: nil)
+        let targetRow = row(at: locationInView)
+
+        return item(atRow: targetRow)
     }
 }

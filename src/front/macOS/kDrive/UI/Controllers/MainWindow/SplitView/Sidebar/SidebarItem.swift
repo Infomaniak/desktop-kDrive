@@ -37,14 +37,25 @@ extension SidebarItem {
     static let kDriveFolder = SidebarItem(
         icon: .kdriveFoldersStacked,
         title: KDriveLocalizable.sidebarSectionAdvancedSync,
-        type: .menu
+        type: .menu(KDriveFolderMenuProvider())
     )
 }
 
-struct SidebarItem: Equatable, Hashable {
-    enum ItemType {
+struct SidebarItem: Sendable, Equatable {
+    enum ItemType: Sendable, Equatable {
         case navigation
-        case menu
+        case menu(any SidebarItemMenuProvider)
+
+        static func == (lhs: SidebarItem.ItemType, rhs: SidebarItem.ItemType) -> Bool {
+            switch (lhs, rhs) {
+            case (.navigation, .navigation):
+                return true
+            case (.menu(let lhsProvider), .menu(let rhsProvider)):
+                return lhsProvider.id == rhsProvider.id
+            default:
+                return false
+            }
+        }
     }
 
     let icon: ImageResource
