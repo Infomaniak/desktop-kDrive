@@ -94,7 +94,7 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
         }
         case UpdateState::Ready: {
             if (AbstractUpdater::isVersionSkipped(_updater->versionInfo(_currentChannel).fullVersion())) break;
-                // The new version is ready to be installed
+            // The new version is ready to be installed
 #if defined(KD_WINDOWS)
             emit showUpdateDialog();
 #endif

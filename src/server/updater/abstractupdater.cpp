@@ -18,6 +18,7 @@
 
 #include "abstractupdater.h"
 
+#include "dummyupdater.h"
 #include "log/log.h"
 #include "requests/parameterscache.h"
 #if defined(KD_MACOS)
@@ -140,6 +141,10 @@ void AbstractUpdater::setState(const UpdateState newState) {
 }
 
 std::unique_ptr<AbstractUpdater> createUpdater() {
+    // if (ParametersCache::instance()->parameters().updateDeactivated()) {
+    //     LOG_INFO(Log::instance()->getLogger(), "Update are deactivated");
+    //     return std::make_unique<DummyUpdater>();
+    // }
 #if defined(KD_MACOS)
     return std::make_unique<SparkleUpdater>();
 #elif defined(KD_WINDOWS)

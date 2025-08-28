@@ -49,7 +49,7 @@ class UpdateManager final : public QObject {
         [[nodiscard]] const VersionInfo &versionInfo(const VersionChannel channel = VersionChannel::Unknown) const {
             return _updater->versionInfo(channel == VersionChannel::Unknown ? _currentChannel : channel);
         }
-        [[nodiscard]] const UpdateState &state() const { return _updater->state(); }
+        [[nodiscard]] const UpdateState &state() const { return _updater ? _updater->state() : UpdateState::Unknown; }
 
         void startInstaller() const;
         void setQuitCallback(const std::function<void()> &quitCallback) const { _updater->setQuitCallback(quitCallback); }

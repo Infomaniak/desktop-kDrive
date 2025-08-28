@@ -42,7 +42,7 @@ class AbstractUpdater {
          * @param id Optional. ID of the created asynchronous job. Useful in tests.
          * @return ExitCode::Ok if no errors.
          */
-        ExitCode checkUpdateAvailable(VersionChannel currentChannel, UniqueId *id = nullptr);
+        virtual ExitCode checkUpdateAvailable(VersionChannel currentChannel, UniqueId *id = nullptr);
 
         /**
          * @brief Start the installation.
