@@ -25,6 +25,8 @@ protocol ClickableOutlineViewDelegate: NSOutlineViewDelegate {
 final class ClickableOutlineView: NSOutlineView {
     private static let menuTopPadding: CGFloat = 4.0
 
+    private(set) var activatedRowIndexes = IndexSet()
+
     override func mouseDown(with event: NSEvent) {
         super.mouseDown(with: event)
 
@@ -34,16 +36,36 @@ final class ClickableOutlineView: NSOutlineView {
         }
     }
 
-    func showMenu(_ menu: NSMenu, at item: Any) {
-        guard let cellFrame = frameOfCell(forItem: item) else { return }
-        menu.popUp(positioning: nil, at: NSPoint(x: cellFrame.minX, y: cellFrame.maxY + Self.menuTopPadding), in: self)
+    override func rowView(atRow row: Int, makeIfNecessary: Bool) -> NSTableRowView? {
+        let tableRow = super.rowView(atRow: row, makeIfNecessary: makeIfNecessary)
+        if let tableRow {
+            markRowAsActivated(tableRow, isActivated: activatedRowIndexes.contains(row))
+        }
+
+        return tableRow
     }
 
-    private func frameOfCell(forItem item: Any) -> NSRect? {
+    func showMenu(_ menu: NSMenu, at item: Any) {
         let itemRow = row(forItem: item)
-        guard itemRow != -1 else { return nil }
+        guard itemRow != -1 else { return }
 
-        return frameOfCell(atColumn: 0, row: itemRow)
+        let cellFrame = frameOfCell(atColumn: 0, row: itemRow)
+
+        activatedRowIndexes.insert(itemRow)
+        if let rowView = rowView(atRow: itemRow, makeIfNecessary: false) {
+            markRowAsActivated(rowView, isActivated: true)
+        }
+
+        menu.popUp(positioning: nil, at: NSPoint(x: cellFrame.minX, y: cellFrame.maxY + Self.menuTopPadding), in: self)
+
+        activatedRowIndexes.remove(itemRow)
+        if let rowView = rowView(atRow: itemRow, makeIfNecessary: false) {
+            markRowAsActivated(rowView, isActivated: false)
+        }
+    }
+
+    private func markRowAsActivated(_ row: NSTableRowView, isActivated: Bool) {
+        row.alphaValue = isActivated ? 0.5 : 1.0
     }
 
     private func detectClickedItem(from event: NSEvent) -> Any? {

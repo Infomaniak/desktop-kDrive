@@ -99,12 +99,3 @@ final class SidebarTableCellView: NSTableCellView {
         }
     }
 }
-
-@available(macOS 14.0, *)
-#Preview {
-    let cell = SidebarTableCellView()
-    cell.imageView?.image = NSImage(resource: .house)
-    cell.textField?.stringValue = "Home"
-    cell.badge = 3
-    return cell
-}
