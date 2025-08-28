@@ -160,10 +160,10 @@
     </Midl>
     <Manifest />
     <PostBuildEvent>
-      <Command>copy /Y "$(ProjectDir)..\Common\debug.h" "C:\Users\cleme\Projects\desktop-kDrive\src\libcommonserver\vfs\win\."
-copy /Y "$(ProjectDir)$(TargetName).h" "C:\Users\cleme\Projects\desktop-kDrive\src\libcommonserver\vfs\win\."
-copy /Y "$(TargetDir)$(TargetName).dll" "C:\Users\cleme\Projects\cmake-build-debug_CLion\bin\."
-copy /Y "$(TargetDir)$(TargetName).pdb" "C:\Users\cleme\Projects\cmake-build-debug_CLion\."</Command>
+      <Command>copy /Y "$(ProjectDir)..\Common\debug.h" "C:\Projects\desktop-kDrive\src\libcommonserver\vfs\win\."
+copy /Y "$(ProjectDir)$(TargetName).h" "C:\Projects\desktop-kDrive\src\libcommonserver\vfs\win\."
+copy /Y "$(TargetDir)$(TargetName).dll" "C:\Projects\desktop-kDrive-build_deb\bin\."
+copy /Y "$(TargetDir)$(TargetName).pdb" "C:\Projects\desktop-kDrive-build_deb\."</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
