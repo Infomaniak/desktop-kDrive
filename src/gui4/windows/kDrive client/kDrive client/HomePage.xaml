@@ -11,8 +11,8 @@
     <Grid>
         <!-- <Image Source="/Assets/dev-placeholders/homePagePlaceHolder.png" /> -->
         <StackPanel>
-            <TextBox Text="{x:Bind local:HomePage.ViewModel.SelectedDrive.Name, Mode=OneWay}" Foreground="Black"/>
-            <ToggleButton IsChecked="{x:Bind local:HomePage.ViewModel.SelectedDrive.IsActive, Mode=TwoWay}" Content="IsActive"/>
+            <TextBox Text="{x:Bind ViewModel.SelectedDrive.Name, Mode=OneWay, FallbackValue='NoDrive'}" Foreground="Black"/>
+            <ToggleButton IsChecked="{x:Bind ViewModel.SelectedDrive.IsActive, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="IsActive"/>
         </StackPanel>
 
     </Grid>

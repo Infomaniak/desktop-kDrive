@@ -24,7 +24,8 @@ namespace kDrive_client
 {
     public sealed partial class MainWindow : Window
     {
-        internal DataModel.AppModel ViewModel => ((App)Application.Current).Data;
+        internal readonly DataModel.AppModel _viewModel = ((App)Application.Current).Data;
+        internal DataModel.AppModel ViewModel { get { return _viewModel; } }
         public MainWindow()
         {
             InitializeComponent();
@@ -38,9 +39,8 @@ namespace kDrive_client
            {
                Random rand = new Random();
                int counter = 50;
-               while (true)
+               while (counter < 70)
                {
-                   await Task.Delay(1000);
                    User user;
                    // Choose a random user
                    if (ViewModel.Users.Count > 0)

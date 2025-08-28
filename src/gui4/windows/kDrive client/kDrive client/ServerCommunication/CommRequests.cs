@@ -36,10 +36,10 @@ namespace kDrive_client.ServerCommunication
             Users[0].Drives.Add(Drives[0]);
             Users[0].Drives.Add(Drives[1]);
 
-            Drives.Add(new Drive(3) { Id = 102, Name = "Pro", Color = Color.Red, Size = 1000000000, UsedSize = 250000000 });
+            Drives.Add(new Drive(3) { Id = 102, Name = "Pro1", Color = Color.Red, Size = 1000000000, UsedSize = 250000000 });
             Users[1].Drives.Add(Drives[2]);
 
-            Drives.Add(new Drive(4) { Id = 103, Name = "Photo", Color = Color.Blue, Size = 2000000000, UsedSize = 150000000 });
+            Drives.Add(new Drive(4) { Id = 103, Name = "Photo1", Color = Color.Blue, Size = 2000000000, UsedSize = 150000000 });
             Users[2].Drives.Add(Drives[3]);
 
             // Create mock syncs

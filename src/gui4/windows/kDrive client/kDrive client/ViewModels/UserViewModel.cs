@@ -30,10 +30,10 @@ namespace kDrive_client.DataModel
             DbId = dbId;
         }
 
+        // Parses a User from a stream, should be removed/replaced when the new communication protocol is done
         public static User ReadFrom(Utility.BinaryReader reader)
         {
             int dbId = reader.ReadInt32();
-
             var user = new User(dbId);
             user.Id = reader.ReadInt32();
             user.Name = reader.ReadString();

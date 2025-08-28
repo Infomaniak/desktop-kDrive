@@ -79,8 +79,12 @@ namespace kDrive_client.DataModel
         public bool IsActive
         {
             get => _isActive;
-            set => SetProperty(ref _isActive, value);
+            set
+            {
+                SetProperty(ref _isActive, value);
+            }
         }
+
         public ObservableCollection<Sync> Syncs
         {
             get { return _syncs; }

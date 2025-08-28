@@ -37,12 +37,15 @@ namespace kDrive_client.DataModel
          */
         public ReadOnlyObservableCollection<Drive> ActiveDrives { get; set; }
 
+        /** The dispatcher queue for the UI thread.
+         *  This is used to marshal calls to the UI thread when updating observable item.
+         *  It must be set in the mainWindow constructor.
+         */
         public static DispatcherQueue UIThreadDispatcher { get; set; } = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
 
         public Drive? SelectedDrive
         {
             get => _selectedDrive;
-
             set => SetProperty(ref _selectedDrive, value);
         }
 
@@ -58,15 +61,25 @@ namespace kDrive_client.DataModel
                 .Subscribe();
             ActiveDrives = activeDrives;
 
-            // Whenever the list of active drives changes, ensure the selected drive is still valid
+            // Observe changes to ActiveDrives list and ensure SelectedDrive is valid
             ActiveDrives.ToObservableChangeSet()
-                .Subscribe(_ =>
-                {
-                    if ((SelectedDrive == null || !ActiveDrives.Contains(SelectedDrive)) && ActiveDrives.Any())
-                    {
-                        SelectedDrive = ActiveDrives[0];
-                    }
-                });
+                       .Subscribe(_ => EnsureValidSelectedDrive());
+        }
+
+        private void EnsureValidSelectedDrive()
+        {
+            // If ActiveDrives is empty, set SelectedDrive to null
+            if (ActiveDrives.Count == 0)
+            {
+                SelectedDrive = null;
+                return;
+            }
+
+            // If SelectedDrive is null or not in ActiveDrives, pick the first one
+            if (_selectedDrive == null || !_selectedDrive.IsActive)
+            {
+                UIThreadDispatcher.TryEnqueue(() => SelectedDrive = ActiveDrives[0]);
+            }
         }
 
         public ObservableCollection<User> Users
