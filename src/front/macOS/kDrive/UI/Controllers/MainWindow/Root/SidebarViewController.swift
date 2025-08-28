@@ -58,13 +58,13 @@ protocol SidebarViewControllerDelegate: AnyObject {
     func sidebarViewController(_ controller: SidebarViewController, didSelectItem item: SidebarItem)
 }
 
-class SidebarViewController: NSViewController {
-    static let cellIdentifier = NSUserInterfaceItemIdentifier("SidebarCell")
+final class SidebarViewController: NSViewController {
+    static let navigationCellIdentifier = NSUserInterfaceItemIdentifier("NavigationSidebarCell")
 
     weak var delegate: SidebarViewControllerDelegate?
 
     private var scrollView: NSScrollView!
-    private var outlineView: NSOutlineView!
+    private var outlineView: OutlineView!
 
     private let items: [SidebarItem] = [.home, .activity, .storage, .kDriveFolder]
 
@@ -81,7 +81,7 @@ class SidebarViewController: NSViewController {
         scrollView.drawsBackground = false
         view.addSubview(scrollView)
 
-        outlineView = NSOutlineView()
+        outlineView = OutlineView()
         outlineView.translatesAutoresizingMaskIntoConstraints = false
         outlineView.dataSource = self
         outlineView.delegate = self
@@ -115,11 +115,21 @@ class SidebarViewController: NSViewController {
 
     override func viewDidLayout() {
         super.viewDidLayout()
+        updateScrollViewElasticity()
+    }
 
-        if let documentView = scrollView.documentView {
-            let isOutlineViewSmallerThanScrollView = documentView.bounds.height <= scrollView.documentVisibleRect.height
-            scrollView.verticalScrollElasticity = isOutlineViewSmallerThanScrollView ? .none : .allowed
-        }
+    private func updateScrollViewElasticity() {
+        guard let documentView = scrollView.documentView else { return }
+
+        let isDocumentViewSmallerThanScrollView = documentView.bounds.height <= scrollView.documentVisibleRect.height
+        scrollView.verticalScrollElasticity = isDocumentViewSmallerThanScrollView ? .none : .automatic
+    }
+
+    private func showMenu(for item: SidebarItem) {
+        guard item == .kDriveFolder else { return }
+
+        let menu = NSMenu()
+        outlineView.showMenu(menu, at: item)
     }
 }
 
@@ -140,9 +150,9 @@ extension SidebarViewController: NSOutlineViewDataSource {
     }
 }
 
-// MARK: - NSOutlineViewDelegate
+// MARK: - OutlineViewDelegate
 
-extension SidebarViewController: NSOutlineViewDelegate {
+extension SidebarViewController: OutlineViewDelegate {
     func outlineView(_ outlineView: NSOutlineView, shouldSelectItem item: Any) -> Bool {
         guard let item = item as? SidebarItem else { return false }
         return item.canBeSelected
@@ -151,10 +161,10 @@ extension SidebarViewController: NSOutlineViewDelegate {
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
         guard let item = item as? SidebarItem else { return nil }
 
-        var cell = outlineView.makeView(withIdentifier: Self.cellIdentifier, owner: self) as? SidebarTableCellView
+        var cell = outlineView.makeView(withIdentifier: Self.navigationCellIdentifier, owner: self) as? SidebarTableCellView
         if cell == nil {
             cell = SidebarTableCellView()
-            cell?.identifier = Self.cellIdentifier
+            cell?.identifier = Self.navigationCellIdentifier
         }
 
         cell?.imageView?.image = NSImage(resource: item.icon)
@@ -166,5 +176,13 @@ extension SidebarViewController: NSOutlineViewDelegate {
     func outlineViewSelectionDidChange(_ notification: Notification) {
         guard let selectedItem = outlineView.item(atRow: outlineView.selectedRow) as? SidebarItem else { return }
         delegate?.sidebarViewController(self, didSelectItem: selectedItem)
+    }
+
+    func outlineView(_ outlineView: NSOutlineView, didClick item: Any?) {
+        guard let item = item as? SidebarItem, item.type == .menu else { return }
+
+        if item == .kDriveFolder {
+            showMenu(for: item)
+        }
     }
 }

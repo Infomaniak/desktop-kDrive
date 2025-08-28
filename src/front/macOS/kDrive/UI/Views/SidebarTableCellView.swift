@@ -18,7 +18,7 @@
 
 import Cocoa
 
-class SidebarTableCellView: NSTableCellView {
+final class SidebarTableCellView: NSTableCellView {
     var badge: Int? {
         didSet {
             updateBadge()
@@ -36,6 +36,7 @@ class SidebarTableCellView: NSTableCellView {
         setupCell()
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

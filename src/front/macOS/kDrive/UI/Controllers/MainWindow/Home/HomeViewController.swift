@@ -18,9 +18,4 @@
 
 import Cocoa
 
-class StorageViewController: NSViewController {
-    override func viewDidAppear() {
-        super.viewDidAppear()
-        view.window?.title = KDriveLocalizable.tabTitleStorage
-    }
-}
+final class HomeViewController: TitledViewController {}

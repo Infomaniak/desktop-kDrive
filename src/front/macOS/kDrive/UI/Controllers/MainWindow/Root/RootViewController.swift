@@ -22,7 +22,7 @@ extension NSToolbarItem.Identifier {
     static let trackingSplitView = NSToolbarItem.Identifier("TrackingSplitView")
 }
 
-class RootViewController: NSSplitViewController {
+final class RootViewController: NSSplitViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupSplitView()
@@ -44,7 +44,7 @@ class RootViewController: NSSplitViewController {
         sidebarItem.maximumThickness = 300
         addSplitViewItem(sidebarItem)
 
-        let homeViewController = HomeViewController()
+        let homeViewController = HomeViewController(toolbarTitle: SidebarItem.home.title)
         let homeDetailItem = NSSplitViewItem(viewController: homeViewController)
         addSplitViewItem(homeDetailItem)
     }
@@ -65,15 +65,15 @@ extension RootViewController: SidebarViewControllerDelegate {
         var contentViewController: NSViewController
         switch item {
         case .home:
-            contentViewController = HomeViewController()
+            contentViewController = HomeViewController(toolbarTitle: item.title)
         case .activity:
-            contentViewController = ActivityViewController()
+            contentViewController = ActivityViewController(toolbarTitle: item.title)
         case .storage:
-            contentViewController = StorageViewController()
+            contentViewController = StorageViewController(toolbarTitle: item.title)
         default:
             fatalError("Destination not handled")
         }
-        
+
         removeSplitViewItem(splitViewItems[1])
         addSplitViewItem(NSSplitViewItem(viewController: contentViewController))
     }

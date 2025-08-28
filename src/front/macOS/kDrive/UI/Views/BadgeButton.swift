@@ -18,12 +18,13 @@
 
 import Cocoa
 
-class BadgeButton: NSButton {
+final class BadgeButton: NSButton {
     init() {
         super.init(frame: .zero)
         bezelStyle = .badge
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
