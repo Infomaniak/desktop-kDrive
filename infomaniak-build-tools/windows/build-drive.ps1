@@ -34,7 +34,7 @@ Param(
     # Ext: Rebuild the extension (automatically done if vfs.h is missing)
     [switch] $ext,
 
-    # Ci: Build with CI testing (currently only checks the building stage)
+    # Ci: Build configured for CI
     [switch] $ci,
 
     # Upload: Flag to trigger the use of the USB-key signing certificate
@@ -45,6 +45,9 @@ Param(
 
     # Coverage: Flag to enable or disable the code coverage computation
     [switch] $coverage,
+
+    # Coverage: Flag to enable or disable the build of unit tests
+    [switch] $unitTests,
 
     # Help: Displays the help message and exits
     [switch] $help
@@ -120,7 +123,7 @@ function Clean {
 function Get-Thumbprint {
     param (
         [bool] $upload,
-        [bool] $ci # On CI build, the certificate are located in local computer store
+        [bool] $ci # On CI build machines, the certificate are located in local computer store
     )
     if ($ci) {
         $certStore = "Cert:\LocalMachine\My"
@@ -247,11 +250,12 @@ function CMake-Build-And-Install {
         New-Item -Path $conanFolder -ItemType Directory
     }
     Write-Host "Conan folder: $conanFolder"
+    ciOption = ""
     if ($ci) {
-        & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder -Ci
-    } else {
-        & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder -MakeRelease
-    }
+       ciOption = "-Ci"
+    } 
+
+    & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder $ciOption -MakeRelease
 
     $conanToolchainFile = Get-ChildItem -Path $conanFolder -Filter "conan_toolchain.cmake" -Recurse -File |
             Select-Object -ExpandProperty FullName -First 1
@@ -296,7 +300,7 @@ function CMake-Build-And-Install {
         "'-DKDRIVE_VERSION_BUILD=$buildVersion'"
     )
 
-    if ($ci) {
+    if ($unitTests) {
         $flags += ("'-DBUILD_UNIT_TESTS:BOOL=TRUE'")
     }
 
@@ -596,8 +600,10 @@ Parameters :
     `t`tall`t`t`t: Remove all the files, located in '$path/build-$buildType', then exit the script
     `t`tremake`t`t: Remove all the files, then rebuild the project
     `t-ext`t`t`t: Rebuild and redeploy the windows extension
+    `t-ci`t`t`t: Use the CI build configuration
     `t-upload`t`t: Upload flag to switch between the virtual and physical certificates. Also rebuilds the project
-    `t-coverage`t`t: Coverage flag to enable or disable code coverage computation
+    `t-coverage`t`t: Enable coverage computation
+    `t-unitTests`t`t: Enable unit tests build
     ") -f Cyan
 
     Write-Host ("It is mandatory that all dependencies are already built and installed before building.
