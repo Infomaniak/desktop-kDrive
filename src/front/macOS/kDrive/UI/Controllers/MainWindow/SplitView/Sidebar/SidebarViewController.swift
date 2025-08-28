@@ -88,13 +88,6 @@ final class SidebarViewController: NSViewController {
         let isDocumentViewSmallerThanScrollView = documentView.bounds.height <= scrollView.documentVisibleRect.height
         scrollView.verticalScrollElasticity = isDocumentViewSmallerThanScrollView ? .none : .automatic
     }
-
-    private func showMenu(for item: SidebarItem) {
-        guard item == .kDriveFolder else { return }
-
-        let menu = NSMenu()
-        outlineView.showMenu(menu, at: item)
-    }
 }
 
 // MARK: - NSOutlineViewDataSource
@@ -143,9 +136,40 @@ extension SidebarViewController: ClickableOutlineViewDelegate {
     }
 
     func outlineView(_ outlineView: NSOutlineView, didClick item: Any?) {
-        guard let item = item as? SidebarItem, case .menu(let menuProvider) = item.type else { return }
+        guard let item = item as? SidebarItem,
+              item.type == .menu,
+              let menu = createMenu(forItem: item)
+        else { return }
 
-        let menu = menuProvider.getMenu()
         (outlineView as? ClickableOutlineView)?.showMenu(menu, at: item)
+    }
+}
+
+// MARK: - Menu actions
+
+extension SidebarViewController {
+    private func createMenu(forItem item: SidebarItem) -> NSMenu? {
+        guard item == .kDriveFolder else { return nil }
+
+        let menu = NSMenu()
+        menu.autoenablesItems = false
+
+        let openInFinder = NSMenuItem(title: KDriveLocalizable.buttonOpenInFinder, action: #selector(openInFinder), keyEquivalent: "")
+        openInFinder.image = NSImage(systemSymbolName: "folder", accessibilityDescription: nil)
+        menu.addItem(openInFinder)
+
+        let openInBrowser = NSMenuItem(title: KDriveLocalizable.buttonOpenInBrowser, action: #selector(openInBrowser), keyEquivalent: "")
+        openInBrowser.image = NSImage(systemSymbolName: "network", accessibilityDescription: nil)
+        menu.addItem(openInBrowser)
+
+        return menu
+    }
+
+    @objc private func openInFinder() {
+        // TODO: Open Finder
+    }
+
+    @objc private func openInBrowser() {
+        // TODO: Open kDrive web
     }
 }

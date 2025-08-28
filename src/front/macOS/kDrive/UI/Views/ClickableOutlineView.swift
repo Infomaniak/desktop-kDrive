@@ -35,13 +35,15 @@ final class ClickableOutlineView: NSOutlineView {
     }
 
     func showMenu(_ menu: NSMenu, at item: Any) {
-        let itemRow = row(forItem: item)
-        guard itemRow != -1 else { return }
-        let itemRect = frameOfCell(atColumn: 0, row: itemRow)
+        guard let cellFrame = frameOfCell(forItem: item) else { return }
+        menu.popUp(positioning: nil, at: NSPoint(x: cellFrame.minX, y: cellFrame.maxY + Self.menuTopPadding), in: self)
+    }
 
-        print("Present Menu")
-        menu.popUp(positioning: nil, at: NSPoint(x: itemRect.minX, y: itemRect.maxY + Self.menuTopPadding), in: self)
-        print("Did present Menu")
+    private func frameOfCell(forItem item: Any) -> NSRect? {
+        let itemRow = row(forItem: item)
+        guard itemRow != -1 else { return nil }
+
+        return frameOfCell(atColumn: 0, row: itemRow)
     }
 
     private func detectClickedItem(from event: NSEvent) -> Any? {
