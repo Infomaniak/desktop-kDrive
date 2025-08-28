@@ -1057,4 +1057,27 @@ bool IoHelper::_setRightsStd(const SyncPath &path, bool read, bool write, bool e
 
     return true;
 }
+
+IoError IoHelper::readLocalFile(const SyncPath &absolutePath, std::string &content) {
+    IoError ioError = IoError::Success;
+    bool exists = false;
+    if (!IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
+        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absolutePath, ioError));
+        return ioError;
+    }
+    if (ioError == IoError::AccessDenied) {
+        LOGW_DEBUG(logger(), L"Access denied to " << Utility::formatSyncPath(absolutePath));
+        return ioError;
+    }
+    if (!exists) {
+        LOGW_DEBUG(logger(), L"Item does not exist anymore - " << Utility::formatSyncPath(absolutePath));
+        ioError = IoError::NoSuchFileOrDirectory;
+        return ioError;
+    }
+
+    std::ifstream ifs(absolutePath);
+    content = std::string((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+    return ioError;
+}
+
 } // namespace KDC

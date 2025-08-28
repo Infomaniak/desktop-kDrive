@@ -19,6 +19,8 @@
 #include "parameterscache.h"
 #include "libparms/db/parmsdb.h"
 #include "libcommonserver/log/log.h"
+#include "libcommonserver/io/iohelper.h"
+#include "utility/jsonparserutility.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -51,7 +53,7 @@ ParametersCache::ParametersCache(bool isTest /*= false*/) {
         return;
     }
 
-    // Load parameters
+    // Load parameters from DB
     bool found = false;
     if (!ParmsDb::instance()->selectParameters(_parameters, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectParameters");
@@ -62,6 +64,26 @@ ParametersCache::ParametersCache(bool isTest /*= false*/) {
         LOG_WARN(Log::instance()->getLogger(), "Parameters not found");
         throw std::runtime_error("Failed to read parameters");
     }
+
+    // Load parameters from settings file
+    std::string jsonStr;
+    SyncPath test = std::filesystem::current_path() / "kDrive_settings";
+    if (const auto ioError = IoHelper::readLocalFile(test, jsonStr);
+        ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory) {
+        assert(false);
+        LOG_WARN(Log::instance()->getLogger(), "Failed to read parameters from settings file.");
+    }
+
+    Poco::JSON::Object::Ptr jsonObj;
+    try {
+        jsonObj = Poco::JSON::Parser{}.parse(jsonStr).extract<Poco::JSON::Object::Ptr>();
+    } catch (const Poco::Exception &exc) {
+        assert(false);
+        LOG_WARN(Log::instance()->getLogger(), "Failed to parse JSON from settings file.");
+    }
+    std::string updateStr;
+    (void) JsonParserUtility::extractValue(jsonObj, "update", updateStr, false);
+    _parameters.setUpdateDeactivated(updateStr == "deactivated");
 }
 
 void ParametersCache::save(ExitCode *exitCode /*= nullptr*/) const {

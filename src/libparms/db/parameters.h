@@ -108,6 +108,9 @@ class PARMS_EXPORT Parameters {
         [[nodiscard]] VersionChannel distributionChannel() const { return _distributionChannel; }
         void setDistributionChannel(const VersionChannel channel) { _distributionChannel = channel; }
 
+        [[nodiscard]] bool updateDeactivated() const { return _updateDeactivated; }
+        void setUpdateDeactivated(const bool updateDeactivated) { _updateDeactivated = updateDeactivated; }
+
         static int _uploadSessionParallelJobsDefault;
 
     private:
@@ -134,6 +137,8 @@ class PARMS_EXPORT Parameters {
         int _maxAllowedCpu;
         int _uploadSessionParallelJobs;
         VersionChannel _distributionChannel{VersionChannel::Prod};
+
+        bool _updateDeactivated{false};
 };
 
 } // namespace KDC

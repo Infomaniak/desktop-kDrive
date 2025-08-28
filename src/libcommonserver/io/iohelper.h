@@ -473,6 +473,8 @@ struct IoHelper {
         static bool getShortPathName(const SyncPath &path, SyncPath &shortPathName, IoError &ioError);
 #endif
 
+        static IoError readLocalFile(const SyncPath &absolutePath, std::string &content);
+
     protected:
         friend class DirectoryIterator;
         friend class TestIo;
