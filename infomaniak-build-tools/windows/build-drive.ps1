@@ -250,9 +250,9 @@ function CMake-Build-And-Install {
         New-Item -Path $conanFolder -ItemType Directory
     }
     Write-Host "Conan folder: $conanFolder"
-    ciOption = ""
+    $ciOption = ""
     if ($ci) {
-       ciOption = "-Ci"
+       $ciOption = "-Ci"
     } 
 
     & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder $ciOption -MakeRelease
