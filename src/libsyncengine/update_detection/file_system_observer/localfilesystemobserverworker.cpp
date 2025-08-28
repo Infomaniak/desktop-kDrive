@@ -266,7 +266,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
             if (opTypeFromOS == OperationType::Delete) {
                 // The node ID of the deleted item is different from `nodeId`. The latter is the identifier of an item with the
                 // same path as the deleted item and that exists on the file system at the time of the last check. This situation
-                // happens for instance if a file is deleted while another file with the same path has is recreated shortly
+                // happens for instance if a file is deleted while another file with the same path is created shortly
                 // afterward. Typically, editors of the MS suite (xlsx, docx) or Adobe suite (pdf) perform a
                 // Delete-followed-by-Create operation during a single edit.
                 NodeId itemId = _liveSnapshot.itemId(relativePath);

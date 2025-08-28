@@ -17,6 +17,7 @@
  */
 
 #include "testhelpers.h"
+#include "localtemporarydirectory.h"
 
 #include "libcommon/utility/utility.h"
 
@@ -95,13 +96,17 @@ std::string loadEnvVariable(const std::string &key, const bool mandatory) {
 }
 
 void createSymLinkLoop(const SyncPath &filepath1, const SyncPath &filepath2, const NodeType nodeType) {
+    LocalTemporaryDirectory tempDir;
+    const auto currentPath = std::filesystem::current_path();
+    std::filesystem::current_path(tempDir.path());
+
     switch (nodeType) {
         case NodeType::File: {
-            std::ofstream ofs(filepath1);
+            std::ofstream ofs("filepath1");
             break;
         }
         case NodeType::Directory: {
-            std::filesystem::create_directories(filepath1);
+            std::filesystem::create_directories("filepath1");
             break;
         }
         default:
@@ -109,9 +114,20 @@ void createSymLinkLoop(const SyncPath &filepath1, const SyncPath &filepath2, con
                     "Invalid argument NodeType argument in createSymLinkLoop. Expected: either NodeType::File or "
                     "NodeType::Directory.");
     }
-    std::filesystem::create_symlink(filepath1, filepath2); // filepath2 -> filepath1
-    std::filesystem::remove_all(filepath1);
-    std::filesystem::create_symlink(filepath2, filepath1); // filepath1 -> filepath2
+
+    std::filesystem::create_symlink(filepath1.filename(), filepath2.filename()); // filepath2 -> filepath1
+
+    std::filesystem::current_path(currentPath);
+    std::filesystem::rename(tempDir.path() / filepath2.filename(), filepath2);
+
+    std::filesystem::current_path(tempDir.path());
+    std::filesystem::remove_all(filepath1.filename());
+    std::filesystem::remove_all(filepath2.filename());
+    std::error_code ec;
+    std::filesystem::create_symlink(filepath2.filename(), filepath1.filename(), ec); // filepath1 -> filepath2
+
+    std::filesystem::current_path(currentPath);
+    std::filesystem::rename(tempDir.path() / filepath1.filename(), filepath1);
 }
 
 } // namespace KDC::testhelpers
