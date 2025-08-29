@@ -572,7 +572,7 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
         }
 
         job->setWithPath(withPath);
-        if (const auto exitInfo = job->runSynchronously(); exitInfo.code() != ExitCode::Ok) {
+        if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
             LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::runSynchronously for userDbId="
                                                            << userDbId << " driveId=" << driveId
                                                            << " nodeId=" << nodeId.toStdString() << " error=" << exitInfo);
