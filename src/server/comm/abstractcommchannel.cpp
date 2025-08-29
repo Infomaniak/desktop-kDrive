@@ -50,8 +50,8 @@ void AbstractCommChannel::sendMessage(const CommString &message) {
 
     std::string dataStr = CommString2Str(localMessage);
     auto sent = writeData(dataStr.c_str(), dataStr.length());
-    if (sent != localMessage.size()) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Could not send all data on socket for " << CommString2WStr(localMessage));
+    if (!sent) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in AbstractCommChannel::writeData");
     }
 }
 

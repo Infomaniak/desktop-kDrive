@@ -292,7 +292,7 @@ bool Utilities::readMessage(std::wstring *response) {
             return false;
         }
 
-        buffer.insert(buffer.end(), resp.begin(), resp.begin() + numBytesRead);
+        buffer.insert(buffer.end(), resp.begin(), resp.begin() + numBytesRead / sizeof(wchar_t));
     }
 
     return true;

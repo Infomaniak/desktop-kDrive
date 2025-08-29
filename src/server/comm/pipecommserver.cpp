@@ -17,6 +17,7 @@
  */
 
 #include "pipecommserver.h"
+#include "requests/parameterscache.h"
 #include "libcommonserver/log/log.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -26,9 +27,9 @@
 #include <tchar.h>
 #include <strsafe.h>
 
+#define PIPE_INSTANCES 6
 #define PIPE_TIMEOUT 5000
 #define EVENT_WAIT_TIMEOUT 100
-#define INSTANCES 4
 #endif
 
 namespace KDC {
@@ -60,7 +61,7 @@ uint64_t PipeCommChannel::writeData(const char *data, uint64_t size) {
     if (!_connected) return 0;
 
 #if defined(KD_WINDOWS)
-    LOG_DEBUG(Log::instance()->getLogger(), "Write on inst:" << _instance << " data:" << data);
+    LOG_DEBUG(Log::instance()->getLogger(), "Try to write on inst:" << _instance << " data:" << data);
     std::vector<TCHAR> wData(size + 1, 0);
     mbstowcs_s(NULL, wData.data(), size + 1, data, size);
     DWORD bytesWritten = 0;
@@ -69,7 +70,9 @@ uint64_t PipeCommChannel::writeData(const char *data, uint64_t size) {
 
     // The write operation completed successfully
     if (fSuccess && bytesWritten == size * sizeof(TCHAR)) {
-        LOG_DEBUG(Log::instance()->getLogger(), "Write done on inst:" << _instance);
+        if (ParametersCache::isExtendedLogEnabled()) {
+            LOG_DEBUG(Log::instance()->getLogger(), "Write done on inst:" << _instance);
+        }
         _pendingIO[index] = FALSE;
         return size;
     }
@@ -77,14 +80,16 @@ uint64_t PipeCommChannel::writeData(const char *data, uint64_t size) {
     // The write operation is still pending
     DWORD dwErr = GetLastError();
     if (!fSuccess && (dwErr == ERROR_IO_PENDING)) {
-        LOG_DEBUG(Log::instance()->getLogger(), "Write pending on inst:" << _instance);
-        _size[index] = bytesWritten;
+        if (ParametersCache::isExtendedLogEnabled()) {
+            LOG_DEBUG(Log::instance()->getLogger(), "Write pending on inst:" << _instance);
+        }
+        _size[index] = size * sizeof(TCHAR);
         _pendingIO[index] = TRUE;
-        return 0;
+        return size;
     }
 
     // An error occurred; disconnect from the client.
-    LOG_DEBUG(Log::instance()->getLogger(), "Write error on inst:" << _instance);
+    LOG_WARN(Log::instance()->getLogger(), "Write error on inst:" << _instance);
     // disconnectAndReconnect(this);
     return 0;
 #endif
@@ -95,16 +100,13 @@ uint64_t PipeCommChannel::bytesAvailable() const {
 }
 
 bool PipeCommChannel::canReadLine() const {
-    return _inBuffer.find(Str("\\/\n"), 0) != std::string::npos;
+    return _inBuffer.find(Str('\n'), 0) != std::string::npos;
 }
 
 PipeCommServer::PipeCommServer(const std::string &name) :
     AbstractCommServer(name) {}
 
-PipeCommServer::~PipeCommServer() {
-    LOG_DEBUG(Log::instance()->getLogger(), name() << " destroyed");
-    log4cplus::threadCleanup();
-}
+PipeCommServer::~PipeCommServer() {}
 
 void PipeCommServer::close() {
     if (_isRunning) {
@@ -150,12 +152,13 @@ void PipeCommServer::executeFunc(PipeCommServer *server) {
 
 void PipeCommServer::execute() {
 #if defined(KD_WINDOWS)
-    HANDLE events[INSTANCES * toInt(PipeCommChannel::Action::EnumEnd)];
+    HANDLE events[PIPE_INSTANCES * toInt(PipeCommChannel::Action::EnumEnd)];
 
-    for (DWORD inst = 0; inst < INSTANCES; inst++) {
+    for (DWORD inst = 0; inst < PIPE_INSTANCES; inst++) {
         // Creates an instance of a named pipe
         auto channel = std::make_shared<PipeCommChannel>();
         _channels.push_back(channel);
+        newConnectionCbk();
 
         for (auto action = 0; action < toInt(PipeCommChannel::Action::EnumEnd); action++) {
             // Create an event object
@@ -185,7 +188,7 @@ void PipeCommServer::execute() {
                                              PIPE_TYPE_BYTE | // message-type pipe
                                                      PIPE_READMODE_BYTE | // message-read mode
                                                      PIPE_WAIT, // blocking mode
-                                             INSTANCES, // number of instances
+                                             PIPE_INSTANCES, // number of instances
                                              BUFSIZE * sizeof(TCHAR), // output buffer size
                                              BUFSIZE * sizeof(TCHAR), // input buffer size
                                              PIPE_TIMEOUT, // client time-out (ms)
@@ -198,22 +201,24 @@ void PipeCommServer::execute() {
         }
 
         // Connect to the pipe
+        if (ParametersCache::isExtendedLogEnabled()) {
+            LOG_DEBUG(Log::instance()->getLogger(), "Try to connect on inst:" << inst);
+        }
         auto connectIndex = toInt(PipeCommChannel::Action::Connect);
         channel->_pendingIO[connectIndex] = connectToPipe(channel->_pipeInst, &channel->_overlap[connectIndex]);
-        if (channel->_pendingIO[connectIndex]) {
-            LOG_DEBUG(Log::instance()->getLogger(), "Connect pending on inst:" << inst);
+        if (ParametersCache::isExtendedLogEnabled()) {
+            if (channel->_pendingIO[connectIndex]) {
+                LOG_DEBUG(Log::instance()->getLogger(), "Connect pending on inst:" << inst);
+            }
         }
 
         channel->_connected = channel->_pendingIO[connectIndex] ? FALSE // still connecting
                                                                 : TRUE; // ready to read
     }
 
-    // The server is connected/connecting to the pipe instances
-    newConnectionCbk();
-
     while (!_stopAsked) {
         // Wait for the event object to be signaled, indicating completion of an overlapped read, write, or connect operation
-        auto eventCount = INSTANCES * toInt(PipeCommChannel::Action::EnumEnd);
+        auto eventCount = PIPE_INSTANCES * toInt(PipeCommChannel::Action::EnumEnd);
         DWORD dwWait = WaitForMultipleObjects(eventCount, events, FALSE,
                                               EVENT_WAIT_TIMEOUT); // wait time (ms)
 
@@ -233,9 +238,7 @@ void PipeCommServer::execute() {
 
         DWORD inst = index / toInt(PipeCommChannel::Action::EnumEnd);
         auto action = index % toInt(PipeCommChannel::Action::EnumEnd);
-        LOG_DEBUG(Log::instance()->getLogger(), "Event received for inst:" << inst << " action:" << action);
         if (_channels[inst]->_pendingIO[action]) {
-            LOG_DEBUG(Log::instance()->getLogger(), "Pending IO for inst:" << inst << " action:" << action);
             DWORD size;
             BOOL fSuccess = GetOverlappedResult(_channels[inst]->_pipeInst, // handle to pipe
                                                 &_channels[inst]->_overlap[action], // OVERLAPPED structure
@@ -244,44 +247,52 @@ void PipeCommServer::execute() {
 
             if (!fSuccess) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in GetOverlappedResult: err=" << GetLastError());
-                _exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
-                return;
+                disconnectAndReconnect(_channels[inst]);
+                continue;
             }
 
-            LOG_DEBUG(Log::instance()->getLogger(), size << " Bytes transferred for inst:" << inst << " action:" << action);
+            if (ParametersCache::isExtendedLogEnabled()) {
+                LOG_DEBUG(Log::instance()->getLogger(), size << " Bytes transferred for inst:" << inst << " action:" << action);
+            }
             _channels[inst]->_pendingIO[action] = FALSE;
 
             if (action == toInt(PipeCommChannel::Action::Connect)) {
                 // Pending connect operation
-                LOG_DEBUG(Log::instance()->getLogger(), "Pending connect for inst:" << inst << " action:" << action);
+                if (ParametersCache::isExtendedLogEnabled()) {
+                    LOG_DEBUG(Log::instance()->getLogger(), "Pending connect done for inst:" << inst << " action:" << action);
+                }
                 _channels[inst]->_connected = TRUE;
             } else if (action == toInt(PipeCommChannel::Action::Write)) {
                 if (size != _channels[inst]->_size[action]) {
-                    LOG_DEBUG(Log::instance()->getLogger(), "Pending write error for inst:" << inst << " action:" << action);
+                    LOG_WARN(Log::instance()->getLogger(), "Pending write error for inst:" << inst << " action:" << action);
                     disconnectAndReconnect(_channels[inst]);
                     continue;
                 }
                 // Pending write operation
-                LOG_DEBUG(Log::instance()->getLogger(), "Pending write for inst:" << inst << " action:" << action);
+                if (ParametersCache::isExtendedLogEnabled()) {
+                    LOG_DEBUG(Log::instance()->getLogger(), "Pending write done for inst:" << inst << " action:" << action);
+                }
             } else if (action == toInt(PipeCommChannel::Action::Read)) {
                 if (size == 0) {
-                    LOG_DEBUG(Log::instance()->getLogger(), "Pending read error for inst:" << inst << " action:" << action);
+                    LOG_WARN(Log::instance()->getLogger(), "Pending read error for inst:" << inst << " action:" << action);
                     disconnectAndReconnect(_channels[inst]);
                     continue;
                 }
                 // Pending read operation
-                LOG_DEBUG(Log::instance()->getLogger(), "Pending read for inst:" << inst << " action:" << action);
+                if (ParametersCache::isExtendedLogEnabled()) {
+                    LOG_DEBUG(Log::instance()->getLogger(), "Pending read done for inst:" << inst << " action:" << action);
+                }
                 _channels[inst]->_size[action] = size;
                 _channels[inst]->_inBuffer += CommString(_channels[inst]->_readData);
                 _channels[inst]->readyReadCbk();
             }
-        } else {
-            continue;
         }
 
         if (_channels[inst]->_connected) {
             // Read
-            LOG_DEBUG(Log::instance()->getLogger(), "Read on inst:" << inst);
+            if (ParametersCache::isExtendedLogEnabled()) {
+                LOG_DEBUG(Log::instance()->getLogger(), "Try to read on inst:" << inst);
+            }
             auto readIndex = toInt(PipeCommChannel::Action::Read);
             memset(&_channels[inst]->_readData[0], 0, sizeof(_channels[inst]->_readData));
             BOOL fSuccess = ReadFile(_channels[inst]->_pipeInst, _channels[inst]->_readData, BUFSIZE * sizeof(TCHAR),
@@ -289,23 +300,28 @@ void PipeCommServer::execute() {
 
             if (fSuccess && _channels[inst]->_size[readIndex] != 0) {
                 // The read operation completed successfully
-                LOG_DEBUG(Log::instance()->getLogger(), "Read done on inst:" << inst);
+                if (ParametersCache::isExtendedLogEnabled()) {
+                    LOG_DEBUG(Log::instance()->getLogger(), "Read done on inst:" << inst);
+                }
                 _channels[inst]->_pendingIO[readIndex] = FALSE;
                 _channels[inst]->_inBuffer += CommString(_channels[inst]->_readData);
                 _channels[inst]->readyReadCbk();
+                SetEvent(events[index]);
                 continue;
             }
 
             DWORD dwErr = GetLastError();
             if (!fSuccess && (dwErr == ERROR_IO_PENDING)) {
                 // The read operation is still pending
-                LOG_DEBUG(Log::instance()->getLogger(), "Read pending on inst:" << inst);
+                if (ParametersCache::isExtendedLogEnabled()) {
+                    LOG_DEBUG(Log::instance()->getLogger(), "Read pending on inst:" << inst);
+                }
                 _channels[inst]->_pendingIO[readIndex] = TRUE;
                 continue;
             }
 
             // An error occurred, disconnect from the client
-            LOG_DEBUG(Log::instance()->getLogger(), "Read error on inst:" << inst);
+            LOG_WARN(Log::instance()->getLogger(), "Read error on inst:" << inst);
             disconnectAndReconnect(_channels[inst]);
             break;
         }

@@ -25,9 +25,14 @@ namespace KDC {
 class AbstractCommServer {
     public:
         AbstractCommServer(const std::string &name) :
-            _name(name) {}
+            _name(name) {
+            LOG_DEBUG(Log::instance()->getLogger(), _name << " created");
+        }
 
-        virtual ~AbstractCommServer() {}
+        virtual ~AbstractCommServer() {
+            LOG_DEBUG(Log::instance()->getLogger(), _name << " destroyed");
+            log4cplus::threadCleanup();
+        }
 
         std::string name() { return _name; }
 
