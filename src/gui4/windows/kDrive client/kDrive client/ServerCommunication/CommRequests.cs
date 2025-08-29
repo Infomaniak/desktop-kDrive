@@ -49,7 +49,7 @@ namespace KDriveClient.ServerCommunication
             Users.Add(new User(3) { Id = 12, Name = "Bob", Email = "Bob.doe@infomaniak.com", IsConnected = false, IsStaff = false });
 
             // Create mock drives
-            Drives.Add(new Drive(1) { Id = 100, Name = "Pro", Color = Color.Red, Size = 1000000000, UsedSize = 250000000 });
+            Drives.Add(new Drive(1) { Id = 140946, Name = "Test", Color = Color.Red, Size = 1000000000, UsedSize = 250000000 });
             Drives.Add(new Drive(2) { Id = 101, Name = "Photo", Color = Color.Blue, Size = 2000000000, UsedSize = 150000000 });
             Users[0].Drives.Add(Drives[0]);
             Users[0].Drives.Add(Drives[1]);

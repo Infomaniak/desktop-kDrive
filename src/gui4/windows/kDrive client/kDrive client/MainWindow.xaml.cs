@@ -49,34 +49,7 @@ namespace KDriveClient
             InitializeComponent();
             AppModel.UIThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(); ;
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
-            this.SetTitleBar(AppTitleBar);
-
-
-            // For testing Purpose only: Simulate live changes in the data model to check if UI updates correctly
-            _ = Task.Run(async () => // Task.Run will run this code in a background thread != UI thread
-           {
-               Random rand = new Random();
-               int counter = 50;
-               while (counter < 70)
-               {
-                   User user;
-                   // Choose a random user
-                   if (ViewModel.Users.Count > 0)
-                   {
-                       user = ViewModel.Users[rand.Next(0, ViewModel.Users.Count)];
-                       // Add a new drive to this user
-                       Drive drive = new Drive(counter++);
-                       drive.Name = "Drive " + counter;
-                       DispatcherQueue.TryEnqueue(() =>
-                       {
-                           // Those action must be done on the UI thread because they modify observable collections bound to the UI
-                           user.Drives.Add(drive);
-                           user.Drives[0].Name = "Changed name " + rand.Next(0, 100);
-                       });
-
-                   }
-               }
-           });
+            this.SetTitleBar(AppTitleBar);            
         }
 
         private void nvSample_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)

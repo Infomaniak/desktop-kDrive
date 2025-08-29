@@ -42,5 +42,46 @@ namespace KDriveClient
         {
             InitializeComponent();
         }
+
+        private async void TrashButton_Click(object sender, RoutedEventArgs e)
+        {
+            Uri? trashUrl = ViewModel.SelectedDrive?.GetWebTrashUri();
+            if (trashUrl != null)
+            {
+                await Windows.System.Launcher.LaunchUriAsync(trashUrl);
+            }
+            else
+            {
+                Logger.LogError("TrashButton_Click: No drive selected or unable to get trash URL.");
+            }
+
+        }
+
+        private async void FavoritesButton_Click(object sender, RoutedEventArgs e)
+        {
+            Uri? favoritesUrl = ViewModel.SelectedDrive?.GetWebFavoritesUri();
+            if (favoritesUrl != null)
+            {
+                await Windows.System.Launcher.LaunchUriAsync(favoritesUrl);
+            }
+            else
+            {
+                Logger.LogError("FavoritesButton_Click: No drive selected or unable to get favorites URL.");
+            }
+
+        }
+
+        private async void SharedButton_Click(object sender, RoutedEventArgs e)
+        {
+            Uri? sharedUrl = ViewModel.SelectedDrive?.GetWebSharedUri();
+            if (sharedUrl != null)
+            {
+                await Windows.System.Launcher.LaunchUriAsync(sharedUrl);
+            }
+            else
+            {
+                Logger.LogError("SharedButton_Click: No drive selected or unable to get shared URL.");
+            }
+        }
     }
 }

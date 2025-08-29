@@ -24,9 +24,77 @@
     xmlns:local="using:KDriveClient"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:KDriveClient.CustomControls"
     mc:Ignorable="d">
 
-    <Grid>
-        <Image Source="/Assets/dev-placeholders/homePagePlaceHolder.png" />
+    <Grid Margin="24" RowSpacing="24" ColumnSpacing="24">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2.3*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Update banner -->
+            <RowDefinition Height="Auto"/> <!-- Sync status bar -->
+            <RowDefinition Height="*"/>    <!-- Main content -->
+            <RowDefinition Height="Auto"/> <!-- Upgrade offer bar -->
+        </Grid.RowDefinitions>
+
+        <!-- Update Available Banner -->
+        <controls:UpdateAvailableBar
+            Grid.Row="0"
+            Grid.ColumnSpan="2"
+            Visibility="Visible"
+            />
+
+        <!-- Header Success Info -->
+        <controls:SyncStatusBar Grid.Row="1"/>
+
+        <!-- Left main pane -->
+        <controls:SynthesisActivityView Grid.Row="2" Grid.Column="0" />
+
+
+        <!-- Right Side Buttons -->
+        <Grid Grid.Row="2" Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Button Click="FavoritesButton_Click" CornerRadius="8" Padding="0" Grid.Row="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0,0,0,8" Background="{ThemeResource LayerFillColorDefaultBrush }">
+                <StackPanel Orientation="Vertical">
+                    <ImageIcon Height="16" Margin="0,0,0,8">
+                        <ImageIcon.Source>
+                            <SvgImageSource UriSource="ms-appx:///Assets/Icons/star.svg"/>
+                        </ImageIcon.Source>
+                    </ImageIcon>
+                    <TextBlock x:Uid="HomePage_favorites" FontFamily="Segoe UI" FontWeight="Normal" FontSize="14" />
+                </StackPanel>
+            </Button>
+            <Button Click="SharedButton_Click" CornerRadius="8" Padding="0" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0,8,0,8" Background="{ThemeResource LayerFillColorDefaultBrush }">
+                <StackPanel Orientation="Vertical">
+                    <ImageIcon Height="16" Margin="0,0,0,8">
+                        <ImageIcon.Source>
+                            <SvgImageSource UriSource="ms-appx:///Assets/Icons/share.svg"/>
+                        </ImageIcon.Source>
+                    </ImageIcon>
+                    <TextBlock x:Uid="HomePage_shared" FontFamily="Segoe UI" FontWeight="Normal" FontSize="14" />
+                </StackPanel>
+            </Button>
+            <Button Click="TrashButton_Click" CornerRadius="8" Padding="0" Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0,8,0,0" Background="{ThemeResource LayerFillColorDefaultBrush }">
+                <StackPanel Orientation="Vertical">
+                    <ImageIcon Height="16" Margin="0,0,0,8">
+                        <ImageIcon.Source>
+                            <SvgImageSource UriSource="ms-appx:///Assets/Icons/trash.svg"/>
+                        </ImageIcon.Source>
+                    </ImageIcon>
+                    <TextBlock x:Uid="HomePage_trash" FontFamily="Segoe UI" FontWeight="Normal" FontSize="14" />
+                </StackPanel>
+            </Button>
+        </Grid>
+        <controls:KSuiteUpgradeBar
+            Grid.Row="3"
+            Grid.ColumnSpan="2"
+            Visibility="Visible"
+            />
     </Grid>
 </Page>

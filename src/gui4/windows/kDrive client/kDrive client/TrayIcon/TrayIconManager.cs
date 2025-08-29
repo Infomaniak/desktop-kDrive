@@ -96,7 +96,8 @@ namespace KDriveClient.TrayIcon
             {
                 presenter.IsMaximizable = false;
                 presenter.IsMinimizable = true;
-                presenter.IsResizable = false;
+                presenter.IsResizable = true;
+                appWindow.Resize(new Windows.Graphics.SizeInt32(1350, 795));
                 presenter.Minimize();
                 presenter.Restore();
             }
@@ -125,7 +126,7 @@ namespace KDriveClient.TrayIcon
 
             try
             {
-                var imagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "status-icons", fileName);
+                var imagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "StatusIcons", fileName);
                 using var bitmap = new Bitmap(imagePath);
                 var iconHandle = bitmap.GetHicon();
                 var icon = Icon.FromHandle(iconHandle);

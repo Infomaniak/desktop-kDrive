@@ -29,9 +29,9 @@
     Title="kDrive client">
 
     <Window.SystemBackdrop>
-        <!--<DesktopAcrylicBackdrop/>-->
-        <MicaBackdrop Kind="BaseAlt"/>
-        <!--<MicaBackdrop Kind="Base"/>-->
+        <!--<DesktopAcrylicBackdrop/> -->
+        <!-- <MicaBackdrop Kind="BaseAlt"/> -->
+        <MicaBackdrop Kind="Base"/>
     </Window.SystemBackdrop>
     <Grid>
         <Grid.RowDefinitions>
@@ -130,12 +130,12 @@
             <NavigationView.MenuItems>
                 <NavigationViewItem x:Uid="NavHome" Tag="HomePage" MinHeight="30" IsSelected="True">
                     <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="Home" Foreground="{ThemeResource AccentAAFillColorDefaultBrush}"/>
+                        <SymbolIcon Symbol="Home"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItem x:Uid="NavActivity" Tag="ActivityPage" MinHeight="30">
                     <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="Sync" Foreground="{ThemeResource AccentAAFillColorDefaultBrush}"/>
+                        <SymbolIcon Symbol="Sync"/>
                     </NavigationViewItem.Icon>
                     <NavigationViewItem.InfoBadge>
                         <InfoBadge x:Name="infoBadge1" Value="4"/>
@@ -143,12 +143,12 @@
                 </NavigationViewItem>
                 <NavigationViewItem x:Uid="NavStorage" Tag="SamplePage3" MinHeight="30" IsEnabled="False">
                     <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="MapDrive" Foreground="{ThemeResource AccentAAFillColorDefaultBrush}"/>
+                        <SymbolIcon Symbol="MapDrive"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItem x:Uid="NavFolder" Tag="SamplePage4" MinHeight="30" IsEnabled="False">
                     <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="Folder" Foreground="{ThemeResource AccentAAFillColorDefaultBrush}"/>
+                        <SymbolIcon Symbol="Folder"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>

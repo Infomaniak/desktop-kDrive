@@ -132,8 +132,6 @@ namespace KDriveClient.ViewModels
                 {
                     Users.AddRange(users);
                 });
-                await Task.Delay(5000).ConfigureAwait(false); // Fake delay to simulate loading time
-
             }
             UIThreadDispatcher.TryEnqueue(() =>
             {

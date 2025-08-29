@@ -108,5 +108,20 @@ namespace KDriveClient.ViewModels
             get { return _syncs; }
             set => SetProperty(ref _syncs, value);
         }
+    
+        public Uri GetWebTrashUri()
+        {
+            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{Id}/trash");
+        }
+
+        public Uri GetWebFavoritesUri()
+        {
+            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{Id}/favorites");
+        }
+
+        public Uri GetWebSharedUri()
+        {
+            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{Id}/shared-with-me");
+        }
     }
 }
