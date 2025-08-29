@@ -279,10 +279,10 @@ void TestIo::testGetItemTypeSimpleCases() {
         // Actual test
 #if defined(KD_WINDOWS)
         const auto result =
-                checker.checkSuccessfullRetrievalOfDanglingLink(filepath1, filepath2, LinkType::Symlink, NodeType::File);
+                checker.checkSuccessfullRetrievalOfDanglingLink(filepath1, "file2.txt", LinkType::Symlink, NodeType::File);
 #else
         const auto result =
-                checker.checkSuccessfullRetrievalOfDanglingLink(filepath1, filepath2, LinkType::Symlink, NodeType::Unknown);
+                checker.checkSuccessfullRetrievalOfDanglingLink(filepath1, "file2.txt", LinkType::Symlink, NodeType::Unknown);
 #endif
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
@@ -297,10 +297,10 @@ void TestIo::testGetItemTypeSimpleCases() {
         // Actual test
 #if defined(KD_WINDOWS)
         const auto result =
-                checker.checkSuccessfullRetrievalOfDanglingLink(filepath1, filepath2, LinkType::Symlink, NodeType::File);
+                checker.checkSuccessfullRetrievalOfDanglingLink(filepath1, "folder2", LinkType::Symlink, NodeType::File);
 #else
         const auto result =
-                checker.checkSuccessfullRetrievalOfDanglingLink(filepath1, filepath2, LinkType::Symlink, NodeType::Unknown);
+                checker.checkSuccessfullRetrievalOfDanglingLink(filepath1, "folder2", LinkType::Symlink, NodeType::Unknown);
 #endif
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }

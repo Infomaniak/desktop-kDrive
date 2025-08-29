@@ -99,6 +99,8 @@ void setModificationDate(const SyncPath &path, const std::chrono::time_point<std
 // Create two symbolic links that refer to each other:
 // filepath1 -> filepath2,
 // filepath2 -> filepath1
+// The created target paths are relative paths. The implementation does not raise an DELETE event in the directories containing
+// `filepath1` and `filepath2`.
 void createSymLinkLoop(const SyncPath &filepath1, const SyncPath &filepath2, const NodeType nodeType = NodeType::File);
 
 } // namespace KDC::testhelpers
