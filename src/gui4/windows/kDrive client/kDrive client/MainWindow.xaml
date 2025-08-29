@@ -92,9 +92,10 @@
         <!-- NavigationView -->
         <NavigationView x:Name="nvSample" 
                         Grid.Row="1"
-                        IsBackButtonVisible="Collapsed"
                         PaneDisplayMode="Left"
                         SelectionChanged="nvSample_SelectionChanged"
+                        IsBackEnabled="{x:Bind contentFrame.CanGoBack, Mode=OneWay}"
+                        BackRequested="nvSample_BackRequested"
                         >
 
             <NavigationView.PaneCustomContent>

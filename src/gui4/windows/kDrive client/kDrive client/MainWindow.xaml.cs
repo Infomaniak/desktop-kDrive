@@ -96,5 +96,13 @@ namespace KDriveClient
                 }
             }
         }
+
+        private void nvSample_BackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
+        {
+            if (contentFrame.CanGoBack)
+            {
+                contentFrame.GoBack();
+            }
+        }
     }
 }
