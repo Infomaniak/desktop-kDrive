@@ -17,7 +17,7 @@
  */
 
 using CommunityToolkit.Mvvm.ComponentModel;
-using kDrive_client.ServerCommunication;
+using KDriveClient.ServerCommunication;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Buffers.Binary;
@@ -30,7 +30,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace kDrive_client.ViewModels
+namespace KDriveClient.ViewModels
 {
     internal class User : ObservableObject
     {

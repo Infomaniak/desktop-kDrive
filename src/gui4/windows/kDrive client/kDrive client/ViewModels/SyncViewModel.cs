@@ -24,7 +24,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace kDrive_client.ViewModels
+namespace KDriveClient.ViewModels
 {
     internal class Sync : ObservableObject
     {

@@ -27,7 +27,7 @@ using System.IO;
 using Windows.System;
 using Microsoft.UI.Windowing;
 
-namespace kDrive_client.TrayIcon
+namespace KDriveClient.TrayIcon
 {
     public class TrayIconManager
     {

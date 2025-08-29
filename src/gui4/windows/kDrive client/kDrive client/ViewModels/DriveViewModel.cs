@@ -18,7 +18,7 @@
 
 using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
-using kDrive_client.ServerCommunication;
+using KDriveClient.ServerCommunication;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -28,7 +28,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace kDrive_client.ViewModels
+namespace KDriveClient.ViewModels
 {
     internal class Drive : ObservableObject
     {

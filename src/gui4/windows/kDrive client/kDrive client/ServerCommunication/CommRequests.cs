@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using kDrive_client.ViewModels;
+using KDriveClient.ViewModels;
 using Microsoft.UI.Xaml;
 using System;
 using System.Buffers.Binary;
@@ -28,7 +28,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace kDrive_client.ServerCommunication
+namespace KDriveClient.ServerCommunication
 {
     internal class MockServerData
     {

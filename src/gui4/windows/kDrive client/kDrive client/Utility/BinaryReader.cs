@@ -24,7 +24,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace kDrive_client.Utility
+namespace KDriveClient.Utility
 {
     internal class BinaryReader : System.IO.BinaryReader
     {

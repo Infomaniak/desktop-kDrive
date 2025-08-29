@@ -17,8 +17,8 @@
  */
 
 using H.NotifyIcon;
-using kDrive_client.ServerCommunication;
-using kDrive_client.ViewModels;
+using KDriveClient.ServerCommunication;
+using KDriveClient.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -40,7 +40,7 @@ using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-namespace kDrive_client
+namespace KDriveClient
 {
     public partial class App : Application
     {
