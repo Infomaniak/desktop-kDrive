@@ -72,11 +72,8 @@ namespace kDrive_client.DataModel
             if (ActiveDrives.Count == 0)
             {
                 SelectedDrive = null;
-                return;
             }
-
-            // If SelectedDrive is null or not in ActiveDrives, pick the first one
-            if (_selectedDrive == null || !_selectedDrive.IsActive)
+            else if (_selectedDrive == null || !_selectedDrive.IsActive)// If SelectedDrive is null or not in ActiveDrives, pick the first one
             {
                 UIThreadDispatcher.TryEnqueue(() => SelectedDrive = ActiveDrives[0]);
             }
