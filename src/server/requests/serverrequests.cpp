@@ -581,15 +581,13 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
 
         Poco::JSON::Object::Ptr resObj = job->jsonRes();
         if (!resObj) {
-            LOG_WARN(Log::instance()->getLogger(), "GetFileListJob failed for userDbId=" << userDbId << " driveId=" << driveId
-                                                                                         << " nodeId=" << nodeId.toStdString());
+            LOG_WARN(Log::instance()->getLogger(), "GetFileListJob failed: no valid JSON message retrieved.");
             return ExitCode::BackError;
         }
 
         Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
         if (!dataArray) {
-            LOG_WARN(Log::instance()->getLogger(), "GetFileListJob failed for userDbId=" << userDbId << " driveId=" << driveId
-                                                                                         << " nodeId=" << nodeId.toStdString());
+            LOG_WARN(Log::instance()->getLogger(), "GetFileListJob failed: missing `data` array in retrieved JSON message.");
             return ExitCode::BackError;
         }
 
