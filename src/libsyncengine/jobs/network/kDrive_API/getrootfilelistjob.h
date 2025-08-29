@@ -24,8 +24,8 @@ namespace KDC {
 
 class GetRootFileListJob : public AbstractTokenNetworkJob {
     public:
-        GetRootFileListJob(int userDbId, int driveId, uint64_t page = 1, bool dirOnly = false);
-        explicit GetRootFileListJob(int driveDbId, uint64_t page = 1, bool dirOnly = false);
+        GetRootFileListJob(int userDbId, int driveId, uint64_t page = 1, bool dirOnly = false, uint64_t nbItemsPerPage = 1000);
+        explicit GetRootFileListJob(int driveDbId, uint64_t page = 1, bool dirOnly = false, uint64_t nbItemsPerPage = 1000);
 
         void setWithPath(const bool val) { _withPath = val; }
 
@@ -40,6 +40,7 @@ class GetRootFileListJob : public AbstractTokenNetworkJob {
 
         uint64_t _page{0};
         bool _dirOnly{false};
+        uint64_t _nbItemsPerPage{0};
         bool _withPath{false};
 
         uint64_t _totalPages{0};
