@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
+using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -115,7 +116,8 @@ namespace kDrive_client.ServerCommunication
                 byte[] jsonBytes = System.Text.Encoding.UTF8.GetBytes(jsonString);
 
                 // Get the size as bytes (4-byte integer)
-                byte[] sizeBytes = BitConverter.GetBytes(jsonBytes.Length).Reverse().ToArray(); // Convert to big-endian
+                byte[] sizeBytes = new byte[4];
+                BinaryPrimitives.WriteInt32BigEndian(sizeBytes, jsonBytes.Length); // Currently the server expects big-endian, once communication layer is ready it should be changed to little-endian
 
                 // Write size followed by JSON data
                 NetworkStream stream = client.GetStream();
@@ -183,7 +185,7 @@ namespace kDrive_client.ServerCommunication
                 Logger.LogWarning("Incomplete size header received.");
                 return;
             }
-            int messageSize = BitConverter.ToInt32(sizeBytes.Reverse().ToArray(), 0); // Convert from big-endian
+            int messageSize = BinaryPrimitives.ReadInt32BigEndian(sizeBytes); // Currently the server sends big-endian, once communication layer is ready it should be changed to little-endian
             Logger.LogDebug($"Message size: {messageSize} bytes.");
 
             // Read the JSON message
