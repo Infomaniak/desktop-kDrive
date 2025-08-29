@@ -18,20 +18,16 @@
 
 import Cocoa
 
-class TitledViewController: NSViewController {
-    let toolbarTitle: String
-
-    init(toolbarTitle: String) {
-        self.toolbarTitle = toolbarTitle
-        super.init(nibName: nil, bundle: nil)
+class ColoredMenuItem: NSMenuItem {
+    init(title: String, image: NSImage, color: NSColor) {
+        self.color = color
+        super.init(title: title, action: nil, keyEquivalent: "")
+        self.image = image
     }
 
-    required init?(coder: NSCoder) {
+    required init(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func viewDidAppear() {
-        super.viewDidAppear()
-        view.window?.title = toolbarTitle
-    }
+    var color: NSColor
 }

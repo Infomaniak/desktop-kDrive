@@ -17,5 +17,6 @@
  */
 
 import Cocoa
+import kDriveCoreUI
 
-class StorageViewController: TitledViewController {}
+final class ActivityViewController: TitledViewController {}

@@ -30,7 +30,7 @@ final class SidebarViewController: NSViewController {
 
     private var scrollView: NSScrollView!
     private var outlineView: ClickableOutlineView!
-    private var popUpButton: NSPopUpButton!
+    private var popUpButton: ColoredPopUpButton!
 
     private let items: [SidebarItem] = [.home, .activity, .storage, .kDriveFolder]
 
@@ -64,29 +64,20 @@ final class SidebarViewController: NSViewController {
     }
 
     private func setupPopUpButton() {
-        popUpButton = NSPopUpButton()
+        popUpButton = ColoredPopUpButton()
         popUpButton.translatesAutoresizingMaskIntoConstraints = false
         popUpButton.action = #selector(didSelectDrive)
 
         let drives = [
-            UIDrive(id: 1, name: "Infomaniak", color: .green),
-            UIDrive(id: 2, name: "Tim Cook et ses amis", color: .blue)
+            UIDrive(id: 1, name: "Infomaniak", color: .systemGreen),
+            UIDrive(id: 2, name: "Tim Cook et ses amis", color: .systemBlue)
         ]
+
         for drive in drives {
-            addPopUpItem(title: drive.name, image: NSImage(resource: .kdriveFoldersStacked), color: .red)
+            popUpButton.addItem(withTitle: drive.name, image: NSImage(resource: .kdriveFoldersStacked), color: drive.color)
         }
+
         view.addSubview(popUpButton)
-    }
-
-    private func addPopUpItem(title: String, image: NSImage, color: NSColor) {
-        popUpButton.addItem(withTitle: title)
-
-        if #available(macOS 12.0, *) {
-            if let coloredImage = image.withSymbolConfiguration(.init(hierarchicalColor: color)) {
-                coloredImage.isTemplate = false
-                popUpButton.lastItem?.image = coloredImage
-            }
-        }
     }
 
     @objc func didSelectDrive() {

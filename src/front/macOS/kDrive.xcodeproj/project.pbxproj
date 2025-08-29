@@ -55,6 +55,34 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		F9A9A0562E61A887005FA196 /* Exceptions for "kDriveCoreUI" folder in "kDrive" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Controllers/TitledViewController.swift,
+				Utils/ColoredMenuItem.swift,
+				Views/BadgeButton.swift,
+				Views/ClickableOutlineView.swift,
+				Views/ColoredPopUpButton.swift,
+				Views/ColoredPopUpButtonCell.swift,
+				Views/SidebarHeaderView.swift,
+				Views/SidebarTableCellView.swift,
+			);
+			target = 37A1C4252E546A5200596DBB /* kDrive */;
+		};
+		F9A9A0572E61A887005FA196 /* Exceptions for "kDriveCoreUI" folder in "kDriveCoreUI" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Controllers/TitledViewController.swift,
+				Utils/ColoredMenuItem.swift,
+				Views/BadgeButton.swift,
+				Views/ClickableOutlineView.swift,
+				Views/ColoredPopUpButton.swift,
+				Views/ColoredPopUpButtonCell.swift,
+				Views/SidebarHeaderView.swift,
+				Views/SidebarTableCellView.swift,
+			);
+			target = 37A1C43E2E546A9600596DBB /* kDriveCoreUI */;
+		};
 		F9ACC5322E5DCC780081E80B /* Exceptions for "kDrive" folder in "kDrive" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -75,6 +103,10 @@
 		};
 		37A1C4402E546A9600596DBB /* kDriveCoreUI */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F9A9A0562E61A887005FA196 /* Exceptions for "kDriveCoreUI" folder in "kDrive" target */,
+				F9A9A0572E61A887005FA196 /* Exceptions for "kDriveCoreUI" folder in "kDriveCoreUI" target */,
+			);
 			path = kDriveCoreUI;
 			sourceTree = "<group>";
 		};

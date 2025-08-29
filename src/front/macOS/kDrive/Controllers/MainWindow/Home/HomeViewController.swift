@@ -17,5 +17,6 @@
  */
 
 import Cocoa
+import kDriveCoreUI
 
 final class HomeViewController: TitledViewController {}
