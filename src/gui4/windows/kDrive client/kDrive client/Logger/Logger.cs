@@ -35,7 +35,8 @@ namespace kDrive_client
             Info = 1,
             Warning = 2,
             Error = 3,
-            None = 4
+            Fatal = 4,
+            None = 5
         }
     }
     internal static class Logger
@@ -67,10 +68,18 @@ namespace kDrive_client
             string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [WARNING] ({Path.GetFileName(filePath)}:{lineNumber}) {message}";
             _logStream.WriteLine(logEntry);
         }
+
         public static void LogError(string message, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)
         {
             string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [ERROR] ({Path.GetFileName(filePath)}:{lineNumber}) {message}";
             _logStream.WriteLine(logEntry);
         }
+
+        public static void LogFatal(string message, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)
+        {
+            string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [FATAL] ({Path.GetFileName(filePath)}:{lineNumber}) {message}";
+            _logStream.WriteLine(logEntry);
+        }
+
     }
 }
