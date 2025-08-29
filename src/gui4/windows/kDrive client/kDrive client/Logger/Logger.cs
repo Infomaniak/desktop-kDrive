@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using kDrive_client.kDrive_client.Log;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -27,7 +26,7 @@ using System.Threading.Tasks;
 
 namespace kDrive_client
 {
-    namespace kDrive_client.Log
+    namespace Log
     {
         enum Level
         {
@@ -48,38 +47,32 @@ namespace kDrive_client
         private static readonly StreamWriter _logStream = new(_logFilePath, append: true) { AutoFlush = true };
 #pragma warning restore S2930 
 
-        static public Level LogLevel { get; set; } = Level.Debug;
+        static public Log.Level LogLevel { get; set; } = Log.Level.Debug;
         public static void LogInfo(string message, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)
         {
-            if (LogLevel > Level.Info) return;
+            if (LogLevel > Log.Level.Info) return;
             string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [INFO] ({Path.GetFileName(filePath)}:{lineNumber}) {message}";
             _logStream.WriteLine(logEntry);
         }
         public static void LogDebug(string message, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)
         {
-            if (LogLevel > Level.Debug) return;
+            if (LogLevel > Log.Level.Debug) return;
             string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [DEBUG] ({Path.GetFileName(filePath)}:{lineNumber}) {message}";
             _logStream.WriteLine(logEntry);
         }
 
         public static void LogWarning(string message, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)
         {
-            if (LogLevel > Level.Warning) return;
+            if (LogLevel > Log.Level.Warning) return;
             string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [WARNING] ({Path.GetFileName(filePath)}:{lineNumber}) {message}";
             _logStream.WriteLine(logEntry);
         }
 
         public static void LogError(string message, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)
         {
+            if (LogLevel > Log.Level.Error) return;
             string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [ERROR] ({Path.GetFileName(filePath)}:{lineNumber}) {message}";
             _logStream.WriteLine(logEntry);
         }
-
-        public static void LogFatal(string message, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)
-        {
-            string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [FATAL] ({Path.GetFileName(filePath)}:{lineNumber}) {message}";
-            _logStream.WriteLine(logEntry);
-        }
-
     }
 }
