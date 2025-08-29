@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using kDrive_client.DataModel;
+using kDrive_client.ViewModels;
 using kDrive_client.ServerCommunication;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
@@ -42,12 +42,12 @@ namespace kDrive_client
 {
     public sealed partial class MainWindow : Window
     {
-        internal readonly DataModel.AppModel _viewModel = ((App)Application.Current).Data;
-        internal DataModel.AppModel ViewModel { get { return _viewModel; } }
+        internal readonly AppModel _viewModel = ((App)Application.Current).Data;
+        internal AppModel ViewModel { get { return _viewModel; } }
         public MainWindow()
         {
             InitializeComponent();
-            DataModel.AppModel.UIThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(); ;
+            AppModel.UIThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(); ;
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
             this.SetTitleBar(AppTitleBar);
 

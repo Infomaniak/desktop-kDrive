@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2025 Infomaniak Network SA
@@ -16,7 +17,6 @@
  * along with this program.  If not, see<http://www.gnu.org/licenses/> .
  -->
 
-<?xml version="1.0" encoding="utf-8"?>
 <Page
     x:Class="kDrive_client.HomePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"

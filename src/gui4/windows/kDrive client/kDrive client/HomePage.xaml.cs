@@ -30,13 +30,14 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using kDrive_client.ViewModels;
 
 namespace kDrive_client
 {
     public sealed partial class HomePage : Page
     {
-        internal DataModel.AppModel _viewModel = ((App)Application.Current).Data;
-        internal DataModel.AppModel ViewModel { get { return _viewModel; } }
+        internal AppModel _viewModel = ((App)Application.Current).Data;
+        internal AppModel ViewModel { get { return _viewModel; } }
         public HomePage()
         {
             InitializeComponent();

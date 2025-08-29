@@ -18,6 +18,7 @@
 
 using H.NotifyIcon;
 using kDrive_client.ServerCommunication;
+using kDrive_client.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -46,7 +47,7 @@ namespace kDrive_client
         public Window? Window { get; set; }
         public TrayIcon.TrayIconManager TrayIcoManager { get; private set; }
         internal ServerCommunication.CommClient ComClient { get; set; } = new ServerCommunication.CommClient();
-        internal DataModel.AppModel Data { get; set; } = new DataModel.AppModel();
+        internal AppModel Data { get; set; } = new AppModel();
         public App()
         {
             InitializeComponent();

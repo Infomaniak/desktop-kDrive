@@ -24,7 +24,7 @@
     xmlns:local="using:kDrive_client"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-    xmlns:dataModel="using:kDrive_client.DataModel"
+    xmlns:viewModel="using:kDrive_client.ViewModels"
     mc:Ignorable="d"
     Title="kDrive client">
 
@@ -109,7 +109,7 @@
                         IsEnabled="{x:Bind ViewModel.IsInitialized, Mode=OneWay}"
                         >
                         <ComboBox.ItemTemplate>
-                            <DataTemplate x:DataType="dataModel:Drive">
+                            <DataTemplate x:DataType="viewModel:Drive">
                                 <StackPanel Orientation="Horizontal">
                                     <PersonPicture
                                         Grid.Column="2"
