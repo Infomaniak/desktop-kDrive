@@ -87,11 +87,15 @@ namespace KDriveClient
                 // Navigate to the selected page
                 switch (selectedItem.Tag)
                 {
-                    case "home":
+                    case "HomePage":
                         contentFrame.Navigate(typeof(HomePage));
                         break;
-                    case "activity":
+                    case "ActivityPage":
                         contentFrame.Navigate(typeof(ActivityPage));
+                        break;
+                    default:
+                        Logger.LogWarning("MainWindow", $"Unknown navigation tag: {selectedItem.Tag}... Going to HomePage");
+                        contentFrame.Navigate(typeof(HomePage));
                         break;
                 }
             }

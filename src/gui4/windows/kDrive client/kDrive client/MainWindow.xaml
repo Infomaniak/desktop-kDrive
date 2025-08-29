@@ -133,7 +133,7 @@
                         <SymbolIcon Symbol="Home" Foreground="{ThemeResource AccentAAFillColorDefaultBrush}"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="NavActivity" Tag="SamplePage2" MinHeight="30">
+                <NavigationViewItem x:Uid="NavActivity" Tag="ActivityPage" MinHeight="30">
                     <NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Sync" Foreground="{ThemeResource AccentAAFillColorDefaultBrush}"/>
                     </NavigationViewItem.Icon>
