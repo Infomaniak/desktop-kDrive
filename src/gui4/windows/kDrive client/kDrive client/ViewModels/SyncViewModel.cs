@@ -32,15 +32,12 @@ namespace kDrive_client.DataModel
         {
             get => _localPath;
             set
-            {
-                if (SetProperty(ref _localPath, value))
+            { // Ensure the path ends with a directory separator
+                if (!string.IsNullOrEmpty(_localPath) && !_localPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
                 {
-                    // Ensure the path ends with a directory separator
-                    if (!string.IsNullOrEmpty(_localPath) && !_localPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
-                    {
-                        _localPath += Path.DirectorySeparatorChar;
-                    }
+                    _localPath += Path.DirectorySeparatorChar;
                 }
+                SetProperty(ref _localPath, value);
             }
         }
 
@@ -49,14 +46,12 @@ namespace kDrive_client.DataModel
             get => _remotePath;
             set
             {
-                if (SetProperty(ref _remotePath, value))
+                // Ensure the path ends with a directory separator
+                if (!string.IsNullOrEmpty(_remotePath) && !_remotePath.EndsWith(Path.DirectorySeparatorChar.ToString()))
                 {
-                    // Ensure the path ends with a directory separator
-                    if (!string.IsNullOrEmpty(_remotePath) && !_remotePath.EndsWith(Path.DirectorySeparatorChar.ToString()))
-                    {
-                        _remotePath += Path.DirectorySeparatorChar;
-                    }
+                    _remotePath += Path.DirectorySeparatorChar;
                 }
+                SetProperty(ref _remotePath, value);
             }
         }
 
