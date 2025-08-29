@@ -16,8 +16,16 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+import AppKit
 
 public struct UIDrive: Sendable {
-    let id: Int
+    public let id: Int
+    public let name: String
+    public let color: NSColor
+
+    public init(id: Int, name: String, color: NSColor) {
+        self.id = id
+        self.name = name
+        self.color = color
+    }
 }

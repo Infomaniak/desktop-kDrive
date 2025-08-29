@@ -17,6 +17,7 @@
  */
 
 import Cocoa
+import kDriveCore
 
 protocol SidebarViewControllerDelegate: AnyObject {
     func sidebarViewController(_ controller: SidebarViewController, didSelectItem item: SidebarItem)
@@ -29,47 +30,91 @@ final class SidebarViewController: NSViewController {
 
     private var scrollView: NSScrollView!
     private var outlineView: ClickableOutlineView!
+    private var popUpButton: NSPopUpButton!
 
     private let items: [SidebarItem] = [.home, .activity, .storage, .kDriveFolder]
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupOutlineView()
+        setupView()
     }
 
-    private func setupOutlineView() {
-        scrollView = NSScrollView()
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.hasVerticalScroller = true
-        scrollView.autohidesScrollers = true
-        scrollView.drawsBackground = false
-        view.addSubview(scrollView)
+    private func setupView() {
+        let headerView = SidebarHeaderView()
+        headerView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(headerView)
 
+        setupPopUpButton()
+        setupScrollAndOutlineView()
+
+        NSLayoutConstraint.activate([
+            headerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            headerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+            headerView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+
+            popUpButton.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: 16),
+            popUpButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+            popUpButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+
+            scrollView.topAnchor.constraint(equalTo: popUpButton.bottomAnchor, constant: 16),
+            scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+        ])
+    }
+
+    private func setupPopUpButton() {
+        popUpButton = NSPopUpButton()
+        popUpButton.translatesAutoresizingMaskIntoConstraints = false
+        popUpButton.action = #selector(didSelectDrive)
+
+        let drives = [
+            UIDrive(id: 1, name: "Infomaniak", color: .green),
+            UIDrive(id: 2, name: "Tim Cook et ses amis", color: .blue)
+        ]
+        for drive in drives {
+            addPopUpItem(title: drive.name, image: NSImage(resource: .kdriveFoldersStacked), color: .red)
+        }
+        view.addSubview(popUpButton)
+    }
+
+    private func addPopUpItem(title: String, image: NSImage, color: NSColor) {
+        popUpButton.addItem(withTitle: title)
+
+        if #available(macOS 12.0, *) {
+            if let coloredImage = image.withSymbolConfiguration(.init(hierarchicalColor: color)) {
+                coloredImage.isTemplate = false
+                popUpButton.lastItem?.image = coloredImage
+            }
+        }
+    }
+
+    @objc func didSelectDrive() {
+        // TODO: Handle updated drive
+    }
+
+    private func setupScrollAndOutlineView() {
         outlineView = ClickableOutlineView()
         outlineView.translatesAutoresizingMaskIntoConstraints = false
         outlineView.dataSource = self
         outlineView.delegate = self
         outlineView.focusRingType = .none
         outlineView.rowSizeStyle = .medium
-        scrollView.documentView = outlineView
-        if #available(macOS 11.0, *) {
-            outlineView.style = .sourceList
-        } else {
-            outlineView.selectionHighlightStyle = .sourceList
-        }
         outlineView.headerView = nil
+        outlineView.style = .sourceList
 
         let singleColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("SidebarColumn"))
         singleColumn.isEditable = false
         outlineView.addTableColumn(singleColumn)
         outlineView.outlineTableColumn = singleColumn
 
-        NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor)
-        ])
+        scrollView = NSScrollView()
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.hasVerticalScroller = true
+        scrollView.autohidesScrollers = true
+        scrollView.drawsBackground = false
+        scrollView.documentView = outlineView
+        view.addSubview(scrollView)
     }
 
     override func viewWillAppear() {

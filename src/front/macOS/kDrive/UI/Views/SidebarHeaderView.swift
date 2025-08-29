@@ -49,7 +49,7 @@ final class SidebarHeaderView: NSView {
             imageView.heightAnchor.constraint(equalTo: imageView.widthAnchor),
             textField.leadingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: 8),
             textField.centerYAnchor.constraint(equalTo: imageView.centerYAnchor),
-            textField.trailingAnchor.constraint(equalTo: trailingAnchor)
+            textField.trailingAnchor.constraint(greaterThanOrEqualTo: trailingAnchor)
         ])
     }
 }
