@@ -458,7 +458,7 @@ function Prepare-Archive {
 
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    if (!$upload) {
+    if ($ci -and !$upload) {
         Write-Host "Archive prepared for CI build."
         exit 0
     }
@@ -753,7 +753,7 @@ if ($upload) {
 #                                                                                               #
 #################################################################################################
 
-Copy-Item -Path "$buildPath\bin\kDrive*.pdb" -Destination $contentPath
+Copy-Item -Path "$buildPath\kDrive*.pdb" -Destination $contentPath
 Remove-Item $archiveDataPath
 
 #################################################################################################
