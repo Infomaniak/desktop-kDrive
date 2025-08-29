@@ -29,7 +29,8 @@ using System.Threading.Tasks;
 using DynamicData;
 using DynamicData.Binding;
 
-namespace kDrive_client.DataModel
+namespace kDrive_client.ViewModels
+
 {
     internal class AppModel : ObservableObject
     {
