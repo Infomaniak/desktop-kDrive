@@ -20,6 +20,7 @@ import Cocoa
 
 extension NSToolbarItem.Identifier {
     static let trackingSplitView = NSToolbarItem.Identifier("TrackingSplitView")
+    static let searchTextField = NSToolbarItem.Identifier("SearchTextField")
 }
 
 final class SplitViewController: NSSplitViewController {
@@ -83,15 +84,21 @@ extension SplitViewController: SidebarViewControllerDelegate {
 
 extension SplitViewController: NSToolbarDelegate {
     func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        return [.trackingSplitView]
+        return [.trackingSplitView, .searchTextField]
     }
 
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        return [.trackingSplitView]
+        return [.trackingSplitView, .searchTextField]
     }
 
     func toolbar(_ toolbar: NSToolbar, itemForItemIdentifier itemIdentifier: NSToolbarItem.Identifier, willBeInsertedIntoToolbar flag: Bool) -> NSToolbarItem? {
-        guard itemIdentifier == .trackingSplitView else { return nil }
-        return NSTrackingSeparatorToolbarItem(identifier: .trackingSplitView, splitView: splitView, dividerIndex: 0)
+        switch itemIdentifier {
+        case .trackingSplitView:
+            return NSTrackingSeparatorToolbarItem(identifier: .trackingSplitView, splitView: splitView, dividerIndex: 0)
+        case .searchTextField:
+            return NSSearchToolbarItem(itemIdentifier: .searchTextField)
+        default:
+            return nil
+        }
     }
 }
