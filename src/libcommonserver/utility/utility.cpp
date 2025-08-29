@@ -550,7 +550,10 @@ bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isM
     if (tmpItemType.linkType == LinkType::None) {
         LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirEntry.path())
                                        << L" because it is not a directory, a regular file or a symlink.");
+        return true;
     }
+
+    isManaged = true;
 
     return true;
 }
