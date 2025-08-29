@@ -72,5 +72,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Assets\icons\" />
+    <Folder Include="Pages\" />
   </ItemGroup>
 </Project>
