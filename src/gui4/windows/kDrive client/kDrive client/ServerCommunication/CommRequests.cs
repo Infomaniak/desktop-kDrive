@@ -274,6 +274,7 @@ namespace kDrive_client.ServerCommunication
                 for (int i = 0; i < count; i++)
                 {
                     User user = User.ReadFrom(reader);
+                    result.Add(user);
                 }
             }
 
