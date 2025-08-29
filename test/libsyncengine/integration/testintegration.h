@@ -83,6 +83,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
 
         void testDeleteAndRecreateBranch();
 
+        void testSynchronizationOfSymLinks();
         void testSymLinkWithTooManySymbolicLevels();
         void testDirSymLinkWithTooManySymbolicLevels();
 
