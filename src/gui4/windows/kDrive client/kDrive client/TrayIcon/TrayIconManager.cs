@@ -92,7 +92,6 @@ namespace kDrive_client.TrayIcon
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(_window);
             var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
             var appWindow = AppWindow.GetFromWindowId(windowId);
-            appWindow.Resize(new Windows.Graphics.SizeInt32(1200, 668));
             if (appWindow.Presenter is OverlappedPresenter presenter)
             {
                 presenter.IsMaximizable = false;
