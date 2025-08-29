@@ -739,7 +739,7 @@ Prepare-Archive $buildType $buildPath $vfsDir $archivePath $upload
 #                                                                                               #
 #################################################################################################
 
-if ($upload) {
+if (!$ci) {
     Create-Archive $path $buildPath $contentPath $installPath $archiveName $archivePath $upload
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Archive creation failed ($LASTEXITCODE) . Aborting." -f Red
