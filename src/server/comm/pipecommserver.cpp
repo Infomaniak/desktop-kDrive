@@ -21,16 +21,14 @@
 
 #include <log4cplus/loggingmacros.h>
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include <stdio.h>
 #include <tchar.h>
 #include <strsafe.h>
 
-#define CONNECTING_STATE 0
-#define READING_STATE 1
-#define WRITING_STATE 2
 #define PIPE_TIMEOUT 5000
 #define EVENT_WAIT_TIMEOUT 100
+#define INSTANCES 4
 #endif
 
 namespace KDC {
@@ -38,26 +36,66 @@ namespace KDC {
 PipeCommChannel::PipeCommChannel() :
     AbstractCommChannel() {}
 
-PipeCommChannel::~PipeCommChannel() {}
-
-uint64_t PipeCommChannel::readData(char *data, uint64_t maxlen) {
-    return 0;
+PipeCommChannel::~PipeCommChannel() {
+    destroyedCbk();
 }
 
-uint64_t PipeCommChannel::writeData(const char *data, uint64_t len) {
+uint64_t PipeCommChannel::readData(char *data, uint64_t maxSize) {
+    if (!_connected) return 0;
+
+#if defined(KD_WINDOWS)
+    std::vector<TCHAR> wData(maxSize, 0);
+    auto size = _inBuffer.copy(wData.data(), maxSize);
+    _inBuffer.erase(0, size);
+    wcstombs_s(NULL, data, maxSize, wData.data(), maxSize);
+    return size;
+#else
+    auto size = _inBuffer.copy(data, maxSize);
+    _inBuffer.erase(0, size);
+    return size;
+#endif
+}
+
+uint64_t PipeCommChannel::writeData(const char *data, uint64_t size) {
+    if (!_connected) return 0;
+
+#if defined(KD_WINDOWS)
+    LOG_DEBUG(Log::instance()->getLogger(), "Write on inst:" << _instance << " data:" << data);
+    std::vector<TCHAR> wData(size + 1, 0);
+    mbstowcs_s(NULL, wData.data(), size + 1, data, size);
+    DWORD bytesWritten = 0;
+    auto index = toInt(Action::Write);
+    BOOL fSuccess = WriteFile(_pipeInst, wData.data(), size * sizeof(TCHAR), &bytesWritten, &_overlap[index]);
+
+    // The write operation completed successfully
+    if (fSuccess && bytesWritten == size * sizeof(TCHAR)) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Write done on inst:" << _instance);
+        _pendingIO[index] = FALSE;
+        return size;
+    }
+
+    // The write operation is still pending
+    DWORD dwErr = GetLastError();
+    if (!fSuccess && (dwErr == ERROR_IO_PENDING)) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Write pending on inst:" << _instance);
+        _size[index] = bytesWritten;
+        _pendingIO[index] = TRUE;
+        return 0;
+    }
+
+    // An error occurred; disconnect from the client.
+    LOG_DEBUG(Log::instance()->getLogger(), "Write error on inst:" << _instance);
+    // disconnectAndReconnect(this);
     return 0;
+#endif
 }
 
 uint64_t PipeCommChannel::bytesAvailable() const {
-    return 0;
+    return _inBuffer.size();
 }
 
 bool PipeCommChannel::canReadLine() const {
-    return true;
-}
-
-std::string PipeCommChannel::id() const {
-    return "";
+    return _inBuffer.find(Str("\\/\n"), 0) != std::string::npos;
 }
 
 PipeCommServer::PipeCommServer(const std::string &name) :
@@ -96,7 +134,12 @@ std::shared_ptr<AbstractCommChannel> PipeCommServer::nextPendingConnection() {
 }
 
 std::list<std::shared_ptr<AbstractCommChannel>> PipeCommServer::connections() {
-    std::list<std::shared_ptr<AbstractCommChannel>> channelList(_channels.begin(), _channels.end());
+    std::list<std::shared_ptr<AbstractCommChannel>> channelList;
+    for (auto &channel: _channels) {
+        if (channel->_connected) {
+            channelList.push_back(channel);
+        }
+    }
     return channelList;
 }
 
@@ -106,174 +149,165 @@ void PipeCommServer::executeFunc(PipeCommServer *server) {
 }
 
 void PipeCommServer::execute() {
-#ifdef _WIN32
-    DWORD i, dwWait, cbRet, dwErr;
-    BOOL fSuccess;
-    HANDLE hEvents[INSTANCES];
+#if defined(KD_WINDOWS)
+    HANDLE events[INSTANCES * toInt(PipeCommChannel::Action::EnumEnd)];
 
-    // The initial loop creates several instances of a named pipe along with an event object for each instance. An overlapped
-    // ConnectNamedPipe operation is started for each instance.
-    for (i = 0; i < INSTANCES; i++) {
-        // Create an event object for this instance.
-        hEvents[i] = CreateEvent(NULL, // default security attribute
-                                 TRUE, // manual-reset event
-                                 TRUE, // initial state = signaled
-                                 NULL); // unnamed event object
-
-        if (hEvents[i] == NULL) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in CreateEvent: err=" << GetLastError());
-            _exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
-            return;
-        }
-
+    for (DWORD inst = 0; inst < INSTANCES; inst++) {
+        // Creates an instance of a named pipe
         auto channel = std::make_shared<PipeCommChannel>();
         _channels.push_back(channel);
-        channel->_oOverlap.hEvent = hEvents[i];
-        channel->_oOverlap.Offset = 0;
-        channel->_oOverlap.OffsetHigh = 0;
 
-        channel->_hPipeInst = CreateNamedPipe(_pipePath.native().c_str(), // pipe name
-                                              PIPE_ACCESS_DUPLEX | // read/write access
-                                                      FILE_FLAG_OVERLAPPED, // overlapped mode
-                                              PIPE_TYPE_MESSAGE | // message-type pipe
-                                                      PIPE_READMODE_MESSAGE | // message-read mode
-                                                      PIPE_WAIT, // blocking mode
-                                              INSTANCES, // number of instances
-                                              BUFSIZE * sizeof(TCHAR), // output buffer size
-                                              BUFSIZE * sizeof(TCHAR), // input buffer size
-                                              PIPE_TIMEOUT, // client time-out (ms)
-                                              NULL); // default security attributes
+        for (auto action = 0; action < toInt(PipeCommChannel::Action::EnumEnd); action++) {
+            // Create an event object
+            auto index = inst * toInt(PipeCommChannel::Action::EnumEnd) + action;
+            events[index] = CreateEvent(NULL, // default security attribute
+                                        TRUE, // manual-reset event
+                                        FALSE, // initial state = not signaled
+                                        NULL); // unnamed event object
 
-        if (channel->_hPipeInst == INVALID_HANDLE_VALUE) {
+            if (events[index] == NULL) {
+                LOG_WARN(Log::instance()->getLogger(), "Error in CreateEvent: err=" << GetLastError());
+                _exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
+                return;
+            }
+
+            channel->_instance = inst;
+            channel->_overlap[action].hEvent = events[index];
+            channel->_overlap[action].Offset = 0;
+            channel->_overlap[action].OffsetHigh = 0;
+            channel->_size[action] = 0;
+            channel->_pendingIO[action] = FALSE;
+        }
+
+        channel->_pipeInst = CreateNamedPipe(_pipePath.native().c_str(), // pipe name
+                                             PIPE_ACCESS_DUPLEX | // read/write access
+                                                     FILE_FLAG_OVERLAPPED, // overlapped mode
+                                             PIPE_TYPE_BYTE | // message-type pipe
+                                                     PIPE_READMODE_BYTE | // message-read mode
+                                                     PIPE_WAIT, // blocking mode
+                                             INSTANCES, // number of instances
+                                             BUFSIZE * sizeof(TCHAR), // output buffer size
+                                             BUFSIZE * sizeof(TCHAR), // input buffer size
+                                             PIPE_TIMEOUT, // client time-out (ms)
+                                             NULL); // default security attributes
+
+        if (channel->_pipeInst == INVALID_HANDLE_VALUE) {
             LOG_WARN(Log::instance()->getLogger(), "Error in CreateNamedPipe: err=" << GetLastError());
             _exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
             return;
         }
 
-        // Call the subroutine to connect to the new client
-        channel->_fPendingIO = connectToNewClient(channel->_hPipeInst, &channel->_oOverlap);
+        // Connect to the pipe
+        auto connectIndex = toInt(PipeCommChannel::Action::Connect);
+        channel->_pendingIO[connectIndex] = connectToPipe(channel->_pipeInst, &channel->_overlap[connectIndex]);
+        if (channel->_pendingIO[connectIndex]) {
+            LOG_DEBUG(Log::instance()->getLogger(), "Connect pending on inst:" << inst);
+        }
 
-        channel->_dwState = channel->_fPendingIO ? CONNECTING_STATE // still connecting
-                                                 : READING_STATE; // ready to read
+        channel->_connected = channel->_pendingIO[connectIndex] ? FALSE // still connecting
+                                                                : TRUE; // ready to read
     }
 
-    while (!_stopAsked) {
-        // Wait for the event object to be signaled, indicating completion of an overlapped read, write, or connect operation.
-        dwWait = WaitForMultipleObjects(INSTANCES, // number of event objects
-                                        hEvents, // array of event objects
-                                        FALSE, // does not wait for all
-                                        EVENT_WAIT_TIMEOUT); // wait time (ms)
+    // The server is connected/connecting to the pipe instances
+    newConnectionCbk();
 
+    while (!_stopAsked) {
+        // Wait for the event object to be signaled, indicating completion of an overlapped read, write, or connect operation
+        auto eventCount = INSTANCES * toInt(PipeCommChannel::Action::EnumEnd);
+        DWORD dwWait = WaitForMultipleObjects(eventCount, events, FALSE,
+                                              EVENT_WAIT_TIMEOUT); // wait time (ms)
+
+        DWORD index = 0;
         if (dwWait == WAIT_TIMEOUT) {
             continue;
-        } else if (dwWait == WAIT_FAILED) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in WaitForMultipleObjects: err=" << GetLastError());
-            _exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
-            return;
-        } else if (dwWait - WAIT_OBJECT_0 < 0 || dwWait - WAIT_OBJECT_0 > INSTANCES - 1) {
-            LOG_WARN(Log::instance()->getLogger(), "Index out of range.");
+        } else if (dwWait >= WAIT_OBJECT_0 && dwWait < WAIT_OBJECT_0 + eventCount) {
+            // Event index
+            index = dwWait - WAIT_OBJECT_0;
+        } else {
+            LOG_WARN(Log::instance()->getLogger(), "Error in WaitForSingleObject: err=" << GetLastError());
             _exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
             return;
         }
 
-        // dwWait shows which pipe instance completed the operation.
-        i = dwWait - WAIT_OBJECT_0;
+        ResetEvent(events[index]);
 
-        // Get the result if the operation was pending.
-        if (_channels[i]->_fPendingIO) {
-            fSuccess = GetOverlappedResult(_channels[i]->_hPipeInst, // handle to pipe
-                                           &_channels[i]->_oOverlap, // OVERLAPPED structure
-                                           &cbRet, // bytes transferred
-                                           FALSE); // do not wait
+        DWORD inst = index / toInt(PipeCommChannel::Action::EnumEnd);
+        auto action = index % toInt(PipeCommChannel::Action::EnumEnd);
+        LOG_DEBUG(Log::instance()->getLogger(), "Event received for inst:" << inst << " action:" << action);
+        if (_channels[inst]->_pendingIO[action]) {
+            LOG_DEBUG(Log::instance()->getLogger(), "Pending IO for inst:" << inst << " action:" << action);
+            DWORD size;
+            BOOL fSuccess = GetOverlappedResult(_channels[inst]->_pipeInst, // handle to pipe
+                                                &_channels[inst]->_overlap[action], // OVERLAPPED structure
+                                                &size, // bytes transferred
+                                                FALSE); // do not wait
 
-            switch (_channels[i]->_dwState) {
-                case CONNECTING_STATE:
-                    // Pending connect operation
-                    if (!fSuccess) {
-                        LOG_WARN(Log::instance()->getLogger(), "Error in GetOverlappedResult: err=" << GetLastError());
-                        _exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
-                        return;
-                    }
-                    _channels[i]->_dwState = READING_STATE;
-                    break;
-                case READING_STATE:
-                    // Pending read operation
-                    if (!fSuccess || cbRet == 0) {
-                        disconnectAndReconnect(_channels[i]);
-                        continue;
-                    }
-                    _channels[i]->_cbRead = cbRet;
-                    _channels[i]->_dwState = WRITING_STATE;
-                    break;
-                case WRITING_STATE:
-                    // Pending write operation
-                    if (!fSuccess || cbRet != _channels[i]->_cbToWrite) {
-                        disconnectAndReconnect(_channels[i]);
-                        continue;
-                    }
-                    _channels[i]->_dwState = READING_STATE;
-                    break;
-                default: {
-                    LOG_WARN(Log::instance()->getLogger(), "Invalid pipe state.");
-                    _exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
-                    return;
-                }
-            }
-        }
-
-        // The pipe state determines which operation to do next.
-        switch (_channels[i]->_dwState) {
-            case READING_STATE:
-                // The pipe instance is connected to the client and is ready to read a request from the client.
-                fSuccess = ReadFile(_channels[i]->_hPipeInst, _channels[i]->_chRequest, BUFSIZE * sizeof(TCHAR),
-                                    &_channels[i]->_cbRead, &_channels[i]->_oOverlap);
-
-                // The read operation completed successfully.
-                if (fSuccess && _channels[i]->_cbRead != 0) {
-                    _channels[i]->_fPendingIO = FALSE;
-                    _channels[i]->_dwState = WRITING_STATE;
-                    continue;
-                }
-
-                // The read operation is still pending.
-                dwErr = GetLastError();
-                if (!fSuccess && (dwErr == ERROR_IO_PENDING)) {
-                    _channels[i]->_fPendingIO = TRUE;
-                    continue;
-                }
-
-                // An error occurred; disconnect from the client.
-                disconnectAndReconnect(_channels[i]);
-                break;
-            case WRITING_STATE:
-                // The request was successfully read from the client. Get the reply data and write it to the client.
-                getAnswerToRequest(_channels[i]);
-
-                fSuccess = WriteFile(_channels[i]->_hPipeInst, _channels[i]->_chReply, _channels[i]->_cbToWrite, &cbRet,
-                                     &_channels[i]->_oOverlap);
-
-                // The write operation completed successfully.
-                if (fSuccess && cbRet == _channels[i]->_cbToWrite) {
-                    _channels[i]->_fPendingIO = FALSE;
-                    _channels[i]->_dwState = READING_STATE;
-                    continue;
-                }
-
-                // The write operation is still pending.
-                dwErr = GetLastError();
-                if (!fSuccess && (dwErr == ERROR_IO_PENDING)) {
-                    _channels[i]->_fPendingIO = TRUE;
-                    continue;
-                }
-
-                // An error occurred; disconnect from the client.
-                disconnectAndReconnect(_channels[i]);
-                break;
-            default: {
-                LOG_WARN(Log::instance()->getLogger(), "Invalid pipe state.");
+            if (!fSuccess) {
+                LOG_WARN(Log::instance()->getLogger(), "Error in GetOverlappedResult: err=" << GetLastError());
                 _exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
                 return;
             }
+
+            LOG_DEBUG(Log::instance()->getLogger(), size << " Bytes transferred for inst:" << inst << " action:" << action);
+            _channels[inst]->_pendingIO[action] = FALSE;
+
+            if (action == toInt(PipeCommChannel::Action::Connect)) {
+                // Pending connect operation
+                LOG_DEBUG(Log::instance()->getLogger(), "Pending connect for inst:" << inst << " action:" << action);
+                _channels[inst]->_connected = TRUE;
+            } else if (action == toInt(PipeCommChannel::Action::Write)) {
+                if (size != _channels[inst]->_size[action]) {
+                    LOG_DEBUG(Log::instance()->getLogger(), "Pending write error for inst:" << inst << " action:" << action);
+                    disconnectAndReconnect(_channels[inst]);
+                    continue;
+                }
+                // Pending write operation
+                LOG_DEBUG(Log::instance()->getLogger(), "Pending write for inst:" << inst << " action:" << action);
+            } else if (action == toInt(PipeCommChannel::Action::Read)) {
+                if (size == 0) {
+                    LOG_DEBUG(Log::instance()->getLogger(), "Pending read error for inst:" << inst << " action:" << action);
+                    disconnectAndReconnect(_channels[inst]);
+                    continue;
+                }
+                // Pending read operation
+                LOG_DEBUG(Log::instance()->getLogger(), "Pending read for inst:" << inst << " action:" << action);
+                _channels[inst]->_size[action] = size;
+                _channels[inst]->_inBuffer += CommString(_channels[inst]->_readData);
+                _channels[inst]->readyReadCbk();
+            }
+        } else {
+            continue;
+        }
+
+        if (_channels[inst]->_connected) {
+            // Read
+            LOG_DEBUG(Log::instance()->getLogger(), "Read on inst:" << inst);
+            auto readIndex = toInt(PipeCommChannel::Action::Read);
+            memset(&_channels[inst]->_readData[0], 0, sizeof(_channels[inst]->_readData));
+            BOOL fSuccess = ReadFile(_channels[inst]->_pipeInst, _channels[inst]->_readData, BUFSIZE * sizeof(TCHAR),
+                                     &_channels[inst]->_size[readIndex], &_channels[inst]->_overlap[readIndex]);
+
+            if (fSuccess && _channels[inst]->_size[readIndex] != 0) {
+                // The read operation completed successfully
+                LOG_DEBUG(Log::instance()->getLogger(), "Read done on inst:" << inst);
+                _channels[inst]->_pendingIO[readIndex] = FALSE;
+                _channels[inst]->_inBuffer += CommString(_channels[inst]->_readData);
+                _channels[inst]->readyReadCbk();
+                continue;
+            }
+
+            DWORD dwErr = GetLastError();
+            if (!fSuccess && (dwErr == ERROR_IO_PENDING)) {
+                // The read operation is still pending
+                LOG_DEBUG(Log::instance()->getLogger(), "Read pending on inst:" << inst);
+                _channels[inst]->_pendingIO[readIndex] = TRUE;
+                continue;
+            }
+
+            // An error occurred, disconnect from the client
+            LOG_DEBUG(Log::instance()->getLogger(), "Read error on inst:" << inst);
+            disconnectAndReconnect(_channels[inst]);
+            break;
         }
     }
 
@@ -281,32 +315,32 @@ void PipeCommServer::execute() {
 #endif
 }
 
-#ifdef _WIN32
-// This function is called when an error occurs or when the client closes its handle to the pipe.
-// Disconnect from this client, then call ConnectNamedPipe to wait for another client to connect.
+#if defined(KD_WINDOWS)
+// This function is called when an error occurs or when the client closes its handle to the pipe
+// Disconnect from this client, then call ConnectNamedPipe to wait for another client to connect
 void PipeCommServer::disconnectAndReconnect(std::shared_ptr<PipeCommChannel> channel) {
     // Disconnect the pipe instance.
-
-    if (!DisconnectNamedPipe(channel->_hPipeInst)) {
+    if (!DisconnectNamedPipe(channel->_pipeInst)) {
         LOG_WARN(Log::instance()->getLogger(), "DisconnectNamedPipe failed: err=" << GetLastError());
     }
 
-    // Call a subroutine to connect to the new client.
-    channel->_fPendingIO = connectToNewClient(channel->_hPipeInst, &channel->_oOverlap);
+    // Call a subroutine to connect to the pipe
+    auto connectIndex = toInt(PipeCommChannel::Action::Connect);
+    channel->_pendingIO[connectIndex] = connectToPipe(channel->_pipeInst, &channel->_overlap[connectIndex]);
 
-    channel->_dwState = channel->_fPendingIO ? CONNECTING_STATE // still connecting
-                                             : READING_STATE; // ready to read
+    channel->_connected = channel->_pendingIO[connectIndex] ? FALSE // still connecting
+                                                            : TRUE; // ready to read
 }
 
-// This function is called to start an overlapped connect operation.
-// It returns true if an operation is pending or false if the connection has been completed.
-bool PipeCommServer::connectToNewClient(HANDLE hPipe, LPOVERLAPPED lpo) {
+// This function is called to start an overlapped connect operation
+// It returns true if an operation is pending or false if the connection has been completed
+bool PipeCommServer::connectToPipe(HANDLE hPipe, LPOVERLAPPED lpo) {
     bool fPendingIO = false;
 
-    // Start an overlapped connection for this pipe instance.
+    // Start an overlapped connection for this pipe instance
     BOOL fConnected = ConnectNamedPipe(hPipe, lpo);
 
-    // Overlapped ConnectNamedPipe should return zero.
+    // Overlapped ConnectNamedPipe should return zero
     if (fConnected) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ConnectNamedPipe: err=" << GetLastError());
         return false;
@@ -314,7 +348,7 @@ bool PipeCommServer::connectToNewClient(HANDLE hPipe, LPOVERLAPPED lpo) {
 
     switch (GetLastError()) {
         case ERROR_IO_PENDING:
-            // The overlapped connection in progress.
+            // The overlapped connection is in progress
             fPendingIO = true;
             break;
         case ERROR_PIPE_CONNECTED:
@@ -330,13 +364,6 @@ bool PipeCommServer::connectToNewClient(HANDLE hPipe, LPOVERLAPPED lpo) {
 
     return fPendingIO;
 }
-
-void PipeCommServer::getAnswerToRequest(std::shared_ptr<PipeCommChannel> channel) {
-    LOGW_INFO(Log::instance()->getLogger(), L"[" << channel->_hPipeInst << L"] " << channel->_chRequest);
-    StringCchCopy(channel->_chReply, BUFSIZE, TEXT("Default answer from server"));
-    channel->_cbToWrite = (lstrlen(channel->_chReply) + 1) * sizeof(TCHAR);
-}
-
 #endif
 
 void PipeCommServer::stop() {

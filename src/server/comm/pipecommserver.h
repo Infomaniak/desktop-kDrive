@@ -22,36 +22,46 @@
 
 #include <thread>
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 #include <windows.h>
-
 #define BUFSIZE 4096
-#define INSTANCES 4
 #endif
 
 namespace KDC {
 
+class PipeCommServer;
+
 class PipeCommChannel : public AbstractCommChannel {
     public:
+        enum class Action {
+            Connect = 0,
+            Read,
+            Write,
+            EnumEnd
+        };
+
         PipeCommChannel();
         ~PipeCommChannel();
 
-        uint64_t readData(char *data, uint64_t maxlen) override;
-        virtual uint64_t writeData(const char *data, uint64_t len) override;
+        uint64_t readData(char *data, uint64_t maxSize) override;
+        virtual uint64_t writeData(const char *data, uint64_t size) override;
         uint64_t bytesAvailable() const override;
         bool canReadLine() const override;
-        std::string id() const override;
 
-#ifdef _WIN32
-        OVERLAPPED _oOverlap;
-        HANDLE _hPipeInst;
-        TCHAR _chRequest[BUFSIZE];
-        DWORD _cbRead;
-        TCHAR _chReply[BUFSIZE];
-        DWORD _cbToWrite;
-        BOOL _dwState;
-        BOOL _fPendingIO;
+    private:
+        CommString _inBuffer;
+
+#if defined(KD_WINDOWS)
+        short _instance = 0;
+        OVERLAPPED _overlap[toInt(Action::EnumEnd)];
+        HANDLE _pipeInst;
+        BOOL _connected = FALSE;
+        DWORD _size[toInt(Action::EnumEnd)];
+        BOOL _pendingIO[toInt(Action::EnumEnd)];
+        TCHAR _readData[BUFSIZE];
 #endif
+
+        friend class PipeCommServer;
 };
 
 class PipeCommServer : public AbstractCommServer {
@@ -79,12 +89,11 @@ class PipeCommServer : public AbstractCommServer {
         void stop();
         void waitForExit();
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         std::vector<std::shared_ptr<PipeCommChannel>> _channels;
 
         void disconnectAndReconnect(std::shared_ptr<PipeCommChannel> channel);
-        bool connectToNewClient(HANDLE, LPOVERLAPPED);
-        void getAnswerToRequest(std::shared_ptr<PipeCommChannel> channel);
+        bool connectToPipe(HANDLE hPipe, LPOVERLAPPED lpo);
 #endif
 };
 

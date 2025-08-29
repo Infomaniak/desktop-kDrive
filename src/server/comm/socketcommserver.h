@@ -33,7 +33,6 @@ class SocketCommChannel : public AbstractCommChannel {
         virtual uint64_t writeData(const char *data, uint64_t len) override;
         uint64_t bytesAvailable() const override;
         bool canReadLine() const override;
-        std::string id() const override;
 
     private:
         Poco::Net::ServerSocket _socket;

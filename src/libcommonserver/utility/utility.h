@@ -173,7 +173,7 @@ struct COMMONSERVER_EXPORT Utility {
         static bool hasLaunchOnStartup(const std::string &appName);
         static bool setLaunchOnStartup(const std::string &appName, const std::string &guiName, bool enable);
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         using kdVariant = std::variant<int, std::wstring>;
 
         static void setFolderPinState(const std::wstring &clsid, bool show);

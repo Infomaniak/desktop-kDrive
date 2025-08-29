@@ -30,10 +30,10 @@
 // TODO: To remove later
 #include "oldcommserver.h"
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
 #include "extcommserver_mac.h"
 #include "guicommserver_mac.h"
-#elif defined(_WIN32)
+#elif defined(KD_WINDOWS)
 #include "extcommserver.h"
 #include "guicommserver.h"
 #else
@@ -59,11 +59,11 @@ CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<SyncPal>>
                          const std::unordered_map<int, std::shared_ptr<Vfs>> &vfsMap) :
     _syncPalMap(syncPalMap),
     _vfsMap(vfsMap),
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
     _extCommServer(std::make_shared<ExtCommServer>("Extension Comm Server")),
 #endif
     _guiCommServer(std::make_shared<GuiCommServer>("GUI Comm Server")) {
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     // Tell the Finder to use the Extension (checking it from System Preferences -> Extensions)
     std::string cmd("pluginkit -v -e use -i ");
     cmd.append(APPLICATION_REV_DOMAIN);
@@ -82,7 +82,7 @@ CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<SyncPal>>
 #endif
 
     // Set CommServer(s) callbacks
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
     _extCommServer->setNewConnectionCbk(std::bind(&CommManager::onNewExtConnection, this));
     _extCommServer->setLostConnectionCbk(std::bind(&CommManager::onLostExtConnection, this, std::placeholders::_1));
 #endif
@@ -91,13 +91,13 @@ CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<SyncPal>>
 }
 
 CommManager::~CommManager() {
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
     _extCommServer.reset();
 #endif
     _guiCommServer.reset();
 
     // Check that there is no memory leak
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
     assert(_extCommServer.use_count() == 0);
 #endif
     assert(_guiCommServer.use_count() == 0);
@@ -113,9 +113,9 @@ void CommManager::start() {
         LOGW_INFO(Log::instance()->getLogger(), CommonUtility::s2ws(_guiCommServer->name()) << L" started");
     }
 
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
     // Start Ext CommServer
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
     SyncPath pipePath = createPipe();
     LOGW_INFO(Log::instance()->getLogger(),
               L"Starting " << CommonUtility::s2ws(_extCommServer->name()) << L": " << Utility::formatSyncPath(pipePath));
@@ -133,13 +133,13 @@ void CommManager::start() {
 }
 
 void CommManager::stop() {
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
     _extCommServer->close();
 #endif
     _guiCommServer->close();
 }
 
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
 void CommManager::registerSync(const SyncPath &localPath) {
     CommString command(Str("REGISTER_PATH"));
     command.append(messageCdeSeparator);
@@ -285,7 +285,7 @@ void CommManager::onLostGuiConnection(std::shared_ptr<AbstractCommChannel> chann
     LOG_INFO(Log::instance()->getLogger(), "Lost gui connection - sender=" << channel->id());
 }
 
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
 SyncPath CommManager::createPipe() {
     // Get pipe file path
     std::string name(Theme::instance()->appName());

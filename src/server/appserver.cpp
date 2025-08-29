@@ -627,6 +627,30 @@ void AppServer::handleClientCrash(bool &quit) {
     }
 }
 
+void AppServer::registerSync(std::shared_ptr<SyncPal> syncPal) {
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+    if (CommonUtility::isMac() || (CommonUtility::isWindows() && syncPal->vfsMode() == VirtualFileMode::Off)) {
+        if (_commManager) {
+            _commManager->registerSync(syncPal->localPath().native());
+        }
+    }
+#else
+    (void) syncPal;
+#endif
+}
+
+void AppServer::unregisterSync(std::shared_ptr<SyncPal> syncPal) {
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+    if (CommonUtility::isMac() || (CommonUtility::isWindows() && syncPal->vfsMode() == VirtualFileMode::Off)) {
+        if (_commManager) {
+            _commManager->unregisterSync(syncPal->localPath().native());
+        }
+    }
+#else
+    (void) syncPal;
+#endif
+}
+
 #if defined(KD_MACOS)
 bool AppServer::noMacVfsSync() const {
     for (const auto &[_, vfsMapElt]: _vfsMap) {
@@ -1036,7 +1060,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 AppServer::stopAllSyncsTask(syncDbIdList);
                 AppServer::deleteDrive(driveDbId);
             });
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
             Utility::restartFinderExtension();
 #endif
             break;
@@ -1146,7 +1170,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitInfo));
                 mainExitInfo.merge(exitInfo, {ExitCode::SystemError});
             }
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
             Utility::restartFinderExtension();
 #endif
             resultStream << mainExitInfo.code();
@@ -1335,7 +1359,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
                     sendSyncRemoved(syncInfo.dbId());
                 }
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
                 Utility::restartFinderExtension();
 #endif
             });
@@ -1382,7 +1406,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
                 // Delete sync from DB
                 deleteSync(syncDbId);
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
                 Utility::restartFinderExtension();
 #endif
             });
@@ -1728,15 +1752,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QTimer::singleShot(100, [=, this]() {
                 for (auto &syncPalMapElt: _syncPalMap) {
                     if (!syncPalMapElt.second) continue;
-                    if (_commManager) {
-                        _commManager->unregisterSync(syncPalMapElt.second->localPath().native());
-                    }
-
+                    unregisterSync(syncPalMapElt.second);
                     _syncPalMap[syncPalMapElt.first]->excludeListUpdated();
-
-                    if (_commManager) {
-                        _commManager->registerSync(syncPalMapElt.second->localPath().native());
-                    }
+                    registerSync(syncPalMapElt.second);
                 }
             });
 
@@ -2693,7 +2711,7 @@ ExitInfo AppServer::startSyncs() {
             mainExitInfo.merge(exitInfo, {ExitCode::SystemError});
         }
     }
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
     Utility::restartFinderExtension();
 #endif
     return mainExitInfo;
@@ -3524,10 +3542,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, cons
         }
     }
 
-    // Ask the Finder/File explorer Extension to register the folder
-    if (_commManager) {
-        _commManager->registerSync(sync.localPath().native());
-    }
+    registerSync(_syncPalMap[sync.dbId()]);
 
     return ExitCode::Ok;
 }
@@ -3570,11 +3585,7 @@ ExitInfo AppServer::stopSyncPal(int syncDbId, bool pausedByUser, bool quit, bool
     }
 
     if (_syncPalMap[syncDbId]) {
-        // Ask the Finder/File explorer Extension to unregister the folder
-        if (_commManager) {
-            _commManager->unregisterSync(_syncPalMap[syncDbId]->localPath().native());
-        }
-
+        unregisterSync(_syncPalMap[syncDbId]);
         _syncPalMap[syncDbId]->stop(pausedByUser, quit, clear);
     }
 

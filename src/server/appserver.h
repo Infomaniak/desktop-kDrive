@@ -235,6 +235,11 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool areMacVfsAuthsOk() const;
 #endif
 
+        // Ask the Finder/File explorer Extension to register the folder
+        void registerSync(std::shared_ptr<SyncPal> syncPal);
+        // Ask the Finder/File explorer Extension to unregister the folder
+        void unregisterSync(std::shared_ptr<SyncPal> syncPal);
+
         // For testing purpose
         void crash() const;
 

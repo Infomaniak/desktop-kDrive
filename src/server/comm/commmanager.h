@@ -39,7 +39,7 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         void start();
         void stop();
 
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         // AppServer callbacks setting
         inline void setAddErrorCallback(void (*addError)(const Error &)) { _addError = addError; }
         inline void setGetThumbnailCallback(ExitCode (*getThumbnail)(int, NodeId, int, std::string &)) {
@@ -68,12 +68,12 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         ExitCode (*_getPublicLinkUrl)(int driveDbId, const NodeId &nodeId, std::string &linkUrl);
 
         // Communication servers
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         std::shared_ptr<AbstractCommServer> _extCommServer;
 #endif
         std::shared_ptr<AbstractCommServer> _guiCommServer;
 
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         // Execute a command received from an extension, which does not require an answer
         void executeExtCommand(const CommString &commandLineStr);
         // Execute a command received from an extension and responds on the provided channel
@@ -92,11 +92,11 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         void onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channel);
         void onLostGuiConnection(std::shared_ptr<AbstractCommChannel> channel);
 
-#if defined(_WIN32)
+#if defined(KD_WINDOWS)
         SyncPath createPipe();
 #endif
 
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         friend class ExtensionJob;
 #endif
 };

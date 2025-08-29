@@ -41,10 +41,6 @@ bool SocketCommChannel::canReadLine() const {
     return true;
 }
 
-std::string SocketCommChannel::id() const {
-    return "";
-}
-
 SocketCommServer::SocketCommServer(const std::string &name) :
     AbstractCommServer(name) {}
 

@@ -34,7 +34,7 @@
 #include <QPixmap>
 #include <QUrl>
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
@@ -66,39 +66,34 @@ ExtensionJob::ExtensionJob(std::shared_ptr<CommManager> commManager, const CommS
     _commManager(commManager),
     _commandLineStr(commandLineStr),
     _channels(channels) {
-    _commands = {
-            {"REGISTER_PATH",
-             std::bind(&ExtensionJob::commandRegisterFolder, this, std::placeholders::_1, std::placeholders::_2)},
-            {"UNREGISTER_PATH",
-             std::bind(&ExtensionJob::commandUnregisterFolder, this, std::placeholders::_1, std::placeholders::_2)},
-            {"GET_STRINGS", std::bind(&ExtensionJob::commandGetStrings, this, std::placeholders::_1, std::placeholders::_2)},
-            {"STATUS", std::bind(&ExtensionJob::commandForceStatus, this, std::placeholders::_1, std::placeholders::_2)},
-            {"GET_MENU_ITEMS", std::bind(&ExtensionJob::commandGetMenuItems, this, std::placeholders::_1, std::placeholders::_2)},
-            {"COPY_PUBLIC_LINK",
-             std::bind(&ExtensionJob::commandCopyPublicLink, this, std::placeholders::_1, std::placeholders::_2)},
-            {"COPY_PRIVATE_LINK",
-             std::bind(&ExtensionJob::commandCopyPrivateLink, this, std::placeholders::_1, std::placeholders::_2)},
-            {"OPEN_PRIVATE_LINK",
-             std::bind(&ExtensionJob::commandOpenPrivateLink, this, std::placeholders::_1, std::placeholders::_2)},
-            {"MAKE_AVAILABLE_LOCALLY_DIRECT",
-             std::bind(&ExtensionJob::commandMakeAvailableLocallyDirect, this, std::placeholders::_1, std::placeholders::_2)},
-#ifdef _WIN32
-            {"GET_ALL_MENU_ITEMS",
-             std::bind(&ExtensionJob::commandGetAllMenuItems, this, std::placeholders::_1, std::placeholders::_2)},
-            {"GET_THUMBNAIL", std::bind(&ExtensionJob::commandGetThumbnail, this, std::placeholders::_1, std::placeholders::_2)},
+    _commands =
+    { {"REGISTER_PATH", std::bind(&ExtensionJob::commandRegisterFolder, this, std::placeholders::_1, std::placeholders::_2)},
+      {"UNREGISTER_PATH", std::bind(&ExtensionJob::commandUnregisterFolder, this, std::placeholders::_1, std::placeholders::_2)},
+      {"GET_STRINGS", std::bind(&ExtensionJob::commandGetStrings, this, std::placeholders::_1, std::placeholders::_2)},
+      {"STATUS", std::bind(&ExtensionJob::commandForceStatus, this, std::placeholders::_1, std::placeholders::_2)},
+      {"GET_MENU_ITEMS", std::bind(&ExtensionJob::commandGetMenuItems, this, std::placeholders::_1, std::placeholders::_2)},
+      {"COPY_PUBLIC_LINK", std::bind(&ExtensionJob::commandCopyPublicLink, this, std::placeholders::_1, std::placeholders::_2)},
+      {"COPY_PRIVATE_LINK", std::bind(&ExtensionJob::commandCopyPrivateLink, this, std::placeholders::_1, std::placeholders::_2)},
+      {"OPEN_PRIVATE_LINK", std::bind(&ExtensionJob::commandOpenPrivateLink, this, std::placeholders::_1, std::placeholders::_2)},
+      {"MAKE_AVAILABLE_LOCALLY_DIRECT",
+       std::bind(&ExtensionJob::commandMakeAvailableLocallyDirect, this, std::placeholders::_1, std::placeholders::_2)},
+#if defined(KD_WINDOWS)
+      {"GET_ALL_MENU_ITEMS",
+       std::bind(&ExtensionJob::commandGetAllMenuItems, this, std::placeholders::_1, std::placeholders::_2)},
+      {"GET_THUMBNAIL", std::bind(&ExtensionJob::commandGetThumbnail, this, std::placeholders::_1, std::placeholders::_2)},
 #endif
-#ifdef __APPLE__
-            {"RETRIEVE_FOLDER_STATUS",
-             std::bind(&ExtensionJob::commandRetrieveFolderStatus, this, std::placeholders::_1, std::placeholders::_2)},
-            {"RETRIEVE_FILE_STATUS",
-             std::bind(&ExtensionJob::commandRetrieveFileStatus, this, std::placeholders::_1, std::placeholders::_2)},
-            {"MAKE_ONLINE_ONLY_DIRECT",
-             std::bind(&ExtensionJob::commandMakeOnlineOnlyDirect, this, std::placeholders::_1, std::placeholders::_2)},
-            {"CANCEL_DEHYDRATION_DIRECT",
-             std::bind(&ExtensionJob::commandCancelDehydrationDirect, this, std::placeholders::_1, std::placeholders::_2)},
-            {"CANCEL_HYDRATION_DIRECT",
-             std::bind(&ExtensionJob::commandCancelHydrationDirect, this, std::placeholders::_1, std::placeholders::_2)},
-            {"SET_THUMBNAIL", std::bind(&ExtensionJob::commandSetThumbnail, this, std::placeholders::_1, std::placeholders::_2)}
+#if defined(KD_MACOS)
+      {"RETRIEVE_FOLDER_STATUS",
+       std::bind(&ExtensionJob::commandRetrieveFolderStatus, this, std::placeholders::_1, std::placeholders::_2)},
+      {"RETRIEVE_FILE_STATUS",
+       std::bind(&ExtensionJob::commandRetrieveFileStatus, this, std::placeholders::_1, std::placeholders::_2)},
+      {"MAKE_ONLINE_ONLY_DIRECT",
+       std::bind(&ExtensionJob::commandMakeOnlineOnlyDirect, this, std::placeholders::_1, std::placeholders::_2)},
+      {"CANCEL_DEHYDRATION_DIRECT",
+       std::bind(&ExtensionJob::commandCancelDehydrationDirect, this, std::placeholders::_1, std::placeholders::_2)},
+      {"CANCEL_HYDRATION_DIRECT",
+       std::bind(&ExtensionJob::commandCancelHydrationDirect, this, std::placeholders::_1, std::placeholders::_2)},
+      {"SET_THUMBNAIL", std::bind(&ExtensionJob::commandSetThumbnail, this, std::placeholders::_1, std::placeholders::_2)}
 #endif
     };
 }
@@ -153,7 +148,7 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
         if (vfsMapIt == _commManager->_vfsMap.end()) return;
     }
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     // Manage dehydration cancellation
     bool canCancelDehydration = false;
 
@@ -257,7 +252,7 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
     const auto fileList = CommonUtility::splitCommString(argument, messageArgSeparator);
 
     SyncPath parentFolder;
-#ifdef __APPLE__
+#if defined(KD_MACOS)
     if (fileList.size() == 1) {
         const auto fileData = FileData::get(fileList[0]);
         if (fileData.isDirectory) {
@@ -305,7 +300,7 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
             continue;
         }
 
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         // Not done in Windows case: triggers a hydration
         // Set pin state
         if (!setPinState(fileData, PinState::AlwaysLocal)) {
@@ -404,7 +399,7 @@ void ExtensionJob::commandGetStrings(const CommString &argument, std::shared_ptr
     }
 }
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
 void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
     auto argumentList = CommonUtility::splitCommString(argument, messageArgSeparator);
 
@@ -593,7 +588,7 @@ void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_p
     channel->sendMessage(response);
 }
 #endif
-#ifdef __APPLE__
+#if defined(KD_MACOS)
 void ExtensionJob::commandRetrieveFolderStatus(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
     // This command is the same as RETRIEVE_FILE_STATUS
     commandRetrieveFileStatus(argument, channel);
@@ -1222,7 +1217,7 @@ void ExtensionJob::monitorFolderHydration(const FileData &fileData) const {
 }
 
 FileData FileData::get(const SyncPath &path) {
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
     SyncPath tmpPath;
     bool notFound = false;
     if (!Utility::longPath(path, tmpPath, notFound)) {

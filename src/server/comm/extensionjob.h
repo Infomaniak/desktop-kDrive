@@ -115,13 +115,13 @@ class ExtensionJob : public AbstractJob {
         void commandOpenPrivateLink(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
         // From FinderSyncExt, LiteSyncExt & FileExplorerExtension (Cloud provider)
         void commandMakeAvailableLocallyDirect(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         // From FileExplorerExtension (Context menu)
         void commandGetAllMenuItems(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
         // From FileExplorerExtension (Thumbnail provider)
         void commandGetThumbnail(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
 #endif
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         // From FinderSyncExt
         void commandRetrieveFolderStatus(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
         void commandRetrieveFileStatus(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);

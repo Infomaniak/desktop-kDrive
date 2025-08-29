@@ -1134,7 +1134,7 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersi
             LOG_WARN(_logger, "Insertion of the normalizations of user exclusion file patterns has failed.");
             return false;
         }
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         if (!replaceShortDbPathsWithLongPaths()) {
             LOG_WARN(_logger, "Failed to replace short DB paths with long ones.");
         }
