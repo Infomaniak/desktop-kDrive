@@ -175,8 +175,8 @@ void TestIo::testGetItemTypeSimpleCases() {
 
     // A non-existing file with a very long name
     {
-        const std::string veryLongfileName(1000, 'a'); // Exceeds the max allowed name length on every file system of interest.
-        const SyncPath path = _localTestDirPath / veryLongfileName; // This file doesn't exist.
+        const std::string veryLongFileName(1000, 'a'); // Exceeds the max allowed name length on every file system of interest.
+        const SyncPath path = _localTestDirPath / veryLongFileName; // This file doesn't exist.
         ItemType itemType;
 #if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
