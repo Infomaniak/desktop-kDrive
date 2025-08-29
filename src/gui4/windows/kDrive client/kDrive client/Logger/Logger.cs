@@ -40,9 +40,7 @@ namespace kDrive_client
     }
     internal static class Logger
     {
-        private static readonly string _logFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "temp", "kDrive-logdir", "kDrive_client.log");
-
-        //private static readonly string _logFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "temp", "kDrive-logdir", $"{DateTime.Now:yyyyMMdd_HHmm}_kDrive_client.log");
+        private static readonly string _logFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "temp", "kDrive-logdir", $"{DateTime.Now:yyyyMMdd_HHmm}_kDrive_client.log");
 #pragma warning disable S2930
         private static readonly StreamWriter _logStream = new(_logFilePath, append: true) { AutoFlush = true };
 #pragma warning restore S2930 
