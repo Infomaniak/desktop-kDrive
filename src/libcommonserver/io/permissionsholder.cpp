@@ -20,19 +20,20 @@
 
 namespace KDC {
 
-struct AccessRights {
+struct AccessRightsInfo {
         bool read{false};
         bool write{false};
         bool exec{false};
         bool locked{false};
+        uint64_t count{0};
 };
-static std::unordered_map<SyncPath, std::pair<uint64_t, AccessRights>, PathHashFunction> heldPermissions;
+static std::unordered_map<SyncPath, AccessRightsInfo, PathHashFunction> heldPermissions;
 static std::mutex mutex;
 
 PermissionsHolder::PermissionsHolder(const SyncPath &path, const log4cplus::Logger logger) :
     _path(path),
     _logger(logger) {
-    AccessRights accessRights;
+    AccessRightsInfo accessRights;
     if (const auto ioError = IoHelper::getRights(path, accessRights.read, accessRights.write, accessRights.exec);
         ioError != IoError::Success) {
         log(std::wstringstream() << L"Failed to get rights for " << Utility::formatSyncPath(path), LogLevel::Error);
@@ -53,10 +54,10 @@ PermissionsHolder::PermissionsHolder(const SyncPath &path, const log4cplus::Logg
     if (IoHelper::setFullAccess(_path) != IoError::Success) {
         log(std::wstringstream() << L"Failed to set full access rights: " << Utility::formatSyncPath(_path), LogLevel::Error);
     }
-    (void) heldPermissions.try_emplace(_path, 0, accessRights);
-    heldPermissions[_path].first++;
+    (void) heldPermissions.try_emplace(_path, accessRights);
+    heldPermissions[_path].count++;
     log(std::wstringstream() << L"PermissionsHolder set full access rights: " << Utility::formatSyncPath(_path) << L" / count:"
-                             << heldPermissions[_path].first,
+                             << heldPermissions[_path].count,
         LogLevel::Debug);
 }
 
@@ -64,22 +65,19 @@ PermissionsHolder::~PermissionsHolder() {
     const std::scoped_lock scopedLock(mutex);
     if (!heldPermissions.contains(_path)) return;
 
-    uint64_t count = 0;
-    AccessRights accessRights;
+    AccessRightsInfo accessRights;
     try {
-        auto &[countTmp, accessRightsTmp] = heldPermissions[_path];
-        countTmp--;
-        count = countTmp;
-        accessRights = accessRightsTmp;
+        accessRights = heldPermissions[_path];
     } catch (...) {
         log(std::wstringstream() << L"PermissionsHolder failed to get value for: " << Utility::formatSyncPath(_path),
             LogLevel::Error);
         return;
     }
 
-    log(std::wstringstream() << L"PermissionsHolder value: " << Utility::formatSyncPath(_path) << L" / count:" << count,
+    log(std::wstringstream() << L"PermissionsHolder value: " << Utility::formatSyncPath(_path) << L" / count:"
+                             << accessRights.count,
         LogLevel::Debug);
-    if (count > 0) return; // Do not put back read-only rights yet.
+    if (accessRights.count > 0) return; // Do not put back read-only rights yet.
 
     log(std::wstringstream() << L"PermissionsHolder setting back initial rights: " << Utility::formatSyncPath(_path),
         LogLevel::Debug);
