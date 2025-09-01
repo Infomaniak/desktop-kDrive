@@ -82,7 +82,7 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
 
     if (downloadJob->hasErrorApi()) {
         std::stringstream ss;
-        ss << downloadJob.errorCode() << " - " << downloadJob.errorDescr();
+        ss << downloadJob->errorCode() << " - " << downloadJob->errorDescr();
         sentry::Handler::captureMessage(sentry::Level::Warning, "WindowsUpdater::downloadFinished", ss.str());
         LOG_ERROR(Log::instance()->getLogger(), ss.str());
         setState(UpdateState::DownloadError);
