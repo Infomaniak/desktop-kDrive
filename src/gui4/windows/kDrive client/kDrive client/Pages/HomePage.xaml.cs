@@ -34,10 +34,11 @@ using KDriveClient.ViewModels;
 
 namespace KDriveClient
 {
-    public sealed partial class HomePage : Page
+      public sealed partial class HomePage : Page
     {
         internal AppModel _viewModel = ((App)Application.Current).Data;
-        internal AppModel ViewModel { 
+        internal AppModel ViewModel
+        {
             get { return _viewModel; }
         }
         public HomePage()
@@ -47,6 +48,7 @@ namespace KDriveClient
 
         private async void TrashButton_Click(object sender, RoutedEventArgs e)
         {
+            Button s;
             Uri? trashUrl = ViewModel.SelectedDrive?.GetWebTrashUri();
             if (trashUrl != null)
             {

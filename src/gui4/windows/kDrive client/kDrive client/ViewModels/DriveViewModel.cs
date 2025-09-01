@@ -30,6 +30,15 @@ using System.Threading.Tasks;
 
 namespace KDriveClient.ViewModels
 {
+
+    enum SyncStatus
+    {
+        Unknown,
+        Starting,
+        Running,
+        Pausing,
+        Pause
+    }
     internal class Drive : ObservableObject
     {
         private int _dbId = -1;
@@ -40,9 +49,15 @@ namespace KDriveClient.ViewModels
         private long _usedSize = 0;
         private bool _isActive = false; // Indicates if the user configured this drive on the current device.
         private bool _isPaidOffer = false; // Indicates if the drive is a paid offer (i.e. myKsuite+/pro +, ...)
-
+        private SyncStatus _syncStatus = SyncStatus.Pause;
 
         private ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
+
+        public SyncStatus SyncStatus
+        {
+            get => _syncStatus;
+            set => SetProperty(ref _syncStatus, value);
+        }
 
         public Drive(int dbId)
         {

@@ -6,21 +6,86 @@
     xmlns:local="using:KDriveClient.CustomControls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:KDriveClient.Converters"
     mc:Ignorable="d">
+    <UserControl.Resources>
 
-    <StackPanel Orientation="Horizontal" >
-        <Button Click="Button_Click" Width="32" Height="32" Margin="0,0,10,0" Padding="8">
+        <!-- Data templates for different button states -->
+        <DataTemplate x:Key="PauseButtonTemplate">
             <Image Margin="0">
                 <Image.Source>
                     <SvgImageSource UriSource="ms-appx:///Assets/Icons/pause.svg"/>
                 </Image.Source>
             </Image>
-        </Button>
-        <Image Height="16" Margin="0,0,10,0" >
-            <Image.Source>
-                <SvgImageSource UriSource="ms-appx:///Assets/Icons/circle-check.svg"/>
-            </Image.Source>
-        </Image>
-        <TextBlock Text="Vos fichiers sont à jour" VerticalAlignment="Center" FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="18"/>
+        </DataTemplate>
+        <DataTemplate x:Key="StartButtonTemplate">
+            <Image Margin="0">
+                <Image.Source>
+                    <SvgImageSource UriSource="ms-appx:///Assets/Icons/play.svg"/>
+                </Image.Source>
+            </Image>
+        </DataTemplate>
+        <DataTemplate x:Key="LoadingButtonTemplate">
+            <ProgressRing IsActive="True" Height="auto" Width="auto"/>
+        </DataTemplate>
+        <local:StartPauseButtonTemplateSelector x:Key="StartPauseButtonTemplateSelector"
+                                    PauseButtonTemplate="{StaticResource PauseButtonTemplate}"
+                                    StartButtonTemplate="{StaticResource StartButtonTemplate}"
+                                    LoadingButtonTemplate="{StaticResource LoadingButtonTemplate}"/>
+
+        <!-- Data templates for different status messages -->
+        <DataTemplate x:Key="PausedStatusTemplate">
+            <TextBlock Text="Synchronisation en pause" FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="18"/>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SyncingStatusTemplate">
+            <TextBlock Text="Synchronisation en cours..." FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="18"/>
+        </DataTemplate>
+
+        <DataTemplate x:Key="StartingStatusTemplate">
+            <TextBlock Text="Démarrage de la synchronisation..." FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="18"/>
+        </DataTemplate>
+
+        <DataTemplate x:Key="PausingStatusTemplate" >
+            <TextBlock Text="Mise en pause de la synchronisation..." FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="18"/>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SyncedStatusTemplate">
+            <TextBlock Text="Tous les fichiers sont synchronisés" FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="18"/>
+        </DataTemplate>
+
+        <DataTemplate x:Key="UnknownStatusTemplate">
+            <Grid>
+                <ProgressBar Width="300" Height="30" IsIndeterminate="True" ShowPaused="False" ShowError="False" Foreground="Blue"/>
+                <Rectangle Fill="{ThemeResource AcrylicInAppFillColorDefaultBrush}" Width="300" Height="30" RadiusX="8"/>
+            </Grid>
+        </DataTemplate>
+
+        <local:TextStatusTemplateSelector x:Key="TextStatusTemplateSelector"
+                                          PausedStatusTemplate="{StaticResource PausedStatusTemplate}"
+                                          SyncingStatusTemplate="{StaticResource SyncingStatusTemplate}"
+                                          StartingStatusTemplate="{StaticResource StartingStatusTemplate}"
+                                          PausingStatusTemplate="{StaticResource PausingStatusTemplate}"
+                                          SyncedStatusTemplate="{StaticResource SyncedStatusTemplate}"
+                                          UnknownStatusTemplate="{StaticResource UnknownStatusTemplate}"
+                            />
+
+        <!-- Converter to enable/disable the button based on sync status -->
+        <local:SyncStatusToButtonEnabledConverter x:Key="SyncStatusToButtonEnabledConverter"/>
+    </UserControl.Resources>
+
+    <StackPanel Orientation="Horizontal">
+        <Button 
+            x:Name="StartPauseButton" 
+            Click="StartPauseButton_Click" 
+            ContentTemplateSelector="{StaticResource StartPauseButtonTemplateSelector}" 
+            Content="{x:Bind ViewModel.SelectedDrive.SyncStatus, Mode=OneWay}" 
+            IsEnabled="{x:Bind ViewModel.SelectedDrive.SyncStatus, Converter={StaticResource SyncStatusToButtonEnabledConverter}, Mode=OneWay}"
+            Width="32" Height="32" 
+            Margin="0,0,10,0" Padding="8"
+            />
+
+        <!-- Text block indicating sync status -->
+        <ContentControl ContentTemplateSelector="{StaticResource TextStatusTemplateSelector}" Content="{x:Bind ViewModel.SelectedDrive.SyncStatus, Mode=OneWay}" VerticalAlignment="Center"/>
     </StackPanel>
 </UserControl>
