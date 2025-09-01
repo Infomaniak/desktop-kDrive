@@ -99,10 +99,6 @@ uint64_t PipeCommChannel::bytesAvailable() const {
     return _inBuffer.size();
 }
 
-bool PipeCommChannel::canReadLine() const {
-    return _inBuffer.find(Str('\n'), 0) != std::string::npos;
-}
-
 PipeCommServer::PipeCommServer(const std::string &name) :
     AbstractCommServer(name) {}
 
@@ -238,6 +234,10 @@ void PipeCommServer::execute() {
 
         DWORD inst = index / toInt(PipeCommChannel::Action::EnumEnd);
         auto action = index % toInt(PipeCommChannel::Action::EnumEnd);
+        if (ParametersCache::isExtendedLogEnabled()) {
+            LOG_DEBUG(Log::instance()->getLogger(), "Event received for inst:" << inst << " action:" << action);
+        }
+
         if (_channels[inst]->_pendingIO[action]) {
             DWORD size;
             BOOL fSuccess = GetOverlappedResult(_channels[inst]->_pipeInst, // handle to pipe
@@ -288,12 +288,12 @@ void PipeCommServer::execute() {
             }
         }
 
-        if (_channels[inst]->_connected) {
+        auto readIndex = toInt(PipeCommChannel::Action::Read);
+        if (_channels[inst]->_connected && !_channels[inst]->_pendingIO[readIndex]) {
             // Read
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOG_DEBUG(Log::instance()->getLogger(), "Try to read on inst:" << inst);
             }
-            auto readIndex = toInt(PipeCommChannel::Action::Read);
             memset(&_channels[inst]->_readData[0], 0, sizeof(_channels[inst]->_readData));
             BOOL fSuccess = ReadFile(_channels[inst]->_pipeInst, _channels[inst]->_readData, BUFSIZE * sizeof(TCHAR),
                                      &_channels[inst]->_size[readIndex], &_channels[inst]->_overlap[readIndex]);
@@ -305,6 +305,7 @@ void PipeCommServer::execute() {
                 }
                 _channels[inst]->_pendingIO[readIndex] = FALSE;
                 _channels[inst]->_inBuffer += CommString(_channels[inst]->_readData);
+                LOGW_DEBUG(Log::instance()->getLogger(), L"Read buffer:" << _channels[inst]->_inBuffer.c_str());
                 _channels[inst]->readyReadCbk();
                 SetEvent(events[index]);
                 continue;

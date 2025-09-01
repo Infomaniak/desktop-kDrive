@@ -25,6 +25,10 @@
 #include <functional>
 #include <filesystem>
 
+#define finderExtLineSeparator Str("\n")
+#define finderExtQuerySeparator Str("\\/")
+#define guiArgSeparator Str(";")
+
 namespace KDC {
 
 class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChannel> {
@@ -35,6 +39,7 @@ class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChan
         bool open();
         void close();
         virtual void sendMessage(const CommString &message) final;
+        virtual bool canReadLine() const;
         virtual CommString readLine() final;
 
         //! Reads from the device.
@@ -58,12 +63,6 @@ class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChan
           \return the number of bytes that are available for reading.
         */
         virtual uint64_t bytesAvailable() const = 0;
-
-        //! Gets from the device if a line is available for reading.
-        /*!
-          \return true if a complete line of data can be read from the device; otherwise returns false.
-        */
-        virtual bool canReadLine() const = 0;
 
         //! Gets a device ID.
         /*!

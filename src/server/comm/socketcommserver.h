@@ -32,7 +32,6 @@ class SocketCommChannel : public AbstractCommChannel {
         uint64_t readData(char *data, uint64_t maxlen) override;
         virtual uint64_t writeData(const char *data, uint64_t len) override;
         uint64_t bytesAvailable() const override;
-        bool canReadLine() const override;
 
     private:
         Poco::Net::ServerSocket _socket;

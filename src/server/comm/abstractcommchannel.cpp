@@ -21,8 +21,6 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 
-static constexpr char messageSeparator('\n');
-
 namespace KDC {
 
 AbstractCommChannel::~AbstractCommChannel() {
@@ -44,8 +42,8 @@ void AbstractCommChannel::sendMessage(const CommString &message) {
 
     // Add messages separator if needed
     CommString localMessage = message;
-    if (!localMessage.ends_with(messageSeparator)) {
-        localMessage.push_back(messageSeparator);
+    if (!localMessage.ends_with(finderExtLineSeparator)) {
+        localMessage += finderExtLineSeparator;
     }
 
     std::string dataStr = CommString2Str(localMessage);
@@ -60,7 +58,7 @@ CommString AbstractCommChannel::readLine() {
     char data[maxlen];
     CommString line;
     forever {
-        if (auto sepPos = _readBuffer.find(messageSeparator); sepPos != std::string::npos) {
+        if (auto sepPos = _readBuffer.find(finderExtLineSeparator); sepPos != std::string::npos) {
             line = _readBuffer.substr(0, sepPos);
             _readBuffer.erase(0, sepPos + 1);
             break;
@@ -73,6 +71,10 @@ CommString AbstractCommChannel::readLine() {
         }
     }
     return line;
+}
+
+bool AbstractCommChannel::canReadLine() const {
+    return _readBuffer.find(finderExtLineSeparator, 0) != std::string::npos;
 }
 
 std::string AbstractCommChannel::id() {

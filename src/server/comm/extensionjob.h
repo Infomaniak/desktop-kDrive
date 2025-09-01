@@ -115,6 +115,8 @@ class ExtensionJob : public AbstractJob {
         void commandOpenPrivateLink(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
         // From FinderSyncExt, LiteSyncExt & FileExplorerExtension (Cloud provider)
         void commandMakeAvailableLocallyDirect(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
+        // From FinderSyncExt & KDOverlays
+        void commandRetrieveFileStatus(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
 #if defined(KD_WINDOWS)
         // From FileExplorerExtension (Context menu)
         void commandGetAllMenuItems(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
@@ -124,7 +126,6 @@ class ExtensionJob : public AbstractJob {
 #if defined(KD_MACOS)
         // From FinderSyncExt
         void commandRetrieveFolderStatus(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
-        void commandRetrieveFileStatus(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
         void commandMakeOnlineOnlyDirect(const CommString &argument, std::shared_ptr<AbstractCommChannel>);
         void commandCancelDehydrationDirect(const CommString &, std::shared_ptr<AbstractCommChannel>);
         void commandCancelHydrationDirect(const CommString &argument, std::shared_ptr<AbstractCommChannel>);

@@ -50,9 +50,6 @@
 
 #include <log4cplus/loggingmacros.h>
 
-#define finderExtQuerySeparator Str("\\/")
-#define guiArgSeparator Str(";")
-
 namespace KDC {
 
 CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<SyncPal>> &syncPalMap,
@@ -224,10 +221,10 @@ void CommManager::onNewExtConnection() {
 void CommManager::onExtQueryReceived(std::shared_ptr<AbstractCommChannel> channel) {
     LOG_IF_FAIL(Log::instance()->getLogger(), channel)
 
-    while (channel->canReadLine()) {
+    while (channel->canReadLine() || channel->bytesAvailable() > 0) {
         CommString line;
         while (!line.ends_with(finderExtQuerySeparator)) {
-            if (!channel->canReadLine()) {
+            if (!channel->canReadLine() && channel->bytesAvailable() == 0) {
                 LOGW_WARN(Log::instance()->getLogger(), L"Failed to parse Extension message - msg="
                                                                 << CommString2WStr(line) << L" channel="
                                                                 << CommonUtility::s2ws(channel->id()));

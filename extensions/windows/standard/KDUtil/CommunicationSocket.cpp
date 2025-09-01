@@ -88,10 +88,8 @@ bool CommunicationSocket::Connect(const std::wstring &pipename) {
 }
 
 bool CommunicationSocket::SendMsg(const wchar_t *message) const {
-    auto utf8_msg = StringUtil::toUtf8(message);
-
     DWORD numBytesWritten = 0;
-    auto result = WriteFile(_pipe, utf8_msg.c_str(), DWORD(utf8_msg.size()), &numBytesWritten, nullptr);
+    auto result = WriteFile(_pipe, message, DWORD(wcslen(message) * sizeof(wchar_t)), &numBytesWritten, nullptr);
 
     if (result) {
         return true;
@@ -115,14 +113,14 @@ bool CommunicationSocket::ReadLine(wstring *response) {
 
     while (true) {
         int lbPos = 0;
-        auto it = std::find(_buffer.begin() + lbPos, _buffer.end(), '\n');
+        auto it = std::find(_buffer.begin() + lbPos, _buffer.end(), L'\n');
         if (it != _buffer.end()) {
-            *response = StringUtil::toUtf16(_buffer.data(), DWORD(it - _buffer.begin()));
+            *response = std::wstring(_buffer.data(), DWORD(it - _buffer.begin()));
             _buffer.erase(_buffer.begin(), it + 1);
             return true;
         }
 
-        std::array<char, 128> resp_utf8;
+        std::array<wchar_t, 1024> resp;
         DWORD numBytesRead = 0;
         DWORD totalBytesAvailable = 0;
 
@@ -134,14 +132,14 @@ bool CommunicationSocket::ReadLine(wstring *response) {
             return false;
         }
 
-        if (!ReadFile(_pipe, resp_utf8.data(), DWORD(resp_utf8.size()), &numBytesRead, nullptr)) {
+        if (!ReadFile(_pipe, resp.data(), DWORD(resp.size() * sizeof(wchar_t)), &numBytesRead, nullptr)) {
             Close();
             return false;
         }
         if (numBytesRead <= 0) {
             return false;
         }
-        _buffer.insert(_buffer.end(), resp_utf8.begin(), resp_utf8.begin() + numBytesRead);
+        _buffer.insert(_buffer.end(), resp.begin(), resp.begin() + numBytesRead / sizeof(wchar_t));
         continue;
     }
 }

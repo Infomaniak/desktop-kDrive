@@ -46,7 +46,6 @@ class PipeCommChannel : public AbstractCommChannel {
         uint64_t readData(char *data, uint64_t maxSize) override;
         virtual uint64_t writeData(const char *data, uint64_t size) override;
         uint64_t bytesAvailable() const override;
-        bool canReadLine() const override;
 
     private:
         CommString _inBuffer;

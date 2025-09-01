@@ -38,10 +38,6 @@ uint64_t XPCCommChannel::bytesAvailable() const {
     return _privatePtr->_inBuffer.size();
 }
 
-bool XPCCommChannel::canReadLine() const {
-    return _privatePtr->_inBuffer.find('\n', 0) != std::string::npos;
-}
-
 // XPCCommServer implementation
 XPCCommServer::XPCCommServer(const std::string &name, AbstractCommServerPrivate *commServerPrivate) :
     KDC::AbstractCommServer(name),

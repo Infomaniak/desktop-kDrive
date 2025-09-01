@@ -77,6 +77,8 @@ ExtensionJob::ExtensionJob(std::shared_ptr<CommManager> commManager, const CommS
       {"OPEN_PRIVATE_LINK", std::bind(&ExtensionJob::commandOpenPrivateLink, this, std::placeholders::_1, std::placeholders::_2)},
       {"MAKE_AVAILABLE_LOCALLY_DIRECT",
        std::bind(&ExtensionJob::commandMakeAvailableLocallyDirect, this, std::placeholders::_1, std::placeholders::_2)},
+      {"RETRIEVE_FILE_STATUS",
+       std::bind(&ExtensionJob::commandRetrieveFileStatus, this, std::placeholders::_1, std::placeholders::_2)},
 #if defined(KD_WINDOWS)
       {"GET_ALL_MENU_ITEMS",
        std::bind(&ExtensionJob::commandGetAllMenuItems, this, std::placeholders::_1, std::placeholders::_2)},
@@ -85,8 +87,6 @@ ExtensionJob::ExtensionJob(std::shared_ptr<CommManager> commManager, const CommS
 #if defined(KD_MACOS)
       {"RETRIEVE_FOLDER_STATUS",
        std::bind(&ExtensionJob::commandRetrieveFolderStatus, this, std::placeholders::_1, std::placeholders::_2)},
-      {"RETRIEVE_FILE_STATUS",
-       std::bind(&ExtensionJob::commandRetrieveFileStatus, this, std::placeholders::_1, std::placeholders::_2)},
       {"MAKE_ONLINE_ONLY_DIRECT",
        std::bind(&ExtensionJob::commandMakeOnlineOnlyDirect, this, std::placeholders::_1, std::placeholders::_2)},
       {"CANCEL_DEHYDRATION_DIRECT",
@@ -202,6 +202,12 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
         };
 
         makePinContextMenu(canHydrate, canDehydrate, canCancelDehydration, canCancelHydration);
+    }
+#elif defined(KD_WINDOWS)
+    // Some options only show for single files
+    bool isSingleFile = false;
+    if (files.size() == 1) {
+        manageActionsOnSingleFile(channel, files, syncPalMapIt, vfsMapIt, sync);
     }
 #endif
 
@@ -399,6 +405,20 @@ void ExtensionJob::commandGetStrings(const CommString &argument, std::shared_ptr
     }
 }
 
+void ExtensionJob::commandRetrieveFileStatus(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
+    const auto fileData = FileData::get(argument);
+    auto status = SyncFileStatus::Unknown;
+    VfsStatus vfsStatus;
+    if (!syncFileStatus(fileData, status, vfsStatus)) {
+        LOGW_DEBUG(Log::instance()->getLogger(),
+                   L"Error in ExtensionJob::syncFileStatus - " << Utility::formatSyncPath(fileData.localPath));
+        return;
+    }
+
+    const CommString message = buildMessage("STATUS", fileData.localPath, statusString(status, vfsStatus));
+    channel->sendMessage(message);
+}
+
 #if defined(KD_WINDOWS)
 void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
     auto argumentList = CommonUtility::splitCommString(argument, messageArgSeparator);
@@ -592,20 +612,6 @@ void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_p
 void ExtensionJob::commandRetrieveFolderStatus(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
     // This command is the same as RETRIEVE_FILE_STATUS
     commandRetrieveFileStatus(argument, channel);
-}
-
-void ExtensionJob::commandRetrieveFileStatus(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
-    const auto fileData = FileData::get(argument);
-    auto status = SyncFileStatus::Unknown;
-    VfsStatus vfsStatus;
-    if (!syncFileStatus(fileData, status, vfsStatus)) {
-        LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Error in ExtensionJob::syncFileStatus - " << Utility::formatSyncPath(fileData.localPath));
-        return;
-    }
-
-    const CommString message = buildMessage("STATUS", fileData.localPath, statusString(status, vfsStatus));
-    channel->sendMessage(message);
 }
 
 void ExtensionJob::commandMakeOnlineOnlyDirect(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {

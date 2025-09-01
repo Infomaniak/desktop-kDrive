@@ -37,10 +37,6 @@ uint64_t SocketCommChannel::bytesAvailable() const {
     return 0;
 }
 
-bool SocketCommChannel::canReadLine() const {
-    return true;
-}
-
 SocketCommServer::SocketCommServer(const std::string &name) :
     AbstractCommServer(name) {}
 
