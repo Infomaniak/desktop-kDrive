@@ -30,9 +30,7 @@
 
             <TextBlock x:Uid="UpdateAvailableBar_message"
                        VerticalAlignment="Center"
-                       FontFamily="Segoe UI"
-                       FontWeight="SemiBold"
-                       FontSize="14"
+                       Style="{StaticResource BodyTextBlockStyle}"
                        Grid.Column="1"/>
 
             <HyperlinkButton x:Uid="UpdateAvailableBar_link" Margin="0,0,20,0" Grid.Column="2" HorizontalAlignment="Right"/> <!-- TODO: link to the update mechanism -->

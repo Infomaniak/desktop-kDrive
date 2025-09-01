@@ -52,9 +52,7 @@
                 <!-- Home icon / message -->
                 <TextBlock x:Uid="KSuiteUpgradeBar_message"
                        VerticalAlignment="Center"
-                       FontFamily="Segoe UI"
-                       FontWeight="SemiBold"
-                       FontSize="14"
+                       Style="{StaticResource BodyTextBlockStyle}"
                        Grid.Column="1"/>
 
                 <HyperlinkButton x:Uid="KSuiteUpgradeBar_link" Margin="0,0,20,0" NavigateUri="{x:Bind KSuiteUpgradeLink, Mode=OneTime}" Grid.Column="2" HorizontalAlignment="Right"/>

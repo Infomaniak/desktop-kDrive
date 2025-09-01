@@ -34,23 +34,23 @@
 
         <!-- Data templates for different status messages -->
         <DataTemplate x:Key="PausedStatusTemplate">
-            <TextBlock x:Uid="SyncStatusBar_PausedStatus" FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="18"/>
+            <TextBlock x:Uid="SyncStatusBar_PausedStatus" Style="{StaticResource BodyStrongTextBlockStyle}"/>
         </DataTemplate>
 
         <DataTemplate x:Key="SyncingStatusTemplate">
-            <TextBlock x:Uid="SyncStatusBar_SyncingStatus" FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="18"/>
+            <TextBlock x:Uid="SyncStatusBar_SyncingStatus" Style="{StaticResource BodyStrongTextBlockStyle}"/>
         </DataTemplate>
 
         <DataTemplate x:Key="StartingStatusTemplate">
-            <TextBlock x:Uid="SyncStatusBar_StartingStatus" FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="18"/>
+            <TextBlock x:Uid="SyncStatusBar_StartingStatus" Style="{StaticResource BodyStrongTextBlockStyle}"/>
         </DataTemplate>
 
         <DataTemplate x:Key="PausingStatusTemplate" >
-            <TextBlock x:Uid="SyncStatusBar_PausingStatus" FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="18"/>
+            <TextBlock x:Uid="SyncStatusBar_PausingStatus" Style="{StaticResource BodyStrongTextBlockStyle}"/>
         </DataTemplate>
 
         <DataTemplate x:Key="SyncedStatusTemplate">
-            <TextBlock x:Uid="SyncStatusBar_SyncedStatus" FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="18"/>
+            <TextBlock x:Uid="SyncStatusBar_SyncedStatus" Style="{StaticResource BodyStrongTextBlockStyle}"/>
         </DataTemplate>
 
         <DataTemplate x:Key="UnknownStatusTemplate">

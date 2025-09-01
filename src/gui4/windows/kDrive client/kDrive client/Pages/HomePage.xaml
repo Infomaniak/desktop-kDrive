@@ -74,7 +74,7 @@
                             <SvgImageSource UriSource="ms-appx:///Assets/Icons/star.svg"/>
                         </ImageIcon.Source>
                     </ImageIcon>
-                    <TextBlock x:Uid="HomePage_favorites" FontFamily="Segoe UI" FontWeight="Normal" FontSize="14" />
+                    <TextBlock x:Uid="HomePage_favorites" Style="{StaticResource TextBlockStyle}" />
                 </StackPanel>
             </Button>
             <Button Click="SharedButton_Click" CornerRadius="8" Padding="0" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0,8,0,8" Background="{ThemeResource LayerFillColorDefaultBrush }">
@@ -84,7 +84,7 @@
                             <SvgImageSource UriSource="ms-appx:///Assets/Icons/share.svg"/>
                         </ImageIcon.Source>
                     </ImageIcon>
-                    <TextBlock x:Uid="HomePage_shared" FontFamily="Segoe UI" FontWeight="Normal" FontSize="14" />
+                    <TextBlock x:Uid="HomePage_shared" Style="{StaticResource TextBlockStyle}" />
                 </StackPanel>
             </Button>
             <Button Click="TrashButton_Click" CornerRadius="8" Padding="0" Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0,8,0,0" Background="{ThemeResource LayerFillColorDefaultBrush }">
@@ -94,7 +94,7 @@
                             <SvgImageSource UriSource="ms-appx:///Assets/Icons/trash.svg"/>
                         </ImageIcon.Source>
                     </ImageIcon>
-                    <TextBlock x:Uid="HomePage_trash" FontFamily="Segoe UI" FontWeight="Normal" FontSize="14" />
+                    <TextBlock x:Uid="HomePage_trash" Style="{StaticResource TextBlockStyle}" />
                 </StackPanel>
             </Button>
         </Grid>
