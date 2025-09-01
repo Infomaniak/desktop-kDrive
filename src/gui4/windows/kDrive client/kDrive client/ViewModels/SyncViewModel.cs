@@ -49,14 +49,8 @@ namespace KDriveClient.ViewModels
         public string LocalPath
         {
             get => _localPath;
-            set
-            { // Ensure the path ends with a directory separator
-                if (!string.IsNullOrEmpty(_localPath) && !_localPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
-                {
-                    _localPath += Path.DirectorySeparatorChar;
-                }
-                SetProperty(ref _localPath, value);
-            }
+            set => SetProperty(ref _localPath, value);
+
         }
 
         public string RemotePath
