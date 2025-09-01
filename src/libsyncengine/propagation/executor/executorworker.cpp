@@ -2069,6 +2069,7 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
     } else {
         auto castJob(std::dynamic_pointer_cast<CreateDirJob>(job));
         newNodeId = castJob->nodeId();
+        newCreationTime = syncOp->affectedNode()->createdAt().value_or(0);
         newModificationTime = castJob->modtime();
     }
 

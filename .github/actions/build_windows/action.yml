@@ -75,8 +75,13 @@ runs:
           mkdir dependencies
           # kDrivecommonserver_vfs_win lib is not cached and therefore is uploaded as a separate artifact
           Get-ChildItem -Path ${{ github.workspace }}/build-windows/install/bin/ -Filter "*.dll" |
-           Where-Object { $_.Name -ne "kDrivecommonserver_vfs_win.dll" } |
-           Copy-Item -Destination ./dependencies/
+              Where-Object {
+                      $_.Name -ne "kDrivecommonserver_vfs_win.dll" -and
+                      $_.Name -ne "KDContextMenu.dll" -and
+                      $_.Name -ne "KDOverlays.dll" -and
+                      $_.Name -ne "Vfs.dll"
+              } |
+              Copy-Item -Destination ./dependencies/
           cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Widgets.dll" ./dependencies/
           cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Gui.dll" ./dependencies/
           cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Network.dll" ./dependencies/
@@ -119,8 +124,16 @@ runs:
       - name:  Fetch kDrive dependencies (lst and vfs lib)
         run: |
           mkdir uncached_dependencies
-          cp "${{ github.workspace }}/build-windows/install/bin/sync-exclude.lst" ./uncached_dependencies/
-          cp "${{ github.workspace }}/build-windows/install/bin/kDrivecommonserver_vfs_win.dll" ./uncached_dependencies/
+          $uncached = @(
+              "sync-exclude.lst",
+              "kDrivecommonserver_vfs_win.dll",
+              "KDContextMenu.dll",
+              "KDOverlays.dll",
+              "Vfs.dll"
+          )
+          $uncached | ForEach-Object {
+              Copy-Item "${{ github.workspace }}/build-windows/install/bin/$_" ./uncached_dependencies/
+          }
         shell: powershell
         if: steps.build.outcome == 'success'
 

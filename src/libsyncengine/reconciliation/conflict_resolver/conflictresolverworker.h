@@ -62,7 +62,7 @@ class ConflictResolverWorker : public OperationProcessor {
          * @param continueSolving A boolean value indicating if we can generate more conflict resolution operations.
          * @return ExitCode indicating if the operation was successful.
          */
-        void handleConflictOnOmittedEdit(const Conflict &conflict, bool &continueSolving);
+        ExitInfo handleConflictOnOmittedEdit(const Conflict &conflict, bool &continueSolving);
 
         /**
          * @brief For Create-Create and Edit-Edit conflicts, the local file is renamed and excluded from the sync in order no to
