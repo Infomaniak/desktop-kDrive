@@ -25,17 +25,20 @@
 namespace KDC {
 
 GetRootFileListJob::GetRootFileListJob(const int userDbId, const int driveId, const uint64_t page /*= 1*/,
-                                       const bool dirOnly /*= false*/) :
+                                       const bool dirOnly /*= false*/, uint64_t nbItemsPerPage /*= 1000*/) :
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId),
     _page(page),
-    _dirOnly(dirOnly) {
+    _dirOnly(dirOnly),
+    _nbItemsPerPage(nbItemsPerPage) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-GetRootFileListJob::GetRootFileListJob(const int driveDbId, const uint64_t page /*= 1*/, const bool dirOnly /*= false*/) :
+GetRootFileListJob::GetRootFileListJob(const int driveDbId, const uint64_t page /*= 1*/, const bool dirOnly /*= false*/,
+                                       uint64_t nbItemsPerPage /*= 1000*/) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _page(page),
-    _dirOnly(dirOnly) {
+    _dirOnly(dirOnly),
+    _nbItemsPerPage(nbItemsPerPage) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
@@ -46,7 +49,7 @@ std::string GetRootFileListJob::getSpecificUrl() {
 }
 
 void GetRootFileListJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
-    uri.addQueryParameter("per_page", nbItemPerPage);
+    uri.addQueryParameter("per_page", std::to_string(_nbItemsPerPage));
     if (_page > 0) {
         uri.addQueryParameter("page", std::to_string(_page));
     }
