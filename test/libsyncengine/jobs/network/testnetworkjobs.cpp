@@ -964,7 +964,7 @@ void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
         CPPUNIT_ASSERT(eof);
     }
 
-    // Send a request that violate validation rules and make sure the reply is correctly decompressed
+    // Send a request that violates validation rules and make sure the reply is correctly decompressed.
     {
         CsvFullFileListWithCursorJob job(_driveDbId, "invalid",
                                          /*blacklist*/ {}, true);
