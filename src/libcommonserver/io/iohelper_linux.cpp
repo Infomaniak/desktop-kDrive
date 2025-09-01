@@ -91,7 +91,6 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
 
     buf->modificationTime = sb.stx_mtime.tv_sec;
     buf->size = static_cast<int64_t>(sb.stx_size);
-    buf->nodeType = S_ISDIR(sb.stx_mode) ? NodeType::Directory : NodeType::File;
 
     setTargetNodeType(path, S_ISLNK(sb.stx_mode), buf->nodeType);
 
