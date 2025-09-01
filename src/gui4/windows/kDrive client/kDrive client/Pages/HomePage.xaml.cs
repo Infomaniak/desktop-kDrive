@@ -52,7 +52,7 @@ namespace KDriveClient
             }
             else
             {
-                Logger.LogError("TrashButton_Click: No drive selected or unable to get trash URL.");
+                Logger.Log(Logger.Level.Error, "TrashButton_Click: No drive selected or unable to get trash URL.");
             }
 
         }
@@ -66,7 +66,7 @@ namespace KDriveClient
             }
             else
             {
-                Logger.LogError("FavoritesButton_Click: No drive selected or unable to get favorites URL.");
+                Logger.Log(Logger.Level.Error, "FavoritesButton_Click: No drive selected or unable to get favorites URL.");
             }
 
         }
@@ -80,7 +80,7 @@ namespace KDriveClient
             }
             else
             {
-                Logger.LogError("SharedButton_Click: No drive selected or unable to get shared URL.");
+                Logger.Log(Logger.Level.Error, "SharedButton_Click: No drive selected or unable to get shared URL.");
             }
         }
     }

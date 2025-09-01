@@ -67,7 +67,7 @@ namespace KDriveClient
                         contentFrame.Navigate(typeof(ActivityPage));
                         break;
                     default:
-                        Logger.LogWarning("MainWindow", $"Unknown navigation tag: {selectedItem.Tag}... Going to HomePage");
+                        Logger.Log(Logger.Level.Warning, $"Unknown navigation tag: {selectedItem.Tag}... Going to HomePage");
                         contentFrame.Navigate(typeof(HomePage));
                         break;
                 }
