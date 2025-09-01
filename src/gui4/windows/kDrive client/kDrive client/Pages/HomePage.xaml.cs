@@ -48,7 +48,6 @@ namespace KDrive
 
         private async void TrashButton_Click(object sender, RoutedEventArgs e)
         {
-            Button s;
             Uri? trashUrl = ViewModel.SelectedDrive?.GetWebTrashUri();
             if (trashUrl != null)
             {
