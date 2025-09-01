@@ -46,6 +46,8 @@
 #include "jobs/testjobmanager.h"
 #include "propagation/executor/testfilerescuer.h"
 #include "requests/testexclusiontemplatecache.h"
+#include "requests/testsyncnodecache.h"
+
 #include "update_detection/update_detector/benchupdatetreeworker.h"
 
 #if defined(KD_MACOS)
@@ -61,6 +63,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestNetworkJobs);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLogUploadJob);
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncDb);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncNodeCache);
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalJobs);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestJobManager);

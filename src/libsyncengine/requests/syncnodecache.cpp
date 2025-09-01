@@ -40,42 +40,92 @@ std::shared_ptr<SyncNodeCache> SyncNodeCache::instance() {
 
 SyncNodeCache::SyncNodeCache() {}
 
-ExitCode SyncNodeCache::syncNodes(int syncDbId, SyncNodeType type, NodeSet &syncNodes) {
-    const std::scoped_lock lock(_mutex);
-
-    if (_syncNodesMap.find(syncDbId) == _syncNodesMap.end()) {
-        LOG_WARN(Log::instance()->getLogger(), "Sync not found in syncNodes map for syncDbId=" << syncDbId);
-        return ExitCode::DataError;
-    }
-
-    if (_syncNodesMap[syncDbId].find(type) == _syncNodesMap[syncDbId].end()) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "Type not found in syncNodes map for syncDbId=" << syncDbId << " and type= " << type);
-        return ExitCode::DataError;
-    }
-
-    syncNodes = _syncNodesMap[syncDbId][type];
-    return ExitCode::Ok;
-}
-
-ExitCode SyncNodeCache::update(int syncDbId, SyncNodeType type, const NodeSet &syncNodes) {
-    const std::scoped_lock lock(_mutex);
-
-    if (_syncDbMap.find(syncDbId) == _syncDbMap.end()) {
+ExitCode SyncNodeCache::checkIfSyncExists(const int syncDbId) const noexcept {
+    if (!_syncDbMap.contains(syncDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Sync not found in syncDb map for syncDbId=" << syncDbId);
         return ExitCode::DataError;
     }
 
-    if (_syncNodesMap.find(syncDbId) == _syncNodesMap.end()) {
+    if (!_syncNodesMap.contains(syncDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Sync not found in syncNodes map for syncDbId=" << syncDbId);
         return ExitCode::DataError;
     }
 
-    if (_syncNodesMap[syncDbId].find(type) == _syncNodesMap[syncDbId].end()) {
+    return ExitCode::Ok;
+}
+
+
+ExitCode SyncNodeCache::checkIfSyncNodeListExists(const int syncDbId, const SyncNodeType type) const {
+    assert(_syncNodesMap.contains(syncDbId) && "Sync not found in SyncNodeCache::checkIfSyncNodeListExists.");
+
+    if (!_syncNodesMap.at(syncDbId).contains(type)) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Type not found in syncNodes map for syncDbId=" << syncDbId << " and type= " << type);
         return ExitCode::DataError;
     }
+
+    return ExitCode::Ok;
+}
+
+ExitCode SyncNodeCache::syncNodes(const int syncDbId, const SyncNodeType type, NodeSet &syncNodes) {
+    const std::scoped_lock lock(_mutex);
+
+    if (auto exitCode = checkIfSyncExists(syncDbId); exitCode != ExitCode::Ok) return exitCode;
+    if (auto exitCode = checkIfSyncNodeListExists(syncDbId, type); exitCode != ExitCode::Ok) return exitCode;
+
+    syncNodes = _syncNodesMap[syncDbId][type];
+
+    return ExitCode::Ok;
+}
+
+bool SyncNodeCache::contains(const int syncDbId, const SyncNodeType type, const NodeId &nodeId) const noexcept {
+    if (auto exitCode = checkIfSyncExists(syncDbId); exitCode != ExitCode::Ok) return false;
+    if (auto exitCode = checkIfSyncNodeListExists(syncDbId, type); exitCode != ExitCode::Ok) return false;
+
+    return _syncNodesMap.at(syncDbId).at(type).contains(nodeId);
+}
+bool SyncNodeCache::contains(const int syncDbId, const NodeId &nodeId) const noexcept {
+    if (auto exitCode = checkIfSyncExists(syncDbId); exitCode != ExitCode::Ok) return false;
+
+    for (auto typeInt = toInt(SyncNodeType::BlackList); typeInt <= toInt(SyncNodeType::TmpLocalBlacklist); ++typeInt) {
+        const auto type = fromInt<SyncNodeType>(typeInt);
+        if (_syncNodesMap.at(syncDbId).at(type).contains(nodeId)) return true;
+    }
+
+    return false;
+}
+
+ExitInfo SyncNodeCache::deleteSyncNode(const int syncDbId, const NodeId &nodeId) {
+    const std::scoped_lock lock(_mutex);
+
+    if (auto exitCode = checkIfSyncExists(syncDbId); exitCode != ExitCode::Ok) return exitCode;
+
+    // Remove `nodeId` from cache.
+    for (auto &[type, nodeSet]: _syncNodesMap[syncDbId]) {
+        if (nodeSet.contains(nodeId)) {
+            (void) nodeSet.erase(nodeId);
+            break;
+        }
+    }
+
+    // Remove `nodeId` from SyncDb.
+    bool found = false;
+    if (!_syncDbMap[syncDbId]->deleteSyncNode(nodeId, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in SyncDb::deleteSyncNode");
+        return ExitCode::DbError;
+    }
+
+    ExitCause exitCause = ExitCause::Unknown;
+    if (!found) exitCause = ExitCause::NotFound;
+
+    return {ExitCode::Ok, exitCause};
+}
+
+ExitCode SyncNodeCache::update(const int syncDbId, const SyncNodeType type, const NodeSet &syncNodes) {
+    const std::scoped_lock lock(_mutex);
+
+    if (auto exitCode = checkIfSyncExists(syncDbId); exitCode != ExitCode::Ok) return exitCode;
+    if (auto exitCode = checkIfSyncNodeListExists(syncDbId, type); exitCode != ExitCode::Ok) return exitCode;
 
     _syncNodesMap[syncDbId][type] = syncNodes;
 
@@ -88,14 +138,14 @@ ExitCode SyncNodeCache::update(int syncDbId, SyncNodeType type, const NodeSet &s
     return ExitCode::Ok;
 }
 
-ExitCode SyncNodeCache::initCache(int syncDbId, std::shared_ptr<SyncDb> syncDb) {
+ExitCode SyncNodeCache::initCache(const int syncDbId, std::shared_ptr<SyncDb> syncDb) {
     const std::scoped_lock lock(_mutex);
 
     _syncDbMap[syncDbId] = syncDb;
 
     // Load sync nodes for all sync node types
-    for (int typeInt = toInt(SyncNodeType::BlackList); typeInt <= toInt(SyncNodeType::TmpLocalBlacklist); typeInt++) {
-        SyncNodeType type = fromInt<SyncNodeType>(typeInt);
+    for (auto typeInt = toInt(SyncNodeType::BlackList); typeInt < toInt(SyncNodeType::EnumEnd); ++typeInt) {
+        const auto type = fromInt<SyncNodeType>(typeInt);
         NodeSet nodeIdSet;
         if (!syncDb->selectAllSyncNodes(type, nodeIdSet)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in SyncDb::selectAllSyncNodes");
@@ -107,18 +157,10 @@ ExitCode SyncNodeCache::initCache(int syncDbId, std::shared_ptr<SyncDb> syncDb) 
     return ExitCode::Ok;
 }
 
-ExitCode SyncNodeCache::clear(int syncDbId) {
+ExitCode SyncNodeCache::clear(const int syncDbId) {
     const std::scoped_lock lock(_mutex);
 
-    if (_syncDbMap.find(syncDbId) == _syncDbMap.end()) {
-        LOG_WARN(Log::instance()->getLogger(), "Sync not found in syncDb map for syncDbId=" << syncDbId);
-        return ExitCode::DataError;
-    }
-
-    if (_syncNodesMap.find(syncDbId) == _syncNodesMap.end()) {
-        LOG_WARN(Log::instance()->getLogger(), "Sync not found in syncNodes map for syncDbId=" << syncDbId);
-        return ExitCode::DataError;
-    }
+    if (auto exitCode = checkIfSyncExists(syncDbId); exitCode != ExitCode::Ok) return exitCode;
 
     _syncDbMap.erase(syncDbId);
     _syncNodesMap.erase(syncDbId);

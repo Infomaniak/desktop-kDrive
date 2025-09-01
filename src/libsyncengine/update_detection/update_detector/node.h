@@ -98,12 +98,15 @@ class Node {
         inline std::optional<SyncTime> createdAt() const { return _createdAt; }
         inline std::optional<SyncTime> modificationTime() const { return _lastModified; }
         inline int64_t size() const { return _size; }
+
+        // The return value should never be `std::nullopt`. It starts with the "tmp_" prefix if and only if the node is a
+        // temporary node of the update tree, i.e., if `isTmp()` returns `true`.
         inline std::optional<NodeId> id() const { return _id; }
         inline std::optional<NodeId> previousId() const { return _previousId; }
+
         inline NodeStatus status() const { return _status; }
         inline std::shared_ptr<Node> parentNode() const { return _parentNode; }
         inline const MoveOriginInfos &moveOriginInfos() const { return _moveOriginInfos; }
-        inline const std::vector<ConflictType> &conflictsAlreadyConsidered() const { return _conflictsAlreadyConsidered; }
         inline bool hasConflictAlreadyConsidered(const ConflictType conf) const {
             return std::count(_conflictsAlreadyConsidered.cbegin(), _conflictsAlreadyConsidered.cend(), conf) > 0;
         }
@@ -111,7 +114,6 @@ class Node {
         inline void setIdb(const std::optional<DbNodeId> &idb) { _idb = idb; }
         void setName(const SyncName &name);
         inline void setInconsistencyType(InconsistencyType newInconsistencyType) { _inconsistencyType = newInconsistencyType; }
-        inline void addInconsistencyType(InconsistencyType newInconsistencyType) { _inconsistencyType |= newInconsistencyType; }
         inline void setCreatedAt(const std::optional<SyncTime> &createdAt) { _createdAt = createdAt; }
         inline void setModificationTime(const std::optional<SyncTime> &lastmodified) { _lastModified = lastmodified; }
         inline void setSize(int64_t size) { _size = size; }
@@ -162,7 +164,7 @@ class Node {
     private:
         friend class UpdateTree;
         // The node id should not be changed without also changing the map in the UpdateTree and the parent/child relationship in
-        // other nodes
+        // other nodes.
         inline void setId(const std::optional<NodeId> &nodeId) { _id = nodeId; }
         [[nodiscard]] bool isParentValid(std::shared_ptr<const Node> parentNode) const;
 
@@ -189,6 +191,8 @@ class Node {
         bool _isTmp = false;
 
         friend class TestNode;
+        friend class TestUpdateTreeWorker;
+        friend class TestPlatformInconsistencyChecker;
 };
 
 } // namespace KDC

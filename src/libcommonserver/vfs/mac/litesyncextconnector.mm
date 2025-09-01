@@ -940,10 +940,13 @@ bool LiteSyncExtConnector::vfsSetPinState(const QString &path, const QString &lo
     // Set status if empty directory
     QFileInfo info(path);
     if (info.isDir()) {
-        const QFileInfoList infoList = QDir(path).entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
+        IoHelper::DirectoryIterator dirIt(QStr2Path(path), false, ioError);
+        bool endOfDir = false;
+        DirectoryEntry entry;
         bool foundChild = false;
-        for (const auto &tmpInfo: qAsConst(infoList)) {
-            QString tmpPath(tmpInfo.filePath());
+        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+            QFileInfo fileinfo(Path2QStr(entry.path()));
+            QString tmpPath(fileinfo.filePath());
 
             std::string tmpPinState;
             if (!vfsGetPinState(tmpPath, tmpPinState)) {
@@ -1464,37 +1467,36 @@ bool LiteSyncExtConnector::vfsProcessDirStatus(const QString &path, const QStrin
         return true;
     }
 
-    QDir dir(path);
-    const QFileInfoList infoList = dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
+    IoError ioError(IoError::Unknown);
+    IoHelper::DirectoryIterator dirIt(QStr2Path(path), false, ioError);
+    bool endOfDir = false;
+    DirectoryEntry entry;
     bool hasASyncingChild = false;
     bool hasADehydratedChild = false;
-    for (const auto &tmpInfo: qAsConst(infoList)) {
-        QString tmpPath(tmpInfo.filePath());
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+        QFileInfo fileinfo(Path2QStr(entry.path()));
+        QString tmpPath(fileinfo.filePath());
         if (!vfsGetPinState(tmpPath, pinState)) {
             continue;
         }
-
         if (pinState == litesync_attrs::pinStateExcluded) {
             continue;
         }
-
         VfsStatus childVfsStatus;
         if (!vfsGetStatus(tmpPath, childVfsStatus)) {
             continue;
         }
-
         if (childVfsStatus.isSyncing) {
             hasASyncingChild = true;
             break;
         }
-
         if (!childVfsStatus.isHydrated) {
             hasADehydratedChild = true;
             break;
         }
     }
 
-    VfsStatus tmpVfsStatus = {.isSyncing = hasASyncingChild, .isHydrated = !hasADehydratedChild, .progress = 100};
+    VfsStatus tmpVfsStatus = {.isHydrated = !hasADehydratedChild, .isSyncing = hasASyncingChild, .progress = 100};
     if (!vfsSetStatus(path, localSyncPath, tmpVfsStatus)) {
         return false;
     }
@@ -1528,12 +1530,14 @@ bool LiteSyncExtConnector::sendStatusToFinder(const QString &path, const VfsStat
 }
 
 bool LiteSyncExtConnector::checkFilesAttributes(const QString &path, const QString &localSyncPath, QStringList &filesToFix) {
-    QDir dir(path);
-    const QFileInfoList infoList = dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
-
+    IoError ioError(IoError::Unknown);
+    IoHelper::DirectoryIterator dirIt(QStr2Path(path), false, ioError);
+    bool endOfDir = false;
+    DirectoryEntry entry;
     bool atLeastOneChanged = false;
-    for (const auto &tmpInfo: qAsConst(infoList)) {
-        QString tmpPath(tmpInfo.filePath());
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+        QFileInfo fileinfo(Path2QStr(entry.path()));
+        QString tmpPath(fileinfo.filePath());
         std::string pinState;
         if (!vfsGetPinState(tmpPath, pinState)) {
             continue;
@@ -1549,7 +1553,7 @@ bool LiteSyncExtConnector::checkFilesAttributes(const QString &path, const QStri
         }
 
         if (vfsStatus.isSyncing) {
-            if (tmpInfo.isDir()) {
+            if (fileinfo.isDir()) {
                 if (!checkFilesAttributes(tmpPath, localSyncPath, filesToFix)) {
                     // No file has to be changed, but we still need to refresh this directory
                     filesToFix.append(tmpPath);

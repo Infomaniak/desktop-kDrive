@@ -27,41 +27,45 @@ OperationProcessor::OperationProcessor(const std::shared_ptr<SyncPal> syncPal, c
     ISyncWorker(syncPal, name, shortName),
     _useSyncDbCache(useSyncDbCache) {}
 
-bool OperationProcessor::editChangeShouldBePropagated(std::shared_ptr<Node> affectedNode) {
+ExitInfo OperationProcessor::editChangeShouldBePropagated(std::shared_ptr<Node> affectedNode, bool &result) {
+    result = true;
+
     if (!affectedNode) {
-        LOG_SYNCPAL_WARN(_logger, "hasChangeToPropagate: provided node is null");
-        return true;
+        LOG_SYNCPAL_WARN(_logger, "Invalid parameters");
+        return ExitInfo(ExitCode::LogicError, ExitCause::Unknown);
     }
 
-    if (affectedNode->side() != ReplicaSide::Local) return true;
+    if (affectedNode->side() != ReplicaSide::Local) return ExitCode::Ok;
 
     bool found = false;
     DbNode affectedDbNode;
     if (affectedNode->idb().has_value()) {
         if (!(_useSyncDbCache ? _syncPal->syncDb()->cache().node(affectedNode->idb().value(), affectedDbNode, found)
                               : _syncPal->syncDb()->node(affectedNode->idb().value(), affectedDbNode, found))) {
-            LOG_SYNCPAL_WARN(_logger, "hasChangeToPropagate: Failed to retrieve node from DB, id=" << *affectedNode->idb());
-            _syncPal->addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
-            return true;
+            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node for id=" << *affectedNode->idb());
+            return ExitInfo(ExitCode::DbError, ExitCause::DbAccessError);
         }
     } else {
         if (!(_useSyncDbCache ? _syncPal->syncDb()->cache().node(ReplicaSide::Local, *affectedNode->id(), affectedDbNode, found)
                               : _syncPal->syncDb()->node(ReplicaSide::Local, *affectedNode->id(), affectedDbNode, found))) {
-            LOG_SYNCPAL_WARN(_logger, "hasChangeToPropagate: Failed to retrieve node from DB, id=" << *affectedNode->id());
-            _syncPal->addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
-            return true;
+            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node for id=" << *affectedNode->id());
+            return ExitInfo(ExitCode::DbError, ExitCause::DbAccessError);
         }
     }
     if (!found) {
-        LOG_SYNCPAL_WARN(_logger, "hasChangeToPropagate: node not found in DB");
-        return true;
+        LOG_SYNCPAL_WARN(_logger,
+                         "Node not found in DB: id=" << (affectedNode->idb().has_value() ? *affectedNode->idb()
+                                                                                         : *affectedNode->id()->c_str()));
+        return ExitCode::Ok;
     }
 
     if (affectedNode->size() == affectedDbNode.size() && affectedNode->modificationTime() == affectedDbNode.lastModifiedLocal() &&
         affectedNode->createdAt() != affectedDbNode.created()) {
-        return false;
+        result = false;
+        return ExitCode::Ok;
     }
-    return true;
+
+    return ExitCode::Ok;
 }
 
 bool OperationProcessor::isPseudoConflict(const std::shared_ptr<Node> node, const std::shared_ptr<Node> correspondingNode) {

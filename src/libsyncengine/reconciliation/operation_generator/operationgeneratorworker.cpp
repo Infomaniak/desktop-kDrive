@@ -185,7 +185,14 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
     }
 
     // If only elements that are not synced with the corresponding side change (e.g., creation date), the operation can be omitted
-    if (!editChangeShouldBePropagated(currentNode)) {
+    bool propagateEdit = true;
+    if (auto exitInfo = editChangeShouldBePropagated(currentNode, propagateEdit); !exitInfo) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in OperationProcessor::editChangeShouldBePropagated: "
+                                           << Utility::formatSyncPath(currentNode->getPath()) << L" " << exitInfo);
+        _syncPal->addError(Error(errId(), exitInfo));
+    }
+
+    if (!propagateEdit) {
         // Only update DB and tree
         op->setOmit(true);
         if (ParametersCache::isExtendedLogEnabled()) {
@@ -280,6 +287,7 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
     assert(correspondingNode);
 
     // Do not generate delete operation if parent already deleted
+    assert(currentNode->parentNode() && currentNode->parentNode()->id().has_value());
     if (_deletedNodes.contains(*currentNode->parentNode()->id())) {
         return;
     }

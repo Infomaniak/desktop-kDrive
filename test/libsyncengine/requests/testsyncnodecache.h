@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2025 Infomaniak Network SA
  *
@@ -16,25 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "testincludes.h"
+#include "db/syncdb.h"
 
-#include "getrootfilelistjob.h"
-#include "libcommon/utility/types.h"
+using namespace CppUnit;
 
 namespace KDC {
 
-class GetFileListJob : public GetRootFileListJob {
+class TestSyncNodeCache : public CppUnit::TestFixture, public TestBase {
+        CPPUNIT_TEST_SUITE(TestSyncNodeCache);
+        CPPUNIT_TEST(testContainsSyncNode);
+        CPPUNIT_TEST(testDeleteSyncNode);
+        CPPUNIT_TEST_SUITE_END();
+
     public:
-        GetFileListJob(int userDbId, int driveId, const NodeId &fileId, uint64_t page = 1, bool dirOnly = false,
-                       uint64_t nbItemsPerPage = 1000);
-        GetFileListJob(int driveDbId, const NodeId &fileId, uint64_t page = 1, bool dirOnly = false,
-                       uint64_t nbItemsPerPage = 1000);
+        void setUp() override;
+        void tearDown() override;
+
+    protected:
+        void testContainsSyncNode();
+        void testDeleteSyncNode();
 
     private:
-        std::string getSpecificUrl() override;
-        ExitInfo setData() override { return ExitCode::Ok; }
-
-        std::string _fileId;
+        std::shared_ptr<SyncDb> _testObj;
 };
-
 } // namespace KDC

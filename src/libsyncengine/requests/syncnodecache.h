@@ -37,10 +37,14 @@ class SYNCENGINE_EXPORT SyncNodeCache {
         SyncNodeCache(SyncNodeCache const &) = delete;
         void operator=(SyncNodeCache const &) = delete;
 
-        ExitCode syncNodes(int syncDbId, SyncNodeType type, NodeSet &syncNodes);
-        ExitCode update(int syncDbId, SyncNodeType type, const NodeSet &syncNodes);
-        ExitCode initCache(int syncDbId, std::shared_ptr<SyncDb> syncDb);
-        ExitCode clear(int syncDbId);
+        ExitCode syncNodes(const int syncDbId, const SyncNodeType type, NodeSet &syncNodes);
+        ExitInfo deleteSyncNode(const int syncDbId, const NodeId &nodeId);
+        ExitCode update(const int syncDbId, const SyncNodeType type, const NodeSet &syncNodes);
+        ExitCode initCache(const int syncDbId, std::shared_ptr<SyncDb> syncDb);
+        ExitCode clear(const int syncDbId);
+
+        bool contains(const int syncDbId, const SyncNodeType type, const NodeId &nodeId) const noexcept;
+        bool contains(const int syncDbId, const NodeId &nodeId) const noexcept;
 
     private:
         static std::shared_ptr<SyncNodeCache> _instance;
@@ -50,6 +54,8 @@ class SYNCENGINE_EXPORT SyncNodeCache {
         std::mutex _mutex;
 
         SyncNodeCache();
+        ExitCode checkIfSyncExists(const int syncDbId) const noexcept;
+        ExitCode checkIfSyncNodeListExists(const int syncDbId, const SyncNodeType type) const;
 };
 
 } // namespace KDC

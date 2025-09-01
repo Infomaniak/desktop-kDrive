@@ -165,7 +165,7 @@ std::wstring Utility::quotedSyncName(const SyncName &name) {
 
 std::wstring Utility::formatSyncName(const SyncName &name) {
     std::wstringstream ss;
-    ss << L"name='" << quotedSyncName(name);
+    ss << L"name=" << quotedSyncName(name);
 
     return ss.str();
 }
