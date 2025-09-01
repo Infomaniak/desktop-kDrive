@@ -17,7 +17,7 @@
  */
 
 using CommunityToolkit.Mvvm.ComponentModel;
-using KDriveClient.ServerCommunication;
+using KDrive.ServerCommunication;
 using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.Concurrent;
@@ -29,7 +29,7 @@ using System.Threading.Tasks;
 using DynamicData;
 using DynamicData.Binding;
 
-namespace KDriveClient.ViewModels
+namespace KDrive.ViewModels
 
 {
     internal class AppModel : ObservableObject

@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using KDriveClient.ViewModels;
-using KDriveClient.ServerCommunication;
+using KDrive.ViewModels;
+using KDrive.ServerCommunication;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -38,7 +38,7 @@ using Windows.Foundation.Collections;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace KDriveClient
+namespace KDrive
 {
     public sealed partial class MainWindow : Window
     {

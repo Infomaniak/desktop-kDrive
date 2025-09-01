@@ -18,10 +18,10 @@
  -->
 
 <Application
-    x:Class="KDriveClient.App"
+    x:Class="KDrive.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:KDriveClient">
+    xmlns:local="using:KDrive">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

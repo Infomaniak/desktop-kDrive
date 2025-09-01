@@ -23,7 +23,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KDriveClient.ServerCommunication
+namespace KDrive.ServerCommunication
 {
     internal class CommData
     {

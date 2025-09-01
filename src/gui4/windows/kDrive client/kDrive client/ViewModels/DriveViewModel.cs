@@ -18,7 +18,7 @@
 
 using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
-using KDriveClient.ServerCommunication;
+using KDrive.ServerCommunication;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -28,7 +28,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace KDriveClient.ViewModels
+namespace KDrive.ViewModels
 {
 
     enum SyncStatus

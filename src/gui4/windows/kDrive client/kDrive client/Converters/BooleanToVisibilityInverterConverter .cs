@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Data;
 
-namespace KDriveClient.Converters
+namespace KDrive.Converters
 {
     internal class BooleanToVisibilityInverterConverter : IValueConverter
     {
