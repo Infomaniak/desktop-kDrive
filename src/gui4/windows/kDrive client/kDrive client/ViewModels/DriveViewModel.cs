@@ -38,7 +38,10 @@ namespace KDriveClient.ViewModels
         private Color _color = Color.Blue;
         private long _size = 0;
         private long _usedSize = 0;
-        private bool _isActive = true; // Indicates if the user choosed to sync this drive
+        private bool _isActive = false; // Indicates if the user configured this drive on the current device.
+        private bool _isPaidOffer = false; // Indicates if the drive is a paid offer (i.e. myKsuite+/pro +, ...)
+
+
         private ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
 
         public Drive(int dbId)
@@ -55,6 +58,8 @@ namespace KDriveClient.ViewModels
                CommRequests.GetDriveSize(DbId).ContinueWith(t => { if (t.Result != null) Size = t.Result.Value; }),
                CommRequests.GetDriveUsedSize(DbId).ContinueWith(t => { if (t.Result != null) UsedSize = t.Result.Value; }),
                CommRequests.GetDriveIsActive(DbId).ContinueWith(t => { if (t.Result != null) IsActive = t.Result.Value; }),
+               CommRequests.GetDriveIsPaidOffer(DbId).ContinueWith(t => { if (t.Result != null) IsPaidOffer = t.Result.Value; }),
+
                // TODO: Load syncs
             };
             await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -103,12 +108,18 @@ namespace KDriveClient.ViewModels
             }
         }
 
+        public bool IsPaidOffer
+        {
+            get => _isPaidOffer;
+            set => SetProperty(ref _isPaidOffer, value);
+        }
+
         public ObservableCollection<Sync> Syncs
         {
             get { return _syncs; }
             set => SetProperty(ref _syncs, value);
         }
-    
+
         public Uri GetWebTrashUri()
         {
             return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{Id}/trash");

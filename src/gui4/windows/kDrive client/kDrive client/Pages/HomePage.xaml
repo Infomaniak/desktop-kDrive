@@ -25,18 +25,25 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:KDriveClient.CustomControls"
+    xmlns:converters="using:KDriveClient.Converters"
     mc:Ignorable="d">
-
+    <Page.Resources>
+        <converters:BooleanToVisibilityInverterConverter x:Key="BooleanToVisibilityInverterConverter"/>
+    </Page.Resources>
     <Grid Margin="24" RowSpacing="24" ColumnSpacing="24">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2.3*"/>
             <ColumnDefinition Width="1*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Update banner -->
-            <RowDefinition Height="Auto"/> <!-- Sync status bar -->
-            <RowDefinition Height="*"/>    <!-- Main content -->
-            <RowDefinition Height="Auto"/> <!-- Upgrade offer bar -->
+            <RowDefinition Height="Auto"/>
+            <!-- Update banner -->
+            <RowDefinition Height="Auto"/>
+            <!-- Sync status bar -->
+            <RowDefinition Height="*"/>
+            <!-- Main content -->
+            <RowDefinition Height="Auto"/>
+            <!-- Upgrade offer bar -->
         </Grid.RowDefinitions>
 
         <!-- Update Available Banner -->
@@ -94,7 +101,7 @@
         <controls:KSuiteUpgradeBar
             Grid.Row="3"
             Grid.ColumnSpan="2"
-            Visibility="Visible"
+            Visibility="{x:Bind ViewModel.SelectedDrive.IsPaidOffer, Mode=OneWay, Converter={StaticResource BooleanToVisibilityInverterConverter}}"
             />
     </Grid>
 </Page>

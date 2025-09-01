@@ -11,6 +11,8 @@
     <Grid>
         <StackPanel>
             <TextBox Text="{x:Bind ViewModel.SelectedDrive.Name, Mode=OneWay, FallbackValue='NoDrive'}" Foreground="Black"/>
+            <TextBlock Text="{x:Bind ViewModel.SelectedDrive.IsPaidOffer, Mode=OneWay, FallbackValue='-100'}" Foreground="Black"/>
+
             <ToggleButton IsChecked="{x:Bind ViewModel.SelectedDrive.IsActive, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="IsActive"/>
         </StackPanel>
 

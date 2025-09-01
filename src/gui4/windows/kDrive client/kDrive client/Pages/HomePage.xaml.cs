@@ -37,7 +37,9 @@ namespace KDriveClient
     public sealed partial class HomePage : Page
     {
         internal AppModel _viewModel = ((App)Application.Current).Data;
-        internal AppModel ViewModel { get { return _viewModel; } }
+        internal AppModel ViewModel { 
+            get { return _viewModel; }
+        }
         public HomePage()
         {
             InitializeComponent();
