@@ -72,6 +72,7 @@ class AbstractNetworkJob : public AbstractJob {
         bool extractJsonError(std::istream &is, Poco::JSON::Object::Ptr errorObjPtr = nullptr);
 
         std::string _httpMethod;
+        uint64_t _apiVersion{2};
         std::string _data;
         Poco::Net::HTTPResponse _resHttp;
         int _customTimeout = 0;

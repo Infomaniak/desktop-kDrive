@@ -39,6 +39,7 @@
 #include "jobs/network/infomaniak_API/getappversionjob.h"
 #include "jobs/network/directdownloadjob.h"
 #include "jobs/network/kDrive_API/createdirjob.h"
+#include "jobs/network/kDrive_API/searchjob.h"
 #include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 #include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
@@ -743,6 +744,13 @@ void TestNetworkJobs::testDownloadHasEnoughSpace() {
 
     // Not enough disk space on both paths
     CPPUNIT_ASSERT(!DownloadJob::hasEnoughPlace(smallPartitionPath, smallPartitionPath, 9000000, Log::instance()->getLogger()));
+}
+
+void TestNetworkJobs::testSearch() {
+    SearchJob job(_driveDbId, "test");
+    CPPUNIT_ASSERT(job.runSynchronously());
+    CPPUNIT_ASSERT(!job.searchResults().empty());
+    CPPUNIT_ASSERT(!job.cursor().empty());
 }
 
 void TestNetworkJobs::testDownloadAborted() {

@@ -65,9 +65,9 @@ QDataStream &operator>>(QDataStream &in, QList<SyncFileItemInfo> &list) {
     int count = 0;
     in >> count;
     for (int i = 0; i < count; i++) {
-        SyncFileItemInfo *info = new SyncFileItemInfo();
-        in >> *info;
-        list.push_back(*info);
+        SyncFileItemInfo info;
+        in >> info;
+        list.push_back(info);
     }
     return in;
 }
