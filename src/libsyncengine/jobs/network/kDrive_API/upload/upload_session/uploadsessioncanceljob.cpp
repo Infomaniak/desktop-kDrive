@@ -42,7 +42,7 @@ std::string UploadSessionCancelJob::getSpecificUrl() {
 
 bool UploadSessionCancelJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
     if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_BAD_REQUEST) {
-        _exitInfo = ExitCode::BackError; // TODO: why here???
+        _exitInfo = ExitCode::BackError;
         return false;
     }
 
