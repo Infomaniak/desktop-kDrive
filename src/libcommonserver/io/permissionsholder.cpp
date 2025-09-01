@@ -35,11 +35,11 @@ PermissionsHolder::PermissionsHolder(const SyncPath &path, const log4cplus::Logg
     AccessRights accessRights;
     if (const auto ioError = IoHelper::getRights(path, accessRights.read, accessRights.write, accessRights.exec);
         ioError != IoError::Success) {
-        log(std::wstringstream() << L"Fail to get rights for: " << Utility::formatSyncPath(path), LogLevel::Error);
+        log(std::wstringstream() << L"Failed to get rights for " << Utility::formatSyncPath(path), LogLevel::Error);
         return;
     }
     if (const auto ioError = IoHelper::isLocked(path, accessRights.locked); ioError != IoError::Success) {
-        log(std::wstringstream() << L"Fail to check if file is locked for: " << Utility::formatSyncPath(path), LogLevel::Error);
+        log(std::wstringstream() << L"Failed to check if file is locked for " << Utility::formatSyncPath(path), LogLevel::Error);
         return;
     }
 
@@ -85,13 +85,13 @@ PermissionsHolder::~PermissionsHolder() {
         LogLevel::Debug);
     if (const auto ioError = IoHelper::setRights(_path, accessRights.read, accessRights.write, accessRights.exec);
         ioError != IoError::Success) {
-        log(std::wstringstream() << L"Failed to set rights for: " << Utility::formatSyncPath(_path) << L" - "
+        log(std::wstringstream() << L"Failed to set rights for " << Utility::formatSyncPath(_path) << L" - "
                                  << Utility::formatIoError(ioError),
             LogLevel::Error);
     }
     if (accessRights.locked) {
         if (const auto ioError = IoHelper::lock(_path); ioError != IoError::Success) {
-            log(std::wstringstream() << L"Failed to lock item for: " << Utility::formatSyncPath(_path) << L" - "
+            log(std::wstringstream() << L"Failed to lock item for " << Utility::formatSyncPath(_path) << L" - "
                                      << Utility::formatIoError(ioError),
                 LogLevel::Error);
         }

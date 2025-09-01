@@ -330,7 +330,7 @@ IoError IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool 
 #if defined(KD_MACOS)
     bool isLocked = false;
     if (const auto ioError = IoHelper::isLocked(path, isLocked); ioError != IoError::Success) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to check if file is locked for: " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to check if file is locked for " << Utility::formatSyncPath(path));
         return ioError;
     }
     write = isLocked ? false : ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
@@ -1076,13 +1076,13 @@ IoError IoHelper::setReadOnly(const SyncPath &path) noexcept {
     bool dummyWrite = false;
     bool exec = false;
     if (const auto ioError = IoHelper::getRights(path, dummyRead, dummyWrite, exec); ioError != IoError::Success) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to set rights for: " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to set rights for " << Utility::formatSyncPath(path));
         return IoError::Unknown;
     }
 
     // Remove write right.
     if (const auto ioError = IoHelper::setRights(path, true, false, exec); ioError != IoError::Success) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to set rights for: " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to set rights for " << Utility::formatSyncPath(path));
         return ioError;
     }
 
@@ -1096,7 +1096,7 @@ IoError IoHelper::setFullAccess(const SyncPath &path) noexcept {
     bool dummyWrite = false;
     bool exec = false;
     if (const auto ioError = IoHelper::getRights(path, dummyRead, dummyWrite, exec); ioError != IoError::Success) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to set rights for: " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to set rights for: " << Utility::formatSyncPath(path));
         return IoError::Unknown;
     }
 
@@ -1107,7 +1107,7 @@ IoError IoHelper::setFullAccess(const SyncPath &path) noexcept {
 
     // Set full access rights.
     if (const auto ioError = IoHelper::setRights(path, true, true, exec); ioError != IoError::Success) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Fail to set rights for: " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to set rights for: " << Utility::formatSyncPath(path));
         return IoError::Unknown;
     }
     return IoError::Success;
