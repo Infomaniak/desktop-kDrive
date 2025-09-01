@@ -53,7 +53,7 @@
             Visibility="Visible"
             />
 
-        <!-- Header Success Info -->
+        <!-- Sync Status Bar -->
         <controls:SyncStatusBar Grid.Row="1"/>
 
         <!-- Left main pane -->
