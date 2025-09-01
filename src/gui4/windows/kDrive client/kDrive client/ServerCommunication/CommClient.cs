@@ -59,16 +59,16 @@ namespace KDriveClient.ServerCommunication
             string homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + Path.DirectorySeparatorChar + ".comm";
             int port = Int32.Parse(File.ReadAllText(homePath).Trim());
 
-            Logger.LogInfo($"Connecting to port {port}");
+            Logger.Log(Logger.Level.Info, $"Connecting to port {port}");
             // Prefer a using declaration to ensure the instance is Disposed later.
             try
             {
                 client = new TcpClient("localhost", port);
-                Logger.LogInfo("Connected to server.");
+                Logger.Log(Logger.Level.Info, "Connected to server.");
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Socket connection error: {ex.Message}");
+                Logger.Log(Logger.Level.Error, $"Socket connection error: {ex.Message}");
                 client = null;
             }
 
@@ -88,7 +88,7 @@ namespace KDriveClient.ServerCommunication
                         }
                         catch (Exception ex)
                         {
-                            Logger.LogError($"Error in read loop: {ex.Message}");
+                            Logger.Log(Logger.Level.Error, $"Error in read loop: {ex.Message}");
                             break;
                         }
                     }
@@ -107,13 +107,13 @@ namespace KDriveClient.ServerCommunication
             {
                 if (client == null)
                 {
-                    Logger.LogWarning("Unable to send request: client is null.");
+                    Logger.Log(Logger.Level.Warning, "Unable to send request: client is null.");
                     return new CommData();
                 }
 
                 if (!client.Connected)
                 {
-                    Logger.LogWarning("Unable to send request: client is not connected.");
+                    Logger.Log(Logger.Level.Warning, "Unable to send request: client is not connected.");
                     return new CommData();
                 }
 
@@ -142,18 +142,18 @@ namespace KDriveClient.ServerCommunication
                 await stream.WriteAsync(sizeBytes, 0, sizeBytes.Length).ConfigureAwait(false);
                 await stream.WriteAsync(jsonBytes, 0, jsonBytes.Length).ConfigureAwait(false);
 
-                Logger.LogInfo($"Sent request: {jsonString}");
+                Logger.Log(Logger.Level.Info, $"Sent request: {jsonString}");
                 CommData reply = await WaitForReplyAsync(requestId).ConfigureAwait(false);
                 return reply;
             }
             catch (OperationCanceledException)
             {
-                Logger.LogError("Request timed out.");
+                Logger.Log(Logger.Level.Error, "Request timed out.");
                 return new CommData();
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Socket write error: {ex.Message}");
+                Logger.Log(Logger.Level.Error, $"Socket write error: {ex.Message}");
                 return new CommData();
             }
         }
@@ -173,12 +173,12 @@ namespace KDriveClient.ServerCommunication
                     }
                     else
                     {
-                        Logger.LogDebug($"Found request(Id) {requestId}, but the respons is not available yet null");
+                        Logger.Log(Logger.Level.Debug, $"Found request(Id) {requestId}, but the respons is not available yet null");
                     }
                 }
                 else
                 {
-                    Logger.LogDebug($"No request(Id) found for {requestId}");
+                    Logger.Log(Logger.Level.Debug, $"No request(Id) found for {requestId}");
                 }
                 await Task.Delay(10).ConfigureAwait(false);
             }
@@ -189,39 +189,39 @@ namespace KDriveClient.ServerCommunication
         {
             if (client == null || !client.Connected)
             {
-                Logger.LogWarning("Unable to read: client is not connected.");
+                Logger.Log(Logger.Level.Warning, "Unable to read: client is not connected.");
                 return;
             }
             NetworkStream stream = client.GetStream();
-            Logger.LogDebug("Data is ready to be read from the server.");
+            Logger.Log(Logger.Level.Debug, "Data is ready to be read from the server.");
 
             // Read the size of the incoming message (4 bytes)
             byte[] sizeBytes = new byte[4];
             int bytesRead = stream.Read(sizeBytes, 0, sizeBytes.Length);
             if (bytesRead < 4)
             {
-                Logger.LogWarning("Incomplete size header received.");
+                Logger.Log(Logger.Level.Warning, "Incomplete size header received.");
                 return;
             }
             int messageSize = BinaryPrimitives.ReadInt32BigEndian(sizeBytes); // Currently the server sends big-endian, once communication layer is ready it should be changed to little-endian
-            Logger.LogDebug($"Message size: {messageSize} bytes.");
+            Logger.Log(Logger.Level.Debug, $"Message size: {messageSize} bytes.");
 
             // Read the JSON message
             byte[] jsonBytes = new byte[messageSize];
             bytesRead = stream.Read(jsonBytes, 0, jsonBytes.Length);
             if (bytesRead < messageSize)
             {
-                Logger.LogWarning("Incomplete message received.");
+                Logger.Log(Logger.Level.Warning, "Incomplete message received.");
                 return;
             }
             string jsonString = System.Text.Encoding.UTF8.GetString(jsonBytes);
-            Logger.LogDebug($"Received message: {jsonString}");
+            Logger.Log(Logger.Level.Debug, $"Received message: {jsonString}");
 
             // Parse JSON
             var messageObj = System.Text.Json.JsonSerializer.Deserialize<CommData>(jsonString);
             if (messageObj == null)
             {
-                Logger.LogWarning("Invalid message format.");
+                Logger.Log(Logger.Level.Warning, "Invalid message format.");
                 return;
             }
             handleServerMessage(messageObj);
@@ -229,15 +229,15 @@ namespace KDriveClient.ServerCommunication
 
         private void handleServerMessage(CommData data)
         {
-            Logger.LogInfo($"Message type: {data.type}, id: {data.id}, num: {data.num}");
+            Logger.Log(Logger.Level.Info, $"Message type: {data.type}, id: {data.id}, num: {data.num}");
             switch (data.type)
             {
                 case 0:
-                    Logger.LogWarning("Received a request from server.");
+                    Logger.Log(Logger.Level.Warning, "Received a request from server.");
                     // TODO: Handle requests
                     break;
                 case 1:
-                    Logger.LogInfo($"Received a reply for id {data.id} with result size: {data.ResultByteArray.Length} bytes.");
+                    Logger.Log(Logger.Level.Info, $"Received a reply for id {data.id} with result size: {data.ResultByteArray.Length} bytes.");
                     pendingRequests[data.id] = data;
                     break;
                 case 2:
@@ -245,22 +245,22 @@ namespace KDriveClient.ServerCommunication
                     if (signalHandlers.ContainsKey(data.num))
                     {
                         bool res = signalHandlers[data.num](data.id, data.ParmsByteArray);
-                        Logger.LogInfo($"Signal handler for id {data.id} executed with result: {res}");
+                        Logger.Log(Logger.Level.Info, $"Signal handler for id {data.id} executed with result: {res}");
                     }
                     else
                     {
-                        Logger.LogWarning($"No handler registered for signal num {data.num}");
+                        Logger.Log(Logger.Level.Warning, $"No handler registered for signal num {data.num}");
                     }
                     break;
                 default:
-                    Logger.LogWarning($"Unknown message type: {data.type}");
+                    Logger.Log(Logger.Level.Warning, $"Unknown message type: {data.type}");
                     break;
             }
         }
 
         private bool OnSyncProgressInfo(int id, ImmutableArray<byte> parms)
         {
-            Logger.LogDebug("Sync progress info signal received.");
+            Logger.Log(Logger.Level.Debug, "Sync progress info signal received.");
             // TODO: Implement actual handling logic here
             return true;
         }

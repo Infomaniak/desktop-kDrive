@@ -26,9 +26,14 @@ using System.Threading.Tasks;
 
 namespace KDriveClient
 {
-    namespace Log
+    internal static class Logger
     {
-        enum Level
+        private static readonly string _logFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "temp", "kDrive-logdir", $"{DateTime.Now:yyyyMMdd_HHmm}_KDriveClient.log");
+#pragma warning disable S2930
+        private static readonly StreamWriter _logStream = new(_logFilePath, append: true) { AutoFlush = true };
+#pragma warning restore S2930 
+
+        public enum Level
         {
             Debug = 0,
             Info = 1,
@@ -37,39 +42,12 @@ namespace KDriveClient
             Fatal = 4,
             None = 5
         }
-    }
-    internal static class Logger
-    {
-        private static readonly string _logFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "temp", "kDrive-logdir", $"{DateTime.Now:yyyyMMdd_HHmm}_KDriveClient.log");
-#pragma warning disable S2930
-        private static readonly StreamWriter _logStream = new(_logFilePath, append: true) { AutoFlush = true };
-#pragma warning restore S2930 
 
-        static public Log.Level LogLevel { get; set; } = Log.Level.Debug;
-        public static void LogInfo(string message, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)
+        static public Level LogLevel { get; set; } = Level.Debug;
+        public static void Log(Level level, string message, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)
         {
-            if (LogLevel > Log.Level.Info) return;
-            string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [INFO] ({Path.GetFileName(filePath)}:{lineNumber}) {message}";
-            _logStream.WriteLine(logEntry);
-        }
-        public static void LogDebug(string message, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)
-        {
-            if (LogLevel > Log.Level.Debug) return;
-            string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [DEBUG] ({Path.GetFileName(filePath)}:{lineNumber}) {message}";
-            _logStream.WriteLine(logEntry);
-        }
-
-        public static void LogWarning(string message, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)
-        {
-            if (LogLevel > Log.Level.Warning) return;
-            string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [WARNING] ({Path.GetFileName(filePath)}:{lineNumber}) {message}";
-            _logStream.WriteLine(logEntry);
-        }
-
-        public static void LogError(string message, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)
-        {
-            if (LogLevel > Log.Level.Error) return;
-            string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [ERROR] ({Path.GetFileName(filePath)}:{lineNumber}) {message}";
+            if (LogLevel > level) return;
+            string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{level}] ({Path.GetFileName(filePath)}:{lineNumber}) {message}";
             _logStream.WriteLine(logEntry);
         }
     }

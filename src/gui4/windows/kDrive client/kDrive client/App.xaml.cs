@@ -28,6 +28,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Shapes;
+using Microsoft.VisualBasic.Logging;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -52,6 +53,7 @@ namespace KDriveClient
         {
             InitializeComponent();
             TrayIcoManager = new TrayIcon.TrayIconManager();
+            Logger.Log(Logger.Level.Info, "Application started");
         }
 
         protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)

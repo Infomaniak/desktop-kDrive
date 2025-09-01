@@ -273,7 +273,7 @@ namespace KDriveClient.ServerCommunication
                 int exitCode = BinaryPrimitives.ReverseEndianness(reader.ReadInt32());
                 if (exitCode != 0)
                 {
-                    Logger.LogError($"GetUsers: exitCode is {exitCode}.");
+                    Logger.Log(Logger.Level.Error, $"GetUsers: exitCode is {exitCode}.");
                     return result;
                 }
 
@@ -285,7 +285,7 @@ namespace KDriveClient.ServerCommunication
                 }
                 else
                 {
-                    Logger.LogError("GetUsers: resultBytes length is less than 4.");
+                    Logger.Log(Logger.Level.Error, "GetUsers: resultBytes length is less than 4.");
                     return result;
                 }
 

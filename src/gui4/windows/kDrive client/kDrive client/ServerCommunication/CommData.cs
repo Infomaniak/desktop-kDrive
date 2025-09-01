@@ -50,7 +50,7 @@ namespace KDriveClient.ServerCommunication
                 }
                 catch (FormatException)
                 {
-                    Logger.LogWarning("Invalid base64 string in params.");
+                    Logger.Log(Logger.Level.Warning, "Invalid base64 string in params.");
                     return ImmutableArray<byte>.Empty;
                 }
             }
@@ -71,7 +71,7 @@ namespace KDriveClient.ServerCommunication
                 }
                 catch (FormatException)
                 {
-                    Logger.LogWarning("Invalid base64 string in result.");
+                    Logger.Log(Logger.Level.Warning, "Invalid base64 string in result.");
                     return ImmutableArray<byte>.Empty;
                 }
             }
