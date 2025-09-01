@@ -303,9 +303,8 @@ void TestUtility::testCheckIfDirEntryIsManaged() {
     CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
     // Check with a symlink on a directory (managed)
-    isManaged = false;
     const SyncPath testDir = tempDir.path() / "testDir";
-    std::filesystem::create_directory(testDir);
+    (void) std::filesystem::create_directory(testDir);
     std::filesystem::create_symlink(testDir, tempDir.path() / "testSymLink");
     std::filesystem::create_directory_symlink(testDir, tempDir.path() / "testSymLinkDir");
     for (auto it = std::filesystem::recursive_directory_iterator(tempDir.path());

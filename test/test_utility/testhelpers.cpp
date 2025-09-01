@@ -96,17 +96,17 @@ std::string loadEnvVariable(const std::string &key, const bool mandatory) {
 }
 
 void createSymLinkLoop(const SyncPath &filepath1, const SyncPath &filepath2, const NodeType nodeType) {
-    LocalTemporaryDirectory tempDir;
+    const LocalTemporaryDirectory tempDir;
     const auto currentPath = std::filesystem::current_path();
     std::filesystem::current_path(tempDir.path());
 
     switch (nodeType) {
         case NodeType::File: {
-            std::ofstream ofs("filepath1");
+            const std::ofstream ofs("filepath1");
             break;
         }
         case NodeType::Directory: {
-            std::filesystem::create_directories("filepath1");
+            (void) std::filesystem::create_directories("filepath1");
             break;
         }
         default:
@@ -121,8 +121,8 @@ void createSymLinkLoop(const SyncPath &filepath1, const SyncPath &filepath2, con
     std::filesystem::rename(tempDir.path() / filepath2.filename(), filepath2);
 
     std::filesystem::current_path(tempDir.path());
-    std::filesystem::remove_all(filepath1.filename());
-    std::filesystem::remove_all(filepath2.filename());
+    (void) std::filesystem::remove_all(filepath1.filename());
+    (void) std::filesystem::remove_all(filepath2.filename());
     std::error_code ec;
     std::filesystem::create_symlink(filepath2.filename(), filepath1.filename(), ec); // filepath1 -> filepath2
 

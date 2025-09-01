@@ -38,8 +38,8 @@ void TestIo::testGetDirectorySize() {
         IoError ioError = IoError::Success;
 
         CPPUNIT_ASSERT(IoHelper::getDirectorySize(temporaryDirectory.path(), dirSize, ioError));
-        CPPUNIT_ASSERT(uint64_t(1000) <= dirSize);
-        CPPUNIT_ASSERT(uint64_t(2000) >= dirSize);
+        CPPUNIT_ASSERT(uint64_t{1000} <= dirSize);
+        CPPUNIT_ASSERT(uint64_t{2000} >= dirSize);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
@@ -62,7 +62,7 @@ void TestIo::testGetDirectorySize() {
 
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::add);
 
-        CPPUNIT_ASSERT(uint64_t(14) <= dirSize);
+        CPPUNIT_ASSERT(uint64_t{14} <= dirSize);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
@@ -75,7 +75,7 @@ void TestIo::testGetDirectorySize() {
         IoError ioError = IoError::Success;
 
         CPPUNIT_ASSERT(IoHelper::getDirectorySize(temporaryDirectory.path(), dirSize, ioError));
-        CPPUNIT_ASSERT(uint64_t(0) == dirSize);
+        CPPUNIT_ASSERT(uint64_t{0} == dirSize);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
@@ -86,7 +86,7 @@ void TestIo::testGetDirectorySize() {
 
         const LocalTemporaryDirectory temporaryDirectory;
         CPPUNIT_ASSERT(IoHelper::getDirectorySize(temporaryDirectory.path() / "does_not_exist", dirSize, ioError));
-        CPPUNIT_ASSERT(uint64_t(0) == dirSize);
+        CPPUNIT_ASSERT(uint64_t{0} == dirSize);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::NoSuchFileOrDirectory),
                                      IoError::NoSuchFileOrDirectory, ioError);
     }

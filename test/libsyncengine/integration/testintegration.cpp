@@ -151,7 +151,6 @@ void TestIntegration::testAll() {
     logStep("initialization");
 
     // Run test cases
-    /*
     basicTests();
     inconsistencyTests();
     conflictTests();
@@ -164,7 +163,6 @@ void TestIntegration::testAll() {
     testDeleteAndRecreateBranch();
     testSymLinkWithTooManySymbolicLevels();
     testDirSymLinkWithTooManySymbolicLevels();
-    */
     testSynchronizationOfSymLinks();
 }
 
@@ -966,7 +964,7 @@ void TestIntegration::testSynchronizationOfSymLinks() {
     std::filesystem::create_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "non_existing_file.txt",
                                     _syncPal->localPath() / tmpRemoteDir.name() / "dangling_symlink");
 
-    std::filesystem::create_directories(_syncPal->localPath() / tmpRemoteDir.name() / "directory");
+    (void) std::filesystem::create_directories(_syncPal->localPath() / tmpRemoteDir.name() / "directory");
     std::filesystem::create_directory_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "directory",
                                               _syncPal->localPath() / tmpRemoteDir.name() / "directory_symlink");
     std::filesystem::create_directory_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "non_existing_directory",
@@ -984,7 +982,7 @@ void TestIntegration::testSynchronizationOfSymLinks() {
     CPPUNIT_ASSERT(remoteTestFileInfo3.isValid());
     CPPUNIT_ASSERT(remoteTestFileInfo4.isValid());
 
-    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(6), countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+    CPPUNIT_ASSERT_EQUAL(int64_t{6}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
 
     logStep("testSynchronizationOfSymLinks");
 }
