@@ -220,8 +220,8 @@ void TestLogUploadJob::checkArchiveContent(const SyncPath &archivePath, const st
         zip_stat_t stat;
         zip_stat_init(&stat);
         zip_stat(archive, expectedFile.string().c_str(), ZIP_FL_UNCHANGED, &stat);
-        if (stat.valid <= zip_uint64_t(0)) zip_close(archive);
-        CPPUNIT_ASSERT_MESSAGE("File not found in the archive: " + expectedFile.string(), stat.valid > zip_uint64_t(0));
+        if (stat.valid <= zip_uint64_t{0}) zip_close(archive);
+        CPPUNIT_ASSERT_MESSAGE("File not found in the archive: " + expectedFile.string(), stat.valid > zip_uint64_t{0});
     }
     zip_close(archive);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("Unexpectec number of files in the archive", static_cast<int64_t>(expectedFiles.size()),

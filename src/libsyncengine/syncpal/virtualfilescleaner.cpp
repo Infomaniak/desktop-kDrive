@@ -223,11 +223,9 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
 
                 if (isDehydrated) {
                     const SyncPath filePath = dirIt->path();
-                    const SyncName filePathStr = dirIt->path().native();
-
                     if (std::error_code ec; !std::filesystem::remove(filePath, ec)) {
                         if (ec) {
-                            LOGW_WARN(_logger, L"Failed to remove " << Utility::formatStdError(filePathStr, ec));
+                            LOGW_WARN(_logger, L"Failed to remove " << Utility::formatStdError(filePath, ec));
                             _exitCode = ExitCode::SystemError;
                             _exitCause = ExitCause::FileAccessError;
 
@@ -235,12 +233,12 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
                             ret = false;
                         }
 
-                        LOGW_WARN(_logger, L"File does not exist: " << Utility::formatSyncPath(filePathStr));
+                        LOGW_WARN(_logger, L"File does not exist: " << Utility::formatSyncPath(filePath));
                     }
 
                     if (ParametersCache::isExtendedLogEnabled()) {
-                        LOGW_DEBUG(_logger, L"VFC removeDehydratedPlaceholders: removing item with "
-                                                    << Utility::formatSyncPath(filePathStr));
+                        LOGW_DEBUG(_logger,
+                                   L"VFC removeDehydratedPlaceholders: removing item with " << Utility::formatSyncPath(filePath));
                     }
                 }
             }
