@@ -77,7 +77,6 @@ public class StartPauseButtonTemplateSelector : DataTemplateSelector
         }
         return LoadingButtonTemplate;
     }
-
 }
 
 public class TextStatusTemplateSelector : DataTemplateSelector

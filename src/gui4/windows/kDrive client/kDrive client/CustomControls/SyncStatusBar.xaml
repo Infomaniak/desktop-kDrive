@@ -6,7 +6,6 @@
     xmlns:local="using:KDriveClient.CustomControls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:converters="using:KDriveClient.Converters"
     mc:Ignorable="d">
     <UserControl.Resources>
 
@@ -35,23 +34,23 @@
 
         <!-- Data templates for different status messages -->
         <DataTemplate x:Key="PausedStatusTemplate">
-            <TextBlock Text="Synchronisation en pause" FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="18"/>
+            <TextBlock x:Uid="SyncStatusBar_PausedStatus" FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="18"/>
         </DataTemplate>
 
         <DataTemplate x:Key="SyncingStatusTemplate">
-            <TextBlock Text="Synchronisation en cours..." FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="18"/>
+            <TextBlock x:Uid="SyncStatusBar_SyncingStatus" FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="18"/>
         </DataTemplate>
 
         <DataTemplate x:Key="StartingStatusTemplate">
-            <TextBlock Text="Démarrage de la synchronisation..." FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="18"/>
+            <TextBlock x:Uid="SyncStatusBar_StartingStatus" FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="18"/>
         </DataTemplate>
 
         <DataTemplate x:Key="PausingStatusTemplate" >
-            <TextBlock Text="Mise en pause de la synchronisation..." FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="18"/>
+            <TextBlock x:Uid="SyncStatusBar_PausingStatus" FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="18"/>
         </DataTemplate>
 
         <DataTemplate x:Key="SyncedStatusTemplate">
-            <TextBlock Text="Tous les fichiers sont synchronisés" FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="18"/>
+            <TextBlock x:Uid="SyncStatusBar_SyncedStatus" FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="18"/>
         </DataTemplate>
 
         <DataTemplate x:Key="UnknownStatusTemplate">

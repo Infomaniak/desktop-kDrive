@@ -150,7 +150,7 @@
   <data name="KSuiteUpgradeBar_link.Content" xml:space="preserve">
     <value />
   </data>
-  <data name="InfomabiakWebSiteLanguageCode" xml:space="preserve">
+  <data name="InfomaniakWebSiteLanguageCode" xml:space="preserve">
     <value />
   </data>
   <data name="UpdateAvailableBar_message.Text" xml:space="preserve">
@@ -160,6 +160,21 @@
     <value />
   </data>
   <data name="UpdateAvailableBar_link.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="SyncStatusBar_PausedStatus.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="SyncStatusBar_StartingStatus.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="SyncStatusBar_PausingStatus.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="SyncStatusBar_SyncedStatus.Text" xml:space="preserve">
     <value />
   </data>
 </root>

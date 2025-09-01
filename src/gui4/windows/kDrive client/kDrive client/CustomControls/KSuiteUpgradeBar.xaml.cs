@@ -26,7 +26,7 @@ namespace KDriveClient.CustomControls
             get
             {
                 var resourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader();
-                string lang = resourceLoader.GetString("InfomabiakWebSiteLanguageCode");
+                string lang = resourceLoader.GetString("InfomaniakWebSiteLanguageCode");
                 string kSuiteTypeName = "myksuite"; // TODO: Fetch the type of the kSuite the user is using (my or pro)
                 string result = "https://www.infomaniak.com/" + lang + "/ksuite/" + kSuiteTypeName;
                 return new Uri(result);
@@ -37,6 +37,5 @@ namespace KDriveClient.CustomControls
         {
             InitializeComponent();
         }
-
     }
 }

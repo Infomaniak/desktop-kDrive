@@ -156,7 +156,7 @@
     <value>Faire évoluer</value>
     <comment>Text of the button to be redirected to the shop</comment>
   </data>
-  <data name="InfomabiakWebSiteLanguageCode" xml:space="preserve">
+  <data name="InfomaniakWebSiteLanguageCode" xml:space="preserve">
     <value>fr</value>
     <comment>Language code (as used in the infomaniak's urls)</comment>
   </data>
@@ -171,5 +171,20 @@
   <data name="UpdateAvailableBar_link.Content" xml:space="preserve">
     <value>Mettre à jour</value>
     <comment>Message of the button to start the update</comment>
+  </data>
+  <data name="SyncStatusBar_PausedStatus.Text" xml:space="preserve">
+    <value>Synchronisation en pause</value>
+  </data>
+  <data name="SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
+    <value>Synchronisation en cours...</value>
+  </data>
+  <data name="SyncStatusBar_StartingStatus.Text" xml:space="preserve">
+    <value>Démarrage de la synchronisation...</value>
+  </data>
+  <data name="SyncStatusBar_PausingStatus.Text" xml:space="preserve">
+    <value>Mise en pause de la synchronisation...</value>
+  </data>
+  <data name="SyncStatusBar_SyncedStatus.Text" xml:space="preserve">
+    <value>Tous les fichiers sont synchronisés</value>
   </data>
 </root>
