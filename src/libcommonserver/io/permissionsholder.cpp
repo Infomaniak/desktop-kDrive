@@ -65,15 +65,8 @@ PermissionsHolder::~PermissionsHolder() {
     const std::scoped_lock scopedLock(mutex);
     if (!heldPermissions.contains(_path)) return;
 
-    AccessRightsInfo accessRights;
-    try {
-        accessRights = heldPermissions[_path];
-    } catch (...) {
-        log(std::wstringstream() << L"PermissionsHolder failed to get value for: " << Utility::formatSyncPath(_path),
-            LogLevel::Error);
-        return;
-    }
-
+    auto &accessRights = heldPermissions[_path];
+    accessRights.count--;
     log(std::wstringstream() << L"PermissionsHolder value: " << Utility::formatSyncPath(_path) << L" / count:"
                              << accessRights.count,
         LogLevel::Debug);
