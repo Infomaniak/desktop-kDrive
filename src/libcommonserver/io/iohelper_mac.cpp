@@ -160,6 +160,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
             sb.st_birthtime; // Supported on all 64-bits macOS versions (32-bits macOS are not supported since nov 2014).
     buf->modificationTime = sb.st_mtime;
     buf->size = sb.st_size;
+    buf->nodeType = S_ISDIR(sb.st_mode) ? NodeType::Directory : NodeType::File;
 
     setTargetNodeType(path, S_ISLNK(sb.st_mode), buf->nodeType);
 
