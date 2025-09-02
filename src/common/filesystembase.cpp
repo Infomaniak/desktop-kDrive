@@ -203,9 +203,11 @@ bool FileSystem::openAndSeekFileSharedRead(QFile *file, QString *errorOrNull, qi
     DWORD newFilePointer = SetFilePointer(fileHandle, li->LowPart, &li->HighPart, FILE_BEGIN);
     if (newFilePointer == 0xFFFFFFFF && GetLastError() != NO_ERROR) {
         error = qt_error_string();
+        _close(fd); // implicitly closes fileHandle
         return false;
     }
 
+    _close(fd); // implicitly closes fileHandle
     return true;
 #else
     if (!file->open(QFile::ReadOnly)) {
