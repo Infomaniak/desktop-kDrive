@@ -1,0 +1,144 @@
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2025 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+using CommunityToolkit.Mvvm.ComponentModel;
+using KDriveClient.ServerCommunication;
+using Microsoft.UI.Xaml.Media.Imaging;
+using System;
+using System.Buffers.Binary;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Collections.ObjectModel;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace KDriveClient.ViewModels
+{
+    internal class User : ObservableObject
+    {
+        private int _dbId = -1;
+        private int _id = -1;
+        private string _name = "";
+        private string _email = "";
+        private Image? _avatar;
+        private bool _isConnected = false;
+        private bool _isStaff = false;
+        private ObservableCollection<Drive> _drives = new ObservableCollection<Drive>();
+
+        public User(int dbId)
+        {
+            DbId = dbId;
+        }
+
+        // Parses a User from a stream, should be removed/replaced when the new communication protocol is done
+        public static User ReadFrom(Utility.BinaryReader reader)
+        {
+            int dbId = reader.ReadInt32();
+            var user = new User(dbId);
+            user.Id = reader.ReadInt32();
+            user.Name = reader.ReadString();
+            user.Email = reader.ReadString();
+            user.Avatar = reader.ReadPNG();
+            user.IsConnected = reader.ReadBoolean();
+            user.IsStaff = reader.ReadBoolean();
+            return user;
+        }
+
+        // Force a reload of all properties from the server
+        public async Task Reload()
+        {
+            Task[] tasks = new Task[]
+            {
+               CommRequests.GetUserId(DbId).ContinueWith(t => { if (t.Result != null) Id = t.Result.Value; }),
+               CommRequests.GetUserName(DbId).ContinueWith(t => { if (t.Result != null) Name = t.Result; }),
+               CommRequests.GetUserEmail(DbId).ContinueWith(t => { if (t.Result != null) Email = t.Result; }),
+               CommRequests.GetUserAvatar(DbId).ContinueWith(t => { if (t.Result != null) Avatar = t.Result; }),
+               CommRequests.GetUserIsConnected(DbId).ContinueWith(t => { if (t.Result != null) IsConnected = t.Result.Value; }),
+               CommRequests.GetUserIsStaff(DbId).ContinueWith(t => { if (t.Result != null) IsStaff = t.Result.Value; }),
+               CommRequests.GetUserDrivesDbIds(DbId).ContinueWith(async t =>
+                {
+                     if (t.Result != null)
+                     {
+                          ObservableCollection<Drive> drives = new ObservableCollection<Drive>();
+                          List<Task> driveTasks = new List<Task>();
+                          foreach (var driveDbId in t.Result)
+                          {
+                            Drive? drive = new Drive(driveDbId);
+                            driveTasks.Add(drive.Reload());
+                            drives.Add(drive);
+                          }
+                          await Task.WhenAll(driveTasks).ConfigureAwait(false);
+                          Drives = drives;
+                     }
+                }).Unwrap()
+            };
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
+
+        public int DbId
+        {
+            get => _dbId;
+            set => SetProperty(ref _dbId, value);
+        }
+
+        public int Id
+        {
+            get => _id;
+            set => SetProperty(ref _id, value);
+        }
+
+        public string Name
+        {
+            get => _name;
+            set => SetProperty(ref _name, value);
+        }
+
+        public string Email
+        {
+            get => _email;
+            set => SetProperty(ref _email, value);
+        }
+
+        public Image? Avatar
+        {
+            get => _avatar;
+            set => SetProperty(ref _avatar, value);
+        }
+
+        public bool IsConnected
+        {
+            get => _isConnected;
+            set => SetProperty(ref _isConnected, value);
+        }
+
+        public bool IsStaff
+        {
+            get => _isStaff;
+            set => SetProperty(ref _isStaff, value);
+        }
+
+        public ObservableCollection<Drive> Drives
+        {
+            get { return _drives; }
+            set => SetProperty(ref _drives, value);
+        }
+    }
+}

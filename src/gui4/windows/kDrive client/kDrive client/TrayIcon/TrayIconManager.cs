@@ -1,4 +1,22 @@
-﻿using H.NotifyIcon;
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2025 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+using H.NotifyIcon;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -9,7 +27,7 @@ using System.IO;
 using Windows.System;
 using Microsoft.UI.Windowing;
 
-namespace kDrive_client.TrayIcon
+namespace KDriveClient.TrayIcon
 {
     public class TrayIconManager
     {
@@ -17,7 +35,7 @@ namespace kDrive_client.TrayIcon
         private Window? _window;
         private bool _handleClosedEvents = true;
 
-        public void Initialize(Window? window)
+        public void Initialize(Window window)
         {
             _window = window;
 
@@ -42,6 +60,15 @@ namespace kDrive_client.TrayIcon
                 // Set initial icon
                 SetIcon_ok();
             }
+
+            _window.Closed += (sender, args) =>
+            {
+                if (_handleClosedEvents)
+                {
+                    args.Handled = true;
+                    _window.Hide();
+                }
+            };
         }
         public void SetIcon_ok()
         {
@@ -61,33 +88,20 @@ namespace kDrive_client.TrayIcon
         }
         private void ShowWindowCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
         {
-            if (_window == null)
-            {
-                _window = new MainWindow();
-                _window.Closed += (sender, args) =>
-                {
-                    if (_handleClosedEvents)
-                    {
-                        args.Handled = true;
-                        _window.Hide();
-                    }
-                };
-                _window.Show();
-                return;
-            }
-
             // Bring to front
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(_window);
             var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
             var appWindow = AppWindow.GetFromWindowId(windowId);
             if (appWindow.Presenter is OverlappedPresenter presenter)
             {
-
+                presenter.IsMaximizable = false;
+                presenter.IsMinimizable = true;
+                presenter.IsResizable = false;
                 presenter.Minimize();
                 presenter.Restore();
             }
-            _window.Show();
-            _window.Activate();
+            _window?.Show();
+            _window?.Activate();
             SetIcon_ok();
 
         }
@@ -121,12 +135,6 @@ namespace kDrive_client.TrayIcon
             {
                 System.Diagnostics.Debug.WriteLine($"Failed to set tray icon: {ex.Message}");
             }
-        }
-
-        public void Dispose()
-        {
-            _trayIcon?.Dispose();
-            _trayIcon = null;
         }
     }
 }

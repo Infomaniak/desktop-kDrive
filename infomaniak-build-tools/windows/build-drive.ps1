@@ -458,7 +458,7 @@ function Prepare-Archive {
 
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    if (!$upload) {
+    if ($ci -and !$upload) {
         Write-Host "Archive prepared for CI build."
         exit 0
     }
@@ -739,7 +739,7 @@ Prepare-Archive $buildType $buildPath $vfsDir $archivePath $upload
 #                                                                                               #
 #################################################################################################
 
-if ($upload) {
+if (!$ci -or $upload) {
     Create-Archive $path $buildPath $contentPath $installPath $archiveName $archivePath $upload
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Archive creation failed ($LASTEXITCODE) . Aborting." -f Red
@@ -753,7 +753,7 @@ if ($upload) {
 #                                                                                               #
 #################################################################################################
 
-Copy-Item -Path "$buildPath\bin\kDrive*.pdb" -Destination $contentPath
+Copy-Item -Path "$buildPath\kDrive*.pdb" -Destination $contentPath
 Remove-Item $archiveDataPath
 
 #################################################################################################
