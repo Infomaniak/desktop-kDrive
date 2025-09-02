@@ -92,7 +92,7 @@ namespace KDrive.ViewModels
                 "Budget"
             };
 
-            int randomPathDepth = rand.Next(0, 1); // Random depth between 1 and 3
+            int randomPathDepth = rand.Next(0, 2); // Random depth between 0 and 1
 
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < randomPathDepth; i++)

@@ -97,11 +97,10 @@ namespace KDrive.CustomControls
         {
             if (sender is HyperlinkButton btn && btn.DataContext is SyncActivity activity)
             {
-                string? parentDir = Path.GetDirectoryName(activity.ParentFolderPath);
-                if (Directory.Exists(parentDir))
+                if (Directory.Exists(activity.ParentFolderPath))
                 {
                     btn.IsEnabled = false;
-                    Process.Start("explorer.exe", parentDir);
+                    Process.Start("explorer.exe", activity.ParentFolderPath);
                     await Task.Delay(5000); // As the explorer might take some time to open avoid multiple clicks
                     btn.IsEnabled = true;
                 }
