@@ -280,7 +280,6 @@ function CMake-Build-And-Install {
         $args += ("'-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'")
     }
 
-
     $buildVersion = Get-Date -Format "yyyyMMdd"
 
     $flags = @(
@@ -465,7 +464,7 @@ function Prepare-Archive {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     if (!$upload) {
-        Write-Host "Archive prepared for CI build."
+        Write-Host "Archive prepared. Skipping binaries required for upload only."
         exit 0
     }
 
@@ -727,6 +726,7 @@ if ($LASTEXITCODE -ne 0) {
 #################################################################################################
 
 Prepare-Archive -BuildType $buildType -BuildPath $buildPath -VfsDir $vfsDir -ArchivePath $archivePath -Upload $upload -Ci $ci
+if ($LASTEXITCODE -ne 0)
 {
     Write-Host "Archive preparation failed. Aborting." -f Red
     exit $LASTEXITCODE
