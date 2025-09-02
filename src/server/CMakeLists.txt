@@ -47,7 +47,6 @@ set(server_SRCS
     comm/abstractcommchannel.h comm/abstractcommchannel.cpp
     comm/abstractcommserver.h
     comm/commmanager.h comm/commmanager.cpp
-    comm/extensionjob.h comm/extensionjob.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
     requests/offlinefilessizeestimator.h requests/offlinefilessizeestimator.cpp
@@ -62,6 +61,7 @@ set(updater_SRCS
 
 if(APPLE)
     list(APPEND server_SRCS ../common/utility_mac.cpp)
+    list(APPEND server_SRCS comm/extensionjob.h comm/extensionjob.cpp)
     list(APPEND server_SRCS comm/abstractcommserver_mac.h comm/abstractcommserver_mac.mm)
     list(APPEND server_SRCS comm/xpccommserver_mac.h comm/xpccommserver_mac.mm)
     list(APPEND server_SRCS comm/extcommserver_mac.h comm/extcommserver_mac.mm)
@@ -89,6 +89,7 @@ if(APPLE)
     endif()
 elseif(WIN32)
     list(APPEND server_SRCS ../common/utility_win.cpp)
+    list(APPEND server_SRCS comm/extensionjob.h comm/extensionjob.cpp)
     list(APPEND server_SRCS comm/socketcommserver.h comm/socketcommserver.cpp)
     list(APPEND server_SRCS comm/pipecommserver.h comm/pipecommserver.cpp)
     list(APPEND server_SRCS comm/extcommserver.h comm/extcommserver.cpp)

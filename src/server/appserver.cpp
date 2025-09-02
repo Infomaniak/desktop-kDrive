@@ -3681,7 +3681,9 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
         vfsSetupParams.localPath = sync.localPath();
         vfsSetupParams.targetPath = sync.targetPath();
         vfsSetupParams.executeCommand = [this](const CommString &command, bool broadcast) {
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
             _commManager->executeCommandDirect(command, broadcast);
+#endif
         };
         vfsSetupParams.logger = _logger;
         vfsSetupParams.sentryHandler = sentry::Handler::instance();
