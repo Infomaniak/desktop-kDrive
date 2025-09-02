@@ -92,26 +92,26 @@ namespace KDC {
 
 class LiteSyncCommClientPrivate {
     public:
-        LiteSyncCommClientPrivate(log4cplus::Logger logger, KDC::ExecuteCommand executeCommand);
+        LiteSyncCommClientPrivate(log4cplus::Logger logger, ExecuteCommand executeCommand);
         ~LiteSyncCommClientPrivate();
 
         bool install(bool &activationDone);
         bool connect();
 
         bool vfsInit();
-        bool vfsStart(const QString &folderPath);
-        bool vfsStop(const QString &folderPath);
+        bool vfsStart(const SyncPath &folderPath);
+        bool vfsStop(const SyncPath &folderPath);
 
-        bool executeCommand(const KDC::CommString &commandLine, bool broadcast);
-        bool updateFetchStatus(const QString &filePath, const QString &status);
-        bool setThumbnail(const QString &filePath, const QPixmap &pixmap);
-        bool setAppExcludeList(const QString &appList);
-        bool getFetchingAppList(QHash<QString, QString> &appTable);
+        bool executeCommand(const std::string &commandLine, bool broadcast);
+        bool updateFetchStatus(const SyncPath &filePath, const std::string &status);
+        bool setThumbnail(const SyncPath &filePath, const QPixmap &pixmap);
+        bool setAppExcludeList(const std::string &appList);
+        bool getFetchingAppList(std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>> &appTable);
 
     private:
         log4cplus::Logger _logger;
-        Connector *_Nullable _connector = nullptr;
-        KDC::ExecuteCommand _executeCommand = nullptr;
+        Connector *_connector = nullptr;
+        ExecuteCommand _executeCommand = nullptr;
 };
 
 } // namespace KDC
@@ -480,30 +480,6 @@ class LiteSyncCommClientPrivate {
 namespace KDC {
 
 LiteSyncCommClient *LiteSyncCommClient::_liteSyncCommClient = nullptr;
-
-class LiteSyncCommClientPrivate {
-    public:
-        LiteSyncCommClientPrivate(log4cplus::Logger logger, ExecuteCommand executeCommand);
-        ~LiteSyncCommClientPrivate();
-
-        bool install(bool &activationDone);
-        bool connect();
-
-        bool vfsInit();
-        bool vfsStart(const SyncPath &folderPath);
-        bool vfsStop(const SyncPath &folderPath);
-
-        bool executeCommand(const std::string &commandLine);
-        bool updateFetchStatus(const SyncPath &filePath, const std::string &status);
-        bool setThumbnail(const SyncPath &filePath, const QPixmap &pixmap);
-        bool setAppExcludeList(const std::string &appList);
-        bool getFetchingAppList(std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>> &appTable);
-
-    private:
-        log4cplus::Logger _logger;
-        Connector *_connector = nullptr;
-        ExecuteCommand _executeCommand = nullptr;
-};
 
 // LiteSyncCommClientPrivate implementation
 LiteSyncCommClientPrivate::LiteSyncCommClientPrivate(log4cplus::Logger logger, ExecuteCommand executeCommand) :
@@ -1387,7 +1363,7 @@ bool LiteSyncCommClient::vfsIsExcluded(const SyncPath &path) {
     return pinState == litesync_attrs::pinStateExcluded;
 }
 
-bool LiteSyncExtConnector::vfsSetStatus(const SyncPath &path, const SyncPath &localSyncPath, const VfsStatus &vfsStatus) {
+bool LiteSyncCommClient::vfsSetStatus(const SyncPath &path, const SyncPath &localSyncPath, const VfsStatus &vfsStatus) {
     VfsStatus currentVfsStatus;
     if (!vfsGetStatus(path, currentVfsStatus)) {
         return false;
@@ -1464,7 +1440,7 @@ bool LiteSyncCommClient::vfsCleanUpStatuses(const SyncPath &localSyncPath) {
     return true;
 }
 
-bool LiteSyncExtConnector::vfsProcessDirStatus(const SyncPath &path, const SyncPath &localSyncPath) {
+bool LiteSyncCommClient::vfsProcessDirStatus(const SyncPath &path, const SyncPath &localSyncPath) {
     VfsStatus vfsStatus;
     if (!vfsGetStatus(path, vfsStatus)) {
         return false;
@@ -1538,7 +1514,7 @@ bool LiteSyncCommClient::sendStatusToFinder(const SyncPath &path, const VfsStatu
     command.append(messageArgSeparator);
     command.append(Str2CommString(std::to_string(vfsStatus.isHydrated)));
     command.append(messageArgSeparator);
-    command.append(QStr2CommString(path));
+    command.append(path.native());
     return _private->executeCommand(command, true);
 }
 

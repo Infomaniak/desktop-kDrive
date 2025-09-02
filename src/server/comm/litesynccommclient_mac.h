@@ -43,7 +43,8 @@ class LiteSyncCommClient {
         bool vfsSetPinState(const SyncPath &path, const SyncPath &localSyncPath, const std::string_view &pinState);
         bool vfsGetPinState(const SyncPath &path, std::string &pinState);
         bool vfsConvertToPlaceHolder(const SyncPath &filePath, bool isHydrated);
-        bool vfsCreatePlaceHolder(const SyncPath &relativePath, const SyncPath &localSyncPath, const struct stat *fileStat);
+        bool vfsCreatePlaceHolder(const SyncPath &relativePath, const SyncPath &localSyncPath,
+                                  const struct stat *_Nonnull fileStat);
         bool vfsUpdateFetchStatus(const SyncPath &tmpFilePath, const SyncPath &filePath, const SyncPath &localSyncPath,
                                   unsigned long long completed, bool &canceled, bool &finished);
         bool vfsUpdateFetchStatus(const SyncPath &absolutePath, const std::string &status);
@@ -56,7 +57,7 @@ class LiteSyncCommClient {
         }
         bool vfsSetAppExcludeList(const std::string &appList);
         bool vfsGetFetchingAppList(std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>> &appTable);
-        bool vfsUpdateMetadata(const SyncPath &absoluteFilePath, const struct stat *fileStat);
+        bool vfsUpdateMetadata(const SyncPath &absoluteFilePath, const struct stat *_Nonnull fileStat);
         bool vfsIsExcluded(const SyncPath &path);
         bool vfsProcessDirStatus(const SyncPath &path, const SyncPath &localSyncPath);
         void vfsClearFileAttributes(const SyncPath &path);
