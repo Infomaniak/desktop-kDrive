@@ -105,12 +105,12 @@
                         Margin="10" Width="200" 
                         Background="Transparent" 
                         BorderBrush="Transparent" 
-                        ItemsSource="{x:Bind ViewModel.ActiveDrives}"
-                        SelectedItem="{x:Bind ViewModel.SelectedDrive, Mode=TwoWay}"
+                        ItemsSource="{x:Bind ViewModel.AllSyncs}"
+                        SelectedItem="{x:Bind ViewModel.SelectedSync, Mode=TwoWay}"
                         IsEnabled="{x:Bind ViewModel.IsInitialized, Mode=OneWay}"
                         >
                         <ComboBox.ItemTemplate>
-                            <DataTemplate x:DataType="viewModel:Drive">
+                            <DataTemplate x:DataType="viewModel:Sync">
                                 <StackPanel Orientation="Horizontal">
                                     <PersonPicture
                                         Grid.Column="2"
@@ -118,7 +118,8 @@
                                         Height="24" Width="24"
                                         VerticalAlignment="Center"
                                         HorizontalAlignment="Right"/>
-                                    <TextBlock Text="{x:Bind Name}" Margin="10,0"/>
+                                    <TextBlock Text="{x:Bind Drive.Name}" Style="{StaticResource BodyTextBlockStyle}"  Margin="10,0"/>
+                                    <TextBlock Text="{x:Bind LocalPath}" Style="{StaticResource TextBlockStyle}" Margin="10,0"/>
                                 </StackPanel>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>

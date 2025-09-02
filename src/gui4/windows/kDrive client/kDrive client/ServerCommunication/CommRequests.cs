@@ -61,15 +61,16 @@ namespace KDrive.ServerCommunication
             Users[2].Drives.Add(Drives[3]);
 
             // Create mock syncs
-            Syncs.Add(new Sync { DbId = 1, Id = 1000, LocalPath = "C:\\Users\\John\\kDrive\\Pro", RemotePath = "", SupportVfs = false });
-            Syncs.Add(new Sync { DbId = 2, Id = 1001, LocalPath = "C:\\Users\\John\\kDrive\\Photo", RemotePath = "", SupportVfs = true });
+            Syncs.Add(new Sync(1, Drives[0]) { Id = 1000, LocalPath = "C:\\Users\\John\\kDrive\\Pro", RemotePath = "", SupportVfs = false });
             Drives[0].Syncs.Add(Syncs[0]);
+
+            Syncs.Add(new Sync(2, Drives[1]) { Id = 1001, LocalPath = "C:\\Users\\John\\kDrive\\Photo", RemotePath = "", SupportVfs = true });
             Drives[1].Syncs.Add(Syncs[1]);
 
-            Syncs.Add(new Sync { DbId = 1, Id = 1000, LocalPath = "C:\\Users\\Alice\\kDrive\\Pro", RemotePath = "", SupportVfs = false });
+            Syncs.Add(new Sync(3, Drives[2]) { Id = 1000, LocalPath = "C:\\Users\\Alice\\kDrive\\Pro", RemotePath = "", SupportVfs = false });
             Drives[2].Syncs.Add(Syncs[2]);
 
-            Syncs.Add(new Sync { DbId = 2, Id = 1001, LocalPath = "C:\\Users\\Bob\\kDrive\\Photo", RemotePath = "", SupportVfs = true });
+            Syncs.Add(new Sync(4, Drives[3]) { Id = 1001, LocalPath = "C:\\Users\\Bob\\kDrive\\Photo", RemotePath = "", SupportVfs = true });
             Drives[3].Syncs.Add(Syncs[3]);
         }
     }
@@ -268,6 +269,42 @@ namespace KDrive.ServerCommunication
             return drive != null ? drive.IsPaidOffer : (bool?)null;
         }
 
+        public static async Task<List<int>> GetDriveSyncsDbIds(int driveDbId)
+        {
+            var drives = _mockServerData.Drives;
+            await SimulateNetworkDelay().ConfigureAwait(false);
+            return drives.FirstOrDefault(d => d.DbId == driveDbId)?.Syncs.Select(s => s!.DbId).ToList() ?? new List<int>();
+        }
+
+        // Sync-related requests
+        public static async Task<int?> GetSyncId(int dbId)
+        {
+            var syncs = _mockServerData.Syncs;
+            await SimulateNetworkDelay().ConfigureAwait(false);
+            return syncs.FirstOrDefault(s => s.DbId == dbId)?.Id;
+        }
+
+        public static async Task<string?> GetSyncLocalPath(int dbId)
+        {
+            var syncs = _mockServerData.Syncs;
+            await SimulateNetworkDelay().ConfigureAwait(false);
+            return syncs.FirstOrDefault(s => s.DbId == dbId)?.LocalPath;
+        }
+
+        public static async Task<string?> GetSyncRemotePath(int dbId)
+        {
+            var syncs = _mockServerData.Syncs;
+            await SimulateNetworkDelay().ConfigureAwait(false);
+            return syncs.FirstOrDefault(s => s.DbId == dbId)?.RemotePath;
+        }
+
+        public static async Task<bool?> GetSyncSupportVfs(int dbId)
+        {
+            var syncs = _mockServerData.Syncs;
+            await SimulateNetworkDelay().ConfigureAwait(false);
+            return syncs.FirstOrDefault(s => s.DbId == dbId)?.SupportVfs;
+        }
+
         public static async Task<List<User>> GetUsers() // USER_INFOLIST
         {
             App app = (App)Application.Current;
@@ -306,5 +343,6 @@ namespace KDrive.ServerCommunication
 
             return result;
         }
+
     }
 }

@@ -49,15 +49,8 @@ namespace KDrive.ViewModels
         private long _usedSize = 0;
         private bool _isActive = false; // Indicates if the user configured this drive on the current device.
         private bool _isPaidOffer = false; // Indicates if the drive is a paid offer (i.e. myKsuite+/pro +, ...)
-        private SyncStatus _syncStatus = SyncStatus.Pause;
 
         private ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
-
-        public SyncStatus SyncStatus
-        {
-            get => _syncStatus;
-            set => SetProperty(ref _syncStatus, value);
-        }
 
         public Drive(int dbId)
         {
@@ -74,8 +67,22 @@ namespace KDrive.ViewModels
                CommRequests.GetDriveUsedSize(DbId).ContinueWith(t => { if (t.Result != null) UsedSize = t.Result.Value; }),
                CommRequests.GetDriveIsActive(DbId).ContinueWith(t => { if (t.Result != null) IsActive = t.Result.Value; }),
                CommRequests.GetDriveIsPaidOffer(DbId).ContinueWith(t => { if (t.Result != null) IsPaidOffer = t.Result.Value; }),
-
-               // TODO: Load syncs
+               CommRequests.GetDriveSyncsDbIds(DbId).ContinueWith(async t =>
+                {
+                     if (t.Result != null)
+                     {
+                          ObservableCollection<Sync> syncs = new ObservableCollection<Sync>();
+                          List<Task> syncTasks = new List<Task>();
+                          foreach (var syncDbId in t.Result)
+                          {
+                            Sync? sync = new Sync(syncDbId, this);
+                            syncTasks.Add(sync.Reload());
+                            syncs.Add(sync);
+                          }
+                          await Task.WhenAll(syncTasks).ConfigureAwait(false);
+                          Syncs = syncs;
+                     }
+                }).Unwrap()
             };
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }

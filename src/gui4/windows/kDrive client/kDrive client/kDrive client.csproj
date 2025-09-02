@@ -79,6 +79,11 @@
     <Folder Include="AnimatedElements\" />
   </ItemGroup>
   <ItemGroup>
+    <Page Update="CustomControls\SyncActivityTable.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="Pages\KSuiteUpgradeBar.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

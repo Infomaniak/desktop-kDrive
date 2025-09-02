@@ -57,8 +57,7 @@
         <controls:SyncStatusBar Grid.Row="1"/>
 
         <!-- Left main pane -->
-        <controls:SynthesisActivityView Grid.Row="2" Grid.Column="0" />
-
+        <controls:SyncActivityTable Grid.Row="2" Grid.Column="0" />
 
         <!-- Right Side Buttons -->
         <Grid Grid.Row="2" Grid.Column="1">
@@ -101,7 +100,7 @@
         <controls:KSuiteUpgradeBar
             Grid.Row="3"
             Grid.ColumnSpan="2"
-            Visibility="{x:Bind ViewModel.SelectedDrive.IsPaidOffer, Mode=OneWay, Converter={StaticResource BooleanToVisibilityInverterConverter}}"
+            Visibility="{x:Bind ViewModel.SelectedSync.Drive.IsPaidOffer, Mode=OneWay, Converter={StaticResource BooleanToVisibilityInverterConverter}}"
             />
     </Grid>
 </Page>

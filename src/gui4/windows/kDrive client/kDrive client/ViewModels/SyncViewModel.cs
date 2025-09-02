@@ -17,22 +17,139 @@
  */
 
 using CommunityToolkit.Mvvm.ComponentModel;
+using KDrive.ServerCommunication;
+using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Foundation;
 
 namespace KDrive.ViewModels
 {
     internal class Sync : ObservableObject
     {
         private int _dbId = -1;
+        private Drive _drive;
         private int _id = -1;
         private string _localPath = "";
         private string _remotePath = "";
         private bool _supportVfs = false;
+        private ObservableCollection<SyncActivity> _syncActivities = new();
+
+        private SyncStatus _syncStatus = SyncStatus.Pause;
+
+        public SyncStatus SyncStatus
+        {
+            get => _syncStatus;
+            set => SetProperty(ref _syncStatus, value);
+        }
+
+        //TODO: Remove this test funciton
+
+        private SyncActivity genereateTestActivity()
+        {
+            Random rand = new Random();
+            string[] sampleFileExtension = new string[]
+            {
+                "docx",
+                "doc",
+                "png",
+                "jpg",
+                "xls",
+                "xlsx",
+                "txt",
+            };
+
+            string[] sampleDirectories = new string[]
+            {
+                "Documents",
+                "Photos",
+                "Music",
+                "Videos",
+                "Work",
+                "Personal",
+                "Projects",
+                "Backups"
+            };
+
+            string[] sampleFileNames = new string[]
+            {
+                "Report",
+                "Presentation",
+                "Notes",
+                "Meeting",
+                "Holiday",
+                "Family",
+                "ProjectPlan",
+                "Budget"
+            };
+
+            int randomPathDepth = rand.Next(1, 4); // Random depth between 1 and 3
+
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < randomPathDepth; i++)
+            {
+                sb.Append(sampleDirectories[rand.Next(sampleDirectories.Length)] + "/");
+            }
+
+            bool isFile = rand.Next(2) == 0; // Randomly decide if it's a file or directory
+            if (isFile)
+            {
+                sb.Append(sampleFileNames[rand.Next(sampleFileNames.Length)] + "." + sampleFileExtension[rand.Next(sampleFileExtension.Length)]);
+            }
+            else
+            {
+                sb.Append(sampleFileNames[rand.Next(sampleFileNames.Length)]);
+            }
+            SyncActivityDirection direction = (SyncActivityDirection)rand.Next(2); // Randomly choose direction
+            SyncActivityItemType itemType = isFile ? SyncActivityItemType.File : SyncActivityItemType.Directory;
+            long size = isFile ? rand.Next(0, 5000000) : 0; // Random size for files, 0 for directories
+            DateTime activityTime = DateTime.Now;
+            return new SyncActivity()
+            {
+                LocalPath = "C:/Users/Hervé/kDrive/" + sb.ToString(),
+                Direction = direction,
+                ItemType = itemType,
+                Size = size,
+                ActivityTime = activityTime,
+                RemoteId = rand.Next(1, 1000)
+            };
+        }
+
+        public Sync(int dbId, Drive drive)
+        {
+            _dbId = dbId;
+            _drive = drive;
+
+
+            Task.Run(async () =>
+            {
+                Random random = new Random();
+
+                while (true)
+                {
+                    await Task.Delay(random.Next(1, 5000)); // Wait between 0 to 5 seconds
+                    if (SyncStatus != SyncStatus.Running)
+                    {
+                        continue;
+                    }
+                    var newActivity = genereateTestActivity();
+
+                    AppModel.UIThreadDispatcher.TryEnqueue(() =>
+                    {
+                        _syncActivities.Insert(0, newActivity);
+                        if (_syncActivities.Count > 100)
+                        {
+                            _syncActivities.RemoveAt(_syncActivities.Count - 1);
+                        }
+                    });
+                }
+            });
+        }
 
         public int DbId
         {
@@ -71,6 +188,28 @@ namespace KDrive.ViewModels
         {
             get => _supportVfs;
             set => SetProperty(ref _supportVfs, value);
+        }
+
+        public ObservableCollection<SyncActivity> SyncActivities
+        {
+            get => _syncActivities;
+        }
+
+        public Drive Drive
+        {
+            get => _drive;
+        }
+
+        public async Task Reload()
+        {
+            Task[] tasks = new Task[]
+            {
+               CommRequests.GetSyncId(DbId).ContinueWith(t => { if (t.Result != null) Id = t.Result.Value; }),
+               CommRequests.GetSyncLocalPath(DbId).ContinueWith(t => { if (t.Result != null) LocalPath = t.Result; }),
+               CommRequests.GetSyncRemotePath(DbId).ContinueWith(t => { if (t.Result != null) RemotePath = t.Result; }),
+               CommRequests.GetSyncSupportVfs(DbId).ContinueWith(t => { if (t.Result != null) SupportVfs = t.Result.Value; }),
+            };
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
     }
 }

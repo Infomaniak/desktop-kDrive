@@ -6,15 +6,40 @@
     xmlns:local="using:KDrive"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:KDrive.CustomControls"
+    xmlns:converters="using:KDrive.Converters"
+    xmlns:viewmodels="using:KDrive.ViewModels"
     mc:Ignorable="d">
+    <Page.Resources>
+        <converters:BooleanToVisibilityInverterConverter x:Key="BooleanToVisibilityInverterConverter"/>
+    </Page.Resources>
 
-    <Grid>
-        <StackPanel>
-            <TextBox Text="{x:Bind ViewModel.SelectedDrive.Name, Mode=OneWay, FallbackValue='NoDrive'}" Foreground="Black"/>
-            <TextBlock Text="{x:Bind ViewModel.SelectedDrive.IsPaidOffer, Mode=OneWay, FallbackValue='-100'}" Foreground="Black"/>
+    <Grid Margin="24" RowSpacing="24" ColumnSpacing="24">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <!-- Sync status bar -->
+            <RowDefinition Height="Auto"/>
+            <!-- Error bar -->
+            <RowDefinition Height="Auto"/>
+            <!-- Main content -->
+            <RowDefinition Height="*"/>
+            <!-- Upgrade offer bar -->
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-            <ToggleButton IsChecked="{x:Bind ViewModel.SelectedDrive.IsActive, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="IsActive"/>
-        </StackPanel>
+        <controls:SyncStatusBar Grid.Row="1"/>
+
+        <!-- Left main pane -->
+        <controls:SyncActivityTable Grid.Row="2" Grid.ColumnSpan="2" />
+
+        <controls:KSuiteUpgradeBar
+        Grid.Row="3"
+        Grid.ColumnSpan="2"
+        Visibility="{x:Bind ViewModel.SelectedSync.Drive.IsPaidOffer, Mode=OneWay, Converter={StaticResource BooleanToVisibilityInverterConverter}}"
+        />
 
     </Grid>
 </Page>

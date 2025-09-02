@@ -40,21 +40,21 @@ namespace KDrive.ViewModels
          */
         private bool _isInitialized = false;
 
-        /** The currently selected drive in the UI.
-         *  This can be null if no drive is selected.
+        /** The currently selected sync in the UI.
+         *  This can be null if no sync is selected.
          */
-        private Drive? _selectedDrive = null;
+        private Sync? _selectedSync = null;
 
         /** The list of users setup in the application.
          *  This is an observable collection, so the UI can bind to it and be notified of changes.
          */
         private ObservableCollection<User> _users = new();
 
-        /** The list of active drives across all users.
+        /** The list of active syncs across all users.
          *  This is a read-only observable collection, so the UI can bind to it and be notified of changes.
-         *  It is automatically updated when a drive's IsActive property changes or when drives are added/removed from users.
+         *  It is automatically updated when a sync's IsActive property changes or when syncs are added/removed from users.
          */
-        public ReadOnlyObservableCollection<Drive> ActiveDrives { get; set; }
+        public ReadOnlyObservableCollection<Sync> AllSyncs { get; set; }
 
         /** The dispatcher queue for the UI thread.
          *  This is used to marshal calls to the UI thread when updating observable item.
@@ -62,10 +62,10 @@ namespace KDrive.ViewModels
          */
         public static DispatcherQueue UIThreadDispatcher { get; set; } = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
 
-        public Drive? SelectedDrive
+        public Sync? SelectedSync
         {
-            get => _selectedDrive;
-            set => SetProperty(ref _selectedDrive, value);
+            get => _selectedSync;
+            set => SetProperty(ref _selectedSync, value);
         }
 
         public AppModel()
@@ -74,27 +74,29 @@ namespace KDrive.ViewModels
             _users.ToObservableChangeSet()
                 .AutoRefresh(u => u.Drives.Count)
                 .TransformMany(u => u.Drives)
-                .AutoRefresh(d => d.IsActive)
-                .Filter(d => d.IsActive)
-                .Bind(out var activeDrives)
+                .AutoRefresh(d => d.Syncs.Count)
+                .Filter(d => (d.Syncs.Any()))
+                .TransformMany(d => d.Syncs)
+                .Bind(out var allSyncs)
                 .Subscribe();
-            ActiveDrives = activeDrives;
+            AllSyncs = allSyncs;
 
-            // Observe changes to ActiveDrives list and ensure SelectedDrive is valid
-            ActiveDrives.ToObservableChangeSet()
-                       .Subscribe(_ => EnsureValidSelectedDrive());
+            // Observe changes to ActiveDrives list and ensure SelectedSync is valid
+            AllSyncs.ToObservableChangeSet()
+                       .Subscribe(_ => EnsureValidSelectedSync());
+
         }
 
-        private void EnsureValidSelectedDrive()
+        private void EnsureValidSelectedSync()
         {
-            // If ActiveDrives is empty, set SelectedDrive to null
-            if (ActiveDrives.Count == 0)
+            // If AllSync is empty, set SelectedSync to null
+            if (AllSyncs.Count == 0)
             {
-                SelectedDrive = null;
+                SelectedSync = null;
             }
-            else if (_selectedDrive == null || !_selectedDrive.IsActive)// If SelectedDrive is null or not in ActiveDrives, pick the first one
+            else if (_selectedSync == null || !AllSyncs.Contains(SelectedSync))// If SelectedSync is null or not in AllSyncs, pick the first one
             {
-                UIThreadDispatcher.TryEnqueue(() => SelectedDrive = ActiveDrives[0]);
+                UIThreadDispatcher.TryEnqueue(() => SelectedSync = AllSyncs[0]);
             }
         }
 
