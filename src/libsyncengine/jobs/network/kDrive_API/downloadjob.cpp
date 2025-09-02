@@ -87,11 +87,14 @@ DownloadJob::~DownloadJob() {
         }
 
         // TODO: usefull ?
-        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, VfsStatus()); !exitInfo) {
-            LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
-        }
+        bool exists = false;
+        if (auto ioError = IoError::Unknown; IoHelper::checkIfPathExists(_localpath, exists, ioError) && exists) {
+            if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, VfsStatus()); !exitInfo) {
+                LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
+            }
 
-        _vfs->cancelHydrate(_localpath);
+            _vfs->cancelHydrate(_localpath);
+        }
 
     } else {
         if (const ExitInfo exitInfo = _vfs->setPinState(
