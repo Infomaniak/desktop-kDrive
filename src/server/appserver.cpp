@@ -655,6 +655,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
     QByteArray results = QByteArray();
     QDataStream resultStream(&results, QIODevice::WriteOnly);
 
+    if (CommonUtility::envVarValue("KDRIVE_COMM_USE_LITTLE_ENDIAN") ==
+        "1") { // .NET comm classes use little endian. For dev purpose this var allow to switch endianness.
+        resultStream.setByteOrder(QDataStream::LittleEndian);
+    }
+
     switch (num) {
         case RequestNum::LOGIN_REQUESTTOKEN: {
             QString code, codeVerifier;
