@@ -383,7 +383,7 @@ In the project build settings, paste the following lines in the `Initial Configu
 -DCMAKE_C_COMPILER:STRING=%{Compiler:Executable:C}
 -DCMAKE_CXX_COMPILER:STRING=%{Compiler:Executable:Cxx}
 -DAPPLICATION_CLIENT_EXECUTABLE=kdrive
--DSOCKETAPI_TEAM_IDENTIFIER_PREFIX=<team id>
+-DTEAM_IDENTIFIER_PREFIX=<team id>
 -DKDRIVE_THEME_DIR=/Users/<user>/Projects/desktop-kDrive/infomaniak
 -DCMAKE_INSTALL_PREFIX=/Users/<user>/Projects/build-desktop-kDrive-Qt_6_2_3_for_macOS-Debug/install
 -DBUILD_TESTING=OFF
