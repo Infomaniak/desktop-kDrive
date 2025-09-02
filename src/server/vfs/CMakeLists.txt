@@ -1,3 +1,5 @@
+configure_file(${CMAKE_CURRENT_LIST_DIR}/vfspluginmetadata.json.in ${CMAKE_CURRENT_LIST_DIR}/vfspluginmetadata.json)
+
 if(MSVC)
   list(APPEND VIRTUAL_FILE_SYSTEM_PLUGINS "win")
 elseif(APPLE)

@@ -332,8 +332,10 @@ void AppServer::init() {
     // Init CommManager
     _commManager = std::make_shared<CommManager>(_syncPalMap, _vfsMap);
     _commManager->setAddErrorCallback(&addError);
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
     _commManager->setGetThumbnailCallback(&ServerRequests::getThumbnail);
     _commManager->setGetPublicLinkUrlCallback(&ServerRequests::getPublicLinkUrl);
+#endif
     _commManager->start();
 
     // Init CommServer instance

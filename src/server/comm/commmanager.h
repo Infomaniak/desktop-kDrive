@@ -39,9 +39,9 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         void start();
         void stop();
 
-#if defined(KD_MACOS) || defined(KD_WINDOWS)
         // AppServer callbacks setting
         inline void setAddErrorCallback(void (*addError)(const Error &)) { _addError = addError; }
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         inline void setGetThumbnailCallback(ExitCode (*getThumbnail)(int, NodeId, int, std::string &)) {
             _getThumbnail = getThumbnail;
         }

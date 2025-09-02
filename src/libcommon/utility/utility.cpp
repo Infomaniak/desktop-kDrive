@@ -1027,7 +1027,7 @@ const std::string CommonUtility::loginItemAgentId() {
 }
 
 const std::string CommonUtility::liteSyncExtBundleId() {
-    return liteSyncExtBundleIdStr.data();
+    return std::string(liteSyncExtBundleIdStr);
 }
 #endif
 

@@ -85,7 +85,7 @@ class VfsMac : public Vfs {
 
 class MacVfsPluginFactory : public QObject, public DefaultPluginFactory<VfsMac> {
         Q_OBJECT
-        Q_PLUGIN_METADATA(IID "org.kdrive.PluginFactory" FILE "../../libcommonserver/vfs/vfspluginmetadata.json")
+        Q_PLUGIN_METADATA(IID "org.kdrive.PluginFactory" FILE "../vfspluginmetadata.json")
         Q_INTERFACES(KDC::PluginFactory)
 };
 
