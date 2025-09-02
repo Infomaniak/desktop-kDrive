@@ -27,7 +27,7 @@
 #include <tchar.h>
 #include <strsafe.h>
 
-#define PIPE_INSTANCES 6
+#define PIPE_INSTANCES 10
 #define PIPE_TIMEOUT 5000
 #define EVENT_WAIT_TIMEOUT 100
 #endif
@@ -61,7 +61,9 @@ uint64_t PipeCommChannel::writeData(const char *data, uint64_t size) {
     if (!_connected) return 0;
 
 #if defined(KD_WINDOWS)
-    LOG_DEBUG(Log::instance()->getLogger(), "Try to write on inst:" << _instance << " data:" << data);
+    if (ParametersCache::isExtendedLogEnabled()) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Try to write on inst:" << _instance);
+    }
     std::vector<TCHAR> wData(size + 1, 0);
     mbstowcs_s(NULL, wData.data(), size + 1, data, size);
     DWORD bytesWritten = 0;
@@ -90,7 +92,7 @@ uint64_t PipeCommChannel::writeData(const char *data, uint64_t size) {
 
     // An error occurred; disconnect from the client.
     LOG_WARN(Log::instance()->getLogger(), "Write error on inst:" << _instance);
-    // disconnectAndReconnect(this);
+    PipeCommServer::disconnectAndReconnect(std::static_pointer_cast<PipeCommChannel>(shared_from_this()));
     return 0;
 #endif
 }
@@ -262,16 +264,6 @@ void PipeCommServer::execute() {
                     LOG_DEBUG(Log::instance()->getLogger(), "Pending connect done for inst:" << inst << " action:" << action);
                 }
                 _channels[inst]->_connected = TRUE;
-            } else if (action == toInt(PipeCommChannel::Action::Write)) {
-                if (size != _channels[inst]->_size[action]) {
-                    LOG_WARN(Log::instance()->getLogger(), "Pending write error for inst:" << inst << " action:" << action);
-                    disconnectAndReconnect(_channels[inst]);
-                    continue;
-                }
-                // Pending write operation
-                if (ParametersCache::isExtendedLogEnabled()) {
-                    LOG_DEBUG(Log::instance()->getLogger(), "Pending write done for inst:" << inst << " action:" << action);
-                }
             } else if (action == toInt(PipeCommChannel::Action::Read)) {
                 if (size == 0) {
                     LOG_WARN(Log::instance()->getLogger(), "Pending read error for inst:" << inst << " action:" << action);
@@ -285,11 +277,21 @@ void PipeCommServer::execute() {
                 _channels[inst]->_size[action] = size;
                 _channels[inst]->_inBuffer += CommString(_channels[inst]->_readData);
                 _channels[inst]->readyReadCbk();
+            } else if (action == toInt(PipeCommChannel::Action::Write)) {
+                if (size != _channels[inst]->_size[action]) {
+                    LOG_WARN(Log::instance()->getLogger(), "Pending write error for inst:" << inst << " action:" << action);
+                    disconnectAndReconnect(_channels[inst]);
+                    continue;
+                }
+                // Pending write operation
+                if (ParametersCache::isExtendedLogEnabled()) {
+                    LOG_DEBUG(Log::instance()->getLogger(), "Pending write done for inst:" << inst << " action:" << action);
+                }
             }
         }
 
         auto readIndex = toInt(PipeCommChannel::Action::Read);
-        if (_channels[inst]->_connected && !_channels[inst]->_pendingIO[readIndex]) {
+        if (!_channels[inst]->_pendingIO[readIndex] && _channels[inst]->_connected) {
             // Read
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOG_DEBUG(Log::instance()->getLogger(), "Try to read on inst:" << inst);
@@ -305,9 +307,9 @@ void PipeCommServer::execute() {
                 }
                 _channels[inst]->_pendingIO[readIndex] = FALSE;
                 _channels[inst]->_inBuffer += CommString(_channels[inst]->_readData);
+                SetEvent(events[index]);
                 LOGW_DEBUG(Log::instance()->getLogger(), L"Read buffer:" << _channels[inst]->_inBuffer.c_str());
                 _channels[inst]->readyReadCbk();
-                SetEvent(events[index]);
                 continue;
             }
 

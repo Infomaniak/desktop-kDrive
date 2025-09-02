@@ -75,6 +75,10 @@ class PipeCommServer : public AbstractCommServer {
 
         static bool removeServer(const SyncPath &path) { return true; }
 
+#if defined(KD_WINDOWS)
+        static void disconnectAndReconnect(std::shared_ptr<PipeCommChannel> channel);
+#endif
+
     private:
         SyncPath _pipePath;
         std::unique_ptr<std::thread> _thread;
@@ -91,8 +95,7 @@ class PipeCommServer : public AbstractCommServer {
 #if defined(KD_WINDOWS)
         std::vector<std::shared_ptr<PipeCommChannel>> _channels;
 
-        void disconnectAndReconnect(std::shared_ptr<PipeCommChannel> channel);
-        bool connectToPipe(HANDLE hPipe, LPOVERLAPPED lpo);
+        static bool connectToPipe(HANDLE hPipe, LPOVERLAPPED lpo);
 #endif
 };
 
