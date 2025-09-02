@@ -69,7 +69,7 @@ class AbstractCommChannelPrivate {
 
         AbstractRemoteEnd *_remoteEnd;
         AbstractLocalEnd *_localEnd;
-        std::string _inBuffer;
+        KDC::CommString _inBuffer;
         bool _isRemoteDisconnected = false;
 };
 
