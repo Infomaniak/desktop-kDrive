@@ -101,24 +101,6 @@ namespace KDrive.TrayIcon
                 presenter.Minimize();
                 presenter.Restore();
             }
-            _window.SizeChanged += (s, e) =>
-            {
-                if (_window != null && appWindow != null)
-                {
-                    if (e.Size.Width < 1350 && e.Size.Height < 795)
-                    {
-                        appWindow.Resize(new Windows.Graphics.SizeInt32(1350, 795));
-                    }
-                    else if (e.Size.Width < 1350)
-                    {
-                        appWindow.Resize(new Windows.Graphics.SizeInt32(1350, (int)e.Size.Height));
-                    }
-                    else if (e.Size.Height < 795)
-                    {
-                        appWindow.Resize(new Windows.Graphics.SizeInt32((int)e.Size.Width, 795));
-                    }
-                }
-            };
 
             _window?.Show();
             _window?.Activate();

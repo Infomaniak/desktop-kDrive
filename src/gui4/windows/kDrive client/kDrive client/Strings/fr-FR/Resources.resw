@@ -187,4 +187,10 @@
   <data name="SyncStatusBar_SyncedStatus.Text" xml:space="preserve">
     <value>Tous les fichiers sont synchronisés</value>
   </data>
+  <data name="SyncErrorBar_message.Text" xml:space="preserve">
+    <value>Impossible de synchroniser certains fichiers</value>
+  </data>
+  <data name="SyncErrorBar_button.Content" xml:space="preserve">
+    <value>Vérifier les fichiers</value>
+  </data>
 </root>

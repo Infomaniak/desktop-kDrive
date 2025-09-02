@@ -29,12 +29,16 @@
             <!-- Upgrade offer bar -->
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
+        <!-- Sync Status Bar -->
+        <controls:SyncStatusBar Grid.Row="0"/>
 
-        <controls:SyncStatusBar Grid.Row="1"/>
+        <!-- Error bar -->
+        <controls:SyncErrorBar Grid.Row="1" Grid.ColumnSpan="2"/>
 
         <!-- Left main pane -->
         <controls:SyncActivityTable Grid.Row="2" Grid.ColumnSpan="2" />
 
+        <!-- Upgrade offer bar -->
         <controls:KSuiteUpgradeBar
         Grid.Row="3"
         Grid.ColumnSpan="2"

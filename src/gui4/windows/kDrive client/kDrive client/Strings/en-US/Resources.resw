@@ -177,4 +177,10 @@
   <data name="SyncStatusBar_SyncedStatus.Text" xml:space="preserve">
     <value />
   </data>
+  <data name="SyncErrorBar_message.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="SyncErrorBar_button.Content" xml:space="preserve">
+    <value />
+  </data>
 </root>
