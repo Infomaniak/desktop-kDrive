@@ -49,29 +49,26 @@ namespace KDrive.ServerCommunication
             Users.Add(new User(3) { Id = 12, Name = "Bob", Email = "Bob.doe@infomaniak.com", IsConnected = false, IsStaff = false });
 
             // Create mock drives
-            Drives.Add(new Drive(1) { Id = 140946, Name = "Test", Color = Color.Red, Size = 1000000000, UsedSize = 250000000, IsActive = true, IsPaidOffer = false });
-            Drives.Add(new Drive(2) { Id = 101, Name = "Photo", Color = Color.Blue, Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
+            Drives.Add(new Drive(1) { Id = 140946, Name = "Infomaniak", Color = Color.Red, Size = 1000000000, UsedSize = 250000000, IsActive = true, IsPaidOffer = false });
+            Drives.Add(new Drive(2) { Id = 101, Name = "Test_kDrive", Color = Color.Blue, Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
             Users[0].Drives.Add(Drives[0]);
             Users[0].Drives.Add(Drives[1]);
 
-            Drives.Add(new Drive(3) { Id = 102, Name = "Pro1", Color = Color.Red, Size = 1000000000, UsedSize = 250000000, IsActive = true, IsPaidOffer = true });
+            Drives.Add(new Drive(3) { Id = 102, Name = "Etik_corp", Color = Color.Red, Size = 1000000000, UsedSize = 250000000, IsActive = true, IsPaidOffer = true });
             Users[1].Drives.Add(Drives[2]);
 
-            Drives.Add(new Drive(4) { Id = 103, Name = "Photo1", Color = Color.Blue, Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
-            Users[2].Drives.Add(Drives[3]);
-
             // Create mock syncs
-            Syncs.Add(new Sync(1, Drives[0]) { Id = 1000, LocalPath = "C:\\Users\\John\\kDrive\\Pro", RemotePath = "", SupportVfs = false });
+            Syncs.Add(new Sync(1, Drives[0]) { Id = 1000, LocalPath = "C:\\Users\\John\\kDrive", RemotePath = "", SupportVfs = false });
+            Syncs.Add(new Sync(2, Drives[0]) { Id = 1000, LocalPath = "C:\\Users\\John\\kDrive1", RemotePath = "", SupportVfs = false });
             Drives[0].Syncs.Add(Syncs[0]);
+            Drives[0].Syncs.Add(Syncs[1]);
 
-            Syncs.Add(new Sync(2, Drives[1]) { Id = 1001, LocalPath = "C:\\Users\\John\\kDrive\\Photo", RemotePath = "", SupportVfs = true });
+
+            Syncs.Add(new Sync(3, Drives[1]) { Id = 1001, LocalPath = "C:\\Users\\John\\kDrive2", RemotePath = "", SupportVfs = true });
             Drives[1].Syncs.Add(Syncs[1]);
 
-            Syncs.Add(new Sync(3, Drives[2]) { Id = 1000, LocalPath = "C:\\Users\\Alice\\kDrive\\Pro", RemotePath = "", SupportVfs = false });
+            Syncs.Add(new Sync(4, Drives[2]) { Id = 1000, LocalPath = "C:\\Users\\John\\kDrive3", RemotePath = "", SupportVfs = false });
             Drives[2].Syncs.Add(Syncs[2]);
-
-            Syncs.Add(new Sync(4, Drives[3]) { Id = 1001, LocalPath = "C:\\Users\\Bob\\kDrive\\Photo", RemotePath = "", SupportVfs = true });
-            Drives[3].Syncs.Add(Syncs[3]);
         }
     }
     internal class CommRequests

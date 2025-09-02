@@ -94,7 +94,7 @@ namespace KDrive.ViewModels
             {
                 SelectedSync = null;
             }
-            else if (_selectedSync == null || !AllSyncs.Contains(SelectedSync))// If SelectedSync is null or not in AllSyncs, pick the first one
+            else if (_selectedSync == null || (_selectedSync != null && !AllSyncs.Contains(_selectedSync))) // If SelectedSync is null or not in AllSyncs, pick the first one
             {
                 UIThreadDispatcher.TryEnqueue(() => SelectedSync = AllSyncs[0]);
             }

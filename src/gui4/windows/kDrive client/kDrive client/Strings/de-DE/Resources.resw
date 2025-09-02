@@ -183,4 +183,16 @@
   <data name="SyncErrorBar_button.Content" xml:space="preserve">
     <value />
   </data>
+  <data name="ActivityList_Header_Name.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="ActivityList_Header_State.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="ActivityList_Header_Size.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="ActivityList_Header_LastLocation.Text" xml:space="preserve">
+    <value />
+  </data>
 </root>

@@ -26,7 +26,5 @@ namespace KDrive
         {
             InitializeComponent();
         }
-
-        
     }
 }

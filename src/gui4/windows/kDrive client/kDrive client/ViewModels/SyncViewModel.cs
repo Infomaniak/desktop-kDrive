@@ -32,6 +32,7 @@ namespace KDrive.ViewModels
 {
     internal class Sync : ObservableObject
     {
+        // Sync properties
         private int _dbId = -1;
         private Drive _drive;
         private int _id = -1;
@@ -39,8 +40,11 @@ namespace KDrive.ViewModels
         private string _remotePath = "";
         private bool _supportVfs = false;
         private ObservableCollection<SyncActivity> _syncActivities = new();
-
         private SyncStatus _syncStatus = SyncStatus.Pause;
+
+        // Sync UI properties
+        private bool _showIncomingActivity = true;
+
 
         public SyncStatus SyncStatus
         {
@@ -88,7 +92,7 @@ namespace KDrive.ViewModels
                 "Budget"
             };
 
-            int randomPathDepth = rand.Next(1, 4); // Random depth between 1 and 3
+            int randomPathDepth = rand.Next(0, 1); // Random depth between 1 and 3
 
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < randomPathDepth; i++)
@@ -111,7 +115,7 @@ namespace KDrive.ViewModels
             DateTime activityTime = DateTime.Now;
             return new SyncActivity()
             {
-                LocalPath = "C:/Users/Hervé/kDrive/" + sb.ToString(),
+                LocalPath = "C:/Users/Herve/kDrive/" + sb.ToString(),
                 Direction = direction,
                 ItemType = itemType,
                 Size = size,
@@ -210,6 +214,12 @@ namespace KDrive.ViewModels
                CommRequests.GetSyncSupportVfs(DbId).ContinueWith(t => { if (t.Result != null) SupportVfs = t.Result.Value; }),
             };
             await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
+
+        public bool ShowIncomingActivity
+        {
+            get => _showIncomingActivity;
+            set => SetProperty(ref _showIncomingActivity, value);
         }
     }
 }

@@ -13,6 +13,7 @@
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <converters:BooleanToVisibilityInverterConverter x:Key="BooleanToVisibilityInverterConverter"/>
         <converters:ItemTypeToSvgUriConverter x:Key="ItemTypeToSvgUriConverter"/>
+        <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter"/>
     </UserControl.Resources>
     <Border Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}" CornerRadius="8" BorderThickness="1" BorderBrush="#E6EAF5">
         <Grid>
@@ -47,7 +48,7 @@
             </Grid>
 
             <!-- Non empty list -->
-            <ListView ItemsSource="{x:Bind ViewModel.SelectedSync.SyncActivities, Mode=OneWay}" 
+            <ListView x:Name="ActivityList" ItemsSource="{x:Bind ViewModel.SelectedSync.SyncActivities, Mode=OneWay}" 
               SelectionMode="None" 
               ContainerContentChanging="ListView_ContainerContentChanging"
               Visibility="{x:Bind ViewModel.SelectedSync.SyncActivities.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
@@ -61,10 +62,10 @@
                             <ColumnDefinition Width="1*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text="Nom" Grid.Column="1" Style="{StaticResource TextBlockStyle}"/>
-                        <TextBlock Text="Dernier emplacement" Style="{StaticResource TextBlockStyle}" Grid.Column="2"/>
-                        <TextBlock Text="Taille" Style="{StaticResource TextBlockStyle}" Grid.Column="3"/>
-                        <TextBlock Text="État" Style="{StaticResource TextBlockStyle}" Grid.Column="4"/>
+                        <TextBlock x:Uid="ActivityList_Header_Name" Grid.Column="1" Style="{StaticResource TextBlockStyle}"/>
+                        <TextBlock x:Uid="ActivityList_Header_LastLocation" Style="{StaticResource TextBlockStyle}" Grid.Column="2"/>
+                        <TextBlock x:Uid="ActivityList_Header_Size" Style="{StaticResource TextBlockStyle}" Grid.Column="3"/>
+                        <TextBlock x:Uid="ActivityList_Header_State" Style="{StaticResource TextBlockStyle}" Grid.Column="4"/>
                     </Grid>
                 </ListView.Header>
                 <ListView.ItemContainerStyle>
@@ -95,7 +96,7 @@
                                 </ImageIcon>
                                 <TextBlock Text="{x:Bind Name}" Grid.Column="0" Padding="10,0,0,0"/>
                             </StackPanel>
-                            <TextBlock Text="{x:Bind ParentFolderPath}" Grid.Column="1" VerticalAlignment="Center"/>
+                            <HyperlinkButton Content="{x:Bind ParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}" Tag="{x:Bind ParentFolderPath}" Grid.Column="1" VerticalAlignment="Center" Click="SyncActivityParent_Click"/>
                             <TextBlock Text="{x:Bind Size}" Grid.Column="2" VerticalAlignment="Center"/>
                             <ImageIcon Height="16" Margin="0,0,0,8" Grid.Column="3"  VerticalAlignment="Center">
                                 <ImageIcon.Source>

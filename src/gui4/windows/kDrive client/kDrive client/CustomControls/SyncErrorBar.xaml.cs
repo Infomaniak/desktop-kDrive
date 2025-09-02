@@ -34,19 +34,21 @@ namespace KDrive.CustomControls
 
         private void CheckFileButton_Click(object sender, RoutedEventArgs e)
         {
-           if(sender is DependencyObject obj)
+            // Go up the visual tree to find the Frame
+            DependencyObject parent = this;
+            while (parent != null && parent is not Frame)
             {
-                // Go up the visual tree to find the Frame
-                DependencyObject parent = obj;
-                while (parent != null && parent is not Frame)
-                {
-                    parent = VisualTreeHelper.GetParent(parent);
-                }
-                if (parent is Frame frame)
-                {
-                    frame.Navigate(typeof(HomePage));
-                }
+                parent = VisualTreeHelper.GetParent(parent);
             }
+            if (parent is Frame frame)
+            {
+                frame.Navigate(typeof(HomePage));
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Warning, "Could not find Frame in visual tree to navigate to error resolution page");
+            }
+
         }
     }
 }

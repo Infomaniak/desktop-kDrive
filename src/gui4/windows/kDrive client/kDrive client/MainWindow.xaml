@@ -25,6 +25,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:viewModel="using:KDrive.ViewModels"
+    xmlns:converters="using:KDrive.Converters"
     mc:Ignorable="d"
     Title="kDrive client">
 
@@ -97,6 +98,9 @@
                         IsBackEnabled="{x:Bind contentFrame.CanGoBack, Mode=OneWay}"
                         BackRequested="nvSample_BackRequested"
                         >
+            <NavigationView.Resources>
+                <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter"/>
+            </NavigationView.Resources>
 
             <NavigationView.PaneCustomContent>
                 <StackPanel>
@@ -119,7 +123,7 @@
                                         VerticalAlignment="Center"
                                         HorizontalAlignment="Right"/>
                                     <TextBlock Text="{x:Bind Drive.Name}" Style="{StaticResource BodyTextBlockStyle}"  Margin="10,0"/>
-                                    <TextBlock Text="{x:Bind LocalPath}" Style="{StaticResource TextBlockStyle}" Margin="10,0"/>
+                                    <TextBlock Text="{Binding LocalPath, Converter={StaticResource StringPathToFileNameConverter}}" />
                                 </StackPanel>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>

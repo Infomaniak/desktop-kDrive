@@ -12,6 +12,7 @@
     mc:Ignorable="d">
     <Page.Resources>
         <converters:BooleanToVisibilityInverterConverter x:Key="BooleanToVisibilityInverterConverter"/>
+        <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter"/>
     </Page.Resources>
 
     <Grid Margin="24" RowSpacing="24" ColumnSpacing="24">
@@ -31,12 +32,13 @@
         </Grid.RowDefinitions>
         <!-- Sync Status Bar -->
         <controls:SyncStatusBar Grid.Row="0"/>
+        <CheckBox x:Name="ShowIncomingActivityCheckBox"  Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Content="Mon activité uniquement" IsChecked="{x:Bind ViewModel.SelectedSync.ShowIncomingActivity, Mode=TwoWay, Converter={StaticResource BooleanToInvertedBooleanConverter}}"/>
 
         <!-- Error bar -->
         <controls:SyncErrorBar Grid.Row="1" Grid.ColumnSpan="2"/>
 
         <!-- Left main pane -->
-        <controls:SyncActivityTable Grid.Row="2" Grid.ColumnSpan="2" />
+        <controls:SyncActivityTable Grid.Row="2" Grid.ColumnSpan="2" ShowIncomingActivity="{x:Bind ViewModel.SelectedSync.ShowIncomingActivity, Mode=OneWay}" />
 
         <!-- Upgrade offer bar -->
         <controls:KSuiteUpgradeBar
