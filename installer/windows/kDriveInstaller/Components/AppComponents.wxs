@@ -13,7 +13,7 @@
                   />
                 <RegistryValue Root="HKCU" Key="Software\Infomaniak\kDrive" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
             </Component>
-            <Component >
+            <Component Guid="{C8A1C31B-AFBC-4B2F-ABA0-A8E73E8EA9C0}">
                 <File Source="$(desktop-kDriveDir)/build-windows/install/bin/kDrive_client.exe" Checksum="yes" />
             </Component>
         </ComponentGroup>

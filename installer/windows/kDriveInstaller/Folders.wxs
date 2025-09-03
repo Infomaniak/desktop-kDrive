@@ -17,9 +17,9 @@
                 <Directory Id="SHELLEXTFOLDER" Name="shellext">
                     <Directory Id="APPXFOLDER" Name="AppX">
                         <Directory Id="APPXDEPENDENCIESFOLDER" Name="Dependencies">
-                            <Directory Id="APPXDEPENDENCIESx64FOLDER" Name="x64"/>
-                            <Directory Id="APPXDEPENDENCIESx86FOLDER" Name="x86"/>
-                            <Directory Id="APPXDEPENDENCIESARMFOLDER" Name="ARM"/>
+                            <Directory Id="APPXDEPENDENCIESx64FOLDER" Name="x64" />
+                            <Directory Id="APPXDEPENDENCIESx86FOLDER" Name="x86" />
+                            <Directory Id="APPXDEPENDENCIESARMFOLDER" Name="ARM" />
                         </Directory>
                     </Directory>
                 </Directory>

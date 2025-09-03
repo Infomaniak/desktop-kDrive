@@ -1,4 +1,4 @@
-﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
     <!-- /!\ DO NOT CHANGE THE PACKAGE ID /!\ It uniquely identify the app on client devices -->
     <Package Id="Infomaniak_Network_SA.kDrive" Name="kDrive" Manufacturer="Infomaniak Network SA" Version="$(shortVersion).0" InstallerVersion="301">
         <MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeError)" />
@@ -25,29 +25,35 @@
             <ComponentGroupRef Id="ShellExtComponents" />
         </Feature>
 
+        <SetProperty Id="WixQuietExecCmdLine" Value="&quot;[System64Folder]\taskkill.exe&quot; /F /IM kDrive.exe" Before="TaskKill" Sequence="execute" />
+        <CustomAction Id="TaskKill"
+                      BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)"
+                      DllEntry="WixQuietExec"
+                      Execute="immediate"
+                      Return="ignore" />
         <CustomAction Id="InstallExplorerExtension"
 					  Directory="APPXFOLDER"
 					  ExeCommand="powershell.exe -WindowStyle hidden -ExecutionPolicy Bypass -Command &quot;Add-AppxPackage FileExplorerExtensionPackage_$(shortVersion).0_x64_arm64.msixbundle -ForceApplicationShutdown -ForceUpdateFromAnyVersion&quot;"
 					  Execute="deferred"
 					  Impersonate="yes"
-					  Return="check"/>
+					  Return="check" />
         <CustomAction Id="UninstallExplorerExtension"
 					  Directory="APPXFOLDER"
 					  ExeCommand="powershell.exe -WindowStyle hidden -ExecutionPolicy Bypass -File &quot;[APPXFOLDER]Uninstall.ps1&quot;"
 					  Execute="deferred"
 					  Impersonate="yes"
-					  Return="check"/>
+					  Return="check" />
         <CustomAction Id="RunApp"
 				Execute="immediate"
 				Impersonate="no"
 				Return="asyncNoWait"
 				FileRef="kDrive.exe"
-				ExeCommand=""/>
+				ExeCommand="" />
         <InstallExecuteSequence>
-            <Custom Action="InstallExplorerExtension" Before="InstallFinalize" Condition="NOT REMOVE=&quot;ALL&quot;"/>
-            <Custom Action="RunApp" After="InstallFinalize" Condition="NOT REMOVE=&quot;ALL&quot;"/>
-            <Custom Action="UninstallExplorerExtension" After="InstallInitialize" Condition="REMOVE=&quot;ALL&quot;"/>
+            <Custom Action="TaskKill" Before="InstallValidate" Condition="REMOVE=&quot;ALL&quot;" />
+            <Custom Action="InstallExplorerExtension" Before="InstallFinalize" Condition="NOT REMOVE=&quot;ALL&quot;" />
+            <Custom Action="RunApp" After="InstallFinalize" Condition="NOT REMOVE=&quot;ALL&quot;" />
+            <Custom Action="UninstallExplorerExtension" After="InstallInitialize" Condition="REMOVE=&quot;ALL&quot;" />
         </InstallExecuteSequence>
-
     </Package>
 </Wix>
