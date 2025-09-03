@@ -1,3 +1,9 @@
+#################################################################################################
+#                                                                                               #
+#                                  Remove extentension package                                  #
+#                                                                                               #
+#################################################################################################
+
 # Requires administrative privileges to remove AppX packages
 
 # Step 1: Find the full package name(s) containing "Infomaniak.kDrive.Extension"
@@ -27,5 +33,36 @@ foreach ($pkg in $package) {
 		exit 1
     }
 }
+
+#################################################################################################
+#                                                                                               #
+#                                            Clean up                                           #
+#                                                                                               #
+#################################################################################################
+
+# Remove DB folders
+Remove-Item "$env:LOCALAPPDATA\kDrive" -Recurse
+
+# Remove log folder
+Remove-Item "$env:TEMP\kDrive-logdir" -Recurse
+
+# Remove cache folder
+Remove-Item "$env:TEMP\kDrive-cache" -Recurse
+
+# Remove shortcuts
+## Start menu shortcut
+Remove-Item "%ProgramData%\Microsoft\Windows\Start Menu\Programs\kDrive.lnk"
+Remove-Item "%AppData%\Microsoft\Windows\Start Menu\Programs\kDrive.lnk"
+## Desktop shortcut
+$DesktopPath = [Environment]::GetFolderPath("Desktop")
+Remove-Item "$DesktopPath\kDrive.lnk"
+## Quick Launch shortcut
+Remove-Item $quickLaunchPath\${APPLICATION_NAME}.lnk
+
+# Remove credentials
+$CredentialsToDelete = 'com.infomaniak.drive.desktopclient*'
+$Credentials = cmdkey.exe /list:($CredentialsToDelete) | Select-String -Pattern 'Target:*'
+$Credentials = $Credentials -replace ' ', '' -replace 'Target:', ''
+foreach ($Credential in $Credentials) {cmdkey.exe /delete $Credential | Out-Null}
 
 exit 0
