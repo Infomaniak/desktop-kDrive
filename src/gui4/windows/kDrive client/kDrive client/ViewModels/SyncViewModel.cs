@@ -39,7 +39,7 @@ namespace KDrive.ViewModels
         private string _localPath = "";
         private string _remotePath = "";
         private bool _supportVfs = false;
-        private ObservableCollection<SyncActivity> _syncActivities = new();
+        private ObservableCollection<SyncActivityViewModel> _syncActivities = new();
         private SyncStatus _syncStatus = SyncStatus.Pause;
 
         // Sync UI properties
@@ -54,7 +54,7 @@ namespace KDrive.ViewModels
 
         //TODO: Remove this test funciton
 
-        private SyncActivity genereateTestActivity()
+        private SyncActivityViewModel genereateTestActivity()
         {
             Random rand = new Random();
             string[] sampleFileExtension = new string[]
@@ -113,7 +113,7 @@ namespace KDrive.ViewModels
             SyncActivityItemType itemType = isFile ? SyncActivityItemType.File : SyncActivityItemType.Directory;
             long size = isFile ? rand.Next(0, 5000000) : 0; // Random size for files, 0 for directories
             DateTime activityTime = DateTime.Now;
-            return new SyncActivity()
+            return new SyncActivityViewModel()
             {
                 LocalPath = "C:/Users/Herve/kDrive/" + sb.ToString(),
                 Direction = direction,
@@ -194,7 +194,7 @@ namespace KDrive.ViewModels
             set => SetProperty(ref _supportVfs, value);
         }
 
-        public ObservableCollection<SyncActivity> SyncActivities
+        public ObservableCollection<SyncActivityViewModel> SyncActivities
         {
             get => _syncActivities;
         }

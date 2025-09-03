@@ -76,7 +76,7 @@
                     </Style>
                 </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="viewmodels:SyncActivity">
+                    <DataTemplate x:DataType="viewmodels:SyncActivityViewModel">
                         <Grid Padding="16,4,16,4" CornerRadius="8" Loading="Grid_Loading">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="2*"/>
