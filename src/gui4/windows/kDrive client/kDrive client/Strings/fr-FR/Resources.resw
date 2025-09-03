@@ -221,4 +221,7 @@
   <data name="Global_Minute" xml:space="preserve">
     <value>min</value>
   </data>
+  <data name="ErrorPage_Title.Text" xml:space="preserve">
+    <value>Éléments à vérifier</value>
+  </data>
 </root>

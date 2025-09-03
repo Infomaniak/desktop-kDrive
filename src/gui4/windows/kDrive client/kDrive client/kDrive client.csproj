@@ -69,6 +69,9 @@
     <Page Update="HomePage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Update="Pages\ErrorPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <PRIResource Update="Strings\fr-FR\Resources.resw">
