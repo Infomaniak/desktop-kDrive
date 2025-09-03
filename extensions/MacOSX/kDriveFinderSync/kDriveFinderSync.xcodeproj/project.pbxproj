@@ -188,7 +188,7 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		467956C926217FB000080183 /* kDrive */ = {
+		467956C926217FB000080183 /* kDriveModel */ = {
 			isa = PBXGroup;
 			children = (
 				467956D326217FB100080183 /* main.m */,
@@ -202,7 +202,7 @@
 				467956CD26217FB100080183 /* Assets.xcassets */,
 				467956CF26217FB100080183 /* MainMenu.xib */,
 			);
-			path = kDrive;
+			path = kDriveModel;
 			sourceTree = "<group>";
 		};
 		4679573026218B0900080183 /* LoginItemAgent */ = {
@@ -221,7 +221,7 @@
 		C2B573941B1CD88000303B36 = {
 			isa = PBXGroup;
 			children = (
-				467956C926217FB000080183 /* kDrive */,
+				467956C926217FB000080183 /* kDriveModel */,
 				C2B573D81B1CD9CE00303B36 /* Extension */,
 				4679573026218B0900080183 /* LoginItemAgent */,
 				C2B573B21B1CD91E00303B36 /* Products */,
@@ -540,7 +540,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_ENTITLEMENTS = kDrive/kDrive.entitlements;
+				CODE_SIGN_ENTITLEMENTS = kDriveModel/kDrive.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
@@ -559,7 +559,7 @@
 				);
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				INFOPLIST_FILE = kDrive/Info.plist;
+				INFOPLIST_FILE = kDriveModel/Info.plist;
 				KD_APPLICATION_DOMAIN = com.infomaniak.drive.desktopclient;
 				KD_APPLICATION_VERSION = 3.2.0;
 				KD_TEAM_IDENTIFIER_PREFIX = 864VDCS2QY.;
@@ -593,7 +593,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_ENTITLEMENTS = kDrive/kDrive.entitlements;
+				CODE_SIGN_ENTITLEMENTS = kDriveModel/kDrive.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application";
 				CODE_SIGN_STYLE = Manual;
@@ -607,7 +607,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				INFOPLIST_FILE = kDrive/Info.plist;
+				INFOPLIST_FILE = kDriveModel/Info.plist;
 				KD_APPLICATION_DOMAIN = com.infomaniak.drive.desktopclient;
 				KD_APPLICATION_VERSION = 3.2.0;
 				KD_TEAM_IDENTIFIER_PREFIX = 864VDCS2QY.;

@@ -72,8 +72,8 @@ if(APPLE)
     set_property(SOURCE comm/extcommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE comm/guicommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
-    list(APPEND server_SRCS ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m)
-    set_property(SOURCE ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    list(APPEND server_SRCS ../../extensions/MacOSX/kDriveFinderSync/kDriveModel/NSXPCConnection+LoginItem.m)
+    set_property(SOURCE ../../extensions/MacOSX/kDriveFinderSync/kDriveModel/NSXPCConnection+LoginItem.m APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
     if(SPARKLE_FOUND)
         # Define this, we need to check in updater.cpp

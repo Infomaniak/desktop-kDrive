@@ -20,12 +20,14 @@
 
 @protocol XPCGuiProtocol
 
+// TODO: POC => replace with real C/S functions
 - (void)sendSignal:(NSData *)msg;
 
 @end
 
 @protocol XPCGuiRemoteProtocol
 
+// TODO: POC => replace with real C/S functions
 - (void)sendQuery:(NSData *)msg;
 
 @end

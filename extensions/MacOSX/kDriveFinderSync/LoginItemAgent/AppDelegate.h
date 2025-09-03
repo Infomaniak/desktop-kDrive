@@ -32,9 +32,4 @@
 
 - (instancetype)init;
 
-/* Tests
-- (void)runFct1;
-- (void)runFct2;
-*/
-
 @end

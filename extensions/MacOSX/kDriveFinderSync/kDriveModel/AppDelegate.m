@@ -213,38 +213,6 @@
 {
 }
 
-/* Tests
-- (void)fct1:(void (^)(int))callback
-{
-    NSLog(@"[KD] fct1 called - begin %@", [NSThread currentThread]);
-    [self performSelectorInBackground:@selector(runFct1InBackground:) withObject:callback];
-    NSLog(@"[KD] fct1 called - end %@", [NSThread currentThread]);
-}
-
-- (void)runFct1InBackground:(void (^)(int))callback
-{
-    NSLog(@"[KD] runFct1InBackground called - begin %@", [NSThread currentThread]);
-    [NSThread sleepForTimeInterval:5.0f];
-    callback(1);
-    NSLog(@"[KD] runFct1InBackground called - end %@", [NSThread currentThread]);
-}
-
-- (void)fct2:(void (^)(int))callback
-{
-    NSLog(@"[KD] fct2 called - begin %@", [NSThread currentThread]);
-    [self performSelectorInBackground:@selector(runFct2InBackground:) withObject:callback];
-    NSLog(@"[KD] fct2 called - end %@", [NSThread currentThread]);
-}
-
-- (void)runFct2InBackground:(void (^)(int))callback
-{
-    NSLog(@"[KD] runFct2InBackground called - begin %@", [NSThread currentThread]);
-    [NSThread sleepForTimeInterval:2.0f];
-    callback(2);
-    NSLog(@"[KD] runFct2InBackground called - end %@", [NSThread currentThread]);
-}
- */
-
 - (IBAction) okButtonAction : (id) sender {
     NSLog(@"Button action here");
     

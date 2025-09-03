@@ -39,9 +39,5 @@ typedef enum {
 
 - (void)processType:(void (^)(ProcessType))callback;
 - (void)serverIsRunning:(NSXPCListenerEndpoint *)endPoint;
-/* Tests
-- (void)fct1:(void (^)(int))callback;
-- (void)fct2:(void (^)(int))callback;
- */
 
 @end

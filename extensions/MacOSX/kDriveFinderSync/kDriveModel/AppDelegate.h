@@ -37,9 +37,4 @@
 
 - (IBAction) okButtonAction : (id) sender;
 
-/* Tests
-- (void)runFct1InBackground:(void (^)(int))callback;
-- (void)runFct2InBackground:(void (^)(int))callback;
- */
-
 @end
