@@ -19,7 +19,7 @@
 #include "abstractcommchannel.h"
 #include "abstractcommserver.h"
 #include "../libcommon/utility/utility.h"
-#import "../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.h"
+#import "../../extensions/MacOSX/kDriveFinderSync/kDriveModel/NSXPCConnection+LoginItem.h"
 #include "../../extensions/MacOSX/kDriveFinderSync/LoginItemAgent/xpcLoginItemProtocol.h"
 
 class AbstractCommChannelPrivate;
@@ -59,7 +59,7 @@ class AbstractCommServerPrivate;
 
 class AbstractCommChannelPrivate {
     public:
-        KDC::AbstractCommChannel *publicPtr;
+        KDC::AbstractCommChannel *_publicPtr;
 
         AbstractCommChannelPrivate(NSXPCConnection *remoteConnection);
         ~AbstractCommChannelPrivate();
@@ -75,7 +75,7 @@ class AbstractCommChannelPrivate {
 
 class AbstractCommServerPrivate {
     public:
-        KDC::AbstractCommServer *publicPtr;
+        KDC::AbstractCommServer *_publicPtr;
 
         AbstractCommServerPrivate();
         ~AbstractCommServerPrivate();

@@ -28,11 +28,12 @@ class XPCCommChannel : public KDC::AbstractCommChannel {
         XPCCommChannel(AbstractCommChannelPrivate *commChannelPrivate);
         ~XPCCommChannel();
 
-        uint64_t readData(char *data, uint64_t maxlen) override;
         uint64_t bytesAvailable() const override;
 
     protected:
         std::unique_ptr<AbstractCommChannelPrivate> _privatePtr;
+
+        uint64_t readData(char *data, uint64_t maxlen) override;
 };
 
 class XPCCommServer : public KDC::AbstractCommServer {

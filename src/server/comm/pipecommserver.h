@@ -43,8 +43,6 @@ class PipeCommChannel : public AbstractCommChannel {
         PipeCommChannel();
         ~PipeCommChannel();
 
-        uint64_t readData(char *data, uint64_t maxSize) override;
-        virtual uint64_t writeData(const char *data, uint64_t size) override;
         uint64_t bytesAvailable() const override;
 
     private:
@@ -59,6 +57,9 @@ class PipeCommChannel : public AbstractCommChannel {
         BOOL _pendingIO[toInt(Action::EnumEnd)];
         TCHAR _readData[BUFSIZE];
 #endif
+
+        uint64_t readData(char *data, uint64_t maxSize) override;
+        virtual uint64_t writeData(const char *data, uint64_t size) override;
 
         friend class PipeCommServer;
 };
@@ -85,8 +86,6 @@ class PipeCommServer : public AbstractCommServer {
         bool _isRunning{false};
         bool _stopAsked{false};
         ExitInfo _exitInfo;
-
-        static void executeFunc(PipeCommServer *server);
 
         void execute();
         void stop();

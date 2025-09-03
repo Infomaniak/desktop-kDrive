@@ -18,7 +18,7 @@
 
 #import "litesynccommclient_mac.h"
 #import "../extensions/MacOSX/kDriveLiteSync/Extension/xpcLiteSyncExtensionProtocol.h"
-#import "../extensions/MacOSX/kDriveLiteSync/kDrive/xpcLiteSyncExtensionRemoteProtocol.h"
+#import "../extensions/MacOSX/kDriveLiteSync/kDriveModel/xpcLiteSyncExtensionRemoteProtocol.h"
 
 #import <Cocoa/Cocoa.h>
 #import <SystemExtensions/SystemExtensions.h>

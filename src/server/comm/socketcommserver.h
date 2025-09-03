@@ -29,12 +29,13 @@ class SocketCommChannel : public AbstractCommChannel {
         SocketCommChannel();
         ~SocketCommChannel();
 
-        uint64_t readData(char *data, uint64_t maxlen) override;
-        virtual uint64_t writeData(const char *data, uint64_t len) override;
         uint64_t bytesAvailable() const override;
 
     private:
         Poco::Net::ServerSocket _socket;
+
+        uint64_t readData(char *data, uint64_t maxlen) override;
+        virtual uint64_t writeData(const char *data, uint64_t len) override;
 };
 
 class SocketCommServer : public AbstractCommServer {
@@ -48,7 +49,7 @@ class SocketCommServer : public AbstractCommServer {
         std::list<std::shared_ptr<KDC::AbstractCommChannel>> connections() override;
 
         static bool removeServer(const KDC::SyncPath &path) {
-#ifdef __linux__
+#if defined(KD_LINUX)
             std::error_code ec;
             std::filesystem::remove(path, ec);
 #endif

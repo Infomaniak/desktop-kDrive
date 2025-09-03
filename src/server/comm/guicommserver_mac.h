@@ -28,6 +28,8 @@ class GuiCommChannelPrivate;
 class GuiCommChannel : public XPCCommChannel {
     public:
         GuiCommChannel(GuiCommChannelPrivate *p);
+
+    private:
         uint64_t writeData(const char *data, uint64_t len) override;
 };
 

@@ -42,33 +42,17 @@ class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChan
         virtual bool canReadLine() const;
         virtual CommString readLine() final;
 
-        //! Reads from the device.
+        //! Gets a device ID.
         /*!
-          \param data is a char array pointer.
-          \param maxSize is is the maximum number of bytes to read.
-          \return the number of bytes read or -1 if an error occurred.
+          \return the device ID.
         */
-        virtual uint64_t readData(char *data, uint64_t maxSize) = 0;
-
-        //! Writes to the device.
-        /*!
-          \param data is a char array pointer.
-          \param maxSize is is the maximum number of bytes to write.
-          \return the number of bytes written or -1 if an error occurred.
-        */
-        virtual uint64_t writeData(const char *data, uint64_t maxSize) = 0;
+        std::string id();
 
         //! Gets from the device if anything is available for reading.
         /*!
           \return the number of bytes that are available for reading.
         */
         virtual uint64_t bytesAvailable() const = 0;
-
-        //! Gets a device ID.
-        /*!
-          \return the device ID.
-        */
-        std::string id();
 
         // Callbacks
         void setLostConnectionCbk(const std::function<void(std::shared_ptr<AbstractCommChannel>)> &cbk) {
@@ -91,6 +75,22 @@ class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChan
         std::function<void(std::shared_ptr<AbstractCommChannel>)> _onLostConnectionCbk;
         std::function<void(std::shared_ptr<AbstractCommChannel>)> _onReadyReadCbk;
         std::function<void(std::shared_ptr<AbstractCommChannel>)> _onDestroyedCbk;
+
+        //! Reads from the device.
+        /*!
+          \param data is a char array pointer.
+          \param maxSize is is the maximum number of bytes to read.
+          \return the number of bytes read or -1 if an error occurred.
+        */
+        virtual uint64_t readData(char *data, uint64_t maxSize) = 0;
+
+        //! Writes to the device.
+        /*!
+          \param data is a char array pointer.
+          \param maxSize is is the maximum number of bytes to write.
+          \return the number of bytes written or -1 if an error occurred.
+        */
+        virtual uint64_t writeData(const char *data, uint64_t maxSize) = 0;
 
         CommString truncateLongLogMessage(const CommString &message);
 };

@@ -60,9 +60,9 @@ class ExtCommServerPrivate : public AbstractCommServerPrivate {
     NSString *answer = [[NSString alloc] initWithData:msg encoding:NSUTF8StringEncoding];
     NSLog(@"[KD] Message received %@", answer);
 
-    if (self.wrapper && self.wrapper->publicPtr) {
+    if (self.wrapper && self.wrapper->_publicPtr) {
         self.wrapper->_inBuffer += std::string([answer UTF8String]);
-        self.wrapper->publicPtr->readyReadCbk();
+        self.wrapper->_publicPtr->readyReadCbk();
     }
 }
 
@@ -97,7 +97,7 @@ class ExtCommServerPrivate : public AbstractCommServerPrivate {
 
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection {
     ExtCommChannelPrivate *channelPrivate = new ExtCommChannelPrivate(newConnection);
-    ExtCommServer *server = (ExtCommServer *) self.wrapper->publicPtr;
+    ExtCommServer *server = (ExtCommServer *) self.wrapper->_publicPtr;
 
     auto channel = std::make_shared<ExtCommChannel>(channelPrivate);
     channel->setLostConnectionCbk(std::bind(&ExtCommServer::lostConnectionCbk, server, std::placeholders::_1));

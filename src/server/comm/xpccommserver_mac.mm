@@ -22,7 +22,7 @@
 // XPCCommChannel implementation
 XPCCommChannel::XPCCommChannel(AbstractCommChannelPrivate *p) :
     _privatePtr(p) {
-    _privatePtr->publicPtr = this;
+    _privatePtr->_publicPtr = this;
     open();
 }
 
@@ -42,7 +42,7 @@ uint64_t XPCCommChannel::bytesAvailable() const {
 XPCCommServer::XPCCommServer(const std::string &name, AbstractCommServerPrivate *commServerPrivate) :
     KDC::AbstractCommServer(name),
     _privatePtr(commServerPrivate) {
-    _privatePtr->publicPtr = this;
+    _privatePtr->_publicPtr = this;
 }
 
 XPCCommServer::~XPCCommServer() {}

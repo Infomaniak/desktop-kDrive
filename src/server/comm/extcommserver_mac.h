@@ -28,6 +28,8 @@ class ExtCommChannelPrivate;
 class ExtCommChannel : public XPCCommChannel {
     public:
         ExtCommChannel(ExtCommChannelPrivate *p);
+
+    private:
         uint64_t writeData(const char *data, uint64_t len) override;
 };
 

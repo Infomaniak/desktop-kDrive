@@ -51,6 +51,7 @@ class GuiCommServerPrivate : public AbstractCommServerPrivate {
 @implementation GuiLocalEnd
 
 // XPCGuiRemoteProtocol protocol implementation
+// TODO: POC => replace with real C/S functions
 - (void)sendQuery:(NSData *)msg {
     NSString *answer = [[NSString alloc] initWithData:msg encoding:NSUTF8StringEncoding];
     NSLog(@"[KD] Query received %@", answer);
@@ -69,10 +70,10 @@ class GuiCommServerPrivate : public AbstractCommServerPrivate {
         NSLog(@"[KD] Error sending ack signal: %@", e.name);
     }
 
-    if (self.wrapper && self.wrapper->publicPtr) {
+    if (self.wrapper && self.wrapper->_publicPtr) {
         self.wrapper->_inBuffer += std::string([answer UTF8String]);
         self.wrapper->_inBuffer += "\n";
-        self.wrapper->publicPtr->readyReadCbk();
+        self.wrapper->_publicPtr->readyReadCbk();
     }
 }
 
@@ -81,6 +82,7 @@ class GuiCommServerPrivate : public AbstractCommServerPrivate {
 @implementation GuiRemoteEnd
 
 // XPCGuiProtocol protocol implementation
+// TODO: POC => replace with real C/S functions
 - (void)sendSignal:(NSData *)msg {
     if (self.connection == nil) {
         return;
@@ -107,7 +109,7 @@ class GuiCommServerPrivate : public AbstractCommServerPrivate {
 
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection {
     GuiCommChannelPrivate *channelPrivate = new GuiCommChannelPrivate(newConnection);
-    GuiCommServer *server = (GuiCommServer *) self.wrapper->publicPtr;
+    GuiCommServer *server = (GuiCommServer *) self.wrapper->_publicPtr;
 
     auto channel = std::make_shared<GuiCommChannel>(channelPrivate);
     channel->setLostConnectionCbk(std::bind(&GuiCommServer::lostConnectionCbk, server, std::placeholders::_1));
