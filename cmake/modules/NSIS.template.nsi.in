@@ -490,7 +490,7 @@ SectionEnd
       install_lite_sync_extension:
       CreateDirectory "$INSTDIR\shellext\AppX"
       SetOutPath "$INSTDIR\shellext\AppX"
-      File /nonfatal /a /r "${VFS_APPX_DIRECTORY}/"
+     File /nonfatal /a /r "${VFS_APPX_DIRECTORY}\"
       !insertmacro CheckAndConfirmEndProcesse1 "${EXTENSION_NAME}"
       ${PowerShellExecLog} "Add-AppxPackage -Path '$INSTDIR\shellext\AppX\${VFS_APPX_BUNDLE}' -ForceApplicationShutdown -ForceUpdateFromAnyVersion"
       end_install_lite_sync_extension:
