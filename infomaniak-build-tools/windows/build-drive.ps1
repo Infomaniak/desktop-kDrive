@@ -218,8 +218,11 @@ function Build-Extension {
     (Get-Content $appxManifestPath -Raw) -replace ' Version="[^"]*" />', " Version=`"$version.0`" />" |
         Set-Content -Encoding UTF8 -Force $appxManifestPath
     Write-Host "Extension version: $version"
-
-    msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint"
+	
+	$aumid = Get-Aumid $upload
+	Write-Host "Building extension with AUMID: $aumid"
+	
+    msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint" /p:KDC_AUMID="$aumid"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     $bundlePath = "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$version.0_Test/FileExplorerExtensionPackage_$version.0_x64_arm64.msixbundle"
