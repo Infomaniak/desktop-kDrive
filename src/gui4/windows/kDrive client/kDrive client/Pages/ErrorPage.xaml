@@ -9,8 +9,10 @@
     xmlns:controls="using:KDrive.CustomControls"
     xmlns:converters="using:KDrive.Converters"
     xmlns:viewmodels="using:KDrive.ViewModels"
+    xmlns:viewmodels_error="using:KDrive.ViewModels.Error"
     mc:Ignorable="d">
     <Page.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </Page.Resources>
 
     <Grid Margin="24" RowSpacing="16">
@@ -35,7 +37,7 @@
         <BreadcrumbBar x:Name="NavBar" Grid.Row="1" ItemClicked="NavBar_ItemClicked"/>
 
         <!-- AppErrors -->
-        <Border Grid.Row="2" BorderThickness="1" BorderBrush="#E6EAF5" CornerRadius="8">
+        <Border Grid.Row="2" BorderThickness="1" BorderBrush="#E6EAF5" CornerRadius="8" Visibility="{x:Bind ViewModel.AppErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto"/>
@@ -63,13 +65,38 @@
                     <StackPanel Orientation="Vertical" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" Margin="16,14,0,0">
                         <TextBlock Text="Assistance technique" VerticalAlignment="Center" Style="{StaticResource TextBlockStyle}" Margin="0,0,0,4"/>
                         <TextBlock Text="Veuillez contacter notre support client." VerticalAlignment="Center" Style="{StaticResource CaptionSemiBoldTextBlockStyle}" Margin="0,0,0,2" Foreground="#666666"/>
-                        <TextBlock Text="Une erreur technique s’est produite (APP:1637:7:0)." VerticalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}" Margin="0,0,0,2" Foreground="#666666"/>
+                        <ListView 
+                            SelectionMode="None" 
+                            ItemsSource="{x:Bind ViewModel.AppErrors, Mode=OneWay}" 
+                            MaxHeight="80">
+
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="Margin" Value="0"/>
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="MinHeight" Value="0"/>
+                                    <Setter Property="Height" Value="Auto"/>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="viewmodels_error:AppError">
+                                    <TextBlock 
+                                        Text="{x:Bind DescriptionShort, Mode=OneWay}" 
+                                        TextWrapping="WrapWholeWords" 
+                                        Style="{StaticResource CaptionTextBlockStyle}" 
+                                        Foreground="#666666"/>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
                         <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2" Margin="0,16,0,16" Spacing="4">
                             <Button Content="Contacter le support" VerticalAlignment="Center"/>
                             <HyperlinkButton Content="En savoir plus" VerticalAlignment="Center" NavigateUri="https://www.infomaniak.com/fr/support/faq/admin2/kdrive"/>
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>
+                
+                
             </Grid>
         </Border>
     </Grid>

@@ -50,17 +50,21 @@ namespace KDrive.ViewModels
          */
         private ObservableCollection<User> _users = new();
 
-        /** The list of active syncs across all users.
-         *  This is a read-only observable collection, so the UI can bind to it and be notified of changes.
-         *  It is automatically updated when a sync's IsActive property changes or when syncs are added/removed from users.
-         */
-        public ReadOnlyObservableCollection<Sync> AllSyncs { get; set; }
-
         /** The dispatcher queue for the UI thread.
          *  This is used to marshal calls to the UI thread when updating observable item.
          *  It must be set in the mainWindow constructor.
          */
         public static DispatcherQueue UIThreadDispatcher { get; set; } = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+
+        private ObservableCollection<Error.AppError> _appErrors = new();
+
+        // Helpers - Agregated collections
+        /** The list of active syncs across all users.
+        *  This is a read-only observable collection, so the UI can bind to it and be notified of changes.
+        *  It is automatically updated when a sync's IsActive property changes or when syncs are added/removed from users.
+        */
+        public ReadOnlyObservableCollection<Sync> AllSyncs { get; set; }
+
 
         public Sync? SelectedSync
         {
@@ -85,6 +89,8 @@ namespace KDrive.ViewModels
             AllSyncs.ToObservableChangeSet()
                        .Subscribe(_ => EnsureValidSelectedSync());
 
+            AppErrors.Add(new Error.AppError(1) { ExitCode = 1, ExitCause = 2 });
+            AppErrors.Add(new Error.AppError(2) { ExitCode = 2, ExitCause = 0 });
         }
 
         private void EnsureValidSelectedSync()
@@ -110,6 +116,12 @@ namespace KDrive.ViewModels
         {
             get => _isInitialized;
             set => SetProperty(ref _isInitialized, value);
+        }
+
+        public ObservableCollection<Error.AppError> AppErrors
+        {
+            get => _appErrors;
+            set => SetProperty(ref _appErrors, value);
         }
 
         /** Initialize the model by loading data from the server.
