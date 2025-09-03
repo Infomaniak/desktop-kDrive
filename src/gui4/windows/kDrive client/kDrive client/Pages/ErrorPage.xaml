@@ -33,6 +33,44 @@
 
         <!-- BreadCrumb bar -->
         <BreadcrumbBar x:Name="NavBar" Grid.Row="1" ItemClicked="NavBar_ItemClicked"/>
-        
+
+        <!-- AppErrors -->
+        <Border Grid.Row="2" BorderThickness="1" BorderBrush="#E6EAF5" CornerRadius="8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Header -->
+                <Border Background="#EEF1FC" Height="40" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
+                    <TextBlock Text="Application" VerticalAlignment="Center" Padding="16" Style="{StaticResource TextBlockStyle}" Foreground="#666666"/>
+                </Border>
+
+                <!-- Content -->
+                <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" Margin="16,0,0,0">
+                    <ImageIcon Height="16" VerticalAlignment="Top" Margin="0,16,0,0">
+                        <ImageIcon.Source>
+                            <SvgImageSource UriSource="ms-appx:///Assets/Icons/headphones.svg"/>
+                        </ImageIcon.Source>
+                    </ImageIcon>
+                    <StackPanel Orientation="Vertical" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" Margin="16,14,0,0">
+                        <TextBlock Text="Assistance technique" VerticalAlignment="Center" Style="{StaticResource TextBlockStyle}" Margin="0,0,0,4"/>
+                        <TextBlock Text="Veuillez contacter notre support client." VerticalAlignment="Center" Style="{StaticResource CaptionSemiBoldTextBlockStyle}" Margin="0,0,0,2" Foreground="#666666"/>
+                        <TextBlock Text="Une erreur technique s’est produite (APP:1637:7:0)." VerticalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}" Margin="0,0,0,2" Foreground="#666666"/>
+                        <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2" Margin="0,16,0,16" Spacing="4">
+                            <Button Content="Contacter le support" VerticalAlignment="Center"/>
+                            <HyperlinkButton Content="En savoir plus" VerticalAlignment="Center" NavigateUri="https://www.infomaniak.com/fr/support/faq/admin2/kdrive"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </Page>
