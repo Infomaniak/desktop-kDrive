@@ -1,6 +1,6 @@
 ﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <!-- /!\ DO NOT CHANGE THE PACKAGE ID /!\ It uniquely identify the app on client devices -->
-  <Package Id="Infomaniak_Network_SA.kDrive" Name="kDrive" Manufacturer="Infomaniak Network SA" Version="$(shortVersion).1" InstallerVersion="301">
+  <Package Id="Infomaniak_Network_SA.kDrive" Name="kDrive" Manufacturer="Infomaniak Network SA" Version="$(shortVersion).0" InstallerVersion="301">
     <MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeError)" />
     <MediaTemplate EmbedCab="yes" />
     <Icon Id="kDrive.ico" SourceFile="$(desktop-kDriveDir)/build-windows/install/bin/kdrive-win.ico"/>
@@ -27,7 +27,7 @@
     
     <CustomAction Id="InstallExplorerExtension"
                   Directory="APPXFOLDER"
-                  ExeCommand="powershell.exe -WindowStyle hidden -ExecutionPolicy Bypass -Command &quot;Add-AppxPackage FileExplorerExtensionPackage_$(shortVersion).0_x64_arm64.msixbundle  -ForceApplicationShutdown -ForceUpdateFromAnyVersion&quot;" 
+                  ExeCommand="powershell.exe -WindowStyle hidden -ExecutionPolicy Bypass -Command &quot;Add-AppxPackage FileExplorerExtensionPackage_$(shortVersion).0_x64_arm64.msixbundle -ForceApplicationShutdown -ForceUpdateFromAnyVersion&quot;" 
                   Execute="deferred" 
                   Impersonate="yes" 
                   Return="check"/>
