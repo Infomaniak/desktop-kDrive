@@ -91,12 +91,12 @@
         </Border>
 
         <!-- NavigationView -->
-        <NavigationView x:Name="nvSample" 
+        <NavigationView x:Name="navView" 
                         Grid.Row="1"
                         PaneDisplayMode="Left"
-                        SelectionChanged="nvSample_SelectionChanged"
+                        SelectionChanged="navView_SelectionChanged"
                         IsBackEnabled="{x:Bind contentFrame.CanGoBack, Mode=OneWay}"
-                        BackRequested="nvSample_BackRequested"
+                        BackRequested="navView_BackRequested"
                         >
             <NavigationView.Resources>
                 <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter"/>
