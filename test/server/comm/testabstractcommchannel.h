@@ -27,19 +27,34 @@ class CommChannelTest : public AbstractCommChannel {
     public:
         ~CommChannelTest() {}
         uint64_t readData(char *data, uint64_t maxSize) override {
-            auto size = _buffer.copy(data, maxSize);
-            _buffer.erase(0, size);
+#if defined(KD_WINDOWS)
+            std::vector<wchar_t> wData(maxSize, 0);
+            auto size = _inBuffer.copy(wData.data(), maxSize - 1);
+            _inBuffer.erase(0, size);
+            wcstombs_s(NULL, data, maxSize, wData.data(), maxSize - 1);
             return size;
+#else
+            auto size = _inBuffer.copy(data, maxSize);
+            _inBuffer.erase(0, size);
+            return size;
+#endif
         }
         uint64_t writeData(const char *data, uint64_t maxSize) override {
-            _buffer.append(data, maxSize);
+#if defined(KD_WINDOWS)
+            std::vector<wchar_t> wData(maxSize + 1, 0);
+            mbstowcs_s(NULL, wData.data(), maxSize + 1, data, maxSize);
+            _inBuffer.append(wData.data(), maxSize);
             return maxSize;
+#else
+            _inBuffer.append(data, maxSize);
+            return maxSize;
+#endif
         }
-        uint64_t bytesAvailable() const override { return _buffer.size(); }
-        bool canReadLine() const override { return _buffer.find('\n') != std::string::npos; }
+        uint64_t bytesAvailable() const override { return _inBuffer.size(); }
+        bool canReadLine() const override { return _inBuffer.find('\n') != std::string::npos; }
 
     private:
-        std::string _buffer; // Write & read to/from the same buffer
+        CommString _inBuffer; // Write & read to/from the same buffer
 };
 
 class TestAbstractCommChannel : public CppUnit::TestFixture, public TestBase {

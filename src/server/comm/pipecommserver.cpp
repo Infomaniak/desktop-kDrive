@@ -46,13 +46,9 @@ uint64_t PipeCommChannel::readData(char *data, uint64_t maxSize) {
 
 #if defined(KD_WINDOWS)
     std::vector<TCHAR> wData(maxSize, 0);
-    auto size = _inBuffer.copy(wData.data(), maxSize);
+    auto size = _inBuffer.copy(wData.data(), maxSize - 1);
     _inBuffer.erase(0, size);
-    wcstombs_s(NULL, data, maxSize, wData.data(), maxSize);
-    return size;
-#else
-    auto size = _inBuffer.copy(data, maxSize);
-    _inBuffer.erase(0, size);
+    wcstombs_s(NULL, data, maxSize, wData.data(), maxSize - 1);
     return size;
 #endif
 }
