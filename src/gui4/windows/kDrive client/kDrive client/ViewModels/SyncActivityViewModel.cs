@@ -60,7 +60,7 @@ namespace KDrive.ViewModels
                     {
                         OnPropertyChanged(nameof(ActivityTime));
                     });
-                }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+                }, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
             }
         }
         public SyncActivityDirection Direction { get => _direction; set => SetProperty(ref _direction, value); }
