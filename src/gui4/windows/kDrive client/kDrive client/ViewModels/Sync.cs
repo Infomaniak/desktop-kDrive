@@ -39,7 +39,7 @@ namespace KDrive.ViewModels
         private string _localPath = "";
         private string _remotePath = "";
         private bool _supportVfs = false;
-        private ObservableCollection<SyncActivityViewModel> _syncActivities = new();
+        private ObservableCollection<SyncActivity> _syncActivities = new();
         private SyncStatus _syncStatus = SyncStatus.Pause;
 
         // Sync UI properties
@@ -113,7 +113,7 @@ namespace KDrive.ViewModels
             SyncActivityItemType itemType = isFile ? SyncActivityItemType.File : SyncActivityItemType.Directory;
             long size = isFile ? rand.Next(0, 5000000) : 0; // Random size for files, 0 for directories
             DateTime activityTime = DateTime.Now;
-            return new SyncActivityViewModel()
+            return new SyncActivity()
             {
                 LocalPath = "C:/Users/Herve/kDrive/" + sb.ToString(),
                 Direction = direction,
@@ -194,7 +194,7 @@ namespace KDrive.ViewModels
             set => SetProperty(ref _supportVfs, value);
         }
 
-        public ObservableCollection<SyncActivityViewModel> SyncActivities
+        public ObservableCollection<SyncActivity> SyncActivities
         {
             get => _syncActivities;
         }

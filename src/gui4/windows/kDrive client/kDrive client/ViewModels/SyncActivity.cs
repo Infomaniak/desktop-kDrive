@@ -20,7 +20,7 @@ namespace KDrive.ViewModels
         audio,
         Grid
     }
-    internal class SyncActivityViewModel : ObservableObject
+    internal class SyncActivity : ObservableObject
     {
         private string _name = "";
         private string _parentFolderPath = "";

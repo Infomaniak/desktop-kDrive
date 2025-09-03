@@ -31,7 +31,7 @@ namespace KDrive.CustomControls
     {
         internal AppModel _viewModel = ((App)Application.Current).Data;
         internal AppModel ViewModel => _viewModel;
-        private ObservableCollection<SyncActivityViewModel> _outGoingActivities = new();
+        private ObservableCollection<SyncActivity> _outGoingActivities = new();
         private Int64 _insertionCounter = 0;
         public SyncActivityTable()
         {
@@ -76,7 +76,7 @@ namespace KDrive.CustomControls
 
         private async void SyncActivityParent_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is HyperlinkButton btn && btn.DataContext is SyncActivityViewModel activity)
+            if (sender is HyperlinkButton btn && btn.DataContext is SyncActivity activity)
             {
                 if (Directory.Exists(activity.ParentFolderPath))
                 {
